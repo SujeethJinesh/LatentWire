@@ -1,0 +1,770 @@
+
+$ git submodule update --init --recursive quantization/C2C
+Dependency check failed or mismatched: rosetta resolved to None, expected under /workspace/LatentWire/quantization/C2C
+
+$ /workspace/conda/envs/rosetta/bin/python -m pip install -e .
+Obtaining file:///workspace/LatentWire/quantization/C2C
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: torch==2.6.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (2.6.0)
+Requirement already satisfied: transformers==4.52.4 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.52.4)
+Requirement already satisfied: filelock in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.20.3)
+Requirement already satisfied: typing-extensions>=4.10.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (4.15.0)
+Requirement already satisfied: networkx in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.4.2)
+Requirement already satisfied: jinja2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.1.6)
+Requirement already satisfied: fsspec in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (2025.10.0)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-cudnn-cu12==9.1.0.70 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (9.1.0.70)
+Requirement already satisfied: nvidia-cublas-cu12==12.4.5.8 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.5.8)
+Requirement already satisfied: nvidia-cufft-cu12==11.2.1.3 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (11.2.1.3)
+Requirement already satisfied: nvidia-curand-cu12==10.3.5.147 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (10.3.5.147)
+Requirement already satisfied: nvidia-cusolver-cu12==11.6.1.9 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (11.6.1.9)
+Requirement already satisfied: nvidia-cusparse-cu12==12.3.1.170 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.3.1.170)
+Requirement already satisfied: nvidia-cusparselt-cu12==0.6.2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (0.6.2)
+Requirement already satisfied: nvidia-nccl-cu12==2.21.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (2.21.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-nvjitlink-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: triton==3.2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.2.0)
+Requirement already satisfied: sympy==1.13.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (1.13.1)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from sympy==1.13.1->torch==2.6.0->rosetta==0.1.0) (1.3.0)
+Requirement already satisfied: huggingface-hub<1.0,>=0.30.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (0.36.0)
+Requirement already satisfied: numpy>=1.17 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (2.2.6)
+Requirement already satisfied: packaging>=20.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (26.0)
+Requirement already satisfied: pyyaml>=5.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (6.0.3)
+Requirement already satisfied: regex!=2019.12.17 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (2026.1.15)
+Requirement already satisfied: requests in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (2.32.5)
+Requirement already satisfied: tokenizers<0.22,>=0.21 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (0.21.4)
+Requirement already satisfied: safetensors>=0.4.3 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (0.7.0)
+Requirement already satisfied: tqdm>=4.27 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (4.67.1)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.52.4->rosetta==0.1.0) (1.2.0)
+Requirement already satisfied: MarkupSafe>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from jinja2->torch==2.6.0->rosetta==0.1.0) (3.0.3)
+Requirement already satisfied: charset_normalizer<4,>=2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from requests->transformers==4.52.4->rosetta==0.1.0) (3.4.4)
+Requirement already satisfied: idna<4,>=2.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from requests->transformers==4.52.4->rosetta==0.1.0) (3.11)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from requests->transformers==4.52.4->rosetta==0.1.0) (2.6.3)
+Requirement already satisfied: certifi>=2017.4.17 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from requests->transformers==4.52.4->rosetta==0.1.0) (2026.1.4)
+Building wheels for collected packages: rosetta
+  Building editable for rosetta (pyproject.toml): started
+  Building editable for rosetta (pyproject.toml): finished with status 'done'
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=e008f60e8b4ee33b937eaa7af8064e1ac53ccf315098bdf7741adf754c148c58
+  Stored in directory: /tmp/pip-ephem-wheel-cache-gkkita1k/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+Successfully built rosetta
+Installing collected packages: rosetta
+  Attempting uninstall: rosetta
+    Found existing installation: rosetta 0.1.0
+    Uninstalling rosetta-0.1.0:
+      Successfully uninstalled rosetta-0.1.0
+Successfully installed rosetta-0.1.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+$ /workspace/conda/envs/rosetta/bin/python -m pip install -e .[training,evaluation]
+Obtaining file:///workspace/LatentWire/quantization/C2C
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: torch==2.6.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (2.6.0)
+Requirement already satisfied: transformers==4.52.4 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.52.4)
+Requirement already satisfied: scikit-learn>=1.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.7.2)
+Requirement already satisfied: matplotlib>=3.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (3.10.8)
+Requirement already satisfied: seaborn>=0.11 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.13.2)
+Requirement already satisfied: jsonlines in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.0.0)
+Requirement already satisfied: openai in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (2.15.0)
+Requirement already satisfied: math_verify in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.9.0)
+Requirement already satisfied: latex2sympy2_extended in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.11.0)
+Requirement already satisfied: spaces>=0.30.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.47.0)
+Requirement already satisfied: datasets>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.5.0)
+Requirement already satisfied: accelerate>=0.20 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.12.0)
+Requirement already satisfied: wandb>=0.13 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.24.0)
+Requirement already satisfied: peft in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.18.1)
+Requirement already satisfied: filelock in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.20.3)
+Requirement already satisfied: typing-extensions>=4.10.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (4.15.0)
+Requirement already satisfied: networkx in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.4.2)
+Requirement already satisfied: jinja2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.1.6)
+Requirement already satisfied: fsspec in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (2025.10.0)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-cudnn-cu12==9.1.0.70 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (9.1.0.70)
+Requirement already satisfied: nvidia-cublas-cu12==12.4.5.8 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.5.8)
+Requirement already satisfied: nvidia-cufft-cu12==11.2.1.3 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (11.2.1.3)
+Requirement already satisfied: nvidia-curand-cu12==10.3.5.147 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (10.3.5.147)
+Requirement already satisfied: nvidia-cusolver-cu12==11.6.1.9 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (11.6.1.9)
+Requirement already satisfied: nvidia-cusparse-cu12==12.3.1.170 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.3.1.170)
+Requirement already satisfied: nvidia-cusparselt-cu12==0.6.2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (0.6.2)
+Requirement already satisfied: nvidia-nccl-cu12==2.21.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (2.21.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: nvidia-nvjitlink-cu12==12.4.127 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (12.4.127)
+Requirement already satisfied: triton==3.2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.2.0)
+Requirement already satisfied: sympy==1.13.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (1.13.1)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from sympy==1.13.1->torch==2.6.0->rosetta==0.1.0) (1.3.0)
+Requirement already satisfied: huggingface-hub<1.0,>=0.30.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (0.36.0)
+Requirement already satisfied: numpy>=1.17 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (2.2.6)
+Requirement already satisfied: packaging>=20.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (26.0)
+Requirement already satisfied: pyyaml>=5.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (6.0.3)
+Requirement already satisfied: regex!=2019.12.17 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (2026.1.15)
+Requirement already satisfied: requests in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (2.32.5)
+Requirement already satisfied: tokenizers<0.22,>=0.21 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (0.21.4)
+Requirement already satisfied: safetensors>=0.4.3 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (0.7.0)
+Requirement already satisfied: tqdm>=4.27 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from transformers==4.52.4->rosetta==0.1.0) (4.67.1)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.52.4->rosetta==0.1.0) (1.2.0)
+Requirement already satisfied: psutil in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from accelerate>=0.20->rosetta==0.1.0) (5.9.8)
+Requirement already satisfied: pyarrow>=21.0.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from datasets>=2.0->rosetta==0.1.0) (23.0.0)
+Requirement already satisfied: dill<0.4.1,>=0.3.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from datasets>=2.0->rosetta==0.1.0) (0.4.0)
+Requirement already satisfied: pandas in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from datasets>=2.0->rosetta==0.1.0) (2.3.3)
+Requirement already satisfied: httpx<1.0.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from datasets>=2.0->rosetta==0.1.0) (0.28.1)
+Requirement already satisfied: xxhash in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from datasets>=2.0->rosetta==0.1.0) (3.6.0)
+Requirement already satisfied: multiprocess<0.70.19 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from datasets>=2.0->rosetta==0.1.0) (0.70.18)
+Requirement already satisfied: aiohttp!=4.0.0a0,!=4.0.0a1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from fsspec[http]<=2025.10.0,>=2023.1.0->datasets>=2.0->rosetta==0.1.0) (3.13.3)
+Requirement already satisfied: anyio in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from httpx<1.0.0->datasets>=2.0->rosetta==0.1.0) (4.12.1)
+Requirement already satisfied: certifi in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from httpx<1.0.0->datasets>=2.0->rosetta==0.1.0) (2026.1.4)
+Requirement already satisfied: httpcore==1.* in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from httpx<1.0.0->datasets>=2.0->rosetta==0.1.0) (1.0.9)
+Requirement already satisfied: idna in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from httpx<1.0.0->datasets>=2.0->rosetta==0.1.0) (3.11)
+Requirement already satisfied: h11>=0.16 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from httpcore==1.*->httpx<1.0.0->datasets>=2.0->rosetta==0.1.0) (0.16.0)
+Requirement already satisfied: aiohappyeyeballs>=2.5.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2025.10.0,>=2023.1.0->datasets>=2.0->rosetta==0.1.0) (2.6.1)
+Requirement already satisfied: aiosignal>=1.4.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2025.10.0,>=2023.1.0->datasets>=2.0->rosetta==0.1.0) (1.4.0)
+Requirement already satisfied: async-timeout<6.0,>=4.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2025.10.0,>=2023.1.0->datasets>=2.0->rosetta==0.1.0) (5.0.1)
+Requirement already satisfied: attrs>=17.3.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2025.10.0,>=2023.1.0->datasets>=2.0->rosetta==0.1.0) (25.4.0)
+Requirement already satisfied: frozenlist>=1.1.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2025.10.0,>=2023.1.0->datasets>=2.0->rosetta==0.1.0) (1.8.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2025.10.0,>=2023.1.0->datasets>=2.0->rosetta==0.1.0) (6.7.1)
+Requirement already satisfied: propcache>=0.2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2025.10.0,>=2023.1.0->datasets>=2.0->rosetta==0.1.0) (0.4.1)
+Requirement already satisfied: yarl<2.0,>=1.17.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from aiohttp!=4.0.0a0,!=4.0.0a1->fsspec[http]<=2025.10.0,>=2023.1.0->datasets>=2.0->rosetta==0.1.0) (1.22.0)
+Requirement already satisfied: contourpy>=1.0.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from matplotlib>=3.5->rosetta==0.1.0) (1.3.2)
+Requirement already satisfied: cycler>=0.10 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from matplotlib>=3.5->rosetta==0.1.0) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from matplotlib>=3.5->rosetta==0.1.0) (4.61.1)
+Requirement already satisfied: kiwisolver>=1.3.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from matplotlib>=3.5->rosetta==0.1.0) (1.4.9)
+Requirement already satisfied: pillow>=8 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from matplotlib>=3.5->rosetta==0.1.0) (12.1.0)
+Requirement already satisfied: pyparsing>=3 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from matplotlib>=3.5->rosetta==0.1.0) (3.3.2)
+Requirement already satisfied: python-dateutil>=2.7 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from matplotlib>=3.5->rosetta==0.1.0) (2.9.0.post0)
+Requirement already satisfied: six>=1.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from python-dateutil>=2.7->matplotlib>=3.5->rosetta==0.1.0) (1.17.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from requests->transformers==4.52.4->rosetta==0.1.0) (3.4.4)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from requests->transformers==4.52.4->rosetta==0.1.0) (2.6.3)
+Requirement already satisfied: scipy>=1.8.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from scikit-learn>=1.0->rosetta==0.1.0) (1.15.3)
+Requirement already satisfied: joblib>=1.2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from scikit-learn>=1.0->rosetta==0.1.0) (1.5.3)
+Requirement already satisfied: threadpoolctl>=3.1.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from scikit-learn>=1.0->rosetta==0.1.0) (3.6.0)
+Requirement already satisfied: pytz>=2020.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from pandas->datasets>=2.0->rosetta==0.1.0) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from pandas->datasets>=2.0->rosetta==0.1.0) (2025.3)
+Requirement already satisfied: gradio in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from spaces>=0.30.0->rosetta==0.1.0) (6.4.0)
+Requirement already satisfied: pydantic<3,>=1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from spaces>=0.30.0->rosetta==0.1.0) (2.12.5)
+Requirement already satisfied: annotated-types>=0.6.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from pydantic<3,>=1->spaces>=0.30.0->rosetta==0.1.0) (0.7.0)
+Requirement already satisfied: pydantic-core==2.41.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from pydantic<3,>=1->spaces>=0.30.0->rosetta==0.1.0) (2.41.5)
+Requirement already satisfied: typing-inspection>=0.4.2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from pydantic<3,>=1->spaces>=0.30.0->rosetta==0.1.0) (0.4.2)
+Requirement already satisfied: click>=8.0.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from wandb>=0.13->rosetta==0.1.0) (8.3.1)
+Requirement already satisfied: gitpython!=3.1.29,>=1.0.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from wandb>=0.13->rosetta==0.1.0) (3.1.46)
+Requirement already satisfied: platformdirs in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from wandb>=0.13->rosetta==0.1.0) (4.5.1)
+Requirement already satisfied: protobuf!=4.21.0,!=5.28.0,<7,>=3.19.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from wandb>=0.13->rosetta==0.1.0) (6.33.4)
+Requirement already satisfied: sentry-sdk>=2.0.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from wandb>=0.13->rosetta==0.1.0) (2.50.0)
+Requirement already satisfied: gitdb<5,>=4.0.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gitpython!=3.1.29,>=1.0.0->wandb>=0.13->rosetta==0.1.0) (4.0.12)
+Requirement already satisfied: smmap<6,>=3.0.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gitdb<5,>=4.0.1->gitpython!=3.1.29,>=1.0.0->wandb>=0.13->rosetta==0.1.0) (5.0.2)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from anyio->httpx<1.0.0->datasets>=2.0->rosetta==0.1.0) (1.3.1)
+Requirement already satisfied: aiofiles<25.0,>=22.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (24.1.0)
+Requirement already satisfied: brotli>=1.1.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (1.2.0)
+Requirement already satisfied: fastapi<1.0,>=0.115.2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (0.128.0)
+Requirement already satisfied: ffmpy in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (1.0.0)
+Requirement already satisfied: gradio-client==2.0.3 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (2.0.3)
+Requirement already satisfied: groovy~=0.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (0.1.2)
+Requirement already satisfied: markupsafe<4.0,>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (3.0.3)
+Requirement already satisfied: orjson~=3.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (3.11.5)
+Requirement already satisfied: pydub in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (0.25.1)
+Requirement already satisfied: python-multipart>=0.0.18 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (0.0.22)
+Requirement already satisfied: safehttpx<0.2.0,>=0.1.7 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (0.1.7)
+Requirement already satisfied: semantic-version~=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (2.10.0)
+Requirement already satisfied: starlette<1.0,>=0.40.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (0.50.0)
+Requirement already satisfied: tomlkit<0.14.0,>=0.12.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (0.13.3)
+Requirement already satisfied: typer<1.0,>=0.12 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (0.21.1)
+Requirement already satisfied: uvicorn>=0.14.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from gradio->spaces>=0.30.0->rosetta==0.1.0) (0.40.0)
+Requirement already satisfied: annotated-doc>=0.0.2 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from fastapi<1.0,>=0.115.2->gradio->spaces>=0.30.0->rosetta==0.1.0) (0.0.4)
+Requirement already satisfied: shellingham>=1.3.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from typer<1.0,>=0.12->gradio->spaces>=0.30.0->rosetta==0.1.0) (1.5.4)
+Requirement already satisfied: rich>=10.11.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from typer<1.0,>=0.12->gradio->spaces>=0.30.0->rosetta==0.1.0) (14.3.1)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rich>=10.11.0->typer<1.0,>=0.12->gradio->spaces>=0.30.0->rosetta==0.1.0) (4.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rich>=10.11.0->typer<1.0,>=0.12->gradio->spaces>=0.30.0->rosetta==0.1.0) (2.19.2)
+Requirement already satisfied: mdurl~=0.1 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=10.11.0->typer<1.0,>=0.12->gradio->spaces>=0.30.0->rosetta==0.1.0) (0.1.2)
+Requirement already satisfied: antlr4-python3-runtime<=4.13.2,>=4.9.3 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from latex2sympy2_extended->rosetta==0.1.0) (4.13.2)
+Requirement already satisfied: distro<2,>=1.7.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from openai->rosetta==0.1.0) (1.9.0)
+Requirement already satisfied: jiter<1,>=0.10.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from openai->rosetta==0.1.0) (0.12.0)
+Requirement already satisfied: sniffio in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from openai->rosetta==0.1.0) (1.3.1)
+Building wheels for collected packages: rosetta
+  Building editable for rosetta (pyproject.toml): started
+  Building editable for rosetta (pyproject.toml): finished with status 'done'
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=f7934daf4de70837566d0c4405dc39a1fde00bd1a52881f4329de22ba07ab76c
+  Stored in directory: /tmp/pip-ephem-wheel-cache-jrdtr7gl/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+Successfully built rosetta
+Installing collected packages: rosetta
+  Attempting uninstall: rosetta
+    Found existing installation: rosetta 0.1.0
+    Uninstalling rosetta-0.1.0:
+      Successfully uninstalled rosetta-0.1.0
+Successfully installed rosetta-0.1.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+Evaluating SPLIT_0_OF_1 (generate):   0%|          | 0/500 [00:00<?, ?it/s]
+Evaluating SPLIT_0_OF_1 (generate):   0%|          | 1/500 [00:01<11:17,  1.36s/it]
+Evaluating SPLIT_0_OF_1 (generate):   0%|          | 2/500 [00:01<06:23,  1.30it/s]
+Evaluating SPLIT_0_OF_1 (generate):   1%|          | 3/500 [00:02<04:46,  1.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):   1%|          | 4/500 [00:02<04:00,  2.06it/s]
+Evaluating SPLIT_0_OF_1 (generate):   1%|          | 5/500 [00:02<03:36,  2.29it/s]
+Evaluating SPLIT_0_OF_1 (generate):   1%|          | 6/500 [00:03<03:20,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):   1%|▏         | 7/500 [00:03<03:10,  2.59it/s]
+Evaluating SPLIT_0_OF_1 (generate):   2%|▏         | 8/500 [00:03<03:03,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):   2%|▏         | 9/500 [00:04<03:04,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):   2%|▏         | 10/500 [00:04<02:59,  2.73it/s]
+Evaluating SPLIT_0_OF_1 (generate):   2%|▏         | 11/500 [00:04<02:55,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):   2%|▏         | 12/500 [00:05<02:53,  2.82it/s]
+Evaluating SPLIT_0_OF_1 (generate):   3%|▎         | 13/500 [00:05<02:52,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):   3%|▎         | 14/500 [00:05<02:50,  2.85it/s]
+Evaluating SPLIT_0_OF_1 (generate):   3%|▎         | 15/500 [00:06<02:49,  2.86it/s]
+Evaluating SPLIT_0_OF_1 (generate):   3%|▎         | 16/500 [00:06<03:22,  2.39it/s]
+Evaluating SPLIT_0_OF_1 (generate):   3%|▎         | 17/500 [00:07<03:30,  2.29it/s]
+Evaluating SPLIT_0_OF_1 (generate):   4%|▎         | 18/500 [00:07<03:17,  2.44it/s]
+Evaluating SPLIT_0_OF_1 (generate):   4%|▍         | 19/500 [00:08<03:41,  2.18it/s]
+Evaluating SPLIT_0_OF_1 (generate):   4%|▍         | 20/500 [00:08<03:24,  2.35it/s]
+Evaluating SPLIT_0_OF_1 (generate):   4%|▍         | 21/500 [00:08<03:17,  2.43it/s]
+Evaluating SPLIT_0_OF_1 (generate):   4%|▍         | 22/500 [00:09<03:07,  2.55it/s]
+Evaluating SPLIT_0_OF_1 (generate):   5%|▍         | 23/500 [00:09<03:05,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):   5%|▍         | 24/500 [00:10<02:59,  2.65it/s]
+Evaluating SPLIT_0_OF_1 (generate):   5%|▌         | 25/500 [00:10<02:54,  2.71it/s]
+Evaluating SPLIT_0_OF_1 (generate):   5%|▌         | 26/500 [00:10<02:51,  2.76it/s]
+Evaluating SPLIT_0_OF_1 (generate):   5%|▌         | 27/500 [00:11<02:49,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):   6%|▌         | 28/500 [00:11<02:47,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):   6%|▌         | 29/500 [00:11<02:46,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):   6%|▌         | 30/500 [00:12<02:44,  2.85it/s]
+Evaluating SPLIT_0_OF_1 (generate):   6%|▌         | 31/500 [00:12<02:43,  2.86it/s]
+Evaluating SPLIT_0_OF_1 (generate):   6%|▋         | 32/500 [00:13<03:10,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):   7%|▋         | 33/500 [00:13<03:14,  2.40it/s]
+Evaluating SPLIT_0_OF_1 (generate):   7%|▋         | 34/500 [00:13<03:04,  2.52it/s]
+Evaluating SPLIT_0_OF_1 (generate):   7%|▋         | 35/500 [00:14<03:25,  2.26it/s]
+Evaluating SPLIT_0_OF_1 (generate):   7%|▋         | 36/500 [00:14<03:11,  2.42it/s]
+Evaluating SPLIT_0_OF_1 (generate):   7%|▋         | 37/500 [00:15<03:02,  2.54it/s]
+Evaluating SPLIT_0_OF_1 (generate):   8%|▊         | 38/500 [00:15<02:55,  2.64it/s]
+Evaluating SPLIT_0_OF_1 (generate):   8%|▊         | 39/500 [00:15<02:51,  2.69it/s]
+Evaluating SPLIT_0_OF_1 (generate):   8%|▊         | 40/500 [00:16<02:47,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):   8%|▊         | 41/500 [00:16<02:44,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):   8%|▊         | 42/500 [00:16<02:59,  2.55it/s]
+Evaluating SPLIT_0_OF_1 (generate):   9%|▊         | 43/500 [00:17<03:24,  2.24it/s]
+Evaluating SPLIT_0_OF_1 (generate):   9%|▉         | 44/500 [00:17<03:01,  2.51it/s]
+Evaluating SPLIT_0_OF_1 (generate):   9%|▉         | 45/500 [00:18<02:53,  2.62it/s]
+Evaluating SPLIT_0_OF_1 (generate):   9%|▉         | 46/500 [00:18<03:01,  2.50it/s]
+Evaluating SPLIT_0_OF_1 (generate):   9%|▉         | 47/500 [00:19<03:11,  2.37it/s]
+Evaluating SPLIT_0_OF_1 (generate):  10%|▉         | 48/500 [00:19<03:00,  2.50it/s]
+Evaluating SPLIT_0_OF_1 (generate):  10%|▉         | 49/500 [00:19<02:52,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  10%|█         | 50/500 [00:20<02:47,  2.69it/s]
+Evaluating SPLIT_0_OF_1 (generate):  10%|█         | 51/500 [00:20<02:43,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  10%|█         | 52/500 [00:20<02:48,  2.65it/s]
+Evaluating SPLIT_0_OF_1 (generate):  11%|█         | 53/500 [00:21<02:44,  2.72it/s]
+Evaluating SPLIT_0_OF_1 (generate):  11%|█         | 54/500 [00:21<02:57,  2.51it/s]
+Evaluating SPLIT_0_OF_1 (generate):  11%|█         | 55/500 [00:21<02:50,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  11%|█         | 56/500 [00:22<02:44,  2.69it/s]
+Evaluating SPLIT_0_OF_1 (generate):  11%|█▏        | 57/500 [00:22<02:40,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  12%|█▏        | 58/500 [00:23<03:21,  2.19it/s]
+Evaluating SPLIT_0_OF_1 (generate):  12%|█▏        | 59/500 [00:23<03:06,  2.37it/s]
+Evaluating SPLIT_0_OF_1 (generate):  12%|█▏        | 60/500 [00:24<02:56,  2.49it/s]
+Evaluating SPLIT_0_OF_1 (generate):  12%|█▏        | 61/500 [00:24<02:49,  2.59it/s]
+Evaluating SPLIT_0_OF_1 (generate):  12%|█▏        | 62/500 [00:24<02:43,  2.67it/s]
+Evaluating SPLIT_0_OF_1 (generate):  13%|█▎        | 63/500 [00:25<02:40,  2.73it/s]
+Evaluating SPLIT_0_OF_1 (generate):  13%|█▎        | 64/500 [00:25<02:57,  2.45it/s]
+Evaluating SPLIT_0_OF_1 (generate):  13%|█▎        | 65/500 [00:25<02:49,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  13%|█▎        | 66/500 [00:26<02:42,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  13%|█▎        | 67/500 [00:26<02:38,  2.73it/s]
+Evaluating SPLIT_0_OF_1 (generate):  14%|█▎        | 68/500 [00:26<02:35,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  14%|█▍        | 69/500 [00:27<02:33,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  14%|█▍        | 70/500 [00:27<03:00,  2.38it/s]
+Evaluating SPLIT_0_OF_1 (generate):  14%|█▍        | 71/500 [00:28<02:51,  2.50it/s]
+Evaluating SPLIT_0_OF_1 (generate):  14%|█▍        | 72/500 [00:28<02:44,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  15%|█▍        | 73/500 [00:28<02:38,  2.69it/s]
+Evaluating SPLIT_0_OF_1 (generate):  15%|█▍        | 74/500 [00:29<02:34,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  15%|█▌        | 75/500 [00:29<02:32,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  15%|█▌        | 76/500 [00:29<02:30,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):  15%|█▌        | 77/500 [00:30<02:28,  2.85it/s]
+Evaluating SPLIT_0_OF_1 (generate):  16%|█▌        | 78/500 [00:30<02:27,  2.87it/s]
+Evaluating SPLIT_0_OF_1 (generate):  16%|█▌        | 79/500 [00:31<02:34,  2.73it/s]
+Evaluating SPLIT_0_OF_1 (generate):  16%|█▌        | 80/500 [00:31<02:31,  2.77it/s]
+Evaluating SPLIT_0_OF_1 (generate):  16%|█▌        | 81/500 [00:31<02:29,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  16%|█▋        | 82/500 [00:32<02:23,  2.91it/s]
+Evaluating SPLIT_0_OF_1 (generate):  17%|█▋        | 83/500 [00:32<02:23,  2.91it/s]
+Evaluating SPLIT_0_OF_1 (generate):  17%|█▋        | 84/500 [00:32<02:23,  2.90it/s]
+Evaluating SPLIT_0_OF_1 (generate):  17%|█▋        | 85/500 [00:33<02:23,  2.89it/s]
+Evaluating SPLIT_0_OF_1 (generate):  17%|█▋        | 86/500 [00:33<02:22,  2.90it/s]
+Evaluating SPLIT_0_OF_1 (generate):  17%|█▋        | 87/500 [00:33<02:22,  2.90it/s]
+Evaluating SPLIT_0_OF_1 (generate):  18%|█▊        | 88/500 [00:34<02:22,  2.90it/s]
+Evaluating SPLIT_0_OF_1 (generate):  18%|█▊        | 89/500 [00:34<02:33,  2.67it/s]
+Evaluating SPLIT_0_OF_1 (generate):  18%|█▊        | 90/500 [00:35<02:49,  2.42it/s]
+Evaluating SPLIT_0_OF_1 (generate):  18%|█▊        | 91/500 [00:35<02:40,  2.54it/s]
+Evaluating SPLIT_0_OF_1 (generate):  18%|█▊        | 92/500 [00:35<02:34,  2.63it/s]
+Evaluating SPLIT_0_OF_1 (generate):  19%|█▊        | 93/500 [00:36<02:30,  2.70it/s]
+Evaluating SPLIT_0_OF_1 (generate):  19%|█▉        | 94/500 [00:36<02:27,  2.76it/s]
+Evaluating SPLIT_0_OF_1 (generate):  19%|█▉        | 95/500 [00:36<02:24,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  19%|█▉        | 96/500 [00:37<02:55,  2.31it/s]
+Evaluating SPLIT_0_OF_1 (generate):  19%|█▉        | 97/500 [00:37<02:55,  2.29it/s]
+Evaluating SPLIT_0_OF_1 (generate):  20%|█▉        | 98/500 [00:38<02:44,  2.44it/s]
+Evaluating SPLIT_0_OF_1 (generate):  20%|█▉        | 99/500 [00:38<02:36,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  20%|██        | 100/500 [00:38<02:18,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  20%|██        | 101/500 [00:39<02:18,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  20%|██        | 102/500 [00:39<02:25,  2.73it/s]
+Evaluating SPLIT_0_OF_1 (generate):  21%|██        | 103/500 [00:39<02:22,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  21%|██        | 104/500 [00:40<02:21,  2.80it/s]
+Evaluating SPLIT_0_OF_1 (generate):  21%|██        | 105/500 [00:40<02:27,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  21%|██        | 106/500 [00:41<02:31,  2.60it/s]
+Evaluating SPLIT_0_OF_1 (generate):  21%|██▏       | 107/500 [00:41<02:26,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  22%|██▏       | 108/500 [00:41<02:23,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  22%|██▏       | 109/500 [00:42<02:20,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  22%|██▏       | 110/500 [00:42<02:18,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  22%|██▏       | 111/500 [00:42<02:17,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  22%|██▏       | 112/500 [00:43<02:42,  2.39it/s]
+Evaluating SPLIT_0_OF_1 (generate):  23%|██▎       | 113/500 [00:43<02:41,  2.40it/s]
+Evaluating SPLIT_0_OF_1 (generate):  23%|██▎       | 114/500 [00:44<02:51,  2.25it/s]
+Evaluating SPLIT_0_OF_1 (generate):  23%|██▎       | 115/500 [00:44<02:39,  2.41it/s]
+Evaluating SPLIT_0_OF_1 (generate):  23%|██▎       | 116/500 [00:44<02:31,  2.54it/s]
+Evaluating SPLIT_0_OF_1 (generate):  23%|██▎       | 117/500 [00:45<02:25,  2.63it/s]
+Evaluating SPLIT_0_OF_1 (generate):  24%|██▎       | 118/500 [00:45<02:21,  2.70it/s]
+Evaluating SPLIT_0_OF_1 (generate):  24%|██▍       | 119/500 [00:46<03:21,  1.89it/s]
+Evaluating SPLIT_0_OF_1 (generate):  24%|██▍       | 120/500 [00:46<03:00,  2.11it/s]
+Evaluating SPLIT_0_OF_1 (generate):  24%|██▍       | 121/500 [00:47<02:44,  2.30it/s]
+Evaluating SPLIT_0_OF_1 (generate):  24%|██▍       | 122/500 [00:47<02:34,  2.45it/s]
+Evaluating SPLIT_0_OF_1 (generate):  25%|██▍       | 123/500 [00:48<02:45,  2.28it/s]
+Evaluating SPLIT_0_OF_1 (generate):  25%|██▍       | 124/500 [00:48<02:34,  2.43it/s]
+Evaluating SPLIT_0_OF_1 (generate):  25%|██▌       | 125/500 [00:48<02:26,  2.55it/s]
+Evaluating SPLIT_0_OF_1 (generate):  25%|██▌       | 126/500 [00:49<02:32,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):  25%|██▌       | 127/500 [00:49<02:24,  2.58it/s]
+Evaluating SPLIT_0_OF_1 (generate):  26%|██▌       | 128/500 [00:49<02:08,  2.89it/s]
+Evaluating SPLIT_0_OF_1 (generate):  26%|██▌       | 129/500 [00:50<02:08,  2.89it/s]
+Evaluating SPLIT_0_OF_1 (generate):  26%|██▌       | 130/500 [00:50<01:49,  3.37it/s]
+Evaluating SPLIT_0_OF_1 (generate):  26%|██▌       | 131/500 [00:50<01:55,  3.20it/s]
+Evaluating SPLIT_0_OF_1 (generate):  26%|██▋       | 132/500 [00:51<01:58,  3.09it/s]
+Evaluating SPLIT_0_OF_1 (generate):  27%|██▋       | 133/500 [00:51<02:01,  3.03it/s]
+Evaluating SPLIT_0_OF_1 (generate):  27%|██▋       | 134/500 [00:51<02:12,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  27%|██▋       | 135/500 [00:52<02:21,  2.58it/s]
+Evaluating SPLIT_0_OF_1 (generate):  27%|██▋       | 136/500 [00:52<02:16,  2.67it/s]
+Evaluating SPLIT_0_OF_1 (generate):  27%|██▋       | 137/500 [00:53<02:23,  2.53it/s]
+Evaluating SPLIT_0_OF_1 (generate):  28%|██▊       | 138/500 [00:53<02:34,  2.34it/s]
+Evaluating SPLIT_0_OF_1 (generate):  28%|██▊       | 139/500 [00:53<02:25,  2.48it/s]
+Evaluating SPLIT_0_OF_1 (generate):  28%|██▊       | 140/500 [00:54<02:19,  2.59it/s]
+Evaluating SPLIT_0_OF_1 (generate):  28%|██▊       | 141/500 [00:54<02:14,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  28%|██▊       | 142/500 [00:54<02:10,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  29%|██▊       | 143/500 [00:55<02:08,  2.77it/s]
+Evaluating SPLIT_0_OF_1 (generate):  29%|██▉       | 144/500 [00:55<01:59,  2.97it/s]
+Evaluating SPLIT_0_OF_1 (generate):  29%|██▉       | 145/500 [00:56<02:27,  2.40it/s]
+Evaluating SPLIT_0_OF_1 (generate):  29%|██▉       | 146/500 [00:56<02:30,  2.36it/s]
+Evaluating SPLIT_0_OF_1 (generate):  29%|██▉       | 147/500 [00:57<02:21,  2.49it/s]
+Evaluating SPLIT_0_OF_1 (generate):  30%|██▉       | 148/500 [00:57<02:21,  2.48it/s]
+Evaluating SPLIT_0_OF_1 (generate):  30%|██▉       | 149/500 [00:57<02:28,  2.36it/s]
+Evaluating SPLIT_0_OF_1 (generate):  30%|███       | 150/500 [00:58<02:20,  2.50it/s]
+Evaluating SPLIT_0_OF_1 (generate):  30%|███       | 151/500 [00:58<02:14,  2.60it/s]
+Evaluating SPLIT_0_OF_1 (generate):  30%|███       | 152/500 [00:58<02:09,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  31%|███       | 153/500 [00:59<02:19,  2.48it/s]
+Evaluating SPLIT_0_OF_1 (generate):  31%|███       | 154/500 [00:59<02:13,  2.59it/s]
+Evaluating SPLIT_0_OF_1 (generate):  31%|███       | 155/500 [01:00<02:09,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  31%|███       | 156/500 [01:00<02:06,  2.72it/s]
+Evaluating SPLIT_0_OF_1 (generate):  31%|███▏      | 157/500 [01:00<02:03,  2.77it/s]
+Evaluating SPLIT_0_OF_1 (generate):  32%|███▏      | 158/500 [01:01<02:18,  2.47it/s]
+Evaluating SPLIT_0_OF_1 (generate):  32%|███▏      | 159/500 [01:01<02:12,  2.58it/s]
+Evaluating SPLIT_0_OF_1 (generate):  32%|███▏      | 160/500 [01:02<02:07,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  32%|███▏      | 161/500 [01:02<02:33,  2.20it/s]
+Evaluating SPLIT_0_OF_1 (generate):  32%|███▏      | 162/500 [01:02<02:22,  2.38it/s]
+Evaluating SPLIT_0_OF_1 (generate):  33%|███▎      | 163/500 [01:03<02:20,  2.40it/s]
+Evaluating SPLIT_0_OF_1 (generate):  33%|███▎      | 164/500 [01:03<02:13,  2.52it/s]
+Evaluating SPLIT_0_OF_1 (generate):  33%|███▎      | 165/500 [01:04<02:07,  2.62it/s]
+Evaluating SPLIT_0_OF_1 (generate):  33%|███▎      | 166/500 [01:04<02:26,  2.28it/s]
+Evaluating SPLIT_0_OF_1 (generate):  33%|███▎      | 167/500 [01:05<02:16,  2.43it/s]
+Evaluating SPLIT_0_OF_1 (generate):  34%|███▎      | 168/500 [01:05<02:13,  2.49it/s]
+Evaluating SPLIT_0_OF_1 (generate):  34%|███▍      | 169/500 [01:05<02:07,  2.60it/s]
+Evaluating SPLIT_0_OF_1 (generate):  34%|███▍      | 170/500 [01:06<02:03,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  34%|███▍      | 171/500 [01:06<02:00,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  34%|███▍      | 172/500 [01:06<01:57,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  35%|███▍      | 173/500 [01:07<01:55,  2.82it/s]
+Evaluating SPLIT_0_OF_1 (generate):  35%|███▍      | 174/500 [01:07<01:54,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  35%|███▌      | 175/500 [01:07<01:54,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  35%|███▌      | 176/500 [01:08<02:06,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  35%|███▌      | 177/500 [01:08<02:23,  2.25it/s]
+Evaluating SPLIT_0_OF_1 (generate):  36%|███▌      | 178/500 [01:09<02:13,  2.41it/s]
+Evaluating SPLIT_0_OF_1 (generate):  36%|███▌      | 179/500 [01:09<02:06,  2.53it/s]
+Evaluating SPLIT_0_OF_1 (generate):  36%|███▌      | 180/500 [01:09<02:07,  2.50it/s]
+Evaluating SPLIT_0_OF_1 (generate):  36%|███▌      | 181/500 [01:10<02:15,  2.36it/s]
+Evaluating SPLIT_0_OF_1 (generate):  36%|███▋      | 182/500 [01:10<02:22,  2.23it/s]
+Evaluating SPLIT_0_OF_1 (generate):  37%|███▋      | 183/500 [01:11<02:28,  2.14it/s]
+Evaluating SPLIT_0_OF_1 (generate):  37%|███▋      | 184/500 [01:11<02:22,  2.22it/s]
+Evaluating SPLIT_0_OF_1 (generate):  37%|███▋      | 185/500 [01:12<02:18,  2.28it/s]
+Evaluating SPLIT_0_OF_1 (generate):  37%|███▋      | 186/500 [01:12<02:09,  2.43it/s]
+Evaluating SPLIT_0_OF_1 (generate):  37%|███▋      | 187/500 [01:12<02:02,  2.55it/s]
+Evaluating SPLIT_0_OF_1 (generate):  38%|███▊      | 188/500 [01:13<01:58,  2.64it/s]
+Evaluating SPLIT_0_OF_1 (generate):  38%|███▊      | 189/500 [01:13<02:06,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):  38%|███▊      | 190/500 [01:14<02:00,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  38%|███▊      | 191/500 [01:14<01:56,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  38%|███▊      | 192/500 [01:14<01:52,  2.73it/s]
+Evaluating SPLIT_0_OF_1 (generate):  39%|███▊      | 193/500 [01:15<01:50,  2.77it/s]
+Evaluating SPLIT_0_OF_1 (generate):  39%|███▉      | 194/500 [01:15<01:48,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  39%|███▉      | 195/500 [01:15<01:47,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):  39%|███▉      | 196/500 [01:16<01:46,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  39%|███▉      | 197/500 [01:16<01:46,  2.86it/s]
+Evaluating SPLIT_0_OF_1 (generate):  40%|███▉      | 198/500 [01:16<01:45,  2.87it/s]
+Evaluating SPLIT_0_OF_1 (generate):  40%|███▉      | 199/500 [01:17<01:44,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  40%|████      | 200/500 [01:17<01:44,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  40%|████      | 201/500 [01:17<01:43,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  40%|████      | 202/500 [01:18<01:46,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  41%|████      | 203/500 [01:18<01:45,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):  41%|████      | 204/500 [01:19<01:44,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  41%|████      | 205/500 [01:19<02:00,  2.45it/s]
+Evaluating SPLIT_0_OF_1 (generate):  41%|████      | 206/500 [01:20<02:03,  2.39it/s]
+Evaluating SPLIT_0_OF_1 (generate):  41%|████▏     | 207/500 [01:20<01:57,  2.50it/s]
+Evaluating SPLIT_0_OF_1 (generate):  42%|████▏     | 208/500 [01:20<01:52,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  42%|████▏     | 209/500 [01:21<01:48,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  42%|████▏     | 210/500 [01:21<01:45,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  42%|████▏     | 211/500 [01:21<01:43,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  42%|████▏     | 212/500 [01:22<01:42,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  43%|████▎     | 213/500 [01:22<01:41,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):  43%|████▎     | 214/500 [01:22<01:40,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  43%|████▎     | 215/500 [01:23<01:39,  2.86it/s]
+Evaluating SPLIT_0_OF_1 (generate):  43%|████▎     | 216/500 [01:23<01:38,  2.87it/s]
+Evaluating SPLIT_0_OF_1 (generate):  43%|████▎     | 217/500 [01:23<01:38,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  44%|████▎     | 218/500 [01:24<01:38,  2.86it/s]
+Evaluating SPLIT_0_OF_1 (generate):  44%|████▍     | 219/500 [01:24<01:38,  2.86it/s]
+Evaluating SPLIT_0_OF_1 (generate):  44%|████▍     | 220/500 [01:24<01:37,  2.86it/s]
+Evaluating SPLIT_0_OF_1 (generate):  44%|████▍     | 221/500 [01:25<01:29,  3.13it/s]
+Evaluating SPLIT_0_OF_1 (generate):  44%|████▍     | 222/500 [01:25<01:31,  3.05it/s]
+Evaluating SPLIT_0_OF_1 (generate):  45%|████▍     | 223/500 [01:25<01:32,  3.00it/s]
+Evaluating SPLIT_0_OF_1 (generate):  45%|████▍     | 224/500 [01:26<01:35,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  45%|████▌     | 225/500 [01:26<01:35,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  45%|████▌     | 226/500 [01:26<01:34,  2.89it/s]
+Evaluating SPLIT_0_OF_1 (generate):  45%|████▌     | 227/500 [01:27<01:53,  2.41it/s]
+Evaluating SPLIT_0_OF_1 (generate):  46%|████▌     | 228/500 [01:27<01:47,  2.53it/s]
+Evaluating SPLIT_0_OF_1 (generate):  46%|████▌     | 229/500 [01:28<01:43,  2.63it/s]
+Evaluating SPLIT_0_OF_1 (generate):  46%|████▌     | 230/500 [01:28<01:52,  2.39it/s]
+Evaluating SPLIT_0_OF_1 (generate):  46%|████▌     | 231/500 [01:29<01:46,  2.52it/s]
+Evaluating SPLIT_0_OF_1 (generate):  46%|████▋     | 232/500 [01:29<01:42,  2.62it/s]
+Evaluating SPLIT_0_OF_1 (generate):  47%|████▋     | 233/500 [01:29<01:46,  2.51it/s]
+Evaluating SPLIT_0_OF_1 (generate):  47%|████▋     | 234/500 [01:30<01:34,  2.82it/s]
+Evaluating SPLIT_0_OF_1 (generate):  47%|████▋     | 235/500 [01:30<01:33,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):  47%|████▋     | 236/500 [01:30<01:32,  2.85it/s]
+Evaluating SPLIT_0_OF_1 (generate):  47%|████▋     | 237/500 [01:31<01:31,  2.87it/s]
+Evaluating SPLIT_0_OF_1 (generate):  48%|████▊     | 238/500 [01:31<01:31,  2.87it/s]
+Evaluating SPLIT_0_OF_1 (generate):  48%|████▊     | 239/500 [01:31<01:30,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  48%|████▊     | 240/500 [01:32<01:30,  2.87it/s]
+Evaluating SPLIT_0_OF_1 (generate):  48%|████▊     | 241/500 [01:32<01:30,  2.87it/s]
+Evaluating SPLIT_0_OF_1 (generate):  48%|████▊     | 242/500 [01:32<01:29,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  49%|████▊     | 243/500 [01:33<01:29,  2.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  49%|████▉     | 244/500 [01:33<01:33,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  49%|████▉     | 245/500 [01:33<01:31,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  49%|████▉     | 246/500 [01:34<01:30,  2.80it/s]
+Evaluating SPLIT_0_OF_1 (generate):  49%|████▉     | 247/500 [01:34<01:29,  2.82it/s]
+Evaluating SPLIT_0_OF_1 (generate):  50%|████▉     | 248/500 [01:35<01:35,  2.63it/s]
+Evaluating SPLIT_0_OF_1 (generate):  50%|████▉     | 249/500 [01:35<01:37,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  50%|█████     | 250/500 [01:35<01:34,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  50%|█████     | 251/500 [01:36<01:41,  2.45it/s]
+Evaluating SPLIT_0_OF_1 (generate):  50%|█████     | 252/500 [01:36<01:43,  2.39it/s]
+Evaluating SPLIT_0_OF_1 (generate):  51%|█████     | 253/500 [01:37<01:40,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):  51%|█████     | 254/500 [01:37<01:42,  2.40it/s]
+Evaluating SPLIT_0_OF_1 (generate):  51%|█████     | 255/500 [01:37<01:37,  2.52it/s]
+Evaluating SPLIT_0_OF_1 (generate):  51%|█████     | 256/500 [01:38<01:42,  2.38it/s]
+Evaluating SPLIT_0_OF_1 (generate):  51%|█████▏    | 257/500 [01:38<01:36,  2.51it/s]
+Evaluating SPLIT_0_OF_1 (generate):  52%|█████▏    | 258/500 [01:39<01:32,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  52%|█████▏    | 259/500 [01:39<01:29,  2.69it/s]
+Evaluating SPLIT_0_OF_1 (generate):  52%|█████▏    | 260/500 [01:39<01:27,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  52%|█████▏    | 261/500 [01:40<01:26,  2.77it/s]
+Evaluating SPLIT_0_OF_1 (generate):  52%|█████▏    | 262/500 [01:40<01:25,  2.80it/s]
+Evaluating SPLIT_0_OF_1 (generate):  53%|█████▎    | 263/500 [01:40<01:23,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):  53%|█████▎    | 264/500 [01:41<01:22,  2.85it/s]
+Evaluating SPLIT_0_OF_1 (generate):  53%|█████▎    | 265/500 [01:41<01:22,  2.86it/s]
+Evaluating SPLIT_0_OF_1 (generate):  53%|█████▎    | 266/500 [01:41<01:21,  2.86it/s]
+Evaluating SPLIT_0_OF_1 (generate):  53%|█████▎    | 267/500 [01:42<01:21,  2.87it/s]
+Evaluating SPLIT_0_OF_1 (generate):  54%|█████▎    | 268/500 [01:42<01:43,  2.25it/s]
+Evaluating SPLIT_0_OF_1 (generate):  54%|█████▍    | 269/500 [01:43<01:46,  2.16it/s]
+Evaluating SPLIT_0_OF_1 (generate):  54%|█████▍    | 270/500 [01:43<01:38,  2.34it/s]
+Evaluating SPLIT_0_OF_1 (generate):  54%|█████▍    | 271/500 [01:44<01:41,  2.26it/s]
+Evaluating SPLIT_0_OF_1 (generate):  54%|█████▍    | 272/500 [01:44<01:45,  2.16it/s]
+Evaluating SPLIT_0_OF_1 (generate):  55%|█████▍    | 273/500 [01:45<01:37,  2.33it/s]
+Evaluating SPLIT_0_OF_1 (generate):  55%|█████▍    | 274/500 [01:45<01:31,  2.47it/s]
+Evaluating SPLIT_0_OF_1 (generate):  55%|█████▌    | 275/500 [01:45<01:35,  2.35it/s]
+Evaluating SPLIT_0_OF_1 (generate):  55%|█████▌    | 276/500 [01:46<01:30,  2.49it/s]
+Evaluating SPLIT_0_OF_1 (generate):  55%|█████▌    | 277/500 [01:46<01:26,  2.59it/s]
+Evaluating SPLIT_0_OF_1 (generate):  56%|█████▌    | 278/500 [01:47<01:46,  2.08it/s]
+Evaluating SPLIT_0_OF_1 (generate):  56%|█████▌    | 279/500 [01:47<01:46,  2.08it/s]
+Evaluating SPLIT_0_OF_1 (generate):  56%|█████▌    | 280/500 [01:48<01:36,  2.27it/s]
+Evaluating SPLIT_0_OF_1 (generate):  56%|█████▌    | 281/500 [01:48<01:30,  2.43it/s]
+Evaluating SPLIT_0_OF_1 (generate):  56%|█████▋    | 282/500 [01:48<01:25,  2.55it/s]
+Evaluating SPLIT_0_OF_1 (generate):  57%|█████▋    | 283/500 [01:49<01:22,  2.64it/s]
+Evaluating SPLIT_0_OF_1 (generate):  57%|█████▋    | 284/500 [01:49<01:19,  2.71it/s]
+Evaluating SPLIT_0_OF_1 (generate):  57%|█████▋    | 285/500 [01:49<01:17,  2.76it/s]
+Evaluating SPLIT_0_OF_1 (generate):  57%|█████▋    | 286/500 [01:50<01:16,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  57%|█████▋    | 287/500 [01:50<01:15,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  58%|█████▊    | 288/500 [01:51<01:27,  2.42it/s]
+Evaluating SPLIT_0_OF_1 (generate):  58%|█████▊    | 289/500 [01:51<01:22,  2.54it/s]
+Evaluating SPLIT_0_OF_1 (generate):  58%|█████▊    | 290/500 [01:51<01:19,  2.64it/s]
+Evaluating SPLIT_0_OF_1 (generate):  58%|█████▊    | 291/500 [01:52<01:17,  2.69it/s]
+Evaluating SPLIT_0_OF_1 (generate):  58%|█████▊    | 292/500 [01:52<01:15,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  59%|█████▊    | 293/500 [01:52<01:14,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  59%|█████▉    | 294/500 [01:53<01:13,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  59%|█████▉    | 295/500 [01:53<01:12,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):  59%|█████▉    | 296/500 [01:53<01:11,  2.85it/s]
+Evaluating SPLIT_0_OF_1 (generate):  59%|█████▉    | 297/500 [01:54<01:01,  3.31it/s]
+Evaluating SPLIT_0_OF_1 (generate):  60%|█████▉    | 298/500 [01:54<01:03,  3.17it/s]
+Evaluating SPLIT_0_OF_1 (generate):  60%|█████▉    | 299/500 [01:54<01:09,  2.91it/s]
+Evaluating SPLIT_0_OF_1 (generate):  60%|██████    | 300/500 [01:55<01:09,  2.89it/s]
+Evaluating SPLIT_0_OF_1 (generate):  60%|██████    | 301/500 [01:55<01:08,  2.89it/s]
+Evaluating SPLIT_0_OF_1 (generate):  60%|██████    | 302/500 [01:55<01:16,  2.60it/s]
+Evaluating SPLIT_0_OF_1 (generate):  61%|██████    | 303/500 [01:56<01:28,  2.22it/s]
+Evaluating SPLIT_0_OF_1 (generate):  61%|██████    | 304/500 [01:56<01:22,  2.38it/s]
+Evaluating SPLIT_0_OF_1 (generate):  61%|██████    | 305/500 [01:57<01:17,  2.52it/s]
+Evaluating SPLIT_0_OF_1 (generate):  61%|██████    | 306/500 [01:57<01:19,  2.44it/s]
+Evaluating SPLIT_0_OF_1 (generate):  61%|██████▏   | 307/500 [01:58<01:28,  2.17it/s]
+Evaluating SPLIT_0_OF_1 (generate):  62%|██████▏   | 308/500 [01:58<01:21,  2.35it/s]
+Evaluating SPLIT_0_OF_1 (generate):  62%|██████▏   | 309/500 [01:59<01:24,  2.27it/s]
+Evaluating SPLIT_0_OF_1 (generate):  62%|██████▏   | 310/500 [01:59<01:18,  2.42it/s]
+Evaluating SPLIT_0_OF_1 (generate):  62%|██████▏   | 311/500 [01:59<01:14,  2.54it/s]
+Evaluating SPLIT_0_OF_1 (generate):  62%|██████▏   | 312/500 [02:00<01:12,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  63%|██████▎   | 313/500 [02:00<01:16,  2.43it/s]
+Evaluating SPLIT_0_OF_1 (generate):  63%|██████▎   | 314/500 [02:00<01:11,  2.62it/s]
+Evaluating SPLIT_0_OF_1 (generate):  63%|██████▎   | 315/500 [02:01<01:08,  2.69it/s]
+Evaluating SPLIT_0_OF_1 (generate):  63%|██████▎   | 316/500 [02:01<01:21,  2.26it/s]
+Evaluating SPLIT_0_OF_1 (generate):  63%|██████▎   | 317/500 [02:02<01:15,  2.42it/s]
+Evaluating SPLIT_0_OF_1 (generate):  64%|██████▎   | 318/500 [02:02<01:11,  2.54it/s]
+Evaluating SPLIT_0_OF_1 (generate):  64%|██████▍   | 319/500 [02:02<01:08,  2.64it/s]
+Evaluating SPLIT_0_OF_1 (generate):  64%|██████▍   | 320/500 [02:03<01:09,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  64%|██████▍   | 321/500 [02:03<01:10,  2.53it/s]
+Evaluating SPLIT_0_OF_1 (generate):  64%|██████▍   | 322/500 [02:04<01:08,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  65%|██████▍   | 323/500 [02:04<01:11,  2.49it/s]
+Evaluating SPLIT_0_OF_1 (generate):  65%|██████▍   | 324/500 [02:05<01:12,  2.41it/s]
+Evaluating SPLIT_0_OF_1 (generate):  65%|██████▌   | 325/500 [02:05<01:08,  2.54it/s]
+Evaluating SPLIT_0_OF_1 (generate):  65%|██████▌   | 326/500 [02:05<01:06,  2.62it/s]
+Evaluating SPLIT_0_OF_1 (generate):  65%|██████▌   | 327/500 [02:06<01:05,  2.65it/s]
+Evaluating SPLIT_0_OF_1 (generate):  66%|██████▌   | 328/500 [02:06<01:04,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  66%|██████▌   | 329/500 [02:06<01:02,  2.72it/s]
+Evaluating SPLIT_0_OF_1 (generate):  66%|██████▌   | 330/500 [02:07<01:01,  2.76it/s]
+Evaluating SPLIT_0_OF_1 (generate):  66%|██████▌   | 331/500 [02:07<01:03,  2.65it/s]
+Evaluating SPLIT_0_OF_1 (generate):  66%|██████▋   | 332/500 [02:07<01:03,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  67%|██████▋   | 333/500 [02:08<01:02,  2.69it/s]
+Evaluating SPLIT_0_OF_1 (generate):  67%|██████▋   | 334/500 [02:08<01:00,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  67%|██████▋   | 335/500 [02:09<00:59,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  67%|██████▋   | 336/500 [02:09<01:01,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  67%|██████▋   | 337/500 [02:09<00:59,  2.72it/s]
+Evaluating SPLIT_0_OF_1 (generate):  68%|██████▊   | 338/500 [02:10<00:58,  2.76it/s]
+Evaluating SPLIT_0_OF_1 (generate):  68%|██████▊   | 339/500 [02:10<00:57,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  68%|██████▊   | 340/500 [02:10<01:04,  2.48it/s]
+Evaluating SPLIT_0_OF_1 (generate):  68%|██████▊   | 341/500 [02:11<01:04,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):  68%|██████▊   | 342/500 [02:11<01:05,  2.39it/s]
+Evaluating SPLIT_0_OF_1 (generate):  69%|██████▊   | 343/500 [02:12<01:02,  2.52it/s]
+Evaluating SPLIT_0_OF_1 (generate):  69%|██████▉   | 344/500 [02:12<00:59,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  69%|██████▉   | 345/500 [02:12<00:57,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  69%|██████▉   | 346/500 [02:13<00:56,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  69%|██████▉   | 347/500 [02:13<00:54,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  70%|██████▉   | 348/500 [02:13<00:53,  2.82it/s]
+Evaluating SPLIT_0_OF_1 (generate):  70%|██████▉   | 349/500 [02:14<00:53,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):  70%|███████   | 350/500 [02:14<00:52,  2.85it/s]
+Evaluating SPLIT_0_OF_1 (generate):  70%|███████   | 351/500 [02:15<00:56,  2.64it/s]
+Evaluating SPLIT_0_OF_1 (generate):  70%|███████   | 352/500 [02:15<00:57,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  71%|███████   | 353/500 [02:15<00:55,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  71%|███████   | 354/500 [02:16<00:54,  2.69it/s]
+Evaluating SPLIT_0_OF_1 (generate):  71%|███████   | 355/500 [02:16<00:55,  2.60it/s]
+Evaluating SPLIT_0_OF_1 (generate):  71%|███████   | 356/500 [02:16<00:53,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  71%|███████▏  | 357/500 [02:17<00:52,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  72%|███████▏  | 358/500 [02:17<00:51,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  72%|███████▏  | 359/500 [02:18<00:56,  2.47it/s]
+Evaluating SPLIT_0_OF_1 (generate):  72%|███████▏  | 360/500 [02:18<00:54,  2.58it/s]
+Evaluating SPLIT_0_OF_1 (generate):  72%|███████▏  | 361/500 [02:18<00:54,  2.53it/s]
+Evaluating SPLIT_0_OF_1 (generate):  72%|███████▏  | 362/500 [02:19<00:53,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  73%|███████▎  | 363/500 [02:19<00:51,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  73%|███████▎  | 364/500 [02:19<00:49,  2.72it/s]
+Evaluating SPLIT_0_OF_1 (generate):  73%|███████▎  | 365/500 [02:21<01:18,  1.71it/s]
+Evaluating SPLIT_0_OF_1 (generate):  73%|███████▎  | 366/500 [02:21<01:09,  1.92it/s]
+Evaluating SPLIT_0_OF_1 (generate):  73%|███████▎  | 367/500 [02:22<01:13,  1.80it/s]
+Evaluating SPLIT_0_OF_1 (generate):  74%|███████▎  | 368/500 [02:22<01:05,  2.03it/s]
+Evaluating SPLIT_0_OF_1 (generate):  74%|███████▍  | 369/500 [02:22<01:06,  1.98it/s]
+Evaluating SPLIT_0_OF_1 (generate):  74%|███████▍  | 370/500 [02:23<00:59,  2.18it/s]
+Evaluating SPLIT_0_OF_1 (generate):  74%|███████▍  | 371/500 [02:23<00:54,  2.36it/s]
+Evaluating SPLIT_0_OF_1 (generate):  74%|███████▍  | 372/500 [02:24<00:55,  2.32it/s]
+Evaluating SPLIT_0_OF_1 (generate):  75%|███████▍  | 373/500 [02:24<00:51,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):  75%|███████▍  | 374/500 [02:24<00:49,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  75%|███████▌  | 375/500 [02:25<00:47,  2.65it/s]
+Evaluating SPLIT_0_OF_1 (generate):  75%|███████▌  | 376/500 [02:25<00:45,  2.72it/s]
+Evaluating SPLIT_0_OF_1 (generate):  75%|███████▌  | 377/500 [02:25<00:44,  2.77it/s]
+Evaluating SPLIT_0_OF_1 (generate):  76%|███████▌  | 378/500 [02:26<00:43,  2.80it/s]
+Evaluating SPLIT_0_OF_1 (generate):  76%|███████▌  | 379/500 [02:26<00:43,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  76%|███████▌  | 380/500 [02:26<00:43,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  76%|███████▌  | 381/500 [02:27<00:42,  2.82it/s]
+Evaluating SPLIT_0_OF_1 (generate):  76%|███████▋  | 382/500 [02:27<00:41,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  77%|███████▋  | 383/500 [02:28<00:43,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  77%|███████▋  | 384/500 [02:28<00:42,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  77%|███████▋  | 385/500 [02:28<00:41,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  77%|███████▋  | 386/500 [02:29<00:40,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  77%|███████▋  | 387/500 [02:29<00:40,  2.76it/s]
+Evaluating SPLIT_0_OF_1 (generate):  78%|███████▊  | 388/500 [02:29<00:43,  2.55it/s]
+Evaluating SPLIT_0_OF_1 (generate):  78%|███████▊  | 389/500 [02:30<00:42,  2.59it/s]
+Evaluating SPLIT_0_OF_1 (generate):  78%|███████▊  | 390/500 [02:30<00:41,  2.65it/s]
+Evaluating SPLIT_0_OF_1 (generate):  78%|███████▊  | 391/500 [02:31<00:50,  2.16it/s]
+Evaluating SPLIT_0_OF_1 (generate):  78%|███████▊  | 392/500 [02:31<00:47,  2.30it/s]
+Evaluating SPLIT_0_OF_1 (generate):  79%|███████▊  | 393/500 [02:32<00:44,  2.39it/s]
+Evaluating SPLIT_0_OF_1 (generate):  79%|███████▉  | 394/500 [02:32<00:43,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):  79%|███████▉  | 395/500 [02:32<00:40,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  79%|███████▉  | 396/500 [02:33<00:39,  2.62it/s]
+Evaluating SPLIT_0_OF_1 (generate):  79%|███████▉  | 397/500 [02:33<00:38,  2.64it/s]
+Evaluating SPLIT_0_OF_1 (generate):  80%|███████▉  | 398/500 [02:33<00:37,  2.71it/s]
+Evaluating SPLIT_0_OF_1 (generate):  80%|███████▉  | 399/500 [02:34<00:36,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  80%|████████  | 400/500 [02:35<00:49,  2.02it/s]
+Evaluating SPLIT_0_OF_1 (generate):  80%|████████  | 401/500 [02:35<00:44,  2.21it/s]
+Evaluating SPLIT_0_OF_1 (generate):  80%|████████  | 402/500 [02:35<00:41,  2.38it/s]
+Evaluating SPLIT_0_OF_1 (generate):  81%|████████  | 403/500 [02:36<00:42,  2.29it/s]
+Evaluating SPLIT_0_OF_1 (generate):  81%|████████  | 404/500 [02:36<00:39,  2.43it/s]
+Evaluating SPLIT_0_OF_1 (generate):  81%|████████  | 405/500 [02:36<00:37,  2.55it/s]
+Evaluating SPLIT_0_OF_1 (generate):  81%|████████  | 406/500 [02:37<00:35,  2.64it/s]
+Evaluating SPLIT_0_OF_1 (generate):  81%|████████▏ | 407/500 [02:37<00:34,  2.70it/s]
+Evaluating SPLIT_0_OF_1 (generate):  82%|████████▏ | 408/500 [02:37<00:33,  2.75it/s]
+Evaluating SPLIT_0_OF_1 (generate):  82%|████████▏ | 409/500 [02:38<00:32,  2.78it/s]
+Evaluating SPLIT_0_OF_1 (generate):  82%|████████▏ | 410/500 [02:38<00:32,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  82%|████████▏ | 411/500 [02:38<00:31,  2.83it/s]
+Evaluating SPLIT_0_OF_1 (generate):  82%|████████▏ | 412/500 [02:39<00:30,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  83%|████████▎ | 413/500 [02:39<00:32,  2.71it/s]
+Evaluating SPLIT_0_OF_1 (generate):  83%|████████▎ | 414/500 [02:40<00:33,  2.60it/s]
+Evaluating SPLIT_0_OF_1 (generate):  83%|████████▎ | 415/500 [02:40<00:31,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  83%|████████▎ | 416/500 [02:40<00:33,  2.47it/s]
+Evaluating SPLIT_0_OF_1 (generate):  83%|████████▎ | 417/500 [02:41<00:32,  2.58it/s]
+Evaluating SPLIT_0_OF_1 (generate):  84%|████████▎ | 418/500 [02:41<00:31,  2.60it/s]
+Evaluating SPLIT_0_OF_1 (generate):  84%|████████▍ | 419/500 [02:42<00:30,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  84%|████████▍ | 420/500 [02:42<00:29,  2.73it/s]
+Evaluating SPLIT_0_OF_1 (generate):  84%|████████▍ | 421/500 [02:42<00:28,  2.77it/s]
+Evaluating SPLIT_0_OF_1 (generate):  84%|████████▍ | 422/500 [02:43<00:28,  2.73it/s]
+Evaluating SPLIT_0_OF_1 (generate):  85%|████████▍ | 423/500 [02:43<00:27,  2.77it/s]
+Evaluating SPLIT_0_OF_1 (generate):  85%|████████▍ | 424/500 [02:43<00:28,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  85%|████████▌ | 425/500 [02:44<00:27,  2.70it/s]
+Evaluating SPLIT_0_OF_1 (generate):  85%|████████▌ | 426/500 [02:44<00:34,  2.17it/s]
+Evaluating SPLIT_0_OF_1 (generate):  85%|████████▌ | 427/500 [02:45<00:31,  2.34it/s]
+Evaluating SPLIT_0_OF_1 (generate):  86%|████████▌ | 428/500 [02:45<00:31,  2.32it/s]
+Evaluating SPLIT_0_OF_1 (generate):  86%|████████▌ | 429/500 [02:46<00:28,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):  86%|████████▌ | 430/500 [02:46<00:32,  2.19it/s]
+Evaluating SPLIT_0_OF_1 (generate):  86%|████████▌ | 431/500 [02:47<00:36,  1.88it/s]
+Evaluating SPLIT_0_OF_1 (generate):  86%|████████▋ | 432/500 [02:47<00:34,  1.94it/s]
+Evaluating SPLIT_0_OF_1 (generate):  87%|████████▋ | 433/500 [02:48<00:31,  2.15it/s]
+Evaluating SPLIT_0_OF_1 (generate):  87%|████████▋ | 434/500 [02:48<00:28,  2.33it/s]
+Evaluating SPLIT_0_OF_1 (generate):  87%|████████▋ | 435/500 [02:48<00:26,  2.47it/s]
+Evaluating SPLIT_0_OF_1 (generate):  87%|████████▋ | 436/500 [02:49<00:27,  2.35it/s]
+Evaluating SPLIT_0_OF_1 (generate):  87%|████████▋ | 437/500 [02:49<00:25,  2.49it/s]
+Evaluating SPLIT_0_OF_1 (generate):  88%|████████▊ | 438/500 [02:50<00:23,  2.59it/s]
+Evaluating SPLIT_0_OF_1 (generate):  88%|████████▊ | 439/500 [02:50<00:22,  2.67it/s]
+Evaluating SPLIT_0_OF_1 (generate):  88%|████████▊ | 440/500 [02:50<00:21,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  88%|████████▊ | 441/500 [02:51<00:25,  2.28it/s]
+Evaluating SPLIT_0_OF_1 (generate):  88%|████████▊ | 442/500 [02:51<00:23,  2.43it/s]
+Evaluating SPLIT_0_OF_1 (generate):  89%|████████▊ | 443/500 [02:52<00:22,  2.55it/s]
+Evaluating SPLIT_0_OF_1 (generate):  89%|████████▉ | 444/500 [02:52<00:22,  2.51it/s]
+Evaluating SPLIT_0_OF_1 (generate):  89%|████████▉ | 445/500 [02:52<00:21,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  89%|████████▉ | 446/500 [02:53<00:20,  2.68it/s]
+Evaluating SPLIT_0_OF_1 (generate):  89%|████████▉ | 447/500 [02:53<00:19,  2.74it/s]
+Evaluating SPLIT_0_OF_1 (generate):  90%|████████▉ | 448/500 [02:53<00:19,  2.71it/s]
+Evaluating SPLIT_0_OF_1 (generate):  90%|████████▉ | 449/500 [02:54<00:18,  2.76it/s]
+Evaluating SPLIT_0_OF_1 (generate):  90%|█████████ | 450/500 [02:54<00:17,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  90%|█████████ | 451/500 [02:54<00:17,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  90%|█████████ | 452/500 [02:55<00:17,  2.82it/s]
+Evaluating SPLIT_0_OF_1 (generate):  91%|█████████ | 453/500 [02:55<00:16,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  91%|█████████ | 454/500 [02:56<00:21,  2.10it/s]
+Evaluating SPLIT_0_OF_1 (generate):  91%|█████████ | 455/500 [02:56<00:19,  2.28it/s]
+Evaluating SPLIT_0_OF_1 (generate):  91%|█████████ | 456/500 [02:57<00:18,  2.43it/s]
+Evaluating SPLIT_0_OF_1 (generate):  91%|█████████▏| 457/500 [02:57<00:16,  2.55it/s]
+Evaluating SPLIT_0_OF_1 (generate):  92%|█████████▏| 458/500 [02:57<00:15,  2.65it/s]
+Evaluating SPLIT_0_OF_1 (generate):  92%|█████████▏| 459/500 [02:58<00:15,  2.71it/s]
+Evaluating SPLIT_0_OF_1 (generate):  92%|█████████▏| 460/500 [02:58<00:14,  2.76it/s]
+Evaluating SPLIT_0_OF_1 (generate):  92%|█████████▏| 461/500 [02:58<00:13,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  92%|█████████▏| 462/500 [02:59<00:13,  2.82it/s]
+Evaluating SPLIT_0_OF_1 (generate):  93%|█████████▎| 463/500 [02:59<00:13,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate):  93%|█████████▎| 464/500 [02:59<00:12,  2.85it/s]
+Evaluating SPLIT_0_OF_1 (generate):  93%|█████████▎| 465/500 [03:00<00:15,  2.32it/s]
+Evaluating SPLIT_0_OF_1 (generate):  93%|█████████▎| 466/500 [03:00<00:13,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):  93%|█████████▎| 467/500 [03:01<00:12,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  94%|█████████▎| 468/500 [03:01<00:12,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  94%|█████████▍| 469/500 [03:01<00:11,  2.72it/s]
+Evaluating SPLIT_0_OF_1 (generate):  94%|█████████▍| 470/500 [03:02<00:11,  2.62it/s]
+Evaluating SPLIT_0_OF_1 (generate):  94%|█████████▍| 471/500 [03:02<00:10,  2.70it/s]
+Evaluating SPLIT_0_OF_1 (generate):  94%|█████████▍| 472/500 [03:03<00:13,  2.00it/s]
+Evaluating SPLIT_0_OF_1 (generate):  95%|█████████▍| 473/500 [03:03<00:13,  1.99it/s]
+Evaluating SPLIT_0_OF_1 (generate):  95%|█████████▍| 474/500 [03:04<00:11,  2.18it/s]
+Evaluating SPLIT_0_OF_1 (generate):  95%|█████████▌| 475/500 [03:04<00:10,  2.35it/s]
+Evaluating SPLIT_0_OF_1 (generate):  95%|█████████▌| 476/500 [03:04<00:09,  2.49it/s]
+Evaluating SPLIT_0_OF_1 (generate):  95%|█████████▌| 477/500 [03:05<00:08,  2.59it/s]
+Evaluating SPLIT_0_OF_1 (generate):  96%|█████████▌| 478/500 [03:05<00:09,  2.42it/s]
+Evaluating SPLIT_0_OF_1 (generate):  96%|█████████▌| 479/500 [03:06<00:08,  2.54it/s]
+Evaluating SPLIT_0_OF_1 (generate):  96%|█████████▌| 480/500 [03:06<00:07,  2.63it/s]
+Evaluating SPLIT_0_OF_1 (generate):  96%|█████████▌| 481/500 [03:06<00:07,  2.38it/s]
+Evaluating SPLIT_0_OF_1 (generate):  96%|█████████▋| 482/500 [03:07<00:07,  2.51it/s]
+Evaluating SPLIT_0_OF_1 (generate):  97%|█████████▋| 483/500 [03:07<00:06,  2.61it/s]
+Evaluating SPLIT_0_OF_1 (generate):  97%|█████████▋| 484/500 [03:08<00:06,  2.46it/s]
+Evaluating SPLIT_0_OF_1 (generate):  97%|█████████▋| 485/500 [03:08<00:05,  2.57it/s]
+Evaluating SPLIT_0_OF_1 (generate):  97%|█████████▋| 486/500 [03:08<00:05,  2.41it/s]
+Evaluating SPLIT_0_OF_1 (generate):  97%|█████████▋| 487/500 [03:09<00:05,  2.52it/s]
+Evaluating SPLIT_0_OF_1 (generate):  98%|█████████▊| 488/500 [03:09<00:04,  2.49it/s]
+Evaluating SPLIT_0_OF_1 (generate):  98%|█████████▊| 489/500 [03:10<00:04,  2.59it/s]
+Evaluating SPLIT_0_OF_1 (generate):  98%|█████████▊| 490/500 [03:10<00:03,  2.66it/s]
+Evaluating SPLIT_0_OF_1 (generate):  98%|█████████▊| 491/500 [03:10<00:03,  2.71it/s]
+Evaluating SPLIT_0_OF_1 (generate):  98%|█████████▊| 492/500 [03:11<00:02,  2.76it/s]
+Evaluating SPLIT_0_OF_1 (generate):  99%|█████████▊| 493/500 [03:11<00:02,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  99%|█████████▉| 494/500 [03:11<00:02,  2.81it/s]
+Evaluating SPLIT_0_OF_1 (generate):  99%|█████████▉| 495/500 [03:12<00:01,  2.79it/s]
+Evaluating SPLIT_0_OF_1 (generate):  99%|█████████▉| 496/500 [03:12<00:01,  2.82it/s]
+Evaluating SPLIT_0_OF_1 (generate):  99%|█████████▉| 497/500 [03:12<00:01,  2.84it/s]
+Evaluating SPLIT_0_OF_1 (generate): 100%|█████████▉| 498/500 [03:13<00:00,  2.85it/s]
+Evaluating SPLIT_0_OF_1 (generate): 100%|█████████▉| 499/500 [03:13<00:00,  2.45it/s]
+Evaluating SPLIT_0_OF_1 (generate): 100%|██████████| 500/500 [03:14<00:00,  2.56it/s]
+Evaluating SPLIT_0_OF_1 (generate): 100%|██████████| 500/500 [03:14<00:00,  2.58it/s]
+
+Please install qwen-vl-utils to use VLM models
+Using config:  /workspace/LatentWire/quantization/data/step_1_kv_ptq/step1_int8_20260127_214552/configs/openbookqa.yaml
+Evaluating on dataset: openbookqa
+Available GPUs: 1
+Requested GPU IDs: [0]
+Answer method: generate
+Using 1 GPUs: [0]
+Please install qwen-vl-utils to use VLM models
+Model Qwen/Qwen3-0.6B already has a chat template.
+
+================ Example IO (SPLIT_0_OF_1) ================
+[Input with chat template]:
+<|im_start|>user
+Accurately answer the following question:
+
+A person wants to start saving money so that they can afford a nice vacation at the end of the year. After looking over their budget and expenses, they decide the best way to save money is to
+
+Choices:
+A. make more phone calls
+B. quit eating lunch out
+C. buy less with monopoly money
+D. have lunch with friends
+
+
+Instructions:
+- Carefully read the question and all options.
+- Select the single most correct answer.
+- Respond ONLY in the following format: "The correct answer is A/B/C/D".
+- Do not include any explanations, additional text, or punctuation besides the answer.
+
+The correct answer is<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+
+
+[Generated output]:
+The correct answer is C. Buy less with monopoly money.
+================ End Example IO ================
+
+SPLIT_0_OF_1 accuracy: 52.80% (evaluated on 500 samples, skipped 0)
+Please install qwen-vl-utils to use VLM models
+Summary saved to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step1_int8_20260127_214552/results/openbookqa/Rosetta_openbookqa_generate_20260127_220524_summary.json
+Detailed length statistics saved to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step1_int8_20260127_214552/results/openbookqa/Rosetta_openbookqa_generate_20260127_220524_length.json
+CoT outputs saved to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step1_int8_20260127_214552/results/openbookqa/Rosetta_openbookqa_generate_20260127_220524_cot.csv
+
+Evaluation complete!
+Overall accuracy: 52.80%
+
