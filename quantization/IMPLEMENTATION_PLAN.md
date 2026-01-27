@@ -381,7 +381,46 @@ Use higher precision in later layers and lower precision in early layers.
 Leverages layer sensitivity to improve the accuracy‑per‑byte curve.
 
 **How**  
-Add per‑layer precision configs; evaluate a small grid (e.g., last 4 layers FP16).
+Add a per‑layer precision schedule to `kv_quant_config` and evaluate a small, targeted grid.  
+Start with INT8 as the default and promote only the last‑N layers to FP16.
+
+**Proposed config shape**  
+```yaml
+kv_quant_config:
+  enabled: true
+  scheme: int8       # default scheme
+  axis: head
+  layer_schedule:
+    default: int8
+    overrides:
+      - layers: [28,29,30,31]
+        scheme: fp16
+```
+
+**Milestone 6 phases (recommended)**  
+- **M6‑P0 (Design)**: pick schedule grid and metrics.  
+  - Grid: last‑4 FP16, last‑8 FP16 (both over INT8 baseline).  
+  - Why: small, interpretable grid; likely accuracy gain with modest byte increase.  
+- **M6‑P1 (Implementation)**:  
+  - Parse `layer_schedule` in `rosetta/utils/quant.py` and apply per‑layer scheme.  
+  - Update `wrapper.py` to choose scheme by target layer index.  
+  - Log the resolved schedule into run manifests.  
+- **M6‑P2 (Local sanity)**:  
+  - Run **1–5 samples** on Mac (`--mode local`) to validate schedule wiring.  
+  - Compare outputs vs INT8 baseline to ensure no crashes.  
+- **M6‑P3 (GPU smoke)**:  
+  - Run 25–50 samples on OpenBookQA with last‑4 FP16 to check throughput + correctness.  
+- **M6‑P4 (Full GPU grid)**:  
+  - OpenBookQA + ARC‑C for last‑4 FP16 and last‑8 FP16.  
+  - Compare accuracy vs INT8 and compute bytes‑per‑sequence deltas (for M4 curves).  
+
+**Expected outcome**  
+- Last‑4 FP16 should recover some accuracy with a modest byte increase.  
+- Last‑8 FP16 may improve further but with diminishing returns.  
+
+**Testing commands (local)**  
+- `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-num-samples 1 --kv-quant-scheme int8`  
+- Same with schedule enabled once implemented (using a `--kv-quant-config` or config override).
 
 ## Milestone 7: Heterogeneity Scaling (Main‑conf extension)
 **What**  
