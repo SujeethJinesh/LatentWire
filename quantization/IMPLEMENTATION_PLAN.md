@@ -346,10 +346,16 @@ If we want to strengthen the workshop paper without committing to full QAT, we c
   - **How**: apply quantization on both cache paths in `wrapper.py`; re‑run INT8/INT4.  
   - **Success criterion**: accuracy drop is bounded; provides stronger budget curves.
 
+**Main‑conf focus (recommended priority)**  
+- **M5‑Core: QAT projector under INT8** (primary algorithmic contribution).  
+- **M6‑Core: Mixed‑precision schedule** (accuracy‑per‑byte improvement).  
+- **Systems add‑on**: add **measured bandwidth/latency** (H100) and/or **true bit‑packing** to strengthen the systems contribution.  
+- **M7‑Core: Heterogeneity scaling** if we have bandwidth; otherwise defer to appendix.
+
 **Additional Main‑conf extensions (beyond M5–M7)**  
+These are *lower‑priority* or appendix‑level once M5/M6 are complete:  
 - **NF4**: accuracy‑preserving INT4 variant (likely via bitsandbytes) to strengthen INT4 results with low added risk.  
 - **FP8 (H100‑friendly)**: hardware‑optimized precision that can narrow the INT8/INT4 accuracy gap; higher engineering effort.  
-- **Mixed‑precision schedules**: per‑layer precision (late layers higher precision) to improve accuracy per byte.  
 - **Quantize both source+base KV**: more aggressive compression; likely larger drop but stronger budget curves.  
 - **True bit‑packing**: makes byte accounting realistic (not just fake‑quant); higher engineering overhead.  
 
@@ -415,7 +421,8 @@ Reuse the PTQ + pruning settings from Steps 2–3.
 
 ## Workshop vs Main‑Conference Path
 - **Workshop**: Milestones 0 → 1 → 2 → 3 → 4 (baseline + PTQ + pruning + budget curve).
-- **Main‑conf**: Workshop path + Milestones 5 → 6 → 7 (QAT + mixed precision + heterogeneity).
+- **Main‑conf**: Workshop path + M5 (QAT) + M6 (mixed precision) + **systems measurements** (bandwidth/latency or bit‑packing).  
+  - **M7 (heterogeneity)** is recommended if time allows; otherwise move to appendix.
 
 ## Potential Improvements / Follow‑ups
 - **Byte accounting**: include per‑head scale metadata in “bytes transferred” so INT8/INT4 are not under‑counted.
