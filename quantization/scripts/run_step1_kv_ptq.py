@@ -182,6 +182,42 @@ def collect_model_stats(model_name):
         return None, str(exc)
 
 
+def load_layer_schedule(path: Path):
+    import yaml
+
+    if not path.exists():
+        die(f"Layer schedule file not found: {path}")
+    data = yaml.safe_load(path.read_text())
+    if isinstance(data, dict) and "layer_schedule" in data:
+        return data["layer_schedule"]
+    if isinstance(data, dict) and ("default" in data or "overrides" in data):
+        return data
+    die(f"Invalid layer schedule format in {path}")
+
+
+def resolve_layer_schedule(args, base_model_name):
+    if args.kv_quant_layer_schedule and args.kv_quant_last_fp16:
+        die("Specify either --kv-quant-layer-schedule or --kv-quant-last-fp16, not both.")
+    if args.kv_quant_layer_schedule:
+        return load_layer_schedule(Path(args.kv_quant_layer_schedule).expanduser())
+    if args.kv_quant_last_fp16:
+        stats, err = collect_model_stats(base_model_name)
+        if err or not stats:
+            die(f"Unable to resolve model stats for layer schedule: {err}")
+        num_layers = stats["num_layers"]
+        n = int(args.kv_quant_last_fp16)
+        if n <= 0 or n > num_layers:
+            die(f"kv-quant-last-fp16 must be between 1 and {num_layers}, got {n}")
+        layers = list(range(num_layers - n, num_layers))
+        return {
+            "default": args.kv_quant_scheme,
+            "overrides": [
+                {"layers": layers, "scheme": "fp16"},
+            ],
+        }
+    return None
+
+
 def collect_env_info():
     info = {
         "python_executable": sys.executable,
@@ -742,6 +778,21 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
         base_model = rosetta_cfg.get("base_model")
         teacher_model = rosetta_cfg.get("teacher_model")
         base_model_stats, base_model_stats_error = collect_model_stats(base_model)
+        if args.kv_quant_last_fp16:
+            schedule = resolve_layer_schedule(args, base_model)
+            if schedule:
+                kv_quant_config = dict(kv_quant_config)
+                kv_quant_config["layer_schedule"] = schedule
+                write_status(
+                    run_root,
+                    "running",
+                    {
+                        "mode": "gpu",
+                        "kv_quant_config": kv_quant_config,
+                        "kv_cache_proportion": args.kv_cache_proportion,
+                        "kv_cache_order_mode": args.kv_cache_order_mode,
+                    },
+                )
 
         def git_rev(path):
             try:
@@ -847,6 +898,17 @@ def main():
     parser.add_argument("--kv-quant-collect-stats", action="store_true", help="Collect quant scale stats")
     parser.add_argument("--disable-kv-quant", action="store_true", help="Disable KV quantization for baseline compare")
     parser.add_argument(
+        "--kv-quant-layer-schedule",
+        default=None,
+        help="Path to JSON/YAML layer schedule (default/overrides).",
+    )
+    parser.add_argument(
+        "--kv-quant-last-fp16",
+        type=int,
+        default=0,
+        help="Promote the last N layers to fp16 (mixed precision).",
+    )
+    parser.add_argument(
         "--kv-cache-proportion",
         type=float,
         default=1.0,
@@ -907,6 +969,8 @@ def main():
     os.environ.setdefault("WANDB_DISABLED", "true")
 
     kv_quant_enabled = not args.disable_kv_quant
+    layer_schedule = resolve_layer_schedule(args, args.base_model)
+
     kv_quant_config = {
         "enabled": kv_quant_enabled,
         "scheme": args.kv_quant_scheme,
@@ -914,6 +978,8 @@ def main():
         "eps": args.kv_quant_eps,
         "collect_stats": bool(args.kv_quant_collect_stats) and kv_quant_enabled,
     }
+    if layer_schedule and kv_quant_enabled:
+        kv_quant_config["layer_schedule"] = layer_schedule
 
     run_root = None
     try:

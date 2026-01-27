@@ -403,7 +403,9 @@ kv_quant_config:
   - Why: small, interpretable grid; likely accuracy gain with modest byte increase.  
 - **M6‑P1 (Implementation)**:  
   - Parse `layer_schedule` in `rosetta/utils/quant.py` and apply per‑layer scheme.  
-  - Update `wrapper.py` to choose scheme by target layer index.  
+  - Update `wrapper.py` and `oracle.py` to choose scheme by **target layer index** (so we can express “last‑N layers higher precision”).  
+  - Update `run_step1_kv_ptq.py` to accept `--kv-quant-layer-schedule` (YAML/JSON) and `--kv-quant-last-fp16 N`, and to inject the schedule into `kv_quant_config`.  
+  - Update `analyze_budget_curve.py` to compute **effective bits per element** when mixed precision is used (average bits across layers).  
   - Log the resolved schedule into run manifests.  
 - **M6‑P2 (Local sanity)**:  
   - Run **1–5 samples** on Mac (`--mode local`) to validate schedule wiring.  
@@ -419,8 +421,12 @@ kv_quant_config:
 - Last‑8 FP16 may improve further but with diminishing returns.  
 
 **Testing commands (local)**  
-- `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-num-samples 1 --kv-quant-scheme int8`  
-- Same with schedule enabled once implemented (using a `--kv-quant-config` or config override).
+- INT8 baseline (1 sample):  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-num-samples 1 --kv-quant-scheme int8`  
+- Mixed precision (last‑4 FP16):  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-num-samples 1 --kv-quant-scheme int8 --kv-quant-last-fp16 4`  
+- Custom schedule (optional):  
+  - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-num-samples 1 --kv-quant-layer-schedule quantization/configs/kv_layer_schedule.yaml`
 
 ## Milestone 7: Heterogeneity Scaling (Main‑conf extension)
 **What**  

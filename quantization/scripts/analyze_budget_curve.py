@@ -108,15 +108,72 @@ def extract_avg_input_length(summary):
     return None
 
 
-def quant_bits_from_config(kv_quant_config):
+def _normalize_scheme(scheme):
+    if scheme is None:
+        return "fp16"
+    if isinstance(scheme, str):
+        return scheme.lower()
+    return str(scheme).lower()
+
+
+def _scheme_bits(scheme):
+    scheme = _normalize_scheme(scheme)
+    if scheme in ("int4", "nf4"):
+        return 4
+    if scheme in ("int8", "fp8"):
+        return 8
+    if scheme in ("fp16", "bf16", "float16", "bfloat16"):
+        return 16
+    if scheme in ("fp32", "float32"):
+        return 32
+    if scheme in ("none", "no"):
+        return 16
+    return 16
+
+
+def _apply_schedule_overrides(schemes, overrides):
+    for override in overrides or []:
+        scheme = _normalize_scheme(override.get("scheme"))
+        if not scheme:
+            continue
+        if override.get("layers") is not None:
+            for idx in override.get("layers") or []:
+                try:
+                    layer_idx = int(idx)
+                except Exception:
+                    continue
+                if 0 <= layer_idx < len(schemes):
+                    schemes[layer_idx] = scheme
+        elif override.get("range") is not None:
+            r = override.get("range")
+            if isinstance(r, (list, tuple)) and len(r) == 2:
+                try:
+                    start, end = int(r[0]), int(r[1])
+                except Exception:
+                    continue
+                start = max(start, 0)
+                end = min(end, len(schemes) - 1)
+                for layer_idx in range(start, end + 1):
+                    schemes[layer_idx] = scheme
+
+
+def quant_bits_from_config(kv_quant_config, num_layers=None):
     if not kv_quant_config or not kv_quant_config.get("enabled", False):
         return 16, "fp16"
-    scheme = kv_quant_config.get("scheme", "int8")
-    if scheme == "int4":
-        return 4, "int4"
-    if scheme == "int8":
-        return 8, "int8"
-    return 16, scheme
+    scheme = _normalize_scheme(kv_quant_config.get("scheme", "int8"))
+    schedule = kv_quant_config.get("layer_schedule") or {}
+    if schedule and num_layers:
+        default_scheme = _normalize_scheme(schedule.get("default", scheme))
+        schemes = [default_scheme for _ in range(int(num_layers))]
+        _apply_schedule_overrides(schemes, schedule.get("overrides", []))
+        avg_bits = sum(_scheme_bits(s) for s in schemes) / float(len(schemes))
+        unique = []
+        for s in schemes:
+            if s not in unique:
+                unique.append(s)
+        label = f"mixed({','.join(unique)})" if len(unique) > 1 else unique[0]
+        return avg_bits, label
+    return _scheme_bits(scheme), scheme
 
 
 def normalize_model_stats(stats):
@@ -247,7 +304,8 @@ def parse_run(run_root):
         model_cfg = cfg.get("model", {}).get("rosetta_config", {})
         base_model = model_cfg.get("base_model", "Qwen/Qwen3-0.6B")
         kv_quant_config = model_cfg.get("kv_quant_config") or manifest.get("kv_quant_config")
-        bits, scheme = quant_bits_from_config(kv_quant_config)
+        num_layers = manifest_stats["num_layers"] if isinstance(manifest_stats, dict) else None
+        bits, scheme = quant_bits_from_config(kv_quant_config, num_layers=num_layers)
         eval_cfg = cfg.get("eval", {})
         proportion = eval_cfg.get("kv_cache_proportion", manifest.get("kv_cache_proportion", 1.0))
         order_mode = eval_cfg.get("kv_cache_order_mode", manifest.get("kv_cache_order_mode", "front"))
@@ -258,6 +316,7 @@ def parse_run(run_root):
                 "dataset": dataset_dir.name,
                 "base_model": base_model,
                 "kv_quant_scheme": scheme,
+                "kv_quant_bits": bits,
                 "kv_cache_proportion": float(proportion),
                 "kv_cache_order_mode": order_mode,
                 "accuracy": safe_float(summary.get("overall_accuracy")),
@@ -274,6 +333,7 @@ def write_csv(rows, out_path):
         "run_tag",
         "dataset",
         "kv_quant_scheme",
+        "kv_quant_bits",
         "kv_cache_proportion",
         "kv_cache_order_mode",
         "base_model",
@@ -454,7 +514,9 @@ def main():
                 model_name, override=override, local_files_only=local_only
             )
         model_stats = model_stats_cache[model_name]
-        bits = 16 if row["kv_quant_scheme"] == "fp16" else (8 if row["kv_quant_scheme"] == "int8" else 4)
+        bits = row.get("kv_quant_bits")
+        if bits is None:
+            bits = 16 if row["kv_quant_scheme"] == "fp16" else (8 if row["kv_quant_scheme"] == "int8" else 4)
         bpt = bytes_per_token(model_stats, bits)
         bytes_seq = avg_input_length * row["kv_cache_proportion"] * bpt
         row["bytes_per_sequence"] = bytes_seq
