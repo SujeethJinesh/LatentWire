@@ -40,7 +40,7 @@ else
   echo "Using conda run: ${CONDA_EXE} run -n ${CONDA_ENV} python"
 fi
 
-PROJECT_ROOT="${PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-/projects/m000066/sujinesh/LatentWire}}"
+PROJECT_ROOT="${PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-${PWD}}}"
 cd "${PROJECT_ROOT}"
 
 export PYTHONPATH="${PROJECT_ROOT}"
