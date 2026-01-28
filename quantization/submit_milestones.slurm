@@ -653,17 +653,22 @@ if [ "${RUN_MILESTONE_5}" = "1" ]; then
   M5_OUTPUT_DIR="${M5_OUTPUT_DIR:-${C2C_CKPT_ROOT}/qat_${RUN_TAG_PREFIX}}"
   mkdir -p "${M5_RUN_ROOT}/configs" "${M5_RUN_ROOT}/logs" "${M5_RUN_ROOT}/manifests"
 
-  if [ ! -f "${M5_RECIPE}" ]; then
+  M5_RECIPE_PATH="${M5_RECIPE}"
+  if [ "${RUN_FULL}" = "1" ] && [ "${M5_RECIPE_PATH}" = "quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json" ]; then
+    M5_RECIPE_PATH="quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8.json"
+  fi
+
+  if [ ! -f "${M5_RECIPE_PATH}" ]; then
     if [ -f "quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8.json" ]; then
-      echo "WARN: M5_RECIPE missing (${M5_RECIPE}); falling back to C2C_0.6+0.5_qat_int8.json"
-      M5_RECIPE="quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8.json"
+      echo "WARN: M5_RECIPE missing (${M5_RECIPE_PATH}); falling back to C2C_0.6+0.5_qat_int8.json"
+      M5_RECIPE_PATH="quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8.json"
     else
-      echo "ERROR: M5_RECIPE not found: ${M5_RECIPE}" >&2
+      echo "ERROR: M5_RECIPE not found: ${M5_RECIPE_PATH}" >&2
       exit 1
     fi
   fi
 
-  cp "${M5_RECIPE}" "${M5_RUN_ROOT}/configs/m5_train.json"
+  cp "${M5_RECIPE_PATH}" "${M5_RUN_ROOT}/configs/m5_train.json"
   "${PYTHON[@]}" - <<'PY' "${M5_RUN_ROOT}/configs/m5_train.json" "${M5_OUTPUT_DIR}"
 import json
 import sys
