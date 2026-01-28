@@ -1,0 +1,13 @@
+{
+  "status": "prep_only",
+  "mode": "gpu",
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": false
+  },
+  "kv_cache_proportion": 0.75,
+  "kv_cache_order_mode": "front"
+}
