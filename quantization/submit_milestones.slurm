@@ -126,6 +126,8 @@ M7_TEACHER_MODEL="${M7_TEACHER_MODEL:-meta-llama/Llama-3.2-1B-Instruct}"
 M7_DO_ALIGNMENT="${M7_DO_ALIGNMENT:-1}"
 M7_ALIGNMENT_STRATEGY="${M7_ALIGNMENT_STRATEGY:-}"
 M7_ALIGNMENT_MODES="${M7_ALIGNMENT_MODES:-${M7_DO_ALIGNMENT}}"
+M7_CHECKPOINT_DIR="${M7_CHECKPOINT_DIR:-}"
+M7_REQUIRE_CHECKPOINT="${M7_REQUIRE_CHECKPOINT:-1}"
 
 # Milestone 8 grid (selective transfer).
 M8_KV_QUANT_SCHEME="${M8_KV_QUANT_SCHEME:-int8}"
@@ -528,6 +530,13 @@ run_preflight() {
   fi
 
   if [ "${RUN_MILESTONE_7}" = "1" ]; then
+    local m7_pre_args=()
+    if [ -n "${M7_CHECKPOINT_DIR}" ]; then
+      m7_pre_args+=( "--checkpoint-dir-override" "${M7_CHECKPOINT_DIR}" )
+    elif [ "${M7_REQUIRE_CHECKPOINT}" = "1" ]; then
+      echo "ERROR: M7_CHECKPOINT_DIR not set for heterogeneity preflight. Provide a hetero fuser checkpoint or set M7_REQUIRE_CHECKPOINT=0 to force default (not recommended)." >&2
+      exit 1
+    fi
     local pre_tag="preflight_step7_${RUN_TAG_PREFIX}"
     "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
       --env "${CONDA_ENV}" \
@@ -536,7 +545,8 @@ run_preflight() {
       --teacher-model-override "${M7_TEACHER_MODEL}" \
       --kv-quant-scheme int8 \
       --prep-only \
-      --run-tag "${pre_tag}"
+      --run-tag "${pre_tag}" \
+      "${m7_pre_args[@]}"
     preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${pre_tag}"
   fi
 
@@ -746,6 +756,12 @@ if [ "${RUN_MILESTONE_7}" = "1" ]; then
   for ALIGN_MODE in ${M7_ALIGNMENT_MODES}; do
     RUN_TAG="step7_align${ALIGN_MODE}_${RUN_TAG_PREFIX}"
     EXTRA_ARGS=()
+    if [ -n "${M7_CHECKPOINT_DIR}" ]; then
+      EXTRA_ARGS+=( "--checkpoint-dir-override" "${M7_CHECKPOINT_DIR}" )
+    elif [ "${M7_REQUIRE_CHECKPOINT}" = "1" ]; then
+      echo "ERROR: M7_CHECKPOINT_DIR not set for heterogeneity. Provide a hetero fuser checkpoint or set M7_REQUIRE_CHECKPOINT=0 to force default (not recommended)." >&2
+      exit 1
+    fi
     if [ "${ALIGN_MODE}" = "1" ]; then
       EXTRA_ARGS+=( "--do-alignment" )
     fi
