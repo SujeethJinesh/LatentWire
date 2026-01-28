@@ -529,6 +529,338 @@
       "config_hash": "7c1454beb12ef94a039acf24b5fe0f4b7f95b9c7",
       "reason": "",
       "timestamp": "2026-01-28T07:00:06.076482Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p5_prompt_sf1_20260128_045934",
+      "config_hash": "eed912981001f1f3559289c67cd779a0f3c48918",
+      "reason": "",
+      "timestamp": "2026-01-28T07:12:22.296624Z"
+    }
+  },
+  "m8|int8|front|0.25|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "76fb313d792a61d4f8b83e1a679dc293d6901cfa",
+      "reason": "",
+      "timestamp": "2026-01-28T07:17:43.128455Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "b647831e5f0349a539776f32fa628507579a68ee",
+      "reason": "",
+      "timestamp": "2026-01-28T07:29:46.943231Z"
+    }
+  },
+  "m8|int8|front|0.10|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "9fca2340bdceacc0f825d539bbbaf9db8519ba3b",
+      "reason": "",
+      "timestamp": "2026-01-28T07:35:11.431131Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "1ef22923d518a764dc3e09939724e36c7c74bd12",
+      "reason": "",
+      "timestamp": "2026-01-28T07:48:33.363112Z"
+    }
+  },
+  "m8|int8|vnorm_topk|1.0|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "config_hash": "08f3d839f8fe3a3f069b2bfec45014a65990f0c8",
+      "reason": "",
+      "timestamp": "2026-01-28T07:53:34.912118Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "config_hash": "7ea78b6b1797b38adcbe892977c641f37854ffe2",
+      "reason": "",
+      "timestamp": "2026-01-28T08:06:21.051954Z"
+    }
+  },
+  "m8|int8|vnorm_topk|0.5|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "config_hash": "19b149cdd461583744aa61e11d87029f26297809",
+      "reason": "",
+      "timestamp": "2026-01-28T08:11:45.951772Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "config_hash": "ab1f1ce857fda310ad6c33a580a67495e7b7f043",
+      "reason": "",
+      "timestamp": "2026-01-28T08:24:41.377880Z"
+    }
+  },
+  "m8|int8|vnorm_topk|0.25|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "f2ba453f07869e8c77ab6e346031c34dcd0a712d",
+      "reason": "",
+      "timestamp": "2026-01-28T08:30:03.198003Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "a71dd56c86a6c0dd7b8b465820d2d38d9cca5b60",
+      "reason": "",
+      "timestamp": "2026-01-28T08:41:53.900243Z"
+    }
+  },
+  "m8|int8|vnorm_topk|0.10|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "7dcb19b1bf62caca970f0ee78a5ab3118f1f0534",
+      "reason": "",
+      "timestamp": "2026-01-28T08:47:58.752836Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "b3923cb658af5267ecfd847f314ba7527307986f",
+      "reason": "",
+      "timestamp": "2026-01-28T09:00:19.042321Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|1.0|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "config_hash": "909ec7ea83ca2fa13a182a5b35d0b355b6886437",
+      "reason": "",
+      "timestamp": "2026-01-28T09:05:57.310846Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "config_hash": "a5021310e395370c6c70bb71954d98fdbcb9d303",
+      "reason": "",
+      "timestamp": "2026-01-28T09:19:17.373633Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|0.5|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "config_hash": "e56e513db917b740297579f988b7a2d2b438b448",
+      "reason": "",
+      "timestamp": "2026-01-28T09:25:37.046431Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "config_hash": "142d6fd8438c54c620b0de61d6638986a6933651",
+      "reason": "",
+      "timestamp": "2026-01-28T09:38:41.627567Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|0.25|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "a37ea58ae07fcdfc8e87b2bf90ceac9b3901e4db",
+      "reason": "",
+      "timestamp": "2026-01-28T09:44:18.922454Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "0b48b0eecc52b68b85ab9a72bb53eb89d3b274e4",
+      "reason": "",
+      "timestamp": "2026-01-28T09:57:10.460488Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|0.10|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "d723abb1968b6956fea55678ba06631a4ebf4054",
+      "reason": "",
+      "timestamp": "2026-01-28T10:02:48.285172Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "9cc889e7aa919e306031b9931a0da0d3ff7447da",
+      "reason": "",
+      "timestamp": "2026-01-28T10:15:56.332183Z"
+    }
+  },
+  "m8|int8|random|1.0|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p1p0_prompt_sf1_20260128_045934",
+      "config_hash": "acd47914330fc3a69fdf79d0a0febc0dad01f83c",
+      "reason": "",
+      "timestamp": "2026-01-28T10:21:00.671846Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p1p0_prompt_sf1_20260128_045934",
+      "config_hash": "c21534aa0075fee0a588a430bf1455ded3aad540",
+      "reason": "",
+      "timestamp": "2026-01-28T10:33:39.210059Z"
+    }
+  },
+  "m8|int8|random|0.5|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p5_prompt_sf1_20260128_045934",
+      "config_hash": "1aa82ba9398706893ad5040aff50d51071d25ead",
+      "reason": "",
+      "timestamp": "2026-01-28T10:39:15.626381Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p5_prompt_sf1_20260128_045934",
+      "config_hash": "de0ff1974f4604d0c33a7a301e101bd68ad8a212",
+      "reason": "",
+      "timestamp": "2026-01-28T10:50:59.679467Z"
+    }
+  },
+  "m8|int8|random|0.25|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "9de640ed9a603eb69391f65824e7fb9128cdf8bd",
+      "reason": "",
+      "timestamp": "2026-01-28T10:56:07.103557Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "3d754b1312a4ceedd836dc23f7279502ce3a6abd",
+      "reason": "",
+      "timestamp": "2026-01-28T11:07:35.033098Z"
+    }
+  },
+  "m8|int8|random|0.10|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "3ae36f4c3b70c71364e1ac0601dda2f183e8496b",
+      "reason": "",
+      "timestamp": "2026-01-28T11:12:40.124566Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "2fb22e667e6bbccc92fe87135992d64c3f25d96f",
+      "reason": "",
+      "timestamp": "2026-01-28T11:24:14.093431Z"
+    }
+  },
+  "m8|int8|knorm_topk|1.0|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "config_hash": "b70c5f0eaef1425912bd1937899a7473bfdd8437",
+      "reason": "",
+      "timestamp": "2026-01-28T11:29:18.364584Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "config_hash": "a9a678b2ce2291b847affb798e71fd4f82055ad0",
+      "reason": "",
+      "timestamp": "2026-01-28T11:41:46.087692Z"
+    }
+  },
+  "m8|int8|knorm_topk|0.5|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "config_hash": "13489158d89b76eb88d4077e25244fbe032ad837",
+      "reason": "",
+      "timestamp": "2026-01-28T11:46:43.707205Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "config_hash": "89205f118a10faa846093d65f11dc92566d346f2",
+      "reason": "",
+      "timestamp": "2026-01-28T11:58:34.227298Z"
+    }
+  },
+  "m8|int8|knorm_topk|0.25|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "21035ae6febf5b9be191e65ddb3a19bfa24384a8",
+      "reason": "",
+      "timestamp": "2026-01-28T12:03:34.104119Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "config_hash": "359102778148f4d2d023fe67d059d58e7f0c121f",
+      "reason": "",
+      "timestamp": "2026-01-28T12:14:19.557424Z"
+    }
+  },
+  "m8|int8|knorm_topk|0.10|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "fc08a587a737a100dae1b77226a5fffea6a309be",
+      "reason": "",
+      "timestamp": "2026-01-28T12:19:19.810516Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "config_hash": "9887a7e5194cb8e9c40a768f6884447db152823d",
+      "reason": "",
+      "timestamp": "2026-01-28T12:31:31.380548Z"
     }
   }
 }

@@ -1,0 +1,2002 @@
+[
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 200,
+    "input_length": 114,
+    "gen_length": 7,
+    "length_ratio": 0.06140350877192982,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 201,
+    "input_length": 103,
+    "gen_length": 8,
+    "length_ratio": 0.07766990291262135,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 202,
+    "input_length": 151,
+    "gen_length": 7,
+    "length_ratio": 0.046357615894039736,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 203,
+    "input_length": 118,
+    "gen_length": 7,
+    "length_ratio": 0.059322033898305086,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 204,
+    "input_length": 123,
+    "gen_length": 7,
+    "length_ratio": 0.056910569105691054,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 205,
+    "input_length": 114,
+    "gen_length": 7,
+    "length_ratio": 0.06140350877192982,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 206,
+    "input_length": 109,
+    "gen_length": 10,
+    "length_ratio": 0.09174311926605505,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 207,
+    "input_length": 128,
+    "gen_length": 7,
+    "length_ratio": 0.0546875,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 208,
+    "input_length": 117,
+    "gen_length": 8,
+    "length_ratio": 0.06837606837606838,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 209,
+    "input_length": 131,
+    "gen_length": 7,
+    "length_ratio": 0.05343511450381679,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 210,
+    "input_length": 118,
+    "gen_length": 7,
+    "length_ratio": 0.059322033898305086,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 211,
+    "input_length": 129,
+    "gen_length": 7,
+    "length_ratio": 0.05426356589147287,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 212,
+    "input_length": 110,
+    "gen_length": 7,
+    "length_ratio": 0.06363636363636363,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 213,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 214,
+    "input_length": 121,
+    "gen_length": 7,
+    "length_ratio": 0.05785123966942149,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 215,
+    "input_length": 125,
+    "gen_length": 7,
+    "length_ratio": 0.056,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 216,
+    "input_length": 117,
+    "gen_length": 7,
+    "length_ratio": 0.05982905982905983,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 217,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 218,
+    "input_length": 135,
+    "gen_length": 7,
+    "length_ratio": 0.05185185185185185,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 219,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 220,
+    "input_length": 108,
+    "gen_length": 2,
+    "length_ratio": 0.018518518518518517,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 221,
+    "input_length": 115,
+    "gen_length": 8,
+    "length_ratio": 0.06956521739130435,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 222,
+    "input_length": 124,
+    "gen_length": 7,
+    "length_ratio": 0.056451612903225805,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 223,
+    "input_length": 105,
+    "gen_length": 7,
+    "length_ratio": 0.06666666666666667,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 224,
+    "input_length": 136,
+    "gen_length": 7,
+    "length_ratio": 0.051470588235294115,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 225,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 226,
+    "input_length": 116,
+    "gen_length": 7,
+    "length_ratio": 0.0603448275862069,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 227,
+    "input_length": 128,
+    "gen_length": 7,
+    "length_ratio": 0.0546875,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 228,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 229,
+    "input_length": 114,
+    "gen_length": 9,
+    "length_ratio": 0.07894736842105263,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 230,
+    "input_length": 127,
+    "gen_length": 7,
+    "length_ratio": 0.05511811023622047,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 231,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 232,
+    "input_length": 108,
+    "gen_length": 9,
+    "length_ratio": 0.08333333333333333,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 233,
+    "input_length": 115,
+    "gen_length": 4,
+    "length_ratio": 0.034782608695652174,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 234,
+    "input_length": 138,
+    "gen_length": 7,
+    "length_ratio": 0.050724637681159424,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 235,
+    "input_length": 108,
+    "gen_length": 7,
+    "length_ratio": 0.06481481481481481,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 236,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 237,
+    "input_length": 109,
+    "gen_length": 4,
+    "length_ratio": 0.03669724770642202,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 238,
+    "input_length": 129,
+    "gen_length": 7,
+    "length_ratio": 0.05426356589147287,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 239,
+    "input_length": 126,
+    "gen_length": 7,
+    "length_ratio": 0.05555555555555555,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 240,
+    "input_length": 105,
+    "gen_length": 7,
+    "length_ratio": 0.06666666666666667,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 241,
+    "input_length": 109,
+    "gen_length": 7,
+    "length_ratio": 0.06422018348623854,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 242,
+    "input_length": 123,
+    "gen_length": 7,
+    "length_ratio": 0.056910569105691054,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 243,
+    "input_length": 104,
+    "gen_length": 7,
+    "length_ratio": 0.0673076923076923,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 244,
+    "input_length": 123,
+    "gen_length": 7,
+    "length_ratio": 0.056910569105691054,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 245,
+    "input_length": 124,
+    "gen_length": 7,
+    "length_ratio": 0.056451612903225805,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 246,
+    "input_length": 122,
+    "gen_length": 7,
+    "length_ratio": 0.05737704918032787,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 247,
+    "input_length": 107,
+    "gen_length": 10,
+    "length_ratio": 0.09345794392523364,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 248,
+    "input_length": 104,
+    "gen_length": 8,
+    "length_ratio": 0.07692307692307693,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 249,
+    "input_length": 110,
+    "gen_length": 7,
+    "length_ratio": 0.06363636363636363,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 250,
+    "input_length": 112,
+    "gen_length": 7,
+    "length_ratio": 0.0625,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 251,
+    "input_length": 103,
+    "gen_length": 7,
+    "length_ratio": 0.06796116504854369,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 252,
+    "input_length": 104,
+    "gen_length": 8,
+    "length_ratio": 0.07692307692307693,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 253,
+    "input_length": 118,
+    "gen_length": 8,
+    "length_ratio": 0.06779661016949153,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 254,
+    "input_length": 113,
+    "gen_length": 7,
+    "length_ratio": 0.061946902654867256,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 255,
+    "input_length": 125,
+    "gen_length": 10,
+    "length_ratio": 0.08,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 256,
+    "input_length": 115,
+    "gen_length": 7,
+    "length_ratio": 0.06086956521739131,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 257,
+    "input_length": 103,
+    "gen_length": 7,
+    "length_ratio": 0.06796116504854369,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 258,
+    "input_length": 114,
+    "gen_length": 7,
+    "length_ratio": 0.06140350877192982,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 259,
+    "input_length": 127,
+    "gen_length": 7,
+    "length_ratio": 0.05511811023622047,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 260,
+    "input_length": 103,
+    "gen_length": 7,
+    "length_ratio": 0.06796116504854369,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 261,
+    "input_length": 116,
+    "gen_length": 7,
+    "length_ratio": 0.0603448275862069,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 262,
+    "input_length": 111,
+    "gen_length": 7,
+    "length_ratio": 0.06306306306306306,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 263,
+    "input_length": 109,
+    "gen_length": 7,
+    "length_ratio": 0.06422018348623854,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 264,
+    "input_length": 124,
+    "gen_length": 7,
+    "length_ratio": 0.056451612903225805,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 265,
+    "input_length": 121,
+    "gen_length": 7,
+    "length_ratio": 0.05785123966942149,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 266,
+    "input_length": 117,
+    "gen_length": 7,
+    "length_ratio": 0.05982905982905983,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 267,
+    "input_length": 111,
+    "gen_length": 7,
+    "length_ratio": 0.06306306306306306,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 268,
+    "input_length": 125,
+    "gen_length": 12,
+    "length_ratio": 0.096,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 269,
+    "input_length": 121,
+    "gen_length": 7,
+    "length_ratio": 0.05785123966942149,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 270,
+    "input_length": 112,
+    "gen_length": 7,
+    "length_ratio": 0.0625,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 271,
+    "input_length": 111,
+    "gen_length": 11,
+    "length_ratio": 0.0990990990990991,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 272,
+    "input_length": 125,
+    "gen_length": 7,
+    "length_ratio": 0.056,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 273,
+    "input_length": 128,
+    "gen_length": 7,
+    "length_ratio": 0.0546875,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 274,
+    "input_length": 116,
+    "gen_length": 7,
+    "length_ratio": 0.0603448275862069,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 275,
+    "input_length": 125,
+    "gen_length": 7,
+    "length_ratio": 0.056,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 276,
+    "input_length": 127,
+    "gen_length": 7,
+    "length_ratio": 0.05511811023622047,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 277,
+    "input_length": 134,
+    "gen_length": 7,
+    "length_ratio": 0.05223880597014925,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 278,
+    "input_length": 122,
+    "gen_length": 10,
+    "length_ratio": 0.08196721311475409,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 279,
+    "input_length": 110,
+    "gen_length": 8,
+    "length_ratio": 0.07272727272727272,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 280,
+    "input_length": 110,
+    "gen_length": 7,
+    "length_ratio": 0.06363636363636363,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 281,
+    "input_length": 127,
+    "gen_length": 7,
+    "length_ratio": 0.05511811023622047,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 282,
+    "input_length": 111,
+    "gen_length": 7,
+    "length_ratio": 0.06306306306306306,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 283,
+    "input_length": 120,
+    "gen_length": 7,
+    "length_ratio": 0.058333333333333334,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 284,
+    "input_length": 111,
+    "gen_length": 7,
+    "length_ratio": 0.06306306306306306,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 285,
+    "input_length": 119,
+    "gen_length": 7,
+    "length_ratio": 0.058823529411764705,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 286,
+    "input_length": 108,
+    "gen_length": 7,
+    "length_ratio": 0.06481481481481481,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 287,
+    "input_length": 138,
+    "gen_length": 7,
+    "length_ratio": 0.050724637681159424,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 288,
+    "input_length": 129,
+    "gen_length": 7,
+    "length_ratio": 0.05426356589147287,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 289,
+    "input_length": 122,
+    "gen_length": 7,
+    "length_ratio": 0.05737704918032787,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 290,
+    "input_length": 120,
+    "gen_length": 7,
+    "length_ratio": 0.058333333333333334,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 291,
+    "input_length": 127,
+    "gen_length": 7,
+    "length_ratio": 0.05511811023622047,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 292,
+    "input_length": 103,
+    "gen_length": 7,
+    "length_ratio": 0.06796116504854369,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 293,
+    "input_length": 128,
+    "gen_length": 7,
+    "length_ratio": 0.0546875,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 294,
+    "input_length": 103,
+    "gen_length": 7,
+    "length_ratio": 0.06796116504854369,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 295,
+    "input_length": 123,
+    "gen_length": 7,
+    "length_ratio": 0.056910569105691054,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 296,
+    "input_length": 108,
+    "gen_length": 7,
+    "length_ratio": 0.06481481481481481,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 297,
+    "input_length": 108,
+    "gen_length": 7,
+    "length_ratio": 0.06481481481481481,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 298,
+    "input_length": 116,
+    "gen_length": 8,
+    "length_ratio": 0.06896551724137931,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 299,
+    "input_length": 112,
+    "gen_length": 7,
+    "length_ratio": 0.0625,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 300,
+    "input_length": 112,
+    "gen_length": 7,
+    "length_ratio": 0.0625,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 301,
+    "input_length": 110,
+    "gen_length": 10,
+    "length_ratio": 0.09090909090909091,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 302,
+    "input_length": 127,
+    "gen_length": 7,
+    "length_ratio": 0.05511811023622047,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 303,
+    "input_length": 116,
+    "gen_length": 7,
+    "length_ratio": 0.0603448275862069,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 304,
+    "input_length": 122,
+    "gen_length": 7,
+    "length_ratio": 0.05737704918032787,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 305,
+    "input_length": 109,
+    "gen_length": 9,
+    "length_ratio": 0.08256880733944955,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 306,
+    "input_length": 131,
+    "gen_length": 7,
+    "length_ratio": 0.05343511450381679,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 307,
+    "input_length": 119,
+    "gen_length": 7,
+    "length_ratio": 0.058823529411764705,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 308,
+    "input_length": 115,
+    "gen_length": 6,
+    "length_ratio": 0.05217391304347826,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 309,
+    "input_length": 124,
+    "gen_length": 7,
+    "length_ratio": 0.056451612903225805,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 310,
+    "input_length": 120,
+    "gen_length": 7,
+    "length_ratio": 0.058333333333333334,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 311,
+    "input_length": 110,
+    "gen_length": 7,
+    "length_ratio": 0.06363636363636363,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 312,
+    "input_length": 114,
+    "gen_length": 10,
+    "length_ratio": 0.08771929824561403,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 313,
+    "input_length": 112,
+    "gen_length": 6,
+    "length_ratio": 0.05357142857142857,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 314,
+    "input_length": 105,
+    "gen_length": 7,
+    "length_ratio": 0.06666666666666667,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 315,
+    "input_length": 122,
+    "gen_length": 7,
+    "length_ratio": 0.05737704918032787,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 316,
+    "input_length": 125,
+    "gen_length": 7,
+    "length_ratio": 0.056,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 317,
+    "input_length": 105,
+    "gen_length": 7,
+    "length_ratio": 0.06666666666666667,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 318,
+    "input_length": 108,
+    "gen_length": 7,
+    "length_ratio": 0.06481481481481481,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 319,
+    "input_length": 114,
+    "gen_length": 8,
+    "length_ratio": 0.07017543859649122,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 320,
+    "input_length": 111,
+    "gen_length": 7,
+    "length_ratio": 0.06306306306306306,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 321,
+    "input_length": 113,
+    "gen_length": 7,
+    "length_ratio": 0.061946902654867256,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 322,
+    "input_length": 107,
+    "gen_length": 10,
+    "length_ratio": 0.09345794392523364,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 323,
+    "input_length": 112,
+    "gen_length": 9,
+    "length_ratio": 0.08035714285714286,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 324,
+    "input_length": 127,
+    "gen_length": 7,
+    "length_ratio": 0.05511811023622047,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 325,
+    "input_length": 108,
+    "gen_length": 7,
+    "length_ratio": 0.06481481481481481,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 326,
+    "input_length": 119,
+    "gen_length": 7,
+    "length_ratio": 0.058823529411764705,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 327,
+    "input_length": 122,
+    "gen_length": 7,
+    "length_ratio": 0.05737704918032787,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 328,
+    "input_length": 108,
+    "gen_length": 7,
+    "length_ratio": 0.06481481481481481,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 329,
+    "input_length": 128,
+    "gen_length": 7,
+    "length_ratio": 0.0546875,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 330,
+    "input_length": 108,
+    "gen_length": 9,
+    "length_ratio": 0.08333333333333333,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 331,
+    "input_length": 118,
+    "gen_length": 7,
+    "length_ratio": 0.059322033898305086,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 332,
+    "input_length": 124,
+    "gen_length": 7,
+    "length_ratio": 0.056451612903225805,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 333,
+    "input_length": 126,
+    "gen_length": 7,
+    "length_ratio": 0.05555555555555555,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 334,
+    "input_length": 110,
+    "gen_length": 7,
+    "length_ratio": 0.06363636363636363,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 335,
+    "input_length": 110,
+    "gen_length": 9,
+    "length_ratio": 0.08181818181818182,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 336,
+    "input_length": 117,
+    "gen_length": 7,
+    "length_ratio": 0.05982905982905983,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 337,
+    "input_length": 138,
+    "gen_length": 7,
+    "length_ratio": 0.050724637681159424,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 338,
+    "input_length": 120,
+    "gen_length": 7,
+    "length_ratio": 0.058333333333333334,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 339,
+    "input_length": 112,
+    "gen_length": 7,
+    "length_ratio": 0.0625,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 340,
+    "input_length": 105,
+    "gen_length": 8,
+    "length_ratio": 0.0761904761904762,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 341,
+    "input_length": 114,
+    "gen_length": 8,
+    "length_ratio": 0.07017543859649122,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 342,
+    "input_length": 141,
+    "gen_length": 7,
+    "length_ratio": 0.04964539007092199,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 343,
+    "input_length": 118,
+    "gen_length": 7,
+    "length_ratio": 0.059322033898305086,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 344,
+    "input_length": 110,
+    "gen_length": 7,
+    "length_ratio": 0.06363636363636363,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 345,
+    "input_length": 108,
+    "gen_length": 7,
+    "length_ratio": 0.06481481481481481,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 346,
+    "input_length": 105,
+    "gen_length": 7,
+    "length_ratio": 0.06666666666666667,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 347,
+    "input_length": 115,
+    "gen_length": 7,
+    "length_ratio": 0.06086956521739131,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 348,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 349,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 350,
+    "input_length": 110,
+    "gen_length": 10,
+    "length_ratio": 0.09090909090909091,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 351,
+    "input_length": 103,
+    "gen_length": 8,
+    "length_ratio": 0.07766990291262135,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 352,
+    "input_length": 109,
+    "gen_length": 7,
+    "length_ratio": 0.06422018348623854,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 353,
+    "input_length": 123,
+    "gen_length": 7,
+    "length_ratio": 0.056910569105691054,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 354,
+    "input_length": 106,
+    "gen_length": 8,
+    "length_ratio": 0.07547169811320754,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 355,
+    "input_length": 119,
+    "gen_length": 7,
+    "length_ratio": 0.058823529411764705,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 356,
+    "input_length": 104,
+    "gen_length": 7,
+    "length_ratio": 0.0673076923076923,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 357,
+    "input_length": 135,
+    "gen_length": 7,
+    "length_ratio": 0.05185185185185185,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 358,
+    "input_length": 114,
+    "gen_length": 7,
+    "length_ratio": 0.06140350877192982,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 359,
+    "input_length": 140,
+    "gen_length": 7,
+    "length_ratio": 0.05,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 360,
+    "input_length": 106,
+    "gen_length": 8,
+    "length_ratio": 0.07547169811320754,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 361,
+    "input_length": 117,
+    "gen_length": 7,
+    "length_ratio": 0.05982905982905983,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 362,
+    "input_length": 114,
+    "gen_length": 8,
+    "length_ratio": 0.07017543859649122,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 363,
+    "input_length": 108,
+    "gen_length": 10,
+    "length_ratio": 0.09259259259259259,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 364,
+    "input_length": 113,
+    "gen_length": 7,
+    "length_ratio": 0.061946902654867256,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 365,
+    "input_length": 117,
+    "gen_length": 7,
+    "length_ratio": 0.05982905982905983,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 366,
+    "input_length": 139,
+    "gen_length": 7,
+    "length_ratio": 0.050359712230215826,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 367,
+    "input_length": 110,
+    "gen_length": 7,
+    "length_ratio": 0.06363636363636363,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 368,
+    "input_length": 136,
+    "gen_length": 7,
+    "length_ratio": 0.051470588235294115,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 369,
+    "input_length": 124,
+    "gen_length": 7,
+    "length_ratio": 0.056451612903225805,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 370,
+    "input_length": 105,
+    "gen_length": 7,
+    "length_ratio": 0.06666666666666667,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 371,
+    "input_length": 108,
+    "gen_length": 9,
+    "length_ratio": 0.08333333333333333,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 372,
+    "input_length": 132,
+    "gen_length": 10,
+    "length_ratio": 0.07575757575757576,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 373,
+    "input_length": 124,
+    "gen_length": 7,
+    "length_ratio": 0.056451612903225805,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 374,
+    "input_length": 126,
+    "gen_length": 7,
+    "length_ratio": 0.05555555555555555,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 375,
+    "input_length": 114,
+    "gen_length": 8,
+    "length_ratio": 0.07017543859649122,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 376,
+    "input_length": 120,
+    "gen_length": 7,
+    "length_ratio": 0.058333333333333334,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 377,
+    "input_length": 120,
+    "gen_length": 7,
+    "length_ratio": 0.058333333333333334,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 378,
+    "input_length": 106,
+    "gen_length": 10,
+    "length_ratio": 0.09433962264150944,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 379,
+    "input_length": 145,
+    "gen_length": 7,
+    "length_ratio": 0.04827586206896552,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 380,
+    "input_length": 124,
+    "gen_length": 7,
+    "length_ratio": 0.056451612903225805,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 381,
+    "input_length": 120,
+    "gen_length": 7,
+    "length_ratio": 0.058333333333333334,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 382,
+    "input_length": 106,
+    "gen_length": 8,
+    "length_ratio": 0.07547169811320754,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 383,
+    "input_length": 118,
+    "gen_length": 7,
+    "length_ratio": 0.059322033898305086,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 384,
+    "input_length": 104,
+    "gen_length": 7,
+    "length_ratio": 0.0673076923076923,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 385,
+    "input_length": 107,
+    "gen_length": 7,
+    "length_ratio": 0.06542056074766354,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 386,
+    "input_length": 119,
+    "gen_length": 7,
+    "length_ratio": 0.058823529411764705,
+    "is_correct": true,
+    "pred": "B",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 387,
+    "input_length": 113,
+    "gen_length": 11,
+    "length_ratio": 0.09734513274336283,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 388,
+    "input_length": 109,
+    "gen_length": 7,
+    "length_ratio": 0.06422018348623854,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 389,
+    "input_length": 114,
+    "gen_length": 2,
+    "length_ratio": 0.017543859649122806,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 390,
+    "input_length": 131,
+    "gen_length": 16,
+    "length_ratio": 0.12213740458015267,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 391,
+    "input_length": 127,
+    "gen_length": 7,
+    "length_ratio": 0.05511811023622047,
+    "is_correct": false,
+    "pred": "C",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 392,
+    "input_length": 113,
+    "gen_length": 8,
+    "length_ratio": 0.07079646017699115,
+    "is_correct": false,
+    "pred": "D",
+    "true_answer": "B"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 393,
+    "input_length": 105,
+    "gen_length": 8,
+    "length_ratio": 0.0761904761904762,
+    "is_correct": true,
+    "pred": "C",
+    "true_answer": "C"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 394,
+    "input_length": 114,
+    "gen_length": 7,
+    "length_ratio": 0.06140350877192982,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 395,
+    "input_length": 123,
+    "gen_length": 7,
+    "length_ratio": 0.056910569105691054,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 396,
+    "input_length": 114,
+    "gen_length": 7,
+    "length_ratio": 0.06140350877192982,
+    "is_correct": true,
+    "pred": "A",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 397,
+    "input_length": 103,
+    "gen_length": 7,
+    "length_ratio": 0.06796116504854369,
+    "is_correct": false,
+    "pred": "B",
+    "true_answer": "A"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 398,
+    "input_length": 130,
+    "gen_length": 7,
+    "length_ratio": 0.05384615384615385,
+    "is_correct": true,
+    "pred": "D",
+    "true_answer": "D"
+  },
+  {
+    "subject": "SPLIT_0_OF_1",
+    "question_id": 399,
+    "input_length": 123,
+    "gen_length": 11,
+    "length_ratio": 0.08943089430894309,
+    "is_correct": false,
+    "pred": "A",
+    "true_answer": "C"
+  }
+]
