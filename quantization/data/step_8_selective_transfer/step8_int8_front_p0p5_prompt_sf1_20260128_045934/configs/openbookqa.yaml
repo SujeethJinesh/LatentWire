@@ -8,14 +8,14 @@ model:
     checkpoints_dir: /workspace/c2c_checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final
     kv_quant_config:
       enabled: true
-      scheme: int4
+      scheme: int8
       axis: head
       eps: 1.0e-06
       collect_stats: false
     kv_transfer_config:
       enabled: true
-      token_select_mode: vnorm_topk
-      token_select_proportion: 0.25
+      token_select_mode: front
+      token_select_proportion: 0.5
       token_select_scope: prompt
       token_select_min_tokens: 64
       sparse_fuse: true
@@ -26,9 +26,9 @@ model:
     do_sample: false
     max_new_tokens: 64
 output:
-  output_dir: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p25_prompt_sf1_20260128_045936/results/arc_c
+  output_dir: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p5_prompt_sf1_20260128_045934/results/openbookqa
 eval:
-  dataset: ai2-arc
+  dataset: openbookqa
   gpu_ids:
   - 0
   answer_method: generate
@@ -40,4 +40,4 @@ eval:
   kv_cache_order_mode: front
   limit:
   - 0
-  - 1172
+  - 500
