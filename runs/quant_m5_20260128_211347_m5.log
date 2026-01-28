@@ -1,0 +1,3 @@
+Using conda env python: /workspace/conda/envs/rosetta/bin/python
+Preflight: running prep-only to validate plumbing.
+Wrote M5 recipe: /workspace/LatentWire/quantization/data/step_5_qat/step5_qat_20260128_211347_m5/configs/m5_train.json
