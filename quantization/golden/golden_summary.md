@@ -30,3 +30,18 @@ All results are full runs (OpenBookQA: 500 samples, ARC-C: 1150 samples).
 | M3 front | int8 | 0.25 | arc_c | 0.383 |
 | M3 front | int8 | 0.10 | openbookqa | 0.386 |
 | M3 front | int8 | 0.10 | arc_c | 0.407 |
+
+## Extension Summary (M6–M8)
+
+These are full runs unless noted. M8 p0.5 ARC-C is still pending.
+
+| Milestone | Setting | Dataset | Accuracy | Notes |
+|---|---|---|---|---|
+| M6 mixed precision | int8 + last-4 layers fp16 | openbookqa | 0.528 | Full run |
+| M6 mixed precision | int8 + last-4 layers fp16 | arc_c | 0.550 | Full run |
+| M7 alignment ablation | is_do_alignment=true | openbookqa | 0.468 | Same-model pair; accuracy drop |
+| M7 alignment ablation | is_do_alignment=true | arc_c | 0.496 | Same-model pair; accuracy drop |
+| M8 selective transfer | proj_vnorm_topk, p=1.0 | openbookqa | 0.528 | Full run |
+| M8 selective transfer | proj_vnorm_topk, p=1.0 | arc_c | 0.550 | Full run |
+| M8 selective transfer | proj_vnorm_topk, p=0.5 | openbookqa | 0.502 | Full run |
+| M8 selective transfer | proj_vnorm_topk, p=0.5 | arc_c | — | Pending |

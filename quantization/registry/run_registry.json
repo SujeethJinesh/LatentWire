@@ -1,0 +1,300 @@
+{
+  "m0": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_0_baselines/step0_20260127_214552",
+      "config_hash": "cbe64aae7aca7150e00ade4d3f7cd9330968ab33",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_0_baselines/step0_20260127_214552",
+      "config_hash": "c920ee6a166a4baa942822dae6d1c27434a95fc4",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m2|int8": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step1_int8_20260127_214552",
+      "config_hash": "400c5315d257a946a78d5fac1136a0f4dd8ca12b",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step1_int8_20260127_214552",
+      "config_hash": "ee54691f345f6a73cb1eb60da116a15d4b66d2b8",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m2|int4": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step1_int4_20260127_214552",
+      "config_hash": "263b4d97900f389deb9ab375f7283c5c94785f18",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step1_int4_20260127_214552",
+      "config_hash": "5b66ffe4bc357edf6203534042357edf407cd3be",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|1.0|front": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_front_20260127_214552",
+      "config_hash": "1964027bdbe0abe05a046498f8474ba30f9d2f62",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_front_20260127_214552",
+      "config_hash": "90e8f5d9f40491b82ff2ac9da0b4f7e515e4185d",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|1.0|back": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_back_20260127_214552",
+      "config_hash": "4a1952f2da363fb8ffbe90634f08251199231714",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_back_20260127_214552",
+      "config_hash": "9cf75b497f3f6cacc5bb0d44bbe7134480c8f655",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.75|front": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_front_20260127_214552",
+      "config_hash": "47e95ec896e596be8aa6015a48d3c8c2628795fc",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_front_20260127_214552",
+      "config_hash": "21bfb782222e35ad4c968cc1b936e1eec1ce9f9d",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.75|back": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_back_20260127_214552",
+      "config_hash": "398ef953a1838f05ae9bede62899aa2f2bcb5b3e",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_back_20260127_214552",
+      "config_hash": "8dfd3083d75e9bb11a1245ebda72f1ec8293bd06",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.5|front": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_front_20260127_214552",
+      "config_hash": "8ec2e387b9b51388e93d02bc5098538644f1ada8",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_front_20260127_214552",
+      "config_hash": "06d91c7f381eb2f112f8ac6a8fecb2c120879875",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.5|back": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_back_20260127_214552",
+      "config_hash": "5a772f30677b42e2dba818659493de2408fabb72",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_back_20260127_214552",
+      "config_hash": "fd8a20f2529cb82743b5c35c41fa9363a1a11d42",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.25|front": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_front_20260127_214552",
+      "config_hash": "d3f10cdcc04a32484800ad520e1e1bcf92585c3d",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_front_20260127_214552",
+      "config_hash": "9f3a7a4853c7ffaacc63091ef2925d94cb98f6c0",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.25|back": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552",
+      "config_hash": "549b2532b47d5cf4fccd1b8d028070cc18c4d0a1",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552",
+      "config_hash": "fecd6f41862d5b964fea335225342c4a8c69abaa",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.1|front": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_front_20260127_082712",
+      "config_hash": "6307b66ead99c7ec003eadb70eacaaa8043a29ac",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_front_20260127_082712",
+      "config_hash": "6f6cde31e2a79818ee6202effd958e6fef6f0096",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.1|back": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_back_20260127_084143",
+      "config_hash": "fa22f757e48d0e72760eaf93fa735c7ae60a4fab",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_back_20260127_084143",
+      "config_hash": "fe9d8aaf622a956e71d0058b8b724f5686c74f6c",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m6|int8|acc63cafca2d58e03caa9836b47d72635972dd5d": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step6_int8_20260128_011432",
+      "config_hash": "f8ecdf3eb6806b3f25f07d584bfa984311723b47",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step6_int8_20260128_011432",
+      "config_hash": "47a99979572e35869c15ceed061856683a28ef16",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m7|Qwen/Qwen3-0.6B|Qwen/Qwen2.5-0.5B-Instruct": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step7_20260128_011432",
+      "config_hash": "5103ef7d28d82c63b35f0e8bf3482974daa1420a",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_1_kv_ptq/step7_20260128_011432",
+      "config_hash": "99ef159d9f792badd1f22c52222175e75a6c79bc",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|1.0": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_20260128_011432",
+      "config_hash": "43b8515ce6fc4a31ec4856ba44743033dd4f7741",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_20260128_011432",
+      "config_hash": "eaa2b8d2852db837a0544a833d9b38aec6fa6b7d",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|0.5": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_20260128_011432",
+      "config_hash": "dd2426d78ed196ded34e44f7a52c4f809e9db0b9",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  }
+}

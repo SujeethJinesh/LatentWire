@@ -312,6 +312,84 @@
       "bytes_per_sequence": 405185.22434782615,
       "status": "complete",
       "notes": null
+    },
+    {
+      "run_tag": "step0_20260127_214552",
+      "run_path": "quantization/data/step_0_baselines/step0_20260127_214552",
+      "dataset": "openbookqa",
+      "scheme": "fp16",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.528,
+      "num_samples": 500,
+      "avg_input_length": 117.926,
+      "bytes_per_sequence": 6823936.0,
+      "status": "complete",
+      "notes": "Full run (preferred)."
+    },
+    {
+      "run_tag": "step0_20260127_214552",
+      "run_path": "quantization/data/step_0_baselines/step0_20260127_214552",
+      "dataset": "arc_c",
+      "scheme": "fp16",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.551304347826087,
+      "num_samples": 1150,
+      "avg_input_length": 141.31739130434784,
+      "bytes_per_sequence": 8069556.260355029,
+      "status": "complete",
+      "notes": "Full run (preferred)."
+    },
+    {
+      "run_tag": "step1_int8_20260127_214552",
+      "run_path": "quantization/data/step_1_kv_ptq/step1_int8_20260127_214552",
+      "dataset": "openbookqa",
+      "scheme": "int8",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.528,
+      "num_samples": 500,
+      "avg_input_length": 117.926,
+      "bytes_per_sequence": 3411968.0,
+      "status": "complete",
+      "notes": "Full run (preferred)."
+    },
+    {
+      "run_tag": "step1_int8_20260127_214552",
+      "run_path": "quantization/data/step_1_kv_ptq/step1_int8_20260127_214552",
+      "dataset": "arc_c",
+      "scheme": "int8",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.5504347826086956,
+      "num_samples": 1150,
+      "avg_input_length": 141.31739130434784,
+      "bytes_per_sequence": 4034778.1301775146,
+      "status": "complete",
+      "notes": "Full run (preferred)."
+    },
+    {
+      "run_tag": "step1_int4_20260127_214552",
+      "run_path": "quantization/data/step_1_kv_ptq/step1_int4_20260127_214552",
+      "dataset": "openbookqa",
+      "scheme": "int4",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.526,
+      "num_samples": 500,
+      "avg_input_length": 117.926,
+      "bytes_per_sequence": 1705984.0,
+      "status": "complete",
+      "notes": "Full run (preferred)."
+    },
+    {
+      "run_tag": "step1_int4_20260127_214552",
+      "run_path": "quantization/data/step_1_kv_ptq/step1_int4_20260127_214552",
+      "dataset": "arc_c",
+      "scheme": "int4",
+      "kv_cache_proportion": 1.0,
+      "accuracy": 0.5539130434782609,
+      "num_samples": 1150,
+      "avg_input_length": 141.31739130434784,
+      "bytes_per_sequence": 2017389.0650887573,
+      "status": "complete",
+      "notes": "Full run (preferred)."
     }
   ]
 }

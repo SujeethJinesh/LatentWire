@@ -142,6 +142,22 @@ Figure~\ref{fig:budget-openbookqa} and Figure~\ref{fig:budget-arc} report accura
 \subsection{Order-Mode Ablation}
 Across all cache lengths, \textbf{back-pruning} (keeping later instruction tokens) consistently outperforms \textbf{front-pruning}. At 50\% cache length, for example, back-pruning retains near-baseline accuracy while front-pruning degrades sharply. This suggests late instruction tokens carry higher utility for cross-model KV fusion, a useful design signal for future selective transfer methods.
 
+\subsection{Main-Conference Extensions (Preliminary)}
+We report early results for two main-conference extensions. Mixed precision (INT8 with FP16 in the last layers) remains near baseline. An alignment-only ablation (same model pair, alignment enabled) reduces accuracy, suggesting alignment should be reserved for heterogeneous pairs.
+\begin{table}[ht]
+\centering
+\caption{Preliminary extension results (\% accuracy).}
+\begin{tabular}{lcc}
+\toprule
+Setting & OpenBookQA & ARC-C \\
+\midrule
+Mixed precision (INT8 + last-4 FP16) & 52.8 & 55.0 \\
+Alignment ablation (same pair) & 46.8 & 49.6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+For SparseC2C (token selection), the p=1.0 run matches baseline; p=0.5 yields 50.2 on OpenBookQA with ARC-C pending. Full grids will be reported in the main-conference track.
+
 \section{Discussion}
 Quantized C2C provides large bandwidth reductions with limited accuracy drop. Cache pruning further improves the tradeoff, suggesting a practical path to deployable multi-LLM communication. A main-conference path includes QAT recovery, mixed-precision schedules, heterogeneous model pairs, and SparseC2C token selection.
 
