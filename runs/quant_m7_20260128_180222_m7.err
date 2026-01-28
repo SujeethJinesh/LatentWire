@@ -1,0 +1,19 @@
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/huggingface_hub/file_download.py:979: UserWarning: `local_dir_use_symlinks` parameter is deprecated and will be ignored. The process to download files to a local folder has been updated and do not rely on symlinks anymore. You only need to pass a destination folder as`local_dir`.
+For more details, check out https://huggingface.co/docs/huggingface_hub/main/en/guides/download#download-files-to-local-folder.
+  warnings.warn(
+
+Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]
+Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 955.71it/s]
+
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/huggingface_hub/file_download.py:979: UserWarning: `local_dir_use_symlinks` parameter is deprecated and will be ignored. The process to download files to a local folder has been updated and do not rely on symlinks anymore. You only need to pass a destination folder as`local_dir`.
+For more details, check out https://huggingface.co/docs/huggingface_hub/main/en/guides/download#download-files-to-local-folder.
+  warnings.warn(
+
+Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]
+Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 928.70it/s]
+
+ERROR: dataset_len returned non-numeric value for openbookqa: ''

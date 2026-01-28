@@ -1,0 +1,14 @@
+Using conda run: /workspace/conda/bin/conda run -n rosetta python
+Preflight: running prep-only to validate plumbing.
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/workspace/LatentWire/quantization/C2C/script/train/SFT_train.py", line 1036, in <module>
+    main()
+  File "/workspace/LatentWire/quantization/C2C/script/train/SFT_train.py", line 521, in main
+    cfg: Dict[str, Any] = load_config(args.config)
+  File "/workspace/LatentWire/quantization/C2C/script/train/SFT_train.py", line 181, in load_config
+    with open(config_path, "r") as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/LatentWire/quantization/data/step_5_qat/step5_qat_20260128_181316_m5/configs/m5_train.json'
+
+ERROR conda.cli.main_run:execute(127): `conda run python quantization/C2C/script/train/SFT_train.py --config /workspace/LatentWire/quantization/data/step_5_qat/step5_qat_20260128_181316_m5/configs/m5_train.json` failed. (See above for error)
