@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 153,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_400699",
+    "question": "A student mixes vinegar and baking soda to use in a volcano model. The mixture causes the volcano model to feel cool when it is touched. What energy transformation has taken place?",
+    "choices": {
+      "text": [
+        "light energy changed to heat energy",
+        "heat energy changed to chemical energy",
+        "chemical energy changed to heat energy",
+        "chemical energy changed to light energy"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student mixes vinegar and baking soda to use in a volcano model. The mixture causes the volcano model to feel cool when it is touched. What energy transformation has taken place?\n\nChoices:\nA. light energy changed to heat energy\nB. heat energy changed to chemical energy\nC. chemical energy changed to heat energy\nD. chemical energy changed to light energy\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

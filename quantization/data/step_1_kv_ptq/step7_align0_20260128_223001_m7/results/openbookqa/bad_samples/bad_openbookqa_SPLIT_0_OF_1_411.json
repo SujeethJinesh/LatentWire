@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 411,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "8-92",
+    "question_stem": "Which beverage would dissolve solids the best?",
+    "choices": {
+      "text": [
+        "A glass of ice-cold water",
+        "A boiling hot mug of tea",
+        "A cup of warm milk",
+        "A room temperature glass of water"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich beverage would dissolve solids the best?\n\nChoices:\nA. A glass of ice-cold water\nB. A boiling hot mug of tea\nC. A cup of warm milk\nD. A room temperature glass of water\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

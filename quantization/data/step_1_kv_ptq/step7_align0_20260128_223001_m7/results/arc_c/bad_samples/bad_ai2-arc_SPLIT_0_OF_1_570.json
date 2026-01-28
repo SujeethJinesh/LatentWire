@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 570,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_402276",
+    "question": "Which of the following best describes a learned behavior?",
+    "choices": {
+      "text": [
+        "owls looking for food at night",
+        "monarch butterflies migrating south",
+        "cats pawing the area where they are going to sleep",
+        "fish swimming to the top of an aquarium to get food"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following best describes a learned behavior?\n\nChoices:\nA. owls looking for food at night\nB. monarch butterflies migrating south\nC. cats pawing the area where they are going to sleep\nD. fish swimming to the top of an aquarium to get food\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

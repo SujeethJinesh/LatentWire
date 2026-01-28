@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 224,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "8-318",
+    "question_stem": "When a plane is in the sky and is several miles away, the light seen is barely visible, but when it is drawing near",
+    "choices": {
+      "text": [
+        "light is far away",
+        "light is more easily seen",
+        "light is more distant",
+        "light is further away"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen a plane is in the sky and is several miles away, the light seen is barely visible, but when it is drawing near\n\nChoices:\nA. light is far away\nB. light is more easily seen\nC. light is more distant\nD. light is further away\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

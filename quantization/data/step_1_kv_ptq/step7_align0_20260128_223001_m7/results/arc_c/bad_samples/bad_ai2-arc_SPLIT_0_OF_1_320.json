@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 320,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_416379",
+    "question": "In the equatorial Pacific Ocean, upwelling moves cold, deep sea water to the surface. This water is rich in nutrients and dissolved carbon dioxide gas. During an El Niño event, upwelling declines. This causes surface waters to rise in temperature. Which of the following is most likely to occur in the equatorial Pacific Ocean during an El Niño year?",
+    "choices": {
+      "text": [
+        "decrease in release of carbon dioxide to the atmosphere",
+        "increase in photosynthesis by algae in surface waters",
+        "increase in dissolved oxygen in surface waters",
+        "decrease in precipitation over ocean waters"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn the equatorial Pacific Ocean, upwelling moves cold, deep sea water to the surface. This water is rich in nutrients and dissolved carbon dioxide gas. During an El Niño event, upwelling declines. This causes surface waters to rise in temperature. Which of the following is most likely to occur in the equatorial Pacific Ocean during an El Niño year?\n\nChoices:\nA. decrease in release of carbon dioxide to the atmosphere\nB. increase in photosynthesis by algae in surface waters\nC. increase in dissolved oxygen in surface waters\nD. decrease in precipitation over ocean waters\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

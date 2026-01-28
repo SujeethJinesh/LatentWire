@@ -1,0 +1,33 @@
+model:
+  model_name: Rosetta
+  rosetta_config:
+    base_model: Qwen/Qwen3-0.6B
+    teacher_model: meta-llama/Llama-3.2-1B-Instruct
+    is_do_alignment: false
+    alignment_strategy: longest
+    checkpoints_dir: /workspace/c2c_checkpoints/fuser_m7_20260128_215928_m7_fuser
+    kv_quant_config:
+      enabled: true
+      scheme: int8
+      axis: head
+      eps: 1.0e-06
+      collect_stats: false
+  generation_config:
+    do_sample: false
+    max_new_tokens: 64
+output:
+  output_dir: /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/openbookqa
+eval:
+  dataset: openbookqa
+  gpu_ids:
+  - 0
+  answer_method: generate
+  use_cot: false
+  use_template: true
+  sample_interval: 1
+  math_grading_method: comprehensive
+  kv_cache_proportion: 1.0
+  kv_cache_order_mode: front
+  limit:
+  - 0
+  - 500

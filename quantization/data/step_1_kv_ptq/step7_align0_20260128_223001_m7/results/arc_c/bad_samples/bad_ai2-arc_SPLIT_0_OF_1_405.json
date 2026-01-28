@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 405,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_413542",
+    "question": "Many people get fresh water from wells that reach water stored underground. When there is little rain, the water can begin to run out. Which step is best to make the water last longer?",
+    "choices": {
+      "text": [
+        "using sprinklers for fewer hours each week",
+        "washing vehicles in the middle of the day",
+        "spraying water to clean oil from parking lots",
+        "letting faucets run while brushing teeth"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nMany people get fresh water from wells that reach water stored underground. When there is little rain, the water can begin to run out. Which step is best to make the water last longer?\n\nChoices:\nA. using sprinklers for fewer hours each week\nB. washing vehicles in the middle of the day\nC. spraying water to clean oil from parking lots\nD. letting faucets run while brushing teeth\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

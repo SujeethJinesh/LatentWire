@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 310,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7032428",
+    "question": "Some researchers believe that beta-carotene, which is found in carrots, may help humans live longer lives. A few scientists designed an experiment in which one-hundred people would be asked to take a double dose of beta-carotene daily for two years and another hundred people were given a placebo, a sugar pill, for the same amount of time. After the two years, the scientists planned to collect the data and draw a conclusion. This is not a good example of a scientific study and was not done because",
+    "choices": {
+      "text": [
+        "there is no control group.",
+        "there are too many variables.",
+        "there is no experimental group.",
+        "it does not have a testable hypothesis."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome researchers believe that beta-carotene, which is found in carrots, may help humans live longer lives. A few scientists designed an experiment in which one-hundred people would be asked to take a double dose of beta-carotene daily for two years and another hundred people were given a placebo, a sugar pill, for the same amount of time. After the two years, the scientists planned to collect the data and draw a conclusion. This is not a good example of a scientific study and was not done because\n\nChoices:\nA. there is no control group.\nB. there are too many variables.\nC. there is no experimental group.\nD. it does not have a testable hypothesis.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

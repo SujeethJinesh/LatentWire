@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 741,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7130655",
+    "question": "Until recently, only a small part of the human DNA was known to have a specific function. The rest of the DNA was thought to be unimportant. New evidence now suggests that all DNA is needed in certain gene functions. Which statement best describes the significance of this new evidence?",
+    "choices": {
+      "text": [
+        "It will make the study of DNA much simpler.",
+        "It proves that DNA is less important than originally thought.",
+        "It provides evidence that scientific results should not be challenged.",
+        "It demonstrates that scientific knowledge is subject to change."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nUntil recently, only a small part of the human DNA was known to have a specific function. The rest of the DNA was thought to be unimportant. New evidence now suggests that all DNA is needed in certain gene functions. Which statement best describes the significance of this new evidence?\n\nChoices:\nA. It will make the study of DNA much simpler.\nB. It proves that DNA is less important than originally thought.\nC. It provides evidence that scientific results should not be challenged.\nD. It demonstrates that scientific knowledge is subject to change.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

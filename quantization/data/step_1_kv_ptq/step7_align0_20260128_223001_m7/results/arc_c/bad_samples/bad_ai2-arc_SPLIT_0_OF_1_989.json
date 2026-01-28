@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 989,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_184818",
+    "question": "If an organism developed in an environment with a gravitational field greater than Earth, which adaptation would most benefit the organism?",
+    "choices": {
+      "text": [
+        "long, thin limbs",
+        "long, strong limbs",
+        "short, thin limbs",
+        "short, strong limbs"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nIf an organism developed in an environment with a gravitational field greater than Earth, which adaptation would most benefit the organism?\n\nChoices:\nA. long, thin limbs\nB. long, strong limbs\nC. short, thin limbs\nD. short, strong limbs\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

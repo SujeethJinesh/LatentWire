@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 185,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "8-304",
+    "question_stem": "which of these people would have the worst air quality at their residence?",
+    "choices": {
+      "text": [
+        "a man who lives next to a landfill",
+        "a man who lives in a city with the best air quality",
+        "none of these",
+        "a man who lives in a great suburb"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nwhich of these people would have the worst air quality at their residence?\n\nChoices:\nA. a man who lives next to a landfill\nB. a man who lives in a city with the best air quality\nC. none of these\nD. a man who lives in a great suburb\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

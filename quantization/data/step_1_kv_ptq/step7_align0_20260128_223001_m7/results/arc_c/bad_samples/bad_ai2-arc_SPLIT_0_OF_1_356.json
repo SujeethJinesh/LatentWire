@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 356,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7150728",
+    "question": "Sean felt the room become cooler. His body adjusts to enable him to survive. Which response did Sean have that enabled his body to continue to function correctly?",
+    "choices": {
+      "text": [
+        "an increase in cellular respiration which increases heat production",
+        "sweating from the skin to lower inner heat levels",
+        "opening of the capillaries in the skin to obtain more heat",
+        "an increase in the metabolism which decreases heat from cells"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nSean felt the room become cooler. His body adjusts to enable him to survive. Which response did Sean have that enabled his body to continue to function correctly?\n\nChoices:\nA. an increase in cellular respiration which increases heat production\nB. sweating from the skin to lower inner heat levels\nC. opening of the capillaries in the skin to obtain more heat\nD. an increase in the metabolism which decreases heat from cells\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

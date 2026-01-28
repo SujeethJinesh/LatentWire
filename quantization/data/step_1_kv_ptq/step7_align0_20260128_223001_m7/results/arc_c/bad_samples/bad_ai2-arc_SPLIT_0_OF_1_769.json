@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 769,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MCAS_2011_8_17694",
+    "question": "Which of the following best describes the function of an encoder in a telephone communication system?",
+    "choices": {
+      "text": [
+        "converting sound to electrical impulses",
+        "receiving transmitted electrical signals",
+        "changing electrical impulses into sound",
+        "sending electrical signals through a circuit"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following best describes the function of an encoder in a telephone communication system?\n\nChoices:\nA. converting sound to electrical impulses\nB. receiving transmitted electrical signals\nC. changing electrical impulses into sound\nD. sending electrical signals through a circuit\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

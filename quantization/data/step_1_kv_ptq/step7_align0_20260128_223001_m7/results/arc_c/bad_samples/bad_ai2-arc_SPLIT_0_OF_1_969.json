@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 969,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7143010",
+    "question": "A boat traveled from a bay into a freshwater lake and brought a nonnative plant to the lake. If the new plant adapts to the freshwater environment, which is the most likely consequence in the lake?",
+    "choices": {
+      "text": [
+        "Some native plant populations will increase.",
+        "Some native plant populations will decline.",
+        "Water temperatures will fluctuate rapidly.",
+        "The water will become brackish."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA boat traveled from a bay into a freshwater lake and brought a nonnative plant to the lake. If the new plant adapts to the freshwater environment, which is the most likely consequence in the lake?\n\nChoices:\nA. Some native plant populations will increase.\nB. Some native plant populations will decline.\nC. Water temperatures will fluctuate rapidly.\nD. The water will become brackish.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,5 @@
+SETUP_DIR=runs/m7_fuser_setup_20260128_215922_m7_fuser_setup
+FUSER_RUN_ROOT=quantization/data/step_7_fuser/20260128_215928_m7_fuser
+FUSER_OUT=/workspace/c2c_checkpoints/fuser_m7_20260128_215928_m7_fuser
+FUSER_LOG=quantization/data/step_7_fuser/20260128_215928_m7_fuser/logs/m7_fuser.log
+FUSER_ERR=quantization/data/step_7_fuser/20260128_215928_m7_fuser/logs/m7_fuser.err

@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 106,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "1911",
+    "question_stem": "One of the negative consequences of offshore oil platforms is",
+    "choices": {
+      "text": [
+        "evaporation of the surrounding water",
+        "discharge of liquid petroleum in the surrounding sea",
+        "improvement in the conditions of sea life",
+        "increase in the birthrate of sea birds"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nOne of the negative consequences of offshore oil platforms is\n\nChoices:\nA. evaporation of the surrounding water\nB. discharge of liquid petroleum in the surrounding sea\nC. improvement in the conditions of sea life\nD. increase in the birthrate of sea birds\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

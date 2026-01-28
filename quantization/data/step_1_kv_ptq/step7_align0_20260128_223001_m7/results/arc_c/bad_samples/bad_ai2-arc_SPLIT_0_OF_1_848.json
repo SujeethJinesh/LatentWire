@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 848,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_409317",
+    "question": "A meteor in the atmosphere of Earth travels at 35 km/sec. It is slowed by friction with the atmosphere by 0.02 km/sec before it reaches the surface of Earth. What is the final the speed of the meteor caused by friction of the atmosphere?",
+    "choices": {
+      "text": [
+        "0.7 km/sec",
+        "34.98 km/sec",
+        "35.02 km/sec",
+        "1750 km/sec"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA meteor in the atmosphere of Earth travels at 35 km/sec. It is slowed by friction with the atmosphere by 0.02 km/sec before it reaches the surface of Earth. What is the final the speed of the meteor caused by friction of the atmosphere?\n\nChoices:\nA. 0.7 km/sec\nB. 34.98 km/sec\nC. 35.02 km/sec\nD. 1750 km/sec\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

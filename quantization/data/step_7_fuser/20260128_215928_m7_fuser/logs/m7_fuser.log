@@ -1,0 +1,17 @@
+Outputs will be saved to: /workspace/c2c_checkpoints/fuser_m7_20260128_215928_m7_fuser
+Training mode: rosetta
+Setting up models…
+Using dtype: torch.bfloat16
+Model Qwen/Qwen3-0.6B already has a chat template.
+Model meta-llama/Llama-3.2-1B-Instruct already has a chat template.
+Using last_aligned mapping strategy (target: [sources])
+Applying freeze configuration: ['teacher', 'base']
+Total parameters: 2,331,732,472
+Trainable parameters: 499,868,152
+Percentage of trainable parameters: 21.4376%
+Loading dataset…
+Loading OpenHermes dataset (split: train)...
+  - Token count filter: max 2048: 50000 -> 49571 samples
+Applied sequential batch filtering: 50000 -> 49571 samples
+Loaded 49571 samples
+Starting training…

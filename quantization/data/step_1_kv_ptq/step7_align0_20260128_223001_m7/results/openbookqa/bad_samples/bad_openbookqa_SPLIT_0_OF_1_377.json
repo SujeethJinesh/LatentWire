@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 377,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "7-208",
+    "question_stem": "After a storm",
+    "choices": {
+      "text": [
+        "ponds may dry out",
+        "flowers will wilt and wither",
+        "creek beds may be spilling over",
+        "drinking water will be in short supply"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nAfter a storm\n\nChoices:\nA. ponds may dry out\nB. flowers will wilt and wither\nC. creek beds may be spilling over\nD. drinking water will be in short supply\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 399,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "ACTAAP_2010_7_14",
+    "question": "Fish breathe oxygen that is in the water where they swim. Which best describes the oxygen that fish breathe?",
+    "choices": {
+      "text": [
+        "The oxygen is a solution that dissolves the water.",
+        "The oxygen is a substance that dissolves the water.",
+        "The oxygen is a solute that is dissolved in the water.",
+        "The oxygen is a solvent that is dissolved in the water."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nFish breathe oxygen that is in the water where they swim. Which best describes the oxygen that fish breathe?\n\nChoices:\nA. The oxygen is a solution that dissolves the water.\nB. The oxygen is a substance that dissolves the water.\nC. The oxygen is a solute that is dissolved in the water.\nD. The oxygen is a solvent that is dissolved in the water.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 465,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "661",
+    "question_stem": "The light that appears dimmest is",
+    "choices": {
+      "text": [
+        "the light in the hall",
+        "a light in the room",
+        "a star outside the window",
+        "a streetlight outside the window"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe light that appears dimmest is\n\nChoices:\nA. the light in the hall\nB. a light in the room\nC. a star outside the window\nD. a streetlight outside the window\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

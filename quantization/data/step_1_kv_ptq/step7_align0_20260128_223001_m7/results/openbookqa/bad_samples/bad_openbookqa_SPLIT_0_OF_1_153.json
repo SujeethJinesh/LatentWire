@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 153,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "9-774",
+    "question_stem": "if the population in a habitat is on a steady decline, what condition is the habitat?",
+    "choices": {
+      "text": [
+        "it is a place to emigrate from",
+        "it is an ideal habitat",
+        "it is an unsustainable habitat",
+        "it is a thriving abode"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nif the population in a habitat is on a steady decline, what condition is the habitat?\n\nChoices:\nA. it is a place to emigrate from\nB. it is an ideal habitat\nC. it is an unsustainable habitat\nD. it is a thriving abode\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

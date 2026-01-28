@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 671,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_414156",
+    "question": "A compass can be made by magnetizing a needle and setting it on a floating cork. The cork will turn so that the needle is pointed north. Which statement explains why the needle points north?",
+    "choices": {
+      "text": [
+        "The needle is measuring the air temperature.",
+        "The needle is showing the direction of the wind.",
+        "The needle is lining up with Earth's magnetic poles.",
+        "The needle is pointing to the magnetic core of Earth."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA compass can be made by magnetizing a needle and setting it on a floating cork. The cork will turn so that the needle is pointed north. Which statement explains why the needle points north?\n\nChoices:\nA. The needle is measuring the air temperature.\nB. The needle is showing the direction of the wind.\nC. The needle is lining up with Earth's magnetic poles.\nD. The needle is pointing to the magnetic core of Earth.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

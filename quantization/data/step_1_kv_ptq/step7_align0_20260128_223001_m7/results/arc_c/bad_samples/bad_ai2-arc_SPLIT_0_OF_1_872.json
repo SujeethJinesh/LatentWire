@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 872,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7221078",
+    "question": "Scientists studying a group of young sage grouse discovered a large percentage were infected with blood parasites. How will these blood parasites most likely affect the young birds?",
+    "choices": {
+      "text": [
+        "by mutating the birds' genetic traits",
+        "by altering the birds' social behaviors",
+        "by decreasing the birds' overall health",
+        "by increasing the birds' available energy"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nScientists studying a group of young sage grouse discovered a large percentage were infected with blood parasites. How will these blood parasites most likely affect the young birds?\n\nChoices:\nA. by mutating the birds' genetic traits\nB. by altering the birds' social behaviors\nC. by decreasing the birds' overall health\nD. by increasing the birds' available energy\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

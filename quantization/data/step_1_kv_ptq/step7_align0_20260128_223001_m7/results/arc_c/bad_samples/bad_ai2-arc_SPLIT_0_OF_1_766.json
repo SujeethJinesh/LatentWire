@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 766,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "LEAP__7_10352",
+    "question": "A scientist discovers that a certain substance will be useful in treating nerve damage. What is the best way she can communicate her results to the scientific community?",
+    "choices": {
+      "text": [
+        "She can call other scientists who also work in nerve research.",
+        "She can write a letter to hospitals that treat patients with nerve damage.",
+        "She can put her conclusions on a Web site that focuses on the nervous system.",
+        "She can publish her results in a scientific journal that covers issues relating to nerves."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA scientist discovers that a certain substance will be useful in treating nerve damage. What is the best way she can communicate her results to the scientific community?\n\nChoices:\nA. She can call other scientists who also work in nerve research.\nB. She can write a letter to hospitals that treat patients with nerve damage.\nC. She can put her conclusions on a Web site that focuses on the nervous system.\nD. She can publish her results in a scientific journal that covers issues relating to nerves.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

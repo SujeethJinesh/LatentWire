@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 627,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7282083",
+    "question": "What can cause an offspring to have a physical trait neither of its parents has?",
+    "choices": {
+      "text": [
+        "a mutation in a parent's body cell",
+        "a mutation in a parent's sex cell",
+        "the natural selection of a trait",
+        "the artificial selection of a trait"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat can cause an offspring to have a physical trait neither of its parents has?\n\nChoices:\nA. a mutation in a parent's body cell\nB. a mutation in a parent's sex cell\nC. the natural selection of a trait\nD. the artificial selection of a trait\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

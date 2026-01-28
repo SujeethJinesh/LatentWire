@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 42,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "1204",
+    "question_stem": "Which of these situations is an example of pollutants?",
+    "choices": {
+      "text": [
+        "plastic bags floating in the ocean",
+        "mallard ducks floating on a lake",
+        "cottonwood seeds floating in the air",
+        "cirrus clouds floating in the sky"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these situations is an example of pollutants?\n\nChoices:\nA. plastic bags floating in the ocean\nB. mallard ducks floating on a lake\nC. cottonwood seeds floating in the air\nD. cirrus clouds floating in the sky\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

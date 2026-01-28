@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 799,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_408922",
+    "question": "A chemical called DDT was once used to kill insect pests. When investigations showed this chemical was harmful to some types of birds, the use of DDT stopped. How was the scientific process best able to help scientists understand that DDT was harmful to birds?",
+    "choices": {
+      "text": [
+        "Different predictions about the chemical were made.",
+        "Tests performed on the chemical had different results.",
+        "Repeated tests on the chemical reached the same conclusion.",
+        "Different procedures were used to test the properties of the chemical."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA chemical called DDT was once used to kill insect pests. When investigations showed this chemical was harmful to some types of birds, the use of DDT stopped. How was the scientific process best able to help scientists understand that DDT was harmful to birds?\n\nChoices:\nA. Different predictions about the chemical were made.\nB. Tests performed on the chemical had different results.\nC. Repeated tests on the chemical reached the same conclusion.\nD. Different procedures were used to test the properties of the chemical.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

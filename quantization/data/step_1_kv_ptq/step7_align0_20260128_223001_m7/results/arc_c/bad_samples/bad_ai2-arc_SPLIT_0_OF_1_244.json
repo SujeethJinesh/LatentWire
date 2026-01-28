@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 244,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MDSA_2007_8_17",
+    "question": "A student has one liter of feathers and one liter of iron nails. Which statement best compares the masses of the two samples?",
+    "choices": {
+      "text": [
+        "The masses cannot be compared without a balance.",
+        "The mass of the feathers is less than the mass of the nails.",
+        "The mass of the feathers is the same as the mass of the nails.",
+        "The mass of the feathers is greater than the mass of the nails."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student has one liter of feathers and one liter of iron nails. Which statement best compares the masses of the two samples?\n\nChoices:\nA. The masses cannot be compared without a balance.\nB. The mass of the feathers is less than the mass of the nails.\nC. The mass of the feathers is the same as the mass of the nails.\nD. The mass of the feathers is greater than the mass of the nails.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

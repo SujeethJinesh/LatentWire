@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 364,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_402547",
+    "question": "A student placed a living green plant in an airtight, transparent container filled with air from the room. The container was exposed to sunlight for one week. At the end of the week the student was to determine which gases had increased in concentration. Assuming enough water and carbon dioxide were available for the proper growth of the plant, which gas would you expect to be present in increased concentration?",
+    "choices": {
+      "text": [
+        "C",
+        "NO_{2}",
+        "O_{2}",
+        "CO"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student placed a living green plant in an airtight, transparent container filled with air from the room. The container was exposed to sunlight for one week. At the end of the week the student was to determine which gases had increased in concentration. Assuming enough water and carbon dioxide were available for the proper growth of the plant, which gas would you expect to be present in increased concentration?\n\nChoices:\nA. C\nB. NO_{2}\nC. O_{2}\nD. CO\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

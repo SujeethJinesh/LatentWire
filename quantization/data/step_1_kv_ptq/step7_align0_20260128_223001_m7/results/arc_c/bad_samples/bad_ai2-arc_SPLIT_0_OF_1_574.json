@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 574,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7131530",
+    "question": "A student mixed some yellow sulfur powder with some iron filings. She was able to take the iron out of the sulfur by using a magnet. She then remixed the iron and sulfur in a test tube and heated it. After it cooled, she removed the substance from the test tube but could not separate the iron from the sulfur using the magnet. Which type of change occurred in the material when it was heated?",
+    "choices": {
+      "text": [
+        "a physical change because the iron reacted with the sulfur",
+        "a chemical change because a new substance was formed",
+        "a physical change because a compound was formed",
+        "a chemical change because a magnet had to be used"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student mixed some yellow sulfur powder with some iron filings. She was able to take the iron out of the sulfur by using a magnet. She then remixed the iron and sulfur in a test tube and heated it. After it cooled, she removed the substance from the test tube but could not separate the iron from the sulfur using the magnet. Which type of change occurred in the material when it was heated?\n\nChoices:\nA. a physical change because the iron reacted with the sulfur\nB. a chemical change because a new substance was formed\nC. a physical change because a compound was formed\nD. a chemical change because a magnet had to be used\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

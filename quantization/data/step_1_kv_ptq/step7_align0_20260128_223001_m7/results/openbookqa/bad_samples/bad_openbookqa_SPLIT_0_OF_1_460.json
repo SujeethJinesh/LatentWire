@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 460,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "1208",
+    "question_stem": "An increase in an object's temperature occurs when",
+    "choices": {
+      "text": [
+        "an orange is placed in a refrigerator",
+        "a steak is removed from the freezer to defrost",
+        "a glass of water is moved from counter top to dinner table",
+        "an ice tray is placed in a freezer"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nAn increase in an object's temperature occurs when\n\nChoices:\nA. an orange is placed in a refrigerator\nB. a steak is removed from the freezer to defrost\nC. a glass of water is moved from counter top to dinner table\nD. an ice tray is placed in a freezer\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

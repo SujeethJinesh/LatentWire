@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 563,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7219678",
+    "question": "Desalination removes salt from water. Removing salt from water can be risky because the process is expensive and slow. Sometimes the technology does not work. A beach community's surface and ground water was decreasing. The community decided to construct a large-scale plant to remove salt from the bay water. The plan to construct a salt-removing plant was accepted because the community",
+    "choices": {
+      "text": [
+        "needed increased resources.",
+        "had access to advanced technology.",
+        "had unlimited financial resources.",
+        "needed to ease social pressures."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nDesalination removes salt from water. Removing salt from water can be risky because the process is expensive and slow. Sometimes the technology does not work. A beach community's surface and ground water was decreasing. The community decided to construct a large-scale plant to remove salt from the bay water. The plan to construct a salt-removing plant was accepted because the community\n\nChoices:\nA. needed increased resources.\nB. had access to advanced technology.\nC. had unlimited financial resources.\nD. needed to ease social pressures.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

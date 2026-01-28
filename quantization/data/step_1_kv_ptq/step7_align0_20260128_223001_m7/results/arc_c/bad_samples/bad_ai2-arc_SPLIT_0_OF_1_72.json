@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 72,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7136885",
+    "question": "Some scientists predict that as greenhouse gases change the climate of Earth, the number and strength of hurricanes will increase. In order for this to occur, the climate change would have to affect Earth by changing the",
+    "choices": {
+      "text": [
+        "depths of the oceans.",
+        "speed of currents in the oceans.",
+        "chemical compositions of the oceans.",
+        "amount of dissolved oxygen in the oceans."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome scientists predict that as greenhouse gases change the climate of Earth, the number and strength of hurricanes will increase. In order for this to occur, the climate change would have to affect Earth by changing the\n\nChoices:\nA. depths of the oceans.\nB. speed of currents in the oceans.\nC. chemical compositions of the oceans.\nD. amount of dissolved oxygen in the oceans.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

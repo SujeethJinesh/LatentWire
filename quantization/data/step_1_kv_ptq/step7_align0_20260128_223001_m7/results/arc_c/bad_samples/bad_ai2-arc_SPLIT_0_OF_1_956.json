@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 956,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7005005",
+    "question": "Winds blowing inland from oceans tend to have greater moisture than winds blowing over land. How does the high moisture content affect the coastal area climate?",
+    "choices": {
+      "text": [
+        "There is less condensation.",
+        "There are fewer hurricanes.",
+        "There is greater precipitation.",
+        "There are more smog-filled areas."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWinds blowing inland from oceans tend to have greater moisture than winds blowing over land. How does the high moisture content affect the coastal area climate?\n\nChoices:\nA. There is less condensation.\nB. There are fewer hurricanes.\nC. There is greater precipitation.\nD. There are more smog-filled areas.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

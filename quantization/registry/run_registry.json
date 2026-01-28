@@ -937,12 +937,12 @@
   },
   "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align0": {
     "openbookqa": {
-      "status": "invalid",
+      "status": "complete",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_202551_m7",
-      "config_hash": "cf37c6ea2e20779f48c331c42dc21b0a4b788496",
-      "reason": "cuda_assert_invalid",
-      "timestamp": "2026-01-28T20:28:59.715388Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7",
+      "config_hash": "c23d8db17de775cc3c0201a0f7ee2d582cb6e813",
+      "reason": "",
+      "timestamp": "2026-01-28T22:31:47.658864Z"
     },
     "ai2-arc": {
       "status": "invalid",

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 303,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7099190",
+    "question": "The removal of plant material, such as grass clippings, would most likely affect an ecosystem by",
+    "choices": {
+      "text": [
+        "decreasing the potential for soil erosion.",
+        "increasing the food available for consumers.",
+        "decreasing the nutrients available for new plants.",
+        "increasing the accumulation of organic materials."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe removal of plant material, such as grass clippings, would most likely affect an ecosystem by\n\nChoices:\nA. decreasing the potential for soil erosion.\nB. increasing the food available for consumers.\nC. decreasing the nutrients available for new plants.\nD. increasing the accumulation of organic materials.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

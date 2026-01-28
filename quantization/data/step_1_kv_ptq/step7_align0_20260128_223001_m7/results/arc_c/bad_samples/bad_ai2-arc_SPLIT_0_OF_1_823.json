@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 823,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_417128",
+    "question": "Nutrient runoff can cause algal blooms in waterways. Which genetically modified organisms could help reduce algal blooms?",
+    "choices": {
+      "text": [
+        "pigs that are modified to have more fat",
+        "cows that are modified to require less feed",
+        "corn that is modified to be resistant to herbicides",
+        "soybeans that are modified to make their own insecticide"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nNutrient runoff can cause algal blooms in waterways. Which genetically modified organisms could help reduce algal blooms?\n\nChoices:\nA. pigs that are modified to have more fat\nB. cows that are modified to require less feed\nC. corn that is modified to be resistant to herbicides\nD. soybeans that are modified to make their own insecticide\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

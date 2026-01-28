@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 69,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "9-229",
+    "question_stem": "A bat flew through the sky without hitting anything due to which of these?",
+    "choices": {
+      "text": [
+        "rainy sky to fly in",
+        "fast truck to drive",
+        "a car with gasoline",
+        "surfaces to reflect sound off"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA bat flew through the sky without hitting anything due to which of these?\n\nChoices:\nA. rainy sky to fly in\nB. fast truck to drive\nC. a car with gasoline\nD. surfaces to reflect sound off\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 472,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_408872",
+    "question": "Anne's project for the science fair is about renewable energy. She wants to describe an activity that uses a renewable source of energy. Which activity should she describe in her project?",
+    "choices": {
+      "text": [
+        "fueling a car with gas",
+        "heating a house with oil",
+        "flying a kite in the wind",
+        "grilling food over charcoal"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nAnne's project for the science fair is about renewable energy. She wants to describe an activity that uses a renewable source of energy. Which activity should she describe in her project?\n\nChoices:\nA. fueling a car with gas\nB. heating a house with oil\nC. flying a kite in the wind\nD. grilling food over charcoal\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,28 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 868,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "TIMSS_2007_8_pg53",
+    "question": "Sally placed electrodes into a beaker containing a solution and connected the electrodes to a batter. Part of Sally's report stated \"Bubbles were given off at one of the electrodes.\" The statement is",
+    "choices": {
+      "text": [
+        "an observation",
+        "a prediction",
+        "a conclusion",
+        "a theory",
+        "a hypothesis"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nSally placed electrodes into a beaker containing a solution and connected the electrodes to a batter. Part of Sally's report stated \"Bubbles were given off at one of the electrodes.\" The statement is\n\nChoices:\nA. an observation\nB. a prediction\nC. a conclusion\nD. a theory\nE. a hypothesis\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 949,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_401523",
+    "question": "The nearest star to the Sun is described as being 4.3 light-years away. Which statement explains why the light-year unit of measure is used in this description?",
+    "choices": {
+      "text": [
+        "The distance is extremely large.",
+        "The distance is a rough estimate.",
+        "Only light can travel between stars.",
+        "Light signals were timed reflecting from the star."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe nearest star to the Sun is described as being 4.3 light-years away. Which statement explains why the light-year unit of measure is used in this description?\n\nChoices:\nA. The distance is extremely large.\nB. The distance is a rough estimate.\nC. Only light can travel between stars.\nD. Light signals were timed reflecting from the star.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

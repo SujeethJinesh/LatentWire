@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 223,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_406725",
+    "question": "A student wants to know how long it takes mold to form on bread. After preparing the bread for the investigation, what should the student most likely do next?",
+    "choices": {
+      "text": [
+        "Check the bread each day.",
+        "Record the temperature of the bread.",
+        "Measure the weight of the bread.",
+        "Give the bread different amounts of light."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student wants to know how long it takes mold to form on bread. After preparing the bread for the investigation, what should the student most likely do next?\n\nChoices:\nA. Check the bread each day.\nB. Record the temperature of the bread.\nC. Measure the weight of the bread.\nD. Give the bread different amounts of light.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

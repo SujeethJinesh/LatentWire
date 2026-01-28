@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 374,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MSA_2012_5_15",
+    "question": "Students made lemonade using the following recipe: 100 grams of lemon juice 100 grams of sugar 1,000 grams of water The students combined the lemon juice, sugar, and water in a container. They stirred the lemonade until all the sugar dissolved. They poured the lemonade into a plastic tray and put the tray in a freezer. The next day, the students removed the tray from the freezer and observed that the lemonade was a solid. Which statement best explains why the lemonade became a solid?",
+    "choices": {
+      "text": [
+        "The lemonade was cooled to 100°C.",
+        "The lemonade was heated to 100°C.",
+        "The lemonade was cooled below 0°C.",
+        "The lemonade was heated above 0°C."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents made lemonade using the following recipe: 100 grams of lemon juice 100 grams of sugar 1,000 grams of water The students combined the lemon juice, sugar, and water in a container. They stirred the lemonade until all the sugar dissolved. They poured the lemonade into a plastic tray and put the tray in a freezer. The next day, the students removed the tray from the freezer and observed that the lemonade was a solid. Which statement best explains why the lemonade became a solid?\n\nChoices:\nA. The lemonade was cooled to 100°C.\nB. The lemonade was heated to 100°C.\nC. The lemonade was cooled below 0°C.\nD. The lemonade was heated above 0°C.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

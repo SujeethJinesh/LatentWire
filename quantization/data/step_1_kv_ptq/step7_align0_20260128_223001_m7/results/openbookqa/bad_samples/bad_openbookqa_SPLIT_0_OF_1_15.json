@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 15,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "7-414",
+    "question_stem": "As gasoline costs rise, alternative fuels are being used, which means that",
+    "choices": {
+      "text": [
+        "wind power will be expensive",
+        "gas costs will rise",
+        "oil costs will be maintained",
+        "gasoline will be needed less"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nAs gasoline costs rise, alternative fuels are being used, which means that\n\nChoices:\nA. wind power will be expensive\nB. gas costs will rise\nC. oil costs will be maintained\nD. gasoline will be needed less\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

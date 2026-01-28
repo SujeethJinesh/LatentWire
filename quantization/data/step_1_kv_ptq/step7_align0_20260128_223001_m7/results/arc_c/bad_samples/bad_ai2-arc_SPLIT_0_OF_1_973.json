@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 973,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7218015",
+    "question": "Both southern California and southern Nevada are arid to semi-arid regions. Which of these has a large influence on the climate in southern California but has little influence on the climate in southern Nevada?",
+    "choices": {
+      "text": [
+        "availability of fresh water",
+        "varieties of plant life",
+        "changes in elevation",
+        "proximity to the ocean"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nBoth southern California and southern Nevada are arid to semi-arid regions. Which of these has a large influence on the climate in southern California but has little influence on the climate in southern Nevada?\n\nChoices:\nA. availability of fresh water\nB. varieties of plant life\nC. changes in elevation\nD. proximity to the ocean\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

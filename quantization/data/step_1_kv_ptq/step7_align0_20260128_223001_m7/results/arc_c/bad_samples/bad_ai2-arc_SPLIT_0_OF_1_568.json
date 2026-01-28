@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 568,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_407710",
+    "question": "Brianna thinks larger pumpkin seeds will sprout faster than smaller pumpkin seeds. She investigates by planting four seeds of each size in the same container. What term is used to describe what Brianna thinks will happen?",
+    "choices": {
+      "text": [
+        "a trial",
+        "a result",
+        "a variable",
+        "a hypothesis"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nBrianna thinks larger pumpkin seeds will sprout faster than smaller pumpkin seeds. She investigates by planting four seeds of each size in the same container. What term is used to describe what Brianna thinks will happen?\n\nChoices:\nA. a trial\nB. a result\nC. a variable\nD. a hypothesis\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

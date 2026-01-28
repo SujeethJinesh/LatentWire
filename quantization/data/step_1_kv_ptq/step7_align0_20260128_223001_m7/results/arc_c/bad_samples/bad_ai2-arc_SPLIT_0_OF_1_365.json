@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 365,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7133945",
+    "question": "In order to determine if two atoms are copper (Cu) atoms, what must be the same for each?",
+    "choices": {
+      "text": [
+        "the number of valence electrons",
+        "the number of protons",
+        "the charge of the atom",
+        "the size of the atom"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn order to determine if two atoms are copper (Cu) atoms, what must be the same for each?\n\nChoices:\nA. the number of valence electrons\nB. the number of protons\nC. the charge of the atom\nD. the size of the atom\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

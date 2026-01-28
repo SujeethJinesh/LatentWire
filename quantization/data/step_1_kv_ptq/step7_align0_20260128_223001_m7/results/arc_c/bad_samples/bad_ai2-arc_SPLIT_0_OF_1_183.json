@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 183,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_402994",
+    "question": "A glass of cold water is set on a desktop. Later that day, beads of water had formed on the outside of the glass. The most likely explanation for the beads of water is that",
+    "choices": {
+      "text": [
+        "some water dripped over the side.",
+        "the water soaked through the glass.",
+        "water vapor condensed on the sides.",
+        "someone sprayed the glass with water."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA glass of cold water is set on a desktop. Later that day, beads of water had formed on the outside of the glass. The most likely explanation for the beads of water is that\n\nChoices:\nA. some water dripped over the side.\nB. the water soaked through the glass.\nC. water vapor condensed on the sides.\nD. someone sprayed the glass with water.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

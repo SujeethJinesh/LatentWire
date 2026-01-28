@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 701,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MCAS_2002_8_17",
+    "question": "Which of the following is a characteristic of elements?",
+    "choices": {
+      "text": [
+        "They break down when reacting with acids.",
+        "They can be altered with an electric current.",
+        "They are always metals.",
+        "They cannot be divided into smaller substances."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following is a characteristic of elements?\n\nChoices:\nA. They break down when reacting with acids.\nB. They can be altered with an electric current.\nC. They are always metals.\nD. They cannot be divided into smaller substances.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

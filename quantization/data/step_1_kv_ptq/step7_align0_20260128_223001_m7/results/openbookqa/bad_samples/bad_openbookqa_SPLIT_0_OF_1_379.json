@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 379,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "998",
+    "question_stem": "Which animal is hiding from a predator?",
+    "choices": {
+      "text": [
+        "a tadpole losing its tail as it grows",
+        "an angler fish using its Esca to lure another fish",
+        "an octopus mimicking the color and texture of a rocky outcrop",
+        "a great white shark breaching the water's surface"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich animal is hiding from a predator?\n\nChoices:\nA. a tadpole losing its tail as it grows\nB. an angler fish using its Esca to lure another fish\nC. an octopus mimicking the color and texture of a rocky outcrop\nD. a great white shark breaching the water's surface\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}
