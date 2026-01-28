@@ -22,6 +22,9 @@ fi
 
 CONDA_ENV="${CONDA_ENV:-rosetta}"
 CONDA_ENV_PATH="${CONDA_ENV_PATH:-/projects/m000066/${USER}/conda/envs/${CONDA_ENV}}"
+if [ ! -x "${CONDA_ENV_PATH}/bin/python" ] && [ -x "/workspace/conda/envs/${CONDA_ENV}/bin/python" ]; then
+  CONDA_ENV_PATH="/workspace/conda/envs/${CONDA_ENV}"
+fi
 if [ -x "${CONDA_ENV_PATH}/bin/python" ]; then
   export CONDA_DEFAULT_ENV="${CONDA_ENV}"
   export CONDA_PREFIX="${CONDA_ENV_PATH}"
@@ -36,8 +39,8 @@ else
     echo "ERROR: conda not found in PATH. Load your conda module and retry." >&2
     exit 1
   fi
-  PYTHON=( "${CONDA_EXE}" run -n "${CONDA_ENV}" python )
-  echo "Using conda run: ${CONDA_EXE} run -n ${CONDA_ENV} python"
+  PYTHON=( "${CONDA_EXE}" run --no-capture-output -n "${CONDA_ENV}" python )
+  echo "Using conda run: ${CONDA_EXE} run --no-capture-output -n ${CONDA_ENV} python"
 fi
 
 PROJECT_ROOT="${PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-${PWD}}}"
@@ -650,20 +653,30 @@ if [ "${RUN_MILESTONE_5}" = "1" ]; then
   M5_OUTPUT_DIR="${M5_OUTPUT_DIR:-${C2C_CKPT_ROOT}/qat_${RUN_TAG_PREFIX}}"
   mkdir -p "${M5_RUN_ROOT}/configs" "${M5_RUN_ROOT}/logs" "${M5_RUN_ROOT}/manifests"
 
-  "${PYTHON[@]}" - <<'PY' "${M5_RECIPE}" "${M5_RUN_ROOT}/configs/m5_train.json" "${M5_OUTPUT_DIR}"
+  if [ ! -f "${M5_RECIPE}" ]; then
+    if [ -f "quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8.json" ]; then
+      echo "WARN: M5_RECIPE missing (${M5_RECIPE}); falling back to C2C_0.6+0.5_qat_int8.json"
+      M5_RECIPE="quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8.json"
+    else
+      echo "ERROR: M5_RECIPE not found: ${M5_RECIPE}" >&2
+      exit 1
+    fi
+  fi
+
+  cp "${M5_RECIPE}" "${M5_RUN_ROOT}/configs/m5_train.json"
+  "${PYTHON[@]}" - <<'PY' "${M5_RUN_ROOT}/configs/m5_train.json" "${M5_OUTPUT_DIR}"
 import json
 import sys
 from pathlib import Path
 
-src = Path(sys.argv[1])
-dst = Path(sys.argv[2])
-out_dir = sys.argv[3]
+cfg_path = Path(sys.argv[1])
+out_dir = sys.argv[2]
 
-data = json.loads(src.read_text())
+data = json.loads(cfg_path.read_text())
 data.setdefault("output", {})
 data["output"]["output_dir"] = out_dir
-dst.write_text(json.dumps(data, indent=2) + "\n")
-print(f"Wrote M5 recipe: {dst}")
+cfg_path.write_text(json.dumps(data, indent=2) + "\n")
+print(f"Wrote M5 recipe: {cfg_path}")
 PY
 
   "${PYTHON[@]}" quantization/C2C/script/train/SFT_train.py \
