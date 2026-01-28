@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1154,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "ACTAAP_2014_7_3",
+    "question": "Which statement best explains why summer days are warmer than winter days in Arkansas?",
+    "choices": {
+      "text": [
+        "The Sun is closer to Earth in the summer than in the winter.",
+        "The Sun has more sunspots in the summer than in the winter.",
+        "Earth's western hemisphere is tilted toward the Sun during the summer.",
+        "Earth's northern hemisphere is tilted toward the Sun during the summer."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement best explains why summer days are warmer than winter days in Arkansas?\n\nChoices:\nA. The Sun is closer to Earth in the summer than in the winter.\nB. The Sun has more sunspots in the summer than in the winter.\nC. Earth's western hemisphere is tilted toward the Sun during the summer.\nD. Earth's northern hemisphere is tilted toward the Sun during the summer.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

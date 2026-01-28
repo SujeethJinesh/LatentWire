@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1085,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7202843",
+    "question": "Burning fossil fuels produces sulfur dioxide (SO2) and nitrogen oxide (NO). These compounds react with water vapor to produce acid rain. What is the most likely effect of acid rain on the environment where it falls?",
+    "choices": {
+      "text": [
+        "The plants and animals in lakes and ponds will be harmed.",
+        "The soil in the area will become more alkaline.",
+        "The thickness of the ozone layer will decrease.",
+        "Levels of air pollution will increase."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nBurning fossil fuels produces sulfur dioxide (SO2) and nitrogen oxide (NO). These compounds react with water vapor to produce acid rain. What is the most likely effect of acid rain on the environment where it falls?\n\nChoices:\nA. The plants and animals in lakes and ponds will be harmed.\nB. The soil in the area will become more alkaline.\nC. The thickness of the ozone layer will decrease.\nD. Levels of air pollution will increase.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

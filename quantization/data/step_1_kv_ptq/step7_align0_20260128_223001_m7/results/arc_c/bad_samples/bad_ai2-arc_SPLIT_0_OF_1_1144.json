@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1144,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7239383",
+    "question": "A geological change separates a wolf population into two new populations. Genetic drift directly causes which effect in the two new populations over time?",
+    "choices": {
+      "text": [
+        "Their mutation rates increase.",
+        "The presence and distribution of alleles diverge.",
+        "They respond differently to the same selection pressures.",
+        "They interbreed to maintain uniformity of traits."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA geological change separates a wolf population into two new populations. Genetic drift directly causes which effect in the two new populations over time?\n\nChoices:\nA. Their mutation rates increase.\nB. The presence and distribution of alleles diverge.\nC. They respond differently to the same selection pressures.\nD. They interbreed to maintain uniformity of traits.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

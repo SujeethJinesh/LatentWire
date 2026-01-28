@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1045,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MCAS_2014_8_6",
+    "question": "The \"Ring of Fire\" is a long chain of volcanoes that encircles the Pacific Ocean. Which of the following is the best explanation for the arrangement of these volcanoes?",
+    "choices": {
+      "text": [
+        "They outline the crater caused by the impact of an asteroid.",
+        "They follow the shape of the adjacent tectonic plates under the sea.",
+        "One volcano usually triggers a second volcano with its hot magma.",
+        "Volcanoes always form in rings because of underwater convection currents."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe \"Ring of Fire\" is a long chain of volcanoes that encircles the Pacific Ocean. Which of the following is the best explanation for the arrangement of these volcanoes?\n\nChoices:\nA. They outline the crater caused by the impact of an asteroid.\nB. They follow the shape of the adjacent tectonic plates under the sea.\nC. One volcano usually triggers a second volcano with its hot magma.\nD. Volcanoes always form in rings because of underwater convection currents.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

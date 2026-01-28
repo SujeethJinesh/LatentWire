@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1093,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "LEAP__7_10351",
+    "question": "Which statement best describes the roles of photosynthesis and respiration in the carbon cycle?",
+    "choices": {
+      "text": [
+        "Respiration and photosynthesis both add carbon to the atmosphere.",
+        "Respiration and photosynthesis both remove carbon from the atmosphere.",
+        "Respiration adds carbon to the atmosphere, while photosynthesis removes carbon from the atmosphere.",
+        "Photosynthesis adds carbon to the atmosphere, while respiration removes carbon from the atmosphere."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement best describes the roles of photosynthesis and respiration in the carbon cycle?\n\nChoices:\nA. Respiration and photosynthesis both add carbon to the atmosphere.\nB. Respiration and photosynthesis both remove carbon from the atmosphere.\nC. Respiration adds carbon to the atmosphere, while photosynthesis removes carbon from the atmosphere.\nD. Photosynthesis adds carbon to the atmosphere, while respiration removes carbon from the atmosphere.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

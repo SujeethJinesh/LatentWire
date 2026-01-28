@@ -11522,3 +11522,1250 @@ Using 1 GPUs: [0]
   warnings.warn(
 /workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
+Please install qwen-vl-utils to use VLM models
+Model Qwen/Qwen3-0.6B already has a chat template.
+Evaluating SPLIT_0_OF_1 (generate):   0%|          | 0/172 [00:00<?, ?it/s]/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [0,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [1,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [2,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [3,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [4,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [5,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [6,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [7,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [8,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [9,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [10,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [11,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [12,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [13,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [14,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [15,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [16,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [17,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [18,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [19,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [20,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [21,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [22,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [23,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [24,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [25,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [26,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [27,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [28,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [29,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [30,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [799,0,0], thread: [31,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [96,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [97,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [98,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [99,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [100,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [101,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [102,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [103,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [104,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [105,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [106,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [107,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [108,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [109,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [110,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [111,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [112,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [113,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [114,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [115,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [116,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [117,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [118,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [119,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [120,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [121,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [122,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [123,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [124,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [125,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [126,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [798,0,0], thread: [127,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [0,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [1,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [2,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [3,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [4,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [5,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [6,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [7,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [8,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [9,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [10,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [11,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [12,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [13,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [14,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [15,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [16,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [17,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [18,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [19,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [20,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [21,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [22,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [23,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [24,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [25,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [26,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [27,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [28,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [29,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [30,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [31,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [0,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [1,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [2,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [3,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [4,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [5,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [6,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [7,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [8,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [9,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [10,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [11,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [12,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [13,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [14,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [15,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [16,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [17,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [18,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [19,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [20,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [21,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [22,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [23,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [24,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [25,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [26,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [27,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [28,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [29,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [30,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [31,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [32,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [33,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [34,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [35,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [36,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [37,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [38,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [39,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [40,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [41,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [42,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [43,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [44,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [45,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [46,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [47,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [48,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [49,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [50,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [51,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [52,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [53,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [54,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [55,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [56,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [57,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [58,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [59,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [60,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [61,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [62,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [750,0,0], thread: [63,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [96,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [97,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [98,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [99,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [100,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [101,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [102,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [103,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [104,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [105,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [106,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [107,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [108,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [109,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [110,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [111,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [112,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [113,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [114,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [115,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [116,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [117,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [118,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [119,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [120,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [121,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [122,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [123,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [124,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [125,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [126,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [751,0,0], thread: [127,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [0,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [1,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [2,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [3,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [4,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [5,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [6,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [7,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [8,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [9,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [10,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [11,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [12,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [13,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [14,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [15,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [16,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [17,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [18,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [19,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [20,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [21,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [22,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [23,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [24,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [25,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [26,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [27,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [28,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [29,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [30,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+/pytorch/aten/src/ATen/native/cuda/Indexing.cu:1422: indexSelectLargeIndex: block: [797,0,0], thread: [31,0,0] Assertion `srcIndex < srcSelectDimSize` failed.
+Evaluating SPLIT_0_OF_1 (generate):   1%|          | 1/172 [00:00<02:49,  1.01it/s]Error processing question 1000 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1000.json
+Error processing question 1001 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1001.json
+Error processing question 1002 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1002.json
+Error processing question 1003 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1003.json
+Error processing question 1004 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1004.json
+Error processing question 1005 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1005.json
+Error processing question 1006 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1006.json
+Error processing question 1007 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1007.json
+Error processing question 1008 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1008.json
+Error processing question 1009 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1009.json
+Error processing question 1010 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1010.json
+Error processing question 1011 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1011.json
+Error processing question 1012 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1012.json
+Error processing question 1013 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1013.json
+Error processing question 1014 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1014.json
+Error processing question 1015 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1015.json
+Error processing question 1016 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1016.json
+Error processing question 1017 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1017.json
+Error processing question 1018 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1018.json
+Error processing question 1019 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1019.json
+Error processing question 1020 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1020.json
+Error processing question 1021 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1021.json
+Error processing question 1022 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1022.json
+Error processing question 1023 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1023.json
+Error processing question 1024 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1024.json
+Error processing question 1025 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1025.json
+Error processing question 1026 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1026.json
+Error processing question 1027 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1027.json
+Error processing question 1028 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1028.json
+Error processing question 1029 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1029.json
+Error processing question 1030 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1030.json
+Error processing question 1031 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1031.json
+Error processing question 1032 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1032.json
+Error processing question 1033 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1033.json
+Error processing question 1034 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1034.json
+Error processing question 1035 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1035.json
+Error processing question 1036 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1036.json
+Error processing question 1037 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1037.json
+Error processing question 1038 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1038.json
+Error processing question 1039 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1039.json
+Error processing question 1040 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1040.json
+Error processing question 1041 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1041.json
+Error processing question 1042 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1042.json
+Error processing question 1043 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1043.json
+Error processing question 1044 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1044.json
+Error processing question 1045 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1045.json
+Error processing question 1046 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1046.json
+Error processing question 1047 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1047.json
+Error processing question 1048 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1048.json
+Error processing question 1049 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1049.json
+Error processing question 1050 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1050.json
+Error processing question 1051 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1051.json
+Error processing question 1052 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1052.json
+Error processing question 1053 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1053.json
+Error processing question 1054 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1054.json
+Error processing question 1055 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1055.json
+Error processing question 1056 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1056.json
+Error processing question 1057 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1057.json
+Error processing question 1058 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1058.json
+Error processing question 1059 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1059.json
+Error processing question 1060 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1060.json
+Error processing question 1061 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1061.json
+Error processing question 1062 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1062.json
+Error processing question 1063 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1063.json
+Error processing question 1064 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1064.json
+Error processing question 1065 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1065.json
+Error processing question 1066 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1066.json
+Error processing question 1067 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1067.json
+Error processing question 1068 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1068.json
+Error processing question 1069 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1069.json
+Error processing question 1070 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1070.json
+Error processing question 1071 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1071.json
+Error processing question 1072 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1072.json
+Error processing question 1073 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1073.json
+Error processing question 1074 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1074.json
+Error processing question 1075 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1075.json
+Error processing question 1076 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1076.json
+Error processing question 1077 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1077.json
+Error processing question 1078 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1078.json
+Error processing question 1079 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1079.json
+Evaluating SPLIT_0_OF_1 (generate):  55%|█████▍    | 94/172 [00:01<00:00, 117.70it/s]Error processing question 1080 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1080.json
+Error processing question 1081 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1081.json
+Error processing question 1082 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1082.json
+Error processing question 1083 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1083.json
+Error processing question 1084 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1084.json
+Error processing question 1085 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1085.json
+Error processing question 1086 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1086.json
+Error processing question 1087 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1087.json
+Error processing question 1088 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1088.json
+Error processing question 1089 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1089.json
+Error processing question 1090 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1090.json
+Error processing question 1091 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1091.json
+Error processing question 1093 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1093.json
+Error processing question 1094 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1094.json
+Error processing question 1095 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1095.json
+Error processing question 1096 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1096.json
+Error processing question 1097 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1097.json
+Error processing question 1098 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1098.json
+Error processing question 1099 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1099.json
+Error processing question 1100 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1100.json
+Error processing question 1101 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1101.json
+Error processing question 1102 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1102.json
+Error processing question 1103 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1103.json
+Error processing question 1104 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1104.json
+Error processing question 1105 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1105.json
+Error processing question 1106 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1106.json
+Error processing question 1107 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1107.json
+Error processing question 1108 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1108.json
+Error processing question 1109 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1109.json
+Error processing question 1110 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1110.json
+Error processing question 1111 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1111.json
+Error processing question 1112 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1112.json
+Error processing question 1114 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1114.json
+Error processing question 1115 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1115.json
+Error processing question 1116 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1116.json
+Error processing question 1117 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1117.json
+Error processing question 1118 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1118.json
+Error processing question 1119 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1119.json
+Error processing question 1120 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1120.json
+Error processing question 1121 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1121.json
+Error processing question 1122 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1122.json
+Error processing question 1123 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1123.json
+Error processing question 1124 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1124.json
+Error processing question 1125 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1125.json
+Error processing question 1126 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1126.json
+Error processing question 1127 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1127.json
+Error processing question 1128 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1128.json
+Error processing question 1129 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1129.json
+Error processing question 1130 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1130.json
+Error processing question 1131 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1131.json
+Error processing question 1132 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1132.json
+Error processing question 1133 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1133.json
+Error processing question 1134 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1134.json
+Error processing question 1135 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1135.json
+Error processing question 1136 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1136.json
+Error processing question 1137 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1137.json
+Error processing question 1138 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1138.json
+Error processing question 1139 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1139.json
+Error processing question 1140 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1140.json
+Error processing question 1141 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1141.json
+Error processing question 1142 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1142.json
+Error processing question 1143 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1143.json
+Error processing question 1144 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1144.json
+Error processing question 1145 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1145.json
+Error processing question 1146 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1146.json
+Error processing question 1147 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1147.json
+Error processing question 1148 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1148.json
+Error processing question 1149 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1149.json
+Error processing question 1150 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1150.json
+Error processing question 1151 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1151.json
+Error processing question 1153 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1153.json
+Error processing question 1154 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1154.json
+Error processing question 1155 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1155.json
+Error processing question 1156 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1156.json
+Error processing question 1157 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1157.json
+Error processing question 1158 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1158.json
+Error processing question 1159 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1159.json
+Error processing question 1160 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1160.json
+Error processing question 1161 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1161.json
+Error processing question 1162 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1162.json
+Evaluating SPLIT_0_OF_1 (generate): 100%|██████████| 172/172 [00:01<00:00, 147.19it/s]
+Error processing question 1163 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1163.json
+Error processing question 1164 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1164.json
+Error processing question 1165 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1165.json
+Error processing question 1166 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1166.json
+Error processing question 1167 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1167.json
+Error processing question 1168 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1168.json
+Error processing question 1169 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1169.json
+Error processing question 1170 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1170.json
+Error processing question 1171 in subject SPLIT_0_OF_1: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Saved bad sample to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/bad_samples/bad_ai2-arc_SPLIT_0_OF_1_1171.json
+SPLIT_0_OF_1 processed 0 samples, skipped 172
+Please install qwen-vl-utils to use VLM models
+Summary saved to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7/results/arc_c/Rosetta_ai2-arc_generate_20260128_223416_summary.json
+
+Evaluation complete!
+Overall accuracy: 0.00%

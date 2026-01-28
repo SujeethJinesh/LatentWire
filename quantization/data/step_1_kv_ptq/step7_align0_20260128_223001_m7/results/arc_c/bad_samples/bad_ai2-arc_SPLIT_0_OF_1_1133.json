@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1133,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7213413",
+    "question": "A group of science students used water, filter paper, and a hot plate to separate a mixture of salt and sand. Which of the following did the students most likely do first?",
+    "choices": {
+      "text": [
+        "shake the mixture until the sand settles on the bottom",
+        "pour the mixture through the filter paper",
+        "heat the mixture on the hot plate",
+        "dissolve the salt by adding water to the mixture"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA group of science students used water, filter paper, and a hot plate to separate a mixture of salt and sand. Which of the following did the students most likely do first?\n\nChoices:\nA. shake the mixture until the sand settles on the bottom\nB. pour the mixture through the filter paper\nC. heat the mixture on the hot plate\nD. dissolve the salt by adding water to the mixture\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

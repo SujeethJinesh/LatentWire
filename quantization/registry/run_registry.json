@@ -945,30 +945,30 @@
       "timestamp": "2026-01-28T22:31:47.658864Z"
     },
     "ai2-arc": {
-      "status": "invalid",
+      "status": "complete",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_202551_m7",
-      "config_hash": "78b37aaa4d1045e52bfa891fa565b728e116e473",
-      "reason": "cuda_assert_invalid",
-      "timestamp": "2026-01-28T20:33:13.173710Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7",
+      "config_hash": "dff63e71c0913d86c5090a15b406e9dc5c2e809a",
+      "reason": "",
+      "timestamp": "2026-01-28T22:34:18.502898Z"
     }
   },
   "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align1": {
     "openbookqa": {
-      "status": "invalid",
+      "status": "complete",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_202551_m7",
-      "config_hash": "e35916db4b9c932cbf29c291d374008f3fe4c859",
-      "reason": "cuda_assert_invalid",
-      "timestamp": "2026-01-28T20:36:35.855817Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_223001_m7",
+      "config_hash": "49e512f7d732d5cdf106e89bbfcc49157a1d105b",
+      "reason": "",
+      "timestamp": "2026-01-28T22:39:23.415836Z"
     },
     "ai2-arc": {
-      "status": "invalid",
+      "status": "complete",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_202551_m7",
-      "config_hash": "0f789e69fba45e94176af6e07fe0838c09a493bd",
-      "reason": "cuda_assert_invalid",
-      "timestamp": "2026-01-28T20:42:02.259380Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_223001_m7",
+      "config_hash": "960bb759d2fbc87ed715ab0a1ac6f7cea5fc5f47",
+      "reason": "",
+      "timestamp": "2026-01-28T22:51:01.791251Z"
     }
   },
   "m5|qat|int8": {
