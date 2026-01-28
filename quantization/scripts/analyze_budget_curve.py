@@ -400,34 +400,70 @@ def plot_budget_curve(rows, out_dir, install_deps=False):
         import matplotlib.pyplot as plt
 
     datasets = sorted({row["dataset"] for row in rows})
-    scheme_colors = {"fp16": "#333333", "int8": "#1f77b4", "int4": "#ff7f0e"}
-    order_markers = {"front": "o", "back": "s"}
+    scheme_colors = {"fp16": "#111111", "int8": "#1f77b4", "int4": "#ff7f0e", "nf4": "#d62728", "fp8": "#9467bd"}
+    order_styles = {"front": ("-", "o"), "back": ("--", "s")}
+    plt.rcParams.update({
+        "font.size": 11,
+        "axes.titlesize": 13,
+        "axes.labelsize": 12,
+        "legend.fontsize": 9,
+        "xtick.labelsize": 10,
+        "ytick.labelsize": 10,
+    })
 
     for dataset in datasets:
-        fig, ax = plt.subplots(figsize=(8, 5))
-        for row in sorted(rows, key=lambda r: r["bytes_per_sequence"]):
-            if row["dataset"] != dataset:
-                continue
+        fig, ax = plt.subplots(figsize=(9.5, 5.5))
+        dataset_rows = [r for r in rows if r["dataset"] == dataset]
+        # Group by scheme + order for connected curves
+        groups = {}
+        for row in dataset_rows:
             scheme = row["kv_quant_scheme"]
             order = row["kv_cache_order_mode"]
-            ax.scatter(
-                row["bytes_per_sequence"],
-                row["accuracy"],
-                c=scheme_colors.get(scheme, "#999999"),
-                marker=order_markers.get(order, "x"),
-                label=f"{scheme}/{order}",
+            key = (scheme, order)
+            groups.setdefault(key, []).append(row)
+
+        for (scheme, order), group in groups.items():
+            group = sorted(group, key=lambda r: r["bytes_per_sequence"])
+            x = [r["bytes_per_sequence_mib"] for r in group]
+            y = [r["accuracy"] for r in group]
+            linestyle, marker = order_styles.get(order, ("-", "o"))
+            ax.plot(
+                x,
+                y,
+                linestyle=linestyle,
+                marker=marker,
+                color=scheme_colors.get(scheme, "#999999"),
+                label=f"{scheme.upper()} / {order}",
             )
-        handles, labels = ax.get_legend_handles_labels()
-        if labels:
-            by_label = dict(zip(labels, handles))
-            ax.legend(by_label.values(), by_label.keys(), fontsize=9)
-        ax.set_xlabel("Bytes per sequence (approx)")
+            # Annotate cache proportion for readability
+            for row in group:
+                prop = row.get("kv_cache_proportion")
+                if prop is None:
+                    continue
+                ax.annotate(
+                    f"{prop:.2f}",
+                    (row["bytes_per_sequence_mib"], row["accuracy"]),
+                    textcoords="offset points",
+                    xytext=(4, 4),
+                    fontsize=8,
+                    color=scheme_colors.get(scheme, "#666666"),
+                )
+
+        ax.set_xlabel("MiB per sequence (approx)")
         ax.set_ylabel("Accuracy")
-        ax.set_title(f"Accuracy vs Bytes ({dataset})")
+        ax.set_title(f"Accuracy vs Communication Budget ({dataset})")
         ax.grid(True, linestyle="--", alpha=0.4)
+        ax.legend(title="Scheme / Order", loc="best")
+        # Log scale helps separate FP16/INT8/INT4 points if span is wide.
+        try:
+            xs = [r["bytes_per_sequence_mib"] for r in dataset_rows if r["bytes_per_sequence_mib"]]
+            if xs and max(xs) / min(xs) >= 4:
+                ax.set_xscale("log")
+        except Exception:
+            pass
         out_path = out_dir / f"budget_curve_{dataset}.png"
         fig.tight_layout()
-        fig.savefig(out_path, dpi=200)
+        fig.savefig(out_path, dpi=250)
         plt.close(fig)
 
 

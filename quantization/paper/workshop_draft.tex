@@ -1,6 +1,6 @@
 \documentclass[10pt]{article}
 
-% Minimal workshop-friendly template (replace with official when ready)
+% Minimal template (replace with official main-conference template when ready)
 \usepackage[margin=1in]{geometry}
 \usepackage{times}
 \usepackage{amsmath,amssymb}
@@ -17,51 +17,75 @@
 \maketitle
 
 \begin{abstract}
-We study precision-aware communication between heterogeneous LLMs by quantizing KV-cache transfers in Cache-to-Cache (C2C). Our goal is to reduce bandwidth and memory while preserving accuracy. We present post-training quantization, cache-length reduction, and token-level selective transfer with sparse fusion, and show accuracy vs.\ bytes transmitted curves. This draft contains placeholders for results.
+We study communication-efficient transfer between heterogeneous large language models (LLMs) by quantizing Cache-to-Cache (C2C) KV-cache transfer. Our goal is to reduce bandwidth and memory while preserving accuracy. We present post-training quantization (INT8/INT4), cache-length reduction, and accuracy-versus-bytes curves for a heterogeneous model pair. Empirically, quantization is nearly lossless, while cache-length pruning reveals a strong front/back asymmetry that is critical for budgeted transfer. We release a reproducible evaluation pipeline and analysis scripts, and we outline a main-conference path toward sparse, projector-aware token selection and mixed precision.
 \end{abstract}
 
 \section{Introduction}
-Large language models (LLMs) often communicate via text, which is slow and lossy. Cache-to-Cache (C2C) communicates via KV-cache projection and fusion, but does not address precision constraints. We ask: \textit{How low can KV precision go before accuracy collapses, and can we recover performance under tight bandwidth budgets?}
+Large language models (LLMs) often communicate via text, which is slow and lossy. Cache-to-Cache (C2C) communicates via KV-cache projection and fusion, but does not address precision or bandwidth constraints. We ask: \emph{How low can KV precision go before accuracy collapses, and can we recover performance under tight communication budgets?}
+
+\paragraph{Contributions.}
+\begin{itemize}[leftmargin=*]
+  \item We introduce a precision-aware C2C evaluation pipeline and quantify INT8/INT4 PTQ effects on C2C accuracy.
+  \item We study cache-length reduction as a second budget axis and show that back-pruning consistently outperforms front-pruning.
+  \item We report accuracy vs. communication-budget curves that jointly compare precision and cache length.
+  \item We provide a reproducible benchmarking setup and analysis scripts to support extensions to QAT, mixed precision, heterogeneity, and selective transfer.
+\end{itemize}
 
 \section{Background and Motivation}
-C2C projects sharer KV caches into receiver space and fuses them with learned gates. This retains richer semantics than text relay. However, KV caches are large: they scale with sequence length, heads, and hidden size. Quantization and cache-length reduction can shrink the communication footprint.
+C2C projects sharer KV caches into receiver space and fuses them with learned gates, preserving rich semantics compared to text relay. However, KV caches are large: they scale with sequence length, KV heads, and head dimension. Quantization and cache-length reduction can shrink the communication footprint while retaining accuracy. This work reframes C2C through a communication-budget lens.
 
 \section{Related Work}
-Layer-selective cache communication has been explored in KVComm and Q-KVComm, which emphasize selecting layers and quantizing shared caches (\href{https://arxiv.org/abs/2510.03346}{KVComm}, \href{https://arxiv.org/abs/2512.17914}{Q-KVComm}). Token-level KV selection has been studied for single-model inference (e.g., ZipCache and TokenSelect), and value-norm criteria have been shown to outperform attention-only scores for token importance (VATP) (\href{https://arxiv.org/abs/2405.14256}{ZipCache}, \href{https://aclanthology.org/2025.emnlp-main.1079/}{TokenSelect}, \href{https://arxiv.org/abs/2406.12335}{VATP}). Our work is grounded in C2C’s cache projection and fusion (\href{https://arxiv.org/abs/2510.03215}{C2C}) and relates to recent KV-cache alignment and latent communication efforts (\href{https://arxiv.org/abs/2601.06123}{KV Cache Alignment}, \href{https://arxiv.org/abs/2511.20639}{Latent Collaboration}). Our contribution is distinct: we apply projector-aware, token-level sparsity within a C2C projector+fuser pipeline for heterogeneous models, and quantify accuracy-per-byte tradeoffs.
+\textbf{C2C.} Cache-to-Cache (C2C) enables direct semantic communication by projecting and fusing a sharer model's KV cache into a receiver's KV cache with learnable gates, avoiding intermediate text generation \cite{c2c}.
+
+\textbf{KV communication across agents.} KVComm aligns KV caches across diverging prefixes using training-free offset correction with online anchors \cite{kvcomm}. Q-KVComm adds adaptive layer-wise quantization, hybrid information extraction, and heterogeneous calibration for compressed KV transfer \cite{qkvcomm}. These works focus on multi-agent cache reuse/compression; our work studies quantization and cache-length pruning within the C2C projector+fuser pipeline.
+
+\textbf{Latent collaboration and cache alignment.} KV cache alignment learns a shared latent space with adapters to align KV caches across models \cite{kvalign}. LatentMAS enables latent-space collaboration with shared working memory without extra training \cite{latentmas}. Our approach stays within C2C's KV fusion but emphasizes communication budgets and precision/length tradeoffs.
+
+\textbf{Token selection and KV compression.} Token-level KV selection and value-norm importance improve long-context inference for a single model (ZipCache, TokenSelect, VATP) \cite{zipcache,tokenselect,vatp}. We adopt the budget perspective for C2C rather than single-model KV compression.
 
 \section{Method}
+\subsection{C2C Recap}
+Let the sharer model produce KV caches $(K^S_\ell,V^S_\ell)$ and the receiver produce $(K^R_\ell,V^R_\ell)$ at layer $\ell$. C2C projects sharer KV into receiver space via $\Pi^K_\ell,\Pi^V_\ell$ and fuses them through a learnable gate:
+\[
+(K^{R\prime}_\ell,V^{R\prime}_\ell)=\mathcal{F}_\ell\left(K^R_\ell,V^R_\ell,\Pi^K_\ell(K^S_\ell),\Pi^V_\ell(V^S_\ell)\right).
+\]
+This avoids intermediate text and transfers richer internal semantics.
+
 \subsection{Post-Training Quantization (PTQ)}
-We quantize the KV caches using INT8 or INT4/NF4 with per-head scaling. We evaluate accuracy and latency under fixed precision budgets.
+We quantize the KV caches using INT8 or INT4/NF4 with per-head scaling. We evaluate accuracy and latency under fixed precision budgets. Our current implementation uses fake-quant (quantize then dequantize) to model quantization noise without bit-packing.
 
 \subsection{Cache-Length Reduction}
-We prune KV tokens using a fixed ratio (e.g., top-50\%, 25\%, 10\%), reducing transmitted bytes further.
+We prune KV tokens using a fixed ratio (e.g., 50\%, 25\%, 10\%), reducing transmitted bytes further. We evaluate front-pruning and back-pruning to diagnose which instruction tokens are most valuable for cross-model transfer.
 
-\subsection{Selective \& Compressed Cache Transfer (SparseC2C)}
-We select a sparse subset of token positions to transfer and fuse. Let $I \subset \{1,\dots,T\}$ be selected tokens and $S_I$ the gather operator. We fuse only selected tokens and scatter updates back:
+\subsection{Selective and Compressed Cache Transfer (SparseC2C)}
+As a main-conference extension, we select a sparse subset of token positions to transfer and fuse. Let $I \subset \{1,\dots,T\}$ be selected tokens and $S_I$ the gather operator. We fuse only selected tokens and scatter updates back:
 \[
 (\tilde{K}^R_\ell, \tilde{V}^R_\ell) = S_I^\top (K^R_\ell, V^R_\ell),\quad
 (\tilde{K}^S_\ell, \tilde{V}^S_\ell) = S_I^\top (K^S_\ell, V^S_\ell)
 \]
 \[
 (\tilde{K}^{R\prime}_\ell, \tilde{V}^{R\prime}_\ell) =
-\mathcal{F}_\ell\big(\tilde{K}^R_\ell, \tilde{V}^R_\ell, \Pi^K_\ell(\tilde{K}^S_\ell), \Pi^V_\ell(\tilde{V}^S_\ell)\big)
+\mathcal{F}_\ell\big(\tilde{K}^R_\ell, \tilde{V}^R_\ell, \Pi^K_\ell(\tilde{K}^S_\ell), \Pi^V_\ell(\tilde{V}^S_\ell)\big).
 \]
-We then scatter the update to the full cache. We use \emph{projector-aware} token scoring by computing value norms in receiver space (``proj\_vnorm\_topk''), which ties selection to the cross-model mapping.
+We then scatter the update to the full cache. We use projector-aware token scoring by computing value norms in receiver space (``proj\_vnorm\_topk''), tying selection to the cross-model mapping.
 
 \subsection{Communication-Budget Curves}
-We report accuracy as a function of transmitted bytes, enabling fair comparison under equal communication constraints.
+We report accuracy as a function of transmitted bytes, enabling fair comparison under equal communication constraints. For a sequence of length $T$, the approximate bytes are
+\[
+{\rm bytes} \approx T \cdot p \cdot 2 \cdot L \cdot H_{kv} \cdot d_h \cdot b/8,
+\]
+where $p$ is the retained cache proportion, $L$ the number of layers, $H_{kv}$ KV heads, $d_h$ head dim, and $b$ bits per element. We use this accounting for consistent budget curves.
 
 \section{Experiments}
 \subsection{Setup}
-We evaluate on OpenBookQA and ARC-C with a Qwen3-0.6B receiver and Qwen2.5-0.5B sharer. All models are frozen; only the projector is trained when QAT is enabled.
+We evaluate on OpenBookQA and ARC-C with a Qwen3-0.6B receiver and Qwen2.5-0.5B sharer. We follow the C2C eval protocol: temperature 0, max\_new\_tokens 64, no CoT, unified chat template. All models are frozen; only the projector is trained when QAT is enabled. The OpenBookQA test split has 500 samples and ARC-C has 1150 samples.
 
 \subsection{Main Results}
-All results below are full runs (OpenBookQA: 500 samples, ARC-C: 1150 samples).
-PTQ is effectively lossless relative to FP16, and cache pruning shows a strong front/back asymmetry.
+All results below are full runs. PTQ is effectively lossless relative to FP16, and cache pruning shows a strong front/back asymmetry.
 
 \begin{table}[ht]
 \centering
-\caption{Baseline vs.\ PTQ (full-cache, \%).}
+\caption{Baseline vs. PTQ (full-cache, \%).}
 \begin{tabular}{lcc}
 \toprule
 Setting & OpenBookQA & ARC-C \\
@@ -100,25 +124,80 @@ Back  & 55.7 & 57.2 & 56.2 & 53.7 \\
 \end{table}
 
 \subsection{Communication-Budget Curve}
+Figure~\ref{fig:budget-openbookqa} and Figure~\ref{fig:budget-arc} report accuracy versus effective transmitted bytes. We plot the communication budget on a log scale when the dynamic range is large; each point is annotated with the retained cache proportion. These curves provide a single, comparable view across precision (FP16/INT8/INT4) and cache-length reduction.
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.85\linewidth]{quantization/analysis/m4_budget_curve/budget_curve_openbookqa.png}
-\caption{Accuracy vs bytes transmitted (OpenBookQA).}
+\includegraphics[width=0.98\linewidth]{quantization/analysis/m4_budget_curve/budget_curve_openbookqa.png}
+\caption{Accuracy vs. communication budget (OpenBookQA).}
+\label{fig:budget-openbookqa}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.85\linewidth]{quantization/analysis/m4_budget_curve/budget_curve_arc_c.png}
-\caption{Accuracy vs bytes transmitted (ARC-C).}
+\includegraphics[width=0.98\linewidth]{quantization/analysis/m4_budget_curve/budget_curve_arc_c.png}
+\caption{Accuracy vs. communication budget (ARC-C).}
+\label{fig:budget-arc}
 \end{figure}
+
+\subsection{Order-Mode Ablation}
+Across all cache lengths, \textbf{back-pruning} (keeping later instruction tokens) consistently outperforms \textbf{front-pruning}. At 50\% cache length, for example, back-pruning retains near-baseline accuracy while front-pruning degrades sharply. This suggests late instruction tokens carry higher utility for cross-model KV fusion, a useful design signal for future selective transfer methods.
 
 \section{Discussion}
-Quantized C2C provides large bandwidth reductions with limited accuracy drop. Cache pruning further improves the tradeoff, suggesting a practical path to deployable multi-LLM communication.
+Quantized C2C provides large bandwidth reductions with limited accuracy drop. Cache pruning further improves the tradeoff, suggesting a practical path to deployable multi-LLM communication. A main-conference path includes QAT recovery, mixed-precision schedules, heterogeneous model pairs, and SparseC2C token selection.
+
+\section{Limitations}
+Our results currently focus on a single model pair and two datasets. We do not yet report end-to-end latency or FLOP measurements for the fuser, and SparseC2C remains an ongoing extension. These limitations will be addressed in the main-conference track.
+
+\section{Broader Impacts}
+Communication-efficient multi-LLM systems can reduce compute and latency, but they may also enable higher-throughput deployment of models. We emphasize reproducible evaluation, careful reporting of accuracy/latency tradeoffs, and responsible deployment in sensitive domains.
 
 \section{Conclusion}
-We introduce precision-aware C2C and report accuracy vs bytes curves. This establishes a communication-budget perspective for cross-model KV transfer and opens the door to low-latency, low-bandwidth agent collaboration.
+We introduce precision-aware C2C and report accuracy vs. bytes curves. This establishes a communication-budget perspective for cross-model KV transfer and opens the door to low-latency, low-bandwidth agent collaboration.
 
 \section*{Acknowledgments}
 Placeholder.
+
+\begin{thebibliography}{99}
+
+\bibitem{c2c}
+T. Fu et al.
+\newblock Cache-to-Cache: Direct Semantic Communication Between Large Language Models.
+\newblock Preprint, 2025. \url{https://arxiv.org/abs/2510.03215}.
+
+\bibitem{kvcomm}
+H. Ye et al.
+\newblock KVCOMM: Online Cross-context KV-cache Communication for Efficient LLM-based Multi-agent Systems.
+\newblock Preprint, 2025. \url{https://arxiv.org/abs/2510.03346}.
+
+\bibitem{qkvcomm}
+B. Kriuk and L. Ng.
+\newblock Q-KVComm: Efficient Multi-Agent Communication via Adaptive KV Cache Compression.
+\newblock Preprint, 2025. \url{https://arxiv.org/abs/2512.17914}.
+
+\bibitem{kvalign}
+L. M. Dery et al.
+\newblock Latent Space Communication via K-V Cache Alignment.
+\newblock Preprint, 2026. \url{https://arxiv.org/abs/2601.06123}.
+
+\bibitem{latentmas}
+J. Zou et al.
+\newblock Latent Collaboration in Multi-Agent Systems.
+\newblock Preprint, 2024. \url{https://arxiv.org/abs/2405.16103}.
+
+\bibitem{zipcache}
+Y. Liu et al.
+\newblock ZipCache: Accurate and Efficient KV Cache Compression for LLMs.
+\newblock Preprint, 2024. \url{https://arxiv.org/abs/2405.14256}.
+
+\bibitem{tokenselect}
+TokenSelect: Efficient Long-Context Inference via Token Selection.
+\newblock EMNLP, 2025. \url{https://aclanthology.org/2025.emnlp-main.1079/}.
+
+\bibitem{vatp}
+J. Wang et al.
+\newblock Attention Score is not All You Need for Token Importance Indicator in KV Cache Reduction: Value Also Matters.
+\newblock Preprint, 2024. \url{https://arxiv.org/abs/2406.12335}.
+
+\end{thebibliography}
 
 \end{document}
