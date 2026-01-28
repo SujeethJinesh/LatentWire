@@ -55,3 +55,13 @@ latentwire/diffusion_bridge.py
 telepathy/*diffusion*.py
 telepathy/run_compression_analysis.py
 telepathy/run_token_capacity_experiment.py
+
+# LaTeX build artifacts (quantization paper)
+quantization/paper/*.aux
+quantization/paper/*.bbl
+quantization/paper/*.blg
+quantization/paper/*.log
+quantization/paper/*.out
+quantization/paper/*.fls
+quantization/paper/*.fdb_latexmk
+quantization/paper/*.synctex.gz

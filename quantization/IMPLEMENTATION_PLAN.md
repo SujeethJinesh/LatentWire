@@ -10,6 +10,13 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
 - **M8 selective transfer**: **partial** — p=1.0 complete (both datasets), p=0.5 complete (both datasets), remaining proportions not run.
 - **Registry**: `quantization/registry/run_registry.json` updated for completed full runs; incomplete datasets intentionally left out so they will rerun.
 
+## Live Action Items (rolling)
+- **Finish M8 INT4 vnorm p0.25 ARC‑C** (currently partial in progress).
+- **Run full M8 INT8 grid** (front/vnorm/proj\_vnorm/random/knorm × p={1.0,0.5,0.25,0.10}).
+- **Run true M7 heterogeneity** (Qwen3‑0.6B ← Llama‑3.2‑1B‑Instruct with align on/off; Gemma‑3‑1B‑IT as Tier‑2).
+- **Run M5 QAT eval** (full recipe + eval).
+- **Update registry + golden summary** after each completed block.
+
 ## Milestone Status Details (run tags)
 - **M0 baseline**: `step0_20260127_214552` complete (OpenBookQA + ARC‑C).
 - **M2 PTQ**: `step1_int8_20260127_214552`, `step1_int4_20260127_214552` complete.
