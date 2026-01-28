@@ -47,7 +47,7 @@ class ResultsAggregator:
         self.datasets = ["sst2", "agnews", "trec", "gsm8k", "banking77", "passkey"]
 
         # Models evaluated
-        self.models = ["llama3.1-8b", "mistral-7b", "qwen2.5-7b", "gemma-2b"]
+        self.models = ["llama3.1-8b", "mistral-7b", "qwen2.5-7b", "gemma-3-1b-it"]
 
         # Experiment types
         self.exp_types = [

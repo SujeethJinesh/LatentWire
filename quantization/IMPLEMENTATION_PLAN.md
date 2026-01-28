@@ -6,7 +6,7 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
 - **M0–M4 complete** on OpenBookQA + ARC‑C with full runs (see `quantization/golden/golden_summary.md`).
 - **M5 QAT**: training smoke only (local); **GPU QAT eval pending**.
 - **M6 mixed precision**: **needs re‑run** with corrected 28‑layer schedule (last‑4 = layers 24–27).
-- **M7 heterogeneity**: **not complete** — current results are an alignment ablation on the same model pair (accuracy drop); needs true cross‑family pair (e.g., Llama/Gemma‑2B), plus alignment on/off.
+- **M7 heterogeneity**: **not complete** — current results are an alignment ablation on the same model pair (accuracy drop); needs true cross‑family pair (e.g., Llama/Gemma‑3‑1B‑IT), plus alignment on/off.
 - **M8 selective transfer**: **partial** — p=1.0 complete (both datasets), p=0.5 complete (both datasets), remaining proportions not run.
 - **Registry**: `quantization/registry/run_registry.json` updated for completed full runs; incomplete datasets intentionally left out so they will rerun.
 
@@ -513,7 +513,7 @@ Reuse the PTQ + pruning settings from Steps 2–3, but swap the **teacher model 
 
 **Milestone 7 phases (recommended)**  
 - **M7‑P0 (Design)**: choose 1–2 cross‑family pairs + datasets.  
-  - Example pairs: Qwen3‑0.6B ← Llama‑3.2‑1B, Qwen3‑0.6B ← Gemma‑2B.  
+  - Example pairs: Qwen3‑0.6B ← Llama‑3.2‑1B, Qwen3‑0.6B ← Gemma‑3‑1B‑IT.  
   - Why: small, interpretable set; enough to show generalization.  
 - **M7‑P1 (Config)**: add a dedicated eval recipe (copy of `unified_eval.yaml`) with:  
   - `rosetta_config.teacher_model` set to the new source model.  
@@ -526,7 +526,7 @@ Reuse the PTQ + pruning settings from Steps 2–3, but swap the **teacher model 
 - **M7‑P5 (Analysis)**: compare to within‑family INT8 baseline; report delta accuracy + bytes.  
 **Tier‑1 / Tier‑2 plan**  
 - **Tier‑1 (must‑run):** same pair (Qwen3‑0.6B ← Llama‑3.2‑1B) with **alignment on/off** to show alignment sensitivity.  
-- **Tier‑2 (nice‑to‑have):** add Gemma‑2B (with alignment) for broader heterogeneity.
+- **Tier‑2 (nice‑to‑have):** add Gemma‑3‑1B‑IT (with alignment) for broader heterogeneity.
 
 **Expected outcome**  
 - Cross‑family should show **some drop** vs within‑family but remain usable.  
@@ -534,7 +534,7 @@ Reuse the PTQ + pruning settings from Steps 2–3, but swap the **teacher model 
 
 **Local test commands (M7)**  
 - `python quantization/scripts/run_step1_kv_ptq.py --mode local --local-dataset openbookqa --local-num-samples 1 --base-model Qwen/Qwen3-0.6B --teacher-model meta-llama/Llama-3.2-1B-Instruct --kv-quant-scheme int8`  
-- Repeat with `--teacher-model google/gemma-2b` if desired.
+- Repeat with `--teacher-model google/gemma-3-1b-it` if desired.
 
 **GPU commands (M7, deferred)**  
 - Create a new eval recipe (copy `quantization/C2C/recipe/eval_recipe/unified_eval.yaml` → `unified_eval_hetero.yaml`) with the new teacher model and `is_do_alignment=true`.  
@@ -642,7 +642,7 @@ kv_transfer_config:
 | ID | Model Pair | Dataset | Method | Precision | Cache Length | Train |
 |---|---|---|---|---|---|---|
 | E1 | Qwen3‑0.6B ← Llama3.2‑1B | ARC‑C | C2C + PTQ | INT8 | full | no |
-| E2 | Qwen3‑0.6B ← Gemma‑2B | ARC‑C | C2C + PTQ | INT8 | full | no |
+| E2 | Qwen3‑0.6B ← Gemma‑3‑1B‑IT | ARC‑C | C2C + PTQ | INT8 | full | no |
 
 ---
 
