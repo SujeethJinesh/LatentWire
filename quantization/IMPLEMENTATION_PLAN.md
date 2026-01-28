@@ -358,7 +358,10 @@ The concrete trade‑off between bandwidth cost and accuracy, enabling direct co
    - `python quantization/scripts/analyze_budget_curve.py --runs-root quantization/data --output-dir quantization/analysis/m4_budget_curve`  
 3) Outputs:  
    - `quantization/analysis/m4_budget_curve/budget_curve.csv`  
-   - `quantization/analysis/m4_budget_curve/budget_curve_<dataset>.png`
+   - `quantization/analysis/m4_budget_curve/budget_curve_<dataset>.png`  
+
+**Status (Milestone 4)**  
+- **Complete**: budget curves generated at `quantization/analysis/m4_budget_curve/` (`budget_curve.csv`, `budget_curve_openbookqa.png`, `budget_curve_arc_c.png`).  
 
 ## Milestone 5: QAT Recovery (Main‑conf extension)
 **What**  

@@ -56,7 +56,22 @@ We report accuracy as a function of transmitted bytes, enabling fair comparison 
 We evaluate on OpenBookQA and ARC-C with a Qwen3-0.6B receiver and Qwen2.5-0.5B sharer. All models are frozen; only the projector is trained when QAT is enabled.
 
 \subsection{Main Results}
-We report preliminary cache-length pruning results from INT8 PTQ runs. Baseline FP16/INT8/INT4 full runs are currently partial (100/169 samples) and are omitted here; we will re-run them to match the full 500/1150 sample counts.
+All results below are full runs (OpenBookQA: 500 samples, ARC-C: 1150 samples).
+PTQ is effectively lossless relative to FP16, and cache pruning shows a strong front/back asymmetry.
+
+\begin{table}[ht]
+\centering
+\caption{Baseline vs.\ PTQ (full-cache, \%).}
+\begin{tabular}{lcc}
+\toprule
+Setting & OpenBookQA & ARC-C \\
+\midrule
+FP16 baseline & 52.8 & 55.1 \\
+INT8 PTQ & 52.8 & 55.0 \\
+INT4 PTQ & 52.6 & 55.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{table}[ht]
 \centering
@@ -87,8 +102,14 @@ Back  & 55.7 & 57.2 & 56.2 & 53.7 \\
 \subsection{Communication-Budget Curve}
 \begin{figure}[ht]
 \centering
-\fbox{\parbox{0.8\linewidth}{\centering Placeholder for accuracy vs bytes plot.}}
-\caption{Accuracy vs bytes transmitted (placeholder).}
+\includegraphics[width=0.85\linewidth]{quantization/analysis/m4_budget_curve/budget_curve_openbookqa.png}
+\caption{Accuracy vs bytes transmitted (OpenBookQA).}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.85\linewidth]{quantization/analysis/m4_budget_curve/budget_curve_arc_c.png}
+\caption{Accuracy vs bytes transmitted (ARC-C).}
 \end{figure}
 
 \section{Discussion}
