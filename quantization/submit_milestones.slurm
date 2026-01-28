@@ -61,6 +61,9 @@ export HF_HUB_CACHE="${HF_HUB_CACHE:-${HF_HOME}/hub}"
 export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-${HF_HOME}/hub}"
 export HF_DATASETS_CACHE="${HF_DATASETS_CACHE:-${HF_HOME}/datasets}"
 export C2C_CKPT_ROOT="${C2C_CKPT_ROOT:-${DEFAULT_CACHE_ROOT}/c2c_checkpoints}"
+export WANDB_MODE="${WANDB_MODE:-disabled}"
+export WANDB_DISABLED="${WANDB_DISABLED:-true}"
+export WANDB_SILENT="${WANDB_SILENT:-true}"
 
 # Guard: ensure HF auth is present when gated models are used (Llama/Gemma).
 if [ -z "${HF_TOKEN:-}" ]; then
