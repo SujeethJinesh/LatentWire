@@ -1,0 +1,20 @@
+{
+  "class": "C2CProjector",
+  "init_args": {
+    "source_dim": 64,
+    "target_dim": 128,
+    "source_num_heads": 2,
+    "target_num_heads": 8,
+    "hidden_dim": 512,
+    "intermediate_dim": 512,
+    "num_layers": 3,
+    "dropout": 0.0,
+    "initial_temperature": 1.0,
+    "final_temperature": 0.001,
+    "anneal_steps": 32,
+    "dtype": {
+      "__type__": "torch.dtype",
+      "value": "float32"
+    }
+  }
+}
