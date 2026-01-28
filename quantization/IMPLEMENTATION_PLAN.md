@@ -5,8 +5,8 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
 ## Status (2026‑01‑28)
 - **M0–M4 complete** on OpenBookQA + ARC‑C with full runs (see `quantization/golden/golden_summary.md`).
 - **M5 QAT**: training smoke only (local); **GPU QAT eval pending**.
-- **M6 mixed precision**: **complete** (INT8 + FP16 last‑layers schedule).
-- **M7 heterogeneity**: **not complete** — current results are an alignment ablation on the same model pair (accuracy drop); needs true cross‑family pair (e.g., Llama/Gemma).
+- **M6 mixed precision**: **needs re‑run** with corrected 28‑layer schedule (last‑4 = layers 24–27).
+- **M7 heterogeneity**: **not complete** — current results are an alignment ablation on the same model pair (accuracy drop); needs true cross‑family pair (e.g., Llama/Gemma), plus alignment on/off.
 - **M8 selective transfer**: **partial** — p=1.0 complete (both datasets), p=0.5 complete (both datasets), remaining proportions not run.
 - **Registry**: `quantization/registry/run_registry.json` updated for completed full runs; incomplete datasets intentionally left out so they will rerun.
 
@@ -15,7 +15,7 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
 - **M2 PTQ**: `step1_int8_20260127_214552`, `step1_int4_20260127_214552` complete.
 - **M3 pruning grid**: complete across front/back at p={1.0,0.75,0.5,0.25,0.10}; p0.10 front/back from `20260127_082712/084143`, others from `20260127_214552`.
 - **M4 curves**: `quantization/analysis/m4_budget_curve/budget_curve_{openbookqa,arc_c}.png` generated.
-- **M6 mixed precision**: `step6_int8_20260128_011432` complete (INT8 + last‑4 FP16 layers).
+- **M6 mixed precision**: `step6_int8_20260128_011432` complete (INT8 + last‑4 FP16 layers) **but schedule file updated; re‑run recommended**.
 - **M7 alignment ablation**: `step7_20260128_011432` complete (same‑pair alignment; not true heterogeneity).
 - **M8 selective transfer**: `step8_int8_proj_vnorm_topk_p1p0_20260128_011432` complete; `p0p5` OpenBookQA + ARC‑C complete.
 
@@ -30,6 +30,7 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
   - `manifests/*_manifest.json` includes `bytes_estimate` (bytes/token + effective proportion; multiply by avg length for per‑sequence bytes)
 - Commit `quantization/data/step_*` to git after each milestone so results are reviewable.
 - Cleanup hygiene: remove failed runs that do not contain `results/` or have `status=failed` in manifests (keep only validated runs).
+- Registry keys now include **M6 schedule hash**, **M7 alignment flag**, and **M8 scope/sparse‑fuse flags** so ablations don’t overwrite each other.
 
 ## Milestone Execution Checklist (clean + verified)
 Use this as the runbook. Replace `$PROJECT_ROOT` and cache paths as needed (RunPod `/workspace/LatentWire`, HPC `/projects/.../LatentWire`).
@@ -47,8 +48,9 @@ This is the “make sure nothing breaks” pass before full runs. **Now unified 
   - `RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_5=1 RUN_MILESTONE_6=1 RUN_MILESTONE_7=1 RUN_MILESTONE_8=1 EVAL_SMOKE=1 SMOKE_LIMIT=50 sbatch quantization/submit_milestones.slurm`
   - Optional overrides:  
     - `M5_RECIPE=quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json`  
-    - `M6_LAYER_SCHEDULE=quantization/configs/kv_layer_schedule.yaml`  
-    - `M7_BASE_MODEL=Qwen/Qwen3-0.6B M7_TEACHER_MODEL=meta-llama/Llama-3.2-1B-Instruct M7_DO_ALIGNMENT=1`
+    - `M6_LAYER_SCHEDULES="quantization/configs/kv_layer_schedule.yaml quantization/configs/kv_layer_schedule_last2.yaml quantization/configs/kv_layer_schedule_last8.yaml"`  
+    - `M7_BASE_MODEL=Qwen/Qwen3-0.6B M7_TEACHER_MODEL=meta-llama/Llama-3.2-1B-Instruct M7_ALIGNMENT_MODES="0 1"`  
+    - `M8_SELECT_MODES="front vnorm_topk proj_vnorm_topk" M8_SELECT_PROPORTIONS="1.0 0.5 0.25" M8_SELECT_SCOPES="prompt" M8_SPARSE_FUSE_MODES="1"`
 
 ### Full runs (paper‑quality)
 - [ ] **All milestones via SLURM (full, skip done by default):**
@@ -458,13 +460,19 @@ kv_quant_config:
   layer_schedule:
     default: int8
     overrides:
-      - layers: [28,29,30,31]
+      - layers: [24,25,26,27]
         scheme: fp16
 ```
+**Tier‑1 / Tier‑2 plan**  
+- **Tier‑1 (must‑run):** last‑4 FP16 over INT8 baseline using `quantization/configs/kv_layer_schedule.yaml`.  
+- **Tier‑2 (nice‑to‑have):** last‑2 and last‑8 FP16 using:  
+  - `quantization/configs/kv_layer_schedule_last2.yaml`  
+  - `quantization/configs/kv_layer_schedule_last8.yaml`  
+**Why this grid**: last‑4 is a common sensitivity band; last‑2 tests minimal overhead; last‑8 probes diminishing returns.
 
 **Milestone 6 phases (recommended)**  
 - **M6‑P0 (Design)**: pick schedule grid and metrics.  
-  - Grid: last‑4 FP16, last‑8 FP16 (both over INT8 baseline).  
+  - Grid: last‑4 FP16 (Tier‑1), last‑2 + last‑8 FP16 (Tier‑2).  
   - Why: small, interpretable grid; likely accuracy gain with modest byte increase.  
 - **M6‑P1 (Implementation)**:  
   - Parse `layer_schedule` in `rosetta/utils/quant.py` and apply per‑layer scheme.  
@@ -478,7 +486,7 @@ kv_quant_config:
 - **M6‑P3 (GPU smoke)**:  
   - Run 25–50 samples on OpenBookQA with last‑4 FP16 to check throughput + correctness.  
 - **M6‑P4 (Full GPU grid)**:  
-  - OpenBookQA + ARC‑C for last‑4 FP16 and last‑8 FP16.  
+  - OpenBookQA + ARC‑C for last‑4 FP16 (Tier‑1), then last‑2/last‑8 FP16 (Tier‑2).  
   - Compare accuracy vs INT8 and compute bytes‑per‑sequence deltas (for M4 curves).  
 
 **Expected outcome**  
@@ -516,6 +524,9 @@ Reuse the PTQ + pruning settings from Steps 2–3, but swap the **teacher model 
 - **M7‑P3 (GPU smoke)**: run 25–50 samples on OpenBookQA to validate throughput and correctness.  
 - **M7‑P4 (Full GPU eval)**: run OpenBookQA + ARC‑C (INT8) for the cross‑family pair.  
 - **M7‑P5 (Analysis)**: compare to within‑family INT8 baseline; report delta accuracy + bytes.  
+**Tier‑1 / Tier‑2 plan**  
+- **Tier‑1 (must‑run):** same pair (Qwen3‑0.6B ← Llama‑3.2‑1B) with **alignment on/off** to show alignment sensitivity.  
+- **Tier‑2 (nice‑to‑have):** add Gemma‑1B (with alignment) for broader heterogeneity.
 
 **Expected outcome**  
 - Cross‑family should show **some drop** vs within‑family but remain usable.  
@@ -573,6 +584,11 @@ kv_transfer_config:
   - INT4 x {1.0, 0.5, 0.25} x {front, vnorm_topk}.  
   - Extend `analyze_budget_curve.py` with token_select columns and effective bytes (payload + index bytes + quant scales).
 
+**Tier‑1 / Tier‑2 plan**  
+- **Tier‑1 (must‑run):** INT8 × {1.0, 0.5, 0.25} × {front, vnorm_topk, proj_vnorm_topk} on OpenBookQA + ARC‑C.  
+- **Tier‑2 (nice‑to‑have):** INT8 × {0.25, 0.10} × {random, knorm_topk} and INT4 × {1.0, 0.5, 0.25} × {front, vnorm_topk}.  
+**Why**: Tier‑1 gives the core projector‑aware vs structural baseline; Tier‑2 adds robustness and the INT4 compression axis.
+
 **Why these ablations**  
 - **front**: ties directly to M3 (length pruning) and serves as a structured baseline.  
 - **random**: sanity check to show selection matters vs arbitrary sparsity.  
@@ -586,6 +602,9 @@ kv_transfer_config:
 - Sparse fusion should reduce fuser compute roughly proportional to `token_select_proportion`.
 **Notes / risks**  
 - `proj_vnorm_topk` computes a full projection to score tokens, which adds overhead. If it becomes too expensive, add a coarse scoring cadence (e.g., score every N tokens) or a cap on selected tokens beyond `token_select_min_tokens`.
+**Telemetry (M8)**  
+- Record `token_select_mode`, `token_select_proportion`, `token_select_scope`, `sparse_fuse`, `scatter_fill`, and selection stats (mean/min/max tokens) in run manifests and result summaries.  
+- Use these fields in `analyze_budget_curve.py` to compute **effective bytes** (cache proportion × token select proportion × quant bits + index/scale overhead).
 
 ---
 

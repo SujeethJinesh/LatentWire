@@ -109,20 +109,24 @@ M5_RECIPE="${M5_RECIPE:-quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int
 # Milestone 6 (mixed precision).
 M6_KV_QUANT_SCHEME="${M6_KV_QUANT_SCHEME:-int8}"
 M6_LAYER_SCHEDULE="${M6_LAYER_SCHEDULE:-quantization/configs/kv_layer_schedule.yaml}"
+M6_LAYER_SCHEDULES="${M6_LAYER_SCHEDULES:-${M6_LAYER_SCHEDULE}}"
 
 # Milestone 7 (heterogeneity).
 M7_BASE_MODEL="${M7_BASE_MODEL:-Qwen/Qwen3-0.6B}"
 M7_TEACHER_MODEL="${M7_TEACHER_MODEL:-meta-llama/Llama-3.2-1B-Instruct}"
 M7_DO_ALIGNMENT="${M7_DO_ALIGNMENT:-1}"
 M7_ALIGNMENT_STRATEGY="${M7_ALIGNMENT_STRATEGY:-}"
+M7_ALIGNMENT_MODES="${M7_ALIGNMENT_MODES:-${M7_DO_ALIGNMENT}}"
 
 # Milestone 8 grid (selective transfer).
 M8_KV_QUANT_SCHEME="${M8_KV_QUANT_SCHEME:-int8}"
 M8_SELECT_MODES="${M8_SELECT_MODES:-proj_vnorm_topk}"
 M8_SELECT_PROPORTIONS="${M8_SELECT_PROPORTIONS:-1.0 0.5 0.25 0.1}"
 M8_SELECT_MIN_TOKENS="${M8_SELECT_MIN_TOKENS:-64}"
+M8_SELECT_SCOPES="${M8_SELECT_SCOPES:-prompt}"
 M8_SCATTER_FILL="${M8_SCATTER_FILL:-receiver_only}"
 M8_SPARSE_FUSE="${M8_SPARSE_FUSE:-1}"
+M8_SPARSE_FUSE_MODES="${M8_SPARSE_FUSE_MODES:-${M8_SPARSE_FUSE}}"
 PREFLIGHT_M8_PROPORTION="${PREFLIGHT_M8_PROPORTION:-0.25}"
 PREFLIGHT_M8_MODE="${PREFLIGHT_M8_MODE:-proj_vnorm_topk}"
 
@@ -530,19 +534,37 @@ run_preflight() {
   if [ "${RUN_MILESTONE_8}" = "1" ]; then
     local pre_prop="${PREFLIGHT_M8_PROPORTION}"
     local pre_mode="${PREFLIGHT_M8_MODE}"
+    local pre_scope="${M8_SELECT_SCOPES}"
+    if [ -n "${pre_scope}" ]; then
+      pre_scope="${pre_scope%% *}"
+    else
+      pre_scope="prompt"
+    fi
+    local pre_sparse="${M8_SPARSE_FUSE_MODES}"
+    if [ -n "${pre_sparse}" ]; then
+      pre_sparse="${pre_sparse%% *}"
+    else
+      pre_sparse="${M8_SPARSE_FUSE}"
+    fi
     local pre_prop_tag
     pre_prop_tag="$(sanitize_prop "${pre_prop}")"
-    local pre_tag="preflight_step8_${pre_mode}_p${pre_prop_tag}_${RUN_TAG_PREFIX}"
+    local pre_tag="preflight_step8_${pre_mode}_p${pre_prop_tag}_${pre_scope}_sf${pre_sparse}_${RUN_TAG_PREFIX}"
+    local pre_extra_args=()
+    if [ "${pre_sparse}" = "0" ]; then
+      pre_extra_args+=( "--no-kv-sparse-fuse" )
+    fi
     "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
       --env "${CONDA_ENV}" \
       --mode gpu \
       --kv-quant-scheme "${M8_KV_QUANT_SCHEME}" \
       --kv-select-mode "${pre_mode}" \
       --kv-select-proportion "${pre_prop}" \
+      --kv-select-scope "${pre_scope}" \
       --kv-select-min-tokens "${M8_SELECT_MIN_TOKENS}" \
       --kv-scatter-fill "${M8_SCATTER_FILL}" \
       --prep-only \
-      --run-tag "${pre_tag}"
+      --run-tag "${pre_tag}" \
+      "${pre_extra_args[@]}"
     preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${pre_tag}"
   fi
 
@@ -626,18 +648,22 @@ fi
 # Milestone 6: Mixed precision (layer schedule).
 # =============================================================================
 if [ "${RUN_MILESTONE_6}" = "1" ]; then
-  RUN_TAG="step6_${M6_KV_QUANT_SCHEME}_${RUN_TAG_PREFIX}"
-  "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
-    --env "${CONDA_ENV}" \
-    --mode gpu \
-    --kv-quant-scheme "${M6_KV_QUANT_SCHEME}" \
-    --kv-quant-layer-schedule "${M6_LAYER_SCHEDULE}" \
-    --prep-only \
-    --run-tag "${RUN_TAG}"
-  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
-  schedule_hash="$(config_hash "${M6_LAYER_SCHEDULE}")"
-  run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m6|${M6_KV_QUANT_SCHEME}|${schedule_hash}"
-  run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m6|${M6_KV_QUANT_SCHEME}|${schedule_hash}"
+  for SCHEDULE_PATH in ${M6_LAYER_SCHEDULES}; do
+    schedule_tag="$(basename "${SCHEDULE_PATH}")"
+    schedule_tag="${schedule_tag%.*}"
+    RUN_TAG="step6_${M6_KV_QUANT_SCHEME}_${schedule_tag}_${RUN_TAG_PREFIX}"
+    "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --kv-quant-scheme "${M6_KV_QUANT_SCHEME}" \
+      --kv-quant-layer-schedule "${SCHEDULE_PATH}" \
+      --prep-only \
+      --run-tag "${RUN_TAG}"
+    RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
+    schedule_hash="$(config_hash "${SCHEDULE_PATH}")"
+    run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m6|${M6_KV_QUANT_SCHEME}|${schedule_hash}"
+    run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m6|${M6_KV_QUANT_SCHEME}|${schedule_hash}"
+  done
   git_autopush "m6"
 fi
 
@@ -645,26 +671,28 @@ fi
 # Milestone 7: Heterogeneity (model pair swap).
 # =============================================================================
 if [ "${RUN_MILESTONE_7}" = "1" ]; then
-  RUN_TAG="step7_${RUN_TAG_PREFIX}"
-  EXTRA_ARGS=()
-  if [ "${M7_DO_ALIGNMENT}" = "1" ]; then
-    EXTRA_ARGS+=( "--do-alignment" )
-  fi
-  if [ -n "${M7_ALIGNMENT_STRATEGY}" ]; then
-    EXTRA_ARGS+=( "--alignment-strategy" "${M7_ALIGNMENT_STRATEGY}" )
-  fi
-  "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
-    --env "${CONDA_ENV}" \
-    --mode gpu \
-    --base-model "${M7_BASE_MODEL}" \
-    --teacher-model "${M7_TEACHER_MODEL}" \
-    --kv-quant-scheme int8 \
-    --prep-only \
-    --run-tag "${RUN_TAG}" \
-    "${EXTRA_ARGS[@]}"
-  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
-  run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m7|${M7_BASE_MODEL}|${M7_TEACHER_MODEL}"
-  run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m7|${M7_BASE_MODEL}|${M7_TEACHER_MODEL}"
+  for ALIGN_MODE in ${M7_ALIGNMENT_MODES}; do
+    RUN_TAG="step7_align${ALIGN_MODE}_${RUN_TAG_PREFIX}"
+    EXTRA_ARGS=()
+    if [ "${ALIGN_MODE}" = "1" ]; then
+      EXTRA_ARGS+=( "--do-alignment" )
+    fi
+    if [ -n "${M7_ALIGNMENT_STRATEGY}" ]; then
+      EXTRA_ARGS+=( "--alignment-strategy" "${M7_ALIGNMENT_STRATEGY}" )
+    fi
+    "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --base-model "${M7_BASE_MODEL}" \
+      --teacher-model "${M7_TEACHER_MODEL}" \
+      --kv-quant-scheme int8 \
+      --prep-only \
+      --run-tag "${RUN_TAG}" \
+      "${EXTRA_ARGS[@]}"
+    RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${RUN_TAG}"
+    run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m7|${M7_BASE_MODEL}|${M7_TEACHER_MODEL}|align${ALIGN_MODE}"
+    run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m7|${M7_BASE_MODEL}|${M7_TEACHER_MODEL}|align${ALIGN_MODE}"
+  done
   git_autopush "m7"
 fi
 
@@ -674,26 +702,33 @@ fi
 if [ "${RUN_MILESTONE_8}" = "1" ]; then
   for MODE in ${M8_SELECT_MODES}; do
     for PROP in ${M8_SELECT_PROPORTIONS}; do
-      PROP_TAG="$(sanitize_prop "${PROP}")"
-      RUN_TAG="step8_${M8_KV_QUANT_SCHEME}_${MODE}_p${PROP_TAG}_${RUN_TAG_PREFIX}"
-      EXTRA_ARGS=()
-      if [ "${M8_SPARSE_FUSE}" = "0" ]; then
-        EXTRA_ARGS+=( "--no-kv-sparse-fuse" )
-      fi
-      "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
-        --env "${CONDA_ENV}" \
-        --mode gpu \
-        --kv-quant-scheme "${M8_KV_QUANT_SCHEME}" \
-        --kv-select-mode "${MODE}" \
-        --kv-select-proportion "${PROP}" \
-        --kv-select-min-tokens "${M8_SELECT_MIN_TOKENS}" \
-        --kv-scatter-fill "${M8_SCATTER_FILL}" \
-        --prep-only \
-        --run-tag "${RUN_TAG}" \
-        "${EXTRA_ARGS[@]}"
-      RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
-      run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}"
-      run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}"
+      for SCOPE in ${M8_SELECT_SCOPES}; do
+        for SPARSE_FUSE_MODE in ${M8_SPARSE_FUSE_MODES}; do
+          PROP_TAG="$(sanitize_prop "${PROP}")"
+          scope_tag="${SCOPE}"
+          sf_tag="sf${SPARSE_FUSE_MODE}"
+          RUN_TAG="step8_${M8_KV_QUANT_SCHEME}_${MODE}_p${PROP_TAG}_${scope_tag}_${sf_tag}_${RUN_TAG_PREFIX}"
+          EXTRA_ARGS=()
+          if [ "${SPARSE_FUSE_MODE}" = "0" ]; then
+            EXTRA_ARGS+=( "--no-kv-sparse-fuse" )
+          fi
+          "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
+            --env "${CONDA_ENV}" \
+            --mode gpu \
+            --kv-quant-scheme "${M8_KV_QUANT_SCHEME}" \
+            --kv-select-mode "${MODE}" \
+            --kv-select-proportion "${PROP}" \
+            --kv-select-scope "${SCOPE}" \
+            --kv-select-min-tokens "${M8_SELECT_MIN_TOKENS}" \
+            --kv-scatter-fill "${M8_SCATTER_FILL}" \
+            --prep-only \
+            --run-tag "${RUN_TAG}" \
+            "${EXTRA_ARGS[@]}"
+          RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
+          run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+          run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+        done
+      done
     done
   done
   git_autopush "m8"
