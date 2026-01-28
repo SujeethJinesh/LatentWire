@@ -1,0 +1,50 @@
+Please install qwen-vl-utils to use VLM models
+Using config:  quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552/configs/arc_c.yaml
+Evaluating on dataset: ai2-arc
+Available GPUs: 1
+Requested GPU IDs: [0]
+Answer method: generate
+Using 1 GPUs: [0]
+Please install qwen-vl-utils to use VLM models
+Model Qwen/Qwen3-0.6B already has a chat template.
+
+================ Example IO (SPLIT_0_OF_1) ================
+[Input with chat template]:
+<|im_start|>user
+Accurately answer the following question:
+
+An astronomer observes that a planet rotates faster after a meteorite impact. Which is the most likely effect of this increase in rotation?
+
+Choices:
+A. Planetary density will decrease.
+B. Planetary years will become longer.
+C. Planetary days will become shorter.
+D. Planetary gravity will become stronger.
+
+
+Instructions:
+- Carefully read the question and all options.
+- Select the single most correct answer.
+- Respond ONLY in the following format: "The correct answer is A/B/C/D".
+- Do not include any explanations, additional text, or punctuation besides the answer.
+
+The correct answer is<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+
+
+[Generated output]:
+The correct answer is C. Planetary days will become shorter.
+================ End Example IO ================
+
+SPLIT_0_OF_1 accuracy: 56.17% (evaluated on 1150 samples, skipped 22)
+Please install qwen-vl-utils to use VLM models
+Summary saved to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552/results/arc_c/Rosetta_ai2-arc_generate_20260128_010351_summary.json
+Detailed length statistics saved to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552/results/arc_c/Rosetta_ai2-arc_generate_20260128_010351_length.json
+CoT outputs saved to /workspace/LatentWire/quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552/results/arc_c/Rosetta_ai2-arc_generate_20260128_010351_cot.csv
+
+Evaluation complete!
+Overall accuracy: 56.17%
