@@ -7,7 +7,7 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
 - **M5 QAT**: training smoke only (local); **GPU QAT eval pending**.
 - **M6 mixed precision**: **complete** (INT8 + FP16 last‑layers schedule).
 - **M7 heterogeneity**: **not complete** — current results are an alignment ablation on the same model pair (accuracy drop); needs true cross‑family pair (e.g., Llama/Gemma).
-- **M8 selective transfer**: **partial** — p=1.0 complete (both datasets), p=0.5 complete for OpenBookQA, **ARC‑C missing**; remaining proportions not run.
+- **M8 selective transfer**: **partial** — p=1.0 complete (both datasets), p=0.5 complete (both datasets), remaining proportions not run.
 - **Registry**: `quantization/registry/run_registry.json` updated for completed full runs; incomplete datasets intentionally left out so they will rerun.
 
 ## Milestone Status Details (run tags)
@@ -17,7 +17,7 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
 - **M4 curves**: `quantization/analysis/m4_budget_curve/budget_curve_{openbookqa,arc_c}.png` generated.
 - **M6 mixed precision**: `step6_int8_20260128_011432` complete (INT8 + last‑4 FP16 layers).
 - **M7 alignment ablation**: `step7_20260128_011432` complete (same‑pair alignment; not true heterogeneity).
-- **M8 selective transfer**: `step8_int8_proj_vnorm_topk_p1p0_20260128_011432` complete; `p0p5` OpenBookQA complete, ARC‑C pending.
+- **M8 selective transfer**: `step8_int8_proj_vnorm_topk_p1p0_20260128_011432` complete; `p0p5` OpenBookQA + ARC‑C complete.
 
 ## Data Capture Contract (applies to every milestone)
 - Each run creates `quantization/data/step_X_<name>/<run_tag>/` with (folder names remain `step_X` for now to match scripts):

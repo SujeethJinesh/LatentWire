@@ -295,6 +295,14 @@
       "config_hash": "dd2426d78ed196ded34e44f7a52c4f809e9db0b9",
       "reason": "",
       "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_20260128_011432",
+      "config_hash": "f719b48e703e44742b5643eef68376117dd47989",
+      "reason": "",
+      "timestamp": "2026-01-28T00:00:00Z"
     }
   }
 }

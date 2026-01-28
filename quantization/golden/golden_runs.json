@@ -390,6 +390,19 @@
       "bytes_per_sequence": 2017389.0650887573,
       "status": "complete",
       "notes": "Full run (preferred)."
+    },
+    {
+      "run_tag": "step8_int8_proj_vnorm_topk_p0p5_20260128_011432",
+      "run_path": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_20260128_011432",
+      "dataset": "arc_c",
+      "scheme": "int8",
+      "kv_cache_proportion": 0.5,
+      "accuracy": 0.5408695652173913,
+      "num_samples": 1150,
+      "avg_input_length": 141.31739130434784,
+      "bytes_per_sequence": 1012963.0608695652,
+      "status": "complete",
+      "notes": "Full run (ARC-C now available)."
     }
   ]
 }
