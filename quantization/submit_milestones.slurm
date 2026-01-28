@@ -59,6 +59,12 @@ export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-${HF_HOME}/hub}"
 export HF_DATASETS_CACHE="${HF_DATASETS_CACHE:-${HF_HOME}/datasets}"
 export C2C_CKPT_ROOT="${C2C_CKPT_ROOT:-${DEFAULT_CACHE_ROOT}/c2c_checkpoints}"
 
+# Guard: ensure HF auth is present when gated models are used (Llama/Gemma).
+if [ -z "${HF_TOKEN:-}" ]; then
+  echo "ERROR: HF_TOKEN is not set. Export HF_TOKEN or run 'huggingface-cli login' before launching." >&2
+  exit 1
+fi
+
 # Milestone toggles (set to 1 when you want to run them).
 RUN_MILESTONE_0="${RUN_MILESTONE_0:-0}"
 RUN_MILESTONE_2="${RUN_MILESTONE_2:-0}"
