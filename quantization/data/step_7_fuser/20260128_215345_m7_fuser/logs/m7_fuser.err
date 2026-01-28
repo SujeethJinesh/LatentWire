@@ -1,0 +1,22 @@
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/workspace/LatentWire/quantization/C2C/script/train/SFT_train.py", line 1036, in <module>
+    main()
+  File "/workspace/LatentWire/quantization/C2C/script/train/SFT_train.py", line 568, in main
+    wandb.init(
+  File "/workspace/conda/envs/rosetta/lib/python3.10/site-packages/wandb/sdk/wandb_init.py", line 1597, in init
+    get_sentry().reraise(e)
+  File "/workspace/conda/envs/rosetta/lib/python3.10/site-packages/wandb/analytics/sentry.py", line 190, in reraise
+    raise exc.with_traceback(tb)
+  File "/workspace/conda/envs/rosetta/lib/python3.10/site-packages/wandb/sdk/wandb_init.py", line 1518, in init
+    wi.maybe_login(init_settings)
+  File "/workspace/conda/envs/rosetta/lib/python3.10/site-packages/wandb/sdk/wandb_init.py", line 196, in maybe_login
+    wandb_login._login(
+  File "/workspace/conda/envs/rosetta/lib/python3.10/site-packages/wandb/sdk/wandb_login.py", line 190, in _login
+    auth = _find_or_prompt_for_key(
+  File "/workspace/conda/envs/rosetta/lib/python3.10/site-packages/wandb/sdk/wandb_login.py", line 266, in _find_or_prompt_for_key
+    auth = wbauth.authenticate_session(
+  File "/workspace/conda/envs/rosetta/lib/python3.10/site-packages/wandb/sdk/lib/wbauth/authenticate.py", line 138, in authenticate_session
+    raise UsageError(
+wandb.errors.errors.UsageError: No API key configured. Use `wandb login` to log in.

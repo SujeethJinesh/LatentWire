@@ -1,0 +1,12 @@
+From github.com:SujeethJinesh/LatentWire
+   1ae68c6f..a1effa7b  main       -> origin/main
+Fetching submodule quantization/C2C
+From github.com:SujeethJinesh/C2C
+   dc59ada..e0ef93d  quant-kv   -> origin/quant-kv
+Updating 0de9f7db..a1effa7b
+Fast-forward
+ quantization/C2C                        |  2 +-
+ quantization/registry/run_registry.json | 24 ++++++++++++------------
+ quantization/submit_milestones.slurm    | 33 +++++++++++++++++++++++++++------
+ 3 files changed, 40 insertions(+), 19 deletions(-)
+Submodule path 'quantization/C2C': checked out 'e0ef93d14101782517a316235c0b1ae3ed2f627b'
