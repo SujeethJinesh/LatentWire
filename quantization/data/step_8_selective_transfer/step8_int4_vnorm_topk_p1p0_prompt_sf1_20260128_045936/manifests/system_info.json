@@ -1,0 +1,11 @@
+{
+  "nvidia_smi_path": "/usr/bin/nvidia-smi",
+  "torch_cuda_available": true,
+  "torch_cuda_device_count": 1,
+  "torch_cuda_device_name": "NVIDIA H100 PCIe",
+  "torch_cuda_capability": [
+    9,
+    0
+  ],
+  "nvidia_smi": "NVIDIA H100 PCIe, 575.57.08, 81559, 4071"
+}

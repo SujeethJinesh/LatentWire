@@ -304,5 +304,205 @@
       "reason": "",
       "timestamp": "2026-01-28T00:00:00Z"
     }
+  },
+  "m8|int4|front|1.0|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p1p0_prompt_sf1_20260128_045936",
+      "config_hash": "1971ba4ffa75ea839b2ab2ab66768065feead61e",
+      "reason": "",
+      "timestamp": "2026-01-28T05:05:49.916285Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p1p0_prompt_sf1_20260128_045936",
+      "config_hash": "2f5f10ad561c647f5d0f2ff2a5615f6840aaeb00",
+      "reason": "",
+      "timestamp": "2026-01-28T05:18:15.043996Z"
+    }
+  },
+  "m6|int8|1c989848c161dfffdbc8dce9fa2c858a2ca7fd1b": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_20260128_045934",
+      "config_hash": "9c5be4575c6eaabedd3f17ea7370ce38ec7eda3e",
+      "reason": "",
+      "timestamp": "2026-01-28T05:06:57.931010Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_20260128_045934",
+      "config_hash": "024ddb6704dee19bfd29ff53c77750747490ee4b",
+      "reason": "",
+      "timestamp": "2026-01-28T05:20:10.262526Z"
+    }
+  },
+  "m8|int4|front|0.5|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p5_prompt_sf1_20260128_045936",
+      "config_hash": "efd1ed1f38abb081e836963b67856351cad00454",
+      "reason": "",
+      "timestamp": "2026-01-28T05:23:56.788718Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p5_prompt_sf1_20260128_045936",
+      "config_hash": "015073fee954cbf7d6da0d2dc2c98c35f75d990c",
+      "reason": "",
+      "timestamp": "2026-01-28T05:36:56.273892Z"
+    }
+  },
+  "m6|int8|a13ce0675bd73e7a9aa524002a0a3be7b1c1927b": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last2_20260128_045934",
+      "config_hash": "d0d208e06ae5b9dc5cc79e967a3e61d234716dba",
+      "reason": "",
+      "timestamp": "2026-01-28T05:25:19.328185Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last2_20260128_045934",
+      "config_hash": "dd1bdf33a0df8e0ce91c05253bfe544f4583fc73",
+      "reason": "",
+      "timestamp": "2026-01-28T05:38:05.767388Z"
+    }
+  },
+  "m8|int4|front|0.25|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p25_prompt_sf1_20260128_045936",
+      "config_hash": "806cd94705f174964179bde2902acd7286bb4aa0",
+      "reason": "",
+      "timestamp": "2026-01-28T05:42:30.164297Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p25_prompt_sf1_20260128_045936",
+      "config_hash": "501af55e729254bb981656196e9ded942c50999b",
+      "reason": "",
+      "timestamp": "2026-01-28T05:55:40.266441Z"
+    }
+  },
+  "m6|int8|9e0c3e9c9e4ffe229e74f1e2700de6f96e783e83": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last8_20260128_045934",
+      "config_hash": "0c16dedc6465b34cc592e2540ceb5126bbfb8a44",
+      "reason": "",
+      "timestamp": "2026-01-28T05:43:10.835751Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last8_20260128_045934",
+      "config_hash": "49bcfe09ea181a63fd51b000d7bdfec93c8249b3",
+      "reason": "",
+      "timestamp": "2026-01-28T05:57:09.256406Z"
+    }
+  },
+  "m8|int4|vnorm_topk|1.0|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p1p0_prompt_sf1_20260128_045936",
+      "config_hash": "1995df877852d848b7ccf6dd3448a72840d51c1a",
+      "reason": "",
+      "timestamp": "2026-01-28T06:00:54.431882Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p1p0_prompt_sf1_20260128_045936",
+      "config_hash": "d73dae6952eb7c89b61c7a99e1a133fadfc81c2d",
+      "reason": "",
+      "timestamp": "2026-01-28T06:13:57.374899Z"
+    }
+  },
+  "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align0": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_045934",
+      "config_hash": "8b14531b375a65bf2e78e1bb5a96fe03111066a2",
+      "reason": "",
+      "timestamp": "2026-01-28T06:02:18.094966Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_045934",
+      "config_hash": "109f532cba6aa69741a0924c22304a40b99c8a45",
+      "reason": "",
+      "timestamp": "2026-01-28T06:15:36.632330Z"
+    }
+  },
+  "m8|int4|vnorm_topk|0.5|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p5_prompt_sf1_20260128_045936",
+      "config_hash": "0248fc27cb7fa5ab77ccc1bcc55da7b5c81aaee2",
+      "reason": "",
+      "timestamp": "2026-01-28T06:19:38.183054Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p5_prompt_sf1_20260128_045936",
+      "config_hash": "ef48cfcb6b2fe7f1d673a6569b98c5fc956ee1c4",
+      "reason": "",
+      "timestamp": "2026-01-28T06:32:30.608414Z"
+    }
+  },
+  "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_045934",
+      "config_hash": "191c842d0260b45c9c731259720b4405a7d110e4",
+      "reason": "",
+      "timestamp": "2026-01-28T06:21:51.524689Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_045934",
+      "config_hash": "9d510b7ad2daaad369e169432db92e2d9ab8f920",
+      "reason": "",
+      "timestamp": "2026-01-28T06:36:16.666378Z"
+    }
+  },
+  "m8|int4|vnorm_topk|0.25|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p25_prompt_sf1_20260128_045936",
+      "config_hash": "f948e8461cfa650aec0d26a56e06d6216c55dc46",
+      "reason": "",
+      "timestamp": "2026-01-28T06:38:02.287982Z"
+    }
+  },
+  "m8|int8|front|1.0|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p1p0_prompt_sf1_20260128_045934",
+      "config_hash": "0d424a5151134615a5531c769778b61c34f89520",
+      "reason": "",
+      "timestamp": "2026-01-28T06:41:46.023591Z"
+    }
   }
 }

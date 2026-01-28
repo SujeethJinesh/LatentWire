@@ -1,0 +1,20 @@
+{
+  "model": "Rosetta",
+  "dataset": "openbookqa",
+  "answer_method": "generate",
+  "overall_accuracy": 0.495,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.495
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 139.585,
+        "avg_gen_length": 9.91,
+        "avg_length_ratio": 0.07152250478732451,
+        "accuracy": 0.495,
+        "total_samples": 200
+      }
+    }
+  }
+}
