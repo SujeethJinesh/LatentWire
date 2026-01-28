@@ -135,6 +135,10 @@ dataset_len() {
   "${PYTHON[@]}" - <<'PY' "$1"
 import sys
 from datasets import load_dataset
+from datasets.utils import logging as ds_logging
+
+ds_logging.disable_progress_bar()
+ds_logging.set_verbosity_error()
 
 dataset = sys.argv[1]
 revision = "main"
@@ -146,7 +150,7 @@ elif dataset == "ai2-arc":
     split = ds["test"]
 else:
     raise SystemExit(f"Unknown dataset: {dataset}")
-print(len(split))
+sys.stdout.write(str(len(split)))
 PY
 }
 
@@ -350,6 +354,10 @@ run_eval_chunks() {
 
   local total
   total="$(dataset_len "${dataset}")"
+  if ! [[ "${total}" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: dataset_len returned non-numeric value for ${dataset}: '${total}'" >&2
+    exit 1
+  fi
 
   if [ "${EVAL_SMOKE}" = "1" ]; then
     local end="${SMOKE_LIMIT}"
@@ -403,6 +411,10 @@ run_eval_chunks_with_skip() {
 
   local total
   total="$(dataset_len "${dataset}")"
+  if ! [[ "${total}" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: dataset_len returned non-numeric value for ${dataset}: '${total}'" >&2
+    exit 1
+  fi
 
   if [ -f "${progress_file}" ]; then
     local start
