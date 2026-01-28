@@ -561,17 +561,28 @@ kv_transfer_config:
 ```
 
 **Milestone 8 phases (recommended)**  
-- **M8‑P0 (Design lock)**: modes = {front, back, random, vnorm_topk, proj_vnorm_topk}, proportions = {1.0, 0.5, 0.25, 0.10}, schemes = {int8, int4}.  
+- **M8‑P0 (Design lock)**: modes = {front, back, random, vnorm_topk, knorm_topk, proj_vnorm_topk}, proportions = {1.0, 0.5, 0.25, 0.10}, schemes = {int8, int4}.  
 - **M8‑P1 (Token selection)**: add `rosetta/utils/kv_select.py` with scoring + top‑k selection and scope masking; add projector‑aware scoring via `proj_vnorm_topk` (score in receiver space after projection).  
 - **M8‑P2 (Sparse transfer + fuse)**: gather selected KV, quantize gathered KV, project + fuse selected tokens only, scatter back.  
 - **M8‑P3 (Runner + telemetry)**: add `run_step8_selective_transfer.py` with token stats + effective bytes.  
 - **M8‑P4 (Local sanity)**: 1–5 samples; `proportion=1.0` must match Milestone 1 outputs.  
-- **M8‑P5 (GPU smoke)**: 50‑sample runs, INT8 x {1.0, 0.5, 0.25}, compare front vs vnorm_topk.  
-- **M8‑P6 (Full GPU grid + plots)**: INT8 x {1.0, 0.5, 0.25, 0.10} x {front, vnorm_topk}; INT4 x {1.0, 0.5, 0.25} x {front, vnorm_topk}.  
+- **M8‑P5 (GPU smoke)**: 50‑sample runs, INT8 x {1.0, 0.5, 0.25}, compare {front, random, vnorm_topk, knorm_topk, proj_vnorm_topk}.  
+- **M8‑P6 (Full GPU grid + plots)**:  
+  - INT8 x {1.0, 0.5, 0.25, 0.10} x {front, vnorm_topk, proj_vnorm_topk}.  
+  - INT8 x {0.25, 0.10} x {random, knorm_topk}.  
+  - INT4 x {1.0, 0.5, 0.25} x {front, vnorm_topk}.  
   - Extend `analyze_budget_curve.py` with token_select columns and effective bytes (payload + index bytes + quant scales).
+
+**Why these ablations**  
+- **front**: ties directly to M3 (length pruning) and serves as a structured baseline.  
+- **random**: sanity check to show selection matters vs arbitrary sparsity.  
+- **knorm_topk**: tests whether K‑norm is a viable proxy vs V‑norm (robustness of the selection metric).  
+- **proj_vnorm_topk**: C2C‑native, projector‑aware scoring to claim novelty over single‑model KV selection.
 
 **Expected outcome**  
 - At matched bytes, projector‑aware `proj_vnorm_topk` should match or exceed `vnorm_topk` and outperform `front/back`.  
+- `random` provides a sanity baseline; it should underperform importance‑based scores at the same proportion.  
+- `knorm_topk` tests sensitivity to K‑norm vs V‑norm; expect similar but slightly worse than V‑norm (V tends to correlate with utility in prior KV work).
 - Sparse fusion should reduce fuser compute roughly proportional to `token_select_proportion`.
 **Notes / risks**  
 - `proj_vnorm_topk` computes a full projection to score tokens, which adds overhead. If it becomes too expensive, add a coarse scoring cadence (e.g., score every N tokens) or a cap on selected tokens beyond `token_select_min_tokens`.
