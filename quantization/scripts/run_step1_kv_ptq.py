@@ -907,6 +907,7 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
             checkpoint_dir = Path(args.checkpoint_dir_override).expanduser().resolve()
             if not checkpoint_dir.exists():
                 die(f"Checkpoint override not found: {checkpoint_dir}")
+            checkpoint_dir = str(checkpoint_dir)
             repo_id = "local_override"
             pattern = "override"
             snapshot_path = str(checkpoint_dir)
