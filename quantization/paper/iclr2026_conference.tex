@@ -83,7 +83,7 @@ where $p$ is the retained cache proportion, $L$ the number of layers, $H_{kv}$ K
 
 \section{Experiments}
 \subsection{Setup}
-We evaluate on OpenBookQA and ARC-C with a Qwen3-0.6B receiver and Qwen2.5-0.5B sharer. We follow the C2C eval protocol: temperature 0, max\_new\_tokens 64, no CoT, unified chat template. All models are frozen; only the projector is trained when QAT is enabled. The OpenBookQA test split has 500 samples and ARC-C has 1172 samples.
+We evaluate on OpenBookQA and ARC-C with a Qwen3-0.6B receiver and Qwen2.5-0.5B sharer. We follow the C2C eval protocol: temperature 0, max\_new\_tokens 64, no CoT, unified chat template. All models are frozen; only the projector is trained when QAT is enabled. The OpenBookQA test split has 500 samples and ARC-C has 1150 samples.
 
 \subsection{Main Results}
 All results below are full runs. PTQ is effectively lossless relative to FP16, and cache pruning shows a strong front/back asymmetry.
@@ -148,7 +148,7 @@ Figure~\ref{fig:budget-openbookqa} and Figure~\ref{fig:budget-arc} report accura
 Across all cache lengths, \textbf{back-pruning} (keeping later instruction tokens) consistently outperforms \textbf{front-pruning}. At 50\% cache length, for example, back-pruning retains near-baseline accuracy while front-pruning degrades sharply. This suggests late instruction tokens carry higher utility for cross-model KV fusion, a useful design signal for future selective transfer methods.
 
 \subsection{Main-Conference Extensions (Preliminary)}
-We report early results for two main-conference extensions. Mixed precision (INT8 with FP16 in the last layers) remains near baseline. An alignment-only ablation (same model pair, alignment enabled) reduces accuracy, suggesting alignment should be reserved for heterogeneous pairs.
+We report early results for two main-conference extensions. Mixed precision (INT8 with FP16 in the last layers) remains near baseline across last-2/last-4/last-8 schedules. An alignment-only ablation (same model pair, alignment enabled) reduces accuracy, suggesting alignment should be reserved for heterogeneous pairs.
 \begin{table}[ht]
 \centering
 \caption{Preliminary extension results (\% accuracy).}
@@ -156,12 +156,32 @@ We report early results for two main-conference extensions. Mixed precision (INT
 \toprule
 Setting & OpenBookQA & ARC-C \\
 \midrule
+Mixed precision (INT8 + last-2 FP16) & 53.0 & 55.0 \\
 Mixed precision (INT8 + last-4 FP16) & 52.8 & 55.3 \\
+Mixed precision (INT8 + last-8 FP16) & 52.4 & 55.2 \\
 Alignment ablation (same pair) & 46.8 & 49.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
-For SparseC2C (token selection), INT4 with vnorm selection remains strong: at p=0.5 we observe 52.0 on OpenBookQA and 56.4 on ARC-C, while front pruning degrades sharply. Full INT8 grids and heterogeneity runs will be reported in the main-conference track.
+For SparseC2C (token selection), vnorm/knorm scoring preserves accuracy under aggressive token budgets. At p=0.5, INT8 vnorm achieves 52.4/56.2 (OpenBookQA/ARC-C) while front pruning drops to 44.8/47.6. INT4 vnorm remains strong at 52.0/56.3. Full grids across selection modes (front, random, proj\_vnorm, knorm, vnorm) are reported; heterogeneity runs remain pending.
+
+\begin{table}[ht]
+\centering
+\caption{SparseC2C token selection at p=0.5 (prompt-only, sparse fuse).}
+\begin{tabular}{lcc}
+\toprule
+Setting & OpenBookQA & ARC-C \\
+\midrule
+INT8 front & 44.8 & 47.6 \\
+INT8 random & 50.0 & 53.0 \\
+INT8 proj\_vnorm\_topk & 50.2 & 54.1 \\
+INT8 knorm\_topk & 51.8 & 56.3 \\
+INT8 vnorm\_topk & 52.4 & 56.2 \\
+INT4 front & 44.6 & 47.8 \\
+INT4 vnorm\_topk & 52.0 & 56.3 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Discussion}
 Quantized C2C provides large bandwidth reductions with limited accuracy drop. Cache pruning further improves the tradeoff, suggesting a practical path to deployable multi-LLM communication. A main-conference path includes QAT recovery, mixed-precision schedules, heterogeneous model pairs, and SparseC2C token selection.

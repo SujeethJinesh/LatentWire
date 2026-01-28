@@ -529,8 +529,8 @@ run_preflight() {
     "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
       --env "${CONDA_ENV}" \
       --mode gpu \
-      --base-model "${M7_BASE_MODEL}" \
-      --teacher-model "${M7_TEACHER_MODEL}" \
+      --base-model-override "${M7_BASE_MODEL}" \
+      --teacher-model-override "${M7_TEACHER_MODEL}" \
       --kv-quant-scheme int8 \
       --prep-only \
       --run-tag "${pre_tag}"
@@ -645,8 +645,56 @@ fi
 # Milestone 5: QAT smoke/full (training).
 # =============================================================================
 if [ "${RUN_MILESTONE_5}" = "1" ]; then
+  M5_RUN_TAG="step5_qat_${RUN_TAG_PREFIX}"
+  M5_RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_5_qat/${M5_RUN_TAG}"
+  M5_OUTPUT_DIR="${M5_OUTPUT_DIR:-${C2C_CKPT_ROOT}/qat_${RUN_TAG_PREFIX}}"
+  mkdir -p "${M5_RUN_ROOT}/configs" "${M5_RUN_ROOT}/logs" "${M5_RUN_ROOT}/manifests"
+
+  "${PYTHON[@]}" - <<'PY' "${M5_RECIPE}" "${M5_RUN_ROOT}/configs/m5_train.json" "${M5_OUTPUT_DIR}"
+import json
+import sys
+from pathlib import Path
+
+src = Path(sys.argv[1])
+dst = Path(sys.argv[2])
+out_dir = sys.argv[3]
+
+data = json.loads(src.read_text())
+data.setdefault("output", {})
+data["output"]["output_dir"] = out_dir
+dst.write_text(json.dumps(data, indent=2) + "\n")
+print(f"Wrote M5 recipe: {dst}")
+PY
+
   "${PYTHON[@]}" quantization/C2C/script/train/SFT_train.py \
-    --config "${M5_RECIPE}"
+    --config "${M5_RUN_ROOT}/configs/m5_train.json" 2>&1 | tee "${M5_RUN_ROOT}/logs/m5_train.log"
+
+  "${PYTHON[@]}" - <<'PY' "${M5_RUN_ROOT}/manifests/train_manifest.json" "${M5_OUTPUT_DIR}" "${M5_RUN_ROOT}/configs/m5_train.json"
+import json
+import sys
+from datetime import datetime
+
+manifest_path = sys.argv[1]
+output_dir = sys.argv[2]
+config_path = sys.argv[3]
+manifest = {
+    "output_dir": output_dir,
+    "config_path": config_path,
+    "timestamp": datetime.utcnow().isoformat() + "Z",
+}
+open(manifest_path, "w").write(json.dumps(manifest, indent=2) + "\\n")
+PY
+
+  M5_EVAL_TAG="step5_qat_eval_${RUN_TAG_PREFIX}"
+  "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
+    --env "${CONDA_ENV}" \
+    --mode gpu \
+    --kv-quant-scheme int8 \
+    --checkpoint-dir-override "${M5_OUTPUT_DIR}" \
+    --run-tag "${M5_EVAL_TAG}"
+  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_1_kv_ptq/${M5_EVAL_TAG}"
+  run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step1.log" "m5|qat|int8"
+  run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step1.log" "m5|qat|int8"
   git_autopush "m5"
 fi
 
@@ -689,8 +737,8 @@ if [ "${RUN_MILESTONE_7}" = "1" ]; then
     "${PYTHON[@]}" quantization/scripts/run_step1_kv_ptq.py \
       --env "${CONDA_ENV}" \
       --mode gpu \
-      --base-model "${M7_BASE_MODEL}" \
-      --teacher-model "${M7_TEACHER_MODEL}" \
+      --base-model-override "${M7_BASE_MODEL}" \
+      --teacher-model-override "${M7_TEACHER_MODEL}" \
       --kv-quant-scheme int8 \
       --prep-only \
       --run-tag "${RUN_TAG}" \

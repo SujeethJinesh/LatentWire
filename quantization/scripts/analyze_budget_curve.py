@@ -259,6 +259,33 @@ def read_manifest_model_stats(run_root):
     return None
 
 
+def aggregate_length_stats(dataset_dir):
+    records = {}
+    for length_path in sorted(dataset_dir.glob("*_length.json")):
+        try:
+            data = json.loads(length_path.read_text())
+        except Exception:
+            continue
+        if isinstance(data, list):
+            for row in data:
+                qid = row.get("question_id")
+                if qid is None:
+                    continue
+                records[qid] = row
+    if not records:
+        return None
+    total = len(records)
+    correct = sum(1 for row in records.values() if row.get("is_correct"))
+    avg_input = sum(row.get("input_length", 0) for row in records.values()) / total
+    avg_gen = sum(row.get("gen_length", 0) for row in records.values()) / total
+    return {
+        "total": total,
+        "accuracy": correct / total,
+        "avg_input_length": avg_input,
+        "avg_gen_length": avg_gen,
+    }
+
+
 def bytes_per_token(model_stats, bits_per_elem):
     bytes_per_elem = bits_per_elem / 8.0
     return 2.0 * model_stats["num_layers"] * model_stats["num_kv_heads"] * model_stats["head_dim"] * bytes_per_elem
@@ -296,9 +323,7 @@ def parse_run(run_root):
         if not dataset_dir.is_dir():
             continue
         summary_path = find_latest_summary(dataset_dir)
-        if summary_path is None:
-            continue
-        summary = json.loads(summary_path.read_text())
+        summary = json.loads(summary_path.read_text()) if summary_path else {}
         cfg_path = run_root / "configs" / f"{dataset_dir.name}.yaml"
         cfg = load_yaml(cfg_path) if cfg_path.exists() else {}
         model_cfg = cfg.get("model", {}).get("rosetta_config", {})
@@ -323,6 +348,14 @@ def parse_run(run_root):
             sparse_fuse = kv_transfer_config.get("sparse_fuse")
             index_dtype_bytes = kv_transfer_config.get("index_dtype_bytes")
             include_scale_overhead = kv_transfer_config.get("include_scale_overhead")
+        length_stats = aggregate_length_stats(dataset_dir)
+        accuracy = safe_float(summary.get("overall_accuracy"))
+        avg_input = extract_avg_input_length(summary)
+        num_samples = None
+        if length_stats:
+            accuracy = length_stats["accuracy"]
+            avg_input = length_stats["avg_input_length"]
+            num_samples = length_stats["total"]
         rows.append(
             {
                 "run_root": str(run_root),
@@ -339,8 +372,9 @@ def parse_run(run_root):
                 "sparse_fuse": sparse_fuse,
                 "index_dtype_bytes": index_dtype_bytes,
                 "include_scale_overhead": include_scale_overhead,
-                "accuracy": safe_float(summary.get("overall_accuracy")),
-                "avg_input_length": extract_avg_input_length(summary),
+                "accuracy": accuracy,
+                "avg_input_length": avg_input,
+                "num_samples": num_samples,
                 "model_stats": manifest_stats,
             }
         )
@@ -356,6 +390,7 @@ def write_csv(rows, out_path):
         "kv_quant_bits",
         "kv_cache_proportion",
         "kv_cache_order_mode",
+        "num_samples",
         "token_select_mode",
         "token_select_proportion",
         "token_select_scope",

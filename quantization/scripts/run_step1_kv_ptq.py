@@ -901,12 +901,23 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
         repo_id = "nics-efc/C2C_Fuser"
         pattern = "qwen3_0.6b+qwen2.5_0.5b_Fuser/*"
         local_dir = ckpt_root / "C2C_Fuser"
-        snapshot_path = snapshot_download(
-            repo_id=repo_id,
-            allow_patterns=[pattern],
-            local_dir=str(local_dir),
-            local_dir_use_symlinks=False,
-        )
+        snapshot_path = None
+        checkpoint_dir = None
+        if args.checkpoint_dir_override:
+            checkpoint_dir = Path(args.checkpoint_dir_override).expanduser().resolve()
+            if not checkpoint_dir.exists():
+                die(f"Checkpoint override not found: {checkpoint_dir}")
+            repo_id = "local_override"
+            pattern = "override"
+            snapshot_path = str(checkpoint_dir)
+        else:
+            snapshot_path = snapshot_download(
+                repo_id=repo_id,
+                allow_patterns=[pattern],
+                local_dir=str(local_dir),
+                local_dir_use_symlinks=False,
+            )
+            checkpoint_dir = str(local_dir / "qwen3_0.6b+qwen2.5_0.5b_Fuser" / "final")
 
         if args.eval_recipe:
             eval_recipe_path = Path(args.eval_recipe)
@@ -960,7 +971,7 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
             "repo_id": repo_id,
             "allow_patterns": [pattern],
             "snapshot_path": snapshot_path,
-            "checkpoint_dir": str(local_dir / "qwen3_0.6b+qwen2.5_0.5b_Fuser" / "final"),
+            "checkpoint_dir": checkpoint_dir,
             "base_model": base_model,
             "teacher_model": teacher_model,
             "is_do_alignment": rosetta_cfg.get("is_do_alignment", False),
@@ -1092,6 +1103,11 @@ def main():
         help="Require HF token and validate access to base/teacher models",
     )
     parser.add_argument("--checkpoint-dir", default=None, help="Local mode projector checkpoint dir")
+    parser.add_argument(
+        "--checkpoint-dir-override",
+        default=None,
+        help="GPU mode: override projector checkpoint dir (skip HF download)",
+    )
     parser.add_argument("--run-tag", default=None, help="Override run tag")
     parser.add_argument("--output-dir", default=None, help="Local mode output dir override")
     parser.add_argument("--hf-cache", default=None, help="Optional HF cache root")
