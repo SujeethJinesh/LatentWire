@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 719,
+  "error": "mat1 and mat2 shapes cannot be multiplied (109x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7075023",
+    "question": "Which statement is an opinion?",
+    "choices": {
+      "text": [
+        "Some multicellular organisms are plants.",
+        "Most organisms are multicellular.",
+        "Some multicellular organisms are poisonous.",
+        "Most multicellular organisms are dangerous."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement is an opinion?\n\nChoices:\nA. Some multicellular organisms are plants.\nB. Most organisms are multicellular.\nC. Some multicellular organisms are poisonous.\nD. Most multicellular organisms are dangerous.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

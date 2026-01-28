@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 238,
+  "error": "mat1 and mat2 shapes cannot be multiplied (161x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_414504",
+    "question": "Students have a rock sample that may contain the mineral hematite. They know that hematite has a red or rusty streak. How can the students determine the color of the streak in the rock sample?",
+    "choices": {
+      "text": [
+        "use a rock with the known mineral to strike the sample",
+        "rub the sample on a piece of unglazed clay tile",
+        "use a file to break off a piece of the sample",
+        "scratch the sample with an iron nail"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents have a rock sample that may contain the mineral hematite. They know that hematite has a red or rusty streak. How can the students determine the color of the streak in the rock sample?\n\nChoices:\nA. use a rock with the known mineral to strike the sample\nB. rub the sample on a piece of unglazed clay tile\nC. use a file to break off a piece of the sample\nD. scratch the sample with an iron nail\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 897,
+  "error": "mat1 and mat2 shapes cannot be multiplied (151x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2000_8_22",
+    "question": "Which statement about the molecules in ice and the molecules in liquid water is correct?",
+    "choices": {
+      "text": [
+        "The molecules in ice have more energy than the molecules in liquid water.",
+        "The molecules in ice contain different atoms than the molecules in liquid water.",
+        "The molecules in ice have more electric charge than the molecules in liquid water.",
+        "The molecules in ice are less free to move than the molecules in liquid water."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement about the molecules in ice and the molecules in liquid water is correct?\n\nChoices:\nA. The molecules in ice have more energy than the molecules in liquid water.\nB. The molecules in ice contain different atoms than the molecules in liquid water.\nC. The molecules in ice have more electric charge than the molecules in liquid water.\nD. The molecules in ice are less free to move than the molecules in liquid water.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

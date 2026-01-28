@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 605,
+  "error": "mat1 and mat2 shapes cannot be multiplied (116x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_405880",
+    "question": "Which activity is an example of conserving nonrenewable resources?",
+    "choices": {
+      "text": [
+        "carpooling to work",
+        "composting grass clippings",
+        "using a solar-powered calculator",
+        "watering the lawn in the morning"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich activity is an example of conserving nonrenewable resources?\n\nChoices:\nA. carpooling to work\nB. composting grass clippings\nC. using a solar-powered calculator\nD. watering the lawn in the morning\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

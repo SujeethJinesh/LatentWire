@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 959,
+  "error": "mat1 and mat2 shapes cannot be multiplied (104x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2013_5_29411",
+    "question": "During which stage of its life cycle does a butterfly spend the most time eating plant leaves?",
+    "choices": {
+      "text": [
+        "adult",
+        "egg",
+        "larva",
+        "pupa"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nDuring which stage of its life cycle does a butterfly spend the most time eating plant leaves?\n\nChoices:\nA. adult\nB. egg\nC. larva\nD. pupa\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

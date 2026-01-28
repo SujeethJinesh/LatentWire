@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 269,
+  "error": "mat1 and mat2 shapes cannot be multiplied (238x1536 and 1152x1024)",
+  "example": {
+    "id": "MDSA_2009_5_39",
+    "question": "A Green Community Many cities in the United States are developing \"green communities.\" A green community is intended to reduce the use of energy and consists of houses, apartments, and nearby businesses. Grocery stores, restaurants, and movie theaters are all within walking distance of the homes in the community. People travel shorter distances to their schools and jobs. Many of the buildings in a green community are made of renewable and recycled materials. Solar energy keeps the buildings at a comfortable temperature. Natural landscape features, such as trees and plants, are carefully located to provide shade and to control temperatures. Community gardens allow residents to grow food and flowers. People in green communities are using a nonrenewable resource when they",
+    "choices": {
+      "text": [
+        "heat their homes with wood",
+        "wash vegetables before cooking",
+        "drive gasoline-powered automobiles",
+        "grow flowers in the community garden"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA Green Community Many cities in the United States are developing \"green communities.\" A green community is intended to reduce the use of energy and consists of houses, apartments, and nearby businesses. Grocery stores, restaurants, and movie theaters are all within walking distance of the homes in the community. People travel shorter distances to their schools and jobs. Many of the buildings in a green community are made of renewable and recycled materials. Solar energy keeps the buildings at a comfortable temperature. Natural landscape features, such as trees and plants, are carefully located to provide shade and to control temperatures. Community gardens allow residents to grow food and flowers. People in green communities are using a nonrenewable resource when they\n\nChoices:\nA. heat their homes with wood\nB. wash vegetables before cooking\nC. drive gasoline-powered automobiles\nD. grow flowers in the community garden\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

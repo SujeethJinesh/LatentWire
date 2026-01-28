@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 449,
+  "error": "mat1 and mat2 shapes cannot be multiplied (118x1536 and 1152x1024)",
+  "example": {
+    "id": "1393",
+    "question_stem": "When does the first quarter phase of the moon occur?",
+    "choices": {
+      "text": [
+        "when you cannot see the moon in the sky at night",
+        "after the first phase of the lunar month",
+        "after a blue moon",
+        "during the full moon"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen does the first quarter phase of the moon occur?\n\nChoices:\nA. when you cannot see the moon in the sky at night\nB. after the first phase of the lunar month\nC. after a blue moon\nD. during the full moon\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 659,
+  "error": "mat1 and mat2 shapes cannot be multiplied (132x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_415406",
+    "question": "A river erodes its banks for thousands of years, and deposits the eroded material at its mouth. What two landforms did the river make?",
+    "choices": {
+      "text": [
+        "a hill and a delta",
+        "a delta and a canyon",
+        "a canyon and a dune",
+        "a dune and a delta"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA river erodes its banks for thousands of years, and deposits the eroded material at its mouth. What two landforms did the river make?\n\nChoices:\nA. a hill and a delta\nB. a delta and a canyon\nC. a canyon and a dune\nD. a dune and a delta\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

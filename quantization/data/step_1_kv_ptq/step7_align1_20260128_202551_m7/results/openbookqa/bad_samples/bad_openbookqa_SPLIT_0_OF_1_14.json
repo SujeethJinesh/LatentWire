@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 14,
+  "error": "mat1 and mat2 shapes cannot be multiplied (117x1536 and 1152x1024)",
+  "example": {
+    "id": "758",
+    "question_stem": "A positive effect of burning biofuel is",
+    "choices": {
+      "text": [
+        "shortage of crops for the food supply",
+        "an increase in air pollution",
+        "powering the lights in a home",
+        "deforestation in the amazon to make room for crops"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA positive effect of burning biofuel is\n\nChoices:\nA. shortage of crops for the food supply\nB. an increase in air pollution\nC. powering the lights in a home\nD. deforestation in the amazon to make room for crops\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

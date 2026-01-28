@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1013,
+  "error": "mat1 and mat2 shapes cannot be multiplied (106x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7091823",
+    "question": "In the nitrogen cycle, nitrogen can return to the lithosphere directly from the atmosphere by",
+    "choices": {
+      "text": [
+        "lightning.",
+        "air pollution.",
+        "condensation.",
+        "cellular respiration."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn the nitrogen cycle, nitrogen can return to the lithosphere directly from the atmosphere by\n\nChoices:\nA. lightning.\nB. air pollution.\nC. condensation.\nD. cellular respiration.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

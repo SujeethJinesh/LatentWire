@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 84,
+  "error": "mat1 and mat2 shapes cannot be multiplied (174x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7103600",
+    "question": "A student investigates the effects of fertilizer on corn plants by performing the following steps.1. Plant groups of corn plants in the same type and amount of soil in full sunlight.2. Add the same amount of different brands of fertilizer to each group.3. Water the plants for 5 minutes each day.4. Measure the heights of the plants each day. What is the independent variable in this investigation?",
+    "choices": {
+      "text": [
+        "type of plant",
+        "height of plant",
+        "amount of fertilizer",
+        "type of fertilizer"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student investigates the effects of fertilizer on corn plants by performing the following steps.1. Plant groups of corn plants in the same type and amount of soil in full sunlight.2. Add the same amount of different brands of fertilizer to each group.3. Water the plants for 5 minutes each day.4. Measure the heights of the plants each day. What is the independent variable in this investigation?\n\nChoices:\nA. type of plant\nB. height of plant\nC. amount of fertilizer\nD. type of fertilizer\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

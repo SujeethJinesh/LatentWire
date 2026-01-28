@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1060,
+  "error": "mat1 and mat2 shapes cannot be multiplied (123x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7016258",
+    "question": "What is the proper procedure for safely disposing of an acid solution after finishing an experiment?",
+    "choices": {
+      "text": [
+        "pour the solution down the sink",
+        "neutralize the solution with a base",
+        "dilute the solution with more acid",
+        "absorb the liquid with paper towels"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is the proper procedure for safely disposing of an acid solution after finishing an experiment?\n\nChoices:\nA. pour the solution down the sink\nB. neutralize the solution with a base\nC. dilute the solution with more acid\nD. absorb the liquid with paper towels\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 133,
+  "error": "mat1 and mat2 shapes cannot be multiplied (115x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7141610",
+    "question": "There is a very slight change in gravity at the top of a mountain. Which property would most likely be less at the top of a mountain?",
+    "choices": {
+      "text": [
+        "mass",
+        "weight",
+        "body density",
+        "body temperature"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nThere is a very slight change in gravity at the top of a mountain. Which property would most likely be less at the top of a mountain?\n\nChoices:\nA. mass\nB. weight\nC. body density\nD. body temperature\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

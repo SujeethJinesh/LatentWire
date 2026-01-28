@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1161,
+  "error": "mat1 and mat2 shapes cannot be multiplied (152x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7159303",
+    "question": "As glaciers receded at the end of the last Ice Age, temperatures increased, allowing lakes to form. Pioneer plants grew in the dunes near the lakes. Farther from the dunes, grasslands and forested areas developed. Which process took place after the glaciers melted, allowing grasslands and forests to develop?",
+    "choices": {
+      "text": [
+        "primary succession",
+        "habitat destruction",
+        "resource depletion",
+        "genetic mutation"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nAs glaciers receded at the end of the last Ice Age, temperatures increased, allowing lakes to form. Pioneer plants grew in the dunes near the lakes. Farther from the dunes, grasslands and forested areas developed. Which process took place after the glaciers melted, allowing grasslands and forests to develop?\n\nChoices:\nA. primary succession\nB. habitat destruction\nC. resource depletion\nD. genetic mutation\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

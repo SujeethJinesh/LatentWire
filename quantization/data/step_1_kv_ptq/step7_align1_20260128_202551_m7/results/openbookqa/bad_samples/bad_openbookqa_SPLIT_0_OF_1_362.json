@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 362,
+  "error": "mat1 and mat2 shapes cannot be multiplied (102x1536 and 1152x1024)",
+  "example": {
+    "id": "9-57",
+    "question_stem": "In order for your computer to operate, it must have an electrical path that is what?",
+    "choices": {
+      "text": [
+        "magical",
+        "closed",
+        "broken",
+        "open"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn order for your computer to operate, it must have an electrical path that is what?\n\nChoices:\nA. magical\nB. closed\nC. broken\nD. open\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

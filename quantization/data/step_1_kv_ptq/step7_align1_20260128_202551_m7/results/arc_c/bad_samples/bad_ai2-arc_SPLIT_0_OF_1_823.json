@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 823,
+  "error": "mat1 and mat2 shapes cannot be multiplied (140x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_417128",
+    "question": "Nutrient runoff can cause algal blooms in waterways. Which genetically modified organisms could help reduce algal blooms?",
+    "choices": {
+      "text": [
+        "pigs that are modified to have more fat",
+        "cows that are modified to require less feed",
+        "corn that is modified to be resistant to herbicides",
+        "soybeans that are modified to make their own insecticide"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nNutrient runoff can cause algal blooms in waterways. Which genetically modified organisms could help reduce algal blooms?\n\nChoices:\nA. pigs that are modified to have more fat\nB. cows that are modified to require less feed\nC. corn that is modified to be resistant to herbicides\nD. soybeans that are modified to make their own insecticide\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

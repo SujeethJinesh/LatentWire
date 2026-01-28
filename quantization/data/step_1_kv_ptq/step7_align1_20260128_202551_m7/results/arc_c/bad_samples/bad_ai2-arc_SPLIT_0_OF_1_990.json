@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 990,
+  "error": "mat1 and mat2 shapes cannot be multiplied (135x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_405931",
+    "question": "Pesticides are used by farmers to control insects. Sometimes, the pesticides run off into streams. This is an example of",
+    "choices": {
+      "text": [
+        "farmers working to protect the environment.",
+        "natural substances being used to solve problems.",
+        "farmers trying to decrease the amount of crops.",
+        "the solution for one problem creating another problem."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nPesticides are used by farmers to control insects. Sometimes, the pesticides run off into streams. This is an example of\n\nChoices:\nA. farmers working to protect the environment.\nB. natural substances being used to solve problems.\nC. farmers trying to decrease the amount of crops.\nD. the solution for one problem creating another problem.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 171,
+  "error": "mat1 and mat2 shapes cannot be multiplied (127x1536 and 1152x1024)",
+  "example": {
+    "id": "LEAP_2005_8_10404",
+    "question": "The radiant energy that comes to Earth from the Sun is",
+    "choices": {
+      "text": [
+        "only one wavelength that we see as yellow.",
+        "a narrow band of wavelengths that is entirely visible light.",
+        "mostly long wavelengths that become heat energy.",
+        "a range of many wavelengths from long to very short."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe radiant energy that comes to Earth from the Sun is\n\nChoices:\nA. only one wavelength that we see as yellow.\nB. a narrow band of wavelengths that is entirely visible light.\nC. mostly long wavelengths that become heat energy.\nD. a range of many wavelengths from long to very short.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

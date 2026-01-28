@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 914,
+  "error": "mat1 and mat2 shapes cannot be multiplied (134x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_405387",
+    "question": "The average temperatures over a four-month period were 31, 24, 18, and 12 degrees Celsius. What is the median temperature for these four months?",
+    "choices": {
+      "text": [
+        "15°C",
+        "21°C",
+        "27°C",
+        "33°C"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe average temperatures over a four-month period were 31, 24, 18, and 12 degrees Celsius. What is the median temperature for these four months?\n\nChoices:\nA. 15°C\nB. 21°C\nC. 27°C\nD. 33°C\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

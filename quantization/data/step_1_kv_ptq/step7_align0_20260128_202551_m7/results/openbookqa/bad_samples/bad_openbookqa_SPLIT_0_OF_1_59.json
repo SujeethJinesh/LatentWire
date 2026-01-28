@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 59,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "9-29",
+    "question_stem": "What could be a positive aspect of a tree being cut down?",
+    "choices": {
+      "text": [
+        "the plants that were under the tree will have access to more light",
+        "the squirrels that were in that tree will have an easier time getting to their home",
+        "Plants under the tree will get cooled off by the shade",
+        "The sun will shine brighter than before"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat could be a positive aspect of a tree being cut down?\n\nChoices:\nA. the plants that were under the tree will have access to more light\nB. the squirrels that were in that tree will have an easier time getting to their home\nC. Plants under the tree will get cooled off by the shade\nD. The sun will shine brighter than before\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

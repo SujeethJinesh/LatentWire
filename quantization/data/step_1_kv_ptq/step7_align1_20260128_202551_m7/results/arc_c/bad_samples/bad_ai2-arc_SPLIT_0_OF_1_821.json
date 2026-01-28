@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 821,
+  "error": "mat1 and mat2 shapes cannot be multiplied (115x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_401656",
+    "question": "Which event must have occurred before coal and oil could be formed?",
+    "choices": {
+      "text": [
+        "Plants began appearing on Earth.",
+        "Dinosaurs became extinct on Earth.",
+        "Earth's continents became separated.",
+        "Earth's moon began orbiting."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich event must have occurred before coal and oil could be formed?\n\nChoices:\nA. Plants began appearing on Earth.\nB. Dinosaurs became extinct on Earth.\nC. Earth's continents became separated.\nD. Earth's moon began orbiting.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

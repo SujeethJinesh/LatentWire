@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 459,
+  "error": "mat1 and mat2 shapes cannot be multiplied (135x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2001_5_2",
+    "question": "Birds come in a variety of colors, shapes, and sizes. Which usually determines the color, shape, and size of a bird?",
+    "choices": {
+      "text": [
+        "the time of year it was born",
+        "the type of food the bird eats",
+        "the bird's migratory patterns",
+        "what the bird inherited from its parents"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nBirds come in a variety of colors, shapes, and sizes. Which usually determines the color, shape, and size of a bird?\n\nChoices:\nA. the time of year it was born\nB. the type of food the bird eats\nC. the bird's migratory patterns\nD. what the bird inherited from its parents\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

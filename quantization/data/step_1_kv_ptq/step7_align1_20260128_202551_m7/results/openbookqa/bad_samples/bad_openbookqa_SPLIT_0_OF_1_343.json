@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 343,
+  "error": "mat1 and mat2 shapes cannot be multiplied (106x1536 and 1152x1024)",
+  "example": {
+    "id": "7-1062",
+    "question_stem": "The respiratory system works by",
+    "choices": {
+      "text": [
+        "directing oxygen from lungs to other organs",
+        "pushing air through lungs",
+        "moving air in a room",
+        "making air quality better"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe respiratory system works by\n\nChoices:\nA. directing oxygen from lungs to other organs\nB. pushing air through lungs\nC. moving air in a room\nD. making air quality better\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 143,
+  "error": "mat1 and mat2 shapes cannot be multiplied (144x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7011130",
+    "question": "Two chemicals react in a beaker that has water droplets on the outside of the bottom of the beaker. The water droplets freeze. Which statement best describes the reaction?",
+    "choices": {
+      "text": [
+        "Endothermic because energy is absorbed.",
+        "Endothermic because energy is released.",
+        "Exothermic because energy is absorbed.",
+        "Exothermic because energy is released."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nTwo chemicals react in a beaker that has water droplets on the outside of the bottom of the beaker. The water droplets freeze. Which statement best describes the reaction?\n\nChoices:\nA. Endothermic because energy is absorbed.\nB. Endothermic because energy is released.\nC. Exothermic because energy is absorbed.\nD. Exothermic because energy is released.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

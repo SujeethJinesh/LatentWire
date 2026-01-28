@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 195,
+  "error": "mat1 and mat2 shapes cannot be multiplied (106x1536 and 1152x1024)",
+  "example": {
+    "id": "1200",
+    "question_stem": "What date is the amount of daylight minimized",
+    "choices": {
+      "text": [
+        "Jul 4th",
+        "Feb 29th",
+        "May 3rd",
+        "Sep 1st"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat date is the amount of daylight minimized\n\nChoices:\nA. Jul 4th\nB. Feb 29th\nC. May 3rd\nD. Sep 1st\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

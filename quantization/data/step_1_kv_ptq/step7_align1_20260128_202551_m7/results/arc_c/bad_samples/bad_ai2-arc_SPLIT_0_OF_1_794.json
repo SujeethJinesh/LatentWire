@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 794,
+  "error": "mat1 and mat2 shapes cannot be multiplied (139x1536 and 1152x1024)",
+  "example": {
+    "id": "AIMS_2008_4_5",
+    "question": "Students want to test how the temperature changes each day throughout the year. Which of the following does not have to be kept the same during the test?",
+    "choices": {
+      "text": [
+        "the place where the temperature is measured",
+        "the thermometer used to take the measurement",
+        "the person reading the temperature measurement",
+        "the time of day when the temperature is measured"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents want to test how the temperature changes each day throughout the year. Which of the following does not have to be kept the same during the test?\n\nChoices:\nA. the place where the temperature is measured\nB. the thermometer used to take the measurement\nC. the person reading the temperature measurement\nD. the time of day when the temperature is measured\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

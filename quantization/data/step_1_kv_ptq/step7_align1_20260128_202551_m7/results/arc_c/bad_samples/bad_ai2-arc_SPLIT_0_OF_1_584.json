@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 584,
+  "error": "mat1 and mat2 shapes cannot be multiplied (211x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7133613",
+    "question": "The cactus moth was deliberately introduced to Australia in 1926 as a biological control for an invasive prickly pear cactus. By the early 1990s the moth had also migrated to the Florida Keys from South America and the moth soon eliminated most of the semaphore cacti in the region. Since then, the moth has adapted to eat other plants in the Keys and has continued to grow in number. Which procedure would most likely reduce the population of the cactus moth?",
+    "choices": {
+      "text": [
+        "Release sterile moths to limit reproduction.",
+        "Use widespread spraying of insecticides.",
+        "Introduce a predator of the cacti.",
+        "Stop importation of all types of plants."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe cactus moth was deliberately introduced to Australia in 1926 as a biological control for an invasive prickly pear cactus. By the early 1990s the moth had also migrated to the Florida Keys from South America and the moth soon eliminated most of the semaphore cacti in the region. Since then, the moth has adapted to eat other plants in the Keys and has continued to grow in number. Which procedure would most likely reduce the population of the cactus moth?\n\nChoices:\nA. Release sterile moths to limit reproduction.\nB. Use widespread spraying of insecticides.\nC. Introduce a predator of the cacti.\nD. Stop importation of all types of plants.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1148,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_400324",
+    "question": "Students go on a class field trip to collect insects. Which of these is an important safety rule for the students to follow?",
+    "choices": {
+      "text": [
+        "Pick up insects with bare hands.",
+        "Stay with a classmate at all times.",
+        "Reach under large rocks without looking first.",
+        "Work away from the group."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents go on a class field trip to collect insects. Which of these is an important safety rule for the students to follow?\n\nChoices:\nA. Pick up insects with bare hands.\nB. Stay with a classmate at all times.\nC. Reach under large rocks without looking first.\nD. Work away from the group.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

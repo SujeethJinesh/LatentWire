@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 899,
+  "error": "mat1 and mat2 shapes cannot be multiplied (145x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7206430",
+    "question": "A lab group investigates the growth rates of four plants grown near a classroom window. The group's conclusion is most strengthened by similar data from which of these sources?",
+    "choices": {
+      "text": [
+        "other lab groups investigating the same question",
+        "average growth rates of the plants published in a book",
+        "an experiment of different plants in the same environment",
+        "a new experiment done with larger plants"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA lab group investigates the growth rates of four plants grown near a classroom window. The group's conclusion is most strengthened by similar data from which of these sources?\n\nChoices:\nA. other lab groups investigating the same question\nB. average growth rates of the plants published in a book\nC. an experiment of different plants in the same environment\nD. a new experiment done with larger plants\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

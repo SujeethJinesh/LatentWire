@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 91,
+  "error": "mat1 and mat2 shapes cannot be multiplied (117x1536 and 1152x1024)",
+  "example": {
+    "id": "9-350",
+    "question_stem": "The salamander could eat a large amounts of what?",
+    "choices": {
+      "text": [
+        "fettuccine if left around",
+        "waxy leaves from certain plants",
+        "dead carcass meat from livestock",
+        "six legged winged organisms"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe salamander could eat a large amounts of what?\n\nChoices:\nA. fettuccine if left around\nB. waxy leaves from certain plants\nC. dead carcass meat from livestock\nD. six legged winged organisms\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

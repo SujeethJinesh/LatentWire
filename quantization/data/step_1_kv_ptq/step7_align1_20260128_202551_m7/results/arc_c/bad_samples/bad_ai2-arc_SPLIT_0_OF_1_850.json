@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 850,
+  "error": "mat1 and mat2 shapes cannot be multiplied (151x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7228358",
+    "question": "In biology class, a student places a tissue specimen on a glass microscope slide. The student drops the slide, and the slide shatters. What procedure should the student follow first?",
+    "choices": {
+      "text": [
+        "attempt to collect the specimen from the slide pieces",
+        "pick up the larger pieces of the slide",
+        "use a broom to sweep up all glass on the floor",
+        "inform the teacher of the accident"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn biology class, a student places a tissue specimen on a glass microscope slide. The student drops the slide, and the slide shatters. What procedure should the student follow first?\n\nChoices:\nA. attempt to collect the specimen from the slide pieces\nB. pick up the larger pieces of the slide\nC. use a broom to sweep up all glass on the floor\nD. inform the teacher of the accident\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

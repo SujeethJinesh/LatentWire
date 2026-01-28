@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 468,
+  "error": "mat1 and mat2 shapes cannot be multiplied (115x1536 and 1152x1024)",
+  "example": {
+    "id": "948",
+    "question_stem": "An instinctual behavior is",
+    "choices": {
+      "text": [
+        "dogs rolling over on command",
+        "frogs returning to the ponds were they hatched to lay eggs",
+        "birds mimicking human speech",
+        "seals clapping for treats from trainers"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nAn instinctual behavior is\n\nChoices:\nA. dogs rolling over on command\nB. frogs returning to the ponds were they hatched to lay eggs\nC. birds mimicking human speech\nD. seals clapping for treats from trainers\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1065,
+  "error": "mat1 and mat2 shapes cannot be multiplied (183x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_407097",
+    "question": "A science class is studying the states of matter. One group of students freezes 100 grams (g) of water in a cup. Another group of students melts 50 g of ice in a cup. Which of these will most likely occur at the end of the experiment?",
+    "choices": {
+      "text": [
+        "The temperature of both cups will be the same.",
+        "Both samples in the cups will be in the same state.",
+        "Both groups will have the same mass with which they started.",
+        "The time required for the changes in states of matter will be the same."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA science class is studying the states of matter. One group of students freezes 100 grams (g) of water in a cup. Another group of students melts 50 g of ice in a cup. Which of these will most likely occur at the end of the experiment?\n\nChoices:\nA. The temperature of both cups will be the same.\nB. Both samples in the cups will be in the same state.\nC. Both groups will have the same mass with which they started.\nD. The time required for the changes in states of matter will be the same.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

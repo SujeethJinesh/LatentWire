@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 785,
+  "error": "mat1 and mat2 shapes cannot be multiplied (147x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7203473",
+    "question": "A DNA strand contains codons, which consist of a sequence of three nucleotides. Which best describes the importance of codons found in the sequence of DNA?",
+    "choices": {
+      "text": [
+        "They contain the code for messenger RNA.",
+        "They signal the start of mitotic cell division.",
+        "They ensure proper replication of the genetic code.",
+        "They are used to assemble amino acids for protein synthesis."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA DNA strand contains codons, which consist of a sequence of three nucleotides. Which best describes the importance of codons found in the sequence of DNA?\n\nChoices:\nA. They contain the code for messenger RNA.\nB. They signal the start of mitotic cell division.\nC. They ensure proper replication of the genetic code.\nD. They are used to assemble amino acids for protein synthesis.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

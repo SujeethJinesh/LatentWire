@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 891,
+  "error": "mat1 and mat2 shapes cannot be multiplied (166x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_417593",
+    "question": "A fish in a pond has longer protective spines than any other fish of its species. The spines keep the fish safe from predators. The fish has many offspring, which also have long spines. Which statement best describes what happened?",
+    "choices": {
+      "text": [
+        "A mutation caused a beneficial change in the fish.",
+        "A mutation caused a harmful change in the fish.",
+        "Longer spines caused a genetic change in the fish.",
+        "Longer spines caused a temporary change in the fish."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA fish in a pond has longer protective spines than any other fish of its species. The spines keep the fish safe from predators. The fish has many offspring, which also have long spines. Which statement best describes what happened?\n\nChoices:\nA. A mutation caused a beneficial change in the fish.\nB. A mutation caused a harmful change in the fish.\nC. Longer spines caused a genetic change in the fish.\nD. Longer spines caused a temporary change in the fish.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

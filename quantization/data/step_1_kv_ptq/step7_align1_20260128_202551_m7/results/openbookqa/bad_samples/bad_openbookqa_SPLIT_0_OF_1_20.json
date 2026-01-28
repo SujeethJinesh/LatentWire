@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 20,
+  "error": "mat1 and mat2 shapes cannot be multiplied (103x1536 and 1152x1024)",
+  "example": {
+    "id": "1160",
+    "question_stem": "There was a lot more water vapor in the air when we went on a trip to",
+    "choices": {
+      "text": [
+        "Hanoi",
+        "Athens",
+        "Baghdad",
+        "Phoenix"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThere was a lot more water vapor in the air when we went on a trip to\n\nChoices:\nA. Hanoi\nB. Athens\nC. Baghdad\nD. Phoenix\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

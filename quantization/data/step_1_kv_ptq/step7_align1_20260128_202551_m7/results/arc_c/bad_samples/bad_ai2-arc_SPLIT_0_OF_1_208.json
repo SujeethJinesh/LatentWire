@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 208,
+  "error": "mat1 and mat2 shapes cannot be multiplied (131x1536 and 1152x1024)",
+  "example": {
+    "id": "AKDE&ED_2008_8_53",
+    "question": "Which statement explains why most salmon leave salt water and return to fresh water?",
+    "choices": {
+      "text": [
+        "It is a learned behavior that maintains the population.",
+        "It is a learned behavior that maintains salt concentrations.",
+        "It is an inherited behavior that maintains the population.",
+        "It is an inherited behavior that maintains salt concentrations."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement explains why most salmon leave salt water and return to fresh water?\n\nChoices:\nA. It is a learned behavior that maintains the population.\nB. It is a learned behavior that maintains salt concentrations.\nC. It is an inherited behavior that maintains the population.\nD. It is an inherited behavior that maintains salt concentrations.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1129,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7212905",
+    "question": "Research is being conducted on using energy from the Sun to split water molecules into hydrogen and oxygen. The oxygen will be released into the environment, and hydrogen will be used for fuel. Which statement describes how this technology will benefit the environment?",
+    "choices": {
+      "text": [
+        "The properties of hydrogen will be better understood.",
+        "The availability of clean resources will increase.",
+        "The atmosphere will be supplied with oxygen.",
+        "The Sun's abundant supply of energy will be used."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nResearch is being conducted on using energy from the Sun to split water molecules into hydrogen and oxygen. The oxygen will be released into the environment, and hydrogen will be used for fuel. Which statement describes how this technology will benefit the environment?\n\nChoices:\nA. The properties of hydrogen will be better understood.\nB. The availability of clean resources will increase.\nC. The atmosphere will be supplied with oxygen.\nD. The Sun's abundant supply of energy will be used.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 403,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MSA_2013_5_23",
+    "question": "Human activities affect the natural environment in many ways. Which action would have a positive effect on the natural environment?",
+    "choices": {
+      "text": [
+        "using natural gas to heat homes",
+        "building dams to produce electricity",
+        "cutting down trees to build new homes",
+        "recycling paper to reduce the cutting of trees"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nHuman activities affect the natural environment in many ways. Which action would have a positive effect on the natural environment?\n\nChoices:\nA. using natural gas to heat homes\nB. building dams to produce electricity\nC. cutting down trees to build new homes\nD. recycling paper to reduce the cutting of trees\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

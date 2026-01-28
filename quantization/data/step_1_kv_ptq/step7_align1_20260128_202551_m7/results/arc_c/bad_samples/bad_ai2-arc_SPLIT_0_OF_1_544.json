@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 544,
+  "error": "mat1 and mat2 shapes cannot be multiplied (220x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2016_8_15",
+    "question": "A college campus has so few parking spaces that cars are often lined up waiting to park during class hours. Which of the following describes how the college could best solve the need for more parking spaces using the universal systems model?",
+    "choices": {
+      "text": [
+        "The college could build an additional parking lot, gather parking data, and then receive input from community meetings.",
+        "The college could limit access to parking lots during busy hours, hire security officers to help restrict parking, and then gather parking data.",
+        "The college could gather parking data, receive input from community meetings, build an additional parking lot, and then gather more parking data.",
+        "The college could hire security officers to help restrict parking, gather parking data, receive input from community meetings, and then gather more data."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA college campus has so few parking spaces that cars are often lined up waiting to park during class hours. Which of the following describes how the college could best solve the need for more parking spaces using the universal systems model?\n\nChoices:\nA. The college could build an additional parking lot, gather parking data, and then receive input from community meetings.\nB. The college could limit access to parking lots during busy hours, hire security officers to help restrict parking, and then gather parking data.\nC. The college could gather parking data, receive input from community meetings, build an additional parking lot, and then gather more parking data.\nD. The college could hire security officers to help restrict parking, gather parking data, receive input from community meetings, and then gather more data.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

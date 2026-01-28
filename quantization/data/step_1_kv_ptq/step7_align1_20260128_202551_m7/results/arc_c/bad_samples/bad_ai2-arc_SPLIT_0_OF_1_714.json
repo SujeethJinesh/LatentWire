@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 714,
+  "error": "mat1 and mat2 shapes cannot be multiplied (192x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2004_9_10-v1",
+    "question": "When estimating amounts of building supplies, it is better to allow for some waste and error rather than to cause delays by not ordering sufficient supplies. An engineer is estimating the number of bundles of shingles needed for a roof area of approximately 2000 sq. ft. In roofing, a square is 100 sq. ft., and each bundle covers one-third of a square. Which of the following is closest to the number of bundles that the engineer should order?",
+    "choices": {
+      "text": [
+        "23",
+        "43",
+        "63",
+        "83 331"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen estimating amounts of building supplies, it is better to allow for some waste and error rather than to cause delays by not ordering sufficient supplies. An engineer is estimating the number of bundles of shingles needed for a roof area of approximately 2000 sq. ft. In roofing, a square is 100 sq. ft., and each bundle covers one-third of a square. Which of the following is closest to the number of bundles that the engineer should order?\n\nChoices:\nA. 23\nB. 43\nC. 63\nD. 83 331\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

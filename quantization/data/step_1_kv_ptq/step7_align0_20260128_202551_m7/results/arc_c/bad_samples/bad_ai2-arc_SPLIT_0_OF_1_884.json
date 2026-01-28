@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 884,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MEA_2010_8_18",
+    "question": "Which statement best explains why wood is considered a renewable energy resource and coal is not?",
+    "choices": {
+      "text": [
+        "Wood is easier to find than coal.",
+        "Wood has less carbon per unit mass than coal.",
+        "Wood grows more quickly than coal forms.",
+        "Wood has less stored energy per unit mass than coal."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement best explains why wood is considered a renewable energy resource and coal is not?\n\nChoices:\nA. Wood is easier to find than coal.\nB. Wood has less carbon per unit mass than coal.\nC. Wood grows more quickly than coal forms.\nD. Wood has less stored energy per unit mass than coal.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

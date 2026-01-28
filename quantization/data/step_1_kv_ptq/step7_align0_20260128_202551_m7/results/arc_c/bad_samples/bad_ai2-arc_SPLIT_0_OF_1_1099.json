@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1099,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_401265",
+    "question": "When a scientist comes up with a hypothesis, he or she is most likely",
+    "choices": {
+      "text": [
+        "summarizing the data in an investigation.",
+        "conducting the final steps of an experiment.",
+        "changing the procedures during an experiment.",
+        "predicting what will happen in an investigation."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen a scientist comes up with a hypothesis, he or she is most likely\n\nChoices:\nA. summarizing the data in an investigation.\nB. conducting the final steps of an experiment.\nC. changing the procedures during an experiment.\nD. predicting what will happen in an investigation.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

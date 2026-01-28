@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 75,
+  "error": "mat1 and mat2 shapes cannot be multiplied (109x1536 and 1152x1024)",
+  "example": {
+    "id": "8-93",
+    "question_stem": "Over a period of time the weather can change",
+    "choices": {
+      "text": [
+        "The color of my hair",
+        "The way I walk",
+        "The size of a statue",
+        "The sound a computer makes"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nOver a period of time the weather can change\n\nChoices:\nA. The color of my hair\nB. The way I walk\nC. The size of a statue\nD. The sound a computer makes\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

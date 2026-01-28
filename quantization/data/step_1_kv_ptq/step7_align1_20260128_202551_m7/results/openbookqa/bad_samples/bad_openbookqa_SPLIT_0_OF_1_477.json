@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 477,
+  "error": "mat1 and mat2 shapes cannot be multiplied (106x1536 and 1152x1024)",
+  "example": {
+    "id": "9-411",
+    "question_stem": "Will happen to the number of islands if the planet's temperature rises?",
+    "choices": {
+      "text": [
+        "they will increase",
+        "nothing will happen",
+        "they will shrink",
+        "they will double"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWill happen to the number of islands if the planet's temperature rises?\n\nChoices:\nA. they will increase\nB. nothing will happen\nC. they will shrink\nD. they will double\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

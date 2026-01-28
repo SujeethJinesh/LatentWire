@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1086,
+  "error": "mat1 and mat2 shapes cannot be multiplied (172x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7159023",
+    "question": "Pluto was discovered in 1930 and was named the ninth planet. In 2003, an object larger than Pluto was discovered by astronomer Michael Brown. Pluto has been reclassified as a \"dwarf\" planet. What does this most likely suggest about scientific investigations?",
+    "choices": {
+      "text": [
+        "Earlier scientists did not use appropriate tools.",
+        "Pluto should not have been classified as a planet.",
+        "Classifications change as new evidence is gathered.",
+        "Review of planetary characteristics should occur every year."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nPluto was discovered in 1930 and was named the ninth planet. In 2003, an object larger than Pluto was discovered by astronomer Michael Brown. Pluto has been reclassified as a \"dwarf\" planet. What does this most likely suggest about scientific investigations?\n\nChoices:\nA. Earlier scientists did not use appropriate tools.\nB. Pluto should not have been classified as a planet.\nC. Classifications change as new evidence is gathered.\nD. Review of planetary characteristics should occur every year.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

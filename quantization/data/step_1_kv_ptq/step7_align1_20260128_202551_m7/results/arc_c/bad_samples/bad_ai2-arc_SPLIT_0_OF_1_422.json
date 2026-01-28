@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 422,
+  "error": "mat1 and mat2 shapes cannot be multiplied (152x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_406835",
+    "question": "Students conducted a scientific investigation about soil types found in the school yard. What should the students most likely do to be sure their investigation will be understood by the class next year?",
+    "choices": {
+      "text": [
+        "Include the names of the students that worked on the investigation.",
+        "Correctly label all the data in their charts and tables.",
+        "Take a picture of the students doing the study.",
+        "Give the report to the teacher."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents conducted a scientific investigation about soil types found in the school yard. What should the students most likely do to be sure their investigation will be understood by the class next year?\n\nChoices:\nA. Include the names of the students that worked on the investigation.\nB. Correctly label all the data in their charts and tables.\nC. Take a picture of the students doing the study.\nD. Give the report to the teacher.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

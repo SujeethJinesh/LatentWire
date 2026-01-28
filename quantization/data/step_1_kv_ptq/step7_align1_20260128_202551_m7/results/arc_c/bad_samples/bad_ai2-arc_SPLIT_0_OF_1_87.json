@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 87,
+  "error": "mat1 and mat2 shapes cannot be multiplied (155x1536 and 1152x1024)",
+  "example": {
+    "id": "ACTAAP_2009_7_8",
+    "question": "Which of the following statements is a scientific hypothesis?",
+    "choices": {
+      "text": [
+        "Flossing has proven to be an effective method of improving oral health.",
+        "Many infectious diseases, such as gum disease, are caused by microorganisms.",
+        "In general, any method that reduces bacteria in the mouth will improve oral health.",
+        "An individual who flosses daily will be less likely to get gum disease than one who flosses weekly."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following statements is a scientific hypothesis?\n\nChoices:\nA. Flossing has proven to be an effective method of improving oral health.\nB. Many infectious diseases, such as gum disease, are caused by microorganisms.\nC. In general, any method that reduces bacteria in the mouth will improve oral health.\nD. An individual who flosses daily will be less likely to get gum disease than one who flosses weekly.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

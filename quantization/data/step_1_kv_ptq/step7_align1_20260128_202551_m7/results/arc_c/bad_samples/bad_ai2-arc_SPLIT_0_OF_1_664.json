@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 664,
+  "error": "mat1 and mat2 shapes cannot be multiplied (137x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2005_8_7",
+    "question": "When air near the ground is warmed by sunlight, which of the following occurs?",
+    "choices": {
+      "text": [
+        "The warm air radiates and becomes cool again.",
+        "The warm air evaporates into the cooler air.",
+        "The warm air expands and rises, resulting in convection.",
+        "The warm air loses its ability to hold water and precipitates."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen air near the ground is warmed by sunlight, which of the following occurs?\n\nChoices:\nA. The warm air radiates and becomes cool again.\nB. The warm air evaporates into the cooler air.\nC. The warm air expands and rises, resulting in convection.\nD. The warm air loses its ability to hold water and precipitates.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

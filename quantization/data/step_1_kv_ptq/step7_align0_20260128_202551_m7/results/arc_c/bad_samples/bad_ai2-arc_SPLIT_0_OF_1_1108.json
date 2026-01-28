@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1108,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "NYSEDREGENTS_2010_4_30",
+    "question": "A student performed this experiment: Four different types of seeds were planted in identical pots filled with the same kind and amount of soil. The pots were placed in a warm, sunny place and were given the same amount of water each day for a month. Which question about these seeds could be answered at the end of the month?",
+    "choices": {
+      "text": [
+        "Which seeds grew well in the dark?",
+        "Which seeds produced the tallest plants?",
+        "Which seeds survived in cold temperatures?",
+        "Which seeds needed the least amount of water?"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student performed this experiment: Four different types of seeds were planted in identical pots filled with the same kind and amount of soil. The pots were placed in a warm, sunny place and were given the same amount of water each day for a month. Which question about these seeds could be answered at the end of the month?\n\nChoices:\nA. Which seeds grew well in the dark?\nB. Which seeds produced the tallest plants?\nC. Which seeds survived in cold temperatures?\nD. Which seeds needed the least amount of water?\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

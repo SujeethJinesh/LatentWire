@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 827,
+  "error": "mat1 and mat2 shapes cannot be multiplied (116x1536 and 1152x1024)",
+  "example": {
+    "id": "ACTAAP_2015_7_9",
+    "question": "Which planet in the solar system has the longest year?",
+    "choices": {
+      "text": [
+        "The planet closest to the Sun.",
+        "The planet with the longest day.",
+        "The planet with the most moons.",
+        "The planet farthest from the Sun."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich planet in the solar system has the longest year?\n\nChoices:\nA. The planet closest to the Sun.\nB. The planet with the longest day.\nC. The planet with the most moons.\nD. The planet farthest from the Sun.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

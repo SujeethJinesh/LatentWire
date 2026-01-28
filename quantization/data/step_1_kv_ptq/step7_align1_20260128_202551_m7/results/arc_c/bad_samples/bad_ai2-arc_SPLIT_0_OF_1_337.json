@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 337,
+  "error": "mat1 and mat2 shapes cannot be multiplied (145x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7206378",
+    "question": "A researcher notices differences in the shapes of leaves on different trees of the same species. Which of these is the most accurate way to record these differences?",
+    "choices": {
+      "text": [
+        "record the numbers of leaves in a data table",
+        "photograph each leaf type using a camera",
+        "record the sizes of different leaves in a notebook",
+        "calculate the percentages of all leaf types using a calculator"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA researcher notices differences in the shapes of leaves on different trees of the same species. Which of these is the most accurate way to record these differences?\n\nChoices:\nA. record the numbers of leaves in a data table\nB. photograph each leaf type using a camera\nC. record the sizes of different leaves in a notebook\nD. calculate the percentages of all leaf types using a calculator\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

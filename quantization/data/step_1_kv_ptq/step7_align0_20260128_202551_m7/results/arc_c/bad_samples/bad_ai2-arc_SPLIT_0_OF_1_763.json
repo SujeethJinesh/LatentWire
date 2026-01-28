@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 763,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MEA_2013_8_1",
+    "question": "There is a limited supply of copper on Earth. How does this affect the way copper is used?",
+    "choices": {
+      "text": [
+        "Copper should be recycled.",
+        "Copper costs less than other materials.",
+        "Copper is in low demand.",
+        "Copper does not make up commercial products."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThere is a limited supply of copper on Earth. How does this affect the way copper is used?\n\nChoices:\nA. Copper should be recycled.\nB. Copper costs less than other materials.\nC. Copper is in low demand.\nD. Copper does not make up commercial products.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

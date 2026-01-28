@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 117,
+  "error": "mat1 and mat2 shapes cannot be multiplied (111x1536 and 1152x1024)",
+  "example": {
+    "id": "1300",
+    "question_stem": "Inherited characteristics",
+    "choices": {
+      "text": [
+        "include mice being able to navigate a maze",
+        "include learning to sit on command",
+        "include dolphins doing tricks for their trainers",
+        "include spots on a ladybug"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nInherited characteristics\n\nChoices:\nA. include mice being able to navigate a maze\nB. include learning to sit on command\nC. include dolphins doing tricks for their trainers\nD. include spots on a ladybug\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

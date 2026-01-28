@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 50,
+  "error": "mat1 and mat2 shapes cannot be multiplied (167x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2001_8_4",
+    "question": "Suppose 20 g of liquid hydrogen peroxide is heated so it completely breaks down into liquid water and oxygen gas. Which best describes the total mass of the water and oxygen that was produced?",
+    "choices": {
+      "text": [
+        "more than 20 g because of the addition of heat",
+        "more than 20 g because there are now two substances",
+        "less than 20 g because oxygen gas is very light",
+        "20 g because no matter is added or removed"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nSuppose 20 g of liquid hydrogen peroxide is heated so it completely breaks down into liquid water and oxygen gas. Which best describes the total mass of the water and oxygen that was produced?\n\nChoices:\nA. more than 20 g because of the addition of heat\nB. more than 20 g because there are now two substances\nC. less than 20 g because oxygen gas is very light\nD. 20 g because no matter is added or removed\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

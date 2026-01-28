@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1074,
+  "error": "mat1 and mat2 shapes cannot be multiplied (185x1536 and 1152x1024)",
+  "example": {
+    "id": "TIMSS_1995_8_L6",
+    "question": "On cold days, snakes usually lie very still and eat little or nothing, while birds usually move around and eat a lot of food. Which statement best explains this?",
+    "choices": {
+      "text": [
+        "Both animals are cold-blooded, but without feathers to keep warm, snakes get too cold to move.",
+        "Unlike birds, snakes are warm-blooded; they must hibernate during cold weather.",
+        "Unlike snakes, birds are cold-blooded; they are less affected by the cold than snakes.",
+        "Unlike snakes, birds are warm-blooded; they must eat food to maintain a constant temperature."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nOn cold days, snakes usually lie very still and eat little or nothing, while birds usually move around and eat a lot of food. Which statement best explains this?\n\nChoices:\nA. Both animals are cold-blooded, but without feathers to keep warm, snakes get too cold to move.\nB. Unlike birds, snakes are warm-blooded; they must hibernate during cold weather.\nC. Unlike snakes, birds are cold-blooded; they are less affected by the cold than snakes.\nD. Unlike snakes, birds are warm-blooded; they must eat food to maintain a constant temperature.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

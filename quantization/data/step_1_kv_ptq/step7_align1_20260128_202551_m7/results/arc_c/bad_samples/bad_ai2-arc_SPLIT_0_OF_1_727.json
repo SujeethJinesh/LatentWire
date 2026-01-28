@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 727,
+  "error": "mat1 and mat2 shapes cannot be multiplied (141x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_407247",
+    "question": "Some frog species will bury themselves in mud if the environment becomes very dry. The frogs enter into a type of hibernation. Which would be the most likely signal for the frogs to emerge from the mud?",
+    "choices": {
+      "text": [
+        "a decrease in daylight hours",
+        "an increase in air temperature",
+        "an increase in precipitation",
+        "a decrease in air pressure"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome frog species will bury themselves in mud if the environment becomes very dry. The frogs enter into a type of hibernation. Which would be the most likely signal for the frogs to emerge from the mud?\n\nChoices:\nA. a decrease in daylight hours\nB. an increase in air temperature\nC. an increase in precipitation\nD. a decrease in air pressure\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

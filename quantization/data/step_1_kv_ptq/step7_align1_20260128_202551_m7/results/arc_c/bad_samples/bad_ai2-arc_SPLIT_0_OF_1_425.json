@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 425,
+  "error": "mat1 and mat2 shapes cannot be multiplied (159x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_409645",
+    "question": "A teacher gives a student an unknown liquid and wants the student to find the boiling point of the liquid. The student performs the investigation and finds the boiling point is 50°C and then repeats the experiment and finds the boiling point is 70°C. How should the student best identify the boiling point?",
+    "choices": {
+      "text": [
+        "use the second boiling point",
+        "average the two numbers",
+        "use the first boiling point",
+        "repeat the investigation"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA teacher gives a student an unknown liquid and wants the student to find the boiling point of the liquid. The student performs the investigation and finds the boiling point is 50°C and then repeats the experiment and finds the boiling point is 70°C. How should the student best identify the boiling point?\n\nChoices:\nA. use the second boiling point\nB. average the two numbers\nC. use the first boiling point\nD. repeat the investigation\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

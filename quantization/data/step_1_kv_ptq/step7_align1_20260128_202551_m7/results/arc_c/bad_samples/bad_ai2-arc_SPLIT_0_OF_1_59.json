@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 59,
+  "error": "mat1 and mat2 shapes cannot be multiplied (197x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_412681",
+    "question": "Which of the following actions will increase the gravitational force between two masses, m_{1} and m_{2}, by the greatest amount?",
+    "choices": {
+      "text": [
+        "Halve the mass of m_{1} and halve the distance between m_{1} and m_{2}.",
+        "Halve the mass of m_{1} and double the distance between m_{1} and m_{2}.",
+        "Double the mass of m_{1} and halve the distance between m_{1} and m_{2}.",
+        "Double the mass of m_{1} and double the distance between m_{1} and m_{2}."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following actions will increase the gravitational force between two masses, m_{1} and m_{2}, by the greatest amount?\n\nChoices:\nA. Halve the mass of m_{1} and halve the distance between m_{1} and m_{2}.\nB. Halve the mass of m_{1} and double the distance between m_{1} and m_{2}.\nC. Double the mass of m_{1} and halve the distance between m_{1} and m_{2}.\nD. Double the mass of m_{1} and double the distance between m_{1} and m_{2}.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

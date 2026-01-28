@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 491,
+  "error": "mat1 and mat2 shapes cannot be multiplied (112x1536 and 1152x1024)",
+  "example": {
+    "id": "9-645",
+    "question_stem": "A shark will be unable to survive on eating algae and moss, because",
+    "choices": {
+      "text": [
+        "it is a predator",
+        "it is a vegetarian",
+        "it is a freshwater fish",
+        "it is a producer"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA shark will be unable to survive on eating algae and moss, because\n\nChoices:\nA. it is a predator\nB. it is a vegetarian\nC. it is a freshwater fish\nD. it is a producer\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

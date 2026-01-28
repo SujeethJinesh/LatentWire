@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 290,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7109323",
+    "question": "For years, many astronomers thought that our solar system formed from a slowly condensing cloud of dust and gas. New evidence indicates that our solar system may have formed when short-lived, massive stars in a nebula exploded. What is most likely going to result from the new evidence?",
+    "choices": {
+      "text": [
+        "The old hypothesis will become obsolete.",
+        "The new hypothesis will be rejected due to conflict.",
+        "The evidence for the old hypothesis will be disregarded.",
+        "The evidence will be verified before the old hypothesis is revised."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nFor years, many astronomers thought that our solar system formed from a slowly condensing cloud of dust and gas. New evidence indicates that our solar system may have formed when short-lived, massive stars in a nebula exploded. What is most likely going to result from the new evidence?\n\nChoices:\nA. The old hypothesis will become obsolete.\nB. The new hypothesis will be rejected due to conflict.\nC. The evidence for the old hypothesis will be disregarded.\nD. The evidence will be verified before the old hypothesis is revised.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

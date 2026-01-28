@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 285,
+  "error": "mat1 and mat2 shapes cannot be multiplied (123x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_407517",
+    "question": "A certain atom has 20 electrons, 21 neutrons, and 20 protons. What is the atomic mass of the atom?",
+    "choices": {
+      "text": [
+        "20",
+        "21",
+        "41",
+        "61"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA certain atom has 20 electrons, 21 neutrons, and 20 protons. What is the atomic mass of the atom?\n\nChoices:\nA. 20\nB. 21\nC. 41\nD. 61\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 222,
+  "error": "mat1 and mat2 shapes cannot be multiplied (112x1536 and 1152x1024)",
+  "example": {
+    "id": "7-852",
+    "question_stem": "Phloem moves things around a plant similar to how",
+    "choices": {
+      "text": [
+        "blood moves in a body",
+        "leaves move in the wind",
+        "water moves in a system",
+        "cars move on a street"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nPhloem moves things around a plant similar to how\n\nChoices:\nA. blood moves in a body\nB. leaves move in the wind\nC. water moves in a system\nD. cars move on a street\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

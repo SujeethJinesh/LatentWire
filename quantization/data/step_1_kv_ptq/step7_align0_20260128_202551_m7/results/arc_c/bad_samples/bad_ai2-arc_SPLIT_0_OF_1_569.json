@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 569,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "VASoL_2009_3_23",
+    "question": "A metal rod is struck and starts to vibrate. Which of these could happen next?",
+    "choices": {
+      "text": [
+        "The metal rod becomes a liquid.",
+        "The metal rod becomes heavier.",
+        "The metal rod attracts other metals.",
+        "The metal rod produces sound."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA metal rod is struck and starts to vibrate. Which of these could happen next?\n\nChoices:\nA. The metal rod becomes a liquid.\nB. The metal rod becomes heavier.\nC. The metal rod attracts other metals.\nD. The metal rod produces sound.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 328,
+  "error": "mat1 and mat2 shapes cannot be multiplied (113x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_407138",
+    "question": "Which of these will form new soil the fastest?",
+    "choices": {
+      "text": [
+        "A log rotting in a forest.",
+        "Water running in a stream.",
+        "A rock sitting in a garden.",
+        "Waves breaking on a beach."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these will form new soil the fastest?\n\nChoices:\nA. A log rotting in a forest.\nB. Water running in a stream.\nC. A rock sitting in a garden.\nD. Waves breaking on a beach.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

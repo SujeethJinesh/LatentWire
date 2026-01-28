@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 735,
+  "error": "mat1 and mat2 shapes cannot be multiplied (122x1536 and 1152x1024)",
+  "example": {
+    "id": "AKDE&ED_2008_4_35",
+    "question": "When and where would the number of daylight hours each day be greatest?",
+    "choices": {
+      "text": [
+        "during the winter near the equator",
+        "during the summer near the equator",
+        "during the winter near the North Pole",
+        "during the summer near the North Pole"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen and where would the number of daylight hours each day be greatest?\n\nChoices:\nA. during the winter near the equator\nB. during the summer near the equator\nC. during the winter near the North Pole\nD. during the summer near the North Pole\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

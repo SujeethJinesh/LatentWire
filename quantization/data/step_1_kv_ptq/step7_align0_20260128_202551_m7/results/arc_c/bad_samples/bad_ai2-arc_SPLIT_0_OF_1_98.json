@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 98,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7216248",
+    "question": "Which structures are common to both plant and animal cells?",
+    "choices": {
+      "text": [
+        "vacuole, chloroplast, nucleus",
+        "cell membrane, nucleus, mitochondrion",
+        "nucleus, cell wall, cell membrane",
+        "mitochondrion, vacuole, cell wall"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich structures are common to both plant and animal cells?\n\nChoices:\nA. vacuole, chloroplast, nucleus\nB. cell membrane, nucleus, mitochondrion\nC. nucleus, cell wall, cell membrane\nD. mitochondrion, vacuole, cell wall\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

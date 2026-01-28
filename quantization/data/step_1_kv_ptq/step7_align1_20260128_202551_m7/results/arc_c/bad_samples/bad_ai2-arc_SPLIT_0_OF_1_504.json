@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 504,
+  "error": "mat1 and mat2 shapes cannot be multiplied (173x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7143308",
+    "question": "Mr. Garcia's science class was studying energy and ways to cut energy costs. Each student was to compare their electric bill for October to the one they would receive for November. Each student would have a list of energy-saving tips that they would follow during November. Which would be the most uncontrollable factor in their investigation?",
+    "choices": {
+      "text": [
+        "the list of energy-saving tips to follow",
+        "the outdoor temperature in November",
+        "the amount of time given to the investigation",
+        "the accuracy of the October and November bills"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nMr. Garcia's science class was studying energy and ways to cut energy costs. Each student was to compare their electric bill for October to the one they would receive for November. Each student would have a list of energy-saving tips that they would follow during November. Which would be the most uncontrollable factor in their investigation?\n\nChoices:\nA. the list of energy-saving tips to follow\nB. the outdoor temperature in November\nC. the amount of time given to the investigation\nD. the accuracy of the October and November bills\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 376,
+  "error": "mat1 and mat2 shapes cannot be multiplied (119x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_405937",
+    "question": "Which of these do scientists most likely do when studying the interaction of animals in their natural habitat?",
+    "choices": {
+      "text": [
+        "collect samples of types of trees",
+        "observe and record behaviors",
+        "conduct experiments in a laboratory",
+        "change environment and observe responses"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these do scientists most likely do when studying the interaction of animals in their natural habitat?\n\nChoices:\nA. collect samples of types of trees\nB. observe and record behaviors\nC. conduct experiments in a laboratory\nD. change environment and observe responses\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

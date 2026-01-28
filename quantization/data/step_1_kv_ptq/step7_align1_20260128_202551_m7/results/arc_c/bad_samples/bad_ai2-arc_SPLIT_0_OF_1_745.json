@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 745,
+  "error": "mat1 and mat2 shapes cannot be multiplied (142x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2006_8_12",
+    "question": "An engineer is analyzing which areas in a city might become flooded if there are heavy rains. Which of the following maps is best to use for this analysis?",
+    "choices": {
+      "text": [
+        "a map showing the routes of city buses",
+        "a map showing the locations of streets",
+        "a map showing the locations of houses",
+        "a map showing the elevations of ground surfaces"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nAn engineer is analyzing which areas in a city might become flooded if there are heavy rains. Which of the following maps is best to use for this analysis?\n\nChoices:\nA. a map showing the routes of city buses\nB. a map showing the locations of streets\nC. a map showing the locations of houses\nD. a map showing the elevations of ground surfaces\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

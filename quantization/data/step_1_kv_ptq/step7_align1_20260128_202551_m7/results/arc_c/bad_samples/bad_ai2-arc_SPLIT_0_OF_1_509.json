@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 509,
+  "error": "mat1 and mat2 shapes cannot be multiplied (128x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_401912",
+    "question": "One parent has brown eyes (BB) and has offspring with another parent who has blue eyes (bb). What is the probability that one of their children will have blue eyes?",
+    "choices": {
+      "text": [
+        "0%",
+        "25%",
+        "50%",
+        "100%"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nOne parent has brown eyes (BB) and has offspring with another parent who has blue eyes (bb). What is the probability that one of their children will have blue eyes?\n\nChoices:\nA. 0%\nB. 25%\nC. 50%\nD. 100%\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

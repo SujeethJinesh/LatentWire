@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 99,
+  "error": "mat1 and mat2 shapes cannot be multiplied (125x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_417677",
+    "question": "A polished metal ball looks very shiny and bright on a sunny day. What makes the ball look shiny?",
+    "choices": {
+      "text": [
+        "The ball makes light.",
+        "The ball reflects light.",
+        "The ball absorbs light and then releases it.",
+        "The ball absorbs light and keeps it inside."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA polished metal ball looks very shiny and bright on a sunny day. What makes the ball look shiny?\n\nChoices:\nA. The ball makes light.\nB. The ball reflects light.\nC. The ball absorbs light and then releases it.\nD. The ball absorbs light and keeps it inside.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

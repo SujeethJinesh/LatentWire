@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 325,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7160563",
+    "question": "Animals can affect their habitats through activities of finding food and raising their young. Sometimes these activities have a positive effect on the habitat of other organisms. Which is the best example of an activity that has a positive effect?",
+    "choices": {
+      "text": [
+        "elephants stripping bark from trees",
+        "viruses infecting the cells of certain birds",
+        "beavers constructing dams to make ponds for lodges",
+        "semi-aquatic rodents feeding on the roots of aquatic plants"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nAnimals can affect their habitats through activities of finding food and raising their young. Sometimes these activities have a positive effect on the habitat of other organisms. Which is the best example of an activity that has a positive effect?\n\nChoices:\nA. elephants stripping bark from trees\nB. viruses infecting the cells of certain birds\nC. beavers constructing dams to make ponds for lodges\nD. semi-aquatic rodents feeding on the roots of aquatic plants\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 604,
+  "error": "mat1 and mat2 shapes cannot be multiplied (148x1536 and 1152x1024)",
+  "example": {
+    "id": "MDSA_2013_8_23",
+    "question": "A science teacher mixes two different substances in a plastic bag and seals the bag. The bag expands and breaks open. What is the most likely reason the bag expanded after the two substances were mixed?",
+    "choices": {
+      "text": [
+        "The substances became cooler and expanded.",
+        "The substances physically changed the plastic.",
+        "The substances became warm and stretched the bag.",
+        "The substances chemically reacted and produced a gas."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA science teacher mixes two different substances in a plastic bag and seals the bag. The bag expands and breaks open. What is the most likely reason the bag expanded after the two substances were mixed?\n\nChoices:\nA. The substances became cooler and expanded.\nB. The substances physically changed the plastic.\nC. The substances became warm and stretched the bag.\nD. The substances chemically reacted and produced a gas.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -934,5 +934,59 @@
       "reason": "",
       "timestamp": "2026-01-28T00:00:00Z"
     }
+  },
+  "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align0": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_202551_m7",
+      "config_hash": "cf37c6ea2e20779f48c331c42dc21b0a4b788496",
+      "reason": "",
+      "timestamp": "2026-01-28T20:28:59.715388Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_202551_m7",
+      "config_hash": "78b37aaa4d1045e52bfa891fa565b728e116e473",
+      "reason": "",
+      "timestamp": "2026-01-28T20:33:13.173710Z"
+    }
+  },
+  "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_202551_m7",
+      "config_hash": "e35916db4b9c932cbf29c291d374008f3fe4c859",
+      "reason": "",
+      "timestamp": "2026-01-28T20:36:35.855817Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_202551_m7",
+      "config_hash": "0f789e69fba45e94176af6e07fe0838c09a493bd",
+      "reason": "",
+      "timestamp": "2026-01-28T20:42:02.259380Z"
+    }
+  },
+  "m5|qat|int8": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260128_202927_m5",
+      "config_hash": "9aeeae8c8a9dd1ce32d005b3614a540ef4c1d0e3",
+      "reason": "",
+      "timestamp": "2026-01-28T20:48:24.103516Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260128_202927_m5",
+      "config_hash": "6e5d97cb9647145b2351d68ae01b87cbc435e1e1",
+      "reason": "",
+      "timestamp": "2026-01-28T20:58:50.840744Z"
+    }
   }
 }

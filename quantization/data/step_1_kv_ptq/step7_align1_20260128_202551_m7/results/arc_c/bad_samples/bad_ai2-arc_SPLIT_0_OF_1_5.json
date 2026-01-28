@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 5,
+  "error": "mat1 and mat2 shapes cannot be multiplied (178x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7270393",
+    "question": "Devil facial tumor disease (DFTD) is a disease that is decimating the population of Tasmanian devils. The disease passes from one animal to another through bites and is caused by parasites. The parasites cause cancerous tumors that spread throughout an infected animal's body and kill it. What is the best description of DFTD?",
+    "choices": {
+      "text": [
+        "a non-infectious, cell-cycle disease",
+        "an infectious, cell-cycle disease",
+        "a non-infectious, chronic disease",
+        "an infectious, chronic disease"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nDevil facial tumor disease (DFTD) is a disease that is decimating the population of Tasmanian devils. The disease passes from one animal to another through bites and is caused by parasites. The parasites cause cancerous tumors that spread throughout an infected animal's body and kill it. What is the best description of DFTD?\n\nChoices:\nA. a non-infectious, cell-cycle disease\nB. an infectious, cell-cycle disease\nC. a non-infectious, chronic disease\nD. an infectious, chronic disease\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

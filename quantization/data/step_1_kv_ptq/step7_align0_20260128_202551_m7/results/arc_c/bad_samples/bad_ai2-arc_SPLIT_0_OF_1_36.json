@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 36,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "ACTAAP_2014_5_8",
+    "question": "Which best describes how the sun might compare to a different-sized star, if they were right next to each other?",
+    "choices": {
+      "text": [
+        "The sun would be enormous next to an average star.",
+        "The sun would be tiny next to one of the largest stars.",
+        "The sun would be extremely bright next to an average star.",
+        "The sun would be very dim next to one of the smallest stars."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich best describes how the sun might compare to a different-sized star, if they were right next to each other?\n\nChoices:\nA. The sun would be enormous next to an average star.\nB. The sun would be tiny next to one of the largest stars.\nC. The sun would be extremely bright next to an average star.\nD. The sun would be very dim next to one of the smallest stars.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

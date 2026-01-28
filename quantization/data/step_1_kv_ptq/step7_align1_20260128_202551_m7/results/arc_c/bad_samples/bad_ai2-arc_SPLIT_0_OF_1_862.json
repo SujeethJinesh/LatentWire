@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 862,
+  "error": "mat1 and mat2 shapes cannot be multiplied (161x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_405019",
+    "question": "Alicia put hydrogen peroxide and yeast in a paper cup. The paper cup felt hot, and she concluded that a reaction occurred that gave off heat. What else could Alicia do to get a more accurate conclusion?",
+    "choices": {
+      "text": [
+        "use an insulated cup rather than a paper cup",
+        "change the amount of hydrogen peroxide used",
+        "take a picture of the cup after the reaction took place",
+        "use a thermometer to measure the change in temperature"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nAlicia put hydrogen peroxide and yeast in a paper cup. The paper cup felt hot, and she concluded that a reaction occurred that gave off heat. What else could Alicia do to get a more accurate conclusion?\n\nChoices:\nA. use an insulated cup rather than a paper cup\nB. change the amount of hydrogen peroxide used\nC. take a picture of the cup after the reaction took place\nD. use a thermometer to measure the change in temperature\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

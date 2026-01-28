@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 207,
+  "error": "mat1 and mat2 shapes cannot be multiplied (156x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2003_8_31",
+    "question": "On a hot day, Jenny walked home from the grocery store with a bag of chocolate chips. When she arrived home the chocolate chips had melted in the bag. Why did the chocolate chips melt?",
+    "choices": {
+      "text": [
+        "Heat transferred from the chocolate chips to the bag.",
+        "Heat evaporated from the bag to the chocolate chips.",
+        "Heat transferred from the environment to the chocolate chips.",
+        "Heat condensed from her hand to the chocolate chips."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nOn a hot day, Jenny walked home from the grocery store with a bag of chocolate chips. When she arrived home the chocolate chips had melted in the bag. Why did the chocolate chips melt?\n\nChoices:\nA. Heat transferred from the chocolate chips to the bag.\nB. Heat evaporated from the bag to the chocolate chips.\nC. Heat transferred from the environment to the chocolate chips.\nD. Heat condensed from her hand to the chocolate chips.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

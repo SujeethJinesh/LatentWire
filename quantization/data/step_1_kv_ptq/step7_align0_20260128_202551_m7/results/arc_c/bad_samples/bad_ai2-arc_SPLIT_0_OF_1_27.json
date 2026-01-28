@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 27,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_412202",
+    "question": "Students heated three objects to different temperatures during a classroom demonstration. Each object emitted light of a different color as shown below. Object 1: blue light Object 2: red light Object 3: orange light Which list presents the objects in order from highest to lowest temperature?",
+    "choices": {
+      "text": [
+        "Object 1, Object 2, Object 3",
+        "Object 1, Object 3, Object 2",
+        "Object 2, Object 1, Object 3",
+        "Object 2, Object 3, Object 1"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents heated three objects to different temperatures during a classroom demonstration. Each object emitted light of a different color as shown below. Object 1: blue light Object 2: red light Object 3: orange light Which list presents the objects in order from highest to lowest temperature?\n\nChoices:\nA. Object 1, Object 2, Object 3\nB. Object 1, Object 3, Object 2\nC. Object 2, Object 1, Object 3\nD. Object 2, Object 3, Object 1\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

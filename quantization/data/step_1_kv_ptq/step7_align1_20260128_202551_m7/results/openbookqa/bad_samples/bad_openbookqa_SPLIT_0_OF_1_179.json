@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 179,
+  "error": "mat1 and mat2 shapes cannot be multiplied (102x1536 and 1152x1024)",
+  "example": {
+    "id": "9-32",
+    "question_stem": "The winter solstice is on December 21st in the",
+    "choices": {
+      "text": [
+        "counties",
+        "north of equator",
+        "states",
+        "southern hemisphere"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe winter solstice is on December 21st in the\n\nChoices:\nA. counties\nB. north of equator\nC. states\nD. southern hemisphere\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

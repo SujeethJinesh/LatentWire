@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 599,
+  "error": "mat1 and mat2 shapes cannot be multiplied (177x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_1998_8_24",
+    "question": "Nearly 100 years ago, a large volcano erupted in the South Pacific. The following year, Boston recorded measurable snow every month of the year, and most of the Northern Hemisphere experienced a cold summer. Which explains how these two events were related?",
+    "choices": {
+      "text": [
+        "The eruption intensified the greenhouse effect.",
+        "Lava flow from the eruption caused a temporary increase in Earth's total heat energy.",
+        "The eruption caused damage to the ozone layer.",
+        "Air pollution from the eruption caused a decrease in the amount of solar energy reaching Earth."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nNearly 100 years ago, a large volcano erupted in the South Pacific. The following year, Boston recorded measurable snow every month of the year, and most of the Northern Hemisphere experienced a cold summer. Which explains how these two events were related?\n\nChoices:\nA. The eruption intensified the greenhouse effect.\nB. Lava flow from the eruption caused a temporary increase in Earth's total heat energy.\nC. The eruption caused damage to the ozone layer.\nD. Air pollution from the eruption caused a decrease in the amount of solar energy reaching Earth.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

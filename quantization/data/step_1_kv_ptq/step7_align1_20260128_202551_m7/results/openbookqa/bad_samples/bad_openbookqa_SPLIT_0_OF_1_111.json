@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 111,
+  "error": "mat1 and mat2 shapes cannot be multiplied (128x1536 and 1152x1024)",
+  "example": {
+    "id": "7-394",
+    "question_stem": "Light from further away may appear to be less bright than other, closer sources, such as in which instance?",
+    "choices": {
+      "text": [
+        "the sun is always bright",
+        "the moon is brighter than stars",
+        "the moon is brighter than a floodlight",
+        "the sun is darker than the moon"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nLight from further away may appear to be less bright than other, closer sources, such as in which instance?\n\nChoices:\nA. the sun is always bright\nB. the moon is brighter than stars\nC. the moon is brighter than a floodlight\nD. the sun is darker than the moon\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 83,
+  "error": "mat1 and mat2 shapes cannot be multiplied (116x1536 and 1152x1024)",
+  "example": {
+    "id": "9-79",
+    "question_stem": "What is the benefit to using a frosted window film over a non treated windows?",
+    "choices": {
+      "text": [
+        "they are easier to make",
+        "they let in less light",
+        "they are cheaper to produce",
+        "they are much stronger"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is the benefit to using a frosted window film over a non treated windows?\n\nChoices:\nA. they are easier to make\nB. they let in less light\nC. they are cheaper to produce\nD. they are much stronger\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

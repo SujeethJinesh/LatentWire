@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 929,
+  "error": "mat1 and mat2 shapes cannot be multiplied (148x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_405464",
+    "question": "Scientists count and record the population of a particular fish in a lake that is losing water each year. What are they most likely trying to understand?",
+    "choices": {
+      "text": [
+        "How many fish are surviving the changing environment?",
+        "How have changes in weather affected the water level?",
+        "How much weight have the fish gained over the year?",
+        "How is the plant life in the lake adjusting to the changes?"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nScientists count and record the population of a particular fish in a lake that is losing water each year. What are they most likely trying to understand?\n\nChoices:\nA. How many fish are surviving the changing environment?\nB. How have changes in weather affected the water level?\nC. How much weight have the fish gained over the year?\nD. How is the plant life in the lake adjusting to the changes?\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

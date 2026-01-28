@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 209,
+  "error": "mat1 and mat2 shapes cannot be multiplied (119x1536 and 1152x1024)",
+  "example": {
+    "id": "9-35",
+    "question_stem": "If you wanted to make a necklace, how long would you have to wait for the materials to appear inside the Earth?",
+    "choices": {
+      "text": [
+        "millions of years",
+        "1 day",
+        "10 days",
+        "100 days"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nIf you wanted to make a necklace, how long would you have to wait for the materials to appear inside the Earth?\n\nChoices:\nA. millions of years\nB. 1 day\nC. 10 days\nD. 100 days\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

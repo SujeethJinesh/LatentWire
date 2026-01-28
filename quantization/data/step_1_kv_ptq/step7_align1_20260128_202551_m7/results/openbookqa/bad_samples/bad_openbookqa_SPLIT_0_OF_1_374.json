@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 374,
+  "error": "mat1 and mat2 shapes cannot be multiplied (114x1536 and 1152x1024)",
+  "example": {
+    "id": "8-403",
+    "question_stem": "if a bat delivers a live offspring, what does this tell us?",
+    "choices": {
+      "text": [
+        "it is a mammal",
+        "calling it a bird is wrong",
+        "all of these",
+        "it is capable of reproducing"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nif a bat delivers a live offspring, what does this tell us?\n\nChoices:\nA. it is a mammal\nB. calling it a bird is wrong\nC. all of these\nD. it is capable of reproducing\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

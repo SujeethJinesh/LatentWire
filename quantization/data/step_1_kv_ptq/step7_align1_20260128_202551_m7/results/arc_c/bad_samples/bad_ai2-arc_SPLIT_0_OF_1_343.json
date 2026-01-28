@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 343,
+  "error": "mat1 and mat2 shapes cannot be multiplied (170x1536 and 1152x1024)",
+  "example": {
+    "id": "MDSA_2010_5_29",
+    "question": "A student wants to show that the matter in a whole apple is equal to the matter in the pieces of the same apple. Which process best describes how the student can demonstrate the relationship between the matter in the whole apple and the apple pieces?",
+    "choices": {
+      "text": [
+        "observing the apple pieces",
+        "cutting the apple into more pieces",
+        "observing the color of the whole apple, then observing the color of the apple pieces",
+        "determining the mass of the whole apple, then determining the mass of the apple pieces"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student wants to show that the matter in a whole apple is equal to the matter in the pieces of the same apple. Which process best describes how the student can demonstrate the relationship between the matter in the whole apple and the apple pieces?\n\nChoices:\nA. observing the apple pieces\nB. cutting the apple into more pieces\nC. observing the color of the whole apple, then observing the color of the apple pieces\nD. determining the mass of the whole apple, then determining the mass of the apple pieces\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

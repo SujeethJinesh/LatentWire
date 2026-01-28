@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 175,
+  "error": "mat1 and mat2 shapes cannot be multiplied (163x1536 and 1152x1024)",
+  "example": {
+    "id": "AIMS_2009_8_14",
+    "question": "Bromine (Br) is a liquid at room temperature. Oxygen (O) is a gas at room temperature. Room temperature is 25° C. Which of the following statements is true?",
+    "choices": {
+      "text": [
+        "The boiling point of oxygen is colder than room temperature.",
+        "The boiling point of bromine is colder than room temperature.",
+        "The melting point of oxygen is warmer than room temperature.",
+        "The melting point of bromine is warmer than room temperature."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nBromine (Br) is a liquid at room temperature. Oxygen (O) is a gas at room temperature. Room temperature is 25° C. Which of the following statements is true?\n\nChoices:\nA. The boiling point of oxygen is colder than room temperature.\nB. The boiling point of bromine is colder than room temperature.\nC. The melting point of oxygen is warmer than room temperature.\nD. The melting point of bromine is warmer than room temperature.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

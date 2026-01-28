@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 915,
+  "error": "mat1 and mat2 shapes cannot be multiplied (119x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7116323",
+    "question": "Diversity among members of a species is important because diversity",
+    "choices": {
+      "text": [
+        "ensures high levels of competition.",
+        "increases the available ecosystem resources.",
+        "ensures the variety of reproductive methods for a species.",
+        "increases the chances of survival under changing conditions."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nDiversity among members of a species is important because diversity\n\nChoices:\nA. ensures high levels of competition.\nB. increases the available ecosystem resources.\nC. ensures the variety of reproductive methods for a species.\nD. increases the chances of survival under changing conditions.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

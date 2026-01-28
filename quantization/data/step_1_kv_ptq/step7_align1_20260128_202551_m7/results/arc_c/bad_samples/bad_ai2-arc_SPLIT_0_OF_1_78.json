@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 78,
+  "error": "mat1 and mat2 shapes cannot be multiplied (139x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_403234",
+    "question": "A 20 N object is placed on a surface and starts to slide. What is the most likely reason the object begins to move?",
+    "choices": {
+      "text": [
+        "Gravity exerts a balanced force on the object.",
+        "An unbalanced force causes acceleration.",
+        "Friction is applied to the object.",
+        "The forces acting on the object are in equilibrium."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA 20 N object is placed on a surface and starts to slide. What is the most likely reason the object begins to move?\n\nChoices:\nA. Gravity exerts a balanced force on the object.\nB. An unbalanced force causes acceleration.\nC. Friction is applied to the object.\nD. The forces acting on the object are in equilibrium.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

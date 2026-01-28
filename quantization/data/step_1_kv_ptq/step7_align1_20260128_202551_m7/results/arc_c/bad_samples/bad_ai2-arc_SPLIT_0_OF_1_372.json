@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 372,
+  "error": "mat1 and mat2 shapes cannot be multiplied (149x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_409114",
+    "question": "John drove a truck for one hour at a rate of 80 kilometers per hour. The next hour, he drove at 100 kilometers per hour. What was his average speed during those two hours?",
+    "choices": {
+      "text": [
+        "80 kilometers per hour",
+        "90 kilometers per hour",
+        "100 kilometers per hour",
+        "180 kilometers per hour"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nJohn drove a truck for one hour at a rate of 80 kilometers per hour. The next hour, he drove at 100 kilometers per hour. What was his average speed during those two hours?\n\nChoices:\nA. 80 kilometers per hour\nB. 90 kilometers per hour\nC. 100 kilometers per hour\nD. 180 kilometers per hour\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 585,
+  "error": "mat1 and mat2 shapes cannot be multiplied (118x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7234605",
+    "question": "A student ran around a circular track. Which statement best describes the motion of the student while running?",
+    "choices": {
+      "text": [
+        "The speed was constant.",
+        "The velocity was constant.",
+        "The speed was always changing.",
+        "The velocity was always changing."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student ran around a circular track. Which statement best describes the motion of the student while running?\n\nChoices:\nA. The speed was constant.\nB. The velocity was constant.\nC. The speed was always changing.\nD. The velocity was always changing.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

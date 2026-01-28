@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 118,
+  "error": "mat1 and mat2 shapes cannot be multiplied (143x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_415086",
+    "question": "An airplane flies in a straight line between two cities that are separated by 840 kilometers. If it takes 4 hours for the airplane to make the trip, what is its average speed?",
+    "choices": {
+      "text": [
+        "84 km/h",
+        "105 km/h",
+        "180 km/h",
+        "210 km/h"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nAn airplane flies in a straight line between two cities that are separated by 840 kilometers. If it takes 4 hours for the airplane to make the trip, what is its average speed?\n\nChoices:\nA. 84 km/h\nB. 105 km/h\nC. 180 km/h\nD. 210 km/h\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

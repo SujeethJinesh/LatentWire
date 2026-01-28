@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1100,
+  "error": "mat1 and mat2 shapes cannot be multiplied (117x1536 and 1152x1024)",
+  "example": {
+    "id": "OHAT_2009_8_34",
+    "question": "What is the role of the mitochondrion in cells?",
+    "choices": {
+      "text": [
+        "It converts sunlight to energy.",
+        "It controls all functions of the cell.",
+        "It transports water throughout the cell.",
+        "It breaks down sugar to release energy."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is the role of the mitochondrion in cells?\n\nChoices:\nA. It converts sunlight to energy.\nB. It controls all functions of the cell.\nC. It transports water throughout the cell.\nD. It breaks down sugar to release energy.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

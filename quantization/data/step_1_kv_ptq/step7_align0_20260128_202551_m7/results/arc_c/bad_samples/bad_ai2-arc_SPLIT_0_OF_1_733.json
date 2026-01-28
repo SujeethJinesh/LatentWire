@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 733,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7056525",
+    "question": "The movement of crustal plates is best described as a",
+    "choices": {
+      "text": [
+        "trend toward increased crust movement over time.",
+        "series of events that happens quickly.",
+        "continuing long-term process.",
+        "process that has a predictable pattern."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe movement of crustal plates is best described as a\n\nChoices:\nA. trend toward increased crust movement over time.\nB. series of events that happens quickly.\nC. continuing long-term process.\nD. process that has a predictable pattern.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

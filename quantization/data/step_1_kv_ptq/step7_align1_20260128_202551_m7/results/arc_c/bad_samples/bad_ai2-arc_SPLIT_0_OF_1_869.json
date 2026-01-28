@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 869,
+  "error": "mat1 and mat2 shapes cannot be multiplied (173x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2006_9_17-v1",
+    "question": "Two students each carry a box up to the third floor of a building. The total mass of each student and the box she is carrying is the same. Roberta makes the trip in 45 s while Mary takes 30 s. Which of the following statements best describes this task?",
+    "choices": {
+      "text": [
+        "Roberta does more total work than Mary.",
+        "Mary does more total work than Roberta.",
+        "Roberta has a greater power output than Mary.",
+        "Mary has a greater power output than Roberta."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nTwo students each carry a box up to the third floor of a building. The total mass of each student and the box she is carrying is the same. Roberta makes the trip in 45 s while Mary takes 30 s. Which of the following statements best describes this task?\n\nChoices:\nA. Roberta does more total work than Mary.\nB. Mary does more total work than Roberta.\nC. Roberta has a greater power output than Mary.\nD. Mary has a greater power output than Roberta.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

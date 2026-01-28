@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1006,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MEA_2016_5_4",
+    "question": "People without safe drinking water may get an illness called dysentery. Dysentery is caused by a type of amoeba that lives inside the body. Doctors can find these amoebas by looking at body samples under a microscope. Which characteristic of amoebas best explains why doctors use microscopes to find dysentery amoebas?",
+    "choices": {
+      "text": [
+        "Amoebas can change their shape.",
+        "Amoebas need humans to survive.",
+        "Amoebas look just like human cells.",
+        "Amoebas are made of only one cell."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nPeople without safe drinking water may get an illness called dysentery. Dysentery is caused by a type of amoeba that lives inside the body. Doctors can find these amoebas by looking at body samples under a microscope. Which characteristic of amoebas best explains why doctors use microscopes to find dysentery amoebas?\n\nChoices:\nA. Amoebas can change their shape.\nB. Amoebas need humans to survive.\nC. Amoebas look just like human cells.\nD. Amoebas are made of only one cell.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

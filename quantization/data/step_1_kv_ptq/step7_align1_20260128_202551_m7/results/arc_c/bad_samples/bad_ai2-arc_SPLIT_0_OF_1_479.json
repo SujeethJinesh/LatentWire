@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 479,
+  "error": "mat1 and mat2 shapes cannot be multiplied (125x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_1998_8_26",
+    "question": "The evidence gained from a design activity is often used to gather information about a technological problem. A design activity is more valid if it",
+    "choices": {
+      "text": [
+        "includes many steps.",
+        "is recorded by a team of scientists.",
+        "includes repeated trials.",
+        "is performed in a laboratory."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe evidence gained from a design activity is often used to gather information about a technological problem. A design activity is more valid if it\n\nChoices:\nA. includes many steps.\nB. is recorded by a team of scientists.\nC. includes repeated trials.\nD. is performed in a laboratory.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

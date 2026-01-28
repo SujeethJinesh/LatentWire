@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 308,
+  "error": "mat1 and mat2 shapes cannot be multiplied (103x1536 and 1152x1024)",
+  "example": {
+    "id": "1823",
+    "question_stem": "Cellular respiration's trash is",
+    "choices": {
+      "text": [
+        "a bug's treasure",
+        "a cow's treasure",
+        "a plant's treasure",
+        "everyone's trash"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nCellular respiration's trash is\n\nChoices:\nA. a bug's treasure\nB. a cow's treasure\nC. a plant's treasure\nD. everyone's trash\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 470,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_410963",
+    "question": "Tori made some observations about a grasshopper she saw on a nature walk. Which statement about the grasshopper is a scientific observation?",
+    "choices": {
+      "text": [
+        "The grasshopper is pretty.",
+        "The grasshopper is dangerous.",
+        "The grasshopper is better than a spider.",
+        "The grasshopper is smaller than the leaf."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nTori made some observations about a grasshopper she saw on a nature walk. Which statement about the grasshopper is a scientific observation?\n\nChoices:\nA. The grasshopper is pretty.\nB. The grasshopper is dangerous.\nC. The grasshopper is better than a spider.\nD. The grasshopper is smaller than the leaf.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

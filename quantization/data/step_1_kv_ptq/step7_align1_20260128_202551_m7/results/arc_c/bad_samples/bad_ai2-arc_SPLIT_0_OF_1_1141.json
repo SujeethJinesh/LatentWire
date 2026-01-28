@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1141,
+  "error": "mat1 and mat2 shapes cannot be multiplied (117x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_405928",
+    "question": "What human action helps maintain a renewable resource?",
+    "choices": {
+      "text": [
+        "building power plants that use coal as fuel",
+        "clearing land for roads and buildings",
+        "directing fertilizer runoff to ponds",
+        "replanting trees in deforested areas"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat human action helps maintain a renewable resource?\n\nChoices:\nA. building power plants that use coal as fuel\nB. clearing land for roads and buildings\nC. directing fertilizer runoff to ponds\nD. replanting trees in deforested areas\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

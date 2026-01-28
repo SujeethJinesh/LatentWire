@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 27,
+  "error": "mat1 and mat2 shapes cannot be multiplied (112x1536 and 1152x1024)",
+  "example": {
+    "id": "9-271",
+    "question_stem": "what system is needed for a body to get its needed supply of the gas humans breathe in?",
+    "choices": {
+      "text": [
+        "the circulatory system",
+        "the digestive system",
+        "the school system",
+        "central nervous system"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nwhat system is needed for a body to get its needed supply of the gas humans breathe in?\n\nChoices:\nA. the circulatory system\nB. the digestive system\nC. the school system\nD. central nervous system\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

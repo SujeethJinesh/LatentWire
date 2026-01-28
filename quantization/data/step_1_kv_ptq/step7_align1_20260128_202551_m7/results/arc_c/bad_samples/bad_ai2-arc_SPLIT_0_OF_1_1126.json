@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1126,
+  "error": "mat1 and mat2 shapes cannot be multiplied (134x1536 and 1152x1024)",
+  "example": {
+    "id": "FCAT_2008_5_1",
+    "question": "Ariana uses balloons to investigate static electricity. Which of the following best explains what will happen when she brings two positively charged balloons close to each other?",
+    "choices": {
+      "text": [
+        "The balloons will move apart.",
+        "One balloon will lose its charge.",
+        "The balloons will come together.",
+        "One balloon will gain a negative charge."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nAriana uses balloons to investigate static electricity. Which of the following best explains what will happen when she brings two positively charged balloons close to each other?\n\nChoices:\nA. The balloons will move apart.\nB. One balloon will lose its charge.\nC. The balloons will come together.\nD. One balloon will gain a negative charge.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 188,
+  "error": "mat1 and mat2 shapes cannot be multiplied (105x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_185325",
+    "question": "When an animal population moves a long distance to another area in order to survive it is called",
+    "choices": {
+      "text": [
+        "breeding.",
+        "hibernation.",
+        "migration.",
+        "navigation."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen an animal population moves a long distance to another area in order to survive it is called\n\nChoices:\nA. breeding.\nB. hibernation.\nC. migration.\nD. navigation.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

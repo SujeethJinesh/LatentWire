@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 658,
+  "error": "mat1 and mat2 shapes cannot be multiplied (139x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_414365",
+    "question": "A student is pushing a 20-kilogram box up a ramp. Which change will require the student to use less force to push the box?",
+    "choices": {
+      "text": [
+        "increasing the mass of the box",
+        "decreasing the length of the ramp",
+        "decreasing the steepness of the ramp",
+        "increasing the friction on the surface of the box"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student is pushing a 20-kilogram box up a ramp. Which change will require the student to use less force to push the box?\n\nChoices:\nA. increasing the mass of the box\nB. decreasing the length of the ramp\nC. decreasing the steepness of the ramp\nD. increasing the friction on the surface of the box\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

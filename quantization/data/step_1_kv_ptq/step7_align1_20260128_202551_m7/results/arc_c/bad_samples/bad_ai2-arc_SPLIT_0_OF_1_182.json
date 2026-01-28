@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 182,
+  "error": "mat1 and mat2 shapes cannot be multiplied (106x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7086695",
+    "question": "Which process is included in the formation of both metamorphic and sedimentary rock?",
+    "choices": {
+      "text": [
+        "heating",
+        "recrystallization",
+        "compaction",
+        "weathering"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich process is included in the formation of both metamorphic and sedimentary rock?\n\nChoices:\nA. heating\nB. recrystallization\nC. compaction\nD. weathering\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

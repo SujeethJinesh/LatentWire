@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 213,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_408568",
+    "question": "Ben wants to know if the amount of air in a basketball affects how high the basketball bounces. He fills three basketballs with air and drops each one three times. Which part of the experiment should Ben keep the same for each ball?",
+    "choices": {
+      "text": [
+        "the amount of air in each ball",
+        "the distance each ball is dropped",
+        "the time it takes to drop each ball",
+        "the number of times the ball bounces"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nBen wants to know if the amount of air in a basketball affects how high the basketball bounces. He fills three basketballs with air and drops each one three times. Which part of the experiment should Ben keep the same for each ball?\n\nChoices:\nA. the amount of air in each ball\nB. the distance each ball is dropped\nC. the time it takes to drop each ball\nD. the number of times the ball bounces\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

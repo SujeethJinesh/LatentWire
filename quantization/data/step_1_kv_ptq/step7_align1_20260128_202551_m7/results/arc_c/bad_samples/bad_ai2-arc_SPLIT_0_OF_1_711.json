@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 711,
+  "error": "mat1 and mat2 shapes cannot be multiplied (120x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_400392",
+    "question": "Which pair of organisms benefits each other the most?",
+    "choices": {
+      "text": [
+        "birds building a nest in a bush",
+        "worms eating the roots of a plant",
+        "squirrels burying seeds from a tree",
+        "deer scraping their antlers on a tree"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich pair of organisms benefits each other the most?\n\nChoices:\nA. birds building a nest in a bush\nB. worms eating the roots of a plant\nC. squirrels burying seeds from a tree\nD. deer scraping their antlers on a tree\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

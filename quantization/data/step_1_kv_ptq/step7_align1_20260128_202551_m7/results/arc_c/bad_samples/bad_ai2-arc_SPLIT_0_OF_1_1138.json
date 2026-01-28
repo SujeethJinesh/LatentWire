@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1138,
+  "error": "mat1 and mat2 shapes cannot be multiplied (121x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_406089",
+    "question": "The use of television has improved safety by",
+    "choices": {
+      "text": [
+        "using larger screens with better color.",
+        "explaining how to avoid pressure from commercials.",
+        "providing a setting that encourages people to exercise more.",
+        "warning people of dangers such as bad weather or accidents."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe use of television has improved safety by\n\nChoices:\nA. using larger screens with better color.\nB. explaining how to avoid pressure from commercials.\nC. providing a setting that encourages people to exercise more.\nD. warning people of dangers such as bad weather or accidents.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

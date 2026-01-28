@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 739,
+  "error": "mat1 and mat2 shapes cannot be multiplied (127x1536 and 1152x1024)",
+  "example": {
+    "id": "TIMSS_2011_8_pg31",
+    "question": "A car tire runs over a can and crushes it completely. Which statement is true for the atoms of the structure of the can?",
+    "choices": {
+      "text": [
+        "The atoms are broken.",
+        "The atoms are flattened.",
+        "The atoms remain the same.",
+        "The atoms are changed into different atoms."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA car tire runs over a can and crushes it completely. Which statement is true for the atoms of the structure of the can?\n\nChoices:\nA. The atoms are broken.\nB. The atoms are flattened.\nC. The atoms remain the same.\nD. The atoms are changed into different atoms.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

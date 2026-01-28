@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 251,
+  "error": "mat1 and mat2 shapes cannot be multiplied (91x1536 and 1152x1024)",
+  "example": {
+    "id": "3",
+    "question_stem": "Sources of air pollution are",
+    "choices": {
+      "text": [
+        "Walking",
+        "Landfills",
+        "Water",
+        "Chips"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nSources of air pollution are\n\nChoices:\nA. Walking\nB. Landfills\nC. Water\nD. Chips\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

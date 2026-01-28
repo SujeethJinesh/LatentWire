@@ -1,0 +1,10 @@
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+python: /workspace/conda/envs/rosetta/bin/python
+torch 2.6.0+cu124
+transformers 4.52.4
+datasets 4.5.0
+huggingface_hub 0.36.0
+yaml 6.0.3
+numpy 2.2.6
+tqdm 4.67.1

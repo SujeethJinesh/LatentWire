@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 231,
+  "error": "mat1 and mat2 shapes cannot be multiplied (95x1536 and 1152x1024)",
+  "example": {
+    "id": "178",
+    "question_stem": "During landslides there is often a lot of",
+    "choices": {
+      "text": [
+        "air",
+        "mud",
+        "snow",
+        "wind"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nDuring landslides there is often a lot of\n\nChoices:\nA. air\nB. mud\nC. snow\nD. wind\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

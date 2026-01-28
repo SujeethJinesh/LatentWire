@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 241,
+  "error": "mat1 and mat2 shapes cannot be multiplied (130x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7131845",
+    "question": "The Miami Blue butterfly is an endangered species in South Florida. Which factor has most likely caused the population decline of this butterfly?",
+    "choices": {
+      "text": [
+        "increase in the number of parks",
+        "decline in the amount of seawater",
+        "increase in number of homes built",
+        "decline in the amount of predators"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe Miami Blue butterfly is an endangered species in South Florida. Which factor has most likely caused the population decline of this butterfly?\n\nChoices:\nA. increase in the number of parks\nB. decline in the amount of seawater\nC. increase in number of homes built\nD. decline in the amount of predators\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

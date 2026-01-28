@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 3,
+  "error": "mat1 and mat2 shapes cannot be multiplied (133x1536 and 1152x1024)",
+  "example": {
+    "id": "7-999",
+    "question_stem": "Oak tree seeds are planted and a sidewalk is paved right next to that spot, until eventually, the tree is tall and the roots must extend past the sidewalk, which means",
+    "choices": {
+      "text": [
+        "roots may be split",
+        "roots may begin to die",
+        "parts may break the concrete",
+        "roots may fall apart"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nOak tree seeds are planted and a sidewalk is paved right next to that spot, until eventually, the tree is tall and the roots must extend past the sidewalk, which means\n\nChoices:\nA. roots may be split\nB. roots may begin to die\nC. parts may break the concrete\nD. roots may fall apart\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

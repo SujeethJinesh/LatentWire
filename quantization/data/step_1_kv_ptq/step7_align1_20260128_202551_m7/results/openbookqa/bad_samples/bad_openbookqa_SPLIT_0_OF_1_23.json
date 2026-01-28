@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 23,
+  "error": "mat1 and mat2 shapes cannot be multiplied (111x1536 and 1152x1024)",
+  "example": {
+    "id": "8-395",
+    "question_stem": "Overpopulation can cause",
+    "choices": {
+      "text": [
+        "More fresh water for people to drink",
+        "Lower Life Expectancy in Countries",
+        "More food for more people",
+        "More space for places to people to live"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nOverpopulation can cause\n\nChoices:\nA. More fresh water for people to drink\nB. Lower Life Expectancy in Countries\nC. More food for more people\nD. More space for places to people to live\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

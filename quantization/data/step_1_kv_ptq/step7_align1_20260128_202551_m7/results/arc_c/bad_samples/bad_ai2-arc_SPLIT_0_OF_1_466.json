@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 466,
+  "error": "mat1 and mat2 shapes cannot be multiplied (158x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_402539",
+    "question": "During an experiment, a class heated a balloon that had an initial circumference of 25 cm. The circumference increased to 27 cm. Which is the best conclusion that can be drawn?",
+    "choices": {
+      "text": [
+        "The molecules inside the balloon lost energy to the outside.",
+        "The molecules inside the balloon gained energy from the heat.",
+        "The energy of the molecules inside the balloon remained the same.",
+        "The molecules inside the balloon were escaping outside."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nDuring an experiment, a class heated a balloon that had an initial circumference of 25 cm. The circumference increased to 27 cm. Which is the best conclusion that can be drawn?\n\nChoices:\nA. The molecules inside the balloon lost energy to the outside.\nB. The molecules inside the balloon gained energy from the heat.\nC. The energy of the molecules inside the balloon remained the same.\nD. The molecules inside the balloon were escaping outside.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

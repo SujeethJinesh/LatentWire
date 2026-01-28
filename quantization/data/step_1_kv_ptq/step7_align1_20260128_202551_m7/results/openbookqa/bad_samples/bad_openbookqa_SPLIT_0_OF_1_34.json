@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 34,
+  "error": "mat1 and mat2 shapes cannot be multiplied (110x1536 and 1152x1024)",
+  "example": {
+    "id": "378",
+    "question_stem": "What explains the characteristic lunar formations?",
+    "choices": {
+      "text": [
+        "remains of ancient ponds",
+        "many collisions that have occured",
+        "volcanic explosions over millions of years",
+        "sink holes due to the moons porous nature"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat explains the characteristic lunar formations?\n\nChoices:\nA. remains of ancient ponds\nB. many collisions that have occured\nC. volcanic explosions over millions of years\nD. sink holes due to the moons porous nature\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

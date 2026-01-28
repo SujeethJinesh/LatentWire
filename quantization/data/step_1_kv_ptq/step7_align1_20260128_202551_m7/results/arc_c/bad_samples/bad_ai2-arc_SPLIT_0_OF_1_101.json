@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 101,
+  "error": "mat1 and mat2 shapes cannot be multiplied (130x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2006_9_12",
+    "question": "Why does a plastic rod have a negative charge after being rubbed with a piece of fur?",
+    "choices": {
+      "text": [
+        "The fur gives up protons to the rod.",
+        "The rod gives up electrons to the air.",
+        "The fur gains protons from the rod.",
+        "The rod gains electrons from the fur."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhy does a plastic rod have a negative charge after being rubbed with a piece of fur?\n\nChoices:\nA. The fur gives up protons to the rod.\nB. The rod gives up electrons to the air.\nC. The fur gains protons from the rod.\nD. The rod gains electrons from the fur.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

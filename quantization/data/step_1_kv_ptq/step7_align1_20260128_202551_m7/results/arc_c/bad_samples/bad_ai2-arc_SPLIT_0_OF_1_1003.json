@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1003,
+  "error": "mat1 and mat2 shapes cannot be multiplied (186x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7182210",
+    "question": "Tide pools are habitats for several kinds of organisms that attach to the rocky surface and depend upon tides for food and oxygen. Sea stars present in these tide pools feed on mussels and other shellfish that have no other natural predators. How will it most likely impact species diversity if all of the sea stars are removed from the tide pool ecosystem?",
+    "choices": {
+      "text": [
+        "Diversity will increase as the rate of predation decreases.",
+        "Diversity will decrease as competition for space increases.",
+        "Diversity will increase as the recycling of nutrients decreases.",
+        "Diversity will decrease as food and oxygen supplies increase."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nTide pools are habitats for several kinds of organisms that attach to the rocky surface and depend upon tides for food and oxygen. Sea stars present in these tide pools feed on mussels and other shellfish that have no other natural predators. How will it most likely impact species diversity if all of the sea stars are removed from the tide pool ecosystem?\n\nChoices:\nA. Diversity will increase as the rate of predation decreases.\nB. Diversity will decrease as competition for space increases.\nC. Diversity will increase as the recycling of nutrients decreases.\nD. Diversity will decrease as food and oxygen supplies increase.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

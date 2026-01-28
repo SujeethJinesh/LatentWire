@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 496,
+  "error": "mat1 and mat2 shapes cannot be multiplied (111x1536 and 1152x1024)",
+  "example": {
+    "id": "7-1186",
+    "question_stem": "Pasta may be cooked in water when",
+    "choices": {
+      "text": [
+        "the water is warm",
+        "the water is on the stove",
+        "water is bubbling from applied warmth",
+        "the pasta is very fresh"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nPasta may be cooked in water when\n\nChoices:\nA. the water is warm\nB. the water is on the stove\nC. water is bubbling from applied warmth\nD. the pasta is very fresh\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

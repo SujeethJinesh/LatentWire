@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 457,
+  "error": "mat1 and mat2 shapes cannot be multiplied (129x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7210455",
+    "question": "In which way is any single observation of wind speed best described?",
+    "choices": {
+      "text": [
+        "It is an indication of a future weather condition.",
+        "It is an indication of the amount of humidity.",
+        "It is an indication of weather at a specific time.",
+        "It is an indication of the existing climate."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn which way is any single observation of wind speed best described?\n\nChoices:\nA. It is an indication of a future weather condition.\nB. It is an indication of the amount of humidity.\nC. It is an indication of weather at a specific time.\nD. It is an indication of the existing climate.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

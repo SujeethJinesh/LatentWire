@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 73,
+  "error": "mat1 and mat2 shapes cannot be multiplied (117x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_400059",
+    "question": "Over a long period of time, running water in a river erodes the riverbed. This erosion causes the river to",
+    "choices": {
+      "text": [
+        "stop flowing.",
+        "create waves.",
+        "move faster and cleaner.",
+        "become deeper and wider."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nOver a long period of time, running water in a river erodes the riverbed. This erosion causes the river to\n\nChoices:\nA. stop flowing.\nB. create waves.\nC. move faster and cleaner.\nD. become deeper and wider.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 824,
+  "error": "mat1 and mat2 shapes cannot be multiplied (126x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7081305",
+    "question": "Two forces act in opposite directions on a wood block. What will happen if the forces are unbalanced?",
+    "choices": {
+      "text": [
+        "The block will balance the forces.",
+        "The forces will reverse direction.",
+        "The mass of the block will change.",
+        "The position of the block will change."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nTwo forces act in opposite directions on a wood block. What will happen if the forces are unbalanced?\n\nChoices:\nA. The block will balance the forces.\nB. The forces will reverse direction.\nC. The mass of the block will change.\nD. The position of the block will change.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

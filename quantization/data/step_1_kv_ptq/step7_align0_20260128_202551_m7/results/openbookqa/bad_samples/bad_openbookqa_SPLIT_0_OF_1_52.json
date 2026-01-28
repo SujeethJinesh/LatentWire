@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 52,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "7-50",
+    "question_stem": "Overpopulation of an organism can",
+    "choices": {
+      "text": [
+        "strain the resources of an ecosystem",
+        "cause boundless growth of resources",
+        "lead to extinction of the organism",
+        "cause the ecosystem to flourish"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nOverpopulation of an organism can\n\nChoices:\nA. strain the resources of an ecosystem\nB. cause boundless growth of resources\nC. lead to extinction of the organism\nD. cause the ecosystem to flourish\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

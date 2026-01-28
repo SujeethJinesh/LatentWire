@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 47,
+  "error": "mat1 and mat2 shapes cannot be multiplied (118x1536 and 1152x1024)",
+  "example": {
+    "id": "8-79",
+    "question_stem": "A balloon is filled with helium for a party. After the party, the balloons are left in the living room, where a fireplace is heating the room. The balloons",
+    "choices": {
+      "text": [
+        "expand",
+        "melt",
+        "shrink",
+        "fall"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA balloon is filled with helium for a party. After the party, the balloons are left in the living room, where a fireplace is heating the room. The balloons\n\nChoices:\nA. expand\nB. melt\nC. shrink\nD. fall\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

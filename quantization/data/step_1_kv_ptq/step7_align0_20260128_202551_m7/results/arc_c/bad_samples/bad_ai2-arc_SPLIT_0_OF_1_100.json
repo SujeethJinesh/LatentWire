@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 100,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7221655",
+    "question": "Electric cars are expensive to own, and recharging stations are not readily available. Unlike cars that run on fossil fuels, electric cars produce no carbon monoxide when being driven. Which of the following best explains why people choose to use this technology?",
+    "choices": {
+      "text": [
+        "The technology is a scientific advancement.",
+        "Electric cars store energy in batteries.",
+        "The technology is environmentally friendly.",
+        "Everyone is getting an electric car."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nElectric cars are expensive to own, and recharging stations are not readily available. Unlike cars that run on fossil fuels, electric cars produce no carbon monoxide when being driven. Which of the following best explains why people choose to use this technology?\n\nChoices:\nA. The technology is a scientific advancement.\nB. Electric cars store energy in batteries.\nC. The technology is environmentally friendly.\nD. Everyone is getting an electric car.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

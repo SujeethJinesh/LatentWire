@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 971,
+  "error": "mat1 and mat2 shapes cannot be multiplied (169x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_410334",
+    "question": "Greta passed a comb through her hair several times. She then placed the comb next to a stream of water flowing from a faucet. Greta observed the stream of water bend toward the comb. How did passing a comb through her hair allow the comb to bend the stream of water?",
+    "choices": {
+      "text": [
+        "by making the comb more absorbent",
+        "by giving the comb an electrical charge",
+        "by increasing the thermal energy of the comb",
+        "by breaking some of the chemical bonds in the comb"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nGreta passed a comb through her hair several times. She then placed the comb next to a stream of water flowing from a faucet. Greta observed the stream of water bend toward the comb. How did passing a comb through her hair allow the comb to bend the stream of water?\n\nChoices:\nA. by making the comb more absorbent\nB. by giving the comb an electrical charge\nC. by increasing the thermal energy of the comb\nD. by breaking some of the chemical bonds in the comb\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

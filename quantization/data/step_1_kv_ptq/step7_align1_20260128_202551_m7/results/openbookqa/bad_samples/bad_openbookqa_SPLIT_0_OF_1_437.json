@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 437,
+  "error": "mat1 and mat2 shapes cannot be multiplied (113x1536 and 1152x1024)",
+  "example": {
+    "id": "1890",
+    "question_stem": "Camouflage is when an organism does what?",
+    "choices": {
+      "text": [
+        "reconfigure appearance to blend in",
+        "hides its young to avoid prey",
+        "changes its shape to appear larger",
+        "buries itself to disappear momentarily"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nCamouflage is when an organism does what?\n\nChoices:\nA. reconfigure appearance to blend in\nB. hides its young to avoid prey\nC. changes its shape to appear larger\nD. buries itself to disappear momentarily\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

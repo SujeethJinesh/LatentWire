@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 860,
+  "error": "mat1 and mat2 shapes cannot be multiplied (122x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_407382",
+    "question": "A duck and turtle are different types of animals. In which way are the duck and the turtle alike?",
+    "choices": {
+      "text": [
+        "They both hibernate.",
+        "They both have feathers.",
+        "They both reproduce by laying eggs.",
+        "They both provide milk for their young."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA duck and turtle are different types of animals. In which way are the duck and the turtle alike?\n\nChoices:\nA. They both hibernate.\nB. They both have feathers.\nC. They both reproduce by laying eggs.\nD. They both provide milk for their young.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

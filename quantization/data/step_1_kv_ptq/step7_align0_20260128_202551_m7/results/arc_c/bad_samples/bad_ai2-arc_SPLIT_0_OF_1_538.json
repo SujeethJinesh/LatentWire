@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 538,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7017938",
+    "question": "What causes a ship carrying heavy cargo to take more time to come to a stop than an identical ship carrying lighter cargo if both ships are traveling at the same speed?",
+    "choices": {
+      "text": [
+        "increased friction",
+        "greater momentum",
+        "greater acceleration",
+        "more constant velocity"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat causes a ship carrying heavy cargo to take more time to come to a stop than an identical ship carrying lighter cargo if both ships are traveling at the same speed?\n\nChoices:\nA. increased friction\nB. greater momentum\nC. greater acceleration\nD. more constant velocity\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

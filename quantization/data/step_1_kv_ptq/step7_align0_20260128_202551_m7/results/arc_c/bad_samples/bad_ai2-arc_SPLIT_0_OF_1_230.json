@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 230,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7182245",
+    "question": "In a forested region, mountain lions and wolves prey upon the deer population to near disappearance. To protect the deer population, most of the mountain lions and wolves in this region were eliminated through hunting. As a result, over-hunting occurred and the deer population increased rapidly. After several years, what most likely will happen to the deer population in the absence of its predators?",
+    "choices": {
+      "text": [
+        "It will stabilize as the birth rate equals the death rate.",
+        "It will continue to increase steadily from year to year.",
+        "It will increase as other herbivores move into the region.",
+        "It will decrease due to overcrowding causing a food shortage."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn a forested region, mountain lions and wolves prey upon the deer population to near disappearance. To protect the deer population, most of the mountain lions and wolves in this region were eliminated through hunting. As a result, over-hunting occurred and the deer population increased rapidly. After several years, what most likely will happen to the deer population in the absence of its predators?\n\nChoices:\nA. It will stabilize as the birth rate equals the death rate.\nB. It will continue to increase steadily from year to year.\nC. It will increase as other herbivores move into the region.\nD. It will decrease due to overcrowding causing a food shortage.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 776,
+  "error": "mat1 and mat2 shapes cannot be multiplied (138x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7012880",
+    "question": "A student is dissolving sugar in water to make candy. She notices that sugar lumps are forming at the bottom of the pan. What could she do to help more of the sugar dissolve?",
+    "choices": {
+      "text": [
+        "heat the solution",
+        "cool the solution",
+        "add more sugar to the pan",
+        "take some water out of the pan"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student is dissolving sugar in water to make candy. She notices that sugar lumps are forming at the bottom of the pan. What could she do to help more of the sugar dissolve?\n\nChoices:\nA. heat the solution\nB. cool the solution\nC. add more sugar to the pan\nD. take some water out of the pan\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

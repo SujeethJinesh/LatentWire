@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 284,
+  "error": "mat1 and mat2 shapes cannot be multiplied (157x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7128555",
+    "question": "In a certain field, plants with blue flowers are pollinated by bees, while plants with white flowers are pollinated by moths. If the population of bees decreases, which will most likely occur?",
+    "choices": {
+      "text": [
+        "The population of blue flowers will increase over time.",
+        "The population of white flowers will increase over time.",
+        "The moths will start pollinating the blue flowers.",
+        "The bees will start pollinating the white flowers."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn a certain field, plants with blue flowers are pollinated by bees, while plants with white flowers are pollinated by moths. If the population of bees decreases, which will most likely occur?\n\nChoices:\nA. The population of blue flowers will increase over time.\nB. The population of white flowers will increase over time.\nC. The moths will start pollinating the blue flowers.\nD. The bees will start pollinating the white flowers.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

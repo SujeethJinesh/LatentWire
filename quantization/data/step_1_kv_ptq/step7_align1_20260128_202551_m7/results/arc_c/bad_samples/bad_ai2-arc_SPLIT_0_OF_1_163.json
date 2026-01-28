@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 163,
+  "error": "mat1 and mat2 shapes cannot be multiplied (124x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7212818",
+    "question": "Scientists present the results of their investigations to others for review because",
+    "choices": {
+      "text": [
+        "people need to be informed about the scientific process.",
+        "data often supports more than one explanation.",
+        "it deters other scientists from duplicating research.",
+        "it ensures that researchers receive credit."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nScientists present the results of their investigations to others for review because\n\nChoices:\nA. people need to be informed about the scientific process.\nB. data often supports more than one explanation.\nC. it deters other scientists from duplicating research.\nD. it ensures that researchers receive credit.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

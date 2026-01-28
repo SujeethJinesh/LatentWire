@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 578,
+  "error": "mat1 and mat2 shapes cannot be multiplied (123x1536 and 1152x1024)",
+  "example": {
+    "id": "AIMS_2008_8_13",
+    "question": "Which substance would most neutralize an acidic food?",
+    "choices": {
+      "text": [
+        "dairy(pH 5-7)",
+        "water (pH 6-7)",
+        "citrus fruit (pH 2-3)",
+        "baking soda (pH 8-9)"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich substance would most neutralize an acidic food?\n\nChoices:\nA. dairy(pH 5-7)\nB. water (pH 6-7)\nC. citrus fruit (pH 2-3)\nD. baking soda (pH 8-9)\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

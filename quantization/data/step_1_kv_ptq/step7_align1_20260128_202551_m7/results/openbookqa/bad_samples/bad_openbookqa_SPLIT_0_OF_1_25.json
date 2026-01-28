@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 25,
+  "error": "mat1 and mat2 shapes cannot be multiplied (120x1536 and 1152x1024)",
+  "example": {
+    "id": "7-372",
+    "question_stem": "If you were attacked by a shark and had to punch it sharply where it pulls in air from, you'd use your hand to make contact with",
+    "choices": {
+      "text": [
+        "its snout",
+        "its gills",
+        "its nose",
+        "its belly"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nIf you were attacked by a shark and had to punch it sharply where it pulls in air from, you'd use your hand to make contact with\n\nChoices:\nA. its snout\nB. its gills\nC. its nose\nD. its belly\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

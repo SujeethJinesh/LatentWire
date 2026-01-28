@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 312,
+  "error": "mat1 and mat2 shapes cannot be multiplied (102x1536 and 1152x1024)",
+  "example": {
+    "id": "342",
+    "question_stem": "Which of these foods might have a negative impact on humans?",
+    "choices": {
+      "text": [
+        "Organic corn",
+        "Conventional corn",
+        "Organic potato",
+        "Organic Apples"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these foods might have a negative impact on humans?\n\nChoices:\nA. Organic corn\nB. Conventional corn\nC. Organic potato\nD. Organic Apples\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 803,
+  "error": "mat1 and mat2 shapes cannot be multiplied (120x1536 and 1152x1024)",
+  "example": {
+    "id": "MEAP_2005_5_14",
+    "question": "Which of the following is a valid food chain?",
+    "choices": {
+      "text": [
+        "water -> grass -> fox -> hawk",
+        "sun -> rabbit -> moose -> wolf",
+        "grass -> spider -> mouse -> rabbit",
+        "dead mouse -> flies -> frog -> snake"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following is a valid food chain?\n\nChoices:\nA. water -> grass -> fox -> hawk\nB. sun -> rabbit -> moose -> wolf\nC. grass -> spider -> mouse -> rabbit\nD. dead mouse -> flies -> frog -> snake\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

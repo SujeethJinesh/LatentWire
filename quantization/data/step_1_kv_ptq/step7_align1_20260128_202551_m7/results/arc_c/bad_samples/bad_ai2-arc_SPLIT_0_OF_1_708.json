@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 708,
+  "error": "mat1 and mat2 shapes cannot be multiplied (134x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2015_5_19",
+    "question": "At the beginning of a science class, the teacher opened a small sealed jar and placed it on a table. The contents of the jar spread throughout the room during class. Which of the following did the jar most likely contain?",
+    "choices": {
+      "text": [
+        "cloth fibers",
+        "oxygen gas",
+        "saltwater",
+        "snowflakes"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nAt the beginning of a science class, the teacher opened a small sealed jar and placed it on a table. The contents of the jar spread throughout the room during class. Which of the following did the jar most likely contain?\n\nChoices:\nA. cloth fibers\nB. oxygen gas\nC. saltwater\nD. snowflakes\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

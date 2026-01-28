@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1114,
+  "error": "mat1 and mat2 shapes cannot be multiplied (112x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_1998_4_13",
+    "question": "Some factories release pollutants into the air that form acid rain. What determines where the acid rain is most likely to fall?",
+    "choices": {
+      "text": [
+        "ocean currents",
+        "wind direction",
+        "air temperature",
+        "relative humidity"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome factories release pollutants into the air that form acid rain. What determines where the acid rain is most likely to fall?\n\nChoices:\nA. ocean currents\nB. wind direction\nC. air temperature\nD. relative humidity\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 233,
+  "error": "mat1 and mat2 shapes cannot be multiplied (103x1536 and 1152x1024)",
+  "example": {
+    "id": "82",
+    "question_stem": "The size of an object and the ability to see it more easily have what kind of relationship?",
+    "choices": {
+      "text": [
+        "equal",
+        "inverse",
+        "direct",
+        "reverse"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe size of an object and the ability to see it more easily have what kind of relationship?\n\nChoices:\nA. equal\nB. inverse\nC. direct\nD. reverse\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

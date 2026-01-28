@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 351,
+  "error": "mat1 and mat2 shapes cannot be multiplied (148x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_409295",
+    "question": "Robert is thinking about buying a new refrigerator. His old refrigerator runs at about 43% efficiency. Which most likely accounts for the remaining 57% of the energy?",
+    "choices": {
+      "text": [
+        "It is used up by the light in the refrigerator.",
+        "It is released to the surroundings as heat.",
+        "It is converted into mechanical energy.",
+        "It stored as a form of potential energy."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nRobert is thinking about buying a new refrigerator. His old refrigerator runs at about 43% efficiency. Which most likely accounts for the remaining 57% of the energy?\n\nChoices:\nA. It is used up by the light in the refrigerator.\nB. It is released to the surroundings as heat.\nC. It is converted into mechanical energy.\nD. It stored as a form of potential energy.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 526,
+  "error": "mat1 and mat2 shapes cannot be multiplied (136x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_401678",
+    "question": "A student determines the mass of a sample on a triple-beam balance. What should the student do before determining the mass of the next sample?",
+    "choices": {
+      "text": [
+        "adjust the height of the pan",
+        "move all of the riders to zero",
+        "move the beams rapidly up and down",
+        "adjust the location of the mass markings"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student determines the mass of a sample on a triple-beam balance. What should the student do before determining the mass of the next sample?\n\nChoices:\nA. adjust the height of the pan\nB. move all of the riders to zero\nC. move the beams rapidly up and down\nD. adjust the location of the mass markings\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

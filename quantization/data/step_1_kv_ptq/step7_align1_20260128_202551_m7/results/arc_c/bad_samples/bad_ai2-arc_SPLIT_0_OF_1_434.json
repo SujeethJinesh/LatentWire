@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 434,
+  "error": "mat1 and mat2 shapes cannot be multiplied (186x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_417127",
+    "question": "Embryo transfer is a type of biotechnology. It is used in the breeding of cattle, sheep, and goats. It allows an embryo to be transferred from the natural mother to a different female. This allows the natural mother to produce many more offspring than she otherwise could. What is the most likely reason that a particular female would be selected to be the natural mother that produces many embryos to be transferred to other females?",
+    "choices": {
+      "text": [
+        "She has a desirable trait.",
+        "She has had other offspring.",
+        "She has recovered from an illness.",
+        "She has donated other tissues successfully."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nEmbryo transfer is a type of biotechnology. It is used in the breeding of cattle, sheep, and goats. It allows an embryo to be transferred from the natural mother to a different female. This allows the natural mother to produce many more offspring than she otherwise could. What is the most likely reason that a particular female would be selected to be the natural mother that produces many embryos to be transferred to other females?\n\nChoices:\nA. She has a desirable trait.\nB. She has had other offspring.\nC. She has recovered from an illness.\nD. She has donated other tissues successfully.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

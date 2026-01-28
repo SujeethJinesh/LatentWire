@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 214,
+  "error": "mat1 and mat2 shapes cannot be multiplied (155x1536 and 1152x1024)",
+  "example": {
+    "id": "AKDE&ED_2008_8_7",
+    "question": "Which method should be used to determine the type of popcorn that produces the greatest number of popped kernels?",
+    "choices": {
+      "text": [
+        "Research articles about different ways to heat popcorn to make it pop.",
+        "Design an experiment that tests multiple types of popcorn using repeated trials.",
+        "Heat kernels of some types on an electric stove and heat other types on a gas stove.",
+        "Construct a mathematical equation that compares size and mass of kernels from each type."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich method should be used to determine the type of popcorn that produces the greatest number of popped kernels?\n\nChoices:\nA. Research articles about different ways to heat popcorn to make it pop.\nB. Design an experiment that tests multiple types of popcorn using repeated trials.\nC. Heat kernels of some types on an electric stove and heat other types on a gas stove.\nD. Construct a mathematical equation that compares size and mass of kernels from each type.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

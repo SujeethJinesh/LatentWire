@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 626,
+  "error": "mat1 and mat2 shapes cannot be multiplied (133x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_177870",
+    "question": "All stars in the universe go through a life cycle. What factor determines how stars progress through this cycle?",
+    "choices": {
+      "text": [
+        "the radiation that is present in the star",
+        "the amount of energy the star consumes",
+        "the quantity of mass with which the star began",
+        "the location of the star in the universe"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nAll stars in the universe go through a life cycle. What factor determines how stars progress through this cycle?\n\nChoices:\nA. the radiation that is present in the star\nB. the amount of energy the star consumes\nC. the quantity of mass with which the star began\nD. the location of the star in the universe\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

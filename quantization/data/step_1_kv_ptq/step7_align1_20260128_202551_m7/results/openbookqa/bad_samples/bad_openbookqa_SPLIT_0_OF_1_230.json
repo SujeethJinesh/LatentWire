@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 230,
+  "error": "mat1 and mat2 shapes cannot be multiplied (115x1536 and 1152x1024)",
+  "example": {
+    "id": "8-59",
+    "question_stem": "Which of these would create the most sound if struck with a metal spoon?",
+    "choices": {
+      "text": [
+        "the plastic water bottle",
+        "the backside of a person",
+        "the hair on a doll",
+        "the chassis of a car"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these would create the most sound if struck with a metal spoon?\n\nChoices:\nA. the plastic water bottle\nB. the backside of a person\nC. the hair on a doll\nD. the chassis of a car\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 798,
+  "error": "mat1 and mat2 shapes cannot be multiplied (126x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_414271",
+    "question": "Which statement describes how the life cycle of butterflies is different from the life cycle of frogs?",
+    "choices": {
+      "text": [
+        "Butterfly life cycles have more stages.",
+        "Butterfly life cycles have an egg stage.",
+        "Butterfly life cycles have a pupa stage.",
+        "Butterfly life cycles have an adult stage."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement describes how the life cycle of butterflies is different from the life cycle of frogs?\n\nChoices:\nA. Butterfly life cycles have more stages.\nB. Butterfly life cycles have an egg stage.\nC. Butterfly life cycles have a pupa stage.\nD. Butterfly life cycles have an adult stage.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

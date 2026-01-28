@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 684,
+  "error": "mat1 and mat2 shapes cannot be multiplied (103x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_409266",
+    "question": "Gravity on Earth is caused by",
+    "choices": {
+      "text": [
+        "the mass of Earth.",
+        "the rotation of Earth.",
+        "the revolution of Earth.",
+        "weather patterns on Earth."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nGravity on Earth is caused by\n\nChoices:\nA. the mass of Earth.\nB. the rotation of Earth.\nC. the revolution of Earth.\nD. weather patterns on Earth.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

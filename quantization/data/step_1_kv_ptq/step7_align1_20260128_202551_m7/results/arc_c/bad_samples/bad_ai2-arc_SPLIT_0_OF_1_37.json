@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 37,
+  "error": "mat1 and mat2 shapes cannot be multiplied (124x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_400407",
+    "question": "Which statement is true about the solar system?",
+    "choices": {
+      "text": [
+        "The gas planets are closer to the Sun.",
+        "The solid planets are closer to the Sun.",
+        "The planets are arranged in order of increasing size.",
+        "The solid planets are much larger than the gas planets."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement is true about the solar system?\n\nChoices:\nA. The gas planets are closer to the Sun.\nB. The solid planets are closer to the Sun.\nC. The planets are arranged in order of increasing size.\nD. The solid planets are much larger than the gas planets.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

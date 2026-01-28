@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 742,
+  "error": "mat1 and mat2 shapes cannot be multiplied (129x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2004_5_7",
+    "question": "Which of the following lists Earth, Jupiter,the Moon, and the Sun in order from largest to smallest?",
+    "choices": {
+      "text": [
+        "Jupiter, Earth, Sun, Moon",
+        "Sun, Jupiter, Earth, Moon",
+        "Sun, Jupiter, Moon, Earth",
+        "Jupiter, Sun, Earth, Moon"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following lists Earth, Jupiter,the Moon, and the Sun in order from largest to smallest?\n\nChoices:\nA. Jupiter, Earth, Sun, Moon\nB. Sun, Jupiter, Earth, Moon\nC. Sun, Jupiter, Moon, Earth\nD. Jupiter, Sun, Earth, Moon\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

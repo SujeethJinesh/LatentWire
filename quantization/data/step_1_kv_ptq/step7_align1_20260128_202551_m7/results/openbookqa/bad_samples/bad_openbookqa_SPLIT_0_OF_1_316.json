@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 316,
+  "error": "mat1 and mat2 shapes cannot be multiplied (113x1536 and 1152x1024)",
+  "example": {
+    "id": "7-653",
+    "question_stem": "A sailor needs to navigate to the shore, and does this by",
+    "choices": {
+      "text": [
+        "closing the sails quickly",
+        "setting out to sea",
+        "making an adjustment to the rudder",
+        "taking the afternoon off"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA sailor needs to navigate to the shore, and does this by\n\nChoices:\nA. closing the sails quickly\nB. setting out to sea\nC. making an adjustment to the rudder\nD. taking the afternoon off\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

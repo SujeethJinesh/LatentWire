@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 748,
+  "error": "mat1 and mat2 shapes cannot be multiplied (131x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2005_5_24",
+    "question": "Tomato plants grow in warm weather. 24 If the temperature drops below 32°F for two days in a row, what will most likely happen to the tomato plants?",
+    "choices": {
+      "text": [
+        "They will die.",
+        "They will migrate.",
+        "They will hibernate.",
+        "They will grow faster."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nTomato plants grow in warm weather. 24 If the temperature drops below 32°F for two days in a row, what will most likely happen to the tomato plants?\n\nChoices:\nA. They will die.\nB. They will migrate.\nC. They will hibernate.\nD. They will grow faster.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

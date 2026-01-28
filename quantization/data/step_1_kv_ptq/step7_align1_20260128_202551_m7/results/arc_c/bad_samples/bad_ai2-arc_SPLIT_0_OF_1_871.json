@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 871,
+  "error": "mat1 and mat2 shapes cannot be multiplied (122x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7192798",
+    "question": "When studying the health of an ecosystem, ecologists consider many factors. Which factor is least likely considered by ecologists when evaluating the impact of human activities on an ecosystem?",
+    "choices": {
+      "text": [
+        "air quality",
+        "plant diversity",
+        "solar radiation",
+        "thermal pollution"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen studying the health of an ecosystem, ecologists consider many factors. Which factor is least likely considered by ecologists when evaluating the impact of human activities on an ecosystem?\n\nChoices:\nA. air quality\nB. plant diversity\nC. solar radiation\nD. thermal pollution\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

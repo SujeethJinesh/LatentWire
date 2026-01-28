@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 784,
+  "error": "mat1 and mat2 shapes cannot be multiplied (118x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7106628",
+    "question": "Which factor will most likely increase the survival chances of an organism living in an environment that is undergoing rapid changes?",
+    "choices": {
+      "text": [
+        "encountering strong competition",
+        "having a long life span",
+        "producing identical offspring",
+        "having a diverse gene pool"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich factor will most likely increase the survival chances of an organism living in an environment that is undergoing rapid changes?\n\nChoices:\nA. encountering strong competition\nB. having a long life span\nC. producing identical offspring\nD. having a diverse gene pool\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

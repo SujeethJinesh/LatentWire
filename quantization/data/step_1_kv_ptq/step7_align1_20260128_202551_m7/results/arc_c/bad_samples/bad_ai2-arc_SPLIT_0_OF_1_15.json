@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 15,
+  "error": "mat1 and mat2 shapes cannot be multiplied (108x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_413240",
+    "question": "At which temperature does water freeze?",
+    "choices": {
+      "text": [
+        "0 degrees Celsius",
+        "32 degrees Celsius",
+        "100 degrees Celsius",
+        "212 degrees Celsius"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nAt which temperature does water freeze?\n\nChoices:\nA. 0 degrees Celsius\nB. 32 degrees Celsius\nC. 100 degrees Celsius\nD. 212 degrees Celsius\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

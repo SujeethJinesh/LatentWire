@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 865,
+  "error": "mat1 and mat2 shapes cannot be multiplied (131x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7139650",
+    "question": "Some new cars use special braking systems to recover energy when the brakes are applied. This energy is stored in special batteries and is used to power the electric motor. What type of energy are the brakes storing as they slow down the car?",
+    "choices": {
+      "text": [
+        "gravitational",
+        "kinetic",
+        "potential",
+        "thermal"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome new cars use special braking systems to recover energy when the brakes are applied. This energy is stored in special batteries and is used to power the electric motor. What type of energy are the brakes storing as they slow down the car?\n\nChoices:\nA. gravitational\nB. kinetic\nC. potential\nD. thermal\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

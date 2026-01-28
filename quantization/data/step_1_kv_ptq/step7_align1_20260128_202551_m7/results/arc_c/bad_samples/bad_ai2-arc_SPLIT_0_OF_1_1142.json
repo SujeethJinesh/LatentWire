@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1142,
+  "error": "mat1 and mat2 shapes cannot be multiplied (115x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2009_5_6518",
+    "question": "Which of the following changes is caused by removing heat?",
+    "choices": {
+      "text": [
+        "A solid changes to a gas.",
+        "A liquid changes to a gas.",
+        "A solid changes to a liquid.",
+        "A liquid changes to a solid."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following changes is caused by removing heat?\n\nChoices:\nA. A solid changes to a gas.\nB. A liquid changes to a gas.\nC. A solid changes to a liquid.\nD. A liquid changes to a solid.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

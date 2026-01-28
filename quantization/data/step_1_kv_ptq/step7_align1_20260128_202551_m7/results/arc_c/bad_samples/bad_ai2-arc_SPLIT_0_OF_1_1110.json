@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1110,
+  "error": "mat1 and mat2 shapes cannot be multiplied (118x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_402103",
+    "question": "When conducting a laboratory experiment, which action could be an unsafe practice?",
+    "choices": {
+      "text": [
+        "Report spills to your teacher immediately.",
+        "Wear a protective eye shield.",
+        "Pay close attention to instructions.",
+        "Smell the chemicals that are being mixed."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen conducting a laboratory experiment, which action could be an unsafe practice?\n\nChoices:\nA. Report spills to your teacher immediately.\nB. Wear a protective eye shield.\nC. Pay close attention to instructions.\nD. Smell the chemicals that are being mixed.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

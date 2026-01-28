@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 950,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_401865",
+    "question": "Which statement is best supported by the chemical equation shown? 6CO_{2} + 12H_{2}O + light -> C_{6}H_{12}O_{6} + 6O_{2} + 6H_{2}O",
+    "choices": {
+      "text": [
+        "CO_{2} has 2 atoms of carbon in it.",
+        "H_{2}O has 2 atoms of oxygen in it.",
+        "Twelve molecules of H_{2}O are produced.",
+        "Six molecules of CO_{2} are needed as reactants."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement is best supported by the chemical equation shown? 6CO_{2} + 12H_{2}O + light -> C_{6}H_{12}O_{6} + 6O_{2} + 6H_{2}O\n\nChoices:\nA. CO_{2} has 2 atoms of carbon in it.\nB. H_{2}O has 2 atoms of oxygen in it.\nC. Twelve molecules of H_{2}O are produced.\nD. Six molecules of CO_{2} are needed as reactants.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

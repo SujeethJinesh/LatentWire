@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 368,
+  "error": "mat1 and mat2 shapes cannot be multiplied (124x1536 and 1152x1024)",
+  "example": {
+    "id": "8-97",
+    "question_stem": "Someone wants their electromagnets to work, but is having difficulty powering them. In order to make them work, they need to",
+    "choices": {
+      "text": [
+        "run wire through currants",
+        "run a continuous current",
+        "run around the wire",
+        "currently run wire through"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nSomeone wants their electromagnets to work, but is having difficulty powering them. In order to make them work, they need to\n\nChoices:\nA. run wire through currants\nB. run a continuous current\nC. run around the wire\nD. currently run wire through\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

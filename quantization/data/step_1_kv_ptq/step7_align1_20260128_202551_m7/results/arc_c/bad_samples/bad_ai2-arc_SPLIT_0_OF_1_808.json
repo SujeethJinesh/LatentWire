@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 808,
+  "error": "mat1 and mat2 shapes cannot be multiplied (187x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2004_8_7",
+    "question": "Several students are entering a bridge building contest that requires using ice cream sticks and glue to construct the strongest bridge possible. The bridges must be 5 in. wide and span a length of 18 in. Which of the following tests is the most accurate way to determine the strongest span design for these bridges?",
+    "choices": {
+      "text": [
+        "roll toy cars across each bridge until it collapses",
+        "place concrete construction blocks on top of each bridge until it collapses",
+        "stack coins on both ends of each bridge until it collapses",
+        "place D-cell batteries at the center of each bridge until it collapses"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nSeveral students are entering a bridge building contest that requires using ice cream sticks and glue to construct the strongest bridge possible. The bridges must be 5 in. wide and span a length of 18 in. Which of the following tests is the most accurate way to determine the strongest span design for these bridges?\n\nChoices:\nA. roll toy cars across each bridge until it collapses\nB. place concrete construction blocks on top of each bridge until it collapses\nC. stack coins on both ends of each bridge until it collapses\nD. place D-cell batteries at the center of each bridge until it collapses\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

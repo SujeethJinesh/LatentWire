@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 967,
+  "error": "mat1 and mat2 shapes cannot be multiplied (139x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_403930",
+    "question": "A student found a worm under some leaves and wrote observations about the worm in a notebook. Which is a fact that could be found in the student's notebook?",
+    "choices": {
+      "text": [
+        "The worm feels cold.",
+        "The worm is a heterotroph.",
+        "The worm has 33 segments.",
+        "The worm has a four-chambered heart."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student found a worm under some leaves and wrote observations about the worm in a notebook. Which is a fact that could be found in the student's notebook?\n\nChoices:\nA. The worm feels cold.\nB. The worm is a heterotroph.\nC. The worm has 33 segments.\nD. The worm has a four-chambered heart.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

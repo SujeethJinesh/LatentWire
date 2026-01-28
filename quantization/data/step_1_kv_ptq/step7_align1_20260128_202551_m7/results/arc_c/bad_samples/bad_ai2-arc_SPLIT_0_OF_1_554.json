@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 554,
+  "error": "mat1 and mat2 shapes cannot be multiplied (130x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7214778",
+    "question": "Students design an investigation to study the effect of different surfaces on the speed of a ball rolling down a ramp. Which of these is the independent variable?",
+    "choices": {
+      "text": [
+        "time to roll down the ramp",
+        "mass of the ball",
+        "diameter of the ball",
+        "kind of surface on the ramp"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents design an investigation to study the effect of different surfaces on the speed of a ball rolling down a ramp. Which of these is the independent variable?\n\nChoices:\nA. time to roll down the ramp\nB. mass of the ball\nC. diameter of the ball\nD. kind of surface on the ramp\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

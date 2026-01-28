@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 36,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "9-540",
+    "question_stem": "If a person puts out four apples around their home on the same day, the molecules in which apple would be moving the most rapidly?",
+    "choices": {
+      "text": [
+        "the apple sitting on a sunny sidewalk",
+        "the apple in the freezer",
+        "the apple sitting on the shaded stoop",
+        "the apple in a closet"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nIf a person puts out four apples around their home on the same day, the molecules in which apple would be moving the most rapidly?\n\nChoices:\nA. the apple sitting on a sunny sidewalk\nB. the apple in the freezer\nC. the apple sitting on the shaded stoop\nD. the apple in a closet\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

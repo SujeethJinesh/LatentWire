@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 291,
+  "error": "mat1 and mat2 shapes cannot be multiplied (115x1536 and 1152x1024)",
+  "example": {
+    "id": "9-454",
+    "question_stem": "A field begins to bloom and blossom and plants need to be pollinated. In order to spread seeds, plants will most rely on",
+    "choices": {
+      "text": [
+        "pythons",
+        "salmon",
+        "robins",
+        "craters"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA field begins to bloom and blossom and plants need to be pollinated. In order to spread seeds, plants will most rely on\n\nChoices:\nA. pythons\nB. salmon\nC. robins\nD. craters\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

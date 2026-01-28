@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1168,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7111125",
+    "question": "Which of these is a response of cats to external stimuli?",
+    "choices": {
+      "text": [
+        "hairs on the back stand up when scared",
+        "decreased heart rate when sleeping",
+        "movement of waste into the bladder",
+        "temperature increases during an infection"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these is a response of cats to external stimuli?\n\nChoices:\nA. hairs on the back stand up when scared\nB. decreased heart rate when sleeping\nC. movement of waste into the bladder\nD. temperature increases during an infection\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

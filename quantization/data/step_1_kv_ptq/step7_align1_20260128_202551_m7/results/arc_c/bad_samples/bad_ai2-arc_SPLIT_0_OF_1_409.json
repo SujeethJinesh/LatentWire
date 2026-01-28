@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 409,
+  "error": "mat1 and mat2 shapes cannot be multiplied (135x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_189070",
+    "question": "Which of these best describes when a lunar eclipse will occur?",
+    "choices": {
+      "text": [
+        "when Earth is between the Moon and the Sun",
+        "when the Moon passes between Earth and the Sun",
+        "when the Sun is between Earth and the Moon",
+        "when Earth is at a 90° angle to the Moon and the Sun"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these best describes when a lunar eclipse will occur?\n\nChoices:\nA. when Earth is between the Moon and the Sun\nB. when the Moon passes between Earth and the Sun\nC. when the Sun is between Earth and the Moon\nD. when Earth is at a 90° angle to the Moon and the Sun\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

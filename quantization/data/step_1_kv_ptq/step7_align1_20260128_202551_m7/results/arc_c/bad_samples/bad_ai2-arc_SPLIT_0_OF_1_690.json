@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 690,
+  "error": "mat1 and mat2 shapes cannot be multiplied (134x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2004_5_11",
+    "question": "Bison are grazing animals. They travel across a prairie, eating grass. If there were too many bison in an area, there would probably be",
+    "choices": {
+      "text": [
+        "fewer predators of bison.",
+        "many other large grazing animals.",
+        "tall shrubs and many trees.",
+        "less grass and more bare soil."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nBison are grazing animals. They travel across a prairie, eating grass. If there were too many bison in an area, there would probably be\n\nChoices:\nA. fewer predators of bison.\nB. many other large grazing animals.\nC. tall shrubs and many trees.\nD. less grass and more bare soil.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

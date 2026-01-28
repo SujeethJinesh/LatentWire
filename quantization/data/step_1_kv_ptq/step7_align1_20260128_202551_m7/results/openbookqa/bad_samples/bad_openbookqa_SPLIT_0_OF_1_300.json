@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 300,
+  "error": "mat1 and mat2 shapes cannot be multiplied (100x1536 and 1152x1024)",
+  "example": {
+    "id": "7-417",
+    "question_stem": "what kind of temperature causes fur shedding?",
+    "choices": {
+      "text": [
+        "in freezing cold",
+        "a high temperature",
+        "in any temperature",
+        "a low temperature"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nwhat kind of temperature causes fur shedding?\n\nChoices:\nA. in freezing cold\nB. a high temperature\nC. in any temperature\nD. a low temperature\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

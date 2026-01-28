@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1000,
+  "error": "mat1 and mat2 shapes cannot be multiplied (155x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7172270",
+    "question": "In a population of brown snakes, a snake is born with a white-spotted pattern. Which factor will have the most influence on whether this trait will become common in the brown snake population?",
+    "choices": {
+      "text": [
+        "the ability of the snake to survive to reproduce",
+        "the appearance of other new traits in the baby snake",
+        "the history of the pattern in previous snake populations",
+        "the presence of thermal energy changing the snake pattern"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn a population of brown snakes, a snake is born with a white-spotted pattern. Which factor will have the most influence on whether this trait will become common in the brown snake population?\n\nChoices:\nA. the ability of the snake to survive to reproduce\nB. the appearance of other new traits in the baby snake\nC. the history of the pattern in previous snake populations\nD. the presence of thermal energy changing the snake pattern\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

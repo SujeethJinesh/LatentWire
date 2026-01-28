@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 415,
+  "error": "mat1 and mat2 shapes cannot be multiplied (145x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_401324",
+    "question": "What will most likely happen to this food chain if a farmer decides to dust a wheat crop with an insecticide? wheat -> insects -> sparrows -> hawks",
+    "choices": {
+      "text": [
+        "The grass would become greener.",
+        "More birds would move into the fields.",
+        "The hawks would eat more of the grass.",
+        "There would be fewer sparrows seen in the fields."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat will most likely happen to this food chain if a farmer decides to dust a wheat crop with an insecticide? wheat -> insects -> sparrows -> hawks\n\nChoices:\nA. The grass would become greener.\nB. More birds would move into the fields.\nC. The hawks would eat more of the grass.\nD. There would be fewer sparrows seen in the fields.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

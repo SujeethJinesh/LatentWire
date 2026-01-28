@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 192,
+  "error": "mat1 and mat2 shapes cannot be multiplied (95x1536 and 1152x1024)",
+  "example": {
+    "id": "158",
+    "question_stem": "A tree is not the habitat of a",
+    "choices": {
+      "text": [
+        "squirrel",
+        "woodpecker",
+        "monkey",
+        "lion"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA tree is not the habitat of a\n\nChoices:\nA. squirrel\nB. woodpecker\nC. monkey\nD. lion\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

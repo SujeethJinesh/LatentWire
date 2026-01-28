@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 146,
+  "error": "mat1 and mat2 shapes cannot be multiplied (110x1536 and 1152x1024)",
+  "example": {
+    "id": "8-346",
+    "question_stem": "What would be the flavor if you ate the item that fell and is thought to have hit Sir Issac Newton's head",
+    "choices": {
+      "text": [
+        "Sweet",
+        "Salty",
+        "bitter",
+        "sour"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat would be the flavor if you ate the item that fell and is thought to have hit Sir Issac Newton's head\n\nChoices:\nA. Sweet\nB. Salty\nC. bitter\nD. sour\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

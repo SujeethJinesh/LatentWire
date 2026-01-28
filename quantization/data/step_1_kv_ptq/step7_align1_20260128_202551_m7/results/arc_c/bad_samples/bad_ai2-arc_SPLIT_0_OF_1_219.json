@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 219,
+  "error": "mat1 and mat2 shapes cannot be multiplied (126x1536 and 1152x1024)",
+  "example": {
+    "id": "LEAP_2000_8_4",
+    "question": "Jerry threw a ball into the air. It followed a curved path and soon fell to the ground because",
+    "choices": {
+      "text": [
+        "air friction stopped the ball.",
+        "gravity changed the ball's direction.",
+        "the ball was not thrown hard enough.",
+        "the ball was not thrown straight up."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nJerry threw a ball into the air. It followed a curved path and soon fell to the ground because\n\nChoices:\nA. air friction stopped the ball.\nB. gravity changed the ball's direction.\nC. the ball was not thrown hard enough.\nD. the ball was not thrown straight up.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

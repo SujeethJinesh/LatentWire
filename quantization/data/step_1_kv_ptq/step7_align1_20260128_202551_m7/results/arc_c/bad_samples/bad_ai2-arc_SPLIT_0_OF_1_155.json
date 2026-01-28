@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 155,
+  "error": "mat1 and mat2 shapes cannot be multiplied (108x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_401372",
+    "question": "Adaptive characteristics that help dolphins survive life in the ocean include all of these except",
+    "choices": {
+      "text": [
+        "their sleek skin.",
+        "swimming very fast.",
+        "their body shape.",
+        "traveling alone."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nAdaptive characteristics that help dolphins survive life in the ocean include all of these except\n\nChoices:\nA. their sleek skin.\nB. swimming very fast.\nC. their body shape.\nD. traveling alone.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 355,
+  "error": "mat1 and mat2 shapes cannot be multiplied (107x1536 and 1152x1024)",
+  "example": {
+    "id": "9-1117",
+    "question_stem": "If I want to avoid being dinner for some type of frog what should I reincarnate as?",
+    "choices": {
+      "text": [
+        "Scorpion",
+        "House Fly",
+        "Cricket",
+        "Moth"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nIf I want to avoid being dinner for some type of frog what should I reincarnate as?\n\nChoices:\nA. Scorpion\nB. House Fly\nC. Cricket\nD. Moth\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

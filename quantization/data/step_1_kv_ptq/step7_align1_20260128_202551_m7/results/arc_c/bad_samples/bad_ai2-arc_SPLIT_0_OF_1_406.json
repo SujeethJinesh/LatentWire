@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 406,
+  "error": "mat1 and mat2 shapes cannot be multiplied (137x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_407302",
+    "question": "Water is found underground in many areas. Pumping large amounts of water from an underground limestone area will most likely cause which to occur?",
+    "choices": {
+      "text": [
+        "faulting in the limestone",
+        "flooding of streams around the area",
+        "the land above the limestone to sink",
+        "a change in the type of rock that forms in that area"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWater is found underground in many areas. Pumping large amounts of water from an underground limestone area will most likely cause which to occur?\n\nChoices:\nA. faulting in the limestone\nB. flooding of streams around the area\nC. the land above the limestone to sink\nD. a change in the type of rock that forms in that area\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

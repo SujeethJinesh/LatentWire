@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 274,
+  "error": "mat1 and mat2 shapes cannot be multiplied (104x1536 and 1152x1024)",
+  "example": {
+    "id": "1274",
+    "question_stem": "In which location would a groundhog hide from a wolf?",
+    "choices": {
+      "text": [
+        "beside a tree",
+        "in the grass",
+        "on a stump",
+        "under the ground"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn which location would a groundhog hide from a wolf?\n\nChoices:\nA. beside a tree\nB. in the grass\nC. on a stump\nD. under the ground\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

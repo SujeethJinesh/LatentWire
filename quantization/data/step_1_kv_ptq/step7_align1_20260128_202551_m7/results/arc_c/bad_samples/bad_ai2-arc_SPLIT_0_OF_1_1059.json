@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1059,
+  "error": "mat1 and mat2 shapes cannot be multiplied (153x1536 and 1152x1024)",
+  "example": {
+    "id": "MEAP_2005_5_15",
+    "question": "Organisms have many methods of surviving winter conditions. Which of the following is NOT an example of an organism adapting to survive the cold winter months?",
+    "choices": {
+      "text": [
+        "Robins fly from Michigan to Georgia in the fall.",
+        "Chameleons change color to match their surroundings.",
+        "White-tailed deer grow longer hair that is hollow inside.",
+        "Carp settle on the bottom of a pond and cover themselves with mud."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nOrganisms have many methods of surviving winter conditions. Which of the following is NOT an example of an organism adapting to survive the cold winter months?\n\nChoices:\nA. Robins fly from Michigan to Georgia in the fall.\nB. Chameleons change color to match their surroundings.\nC. White-tailed deer grow longer hair that is hollow inside.\nD. Carp settle on the bottom of a pond and cover themselves with mud.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

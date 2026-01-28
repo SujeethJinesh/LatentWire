@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 505,
+  "error": "mat1 and mat2 shapes cannot be multiplied (143x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2005_9_21",
+    "question": "A man ran on a treadmill for 1,800 seconds. At the end of his run, the treadmill indicated his energy output as 240,000 J. What average power did he generate?",
+    "choices": {
+      "text": [
+        "666 W",
+        "133 W",
+        "66 W",
+        "7 W"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA man ran on a treadmill for 1,800 seconds. At the end of his run, the treadmill indicated his energy output as 240,000 J. What average power did he generate?\n\nChoices:\nA. 666 W\nB. 133 W\nC. 66 W\nD. 7 W\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

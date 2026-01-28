@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 498,
+  "error": "mat1 and mat2 shapes cannot be multiplied (171x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_400887",
+    "question": "How much energy is needed to raise the temperature of 5.0 grams of lead from 25°C to 35°C? [specific heat (c) = 0.129 J/(g °C)] q = c \\times m \\times \\Delta T",
+    "choices": {
+      "text": [
+        "6.45 J/(g °C)",
+        "6.45 J",
+        "16.1 J/(g °C)",
+        "16.1 J"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nHow much energy is needed to raise the temperature of 5.0 grams of lead from 25°C to 35°C? [specific heat (c) = 0.129 J/(g °C)] q = c \\times m \\times \\Delta T\n\nChoices:\nA. 6.45 J/(g °C)\nB. 6.45 J\nC. 16.1 J/(g °C)\nD. 16.1 J\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 154,
+  "error": "mat1 and mat2 shapes cannot be multiplied (133x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7029803",
+    "question": "Why does a floor covered with tile feel colder than a floor covered with carpet?",
+    "choices": {
+      "text": [
+        "The tile floor is colder than the carpet.",
+        "The tile floor conducts heat better than the carpet.",
+        "The carpet conducts heat better than the tile floor.",
+        "The tile floor is a better insulator than the carpet."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhy does a floor covered with tile feel colder than a floor covered with carpet?\n\nChoices:\nA. The tile floor is colder than the carpet.\nB. The tile floor conducts heat better than the carpet.\nC. The carpet conducts heat better than the tile floor.\nD. The tile floor is a better insulator than the carpet.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 31,
+  "error": "mat1 and mat2 shapes cannot be multiplied (125x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7210245",
+    "question": "Earth's distance from the Sun enables water to be readily available for organisms. Which property of water is most important for these organisms?",
+    "choices": {
+      "text": [
+        "its ability to freeze",
+        "its specific heat capacity",
+        "its ability to exist as a liquid",
+        "its high surface tension"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nEarth's distance from the Sun enables water to be readily available for organisms. Which property of water is most important for these organisms?\n\nChoices:\nA. its ability to freeze\nB. its specific heat capacity\nC. its ability to exist as a liquid\nD. its high surface tension\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

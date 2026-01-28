@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 192,
+  "error": "mat1 and mat2 shapes cannot be multiplied (110x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7093958",
+    "question": "What is one effect the hydrosphere has on the lithosphere?",
+    "choices": {
+      "text": [
+        "erosion of rocks",
+        "evaporation of water",
+        "heating of the core",
+        "melting of the crust"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is one effect the hydrosphere has on the lithosphere?\n\nChoices:\nA. erosion of rocks\nB. evaporation of water\nC. heating of the core\nD. melting of the crust\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

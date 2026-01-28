@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 245,
+  "error": "mat1 and mat2 shapes cannot be multiplied (112x1536 and 1152x1024)",
+  "example": {
+    "id": "1095",
+    "question_stem": "What is the primary reason my duck feather filled jacket works well against the snow",
+    "choices": {
+      "text": [
+        "feathers slows heat transfer",
+        "the natural duck wax",
+        "a synthetic thick liner",
+        "small flexible solar panels"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is the primary reason my duck feather filled jacket works well against the snow\n\nChoices:\nA. feathers slows heat transfer\nB. the natural duck wax\nC. a synthetic thick liner\nD. small flexible solar panels\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

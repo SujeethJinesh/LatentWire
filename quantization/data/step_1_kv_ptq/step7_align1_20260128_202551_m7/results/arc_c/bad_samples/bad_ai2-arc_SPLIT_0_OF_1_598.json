@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 598,
+  "error": "mat1 and mat2 shapes cannot be multiplied (184x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_416576",
+    "question": "A euglena cell has a structure called an eyespot that detects light. A paramecium does not have an eyespot, and so it cannot detect light. Why doesn't a paramecium need an eyespot?",
+    "choices": {
+      "text": [
+        "A paramecium does not live where there is light.",
+        "A paramecium does not photosynthesize its own food.",
+        "A paramecium lives in shallower water than a euglena.",
+        "A paramecium uses cilia instead of a flagellum to move."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA euglena cell has a structure called an eyespot that detects light. A paramecium does not have an eyespot, and so it cannot detect light. Why doesn't a paramecium need an eyespot?\n\nChoices:\nA. A paramecium does not live where there is light.\nB. A paramecium does not photosynthesize its own food.\nC. A paramecium lives in shallower water than a euglena.\nD. A paramecium uses cilia instead of a flagellum to move.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

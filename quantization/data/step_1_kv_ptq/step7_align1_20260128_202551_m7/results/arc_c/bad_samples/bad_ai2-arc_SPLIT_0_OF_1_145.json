@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 145,
+  "error": "mat1 and mat2 shapes cannot be multiplied (159x1536 and 1152x1024)",
+  "example": {
+    "id": "TIMSS_1995_8_J1",
+    "question": "Which BEST describes the surface of the Earth over billions of years?",
+    "choices": {
+      "text": [
+        "A flat surface is gradually pushed up into higher and higher mountains until the Earth is covered with mountains.",
+        "High mountains gradually wear down until most of the Earth is at sea level.",
+        "High mountains gradually wear down as new mountains are continuously being formed, over and over again.",
+        "High mountains and flat plains stay side by side for billions of years with little change."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich BEST describes the surface of the Earth over billions of years?\n\nChoices:\nA. A flat surface is gradually pushed up into higher and higher mountains until the Earth is covered with mountains.\nB. High mountains gradually wear down until most of the Earth is at sea level.\nC. High mountains gradually wear down as new mountains are continuously being formed, over and over again.\nD. High mountains and flat plains stay side by side for billions of years with little change.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

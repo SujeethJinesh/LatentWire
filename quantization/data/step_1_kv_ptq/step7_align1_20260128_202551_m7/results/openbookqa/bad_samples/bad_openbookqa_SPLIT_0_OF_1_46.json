@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 46,
+  "error": "mat1 and mat2 shapes cannot be multiplied (99x1536 and 1152x1024)",
+  "example": {
+    "id": "132",
+    "question_stem": "What would happen when balloons heat up?",
+    "choices": {
+      "text": [
+        "they get bigger",
+        "they get smaller",
+        "nothing happens",
+        "they fall down"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat would happen when balloons heat up?\n\nChoices:\nA. they get bigger\nB. they get smaller\nC. nothing happens\nD. they fall down\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

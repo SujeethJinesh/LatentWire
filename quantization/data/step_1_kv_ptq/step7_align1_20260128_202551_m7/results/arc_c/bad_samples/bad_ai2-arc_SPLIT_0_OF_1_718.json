@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 718,
+  "error": "mat1 and mat2 shapes cannot be multiplied (151x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_1998_4_23",
+    "question": "Melinda looked out of her window one night and saw a very bright star just over the top of a tree. Late that night she looked out and the star was gone. Which BEST explains what happened?",
+    "choices": {
+      "text": [
+        "Earth turns so the stars seem to move.",
+        "Some stars only shine for a few hours each night.",
+        "The star must have burned up.",
+        "Some stars move faster than others."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nMelinda looked out of her window one night and saw a very bright star just over the top of a tree. Late that night she looked out and the star was gone. Which BEST explains what happened?\n\nChoices:\nA. Earth turns so the stars seem to move.\nB. Some stars only shine for a few hours each night.\nC. The star must have burned up.\nD. Some stars move faster than others.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

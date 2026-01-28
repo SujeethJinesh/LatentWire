@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 304,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_401605",
+    "question": "Which item can safely be reused after an investigation?",
+    "choices": {
+      "text": [
+        "glassware used to heat liquids",
+        "filter paper used to filter water",
+        "paper towels used to soak up water",
+        "powdered chemicals cleaned from a spill"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich item can safely be reused after an investigation?\n\nChoices:\nA. glassware used to heat liquids\nB. filter paper used to filter water\nC. paper towels used to soak up water\nD. powdered chemicals cleaned from a spill\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

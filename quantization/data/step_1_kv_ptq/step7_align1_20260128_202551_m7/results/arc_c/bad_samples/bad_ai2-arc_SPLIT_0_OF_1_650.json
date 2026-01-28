@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 650,
+  "error": "mat1 and mat2 shapes cannot be multiplied (147x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_405130",
+    "question": "A science class is divided into two groups. The first group plays loud music in a room that has thick carpet on the ceiling, walls, and floor. The second group is outside of the room but does not hear the music because the sound was",
+    "choices": {
+      "text": [
+        "absorbed by the carpet.",
+        "refracted by the carpet.",
+        "reflected by the carpet.",
+        "amplified by the carpet."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA science class is divided into two groups. The first group plays loud music in a room that has thick carpet on the ceiling, walls, and floor. The second group is outside of the room but does not hear the music because the sound was\n\nChoices:\nA. absorbed by the carpet.\nB. refracted by the carpet.\nC. reflected by the carpet.\nD. amplified by the carpet.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

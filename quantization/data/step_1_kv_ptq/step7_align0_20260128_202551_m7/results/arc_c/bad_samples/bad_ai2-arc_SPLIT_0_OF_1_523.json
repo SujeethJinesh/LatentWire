@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 523,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7201968",
+    "question": "Scientists discovered that although infectious bacteria may develop immunity to antibiotic medications, some bacteria are unable to resist certain peptides, which act as natural antibiotic substances inside the human body. This discovery led to the development of which new technology?",
+    "choices": {
+      "text": [
+        "artificial substances that mimic human peptides",
+        "antibiotics that can be absorbed through the skin",
+        "bacteria that attack antibiotic-resistant organisms",
+        "antibiotics that adapt in response to bacterial immunity"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nScientists discovered that although infectious bacteria may develop immunity to antibiotic medications, some bacteria are unable to resist certain peptides, which act as natural antibiotic substances inside the human body. This discovery led to the development of which new technology?\n\nChoices:\nA. artificial substances that mimic human peptides\nB. antibiotics that can be absorbed through the skin\nC. bacteria that attack antibiotic-resistant organisms\nD. antibiotics that adapt in response to bacterial immunity\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

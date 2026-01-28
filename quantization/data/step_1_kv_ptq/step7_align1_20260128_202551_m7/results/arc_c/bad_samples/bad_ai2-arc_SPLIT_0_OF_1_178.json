@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 178,
+  "error": "mat1 and mat2 shapes cannot be multiplied (122x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_402501",
+    "question": "Magnesium bromide is one of the most abundant compounds found in sea water. Which formula correctly represents magnesium bromide?",
+    "choices": {
+      "text": [
+        "MgBr",
+        "MgBr_{2}",
+        "Mg_{2}Br",
+        "Mg_{3}Br_{2}"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nMagnesium bromide is one of the most abundant compounds found in sea water. Which formula correctly represents magnesium bromide?\n\nChoices:\nA. MgBr\nB. MgBr_{2}\nC. Mg_{2}Br\nD. Mg_{3}Br_{2}\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

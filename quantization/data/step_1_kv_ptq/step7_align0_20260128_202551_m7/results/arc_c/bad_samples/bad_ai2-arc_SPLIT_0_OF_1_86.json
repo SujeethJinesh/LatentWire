@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 86,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7127943",
+    "question": "As early as the 1600s, scientists noticed that the continents appeared to fit together like pieces of a puzzle. The idea that the continents were once together and had drifted apart was not widely accepted. In the 1940s, technology used on submarines led to evidence of continental movement. This technology allowed the scientists to do which of these?",
+    "choices": {
+      "text": [
+        "to explain the mechanism that caused the continents to move",
+        "to consider the glacial evidence as outdated",
+        "to explain the extinction of the dinosaurs",
+        "to consider it unlikely that the continents were once together"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nAs early as the 1600s, scientists noticed that the continents appeared to fit together like pieces of a puzzle. The idea that the continents were once together and had drifted apart was not widely accepted. In the 1940s, technology used on submarines led to evidence of continental movement. This technology allowed the scientists to do which of these?\n\nChoices:\nA. to explain the mechanism that caused the continents to move\nB. to consider the glacial evidence as outdated\nC. to explain the extinction of the dinosaurs\nD. to consider it unlikely that the continents were once together\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

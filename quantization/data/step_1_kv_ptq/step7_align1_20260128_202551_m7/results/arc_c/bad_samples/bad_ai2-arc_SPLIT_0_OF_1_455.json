@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 455,
+  "error": "mat1 and mat2 shapes cannot be multiplied (164x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7218505",
+    "question": "An astronomer collects data from observations of a star. The astronomer thinks the data indicate that a large planet orbits the star. How should the astronomer report the findings to best support the scientific reliability of the data?",
+    "choices": {
+      "text": [
+        "by writing a post to an astronomy-based science blog",
+        "by sending an article to a peer-reviewed astronomy journal",
+        "by creating a personal webpage that is focused on astronomy",
+        "by discussing the data with a reporter who understands astronomy"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nAn astronomer collects data from observations of a star. The astronomer thinks the data indicate that a large planet orbits the star. How should the astronomer report the findings to best support the scientific reliability of the data?\n\nChoices:\nA. by writing a post to an astronomy-based science blog\nB. by sending an article to a peer-reviewed astronomy journal\nC. by creating a personal webpage that is focused on astronomy\nD. by discussing the data with a reporter who understands astronomy\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

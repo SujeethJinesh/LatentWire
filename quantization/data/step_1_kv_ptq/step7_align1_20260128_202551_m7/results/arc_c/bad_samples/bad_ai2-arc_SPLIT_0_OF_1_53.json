@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 53,
+  "error": "mat1 and mat2 shapes cannot be multiplied (122x1536 and 1152x1024)",
+  "example": {
+    "id": "AKDE&ED_2008_4_26",
+    "question": "Which example shows a relationship between a living thing and a nonliving thing?",
+    "choices": {
+      "text": [
+        "An insect is food for a salmon.",
+        "Water carries a rock downstream.",
+        "A tree removes a gas from the air.",
+        "A flower makes food for a butterfly."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich example shows a relationship between a living thing and a nonliving thing?\n\nChoices:\nA. An insect is food for a salmon.\nB. Water carries a rock downstream.\nC. A tree removes a gas from the air.\nD. A flower makes food for a butterfly.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

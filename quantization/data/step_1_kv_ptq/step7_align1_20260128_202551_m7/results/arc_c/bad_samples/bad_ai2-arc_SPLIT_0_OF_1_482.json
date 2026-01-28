@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 482,
+  "error": "mat1 and mat2 shapes cannot be multiplied (146x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7027720",
+    "question": "A student has built a model in which sheets of cork floating in a tub of water represent tectonic plates. To make the sheet representing an ocean plate more accurate in the model system, the student should",
+    "choices": {
+      "text": [
+        "cut several holes in it.",
+        "attach small weights to it.",
+        "cut it into a smaller shape.",
+        "replace it with a thin sheet of copper."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student has built a model in which sheets of cork floating in a tub of water represent tectonic plates. To make the sheet representing an ocean plate more accurate in the model system, the student should\n\nChoices:\nA. cut several holes in it.\nB. attach small weights to it.\nC. cut it into a smaller shape.\nD. replace it with a thin sheet of copper.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

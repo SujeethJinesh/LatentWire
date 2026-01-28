@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 314,
+  "error": "mat1 and mat2 shapes cannot be multiplied (138x1536 and 1152x1024)",
+  "example": {
+    "id": "VASoL_2007_5_22",
+    "question": "22 Sandy is conducting an investigation to find out which food his dog likes best. Which is the manipulated variable in his investigation?",
+    "choices": {
+      "text": [
+        "The color of his dog's food dish",
+        "The kind of food he gives his dog",
+        "The amount of food he gives his dog",
+        "The time of day he feeds his dog"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\n22 Sandy is conducting an investigation to find out which food his dog likes best. Which is the manipulated variable in his investigation?\n\nChoices:\nA. The color of his dog's food dish\nB. The kind of food he gives his dog\nC. The amount of food he gives his dog\nD. The time of day he feeds his dog\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

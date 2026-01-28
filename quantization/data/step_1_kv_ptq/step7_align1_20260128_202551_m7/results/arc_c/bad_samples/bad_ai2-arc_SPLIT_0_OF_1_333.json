@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 333,
+  "error": "mat1 and mat2 shapes cannot be multiplied (139x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_401763",
+    "question": "An aluminum ion has a charge of +3, and an oxide ion has a charge of -2. Which would be the product of a reaction between these two elements?",
+    "choices": {
+      "text": [
+        "Al_{2}O",
+        "Al_{2}O_{3}",
+        "2AlO_{3}",
+        "Al_{3}O_{2}"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nAn aluminum ion has a charge of +3, and an oxide ion has a charge of -2. Which would be the product of a reaction between these two elements?\n\nChoices:\nA. Al_{2}O\nB. Al_{2}O_{3}\nC. 2AlO_{3}\nD. Al_{3}O_{2}\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

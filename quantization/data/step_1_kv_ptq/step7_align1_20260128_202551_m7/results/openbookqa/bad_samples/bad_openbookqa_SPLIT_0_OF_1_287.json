@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 287,
+  "error": "mat1 and mat2 shapes cannot be multiplied (126x1536 and 1152x1024)",
+  "example": {
+    "id": "7-334",
+    "question_stem": "A Punnett square is used to identify the percent chance of a trait being passed down from a parent to its offspring, so",
+    "choices": {
+      "text": [
+        "certain things may be featured",
+        "certain features may be predicted",
+        "certain traits may be given",
+        "certain features may be guaranteed"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA Punnett square is used to identify the percent chance of a trait being passed down from a parent to its offspring, so\n\nChoices:\nA. certain things may be featured\nB. certain features may be predicted\nC. certain traits may be given\nD. certain features may be guaranteed\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

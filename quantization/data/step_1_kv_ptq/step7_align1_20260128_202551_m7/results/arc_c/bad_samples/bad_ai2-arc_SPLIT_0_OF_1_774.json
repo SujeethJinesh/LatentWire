@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 774,
+  "error": "mat1 and mat2 shapes cannot be multiplied (127x1536 and 1152x1024)",
+  "example": {
+    "id": "TIMSS_2003_8_pg16",
+    "question": "Some chemical reactions absorbed energy, while others release energy. Of the chemical reactions in the burning coal and exploding fireworks, which will release energy?",
+    "choices": {
+      "text": [
+        "Burning coal only",
+        "Exploding fireworks only",
+        "Both burning coal and exploding fireworks",
+        "Neither burning coal nor exploding fireworks"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome chemical reactions absorbed energy, while others release energy. Of the chemical reactions in the burning coal and exploding fireworks, which will release energy?\n\nChoices:\nA. Burning coal only\nB. Exploding fireworks only\nC. Both burning coal and exploding fireworks\nD. Neither burning coal nor exploding fireworks\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

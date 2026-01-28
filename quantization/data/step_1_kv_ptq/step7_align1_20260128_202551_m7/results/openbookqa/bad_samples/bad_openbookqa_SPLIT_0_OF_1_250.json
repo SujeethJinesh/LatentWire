@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 250,
+  "error": "mat1 and mat2 shapes cannot be multiplied (100x1536 and 1152x1024)",
+  "example": {
+    "id": "8-340",
+    "question_stem": "Rain is usually guaranteed when all are present but",
+    "choices": {
+      "text": [
+        "cirrus clouds",
+        "cumulus clouds",
+        "hail stones",
+        "direct sunshine"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nRain is usually guaranteed when all are present but\n\nChoices:\nA. cirrus clouds\nB. cumulus clouds\nC. hail stones\nD. direct sunshine\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

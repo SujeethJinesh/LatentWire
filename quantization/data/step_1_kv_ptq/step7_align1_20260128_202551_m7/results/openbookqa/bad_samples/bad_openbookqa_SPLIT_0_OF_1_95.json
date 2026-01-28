@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 95,
+  "error": "mat1 and mat2 shapes cannot be multiplied (118x1536 and 1152x1024)",
+  "example": {
+    "id": "1672",
+    "question_stem": "Squirrels spend their fall",
+    "choices": {
+      "text": [
+        "looking for pretty leaves to collect",
+        "stockpiling rocks for fighting in the winter",
+        "stockpiling pecans for the frigid months",
+        "collecting twigs to keep warm"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nSquirrels spend their fall\n\nChoices:\nA. looking for pretty leaves to collect\nB. stockpiling rocks for fighting in the winter\nC. stockpiling pecans for the frigid months\nD. collecting twigs to keep warm\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

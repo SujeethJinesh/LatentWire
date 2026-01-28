@@ -1,0 +1,22 @@
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/torch/utils/data/dataset.py:473: UserWarning: Length of split at index 1 is 0. This might result in an empty dataset.
+  warnings.warn(
+Outputs will be saved to: /workspace/c2c_checkpoints/qat_20260128_202927_m5
+Training mode: rosetta
+Setting up models…
+Using dtype: torch.float32
+Model Qwen/Qwen3-0.6B already has a chat template.
+Using last_aligned mapping strategy (target: [sources])
+Applying freeze configuration: ['teacher', 'base']
+Total parameters: 1,240,955,256
+Trainable parameters: 150,872,568
+Percentage of trainable parameters: 12.1578%
+Loading dataset…
+Loading MMLU dataset (split: dev)...
+Loaded 1 samples
+Starting training…
+Epoch 1/1:   0%|          | 0/1 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/1 [01:17<?, ?it/s, loss=3.3973, avg_loss=3.3973, lr=0.00e+00]Epoch 1/1: 100%|██████████| 1/1 [01:17<00:00, 77.21s/it, loss=3.3973, avg_loss=3.3973, lr=0.00e+00]Epoch 1/1: 100%|██████████| 1/1 [01:17<00:00, 77.93s/it, loss=3.3973, avg_loss=3.3973, lr=0.00e+00]
+Running end-of-epoch evaluation for epoch 1...
+Epoch 1 completed. Train loss: 3.3973 | Eval loss: 0.0000
+Training completed!

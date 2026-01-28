@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 419,
+  "error": "mat1 and mat2 shapes cannot be multiplied (145x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7103530",
+    "question": "A student wants to determine which hand soap kills more bacteria. Her teacher tells her to change only the type of hand soap. The type of bacterium tested must be the same. Only one variable is tested because it",
+    "choices": {
+      "text": [
+        "speeds up the experiment.",
+        "improves the reliability of the results.",
+        "makes the graphs easier to read.",
+        "ensures the students learn something."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student wants to determine which hand soap kills more bacteria. Her teacher tells her to change only the type of hand soap. The type of bacterium tested must be the same. Only one variable is tested because it\n\nChoices:\nA. speeds up the experiment.\nB. improves the reliability of the results.\nC. makes the graphs easier to read.\nD. ensures the students learn something.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

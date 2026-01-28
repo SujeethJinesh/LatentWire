@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 288,
+  "error": "mat1 and mat2 shapes cannot be multiplied (117x1536 and 1152x1024)",
+  "example": {
+    "id": "9-853",
+    "question_stem": "A deer is eating in a field, and wants more food. Regardless of how hard the deer tries, the deer is unable to produce",
+    "choices": {
+      "text": [
+        "longer antlers",
+        "food for itself",
+        "baby deer",
+        "urine"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA deer is eating in a field, and wants more food. Regardless of how hard the deer tries, the deer is unable to produce\n\nChoices:\nA. longer antlers\nB. food for itself\nC. baby deer\nD. urine\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

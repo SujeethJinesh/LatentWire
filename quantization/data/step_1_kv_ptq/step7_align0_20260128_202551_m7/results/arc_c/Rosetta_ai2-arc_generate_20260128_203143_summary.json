@@ -1,0 +1,7 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0,
+  "subjects": {}
+}

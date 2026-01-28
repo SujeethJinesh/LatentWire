@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 265,
+  "error": "mat1 and mat2 shapes cannot be multiplied (137x1536 and 1152x1024)",
+  "example": {
+    "id": "LEAP__5_10315",
+    "question": "What happens when the temperature of water changes from 10° Celsius to -10° Celsius?",
+    "choices": {
+      "text": [
+        "The water changes from a solid into a gas.",
+        "The water changes from a liquid into a gas.",
+        "The water changes from a liquid into a solid.",
+        "The water changes from a solid into a liquid."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat happens when the temperature of water changes from 10° Celsius to -10° Celsius?\n\nChoices:\nA. The water changes from a solid into a gas.\nB. The water changes from a liquid into a gas.\nC. The water changes from a liquid into a solid.\nD. The water changes from a solid into a liquid.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

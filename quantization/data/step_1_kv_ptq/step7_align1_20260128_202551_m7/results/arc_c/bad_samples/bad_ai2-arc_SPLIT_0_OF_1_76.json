@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 76,
+  "error": "mat1 and mat2 shapes cannot be multiplied (156x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_414099",
+    "question": "A student examined diagrams of two different cells. One cell was prokaryotic, and the other cell was eukaryotic. What should the student do to identify a major difference between the diagrams?",
+    "choices": {
+      "text": [
+        "compare the shapes of the two cells",
+        "check to see which diagram shows a nucleus",
+        "check to see which diagram shows cytoplasm",
+        "compare the number of vacuoles in the two cells"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student examined diagrams of two different cells. One cell was prokaryotic, and the other cell was eukaryotic. What should the student do to identify a major difference between the diagrams?\n\nChoices:\nA. compare the shapes of the two cells\nB. check to see which diagram shows a nucleus\nC. check to see which diagram shows cytoplasm\nD. compare the number of vacuoles in the two cells\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

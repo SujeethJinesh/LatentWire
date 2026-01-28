@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1044,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_407262",
+    "question": "Which of these best describes a change that is physical?",
+    "choices": {
+      "text": [
+        "yarn being knitted into a sweater",
+        "the engine from a tractor being started",
+        "the metal on a bicycle forming rust",
+        "grass capturing the energy from sunlight"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these best describes a change that is physical?\n\nChoices:\nA. yarn being knitted into a sweater\nB. the engine from a tractor being started\nC. the metal on a bicycle forming rust\nD. grass capturing the energy from sunlight\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

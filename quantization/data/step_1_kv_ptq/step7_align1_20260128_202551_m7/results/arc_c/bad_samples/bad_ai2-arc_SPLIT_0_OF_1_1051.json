@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1051,
+  "error": "mat1 and mat2 shapes cannot be multiplied (168x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2006_9_28-v1",
+    "question": "Human tears contain the enzyme lysozyme, which damages the cell walls of bacteria. Which of the following statements about lysozyme is most accurate?",
+    "choices": {
+      "text": [
+        "Lysozyme causes mutations in bacterial cell wall molecules.",
+        "Lysozyme is destroyed as it digests bacterial cell wall molecules.",
+        "Lysozyme breaks a specific type of bond in a bacterial cell wall molecule.",
+        "Lysozyme is converted to another chemical by a bacterial cell wall molecule."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nHuman tears contain the enzyme lysozyme, which damages the cell walls of bacteria. Which of the following statements about lysozyme is most accurate?\n\nChoices:\nA. Lysozyme causes mutations in bacterial cell wall molecules.\nB. Lysozyme is destroyed as it digests bacterial cell wall molecules.\nC. Lysozyme breaks a specific type of bond in a bacterial cell wall molecule.\nD. Lysozyme is converted to another chemical by a bacterial cell wall molecule.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

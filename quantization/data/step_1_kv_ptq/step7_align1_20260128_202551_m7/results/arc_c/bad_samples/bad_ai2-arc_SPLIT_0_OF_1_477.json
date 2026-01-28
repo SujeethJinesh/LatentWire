@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 477,
+  "error": "mat1 and mat2 shapes cannot be multiplied (152x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7205800",
+    "question": "Sediments are generally classified by particle size. A student would like to classify sediments by their source. Which statement best describes this alternate classification?",
+    "choices": {
+      "text": [
+        "acceptable if the sediments are also identified by particle size",
+        "acceptable if the factors used for the classification are given",
+        "unacceptable because others would not understand the classification system",
+        "unacceptable because this is not the way scientists usually classify sediments"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nSediments are generally classified by particle size. A student would like to classify sediments by their source. Which statement best describes this alternate classification?\n\nChoices:\nA. acceptable if the sediments are also identified by particle size\nB. acceptable if the factors used for the classification are given\nC. unacceptable because others would not understand the classification system\nD. unacceptable because this is not the way scientists usually classify sediments\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

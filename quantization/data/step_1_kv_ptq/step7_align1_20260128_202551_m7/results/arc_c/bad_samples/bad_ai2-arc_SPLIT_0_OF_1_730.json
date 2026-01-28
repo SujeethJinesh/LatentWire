@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 730,
+  "error": "mat1 and mat2 shapes cannot be multiplied (166x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_412780",
+    "question": "Propane (C_{3}H_{8}) is a gas at room temperature. Which statement best describes the physical characteristics of a sample of propane at room temperature?",
+    "choices": {
+      "text": [
+        "It has a definite volume and takes the shape of its container.",
+        "It has an indefinite volume and takes the shape of its container.",
+        "It has a definite volume, and its shape is independent of its container.",
+        "It has an indefinite volume, and its shape is independent of its container."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nPropane (C_{3}H_{8}) is a gas at room temperature. Which statement best describes the physical characteristics of a sample of propane at room temperature?\n\nChoices:\nA. It has a definite volume and takes the shape of its container.\nB. It has an indefinite volume and takes the shape of its container.\nC. It has a definite volume, and its shape is independent of its container.\nD. It has an indefinite volume, and its shape is independent of its container.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

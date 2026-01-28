@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 289,
+  "error": "mat1 and mat2 shapes cannot be multiplied (110x1536 and 1152x1024)",
+  "example": {
+    "id": "8-367",
+    "question_stem": "Building new areas to dispose of refuse may lead to",
+    "choices": {
+      "text": [
+        "community concerns over environmental impact",
+        "better air and soil quality",
+        "higher value on land parcels",
+        "improvement in water supply"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nBuilding new areas to dispose of refuse may lead to\n\nChoices:\nA. community concerns over environmental impact\nB. better air and soil quality\nC. higher value on land parcels\nD. improvement in water supply\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 754,
+  "error": "mat1 and mat2 shapes cannot be multiplied (131x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_409009",
+    "question": "Bernice studied some organisms that live together in a field. In which way is a rabbit similar to the plant it eats?",
+    "choices": {
+      "text": [
+        "They both need energy to survive.",
+        "They both consume other organisms.",
+        "They both absorb water from the ground.",
+        "They both produce their own food from sunlight."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nBernice studied some organisms that live together in a field. In which way is a rabbit similar to the plant it eats?\n\nChoices:\nA. They both need energy to survive.\nB. They both consume other organisms.\nC. They both absorb water from the ground.\nD. They both produce their own food from sunlight.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

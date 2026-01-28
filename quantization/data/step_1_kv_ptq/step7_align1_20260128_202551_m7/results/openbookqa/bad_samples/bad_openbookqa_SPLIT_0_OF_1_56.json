@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 56,
+  "error": "mat1 and mat2 shapes cannot be multiplied (91x1536 and 1152x1024)",
+  "example": {
+    "id": "7-49",
+    "question_stem": "A rabbit may enjoy",
+    "choices": {
+      "text": [
+        "meat",
+        "compost",
+        "peas",
+        "pebbles"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA rabbit may enjoy\n\nChoices:\nA. meat\nB. compost\nC. peas\nD. pebbles\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

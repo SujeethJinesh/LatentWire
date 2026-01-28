@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 999,
+  "error": "mat1 and mat2 shapes cannot be multiplied (156x1536 and 1152x1024)",
+  "example": {
+    "id": "LEAP_2000_8_2",
+    "question": "El Cajon Pass in California is becoming higher than the land around it at a rate of nearly one centimeter each year. Which statement is true about the area?",
+    "choices": {
+      "text": [
+        "Erosion is slower than uplift at El Cajon Pass.",
+        "Plates are separating at El Cajon Pass.",
+        "Mountain building is slower than erosion at El Cajon Pass.",
+        "Erosion and uplift are balanced at El Cajon Pass."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nEl Cajon Pass in California is becoming higher than the land around it at a rate of nearly one centimeter each year. Which statement is true about the area?\n\nChoices:\nA. Erosion is slower than uplift at El Cajon Pass.\nB. Plates are separating at El Cajon Pass.\nC. Mountain building is slower than erosion at El Cajon Pass.\nD. Erosion and uplift are balanced at El Cajon Pass.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1080,
+  "error": "mat1 and mat2 shapes cannot be multiplied (149x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7154315",
+    "question": "The waters off the Florida Keys are being polluted. This pollution affects the numerous marine ecosystems found in the Keys. Which action could most likely reduce water pollution?",
+    "choices": {
+      "text": [
+        "using compost as a fertilizer for lawns and gardens",
+        "using water from washing machines to water lawns",
+        "using cars that are designed to use petroleum products",
+        "using more plastic bottles and disposing them in landfills"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe waters off the Florida Keys are being polluted. This pollution affects the numerous marine ecosystems found in the Keys. Which action could most likely reduce water pollution?\n\nChoices:\nA. using compost as a fertilizer for lawns and gardens\nB. using water from washing machines to water lawns\nC. using cars that are designed to use petroleum products\nD. using more plastic bottles and disposing them in landfills\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

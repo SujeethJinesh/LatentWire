@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 88,
+  "error": "mat1 and mat2 shapes cannot be multiplied (154x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2006_9_43",
+    "question": "A pitcher throws a 0.15 kg baseball at 43 40 m/s towards the catcher. What is the momentum of the baseball while moving at 40 m/s?",
+    "choices": {
+      "text": [
+        "0.025 kg x m/s",
+        "3.8 kg x m/s",
+        "6.0 kg x m/s",
+        "270 kg x m/s"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA pitcher throws a 0.15 kg baseball at 43 40 m/s towards the catcher. What is the momentum of the baseball while moving at 40 m/s?\n\nChoices:\nA. 0.025 kg x m/s\nB. 3.8 kg x m/s\nC. 6.0 kg x m/s\nD. 270 kg x m/s\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

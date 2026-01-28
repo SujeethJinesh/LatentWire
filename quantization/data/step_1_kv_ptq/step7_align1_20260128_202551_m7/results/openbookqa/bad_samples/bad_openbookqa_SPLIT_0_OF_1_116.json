@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 116,
+  "error": "mat1 and mat2 shapes cannot be multiplied (110x1536 and 1152x1024)",
+  "example": {
+    "id": "7-725",
+    "question_stem": "Wind can cause",
+    "choices": {
+      "text": [
+        "basements to flood due to weather",
+        "small birds to kill large birds",
+        "waterfalls to flow backwards",
+        "stones to weather down to pebbles"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWind can cause\n\nChoices:\nA. basements to flood due to weather\nB. small birds to kill large birds\nC. waterfalls to flow backwards\nD. stones to weather down to pebbles\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

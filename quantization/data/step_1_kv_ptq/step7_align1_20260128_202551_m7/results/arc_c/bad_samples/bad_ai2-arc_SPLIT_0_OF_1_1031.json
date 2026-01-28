@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1031,
+  "error": "mat1 and mat2 shapes cannot be multiplied (141x1536 and 1152x1024)",
+  "example": {
+    "id": "ACTAAP_2010_7_3",
+    "question": "A town in northern Arkansas experienced colder than normal temperatures during part of the winter. Which change was most likely responsible for this?",
+    "choices": {
+      "text": [
+        "A southward dip in the jet stream",
+        "A northward movement of the jet stream",
+        "The Coriolis effect creating a low pressure area",
+        "The Coriolis effect creating a high pressure area"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA town in northern Arkansas experienced colder than normal temperatures during part of the winter. Which change was most likely responsible for this?\n\nChoices:\nA. A southward dip in the jet stream\nB. A northward movement of the jet stream\nC. The Coriolis effect creating a low pressure area\nD. The Coriolis effect creating a high pressure area\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

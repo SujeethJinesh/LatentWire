@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 39,
+  "error": "mat1 and mat2 shapes cannot be multiplied (142x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2004_9_15-v1",
+    "question": "Which of the following is the primary difference between hydraulic and pneumatic systems?",
+    "choices": {
+      "text": [
+        "Hydraulic systems are under pressure and pneumatic systems are not.",
+        "Hydraulic systems involve liquids and pneumatic systems involve gases.",
+        "Hydraulic systems are open systems and pneumatic systems are closed systems.",
+        "Hydraulic systems involve fluids in motion and pneumatic systems involve fluids at rest."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following is the primary difference between hydraulic and pneumatic systems?\n\nChoices:\nA. Hydraulic systems are under pressure and pneumatic systems are not.\nB. Hydraulic systems involve liquids and pneumatic systems involve gases.\nC. Hydraulic systems are open systems and pneumatic systems are closed systems.\nD. Hydraulic systems involve fluids in motion and pneumatic systems involve fluids at rest.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

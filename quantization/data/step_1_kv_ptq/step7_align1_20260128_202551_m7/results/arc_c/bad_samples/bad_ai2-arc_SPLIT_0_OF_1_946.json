@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 946,
+  "error": "mat1 and mat2 shapes cannot be multiplied (132x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_409241",
+    "question": "Some animals live in a grassland. A fire burns through the grassland. Which type of animal will best compete for resources after the fire?",
+    "choices": {
+      "text": [
+        "one that eats meat",
+        "one that uses plants for shelter",
+        "one that lives under the ground",
+        "one that builds nests on the ground"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome animals live in a grassland. A fire burns through the grassland. Which type of animal will best compete for resources after the fire?\n\nChoices:\nA. one that eats meat\nB. one that uses plants for shelter\nC. one that lives under the ground\nD. one that builds nests on the ground\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

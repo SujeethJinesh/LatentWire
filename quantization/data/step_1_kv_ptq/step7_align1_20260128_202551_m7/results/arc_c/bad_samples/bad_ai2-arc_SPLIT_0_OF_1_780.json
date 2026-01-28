@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 780,
+  "error": "mat1 and mat2 shapes cannot be multiplied (141x1536 and 1152x1024)",
+  "example": {
+    "id": "MDSA_2013_8_40",
+    "question": "A scientist will repeat an investigation many times before finally making a conclusion. Which reason best explains why a scientist repeats an investigation?",
+    "choices": {
+      "text": [
+        "Repetition is needed to prove a hypothesis.",
+        "Repetition is required to publish a conclusion.",
+        "Repetition ensures the accuracy of obtained data.",
+        "Repetition helps scientists remain objective about observations."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA scientist will repeat an investigation many times before finally making a conclusion. Which reason best explains why a scientist repeats an investigation?\n\nChoices:\nA. Repetition is needed to prove a hypothesis.\nB. Repetition is required to publish a conclusion.\nC. Repetition ensures the accuracy of obtained data.\nD. Repetition helps scientists remain objective about observations.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

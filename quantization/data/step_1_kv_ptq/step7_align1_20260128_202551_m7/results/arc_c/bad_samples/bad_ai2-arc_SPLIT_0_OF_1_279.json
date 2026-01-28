@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 279,
+  "error": "mat1 and mat2 shapes cannot be multiplied (118x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_400374",
+    "question": "Flooding rivers can help or harm the environment. Which of these would be a helpful effect from a flood?",
+    "choices": {
+      "text": [
+        "eroded riverbanks",
+        "more fertile soils",
+        "fewer trees near rivers",
+        "less habitat for aquatic animals"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nFlooding rivers can help or harm the environment. Which of these would be a helpful effect from a flood?\n\nChoices:\nA. eroded riverbanks\nB. more fertile soils\nC. fewer trees near rivers\nD. less habitat for aquatic animals\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

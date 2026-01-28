@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 33,
+  "error": "mat1 and mat2 shapes cannot be multiplied (117x1536 and 1152x1024)",
+  "example": {
+    "id": "AKDE&ED_2008_4_19",
+    "question": "Which statement describes a positive effect of a scientific discovery?",
+    "choices": {
+      "text": [
+        "It makes some people upset.",
+        "It takes a long time to be useful.",
+        "It helps explain how things work.",
+        "It causes work to be more difficult."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement describes a positive effect of a scientific discovery?\n\nChoices:\nA. It makes some people upset.\nB. It takes a long time to be useful.\nC. It helps explain how things work.\nD. It causes work to be more difficult.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

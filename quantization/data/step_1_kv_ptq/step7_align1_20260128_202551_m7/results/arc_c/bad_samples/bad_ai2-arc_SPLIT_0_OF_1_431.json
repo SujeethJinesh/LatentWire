@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 431,
+  "error": "mat1 and mat2 shapes cannot be multiplied (180x1536 and 1152x1024)",
+  "example": {
+    "id": "ACTAAP_2010_7_12",
+    "question": "Each student in Ms. Jordan's science class was given a beaker containing several substances that had been stirred thoroughly. Maxwell must classify the contents of his beaker as either a compound or a mixture. Which of the following would indicate that the beaker contains a mixture?",
+    "choices": {
+      "text": [
+        "The original substances had different densities.",
+        "The contents of the beaker reacted to form a new substance.",
+        "The original substances had a greater mass than the contents of the beaker.",
+        "The contents of the beaker can be easily separated into the original substances."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nEach student in Ms. Jordan's science class was given a beaker containing several substances that had been stirred thoroughly. Maxwell must classify the contents of his beaker as either a compound or a mixture. Which of the following would indicate that the beaker contains a mixture?\n\nChoices:\nA. The original substances had different densities.\nB. The contents of the beaker reacted to form a new substance.\nC. The original substances had a greater mass than the contents of the beaker.\nD. The contents of the beaker can be easily separated into the original substances.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

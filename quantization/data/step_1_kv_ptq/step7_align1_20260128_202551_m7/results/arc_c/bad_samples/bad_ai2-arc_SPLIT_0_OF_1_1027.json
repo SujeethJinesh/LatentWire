@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1027,
+  "error": "mat1 and mat2 shapes cannot be multiplied (110x1536 and 1152x1024)",
+  "example": {
+    "id": "NYSEDREGENTS_2008_4_12",
+    "question": "Precipitation is most likely to occur when the sky",
+    "choices": {
+      "text": [
+        "is clear and sunny",
+        "is partly sunny",
+        "has thick, dark clouds",
+        "has white, puffy clouds"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nPrecipitation is most likely to occur when the sky\n\nChoices:\nA. is clear and sunny\nB. is partly sunny\nC. has thick, dark clouds\nD. has white, puffy clouds\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

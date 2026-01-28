@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 508,
+  "error": "mat1 and mat2 shapes cannot be multiplied (136x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7159250",
+    "question": "Oak tree decline is linked to the effects of pathogenic fungi, insect defoliation, soil chemical stress, and microorganism activity. Which factor is an abiotic condition that is affecting oak tree decline?",
+    "choices": {
+      "text": [
+        "pathogenic fungi",
+        "insect defoliation",
+        "soil chemical stress",
+        "microorganism activity"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nOak tree decline is linked to the effects of pathogenic fungi, insect defoliation, soil chemical stress, and microorganism activity. Which factor is an abiotic condition that is affecting oak tree decline?\n\nChoices:\nA. pathogenic fungi\nB. insect defoliation\nC. soil chemical stress\nD. microorganism activity\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 226,
+  "error": "mat1 and mat2 shapes cannot be multiplied (159x1536 and 1152x1024)",
+  "example": {
+    "id": "MSA_2012_5_23",
+    "question": "In 2003, Maryland power plants produced 56% of the electricity used in the state by burning coal and 5% of the electricity using hydropower. Which of the following statements best describes coal and water as resources?",
+    "choices": {
+      "text": [
+        "Both are renewable.",
+        "Both are nonrenewable.",
+        "Coal is nonrenewable; water is renewable.",
+        "Coal is renewable; water is nonrenewable."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn 2003, Maryland power plants produced 56% of the electricity used in the state by burning coal and 5% of the electricity using hydropower. Which of the following statements best describes coal and water as resources?\n\nChoices:\nA. Both are renewable.\nB. Both are nonrenewable.\nC. Coal is nonrenewable; water is renewable.\nD. Coal is renewable; water is nonrenewable.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

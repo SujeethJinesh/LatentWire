@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 76,
+  "error": "mat1 and mat2 shapes cannot be multiplied (109x1536 and 1152x1024)",
+  "example": {
+    "id": "7-988",
+    "question_stem": "Plant growth may cause",
+    "choices": {
+      "text": [
+        "an uptick in the number of leaves",
+        "a surge in leaf disease",
+        "a gradual decrease in leaves",
+        "a rapid decline of the leaves"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nPlant growth may cause\n\nChoices:\nA. an uptick in the number of leaves\nB. a surge in leaf disease\nC. a gradual decrease in leaves\nD. a rapid decline of the leaves\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

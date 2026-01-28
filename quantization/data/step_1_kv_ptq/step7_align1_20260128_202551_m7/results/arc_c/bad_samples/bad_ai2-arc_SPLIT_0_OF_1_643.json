@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 643,
+  "error": "mat1 and mat2 shapes cannot be multiplied (111x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7027248",
+    "question": "Which of these fields of research in the 20th century was most advanced by the use of the microscope?",
+    "choices": {
+      "text": [
+        "space flight",
+        "genetic modification",
+        "alternative energy",
+        "hurricane forecasting"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these fields of research in the 20th century was most advanced by the use of the microscope?\n\nChoices:\nA. space flight\nB. genetic modification\nC. alternative energy\nD. hurricane forecasting\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

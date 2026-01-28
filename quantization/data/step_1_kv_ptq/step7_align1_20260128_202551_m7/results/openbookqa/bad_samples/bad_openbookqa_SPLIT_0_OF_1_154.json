@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 154,
+  "error": "mat1 and mat2 shapes cannot be multiplied (119x1536 and 1152x1024)",
+  "example": {
+    "id": "8-333",
+    "question_stem": "A teacher wants to show how to combine two substances together. The two things that he can use in order to mix them completely are",
+    "choices": {
+      "text": [
+        "water and soda",
+        "water and oil",
+        "sand and rocks",
+        "salt and bark"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA teacher wants to show how to combine two substances together. The two things that he can use in order to mix them completely are\n\nChoices:\nA. water and soda\nB. water and oil\nC. sand and rocks\nD. salt and bark\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

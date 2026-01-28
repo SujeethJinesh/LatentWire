@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 282,
+  "error": "mat1 and mat2 shapes cannot be multiplied (99x1536 and 1152x1024)",
+  "example": {
+    "id": "7-736",
+    "question_stem": "Which characteristic did a person inherit?",
+    "choices": {
+      "text": [
+        "length of hair",
+        "number of friends",
+        "number of nails",
+        "length of shirt"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich characteristic did a person inherit?\n\nChoices:\nA. length of hair\nB. number of friends\nC. number of nails\nD. length of shirt\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

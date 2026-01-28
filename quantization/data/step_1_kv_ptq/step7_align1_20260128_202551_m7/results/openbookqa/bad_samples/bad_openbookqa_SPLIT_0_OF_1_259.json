@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 259,
+  "error": "mat1 and mat2 shapes cannot be multiplied (115x1536 and 1152x1024)",
+  "example": {
+    "id": "9-105",
+    "question_stem": "if you put wine from a jug into a thin bottle, how come it conforms?",
+    "choices": {
+      "text": [
+        "it exhibits absolute rigidity",
+        "it is a solid mass",
+        "all of these",
+        "it is a variable substance"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nif you put wine from a jug into a thin bottle, how come it conforms?\n\nChoices:\nA. it exhibits absolute rigidity\nB. it is a solid mass\nC. all of these\nD. it is a variable substance\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

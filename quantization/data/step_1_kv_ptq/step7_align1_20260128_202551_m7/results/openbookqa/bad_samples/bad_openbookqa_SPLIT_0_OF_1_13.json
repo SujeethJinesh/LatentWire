@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 13,
+  "error": "mat1 and mat2 shapes cannot be multiplied (99x1536 and 1152x1024)",
+  "example": {
+    "id": "1618",
+    "question_stem": "The chance of wildfires is increased by",
+    "choices": {
+      "text": [
+        "parched foliage",
+        "torrential rain",
+        "lush foliage",
+        "careful fire maintenance"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe chance of wildfires is increased by\n\nChoices:\nA. parched foliage\nB. torrential rain\nC. lush foliage\nD. careful fire maintenance\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 465,
+  "error": "mat1 and mat2 shapes cannot be multiplied (139x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_417460",
+    "question": "A plant grows in a damp, marshy area filled with nonvascular plants and seedless vascular plants. Which characteristic indicates the plant is classified as a seedless vascular plant?",
+    "choices": {
+      "text": [
+        "It is 18 cm tall.",
+        "It produces spores.",
+        "It grows in poor soil.",
+        "It has a flat gametophyte."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA plant grows in a damp, marshy area filled with nonvascular plants and seedless vascular plants. Which characteristic indicates the plant is classified as a seedless vascular plant?\n\nChoices:\nA. It is 18 cm tall.\nB. It produces spores.\nC. It grows in poor soil.\nD. It has a flat gametophyte.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

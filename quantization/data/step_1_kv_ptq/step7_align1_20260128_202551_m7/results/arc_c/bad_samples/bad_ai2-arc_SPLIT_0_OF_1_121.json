@@ -1,0 +1,24 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 121,
+  "error": "mat1 and mat2 shapes cannot be multiplied (107x1536 and 1152x1024)",
+  "example": {
+    "id": "NYSEDREGENTS_2010_4_4",
+    "question": "A toy truck rolls over a smooth surface. If the surface is covered with sand, the truck will most likely roll",
+    "choices": {
+      "text": [
+        "slower",
+        "faster",
+        "at the same speed"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA toy truck rolls over a smooth surface. If the surface is covered with sand, the truck will most likely roll\n\nChoices:\nA. slower\nB. faster\nC. at the same speed\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

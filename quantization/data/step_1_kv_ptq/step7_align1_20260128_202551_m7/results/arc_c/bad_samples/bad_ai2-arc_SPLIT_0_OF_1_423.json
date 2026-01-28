@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 423,
+  "error": "mat1 and mat2 shapes cannot be multiplied (159x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_178255",
+    "question": "In science class, a student obtains 20 mL of an acid solution. A small amount of acid is added to a substance to detect the presence of copper. What should be done with the excess acid solution?",
+    "choices": {
+      "text": [
+        "Pour the acid into a trash can.",
+        "Neutralize the acid before pouring it down a sink.",
+        "Return the acid to the teacher's stock bottle.",
+        "Allow the water to evaporate from the acid solution."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn science class, a student obtains 20 mL of an acid solution. A small amount of acid is added to a substance to detect the presence of copper. What should be done with the excess acid solution?\n\nChoices:\nA. Pour the acid into a trash can.\nB. Neutralize the acid before pouring it down a sink.\nC. Return the acid to the teacher's stock bottle.\nD. Allow the water to evaporate from the acid solution.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

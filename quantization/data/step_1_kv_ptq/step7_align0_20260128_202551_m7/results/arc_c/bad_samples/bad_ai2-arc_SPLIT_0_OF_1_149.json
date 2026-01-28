@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 149,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7056858",
+    "question": "Multicellular organisms have four main types of tissue which include muscle, epithelial, nerve, and connective tissue. Which organ consists mostly of nerve tissue?",
+    "choices": {
+      "text": [
+        "brain",
+        "liver",
+        "skin",
+        "stomach"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nMulticellular organisms have four main types of tissue which include muscle, epithelial, nerve, and connective tissue. Which organ consists mostly of nerve tissue?\n\nChoices:\nA. brain\nB. liver\nC. skin\nD. stomach\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

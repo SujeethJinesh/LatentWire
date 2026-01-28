@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 635,
+  "error": "mat1 and mat2 shapes cannot be multiplied (170x1536 and 1152x1024)",
+  "example": {
+    "id": "ACTAAP_2011_5_1",
+    "question": "For a science fair project, Jordan collects data on which types of insects live in different areas of the neighborhood. He collects insects and uses a field guide to identify them. Which pieces of information should Jordan record in his notebook for each insect collected?",
+    "choices": {
+      "text": [
+        "the size of the insect and the number of legs",
+        "the name of the insect and the location found",
+        "the weight of the insect and the time it was collected",
+        "the color of the insect and the number of body segments"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nFor a science fair project, Jordan collects data on which types of insects live in different areas of the neighborhood. He collects insects and uses a field guide to identify them. Which pieces of information should Jordan record in his notebook for each insect collected?\n\nChoices:\nA. the size of the insect and the number of legs\nB. the name of the insect and the location found\nC. the weight of the insect and the time it was collected\nD. the color of the insect and the number of body segments\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

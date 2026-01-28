@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 746,
+  "error": "mat1 and mat2 shapes cannot be multiplied (134x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7233765",
+    "question": "Removing the coal from Earth's crust can change the structure of the crust, release methane gas, and contaminate groundwater with heavy metals. Which of Earth's subsystems is most likely to be affected by all these consequences?",
+    "choices": {
+      "text": [
+        "atmosphere",
+        "biosphere",
+        "hydrosphere",
+        "lithosphere"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nRemoving the coal from Earth's crust can change the structure of the crust, release methane gas, and contaminate groundwater with heavy metals. Which of Earth's subsystems is most likely to be affected by all these consequences?\n\nChoices:\nA. atmosphere\nB. biosphere\nC. hydrosphere\nD. lithosphere\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

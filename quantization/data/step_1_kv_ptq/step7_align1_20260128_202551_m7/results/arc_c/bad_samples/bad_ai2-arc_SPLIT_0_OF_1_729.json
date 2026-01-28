@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 729,
+  "error": "mat1 and mat2 shapes cannot be multiplied (143x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7180810",
+    "question": "A teacher is conducting an investigation by using special equipment to hold a magnesium (Mg) ribbon over the flame of a Bunsen burner. Which observation indicates a chemical reaction took place?",
+    "choices": {
+      "text": [
+        "The temperature of the magnesium ribbon increased.",
+        "The shape of the magnesium ribbon changed.",
+        "The burning magnesium produced light.",
+        "The magnesium appeared to evaporate."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA teacher is conducting an investigation by using special equipment to hold a magnesium (Mg) ribbon over the flame of a Bunsen burner. Which observation indicates a chemical reaction took place?\n\nChoices:\nA. The temperature of the magnesium ribbon increased.\nB. The shape of the magnesium ribbon changed.\nC. The burning magnesium produced light.\nD. The magnesium appeared to evaporate.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

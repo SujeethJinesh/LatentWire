@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 108,
+  "error": "mat1 and mat2 shapes cannot be multiplied (132x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_400057",
+    "question": "In some U.S. national parks, black bears have lost their fear of humans and look for food near campsites along the roadside. This is an example of an animal",
+    "choices": {
+      "text": [
+        "becoming an herbivore.",
+        "using its inherited traits.",
+        "finding a new ecosystem.",
+        "learning a new behavior."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn some U.S. national parks, black bears have lost their fear of humans and look for food near campsites along the roadside. This is an example of an animal\n\nChoices:\nA. becoming an herbivore.\nB. using its inherited traits.\nC. finding a new ecosystem.\nD. learning a new behavior.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

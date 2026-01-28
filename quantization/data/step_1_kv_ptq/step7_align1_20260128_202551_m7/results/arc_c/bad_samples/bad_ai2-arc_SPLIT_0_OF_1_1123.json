@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1123,
+  "error": "mat1 and mat2 shapes cannot be multiplied (99x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_400582",
+    "question": "An exothermic reaction could best be demonstrated with a",
+    "choices": {
+      "text": [
+        "car engine.",
+        "refrigerator.",
+        "frying pan.",
+        "glass bottle."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nAn exothermic reaction could best be demonstrated with a\n\nChoices:\nA. car engine.\nB. refrigerator.\nC. frying pan.\nD. glass bottle.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

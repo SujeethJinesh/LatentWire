@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 539,
+  "error": "mat1 and mat2 shapes cannot be multiplied (126x1536 and 1152x1024)",
+  "example": {
+    "id": "MDSA_2013_8_32",
+    "question": "A container is filled with a mixture of sand and an unknown substance. What should a student do to determine whether iron particles are in the mixture?",
+    "choices": {
+      "text": [
+        "heat the mixture",
+        "filter the mixture",
+        "pour water into the mixture",
+        "pull a magnet through the mixture"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA container is filled with a mixture of sand and an unknown substance. What should a student do to determine whether iron particles are in the mixture?\n\nChoices:\nA. heat the mixture\nB. filter the mixture\nC. pour water into the mixture\nD. pull a magnet through the mixture\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

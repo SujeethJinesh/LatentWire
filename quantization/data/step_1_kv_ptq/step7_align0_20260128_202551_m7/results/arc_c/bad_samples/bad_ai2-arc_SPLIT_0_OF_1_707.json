@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 707,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7159075",
+    "question": "Sickle cell anemia is a condition that affects the shape of a red blood cell. An unaffected individual can be represented with the genotype AA. An affected individual can be represented with the genotype SS. Individuals that are carriers have the genotype AS. Which is the best description of sickle cell anemia?",
+    "choices": {
+      "text": [
+        "multiple alleles",
+        "incomplete dominance",
+        "homozygous recessive",
+        "heterozygous dominant"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nSickle cell anemia is a condition that affects the shape of a red blood cell. An unaffected individual can be represented with the genotype AA. An affected individual can be represented with the genotype SS. Individuals that are carriers have the genotype AS. Which is the best description of sickle cell anemia?\n\nChoices:\nA. multiple alleles\nB. incomplete dominance\nC. homozygous recessive\nD. heterozygous dominant\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

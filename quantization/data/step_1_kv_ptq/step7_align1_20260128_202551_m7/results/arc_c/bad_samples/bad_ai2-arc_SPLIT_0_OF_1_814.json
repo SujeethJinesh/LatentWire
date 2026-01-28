@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 814,
+  "error": "mat1 and mat2 shapes cannot be multiplied (154x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7109498",
+    "question": "Sequoia trees in the Sierra Nevada in California are tall giants. Some of them are more than 3000 years old. Which statement best illustrates how forest brush fires have benefited these trees?",
+    "choices": {
+      "text": [
+        "They set up a secondary succession event.",
+        "They eliminate some competition for nutrients.",
+        "They allow larger trees to act as pioneer species.",
+        "They stimulate growth in smaller, shade-tolerant trees."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nSequoia trees in the Sierra Nevada in California are tall giants. Some of them are more than 3000 years old. Which statement best illustrates how forest brush fires have benefited these trees?\n\nChoices:\nA. They set up a secondary succession event.\nB. They eliminate some competition for nutrients.\nC. They allow larger trees to act as pioneer species.\nD. They stimulate growth in smaller, shade-tolerant trees.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1082,
+  "error": "mat1 and mat2 shapes cannot be multiplied (113x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_401241",
+    "question": "Hawks have sharp claws called talons that help them capture prey. Talons are best described as",
+    "choices": {
+      "text": [
+        "an inherited trait.",
+        "a genetic mutation.",
+        "a behavioral adaptation.",
+        "an acquired characteristic."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nHawks have sharp claws called talons that help them capture prey. Talons are best described as\n\nChoices:\nA. an inherited trait.\nB. a genetic mutation.\nC. a behavioral adaptation.\nD. an acquired characteristic.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

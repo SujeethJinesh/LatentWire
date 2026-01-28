@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 473,
+  "error": "mat1 and mat2 shapes cannot be multiplied (119x1536 and 1152x1024)",
+  "example": {
+    "id": "850",
+    "question_stem": "Live birth is exemplified in",
+    "choices": {
+      "text": [
+        "snakes slithering out of eggs",
+        "a calf emerging from a mother giraffe",
+        "owlets pecking out of their encasement",
+        "sea turtles emerging from their shells"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nLive birth is exemplified in\n\nChoices:\nA. snakes slithering out of eggs\nB. a calf emerging from a mother giraffe\nC. owlets pecking out of their encasement\nD. sea turtles emerging from their shells\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

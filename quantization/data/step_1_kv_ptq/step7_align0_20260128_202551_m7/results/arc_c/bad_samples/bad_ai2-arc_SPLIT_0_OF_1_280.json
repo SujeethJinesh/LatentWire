@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 280,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "CSZ_2009_8_CSZ20740",
+    "question": "How much time is required for a bicycle to travel a distance of 100 m at an average speed of 2 m/s?",
+    "choices": {
+      "text": [
+        "0.02 s",
+        "50 s",
+        "100 s",
+        "200 s"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nHow much time is required for a bicycle to travel a distance of 100 m at an average speed of 2 m/s?\n\nChoices:\nA. 0.02 s\nB. 50 s\nC. 100 s\nD. 200 s\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

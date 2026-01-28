@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 682,
+  "error": "mat1 and mat2 shapes cannot be multiplied (119x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_1999_4_27",
+    "question": "Which of the following is a current technological challenge, yet to be solved?",
+    "choices": {
+      "text": [
+        "landing a human on Mars",
+        "using solar power to produce electricity",
+        "replacing human body parts with artificial parts",
+        "using DNA to identify a criminal"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following is a current technological challenge, yet to be solved?\n\nChoices:\nA. landing a human on Mars\nB. using solar power to produce electricity\nC. replacing human body parts with artificial parts\nD. using DNA to identify a criminal\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 365,
+  "error": "mat1 and mat2 shapes cannot be multiplied (105x1536 and 1152x1024)",
+  "example": {
+    "id": "7-740",
+    "question_stem": "What constitutes a frog's diet?",
+    "choices": {
+      "text": [
+        "it eats all plants",
+        "it will eat dogs",
+        "it only eats burgers",
+        "it chomps on insects"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat constitutes a frog's diet?\n\nChoices:\nA. it eats all plants\nB. it will eat dogs\nC. it only eats burgers\nD. it chomps on insects\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

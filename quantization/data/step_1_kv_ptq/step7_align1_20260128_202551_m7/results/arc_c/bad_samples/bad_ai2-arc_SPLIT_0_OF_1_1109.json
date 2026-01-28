@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1109,
+  "error": "mat1 and mat2 shapes cannot be multiplied (123x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7025060",
+    "question": "An air mass travels north over the Pacific Ocean, from the tropics, and then eastward across the United States. Which weather pattern can be expected?",
+    "choices": {
+      "text": [
+        "cool and dry",
+        "warm and dry",
+        "cool and wet",
+        "warm and wet"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nAn air mass travels north over the Pacific Ocean, from the tropics, and then eastward across the United States. Which weather pattern can be expected?\n\nChoices:\nA. cool and dry\nB. warm and dry\nC. cool and wet\nD. warm and wet\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

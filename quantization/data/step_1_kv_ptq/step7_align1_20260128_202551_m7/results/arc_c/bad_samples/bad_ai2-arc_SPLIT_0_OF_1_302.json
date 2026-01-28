@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 302,
+  "error": "mat1 and mat2 shapes cannot be multiplied (114x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_175840",
+    "question": "What is the main function of the cell wall in a plant cell?",
+    "choices": {
+      "text": [
+        "to protect against disease",
+        "to give structural support",
+        "to contain the parts of the cell",
+        "to help with cell division"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is the main function of the cell wall in a plant cell?\n\nChoices:\nA. to protect against disease\nB. to give structural support\nC. to contain the parts of the cell\nD. to help with cell division\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

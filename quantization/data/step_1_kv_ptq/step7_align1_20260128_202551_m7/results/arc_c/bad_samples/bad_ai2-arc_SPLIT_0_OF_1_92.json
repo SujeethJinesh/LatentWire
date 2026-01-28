@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 92,
+  "error": "mat1 and mat2 shapes cannot be multiplied (133x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_414041",
+    "question": "Students shake salt into a jar of water, and they shake pepper into a second jar of water. Which statement best compares the two jars?",
+    "choices": {
+      "text": [
+        "Only the salt and water is a mixture.",
+        "Only the pepper and water is a solution.",
+        "Both jars contain solutions.",
+        "Both jars contain mixtures."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents shake salt into a jar of water, and they shake pepper into a second jar of water. Which statement best compares the two jars?\n\nChoices:\nA. Only the salt and water is a mixture.\nB. Only the pepper and water is a solution.\nC. Both jars contain solutions.\nD. Both jars contain mixtures.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

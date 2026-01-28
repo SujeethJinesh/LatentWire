@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 927,
+  "error": "mat1 and mat2 shapes cannot be multiplied (170x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7030468",
+    "question": "New technologies have allowed automobile manufacturers to market fuel-efficient hybrid cars, but disposal of hybrid cars at the end of their service lives presents a problem. Which question represents a disposal problem unique to hybrid vehicles?",
+    "choices": {
+      "text": [
+        "What will be done to recycle the batteries?",
+        "What will be done with the refrigerant in the air conditioning system?",
+        "What will be done with the fluids in the gas tank, the radiator, and the batteries?",
+        "What will be done with the plastic materials in the vehicles?"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nNew technologies have allowed automobile manufacturers to market fuel-efficient hybrid cars, but disposal of hybrid cars at the end of their service lives presents a problem. Which question represents a disposal problem unique to hybrid vehicles?\n\nChoices:\nA. What will be done to recycle the batteries?\nB. What will be done with the refrigerant in the air conditioning system?\nC. What will be done with the fluids in the gas tank, the radiator, and the batteries?\nD. What will be done with the plastic materials in the vehicles?\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

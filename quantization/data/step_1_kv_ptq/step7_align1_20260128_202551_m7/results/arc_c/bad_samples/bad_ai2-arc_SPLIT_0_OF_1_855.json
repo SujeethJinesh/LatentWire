@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 855,
+  "error": "mat1 and mat2 shapes cannot be multiplied (253x1536 and 1152x1024)",
+  "example": {
+    "id": "NAEP_2005_4_S14+3",
+    "question": "Pat has two kinds of plant food,\"\"Quickgrow\"\" and \"\"Supergrow.\"\" What would be the best way for Pat to find out which plant food helps a particular type of houseplant grow the most?",
+    "choices": {
+      "text": [
+        "Put some Quickgrow on a plant in the living room, put some Supergrow on a plant of the same type in the bedroom, and see which one grows the most.",
+        "Find out how much each kind of plant food costs, because the more expensive kind is probably better for growing plants.",
+        "Put some Quickgrow on a few plants, put the same amount of Supergrow on a few other plants of the same type, put all the plants in the same place, and see which group of plants grows the most.",
+        "Look at the advertisements for Quickgrow, look at the advertisements for Supergrow, and see which one says it helps plants grow the most."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nPat has two kinds of plant food,\"\"Quickgrow\"\" and \"\"Supergrow.\"\" What would be the best way for Pat to find out which plant food helps a particular type of houseplant grow the most?\n\nChoices:\nA. Put some Quickgrow on a plant in the living room, put some Supergrow on a plant of the same type in the bedroom, and see which one grows the most.\nB. Find out how much each kind of plant food costs, because the more expensive kind is probably better for growing plants.\nC. Put some Quickgrow on a few plants, put the same amount of Supergrow on a few other plants of the same type, put all the plants in the same place, and see which group of plants grows the most.\nD. Look at the advertisements for Quickgrow, look at the advertisements for Supergrow, and see which one says it helps plants grow the most.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

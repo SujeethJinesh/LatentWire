@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 201,
+  "error": "mat1 and mat2 shapes cannot be multiplied (123x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7075040",
+    "question": "Although the scientific method states that conclusions should be based on evidence, scientists do not always agree on the conclusions because",
+    "choices": {
+      "text": [
+        "scientific laws change often.",
+        "scientific investigations are generally flawed.",
+        "scientists may interpret data differently.",
+        "scientists believe experiments should be repeated."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nAlthough the scientific method states that conclusions should be based on evidence, scientists do not always agree on the conclusions because\n\nChoices:\nA. scientific laws change often.\nB. scientific investigations are generally flawed.\nC. scientists may interpret data differently.\nD. scientists believe experiments should be repeated.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

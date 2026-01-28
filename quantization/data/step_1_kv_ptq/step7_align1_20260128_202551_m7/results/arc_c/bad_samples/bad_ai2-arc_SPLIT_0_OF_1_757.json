@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 757,
+  "error": "mat1 and mat2 shapes cannot be multiplied (150x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7215670",
+    "question": "Members of the same species of bird became geographically separated. Over many years, the two groups evolved to become two different species. Which of these observations is the best evidence that two separate species developed?",
+    "choices": {
+      "text": [
+        "Each group has a different feeding preference.",
+        "Each group has a different habitat preference.",
+        "Each group has different mating habits.",
+        "Each group is active at a different time of day."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nMembers of the same species of bird became geographically separated. Over many years, the two groups evolved to become two different species. Which of these observations is the best evidence that two separate species developed?\n\nChoices:\nA. Each group has a different feeding preference.\nB. Each group has a different habitat preference.\nC. Each group has different mating habits.\nD. Each group is active at a different time of day.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

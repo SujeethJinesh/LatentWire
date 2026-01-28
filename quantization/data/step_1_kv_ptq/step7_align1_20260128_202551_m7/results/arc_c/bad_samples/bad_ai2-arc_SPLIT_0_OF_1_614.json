@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 614,
+  "error": "mat1 and mat2 shapes cannot be multiplied (116x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_416169",
+    "question": "Nick is making a model to show how human skin covers the body. What material would work best?",
+    "choices": {
+      "text": [
+        "a sheet of rubber",
+        "a sheet of paper",
+        "a sheet of metal",
+        "a sheet of wood"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nNick is making a model to show how human skin covers the body. What material would work best?\n\nChoices:\nA. a sheet of rubber\nB. a sheet of paper\nC. a sheet of metal\nD. a sheet of wood\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

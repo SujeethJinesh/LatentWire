@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 498,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "7-519",
+    "question_stem": "When soil is viewed in a scientific way, what is seen and viewed is actually",
+    "choices": {
+      "text": [
+        "insects like big beetles",
+        "tiny lifeforms in dirt",
+        "small mammals living there",
+        "a lot of tiny pebbles"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen soil is viewed in a scientific way, what is seen and viewed is actually\n\nChoices:\nA. insects like big beetles\nB. tiny lifeforms in dirt\nC. small mammals living there\nD. a lot of tiny pebbles\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

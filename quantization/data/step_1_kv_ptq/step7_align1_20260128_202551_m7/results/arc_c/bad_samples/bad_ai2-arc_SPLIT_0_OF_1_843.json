@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 843,
+  "error": "mat1 and mat2 shapes cannot be multiplied (131x1536 and 1152x1024)",
+  "example": {
+    "id": "AKDE&ED_2008_8_45",
+    "question": "Which combination of processes from the water cycle is most likely to cause flooding?",
+    "choices": {
+      "text": [
+        "low runoff, low evaporation, high transpiration",
+        "high runoff, low evaporation, low precipitation",
+        "low runoff, high infiltration, high condensation",
+        "high runoff, low infiltration, high precipitation"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich combination of processes from the water cycle is most likely to cause flooding?\n\nChoices:\nA. low runoff, low evaporation, high transpiration\nB. high runoff, low evaporation, low precipitation\nC. low runoff, high infiltration, high condensation\nD. high runoff, low infiltration, high precipitation\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

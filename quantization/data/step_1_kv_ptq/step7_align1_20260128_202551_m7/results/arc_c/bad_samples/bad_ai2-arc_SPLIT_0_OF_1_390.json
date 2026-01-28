@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 390,
+  "error": "mat1 and mat2 shapes cannot be multiplied (135x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2006_8_13",
+    "question": "From year to year, farmers rotate different crops in the fields to improve soil nutrients. Why is crop rotation also an effective pest management method?",
+    "choices": {
+      "text": [
+        "It allows chemicals to kill more pests.",
+        "It creates crops that are pest-resistant.",
+        "It interrupts the life cycles of pests.",
+        "It allows pests to overpopulate."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nFrom year to year, farmers rotate different crops in the fields to improve soil nutrients. Why is crop rotation also an effective pest management method?\n\nChoices:\nA. It allows chemicals to kill more pests.\nB. It creates crops that are pest-resistant.\nC. It interrupts the life cycles of pests.\nD. It allows pests to overpopulate.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

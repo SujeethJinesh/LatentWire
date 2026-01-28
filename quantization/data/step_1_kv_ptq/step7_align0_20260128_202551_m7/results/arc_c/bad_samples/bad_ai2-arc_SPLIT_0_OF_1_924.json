@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 924,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MDSA_2009_4_34",
+    "question": "A scientist investigated how well plants native to Maryland would grow in desert conditions. The scientist placed equal amounts of desert soil into 10 identical containers. Each container held two of the same kind of plant. The scientist investigated a total of 10 different kinds of plants. The scientist placed all of the containers into a greenhouse adjusted to produce hot, desert-like conditions .The scientist gave the plants equal, but small amounts of water for the next five weeks. Most of the plants did not survive after the five week investigation. Which statement best explains why 16 of the plants did not survive?",
+    "choices": {
+      "text": [
+        "Plants do not grow in desert conditions.",
+        "Few plants survive severe changes to their environment.",
+        "Plants native to Maryland are not good for scientific studies.",
+        "Plants native to Maryland are only able to survive in Maryland."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA scientist investigated how well plants native to Maryland would grow in desert conditions. The scientist placed equal amounts of desert soil into 10 identical containers. Each container held two of the same kind of plant. The scientist investigated a total of 10 different kinds of plants. The scientist placed all of the containers into a greenhouse adjusted to produce hot, desert-like conditions .The scientist gave the plants equal, but small amounts of water for the next five weeks. Most of the plants did not survive after the five week investigation. Which statement best explains why 16 of the plants did not survive?\n\nChoices:\nA. Plants do not grow in desert conditions.\nB. Few plants survive severe changes to their environment.\nC. Plants native to Maryland are not good for scientific studies.\nD. Plants native to Maryland are only able to survive in Maryland.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

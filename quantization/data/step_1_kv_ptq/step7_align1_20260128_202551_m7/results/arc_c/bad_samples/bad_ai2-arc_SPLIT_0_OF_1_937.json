@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 937,
+  "error": "mat1 and mat2 shapes cannot be multiplied (151x1536 and 1152x1024)",
+  "example": {
+    "id": "AKDE&ED_2008_8_40",
+    "question": "Students will perform an experiment to find out how long it takes 2 g of salt to dissolve in 50 mL of water. Which experimental method will provide the most accurate results?",
+    "choices": {
+      "text": [
+        "one student taking time measurements for one experiment",
+        "two students taking time measurements for one experiment",
+        "one student taking time measurements for three identical experiments",
+        "three students taking time measurements for two identical experiments"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents will perform an experiment to find out how long it takes 2 g of salt to dissolve in 50 mL of water. Which experimental method will provide the most accurate results?\n\nChoices:\nA. one student taking time measurements for one experiment\nB. two students taking time measurements for one experiment\nC. one student taking time measurements for three identical experiments\nD. three students taking time measurements for two identical experiments\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

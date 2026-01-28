@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 392,
+  "error": "mat1 and mat2 shapes cannot be multiplied (170x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7158935",
+    "question": "The Steller sea lion population has been decreasing in parts of Alaska. New evidence suggests that Steller sea lions need herring as a part of their diet in order to survive. Pollock, another type of fish, also feed on herring. Which would most likely help the Steller sea lion population to increase?",
+    "choices": {
+      "text": [
+        "increasing the number of pollock",
+        "changing the diet of the sea lions",
+        "improving the habitats of herring",
+        "changing the location of the sea lions"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe Steller sea lion population has been decreasing in parts of Alaska. New evidence suggests that Steller sea lions need herring as a part of their diet in order to survive. Pollock, another type of fish, also feed on herring. Which would most likely help the Steller sea lion population to increase?\n\nChoices:\nA. increasing the number of pollock\nB. changing the diet of the sea lions\nC. improving the habitats of herring\nD. changing the location of the sea lions\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

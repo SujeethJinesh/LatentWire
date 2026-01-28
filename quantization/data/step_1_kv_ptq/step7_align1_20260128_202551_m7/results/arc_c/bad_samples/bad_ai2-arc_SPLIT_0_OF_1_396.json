@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 396,
+  "error": "mat1 and mat2 shapes cannot be multiplied (164x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7081603",
+    "question": "A student observes that a plant grows at different rates at different times. The student states that these changes must result from changes in the amount of light received by the plant. Which description of the student's statement is most accurate?",
+    "choices": {
+      "text": [
+        "It is an opinion and not a fact.",
+        "It is correct because it is based on observation.",
+        "It is one of several possible explanations for the evidence.",
+        "It is invalid because it is not based on a scientific method."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student observes that a plant grows at different rates at different times. The student states that these changes must result from changes in the amount of light received by the plant. Which description of the student's statement is most accurate?\n\nChoices:\nA. It is an opinion and not a fact.\nB. It is correct because it is based on observation.\nC. It is one of several possible explanations for the evidence.\nD. It is invalid because it is not based on a scientific method.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

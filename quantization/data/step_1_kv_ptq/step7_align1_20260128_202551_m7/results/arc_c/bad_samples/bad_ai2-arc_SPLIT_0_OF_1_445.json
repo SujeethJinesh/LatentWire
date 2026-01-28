@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 445,
+  "error": "mat1 and mat2 shapes cannot be multiplied (116x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_400661",
+    "question": "In a forest ecosystem, the niche of a squirrel population is",
+    "choices": {
+      "text": [
+        "to decompose.",
+        "to pollinate flowers.",
+        "to recycle nutrients in the soil.",
+        "to collect acorns and bury them in the soil."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn a forest ecosystem, the niche of a squirrel population is\n\nChoices:\nA. to decompose.\nB. to pollinate flowers.\nC. to recycle nutrients in the soil.\nD. to collect acorns and bury them in the soil.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 934,
+  "error": "mat1 and mat2 shapes cannot be multiplied (165x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7150343",
+    "question": "Energy from the Sun enters ecosystems through the transformation of light to chemical energy. This energy is available to different organisms based on the trophic level in which the organisms exist. Which statement best describes the availability of energy for organisms in different trophic levels?",
+    "choices": {
+      "text": [
+        "Available energy increases as trophic levels increase.",
+        "Available energy decreases as trophic levels increase.",
+        "Primary consumers have the least energy available.",
+        "Tertiary consumers have the most energy available."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nEnergy from the Sun enters ecosystems through the transformation of light to chemical energy. This energy is available to different organisms based on the trophic level in which the organisms exist. Which statement best describes the availability of energy for organisms in different trophic levels?\n\nChoices:\nA. Available energy increases as trophic levels increase.\nB. Available energy decreases as trophic levels increase.\nC. Primary consumers have the least energy available.\nD. Tertiary consumers have the most energy available.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

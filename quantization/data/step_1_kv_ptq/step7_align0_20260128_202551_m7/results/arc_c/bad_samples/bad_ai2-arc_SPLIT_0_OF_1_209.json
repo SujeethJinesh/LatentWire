@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 209,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "TIMSS_2007_8_pg109",
+    "question": "Which of the following is the best way to determine whether two people are related?",
+    "choices": {
+      "text": [
+        "Compare their blood types.",
+        "Compare their handwriting.",
+        "Compare their genes.",
+        "Compare their fingerprints."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following is the best way to determine whether two people are related?\n\nChoices:\nA. Compare their blood types.\nB. Compare their handwriting.\nC. Compare their genes.\nD. Compare their fingerprints.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

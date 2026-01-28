@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 286,
+  "error": "mat1 and mat2 shapes cannot be multiplied (126x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_405950",
+    "question": "All organisms process nutrients. Which sentence best describes how plants and animals process nutrients similarly?",
+    "choices": {
+      "text": [
+        "Energy from sunlight produces nutrients.",
+        "Nutrients increase the strength of cell walls.",
+        "Cells break down nutrients into usable forms.",
+        "Nutrients are broken down by the digestive system."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nAll organisms process nutrients. Which sentence best describes how plants and animals process nutrients similarly?\n\nChoices:\nA. Energy from sunlight produces nutrients.\nB. Nutrients increase the strength of cell walls.\nC. Cells break down nutrients into usable forms.\nD. Nutrients are broken down by the digestive system.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

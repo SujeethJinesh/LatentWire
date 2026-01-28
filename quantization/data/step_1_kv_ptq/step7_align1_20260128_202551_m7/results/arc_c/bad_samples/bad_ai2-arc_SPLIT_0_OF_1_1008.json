@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1008,
+  "error": "mat1 and mat2 shapes cannot be multiplied (125x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7189000",
+    "question": "Geologists were examining an area in Africa called the Great Rift Valley. Which geologic event most likely caused the formation of the valley?",
+    "choices": {
+      "text": [
+        "diverging continental plates",
+        "collision of tectonic plates",
+        "movement of glaciers",
+        "impacts from meteors"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nGeologists were examining an area in Africa called the Great Rift Valley. Which geologic event most likely caused the formation of the valley?\n\nChoices:\nA. diverging continental plates\nB. collision of tectonic plates\nC. movement of glaciers\nD. impacts from meteors\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

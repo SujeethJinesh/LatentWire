@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 193,
+  "error": "mat1 and mat2 shapes cannot be multiplied (142x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7102323",
+    "question": "Students conduct an investigation with 20 of the same tomato plants. Each plant receives the same amount of water but different amounts of sunlight. The students measure the number of fruits on each plant every day. What is the dependent variable in this investigation?",
+    "choices": {
+      "text": [
+        "type of plant",
+        "amount of water",
+        "amount of sunlight",
+        "number of fruits"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nStudents conduct an investigation with 20 of the same tomato plants. Each plant receives the same amount of water but different amounts of sunlight. The students measure the number of fruits on each plant every day. What is the dependent variable in this investigation?\n\nChoices:\nA. type of plant\nB. amount of water\nC. amount of sunlight\nD. number of fruits\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

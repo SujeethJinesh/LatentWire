@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1025,
+  "error": "mat1 and mat2 shapes cannot be multiplied (157x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7210508",
+    "question": "On December 12th a snowstorm in a city produced 20 centimeters of snowfall. When can this event be used to describe the climate of the region?",
+    "choices": {
+      "text": [
+        "if the snowfall set a record",
+        "if the snowfall was unusual for the area",
+        "if the snowfall was consistent with weather in December over time",
+        "if the snowfall remained on the ground for longer than one month"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nOn December 12th a snowstorm in a city produced 20 centimeters of snowfall. When can this event be used to describe the climate of the region?\n\nChoices:\nA. if the snowfall set a record\nB. if the snowfall was unusual for the area\nC. if the snowfall was consistent with weather in December over time\nD. if the snowfall remained on the ground for longer than one month\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

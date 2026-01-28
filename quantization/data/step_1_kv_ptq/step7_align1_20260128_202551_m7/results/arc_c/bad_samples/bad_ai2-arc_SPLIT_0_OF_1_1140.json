@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1140,
+  "error": "mat1 and mat2 shapes cannot be multiplied (142x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7223493",
+    "question": "A scientist placed a sample of lithium into a container of water. The scientist observed the lithium floating and making a buzzing sound as gas bubbles were forming around it. Which conclusion is best supported by this observation?",
+    "choices": {
+      "text": [
+        "A chemical change took place.",
+        "The lithium was dissolved by the water.",
+        "Dissolved gases were released.",
+        "Water was vaporized."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA scientist placed a sample of lithium into a container of water. The scientist observed the lithium floating and making a buzzing sound as gas bubbles were forming around it. Which conclusion is best supported by this observation?\n\nChoices:\nA. A chemical change took place.\nB. The lithium was dissolved by the water.\nC. Dissolved gases were released.\nD. Water was vaporized.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

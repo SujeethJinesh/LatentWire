@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 406,
+  "error": "mat1 and mat2 shapes cannot be multiplied (118x1536 and 1152x1024)",
+  "example": {
+    "id": "8-62",
+    "question_stem": "In a hypothetical world, black bears decrease in numbers until there are zero black bears left on this world. The black bear species",
+    "choices": {
+      "text": [
+        "would cease existing",
+        "would be troubled",
+        "would be thriving",
+        "would be endangered"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn a hypothetical world, black bears decrease in numbers until there are zero black bears left on this world. The black bear species\n\nChoices:\nA. would cease existing\nB. would be troubled\nC. would be thriving\nD. would be endangered\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1084,
+  "error": "mat1 and mat2 shapes cannot be multiplied (133x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7175893",
+    "question": "All planets of the solar system rotate, but not all planets have the same rotational velocity. Which characteristic of a planet is determined by the rotational velocity of the planet?",
+    "choices": {
+      "text": [
+        "the strength of the gravity",
+        "the shape of the orbit",
+        "the size of the planet",
+        "the length of the day"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nAll planets of the solar system rotate, but not all planets have the same rotational velocity. Which characteristic of a planet is determined by the rotational velocity of the planet?\n\nChoices:\nA. the strength of the gravity\nB. the shape of the orbit\nC. the size of the planet\nD. the length of the day\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

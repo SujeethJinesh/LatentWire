@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 162,
+  "error": "mat1 and mat2 shapes cannot be multiplied (111x1536 and 1152x1024)",
+  "example": {
+    "id": "9-877",
+    "question_stem": "I'm an animal with a white fur and a large fluffy tail that lives in arctic regions; what am I?",
+    "choices": {
+      "text": [
+        "weasel",
+        "snow fox",
+        "wolf",
+        "polar bear"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nI'm an animal with a white fur and a large fluffy tail that lives in arctic regions; what am I?\n\nChoices:\nA. weasel\nB. snow fox\nC. wolf\nD. polar bear\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

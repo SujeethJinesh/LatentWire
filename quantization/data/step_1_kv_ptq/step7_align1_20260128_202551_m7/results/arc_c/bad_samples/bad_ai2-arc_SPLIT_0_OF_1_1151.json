@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1151,
+  "error": "mat1 and mat2 shapes cannot be multiplied (145x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_401185",
+    "question": "Trail mix is a type of snack. One kind of trail mix is made of raisins, chocolate pieces, peanuts, and sunflower seeds. Which statement describes why trail mix is a mixture?",
+    "choices": {
+      "text": [
+        "The mix contains four ingredients.",
+        "The different ingredients clump together.",
+        "Each component maintains its original properties.",
+        "Components are impossible to separate out of the mix."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nTrail mix is a type of snack. One kind of trail mix is made of raisins, chocolate pieces, peanuts, and sunflower seeds. Which statement describes why trail mix is a mixture?\n\nChoices:\nA. The mix contains four ingredients.\nB. The different ingredients clump together.\nC. Each component maintains its original properties.\nD. Components are impossible to separate out of the mix.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

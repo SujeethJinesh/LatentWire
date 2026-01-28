@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 257,
+  "error": "mat1 and mat2 shapes cannot be multiplied (167x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7198468",
+    "question": "Wolves, which are top predators, were eliminated from Yellowstone National Park in the 1930s. In 1995, wolves were reintroduced into Yellowstone. During the period in which wolves were absent from Yellowstone, which most likely occurred?",
+    "choices": {
+      "text": [
+        "an increase in competition for food resources among small prey",
+        "a greater opportunity for primary producers to flourish",
+        "an increase in the population of tertiary consumers",
+        "a greater balance of predator-prey relationships"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWolves, which are top predators, were eliminated from Yellowstone National Park in the 1930s. In 1995, wolves were reintroduced into Yellowstone. During the period in which wolves were absent from Yellowstone, which most likely occurred?\n\nChoices:\nA. an increase in competition for food resources among small prey\nB. a greater opportunity for primary producers to flourish\nC. an increase in the population of tertiary consumers\nD. a greater balance of predator-prey relationships\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

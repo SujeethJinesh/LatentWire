@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 425,
+  "error": "mat1 and mat2 shapes cannot be multiplied (122x1536 and 1152x1024)",
+  "example": {
+    "id": "9-281",
+    "question_stem": "if a pot on the stove is described as hot, what does this mean?",
+    "choices": {
+      "text": [
+        "the body of the pot is of high temperature",
+        "the body of the pot is cold",
+        "all of these",
+        "the body of the pot is wet"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nif a pot on the stove is described as hot, what does this mean?\n\nChoices:\nA. the body of the pot is of high temperature\nB. the body of the pot is cold\nC. all of these\nD. the body of the pot is wet\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

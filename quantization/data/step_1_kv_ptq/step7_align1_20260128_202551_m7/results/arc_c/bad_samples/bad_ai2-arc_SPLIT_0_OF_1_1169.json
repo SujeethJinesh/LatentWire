@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1169,
+  "error": "mat1 and mat2 shapes cannot be multiplied (147x1536 and 1152x1024)",
+  "example": {
+    "id": "LEAP_2009_8_10430",
+    "question": "Which procedure best determines whether water temperature affects the time it will take a sugar cube to dissolve?",
+    "choices": {
+      "text": [
+        "Test three sugar cubes, one each in three different water temperatures.",
+        "Test three sugar cubes in one water temperature.",
+        "Test one crushed sugar cube and one whole sugar cube in water.",
+        "Test three sugar cubes, one each in an acid, a base, and water."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich procedure best determines whether water temperature affects the time it will take a sugar cube to dissolve?\n\nChoices:\nA. Test three sugar cubes, one each in three different water temperatures.\nB. Test three sugar cubes in one water temperature.\nC. Test one crushed sugar cube and one whole sugar cube in water.\nD. Test three sugar cubes, one each in an acid, a base, and water.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

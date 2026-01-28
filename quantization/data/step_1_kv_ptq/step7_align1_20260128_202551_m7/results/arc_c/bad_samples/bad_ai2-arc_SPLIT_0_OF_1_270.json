@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 270,
+  "error": "mat1 and mat2 shapes cannot be multiplied (121x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_187198",
+    "question": "When ice begins to melt at 0°C, water molecules",
+    "choices": {
+      "text": [
+        "begin to lose some of their atomic mass.",
+        "break apart into individual water atoms.",
+        "move more freely in relation to each other.",
+        "release heat to the surrounding atmosphere."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen ice begins to melt at 0°C, water molecules\n\nChoices:\nA. begin to lose some of their atomic mass.\nB. break apart into individual water atoms.\nC. move more freely in relation to each other.\nD. release heat to the surrounding atmosphere.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

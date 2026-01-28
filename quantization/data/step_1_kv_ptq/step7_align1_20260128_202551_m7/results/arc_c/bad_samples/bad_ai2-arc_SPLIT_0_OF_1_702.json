@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 702,
+  "error": "mat1 and mat2 shapes cannot be multiplied (116x1536 and 1152x1024)",
+  "example": {
+    "id": "MDSA_2007_8_30",
+    "question": "As the human population grows, the demand for natural resources increases. Which activity wastes a natural resource?",
+    "choices": {
+      "text": [
+        "turning off lights",
+        "using public transportation",
+        "throwing away aluminum cans",
+        "opening windows to cool a house"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nAs the human population grows, the demand for natural resources increases. Which activity wastes a natural resource?\n\nChoices:\nA. turning off lights\nB. using public transportation\nC. throwing away aluminum cans\nD. opening windows to cool a house\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

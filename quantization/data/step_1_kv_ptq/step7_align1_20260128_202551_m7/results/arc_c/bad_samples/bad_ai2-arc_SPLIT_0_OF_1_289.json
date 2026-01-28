@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 289,
+  "error": "mat1 and mat2 shapes cannot be multiplied (154x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_406451",
+    "question": "A school replaced all of their light bulbs with a new type of light bulb. The new light bulbs use less energy. How will the new light bulbs most likely help the environment?",
+    "choices": {
+      "text": [
+        "The amount of light pollution will decrease.",
+        "The air conditioner at the school will run less often.",
+        "Fewer natural resources will be used to make electricity.",
+        "Money will be saved on the electricity bill for the school."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA school replaced all of their light bulbs with a new type of light bulb. The new light bulbs use less energy. How will the new light bulbs most likely help the environment?\n\nChoices:\nA. The amount of light pollution will decrease.\nB. The air conditioner at the school will run less often.\nC. Fewer natural resources will be used to make electricity.\nD. Money will be saved on the electricity bill for the school.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

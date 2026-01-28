@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 366,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "1774",
+    "question_stem": "What is an example of the digestive system digesting food for the body?",
+    "choices": {
+      "text": [
+        "a man eating nachos then getting food poisoning",
+        "a baby drinking formula then needing a diaper change",
+        "a cat eating food then throwing it up",
+        "a horse licking a salt lick"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is an example of the digestive system digesting food for the body?\n\nChoices:\nA. a man eating nachos then getting food poisoning\nB. a baby drinking formula then needing a diaper change\nC. a cat eating food then throwing it up\nD. a horse licking a salt lick\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

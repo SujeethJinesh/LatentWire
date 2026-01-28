@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 856,
+  "error": "mat1 and mat2 shapes cannot be multiplied (171x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7024395",
+    "question": "Several different sized filter-paper disks are soaked in a solution and placed into another solution where a reaction will take place that produces a gas. The gas bubbles collect on the filter paper and make the filter paper rise to the top of the solution. Which of these is a measurement that would not be made during this experiment?",
+    "choices": {
+      "text": [
+        "the number of bubbles produced",
+        "the distance the filter paper rises",
+        "the diameter of the filter-paper disks",
+        "the time it takes for the filter paper to rise"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nSeveral different sized filter-paper disks are soaked in a solution and placed into another solution where a reaction will take place that produces a gas. The gas bubbles collect on the filter paper and make the filter paper rise to the top of the solution. Which of these is a measurement that would not be made during this experiment?\n\nChoices:\nA. the number of bubbles produced\nB. the distance the filter paper rises\nC. the diameter of the filter-paper disks\nD. the time it takes for the filter paper to rise\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

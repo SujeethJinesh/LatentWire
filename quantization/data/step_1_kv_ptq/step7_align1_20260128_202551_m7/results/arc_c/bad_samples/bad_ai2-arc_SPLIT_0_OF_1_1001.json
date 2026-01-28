@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1001,
+  "error": "mat1 and mat2 shapes cannot be multiplied (133x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_184205",
+    "question": "The same side of the Moon is always visible from Earth because",
+    "choices": {
+      "text": [
+        "the Moon does not rotate on its axis.",
+        "the far side of the Moon faces Earth during the day.",
+        "the Moon makes one rotation per revolution around Earth.",
+        "the rate of rotation is the same for Earth and the Moon."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe same side of the Moon is always visible from Earth because\n\nChoices:\nA. the Moon does not rotate on its axis.\nB. the far side of the Moon faces Earth during the day.\nC. the Moon makes one rotation per revolution around Earth.\nD. the rate of rotation is the same for Earth and the Moon.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

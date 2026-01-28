@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 842,
+  "error": "mat1 and mat2 shapes cannot be multiplied (124x1536 and 1152x1024)",
+  "example": {
+    "id": "MDSA_2008_4_19",
+    "question": "In October, the constellations Gemini and Orion appear in the sky after midnight. In January, Orion appears at sunset. At which time will Gemini most likely appear in January?",
+    "choices": {
+      "text": [
+        "at noon",
+        "at sunset",
+        "after midnight",
+        "before sunrise"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn October, the constellations Gemini and Orion appear in the sky after midnight. In January, Orion appears at sunset. At which time will Gemini most likely appear in January?\n\nChoices:\nA. at noon\nB. at sunset\nC. after midnight\nD. before sunrise\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

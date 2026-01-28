@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 430,
+  "error": "mat1 and mat2 shapes cannot be multiplied (103x1536 and 1152x1024)",
+  "example": {
+    "id": "7-1138",
+    "question_stem": "When ice buildup is on a sidewalk, the ice may be reduced by",
+    "choices": {
+      "text": [
+        "adding salt",
+        "adding litter",
+        "adding sand",
+        "adding water"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen ice buildup is on a sidewalk, the ice may be reduced by\n\nChoices:\nA. adding salt\nB. adding litter\nC. adding sand\nD. adding water\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

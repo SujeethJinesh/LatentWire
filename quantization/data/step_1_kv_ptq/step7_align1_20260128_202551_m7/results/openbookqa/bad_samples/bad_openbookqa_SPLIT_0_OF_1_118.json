@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 118,
+  "error": "mat1 and mat2 shapes cannot be multiplied (133x1536 and 1152x1024)",
+  "example": {
+    "id": "9-230",
+    "question_stem": "How could we determine approximately how far a bird is from the ground?",
+    "choices": {
+      "text": [
+        "Measure the altitude of the bird using a reference point, such as a tall building.",
+        "Identify the species of bird",
+        "Ask the bird how high it was when it returns back to earth",
+        "Measure the bird's mass"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nHow could we determine approximately how far a bird is from the ground?\n\nChoices:\nA. Measure the altitude of the bird using a reference point, such as a tall building.\nB. Identify the species of bird\nC. Ask the bird how high it was when it returns back to earth\nD. Measure the bird's mass\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

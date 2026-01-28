@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 543,
+  "error": "mat1 and mat2 shapes cannot be multiplied (181x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_417117",
+    "question": "Scientists have been able to insert genes from a spider into the genome of a domestic goat. When the goat matures, it produces milk that contains a protein found in spider webs. This protein can then be extracted and used to make strong but lightweight materials for bulletproof vests, automobiles, and aircraft. The change does not cause the goat any pain, but some people think that it is not right to add genes from the genome of one animal to another. Which word best describes this concern?",
+    "choices": {
+      "text": [
+        "economic",
+        "biological",
+        "ethical",
+        "practical"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nScientists have been able to insert genes from a spider into the genome of a domestic goat. When the goat matures, it produces milk that contains a protein found in spider webs. This protein can then be extracted and used to make strong but lightweight materials for bulletproof vests, automobiles, and aircraft. The change does not cause the goat any pain, but some people think that it is not right to add genes from the genome of one animal to another. Which word best describes this concern?\n\nChoices:\nA. economic\nB. biological\nC. ethical\nD. practical\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

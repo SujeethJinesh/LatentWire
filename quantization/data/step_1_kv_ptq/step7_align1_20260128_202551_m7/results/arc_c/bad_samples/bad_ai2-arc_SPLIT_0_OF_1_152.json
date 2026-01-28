@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 152,
+  "error": "mat1 and mat2 shapes cannot be multiplied (105x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_400062",
+    "question": "A plateau is most likely formed by",
+    "choices": {
+      "text": [
+        "runoff from a river.",
+        "weathering by waves.",
+        "erosion of rock debris.",
+        "a buildup of cooled lava."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA plateau is most likely formed by\n\nChoices:\nA. runoff from a river.\nB. weathering by waves.\nC. erosion of rock debris.\nD. a buildup of cooled lava.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

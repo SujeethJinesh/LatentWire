@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 450,
+  "error": "mat1 and mat2 shapes cannot be multiplied (144x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_407696",
+    "question": "Jake and Molly each have a few different objects. They want to see which objects can float. How can they best compare the results of their investigations with each other?",
+    "choices": {
+      "text": [
+        "Drop each object in different liquids.",
+        "Record in a table how each object behaves.",
+        "Measure the length and mass of each object.",
+        "Test the objects in groups from smallest to largest."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nJake and Molly each have a few different objects. They want to see which objects can float. How can they best compare the results of their investigations with each other?\n\nChoices:\nA. Drop each object in different liquids.\nB. Record in a table how each object behaves.\nC. Measure the length and mass of each object.\nD. Test the objects in groups from smallest to largest.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

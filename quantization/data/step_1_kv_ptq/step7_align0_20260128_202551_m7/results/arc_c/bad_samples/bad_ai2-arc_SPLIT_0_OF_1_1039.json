@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1039,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7263638",
+    "question": "Earth's core consists primarily of iron. Which observation about another planet would provide some evidence that the planet has an iron core?",
+    "choices": {
+      "text": [
+        "the presence of a fluid mantle",
+        "the presence of Van Allen belts",
+        "the presence of gravitational force",
+        "the presence of water in three states"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nEarth's core consists primarily of iron. Which observation about another planet would provide some evidence that the planet has an iron core?\n\nChoices:\nA. the presence of a fluid mantle\nB. the presence of Van Allen belts\nC. the presence of gravitational force\nD. the presence of water in three states\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

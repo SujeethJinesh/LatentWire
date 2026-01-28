@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 493,
+  "error": "mat1 and mat2 shapes cannot be multiplied (134x1536 and 1152x1024)",
+  "example": {
+    "id": "LEAP_2002_4_10247",
+    "question": "When you are getting up to go to school in Louisiana, a student on the other side of Earth is getting ready for bed. What is the reason for this?",
+    "choices": {
+      "text": [
+        "Earth revolves around the Sun.",
+        "Earth rotates on its axis.",
+        "The Sun rotates on its axis.",
+        "The Moon revolves around Earth."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen you are getting up to go to school in Louisiana, a student on the other side of Earth is getting ready for bed. What is the reason for this?\n\nChoices:\nA. Earth revolves around the Sun.\nB. Earth rotates on its axis.\nC. The Sun rotates on its axis.\nD. The Moon revolves around Earth.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

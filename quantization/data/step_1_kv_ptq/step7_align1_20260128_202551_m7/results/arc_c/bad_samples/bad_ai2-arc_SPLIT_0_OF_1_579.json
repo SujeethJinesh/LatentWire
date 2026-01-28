@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 579,
+  "error": "mat1 and mat2 shapes cannot be multiplied (134x1536 and 1152x1024)",
+  "example": {
+    "id": "MDSA_2013_8_20",
+    "question": "Energy changes form or is transferred through the action of forces. An example of kinetic energy changing to potential energy is",
+    "choices": {
+      "text": [
+        "a boulder sitting on a cliff",
+        "a person running around a track",
+        "a car being driven up a hill and being parked",
+        "a rubber band being stretched and being broken"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nEnergy changes form or is transferred through the action of forces. An example of kinetic energy changing to potential energy is\n\nChoices:\nA. a boulder sitting on a cliff\nB. a person running around a track\nC. a car being driven up a hill and being parked\nD. a rubber band being stretched and being broken\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

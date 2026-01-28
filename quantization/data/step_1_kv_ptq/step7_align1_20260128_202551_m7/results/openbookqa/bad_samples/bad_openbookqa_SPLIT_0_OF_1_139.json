@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 139,
+  "error": "mat1 and mat2 shapes cannot be multiplied (99x1536 and 1152x1024)",
+  "example": {
+    "id": "7-107",
+    "question_stem": "Summertime  happens during June in all but which location?",
+    "choices": {
+      "text": [
+        "Australia",
+        "in Canada",
+        "United States",
+        "Europe"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nSummertime  happens during June in all but which location?\n\nChoices:\nA. Australia\nB. in Canada\nC. United States\nD. Europe\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

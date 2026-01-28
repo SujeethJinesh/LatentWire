@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 137,
+  "error": "mat1 and mat2 shapes cannot be multiplied (127x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7093153",
+    "question": "Which question about tulips could best be answered by scientific research?",
+    "choices": {
+      "text": [
+        "Are tulips better than other flowers?",
+        "What genes determine tulip petal color?",
+        "Why do people like to look at tulips?",
+        "Which color of tulips is the prettiest?"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich question about tulips could best be answered by scientific research?\n\nChoices:\nA. Are tulips better than other flowers?\nB. What genes determine tulip petal color?\nC. Why do people like to look at tulips?\nD. Which color of tulips is the prettiest?\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

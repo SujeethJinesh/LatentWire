@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 964,
+  "error": "mat1 and mat2 shapes cannot be multiplied (153x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7064750",
+    "question": "A student pours salt water into a beaker and then pours some acid into another beaker. The student returns to the lab table and realizes that the samples are not marked. What should the student do?",
+    "choices": {
+      "text": [
+        "smell each sample in order to identify it",
+        "guess which beaker contains each substance",
+        "mix the substances together to determine what they are",
+        "safely discard the samples and get new ones"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student pours salt water into a beaker and then pours some acid into another beaker. The student returns to the lab table and realizes that the samples are not marked. What should the student do?\n\nChoices:\nA. smell each sample in order to identify it\nB. guess which beaker contains each substance\nC. mix the substances together to determine what they are\nD. safely discard the samples and get new ones\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

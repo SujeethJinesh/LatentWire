@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 381,
+  "error": "mat1 and mat2 shapes cannot be multiplied (108x1536 and 1152x1024)",
+  "example": {
+    "id": "9-508",
+    "question_stem": "the night sky shows very far away what",
+    "choices": {
+      "text": [
+        "clumps of flaming gas",
+        "tidal waves washing over beaches",
+        "aircraft falling towards collision",
+        "party balloons tied to houses"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nthe night sky shows very far away what\n\nChoices:\nA. clumps of flaming gas\nB. tidal waves washing over beaches\nC. aircraft falling towards collision\nD. party balloons tied to houses\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

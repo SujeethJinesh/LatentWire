@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 229,
+  "error": "mat1 and mat2 shapes cannot be multiplied (124x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2005_5_34",
+    "question": "A small laundry room has several shelves above the washing machine. These shelves are an example of",
+    "choices": {
+      "text": [
+        "making the wall stronger.",
+        "using storage space efficiently.",
+        "using a machine for more than one purpose.",
+        "solving the need for shelter in a creative way."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA small laundry room has several shelves above the washing machine. These shelves are an example of\n\nChoices:\nA. making the wall stronger.\nB. using storage space efficiently.\nC. using a machine for more than one purpose.\nD. solving the need for shelter in a creative way.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 87,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "8-308",
+    "question_stem": "Some blind people have demonstrated bat-like skills by:",
+    "choices": {
+      "text": [
+        "sensing shapes by light and shadows",
+        "having a unusually strong sense of smell",
+        "sensing nearby objects by temperature change",
+        "using sound to 'see'"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome blind people have demonstrated bat-like skills by:\n\nChoices:\nA. sensing shapes by light and shadows\nB. having a unusually strong sense of smell\nC. sensing nearby objects by temperature change\nD. using sound to 'see'\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

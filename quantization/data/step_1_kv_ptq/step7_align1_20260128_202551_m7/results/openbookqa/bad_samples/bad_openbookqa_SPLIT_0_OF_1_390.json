@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 390,
+  "error": "mat1 and mat2 shapes cannot be multiplied (119x1536 and 1152x1024)",
+  "example": {
+    "id": "9-554",
+    "question_stem": "A bear cub learns to stay away from unknown bears because",
+    "choices": {
+      "text": [
+        "they are much bigger than the cub",
+        "the other bears look like its mother",
+        "their mother teaches them to keep their distance",
+        "the unknown bears look harmless"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA bear cub learns to stay away from unknown bears because\n\nChoices:\nA. they are much bigger than the cub\nB. the other bears look like its mother\nC. their mother teaches them to keep their distance\nD. the unknown bears look harmless\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1053,
+  "error": "mat1 and mat2 shapes cannot be multiplied (127x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7086520",
+    "question": "Copper and gold have similar reactive properties. On the Periodic Table of the Elements, these elements are most likely to",
+    "choices": {
+      "text": [
+        "be in the same group.",
+        "be in the same period.",
+        "have nearly the same mass.",
+        "have the same number of protons."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nCopper and gold have similar reactive properties. On the Periodic Table of the Elements, these elements are most likely to\n\nChoices:\nA. be in the same group.\nB. be in the same period.\nC. have nearly the same mass.\nD. have the same number of protons.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

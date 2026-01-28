@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 483,
+  "error": "mat1 and mat2 shapes cannot be multiplied (162x1536 and 1152x1024)",
+  "example": {
+    "id": "LEAP__5_10312",
+    "question": "Antonia is testing the properties of block A. • She puts block A on top of a hot metal block and then touches the block A with her finger. • She keeps her finger on the block A for several minutes, but block A still does not get hot. What can Antonia conclude about block A?",
+    "choices": {
+      "text": [
+        "It is a good conductor.",
+        "It is a poor conductor.",
+        "It is highly magnetic.",
+        "It is nonmagnetic."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nAntonia is testing the properties of block A. • She puts block A on top of a hot metal block and then touches the block A with her finger. • She keeps her finger on the block A for several minutes, but block A still does not get hot. What can Antonia conclude about block A?\n\nChoices:\nA. It is a good conductor.\nB. It is a poor conductor.\nC. It is highly magnetic.\nD. It is nonmagnetic.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

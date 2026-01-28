@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 106,
+  "error": "mat1 and mat2 shapes cannot be multiplied (119x1536 and 1152x1024)",
+  "example": {
+    "id": "TIMSS_2011_8_pg102",
+    "question": "Robert put two drops of an indicator into vinegar, and the color turned red. He then added drops of ammonia solution until the color disappeared. What process occurred?",
+    "choices": {
+      "text": [
+        "rusting",
+        "melting",
+        "evaporation",
+        "neutralization"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nRobert put two drops of an indicator into vinegar, and the color turned red. He then added drops of ammonia solution until the color disappeared. What process occurred?\n\nChoices:\nA. rusting\nB. melting\nC. evaporation\nD. neutralization\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

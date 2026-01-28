@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 489,
+  "error": "mat1 and mat2 shapes cannot be multiplied (127x1536 and 1152x1024)",
+  "example": {
+    "id": "1359",
+    "question_stem": "Photosynthesis does what by converting carbon dioxide, water, and sunlight into carbohydrates?",
+    "choices": {
+      "text": [
+        "nourishes small protein bits that need to eat with tiny shakes",
+        "providing nourishment which enables some growth to vegetation",
+        "mixes carbs into soluble plant matter",
+        "makes good vegetable protein"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nPhotosynthesis does what by converting carbon dioxide, water, and sunlight into carbohydrates?\n\nChoices:\nA. nourishes small protein bits that need to eat with tiny shakes\nB. providing nourishment which enables some growth to vegetation\nC. mixes carbs into soluble plant matter\nD. makes good vegetable protein\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

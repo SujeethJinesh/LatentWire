@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 57,
+  "error": "mat1 and mat2 shapes cannot be multiplied (171x1536 and 1152x1024)",
+  "example": {
+    "id": "8-393",
+    "question_stem": "A construction group wants to put a shopping center in town, but the only place available is a small nature park with a trail. Deer and other wildlife frequent the park, since it is the only place in the city where trees and fresh water are available for them. The construction group decides to build the shopping center, which means that",
+    "choices": {
+      "text": [
+        "the deer are moved to a zoo",
+        "the trail is expanded",
+        "the mall has a nature park in it",
+        "the wildlife environment is destroyed"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA construction group wants to put a shopping center in town, but the only place available is a small nature park with a trail. Deer and other wildlife frequent the park, since it is the only place in the city where trees and fresh water are available for them. The construction group decides to build the shopping center, which means that\n\nChoices:\nA. the deer are moved to a zoo\nB. the trail is expanded\nC. the mall has a nature park in it\nD. the wildlife environment is destroyed\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

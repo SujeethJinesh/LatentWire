@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 272,
+  "error": "mat1 and mat2 shapes cannot be multiplied (113x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_184100",
+    "question": "Which of these is the best example of physical weathering?",
+    "choices": {
+      "text": [
+        "insects eating a dead tree",
+        "a bulldozer pushing soil",
+        "ice fracturing a stone",
+        "acid rain dissolving limestone"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these is the best example of physical weathering?\n\nChoices:\nA. insects eating a dead tree\nB. a bulldozer pushing soil\nC. ice fracturing a stone\nD. acid rain dissolving limestone\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

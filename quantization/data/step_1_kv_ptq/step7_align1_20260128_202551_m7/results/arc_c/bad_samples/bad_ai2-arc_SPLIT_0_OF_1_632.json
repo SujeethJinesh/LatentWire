@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 632,
+  "error": "mat1 and mat2 shapes cannot be multiplied (141x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7106593",
+    "question": "A particular peach tree produces peaches that are more resistant to disease than other peaches. What method would reproduce these exact peaches?",
+    "choices": {
+      "text": [
+        "use bees to pollinate the flowers",
+        "reproduce by cross-pollination of different peach trees",
+        "increase the diversity in the peach tree",
+        "ensure that the peach tree reproduces asexually"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA particular peach tree produces peaches that are more resistant to disease than other peaches. What method would reproduce these exact peaches?\n\nChoices:\nA. use bees to pollinate the flowers\nB. reproduce by cross-pollination of different peach trees\nC. increase the diversity in the peach tree\nD. ensure that the peach tree reproduces asexually\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

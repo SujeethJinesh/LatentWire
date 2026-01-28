@@ -1,0 +1,24 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 400,
+  "error": "mat1 and mat2 shapes cannot be multiplied (94x1536 and 1152x1024)",
+  "example": {
+    "id": "NYSEDREGENTS_2008_4_15",
+    "question": "In which state of matter does water have a definite shape and volume?",
+    "choices": {
+      "text": [
+        "gas",
+        "liquid",
+        "solid"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn which state of matter does water have a definite shape and volume?\n\nChoices:\nA. gas\nB. liquid\nC. solid\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 816,
+  "error": "mat1 and mat2 shapes cannot be multiplied (208x1536 and 1152x1024)",
+  "example": {
+    "id": "MCAS_2006_9_4",
+    "question": "There are two types of modern whales: toothed whales and baleen whales. Baleen whales filter plankton from the water using baleen, plates made of fibrous proteins that grow from the roof of their mouths. The embryos of baleen whales have teeth in their upper jaws. As the embryos develop, the teeth are replaced with baleen. Which of the following conclusions is best supported by this information?",
+    "choices": {
+      "text": [
+        "Primitive whales had teeth as adults.",
+        "Toothed whales descended from baleen whales.",
+        "Baleen whales are evolving into toothed whales.",
+        "Descendants of modern baleen whales will have both teeth and baleen as adults."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThere are two types of modern whales: toothed whales and baleen whales. Baleen whales filter plankton from the water using baleen, plates made of fibrous proteins that grow from the roof of their mouths. The embryos of baleen whales have teeth in their upper jaws. As the embryos develop, the teeth are replaced with baleen. Which of the following conclusions is best supported by this information?\n\nChoices:\nA. Primitive whales had teeth as adults.\nB. Toothed whales descended from baleen whales.\nC. Baleen whales are evolving into toothed whales.\nD. Descendants of modern baleen whales will have both teeth and baleen as adults.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

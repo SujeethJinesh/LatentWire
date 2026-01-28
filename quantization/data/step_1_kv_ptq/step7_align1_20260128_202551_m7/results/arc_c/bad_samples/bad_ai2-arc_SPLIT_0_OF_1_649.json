@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 649,
+  "error": "mat1 and mat2 shapes cannot be multiplied (121x1536 and 1152x1024)",
+  "example": {
+    "id": "TIMSS_1995_8_K18",
+    "question": "What is the main function of chloroplasts in a plant cell?",
+    "choices": {
+      "text": [
+        "To absorb light energy and manufacture food",
+        "To remove waste materials by active transport",
+        "To manufacture chemical energy from food",
+        "To control the shape of the cell"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is the main function of chloroplasts in a plant cell?\n\nChoices:\nA. To absorb light energy and manufacture food\nB. To remove waste materials by active transport\nC. To manufacture chemical energy from food\nD. To control the shape of the cell\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

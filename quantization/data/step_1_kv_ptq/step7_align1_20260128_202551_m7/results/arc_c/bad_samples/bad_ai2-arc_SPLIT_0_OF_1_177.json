@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 177,
+  "error": "mat1 and mat2 shapes cannot be multiplied (133x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7206938",
+    "question": "The melting point of a compound was measured by three different scientists. It is acceptable for the scientists to display the same data differently because",
+    "choices": {
+      "text": [
+        "multiple methods are acceptable for organizing data.",
+        "melting point data is inconsistent.",
+        "the scientists collected data in different areas.",
+        "the data was measured with different instruments."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe melting point of a compound was measured by three different scientists. It is acceptable for the scientists to display the same data differently because\n\nChoices:\nA. multiple methods are acceptable for organizing data.\nB. melting point data is inconsistent.\nC. the scientists collected data in different areas.\nD. the data was measured with different instruments.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

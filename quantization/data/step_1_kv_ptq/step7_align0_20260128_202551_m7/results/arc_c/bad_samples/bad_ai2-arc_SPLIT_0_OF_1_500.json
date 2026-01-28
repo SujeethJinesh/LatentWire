@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 500,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MDSA_2007_8_24",
+    "question": "When 1 gram of water is evaporated, the volume of the water vapor increases but the mass remains constant. Why does the mass of the water remain constant?",
+    "choices": {
+      "text": [
+        "The temperature of the water remains constant.",
+        "The pressure acting on the water remains constant.",
+        "The number of atoms in the water remains constant.",
+        "The distance between water molecules remains constant."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen 1 gram of water is evaporated, the volume of the water vapor increases but the mass remains constant. Why does the mass of the water remain constant?\n\nChoices:\nA. The temperature of the water remains constant.\nB. The pressure acting on the water remains constant.\nC. The number of atoms in the water remains constant.\nD. The distance between water molecules remains constant.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

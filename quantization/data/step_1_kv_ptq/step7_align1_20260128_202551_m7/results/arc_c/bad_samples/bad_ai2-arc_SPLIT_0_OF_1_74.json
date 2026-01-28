@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 74,
+  "error": "mat1 and mat2 shapes cannot be multiplied (122x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7044328",
+    "question": "Which best explains what scientists are referring to when they use the term conservation?",
+    "choices": {
+      "text": [
+        "nonliving parts of the environment",
+        "living organisms in the environment",
+        "health of the living organisms in the environment",
+        "protection, management, and renewal of resources"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich best explains what scientists are referring to when they use the term conservation?\n\nChoices:\nA. nonliving parts of the environment\nB. living organisms in the environment\nC. health of the living organisms in the environment\nD. protection, management, and renewal of resources\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

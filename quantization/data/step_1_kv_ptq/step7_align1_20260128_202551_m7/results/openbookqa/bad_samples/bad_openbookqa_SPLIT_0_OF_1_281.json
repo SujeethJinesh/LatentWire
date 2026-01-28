@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 281,
+  "error": "mat1 and mat2 shapes cannot be multiplied (115x1536 and 1152x1024)",
+  "example": {
+    "id": "7-270",
+    "question_stem": "Plants are unable to grow if they have zero access to",
+    "choices": {
+      "text": [
+        "a nice cool breeze",
+        "fresh soil with manure",
+        "a regular source of saltwater",
+        "needs required for creating chlorophyll"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nPlants are unable to grow if they have zero access to\n\nChoices:\nA. a nice cool breeze\nB. fresh soil with manure\nC. a regular source of saltwater\nD. needs required for creating chlorophyll\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

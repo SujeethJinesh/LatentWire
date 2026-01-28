@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 642,
+  "error": "mat1 and mat2 shapes cannot be multiplied (154x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_LBS10302",
+    "question": "A light-year is the measure of how far light can travel in one year. How long has the light from a star 125,000 light-years away been traveling to reach Earth?",
+    "choices": {
+      "text": [
+        "12.5 years",
+        "125 years",
+        "125,000 years",
+        "125,000,000 years"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA light-year is the measure of how far light can travel in one year. How long has the light from a star 125,000 light-years away been traveling to reach Earth?\n\nChoices:\nA. 12.5 years\nB. 125 years\nC. 125,000 years\nD. 125,000,000 years\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

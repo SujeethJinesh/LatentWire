@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 359,
+  "error": "mat1 and mat2 shapes cannot be multiplied (128x1536 and 1152x1024)",
+  "example": {
+    "id": "8-52",
+    "question_stem": "A star, burning far, far away, has enormous pressure and temperature. This allows for",
+    "choices": {
+      "text": [
+        "a room to have overhead lights",
+        "night on Earth to be dimly lit",
+        "plastic stars to decorate a ceiling",
+        "a person to be the star of a show"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA star, burning far, far away, has enormous pressure and temperature. This allows for\n\nChoices:\nA. a room to have overhead lights\nB. night on Earth to be dimly lit\nC. plastic stars to decorate a ceiling\nD. a person to be the star of a show\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

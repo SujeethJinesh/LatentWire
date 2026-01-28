@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1112,
+  "error": "mat1 and mat2 shapes cannot be multiplied (111x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_SC_402981",
+    "question": "During which activity should a student wear a laboratory apron or coat?",
+    "choices": {
+      "text": [
+        "cracking open a geode",
+        "adjusting a microscope",
+        "spraying water on plants",
+        "adding salt to boiling water"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nDuring which activity should a student wear a laboratory apron or coat?\n\nChoices:\nA. cracking open a geode\nB. adjusting a microscope\nC. spraying water on plants\nD. adding salt to boiling water\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

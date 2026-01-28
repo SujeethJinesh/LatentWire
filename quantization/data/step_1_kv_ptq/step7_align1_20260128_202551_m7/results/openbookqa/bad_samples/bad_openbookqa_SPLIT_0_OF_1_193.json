@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 193,
+  "error": "mat1 and mat2 shapes cannot be multiplied (111x1536 and 1152x1024)",
+  "example": {
+    "id": "7-445",
+    "question_stem": "Erosion could lead to",
+    "choices": {
+      "text": [
+        "a change in the direction of a stream",
+        "a change in ocean temperatures",
+        "an increase in rainy weather",
+        "an increase in plants and animals"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nErosion could lead to\n\nChoices:\nA. a change in the direction of a stream\nB. a change in ocean temperatures\nC. an increase in rainy weather\nD. an increase in plants and animals\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

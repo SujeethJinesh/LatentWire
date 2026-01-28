@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 759,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7270515",
+    "question": "Which of these questions cannot be answered scientifically?",
+    "choices": {
+      "text": [
+        "Which musical notes can be perceived by the human ear?",
+        "Which musical notes combine to be the most beautiful?",
+        "Which frequencies can be heard by children but not by adults?",
+        "Which frequencies can be produced by human vocal cords?"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of these questions cannot be answered scientifically?\n\nChoices:\nA. Which musical notes can be perceived by the human ear?\nB. Which musical notes combine to be the most beautiful?\nC. Which frequencies can be heard by children but not by adults?\nD. Which frequencies can be produced by human vocal cords?\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

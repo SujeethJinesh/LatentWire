@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1095,
+  "error": "mat1 and mat2 shapes cannot be multiplied (102x1536 and 1152x1024)",
+  "example": {
+    "id": "Mercury_7086608",
+    "question": "If an atom has two protons and three electrons, then the atom is",
+    "choices": {
+      "text": [
+        "positively charged.",
+        "negatively charged.",
+        "radioactive.",
+        "neutral."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nIf an atom has two protons and three electrons, then the atom is\n\nChoices:\nA. positively charged.\nB. negatively charged.\nC. radioactive.\nD. neutral.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

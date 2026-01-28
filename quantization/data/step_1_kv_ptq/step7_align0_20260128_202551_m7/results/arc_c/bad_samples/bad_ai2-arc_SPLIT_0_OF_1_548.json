@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 548,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_416646",
+    "question": "Both euglenas and volvox are classified as plant-like protists. But volvox has more structures in common with plants than euglenas do. Which structure found in plant cells is also found in volvox but not in euglenas?",
+    "choices": {
+      "text": [
+        "eyespot",
+        "cell wall",
+        "chloroplast",
+        "central vacuole"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nBoth euglenas and volvox are classified as plant-like protists. But volvox has more structures in common with plants than euglenas do. Which structure found in plant cells is also found in volvox but not in euglenas?\n\nChoices:\nA. eyespot\nB. cell wall\nC. chloroplast\nD. central vacuole\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}
