@@ -1,0 +1,22 @@
+Using conda env python: /workspace/conda/envs/rosetta/bin/python
+Preflight: running prep-only to validate plumbing.
+Wrote M5 recipe: /workspace/LatentWire/quantization/data/step_5_qat/step5_qat_20260129_074456_m5/configs/m5_train.json
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Outputs will be saved to: /workspace/c2c_checkpoints/qat_20260129_074456_m5
+Training mode: rosetta
+Setting up models…
+Using dtype: torch.bfloat16
+Model Qwen/Qwen3-0.6B already has a chat template.
+Using last_aligned mapping strategy (target: [sources])
+Applying freeze configuration: ['teacher', 'base']
+Total parameters: 1,567,930,744
+Trainable parameters: 477,848,056
+Percentage of trainable parameters: 30.4763%
+Loading dataset…
+Loading OpenHermes dataset (split: train)...
+  - Token count filter: max 2048: 50000 -> 49571 samples
+Applied sequential batch filtering: 50000 -> 49571 samples
+Loaded 49571 samples
+Starting training…
+Epoch 1/1:   0%|          | 0/1534 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/1534 [00:17<?, ?it/s, loss=2.7678, avg_loss=2.7678, lr=6.54e-07]Epoch 1/1:   0%|          | 1/1534 [00:17<7:37:20, 17.90s/it, loss=2.7678, avg_loss=2.7678, lr=6.54e-07]Epoch 1/1:   0%|          | 1/1534 [00:33<7:37:20, 17.90s/it, loss=2.5325, avg_loss=2.6502, lr=1.31e-06]Epoch 1/1:   0%|          | 2/1534 [00:33<7:04:43, 16.63s/it, loss=2.5325, avg_loss=2.6502, lr=1.31e-06]Epoch 1/1:   0%|          | 2/1534 [00:49<7:04:43, 16.63s/it, loss=2.2920, avg_loss=2.5308, lr=1.96e-06]Epoch 1/1:   0%|          | 3/1534 [00:49<6:51:34, 16.13s/it, loss=2.2920, avg_loss=2.5308, lr=1.96e-06]Epoch 1/1:   0%|          | 3/1534 [01:04<6:51:34, 16.13s/it, loss=2.1309, avg_loss=2.4308, lr=2.61e-06]Epoch 1/1:   0%|          | 4/1534 [01:04<6:47:26, 15.98s/it, loss=2.1309, avg_loss=2.4308, lr=2.61e-06]Epoch 1/1:   0%|          | 4/1534 [01:20<6:47:26, 15.98s/it, loss=2.4323, avg_loss=2.4311, lr=3.27e-06]Epoch 1/1:   0%|          | 5/1534 [01:20<6:42:21, 15.79s/it, loss=2.4323, avg_loss=2.4311, lr=3.27e-06]Epoch 1/1:   0%|          | 5/1534 [01:36<6:42:21, 15.79s/it, loss=2.4120, avg_loss=2.4279, lr=3.92e-06]Epoch 1/1:   0%|          | 6/1534 [01:36<6:48:13, 16.03s/it, loss=2.4120, avg_loss=2.4279, lr=3.92e-06]Epoch 1/1:   0%|          | 6/1534 [01:52<6:48:13, 16.03s/it, loss=2.5627, avg_loss=2.4472, lr=4.58e-06]Epoch 1/1:   0%|          | 7/1534 [01:52<6:44:58, 15.91s/it, loss=2.5627, avg_loss=2.4472, lr=4.58e-06]
