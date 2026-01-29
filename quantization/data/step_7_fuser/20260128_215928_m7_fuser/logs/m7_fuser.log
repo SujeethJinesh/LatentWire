@@ -15,3 +15,42 @@ Loading OpenHermes dataset (split: train)...
 Applied sequential batch filtering: 50000 -> 49571 samples
 Loaded 49571 samples
 Starting training…
+
+Evaluation loss at step 100: 1.0357
+
+Evaluation loss at step 200: 1.0079
+
+Evaluation loss at step 300: 0.9802
+
+Evaluation loss at step 400: 0.9732
+
+Evaluation loss at step 500: 0.9669
+
+Checkpoint saved at step 500
+
+Evaluation loss at step 600: 0.9655
+
+Evaluation loss at step 700: 0.9577
+
+Evaluation loss at step 800: 0.9595
+
+Evaluation loss at step 900: 0.9597
+
+Evaluation loss at step 1000: 0.9550
+
+Checkpoint saved at step 1000
+
+Evaluation loss at step 1100: 0.9500
+
+Evaluation loss at step 1200: 0.9488
+
+Evaluation loss at step 1300: 0.9495
+
+Evaluation loss at step 1400: 0.9502
+
+Evaluation loss at step 1500: 0.9505
+
+Checkpoint saved at step 1500
+Running end-of-epoch evaluation for epoch 1...
+Epoch 1 completed. Train loss: 0.9415 | Eval loss: 0.9502
+Training completed!
