@@ -937,38 +937,38 @@
   },
   "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align0": {
     "openbookqa": {
-      "status": "complete",
+      "status": "skipped",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7",
-      "config_hash": "c23d8db17de775cc3c0201a0f7ee2d582cb6e813",
-      "reason": "",
-      "timestamp": "2026-01-28T22:31:47.658864Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260129_063607_m7",
+      "config_hash": "471f002ca15199a6266c7a009a4d9e7c86d38076",
+      "reason": "skip_done",
+      "timestamp": "2026-01-29T06:36:35.850812Z"
     },
     "ai2-arc": {
-      "status": "complete",
+      "status": "skipped",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260128_223001_m7",
-      "config_hash": "dff63e71c0913d86c5090a15b406e9dc5c2e809a",
-      "reason": "",
-      "timestamp": "2026-01-28T22:34:18.502898Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260129_063607_m7",
+      "config_hash": "9dded093b31ec5a1a8d66aafaa2e192968d3f055",
+      "reason": "skip_done",
+      "timestamp": "2026-01-29T06:36:39.882613Z"
     }
   },
   "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align1": {
     "openbookqa": {
-      "status": "complete",
+      "status": "skipped",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_223001_m7",
-      "config_hash": "49e512f7d732d5cdf106e89bbfcc49157a1d105b",
-      "reason": "",
-      "timestamp": "2026-01-28T22:39:23.415836Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260129_063607_m7",
+      "config_hash": "c98d1c898e228768f8b31612600d8e3bcce5a884",
+      "reason": "skip_done",
+      "timestamp": "2026-01-29T06:36:55.826427Z"
     },
     "ai2-arc": {
-      "status": "complete",
+      "status": "skipped",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260128_223001_m7",
-      "config_hash": "960bb759d2fbc87ed715ab0a1ac6f7cea5fc5f47",
-      "reason": "",
-      "timestamp": "2026-01-28T22:51:01.791251Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260129_063607_m7",
+      "config_hash": "f6f87e258fa3128c7778c75c02701443923e1f54",
+      "reason": "skip_done",
+      "timestamp": "2026-01-29T06:37:00.218063Z"
     }
   },
   "m5|qat|int8": {
