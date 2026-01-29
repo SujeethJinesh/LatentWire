@@ -1,0 +1,5 @@
+{
+  "output_dir": "/workspace/c2c_checkpoints/qat_20260129_074456_m5",
+  "config_path": "/workspace/LatentWire/quantization/data/step_5_qat/step5_qat_20260129_074456_m5/configs/m5_train.json",
+  "timestamp": "2026-01-29T14:43:21.182045Z"
+}\n

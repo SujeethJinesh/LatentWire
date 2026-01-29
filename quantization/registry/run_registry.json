@@ -973,20 +973,20 @@
   },
   "m5|qat|int8": {
     "openbookqa": {
-      "status": "invalid",
+      "status": "complete",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260128_202927_m5",
-      "config_hash": "9aeeae8c8a9dd1ce32d005b3614a540ef4c1d0e3",
-      "reason": "qat_smoke_only",
-      "timestamp": "2026-01-28T20:48:24.103516Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260129_074456_m5",
+      "config_hash": "08379d9fec25e56673022005f8bb5cea0dbca715",
+      "reason": "",
+      "timestamp": "2026-01-29T15:00:40.288229Z"
     },
     "ai2-arc": {
-      "status": "invalid",
+      "status": "complete",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260128_202927_m5",
-      "config_hash": "6e5d97cb9647145b2351d68ae01b87cbc435e1e1",
-      "reason": "qat_smoke_only",
-      "timestamp": "2026-01-28T20:58:50.840744Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260129_074456_m5",
+      "config_hash": "dad2e33ea3d645075fe5c4ad9e13946845daa22b",
+      "reason": "",
+      "timestamp": "2026-01-29T15:11:13.299394Z"
     }
   }
 }
