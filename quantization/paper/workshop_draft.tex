@@ -160,6 +160,21 @@ Hetero pair (Qwen3$\rightarrow$Llama3.2, align on) & 44.2 & 47.8 \\
 \end{table}
 For SparseC2C (token selection), vnorm/knorm scoring preserves accuracy under aggressive token budgets. At p=0.5, INT8 vnorm achieves 52.4/56.2 (OpenBookQA/ARC-C) while front pruning drops to 44.8/47.6. Full grids are reported in the main-conference track.
 
+\paragraph{Receiver-aware delta selection (M9).}
+Let $(\widehat K^{\ell}, \widehat V^{\ell}) = P_{\ell}(K^{S,m}, V^{S,m}; K^{R,\ell}, V^{R,\ell})$ be the projected cache in receiver space (using the same quantize$\rightarrow$dequantize path as transfer). We score each token by its marginal update:
+\[
+u^{\ell}(t)=\mathbb{E}_{b,h}\left[\left\lVert \widehat V^{\ell}_{b,h,t}-V^{R,\ell}_{b,h,t}\right\rVert_2\right],
+\qquad
+I_{\ell}=\text{TopK}\big(u^{\ell}(t),\lfloor pT\rfloor\big).
+\]
+
+\paragraph{RD-C2C (M10).}
+Under a byte budget $R$, assign each token $a_t\in\{\text{drop},\text{int4},\text{int8}\}$ with cost $r(a_t)$ and distortion $D_t(a_t)$:
+\[
+\min_{\{a_t\}}\sum_{t=1}^{T}D_t(a_t)\quad\text{s.t.}\quad\sum_{t=1}^{T}r(a_t)\le R,
+\]
+with $D_t(\text{drop})=\lVert \widehat V^{\ell}_t - V^{R,\ell}_t\rVert_2^2$ and $D_t(\text{intb})=\lVert \widehat V^{\ell}_t-\widehat V^{\ell,(b)}_t\rVert_2^2$. We use a deterministic greedy allocator (int8$\rightarrow$int4$\rightarrow$drop) by $u^{\ell}(t)$.
+
 \section{Discussion}
 Quantized C2C provides large bandwidth reductions with limited accuracy drop. Cache pruning further improves the tradeoff, suggesting a practical path to deployable multi-LLM communication. A main-conference path includes QAT recovery, mixed-precision schedules, heterogeneous model pairs, and SparseC2C token selection.
 

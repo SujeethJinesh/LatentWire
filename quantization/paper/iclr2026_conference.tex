@@ -167,6 +167,22 @@ Hetero pair (Qwen3$\rightarrow$Llama3.2, align on) & 44.2 & 47.8 \\
 \end{table}
 For SparseC2C (token selection), vnorm/knorm scoring preserves accuracy under aggressive token budgets. At p=0.5, INT8 vnorm achieves 52.4/56.2 (OpenBookQA/ARC-C) while front pruning drops to 44.8/47.6. INT4 vnorm remains strong at 52.0/56.3. Full grids across selection modes (front, random, proj\_vnorm, knorm, vnorm) are reported.
 
+\paragraph{Receiver-aware delta selection (M9).}
+Let $(K^{R,\ell}, V^{R,\ell})$ be the receiver cache and $(K^{S,m}, V^{S,m})$ the sharer cache mapped to layer $\ell$ by C2C. Let $(\widehat K^{\ell}, \widehat V^{\ell}) = P_{\ell}(K^{S,m}, V^{S,m}; K^{R,\ell}, V^{R,\ell})$ be the projected cache in receiver space using the same quantize$\rightarrow$dequantize path as transfer. We score each token by its marginal update magnitude:
+\[
+u^{\ell}(t)=\mathbb{E}_{b,h}\left[\left\lVert \widehat V^{\ell}_{b,h,t}-V^{R,\ell}_{b,h,t}\right\rVert_2\right],
+\qquad
+I_{\ell}=\text{TopK}\big(u^{\ell}(t),\lfloor pT\rfloor\big).
+\]
+This directly targets receiver-space redundancy and is aligned with residual-style fusion.
+
+\paragraph{RD-C2C (M10).}
+Under a byte budget $R$, we assign each token an action $a_t\in\{\text{drop},\text{int4},\text{int8}\}$ with cost $r(a_t)$ and distortion $D_t(a_t)$. We solve
+\[
+\min_{\{a_t\}}\sum_{t=1}^{T}D_t(a_t)\quad\text{s.t.}\quad\sum_{t=1}^{T}r(a_t)\le R,
+\]
+with $D_t(\text{drop})=\lVert \widehat V^{\ell}_t - V^{R,\ell}_t\rVert_2^2$ and $D_t(\text{intb})=\lVert \widehat V^{\ell}_t-\widehat V^{\ell,(b)}_t\rVert_2^2$. A deterministic greedy allocator (int8$\rightarrow$int4$\rightarrow$drop by $u^\ell(t)$) yields a practical rate--distortion schedule.
+
 \begin{table}[ht]
 \centering
 \caption{SparseC2C token selection at p=0.5 (prompt-only, sparse fuse).}
