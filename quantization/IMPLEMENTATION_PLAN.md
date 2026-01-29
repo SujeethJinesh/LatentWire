@@ -615,6 +615,132 @@ kv_transfer_config:
 
 ---
 
+## Milestone 9: Delta-Selective Transfer (Receiver-Redundancy Token Scoring)
+**What**  
+Add a new token selection mode that ranks tokens by **marginal update in receiver space**:
+`token_select_mode: delta_proj_vnorm_topk`.
+
+**Why**  
+M8 importance scores (vnorm/proj_vnorm) do not account for **redundancy with the receiver**. If the projected sharer token is already represented in the receiver KV, transmitting it is wasted bandwidth. Delta scoring should improve **accuracy per byte** at low token budgets.
+
+**How**  
+Compute full projection once, then score each token by the mean L2 norm of `(proj_v - base_v)` across batch/head. Select top-k tokens and reuse the existing sparse-fuse path.
+
+**Implementation (code changes)**  
+- `rosetta/model/wrapper.py`: in `RosettaModel._project_with_transfer`, add a branch for `delta_proj_vnorm_topk` that:
+  - applies the same quantize→dequantize path used in transfer **before scoring** (so selection matches the actual channel);
+  - computes `proj_key_full, proj_val_full = projector.forward(source_kv_cache, base_kv_cache)` once;
+  - computes scores: `scores = norm((proj_val_full - base_value_cache).float(), dim=-1).mean(dim=(0,1))`;
+  - applies `token_select_scope` mask before top-k (prompt/instruction/all);
+  - **reuses** `proj_*_full` for fusion (gather selected indices) to avoid a second projection pass;
+  - uses existing top-k selection + gather + sparse-fuse/scatter;
+  - caches indices + score stats in `transfer_cache` and sorts indices deterministically.
+- `rosetta/utils/kv_select.py`: reuse the top-k helper; add guard rails for `token_select_min_tokens` and masked positions.
+- `quantization/scripts/run_step1_kv_ptq.py` + configs: expose new mode in CLI/config; ensure manifests include the new selection mode.
+- `quantization/scripts/analyze_budget_curve.py`: include delta mode in plots/CSV and account for index/scale overhead in bytes.
+
+**Masking order (avoid confounds)**  
+- Apply masks in this order: **scope mask → optional kv_cache_proportion within scope → score → top-k**.  
+- Do not combine M3 `kv_cache_proportion` with M9 selection in main tables unless explicitly stated.
+
+**Token minimums (avoid hidden budgets)**  
+- For M9/M10 experiments, set `token_select_min_tokens=1` (or a tiny % of prompt length).  
+- Use `token_select_min_tokens=64` only for stability/debug runs, not for headline curves.
+
+**Telemetry (M9)**  
+- Selection: `selected_tokens`, `total_tokens`, `selected_fraction`, `score_mean/min/max`.  
+- Overhead: `projection_score_time_ms`, `selection_time_ms`, `projection_transfer_time_ms`, `fuse_time_ms`, `end_to_end_prefill_ms`.  
+- Bytes: payload + index bytes + scale overhead (effective bytes/elem).
+
+**Milestone 9 phases (required)**  
+- **M9-P0 (Design lock)**: scope = prompt; proportions = {1.0, 0.5, 0.25, 0.10}; modes = {vnorm_topk, proj_vnorm_topk, delta_proj_vnorm_topk}.  
+- **M9-P1 (Implementation)**: add the new mode in `wrapper.py`, expose in configs/CLI, and log telemetry fields.  
+- **M9-P2 (Correctness)**:  
+  - with `proportion=1.0`, outputs must match M8 (exact answers);  
+  - selection stats must report 100% coverage (selected_fraction=1.0).  
+- **M9-P3 (Perf/overhead check)**: measure selection + projection overhead on 50 samples; if overhead is too high, restrict scope to prompt/instruction tokens.  
+- **M9-P4 (GPU smoke)**: 50 samples at {0.25, 0.10} on OpenBookQA.  
+- **M9-P5 (Full GPU grid)**: OpenBookQA + ARC-C for {1.0, 0.5, 0.25, 0.10} with {vnorm, proj_vnorm, delta_proj_vnorm}.  
+- **M9-P5b (Very-low budget)**: add p=0.05 for **delta only** on one dataset (OpenBookQA) to show extreme-budget behavior.  
+- **M9-P6 (Hetero spot check)**: at least one low-budget point (0.25 or 0.10) on Qwen3 <- Llama3.2 to confirm benefit under heterogeneity.  
+- **M9-P7 (Analysis)**: update budget curves + golden summary; report deltas at low budgets.
+
+**Expected outcome**  
+- Delta scoring should beat vnorm/proj_vnorm at lower budgets (<= 0.25), especially for hetero pairs.
+
+**Notes / risks**  
+- Requires full projection to score tokens (extra overhead). If too slow, score only prompt/instruction tokens or subsample tokens when scoring.
+
+---
+
+## Milestone 10: RD-C2C (Token x Precision Rate-Distortion Scheduling)
+**What**  
+Under a fixed communication budget, jointly decide **which tokens** to transmit and **what precision** (drop/int4/int8) per token.
+
+**Why**  
+Selection alone (M9) leaves efficiency on the table. Mixed precision at token level should improve the **accuracy-bytes frontier** beyond fixed-precision selection.
+
+**How (high level)**  
+Use M9 delta scores as utility and assign each token to {drop, int4, int8} to meet a **byte budget** using a deterministic greedy allocator. The allocator should be stable under ties and enforce the exact budget (including overhead).
+
+**Implementation (code changes)**  
+- Config keys (kv_transfer_config):
+  - `token_precision_mode: rd_greedy`
+  - `token_precision_candidates: [drop, int4, int8]`
+  - `token_precision_budget_bits_per_elem: <float>` (derived; log only)
+  - `token_precision_budget_bytes: <float>` (primary budget)
+  - `token_precision_calib_n: 64`
+  - `token_precision_scope: prompt` (align with token_select_scope by default)
+- In `wrapper.py`:
+  - compute token scores from M9;
+  - **RD-Greedy v0**: sort by Δ score (stable sort by score, then index), fill budget with int8 → int4 → drop;
+  - enforce `bytes(I8,int8) + bytes(I4,int4) + index/scale overhead ≤ token_precision_budget_bytes`;
+  - project/fuse each group separately:
+    - int8 group: kv_quant_scheme=int8
+    - int4 group: kv_quant_scheme=int4
+    - drop group: receiver cache only (no projection)
+  - scatter into full cache; ensure group ordering is deterministic.
+- Calibration (lightweight):
+  - estimate relative distortion scales for int4/int8 from a small calibration subset; store scalars in manifest so runs are reproducible.
+- `analyze_budget_curve.py`:
+  - compute effective bits/elem for mixed precision;
+  - log group counts and bytes.
+
+**Budget definition (required)**  
+- Define `B_total_bytes` as a fraction of **full-transfer bytes** (payload + index + scale).  
+- The allocator must satisfy `bytes(I8,int8) + bytes(I4,int4) + overhead ≤ B_total_bytes`.  
+- `token_precision_budget_bits_per_elem` is a derived diagnostic, not the primary budget.
+
+**Baseline reduction (required sanity)**  
+- RD-C2C with candidates `{drop,int8}` must reduce to M9 delta selection at the equivalent byte budget (up to rounding).
+
+**Projection grouping sanity**  
+- Validate that projecting tokens as groups vs projecting all tokens as one group yields negligible differences for `proportion=1.0` (document any discrepancies).
+
+**Telemetry (M10)**  
+- Group counts: `tokens_drop`, `tokens_int4`, `tokens_int8`, `effective_bits_per_elem`.  
+- Overhead: allocation time, projection time by group.  
+- Budget accounting: payload + index bytes + scale overhead.
+
+**Milestone 10 phases (required)**  
+- **M10-P0 (Design lock)**: budgets = {1/32, 1/16, 1/8, 1/4} of full-transfer bytes; candidates = {drop,int4,int8}.  
+- **M10-P1 (Allocator)**: implement the deterministic greedy solver and log assignment stats + effective bits.  
+- **M10-P2 (Local sanity)**: 1–5 samples to validate group assignment + scatter; verify budget accounting equals target.  
+- **M10-P3 (GPU smoke)**: 50 samples at 1/8 budget on OpenBookQA.  
+- **M10-P4 (Full GPU grid)**: OpenBookQA + ARC-C for {1/32, 1/16, 1/8, 1/4}, compare fixed-int8 vs RD (drop,int4,int8).  
+- **M10-P5 (Hetero spot check)**: one budget point at 1/8 on Qwen3 <- Llama3.2.  
+- **M10-P6 (Analysis)**: report Pareto frontier vs fixed-int8 selection and update budget curves.
+**M10 evaluation note**  
+- M10 budget runs **ignore** `token_select_proportion`; the allocator chooses group sizes to meet the byte budget.
+
+**Expected outcome**  
+- RD-C2C should improve accuracy at the same bytes (or reduce bytes at the same accuracy) compared to fixed-precision selection.
+
+**Notes / risks**  
+- Requires stable distortion estimates; if noisy, increase `token_precision_calib_n` or use per-layer calibration.
+
+---
+
 # Experiment Matrix (Merged)
 
 ## A. Baselines (Milestone 0)
@@ -651,13 +777,24 @@ kv_transfer_config:
 | E1 | Qwen3‑0.6B ← Llama3.2‑1B | ARC‑C | C2C + PTQ | INT8 | full | no |
 | E2 | Qwen3‑0.6B ← Gemma‑3‑1B‑IT | ARC‑C | C2C + PTQ | INT8 | full | no |
 
+## F. Delta Selection + RD-C2C (Milestones 9–10)
+| ID | Model Pair | Dataset | Method | Precision | Token Budget | Train |
+|---|---|---|---|---|---|---|
+| F1 | Qwen3‑0.6B <- Qwen2.5‑0.5B | OpenBookQA | Delta selection | INT8 | 0.25 | no |
+| F2 | Qwen3‑0.6B <- Qwen2.5‑0.5B | ARC‑C | Delta selection | INT8 | 0.25 | no |
+| F3 | Qwen3‑0.6B <- Qwen2.5‑0.5B | OpenBookQA | RD‑C2C | mixed (drop/int4/int8) | 1/8 | no |
+| F4 | Qwen3‑0.6B <- Qwen2.5‑0.5B | ARC‑C | RD‑C2C | mixed (drop/int4/int8) | 1/8 | no |
+| F5 | Qwen3‑0.6B <- Llama3.2‑1B | OpenBookQA | Delta selection | INT8 | 0.25 | no |
+| F6 | Qwen3‑0.6B <- Llama3.2‑1B | OpenBookQA | RD‑C2C | mixed (drop/int4/int8) | 1/8 | no |
+
 ---
 
 ## Workshop vs Main‑Conference Path
 - **Workshop**: Milestones 0 → 1 → 2 → 3 → 4 (baseline + PTQ + pruning + budget curve).
 - **Main‑conf**: Workshop path + M5 (QAT) + M6 (mixed precision) + **systems measurements** (bandwidth/latency or bit‑packing).  
-  - **M7 (heterogeneity)** is recommended if time allows; otherwise move to appendix.  
-  - **M8 (token‑level sparse C2C)** is a strong main‑conf differentiator if bandwidth permits.
+  - **M7 (heterogeneity)** is required (at least one cross‑family pair with alignment on).  
+  - **M8 (token‑level sparse C2C)** is required.  
+  - **M9/M10 (delta selection + RD‑C2C)** are required.
 
 ## Potential Improvements / Follow‑ups
 - **Byte accounting**: include per‑head scale metadata in “bytes transferred” so INT8/INT4 are not under‑counted.
