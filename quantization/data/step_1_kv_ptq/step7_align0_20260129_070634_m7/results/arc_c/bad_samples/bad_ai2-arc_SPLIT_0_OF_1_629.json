@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 629,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7082443",
+    "question": "Which statement is an opinion about the element copper?",
+    "choices": {
+      "text": [
+        "Copper is a good conductor of electricity.",
+        "Copper mixed with silver is expensive.",
+        "Copper can be pounded into many shapes.",
+        "Copper is an excellent conductor of heat."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement is an opinion about the element copper?\n\nChoices:\nA. Copper is a good conductor of electricity.\nB. Copper mixed with silver is expensive.\nC. Copper can be pounded into many shapes.\nD. Copper is an excellent conductor of heat.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 474,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "WASL_2005_8_12",
+    "question": "In your garden, you want to plant marigolds all around your pepper plants because you read that this flower repels whiteflies. How can you test to see if marigolds really do repel whiteflies?",
+    "choices": {
+      "text": [
+        "Count the number of whiteflies on the peppers before and after planting marigolds.",
+        "Count the number of whiteflies on the marigolds near the peppers.",
+        "Kill the whiteflies on other plants in the garden except on the peppers.",
+        "Put whiteflies on other garden plants and see what happens."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn your garden, you want to plant marigolds all around your pepper plants because you read that this flower repels whiteflies. How can you test to see if marigolds really do repel whiteflies?\n\nChoices:\nA. Count the number of whiteflies on the peppers before and after planting marigolds.\nB. Count the number of whiteflies on the marigolds near the peppers.\nC. Kill the whiteflies on other plants in the garden except on the peppers.\nD. Put whiteflies on other garden plants and see what happens.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

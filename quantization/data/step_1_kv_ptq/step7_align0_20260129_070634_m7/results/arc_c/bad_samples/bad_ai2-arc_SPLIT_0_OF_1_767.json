@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 767,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_412605",
+    "question": "Nevada's annual precipitation averages between 21 and 24 cm. In comparison, Washington state averages between 96 and 97 cm of precipitation per year. Which of these factors has the greatest impact on the difference in precipitation between these two states?",
+    "choices": {
+      "text": [
+        "the relative sizes of each state",
+        "the types of industry found in each state",
+        "the location of each state on the continent",
+        "the relative frequency of volcanic activity in each state"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nNevada's annual precipitation averages between 21 and 24 cm. In comparison, Washington state averages between 96 and 97 cm of precipitation per year. Which of these factors has the greatest impact on the difference in precipitation between these two states?\n\nChoices:\nA. the relative sizes of each state\nB. the types of industry found in each state\nC. the location of each state on the continent\nD. the relative frequency of volcanic activity in each state\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

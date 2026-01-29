@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 516,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_416505",
+    "question": "A scientist uses a special chemical marker to label some amino acids. He follows the marker until it becomes part of a large molecule in a cell. Which molecule does he find the chemical marker on?",
+    "choices": {
+      "text": [
+        "a lipid in a membrane",
+        "an enzyme in a lysosome",
+        "a polysaccharide in a cell wall",
+        "a DNA molecule in a mitochondrion"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA scientist uses a special chemical marker to label some amino acids. He follows the marker until it becomes part of a large molecule in a cell. Which molecule does he find the chemical marker on?\n\nChoices:\nA. a lipid in a membrane\nB. an enzyme in a lysosome\nC. a polysaccharide in a cell wall\nD. a DNA molecule in a mitochondrion\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

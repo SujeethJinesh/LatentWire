@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 496,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7064260",
+    "question": "When using a map of the world, a scientist must recognize that a map is a",
+    "choices": {
+      "text": [
+        "two dimensional representation of a one dimensional surface.",
+        "two dimensional representation of a three dimensional surface.",
+        "one dimensional representation of a two dimensional surface.",
+        "three dimensional representation of a two dimensional surface."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhen using a map of the world, a scientist must recognize that a map is a\n\nChoices:\nA. two dimensional representation of a one dimensional surface.\nB. two dimensional representation of a three dimensional surface.\nC. one dimensional representation of a two dimensional surface.\nD. three dimensional representation of a two dimensional surface.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

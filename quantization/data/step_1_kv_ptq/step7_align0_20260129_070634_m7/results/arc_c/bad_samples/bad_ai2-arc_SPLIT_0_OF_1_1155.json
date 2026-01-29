@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1155,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MDSA_2008_8_27",
+    "question": "Rossby waves are slow-moving, long ocean waves. What feature of a Rossby wave would change if the wavelength was doubled?",
+    "choices": {
+      "text": [
+        "The amplitude would double.",
+        "The frequency would double.",
+        "The amplitude would decrease by half.",
+        "The frequency would decrease by half."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nRossby waves are slow-moving, long ocean waves. What feature of a Rossby wave would change if the wavelength was doubled?\n\nChoices:\nA. The amplitude would double.\nB. The frequency would double.\nC. The amplitude would decrease by half.\nD. The frequency would decrease by half.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

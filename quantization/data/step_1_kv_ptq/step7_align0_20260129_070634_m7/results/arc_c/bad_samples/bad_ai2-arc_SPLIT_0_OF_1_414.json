@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 414,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7223160",
+    "question": "A sample of an unknown substance has a volume that is independent of its container. Which additional information is needed to determine the state of the sample?",
+    "choices": {
+      "text": [
+        "the mass of the sample",
+        "the density of the sample",
+        "whether the sample has a fixed shape",
+        "whether the sample conducts electricity"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA sample of an unknown substance has a volume that is independent of its container. Which additional information is needed to determine the state of the sample?\n\nChoices:\nA. the mass of the sample\nB. the density of the sample\nC. whether the sample has a fixed shape\nD. whether the sample conducts electricity\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

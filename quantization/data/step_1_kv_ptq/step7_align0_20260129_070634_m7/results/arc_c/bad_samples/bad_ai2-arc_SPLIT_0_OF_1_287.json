@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 287,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MCAS_2004_9_5",
+    "question": "The voltage is held constant in an electric circuit. What will happen to the current in this circuit if the resistance is doubled?",
+    "choices": {
+      "text": [
+        "The current will be tripled.",
+        "The current will be doubled.",
+        "The current will be cut in half.",
+        "The current will stay the same."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe voltage is held constant in an electric circuit. What will happen to the current in this circuit if the resistance is doubled?\n\nChoices:\nA. The current will be tripled.\nB. The current will be doubled.\nC. The current will be cut in half.\nD. The current will stay the same.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

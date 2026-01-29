@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 743,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7187373",
+    "question": "Some non-native plants can adapt to their environments more quickly than some native plants or crops can. Which adaptation would most likely decrease a plant's ability to survive?",
+    "choices": {
+      "text": [
+        "having a large number of seeds",
+        "having a resistance to herbicides",
+        "having roots that develop rapidly",
+        "having leaves that form at a slow rate"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome non-native plants can adapt to their environments more quickly than some native plants or crops can. Which adaptation would most likely decrease a plant's ability to survive?\n\nChoices:\nA. having a large number of seeds\nB. having a resistance to herbicides\nC. having roots that develop rapidly\nD. having leaves that form at a slow rate\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

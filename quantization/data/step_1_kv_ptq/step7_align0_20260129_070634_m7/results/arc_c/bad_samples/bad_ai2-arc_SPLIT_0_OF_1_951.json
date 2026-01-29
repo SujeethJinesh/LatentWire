@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 951,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MCAS_2013_8_29435",
+    "question": "Which of the following is the most efficient way to transport large amounts of coal from a mine in Kentucky to a power plant in Arizona?",
+    "choices": {
+      "text": [
+        "by ship",
+        "by train",
+        "by truck",
+        "by airplane"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich of the following is the most efficient way to transport large amounts of coal from a mine in Kentucky to a power plant in Arizona?\n\nChoices:\nA. by ship\nB. by train\nC. by truck\nD. by airplane\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 790,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "ACTAAP_2013_7_2",
+    "question": "Why is the structure of a sperm cell very different from the structure of an egg cell?",
+    "choices": {
+      "text": [
+        "A sperm cell must move in order to reach the egg cell.",
+        "An egg cell must divide into many separate sperm cells.",
+        "An egg cell must move in order to reach the sperm cell.",
+        "A sperm cell must combine with many different egg cells."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhy is the structure of a sperm cell very different from the structure of an egg cell?\n\nChoices:\nA. A sperm cell must move in order to reach the egg cell.\nB. An egg cell must divide into many separate sperm cells.\nC. An egg cell must move in order to reach the sperm cell.\nD. A sperm cell must combine with many different egg cells.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

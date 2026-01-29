@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 419,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "9-461",
+    "question_stem": "Steve was driving on the highway when he rear-ended another car because he didn't see it until he was just a foot away. This could have happened because of",
+    "choices": {
+      "text": [
+        "reports of tornadoes in the area",
+        "a dog running across the highway behind Steve's car",
+        "a sudden fog moving into the area",
+        "ice forming on the road"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nSteve was driving on the highway when he rear-ended another car because he didn't see it until he was just a foot away. This could have happened because of\n\nChoices:\nA. reports of tornadoes in the area\nB. a dog running across the highway behind Steve's car\nC. a sudden fog moving into the area\nD. ice forming on the road\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 357,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_402207",
+    "question": "A 60-kg man and a 25-kg boy, both on roller skates, push off of each other using their hands. Which of these describes the motion of the two people?",
+    "choices": {
+      "text": [
+        "The man moves farther and faster than the boy.",
+        "The boy moves farther and faster than the man.",
+        "The man moves farther but the same speed as the boy.",
+        "The boy moves faster but the same distance as the man."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA 60-kg man and a 25-kg boy, both on roller skates, push off of each other using their hands. Which of these describes the motion of the two people?\n\nChoices:\nA. The man moves farther and faster than the boy.\nB. The boy moves farther and faster than the man.\nC. The man moves farther but the same speed as the boy.\nD. The boy moves faster but the same distance as the man.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

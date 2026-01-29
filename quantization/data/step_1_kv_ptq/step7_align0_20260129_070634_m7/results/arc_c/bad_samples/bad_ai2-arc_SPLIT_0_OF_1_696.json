@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 696,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_400985",
+    "question": "Which method is the safest way to watch an eclipse of the Sun?",
+    "choices": {
+      "text": [
+        "Turn away after two or three minutes.",
+        "Look at the Sun through a long telescope.",
+        "Cast an image through a pinhole onto a screen.",
+        "Blink often until your eyes get used to the light."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich method is the safest way to watch an eclipse of the Sun?\n\nChoices:\nA. Turn away after two or three minutes.\nB. Look at the Sun through a long telescope.\nC. Cast an image through a pinhole onto a screen.\nD. Blink often until your eyes get used to the light.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

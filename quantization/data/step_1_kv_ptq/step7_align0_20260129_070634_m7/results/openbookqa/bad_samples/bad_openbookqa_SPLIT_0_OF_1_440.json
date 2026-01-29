@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 440,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "1126",
+    "question_stem": "Water can turn to vapor",
+    "choices": {
+      "text": [
+        "when a pot of water is placed on an off stove burner",
+        "when placing water in a freezer",
+        "when boiling eggs on a stove top",
+        "when placed in a room temperature setting"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWater can turn to vapor\n\nChoices:\nA. when a pot of water is placed on an off stove burner\nB. when placing water in a freezer\nC. when boiling eggs on a stove top\nD. when placed in a room temperature setting\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

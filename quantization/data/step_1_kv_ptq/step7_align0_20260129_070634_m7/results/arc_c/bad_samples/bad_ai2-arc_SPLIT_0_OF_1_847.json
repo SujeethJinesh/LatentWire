@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 847,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7190120",
+    "question": "A hill in the rain forest was once completely covered with trees. A logging company cut down all of the trees. Which is a form of environmental degradation that will most likely result because of the cutting down of trees?",
+    "choices": {
+      "text": [
+        "There will be more biodiversity.",
+        "The soil will be stripped of its minerals.",
+        "The air will be depleted of carbon dioxide.",
+        "There will be more oxygen released into the air."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA hill in the rain forest was once completely covered with trees. A logging company cut down all of the trees. Which is a form of environmental degradation that will most likely result because of the cutting down of trees?\n\nChoices:\nA. There will be more biodiversity.\nB. The soil will be stripped of its minerals.\nC. The air will be depleted of carbon dioxide.\nD. There will be more oxygen released into the air.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

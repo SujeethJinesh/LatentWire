@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 91,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "FCAT_2008_5_2",
+    "question": "The stem is an important part of many plants. Which of the following is most similar to the role performed by the stem of a plant?",
+    "choices": {
+      "text": [
+        "an anchor holding a boat in place",
+        "a snack company producing energy bars",
+        "a colorful sign attracting people into a store",
+        "an elevator transporting supplies from one floor to another"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe stem is an important part of many plants. Which of the following is most similar to the role performed by the stem of a plant?\n\nChoices:\nA. an anchor holding a boat in place\nB. a snack company producing energy bars\nC. a colorful sign attracting people into a store\nD. an elevator transporting supplies from one floor to another\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

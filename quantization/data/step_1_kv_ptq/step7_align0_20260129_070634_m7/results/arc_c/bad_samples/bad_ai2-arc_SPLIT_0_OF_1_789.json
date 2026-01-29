@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 789,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7203560",
+    "question": "Black-and-white warblers migrate from their breeding range in Canada to southern Florida for the winter. Which is most likely to occur if environmental factors limit the number of female warblers that return to Canada?",
+    "choices": {
+      "text": [
+        "Fewer young warblers will hatch in the spring.",
+        "Warbler breeding season will start earlier.",
+        "Warblers will have a larger selection of mates.",
+        "Genetic diversity will increase among warblers."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nBlack-and-white warblers migrate from their breeding range in Canada to southern Florida for the winter. Which is most likely to occur if environmental factors limit the number of female warblers that return to Canada?\n\nChoices:\nA. Fewer young warblers will hatch in the spring.\nB. Warbler breeding season will start earlier.\nC. Warblers will have a larger selection of mates.\nD. Genetic diversity will increase among warblers.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

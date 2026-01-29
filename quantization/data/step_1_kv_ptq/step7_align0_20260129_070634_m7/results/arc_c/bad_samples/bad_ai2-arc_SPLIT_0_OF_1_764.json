@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 764,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7033845",
+    "question": "Which is the most likely reason that using energy generated from wind is better for air quality than burning fossil fuels?",
+    "choices": {
+      "text": [
+        "the equipment for harnessing wind is inexpensive",
+        "wind produces less pollution than fossil fuels",
+        "energy from wind power is easy to store",
+        "wind is more efficient than fossil fuels"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich is the most likely reason that using energy generated from wind is better for air quality than burning fossil fuels?\n\nChoices:\nA. the equipment for harnessing wind is inexpensive\nB. wind produces less pollution than fossil fuels\nC. energy from wind power is easy to store\nD. wind is more efficient than fossil fuels\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 993,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MCAS_2014_8_16",
+    "question": "Just before sunset, a student recorded the temperature of the air and the soil at the same location. The student found that the air and the soil had the same temperature. Which of the following statements describes how the air and soil temperatures most likely changed after sunset on that day?",
+    "choices": {
+      "text": [
+        "The soil temperature increased more quickly than the air temperature.",
+        "The air temperature increased more quickly than the soil temperature.",
+        "The soil temperature decreased more quickly than the air temperature.",
+        "The air temperature decreased more quickly than the soil temperature."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nJust before sunset, a student recorded the temperature of the air and the soil at the same location. The student found that the air and the soil had the same temperature. Which of the following statements describes how the air and soil temperatures most likely changed after sunset on that day?\n\nChoices:\nA. The soil temperature increased more quickly than the air temperature.\nB. The air temperature increased more quickly than the soil temperature.\nC. The soil temperature decreased more quickly than the air temperature.\nD. The air temperature decreased more quickly than the soil temperature.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 634,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_410026",
+    "question": "In Australia, mid-day temperatures can soar to over 110°F (43°C). In order to keep their bodies cool, kangaroos lick their arms, coating them with a thick layer of saliva. As the saliva evaporates, it acts as a cooling mechanism and lowers the kangaroo's body temperature. Which term best describes this activity?",
+    "choices": {
+      "text": [
+        "natural selection",
+        "defense mechanism",
+        "structural adaptation",
+        "behavioral adaptation"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn Australia, mid-day temperatures can soar to over 110°F (43°C). In order to keep their bodies cool, kangaroos lick their arms, coating them with a thick layer of saliva. As the saliva evaporates, it acts as a cooling mechanism and lowers the kangaroo's body temperature. Which term best describes this activity?\n\nChoices:\nA. natural selection\nB. defense mechanism\nC. structural adaptation\nD. behavioral adaptation\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

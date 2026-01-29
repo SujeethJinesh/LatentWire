@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 172,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "AIMS_2008_8_6",
+    "question": "Which environmental risk is not associated with the disposal of used motor oil from cars?",
+    "choices": {
+      "text": [
+        "It is insoluble and difficult to clean up.",
+        "It dissolves in water and causes acid rain.",
+        "It enter storm drains and contaminates surface water.",
+        "It leaks onto the ground and contaminates soil and ground water."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich environmental risk is not associated with the disposal of used motor oil from cars?\n\nChoices:\nA. It is insoluble and difficult to clean up.\nB. It dissolves in water and causes acid rain.\nC. It enter storm drains and contaminates surface water.\nD. It leaks onto the ground and contaminates soil and ground water.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 672,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7094133",
+    "question": "What process causes igneous rock to transform into metamorphic rock?",
+    "choices": {
+      "text": [
+        "deposition in water",
+        "slow cooling and crystallization",
+        "weathering and erosion",
+        "exposure to heat and high pressure"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat process causes igneous rock to transform into metamorphic rock?\n\nChoices:\nA. deposition in water\nB. slow cooling and crystallization\nC. weathering and erosion\nD. exposure to heat and high pressure\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 725,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_LBS10932",
+    "question": "A scientist lost the cap to an ammonia bottle, so she moved the ammonia into a clean container with a lid. What else should she do to be safe?",
+    "choices": {
+      "text": [
+        "Recycle the old ammonia bottle.",
+        "Label the new container clearly.",
+        "Heat the new container to seal the lid.",
+        "Store the new container in the refrigerator."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA scientist lost the cap to an ammonia bottle, so she moved the ammonia into a clean container with a lid. What else should she do to be safe?\n\nChoices:\nA. Recycle the old ammonia bottle.\nB. Label the new container clearly.\nC. Heat the new container to seal the lid.\nD. Store the new container in the refrigerator.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 93,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MCAS_2014_8_20",
+    "question": "The students in a class would like to make 20 paper sailboats for a race. The students will select one design and collect the materials they need to construct the boats. Which of the following is the best way for the students to be sure the paper sailboats will float without tipping over in the water?",
+    "choices": {
+      "text": [
+        "construct a prototype of a boat for testing",
+        "calculate the total mass of all of the finished boats",
+        "determine the total amount of weight each boat can carry",
+        "test the strength of each material used to construct the boats"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe students in a class would like to make 20 paper sailboats for a race. The students will select one design and collect the materials they need to construct the boats. Which of the following is the best way for the students to be sure the paper sailboats will float without tipping over in the water?\n\nChoices:\nA. construct a prototype of a boat for testing\nB. calculate the total mass of all of the finished boats\nC. determine the total amount of weight each boat can carry\nD. test the strength of each material used to construct the boats\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

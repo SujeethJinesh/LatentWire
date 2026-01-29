@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 705,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7094308",
+    "question": "Several species of fish live in a classroom aquarium. Students notice that the gills of one type of fish move faster than the gills of the other fish. Which of these statements is the best hypothesis on this observation?",
+    "choices": {
+      "text": [
+        "Fish have a two-chambered heart.",
+        "Some fish are much larger than others.",
+        "Fish need different amounts of oxygen.",
+        "There are six types of fish in the aquarium."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nSeveral species of fish live in a classroom aquarium. Students notice that the gills of one type of fish move faster than the gills of the other fish. Which of these statements is the best hypothesis on this observation?\n\nChoices:\nA. Fish have a two-chambered heart.\nB. Some fish are much larger than others.\nC. Fish need different amounts of oxygen.\nD. There are six types of fish in the aquarium.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 488,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_400697",
+    "question": "Which action could change the melting point of ice?",
+    "choices": {
+      "text": [
+        "heating the water before it is frozen",
+        "adding salt to the water before it is frozen",
+        "changing the amount of water to be frozen",
+        "changing the container for the water to be frozen in"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich action could change the melting point of ice?\n\nChoices:\nA. heating the water before it is frozen\nB. adding salt to the water before it is frozen\nC. changing the amount of water to be frozen\nD. changing the container for the water to be frozen in\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

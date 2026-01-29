@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 600,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_408367",
+    "question": "Thick fur on a mammal will trap heat close to the animal's body. A mammal with thick fur would be best fit for which type of environment?",
+    "choices": {
+      "text": [
+        "a salt marsh",
+        "a frozen plain",
+        "a sandy beach",
+        "a humid rainforest"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nThick fur on a mammal will trap heat close to the animal's body. A mammal with thick fur would be best fit for which type of environment?\n\nChoices:\nA. a salt marsh\nB. a frozen plain\nC. a sandy beach\nD. a humid rainforest\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

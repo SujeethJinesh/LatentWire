@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 378,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "NAEP_2000_8_S21+4",
+    "question": "To keep a heavy box sliding across a carpeted floor at constant speed, a person must continually exert a force on the box. This force is used primarily to overcome which of the following forces?",
+    "choices": {
+      "text": [
+        "Air resistance",
+        "The weight of the box",
+        "The frictional force exerted by the floor on the box",
+        "The gravitational force exerted by the Earth on the box"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nTo keep a heavy box sliding across a carpeted floor at constant speed, a person must continually exert a force on the box. This force is used primarily to overcome which of the following forces?\n\nChoices:\nA. Air resistance\nB. The weight of the box\nC. The frictional force exerted by the floor on the box\nD. The gravitational force exerted by the Earth on the box\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

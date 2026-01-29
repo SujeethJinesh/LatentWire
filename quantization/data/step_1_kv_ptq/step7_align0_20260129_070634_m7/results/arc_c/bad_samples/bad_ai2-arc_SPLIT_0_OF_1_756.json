@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 756,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "ACTAAP_2007_7_3",
+    "question": "A student is investigating the temperature at which evaporation takes place. Which statement best shows that evaporation has taken place?",
+    "choices": {
+      "text": [
+        "Rain falls from the sky.",
+        "The sky is clear of clouds.",
+        "Water droplets appear on the grass.",
+        "Water droplets disappear from the grass."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA student is investigating the temperature at which evaporation takes place. Which statement best shows that evaporation has taken place?\n\nChoices:\nA. Rain falls from the sky.\nB. The sky is clear of clouds.\nC. Water droplets appear on the grass.\nD. Water droplets disappear from the grass.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

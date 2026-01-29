@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1057,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MCAS_2004_8_23",
+    "question": "An airplane takes off from Boston for the 980 km trip to Detroit. The plane lands two hours later. Which of the following best describes the average speed and direction of the airplane's flight?",
+    "choices": {
+      "text": [
+        "325 km/h W",
+        "490 km/h W",
+        "980 km/h W",
+        "1960 km/h W"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nAn airplane takes off from Boston for the 980 km trip to Detroit. The plane lands two hours later. Which of the following best describes the average speed and direction of the airplane's flight?\n\nChoices:\nA. 325 km/h W\nB. 490 km/h W\nC. 980 km/h W\nD. 1960 km/h W\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

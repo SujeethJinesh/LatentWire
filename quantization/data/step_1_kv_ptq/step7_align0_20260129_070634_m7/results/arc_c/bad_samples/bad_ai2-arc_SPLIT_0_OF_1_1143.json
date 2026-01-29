@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1143,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MCAS_2006_9_1",
+    "question": "A caterpillar eats an oak leaf. Which of the following best describes the energy transfer in this situation?",
+    "choices": {
+      "text": [
+        "Both the caterpillar and the leaf gain energy.",
+        "Energy is transferred from the leaf to the caterpillar.",
+        "Decomposers in the leaf obtain energy from the caterpillar.",
+        "The oak tree gains energy when the caterpillar eats the leaf."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nA caterpillar eats an oak leaf. Which of the following best describes the energy transfer in this situation?\n\nChoices:\nA. Both the caterpillar and the leaf gain energy.\nB. Energy is transferred from the leaf to the caterpillar.\nC. Decomposers in the leaf obtain energy from the caterpillar.\nD. The oak tree gains energy when the caterpillar eats the leaf.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

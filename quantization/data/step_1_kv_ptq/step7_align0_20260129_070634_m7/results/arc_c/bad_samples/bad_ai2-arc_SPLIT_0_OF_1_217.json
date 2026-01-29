@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 217,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_415407",
+    "question": "What are two ways ice can change Earth's surface?",
+    "choices": {
+      "text": [
+        "cracking a rock and making a U-shaped valley",
+        "making a dune and making a U-shaped valley",
+        "making a dune and making a V-shaped valley",
+        "cracking a rock and making a V-shaped valley"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat are two ways ice can change Earth's surface?\n\nChoices:\nA. cracking a rock and making a U-shaped valley\nB. making a dune and making a U-shaped valley\nC. making a dune and making a V-shaped valley\nD. cracking a rock and making a V-shaped valley\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

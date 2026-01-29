@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 796,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_LBS10027",
+    "question": "What is potential energy?",
+    "choices": {
+      "text": [
+        "The energy an object has due to its motion.",
+        "The energy an object has due to its position.",
+        "The energy that increases the mass of an object.",
+        "The energy that increases the temperature of an object."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is potential energy?\n\nChoices:\nA. The energy an object has due to its motion.\nB. The energy an object has due to its position.\nC. The energy that increases the mass of an object.\nD. The energy that increases the temperature of an object.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

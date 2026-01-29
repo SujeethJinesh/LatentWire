@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 542,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "NYSEDREGENTS_2008_4_26",
+    "question": "Which statement is an example of how humans have changed the natural environment?",
+    "choices": {
+      "text": [
+        "Wind and rain destroy wheat plants.",
+        "The Sun's energy helps a wheat plant grow.",
+        "A forest is cleared to make space to plant wheat.",
+        "A wheat plant's seeds are scattered by the wind."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich statement is an example of how humans have changed the natural environment?\n\nChoices:\nA. Wind and rain destroy wheat plants.\nB. The Sun's energy helps a wheat plant grow.\nC. A forest is cleared to make space to plant wheat.\nD. A wheat plant's seeds are scattered by the wind.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

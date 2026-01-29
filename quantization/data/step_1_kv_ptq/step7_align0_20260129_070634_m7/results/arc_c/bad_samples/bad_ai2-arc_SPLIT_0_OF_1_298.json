@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 298,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7138390",
+    "question": "The number of living organisms in and around a lake remained fairly stable throughout the month of June. In July there was a three-week period of high temperatures and no rainfall. This resulted in an overabundance of green algae that almost covered the surface of the lake. This would most likely result in",
+    "choices": {
+      "text": [
+        "a decrease in the amount of bacteria.",
+        "a decrease in the amount of oxygen.",
+        "an increase in the water temperature.",
+        "an increase in the fish population."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe number of living organisms in and around a lake remained fairly stable throughout the month of June. In July there was a three-week period of high temperatures and no rainfall. This resulted in an overabundance of green algae that almost covered the surface of the lake. This would most likely result in\n\nChoices:\nA. a decrease in the amount of bacteria.\nB. a decrease in the amount of oxygen.\nC. an increase in the water temperature.\nD. an increase in the fish population.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

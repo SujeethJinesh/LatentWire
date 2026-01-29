@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1083,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_408251",
+    "question": "Ricardo measured an empty graduated cylinder on a balance. He then filled the graduated cylinder with 50 mL of a liquid and measured the cylinder again. Which question is Ricardo most likely trying to answer?",
+    "choices": {
+      "text": [
+        "What is the mass of the liquid?",
+        "What is the volume of the liquid?",
+        "How quickly will the liquid evaporate?",
+        "How quickly will the liquid boil?"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nRicardo measured an empty graduated cylinder on a balance. He then filled the graduated cylinder with 50 mL of a liquid and measured the cylinder again. Which question is Ricardo most likely trying to answer?\n\nChoices:\nA. What is the mass of the liquid?\nB. What is the volume of the liquid?\nC. How quickly will the liquid evaporate?\nD. How quickly will the liquid boil?\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

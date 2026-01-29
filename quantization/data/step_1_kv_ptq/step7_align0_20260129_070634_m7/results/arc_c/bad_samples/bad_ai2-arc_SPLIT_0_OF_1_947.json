@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 947,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_401147",
+    "question": "The main function of a producer in an ecosystem is to",
+    "choices": {
+      "text": [
+        "absorb minerals from the soil.",
+        "change water vapor into a liquid.",
+        "make sugar through photosynthesis.",
+        "break down dead plant and animal matter."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nThe main function of a producer in an ecosystem is to\n\nChoices:\nA. absorb minerals from the soil.\nB. change water vapor into a liquid.\nC. make sugar through photosynthesis.\nD. break down dead plant and animal matter.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

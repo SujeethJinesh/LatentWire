@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 64,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_416645",
+    "question": "Dominic is observing a volvox colony and a paramecium under a microscope. He makes a note in his journal that the volvox colony and the paramecium are similar because they have many organelles for movement. What would Dominic most likely notice about the movement of a volvox colony and a paramecium?",
+    "choices": {
+      "text": [
+        "They both move at the same rate.",
+        "They both move away from light.",
+        "They both move in the same direction.",
+        "They both move toward an energy source."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nDominic is observing a volvox colony and a paramecium under a microscope. He makes a note in his journal that the volvox colony and the paramecium are similar because they have many organelles for movement. What would Dominic most likely notice about the movement of a volvox colony and a paramecium?\n\nChoices:\nA. They both move at the same rate.\nB. They both move away from light.\nC. They both move in the same direction.\nD. They both move toward an energy source.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

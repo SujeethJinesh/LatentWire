@@ -1,0 +1,26 @@
+{
+  "dataset": "openbookqa",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 342,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "1387",
+    "question_stem": "What is an example of fire giving off light?",
+    "choices": {
+      "text": [
+        "an oven is preheated and the pilot light is lit",
+        "a match is lit to light a cigarette",
+        "a lit candle in a window signalling to someone",
+        "a fire that was put out to send smoke signals"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhat is an example of fire giving off light?\n\nChoices:\nA. an oven is preheated and the pilot light is lit\nB. a match is lit to light a cigarette\nC. a lit candle in a window signalling to someone\nD. a fire that was put out to send smoke signals\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

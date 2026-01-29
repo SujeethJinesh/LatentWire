@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 636,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_417138",
+    "question": "Estuaries are dynamic ecosystems where salt water and fresh water mix. Usually this happens as fresh water flows from a river to an ocean. When would you expect the concentration of salt in the estuary water to be LOWEST near the mouth of the river?",
+    "choices": {
+      "text": [
+        "when the river flow is low and the tide is low",
+        "when the river flow is high and the tide is low",
+        "when the river flow is low and the tide is high",
+        "when the river flow is high and the tide is high"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nEstuaries are dynamic ecosystems where salt water and fresh water mix. Usually this happens as fresh water flows from a river to an ocean. When would you expect the concentration of salt in the estuary water to be LOWEST near the mouth of the river?\n\nChoices:\nA. when the river flow is low and the tide is low\nB. when the river flow is high and the tide is low\nC. when the river flow is low and the tide is high\nD. when the river flow is high and the tide is high\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

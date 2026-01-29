@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 288,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "NCEOGA_2013_8_28",
+    "question": "If a body of water has high turbidity levels, what can most likely be concluded?",
+    "choices": {
+      "text": [
+        "It has a low pH.",
+        "It is unsafe to drink.",
+        "It is too hot to drink.",
+        "It contains a lot of chemicals."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nIf a body of water has high turbidity levels, what can most likely be concluded?\n\nChoices:\nA. It has a low pH.\nB. It is unsafe to drink.\nC. It is too hot to drink.\nD. It contains a lot of chemicals.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

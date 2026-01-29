@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 336,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_415081",
+    "question": "In a rubber duck race, the winning duck traveled 300 meters in 10 minutes. What was the duck's average speed?",
+    "choices": {
+      "text": [
+        "0.5 m/s",
+        "1.0 m/s",
+        "7.5 m/s",
+        "30 m/s"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nIn a rubber duck race, the winning duck traveled 300 meters in 10 minutes. What was the duck's average speed?\n\nChoices:\nA. 0.5 m/s\nB. 1.0 m/s\nC. 7.5 m/s\nD. 30 m/s\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

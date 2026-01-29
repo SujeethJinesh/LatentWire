@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 402,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7218628",
+    "question": "A forecast for \"wintry mix\" indicates that vapor in the air will form both rain and snow. Which of these is a correct principle illustrated by this event?",
+    "choices": {
+      "text": [
+        "There is little water in the atmosphere of Earth.",
+        "Most water on Earth is found as vapor.",
+        "Water exists in all three states on Earth.",
+        "Water on Earth tends to form a solid over time."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nA forecast for \"wintry mix\" indicates that vapor in the air will form both rain and snow. Which of these is a correct principle illustrated by this event?\n\nChoices:\nA. There is little water in the atmosphere of Earth.\nB. Most water on Earth is found as vapor.\nC. Water exists in all three states on Earth.\nD. Water on Earth tends to form a solid over time.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

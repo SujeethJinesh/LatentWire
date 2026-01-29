@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 1064,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_7017973",
+    "question": "Ancient Greeks hypothesized that a hair from a horse's tail left in water would turn into a worm. What scientific process most likely would have disproved this hypothesis?",
+    "choices": {
+      "text": [
+        "forming a theory",
+        "designing a model",
+        "analyzing data",
+        "comparing to a control"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nAncient Greeks hypothesized that a hair from a horse's tail left in water would turn into a worm. What scientific process most likely would have disproved this hypothesis?\n\nChoices:\nA. forming a theory\nB. designing a model\nC. analyzing data\nD. comparing to a control\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 299,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MEAP_2005_5_12",
+    "question": "A farmer has three large fields where he plans to grow grasses to harvest for hay. Grasses should be harvested only after two years of growth. What could the farmer do to make sure he has a hay crop each year?",
+    "choices": {
+      "text": [
+        "Plant each field at one-year intervals.",
+        "Plant the grasses as close together as possible.",
+        "Plant all the fields at the same time, but with different types of grasses.",
+        "Plant warm-season grasses and cool-season grasses in each field at the same time."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA farmer has three large fields where he plans to grow grasses to harvest for hay. Grasses should be harvested only after two years of growth. What could the farmer do to make sure he has a hay crop each year?\n\nChoices:\nA. Plant each field at one-year intervals.\nB. Plant the grasses as close together as possible.\nC. Plant all the fields at the same time, but with different types of grasses.\nD. Plant warm-season grasses and cool-season grasses in each field at the same time.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

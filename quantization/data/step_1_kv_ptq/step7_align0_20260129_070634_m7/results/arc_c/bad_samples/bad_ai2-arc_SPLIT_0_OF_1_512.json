@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 512,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "TAKS_2009_5_14",
+    "question": "A fork falls off the edge of a table. Which force moves the fork toward the floor?",
+    "choices": {
+      "text": [
+        "The pull of Earth's gravity",
+        "The pull of Earth's rotation",
+        "The push of the table",
+        "The push of air pressure"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "A"
+  },
+  "prompt": "Accurately answer the following question:\n\nA fork falls off the edge of a table. Which force moves the fork toward the floor?\n\nChoices:\nA. The pull of Earth's gravity\nB. The pull of Earth's rotation\nC. The push of the table\nD. The push of air pressure\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

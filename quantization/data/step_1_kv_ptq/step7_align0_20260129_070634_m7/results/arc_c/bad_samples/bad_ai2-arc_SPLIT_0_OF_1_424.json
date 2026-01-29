@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 424,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "MDSA_2012_8_16",
+    "question": "Some coal mining occurs underground and does not disturb the overlying land. How might coal mining that occurs underground be less harmful to the environment than surface mining?",
+    "choices": {
+      "text": [
+        "Underground coal mining increases pollution.",
+        "Underground coal mining reduces habitat loss.",
+        "Underground coal mining increases forest growth.",
+        "Underground coal mining reduces animal populations."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "B"
+  },
+  "prompt": "Accurately answer the following question:\n\nSome coal mining occurs underground and does not disturb the overlying land. How might coal mining that occurs underground be less harmful to the environment than surface mining?\n\nChoices:\nA. Underground coal mining increases pollution.\nB. Underground coal mining reduces habitat loss.\nC. Underground coal mining increases forest growth.\nD. Underground coal mining reduces animal populations.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

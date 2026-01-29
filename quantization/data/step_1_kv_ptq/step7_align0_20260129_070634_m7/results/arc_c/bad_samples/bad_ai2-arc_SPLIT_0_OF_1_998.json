@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 998,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_414339",
+    "question": "Which change can occur when you add heat energy to water?",
+    "choices": {
+      "text": [
+        "The water can change from a liquid to a solid.",
+        "The water can change from a solid to a liquid.",
+        "The water can change from a liquid to a gas.",
+        "The water can change from a gas to a liquid."
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "C"
+  },
+  "prompt": "Accurately answer the following question:\n\nWhich change can occur when you add heat energy to water?\n\nChoices:\nA. The water can change from a liquid to a solid.\nB. The water can change from a solid to a liquid.\nC. The water can change from a liquid to a gas.\nD. The water can change from a gas to a liquid.\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}

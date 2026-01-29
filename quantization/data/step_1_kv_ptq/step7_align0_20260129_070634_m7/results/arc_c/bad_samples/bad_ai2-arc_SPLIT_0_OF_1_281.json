@@ -1,0 +1,26 @@
+{
+  "dataset": "ai2-arc",
+  "subject": "SPLIT_0_OF_1",
+  "question_id": 281,
+  "error": "CUDA error: device-side assert triggered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+  "example": {
+    "id": "Mercury_SC_406482",
+    "question": "A class tested the amount of vitamin C in fresh orange juice and calculated a different amount than the previous class that conducted the same investigation. What should most likely be done to make sure that their results are accurate?",
+    "choices": {
+      "text": [
+        "try a different juice",
+        "analyze the recorded data",
+        "ask a scientist what went wrong",
+        "repeat the investigation two more times"
+      ],
+      "label": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ]
+    },
+    "answerKey": "D"
+  },
+  "prompt": "Accurately answer the following question:\n\nA class tested the amount of vitamin C in fresh orange juice and calculated a different amount than the previous class that conducted the same investigation. What should most likely be done to make sure that their results are accurate?\n\nChoices:\nA. try a different juice\nB. analyze the recorded data\nC. ask a scientist what went wrong\nD. repeat the investigation two more times\n\n\nInstructions:\n- Carefully read the question and all options.\n- Select the single most correct answer.\n- Respond ONLY in the following format: \"The correct answer is A/B/C/D\".\n- Do not include any explanations, additional text, or punctuation besides the answer.\n\nThe correct answer is"
+}
