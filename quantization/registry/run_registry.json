@@ -1,992 +1,992 @@
 {
   "m0": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_0_baselines/step0_20260127_214552",
-      "config_hash": "cbe64aae7aca7150e00ade4d3f7cd9330968ab33",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_0_baselines/step0_20260127_214552",
       "config_hash": "c920ee6a166a4baa942822dae6d1c27434a95fc4",
       "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m2|int8": {
-    "openbookqa": {
-      "status": "complete",
+      "run_root": "quantization/data/step_0_baselines/step0_20260127_214552",
       "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step1_int8_20260127_214552",
-      "config_hash": "400c5315d257a946a78d5fac1136a0f4dd8ca12b",
-      "reason": "",
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step1_int8_20260127_214552",
-      "config_hash": "ee54691f345f6a73cb1eb60da116a15d4b66d2b8",
+    "openbookqa": {
+      "config_hash": "cbe64aae7aca7150e00ade4d3f7cd9330968ab33",
       "reason": "",
+      "run_root": "quantization/data/step_0_baselines/step0_20260127_214552",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     }
   },
   "m2|int4": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step1_int4_20260127_214552",
-      "config_hash": "263b4d97900f389deb9ab375f7283c5c94785f18",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step1_int4_20260127_214552",
       "config_hash": "5b66ffe4bc357edf6203534042357edf407cd3be",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step1_int4_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "263b4d97900f389deb9ab375f7283c5c94785f18",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step1_int4_20260127_214552",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     }
   },
-  "m3|int8|1.0|front": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_front_20260127_214552",
-      "config_hash": "1964027bdbe0abe05a046498f8474ba30f9d2f62",
+  "m2|int8": {
+    "ai2-arc": {
+      "config_hash": "ee54691f345f6a73cb1eb60da116a15d4b66d2b8",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step1_int8_20260127_214552",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_front_20260127_214552",
-      "config_hash": "90e8f5d9f40491b82ff2ac9da0b4f7e515e4185d",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m3|int8|1.0|back": {
     "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_back_20260127_214552",
-      "config_hash": "4a1952f2da363fb8ffbe90634f08251199231714",
+      "config_hash": "400c5315d257a946a78d5fac1136a0f4dd8ca12b",
       "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
+      "run_root": "quantization/data/step_1_kv_ptq/step1_int8_20260127_214552",
       "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_back_20260127_214552",
-      "config_hash": "9cf75b497f3f6cacc5bb0d44bbe7134480c8f655",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m3|int8|0.75|front": {
-    "openbookqa": {
       "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_front_20260127_214552",
-      "config_hash": "47e95ec896e596be8aa6015a48d3c8c2628795fc",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_front_20260127_214552",
-      "config_hash": "21bfb782222e35ad4c968cc1b936e1eec1ce9f9d",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m3|int8|0.75|back": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_back_20260127_214552",
-      "config_hash": "398ef953a1838f05ae9bede62899aa2f2bcb5b3e",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_back_20260127_214552",
-      "config_hash": "8dfd3083d75e9bb11a1245ebda72f1ec8293bd06",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m3|int8|0.5|front": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_front_20260127_214552",
-      "config_hash": "8ec2e387b9b51388e93d02bc5098538644f1ada8",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_front_20260127_214552",
-      "config_hash": "06d91c7f381eb2f112f8ac6a8fecb2c120879875",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m3|int8|0.5|back": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_back_20260127_214552",
-      "config_hash": "5a772f30677b42e2dba818659493de2408fabb72",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_back_20260127_214552",
-      "config_hash": "fd8a20f2529cb82743b5c35c41fa9363a1a11d42",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m3|int8|0.25|front": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_front_20260127_214552",
-      "config_hash": "d3f10cdcc04a32484800ad520e1e1bcf92585c3d",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_front_20260127_214552",
-      "config_hash": "9f3a7a4853c7ffaacc63091ef2925d94cb98f6c0",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m3|int8|0.25|back": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552",
-      "config_hash": "549b2532b47d5cf4fccd1b8d028070cc18c4d0a1",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552",
-      "config_hash": "fecd6f41862d5b964fea335225342c4a8c69abaa",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m3|int8|0.1|front": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_front_20260127_082712",
-      "config_hash": "6307b66ead99c7ec003eadb70eacaaa8043a29ac",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_front_20260127_082712",
-      "config_hash": "6f6cde31e2a79818ee6202effd958e6fef6f0096",
-      "reason": "",
       "timestamp": "2026-01-28T00:00:00Z"
     }
   },
   "m3|int8|0.1|back": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_back_20260127_084143",
-      "config_hash": "fa22f757e48d0e72760eaf93fa735c7ae60a4fab",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_back_20260127_084143",
       "config_hash": "fe9d8aaf622a956e71d0058b8b724f5686c74f6c",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_back_20260127_084143",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "fa22f757e48d0e72760eaf93fa735c7ae60a4fab",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_back_20260127_084143",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     }
   },
-  "m6|int8|acc63cafca2d58e03caa9836b47d72635972dd5d": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step6_int8_20260128_011432",
-      "config_hash": "f8ecdf3eb6806b3f25f07d584bfa984311723b47",
+  "m3|int8|0.1|front": {
+    "ai2-arc": {
+      "config_hash": "6f6cde31e2a79818ee6202effd958e6fef6f0096",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_front_20260127_082712",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step6_int8_20260128_011432",
-      "config_hash": "47a99979572e35869c15ceed061856683a28ef16",
+    "openbookqa": {
+      "config_hash": "6307b66ead99c7ec003eadb70eacaaa8043a29ac",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0.10_front_20260127_082712",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     }
   },
-  "m8|int8|proj_vnorm_topk|1.0": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_20260128_011432",
-      "config_hash": "43b8515ce6fc4a31ec4856ba44743033dd4f7741",
+  "m3|int8|0.25|back": {
+    "ai2-arc": {
+      "config_hash": "fecd6f41862d5b964fea335225342c4a8c69abaa",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_20260128_011432",
-      "config_hash": "eaa2b8d2852db837a0544a833d9b38aec6fa6b7d",
+    "openbookqa": {
+      "config_hash": "549b2532b47d5cf4fccd1b8d028070cc18c4d0a1",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_back_20260127_214552",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     }
   },
-  "m8|int8|proj_vnorm_topk|0.5": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_20260128_011432",
-      "config_hash": "dd2426d78ed196ded34e44f7a52c4f809e9db0b9",
+  "m3|int8|0.25|front": {
+    "ai2-arc": {
+      "config_hash": "9f3a7a4853c7ffaacc63091ef2925d94cb98f6c0",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_front_20260127_214552",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_20260128_011432",
-      "config_hash": "f719b48e703e44742b5643eef68376117dd47989",
+    "openbookqa": {
+      "config_hash": "d3f10cdcc04a32484800ad520e1e1bcf92585c3d",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p25_front_20260127_214552",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     }
   },
-  "m8|int4|front|1.0|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p1p0_prompt_sf1_20260128_045936",
-      "config_hash": "1971ba4ffa75ea839b2ab2ab66768065feead61e",
-      "reason": "",
-      "timestamp": "2026-01-28T05:05:49.916285Z"
-    },
+  "m3|int8|0.5|back": {
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p1p0_prompt_sf1_20260128_045936",
-      "config_hash": "2f5f10ad561c647f5d0f2ff2a5615f6840aaeb00",
+      "config_hash": "fd8a20f2529cb82743b5c35c41fa9363a1a11d42",
       "reason": "",
-      "timestamp": "2026-01-28T05:18:15.043996Z"
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_back_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "5a772f30677b42e2dba818659493de2408fabb72",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_back_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.5|front": {
+    "ai2-arc": {
+      "config_hash": "06d91c7f381eb2f112f8ac6a8fecb2c120879875",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_front_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "8ec2e387b9b51388e93d02bc5098538644f1ada8",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p5_front_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.75|back": {
+    "ai2-arc": {
+      "config_hash": "8dfd3083d75e9bb11a1245ebda72f1ec8293bd06",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_back_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "398ef953a1838f05ae9bede62899aa2f2bcb5b3e",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_back_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|0.75|front": {
+    "ai2-arc": {
+      "config_hash": "21bfb782222e35ad4c968cc1b936e1eec1ce9f9d",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_front_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "47e95ec896e596be8aa6015a48d3c8c2628795fc",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p0p75_front_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|1.0|back": {
+    "ai2-arc": {
+      "config_hash": "9cf75b497f3f6cacc5bb0d44bbe7134480c8f655",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_back_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "4a1952f2da363fb8ffbe90634f08251199231714",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_back_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m3|int8|1.0|front": {
+    "ai2-arc": {
+      "config_hash": "90e8f5d9f40491b82ff2ac9da0b4f7e515e4185d",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_front_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "1964027bdbe0abe05a046498f8474ba30f9d2f62",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step3_int8_p1p0_front_20260127_214552",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m5|qat|int8": {
+    "ai2-arc": {
+      "config_hash": "dad2e33ea3d645075fe5c4ad9e13946845daa22b",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260129_074456_m5",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-29T15:11:13.299394Z"
+    },
+    "openbookqa": {
+      "config_hash": "08379d9fec25e56673022005f8bb5cea0dbca715",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260129_074456_m5",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-29T15:00:40.288229Z"
     }
   },
   "m6|int8|1c989848c161dfffdbc8dce9fa2c858a2ca7fd1b": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_20260128_045934",
-      "config_hash": "9c5be4575c6eaabedd3f17ea7370ce38ec7eda3e",
-      "reason": "",
-      "timestamp": "2026-01-28T05:06:57.931010Z"
-    },
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_20260128_045934",
       "config_hash": "024ddb6704dee19bfd29ff53c77750747490ee4b",
       "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_20260128_045934",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T05:20:10.262526Z"
-    }
-  },
-  "m8|int4|front|0.5|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p5_prompt_sf1_20260128_045936",
-      "config_hash": "efd1ed1f38abb081e836963b67856351cad00454",
-      "reason": "",
-      "timestamp": "2026-01-28T05:23:56.788718Z"
     },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p5_prompt_sf1_20260128_045936",
-      "config_hash": "015073fee954cbf7d6da0d2dc2c98c35f75d990c",
-      "reason": "",
-      "timestamp": "2026-01-28T05:36:56.273892Z"
-    }
-  },
-  "m6|int8|a13ce0675bd73e7a9aa524002a0a3be7b1c1927b": {
     "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last2_20260128_045934",
-      "config_hash": "d0d208e06ae5b9dc5cc79e967a3e61d234716dba",
+      "config_hash": "9c5be4575c6eaabedd3f17ea7370ce38ec7eda3e",
       "reason": "",
-      "timestamp": "2026-01-28T05:25:19.328185Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_20260128_045934",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last2_20260128_045934",
-      "config_hash": "dd1bdf33a0df8e0ce91c05253bfe544f4583fc73",
-      "reason": "",
-      "timestamp": "2026-01-28T05:38:05.767388Z"
-    }
-  },
-  "m8|int4|front|0.25|prompt|1": {
-    "openbookqa": {
       "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p25_prompt_sf1_20260128_045936",
-      "config_hash": "806cd94705f174964179bde2902acd7286bb4aa0",
-      "reason": "",
-      "timestamp": "2026-01-28T05:42:30.164297Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p25_prompt_sf1_20260128_045936",
-      "config_hash": "501af55e729254bb981656196e9ded942c50999b",
-      "reason": "",
-      "timestamp": "2026-01-28T05:55:40.266441Z"
+      "timestamp": "2026-01-28T05:06:57.931010Z"
     }
   },
   "m6|int8|9e0c3e9c9e4ffe229e74f1e2700de6f96e783e83": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last8_20260128_045934",
-      "config_hash": "0c16dedc6465b34cc592e2540ceb5126bbfb8a44",
-      "reason": "",
-      "timestamp": "2026-01-28T05:43:10.835751Z"
-    },
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last8_20260128_045934",
       "config_hash": "49bcfe09ea181a63fd51b000d7bdfec93c8249b3",
       "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last8_20260128_045934",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T05:57:09.256406Z"
+    },
+    "openbookqa": {
+      "config_hash": "0c16dedc6465b34cc592e2540ceb5126bbfb8a44",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last8_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T05:43:10.835751Z"
     }
   },
-  "m8|int4|vnorm_topk|1.0|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p1p0_prompt_sf1_20260128_045936",
-      "config_hash": "1995df877852d848b7ccf6dd3448a72840d51c1a",
-      "reason": "",
-      "timestamp": "2026-01-28T06:00:54.431882Z"
-    },
+  "m6|int8|a13ce0675bd73e7a9aa524002a0a3be7b1c1927b": {
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p1p0_prompt_sf1_20260128_045936",
-      "config_hash": "d73dae6952eb7c89b61c7a99e1a133fadfc81c2d",
+      "config_hash": "dd1bdf33a0df8e0ce91c05253bfe544f4583fc73",
       "reason": "",
-      "timestamp": "2026-01-28T06:13:57.374899Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last2_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T05:38:05.767388Z"
+    },
+    "openbookqa": {
+      "config_hash": "d0d208e06ae5b9dc5cc79e967a3e61d234716dba",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step6_int8_kv_layer_schedule_last2_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T05:25:19.328185Z"
     }
   },
-  "m8|int4|vnorm_topk|0.5|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p5_prompt_sf1_20260128_045936",
-      "config_hash": "0248fc27cb7fa5ab77ccc1bcc55da7b5c81aaee2",
-      "reason": "",
-      "timestamp": "2026-01-28T06:19:38.183054Z"
-    },
+  "m6|int8|acc63cafca2d58e03caa9836b47d72635972dd5d": {
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p5_prompt_sf1_20260128_045936",
-      "config_hash": "ef48cfcb6b2fe7f1d673a6569b98c5fc956ee1c4",
+      "config_hash": "47a99979572e35869c15ceed061856683a28ef16",
       "reason": "",
-      "timestamp": "2026-01-28T06:32:30.608414Z"
-    }
-  },
-  "m8|int4|vnorm_topk|0.25|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
+      "run_root": "quantization/data/step_1_kv_ptq/step6_int8_20260128_011432",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p25_prompt_sf1_20260128_045936",
-      "config_hash": "f948e8461cfa650aec0d26a56e06d6216c55dc46",
-      "reason": "",
-      "timestamp": "2026-01-28T06:38:02.287982Z"
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
     },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p25_prompt_sf1_20260128_045936",
-      "config_hash": "dc8b19afaed85dee43c7efe930fbe6b32e20d3d9",
-      "reason": "",
-      "timestamp": "2026-01-28T06:50:38.523648Z"
-    }
-  },
-  "m8|int8|front|1.0|prompt|1": {
     "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "0d424a5151134615a5531c769778b61c34f89520",
+      "config_hash": "f8ecdf3eb6806b3f25f07d584bfa984311723b47",
       "reason": "",
-      "timestamp": "2026-01-28T06:41:46.023591Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
+      "run_root": "quantization/data/step_1_kv_ptq/step6_int8_20260128_011432",
       "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "37a22369d3b75505d3ac2b75160652e2ba3e71a6",
-      "reason": "",
-      "timestamp": "2026-01-28T06:54:48.024174Z"
-    }
-  },
-  "m8|int8|front|0.5|prompt|1": {
-    "openbookqa": {
       "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "7c1454beb12ef94a039acf24b5fe0f4b7f95b9c7",
-      "reason": "",
-      "timestamp": "2026-01-28T07:00:06.076482Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "eed912981001f1f3559289c67cd779a0f3c48918",
-      "reason": "",
-      "timestamp": "2026-01-28T07:12:22.296624Z"
-    }
-  },
-  "m8|int8|front|0.25|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "76fb313d792a61d4f8b83e1a679dc293d6901cfa",
-      "reason": "",
-      "timestamp": "2026-01-28T07:17:43.128455Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "b647831e5f0349a539776f32fa628507579a68ee",
-      "reason": "",
-      "timestamp": "2026-01-28T07:29:46.943231Z"
-    }
-  },
-  "m8|int8|front|0.10|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "9fca2340bdceacc0f825d539bbbaf9db8519ba3b",
-      "reason": "",
-      "timestamp": "2026-01-28T07:35:11.431131Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "1ef22923d518a764dc3e09939724e36c7c74bd12",
-      "reason": "",
-      "timestamp": "2026-01-28T07:48:33.363112Z"
-    }
-  },
-  "m8|int8|vnorm_topk|1.0|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "08f3d839f8fe3a3f069b2bfec45014a65990f0c8",
-      "reason": "",
-      "timestamp": "2026-01-28T07:53:34.912118Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "7ea78b6b1797b38adcbe892977c641f37854ffe2",
-      "reason": "",
-      "timestamp": "2026-01-28T08:06:21.051954Z"
-    }
-  },
-  "m8|int8|vnorm_topk|0.5|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "19b149cdd461583744aa61e11d87029f26297809",
-      "reason": "",
-      "timestamp": "2026-01-28T08:11:45.951772Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "ab1f1ce857fda310ad6c33a580a67495e7b7f043",
-      "reason": "",
-      "timestamp": "2026-01-28T08:24:41.377880Z"
-    }
-  },
-  "m8|int8|vnorm_topk|0.25|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "f2ba453f07869e8c77ab6e346031c34dcd0a712d",
-      "reason": "",
-      "timestamp": "2026-01-28T08:30:03.198003Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "a71dd56c86a6c0dd7b8b465820d2d38d9cca5b60",
-      "reason": "",
-      "timestamp": "2026-01-28T08:41:53.900243Z"
-    }
-  },
-  "m8|int8|vnorm_topk|0.10|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "7dcb19b1bf62caca970f0ee78a5ab3118f1f0534",
-      "reason": "",
-      "timestamp": "2026-01-28T08:47:58.752836Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "b3923cb658af5267ecfd847f314ba7527307986f",
-      "reason": "",
-      "timestamp": "2026-01-28T09:00:19.042321Z"
-    }
-  },
-  "m8|int8|proj_vnorm_topk|1.0|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "909ec7ea83ca2fa13a182a5b35d0b355b6886437",
-      "reason": "",
-      "timestamp": "2026-01-28T09:05:57.310846Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "a5021310e395370c6c70bb71954d98fdbcb9d303",
-      "reason": "",
-      "timestamp": "2026-01-28T09:19:17.373633Z"
-    }
-  },
-  "m8|int8|proj_vnorm_topk|0.5|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "e56e513db917b740297579f988b7a2d2b438b448",
-      "reason": "",
-      "timestamp": "2026-01-28T09:25:37.046431Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "142d6fd8438c54c620b0de61d6638986a6933651",
-      "reason": "",
-      "timestamp": "2026-01-28T09:38:41.627567Z"
-    }
-  },
-  "m8|int8|proj_vnorm_topk|0.25|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "a37ea58ae07fcdfc8e87b2bf90ceac9b3901e4db",
-      "reason": "",
-      "timestamp": "2026-01-28T09:44:18.922454Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "0b48b0eecc52b68b85ab9a72bb53eb89d3b274e4",
-      "reason": "",
-      "timestamp": "2026-01-28T09:57:10.460488Z"
-    }
-  },
-  "m8|int8|proj_vnorm_topk|0.10|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "d723abb1968b6956fea55678ba06631a4ebf4054",
-      "reason": "",
-      "timestamp": "2026-01-28T10:02:48.285172Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "9cc889e7aa919e306031b9931a0da0d3ff7447da",
-      "reason": "",
-      "timestamp": "2026-01-28T10:15:56.332183Z"
-    }
-  },
-  "m8|int8|random|1.0|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "acd47914330fc3a69fdf79d0a0febc0dad01f83c",
-      "reason": "",
-      "timestamp": "2026-01-28T10:21:00.671846Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "c21534aa0075fee0a588a430bf1455ded3aad540",
-      "reason": "",
-      "timestamp": "2026-01-28T10:33:39.210059Z"
-    }
-  },
-  "m8|int8|random|0.5|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "1aa82ba9398706893ad5040aff50d51071d25ead",
-      "reason": "",
-      "timestamp": "2026-01-28T10:39:15.626381Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "de0ff1974f4604d0c33a7a301e101bd68ad8a212",
-      "reason": "",
-      "timestamp": "2026-01-28T10:50:59.679467Z"
-    }
-  },
-  "m8|int8|random|0.25|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "9de640ed9a603eb69391f65824e7fb9128cdf8bd",
-      "reason": "",
-      "timestamp": "2026-01-28T10:56:07.103557Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "3d754b1312a4ceedd836dc23f7279502ce3a6abd",
-      "reason": "",
-      "timestamp": "2026-01-28T11:07:35.033098Z"
-    }
-  },
-  "m8|int8|random|0.10|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "3ae36f4c3b70c71364e1ac0601dda2f183e8496b",
-      "reason": "",
-      "timestamp": "2026-01-28T11:12:40.124566Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "2fb22e667e6bbccc92fe87135992d64c3f25d96f",
-      "reason": "",
-      "timestamp": "2026-01-28T11:24:14.093431Z"
-    }
-  },
-  "m8|int8|knorm_topk|1.0|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "b70c5f0eaef1425912bd1937899a7473bfdd8437",
-      "reason": "",
-      "timestamp": "2026-01-28T11:29:18.364584Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p1p0_prompt_sf1_20260128_045934",
-      "config_hash": "a9a678b2ce2291b847affb798e71fd4f82055ad0",
-      "reason": "",
-      "timestamp": "2026-01-28T11:41:46.087692Z"
-    }
-  },
-  "m8|int8|knorm_topk|0.5|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "13489158d89b76eb88d4077e25244fbe032ad837",
-      "reason": "",
-      "timestamp": "2026-01-28T11:46:43.707205Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p5_prompt_sf1_20260128_045934",
-      "config_hash": "89205f118a10faa846093d65f11dc92566d346f2",
-      "reason": "",
-      "timestamp": "2026-01-28T11:58:34.227298Z"
-    }
-  },
-  "m8|int8|knorm_topk|0.25|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "21035ae6febf5b9be191e65ddb3a19bfa24384a8",
-      "reason": "",
-      "timestamp": "2026-01-28T12:03:34.104119Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p25_prompt_sf1_20260128_045934",
-      "config_hash": "359102778148f4d2d023fe67d059d58e7f0c121f",
-      "reason": "",
-      "timestamp": "2026-01-28T12:14:19.557424Z"
-    }
-  },
-  "m8|int8|knorm_topk|0.10|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "fc08a587a737a100dae1b77226a5fffea6a309be",
-      "reason": "",
-      "timestamp": "2026-01-28T12:19:19.810516Z"
-    },
-    "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "9887a7e5194cb8e9c40a768f6884447db152823d",
-      "reason": "",
-      "timestamp": "2026-01-28T12:31:31.380548Z"
+      "timestamp": "2026-01-28T00:00:00Z"
     }
   },
   "m7|Qwen/Qwen3-0.6B|Qwen/Qwen2.5-0.5B-Instruct|align0": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step7_align0_20260128_045934",
-      "config_hash": "8b14531b375a65bf2e78e1bb5a96fe03111066a2",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
     "arc_c": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step7_align0_20260128_045934",
       "config_hash": "109f532cba6aa69741a0924c22304a40b99c8a45",
       "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step7_align0_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "8b14531b375a65bf2e78e1bb5a96fe03111066a2",
+      "reason": "",
+      "run_root": "quantization/data/step_1_kv_ptq/step7_align0_20260128_045934",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     }
   },
   "m7|Qwen/Qwen3-0.6B|Qwen/Qwen2.5-0.5B-Instruct|align1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step7_align1_20260128_045934",
-      "config_hash": "191c842d0260b45c9c731259720b4405a7d110e4",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
     "arc_c": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_1_kv_ptq/step7_align1_20260128_045934",
       "config_hash": "9d510b7ad2daaad369e169432db92e2d9ab8f920",
       "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m8|int8|knorm_topk|0.1|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
+      "run_root": "quantization/data/step_1_kv_ptq/step7_align1_20260128_045934",
       "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "fc08a587a737a100dae1b77226a5fffea6a309be",
-      "reason": "",
+      "status": "complete",
       "timestamp": "2026-01-28T00:00:00Z"
     },
-    "arc_c": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "9887a7e5194cb8e9c40a768f6884447db152823d",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m8|int8|proj_vnorm_topk|0.1|prompt|1": {
     "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "d723abb1968b6956fea55678ba06631a4ebf4054",
+      "config_hash": "191c842d0260b45c9c731259720b4405a7d110e4",
       "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "arc_c": {
-      "status": "complete",
+      "run_root": "quantization/data/step_1_kv_ptq/step7_align1_20260128_045934",
       "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "9cc889e7aa919e306031b9931a0da0d3ff7447da",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m8|int8|vnorm_topk|0.1|prompt|1": {
-    "openbookqa": {
       "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "7dcb19b1bf62caca970f0ee78a5ab3118f1f0534",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "arc_c": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "b3923cb658af5267ecfd847f314ba7527307986f",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m8|int8|random|0.1|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "3ae36f4c3b70c71364e1ac0601dda2f183e8496b",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "arc_c": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "2fb22e667e6bbccc92fe87135992d64c3f25d96f",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    }
-  },
-  "m8|int8|front|0.1|prompt|1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "9fca2340bdceacc0f825d539bbbaf9db8519ba3b",
-      "reason": "",
-      "timestamp": "2026-01-28T00:00:00Z"
-    },
-    "arc_c": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
-      "config_hash": "1ef22923d518a764dc3e09939724e36c7c74bd12",
-      "reason": "",
       "timestamp": "2026-01-28T00:00:00Z"
     }
   },
   "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align0": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260129_070634_m7",
-      "config_hash": "454a5d404412d257f7536db5a844794d5925c9f0",
-      "reason": "",
-      "timestamp": "2026-01-29T07:08:20.026125Z"
-    },
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260129_070634_m7",
       "config_hash": "917c9f0a3ea8bea1dae96747d6e3e3cf601ea839",
-      "reason": "",
-      "timestamp": "2026-01-29T07:11:13.361616Z"
+      "reason": "hetero_align0_cuda_assert",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260129_070634_m7",
+      "smoke": false,
+      "status": "invalid",
+      "timestamp": "2026-01-29T19:45:07.872618Z"
+    },
+    "openbookqa": {
+      "config_hash": "454a5d404412d257f7536db5a844794d5925c9f0",
+      "reason": "hetero_align0_cuda_assert",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align0_20260129_070634_m7",
+      "smoke": false,
+      "status": "invalid",
+      "timestamp": "2026-01-29T19:45:07.872618Z"
     }
   },
   "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align1": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260129_070634_m7",
-      "config_hash": "1029913cc485cb9dd6b3a1ea865bd8e71e9847b6",
-      "reason": "",
-      "timestamp": "2026-01-29T07:16:22.718910Z"
-    },
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260129_070634_m7",
       "config_hash": "06a745a0857a81e591b7a7aa2bc246d87cde8f9c",
       "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260129_070634_m7",
+      "smoke": false,
+      "status": "complete",
       "timestamp": "2026-01-29T07:28:09.142650Z"
+    },
+    "openbookqa": {
+      "config_hash": "1029913cc485cb9dd6b3a1ea865bd8e71e9847b6",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260129_070634_m7",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-29T07:16:22.718910Z"
     }
   },
-  "m5|qat|int8": {
-    "openbookqa": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260129_074456_m5",
-      "config_hash": "08379d9fec25e56673022005f8bb5cea0dbca715",
-      "reason": "",
-      "timestamp": "2026-01-29T15:00:40.288229Z"
-    },
+  "m8|int4|front|0.25|prompt|1": {
     "ai2-arc": {
-      "status": "complete",
-      "smoke": false,
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step5_qat_eval_20260129_074456_m5",
-      "config_hash": "dad2e33ea3d645075fe5c4ad9e13946845daa22b",
+      "config_hash": "501af55e729254bb981656196e9ded942c50999b",
       "reason": "",
-      "timestamp": "2026-01-29T15:11:13.299394Z"
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p25_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T05:55:40.266441Z"
+    },
+    "openbookqa": {
+      "config_hash": "806cd94705f174964179bde2902acd7286bb4aa0",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p25_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T05:42:30.164297Z"
+    }
+  },
+  "m8|int4|front|0.5|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "015073fee954cbf7d6da0d2dc2c98c35f75d990c",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p5_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T05:36:56.273892Z"
+    },
+    "openbookqa": {
+      "config_hash": "efd1ed1f38abb081e836963b67856351cad00454",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p0p5_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T05:23:56.788718Z"
+    }
+  },
+  "m8|int4|front|1.0|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "2f5f10ad561c647f5d0f2ff2a5615f6840aaeb00",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p1p0_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T05:18:15.043996Z"
+    },
+    "openbookqa": {
+      "config_hash": "1971ba4ffa75ea839b2ab2ab66768065feead61e",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_front_p1p0_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T05:05:49.916285Z"
+    }
+  },
+  "m8|int4|vnorm_topk|0.25|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "dc8b19afaed85dee43c7efe930fbe6b32e20d3d9",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p25_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T06:50:38.523648Z"
+    },
+    "openbookqa": {
+      "config_hash": "f948e8461cfa650aec0d26a56e06d6216c55dc46",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p25_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T06:38:02.287982Z"
+    }
+  },
+  "m8|int4|vnorm_topk|0.5|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "ef48cfcb6b2fe7f1d673a6569b98c5fc956ee1c4",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p5_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T06:32:30.608414Z"
+    },
+    "openbookqa": {
+      "config_hash": "0248fc27cb7fa5ab77ccc1bcc55da7b5c81aaee2",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p0p5_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T06:19:38.183054Z"
+    }
+  },
+  "m8|int4|vnorm_topk|1.0|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "d73dae6952eb7c89b61c7a99e1a133fadfc81c2d",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p1p0_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T06:13:57.374899Z"
+    },
+    "openbookqa": {
+      "config_hash": "1995df877852d848b7ccf6dd3448a72840d51c1a",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int4_vnorm_topk_p1p0_prompt_sf1_20260128_045936",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T06:00:54.431882Z"
+    }
+  },
+  "m8|int8|front|0.10|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "1ef22923d518a764dc3e09939724e36c7c74bd12",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T07:48:33.363112Z"
+    },
+    "openbookqa": {
+      "config_hash": "9fca2340bdceacc0f825d539bbbaf9db8519ba3b",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T07:35:11.431131Z"
+    }
+  },
+  "m8|int8|front|0.1|prompt|1": {
+    "arc_c": {
+      "config_hash": "1ef22923d518a764dc3e09939724e36c7c74bd12",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "9fca2340bdceacc0f825d539bbbaf9db8519ba3b",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_front_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m8|int8|front|0.25|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "b647831e5f0349a539776f32fa628507579a68ee",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T07:29:46.943231Z"
+    },
+    "openbookqa": {
+      "config_hash": "76fb313d792a61d4f8b83e1a679dc293d6901cfa",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T07:17:43.128455Z"
+    }
+  },
+  "m8|int8|front|0.5|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "eed912981001f1f3559289c67cd779a0f3c48918",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T07:12:22.296624Z"
+    },
+    "openbookqa": {
+      "config_hash": "7c1454beb12ef94a039acf24b5fe0f4b7f95b9c7",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T07:00:06.076482Z"
+    }
+  },
+  "m8|int8|front|1.0|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "37a22369d3b75505d3ac2b75160652e2ba3e71a6",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T06:54:48.024174Z"
+    },
+    "openbookqa": {
+      "config_hash": "0d424a5151134615a5531c769778b61c34f89520",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_front_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T06:41:46.023591Z"
+    }
+  },
+  "m8|int8|knorm_topk|0.10|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "9887a7e5194cb8e9c40a768f6884447db152823d",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T12:31:31.380548Z"
+    },
+    "openbookqa": {
+      "config_hash": "fc08a587a737a100dae1b77226a5fffea6a309be",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T12:19:19.810516Z"
+    }
+  },
+  "m8|int8|knorm_topk|0.1|prompt|1": {
+    "arc_c": {
+      "config_hash": "9887a7e5194cb8e9c40a768f6884447db152823d",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "fc08a587a737a100dae1b77226a5fffea6a309be",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m8|int8|knorm_topk|0.25|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "359102778148f4d2d023fe67d059d58e7f0c121f",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T12:14:19.557424Z"
+    },
+    "openbookqa": {
+      "config_hash": "21035ae6febf5b9be191e65ddb3a19bfa24384a8",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T12:03:34.104119Z"
+    }
+  },
+  "m8|int8|knorm_topk|0.5|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "89205f118a10faa846093d65f11dc92566d346f2",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T11:58:34.227298Z"
+    },
+    "openbookqa": {
+      "config_hash": "13489158d89b76eb88d4077e25244fbe032ad837",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T11:46:43.707205Z"
+    }
+  },
+  "m8|int8|knorm_topk|1.0|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "a9a678b2ce2291b847affb798e71fd4f82055ad0",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T11:41:46.087692Z"
+    },
+    "openbookqa": {
+      "config_hash": "b70c5f0eaef1425912bd1937899a7473bfdd8437",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_knorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T11:29:18.364584Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|0.10|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "9cc889e7aa919e306031b9931a0da0d3ff7447da",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T10:15:56.332183Z"
+    },
+    "openbookqa": {
+      "config_hash": "d723abb1968b6956fea55678ba06631a4ebf4054",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T10:02:48.285172Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|0.1|prompt|1": {
+    "arc_c": {
+      "config_hash": "9cc889e7aa919e306031b9931a0da0d3ff7447da",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "d723abb1968b6956fea55678ba06631a4ebf4054",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|0.25|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "0b48b0eecc52b68b85ab9a72bb53eb89d3b274e4",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T09:57:10.460488Z"
+    },
+    "openbookqa": {
+      "config_hash": "a37ea58ae07fcdfc8e87b2bf90ceac9b3901e4db",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T09:44:18.922454Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|0.5": {
+    "ai2-arc": {
+      "config_hash": "f719b48e703e44742b5643eef68376117dd47989",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_20260128_011432",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "dd2426d78ed196ded34e44f7a52c4f809e9db0b9",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_20260128_011432",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|0.5|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "142d6fd8438c54c620b0de61d6638986a6933651",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T09:38:41.627567Z"
+    },
+    "openbookqa": {
+      "config_hash": "e56e513db917b740297579f988b7a2d2b438b448",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T09:25:37.046431Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|1.0": {
+    "ai2-arc": {
+      "config_hash": "eaa2b8d2852db837a0544a833d9b38aec6fa6b7d",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_20260128_011432",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "43b8515ce6fc4a31ec4856ba44743033dd4f7741",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_20260128_011432",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m8|int8|proj_vnorm_topk|1.0|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "a5021310e395370c6c70bb71954d98fdbcb9d303",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T09:19:17.373633Z"
+    },
+    "openbookqa": {
+      "config_hash": "909ec7ea83ca2fa13a182a5b35d0b355b6886437",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_proj_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T09:05:57.310846Z"
+    }
+  },
+  "m8|int8|random|0.10|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "2fb22e667e6bbccc92fe87135992d64c3f25d96f",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T11:24:14.093431Z"
+    },
+    "openbookqa": {
+      "config_hash": "3ae36f4c3b70c71364e1ac0601dda2f183e8496b",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T11:12:40.124566Z"
+    }
+  },
+  "m8|int8|random|0.1|prompt|1": {
+    "arc_c": {
+      "config_hash": "2fb22e667e6bbccc92fe87135992d64c3f25d96f",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "3ae36f4c3b70c71364e1ac0601dda2f183e8496b",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_random_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m8|int8|random|0.25|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "3d754b1312a4ceedd836dc23f7279502ce3a6abd",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T11:07:35.033098Z"
+    },
+    "openbookqa": {
+      "config_hash": "9de640ed9a603eb69391f65824e7fb9128cdf8bd",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T10:56:07.103557Z"
+    }
+  },
+  "m8|int8|random|0.5|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "de0ff1974f4604d0c33a7a301e101bd68ad8a212",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T10:50:59.679467Z"
+    },
+    "openbookqa": {
+      "config_hash": "1aa82ba9398706893ad5040aff50d51071d25ead",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T10:39:15.626381Z"
+    }
+  },
+  "m8|int8|random|1.0|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "c21534aa0075fee0a588a430bf1455ded3aad540",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T10:33:39.210059Z"
+    },
+    "openbookqa": {
+      "config_hash": "acd47914330fc3a69fdf79d0a0febc0dad01f83c",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_random_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T10:21:00.671846Z"
+    }
+  },
+  "m8|int8|vnorm_topk|0.10|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "b3923cb658af5267ecfd847f314ba7527307986f",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T09:00:19.042321Z"
+    },
+    "openbookqa": {
+      "config_hash": "7dcb19b1bf62caca970f0ee78a5ab3118f1f0534",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T08:47:58.752836Z"
+    }
+  },
+  "m8|int8|vnorm_topk|0.1|prompt|1": {
+    "arc_c": {
+      "config_hash": "b3923cb658af5267ecfd847f314ba7527307986f",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    },
+    "openbookqa": {
+      "config_hash": "7dcb19b1bf62caca970f0ee78a5ab3118f1f0534",
+      "reason": "",
+      "run_root": "quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p10_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T00:00:00Z"
+    }
+  },
+  "m8|int8|vnorm_topk|0.25|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "a71dd56c86a6c0dd7b8b465820d2d38d9cca5b60",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T08:41:53.900243Z"
+    },
+    "openbookqa": {
+      "config_hash": "f2ba453f07869e8c77ab6e346031c34dcd0a712d",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p25_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T08:30:03.198003Z"
+    }
+  },
+  "m8|int8|vnorm_topk|0.5|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "ab1f1ce857fda310ad6c33a580a67495e7b7f043",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T08:24:41.377880Z"
+    },
+    "openbookqa": {
+      "config_hash": "19b149cdd461583744aa61e11d87029f26297809",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p0p5_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T08:11:45.951772Z"
+    }
+  },
+  "m8|int8|vnorm_topk|1.0|prompt|1": {
+    "ai2-arc": {
+      "config_hash": "7ea78b6b1797b38adcbe892977c641f37854ffe2",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T08:06:21.051954Z"
+    },
+    "openbookqa": {
+      "config_hash": "08f3d839f8fe3a3f069b2bfec45014a65990f0c8",
+      "reason": "",
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step8_int8_vnorm_topk_p1p0_prompt_sf1_20260128_045934",
+      "smoke": false,
+      "status": "complete",
+      "timestamp": "2026-01-28T07:53:34.912118Z"
     }
   }
 }

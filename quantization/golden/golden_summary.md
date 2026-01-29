@@ -31,12 +31,14 @@ All results are full runs (OpenBookQA: 500 samples, ARC-C: 1150 samples).
 | M3 front | int8 | 1.00 | openbookqa | 0.528 |
 | M3 front | int8 | 1.00 | arc_c | 0.550 |
 
-## Extension Summary (M6–M8)
+## Extension Summary (M5–M8)
 
-These are full runs. M7 is an alignment ablation on the same model pair (heterogeneity runs are still pending).
+These are full runs. M7 includes alignment ablation on the same model pair and heterogeneity with alignment on (alignment-off failed for the hetero pair).
 
 | Milestone | Setting | Dataset | Accuracy | Notes |
 |---|---|---|---|---|
+| M5 QAT | projector QAT int8 | openbookqa | 0.396 | Full run |
+| M5 QAT | projector QAT int8 | arc_c | 0.402 | Full run |
 | M6 mixed precision | INT8 + last4 layers FP16 | openbookqa | 0.528 | Full run |
 | M6 mixed precision | INT8 + last4 layers FP16 | arc_c | 0.553 | Full run |
 | M6 mixed precision | INT8 + last2 layers FP16 | openbookqa | 0.530 | Full run |
@@ -47,6 +49,8 @@ These are full runs. M7 is an alignment ablation on the same model pair (heterog
 | M7 alignment ablation | alignment off | arc_c | 0.550 | Same-model pair |
 | M7 alignment ablation | alignment on | openbookqa | 0.468 | Same-model pair |
 | M7 alignment ablation | alignment on | arc_c | 0.496 | Same-model pair |
+| M7 heterogeneity | alignment on | openbookqa | 0.442 | Qwen3->Llama3.2 |
+| M7 heterogeneity | alignment on | arc_c | 0.478 | Qwen3->Llama3.2 |
 | M8 selective transfer | int8 front p=0.5 | openbookqa | 0.448 | Full run |
 | M8 selective transfer | int8 front p=0.5 | arc_c | 0.476 | Full run |
 | M8 selective transfer | int8 vnorm_topk p=0.5 | openbookqa | 0.524 | Full run |

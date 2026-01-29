@@ -127,14 +127,14 @@ Back  & 55.7 & 57.2 & 56.2 & 53.7 \\
 Figure~\ref{fig:budget-openbookqa} and Figure~\ref{fig:budget-arc} report accuracy versus effective transmitted bytes. We plot the communication budget on a log scale when the dynamic range is large; each point is annotated with the retained cache proportion. These curves provide a single, comparable view across precision (FP16/INT8/INT4) and cache-length reduction.
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.98\linewidth]{quantization/analysis/m4_budget_curve/budget_curve_openbookqa.png}
+\includegraphics[width=0.98\linewidth]{../analysis/m4_budget_curve/budget_curve_openbookqa.png}
 \caption{Accuracy vs. communication budget (OpenBookQA).}
 \label{fig:budget-openbookqa}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.98\linewidth]{quantization/analysis/m4_budget_curve/budget_curve_arc_c.png}
+\includegraphics[width=0.98\linewidth]{../analysis/m4_budget_curve/budget_curve_arc_c.png}
 \caption{Accuracy vs. communication budget (ARC-C).}
 \label{fig:budget-arc}
 \end{figure}
@@ -143,7 +143,7 @@ Figure~\ref{fig:budget-openbookqa} and Figure~\ref{fig:budget-arc} report accura
 Across all cache lengths, \textbf{back-pruning} (keeping later instruction tokens) consistently outperforms \textbf{front-pruning}. At 50\% cache length, for example, back-pruning retains near-baseline accuracy while front-pruning degrades sharply. This suggests late instruction tokens carry higher utility for cross-model KV fusion, a useful design signal for future selective transfer methods.
 
 \subsection{Main-Conference Extensions (Preliminary)}
-We report early results for two main-conference extensions. Mixed precision (INT8 with FP16 in the last layers) remains near baseline. An alignment-only ablation (same model pair, alignment enabled) reduces accuracy, suggesting alignment should be reserved for heterogeneous pairs.
+We report early results for main-conference extensions. Mixed precision (INT8 with FP16 in the last layers) remains near baseline. Projector-only QAT (INT8) currently degrades accuracy (39.6/40.2), indicating that longer training or recipe tuning is needed. An alignment-only ablation (same model pair, alignment enabled) reduces accuracy, suggesting alignment should be reserved for heterogeneous pairs. For a heterogeneous pair (Qwen3$\rightarrow$Llama3.2), alignment-on yields 44.2/47.8; alignment-off was unstable and is omitted.
 \begin{table}[ht]
 \centering
 \caption{Preliminary extension results (\% accuracy).}
@@ -152,11 +152,13 @@ We report early results for two main-conference extensions. Mixed precision (INT
 Setting & OpenBookQA & ARC-C \\
 \midrule
 Mixed precision (INT8 + last-4 FP16) & 52.8 & 55.0 \\
+QAT (projector-only, INT8) & 39.6 & 40.2 \\
 Alignment ablation (same pair) & 46.8 & 49.6 \\
+Hetero pair (Qwen3$\rightarrow$Llama3.2, align on) & 44.2 & 47.8 \\
 \bottomrule
 \end{tabular}
 \end{table}
-For SparseC2C (token selection), the p=1.0 run matches baseline; p=0.5 yields 50.2 on OpenBookQA with ARC-C pending. Full grids will be reported in the main-conference track.
+For SparseC2C (token selection), vnorm/knorm scoring preserves accuracy under aggressive token budgets. At p=0.5, INT8 vnorm achieves 52.4/56.2 (OpenBookQA/ARC-C) while front pruning drops to 44.8/47.6. Full grids are reported in the main-conference track.
 
 \section{Discussion}
 Quantized C2C provides large bandwidth reductions with limited accuracy drop. Cache pruning further improves the tradeoff, suggesting a practical path to deployable multi-LLM communication. A main-conference path includes QAT recovery, mixed-precision schedules, heterogeneous model pairs, and SparseC2C token selection.
