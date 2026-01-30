@@ -79,6 +79,8 @@ RUN_MILESTONE_5="${RUN_MILESTONE_5:-0}"
 RUN_MILESTONE_6="${RUN_MILESTONE_6:-0}"
 RUN_MILESTONE_7="${RUN_MILESTONE_7:-0}"
 RUN_MILESTONE_8="${RUN_MILESTONE_8:-0}"
+RUN_MILESTONE_9="${RUN_MILESTONE_9:-0}"
+RUN_MILESTONE_10="${RUN_MILESTONE_10:-0}"
 RUN_FULL="${RUN_FULL:-0}"
 PREFLIGHT="${PREFLIGHT:-1}"
 DRY_RUN="${DRY_RUN:-0}"
@@ -143,6 +145,35 @@ M8_SPARSE_FUSE="${M8_SPARSE_FUSE:-1}"
 M8_SPARSE_FUSE_MODES="${M8_SPARSE_FUSE_MODES:-${M8_SPARSE_FUSE}}"
 PREFLIGHT_M8_PROPORTION="${PREFLIGHT_M8_PROPORTION:-0.25}"
 PREFLIGHT_M8_MODE="${PREFLIGHT_M8_MODE:-proj_vnorm_topk}"
+
+# Milestone 9 grid (delta selection).
+M9_KV_QUANT_SCHEME="${M9_KV_QUANT_SCHEME:-int8}"
+M9_SELECT_MODES="${M9_SELECT_MODES:-vnorm_topk proj_vnorm_topk delta_proj_vnorm_topk}"
+M9_SELECT_PROPORTIONS="${M9_SELECT_PROPORTIONS:-1.0 0.5 0.25 0.10}"
+M9_SELECT_MIN_TOKENS="${M9_SELECT_MIN_TOKENS:-1}"
+M9_SELECT_SCOPES="${M9_SELECT_SCOPES:-prompt}"
+M9_SCATTER_FILL="${M9_SCATTER_FILL:-receiver_only}"
+M9_SPARSE_FUSE="${M9_SPARSE_FUSE:-1}"
+M9_SPARSE_FUSE_MODES="${M9_SPARSE_FUSE_MODES:-${M9_SPARSE_FUSE}}"
+M9_EXTRA_LOW_PROP="${M9_EXTRA_LOW_PROP:-}"
+M9_EXTRA_LOW_MODE="${M9_EXTRA_LOW_MODE:-delta_proj_vnorm_topk}"
+
+# Milestone 10 grid (RD token x precision).
+M10_KV_QUANT_SCHEME="${M10_KV_QUANT_SCHEME:-int8}"
+M10_KV_QUANT_AXIS="${M10_KV_QUANT_AXIS:-head}"
+M10_BASE_MODEL="${M10_BASE_MODEL:-Qwen/Qwen3-0.6B}"
+M10_TEACHER_MODEL="${M10_TEACHER_MODEL:-Qwen/Qwen2.5-0.5B-Instruct}"
+M10_SELECT_MODE="${M10_SELECT_MODE:-delta_proj_vnorm_topk}"
+M10_SELECT_SCOPE="${M10_SELECT_SCOPE:-prompt}"
+M10_SELECT_MIN_TOKENS="${M10_SELECT_MIN_TOKENS:-1}"
+M10_SCATTER_FILL="${M10_SCATTER_FILL:-receiver_only}"
+M10_TOKEN_PRECISION_CANDIDATES="${M10_TOKEN_PRECISION_CANDIDATES:-drop,int4,int8}"
+M10_BUDGET_FRACS="${M10_BUDGET_FRACS:-0.03125 0.0625 0.125 0.25}"
+M10_BUDGET_BYTES="${M10_BUDGET_BYTES:-}"
+M10_AVG_INPUT_LEN="${M10_AVG_INPUT_LEN:-256}"
+M10_INDEX_BYTES="${M10_INDEX_BYTES:-2}"
+M10_INCLUDE_SCALE_OVERHEAD="${M10_INCLUDE_SCALE_OVERHEAD:-1}"
+M10_TIMING_SYNC="${M10_TIMING_SYNC:-0}"
 
 handle_signal() {
   echo "Received preemption signal. Job will exit and can be requeued."
@@ -466,6 +497,54 @@ sanitize_prop() {
   echo "$1" | sed 's/\./p/g'
 }
 
+sanitize_frac() {
+  echo "$1" | sed 's/\//over/g' | sed 's/\./p/g'
+}
+
+compute_rd_budget_bytes() {
+  local frac="$1"
+  local avg_len="$2"
+  local base_model="$3"
+  local index_bytes="$4"
+  local axis="$5"
+  local include_scale="$6"
+  local kv_scheme="$7"
+  "${PYTHON[@]}" - <<'PY' "${frac}" "${avg_len}" "${base_model}" "${index_bytes}" "${axis}" "${include_scale}" "${kv_scheme}"
+import sys
+from transformers import AutoConfig
+
+frac = float(sys.argv[1])
+avg_len = float(sys.argv[2])
+base_model = sys.argv[3]
+index_bytes = float(sys.argv[4])
+axis = sys.argv[5]
+include_scale = sys.argv[6] == "1"
+scheme = sys.argv[7].lower()
+
+cfg = AutoConfig.from_pretrained(base_model)
+num_heads = getattr(cfg, "num_key_value_heads", None) or cfg.num_attention_heads
+head_dim = cfg.hidden_size // cfg.num_attention_heads
+
+if scheme in ("int4", "nf4"):
+    bytes_per_elem = 0.5
+elif scheme in ("int8", "fp8"):
+    bytes_per_elem = 1.0
+else:
+    bytes_per_elem = 2.0
+
+payload = 2 * num_heads * head_dim * bytes_per_elem
+full_layer = avg_len * (payload + index_bytes)
+if include_scale:
+    if axis == "head":
+        full_layer += 2 * num_heads * 4
+    else:
+        full_layer += 2 * 4
+
+budget = full_layer * frac
+print(f"{budget:.6f}")
+PY
+}
+
 preflight_cleanup() {
   local run_root="$1"
   if [ -d "${run_root}" ]; then
@@ -584,6 +663,101 @@ run_preflight() {
       --kv-select-scope "${pre_scope}" \
       --kv-select-min-tokens "${M8_SELECT_MIN_TOKENS}" \
       --kv-scatter-fill "${M8_SCATTER_FILL}" \
+      --prep-only \
+      --run-tag "${pre_tag}" \
+      "${pre_extra_args[@]}"
+    preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${pre_tag}"
+  fi
+
+  if [ "${RUN_MILESTONE_9}" = "1" ]; then
+    local pre_prop="${M9_SELECT_PROPORTIONS}"
+    if [ -n "${pre_prop}" ]; then
+      pre_prop="${pre_prop%% *}"
+    else
+      pre_prop="0.25"
+    fi
+    local pre_mode="${M9_SELECT_MODES}"
+    if [ -n "${pre_mode}" ]; then
+      pre_mode="${pre_mode%% *}"
+    else
+      pre_mode="delta_proj_vnorm_topk"
+    fi
+    local pre_scope="${M9_SELECT_SCOPES}"
+    if [ -n "${pre_scope}" ]; then
+      pre_scope="${pre_scope%% *}"
+    else
+      pre_scope="prompt"
+    fi
+    local pre_sparse="${M9_SPARSE_FUSE_MODES}"
+    if [ -n "${pre_sparse}" ]; then
+      pre_sparse="${pre_sparse%% *}"
+    else
+      pre_sparse="${M9_SPARSE_FUSE}"
+    fi
+    local pre_prop_tag
+    pre_prop_tag="$(sanitize_prop "${pre_prop}")"
+    local pre_tag="preflight_step9_${pre_mode}_p${pre_prop_tag}_${pre_scope}_sf${pre_sparse}_${RUN_TAG_PREFIX}"
+    local pre_extra_args=()
+    if [ "${pre_sparse}" = "0" ]; then
+      pre_extra_args+=( "--no-kv-sparse-fuse" )
+    fi
+    "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --kv-quant-scheme "${M9_KV_QUANT_SCHEME}" \
+      --kv-select-mode "${pre_mode}" \
+      --kv-select-proportion "${pre_prop}" \
+      --kv-select-scope "${pre_scope}" \
+      --kv-select-min-tokens "${M9_SELECT_MIN_TOKENS}" \
+      --kv-scatter-fill "${M9_SCATTER_FILL}" \
+      --prep-only \
+      --run-tag "${pre_tag}" \
+      "${pre_extra_args[@]}"
+    preflight_cleanup "${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${pre_tag}"
+  fi
+
+  if [ "${RUN_MILESTONE_10}" = "1" ]; then
+    local pre_budget=""
+    if [ -n "${M10_BUDGET_BYTES}" ]; then
+      pre_budget="${M10_BUDGET_BYTES%% *}"
+    else
+      local pre_frac="${M10_BUDGET_FRACS}"
+      if [ -n "${pre_frac}" ]; then
+        pre_frac="${pre_frac%% *}"
+      else
+        pre_frac="0.125"
+      fi
+      pre_budget="$(compute_rd_budget_bytes "${pre_frac}" "${M10_AVG_INPUT_LEN}" "${M10_BASE_MODEL}" "${M10_INDEX_BYTES}" "${M10_KV_QUANT_AXIS}" "${M10_INCLUDE_SCALE_OVERHEAD}" "${M10_KV_QUANT_SCHEME}")"
+    fi
+    local pre_tag="preflight_step10_rd_${RUN_TAG_PREFIX}"
+    local pre_extra_args=()
+    if [ -n "${M10_BASE_MODEL}" ]; then
+      pre_extra_args+=( "--base-model-override" "${M10_BASE_MODEL}" )
+    fi
+    if [ -n "${M10_TEACHER_MODEL}" ]; then
+      pre_extra_args+=( "--teacher-model-override" "${M10_TEACHER_MODEL}" )
+    fi
+    if [ "${M10_INCLUDE_SCALE_OVERHEAD}" = "1" ]; then
+      pre_extra_args+=( "--kv-include-scale-overhead" )
+    fi
+    if [ "${M10_TIMING_SYNC}" = "1" ]; then
+      pre_extra_args+=( "--kv-timing-sync" )
+    fi
+    "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --kv-quant-scheme "${M10_KV_QUANT_SCHEME}" \
+      --kv-quant-axis "${M10_KV_QUANT_AXIS}" \
+      --kv-select-mode "${M10_SELECT_MODE}" \
+      --kv-select-proportion "1.0" \
+      --kv-select-scope "${M10_SELECT_SCOPE}" \
+      --kv-select-min-tokens "${M10_SELECT_MIN_TOKENS}" \
+      --kv-scatter-fill "${M10_SCATTER_FILL}" \
+      --token-precision-mode rd_greedy \
+      --token-precision-candidates "${M10_TOKEN_PRECISION_CANDIDATES}" \
+      --token-precision-budget-bytes "${pre_budget}" \
+      --token-precision-scope "${M10_SELECT_SCOPE}" \
+      --kv-index-dtype-bytes "${M10_INDEX_BYTES}" \
       --prep-only \
       --run-tag "${pre_tag}" \
       "${pre_extra_args[@]}"
@@ -823,6 +997,130 @@ if [ "${RUN_MILESTONE_8}" = "1" ]; then
     done
   done
   git_autopush "m8"
+fi
+
+# =============================================================================
+# Milestone 9: Delta selection (receiver-aware token scoring).
+# =============================================================================
+if [ "${RUN_MILESTONE_9}" = "1" ]; then
+  for MODE in ${M9_SELECT_MODES}; do
+    for PROP in ${M9_SELECT_PROPORTIONS}; do
+      for SCOPE in ${M9_SELECT_SCOPES}; do
+        for SPARSE_FUSE_MODE in ${M9_SPARSE_FUSE_MODES}; do
+          PROP_TAG="$(sanitize_prop "${PROP}")"
+          scope_tag="${SCOPE}"
+          sf_tag="sf${SPARSE_FUSE_MODE}"
+          RUN_TAG="step9_${M9_KV_QUANT_SCHEME}_${MODE}_p${PROP_TAG}_${scope_tag}_${sf_tag}_${RUN_TAG_PREFIX}"
+          EXTRA_ARGS=()
+          if [ "${SPARSE_FUSE_MODE}" = "0" ]; then
+            EXTRA_ARGS+=( "--no-kv-sparse-fuse" )
+          fi
+          "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
+            --env "${CONDA_ENV}" \
+            --mode gpu \
+            --kv-quant-scheme "${M9_KV_QUANT_SCHEME}" \
+            --kv-select-mode "${MODE}" \
+            --kv-select-proportion "${PROP}" \
+            --kv-select-scope "${SCOPE}" \
+            --kv-select-min-tokens "${M9_SELECT_MIN_TOKENS}" \
+            --kv-scatter-fill "${M9_SCATTER_FILL}" \
+            --prep-only \
+            --run-tag "${RUN_TAG}" \
+            "${EXTRA_ARGS[@]}"
+          RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
+          run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+          run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+        done
+      done
+    done
+  done
+  if [ -n "${M9_EXTRA_LOW_PROP}" ]; then
+    PROP_TAG="$(sanitize_prop "${M9_EXTRA_LOW_PROP}")"
+    RUN_TAG="step9_${M9_KV_QUANT_SCHEME}_${M9_EXTRA_LOW_MODE}_p${PROP_TAG}_prompt_sf${M9_SPARSE_FUSE}_${RUN_TAG_PREFIX}"
+    EXTRA_ARGS=()
+    if [ "${M9_SPARSE_FUSE}" = "0" ]; then
+      EXTRA_ARGS+=( "--no-kv-sparse-fuse" )
+    fi
+    "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --kv-quant-scheme "${M9_KV_QUANT_SCHEME}" \
+      --kv-select-mode "${M9_EXTRA_LOW_MODE}" \
+      --kv-select-proportion "${M9_EXTRA_LOW_PROP}" \
+      --kv-select-scope "prompt" \
+      --kv-select-min-tokens "${M9_SELECT_MIN_TOKENS}" \
+      --kv-scatter-fill "${M9_SCATTER_FILL}" \
+      --prep-only \
+      --run-tag "${RUN_TAG}" \
+      "${EXTRA_ARGS[@]}"
+    RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
+    run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${M9_EXTRA_LOW_MODE}|${M9_EXTRA_LOW_PROP}|prompt|${M9_SPARSE_FUSE}"
+  fi
+  git_autopush "m9"
+fi
+
+# =============================================================================
+# Milestone 10: RD-C2C (token x precision scheduling).
+# =============================================================================
+if [ "${RUN_MILESTONE_10}" = "1" ]; then
+  BUDGET_LIST=()
+  TAG_LIST=()
+  if [ -n "${M10_BUDGET_BYTES}" ]; then
+    idx=0
+    for BUDGET in ${M10_BUDGET_BYTES}; do
+      idx=$((idx+1))
+      BUDGET_LIST+=( "${BUDGET}" )
+      TAG_LIST+=( "bytes${idx}" )
+    done
+  else
+    for FRAC in ${M10_BUDGET_FRACS}; do
+      BUDGET="$(compute_rd_budget_bytes "${FRAC}" "${M10_AVG_INPUT_LEN}" "${M10_BASE_MODEL}" "${M10_INDEX_BYTES}" "${M10_KV_QUANT_AXIS}" "${M10_INCLUDE_SCALE_OVERHEAD}" "${M10_KV_QUANT_SCHEME}")"
+      BUDGET_LIST+=( "${BUDGET}" )
+      TAG_LIST+=( "$(sanitize_frac "${FRAC}")" )
+    done
+  fi
+
+  EXTRA_ARGS=()
+  if [ -n "${M10_BASE_MODEL}" ]; then
+    EXTRA_ARGS+=( "--base-model-override" "${M10_BASE_MODEL}" )
+  fi
+  if [ -n "${M10_TEACHER_MODEL}" ]; then
+    EXTRA_ARGS+=( "--teacher-model-override" "${M10_TEACHER_MODEL}" )
+  fi
+  if [ "${M10_INCLUDE_SCALE_OVERHEAD}" = "1" ]; then
+    EXTRA_ARGS+=( "--kv-include-scale-overhead" )
+  fi
+  if [ "${M10_TIMING_SYNC}" = "1" ]; then
+    EXTRA_ARGS+=( "--kv-timing-sync" )
+  fi
+
+  for i in "${!BUDGET_LIST[@]}"; do
+    BUDGET="${BUDGET_LIST[$i]}"
+    TAG="${TAG_LIST[$i]}"
+    RUN_TAG="step10_${M10_KV_QUANT_SCHEME}_rd_${TAG}_${M10_SELECT_SCOPE}_${RUN_TAG_PREFIX}"
+    "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
+      --env "${CONDA_ENV}" \
+      --mode gpu \
+      --kv-quant-scheme "${M10_KV_QUANT_SCHEME}" \
+      --kv-quant-axis "${M10_KV_QUANT_AXIS}" \
+      --kv-select-mode "${M10_SELECT_MODE}" \
+      --kv-select-proportion "1.0" \
+      --kv-select-scope "${M10_SELECT_SCOPE}" \
+      --kv-select-min-tokens "${M10_SELECT_MIN_TOKENS}" \
+      --kv-scatter-fill "${M10_SCATTER_FILL}" \
+      --token-precision-mode rd_greedy \
+      --token-precision-candidates "${M10_TOKEN_PRECISION_CANDIDATES}" \
+      --token-precision-budget-bytes "${BUDGET}" \
+      --token-precision-scope "${M10_SELECT_SCOPE}" \
+      --kv-index-dtype-bytes "${M10_INDEX_BYTES}" \
+      --prep-only \
+      --run-tag "${RUN_TAG}" \
+      "${EXTRA_ARGS[@]}"
+    RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
+    run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m10|${M10_KV_QUANT_SCHEME}|${TAG}|${M10_SELECT_SCOPE}"
+    run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log" "m10|${M10_KV_QUANT_SCHEME}|${TAG}|${M10_SELECT_SCOPE}"
+  done
+  git_autopush "m10"
 fi
 
 echo "Done."
