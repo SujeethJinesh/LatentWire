@@ -335,7 +335,9 @@ def estimate_bytes(base_model_stats, kv_cache_proportion=1.0, kv_quant_config=No
     }.get(scheme, 2.0)
 
     effective_proportion = float(kv_cache_proportion or 1.0)
+    token_precision_mode = None
     if kv_transfer_config and kv_transfer_config.get("enabled", False):
+        token_precision_mode = (kv_transfer_config.get("token_precision_mode") or "").lower()
         token_prop = kv_transfer_config.get("token_select_proportion")
         if token_prop is not None:
             effective_proportion *= float(token_prop)
@@ -347,13 +349,18 @@ def estimate_bytes(base_model_stats, kv_cache_proportion=1.0, kv_quant_config=No
         if index_bytes:
             index_bytes_per_token = effective_proportion * float(index_bytes)
 
-    return {
+    estimate = {
         "bytes_per_element": bytes_per_element,
         "bytes_per_token": bytes_per_token,
         "effective_proportion": effective_proportion,
         "index_bytes_per_token": index_bytes_per_token,
         "formula": "bytes_per_token * avg_input_length",
     }
+    if token_precision_mode == "rd_greedy":
+        estimate["token_precision_budget_bytes"] = kv_transfer_config.get("token_precision_budget_bytes")
+        estimate["token_precision_candidates"] = kv_transfer_config.get("token_precision_candidates")
+        estimate["token_precision_mode"] = token_precision_mode
+    return estimate
 
 
 def collect_system_info():
@@ -1162,7 +1169,7 @@ def main():
     )
     parser.add_argument(
         "--kv-select-mode",
-        choices=["vnorm_topk", "knorm_topk", "proj_vnorm_topk", "random", "front", "back"],
+        choices=["vnorm_topk", "knorm_topk", "proj_vnorm_topk", "delta_proj_vnorm_topk", "random", "front", "back"],
         default="vnorm_topk",
         help="Token selection mode for sparse transfer (proj_vnorm_topk scores in receiver space)",
     )
@@ -1183,6 +1190,41 @@ def main():
         type=int,
         default=64,
         help="Minimum number of tokens to keep during selection",
+    )
+    parser.add_argument(
+        "--token-precision-mode",
+        choices=["rd_greedy", "none"],
+        default=None,
+        help="Token precision allocator mode (rd_greedy for M10).",
+    )
+    parser.add_argument(
+        "--token-precision-candidates",
+        default="drop,int4,int8",
+        help="Comma-separated precision candidates for RD allocator (e.g., drop,int4,int8).",
+    )
+    parser.add_argument(
+        "--token-precision-budget-bytes",
+        type=float,
+        default=None,
+        help="Per-layer token precision budget in bytes (RD allocator).",
+    )
+    parser.add_argument(
+        "--token-precision-budget-bits-per-elem",
+        type=float,
+        default=None,
+        help="Optional derived bits/elem budget (logged for reference).",
+    )
+    parser.add_argument(
+        "--token-precision-calib-n",
+        type=int,
+        default=64,
+        help="Calibration samples for RD allocator (logged for reference).",
+    )
+    parser.add_argument(
+        "--token-precision-scope",
+        choices=["prompt", "instruction_only", "all_context"],
+        default=None,
+        help="Scope for token-precision allocation (defaults to kv_select_scope).",
     )
     parser.add_argument(
         "--kv-sparse-fuse",
@@ -1213,6 +1255,11 @@ def main():
         "--kv-include-scale-overhead",
         action="store_true",
         help="Include quantization scale overhead in effective bytes",
+    )
+    parser.add_argument(
+        "--kv-timing-sync",
+        action="store_true",
+        help="Synchronize CUDA for KV transfer timing (slower but more accurate).",
     )
     parser.add_argument(
         "--local-dataset",
@@ -1285,6 +1332,15 @@ def main():
     if args.kv_select_min_tokens < 1:
         die("kv_select_min_tokens must be >= 1")
 
+    token_precision_mode = None
+    if args.token_precision_mode and args.token_precision_mode.lower() != "none":
+        token_precision_mode = args.token_precision_mode.lower()
+    token_precision_candidates = [
+        item.strip().lower()
+        for item in (args.token_precision_candidates or "").split(",")
+        if item.strip()
+    ]
+
     kv_transfer_enabled = not args.disable_kv_transfer
     kv_transfer_config = {
         "enabled": kv_transfer_enabled,
@@ -1296,7 +1352,18 @@ def main():
         "scatter_fill": args.kv_scatter_fill,
         "index_dtype_bytes": int(args.kv_index_dtype_bytes),
         "include_scale_overhead": bool(args.kv_include_scale_overhead),
+        "timing_sync": bool(args.kv_timing_sync),
     }
+    if token_precision_mode:
+        kv_transfer_config["token_precision_mode"] = token_precision_mode
+        if token_precision_candidates:
+            kv_transfer_config["token_precision_candidates"] = token_precision_candidates
+        if args.token_precision_budget_bytes is not None:
+            kv_transfer_config["token_precision_budget_bytes"] = float(args.token_precision_budget_bytes)
+        if args.token_precision_budget_bits_per_elem is not None:
+            kv_transfer_config["token_precision_budget_bits_per_elem"] = float(args.token_precision_budget_bits_per_elem)
+        kv_transfer_config["token_precision_calib_n"] = int(args.token_precision_calib_n)
+        kv_transfer_config["token_precision_scope"] = args.token_precision_scope or args.kv_select_scope
 
     run_root = None
     try:

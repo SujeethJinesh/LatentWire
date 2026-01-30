@@ -341,6 +341,13 @@ def parse_run(run_root):
         sparse_fuse = None
         index_dtype_bytes = None
         include_scale_overhead = None
+        token_precision_mode = None
+        token_precision_candidates = None
+        token_precision_budget_bytes = None
+        token_precision_budget_bits = None
+        kv_transfer_stats = None
+        rd_bytes_used_mean = None
+        rd_budget_bytes_mean = None
         if isinstance(kv_transfer_config, dict) and kv_transfer_config.get("enabled", False):
             token_select_mode = kv_transfer_config.get("token_select_mode")
             token_select_proportion = kv_transfer_config.get("token_select_proportion")
@@ -348,6 +355,25 @@ def parse_run(run_root):
             sparse_fuse = kv_transfer_config.get("sparse_fuse")
             index_dtype_bytes = kv_transfer_config.get("index_dtype_bytes")
             include_scale_overhead = kv_transfer_config.get("include_scale_overhead")
+            token_precision_mode = kv_transfer_config.get("token_precision_mode")
+            token_precision_candidates = kv_transfer_config.get("token_precision_candidates")
+            token_precision_budget_bytes = kv_transfer_config.get("token_precision_budget_bytes")
+            token_precision_budget_bits = kv_transfer_config.get("token_precision_budget_bits_per_elem")
+        if isinstance(summary, dict):
+            kv_transfer_stats = summary.get("kv_transfer_stats")
+            if isinstance(kv_transfer_stats, dict):
+                rd_bytes_used_mean = safe_float(kv_transfer_stats.get("rd_bytes_used_mean"))
+                if rd_bytes_used_mean is None:
+                    rd_bytes_used_sum = safe_float(kv_transfer_stats.get("rd_bytes_used_sum"))
+                    count = safe_float(kv_transfer_stats.get("count"))
+                    if rd_bytes_used_sum is not None and count:
+                        rd_bytes_used_mean = rd_bytes_used_sum / count
+                rd_budget_bytes_mean = safe_float(kv_transfer_stats.get("rd_budget_bytes_mean"))
+                if rd_budget_bytes_mean is None:
+                    rd_budget_bytes_sum = safe_float(kv_transfer_stats.get("rd_budget_bytes_sum"))
+                    count = safe_float(kv_transfer_stats.get("count"))
+                    if rd_budget_bytes_sum is not None and count:
+                        rd_budget_bytes_mean = rd_budget_bytes_sum / count
         length_stats = aggregate_length_stats(dataset_dir)
         accuracy = safe_float(summary.get("overall_accuracy"))
         avg_input = extract_avg_input_length(summary)
@@ -369,6 +395,12 @@ def parse_run(run_root):
                 "token_select_mode": token_select_mode,
                 "token_select_proportion": token_select_proportion,
                 "token_select_scope": token_select_scope,
+                "token_precision_mode": token_precision_mode,
+                "token_precision_candidates": token_precision_candidates,
+                "token_precision_budget_bytes": token_precision_budget_bytes,
+                "token_precision_budget_bits": token_precision_budget_bits,
+                "rd_bytes_used_mean": rd_bytes_used_mean,
+                "rd_budget_bytes_mean": rd_budget_bytes_mean,
                 "sparse_fuse": sparse_fuse,
                 "index_dtype_bytes": index_dtype_bytes,
                 "include_scale_overhead": include_scale_overhead,
@@ -394,6 +426,12 @@ def write_csv(rows, out_path):
         "token_select_mode",
         "token_select_proportion",
         "token_select_scope",
+        "token_precision_mode",
+        "token_precision_candidates",
+        "token_precision_budget_bytes",
+        "token_precision_budget_bits",
+        "rd_bytes_used_mean",
+        "rd_budget_bytes_mean",
         "sparse_fuse",
         "index_dtype_bytes",
         "include_scale_overhead",
@@ -622,6 +660,12 @@ def main():
             except Exception:
                 pass
         bytes_seq = avg_input_length * effective_prop * bpt
+        if row.get("token_precision_mode") == "rd_greedy" and row.get("rd_bytes_used_mean") is not None and model_stats:
+            bytes_seq = float(row["rd_bytes_used_mean"]) * float(model_stats["num_layers"])
+            row["bytes_per_sequence"] = bytes_seq
+            row["bytes_per_sequence_mib"] = bytes_seq / (1024.0 * 1024.0)
+            enriched.append(row)
+            continue
         index_bytes = 0.0
         if row.get("index_dtype_bytes") is not None:
             try:
