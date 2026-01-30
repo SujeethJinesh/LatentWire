@@ -26,6 +26,15 @@ Recommended setup:
 - `.bashrc` sources `/workspace/env.sh` on login.
 - Cache & checkpoints on `/workspace` to avoid container root.
 
+**RunPod bootstrap checks (new):**
+```
+bash quantization/scripts/runpod_bootstrap.sh
+```
+If you want it to auto-install tmux/vim, run:
+```
+bash quantization/scripts/runpod_bootstrap.sh --install
+```
+
 **Required env vars:**
 ```
 export HF_HOME=/workspace/.cache/huggingface
@@ -202,4 +211,3 @@ tmux new -d -s m5_run "cd /workspace/LatentWire && source /workspace/env.sh && R
 2) Run M7 eval with `M7_CHECKPOINT_DIR` set
 3) Run M5 full QAT (W&B disabled)
 4) Pull logs back to local, update goldens + registry, update paper
-

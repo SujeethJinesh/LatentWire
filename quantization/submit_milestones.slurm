@@ -65,6 +65,12 @@ export WANDB_MODE="${WANDB_MODE:-disabled}"
 export WANDB_DISABLED="${WANDB_DISABLED:-true}"
 export WANDB_SILENT="${WANDB_SILENT:-true}"
 
+# RunPod bootstrap checks (fail fast on missing pod setup).
+RUNPOD_BOOTSTRAP="${RUNPOD_BOOTSTRAP:-1}"
+if [ "${RUNPOD_BOOTSTRAP}" = "1" ] && [ -x "quantization/scripts/runpod_bootstrap.sh" ]; then
+  bash quantization/scripts/runpod_bootstrap.sh
+fi
+
 # Guard: ensure HF auth is present when gated models are used (Llama/Gemma).
 if [ -z "${HF_TOKEN:-}" ]; then
   echo "ERROR: HF_TOKEN is not set. Export HF_TOKEN or run 'huggingface-cli login' before launching." >&2
