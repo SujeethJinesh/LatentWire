@@ -988,5 +988,15 @@
       "status": "complete",
       "timestamp": "2026-01-28T07:53:34.912118Z"
     }
+  },
+  "m9|int8|vnorm_topk|1.0|prompt|1": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_vnorm_topk_p1p0_prompt_sf1_20260131_202705_m9m10",
+      "config_hash": "5a9f26de67ce1dd57cde660eb927a0228dde78d8",
+      "reason": "",
+      "timestamp": "2026-01-31T20:32:39.403462Z"
+    }
   }
 }
