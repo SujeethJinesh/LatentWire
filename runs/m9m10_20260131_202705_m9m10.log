@@ -1034,3 +1034,14 @@ CoT outputs saved to /workspace/LatentWire/quantization/data/step_8_selective_tr
 Evaluation complete!
 Overall accuracy: 52.02%
 Eval ai2-arc: [400, 600) of 1172
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Please install qwen-vl-utils to use VLM models
+Using config:  /workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_vnorm_topk_p1p0_prompt_sf1_20260131_202705_m9m10/configs/arc_c.yaml
+Evaluating on dataset: ai2-arc
+Available GPUs: 1
+Requested GPU IDs: [0]
+Answer method: generate
+Using 1 GPUs: [0]
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
