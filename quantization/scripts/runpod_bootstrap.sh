@@ -3,12 +3,16 @@ set -euo pipefail
 
 INSTALL=0
 FORCE=0
+GENERATE_SSH=0
+WRITE_ENV=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --install) INSTALL=1 ;;
     --force) FORCE=1 ;;
+    --generate-ssh-key) GENERATE_SSH=1 ;;
+    --write-env) WRITE_ENV=1 ;;
     --help|-h)
-      echo "Usage: runpod_bootstrap.sh [--install] [--force]"
+      echo "Usage: runpod_bootstrap.sh [--install] [--force] [--generate-ssh-key] [--write-env]"
       exit 0
       ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
@@ -41,8 +45,19 @@ warn() {
 }
 
 if [ ! -f "/workspace/env.sh" ]; then
-  err "/workspace/env.sh missing."
-  cat >&2 <<'EOF'
+  if [ "${WRITE_ENV}" = "1" ]; then
+    cat > /workspace/env.sh <<'EOF'
+export HF_HOME=/workspace/.cache/huggingface
+export TRANSFORMERS_CACHE=$HF_HOME/transformers
+export C2C_CKPT_ROOT=/workspace/c2c_checkpoints
+export CONDA_EXE=/workspace/conda/bin/conda
+export HF_TOKEN=YOUR_TOKEN_HERE
+export WANDB_DISABLED=true
+EOF
+    echo "Wrote /workspace/env.sh (update HF_TOKEN)."
+  else
+    err "/workspace/env.sh missing."
+    cat >&2 <<'EOF'
 Create it with:
   cat > /workspace/env.sh <<'EOT'
 export HF_HOME=/workspace/.cache/huggingface
@@ -52,14 +67,17 @@ export CONDA_EXE=/workspace/conda/bin/conda
 export HF_TOKEN=YOUR_TOKEN_HERE
 export WANDB_DISABLED=true
 EOT
-
-Then add to ~/.bashrc:
-  grep -qxF 'source /workspace/env.sh' ~/.bashrc || echo 'source /workspace/env.sh' >> ~/.bashrc
-  source /workspace/env.sh
 EOF
-else
+  fi
+fi
+
+if [ -f "/workspace/env.sh" ]; then
   # shellcheck disable=SC1091
   source /workspace/env.sh || true
+  if ! grep -qxF 'source /workspace/env.sh' "${HOME}/.bashrc" 2>/dev/null; then
+    echo 'source /workspace/env.sh' >> "${HOME}/.bashrc"
+    echo "Added /workspace/env.sh to ~/.bashrc."
+  fi
 fi
 
 if [ -z "${HF_TOKEN:-}" ]; then
@@ -99,14 +117,21 @@ fi
 origin_url="$(git -C "${ROOT}" remote get-url origin 2>/dev/null || true)"
 if [[ "${origin_url}" == git@github.com:* ]]; then
   if [ ! -f "${HOME}/.ssh/id_ed25519" ] && [ ! -f "${HOME}/.ssh/id_rsa" ]; then
-    err "Git remote uses SSH (git@...), but no SSH key found."
-    cat >&2 <<'EOF'
+    if [ "${GENERATE_SSH}" = "1" ]; then
+      ssh-keygen -t ed25519 -C "runpod" -f "${HOME}/.ssh/id_ed25519" -N ""
+      echo "SSH key generated. Add this to GitHub:"
+      cat "${HOME}/.ssh/id_ed25519.pub"
+      err "SSH key added locally, but NOT added to GitHub yet."
+    else
+      err "Git remote uses SSH (git@...), but no SSH key found."
+      cat >&2 <<'EOF'
 Generate a key and add it to GitHub:
   ssh-keygen -t ed25519 -C "runpod"
   cat ~/.ssh/id_ed25519.pub
 Alternative (HTTPS):
   git config --global url."https://github.com/".insteadOf git@github.com:
 EOF
+    fi
   fi
 fi
 

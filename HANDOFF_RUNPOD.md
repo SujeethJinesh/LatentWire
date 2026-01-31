@@ -30,10 +30,13 @@ Recommended setup:
 ```
 bash quantization/scripts/runpod_bootstrap.sh
 ```
-If you want it to auto-install tmux/vim, run:
+**One-shot setup (recommended after pod reset):**
 ```
-bash quantization/scripts/runpod_bootstrap.sh --install
+bash quantization/scripts/runpod_bootstrap.sh --install --write-env --generate-ssh-key
 ```
+Notes:
+- `--write-env` creates `/workspace/env.sh` with placeholders (edit HF_TOKEN).
+- `--generate-ssh-key` creates a local key and prints the public key (still must be added to GitHub).
 
 **Required env vars:**
 ```

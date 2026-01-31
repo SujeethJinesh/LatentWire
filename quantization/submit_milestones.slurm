@@ -68,7 +68,8 @@ export WANDB_SILENT="${WANDB_SILENT:-true}"
 # RunPod bootstrap checks (fail fast on missing pod setup).
 RUNPOD_BOOTSTRAP="${RUNPOD_BOOTSTRAP:-1}"
 if [ "${RUNPOD_BOOTSTRAP}" = "1" ] && [ -x "quantization/scripts/runpod_bootstrap.sh" ]; then
-  bash quantization/scripts/runpod_bootstrap.sh
+  RUNPOD_BOOTSTRAP_ARGS="${RUNPOD_BOOTSTRAP_ARGS:-}"
+  bash quantization/scripts/runpod_bootstrap.sh ${RUNPOD_BOOTSTRAP_ARGS}
 fi
 
 # Guard: ensure HF auth is present when gated models are used (Llama/Gemma).
