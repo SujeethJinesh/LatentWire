@@ -1033,3 +1033,4 @@ CoT outputs saved to /workspace/LatentWire/quantization/data/step_8_selective_tr
 
 Evaluation complete!
 Overall accuracy: 52.02%
+Eval ai2-arc: [400, 600) of 1172
