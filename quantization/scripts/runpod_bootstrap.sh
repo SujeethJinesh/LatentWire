@@ -5,14 +5,16 @@ INSTALL=0
 FORCE=0
 GENERATE_SSH=0
 WRITE_ENV=0
+WRITE_TMUX=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --install) INSTALL=1 ;;
     --force) FORCE=1 ;;
     --generate-ssh-key) GENERATE_SSH=1 ;;
     --write-env) WRITE_ENV=1 ;;
+    --write-tmux-conf) WRITE_TMUX=1 ;;
     --help|-h)
-      echo "Usage: runpod_bootstrap.sh [--install] [--force] [--generate-ssh-key] [--write-env]"
+      echo "Usage: runpod_bootstrap.sh [--install] [--force] [--generate-ssh-key] [--write-env] [--write-tmux-conf]"
       exit 0
       ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
@@ -111,7 +113,22 @@ if ! command -v vim >/dev/null 2>&1; then
 fi
 
 if [ ! -f "${HOME}/.tmux.conf" ]; then
-  warn "~/.tmux.conf not found. Optional but recommended."
+  if [ "${WRITE_TMUX}" = "1" ]; then
+    cat > "${HOME}/.tmux.conf" <<'EOF'
+set -g mouse on
+set -g history-limit 100000
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+bind r source-file ~/.tmux.conf \; display-message "Reloaded ~/.tmux.conf"
+set -g status-interval 5
+set -g status-keys vi
+setw -g mode-keys vi
+EOF
+    echo "Wrote ~/.tmux.conf."
+  else
+    warn "~/.tmux.conf not found. Optional but recommended."
+  fi
 fi
 
 origin_url="$(git -C "${ROOT}" remote get-url origin 2>/dev/null || true)"
