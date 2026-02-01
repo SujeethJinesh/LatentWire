@@ -1054,6 +1054,20 @@ fi
 # =============================================================================
 if [ "${RUN_MILESTONE_7}" = "1" ]; then
   for ALIGN_MODE in ${M7_ALIGNMENT_MODES}; do
+    if [ "${ALIGN_MODE}" = "0" ]; then
+      SKIP_ALIGN0="$(python - <<'PY' "${M7_BASE_MODEL}" "${M7_TEACHER_MODEL}"
+from transformers import AutoTokenizer
+import sys
+b=AutoTokenizer.from_pretrained(sys.argv[1])
+t=AutoTokenizer.from_pretrained(sys.argv[2])
+print("1" if (b.vocab_size!=t.vocab_size or b.name_or_path!=t.name_or_path) else "0")
+PY
+)"
+      if [ "${SKIP_ALIGN0}" = "1" ]; then
+        echo "Skipping align0 for hetero (tokenizer mismatch)."
+        continue
+      fi
+    fi
     RUN_TAG="step7_align${ALIGN_MODE}_${RUN_TAG_PREFIX}"
     EXTRA_ARGS=()
     if [ -n "${M7_CHECKPOINT_DIR}" ]; then
