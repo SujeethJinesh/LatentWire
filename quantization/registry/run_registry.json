@@ -1322,8 +1322,8 @@
       },
       {
         "id": "m7_hetero_clean",
-        "status": "blocked",
-        "description": "Hetero align0 is invalid (tokenizer vocab mismatch). Run align1 only for hetero; keep align0 for same-vocab pairs."
+        "status": "complete",
+        "description": "Hetero align1 completed; align0 remains invalid due to tokenizer vocab mismatch. Use align0 only for same-vocab pairs."
       }
     ]
   }
