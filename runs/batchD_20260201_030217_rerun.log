@@ -86,8 +86,8 @@ Requirement already satisfied: certifi>=2017.4.17 in /workspace/conda/envs/roset
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=2cdf0f04e4cf6f09c1f33a8d899706472f4ecaa5bffe2f35950dccee3af7ef1c
-  Stored in directory: /tmp/pip-ephem-wheel-cache-5h_v505r/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=59aac4ad59da474248e9af2f101ea04b951f7a6509883293e09a1762870307f7
+  Stored in directory: /tmp/pip-ephem-wheel-cache-4zs8gy1l/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -108,6 +108,10 @@ Obtaining file:///workspace/LatentWire/quantization/C2C
   Preparing editable metadata (pyproject.toml): finished with status 'done'
 Requirement already satisfied: torch==2.6.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (2.6.0)
 Requirement already satisfied: transformers==4.52.4 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.52.4)
+Requirement already satisfied: datasets>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.5.0)
+Requirement already satisfied: accelerate>=0.20 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.12.0)
+Requirement already satisfied: wandb>=0.13 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.24.0)
+Requirement already satisfied: peft in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.18.1)
 Requirement already satisfied: scikit-learn>=1.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.7.2)
 Requirement already satisfied: matplotlib>=3.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (3.10.8)
 Requirement already satisfied: seaborn>=0.11 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.13.2)
@@ -116,10 +120,6 @@ Requirement already satisfied: openai in /workspace/conda/envs/rosetta/lib/pytho
 Requirement already satisfied: math_verify in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.9.0)
 Requirement already satisfied: latex2sympy2_extended in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.11.0)
 Requirement already satisfied: spaces>=0.30.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.47.0)
-Requirement already satisfied: datasets>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.5.0)
-Requirement already satisfied: accelerate>=0.20 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.12.0)
-Requirement already satisfied: wandb>=0.13 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.24.0)
-Requirement already satisfied: peft in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.18.1)
 Requirement already satisfied: filelock in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.20.3)
 Requirement already satisfied: typing-extensions>=4.10.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (4.15.0)
 Requirement already satisfied: networkx in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.4.2)
@@ -232,8 +232,8 @@ Requirement already satisfied: sniffio in /workspace/conda/envs/rosetta/lib/pyth
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=817c0b515ee6320246f910c295ae9623e5a54ba788779b9890b114674d300480
-  Stored in directory: /tmp/pip-ephem-wheel-cache-gre8ednu/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=bac029366b621fc08e9f4afa5a24a4596ba116942e4454ef74e0de352450b9fc
+  Stored in directory: /tmp/pip-ephem-wheel-cache-54jpbn8d/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -242,11 +242,11 @@ Installing collected packages: rosetta
       Successfully uninstalled rosetta-0.1.0
 Successfully installed rosetta-0.1.0
 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1121.25it/s]
+Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1057.33it/s]
 HF access OK: Qwen/Qwen3-0.6B
 HF access OK: Qwen/Qwen2.5-0.5B-Instruct
-Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step9_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/manifests/step_8_manifest.json
-Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step9_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a
+Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step9_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a/manifests/step_8_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step9_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a
 /workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
 /workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
@@ -334,8 +334,8 @@ Requirement already satisfied: certifi>=2017.4.17 in /workspace/conda/envs/roset
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=77f036aecb04bce94059d134a29cd8b7f77d634cc14bbbd0760aedb131ac8df6
-  Stored in directory: /tmp/pip-ephem-wheel-cache-qv0sz8o1/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=b170d33e20346c7927445b88178bd8a242698697cdc7e93a7c0976f33e4e84a0
+  Stored in directory: /tmp/pip-ephem-wheel-cache-oo65nvr8/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -480,8 +480,8 @@ Requirement already satisfied: sniffio in /workspace/conda/envs/rosetta/lib/pyth
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=9bafd2ceb0f9d888f698a2452978dfb6e1ff4fae6d0fe4d2f41bafbf57fcc58a
-  Stored in directory: /tmp/pip-ephem-wheel-cache-zmgvh548/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=cc5a55e0f0550bd00179453c8faa4815638d9c297e28f5bdfc44f8ee05dad9fe
+  Stored in directory: /tmp/pip-ephem-wheel-cache-mkv_yg71/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -490,11 +490,11 @@ Installing collected packages: rosetta
       Successfully uninstalled rosetta-0.1.0
 Successfully installed rosetta-0.1.0
 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 966.96it/s]
+Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1149.16it/s]
 HF access OK: Qwen/Qwen3-0.6B
 HF access OK: Qwen/Qwen2.5-0.5B-Instruct
-Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step10_rd_20260201_025146_batchD_a/manifests/step_8_manifest.json
-Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step10_rd_20260201_025146_batchD_a
+Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step10_rd_20260201_030217_rerun_D_a/manifests/step_8_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step10_rd_20260201_030217_rerun_D_a
 /workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
 Environment info: {
@@ -580,8 +580,8 @@ Requirement already satisfied: certifi>=2017.4.17 in /workspace/conda/envs/roset
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=df5827bdb5dede3bdb3289efbf6b4a8c81e65f1420ab73410dfbaa5d262f49f8
-  Stored in directory: /tmp/pip-ephem-wheel-cache-pqesr6hv/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=7391bd7d6b3917549e6606e891ff7fe62e58ce439842ef7a977198d7f6325886
+  Stored in directory: /tmp/pip-ephem-wheel-cache-e9q97son/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -726,8 +726,8 @@ Requirement already satisfied: sniffio in /workspace/conda/envs/rosetta/lib/pyth
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=090d60c7fc173327b4b52bf99b2dda184658bd60b87b974d1f76ea772c286785
-  Stored in directory: /tmp/pip-ephem-wheel-cache-7kx0v869/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=c88780191903f7eac0a8cc0928961812f769cf20e5d8285916e76e5bd2834b47
+  Stored in directory: /tmp/pip-ephem-wheel-cache-oz_46hlc/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -736,11 +736,11 @@ Installing collected packages: rosetta
       Successfully uninstalled rosetta-0.1.0
 Successfully installed rosetta-0.1.0
 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1085.10it/s]
+Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1152.40it/s]
 HF access OK: Qwen/Qwen3-0.6B
 HF access OK: Qwen/Qwen2.5-0.5B-Instruct
-Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/manifests/step_8_manifest.json
-Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a
+Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a/manifests/step_8_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a
 Traceback (most recent call last):
   File "<stdin>", line 4, in <module>
 ModuleNotFoundError: No module named 'script'
@@ -832,8 +832,8 @@ Requirement already satisfied: certifi>=2017.4.17 in /workspace/conda/envs/roset
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=db7423044eaf9d90b1b81838752526ef5fc6a6bed780b4f90e04b92090e9ddec
-  Stored in directory: /tmp/pip-ephem-wheel-cache-uybrdfo8/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=60b68c524a0fab900b0f4d23472f602c328254c6cb4e0a7302814dcbc8f921f1
+  Stored in directory: /tmp/pip-ephem-wheel-cache-ldmuyoyb/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -854,10 +854,6 @@ Obtaining file:///workspace/LatentWire/quantization/C2C
   Preparing editable metadata (pyproject.toml): finished with status 'done'
 Requirement already satisfied: torch==2.6.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (2.6.0)
 Requirement already satisfied: transformers==4.52.4 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.52.4)
-Requirement already satisfied: datasets>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.5.0)
-Requirement already satisfied: accelerate>=0.20 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.12.0)
-Requirement already satisfied: wandb>=0.13 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.24.0)
-Requirement already satisfied: peft in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.18.1)
 Requirement already satisfied: scikit-learn>=1.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.7.2)
 Requirement already satisfied: matplotlib>=3.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (3.10.8)
 Requirement already satisfied: seaborn>=0.11 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.13.2)
@@ -866,6 +862,10 @@ Requirement already satisfied: openai in /workspace/conda/envs/rosetta/lib/pytho
 Requirement already satisfied: math_verify in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.9.0)
 Requirement already satisfied: latex2sympy2_extended in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.11.0)
 Requirement already satisfied: spaces>=0.30.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.47.0)
+Requirement already satisfied: datasets>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.5.0)
+Requirement already satisfied: accelerate>=0.20 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.12.0)
+Requirement already satisfied: wandb>=0.13 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.24.0)
+Requirement already satisfied: peft in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.18.1)
 Requirement already satisfied: filelock in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.20.3)
 Requirement already satisfied: typing-extensions>=4.10.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (4.15.0)
 Requirement already satisfied: networkx in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.4.2)
@@ -978,8 +978,8 @@ Requirement already satisfied: sniffio in /workspace/conda/envs/rosetta/lib/pyth
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=253ca6a20bfe02fed0aa8a2e68439f516522f4f499a95fc472414c659a2fafde
-  Stored in directory: /tmp/pip-ephem-wheel-cache-q4z9aclj/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=070496d1bd6ddb36a6ca4e334e7deb4665291641fdfead4d9e6604554b5c52ae
+  Stored in directory: /tmp/pip-ephem-wheel-cache-rbzvyhtf/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -988,11 +988,11 @@ Installing collected packages: rosetta
       Successfully uninstalled rosetta-0.1.0
 Successfully installed rosetta-0.1.0
 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1226.61it/s]
+Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1093.51it/s]
 HF access OK: Qwen/Qwen3-0.6B
 HF access OK: Qwen/Qwen2.5-0.5B-Instruct
-Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step9_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/manifests/step_8_manifest.json
-Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step9_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b
+Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step9_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b/manifests/step_8_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step9_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b
 /workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
 /workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
@@ -1080,8 +1080,8 @@ Requirement already satisfied: certifi>=2017.4.17 in /workspace/conda/envs/roset
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=3ff60e75cb60654afe7e1e1bf69ff8d6ef41bf390c6a93910829be452aa9ad93
-  Stored in directory: /tmp/pip-ephem-wheel-cache-5ln8k2i0/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=8323c083bfbd549be3d81f61016154f71c622b72c6ae050b3d93e5a068238659
+  Stored in directory: /tmp/pip-ephem-wheel-cache-ojuo2oz1/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -1102,10 +1102,6 @@ Obtaining file:///workspace/LatentWire/quantization/C2C
   Preparing editable metadata (pyproject.toml): finished with status 'done'
 Requirement already satisfied: torch==2.6.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (2.6.0)
 Requirement already satisfied: transformers==4.52.4 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.52.4)
-Requirement already satisfied: datasets>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.5.0)
-Requirement already satisfied: accelerate>=0.20 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.12.0)
-Requirement already satisfied: wandb>=0.13 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.24.0)
-Requirement already satisfied: peft in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.18.1)
 Requirement already satisfied: scikit-learn>=1.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.7.2)
 Requirement already satisfied: matplotlib>=3.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (3.10.8)
 Requirement already satisfied: seaborn>=0.11 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.13.2)
@@ -1114,6 +1110,10 @@ Requirement already satisfied: openai in /workspace/conda/envs/rosetta/lib/pytho
 Requirement already satisfied: math_verify in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.9.0)
 Requirement already satisfied: latex2sympy2_extended in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.11.0)
 Requirement already satisfied: spaces>=0.30.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.47.0)
+Requirement already satisfied: datasets>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.5.0)
+Requirement already satisfied: accelerate>=0.20 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.12.0)
+Requirement already satisfied: wandb>=0.13 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.24.0)
+Requirement already satisfied: peft in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.18.1)
 Requirement already satisfied: filelock in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.20.3)
 Requirement already satisfied: typing-extensions>=4.10.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (4.15.0)
 Requirement already satisfied: networkx in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.4.2)
@@ -1226,8 +1226,8 @@ Requirement already satisfied: sniffio in /workspace/conda/envs/rosetta/lib/pyth
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=4621fe570ddb2b8eb878e74fb57286769178613a2c3bbfc3a4ab4c7a73033844
-  Stored in directory: /tmp/pip-ephem-wheel-cache-mwd1jha6/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=0e46fd3da4310b5c50430584b2ec0be6d07cbf6a6732573c67c476bff8b85209
+  Stored in directory: /tmp/pip-ephem-wheel-cache-270emfml/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -1236,11 +1236,11 @@ Installing collected packages: rosetta
       Successfully uninstalled rosetta-0.1.0
 Successfully installed rosetta-0.1.0
 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1083.84it/s]
+Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1318.11it/s]
 HF access OK: Qwen/Qwen3-0.6B
 HF access OK: Qwen/Qwen2.5-0.5B-Instruct
-Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step10_rd_20260201_025146_batchD_b/manifests/step_8_manifest.json
-Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step10_rd_20260201_025146_batchD_b
+Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step10_rd_20260201_030217_rerun_D_b/manifests/step_8_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/preflight_step10_rd_20260201_030217_rerun_D_b
 /workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
   warnings.warn(
 Environment info: {
@@ -1326,8 +1326,8 @@ Requirement already satisfied: certifi>=2017.4.17 in /workspace/conda/envs/roset
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=062fd4886ea8ae83a9abcf6d293be87d460b46f4bec80886762dfa4396db76de
-  Stored in directory: /tmp/pip-ephem-wheel-cache-kngskeub/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=4c4a02e2f01cb9d56854ffa39a590f2c1564557682c0c69f9d30ca853bd64aeb
+  Stored in directory: /tmp/pip-ephem-wheel-cache-zvgx6toa/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -1348,6 +1348,10 @@ Obtaining file:///workspace/LatentWire/quantization/C2C
   Preparing editable metadata (pyproject.toml): finished with status 'done'
 Requirement already satisfied: torch==2.6.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (2.6.0)
 Requirement already satisfied: transformers==4.52.4 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.52.4)
+Requirement already satisfied: datasets>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.5.0)
+Requirement already satisfied: accelerate>=0.20 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.12.0)
+Requirement already satisfied: wandb>=0.13 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.24.0)
+Requirement already satisfied: peft in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.18.1)
 Requirement already satisfied: scikit-learn>=1.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.7.2)
 Requirement already satisfied: matplotlib>=3.5 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (3.10.8)
 Requirement already satisfied: seaborn>=0.11 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.13.2)
@@ -1356,10 +1360,6 @@ Requirement already satisfied: openai in /workspace/conda/envs/rosetta/lib/pytho
 Requirement already satisfied: math_verify in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.9.0)
 Requirement already satisfied: latex2sympy2_extended in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.11.0)
 Requirement already satisfied: spaces>=0.30.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.47.0)
-Requirement already satisfied: datasets>=2.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (4.5.0)
-Requirement already satisfied: accelerate>=0.20 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (1.12.0)
-Requirement already satisfied: wandb>=0.13 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.24.0)
-Requirement already satisfied: peft in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from rosetta==0.1.0) (0.18.1)
 Requirement already satisfied: filelock in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.20.3)
 Requirement already satisfied: typing-extensions>=4.10.0 in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (4.15.0)
 Requirement already satisfied: networkx in /workspace/conda/envs/rosetta/lib/python3.10/site-packages (from torch==2.6.0->rosetta==0.1.0) (3.4.2)
@@ -1472,8 +1472,8 @@ Requirement already satisfied: sniffio in /workspace/conda/envs/rosetta/lib/pyth
 Building wheels for collected packages: rosetta
   Building editable for rosetta (pyproject.toml): started
   Building editable for rosetta (pyproject.toml): finished with status 'done'
-  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=0e7e2fdbc496c368813c5126e12e866b1ac84052214ced05d2a0b1e25843d2a0
-  Stored in directory: /tmp/pip-ephem-wheel-cache-kc58gop3/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
+  Created wheel for rosetta: filename=rosetta-0.1.0-0.editable-py3-none-any.whl size=12579 sha256=7128efa9d803e3c5a08492e343a65c45cc0ccb54a521d5e118ff1ebe5327c90b
+  Stored in directory: /tmp/pip-ephem-wheel-cache-3ch3r9_a/wheels/ae/a8/71/71f24113a536d15e87cf9b25012f906e40d73d1dfb9ac76906
 Successfully built rosetta
 Installing collected packages: rosetta
   Attempting uninstall: rosetta
@@ -1482,47 +1482,34 @@ Installing collected packages: rosetta
       Successfully uninstalled rosetta-0.1.0
 Successfully installed rosetta-0.1.0
 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 982.02it/s]
+Fetching 59 files:   0%|          | 0/59 [00:00<?, ?it/s]Fetching 59 files: 100%|██████████| 59/59 [00:00<00:00, 1316.55it/s]
 HF access OK: Qwen/Qwen3-0.6B
 HF access OK: Qwen/Qwen2.5-0.5B-Instruct
-Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/manifests/step_8_manifest.json
-Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b
+Wrote manifest: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b/manifests/step_8_manifest.json
+Prep-only complete. Run on GPU to execute evals. Run folder: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b
 Traceback (most recent call last):
   File "<stdin>", line 4, in <module>
 ModuleNotFoundError: No module named 'script'
-On branch main
-Your branch is up to date with 'origin/main'.
-
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-	modified:   runs/batchC_20260201_025146_batchC.log
-	modified:   runs/batchD_20260201_025146_batchD.log
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/
-	quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/
-
-no changes added to commit (use "git add" and/or "git commit -a")
-[main fc6c93c9] Runpod: Batch D
+[main 6ee50884] Runpod: Batch D rerun
  14 files changed, 836 insertions(+)
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/configs/arc_c.yaml
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/configs/openbookqa.yaml
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/logs/step8.log
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/manifests/env_info.json
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/manifests/run_manifest.json
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/manifests/step_8_manifest.json
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_a/manifests/system_info.json
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/configs/arc_c.yaml
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/configs/openbookqa.yaml
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/logs/step8.log
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/manifests/env_info.json
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/manifests/run_manifest.json
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/manifests/step_8_manifest.json
- create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_025146_batchD_b/manifests/system_info.json
-ssh: connect to host github.com port 22: Connection timed out
-fatal: Could not read from remote repository.
-
-Please make sure you have the correct access rights
-and the repository exists.
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a/configs/arc_c.yaml
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a/configs/openbookqa.yaml
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a/logs/step8.log
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a/manifests/env_info.json
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a/manifests/run_manifest.json
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a/manifests/step_8_manifest.json
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_a/manifests/system_info.json
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b/configs/arc_c.yaml
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b/configs/openbookqa.yaml
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b/logs/step8.log
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b/manifests/env_info.json
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b/manifests/run_manifest.json
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b/manifests/step_8_manifest.json
+ create mode 100644 quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_030217_rerun_D_b/manifests/system_info.json
+To github.com:SujeethJinesh/LatentWire.git
+ ! [rejected]          main -> main (non-fast-forward)
+error: failed to push some refs to 'github.com:SujeethJinesh/LatentWire.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
