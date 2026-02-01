@@ -1362,5 +1362,77 @@
       "reason": "",
       "timestamp": "2026-02-01T21:36:58.888141Z"
     }
+  },
+  "m10|int8|0p0625_canddrop-int8|prompt|ablate_final": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p0625_canddrop-int8_prompt_20260201_215417_batchB_final",
+      "config_hash": "e290019f835dbc6939558ef5147bb92f6fbbb087",
+      "reason": "",
+      "timestamp": "2026-02-01T22:01:30.612487Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p0625_canddrop-int8_prompt_20260201_215417_batchB_final",
+      "config_hash": "013abe93db34b3abdc99053c7749ee43ebb1da8f",
+      "reason": "",
+      "timestamp": "2026-02-01T22:18:30.508711Z"
+    }
+  },
+  "m10|int8|0p125_canddrop-int8|prompt|ablate_final": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_canddrop-int8_prompt_20260201_215417_batchB_final",
+      "config_hash": "148f8d291e17cc676ad0edb5c218122561573445",
+      "reason": "",
+      "timestamp": "2026-02-01T22:25:32.481609Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_canddrop-int8_prompt_20260201_215417_batchB_final",
+      "config_hash": "1008e22b3a167206e0d98216a314c368294be4f0",
+      "reason": "",
+      "timestamp": "2026-02-01T22:43:02.858909Z"
+    }
+  },
+  "m10|int8|0p0625_canddrop-int4-int8|prompt|ablate_final": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p0625_canddrop-int4-int8_prompt_20260201_215417_batchB_final",
+      "config_hash": "1b6b8ce82bbb5b9e7d23d4194de533a42627606d",
+      "reason": "",
+      "timestamp": "2026-02-01T22:50:32.667420Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p0625_canddrop-int4-int8_prompt_20260201_215417_batchB_final",
+      "config_hash": "516237323243cea522c7d66d8f8b69a6ab3d395e",
+      "reason": "",
+      "timestamp": "2026-02-01T23:09:10.235414Z"
+    }
+  },
+  "m10|int8|0p125_canddrop-int4-int8|prompt|ablate_final": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_canddrop-int4-int8_prompt_20260201_215417_batchB_final",
+      "config_hash": "59b9ffd2bfc27c259a36e82b7e2e02cd91cb7082",
+      "reason": "",
+      "timestamp": "2026-02-01T23:16:29.449286Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_canddrop-int4-int8_prompt_20260201_215417_batchB_final",
+      "config_hash": "cb6cf90efa2626d62a99aff170f383f3d6ee2799",
+      "reason": "",
+      "timestamp": "2026-02-01T23:33:57.970150Z"
+    }
   }
 }

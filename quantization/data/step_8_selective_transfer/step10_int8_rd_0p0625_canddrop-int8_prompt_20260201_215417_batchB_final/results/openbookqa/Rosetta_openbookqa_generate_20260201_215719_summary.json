@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "openbookqa",
+  "answer_method": "generate",
+  "overall_accuracy": 0.535,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.535
+  },
+  "kv_transfer_stats": {
+    "count": 5600,
+    "selected_min": 63,
+    "selected_max": 63,
+    "selected_sum": 352800,
+    "total_sum": 658476,
+    "selected_fraction_sum": 3030.0736970474322,
+    "score_mean_sum": 85602.76788783073,
+    "score_min": 1.2495698928833008,
+    "score_max": 88.61380004882812,
+    "prefill_count": 200,
+    "prefill_time_sum_ms": 81546.99088109192,
+    "selection_time_sum_ms": 847.9397374903783,
+    "projection_score_time_sum_ms": 11796.1983717978,
+    "projection_transfer_time_sum_ms": 12065.082974499092,
+    "fuse_time_sum_ms": 620.5911701545119,
+    "rd_int8_sum": 352800,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 305676,
+    "rd_budget_bytes_sum": 91952000.0,
+    "rd_bytes_used_sum": 91112000.0,
+    "rd_effective_bits_sum": 45194.44444444384,
+    "rd_payload_bytes_sum": 90316800.0,
+    "rd_index_bytes_sum": 705600.0,
+    "rd_scale_bytes_sum": 89600.0,
+    "selected_mean": 63.0,
+    "total_mean": 117.585,
+    "selected_fraction_mean": 0.54108458875847,
+    "score_mean": 15.286208551398346,
+    "prefill_time_mean_ms": 407.7349544054596,
+    "selection_time_mean_ms": 0.15141781026613899,
+    "projection_score_time_mean_ms": 2.106463994963893,
+    "projection_transfer_time_mean_ms": 2.1544791025891237,
+    "fuse_time_mean_ms": 0.1108198518133057,
+    "rd_int8_mean": 63.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 54.585,
+    "rd_budget_bytes_mean": 16420.0,
+    "rd_bytes_used_mean": 16270.0,
+    "rd_effective_bits_mean": 8.0704365079364,
+    "rd_payload_bytes_mean": 16128.0,
+    "rd_index_bytes_mean": 126.0,
+    "rd_scale_bytes_mean": 16.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 118.585,
+        "avg_gen_length": 8.545,
+        "avg_length_ratio": 0.07249180982164588,
+        "accuracy": 0.535,
+        "total_samples": 200
+      }
+    }
+  }
+}

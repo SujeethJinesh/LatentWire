@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.514792899408284,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.514792899408284
+  },
+  "kv_transfer_stats": {
+    "count": 4732,
+    "selected_min": 103,
+    "selected_max": 127,
+    "selected_sum": 587020,
+    "total_sum": 661164,
+    "selected_fraction_sum": 4269.809894513207,
+    "score_mean_sum": 62201.27666270733,
+    "score_min": 0.12491071224212646,
+    "score_max": 89.0440673828125,
+    "prefill_count": 169,
+    "prefill_time_sum_ms": 75860.65996310208,
+    "selection_time_sum_ms": 768.2119779055938,
+    "projection_score_time_sum_ms": 10197.721533360891,
+    "projection_transfer_time_sum_ms": 10056.916465982795,
+    "fuse_time_sum_ms": 529.1589155094698,
+    "rd_int8_sum": 587020,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 74144,
+    "rd_budget_bytes_sum": 155398880.0,
+    "rd_bytes_used_sum": 151526872.0,
+    "rd_effective_bits_sum": 38170.87033311785,
+    "rd_payload_bytes_sum": 150277120.0,
+    "rd_index_bytes_sum": 1174040.0,
+    "rd_scale_bytes_sum": 75712.0,
+    "selected_mean": 124.05325443786982,
+    "total_mean": 139.72189349112426,
+    "selected_fraction_mean": 0.902326689457567,
+    "score_mean": 13.144817553403916,
+    "prefill_time_mean_ms": 448.8796447520833,
+    "selection_time_mean_ms": 0.16234403590566227,
+    "projection_score_time_mean_ms": 2.1550552690957083,
+    "projection_transfer_time_mean_ms": 2.125299337697125,
+    "fuse_time_mean_ms": 0.11182563725897503,
+    "rd_int8_mean": 124.05325443786982,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 15.668639053254438,
+    "rd_budget_bytes_mean": 32840.0,
+    "rd_bytes_used_mean": 32021.739644970414,
+    "rd_effective_bits_mean": 8.066540645206645,
+    "rd_payload_bytes_mean": 31757.633136094675,
+    "rd_index_bytes_mean": 248.10650887573965,
+    "rd_scale_bytes_mean": 16.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 140.72189349112426,
+        "avg_gen_length": 11.875739644970414,
+        "avg_length_ratio": 0.084075579788634,
+        "accuracy": 0.514792899408284,
+        "total_samples": 169
+      }
+    }
+  }
+}
