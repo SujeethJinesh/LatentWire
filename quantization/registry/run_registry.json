@@ -1259,6 +1259,32 @@
       "config_hash": "ef124e7b0f23d224b8cd7337b0b579ebfc83dea7",
       "reason": "",
       "timestamp": "2026-02-01T00:56:50.282176Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_prompt_20260131_202705_m9m10",
+      "config_hash": "30dcf12dcfa6cf7a05d0aa7d556a7fff8bb4d349",
+      "reason": "",
+      "timestamp": "2026-02-01T01:14:18.893685Z"
+    }
+  },
+  "m10|int8|0p25|prompt": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p25_prompt_20260131_202705_m9m10",
+      "config_hash": "4c7a0efa5dd915ac9d948b03d9d8fc9d5a93952c",
+      "reason": "",
+      "timestamp": "2026-02-01T01:21:15.382868Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p25_prompt_20260131_202705_m9m10",
+      "config_hash": "4c16de895b7463bb23fbc388128b3d8b0064acea",
+      "reason": "",
+      "timestamp": "2026-02-01T01:38:32.392811Z"
     }
   }
 }

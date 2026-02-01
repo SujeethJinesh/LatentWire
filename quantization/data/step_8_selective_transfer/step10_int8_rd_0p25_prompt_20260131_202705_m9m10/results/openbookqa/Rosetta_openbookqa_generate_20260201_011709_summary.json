@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "openbookqa",
+  "answer_method": "generate",
+  "overall_accuracy": 0.56,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.56
+  },
+  "kv_transfer_stats": {
+    "count": 5600,
+    "selected_min": 101,
+    "selected_max": 182,
+    "selected_sum": 658476,
+    "total_sum": 658476,
+    "selected_fraction_sum": 5600.0,
+    "score_mean_sum": 72143.58562397957,
+    "score_min": 0.12491133064031601,
+    "score_max": 88.61380004882812,
+    "prefill_count": 200,
+    "prefill_time_sum_ms": 81053.69954032358,
+    "selection_time_sum_ms": 843.9874656032771,
+    "projection_score_time_sum_ms": 11732.45588352438,
+    "projection_transfer_time_sum_ms": 11593.54330203496,
+    "fuse_time_sum_ms": 612.4376832740381,
+    "rd_int8_sum": 658476,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 367808000.0,
+    "rd_bytes_used_sum": 169976408.0,
+    "rd_effective_bits_sum": 45174.04820394505,
+    "rd_payload_bytes_sum": 168569856.0,
+    "rd_index_bytes_sum": 1316952.0,
+    "rd_scale_bytes_sum": 89600.0,
+    "selected_mean": 117.585,
+    "total_mean": 117.585,
+    "selected_fraction_mean": 1.0,
+    "score_mean": 12.88278314713921,
+    "prefill_time_mean_ms": 405.2684977016179,
+    "selection_time_mean_ms": 0.15071204742915661,
+    "projection_score_time_mean_ms": 2.0950814077722106,
+    "projection_transfer_time_mean_ms": 2.0702755896491,
+    "fuse_time_mean_ms": 0.10936387201322109,
+    "rd_int8_mean": 117.585,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 65680.0,
+    "rd_bytes_used_mean": 30352.93,
+    "rd_effective_bits_mean": 8.066794322133045,
+    "rd_payload_bytes_mean": 30101.76,
+    "rd_index_bytes_mean": 235.17,
+    "rd_scale_bytes_mean": 16.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 118.585,
+        "avg_gen_length": 8.115,
+        "avg_length_ratio": 0.06875099767124465,
+        "accuracy": 0.56,
+        "total_samples": 200
+      }
+    }
+  }
+}

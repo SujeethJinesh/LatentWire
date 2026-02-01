@@ -28,14 +28,14 @@ model:
       - drop
       - int4
       - int8
-      token_precision_budget_bytes: 32840.0
+      token_precision_budget_bytes: 65680.0
       token_precision_calib_n: 64
       token_precision_scope: prompt
   generation_config:
     do_sample: false
     max_new_tokens: 64
 output:
-  output_dir: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_prompt_20260131_202705_m9m10/results/arc_c
+  output_dir: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p25_prompt_20260131_202705_m9m10/results/arc_c
 eval:
   dataset: ai2-arc
   gpu_ids:
