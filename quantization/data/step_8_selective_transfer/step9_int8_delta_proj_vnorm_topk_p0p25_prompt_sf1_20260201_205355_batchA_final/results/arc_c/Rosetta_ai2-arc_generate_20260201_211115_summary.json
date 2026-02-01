@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.46745562130177515,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.46745562130177515
+  },
+  "kv_transfer_stats": {
+    "count": 4732,
+    "selected_min": 23,
+    "selected_max": 46,
+    "selected_sum": 152404,
+    "total_sum": 609112,
+    "selected_fraction_sum": 1184.2045262573668,
+    "score_mean_sum": 104947.30871582031,
+    "score_min": 1.4597828388214111,
+    "score_max": 107.58269500732422,
+    "prefill_count": 169,
+    "prefill_time_sum_ms": 38747.695775702596,
+    "selection_time_sum_ms": 1791.0486243199557,
+    "projection_score_time_sum_ms": 10422.06606338732,
+    "projection_transfer_time_sum_ms": 0.0,
+    "fuse_time_sum_ms": 720.479451934807,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 32.20710059171598,
+    "total_mean": 128.72189349112426,
+    "selected_fraction_mean": 0.2502545490822838,
+    "score_mean": 22.178214014332273,
+    "prefill_time_mean_ms": 229.27630636510412,
+    "selection_time_mean_ms": 0.3784971733558655,
+    "projection_score_time_mean_ms": 2.202465355745418,
+    "projection_transfer_time_mean_ms": 0.0,
+    "fuse_time_mean_ms": 0.15225685797438862,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 167.72189349112426,
+        "avg_gen_length": 8.112426035502958,
+        "avg_length_ratio": 0.04840420593702024,
+        "accuracy": 0.46745562130177515,
+        "total_samples": 169
+      }
+    }
+  }
+}

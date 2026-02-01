@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "openbookqa",
+  "answer_method": "generate",
+  "overall_accuracy": 0.41,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.41
+  },
+  "kv_transfer_stats": {
+    "count": 5600,
+    "selected_min": 32,
+    "selected_max": 32,
+    "selected_sum": 179200,
+    "total_sum": 586488,
+    "selected_fraction_sum": 1725.0667521860112,
+    "score_mean_sum": 118888.02424192429,
+    "score_min": 1.4584788084030151,
+    "score_max": 112.77983093261719,
+    "prefill_count": 200,
+    "prefill_time_sum_ms": 100503.3088704804,
+    "selection_time_sum_ms": 844.718397478573,
+    "projection_score_time_sum_ms": 12387.778518837877,
+    "projection_transfer_time_sum_ms": 23311.415905482136,
+    "fuse_time_sum_ms": 1076.6132157295942,
+    "rd_int8_sum": 173600,
+    "rd_int4_sum": 5600,
+    "rd_drop_sum": 407288,
+    "rd_budget_bytes_sum": 183904000.0,
+    "rd_bytes_used_sum": 181708800.0,
+    "rd_effective_bits_sum": 44362.5,
+    "rd_payload_bytes_sum": 180633600.0,
+    "rd_index_bytes_sum": 358400.0,
+    "rd_scale_bytes_sum": 716800.0,
+    "selected_mean": 32.0,
+    "total_mean": 104.73,
+    "selected_fraction_mean": 0.30804763431893056,
+    "score_mean": 21.23000432891505,
+    "prefill_time_mean_ms": 502.516544352402,
+    "selection_time_mean_ms": 0.1508425709783166,
+    "projection_score_time_mean_ms": 2.2121033069353353,
+    "projection_transfer_time_mean_ms": 4.162752840264667,
+    "fuse_time_mean_ms": 0.19225235995171325,
+    "rd_int8_mean": 31.0,
+    "rd_int4_mean": 1.0,
+    "rd_drop_mean": 72.73,
+    "rd_budget_bytes_mean": 32840.0,
+    "rd_bytes_used_mean": 32448.0,
+    "rd_effective_bits_mean": 7.921875,
+    "rd_payload_bytes_mean": 32256.0,
+    "rd_index_bytes_mean": 64.0,
+    "rd_scale_bytes_mean": 128.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 143.73,
+        "avg_gen_length": 6.96,
+        "avg_length_ratio": 0.04837409974512126,
+        "accuracy": 0.41,
+        "total_samples": 200
+      }
+    }
+  }
+}
