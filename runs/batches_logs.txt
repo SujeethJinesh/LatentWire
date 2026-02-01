@@ -1,0 +1,6 @@
+A 20260201_025146_batchA runs/batchA_20260201_025146_batchA.log
+B 20260201_025146_batchB runs/batchB_20260201_025146_batchB.log
+C 20260201_025146_batchC runs/batchC_20260201_025146_batchC.log
+D 20260201_025146_batchD runs/batchD_20260201_025146_batchD.log
+E 20260201_025146_batchE runs/batchE_20260201_025146_batchE.log
+F 20260201_025146_batchF runs/batchF_20260201_025146_batchF.log
