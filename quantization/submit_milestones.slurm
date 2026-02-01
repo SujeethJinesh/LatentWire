@@ -46,7 +46,11 @@ fi
 PROJECT_ROOT="${PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-${PWD}}}"
 cd "${PROJECT_ROOT}"
 
-export PYTHONPATH="${PROJECT_ROOT}"
+if [ -n "${PYTHONPATH:-}" ]; then
+  export PYTHONPATH="${PROJECT_ROOT}:${PROJECT_ROOT}/quantization/C2C:${PYTHONPATH}"
+else
+  export PYTHONPATH="${PROJECT_ROOT}:${PROJECT_ROOT}/quantization/C2C"
+fi
 
 # Cache roots (prefer scratch on HPC, fallback to /workspace for RunPod/containers).
 DEFAULT_CACHE_ROOT="/scratch/m000066/${USER}"
