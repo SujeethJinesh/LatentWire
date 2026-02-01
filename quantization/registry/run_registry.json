@@ -1286,5 +1286,45 @@
       "reason": "",
       "timestamp": "2026-02-01T01:38:32.392811Z"
     }
+  },
+  "_backlog": {
+    "updated": "2026-02-01",
+    "items": [
+      {
+        "id": "m9_hetero_spot_check",
+        "status": "pending",
+        "description": "Run M9 delta selection on hetero pair (Qwen3-0.6B <- Llama-3.2-1B-Instruct) at p=0.25 or p=0.10."
+      },
+      {
+        "id": "m10_hetero_spot_check",
+        "status": "pending",
+        "description": "Run M10 RD-C2C on hetero pair at budget 1/8 with {drop,int4,int8}."
+      },
+      {
+        "id": "system_metrics",
+        "status": "pending",
+        "description": "Capture prefill/selection/projection/fuse/end-to-end timings and report in paper tables."
+      },
+      {
+        "id": "stability_seeds",
+        "status": "pending",
+        "description": "Run 2\u20133 seeds or shard bootstrap for M9 p=0.10 and M10 1/16 budget."
+      },
+      {
+        "id": "extra_dataset",
+        "status": "pending",
+        "description": "Add one extra benchmark (e.g., HellaSwag or ARC-Easy) for breadth."
+      },
+      {
+        "id": "rd_ablation",
+        "status": "pending",
+        "description": "Compare RD candidates {drop,int8} vs {drop,int4,int8} at same budgets."
+      },
+      {
+        "id": "m7_hetero_clean",
+        "status": "pending",
+        "description": "Clean M7 heterogeneity run with align on/off using correct fuser checkpoint."
+      }
+    ]
   }
 }

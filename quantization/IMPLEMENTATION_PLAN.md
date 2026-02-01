@@ -2,19 +2,23 @@
 
 Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with communication‑budget curves, and a clear path to a main‑conference submission (QAT + mixed precision + heterogeneity scaling). Each milestone is designed to run on a single H100.
 
-## Status (2026‑01‑28)
+## Status (2026‑02‑01)
 - **M0–M4 complete** on OpenBookQA + ARC‑C with full runs (see `quantization/golden/golden_summary.md`).
-- **M5 QAT**: training smoke only (local); **GPU QAT eval pending**.
-- **M6 mixed precision**: **needs re‑run** with corrected 28‑layer schedule (last‑4 = layers 24–27).
-- **M7 heterogeneity**: **not complete** — current results are an alignment ablation on the same model pair (accuracy drop); needs true cross‑family pair (e.g., Llama/Gemma‑3‑1B‑IT), plus alignment on/off.
-- **M8 selective transfer**: **partial** — p=1.0 complete (both datasets), p=0.5 complete (both datasets), remaining proportions not run.
+- **M5 QAT**: full eval still weak (projector‑only INT8); needs recipe tuning or longer training.
+- **M6 mixed precision**: complete across last‑2/last‑4/last‑8 schedules (near baseline).
+- **M7 heterogeneity**: partial — alignment on/off done for same‑pair; hetero pair (Qwen3$\rightarrow$Llama3.2) align‑on reported, align‑off unstable; needs a clean hetero run.
+- **M8 selective transfer**: full grid complete (p={1.0,0.5,0.25,0.10} for front/random/knorm/vnorm/proj\_vnorm; INT8 + INT4).
+- **M9 delta selection**: full grid complete + p=0.05 (OpenBookQA only). Hetero spot check pending.
+- **M10 RD‑C2C**: budgets complete at {1/32, 1/16, 1/8, 1/4}. Hetero spot check pending.
 - **Registry**: `quantization/registry/run_registry.json` updated for completed full runs; incomplete datasets intentionally left out so they will rerun.
 
 ## Live Action Items (rolling)
-- **Finish M8 INT4 vnorm p0.25 ARC‑C** (currently partial in progress).
-- **Run full M8 INT8 grid** (front/vnorm/proj\_vnorm/random/knorm × p={1.0,0.5,0.25,0.10}).
-- **Run true M7 heterogeneity** (Qwen3‑0.6B ← Llama‑3.2‑1B‑Instruct with align on/off; Gemma‑3‑1B‑IT as Tier‑2).
-- **Run M5 QAT eval** (full recipe + eval).
+- **Hetero M9/M10 spot checks** (Qwen3‑0.6B ← Llama‑3.2‑1B‑Instruct; at least p=0.25 for M9 and 1/8 for M10).
+- **System metrics**: capture prefill/selection/projection/fuse/end‑to‑end timings and report in paper.
+- **Stability checks**: 2–3 seeds (or shard bootstrap) on 1–2 key points (M9 p=0.10, M10 1/16).
+- **Extra dataset**: add one more benchmark (e.g., HellaSwag or ARC‑Easy) to bolster breadth.
+- **RD ablation**: compare {drop,int8} vs {drop,int4,int8} at the same budgets.
+- **Run true M7 heterogeneity** (clean align on/off on a cross‑family pair).
 - **Update registry + golden summary** after each completed block.
 
 ## Milestone Status Details (run tags)
@@ -24,7 +28,9 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
 - **M4 curves**: `quantization/analysis/m4_budget_curve/budget_curve_{openbookqa,arc_c}.png` generated.
 - **M6 mixed precision**: `step6_int8_20260128_011432` complete (INT8 + last‑4 FP16 layers) **but schedule file updated; re‑run recommended**.
 - **M7 alignment ablation**: `step7_20260128_011432` complete (same‑pair alignment; not true heterogeneity).
-- **M8 selective transfer**: `step8_int8_proj_vnorm_topk_p1p0_20260128_011432` complete; `p0p5` OpenBookQA + ARC‑C complete.
+- **M8 selective transfer**: full grid complete (see `golden_summary.md`).
+- **M9 delta selection**: `step9_*_20260131_202705_m9m10` complete (full grid + p=0.05 OpenBookQA).
+- **M10 RD‑C2C**: `step10_*_20260131_202705_m9m10` complete (budgets 1/32–1/4).
 
 ## Data Capture Contract (applies to every milestone)
 - Each run creates `quantization/data/step_X_<name>/<run_tag>/` with (folder names remain `step_X` for now to match scripts):
