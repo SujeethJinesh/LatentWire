@@ -1322,8 +1322,8 @@
       },
       {
         "id": "m7_hetero_clean",
-        "status": "in_progress",
-        "description": "Clean M7 heterogeneity run with align on/off using correct fuser checkpoint."
+        "status": "blocked",
+        "description": "Hetero align0 is invalid (tokenizer vocab mismatch). Run align1 only for hetero; keep align0 for same-vocab pairs."
       }
     ]
   }
