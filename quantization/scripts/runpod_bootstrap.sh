@@ -8,13 +8,20 @@ WRITE_ENV=0
 WRITE_TMUX=0
 while [ $# -gt 0 ]; do
   case "$1" in
+    --full)
+      INSTALL=1
+      GENERATE_SSH=1
+      WRITE_ENV=1
+      WRITE_TMUX=1
+      FORCE=1
+      ;;
     --install) INSTALL=1 ;;
     --force) FORCE=1 ;;
     --generate-ssh-key) GENERATE_SSH=1 ;;
     --write-env) WRITE_ENV=1 ;;
     --write-tmux-conf) WRITE_TMUX=1 ;;
     --help|-h)
-      echo "Usage: runpod_bootstrap.sh [--install] [--force] [--generate-ssh-key] [--write-env] [--write-tmux-conf]"
+      echo "Usage: runpod_bootstrap.sh [--full] [--install] [--force] [--generate-ssh-key] [--write-env] [--write-tmux-conf]"
       exit 0
       ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
@@ -44,6 +51,32 @@ err() {
 
 warn() {
   echo "WARN: $*" >&2
+}
+
+APT_UPDATED=0
+apt_update_once() {
+  if [ "${APT_UPDATED}" -eq 0 ]; then
+    if command -v sudo >/dev/null 2>&1; then
+      sudo apt-get update
+    else
+      apt-get update
+    fi
+    APT_UPDATED=1
+  fi
+}
+
+apt_install() {
+  local pkg="$1"
+  if ! command -v apt-get >/dev/null 2>&1; then
+    err "apt-get is not available; install ${pkg} manually."
+    return
+  fi
+  apt_update_once
+  if command -v sudo >/dev/null 2>&1; then
+    sudo apt-get install -y "${pkg}"
+  else
+    apt-get install -y "${pkg}"
+  fi
 }
 
 if [ ! -f "/workspace/env.sh" ]; then
@@ -95,20 +128,18 @@ elif ! command -v conda >/dev/null 2>&1; then
 fi
 
 if ! command -v tmux >/dev/null 2>&1; then
-  if [ "${INSTALL}" = "1" ] && command -v apt-get >/dev/null 2>&1; then
-    sudo apt-get update
-    sudo apt-get install -y tmux
+  if [ "${INSTALL}" = "1" ]; then
+    apt_install tmux
   else
     err "tmux is missing. Install with: sudo apt-get update && sudo apt-get install -y tmux"
   fi
 fi
 
 if ! command -v vim >/dev/null 2>&1; then
-  if [ "${INSTALL}" = "1" ] && command -v apt-get >/dev/null 2>&1; then
-    sudo apt-get update
-    sudo apt-get install -y vim
+  if [ "${INSTALL}" = "1" ]; then
+    apt_install vim
   else
-    warn "vim is missing. Install with: sudo apt-get update && sudo apt-get install -y vim"
+    err "vim is missing. Install with: sudo apt-get update && sudo apt-get install -y vim"
   fi
 fi
 
@@ -135,7 +166,9 @@ origin_url="$(git -C "${ROOT}" remote get-url origin 2>/dev/null || true)"
 if [[ "${origin_url}" == git@github.com:* ]]; then
   if [ ! -f "${HOME}/.ssh/id_ed25519" ] && [ ! -f "${HOME}/.ssh/id_rsa" ]; then
     if [ "${GENERATE_SSH}" = "1" ]; then
-      ssh-keygen -t ed25519 -C "runpod" -f "${HOME}/.ssh/id_ed25519" -N ""
+      if [ ! -f "${HOME}/.ssh/id_ed25519" ]; then
+        ssh-keygen -t ed25519 -C "runpod" -f "${HOME}/.ssh/id_ed25519" -N ""
+      fi
       echo "SSH key generated. Add this to GitHub:"
       cat "${HOME}/.ssh/id_ed25519.pub"
       err "SSH key added locally, but NOT added to GitHub yet."
