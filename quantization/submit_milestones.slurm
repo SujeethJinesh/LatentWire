@@ -176,6 +176,7 @@ M9_TIMING_SYNC="${M9_TIMING_SYNC:-0}"
 M9_EVAL_DATASETS="${M9_EVAL_DATASETS:-}"
 M9_EVAL_LIMIT="${M9_EVAL_LIMIT:-}"
 M9_EVAL_RANGE="${M9_EVAL_RANGE:-}"
+M9_KEY_SUFFIX="${M9_KEY_SUFFIX:-}"
 
 # Milestone 10 grid (RD token x precision).
 M10_KV_QUANT_SCHEME="${M10_KV_QUANT_SCHEME:-int8}"
@@ -200,6 +201,7 @@ M10_TIMING_SYNC="${M10_TIMING_SYNC:-0}"
 M10_EVAL_DATASETS="${M10_EVAL_DATASETS:-}"
 M10_EVAL_LIMIT="${M10_EVAL_LIMIT:-}"
 M10_EVAL_RANGE="${M10_EVAL_RANGE:-}"
+M10_KEY_SUFFIX="${M10_KEY_SUFFIX:-}"
 
 STEP8_EVAL_DATASETS="${STEP8_EVAL_DATASETS:-openbookqa,ai2-arc}"
 
@@ -1179,7 +1181,11 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
           RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
           for DATASET in ${DATASETS}; do
             SLUG="$(dataset_slug "${DATASET}")"
-            run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+            KEY="m9|${M9_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+            if [ -n "${M9_KEY_SUFFIX}" ]; then
+              KEY="${KEY}|${M9_KEY_SUFFIX}"
+            fi
+            run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "${KEY}"
           done
         done
       done
@@ -1232,7 +1238,11 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
     RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
     for DATASET in ${DATASETS}; do
       SLUG="$(dataset_slug "${DATASET}")"
-      run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${M9_EXTRA_LOW_MODE}|${M9_EXTRA_LOW_PROP}|prompt|${M9_SPARSE_FUSE}"
+      KEY="m9|${M9_KV_QUANT_SCHEME}|${M9_EXTRA_LOW_MODE}|${M9_EXTRA_LOW_PROP}|prompt|${M9_SPARSE_FUSE}"
+      if [ -n "${M9_KEY_SUFFIX}" ]; then
+        KEY="${KEY}|${M9_KEY_SUFFIX}"
+      fi
+      run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "${KEY}"
     done
   fi
   git_autopush "m9"
@@ -1329,7 +1339,11 @@ if [ "${RUN_MILESTONE_10}" = "1" ]; then
       RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
       for DATASET in ${DATASETS}; do
         SLUG="$(dataset_slug "${DATASET}")"
-        run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "m10|${M10_KV_QUANT_SCHEME}|${TAG}|${M10_SELECT_SCOPE}"
+        KEY="m10|${M10_KV_QUANT_SCHEME}|${TAG}|${M10_SELECT_SCOPE}"
+        if [ -n "${M10_KEY_SUFFIX}" ]; then
+          KEY="${KEY}|${M10_KEY_SUFFIX}"
+        fi
+        run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "${KEY}"
       done
     done
   done
