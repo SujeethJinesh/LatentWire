@@ -379,20 +379,20 @@
   },
   "m7|Qwen/Qwen3-0.6B|meta-llama/Llama-3.2-1B-Instruct|align1": {
     "ai2-arc": {
-      "config_hash": "06a745a0857a81e591b7a7aa2bc246d87cde8f9c",
-      "reason": "",
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260129_070634_m7",
-      "smoke": false,
       "status": "complete",
-      "timestamp": "2026-01-29T07:28:09.142650Z"
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260201_202636_m7_align1",
+      "config_hash": "503f9c14a9ffa649886c8cab2b32de4ab7c84c95",
+      "reason": "",
+      "timestamp": "2026-02-01T20:43:36.550977Z"
     },
     "openbookqa": {
-      "config_hash": "1029913cc485cb9dd6b3a1ea865bd8e71e9847b6",
-      "reason": "",
-      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260129_070634_m7",
-      "smoke": false,
       "status": "complete",
-      "timestamp": "2026-01-29T07:16:22.718910Z"
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_1_kv_ptq/step7_align1_20260201_202636_m7_align1",
+      "config_hash": "7e3654dc71b523cb1cd8b3cd48880c3729fb4dec",
+      "reason": "",
+      "timestamp": "2026-02-01T20:32:03.057737Z"
     }
   },
   "m8|int4|front|0.25|prompt|1": {
