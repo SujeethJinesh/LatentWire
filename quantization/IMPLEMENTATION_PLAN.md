@@ -16,17 +16,32 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
 - **Hetero M9/M10 spot checks** (Qwen3‑0.6B ← Llama‑3.2‑1B‑Instruct; at least p=0.25 for M9 and 1/8 for M10).
 - **System metrics**: capture prefill/selection/projection/fuse/end‑to‑end timings and report in paper.
 - **Stability checks**: 2–3 seeds (or shard bootstrap) on 1–2 key points (M9 p=0.10, M10 1/16).
-- **Extra dataset**: add one more benchmark (e.g., HellaSwag or ARC‑Easy) to bolster breadth.
+- **Extra dataset**: add one more benchmark (gsm8k is supported end‑to‑end in the evaluator).
 - **RD ablation**: compare {drop,int8} vs {drop,int4,int8} at the same budgets.
 - **Run true M7 heterogeneity** (clean align on/off on a cross‑family pair).
 - **Update registry + golden summary** after each completed block.
+
+## Main‑Conference Completeness Checklist
+- **DONE**: M0–M4 baselines + budget curves (OpenBookQA, ARC‑C).
+- **DONE**: M6 mixed‑precision schedules (last‑2/last‑4/last‑8).
+- **DONE**: M8 selective‑transfer grids (INT8/INT4; p={1.0,0.5,0.25,0.10}).
+- **DONE**: M9 delta selection grid + p=0.05 on OpenBookQA.
+- **DONE**: M10 RD budgets {1/32,1/16,1/8,1/4} on OpenBookQA + ARC‑C.
+- **PENDING**: M7 hetero align on/off with correct fuser checkpoint (clean run).
+- **PENDING**: M9 hetero spot check (p=0.25 or p=0.10).
+- **PENDING**: M10 hetero spot check (budget 1/8).
+- **PENDING**: RD ablation {drop,int8} vs {drop,int4,int8}.
+- **PENDING**: System metrics (timing sync + table in paper).
+- **PENDING**: Stability checks (two shards/seeded subsets).
+- **PENDING**: Extra dataset breadth (gsm8k).
+- **PENDING**: QAT recovery (improved recipe or longer training).
 
 ## Milestone Status Details (run tags)
 - **M0 baseline**: `step0_20260127_214552` complete (OpenBookQA + ARC‑C).
 - **M2 PTQ**: `step1_int8_20260127_214552`, `step1_int4_20260127_214552` complete.
 - **M3 pruning grid**: complete across front/back at p={1.0,0.75,0.5,0.25,0.10}; p0.10 front/back from `20260127_082712/084143`, others from `20260127_214552`.
 - **M4 curves**: `quantization/analysis/m4_budget_curve/budget_curve_{openbookqa,arc_c}.png` generated.
-- **M6 mixed precision**: `step6_int8_20260128_011432` complete (INT8 + last‑4 FP16 layers) **but schedule file updated; re‑run recommended**.
+- **M6 mixed precision**: complete across last‑2/last‑4/last‑8 schedules (see `golden_summary.md`).
 - **M7 alignment ablation**: `step7_20260128_011432` complete (same‑pair alignment; not true heterogeneity).
 - **M8 selective transfer**: full grid complete (see `golden_summary.md`).
 - **M9 delta selection**: `step9_*_20260131_202705_m9m10` complete (full grid + p=0.05 OpenBookQA).
@@ -671,6 +686,13 @@ Compute full projection once, then score each token by the mean L2 norm of `(pro
 - **M9-P6 (Hetero spot check)**: at least one low-budget point (0.25 or 0.10) on Qwen3 <- Llama3.2 to confirm benefit under heterogeneity.  
 - **M9-P7 (Analysis)**: update budget curves + golden summary; report deltas at low budgets.
 
+**M9 status (2026‑02‑01)**  
+- **DONE**: P0–P5b (full grid + p=0.05).  
+- **PENDING**: P6 hetero spot check.  
+- **PENDING**: stability shard/seed runs (p=0.10).  
+- **PENDING**: system‑timing sync run for reporting.  
+- **PENDING**: extra‑dataset run (gsm8k).
+
 **Expected outcome**  
 - Delta scoring should beat vnorm/proj_vnorm at lower budgets (<= 0.25), especially for hetero pairs.
 
@@ -736,8 +758,17 @@ Use M9 delta scores as utility and assign each token to {drop, int4, int8} to me
 - **M10-P4 (Full GPU grid)**: OpenBookQA + ARC-C for {1/32, 1/16, 1/8, 1/4}, compare fixed-int8 vs RD (drop,int4,int8).  
 - **M10-P5 (Hetero spot check)**: one budget point at 1/8 on Qwen3 <- Llama3.2.  
 - **M10-P6 (Analysis)**: report Pareto frontier vs fixed-int8 selection and update budget curves.
+ - **M10-P7 (RD ablation)**: compare candidates {drop,int8} vs {drop,int4,int8} at the same budgets.
 **M10 evaluation note**  
 - M10 budget runs **ignore** `token_select_proportion`; the allocator chooses group sizes to meet the byte budget.
+
+**M10 status (2026‑02‑01)**  
+- **DONE**: P0–P4 (budgets 1/32–1/4 on OpenBookQA + ARC‑C).  
+- **PENDING**: P5 hetero spot check.  
+- **PENDING**: P7 RD ablation ({drop,int8} vs {drop,int4,int8}).  
+- **PENDING**: stability shard/seed runs (budget 1/16).  
+- **PENDING**: system‑timing sync run for reporting.  
+- **PENDING**: extra‑dataset run (gsm8k).
 
 **Expected outcome**  
 - RD-C2C should improve accuracy at the same bytes (or reduce bytes at the same accuracy) compared to fixed-precision selection.

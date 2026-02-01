@@ -172,6 +172,7 @@ M9_SPARSE_FUSE="${M9_SPARSE_FUSE:-1}"
 M9_SPARSE_FUSE_MODES="${M9_SPARSE_FUSE_MODES:-${M9_SPARSE_FUSE}}"
 M9_EXTRA_LOW_PROP="${M9_EXTRA_LOW_PROP:-}"
 M9_EXTRA_LOW_MODE="${M9_EXTRA_LOW_MODE:-delta_proj_vnorm_topk}"
+M9_TIMING_SYNC="${M9_TIMING_SYNC:-0}"
 M9_EVAL_DATASETS="${M9_EVAL_DATASETS:-}"
 M9_EVAL_LIMIT="${M9_EVAL_LIMIT:-}"
 M9_EVAL_RANGE="${M9_EVAL_RANGE:-}"
@@ -787,6 +788,9 @@ run_preflight() {
     if [ -n "${M9_ALIGNMENT_STRATEGY}" ]; then
       pre_extra_args+=( "--alignment-strategy" "${M9_ALIGNMENT_STRATEGY}" )
     fi
+    if [ "${M9_TIMING_SYNC}" = "1" ]; then
+      pre_extra_args+=( "--kv-timing-sync" )
+    fi
     if [ -n "${M9_EVAL_LIMIT}" ]; then
       pre_extra_args+=( "--eval-limit" "${M9_EVAL_LIMIT}" )
     fi
@@ -1150,6 +1154,9 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
           if [ -n "${M9_ALIGNMENT_STRATEGY}" ]; then
             EXTRA_ARGS+=( "--alignment-strategy" "${M9_ALIGNMENT_STRATEGY}" )
           fi
+          if [ "${M9_TIMING_SYNC}" = "1" ]; then
+            EXTRA_ARGS+=( "--kv-timing-sync" )
+          fi
           if [ -n "${M9_EVAL_LIMIT}" ]; then
             EXTRA_ARGS+=( "--eval-limit" "${M9_EVAL_LIMIT}" )
           fi
@@ -1199,6 +1206,9 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
     fi
     if [ -n "${M9_ALIGNMENT_STRATEGY}" ]; then
       EXTRA_ARGS+=( "--alignment-strategy" "${M9_ALIGNMENT_STRATEGY}" )
+    fi
+    if [ "${M9_TIMING_SYNC}" = "1" ]; then
+      EXTRA_ARGS+=( "--kv-timing-sync" )
     fi
     if [ -n "${M9_EVAL_LIMIT}" ]; then
       EXTRA_ARGS+=( "--eval-limit" "${M9_EVAL_LIMIT}" )
