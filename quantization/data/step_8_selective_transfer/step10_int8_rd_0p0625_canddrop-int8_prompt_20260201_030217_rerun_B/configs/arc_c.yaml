@@ -1,0 +1,48 @@
+model:
+  model_name: Rosetta
+  rosetta_config:
+    base_model: Qwen/Qwen3-0.6B
+    teacher_model: Qwen/Qwen2.5-0.5B-Instruct
+    is_do_alignment: false
+    alignment_strategy: longest
+    checkpoints_dir: /workspace/c2c_checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final
+    kv_quant_config:
+      enabled: true
+      scheme: int8
+      axis: head
+      eps: 1.0e-06
+      collect_stats: false
+    kv_transfer_config:
+      enabled: true
+      token_select_mode: delta_proj_vnorm_topk
+      token_select_proportion: 1.0
+      token_select_scope: prompt
+      token_select_min_tokens: 1
+      sparse_fuse: true
+      scatter_fill: receiver_only
+      index_dtype_bytes: 2
+      include_scale_overhead: true
+      timing_sync: false
+      token_precision_mode: rd_greedy
+      token_precision_candidates:
+      - drop
+      - int8
+      token_precision_budget_bytes: 16420.0
+      token_precision_calib_n: 64
+      token_precision_scope: prompt
+  generation_config:
+    do_sample: false
+    max_new_tokens: 64
+output:
+  output_dir: /workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p0625_canddrop-int8_prompt_20260201_030217_rerun_B/results/arc_c
+eval:
+  dataset: ai2-arc
+  gpu_ids:
+  - 0
+  answer_method: generate
+  use_cot: false
+  use_template: true
+  sample_interval: 1
+  math_grading_method: comprehensive
+  kv_cache_proportion: 1.0
+  kv_cache_order_mode: front
