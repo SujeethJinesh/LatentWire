@@ -150,11 +150,18 @@ M8_SELECT_SCOPES="${M8_SELECT_SCOPES:-prompt}"
 M8_SCATTER_FILL="${M8_SCATTER_FILL:-receiver_only}"
 M8_SPARSE_FUSE="${M8_SPARSE_FUSE:-1}"
 M8_SPARSE_FUSE_MODES="${M8_SPARSE_FUSE_MODES:-${M8_SPARSE_FUSE}}"
+M8_EVAL_DATASETS="${M8_EVAL_DATASETS:-}"
+M8_EVAL_LIMIT="${M8_EVAL_LIMIT:-}"
+M8_EVAL_RANGE="${M8_EVAL_RANGE:-}"
 PREFLIGHT_M8_PROPORTION="${PREFLIGHT_M8_PROPORTION:-0.25}"
 PREFLIGHT_M8_MODE="${PREFLIGHT_M8_MODE:-proj_vnorm_topk}"
 
 # Milestone 9 grid (delta selection).
 M9_KV_QUANT_SCHEME="${M9_KV_QUANT_SCHEME:-int8}"
+M9_BASE_MODEL="${M9_BASE_MODEL:-}"
+M9_TEACHER_MODEL="${M9_TEACHER_MODEL:-}"
+M9_DO_ALIGNMENT="${M9_DO_ALIGNMENT:-0}"
+M9_ALIGNMENT_STRATEGY="${M9_ALIGNMENT_STRATEGY:-}"
 M9_SELECT_MODES="${M9_SELECT_MODES:-vnorm_topk proj_vnorm_topk delta_proj_vnorm_topk}"
 M9_SELECT_PROPORTIONS="${M9_SELECT_PROPORTIONS:-1.0 0.5 0.25 0.10}"
 M9_SELECT_MIN_TOKENS="${M9_SELECT_MIN_TOKENS:-1}"
@@ -164,34 +171,62 @@ M9_SPARSE_FUSE="${M9_SPARSE_FUSE:-1}"
 M9_SPARSE_FUSE_MODES="${M9_SPARSE_FUSE_MODES:-${M9_SPARSE_FUSE}}"
 M9_EXTRA_LOW_PROP="${M9_EXTRA_LOW_PROP:-}"
 M9_EXTRA_LOW_MODE="${M9_EXTRA_LOW_MODE:-delta_proj_vnorm_topk}"
+M9_EVAL_DATASETS="${M9_EVAL_DATASETS:-}"
+M9_EVAL_LIMIT="${M9_EVAL_LIMIT:-}"
+M9_EVAL_RANGE="${M9_EVAL_RANGE:-}"
 
 # Milestone 10 grid (RD token x precision).
 M10_KV_QUANT_SCHEME="${M10_KV_QUANT_SCHEME:-int8}"
 M10_KV_QUANT_AXIS="${M10_KV_QUANT_AXIS:-head}"
 M10_BASE_MODEL="${M10_BASE_MODEL:-Qwen/Qwen3-0.6B}"
 M10_TEACHER_MODEL="${M10_TEACHER_MODEL:-Qwen/Qwen2.5-0.5B-Instruct}"
+M10_DO_ALIGNMENT="${M10_DO_ALIGNMENT:-0}"
+M10_ALIGNMENT_STRATEGY="${M10_ALIGNMENT_STRATEGY:-}"
 M10_SELECT_MODE="${M10_SELECT_MODE:-delta_proj_vnorm_topk}"
 M10_SELECT_SCOPE="${M10_SELECT_SCOPE:-prompt}"
 M10_SELECT_MIN_TOKENS="${M10_SELECT_MIN_TOKENS:-1}"
 M10_SCATTER_FILL="${M10_SCATTER_FILL:-receiver_only}"
 M10_TOKEN_PRECISION_CANDIDATES="${M10_TOKEN_PRECISION_CANDIDATES:-drop,int4,int8}"
+M10_CANDIDATE_SETS="${M10_CANDIDATE_SETS:-}"
 M10_BUDGET_FRACS="${M10_BUDGET_FRACS:-0.03125 0.0625 0.125 0.25}"
 M10_BUDGET_BYTES="${M10_BUDGET_BYTES:-}"
 M10_AVG_INPUT_LEN="${M10_AVG_INPUT_LEN:-256}"
 M10_INDEX_BYTES="${M10_INDEX_BYTES:-2}"
 M10_INCLUDE_SCALE_OVERHEAD="${M10_INCLUDE_SCALE_OVERHEAD:-1}"
 M10_TIMING_SYNC="${M10_TIMING_SYNC:-0}"
+M10_EVAL_DATASETS="${M10_EVAL_DATASETS:-}"
+M10_EVAL_LIMIT="${M10_EVAL_LIMIT:-}"
+M10_EVAL_RANGE="${M10_EVAL_RANGE:-}"
+
+STEP8_EVAL_DATASETS="${STEP8_EVAL_DATASETS:-openbookqa,ai2-arc}"
 
 handle_signal() {
   echo "Received preemption signal. Job will exit and can be requeued."
 }
 trap handle_signal USR1 TERM
 
+normalize_dataset_list() {
+  echo "$1" | tr ',' ' '
+}
+
+dataset_slug() {
+  if [ "$1" = "ai2-arc" ]; then
+    echo "arc_c"
+  else
+    echo "$1" | tr '/-' '__' | tr -cd '[:alnum:]_'
+  fi
+}
+
+sanitize_candidates() {
+  echo "$1" | tr ',' '-' | tr -cd '[:alnum:]-'
+}
+
 dataset_len() {
   "${PYTHON[@]}" - <<'PY' "$1"
 import sys
 from datasets import load_dataset
 from datasets.utils import logging as ds_logging
+from script.evaluation.unified_evaluator import DATASET_CONFIGS
 
 ds_logging.disable_progress_bar()
 ds_logging.set_verbosity_error()
@@ -201,12 +236,32 @@ revision = "main"
 if dataset == "openbookqa":
     ds = load_dataset("allenai/openbookqa", revision=revision)
     split = ds["test"]
-elif dataset == "ai2-arc":
+    sys.stdout.write(str(len(split)))
+    raise SystemExit(0)
+if dataset == "ai2-arc":
     ds = load_dataset("allenai/ai2_arc", "ARC-Challenge", revision=revision)
     split = ds["test"]
-else:
+    sys.stdout.write(str(len(split)))
+    raise SystemExit(0)
+
+cfg = DATASET_CONFIGS.get(dataset)
+if not cfg:
     raise SystemExit(f"Unknown dataset: {dataset}")
-sys.stdout.write(str(len(split)))
+name = cfg.get("dataset_name")
+split_name = cfg.get("test_split", "test")
+subjects = cfg.get("subjects") or []
+if subjects:
+    total = 0
+    for subject in subjects:
+        try:
+            ds = load_dataset(name, subject)
+        except Exception:
+            ds = load_dataset(name)
+        total += len(ds[split_name])
+    sys.stdout.write(str(total))
+else:
+    ds = load_dataset(name)
+    sys.stdout.write(str(len(ds[split_name])))
 PY
 }
 
@@ -661,6 +716,12 @@ run_preflight() {
     if [ "${pre_sparse}" = "0" ]; then
       pre_extra_args+=( "--no-kv-sparse-fuse" )
     fi
+    if [ -n "${M8_EVAL_LIMIT}" ]; then
+      pre_extra_args+=( "--eval-limit" "${M8_EVAL_LIMIT}" )
+    fi
+    if [ -n "${M8_EVAL_RANGE}" ]; then
+      pre_extra_args+=( "--eval-range" "${M8_EVAL_RANGE}" )
+    fi
     "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
       --env "${CONDA_ENV}" \
       --mode gpu \
@@ -670,6 +731,7 @@ run_preflight() {
       --kv-select-scope "${pre_scope}" \
       --kv-select-min-tokens "${M8_SELECT_MIN_TOKENS}" \
       --kv-scatter-fill "${M8_SCATTER_FILL}" \
+      --eval-datasets "${M8_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
       --prep-only \
       --run-tag "${pre_tag}" \
       "${pre_extra_args[@]}"
@@ -708,6 +770,24 @@ run_preflight() {
     if [ "${pre_sparse}" = "0" ]; then
       pre_extra_args+=( "--no-kv-sparse-fuse" )
     fi
+    if [ -n "${M9_BASE_MODEL}" ]; then
+      pre_extra_args+=( "--base-model-override" "${M9_BASE_MODEL}" )
+    fi
+    if [ -n "${M9_TEACHER_MODEL}" ]; then
+      pre_extra_args+=( "--teacher-model-override" "${M9_TEACHER_MODEL}" )
+    fi
+    if [ "${M9_DO_ALIGNMENT}" = "1" ]; then
+      pre_extra_args+=( "--do-alignment" )
+    fi
+    if [ -n "${M9_ALIGNMENT_STRATEGY}" ]; then
+      pre_extra_args+=( "--alignment-strategy" "${M9_ALIGNMENT_STRATEGY}" )
+    fi
+    if [ -n "${M9_EVAL_LIMIT}" ]; then
+      pre_extra_args+=( "--eval-limit" "${M9_EVAL_LIMIT}" )
+    fi
+    if [ -n "${M9_EVAL_RANGE}" ]; then
+      pre_extra_args+=( "--eval-range" "${M9_EVAL_RANGE}" )
+    fi
     "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
       --env "${CONDA_ENV}" \
       --mode gpu \
@@ -717,6 +797,7 @@ run_preflight() {
       --kv-select-scope "${pre_scope}" \
       --kv-select-min-tokens "${M9_SELECT_MIN_TOKENS}" \
       --kv-scatter-fill "${M9_SCATTER_FILL}" \
+      --eval-datasets "${M9_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
       --prep-only \
       --run-tag "${pre_tag}" \
       "${pre_extra_args[@]}"
@@ -744,11 +825,23 @@ run_preflight() {
     if [ -n "${M10_TEACHER_MODEL}" ]; then
       pre_extra_args+=( "--teacher-model-override" "${M10_TEACHER_MODEL}" )
     fi
+    if [ "${M10_DO_ALIGNMENT}" = "1" ]; then
+      pre_extra_args+=( "--do-alignment" )
+    fi
+    if [ -n "${M10_ALIGNMENT_STRATEGY}" ]; then
+      pre_extra_args+=( "--alignment-strategy" "${M10_ALIGNMENT_STRATEGY}" )
+    fi
     if [ "${M10_INCLUDE_SCALE_OVERHEAD}" = "1" ]; then
       pre_extra_args+=( "--kv-include-scale-overhead" )
     fi
     if [ "${M10_TIMING_SYNC}" = "1" ]; then
       pre_extra_args+=( "--kv-timing-sync" )
+    fi
+    if [ -n "${M10_EVAL_LIMIT}" ]; then
+      pre_extra_args+=( "--eval-limit" "${M10_EVAL_LIMIT}" )
+    fi
+    if [ -n "${M10_EVAL_RANGE}" ]; then
+      pre_extra_args+=( "--eval-range" "${M10_EVAL_RANGE}" )
     fi
     "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
       --env "${CONDA_ENV}" \
@@ -765,6 +858,7 @@ run_preflight() {
       --token-precision-budget-bytes "${pre_budget}" \
       --token-precision-scope "${M10_SELECT_SCOPE}" \
       --kv-index-dtype-bytes "${M10_INDEX_BYTES}" \
+      --eval-datasets "${M10_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
       --prep-only \
       --run-tag "${pre_tag}" \
       "${pre_extra_args[@]}"
@@ -972,6 +1066,7 @@ fi
 # Milestone 8: Selective transfer (token-level sparsity + quantization).
 # =============================================================================
 if [ "${RUN_MILESTONE_8}" = "1" ]; then
+  DATASETS="$(normalize_dataset_list "${M8_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}")"
   for MODE in ${M8_SELECT_MODES}; do
     for PROP in ${M8_SELECT_PROPORTIONS}; do
       for SCOPE in ${M8_SELECT_SCOPES}; do
@@ -984,6 +1079,12 @@ if [ "${RUN_MILESTONE_8}" = "1" ]; then
           if [ "${SPARSE_FUSE_MODE}" = "0" ]; then
             EXTRA_ARGS+=( "--no-kv-sparse-fuse" )
           fi
+          if [ -n "${M8_EVAL_LIMIT}" ]; then
+            EXTRA_ARGS+=( "--eval-limit" "${M8_EVAL_LIMIT}" )
+          fi
+          if [ -n "${M8_EVAL_RANGE}" ]; then
+            EXTRA_ARGS+=( "--eval-range" "${M8_EVAL_RANGE}" )
+          fi
           "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
             --env "${CONDA_ENV}" \
             --mode gpu \
@@ -993,12 +1094,15 @@ if [ "${RUN_MILESTONE_8}" = "1" ]; then
             --kv-select-scope "${SCOPE}" \
             --kv-select-min-tokens "${M8_SELECT_MIN_TOKENS}" \
             --kv-scatter-fill "${M8_SCATTER_FILL}" \
+            --eval-datasets "${M8_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
             --prep-only \
             --run-tag "${RUN_TAG}" \
             "${EXTRA_ARGS[@]}"
           RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
-          run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
-          run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+          for DATASET in ${DATASETS}; do
+            SLUG="$(dataset_slug "${DATASET}")"
+            run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "m8|${M8_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+          done
         done
       done
     done
@@ -1010,6 +1114,7 @@ fi
 # Milestone 9: Delta selection (receiver-aware token scoring).
 # =============================================================================
 if [ "${RUN_MILESTONE_9}" = "1" ]; then
+  DATASETS="$(normalize_dataset_list "${M9_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}")"
   for MODE in ${M9_SELECT_MODES}; do
     for PROP in ${M9_SELECT_PROPORTIONS}; do
       for SCOPE in ${M9_SELECT_SCOPES}; do
@@ -1022,6 +1127,24 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
           if [ "${SPARSE_FUSE_MODE}" = "0" ]; then
             EXTRA_ARGS+=( "--no-kv-sparse-fuse" )
           fi
+          if [ -n "${M9_BASE_MODEL}" ]; then
+            EXTRA_ARGS+=( "--base-model-override" "${M9_BASE_MODEL}" )
+          fi
+          if [ -n "${M9_TEACHER_MODEL}" ]; then
+            EXTRA_ARGS+=( "--teacher-model-override" "${M9_TEACHER_MODEL}" )
+          fi
+          if [ "${M9_DO_ALIGNMENT}" = "1" ]; then
+            EXTRA_ARGS+=( "--do-alignment" )
+          fi
+          if [ -n "${M9_ALIGNMENT_STRATEGY}" ]; then
+            EXTRA_ARGS+=( "--alignment-strategy" "${M9_ALIGNMENT_STRATEGY}" )
+          fi
+          if [ -n "${M9_EVAL_LIMIT}" ]; then
+            EXTRA_ARGS+=( "--eval-limit" "${M9_EVAL_LIMIT}" )
+          fi
+          if [ -n "${M9_EVAL_RANGE}" ]; then
+            EXTRA_ARGS+=( "--eval-range" "${M9_EVAL_RANGE}" )
+          fi
           "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
             --env "${CONDA_ENV}" \
             --mode gpu \
@@ -1031,12 +1154,15 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
             --kv-select-scope "${SCOPE}" \
             --kv-select-min-tokens "${M9_SELECT_MIN_TOKENS}" \
             --kv-scatter-fill "${M9_SCATTER_FILL}" \
+            --eval-datasets "${M9_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
             --prep-only \
             --run-tag "${RUN_TAG}" \
             "${EXTRA_ARGS[@]}"
           RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
-          run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
-          run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+          for DATASET in ${DATASETS}; do
+            SLUG="$(dataset_slug "${DATASET}")"
+            run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+          done
         done
       done
     done
@@ -1048,6 +1174,24 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
     if [ "${M9_SPARSE_FUSE}" = "0" ]; then
       EXTRA_ARGS+=( "--no-kv-sparse-fuse" )
     fi
+    if [ -n "${M9_BASE_MODEL}" ]; then
+      EXTRA_ARGS+=( "--base-model-override" "${M9_BASE_MODEL}" )
+    fi
+    if [ -n "${M9_TEACHER_MODEL}" ]; then
+      EXTRA_ARGS+=( "--teacher-model-override" "${M9_TEACHER_MODEL}" )
+    fi
+    if [ "${M9_DO_ALIGNMENT}" = "1" ]; then
+      EXTRA_ARGS+=( "--do-alignment" )
+    fi
+    if [ -n "${M9_ALIGNMENT_STRATEGY}" ]; then
+      EXTRA_ARGS+=( "--alignment-strategy" "${M9_ALIGNMENT_STRATEGY}" )
+    fi
+    if [ -n "${M9_EVAL_LIMIT}" ]; then
+      EXTRA_ARGS+=( "--eval-limit" "${M9_EVAL_LIMIT}" )
+    fi
+    if [ -n "${M9_EVAL_RANGE}" ]; then
+      EXTRA_ARGS+=( "--eval-range" "${M9_EVAL_RANGE}" )
+    fi
     "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
       --env "${CONDA_ENV}" \
       --mode gpu \
@@ -1057,11 +1201,15 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
       --kv-select-scope "prompt" \
       --kv-select-min-tokens "${M9_SELECT_MIN_TOKENS}" \
       --kv-scatter-fill "${M9_SCATTER_FILL}" \
+      --eval-datasets "${M9_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
       --prep-only \
       --run-tag "${RUN_TAG}" \
       "${EXTRA_ARGS[@]}"
     RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
-    run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${M9_EXTRA_LOW_MODE}|${M9_EXTRA_LOW_PROP}|prompt|${M9_SPARSE_FUSE}"
+    for DATASET in ${DATASETS}; do
+      SLUG="$(dataset_slug "${DATASET}")"
+      run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "m9|${M9_KV_QUANT_SCHEME}|${M9_EXTRA_LOW_MODE}|${M9_EXTRA_LOW_PROP}|prompt|${M9_SPARSE_FUSE}"
+    done
   fi
   git_autopush "m9"
 fi
@@ -1070,6 +1218,7 @@ fi
 # Milestone 10: RD-C2C (token x precision scheduling).
 # =============================================================================
 if [ "${RUN_MILESTONE_10}" = "1" ]; then
+  DATASETS="$(normalize_dataset_list "${M10_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}")"
   BUDGET_LIST=()
   TAG_LIST=()
   if [ -n "${M10_BUDGET_BYTES}" ]; then
@@ -1087,45 +1236,75 @@ if [ "${RUN_MILESTONE_10}" = "1" ]; then
     done
   fi
 
-  EXTRA_ARGS=()
-  if [ -n "${M10_BASE_MODEL}" ]; then
-    EXTRA_ARGS+=( "--base-model-override" "${M10_BASE_MODEL}" )
-  fi
-  if [ -n "${M10_TEACHER_MODEL}" ]; then
-    EXTRA_ARGS+=( "--teacher-model-override" "${M10_TEACHER_MODEL}" )
-  fi
-  if [ "${M10_INCLUDE_SCALE_OVERHEAD}" = "1" ]; then
-    EXTRA_ARGS+=( "--kv-include-scale-overhead" )
-  fi
-  if [ "${M10_TIMING_SYNC}" = "1" ]; then
-    EXTRA_ARGS+=( "--kv-timing-sync" )
+  if [ -n "${M10_CANDIDATE_SETS}" ]; then
+    CANDIDATE_SETS="$(echo "${M10_CANDIDATE_SETS}" | tr ';' ' ')"
+    CAND_TAG_ALWAYS="1"
+  else
+    CANDIDATE_SETS="${M10_TOKEN_PRECISION_CANDIDATES}"
+    CAND_TAG_ALWAYS="0"
   fi
 
-  for i in "${!BUDGET_LIST[@]}"; do
-    BUDGET="${BUDGET_LIST[$i]}"
-    TAG="${TAG_LIST[$i]}"
-    RUN_TAG="step10_${M10_KV_QUANT_SCHEME}_rd_${TAG}_${M10_SELECT_SCOPE}_${RUN_TAG_PREFIX}"
-    "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
-      --env "${CONDA_ENV}" \
-      --mode gpu \
-      --kv-quant-scheme "${M10_KV_QUANT_SCHEME}" \
-      --kv-quant-axis "${M10_KV_QUANT_AXIS}" \
-      --kv-select-mode "${M10_SELECT_MODE}" \
-      --kv-select-proportion "1.0" \
-      --kv-select-scope "${M10_SELECT_SCOPE}" \
-      --kv-select-min-tokens "${M10_SELECT_MIN_TOKENS}" \
-      --kv-scatter-fill "${M10_SCATTER_FILL}" \
-      --token-precision-mode rd_greedy \
-      --token-precision-candidates "${M10_TOKEN_PRECISION_CANDIDATES}" \
-      --token-precision-budget-bytes "${BUDGET}" \
-      --token-precision-scope "${M10_SELECT_SCOPE}" \
-      --kv-index-dtype-bytes "${M10_INDEX_BYTES}" \
-      --prep-only \
-      --run-tag "${RUN_TAG}" \
-      "${EXTRA_ARGS[@]}"
-    RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
-    run_eval_chunks_with_skip "${RUN_ROOT}" "openbookqa.yaml" "openbookqa" "${RUN_ROOT}/logs/step8.log" "m10|${M10_KV_QUANT_SCHEME}|${TAG}|${M10_SELECT_SCOPE}"
-    run_eval_chunks_with_skip "${RUN_ROOT}" "arc_c.yaml" "ai2-arc" "${RUN_ROOT}/logs/step8.log" "m10|${M10_KV_QUANT_SCHEME}|${TAG}|${M10_SELECT_SCOPE}"
+  for CAND_SET in ${CANDIDATE_SETS}; do
+    CAND_TAG=""
+    if [ "${CAND_TAG_ALWAYS}" = "1" ] || [ "${CAND_SET}" != "${M10_TOKEN_PRECISION_CANDIDATES}" ]; then
+      CAND_TAG="_cand$(sanitize_candidates "${CAND_SET}")"
+    fi
+
+    EXTRA_ARGS=()
+    if [ -n "${M10_BASE_MODEL}" ]; then
+      EXTRA_ARGS+=( "--base-model-override" "${M10_BASE_MODEL}" )
+    fi
+    if [ -n "${M10_TEACHER_MODEL}" ]; then
+      EXTRA_ARGS+=( "--teacher-model-override" "${M10_TEACHER_MODEL}" )
+    fi
+    if [ "${M10_DO_ALIGNMENT}" = "1" ]; then
+      EXTRA_ARGS+=( "--do-alignment" )
+    fi
+    if [ -n "${M10_ALIGNMENT_STRATEGY}" ]; then
+      EXTRA_ARGS+=( "--alignment-strategy" "${M10_ALIGNMENT_STRATEGY}" )
+    fi
+    if [ "${M10_INCLUDE_SCALE_OVERHEAD}" = "1" ]; then
+      EXTRA_ARGS+=( "--kv-include-scale-overhead" )
+    fi
+    if [ "${M10_TIMING_SYNC}" = "1" ]; then
+      EXTRA_ARGS+=( "--kv-timing-sync" )
+    fi
+    if [ -n "${M10_EVAL_LIMIT}" ]; then
+      EXTRA_ARGS+=( "--eval-limit" "${M10_EVAL_LIMIT}" )
+    fi
+    if [ -n "${M10_EVAL_RANGE}" ]; then
+      EXTRA_ARGS+=( "--eval-range" "${M10_EVAL_RANGE}" )
+    fi
+
+    for i in "${!BUDGET_LIST[@]}"; do
+      BUDGET="${BUDGET_LIST[$i]}"
+      TAG="${TAG_LIST[$i]}${CAND_TAG}"
+      RUN_TAG="step10_${M10_KV_QUANT_SCHEME}_rd_${TAG}_${M10_SELECT_SCOPE}_${RUN_TAG_PREFIX}"
+      "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
+        --env "${CONDA_ENV}" \
+        --mode gpu \
+        --kv-quant-scheme "${M10_KV_QUANT_SCHEME}" \
+        --kv-quant-axis "${M10_KV_QUANT_AXIS}" \
+        --kv-select-mode "${M10_SELECT_MODE}" \
+        --kv-select-proportion "1.0" \
+        --kv-select-scope "${M10_SELECT_SCOPE}" \
+        --kv-select-min-tokens "${M10_SELECT_MIN_TOKENS}" \
+        --kv-scatter-fill "${M10_SCATTER_FILL}" \
+        --token-precision-mode rd_greedy \
+        --token-precision-candidates "${CAND_SET}" \
+        --token-precision-budget-bytes "${BUDGET}" \
+        --token-precision-scope "${M10_SELECT_SCOPE}" \
+        --kv-index-dtype-bytes "${M10_INDEX_BYTES}" \
+        --eval-datasets "${M10_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
+        --prep-only \
+        --run-tag "${RUN_TAG}" \
+        "${EXTRA_ARGS[@]}"
+      RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
+      for DATASET in ${DATASETS}; do
+        SLUG="$(dataset_slug "${DATASET}")"
+        run_eval_chunks_with_skip "${RUN_ROOT}" "${SLUG}.yaml" "${DATASET}" "${RUN_ROOT}/logs/step8.log" "m10|${M10_KV_QUANT_SCHEME}|${TAG}|${M10_SELECT_SCOPE}"
+      done
+    done
   done
   git_autopush "m10"
 fi

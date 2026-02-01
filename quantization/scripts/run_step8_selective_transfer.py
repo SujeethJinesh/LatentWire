@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -37,6 +38,28 @@ LOCAL_TORCH_VERSION = "2.2.2"
 def die(msg):
     print(f"ERROR: {msg}", file=sys.stderr)
     sys.exit(1)
+
+
+def parse_eval_datasets(raw):
+    if not raw:
+        return ["openbookqa", "ai2-arc"]
+    parts = re.split(r"[,\s]+", raw.strip())
+    return [p for p in parts if p]
+
+
+def dataset_slug(name):
+    if name == "ai2-arc":
+        return "arc_c"
+    return re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_").lower()
+
+
+def parse_eval_range(raw):
+    if raw is None:
+        return None
+    match = re.match(r"^\s*(\d+)\s*:\s*(\d+)\s*$", raw)
+    if not match:
+        die("Invalid --eval-range. Expected format start:end (e.g., 0:200).")
+    return [int(match.group(1)), int(match.group(2))]
 
 
 def run_cmd(cmd, cwd=None, env=None, log_file=None):
@@ -1024,9 +1047,6 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, kv_transfer_config, a
         manifest_path.write_text(json.dumps(manifest, indent=2))
         print("Wrote manifest:", manifest_path)
 
-        (run_root / "configs" / "openbookqa.yaml").write_text(eval_recipe_path.read_text())
-        (run_root / "configs" / "arc_c.yaml").write_text(eval_recipe_path.read_text())
-
         def patch(cfg_path, dataset, out_dir):
             cfg = yaml.safe_load(Path(cfg_path).read_text())
             cfg.setdefault("eval", {})
@@ -1045,10 +1065,20 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, kv_transfer_config, a
             cfg["eval"]["dataset"] = dataset
             cfg["eval"]["kv_cache_proportion"] = args.kv_cache_proportion
             cfg["eval"]["kv_cache_order_mode"] = args.kv_cache_order_mode
+            if args.eval_limit is not None:
+                cfg["eval"]["limit"] = int(args.eval_limit)
+            elif args.eval_range is not None:
+                cfg["eval"]["limit"] = args.eval_range
             Path(cfg_path).write_text(yaml.safe_dump(cfg, sort_keys=False))
 
-        patch(run_root / "configs/openbookqa.yaml", "openbookqa", run_root / "results" / "openbookqa")
-        patch(run_root / "configs/arc_c.yaml", "ai2-arc", run_root / "results" / "arc_c")
+        dataset_cfgs = {}
+        for dataset in args.eval_datasets:
+            slug = dataset_slug(dataset)
+            cfg_path = run_root / "configs" / f"{slug}.yaml"
+            cfg_path.write_text(eval_recipe_path.read_text())
+            out_dir = run_root / "results" / slug
+            patch(cfg_path, dataset, out_dir)
+            dataset_cfgs[slug] = cfg_path
 
         if args.prep_only:
             write_status(run_root, "prep_only")
@@ -1071,8 +1101,9 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, kv_transfer_config, a
             timings["datasets"][label] = {"seconds": time.time() - start}
             (run_root / "manifests" / "timings.json").write_text(json.dumps(timings, indent=2))
 
-        run_eval_with_timing("openbookqa", run_root / "configs/openbookqa.yaml")
-        run_eval_with_timing("arc_c", run_root / "configs/arc_c.yaml")
+        for dataset in args.eval_datasets:
+            slug = dataset_slug(dataset)
+            run_eval_with_timing(slug, dataset_cfgs[slug])
 
         timings["total_seconds"] = time.time() - timings["start_time"]
         (run_root / "manifests" / "timings.json").write_text(json.dumps(timings, indent=2))
@@ -1262,6 +1293,22 @@ def main():
         help="Synchronize CUDA for KV transfer timing (slower but more accurate).",
     )
     parser.add_argument(
+        "--eval-datasets",
+        default="openbookqa,ai2-arc",
+        help="Comma/space-separated eval datasets (default: openbookqa,ai2-arc).",
+    )
+    parser.add_argument(
+        "--eval-limit",
+        type=int,
+        default=None,
+        help="Limit evaluation to first N samples (per dataset).",
+    )
+    parser.add_argument(
+        "--eval-range",
+        default=None,
+        help="Evaluate a specific index range start:end (per dataset).",
+    )
+    parser.add_argument(
         "--local-dataset",
         choices=["openbookqa", "ai2-arc"],
         default="openbookqa",
@@ -1296,6 +1343,13 @@ def main():
 
     if args.kv_cache_proportion < 0.0 or args.kv_cache_proportion > 1.0:
         die("kv_cache_proportion must be between 0.0 and 1.0")
+
+    if args.eval_limit is not None and args.eval_limit <= 0:
+        die("--eval-limit must be positive")
+    if args.eval_limit is not None and args.eval_range is not None:
+        die("Use only one of --eval-limit or --eval-range.")
+    args.eval_range = parse_eval_range(args.eval_range)
+    args.eval_datasets = parse_eval_datasets(args.eval_datasets)
 
     if args.mode == "gpu" and not args.skip_gpu_check and not args.prep_only:
         check_gpu()

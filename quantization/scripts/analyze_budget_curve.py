@@ -318,6 +318,13 @@ def parse_run(run_root):
         return []
 
     rows = []
+    timings = None
+    timings_path = run_root / "manifests" / "timings.json"
+    if timings_path.exists():
+        try:
+            timings = json.loads(timings_path.read_text())
+        except Exception:
+            timings = None
     manifest_stats = read_manifest_model_stats(run_root)
     for dataset_dir in sorted(results_root.iterdir()):
         if not dataset_dir.is_dir():
@@ -348,6 +355,13 @@ def parse_run(run_root):
         kv_transfer_stats = None
         rd_bytes_used_mean = None
         rd_budget_bytes_mean = None
+        prefill_time_mean_ms = None
+        selection_time_mean_ms = None
+        projection_score_time_mean_ms = None
+        projection_transfer_time_mean_ms = None
+        fuse_time_mean_ms = None
+        eval_seconds = None
+        eval_total_seconds = None
         if isinstance(kv_transfer_config, dict) and kv_transfer_config.get("enabled", False):
             token_select_mode = kv_transfer_config.get("token_select_mode")
             token_select_proportion = kv_transfer_config.get("token_select_proportion")
@@ -374,6 +388,22 @@ def parse_run(run_root):
                     count = safe_float(kv_transfer_stats.get("count"))
                     if rd_budget_bytes_sum is not None and count:
                         rd_budget_bytes_mean = rd_budget_bytes_sum / count
+                prefill_time_mean_ms = safe_float(kv_transfer_stats.get("prefill_time_mean_ms"))
+                selection_time_mean_ms = safe_float(kv_transfer_stats.get("selection_time_mean_ms"))
+                projection_score_time_mean_ms = safe_float(
+                    kv_transfer_stats.get("projection_score_time_mean_ms")
+                )
+                projection_transfer_time_mean_ms = safe_float(
+                    kv_transfer_stats.get("projection_transfer_time_mean_ms")
+                )
+                fuse_time_mean_ms = safe_float(kv_transfer_stats.get("fuse_time_mean_ms"))
+        if isinstance(timings, dict):
+            eval_total_seconds = safe_float(timings.get("total_seconds"))
+            datasets = timings.get("datasets") or {}
+            if isinstance(datasets, dict):
+                entry = datasets.get(dataset_dir.name)
+                if isinstance(entry, dict):
+                    eval_seconds = safe_float(entry.get("seconds"))
         length_stats = aggregate_length_stats(dataset_dir)
         accuracy = safe_float(summary.get("overall_accuracy"))
         avg_input = extract_avg_input_length(summary)
@@ -401,6 +431,13 @@ def parse_run(run_root):
                 "token_precision_budget_bits": token_precision_budget_bits,
                 "rd_bytes_used_mean": rd_bytes_used_mean,
                 "rd_budget_bytes_mean": rd_budget_bytes_mean,
+                "prefill_time_mean_ms": prefill_time_mean_ms,
+                "selection_time_mean_ms": selection_time_mean_ms,
+                "projection_score_time_mean_ms": projection_score_time_mean_ms,
+                "projection_transfer_time_mean_ms": projection_transfer_time_mean_ms,
+                "fuse_time_mean_ms": fuse_time_mean_ms,
+                "eval_seconds": eval_seconds,
+                "eval_total_seconds": eval_total_seconds,
                 "sparse_fuse": sparse_fuse,
                 "index_dtype_bytes": index_dtype_bytes,
                 "include_scale_overhead": include_scale_overhead,
@@ -432,6 +469,13 @@ def write_csv(rows, out_path):
         "token_precision_budget_bits",
         "rd_bytes_used_mean",
         "rd_budget_bytes_mean",
+        "prefill_time_mean_ms",
+        "selection_time_mean_ms",
+        "projection_score_time_mean_ms",
+        "projection_transfer_time_mean_ms",
+        "fuse_time_mean_ms",
+        "eval_seconds",
+        "eval_total_seconds",
         "sparse_fuse",
         "index_dtype_bytes",
         "include_scale_overhead",
