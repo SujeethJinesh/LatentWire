@@ -167,6 +167,7 @@ u^{\ell}(t)=\mathbb{E}_{b,h}\left[\left\lVert \widehat V^{\ell}_{b,h,t}-V^{R,\el
 \qquad
 I_{\ell}=\text{TopK}\big(u^{\ell}(t),\lfloor pT\rfloor\big).
 \]
+Delta selection improves low-budget accuracy (e.g., +4.2/+3.3 points at $p=0.10$ vs vnorm on OpenBookQA/ARC-C).
 
 \paragraph{RD-C2C (M10).}
 Under a byte budget $R$, assign each token $a_t\in\{\text{drop},\text{int4},\text{int8}\}$ with cost $r(a_t)$ and distortion $D_t(a_t)$:
@@ -175,11 +176,46 @@ Under a byte budget $R$, assign each token $a_t\in\{\text{drop},\text{int4},\tex
 \]
 with $D_t(\text{drop})=\lVert \widehat V^{\ell}_t - V^{R,\ell}_t\rVert_2^2$ and $D_t(\text{intb})=\lVert \widehat V^{\ell}_t-\widehat V^{\ell,(b)}_t\rVert_2^2$. We use a deterministic greedy allocator (int8$\rightarrow$int4$\rightarrow$drop) by $u^{\ell}(t)$.
 
+\begin{table}[ht]
+\centering
+\caption{M9 delta selection vs. baselines (accuracy).}
+\begin{tabular}{lcc}
+\toprule
+Setting & OpenBookQA & ARC-C \\
+\midrule
+vnorm\_topk (p=0.10) & 0.422 & 0.478 \\
+proj\_vnorm\_topk (p=0.10) & 0.432 & 0.475 \\
+delta\_proj\_vnorm\_topk (p=0.10) & 0.464 & 0.511 \\
+vnorm\_topk (p=0.25) & 0.470 & 0.496 \\
+proj\_vnorm\_topk (p=0.25) & 0.462 & 0.526 \\
+delta\_proj\_vnorm\_topk (p=0.25) & 0.498 & 0.548 \\
+vnorm\_topk (p=0.50) & 0.508 & 0.560 \\
+proj\_vnorm\_topk (p=0.50) & 0.504 & 0.546 \\
+delta\_proj\_vnorm\_topk (p=0.50) & 0.540 & 0.573 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{M10 RD budgets (accuracy).}
+\begin{tabular}{lcc}
+\toprule
+Setting & OpenBookQA & ARC-C \\
+\midrule
+RD budget 0p03125 & 0.498 & 0.548 \\
+RD budget 0p0625 & 0.534 & 0.570 \\
+RD budget 0p125 & 0.524 & 0.549 \\
+RD budget 0p25 & 0.528 & 0.550 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Discussion}
-Quantized C2C provides large bandwidth reductions with limited accuracy drop. Cache pruning further improves the tradeoff, suggesting a practical path to deployable multi-LLM communication. A main-conference path includes QAT recovery, mixed-precision schedules, heterogeneous model pairs, and SparseC2C token selection.
+Quantized C2C provides large bandwidth reductions with limited accuracy drop. Receiver-aware delta selection and RD-C2C improve low-budget performance, suggesting redundancy-aware selection is a key lever for cache transfer. A main-conference path includes QAT recovery, mixed-precision schedules, heterogeneous model pairs, and system-level latency measurements.
 
 \section{Limitations}
-Our results currently focus on a single model pair and two datasets. We do not yet report end-to-end latency or FLOP measurements for the fuser, and SparseC2C remains an ongoing extension. These limitations will be addressed in the main-conference track.
+Our results currently focus on a single model pair and two datasets. We do not yet report end-to-end latency or FLOP measurements for the fuser, and heterogeneity results for M9/M10 are pending. These limitations will be addressed in the main-conference track.
 
 \section{Broader Impacts}
 Communication-efficient multi-LLM systems can reduce compute and latency, but they may also enable higher-throughput deployment of models. We emphasize reproducible evaluation, careful reporting of accuracy/latency tradeoffs, and responsible deployment in sensitive domains.

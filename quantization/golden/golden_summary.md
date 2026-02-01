@@ -65,3 +65,50 @@ These are full runs. M7 includes alignment ablation on the same model pair and h
 | M8 selective transfer | int4 front p=0.5 | arc_c | 0.478 | Full run |
 | M8 selective transfer | int4 vnorm_topk p=0.5 | openbookqa | 0.520 | Full run |
 | M8 selective transfer | int4 vnorm_topk p=0.5 | arc_c | 0.563 | Full run |
+
+## M9/M10 Summary (Selective Transfer v2)
+
+M9 runs are full unless noted (p=0.05 is OpenBookQA-only). M10 budget=0p125 is OpenBookQA-only so far.
+
+### M9 Δ-selection + baselines
+
+| Setting | Dataset | Accuracy |
+|---|---|---|
+| int8 delta_proj_vnorm_topk p=0.05 | openbookqa | 0.430 |
+| int8 delta_proj_vnorm_topk p=0.10 | arc_c | 0.511 |
+| int8 delta_proj_vnorm_topk p=0.10 | openbookqa | 0.464 |
+| int8 delta_proj_vnorm_topk p=0.25 | arc_c | 0.548 |
+| int8 delta_proj_vnorm_topk p=0.25 | openbookqa | 0.498 |
+| int8 delta_proj_vnorm_topk p=0.5 | arc_c | 0.573 |
+| int8 delta_proj_vnorm_topk p=0.5 | openbookqa | 0.540 |
+| int8 delta_proj_vnorm_topk p=1.0 | arc_c | 0.550 |
+| int8 delta_proj_vnorm_topk p=1.0 | openbookqa | 0.528 |
+| int8 proj_vnorm_topk p=0.10 | arc_c | 0.475 |
+| int8 proj_vnorm_topk p=0.10 | openbookqa | 0.432 |
+| int8 proj_vnorm_topk p=0.25 | arc_c | 0.526 |
+| int8 proj_vnorm_topk p=0.25 | openbookqa | 0.462 |
+| int8 proj_vnorm_topk p=0.5 | arc_c | 0.546 |
+| int8 proj_vnorm_topk p=0.5 | openbookqa | 0.504 |
+| int8 proj_vnorm_topk p=1.0 | arc_c | 0.550 |
+| int8 proj_vnorm_topk p=1.0 | openbookqa | 0.528 |
+| int8 vnorm_topk p=0.10 | arc_c | 0.478 |
+| int8 vnorm_topk p=0.10 | openbookqa | 0.422 |
+| int8 vnorm_topk p=0.25 | arc_c | 0.496 |
+| int8 vnorm_topk p=0.25 | openbookqa | 0.470 |
+| int8 vnorm_topk p=0.5 | arc_c | 0.560 |
+| int8 vnorm_topk p=0.5 | openbookqa | 0.508 |
+| int8 vnorm_topk p=1.0 | arc_c | 0.550 |
+| int8 vnorm_topk p=1.0 | openbookqa | 0.528 |
+
+### M10 RD budgets
+
+| Setting | Dataset | Accuracy |
+|---|---|---|
+| int8 rd_greedy budget=0p03125 | arc_c | 0.548 |
+| int8 rd_greedy budget=0p03125 | openbookqa | 0.498 |
+| int8 rd_greedy budget=0p0625 | arc_c | 0.570 |
+| int8 rd_greedy budget=0p0625 | openbookqa | 0.534 |
+| int8 rd_greedy budget=0p125 | arc_c | 0.549 |
+| int8 rd_greedy budget=0p125 | openbookqa | 0.524 |
+| int8 rd_greedy budget=0p25 | arc_c | 0.550 |
+| int8 rd_greedy budget=0p25 | openbookqa | 0.528 |
