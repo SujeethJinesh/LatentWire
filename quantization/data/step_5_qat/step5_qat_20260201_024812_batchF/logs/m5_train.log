@@ -1,0 +1,19 @@
+/workspace/conda/envs/rosetta/lib/python3.10/site-packages/transformers/utils/hub.py:111: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Outputs will be saved to: /workspace/c2c_checkpoints/qat_20260201_024812_batchF
+Training mode: rosetta
+Setting up models…
+Using dtype: torch.bfloat16
+Model Qwen/Qwen3-0.6B already has a chat template.
+Using last_aligned mapping strategy (target: [sources])
+Applying freeze configuration: ['teacher', 'base']
+Total parameters: 1,567,930,744
+Trainable parameters: 477,848,056
+Percentage of trainable parameters: 30.4763%
+Loading dataset…
+Loading OpenHermes dataset (split: train)...
+  - Token count filter: max 2048: 50000 -> 49571 samples
+Applied sequential batch filtering: 50000 -> 49571 samples
+Loaded 49571 samples
+Starting training…
+Epoch 1/1:   0%|          | 0/1534 [00:00<?, ?it/s]

@@ -1,0 +1,5 @@
+
+$ git submodule update --init --recursive quantization/C2C
+Dependency check failed or mismatched: rosetta resolved to None, expected under /workspace/LatentWire/quantization/C2C
+
+$ /workspace/conda/envs/rosetta/bin/python -m pip install -e .

@@ -1,0 +1,25 @@
+{
+  "status": "running",
+  "mode": "gpu",
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": false
+  },
+  "kv_transfer_config": {
+    "enabled": true,
+    "token_select_mode": "delta_proj_vnorm_topk",
+    "token_select_proportion": 0.25,
+    "token_select_scope": "prompt",
+    "token_select_min_tokens": 1,
+    "sparse_fuse": true,
+    "scatter_fill": "receiver_only",
+    "index_dtype_bytes": 2,
+    "include_scale_overhead": false,
+    "timing_sync": false
+  },
+  "kv_cache_proportion": 1.0,
+  "kv_cache_order_mode": "front"
+}
