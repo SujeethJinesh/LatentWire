@@ -1,0 +1,12 @@
+{
+  "datasets": {
+    "openbookqa": {
+      "seconds": 207.0214488506317
+    },
+    "arc_c": {
+      "seconds": 481.5096106529236
+    }
+  },
+  "start_time": 1769939919.968125,
+  "total_seconds": 688.5322556495667
+}
