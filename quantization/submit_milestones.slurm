@@ -232,10 +232,11 @@ sanitize_candidates() {
 
 dataset_len() {
   "${PYTHON[@]}" - <<'PY' "$1"
+import contextlib
+import io
 import sys
 from datasets import load_dataset
 from datasets.utils import logging as ds_logging
-from script.evaluation.unified_evaluator import DATASET_CONFIGS
 
 ds_logging.disable_progress_bar()
 ds_logging.set_verbosity_error()
@@ -252,6 +253,9 @@ if dataset == "ai2-arc":
     split = ds["test"]
     sys.stdout.write(str(len(split)))
     raise SystemExit(0)
+
+with contextlib.redirect_stdout(io.StringIO()):
+    from script.evaluation.unified_evaluator import DATASET_CONFIGS
 
 cfg = DATASET_CONFIGS.get(dataset)
 if not cfg:
