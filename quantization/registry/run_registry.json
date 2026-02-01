@@ -1326,5 +1326,41 @@
         "description": "Hetero align1 completed; align0 remains invalid due to tokenizer vocab mismatch. Use align0 only for same-vocab pairs."
       }
     ]
+  },
+  "m9|int8|delta_proj_vnorm_topk|0.25|prompt|1|hetero_final": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_205355_batchA_final",
+      "config_hash": "cc144ac52dfad887c52ffa04fecbe1886d034866",
+      "reason": "",
+      "timestamp": "2026-02-01T20:59:19.190652Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_205355_batchA_final",
+      "config_hash": "f5e7c9972f2c27fbc3a785a5e011e96f127d06f5",
+      "reason": "",
+      "timestamp": "2026-02-01T21:11:17.773439Z"
+    }
+  },
+  "m10|int8|0p125|prompt|hetero_final": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_prompt_20260201_205355_batchA_final",
+      "config_hash": "444eb19868e262e2e276f05f84a39ebd1271dfb3",
+      "reason": "",
+      "timestamp": "2026-02-01T21:18:56.861165Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_prompt_20260201_205355_batchA_final",
+      "config_hash": "04de905046bc9c26ecdc16ccdd594b728adc6d50",
+      "reason": "",
+      "timestamp": "2026-02-01T21:36:58.888141Z"
+    }
   }
 }
