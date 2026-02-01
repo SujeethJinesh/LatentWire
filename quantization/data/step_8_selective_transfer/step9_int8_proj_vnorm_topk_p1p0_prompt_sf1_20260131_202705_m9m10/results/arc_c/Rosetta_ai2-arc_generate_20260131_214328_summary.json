@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.5482233502538071,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.5482233502538071
+  },
+  "kv_transfer_stats": {
+    "count": 5516,
+    "selected_min": 105,
+    "selected_max": 237,
+    "selected_sum": 769076,
+    "total_sum": 769076,
+    "selected_fraction_sum": 5516.0,
+    "score_mean_sum": 167055.95153212547,
+    "score_min": 0.41104161739349365,
+    "score_max": 226.37673950195312,
+    "prefill_count": 197,
+    "prefill_time_sum_ms": 42784.305771347135,
+    "selection_time_sum_ms": 549.327181885019,
+    "projection_score_time_sum_ms": 9725.491490564309,
+    "projection_transfer_time_sum_ms": 11073.22860264685,
+    "fuse_time_sum_ms": 571.1817565606907,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 139.4263959390863,
+    "total_mean": 139.4263959390863,
+    "selected_fraction_mean": 1.0,
+    "score_mean": 30.285705498935002,
+    "prefill_time_mean_ms": 217.17921711343723,
+    "selection_time_mean_ms": 0.09958795900743636,
+    "projection_score_time_mean_ms": 1.7631420396236963,
+    "projection_transfer_time_mean_ms": 2.007474365962083,
+    "fuse_time_mean_ms": 0.10354999212485329,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 140.4263959390863,
+        "avg_gen_length": 11.055837563451776,
+        "avg_length_ratio": 0.07930852327105008,
+        "accuracy": 0.5482233502538071,
+        "total_samples": 197
+      }
+    }
+  }
+}

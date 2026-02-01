@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "openbookqa",
+  "answer_method": "generate",
+  "overall_accuracy": 0.54,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.54
+  },
+  "kv_transfer_stats": {
+    "count": 5600,
+    "selected_min": 32,
+    "selected_max": 32,
+    "selected_sum": 179200,
+    "total_sum": 658476,
+    "selected_fraction_sum": 1539.0850524685875,
+    "score_mean_sum": 98961.62068104744,
+    "score_min": 1.3495821952819824,
+    "score_max": 88.61380004882812,
+    "prefill_count": 200,
+    "prefill_time_sum_ms": 94131.84378657024,
+    "selection_time_sum_ms": 857.1943517308682,
+    "projection_score_time_sum_ms": 11946.422584936954,
+    "projection_transfer_time_sum_ms": 23205.799035262316,
+    "fuse_time_sum_ms": 1076.8533042864874,
+    "rd_int8_sum": 173600,
+    "rd_int4_sum": 5600,
+    "rd_drop_sum": 479276,
+    "rd_budget_bytes_sum": 45976000.0,
+    "rd_bytes_used_sum": 45696000.0,
+    "rd_effective_bits_sum": 44625.0,
+    "rd_payload_bytes_sum": 45158400.0,
+    "rd_index_bytes_sum": 358400.0,
+    "rd_scale_bytes_sum": 179200.0,
+    "selected_mean": 32.0,
+    "total_mean": 117.585,
+    "selected_fraction_mean": 0.2748366165122478,
+    "score_mean": 17.671717978758473,
+    "prefill_time_mean_ms": 470.6592189328512,
+    "selection_time_mean_ms": 0.15307041995194076,
+    "projection_score_time_mean_ms": 2.13328974731017,
+    "projection_transfer_time_mean_ms": 4.143892684868271,
+    "fuse_time_mean_ms": 0.19229523290830133,
+    "rd_int8_mean": 31.0,
+    "rd_int4_mean": 1.0,
+    "rd_drop_mean": 85.585,
+    "rd_budget_bytes_mean": 8210.0,
+    "rd_bytes_used_mean": 8160.0,
+    "rd_effective_bits_mean": 7.96875,
+    "rd_payload_bytes_mean": 8064.0,
+    "rd_index_bytes_mean": 64.0,
+    "rd_scale_bytes_mean": 32.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 118.585,
+        "avg_gen_length": 7.4,
+        "avg_length_ratio": 0.06272519129573187,
+        "accuracy": 0.54,
+        "total_samples": 200
+      }
+    }
+  }
+}

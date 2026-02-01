@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.5670103092783505,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.5670103092783505
+  },
+  "kv_transfer_stats": {
+    "count": 5432,
+    "selected_min": 10,
+    "selected_max": 23,
+    "selected_sum": 77616,
+    "total_sum": 776076,
+    "selected_fraction_sum": 543.2074766876901,
+    "score_mean_sum": 117022.38506996632,
+    "score_min": 1.4180448055267334,
+    "score_max": 88.60650634765625,
+    "prefill_count": 194,
+    "prefill_time_sum_ms": 34454.67019348871,
+    "selection_time_sum_ms": 2017.895643832162,
+    "projection_score_time_sum_ms": 11348.776415688917,
+    "projection_transfer_time_sum_ms": 0.0,
+    "fuse_time_sum_ms": 812.4028613092378,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 14.288659793814434,
+    "total_mean": 142.87113402061857,
+    "selected_fraction_mean": 0.1000013764152596,
+    "score_mean": 21.543148945133712,
+    "prefill_time_mean_ms": 177.6013927499418,
+    "selection_time_mean_ms": 0.3714829977599709,
+    "projection_score_time_mean_ms": 2.0892445536982542,
+    "projection_transfer_time_mean_ms": 0.0,
+    "fuse_time_mean_ms": 0.14955870053557396,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 143.87113402061857,
+        "avg_gen_length": 8.835051546391753,
+        "avg_length_ratio": 0.06299165252260111,
+        "accuracy": 0.5670103092783505,
+        "total_samples": 194
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.5303030303030303,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.5303030303030303
+  },
+  "kv_transfer_stats": {
+    "count": 5544,
+    "selected_min": 32,
+    "selected_max": 32,
+    "selected_sum": 177408,
+    "total_sum": 781704,
+    "selected_fraction_sum": 1291.8708063982815,
+    "score_mean_sum": 99428.73998558521,
+    "score_min": 1.350331425666809,
+    "score_max": 88.78279113769531,
+    "prefill_count": 198,
+    "prefill_time_sum_ms": 101140.06010361481,
+    "selection_time_sum_ms": 841.3648550631478,
+    "projection_score_time_sum_ms": 11811.332977144048,
+    "projection_transfer_time_sum_ms": 22987.426468520425,
+    "fuse_time_sum_ms": 1064.9953089887276,
+    "rd_int8_sum": 171864,
+    "rd_int4_sum": 5544,
+    "rd_drop_sum": 604296,
+    "rd_budget_bytes_sum": 45516240.0,
+    "rd_bytes_used_sum": 45239040.0,
+    "rd_effective_bits_sum": 44178.75,
+    "rd_payload_bytes_sum": 44706816.0,
+    "rd_index_bytes_sum": 354816.0,
+    "rd_scale_bytes_sum": 177408.0,
+    "selected_mean": 32.0,
+    "total_mean": 141.0,
+    "selected_fraction_mean": 0.23302142972551976,
+    "score_mean": 17.93447690937684,
+    "prefill_time_mean_ms": 510.80838436169097,
+    "selection_time_mean_ms": 0.1517613374933528,
+    "projection_score_time_mean_ms": 2.130471316223674,
+    "projection_transfer_time_mean_ms": 4.1463611956205675,
+    "fuse_time_mean_ms": 0.1920987209575627,
+    "rd_int8_mean": 31.0,
+    "rd_int4_mean": 1.0,
+    "rd_drop_mean": 109.0,
+    "rd_budget_bytes_mean": 8210.0,
+    "rd_bytes_used_mean": 8160.0,
+    "rd_effective_bits_mean": 7.96875,
+    "rd_payload_bytes_mean": 8064.0,
+    "rd_index_bytes_mean": 64.0,
+    "rd_scale_bytes_mean": 32.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 142.0,
+        "avg_gen_length": 9.080808080808081,
+        "avg_length_ratio": 0.06417865347989976,
+        "accuracy": 0.5303030303030303,
+        "total_samples": 198
+      }
+    }
+  }
+}

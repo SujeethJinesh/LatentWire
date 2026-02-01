@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.48484848484848486,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.48484848484848486
+  },
+  "kv_transfer_stats": {
+    "count": 5544,
+    "selected_min": 10,
+    "selected_max": 27,
+    "selected_sum": 78204,
+    "total_sum": 781704,
+    "selected_fraction_sum": 554.561284746406,
+    "score_mean_sum": 244224.46854305267,
+    "score_min": 2.1708567142486572,
+    "score_max": 224.0343017578125,
+    "prefill_count": 198,
+    "prefill_time_sum_ms": 46271.683582570404,
+    "selection_time_sum_ms": 2135.359788662754,
+    "projection_score_time_sum_ms": 10224.969770642929,
+    "projection_transfer_time_sum_ms": 12125.265181297436,
+    "fuse_time_sum_ms": 596.4109018677846,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 14.106060606060606,
+    "total_mean": 141.0,
+    "selected_fraction_mean": 0.10002909176522476,
+    "score_mean": 44.05203256548569,
+    "prefill_time_mean_ms": 233.69537162914347,
+    "selection_time_mean_ms": 0.3851659070459513,
+    "projection_score_time_mean_ms": 1.844330766710485,
+    "projection_transfer_time_mean_ms": 2.1870968941734192,
+    "fuse_time_mean_ms": 0.10757772400212565,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 142.0,
+        "avg_gen_length": 9.616161616161616,
+        "avg_length_ratio": 0.06917491150212356,
+        "accuracy": 0.48484848484848486,
+        "total_samples": 198
+      }
+    }
+  }
+}

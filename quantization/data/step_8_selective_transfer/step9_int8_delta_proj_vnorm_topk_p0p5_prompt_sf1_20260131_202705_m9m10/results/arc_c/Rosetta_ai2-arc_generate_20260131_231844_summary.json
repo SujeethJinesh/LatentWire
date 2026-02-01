@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.5477386934673367,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.5477386934673367
+  },
+  "kv_transfer_stats": {
+    "count": 5572,
+    "selected_min": 50,
+    "selected_max": 106,
+    "selected_sum": 386540,
+    "total_sum": 773108,
+    "selected_fraction_sum": 2785.9781875223807,
+    "score_mean_sum": 85184.03393149376,
+    "score_min": 1.2224235534667969,
+    "score_max": 88.75782775878906,
+    "prefill_count": 199,
+    "prefill_time_sum_ms": 34900.34258621745,
+    "selection_time_sum_ms": 2043.8284557312727,
+    "projection_score_time_sum_ms": 11685.238714911975,
+    "projection_transfer_time_sum_ms": 0.0,
+    "fuse_time_sum_ms": 834.7336233127862,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 69.37185929648241,
+    "total_mean": 138.74874371859298,
+    "selected_fraction_mean": 0.49999608534141793,
+    "score_mean": 15.28787400062702,
+    "prefill_time_mean_ms": 175.3786059608917,
+    "selection_time_mean_ms": 0.36680338401494483,
+    "projection_score_time_mean_ms": 2.0971354477587894,
+    "projection_transfer_time_mean_ms": 0.0,
+    "fuse_time_mean_ms": 0.14980861868499393,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 139.74874371859298,
+        "avg_gen_length": 10.522613065326633,
+        "avg_length_ratio": 0.07623075248263492,
+        "accuracy": 0.5477386934673367,
+        "total_samples": 199
+      }
+    }
+  }
+}

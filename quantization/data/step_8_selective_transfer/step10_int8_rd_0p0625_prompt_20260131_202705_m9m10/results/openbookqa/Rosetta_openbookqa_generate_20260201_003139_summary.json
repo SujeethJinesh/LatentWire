@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "openbookqa",
+  "answer_method": "generate",
+  "overall_accuracy": 0.48,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.48
+  },
+  "kv_transfer_stats": {
+    "count": 2800,
+    "selected_min": 64,
+    "selected_max": 64,
+    "selected_sum": 179200,
+    "total_sum": 330400,
+    "selected_fraction_sum": 1535.333257659556,
+    "score_mean_sum": 42707.15119040012,
+    "score_min": 1.2495698928833008,
+    "score_max": 88.35688781738281,
+    "prefill_count": 100,
+    "prefill_time_sum_ms": 47169.37668598257,
+    "selection_time_sum_ms": 515.4195493087173,
+    "projection_score_time_sum_ms": 5959.552823216654,
+    "projection_transfer_time_sum_ms": 11535.675113787875,
+    "fuse_time_sum_ms": 535.5750184971839,
+    "rd_int8_sum": 176400,
+    "rd_int4_sum": 2800,
+    "rd_drop_sum": 151200,
+    "rd_budget_bytes_sum": 45976000.0,
+    "rd_bytes_used_sum": 45964800.0,
+    "rd_effective_bits_sum": 22443.75,
+    "rd_payload_bytes_sum": 45516800.0,
+    "rd_index_bytes_sum": 358400.0,
+    "rd_scale_bytes_sum": 89600.0,
+    "selected_mean": 64.0,
+    "total_mean": 118.0,
+    "selected_fraction_mean": 0.5483333063069843,
+    "score_mean": 15.252553996571473,
+    "prefill_time_mean_ms": 471.6937668598257,
+    "selection_time_mean_ms": 0.184078410467399,
+    "projection_score_time_mean_ms": 2.1284117225773764,
+    "projection_transfer_time_mean_ms": 4.119883969209956,
+    "fuse_time_mean_ms": 0.19127679232042283,
+    "rd_int8_mean": 63.0,
+    "rd_int4_mean": 1.0,
+    "rd_drop_mean": 54.0,
+    "rd_budget_bytes_mean": 16420.0,
+    "rd_bytes_used_mean": 16416.0,
+    "rd_effective_bits_mean": 8.015625,
+    "rd_payload_bytes_mean": 16256.0,
+    "rd_index_bytes_mean": 128.0,
+    "rd_scale_bytes_mean": 32.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 119.0,
+        "avg_gen_length": 8.13,
+        "avg_length_ratio": 0.06910188331822031,
+        "accuracy": 0.48,
+        "total_samples": 100
+      }
+    }
+  }
+}

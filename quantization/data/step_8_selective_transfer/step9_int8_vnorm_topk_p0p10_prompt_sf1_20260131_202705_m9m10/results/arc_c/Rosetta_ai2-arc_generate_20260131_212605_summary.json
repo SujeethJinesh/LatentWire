@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.4720812182741117,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.4720812182741117
+  },
+  "kv_transfer_stats": {
+    "count": 5516,
+    "selected_min": 10,
+    "selected_max": 24,
+    "selected_sum": 77028,
+    "total_sum": 769076,
+    "selected_fraction_sum": 552.621019940931,
+    "score_mean_sum": 38296.197910010815,
+    "score_min": 0.24046508967876434,
+    "score_max": 36.05934143066406,
+    "prefill_count": 197,
+    "prefill_time_sum_ms": 36461.964518297464,
+    "selection_time_sum_ms": 3397.2196003887802,
+    "projection_score_time_sum_ms": 0.0,
+    "projection_transfer_time_sum_ms": 12533.131514210254,
+    "fuse_time_sum_ms": 592.3042570939288,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 13.964467005076141,
+    "total_mean": 139.4263959390863,
+    "selected_fraction_mean": 0.10018510151213397,
+    "score_mean": 6.942747989487095,
+    "prefill_time_mean_ms": 185.08611430607849,
+    "selection_time_mean_ms": 0.615884626611454,
+    "projection_score_time_mean_ms": 0.0,
+    "projection_transfer_time_mean_ms": 2.2721413187473267,
+    "fuse_time_mean_ms": 0.10737930694233662,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 140.4263959390863,
+        "avg_gen_length": 9.568527918781726,
+        "avg_length_ratio": 0.06980968779186413,
+        "accuracy": 0.4720812182741117,
+        "total_samples": 197
+      }
+    }
+  }
+}

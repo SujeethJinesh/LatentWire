@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.5325443786982249,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.5325443786982249
+  },
+  "kv_transfer_stats": {
+    "count": 4732,
+    "selected_min": 52,
+    "selected_max": 98,
+    "selected_sum": 330568,
+    "total_sum": 661164,
+    "selected_fraction_sum": 2365.766213055944,
+    "score_mean_sum": 165775.97485160828,
+    "score_min": 1.9229543209075928,
+    "score_max": 238.27577209472656,
+    "prefill_count": 169,
+    "prefill_time_sum_ms": 39161.57037997618,
+    "selection_time_sum_ms": 1706.5466854255646,
+    "projection_score_time_sum_ms": 8755.549318622798,
+    "projection_transfer_time_sum_ms": 10144.873890210874,
+    "fuse_time_sum_ms": 514.1407803166658,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 69.85798816568047,
+    "total_mean": 139.72189349112426,
+    "selected_fraction_mean": 0.4999505944750515,
+    "score_mean": 35.032961718429476,
+    "prefill_time_mean_ms": 231.72526852056913,
+    "selection_time_mean_ms": 0.3606396207577271,
+    "projection_score_time_mean_ms": 1.8502851476379538,
+    "projection_transfer_time_mean_ms": 2.143887128108807,
+    "fuse_time_mean_ms": 0.10865189778458702,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 140.72189349112426,
+        "avg_gen_length": 9.810650887573965,
+        "avg_length_ratio": 0.0700887755083145,
+        "accuracy": 0.5325443786982249,
+        "total_samples": 169
+      }
+    }
+  }
+}

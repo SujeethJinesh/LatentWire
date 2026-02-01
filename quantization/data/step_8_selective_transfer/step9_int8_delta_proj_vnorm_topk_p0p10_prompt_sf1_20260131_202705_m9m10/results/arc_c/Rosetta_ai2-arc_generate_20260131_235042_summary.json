@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.5125628140703518,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.5125628140703518
+  },
+  "kv_transfer_stats": {
+    "count": 5572,
+    "selected_min": 10,
+    "selected_max": 21,
+    "selected_sum": 77140,
+    "total_sum": 773108,
+    "selected_fraction_sum": 556.0115136038822,
+    "score_mean_sum": 120769.93748247623,
+    "score_min": 1.4154961109161377,
+    "score_max": 88.75782775878906,
+    "prefill_count": 199,
+    "prefill_time_sum_ms": 35714.822501526214,
+    "selection_time_sum_ms": 2072.8567966725677,
+    "projection_score_time_sum_ms": 11749.522902071476,
+    "projection_transfer_time_sum_ms": 0.0,
+    "fuse_time_sum_ms": 842.7208533976227,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 13.844221105527637,
+    "total_mean": 138.74874371859298,
+    "selected_fraction_mean": 0.09978670380543471,
+    "score_mean": 21.67443242686221,
+    "prefill_time_mean_ms": 179.47146985691566,
+    "selection_time_mean_ms": 0.372013064729463,
+    "projection_score_time_mean_ms": 2.1086724519151967,
+    "projection_transfer_time_mean_ms": 0.0,
+    "fuse_time_mean_ms": 0.15124207706346424,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 139.74874371859298,
+        "avg_gen_length": 8.386934673366834,
+        "avg_length_ratio": 0.060973898539721676,
+        "accuracy": 0.5125628140703518,
+        "total_samples": 199
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.49238578680203043,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.49238578680203043
+  },
+  "kv_transfer_stats": {
+    "count": 5516,
+    "selected_min": 26,
+    "selected_max": 59,
+    "selected_sum": 192388,
+    "total_sum": 769076,
+    "selected_fraction_sum": 1379.9844919978873,
+    "score_mean_sum": 35338.97008946538,
+    "score_min": 0.22170725464820862,
+    "score_max": 36.05934143066406,
+    "prefill_count": 197,
+    "prefill_time_sum_ms": 35886.18365221191,
+    "selection_time_sum_ms": 3296.4435924077407,
+    "projection_score_time_sum_ms": 0.0,
+    "projection_transfer_time_sum_ms": 12207.360907108523,
+    "fuse_time_sum_ms": 574.9548434978351,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 34.878172588832484,
+    "total_mean": 139.4263959390863,
+    "selected_fraction_mean": 0.2501784793324669,
+    "score_mean": 6.406629820425196,
+    "prefill_time_mean_ms": 182.16336879295386,
+    "selection_time_mean_ms": 0.5976148644684084,
+    "projection_score_time_mean_ms": 0.0,
+    "projection_transfer_time_mean_ms": 2.2130821078876943,
+    "fuse_time_mean_ms": 0.10423401803804117,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 140.4263959390863,
+        "avg_gen_length": 10.142131979695431,
+        "avg_length_ratio": 0.0732022438171325,
+        "accuracy": 0.49238578680203043,
+        "total_samples": 197
+      }
+    }
+  }
+}

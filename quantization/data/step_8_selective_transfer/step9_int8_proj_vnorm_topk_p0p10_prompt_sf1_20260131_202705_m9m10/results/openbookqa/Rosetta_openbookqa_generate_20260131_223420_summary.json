@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "openbookqa",
+  "answer_method": "generate",
+  "overall_accuracy": 0.42,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.42
+  },
+  "kv_transfer_stats": {
+    "count": 5600,
+    "selected_min": 10,
+    "selected_max": 15,
+    "selected_sum": 64848,
+    "total_sum": 648088,
+    "selected_fraction_sum": 560.2616980042307,
+    "score_mean_sum": 251833.93743610382,
+    "score_min": 2.175290107727051,
+    "score_max": 228.05613708496094,
+    "prefill_count": 200,
+    "prefill_time_sum_ms": 44920.76692299452,
+    "selection_time_sum_ms": 2058.4149099886417,
+    "projection_score_time_sum_ms": 10108.716539340094,
+    "projection_transfer_time_sum_ms": 11975.511869997717,
+    "fuse_time_sum_ms": 591.9254368636757,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 11.58,
+    "total_mean": 115.73,
+    "selected_fraction_mean": 0.10004673178646976,
+    "score_mean": 44.97034597073282,
+    "prefill_time_mean_ms": 224.60383461497258,
+    "selection_time_mean_ms": 0.3675740910694003,
+    "projection_score_time_mean_ms": 1.8051279534535882,
+    "projection_transfer_time_mean_ms": 2.1384842624995923,
+    "fuse_time_mean_ms": 0.10570097086851352,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 116.73,
+        "avg_gen_length": 8.995,
+        "avg_length_ratio": 0.07707319644892055,
+        "accuracy": 0.42,
+        "total_samples": 200
+      }
+    }
+  }
+}

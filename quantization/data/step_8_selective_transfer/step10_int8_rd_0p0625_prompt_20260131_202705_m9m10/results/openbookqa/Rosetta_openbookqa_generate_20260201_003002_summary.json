@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "openbookqa",
+  "answer_method": "generate",
+  "overall_accuracy": 0.55,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.55
+  },
+  "kv_transfer_stats": {
+    "count": 5600,
+    "selected_min": 64,
+    "selected_max": 64,
+    "selected_sum": 358400,
+    "total_sum": 648088,
+    "selected_fraction_sum": 3117.667264429234,
+    "score_mean_sum": 85231.83156716824,
+    "score_min": 1.2490650415420532,
+    "score_max": 88.60375213623047,
+    "prefill_count": 200,
+    "prefill_time_sum_ms": 91696.5275319526,
+    "selection_time_sum_ms": 843.8268726458773,
+    "projection_score_time_sum_ms": 11665.377934463322,
+    "projection_transfer_time_sum_ms": 22692.201605648734,
+    "fuse_time_sum_ms": 1075.6069191265851,
+    "rd_int8_sum": 352800,
+    "rd_int4_sum": 5600,
+    "rd_drop_sum": 289688,
+    "rd_budget_bytes_sum": 91952000.0,
+    "rd_bytes_used_sum": 91929600.0,
+    "rd_effective_bits_sum": 44887.5,
+    "rd_payload_bytes_sum": 91033600.0,
+    "rd_index_bytes_sum": 716800.0,
+    "rd_scale_bytes_sum": 179200.0,
+    "selected_mean": 64.0,
+    "total_mean": 115.73,
+    "selected_fraction_mean": 0.5567262972195061,
+    "score_mean": 15.219969922708614,
+    "prefill_time_mean_ms": 458.482637659763,
+    "selection_time_mean_ms": 0.15068337011533522,
+    "projection_score_time_mean_ms": 2.0831032025827363,
+    "projection_transfer_time_mean_ms": 4.052178858151559,
+    "fuse_time_mean_ms": 0.19207266412974736,
+    "rd_int8_mean": 63.0,
+    "rd_int4_mean": 1.0,
+    "rd_drop_mean": 51.73,
+    "rd_budget_bytes_mean": 16420.0,
+    "rd_bytes_used_mean": 16416.0,
+    "rd_effective_bits_mean": 8.015625,
+    "rd_payload_bytes_mean": 16256.0,
+    "rd_index_bytes_mean": 128.0,
+    "rd_scale_bytes_mean": 32.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 116.73,
+        "avg_gen_length": 8.2,
+        "avg_length_ratio": 0.07055088819034432,
+        "accuracy": 0.55,
+        "total_samples": 200
+      }
+    }
+  }
+}
