@@ -162,6 +162,7 @@ M9_BASE_MODEL="${M9_BASE_MODEL:-}"
 M9_TEACHER_MODEL="${M9_TEACHER_MODEL:-}"
 M9_DO_ALIGNMENT="${M9_DO_ALIGNMENT:-0}"
 M9_ALIGNMENT_STRATEGY="${M9_ALIGNMENT_STRATEGY:-}"
+M9_CHECKPOINT_DIR="${M9_CHECKPOINT_DIR:-}"
 M9_SELECT_MODES="${M9_SELECT_MODES:-vnorm_topk proj_vnorm_topk delta_proj_vnorm_topk}"
 M9_SELECT_PROPORTIONS="${M9_SELECT_PROPORTIONS:-1.0 0.5 0.25 0.10}"
 M9_SELECT_MIN_TOKENS="${M9_SELECT_MIN_TOKENS:-1}"
@@ -182,6 +183,7 @@ M10_BASE_MODEL="${M10_BASE_MODEL:-Qwen/Qwen3-0.6B}"
 M10_TEACHER_MODEL="${M10_TEACHER_MODEL:-Qwen/Qwen2.5-0.5B-Instruct}"
 M10_DO_ALIGNMENT="${M10_DO_ALIGNMENT:-0}"
 M10_ALIGNMENT_STRATEGY="${M10_ALIGNMENT_STRATEGY:-}"
+M10_CHECKPOINT_DIR="${M10_CHECKPOINT_DIR:-}"
 M10_SELECT_MODE="${M10_SELECT_MODE:-delta_proj_vnorm_topk}"
 M10_SELECT_SCOPE="${M10_SELECT_SCOPE:-prompt}"
 M10_SELECT_MIN_TOKENS="${M10_SELECT_MIN_TOKENS:-1}"
@@ -776,6 +778,9 @@ run_preflight() {
     if [ -n "${M9_TEACHER_MODEL}" ]; then
       pre_extra_args+=( "--teacher-model-override" "${M9_TEACHER_MODEL}" )
     fi
+    if [ -n "${M9_CHECKPOINT_DIR}" ]; then
+      pre_extra_args+=( "--checkpoint-dir-override" "${M9_CHECKPOINT_DIR}" )
+    fi
     if [ "${M9_DO_ALIGNMENT}" = "1" ]; then
       pre_extra_args+=( "--do-alignment" )
     fi
@@ -824,6 +829,9 @@ run_preflight() {
     fi
     if [ -n "${M10_TEACHER_MODEL}" ]; then
       pre_extra_args+=( "--teacher-model-override" "${M10_TEACHER_MODEL}" )
+    fi
+    if [ -n "${M10_CHECKPOINT_DIR}" ]; then
+      pre_extra_args+=( "--checkpoint-dir-override" "${M10_CHECKPOINT_DIR}" )
     fi
     if [ "${M10_DO_ALIGNMENT}" = "1" ]; then
       pre_extra_args+=( "--do-alignment" )
@@ -1133,6 +1141,9 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
           if [ -n "${M9_TEACHER_MODEL}" ]; then
             EXTRA_ARGS+=( "--teacher-model-override" "${M9_TEACHER_MODEL}" )
           fi
+          if [ -n "${M9_CHECKPOINT_DIR}" ]; then
+            EXTRA_ARGS+=( "--checkpoint-dir-override" "${M9_CHECKPOINT_DIR}" )
+          fi
           if [ "${M9_DO_ALIGNMENT}" = "1" ]; then
             EXTRA_ARGS+=( "--do-alignment" )
           fi
@@ -1179,6 +1190,9 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
     fi
     if [ -n "${M9_TEACHER_MODEL}" ]; then
       EXTRA_ARGS+=( "--teacher-model-override" "${M9_TEACHER_MODEL}" )
+    fi
+    if [ -n "${M9_CHECKPOINT_DIR}" ]; then
+      EXTRA_ARGS+=( "--checkpoint-dir-override" "${M9_CHECKPOINT_DIR}" )
     fi
     if [ "${M9_DO_ALIGNMENT}" = "1" ]; then
       EXTRA_ARGS+=( "--do-alignment" )
@@ -1256,6 +1270,9 @@ if [ "${RUN_MILESTONE_10}" = "1" ]; then
     fi
     if [ -n "${M10_TEACHER_MODEL}" ]; then
       EXTRA_ARGS+=( "--teacher-model-override" "${M10_TEACHER_MODEL}" )
+    fi
+    if [ -n "${M10_CHECKPOINT_DIR}" ]; then
+      EXTRA_ARGS+=( "--checkpoint-dir-override" "${M10_CHECKPOINT_DIR}" )
     fi
     if [ "${M10_DO_ALIGNMENT}" = "1" ]; then
       EXTRA_ARGS+=( "--do-alignment" )
