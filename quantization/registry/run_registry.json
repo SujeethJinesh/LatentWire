@@ -1185,6 +1185,14 @@
       "config_hash": "03be839b443227336ee44e8ae8f105243b83b9a3",
       "reason": "",
       "timestamp": "2026-01-31T23:38:28.864245Z"
+    },
+    "gsm8k": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260202_gsm8k_cot",
+      "config_hash": "6a6a4f7536831dcbd54268c6d3292cc4a8495786",
+      "reason": "",
+      "timestamp": "2026-02-02T07:37:29.631318Z"
     }
   },
   "m9|int8|delta_proj_vnorm_topk|0.10|prompt|1": {
