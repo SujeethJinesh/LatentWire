@@ -112,6 +112,8 @@ M9 runs are full unless noted (p=0.05 is OpenBookQA-only). M10 budgets include f
 | int8 rd_greedy budget=0p125 | openbookqa | 0.524 |
 | int8 rd_greedy budget=0p25 | arc_c | 0.550 |
 | int8 rd_greedy budget=0p25 | openbookqa | 0.528 |
+| int8 delta_proj_vnorm_topk p=0.25 (gsm8k CoT) | gsm8k | 0.028 |
+| int8 rd_greedy budget=0p125 (gsm8k CoT) | gsm8k | 0.042 |
 
 ### Stability shards (0:200, 200:400)
 

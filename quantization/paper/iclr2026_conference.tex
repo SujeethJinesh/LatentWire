@@ -255,12 +255,14 @@ Hetero pair (Qwen3$\rightarrow$Llama3.2, align on) & 44.2 & 47.8 \\
 \bottomrule
 \end{tabular}
 \end{table}
+\paragraph{GSM8K with CoT.}
+On GSM8K, CoT prompting remains challenging at this model scale. M10 RD (1/8 budget) improves accuracy over M9 delta (p=0.25) by +0.014 absolute (0.042 vs 0.028), but both are far below competitive levels.
 
 \section{Discussion}
 Quantized C2C provides large bandwidth reductions with limited accuracy drop. Receiver-aware delta selection consistently improves low-budget accuracy, and RD-C2C achieves near-baseline performance at moderate byte budgets. Shard-based repeats show low variance (std $\leq$ 0.02), supporting robustness at tight budgets. Timing-sync measurements indicate RD scheduling adds overhead relative to delta selection, highlighting the compute--communication tradeoff. A main-conference path includes QAT recovery, broader heterogeneity, and more system-level profiling beyond single-GPU eval time.
 
 \section{Limitations}
-Our results focus on a single base pair and two primary datasets; heterogeneity is evaluated via a single spot check. Timing-sync evals capture end-to-end runtime on a single GPU but do not measure distributed communication overhead or kernel-level profiling. GSM8K accuracy is low without chain-of-thought prompting. These limitations will be addressed in the final main-conference revision.
+Our results focus on a single base pair and two primary datasets; heterogeneity is evaluated via a single spot check. Timing-sync evals capture end-to-end runtime on a single GPU but do not measure distributed communication overhead or kernel-level profiling. GSM8K remains challenging: with CoT enabled, M10 improves over M9 but overall accuracy is still low. These limitations will be addressed in the final main-conference revision.
 
 \section{Broader Impact}
 Communication-efficient multi-LLM systems can reduce compute and latency, but they may also enable higher-throughput deployment of models. We emphasize reproducible evaluation, careful reporting of accuracy/latency tradeoffs, and responsible deployment in sensitive domains.
