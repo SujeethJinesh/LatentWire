@@ -1634,5 +1634,23 @@
       "reason": "",
       "timestamp": "2026-02-02T06:08:12.181832Z"
     }
+  },
+  "m9|int8|delta_proj_vnorm_topk|0.25|prompt|1|stab_b": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260202_stabB",
+      "config_hash": "937bd363857addb8b5c7b419377ec56ed0cd9165",
+      "reason": "",
+      "timestamp": "2026-02-02T06:10:44.024421Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260202_stabB",
+      "config_hash": "48d70b2f00c5de379ba748578809abf62c16370a",
+      "reason": "",
+      "timestamp": "2026-02-02T06:12:46.907332Z"
+    }
   }
 }
