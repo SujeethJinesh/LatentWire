@@ -22,19 +22,18 @@
 \maketitle
 
 \begin{abstract}
-We study communication-efficient transfer between heterogeneous large language models (LLMs) by quantizing Cache-to-Cache (C2C) KV-cache transfer. Our goal is to reduce bandwidth and memory while preserving accuracy. We present post-training quantization (INT8/INT4), cache-length reduction, and accuracy-versus-bytes curves for C2C, and introduce receiver-aware token selection and rate--distortion mixed-precision scheduling for sparse transfer. Empirically, quantization is nearly lossless, cache-length pruning reveals a strong front/back asymmetry, and our delta-selection improves accuracy at fixed token budgets while RD scheduling matches or improves accuracy at fixed byte budgets. We release a reproducible evaluation pipeline and analysis scripts.
+We study communication-efficient cache transfer between heterogeneous LLMs using Cache-to-Cache (C2C) under explicit byte budgets. We quantify precision and length trade-offs (INT8/INT4 PTQ and cache pruning) and introduce two budgeted transfer mechanisms: receiver-aware delta token selection and rate--distortion (RD) token$\times$precision scheduling. On OpenBookQA and ARC-C, INT8/INT4 are nearly lossless, back-pruning dominates front-pruning, delta selection improves accuracy at fixed token budgets (e.g., +2.8/+5.2 points at $p=0.25$), and RD scheduling matches or slightly improves fixed-precision baselines at 1/16--1/8 budgets with moderate overhead. We release a reproducible pipeline for evaluating cross-model cache communication.
 \end{abstract}
 
 \section{Introduction}
-Large language models (LLMs) often communicate via text, which is slow and lossy. Cache-to-Cache (C2C) communicates via KV-cache projection and fusion, but does not address precision or bandwidth constraints. We ask: \emph{How low can KV precision go before accuracy collapses, and can we recover performance under tight communication budgets?}
+Large language models (LLMs) often communicate via text, which is slow and lossy for distributed agents. Cache-to-Cache (C2C) communicates by projecting and fusing KV caches, but practical deployments face strict bandwidth and latency constraints. We ask: \emph{How low can KV precision go before accuracy collapses, and under a fixed byte budget what should be transmitted?}
 
 \paragraph{Contributions.}
 \begin{itemize}[leftmargin=*]
-  \item We introduce a precision-aware C2C evaluation pipeline and quantify INT8/INT4 PTQ effects on C2C accuracy.
-  \item We study cache-length reduction as a second budget axis and show that back-pruning consistently outperforms front-pruning.
-  \item We report accuracy vs. communication-budget curves that jointly compare precision and cache length.
-  \item We propose receiver-aware delta token selection and rate--distortion token$\times$precision scheduling for sparse, budgeted C2C transfer.
-  \item We provide a reproducible benchmarking setup and analysis scripts to support extensions to QAT, mixed precision, heterogeneity, and selective transfer.
+  \item We build a precision-aware C2C evaluation pipeline and quantify INT8/INT4 PTQ plus cache-length reduction under equal-byte budgets.
+  \item We introduce receiver-aware delta token selection and RD token$\times$precision scheduling, with a formal budgeted formulation.
+  \item We report accuracy--bytes curves, system-level timing measurements, and stability shards to characterize accuracy and overhead.
+  \item We release a reproducible benchmark setup and analysis scripts for extending C2C under communication constraints.
 \end{itemize}
 
 \section{Background and Motivation}
@@ -103,7 +102,7 @@ where $p$ is the retained cache proportion, $L$ the number of layers, $H_{kv}$ K
 
 \section{Experiments}
 \subsection{Setup}
-We evaluate on OpenBookQA and ARC-C with a Qwen3-0.6B receiver and Qwen2.5-0.5B sharer. We follow the C2C eval protocol: temperature 0, max\_new\_tokens 64, no CoT, unified chat template. All models are frozen; only the projector is trained when QAT is enabled. The OpenBookQA test split has 500 samples and ARC-C has 1150 samples.
+We evaluate on OpenBookQA (500) and ARC-C (1150) with a Qwen3-0.6B receiver and Qwen2.5-0.5B-Instruct sharer. We follow the C2C eval protocol: greedy decoding, max\_new\_tokens 64, unified chat template, and no CoT (except for the GSM8K CoT ablation). All models are frozen; only the projector is trained when QAT is enabled. We report a hetero spot check with Qwen3$\rightarrow$Llama3.2-1B-Instruct using alignment-on.
 
 \subsection{Main Results}
 All results below are full runs. PTQ is effectively lossless relative to FP16, and cache pruning shows a strong front/back asymmetry.
@@ -256,13 +255,13 @@ Hetero pair (Qwen3$\rightarrow$Llama3.2, align on) & 44.2 & 47.8 \\
 \end{tabular}
 \end{table}
 \paragraph{GSM8K with CoT.}
-On GSM8K, CoT prompting remains challenging at this model scale. M10 RD (1/8 budget) improves accuracy over M9 delta (p=0.25) by +0.014 absolute (0.042 vs 0.028), but both are far below competitive levels.
+On GSM8K, CoT prompting remains challenging at this model scale. M10 RD (1/8 budget) improves accuracy over M9 delta (p=0.25) by +1.44 points (4.25\% vs 2.81\%), but both remain far below competitive levels.
 
 \section{Discussion}
-Quantized C2C provides large bandwidth reductions with limited accuracy drop. Receiver-aware delta selection consistently improves low-budget accuracy, and RD-C2C achieves near-baseline performance at moderate byte budgets. Shard-based repeats show low variance (std $\leq$ 0.02), supporting robustness at tight budgets. Timing-sync measurements indicate RD scheduling adds overhead relative to delta selection, highlighting the compute--communication tradeoff. A main-conference path includes QAT recovery, broader heterogeneity, and more system-level profiling beyond single-GPU eval time.
+Quantized C2C provides large bandwidth reductions with limited accuracy drop. Receiver-aware delta selection consistently improves low-budget accuracy, and RD-C2C achieves comparable performance at fixed byte budgets while increasing evaluation time by roughly 1.5$\times$ relative to delta selection. Shard-based repeats show low variance (std $\leq$ 0.02), supporting robustness at tight budgets. These results highlight a clear compute--communication tradeoff. A main-conference path includes QAT recovery, broader heterogeneity, and system-level profiling beyond single-GPU eval time.
 
 \section{Limitations}
-Our results focus on a single base pair and two primary datasets; heterogeneity is evaluated via a single spot check. Timing-sync evals capture end-to-end runtime on a single GPU but do not measure distributed communication overhead or kernel-level profiling. GSM8K remains challenging: with CoT enabled, M10 improves over M9 but overall accuracy is still low. These limitations will be addressed in the final main-conference revision.
+Our results focus on a single base pair and two primary datasets; heterogeneity is evaluated via a single spot check. Timing-sync evals capture end-to-end runtime on a single GPU but do not measure distributed communication overhead or kernel-level profiling. GSM8K remains challenging at this model scale (2.8--4.3\% with CoT). These limitations will be addressed in the final main-conference revision.
 
 \section{Broader Impact}
 Communication-efficient multi-LLM systems can reduce compute and latency, but they may also enable higher-throughput deployment of models. We emphasize reproducible evaluation, careful reporting of accuracy/latency tradeoffs, and responsible deployment in sensitive domains.
