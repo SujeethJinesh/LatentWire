@@ -1,0 +1,15 @@
+{
+  "datasets": {
+    "openbookqa": {
+      "seconds": 159.03480005264282,
+      "runs": 1
+    },
+    "ai2-arc": {
+      "seconds": 185.6921088695526,
+      "runs": 1
+    }
+  },
+  "start_time": 1770012302.3437662,
+  "updated_at": "2026-02-02T06:08:12Z",
+  "total_seconds": 344.72690892219543
+}
