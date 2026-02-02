@@ -1542,5 +1542,25 @@
       "reason": "",
       "timestamp": "2026-02-02T00:57:18.543128Z"
     }
+  },
+  "m9|int8|vnorm_topk|0.25|prompt|1|gsm8k_final": {
+    "gsm8k": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_vnorm_topk_p0p25_prompt_sf1_20260202_005719_batchE_final",
+      "config_hash": "ea2a8e0ee3792ef4887e8cd5f3d4955f6186a362",
+      "reason": "",
+      "timestamp": "2026-02-02T01:49:56.683909Z"
+    }
+  },
+  "m9|int8|delta_proj_vnorm_topk|0.25|prompt|1|gsm8k_final": {
+    "gsm8k": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260202_005719_batchE_final",
+      "config_hash": "f88e4e0d88e2f876d7fd9f931406eb4bbe71efe7",
+      "reason": "",
+      "timestamp": "2026-02-02T02:42:29.481079Z"
+    }
   }
 }
