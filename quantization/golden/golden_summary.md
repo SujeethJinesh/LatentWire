@@ -68,7 +68,7 @@ These are full runs. M7 includes alignment ablation on the same model pair and h
 
 ## M9/M10 Summary (Selective Transfer v2)
 
-M9 runs are full unless noted (p=0.05 is OpenBookQA-only). M10 budget=0p125 is OpenBookQA-only so far.
+M9 runs are full unless noted (p=0.05 is OpenBookQA-only). M10 budgets include full OpenBookQA + ARC-C; timing-sync and stability shard runs are recorded in the registry.
 
 ### M9 Δ-selection + baselines
 
@@ -112,3 +112,19 @@ M9 runs are full unless noted (p=0.05 is OpenBookQA-only). M10 budget=0p125 is O
 | int8 rd_greedy budget=0p125 | openbookqa | 0.524 |
 | int8 rd_greedy budget=0p25 | arc_c | 0.550 |
 | int8 rd_greedy budget=0p25 | openbookqa | 0.528 |
+
+### Stability shards (0:200, 200:400)
+
+| Setting | Dataset | Shard A | Shard B | Mean | Std |
+|---|---|---|---|---|---|
+| M9 delta p=0.25 | openbookqa | 0.535 | 0.500 | 0.518 | 0.018 |
+| M9 delta p=0.25 | arc_c | 0.528 | 0.520 | 0.524 | 0.004 |
+| M10 RD 0p125 | openbookqa | 0.555 | 0.535 | 0.545 | 0.010 |
+| M10 RD 0p125 | arc_c | 0.548 | 0.515 | 0.532 | 0.017 |
+
+### System metrics (timing\_sync, 1x H100)
+
+| Setting | OpenBookQA total s (per sample) | ARC-C total s (per sample) |
+|---|---|---|
+| M9 delta p=0.25 | 279.5 (0.56) | 675.1 (0.59) |
+| M10 RD 0p125 | 412.2 (0.82) | 1056.9 (0.92) |

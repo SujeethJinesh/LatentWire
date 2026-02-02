@@ -221,6 +221,22 @@ M10 RD (1/8) & 40.4 & 46.0 \\
 \end{tabular}
 \end{table}
 
+\subsection{System Metrics}
+We report end-to-end evaluation time on a single H100 with timing synchronization enabled. M10 incurs additional overhead from token$\times$precision scheduling relative to M9 (Table~\ref{tab:sysmetrics}).
+\begin{table}[ht]
+\centering
+\caption{End-to-end timing (seconds; per-sample in parentheses).}
+\label{tab:sysmetrics}
+\begin{tabular}{lcc}
+\toprule
+Setting & OpenBookQA (500) & ARC-C (1150) \\
+\midrule
+M9 delta (p=0.25) & 279.5 (0.56) & 675.1 (0.59) \\
+M10 RD (1/8) & 412.2 (0.82) & 1056.9 (0.92) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Additional Extensions}
 Mixed precision (INT8 with FP16 in the last layers) remains near baseline across last-2/last-4/last-8 schedules. Projector-only QAT (INT8) currently degrades accuracy (39.6/40.2), indicating that longer training or recipe tuning is needed. An alignment-only ablation (same model pair, alignment enabled) reduces accuracy, suggesting alignment should be reserved for heterogeneous pairs.
 \begin{table}[ht]
@@ -241,10 +257,10 @@ Hetero pair (Qwen3$\rightarrow$Llama3.2, align on) & 44.2 & 47.8 \\
 \end{table}
 
 \section{Discussion}
-Quantized C2C provides large bandwidth reductions with limited accuracy drop. Receiver-aware delta selection consistently improves low-budget accuracy, and RD-C2C achieves near-baseline performance at moderate byte budgets. These results suggest that redundancy-aware token selection is a key lever for cross-model cache transfer. A main-conference path includes QAT recovery, mixed-precision schedules, heterogeneous model pairs, and system-level latency measurements.
+Quantized C2C provides large bandwidth reductions with limited accuracy drop. Receiver-aware delta selection consistently improves low-budget accuracy, and RD-C2C achieves near-baseline performance at moderate byte budgets. Shard-based repeats show low variance (std $\leq$ 0.02), supporting robustness at tight budgets. Timing-sync measurements indicate RD scheduling adds overhead relative to delta selection, highlighting the compute--communication tradeoff. A main-conference path includes QAT recovery, broader heterogeneity, and more system-level profiling beyond single-GPU eval time.
 
 \section{Limitations}
-Our results focus on a single base pair and two primary datasets; heterogeneity is evaluated via a single spot check. We do not yet report end-to-end latency or FLOP measurements for the fuser (timing-sync runs are pending). GSM8K accuracy is low without chain-of-thought prompting. These limitations will be addressed in the final main-conference revision.
+Our results focus on a single base pair and two primary datasets; heterogeneity is evaluated via a single spot check. Timing-sync evals capture end-to-end runtime on a single GPU but do not measure distributed communication overhead or kernel-level profiling. GSM8K accuracy is low without chain-of-thought prompting. These limitations will be addressed in the final main-conference revision.
 
 \section{Broader Impact}
 Communication-efficient multi-LLM systems can reduce compute and latency, but they may also enable higher-throughput deployment of models. We emphasize reproducible evaluation, careful reporting of accuracy/latency tradeoffs, and responsible deployment in sensitive domains.

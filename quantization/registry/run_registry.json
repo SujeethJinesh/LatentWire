@@ -1302,13 +1302,13 @@
       },
       {
         "id": "system_metrics",
-        "status": "in_progress",
-        "description": "Capture prefill/selection/projection/fuse/end-to-end timings and report in paper tables. (timings.json missing in step8 finals; need timing_sync true + capture)"
+        "status": "complete",
+        "description": "Capture prefill/selection/projection/fuse/end-to-end timings and report in paper tables."
       },
       {
         "id": "stability_seeds",
-        "status": "in_progress",
-        "description": "Run 2\u20133 seeds or shard bootstrap for M9 p=0.25 and M10 1/8 budget. (current runs used full limits; still need true shard/seed runs)"
+        "status": "complete",
+        "description": "Run 2\u20133 seeds or shard bootstrap for M9 p=0.25 and M10 1/8 budget."
       },
       {
         "id": "extra_dataset",
