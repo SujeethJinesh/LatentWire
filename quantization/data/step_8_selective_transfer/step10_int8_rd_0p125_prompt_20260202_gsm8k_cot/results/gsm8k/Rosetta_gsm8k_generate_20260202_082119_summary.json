@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "gsm8k",
+  "answer_method": "generate",
+  "overall_accuracy": 0.015,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.015
+  },
+  "kv_transfer_stats": {
+    "count": 5600,
+    "selected_min": 114,
+    "selected_max": 127,
+    "selected_sum": 707196,
+    "total_sum": 835324,
+    "selected_fraction_sum": 4828.876510048833,
+    "score_mean_sum": 77674.33766198158,
+    "score_min": 0.12491508573293686,
+    "score_max": 91.61798095703125,
+    "prefill_count": 200,
+    "prefill_time_sum_ms": 91003.24883009307,
+    "selection_time_sum_ms": 842.5163293723017,
+    "projection_score_time_sum_ms": 11822.800443856977,
+    "projection_transfer_time_sum_ms": 11681.735251448117,
+    "fuse_time_sum_ms": 614.9645140394568,
+    "rd_int8_sum": 707196,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 128128,
+    "rd_budget_bytes_sum": 183904000.0,
+    "rd_bytes_used_sum": 182546168.0,
+    "rd_effective_bits_sum": 45172.17987303577,
+    "rd_payload_bytes_sum": 181042176.0,
+    "rd_index_bytes_sum": 1414392.0,
+    "rd_scale_bytes_sum": 89600.0,
+    "selected_mean": 126.285,
+    "total_mean": 149.165,
+    "selected_fraction_mean": 0.8622993767944344,
+    "score_mean": 13.870417439639569,
+    "prefill_time_mean_ms": 455.01624415046535,
+    "selection_time_mean_ms": 0.15044934453076816,
+    "projection_score_time_mean_ms": 2.1112143649744604,
+    "projection_transfer_time_mean_ms": 2.0860241520443066,
+    "fuse_time_mean_ms": 0.10981509179276015,
+    "rd_int8_mean": 126.285,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 22.88,
+    "rd_budget_bytes_mean": 32840.0,
+    "rd_bytes_used_mean": 32597.53,
+    "rd_effective_bits_mean": 8.06646069161353,
+    "rd_payload_bytes_mean": 32328.96,
+    "rd_index_bytes_mean": 252.57,
+    "rd_scale_bytes_mean": 16.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 150.165,
+        "avg_gen_length": 64.0,
+        "avg_length_ratio": 0.4345510576493538,
+        "accuracy": 0.015,
+        "total_samples": 200
+      }
+    }
+  }
+}

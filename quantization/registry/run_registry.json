@@ -1275,6 +1275,14 @@
       "config_hash": "30dcf12dcfa6cf7a05d0aa7d556a7fff8bb4d349",
       "reason": "",
       "timestamp": "2026-02-01T01:14:18.893685Z"
+    },
+    "gsm8k": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_prompt_20260202_gsm8k_cot",
+      "config_hash": "74e37fc1fa3f374100cc3875b32e871520fa0124",
+      "reason": "",
+      "timestamp": "2026-02-02T08:35:23.369083Z"
     }
   },
   "m10|int8|0p25|prompt": {
