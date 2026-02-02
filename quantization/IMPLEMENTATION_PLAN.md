@@ -931,3 +931,492 @@ Goal: increase GPU utilization safely (batching/compile/prefetch), while proving
 - Medusa: Simple LLM Inference Acceleration with Multiple Decoding Heads — https://arxiv.org/abs/2401.10774
 - DeepSpeed Inference: Efficient Inference of Transformer Models at Scale — https://arxiv.org/abs/2207.00032
 - Speculative Sampling / Decoding — https://arxiv.org/abs/2302.01318
+
+## Extension Plan: Measured-Byte Semantic Cache Communication at Scale (NeurIPS-ready)
+
+> **Paste-in block:** This section is designed to drop into the existing `quantization/IMPLEMENTATION_PLAN.md` as an extension.
+> Focus: **measured on-wire bytes**, **7B+ scaling**, **cross-family heterogeneity**, **head-to-head baselines**, and a **regime map** (when cache beats text and when it doesn’t).
+> Optional high-upside add-on: **2-round receiver-driven refinement** *only if a pilot shows a clear win*.
+
+---
+
+### High-level goals
+
+1. **Replace all “estimated bytes” claims with measured on-wire bytes** (including indices + metadata + true INT4 packing).
+2. **Validate the full story at 7B+ scale** and on at least one **cross-family heterogeneity pair**.
+3. **Run head-to-head comparisons** at *equal measured bytes* vs the closest baseline families:
+
+   * text-only communication under byte caps
+   * selective KV sharing baselines (KVComm-like)
+   * adaptive mixed-precision KV compression baselines (Q-KVComm-like)
+   * existing semantic cache transfer baseline (C2C-style, what we already have)
+4. Produce a **regime map**:
+
+   * identify and explain **where semantic cache comm beats text**, and where it **does not**, under strict measured byte budgets.
+5. (Optional, gated) Add **receiver-driven refinement** (2-round max) if the pilot clearly improves bytes-to-success / success-at-cap.
+
+---
+
+### Non-goals (to avoid scope creep)
+
+* We do **not** claim the wire format itself is novel; it is **credibility infrastructure**.
+* We do **not** build a large new “platform” product. We build a **minimal harness** sufficient for fair comparisons and regime analysis.
+* We do **not** pursue a learned proxy model unless/until the core results are already strong.
+
+---
+
+## Definitions and accounting contract (must be consistent everywhere)
+
+### Bytes on wire (measured)
+
+For every method point, we record:
+
+* `bytes_measured_total`: exact number of bytes produced by serialization (`len(blob)`), including:
+
+  * token indices
+  * quantized K/V payloads (packed INT4 or INT8)
+  * scale/zero metadata
+  * headers describing shapes/dtypes/version
+  * (if interactive) request messages
+
+We also keep:
+
+* `bytes_estimated_total` (legacy sanity check only)
+
+### Latency accounting (recommended)
+
+For every point, record:
+
+* `wire_encode_ms`
+* `wire_decode_ms`
+* `receiver_forward_ms` (or end-to-end step time)
+* optionally `wire_send_ms` if we measure a socket loopback
+
+### Fairness rules for comparisons
+
+* All comparisons against baselines must be done at **equal `bytes_measured_total`** (not equal p, not equal “compression ratio estimate”).
+* Prompt templates, decoding settings, and evaluation scoring must be identical across methods within a comparison group.
+* If a baseline cannot be implemented faithfully, we implement a **clearly labeled “-like” variant** and document the differences.
+
+---
+
+## Tripwires (early kill-switches to prevent wasted weeks)
+
+* **Tripwire T1 (measured bytes drift):** If measured bytes differ from estimates by >15% in target regimes, halt and fix accounting/format before running large sweeps.
+* **Tripwire T2 (scale collapse):** If improvements disappear at 7B+ on the within-family pair, pivot the paper emphasis toward **regime map + limitations** rather than method wins.
+* **Tripwire T3 (hetero instability):** If cross-family runs are unstable, freeze alignment choices (fixed layer subset + fixed projector) and reduce tuning knobs; do not chase hyperparameters indefinitely.
+* **Tripwire T4 (baseline dominance):** If we cannot beat or match strong baseline families at equal measured bytes in *any* meaningful regime, pivot to a **negative/diagnostic regime-map paper** (“when semantic cache transfer fails under realistic byte budgets and why”).
+* **Tripwire T5 (interactive pilot fails):** If a 100-sample pilot shows no clear win, do not build a full interactive protocol.
+
+---
+
+# Milestone M11 — KVWire v1 (Measured bytes + correct INT4 packing)
+
+### Objective
+
+Replace “fake-quant + byte estimates” with **real serialization** and **measured bytes** for every method.
+
+### Deliverables
+
+* `quantization/kvwire/kvwire_v1.py`
+* Roundtrip + correctness tests
+* Integration into existing selective-transfer and RD pipelines so all runs emit measured bytes + wire timings.
+
+### Implementation steps
+
+#### M11.1 — Implement KVWire v1 serialization
+
+Create:
+
+* `quantization/kvwire/kvwire_v1.py`
+
+Required API:
+
+* `pack(payload: dict, cfg: KVWireConfig) -> bytes`
+* `unpack(blob: bytes, cfg: KVWireConfig) -> dict`
+
+Minimal payload fields:
+
+* `version` (e.g., `kvwire_v1`)
+* tensor metadata (layer count, head dims, dtypes, shapes)
+* `indices` (positions)
+* `k_quant`, `v_quant` (INT8 or packed INT4)
+* `scales` (FP16/BF16; granularity configurable)
+* optional `zeros` if asymmetric
+
+Config options:
+
+* `wire_index_dtype: uint16|uint32` (uint16 when safe)
+* `wire_scale_dtype: fp16|bf16`
+* `wire_quant_mode: int8|int4`
+* `wire_scale_granularity: per_tensor|per_layer|per_head|per_block`
+* `wire_include_headers: bool` (default true)
+
+Design constraints (keep simple):
+
+* Single contiguous blob (header + sections), no entropy coding initially.
+* Avoid per-token headers; keep section headers constant-size.
+
+#### M11.2 — Correct INT4 packing/unpacking
+
+Add helpers (same file or `quantization/kvwire/int4.py`):
+
+* `pack_int4(int8_tensor_in_range[-8,7]) -> bytes`
+* `unpack_int4(blob, shape) -> int8_tensor`
+
+#### M11.3 — Tests (non-negotiable)
+
+Add:
+
+* `quantization/tests/test_kvwire_roundtrip.py`
+* `quantization/tests/test_kvwire_int4.py`
+
+Coverage:
+
+* random tensors -> quantize -> pack -> unpack -> dequantize
+* verify shapes/dtypes
+* verify INT4 byte length (`ceil(n/2)` with defined padding)
+* verify errors within expected quant bounds
+
+#### M11.4 — Integrate KVWire into existing run steps
+
+Wherever current code estimates bytes, add:
+
+* `wire_format: estimate|kvwire_v1` (default estimate during rollout)
+* when `kvwire_v1`: quantize -> pack -> record `len(blob)` -> unpack -> dequantize -> apply
+
+Update manifests to include:
+
+* `bytes_measured_total`
+* `bytes_measured_breakdown` (indices/payload/scales/headers)
+* `wire_encode_ms`, `wire_decode_ms`
+* keep `bytes_estimated_total` for sanity
+
+#### M11.5 — Minimal equivalence harness
+
+Add:
+
+* `quantization/scripts/debug_kvwire_equivalence.py`
+
+Run it on a tiny batch to validate:
+
+* pack/unpack path is functionally equivalent (modulo quant noise)
+* measured bytes stable across runs
+
+### Acceptance criteria
+
+* KVWire roundtrip tests pass.
+* Measured bytes emitted for at least 2–3 existing golden points (one INT8, one INT4, one sparse).
+* Measured-vs-estimated drift <15% in target configs (or drift explained and estimates updated).
+
+---
+
+# Milestone M12 — Scale + Heterogeneity Grid (7B+ and cross-family)
+
+### Objective
+
+Make the paper defensible: results at 7B+ and at least one cross-family pair.
+
+### Deliverables
+
+* Pair configs for:
+
+  * a 7B+ within-family pair
+  * a 7B+ cross-family (heterogeneous) pair
+* Sequential execution mode to run sharer and receiver on a single GPU if needed
+* A standardized prompt builder and evaluation scoring pipeline used across all runs
+
+### Implementation steps
+
+#### M12.1 — Define the evaluation grid (explicit table in repo)
+
+Add a table in the plan + a machine-readable config (JSON/YAML) such as:
+
+* `quantization/configs/grids/scale_hetero_grid.json`
+
+Minimum axes:
+
+* `pair_id ∈ {small_within, large_within, large_hetero}`
+* `task ∈ {OpenBookQA, ARC-C, +1 non-MC task}`
+* `context_len ∈ {baseline, long}`
+* `budget ∈ {full, 1/2, 1/4, 1/8, 1/16}` **defined by measured bytes**
+
+#### M12.2 — Pair configuration layer
+
+Create:
+
+* `quantization/configs/pairs/<pair_id>.json`
+
+Include:
+
+* sharer model name
+* receiver model name
+* tokenizer strategy
+* alignment strategy + required mapping files
+* max_seq_len and any offload rules
+
+#### M12.3 — Sequential execution mode (single-GPU friendly)
+
+Implement a runner option:
+
+* `--exec-mode simultaneous|sequential`
+
+Sequential mode:
+
+1. Load sharer -> compute KV/representations -> pack KVWire blob(s) -> save to CPU RAM/disk
+2. Unload sharer (`del model; torch.cuda.empty_cache()`)
+3. Load receiver -> unpack -> apply -> evaluate
+
+Add helper utilities:
+
+* `quantization/utils/model_lifecycle.py` (load/unload/gc wrappers)
+
+Validation:
+
+* On small models, sequential and simultaneous should match (within quant noise).
+
+#### M12.4 — Standardize prompts and scoring
+
+Add:
+
+* `quantization/prompts/builders.py`
+* record `prompt_template_id` and `decode_settings_hash` into manifests
+
+Ensure scoring is deterministic (forced-choice scoring for MC where possible).
+
+### Acceptance criteria
+
+* At least one 7B+ within-family run and one 7B+ cross-family run complete with measured bytes.
+* Same prompt builder used for all methods on a dataset.
+* Sequential mode matches simultaneous on the small baseline pair.
+
+---
+
+# Milestone M13 — Head-to-Head Baselines at Equal Measured Bytes
+
+### Objective
+
+Prevent “non-novel / repeated work” critique by showing you can compete with the closest baseline families at equal measured bytes.
+
+### Deliverables
+
+Baseline implementations:
+
+1. Text-only comm (byte-capped)
+2. KVComm-like selective KV sharing baseline
+3. Q-KVComm-like adaptive compression baseline
+4. Existing semantic cache transfer baseline (what you already have)
+
+### Implementation steps
+
+#### M13.1 — Text-only baselines (must be fair + byte-accurate)
+
+Create:
+
+* `quantization/baselines/text_comm.py`
+
+Implement:
+
+* `count_utf8_bytes(text: str) -> int`
+* `make_message(example, budget_bytes, style) -> str`
+
+Provide at least two styles:
+
+* `text_raw`: minimal necessary information within budget
+* `text_summary`: compressed summary within budget (simple heuristics acceptable)
+
+Ensure receiver consumes this message in a standardized way (same prompt wrapper).
+
+#### M13.2 — KVComm-like baseline (documented “-like” variant)
+
+Create:
+
+* `quantization/baselines/kvcomm_like.py`
+
+Implement one or two transparent heuristics (choose ones you can justify and reproduce):
+
+* recency / back-keep heuristic
+* norm-based token selection (you already have vnorm-style; reuse)
+* optional: attention proxy if already available cheaply
+
+The baseline must emit KVWire payloads so `bytes_measured_total` is comparable.
+
+#### M13.3 — Q-KVComm-like baseline (layerwise / mixed-precision schedule)
+
+Create:
+
+* `quantization/baselines/qkvcomm_like.py`
+
+Implement:
+
+* a simple layerwise sensitivity schedule that assigns INT4 vs INT8 under a measured byte cap
+* optionally: include a “calibration” step for hetero pairs if your pipeline already does it
+
+Again: must emit KVWire payloads.
+
+#### M13.4 — Equal-bytes comparison harness
+
+Update/extend the existing budget-curve generator so that for each run:
+
+* budget is enforced by **measured bytes**
+* comparisons across methods are done at matched budgets
+
+### Acceptance criteria
+
+* For each dataset + pair, produce a plot/table comparing:
+
+  * best cache method vs best text baseline vs kvcomm_like vs qkvcomm_like
+  * all at equal `bytes_measured_total`
+* If no method wins anywhere, trigger pivot to “regime map / limitations” framing.
+
+---
+
+# Milestone M14 — Regime Map + Diagnostics (“When cache beats text, and why”)
+
+### Objective
+
+A paper-grade result that survives even if gains are modest: a clear map of regimes where semantic cache transfer is worthwhile under real byte budgets.
+
+### Deliverables
+
+* A single analysis script that produces:
+
+  * regime heatmap/table (cache > text vs text > cache)
+  * representative frontier plots
+  * bytes breakdown diagnostics
+
+### Implementation steps
+
+#### M14.1 — Unified result ingestion
+
+Create:
+
+* `quantization/scripts/analyze_regime_map.py`
+
+It should ingest manifests across all runs and construct a dataframe keyed by:
+
+* pair_id
+* dataset/task
+* context_len_bucket
+* budget_bucket (based on `bytes_measured_total`)
+* method_family
+
+#### M14.2 — Compute the regime map
+
+For each cell:
+
+* identify best cache-family method
+* identify best text-only baseline
+* compute:
+
+  * Δaccuracy at fixed bytes
+  * bytes required to hit a fixed accuracy target (inverse view)
+  * stability across seeds (where available)
+
+#### M14.3 — Add “why” diagnostics
+
+Per cell/point, compute:
+
+* bytes breakdown: indices vs payload vs metadata
+* fraction of tokens kept
+* front/back pruning behavior
+* which layers dominate bytes (if available)
+
+#### M14.4 — Produce paper-ready artifacts
+
+Outputs:
+
+* `analysis/regime_map/regime_table.csv`
+* `analysis/regime_map/heatmap.png`
+* `analysis/regime_map/frontiers/<pair>/<task>.png`
+* `analysis/regime_map/bytes_breakdown_<pair>_<task>.png`
+
+### Acceptance criteria
+
+* One main-figure regime map exists for the paper.
+* Appendix artifacts exist for full grid.
+* The map is stable under minor run perturbations (seed/task shard).
+
+---
+
+# Optional Milestone M15 — Receiver-Driven Refinement (2-round max, pilot-gated)
+
+> **Do not implement fully unless the pilot wins.**
+
+### Objective
+
+Try a high-upside “new knob” without derailing the core plan. This should never be the only novelty; it’s additive.
+
+### Pilot (required before full build)
+
+* Run 100 samples on 1–2 tasks, 1 pair, 2 budgets:
+
+  * Round 0: cheap payload
+  * Round 1: refinement payload (add indices and/or upgrade precision)
+* Decision rule:
+
+  * MC tasks: forced-choice margin trigger
+  * numeric tasks: self-consistency / verifier-style check if available
+* Count request bytes and latency.
+
+### Full implementation only if pilot succeeds
+
+* Hard cap: 2 rounds
+* Must report:
+
+  * success-at-cap and/or bytes-to-success improvements
+  * latency impact (encode/decode + extra receiver pass)
+
+### Acceptance criteria
+
+* Clear improvement vs best one-shot method in at least one meaningful regime (tight budget or long context), measured in bytes-to-success and/or success-at-cap.
+* If not, abandon and do not include except as a short negative appendix note.
+
+---
+
+# Execution order (recommended)
+
+1. **M11 KVWire** (measured bytes correctness first)
+2. **M12 scale + hetero** (single-GPU sequential mode if needed)
+3. **M13 head-to-head baselines** (equal-bytes fairness)
+4. **M14 regime map + diagnostics** (paper-grade framing)
+5. **M15 optional interactive pilot** (only if the pilot shows a win)
+
+---
+
+# “If results aren’t what we expect” pivot plan (explicit)
+
+* If **measured bytes** reveal overhead dominates (indices/metadata too large):
+
+  * change index dtype (uint16 when safe)
+  * change scale granularity (per-block instead of per-head)
+  * rerun a small grid before any large sweeps
+
+* If **scale (7B+)** results weaken:
+
+  * reframe contribution around the **regime map** and the scaling diagnosis
+  * identify which components fail to scale (quant vs selection vs alignment)
+
+* If **cross-family hetero** is unstable:
+
+  * freeze mapping choices, reduce tuning knobs
+  * prefer fewer, cleaner hetero results over many unstable ones
+
+* If **baselines dominate**:
+
+  * pivot to a diagnostic paper: “semantic cache transfer under realistic measured byte budgets often fails; here are the regimes and the reasons”
+  * this is still publishable if the analysis is deep, broad, and honest
+
+* If **interactive pilot fails**:
+
+  * drop interactive from mainline scope immediately
+
+---
+
+# Paper-facing checklist (what must exist before writing)
+
+* All headline plots use `bytes_measured_total` (KVWire)
+* At least one 7B+ within-family and one 7B+ cross-family set of results
+* Head-to-head baseline tables at equal measured bytes
+* Regime map figure + diagnostic breakdown plots
+* A short “limitations / when text wins” section backed by regime map evidence
