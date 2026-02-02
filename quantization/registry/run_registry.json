@@ -1434,5 +1434,41 @@
       "reason": "",
       "timestamp": "2026-02-01T23:33:57.970150Z"
     }
+  },
+  "m9|int8|delta_proj_vnorm_topk|0.25|prompt|1|timing_final": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_233359_batchC_final",
+      "config_hash": "b3b3c6bb1e44da4eea0eb87a9a611e549c3f4e42",
+      "reason": "",
+      "timestamp": "2026-02-01T23:38:55.253601Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step9_int8_delta_proj_vnorm_topk_p0p25_prompt_sf1_20260201_233359_batchC_final",
+      "config_hash": "540a2be2718257b8513e06376e9958b9e08f8cd7",
+      "reason": "",
+      "timestamp": "2026-02-01T23:50:13.008375Z"
+    }
+  },
+  "m10|int8|0p125|prompt|timing_final": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_prompt_20260201_233359_batchC_final",
+      "config_hash": "a41e68a74e651d5b641c66f8887eef3b73f236e0",
+      "reason": "",
+      "timestamp": "2026-02-01T23:57:21.202555Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_prompt_20260201_233359_batchC_final",
+      "config_hash": "42f1ae242ddee1cb30e88cdd5d55bcb23727c777",
+      "reason": "",
+      "timestamp": "2026-02-02T00:15:18.412464Z"
+    }
   }
 }
