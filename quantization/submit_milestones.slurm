@@ -293,6 +293,61 @@ cfg_path.write_text(yaml.safe_dump(cfg, sort_keys=False))
 PY
 }
 
+read_eval_limit() {
+  "${PYTHON[@]}" - <<'PY' "$1"
+import sys
+from pathlib import Path
+import yaml
+
+cfg_path = Path(sys.argv[1])
+cfg = yaml.safe_load(cfg_path.read_text())
+limit = cfg.get("eval", {}).get("limit")
+if not limit or len(limit) != 2:
+    print("")
+    raise SystemExit(0)
+try:
+    start = int(limit[0])
+    end = int(limit[1])
+except Exception:
+    print("")
+    raise SystemExit(0)
+print(f"{start} {end}")
+PY
+}
+
+eval_range_for_config() {
+  local config_path="$1"
+  local dataset="$2"
+  local total
+  total="$(dataset_len "${dataset}")"
+  if ! [[ "${total}" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: dataset_len returned non-numeric value for ${dataset}: '${total}'" >&2
+    exit 1
+  fi
+  local limit
+  limit="$(read_eval_limit "${config_path}")"
+  local base_start=0
+  local base_end="${total}"
+  if [ -n "${limit}" ]; then
+    base_start="$(echo "${limit}" | awk '{print $1}')"
+    base_end="$(echo "${limit}" | awk '{print $2}')"
+    if [ "${base_end}" -lt "${base_start}" ]; then
+      echo "ERROR: eval limit end < start in ${config_path} (${base_start}..${base_end})" >&2
+      exit 1
+    fi
+    if [ "${base_end}" -gt "${total}" ]; then
+      echo "ERROR: eval limit end ${base_end} exceeds dataset length ${total} for ${dataset}" >&2
+      exit 1
+    fi
+    total=$((base_end - base_start))
+  fi
+  if [ "${total}" -le 0 ]; then
+    echo "ERROR: eval range is empty for ${dataset} (limit ${base_start}..${base_end})" >&2
+    exit 1
+  fi
+  echo "${base_start} ${base_end} ${total}"
+}
+
 write_progress() {
   "${PYTHON[@]}" - <<'PY' "$1" "$2" "$3" "$4"
 import json
@@ -323,6 +378,46 @@ if not progress_path.exists():
     raise SystemExit(0)
 data = json.loads(progress_path.read_text())
 print(int(data.get("next_start", 0)))
+PY
+}
+
+now_seconds() {
+  "${PYTHON[@]}" - <<'PY'
+import time
+print(time.time())
+PY
+}
+
+timings_record() {
+  "${PYTHON[@]}" - <<'PY' "$1" "$2" "$3" "$4"
+import json
+import sys
+import time
+from pathlib import Path
+
+run_root = Path(sys.argv[1])
+dataset = sys.argv[2]
+start = float(sys.argv[3])
+end = float(sys.argv[4])
+seconds = max(0.0, end - start)
+
+path = run_root / "manifests" / "timings.json"
+data = {}
+if path.exists():
+    try:
+        data = json.loads(path.read_text() or "{}")
+    except json.JSONDecodeError:
+        data = {}
+data.setdefault("datasets", {})
+entry = data["datasets"].get(dataset, {"seconds": 0.0, "runs": 0})
+entry["seconds"] = float(entry.get("seconds", 0.0)) + seconds
+entry["runs"] = int(entry.get("runs", 0)) + 1
+data["datasets"][dataset] = entry
+if "start_time" not in data:
+    data["start_time"] = time.time()
+data["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+data["total_seconds"] = sum(v.get("seconds", 0.0) for v in data["datasets"].values())
+path.write_text(json.dumps(data, indent=2) + "\n")
 PY
 }
 
@@ -476,12 +571,8 @@ run_eval_chunks() {
 
   mkdir -p "${progress_dir}"
 
-  local total
-  total="$(dataset_len "${dataset}")"
-  if ! [[ "${total}" =~ ^[0-9]+$ ]]; then
-    echo "ERROR: dataset_len returned non-numeric value for ${dataset}: '${total}'" >&2
-    exit 1
-  fi
+  local base_start base_end total
+  read -r base_start base_end total <<<"$(eval_range_for_config "${run_root}/configs/${config_name}" "${dataset}")"
 
   if [ "${EVAL_SMOKE}" = "1" ]; then
     local end="${SMOKE_LIMIT}"
@@ -489,10 +580,10 @@ run_eval_chunks() {
       end="${total}"
     fi
     echo "Smoke eval ${dataset}: [0, ${end}) of ${total}"
-    patch_limit "${run_root}/configs/${config_name}" 0 "${end}"
+    patch_limit "${run_root}/configs/${config_name}" "${base_start}" "$((base_start + end))"
     "${PYTHON[@]}" quantization/C2C/script/evaluation/unified_evaluator.py \
       --config "${run_root}/configs/${config_name}" 2>&1 | tee -a "${log_path}"
-    echo "{\"start\":0,\"end\":${end},\"total\":${total},\"timestamp\":\"$(date -Iseconds)\"}" >> "${chunks_log}"
+    echo "{\"start\":0,\"end\":${end},\"total\":${total},\"base_start\":${base_start},\"base_end\":${base_end},\"timestamp\":\"$(date -Iseconds)\"}" >> "${chunks_log}"
     return
   fi
 
@@ -500,7 +591,7 @@ run_eval_chunks() {
   start="$(read_next_start "${progress_file}")"
   if [ "${start}" -ge "${total}" ]; then
     echo "Resume: ${dataset} already complete (start=${start}, total=${total})."
-    patch_limit "${run_root}/configs/${config_name}" 0 "${total}"
+    patch_limit "${run_root}/configs/${config_name}" "${base_start}" "${base_end}"
     return
   fi
 
@@ -510,16 +601,16 @@ run_eval_chunks() {
       end="${total}"
     fi
     echo "Eval ${dataset}: [${start}, ${end}) of ${total}"
-    patch_limit "${run_root}/configs/${config_name}" "${start}" "${end}"
+    patch_limit "${run_root}/configs/${config_name}" "$((base_start + start))" "$((base_start + end))"
     "${PYTHON[@]}" quantization/C2C/script/evaluation/unified_evaluator.py \
       --config "${run_root}/configs/${config_name}" 2>&1 | tee -a "${log_path}"
-    echo "{\"start\":${start},\"end\":${end},\"total\":${total},\"timestamp\":\"$(date -Iseconds)\"}" >> "${chunks_log}"
+    echo "{\"start\":${start},\"end\":${end},\"total\":${total},\"base_start\":${base_start},\"base_end\":${base_end},\"timestamp\":\"$(date -Iseconds)\"}" >> "${chunks_log}"
     write_progress "${progress_file}" "${start}" "${end}" "${total}"
     start="${end}"
   done
 
   # Reset limit after completion so manual re-runs don't stay pinned to the last chunk.
-  patch_limit "${run_root}/configs/${config_name}" 0 "${total}"
+  patch_limit "${run_root}/configs/${config_name}" "${base_start}" "${base_end}"
 }
 
 run_eval_chunks_with_skip() {
@@ -533,18 +624,18 @@ run_eval_chunks_with_skip() {
   local progress_file="${progress_dir}/${dataset}.json"
   mkdir -p "${progress_dir}"
 
-  local total
-  total="$(dataset_len "${dataset}")"
-  if ! [[ "${total}" =~ ^[0-9]+$ ]]; then
-    echo "ERROR: dataset_len returned non-numeric value for ${dataset}: '${total}'" >&2
-    exit 1
-  fi
+  local base_start base_end total
+  read -r base_start base_end total <<<"$(eval_range_for_config "${run_root}/configs/${config_name}" "${dataset}")"
 
   if [ -f "${progress_file}" ]; then
     local start
     start="$(read_next_start "${progress_file}")"
     if [ "${start}" -lt "${total}" ]; then
+      local t0 t1
+      t0="$(now_seconds)"
       run_eval_chunks "${run_root}" "${config_name}" "${dataset}" "${log_path}"
+      t1="$(now_seconds)"
+      timings_record "${run_root}" "${dataset}" "${t0}" "${t1}"
       local cfg_hash
       cfg_hash="$(config_hash "${run_root}/configs/${config_name}")"
       registry_record "${registry_key}" "${dataset}" "complete" "${run_root}" "${EVAL_SMOKE}" "${cfg_hash}"
@@ -562,7 +653,11 @@ run_eval_chunks_with_skip() {
     return
   fi
 
+  local t0 t1
+  t0="$(now_seconds)"
   run_eval_chunks "${run_root}" "${config_name}" "${dataset}" "${log_path}"
+  t1="$(now_seconds)"
+  timings_record "${run_root}" "${dataset}" "${t0}" "${t1}"
   local cfg_hash
   cfg_hash="$(config_hash "${run_root}/configs/${config_name}")"
   registry_record "${registry_key}" "${dataset}" "complete" "${run_root}" "${EVAL_SMOKE}" "${cfg_hash}"
