@@ -1074,6 +1074,10 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, kv_transfer_config, a
             cfg["eval"]["dataset"] = dataset
             cfg["eval"]["kv_cache_proportion"] = args.kv_cache_proportion
             cfg["eval"]["kv_cache_order_mode"] = args.kv_cache_order_mode
+            if args.eval_use_cot:
+                cfg["eval"]["use_cot"] = True
+            if args.eval_no_template:
+                cfg["eval"]["use_template"] = False
             if args.eval_limit is not None:
                 cfg["eval"]["limit"] = int(args.eval_limit)
             elif args.eval_range is not None:
@@ -1310,6 +1314,16 @@ def main():
         "--eval-datasets",
         default="openbookqa,ai2-arc",
         help="Comma/space-separated eval datasets (default: openbookqa,ai2-arc).",
+    )
+    parser.add_argument(
+        "--eval-use-cot",
+        action="store_true",
+        help="Enable chain-of-thought prompting in eval config.",
+    )
+    parser.add_argument(
+        "--eval-no-template",
+        action="store_true",
+        help="Disable chat template in eval config (use raw prompts).",
     )
     parser.add_argument(
         "--eval-limit",

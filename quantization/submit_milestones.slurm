@@ -178,6 +178,8 @@ M9_EXTRA_LOW_PROP="${M9_EXTRA_LOW_PROP:-}"
 M9_EXTRA_LOW_MODE="${M9_EXTRA_LOW_MODE:-delta_proj_vnorm_topk}"
 M9_TIMING_SYNC="${M9_TIMING_SYNC:-0}"
 M9_EVAL_DATASETS="${M9_EVAL_DATASETS:-}"
+M9_EVAL_USE_COT="${M9_EVAL_USE_COT:-0}"
+M9_EVAL_NO_TEMPLATE="${M9_EVAL_NO_TEMPLATE:-0}"
 M9_EVAL_LIMIT="${M9_EVAL_LIMIT:-}"
 M9_EVAL_RANGE="${M9_EVAL_RANGE:-}"
 M9_KEY_SUFFIX="${M9_KEY_SUFFIX:-}"
@@ -203,6 +205,8 @@ M10_INDEX_BYTES="${M10_INDEX_BYTES:-2}"
 M10_INCLUDE_SCALE_OVERHEAD="${M10_INCLUDE_SCALE_OVERHEAD:-1}"
 M10_TIMING_SYNC="${M10_TIMING_SYNC:-0}"
 M10_EVAL_DATASETS="${M10_EVAL_DATASETS:-}"
+M10_EVAL_USE_COT="${M10_EVAL_USE_COT:-0}"
+M10_EVAL_NO_TEMPLATE="${M10_EVAL_NO_TEMPLATE:-0}"
 M10_EVAL_LIMIT="${M10_EVAL_LIMIT:-}"
 M10_EVAL_RANGE="${M10_EVAL_RANGE:-}"
 M10_KEY_SUFFIX="${M10_KEY_SUFFIX:-}"
@@ -902,6 +906,12 @@ run_preflight() {
     if [ -n "${M9_EVAL_RANGE}" ]; then
       pre_extra_args+=( "--eval-range" "${M9_EVAL_RANGE}" )
     fi
+    if [ "${M9_EVAL_USE_COT}" = "1" ]; then
+      pre_extra_args+=( "--eval-use-cot" )
+    fi
+    if [ "${M9_EVAL_NO_TEMPLATE}" = "1" ]; then
+      pre_extra_args+=( "--eval-no-template" )
+    fi
     "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
       --env "${CONDA_ENV}" \
       --mode gpu \
@@ -959,6 +969,12 @@ run_preflight() {
     fi
     if [ -n "${M10_EVAL_RANGE}" ]; then
       pre_extra_args+=( "--eval-range" "${M10_EVAL_RANGE}" )
+    fi
+    if [ "${M10_EVAL_USE_COT}" = "1" ]; then
+      pre_extra_args+=( "--eval-use-cot" )
+    fi
+    if [ "${M10_EVAL_NO_TEMPLATE}" = "1" ]; then
+      pre_extra_args+=( "--eval-no-template" )
     fi
     "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
       --env "${CONDA_ENV}" \
@@ -1282,6 +1298,12 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
           if [ -n "${M9_EVAL_RANGE}" ]; then
             EXTRA_ARGS+=( "--eval-range" "${M9_EVAL_RANGE}" )
           fi
+          if [ "${M9_EVAL_USE_COT}" = "1" ]; then
+            EXTRA_ARGS+=( "--eval-use-cot" )
+          fi
+          if [ "${M9_EVAL_NO_TEMPLATE}" = "1" ]; then
+            EXTRA_ARGS+=( "--eval-no-template" )
+          fi
           "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
             --env "${CONDA_ENV}" \
             --mode gpu \
@@ -1338,6 +1360,12 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
     fi
     if [ -n "${M9_EVAL_RANGE}" ]; then
       EXTRA_ARGS+=( "--eval-range" "${M9_EVAL_RANGE}" )
+    fi
+    if [ "${M9_EVAL_USE_COT}" = "1" ]; then
+      EXTRA_ARGS+=( "--eval-use-cot" )
+    fi
+    if [ "${M9_EVAL_NO_TEMPLATE}" = "1" ]; then
+      EXTRA_ARGS+=( "--eval-no-template" )
     fi
     "${PYTHON[@]}" quantization/scripts/run_step8_selective_transfer.py \
       --env "${CONDA_ENV}" \
@@ -1428,6 +1456,12 @@ if [ "${RUN_MILESTONE_10}" = "1" ]; then
     fi
     if [ -n "${M10_EVAL_RANGE}" ]; then
       EXTRA_ARGS+=( "--eval-range" "${M10_EVAL_RANGE}" )
+    fi
+    if [ "${M10_EVAL_USE_COT}" = "1" ]; then
+      EXTRA_ARGS+=( "--eval-use-cot" )
+    fi
+    if [ "${M10_EVAL_NO_TEMPLATE}" = "1" ]; then
+      EXTRA_ARGS+=( "--eval-no-template" )
     fi
 
     for i in "${!BUDGET_LIST[@]}"; do
