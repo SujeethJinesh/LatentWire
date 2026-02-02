@@ -1580,5 +1580,23 @@
       "reason": "",
       "timestamp": "2026-02-02T05:32:04.888545Z"
     }
+  },
+  "m10|int8|0p125|prompt|timing_full": {
+    "openbookqa": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_prompt_20260202_sysmetrics",
+      "config_hash": "07acabedc67ccf85bec544017a5a11fcf63fa560",
+      "reason": "",
+      "timestamp": "2026-02-02T05:39:17.747953Z"
+    },
+    "ai2-arc": {
+      "status": "complete",
+      "smoke": false,
+      "run_root": "/workspace/LatentWire/quantization/data/step_8_selective_transfer/step10_int8_rd_0p125_prompt_20260202_sysmetrics",
+      "config_hash": "6a5f1b54f9baf49c6b93a8821781ffa01e5787be",
+      "reason": "",
+      "timestamp": "2026-02-02T05:56:59.129523Z"
+    }
   }
 }
