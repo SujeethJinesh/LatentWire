@@ -1,0 +1,64 @@
+{
+  "model": "Rosetta",
+  "dataset": "ai2-arc",
+  "answer_method": "generate",
+  "overall_accuracy": 0.5680473372781065,
+  "subjects": {
+    "SPLIT_0_OF_1": 0.5680473372781065
+  },
+  "kv_transfer_stats": {
+    "count": 4732,
+    "selected_min": 26,
+    "selected_max": 49,
+    "selected_sum": 165172,
+    "total_sum": 661164,
+    "selected_fraction_sum": 1181.9884212540449,
+    "score_mean_sum": 83488.1374963522,
+    "score_min": 1.3417741060256958,
+    "score_max": 89.0440673828125,
+    "prefill_count": 169,
+    "prefill_time_sum_ms": 30054.883614415303,
+    "selection_time_sum_ms": 1775.7064189063385,
+    "projection_score_time_sum_ms": 10092.543479287997,
+    "projection_transfer_time_sum_ms": 0.0,
+    "fuse_time_sum_ms": 725.6077023921534,
+    "rd_int8_sum": 0,
+    "rd_int4_sum": 0,
+    "rd_drop_sum": 0,
+    "rd_budget_bytes_sum": 0.0,
+    "rd_bytes_used_sum": 0.0,
+    "rd_effective_bits_sum": 0.0,
+    "rd_payload_bytes_sum": 0.0,
+    "rd_index_bytes_sum": 0.0,
+    "rd_scale_bytes_sum": 0.0,
+    "selected_mean": 34.905325443786985,
+    "total_mean": 139.72189349112426,
+    "selected_fraction_mean": 0.24978622596239325,
+    "score_mean": 17.64330885383605,
+    "prefill_time_mean_ms": 177.83954801429172,
+    "selection_time_mean_ms": 0.3752549490503674,
+    "projection_score_time_mean_ms": 2.1328282923262885,
+    "projection_transfer_time_mean_ms": 0.0,
+    "fuse_time_mean_ms": 0.15334059644804596,
+    "rd_int8_mean": 0.0,
+    "rd_int4_mean": 0.0,
+    "rd_drop_mean": 0.0,
+    "rd_budget_bytes_mean": 0.0,
+    "rd_bytes_used_mean": 0.0,
+    "rd_effective_bits_mean": 0.0,
+    "rd_payload_bytes_mean": 0.0,
+    "rd_index_bytes_mean": 0.0,
+    "rd_scale_bytes_mean": 0.0
+  },
+  "length_statistics": {
+    "subjects": {
+      "SPLIT_0_OF_1": {
+        "avg_input_length": 140.72189349112426,
+        "avg_gen_length": 9.1301775147929,
+        "avg_length_ratio": 0.06472441146415042,
+        "accuracy": 0.5680473372781065,
+        "total_samples": 169
+      }
+    }
+  }
+}
