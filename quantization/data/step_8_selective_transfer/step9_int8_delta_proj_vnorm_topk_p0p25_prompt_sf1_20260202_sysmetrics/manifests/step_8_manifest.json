@@ -1,0 +1,54 @@
+{
+  "repo_id": "nics-efc/C2C_Fuser",
+  "allow_patterns": [
+    "qwen3_0.6b+qwen2.5_0.5b_Fuser/*"
+  ],
+  "snapshot_path": "/workspace/c2c_checkpoints/C2C_Fuser",
+  "checkpoint_dir": "/workspace/c2c_checkpoints/C2C_Fuser/qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "base_model": "Qwen/Qwen3-0.6B",
+  "teacher_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "is_do_alignment": false,
+  "alignment_strategy": "longest",
+  "base_model_stats": {
+    "hidden_size": 1024,
+    "num_layers": 28,
+    "num_heads": 16,
+    "num_kv_heads": 8,
+    "head_dim": 64
+  },
+  "base_model_stats_error": null,
+  "latentwire_commit": "be0dee73b396bed217c5da6bf9948c42ae82b8f7",
+  "c2c_commit": "4906a92826478db22ffcf5ef88a5c6d78b7ed6c5",
+  "hostname": "782bf035b293",
+  "timestamp": "2026-02-02 05:16:00",
+  "prep_only": true,
+  "kv_quant_config": {
+    "enabled": true,
+    "scheme": "int8",
+    "axis": "head",
+    "eps": 1e-06,
+    "collect_stats": false
+  },
+  "kv_transfer_config": {
+    "enabled": true,
+    "token_select_mode": "delta_proj_vnorm_topk",
+    "token_select_proportion": 0.25,
+    "token_select_scope": "prompt",
+    "token_select_min_tokens": 1,
+    "sparse_fuse": true,
+    "scatter_fill": "receiver_only",
+    "index_dtype_bytes": 2,
+    "include_scale_overhead": false,
+    "timing_sync": true
+  },
+  "kv_cache_proportion": 1.0,
+  "kv_cache_order_mode": "front",
+  "eval_recipe_path": "/workspace/LatentWire/quantization/C2C/recipe/eval_recipe/unified_eval.yaml",
+  "bytes_estimate": {
+    "bytes_per_element": 1.0,
+    "bytes_per_token": 28672.0,
+    "effective_proportion": 0.25,
+    "index_bytes_per_token": 0.5,
+    "formula": "bytes_per_token * avg_input_length"
+  }
+}
