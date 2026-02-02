@@ -22,7 +22,7 @@
 \maketitle
 
 \begin{abstract}
-We study communication-efficient transfer between heterogeneous large language models (LLMs) by quantizing Cache-to-Cache (C2C) KV-cache transfer. Our goal is to reduce bandwidth and memory while preserving accuracy. We present post-training quantization (INT8/INT4), cache-length reduction, and accuracy-versus-bytes curves for a heterogeneous model pair. Empirically, quantization is nearly lossless, while cache-length pruning reveals a strong front/back asymmetry that is critical for budgeted transfer. We release a reproducible evaluation pipeline and analysis scripts, and we outline a main-conference path toward sparse, projector-aware token selection and mixed precision.
+We study communication-efficient transfer between heterogeneous large language models (LLMs) by quantizing Cache-to-Cache (C2C) KV-cache transfer. Our goal is to reduce bandwidth and memory while preserving accuracy. We present post-training quantization (INT8/INT4), cache-length reduction, and accuracy-versus-bytes curves for C2C, and introduce receiver-aware token selection and rate--distortion mixed-precision scheduling for sparse transfer. Empirically, quantization is nearly lossless, cache-length pruning reveals a strong front/back asymmetry, and our delta-selection improves accuracy at fixed token budgets while RD scheduling matches or improves accuracy at fixed byte budgets. We release a reproducible evaluation pipeline and analysis scripts.
 \end{abstract}
 
 \section{Introduction}
@@ -33,6 +33,7 @@ Large language models (LLMs) often communicate via text, which is slow and lossy
   \item We introduce a precision-aware C2C evaluation pipeline and quantify INT8/INT4 PTQ effects on C2C accuracy.
   \item We study cache-length reduction as a second budget axis and show that back-pruning consistently outperforms front-pruning.
   \item We report accuracy vs. communication-budget curves that jointly compare precision and cache length.
+  \item We propose receiver-aware delta token selection and rate--distortion token$\times$precision scheduling for sparse, budgeted C2C transfer.
   \item We provide a reproducible benchmarking setup and analysis scripts to support extensions to QAT, mixed precision, heterogeneity, and selective transfer.
 \end{itemize}
 
@@ -73,6 +74,25 @@ As a main-conference extension, we select a sparse subset of token positions to 
 \mathcal{F}_\ell\big(\tilde{K}^R_\ell, \tilde{V}^R_\ell, \Pi^K_\ell(\tilde{K}^S_\ell), \Pi^V_\ell(\tilde{V}^S_\ell)\big).
 \]
 We then scatter the update to the full cache. We use projector-aware token scoring by computing value norms in receiver space (\texttt{proj\_vnorm\_topk}), tying selection to the cross-model mapping.
+
+\subsubsection{Receiver-Aware Delta Selection (M9)}
+For sparse transfer, the receiver already has a cache baseline, so sending large-but-redundant tokens wastes bandwidth. We score each token by its \emph{marginal update} in receiver space:
+\[
+\Delta V^\ell_t = \widehat V^\ell_{:,:,t,:} - V^{R,\ell}_{:,:,t,:},\quad
+u^\ell(t)=\mathbb{E}_{b,h}\left[\lVert \Delta V^\ell_{b,h,t}\rVert_2\right].
+\]
+We select the top-$k$ tokens by $u^\ell(t)$ under a token budget $|I_\ell|\le \lfloor pT\rfloor$:
+\[
+I_\ell=\operatorname{TopK}\big(u^\ell(t); \lfloor pT\rfloor\big).
+\]
+This \texttt{delta\_proj\_vnorm\_topk} score is projector-aware and redundancy-aware by construction.
+
+\subsubsection{Rate--Distortion Token$\times$Precision Scheduling (M10)}
+Under a fixed communication budget, we jointly select tokens and precisions. Each token $t$ chooses an action $a_t \in \{\text{drop}, \text{int4}, \text{int8}\}$ with rate $r(a_t)$ (bits/element). We minimize distortion under a byte budget:
+\[
+\min_{a_t} \sum_t D_t(a_t)\quad \text{s.t.}\quad \sum_t r(a_t)\le R_{\text{budget}},
+\]
+with $D_t(\text{drop})=\lVert \widehat V_t - V^R_t\rVert_2^2$ and $D_t(\text{int}b)=\lVert \widehat V_t - \widehat V^{(\text{int}b)}_t\rVert_2^2$. We implement a deterministic greedy allocator (RD-Greedy) that assigns INT8 to highest-utility tokens, then INT4, then drop, until the byte budget is met.
 
 \subsection{Communication-Budget Curves}
 We report accuracy as a function of transmitted bytes, enabling fair comparison under equal communication constraints. For a sequence of length $T$, the approximate bytes are
@@ -144,14 +164,68 @@ Figure~\ref{fig:budget-openbookqa} and Figure~\ref{fig:budget-arc} report accura
 \label{fig:budget-arc}
 \end{figure}
 
+
 \subsection{Order-Mode Ablation}
 Across all cache lengths, \textbf{back-pruning} (keeping later instruction tokens) consistently outperforms \textbf{front-pruning}. At 50\% cache length, for example, back-pruning retains near-baseline accuracy while front-pruning degrades sharply. This suggests late instruction tokens carry higher utility for cross-model KV fusion, a useful design signal for future selective transfer methods.
 
-\subsection{Main-Conference Extensions (Preliminary)}
-We report early results for main-conference extensions. Mixed precision (INT8 with FP16 in the last layers) remains near baseline across last-2/last-4/last-8 schedules. Projector-only QAT (INT8) currently degrades accuracy (39.6/40.2), indicating that longer training or recipe tuning is needed. An alignment-only ablation (same model pair, alignment enabled) reduces accuracy, suggesting alignment should be reserved for heterogeneous pairs. For a heterogeneous pair (Qwen3$\rightarrow$Llama3.2), alignment-on yields 44.2/47.8; alignment-off was unstable and is omitted.
+\subsection{Receiver-Aware Selection and RD Scheduling}
+We compare M9 delta selection against value-norm baselines at a fixed token budget ($p=0.25$, INT8, prompt-only). Delta selection improves accuracy over both vnorm and proj\_vnorm heuristics on both datasets (Table~\ref{tab:m9-select}).
+
 \begin{table}[ht]
 \centering
-\caption{Preliminary extension results (\% accuracy).}
+\caption{M9 selection at $p=0.25$ (INT8, base pair).}
+\label{tab:m9-select}
+\begin{tabular}{lcc}
+\toprule
+Token selector & OpenBookQA & ARC-C \\
+\midrule
+vnorm\_topk & 47.0 & 49.6 \\
+proj\_vnorm\_topk & 46.2 & 52.6 \\
+delta\_proj\_vnorm\_topk & \textbf{49.8} & \textbf{54.8} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+RD scheduling provides an additional budget axis. At 1/16 and 1/8 byte budgets, mixed-precision RD (drop+int4+int8) matches or slightly improves over drop+int8 (Table~\ref{tab:rd-ablate}), indicating that token-level precision allocation is competitive under tight budgets.
+
+\begin{table}[ht]
+\centering
+\caption{M10 RD ablation (base pair).}
+\label{tab:rd-ablate}
+\begin{tabular}{lcc}
+\toprule
+Setting & OpenBookQA & ARC-C \\
+\midrule
+RD 1/16 (drop+int8) & 52.6 & 57.2 \\
+RD 1/16 (drop+int4+int8) & \textbf{53.4} & 57.0 \\
+RD 1/8 (drop+int8) & 52.4 & 54.9 \\
+RD 1/8 (drop+int4+int8) & 52.4 & 54.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Heterogeneous Pair Spot Check}
+On a heterogeneous pair (Qwen3$\rightarrow$Llama3.2, alignment on), M9 delta selection and M10 RD scheduling remain viable (Table~\ref{tab:hetero}).
+
+\begin{table}[ht]
+\centering
+\caption{Hetero spot check (alignment on).}
+\label{tab:hetero}
+\begin{tabular}{lcc}
+\toprule
+Setting & OpenBookQA & ARC-C \\
+\midrule
+M9 delta (p=0.25) & 40.0 & 44.6 \\
+M10 RD (1/8) & 40.4 & 46.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Additional Extensions}
+Mixed precision (INT8 with FP16 in the last layers) remains near baseline across last-2/last-4/last-8 schedules. Projector-only QAT (INT8) currently degrades accuracy (39.6/40.2), indicating that longer training or recipe tuning is needed. An alignment-only ablation (same model pair, alignment enabled) reduces accuracy, suggesting alignment should be reserved for heterogeneous pairs.
+\begin{table}[ht]
+\centering
+\caption{Additional extension results (\% accuracy).}
 \begin{tabular}{lcc}
 \toprule
 Setting & OpenBookQA & ARC-C \\
@@ -165,82 +239,12 @@ Hetero pair (Qwen3$\rightarrow$Llama3.2, align on) & 44.2 & 47.8 \\
 \bottomrule
 \end{tabular}
 \end{table}
-For SparseC2C (token selection), vnorm/knorm scoring preserves accuracy under aggressive token budgets. At p=0.5, INT8 vnorm achieves 52.4/56.2 (OpenBookQA/ARC-C) while front pruning drops to 44.8/47.6. INT4 vnorm remains strong at 52.0/56.3. Full grids across selection modes (front, random, proj\_vnorm, knorm, vnorm) are reported.
-
-\paragraph{Receiver-aware delta selection (M9).}
-Let $(K^{R,\ell}, V^{R,\ell})$ be the receiver cache and $(K^{S,m}, V^{S,m})$ the sharer cache mapped to layer $\ell$ by C2C. Let $(\widehat K^{\ell}, \widehat V^{\ell}) = P_{\ell}(K^{S,m}, V^{S,m}; K^{R,\ell}, V^{R,\ell})$ be the projected cache in receiver space using the same quantize$\rightarrow$dequantize path as transfer. We score each token by its marginal update magnitude:
-\[
-u^{\ell}(t)=\mathbb{E}_{b,h}\left[\left\lVert \widehat V^{\ell}_{b,h,t}-V^{R,\ell}_{b,h,t}\right\rVert_2\right],
-\qquad
-I_{\ell}=\text{TopK}\big(u^{\ell}(t),\lfloor pT\rfloor\big).
-\]
-This directly targets receiver-space redundancy and is aligned with residual-style fusion. Empirically, delta selection consistently improves low-budget accuracy: at $p=0.10$ it yields +4.2/+3.3 points over vnorm\_topk (OpenBookQA/ARC-C), and at $p=0.25$ it gains +2.8/+5.2.
-
-\paragraph{RD-C2C (M10).}
-Under a byte budget $R$, we assign each token an action $a_t\in\{\text{drop},\text{int4},\text{int8}\}$ with cost $r(a_t)$ and distortion $D_t(a_t)$. We solve
-\[
-\min_{\{a_t\}}\sum_{t=1}^{T}D_t(a_t)\quad\text{s.t.}\quad\sum_{t=1}^{T}r(a_t)\le R,
-\]
-with $D_t(\text{drop})=\lVert \widehat V^{\ell}_t - V^{R,\ell}_t\rVert_2^2$ and $D_t(\text{intb})=\lVert \widehat V^{\ell}_t-\widehat V^{\ell,(b)}_t\rVert_2^2$. A deterministic greedy allocator (int8$\rightarrow$int4$\rightarrow$drop by $u^\ell(t)$) yields a practical rate--distortion schedule.
-
-\begin{table}[ht]
-\centering
-\caption{M9 delta selection vs. baselines (accuracy).}
-\begin{tabular}{lcc}
-\toprule
-Setting & OpenBookQA & ARC-C \\
-\midrule
-vnorm\_topk (p=0.10) & 0.422 & 0.478 \\
-proj\_vnorm\_topk (p=0.10) & 0.432 & 0.475 \\
-delta\_proj\_vnorm\_topk (p=0.10) & 0.464 & 0.511 \\
-vnorm\_topk (p=0.25) & 0.470 & 0.496 \\
-proj\_vnorm\_topk (p=0.25) & 0.462 & 0.526 \\
-delta\_proj\_vnorm\_topk (p=0.25) & 0.498 & 0.548 \\
-vnorm\_topk (p=0.50) & 0.508 & 0.560 \\
-proj\_vnorm\_topk (p=0.50) & 0.504 & 0.546 \\
-delta\_proj\_vnorm\_topk (p=0.50) & 0.540 & 0.573 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[ht]
-\centering
-\caption{M10 RD budgets (accuracy).}
-\begin{tabular}{lcc}
-\toprule
-Setting & OpenBookQA & ARC-C \\
-\midrule
-RD budget 0p03125 & 0.498 & 0.548 \\
-RD budget 0p0625 & 0.534 & 0.570 \\
-RD budget 0p125 & 0.524 & 0.549 \\
-RD budget 0p25 & 0.528 & 0.550 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[ht]
-\centering
-\caption{SparseC2C token selection at p=0.5 (prompt-only, sparse fuse).}
-\begin{tabular}{lcc}
-\toprule
-Setting & OpenBookQA & ARC-C \\
-\midrule
-INT8 front & 44.8 & 47.6 \\
-INT8 random & 50.0 & 53.0 \\
-INT8 proj\_vnorm\_topk & 50.2 & 54.1 \\
-INT8 knorm\_topk & 51.8 & 56.3 \\
-INT8 vnorm\_topk & 52.4 & 56.2 \\
-INT4 front & 44.6 & 47.8 \\
-INT4 vnorm\_topk & 52.0 & 56.3 \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \section{Discussion}
 Quantized C2C provides large bandwidth reductions with limited accuracy drop. Receiver-aware delta selection consistently improves low-budget accuracy, and RD-C2C achieves near-baseline performance at moderate byte budgets. These results suggest that redundancy-aware token selection is a key lever for cross-model cache transfer. A main-conference path includes QAT recovery, mixed-precision schedules, heterogeneous model pairs, and system-level latency measurements.
 
 \section{Limitations}
-Our results currently focus on a single model pair and two datasets. We do not yet report end-to-end latency or FLOP measurements for the fuser, and heterogeneity results for M9/M10 are pending. These limitations will be addressed in the main-conference track.
+Our results focus on a single base pair and two primary datasets; heterogeneity is evaluated via a single spot check. We do not yet report end-to-end latency or FLOP measurements for the fuser (timing-sync runs are pending). GSM8K accuracy is low without chain-of-thought prompting. These limitations will be addressed in the final main-conference revision.
 
 \section{Broader Impact}
 Communication-efficient multi-LLM systems can reduce compute and latency, but they may also enable higher-throughput deployment of models. We emphasize reproducible evaluation, careful reporting of accuracy/latency tradeoffs, and responsible deployment in sensitive domains.
