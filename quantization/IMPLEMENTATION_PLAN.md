@@ -55,10 +55,16 @@ Goal: deliver a workshop‑ready paper on **Quantized Cache‑to‑Cache** with 
   - `manifests/` (checkpoint + environment provenance)
   - `manifests/system_info.json` (GPU + driver snapshot)
   - `manifests/timings.json` (per‑dataset wall‑clock timings)
-  - `manifests/*_manifest.json` includes `bytes_estimate` (bytes/token + effective proportion; multiply by avg length for per‑sequence bytes)
+  - `manifests/*_manifest.json` includes byte + timing accounting (required for new runs):
+    - `bytes_estimate` (legacy estimate only; do **not** use for head-to-head claims)
+    - `bytes_estimated_total` (preferred estimated field; same semantics as `bytes_estimate`)
+    - `bytes_measured_total` (canonical; exact bytes on wire: `len(blob)` for KVWire or UTF-8 bytes for text-message baselines)
+    - `bytes_measured_breakdown` (optional dict: indices/payload/scales/headers)
+    - `wire_encode_ms`, `wire_decode_ms` (required when `wire_format=kvwire_v1`)
+- Communication accounting scope: **count only the teacher → receiver payload** (cache blob or text message). Do **not** count the shared task prompt.
 - Commit `quantization/data/step_*` to git after each milestone so results are reviewable.
 - Cleanup hygiene: remove failed runs that do not contain `results/` or have `status=failed` in manifests (keep only validated runs).
-- Registry keys now include **M6 schedule hash**, **M7 alignment flag**, and **M8 scope/sparse‑fuse flags** so ablations don’t overwrite each other.
+- Registry keys now include **M6 schedule hash**, **M7 alignment flag**, and **M8 scope/sparse‑fuse flags**, plus `wire_format` so estimate vs measured-byte runs don’t overwrite each other.
 
 ## Milestone Execution Checklist (clean + verified)
 Use this as the runbook. Replace `$PROJECT_ROOT` and cache paths as needed (RunPod `/workspace/LatentWire`, HPC `/projects/.../LatentWire`).
@@ -73,16 +79,18 @@ Use this as the runbook. Replace `$PROJECT_ROOT` and cache paths as needed (RunP
 ### GPU verification pass (smoke, all milestones)
 This is the “make sure nothing breaks” pass before full runs. **Now unified in SLURM.**
 - [ ] **All milestones via SLURM (smoke):**
-  - `RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_5=1 RUN_MILESTONE_6=1 RUN_MILESTONE_7=1 RUN_MILESTONE_8=1 EVAL_SMOKE=1 SMOKE_LIMIT=50 sbatch quantization/submit_milestones.slurm`
+  - `RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_5=1 RUN_MILESTONE_6=1 RUN_MILESTONE_7=1 RUN_MILESTONE_8=1 RUN_MILESTONE_9=1 RUN_MILESTONE_10=1 EVAL_SMOKE=1 SMOKE_LIMIT=50 sbatch quantization/submit_milestones.slurm`
   - Optional overrides:  
     - `M5_RECIPE=quantization/C2C/recipe/train_recipe/C2C_0.6+0.5_qat_int8_smoke.json`  
     - `M6_LAYER_SCHEDULES="quantization/configs/kv_layer_schedule.yaml quantization/configs/kv_layer_schedule_last2.yaml quantization/configs/kv_layer_schedule_last8.yaml"`  
     - `M7_BASE_MODEL=Qwen/Qwen3-0.6B M7_TEACHER_MODEL=meta-llama/Llama-3.2-1B-Instruct M7_ALIGNMENT_MODES="0 1"`  
     - `M8_SELECT_MODES="front vnorm_topk proj_vnorm_topk" M8_SELECT_PROPORTIONS="1.0 0.5 0.25" M8_SELECT_SCOPES="prompt" M8_SPARSE_FUSE_MODES="1"`
+    - `M9_SELECT_MODES="delta_proj_vnorm_topk" M9_SELECT_PROPORTIONS="0.25 0.10" M9_SELECT_SCOPES="prompt"`
+    - `M10_BUDGETS="1/32 1/16 1/8 1/4" M10_PRECISION_CANDIDATES="drop int4 int8"`
 
 ### Full runs (paper‑quality)
 - [ ] **All milestones via SLURM (full, skip done by default):**
-  - `RUN_FULL=1 RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_5=1 RUN_MILESTONE_6=1 RUN_MILESTONE_7=1 RUN_MILESTONE_8=1 sbatch quantization/submit_milestones.slurm`
+  - `RUN_FULL=1 RUN_MILESTONE_0=1 RUN_MILESTONE_2=1 RUN_MILESTONE_3=1 RUN_MILESTONE_5=1 RUN_MILESTONE_6=1 RUN_MILESTONE_7=1 RUN_MILESTONE_8=1 RUN_MILESTONE_9=1 RUN_MILESTONE_10=1 sbatch quantization/submit_milestones.slurm`
   - Optional: `SKIP_DONE=0` to ignore registry, `FORCE_RERUN=1` to override skip.
 - [ ] **Auto‑push results after each milestone (full runs only):**
   - `AUTO_PUSH=1` (default: off)
@@ -376,6 +384,7 @@ The concrete trade‑off between bandwidth cost and accuracy, enabling direct co
 **Milestone 4 sub‑steps (phased)**  
 - **Phase 0 (Budget definition)**: define byte formula and the metadata required.  
   - **Formula**: `bytes = avg_input_length × kv_cache_proportion × 2 × num_layers × num_kv_heads × head_dim × bytes_per_element`.  
+  - **Canonical (measured, M11+)**: once `wire_format=kvwire_v1` exists, the analysis must prefer `bytes_measured_total` (includes indices + scales + headers) and fall back to the estimate above only when measured bytes are unavailable.
   - **Why**: fixes the accounting so curves are comparable and reproducible.  
 - **Phase 1 (Analysis script)**: add a parser to read run folders, extract accuracy + length stats, compute bytes, and emit CSV + plots.  
   - **Why**: makes the curve generation repeatable from raw results.  
@@ -995,6 +1004,7 @@ For every point, record:
 ### Fairness rules for comparisons
 
 * All comparisons against baselines must be done at **equal `bytes_measured_total`** (not equal p, not equal “compression ratio estimate”).
+* The byte cap applies only to the **teacher → receiver payload** (KVWire blob or text message). The shared task prompt is provided to the receiver in all conditions and is **not** counted.
 * Prompt templates, decoding settings, and evaluation scoring must be identical across methods within a comparison group.
 * If a baseline cannot be implemented faithfully, we implement a **clearly labeled “-like” variant** and document the differences.
 
