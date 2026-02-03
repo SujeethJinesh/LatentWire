@@ -13,6 +13,7 @@ def collect_manifests(root: Path):
 def main():
     parser = argparse.ArgumentParser(description="Report drift between estimated and measured bytes.")
     parser.add_argument("--runs-root", default="quantization/data", help="Runs root to scan")
+    parser.add_argument("--out", default=None, help="Optional path to write JSON report")
     args = parser.parse_args()
 
     root = Path(args.runs_root)
@@ -60,7 +61,12 @@ def main():
         "max": max(drifts),
         "skipped": skipped,
     }
-    print(json.dumps(report, indent=2))
+    report_json = json.dumps(report, indent=2)
+    if args.out:
+        out_path = Path(args.out)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(report_json)
+    print(report_json)
     return 0
 
 
