@@ -1039,6 +1039,56 @@ For every point, record:
   * All byte budgets are **per-sample caps** (not dataset-average). Log `budget_cap_bytes`, `budget_actual_bytes`, and `budget_slack_bytes`.
 * [ ] **Compatibility layer**
   * Update analysis to prefer `bytes_measured_total` when present and fall back to `bytes_estimated_total` / `bytes_estimate`.
+* [ ] **Glue tasks before large sweeps**
+  * Add `quantization/scripts/check_model_access.py` (AutoConfig probe + shape print, fail fast on gated/missing models).
+  * Add a manifest schema contract test (assert required fields per run).
+  * Add a long-context corpus builder and corpus version pinning.
+  * Add a budget-cap enforcement unit test (per-sample byte cap respected).
+  * Add a sequential vs simultaneous equivalence test (small model, tight tolerance).
+
+### P0 Design Locks (to unblock M11-M15)
+
+#### M12 Pair Selection (locked)
+
+* large_within:
+  * receiver: `Qwen/Qwen3-8B`
+  * sharer: `Qwen/Qwen2.5-7B`
+* large_hetero:
+  * receiver: `Qwen/Qwen3-8B`
+  * sharer: `mistralai/Mistral-7B-Instruct-v0.3`
+* Add `quantization/scripts/check_model_access.py` to fail fast on gated/missing models and print key shapes.
+
+#### M11 KVWire v1 Defaults (locked)
+
+* indices: absolute, sorted ascending
+* index dtype: uint16 when max_index < 65536 else uint32
+* scale dtype: fp16
+* scale granularity default: per_block where block = (layer, token_index, head_id) vector (separate scale for K and V)
+* quant modes: int8 + packed int4
+* compression: off by default (no entropy coding); optional zstd only as a secondary measurement mode
+* add a golden-blob unit test to prevent schema drift
+
+#### Long-context Definition (locked)
+
+* baseline: default prompt only
+* long: append deterministic padding context until 8192 receiver-tokenizer tokens
+* padding method: concat chunks from a pinned local corpus (no retrieval); deterministic seed = hash(example_id)
+* record `corpus_version` and `longctx_seed` in manifests
+
+#### Text baselines (locked)
+
+* Implement 3 styles:
+  * text_raw (deterministic)
+  * text_summary_heur (deterministic heuristics)
+  * text_summary_llm (sharer-generated; main strong baseline)
+* text_summary_llm decoding: do_sample=False, temperature=0, top_p=1; post-trim by UTF-8 bytes to fit budget
+* Always count UTF-8 bytes; receiver consumes message with a fixed wrapper prompt
+* For Qwen3, disable thinking mode for deterministic greedy baseline generation
+
+#### Storage policy (locked)
+
+* Do not store KVWire blobs by default; store metrics + breakdown + timings.
+* Optionally store N=10 sample blobs per config + all failure blobs for debugging.
 
 # Milestone M11 — KVWire v1 (Measured bytes + correct INT4 packing)
 
