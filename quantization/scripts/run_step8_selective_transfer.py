@@ -1565,6 +1565,11 @@ def main():
     parser.add_argument("--no-reexec", action="store_true", help="Internal flag to avoid re-exec loops")
     args = parser.parse_args()
 
+    if args.long_context:
+        corpus_path = Path(args.long_context_corpus)
+        if not corpus_path.exists():
+            die(f"Long-context corpus not found: {corpus_path}. Run build_longctx_corpus.py first.")
+
     project_root = Path(args.project_root).resolve()
     if not project_root.is_dir():
         die(f"PROJECT_ROOT not found: {project_root}")
