@@ -62,6 +62,7 @@ def main():
             continue
         manifest = load_manifest(run_root)
         pair_id = manifest.get("pair_id")
+        context_len_bucket = manifest.get("context_len_bucket")
         method_family = infer_method_family(manifest)
         bytes_measured = manifest.get("bytes_measured_total")
         bytes_estimated = manifest.get("bytes_estimated_total") or manifest.get("bytes_estimate")
@@ -100,6 +101,7 @@ def main():
                 "run_root": str(run_root),
                 "dataset": dataset_dir.name,
                 "pair_id": pair_id,
+                "context_len_bucket": context_len_bucket,
                 "method_family": method_family,
                 "bytes_measured_total": bytes_total,
                 "budget_bucket": budget_bucket,
@@ -108,13 +110,96 @@ def main():
 
     out_csv = output_dir / "regime_table.csv"
     with out_csv.open("w", encoding="utf-8") as handle:
-        handle.write("dataset,pair_id,method_family,bytes_measured_total,budget_bucket,accuracy,run_root\n")
+        handle.write("dataset,pair_id,context_len_bucket,method_family,bytes_measured_total,budget_bucket,accuracy,run_root\n")
         for row in rows:
             handle.write(
-                f"{row['dataset']},{row['pair_id']},{row['method_family']},{row['bytes_measured_total']},{row['budget_bucket']},{row['accuracy']},{row['run_root']}\n"
+                f"{row['dataset']},{row['pair_id']},{row['context_len_bucket']},{row['method_family']},{row['bytes_measured_total']},{row['budget_bucket']},{row['accuracy']},{row['run_root']}\n"
             )
 
+    def better_row(a, b):
+        if a is None:
+            return b
+        if b is None:
+            return a
+        acc_a = a.get("accuracy")
+        acc_b = b.get("accuracy")
+        if acc_a is None:
+            return b
+        if acc_b is None:
+            return a
+        if acc_b > acc_a:
+            return b
+        if acc_b < acc_a:
+            return a
+        # tie-breaker: lower bytes
+        bytes_a = a.get("bytes_measured_total")
+        bytes_b = b.get("bytes_measured_total")
+        if bytes_a is None:
+            return b
+        if bytes_b is None:
+            return a
+        return b if bytes_b < bytes_a else a
+
+    summary_rows = []
+    cells = {}
+    for row in rows:
+        key = (row.get("dataset"), row.get("pair_id"), row.get("context_len_bucket"), row.get("budget_bucket"))
+        cell = cells.setdefault(key, {"cache": None, "text": None})
+        family = row.get("method_family")
+        if family == "text":
+            cell["text"] = better_row(cell["text"], row)
+        else:
+            cell["cache"] = better_row(cell["cache"], row)
+    for key, cell in cells.items():
+        dataset, pair_id, context_len_bucket, budget_bucket = key
+        cache = cell.get("cache")
+        text = cell.get("text")
+        cache_acc = cache.get("accuracy") if cache else None
+        text_acc = text.get("accuracy") if text else None
+        delta = None
+        if cache_acc is not None and text_acc is not None:
+            delta = cache_acc - text_acc
+        winner = None
+        if delta is not None:
+            winner = "cache" if delta > 0 else ("text" if delta < 0 else "tie")
+        summary_rows.append({
+            "dataset": dataset,
+            "pair_id": pair_id,
+            "context_len_bucket": context_len_bucket,
+            "budget_bucket": budget_bucket,
+            "best_cache_family": cache.get("method_family") if cache else None,
+            "best_cache_accuracy": cache_acc,
+            "best_cache_bytes": cache.get("bytes_measured_total") if cache else None,
+            "best_text_accuracy": text_acc,
+            "best_text_bytes": text.get("bytes_measured_total") if text else None,
+            "delta_accuracy": delta,
+            "winner": winner,
+        })
+
+    summary_csv = output_dir / "regime_summary.csv"
+    with summary_csv.open("w", encoding="utf-8") as handle:
+        handle.write(
+            "dataset,pair_id,context_len_bucket,budget_bucket,best_cache_family,best_cache_accuracy,best_cache_bytes,best_text_accuracy,best_text_bytes,delta_accuracy,winner\n"
+        )
+        for row in summary_rows:
+            handle.write(
+                f"{row['dataset']},{row['pair_id']},{row['context_len_bucket']},{row['budget_bucket']},{row['best_cache_family']},{row['best_cache_accuracy']},{row['best_cache_bytes']},{row['best_text_accuracy']},{row['best_text_bytes']},{row['delta_accuracy']},{row['winner']}\n"
+            )
+
+    summary_md = output_dir / "regime_summary.md"
+    with summary_md.open("w", encoding="utf-8") as handle:
+        handle.write("# Regime Map Summary\n\n")
+        handle.write(f"Cells: {len(summary_rows)}\n\n")
+        wins_cache = sum(1 for r in summary_rows if r.get("winner") == "cache")
+        wins_text = sum(1 for r in summary_rows if r.get("winner") == "text")
+        wins_tie = sum(1 for r in summary_rows if r.get("winner") == "tie")
+        handle.write(f"- cache wins: {wins_cache}\n")
+        handle.write(f"- text wins: {wins_text}\n")
+        handle.write(f"- ties: {wins_tie}\n")
+
     print(f"Wrote {out_csv}")
+    print(f"Wrote {summary_csv}")
+    print(f"Wrote {summary_md}")
 
 
 if __name__ == "__main__":

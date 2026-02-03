@@ -1417,6 +1417,17 @@ def main():
         help="Pack/unpack KVWire payloads to measure on-wire bytes + timings.",
     )
     parser.add_argument(
+        "--wire-cache-dir",
+        default=None,
+        help="Directory to store/load KVWire blobs for sequential exec (default: run_root/wire_blobs).",
+    )
+    parser.add_argument(
+        "--wire-cache-mode",
+        choices=["off", "write", "read"],
+        default="off",
+        help="Wire cache mode for KV blobs (off, write, read).",
+    )
+    parser.add_argument(
         "--wire-index-dtype",
         choices=["uint16", "uint32"],
         default="uint16",
@@ -1665,11 +1676,33 @@ def main():
                 run_root = Path(args.output_dir).expanduser().resolve()
             else:
                 run_root = data_root / "step_8_selective_transfer" / "local_smoke_tests" / args.run_tag
+            if args.exec_mode == "sequential" and args.wire_format == "kvwire_v1":
+                if not args.wire_cache_dir:
+                    args.wire_cache_dir = str(run_root / "wire_blobs")
+                if args.wire_cache_mode == "off":
+                    args.wire_cache_mode = "write"
+            if args.wire_cache_mode == "write" and not args.wire_apply_pack:
+                args.wire_apply_pack = True
+                kv_transfer_config["wire_apply_pack"] = True
+            kv_transfer_config["wire_cache_dir"] = args.wire_cache_dir
+            kv_transfer_config["wire_cache_mode"] = args.wire_cache_mode
+            kv_transfer_config["wire_cache_tag"] = args.run_tag
             run_root = run_local_smoke_test(project_root, data_root, kv_quant_config, kv_transfer_config, args, run_root)
         else:
             if args.run_tag is None:
                 args.run_tag = f"{args.kv_quant_scheme}_{time.strftime('%Y%m%d_%H%M%S')}"
             run_root = data_root / "step_8_selective_transfer" / args.run_tag
+            if args.exec_mode == "sequential" and args.wire_format == "kvwire_v1":
+                if not args.wire_cache_dir:
+                    args.wire_cache_dir = str(run_root / "wire_blobs")
+                if args.wire_cache_mode == "off":
+                    args.wire_cache_mode = "write"
+            if args.wire_cache_mode == "write" and not args.wire_apply_pack:
+                args.wire_apply_pack = True
+                kv_transfer_config["wire_apply_pack"] = True
+            kv_transfer_config["wire_cache_dir"] = args.wire_cache_dir
+            kv_transfer_config["wire_cache_mode"] = args.wire_cache_mode
+            kv_transfer_config["wire_cache_tag"] = args.run_tag
             run_root = run_gpu_eval(project_root, data_root, kv_quant_config, kv_transfer_config, args, run_root)
     except SystemExit as exc:
         cleanup_failed(run_root, args, f"exit_code={exc.code}")

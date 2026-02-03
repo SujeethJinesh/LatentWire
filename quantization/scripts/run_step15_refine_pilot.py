@@ -9,7 +9,7 @@ import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from rosetta.utils.evaluate import build_prompt, extract_answer_from_content, set_default_chat_template
+from rosetta.utils.evaluate import build_prompt, extract_answer_from_content, set_default_chat_template, get_option_token_ids
 
 from quantization.baselines.text_comm import make_message
 
@@ -38,7 +38,7 @@ def _format_example(example, dataset):
     return prompt, answer
 
 
-def _generate_answer(model, tokenizer, prompt):
+def _score_options(model, tokenizer, prompt, option_ids, response_text: str):
     messages = [{"role": "user", "content": prompt}]
     text = tokenizer.apply_chat_template(
         messages,
@@ -46,11 +46,17 @@ def _generate_answer(model, tokenizer, prompt):
         add_generation_prompt=True,
         enable_thinking=False,
     )
+    text += response_text
     inputs = tokenizer(text, return_tensors="pt").to(model.device)
     with torch.no_grad():
-        outputs = model.generate(**inputs, do_sample=False, max_new_tokens=64)
-    generated = outputs[0][inputs["input_ids"].shape[1]:]
-    return tokenizer.decode(generated, skip_special_tokens=True).strip()
+        outputs = model(**inputs)
+    logits = outputs.logits[0, -1]
+    option_logits = torch.tensor([logits[idx].item() for idx in option_ids], device=logits.device)
+    probs = torch.softmax(option_logits, dim=0).cpu().numpy()
+    pred = chr(65 + int(probs.argmax()))
+    sorted_probs = sorted(probs, reverse=True)
+    margin = sorted_probs[0] - sorted_probs[1] if len(sorted_probs) > 1 else sorted_probs[0]
+    return pred, float(margin)
 
 
 def _generate_message(model, tokenizer, question, choices, budget_bytes):
@@ -82,6 +88,8 @@ def main():
     parser.add_argument("--teacher-model", default="Qwen/Qwen2.5-0.5B-Instruct")
     parser.add_argument("--budget-round0", type=int, default=1024)
     parser.add_argument("--budget-round1", type=int, default=2048)
+    parser.add_argument("--margin-threshold", type=float, default=0.05)
+    parser.add_argument("--response-text", default="The correct answer is")
     parser.add_argument("--run-tag", default=None)
     args = parser.parse_args()
 
@@ -102,44 +110,69 @@ def main():
 
     data = _load_dataset(args.dataset, limit=args.limit)
     correct = 0
+    correct_round0 = 0
     total = 0
     round2_used = 0
     bytes_round0 = 0
     bytes_round1 = 0
+    bytes_to_success = 0
+    bytes_to_success_round0 = 0
 
+    option_ids = get_option_token_ids(receiver_tokenizer, num_options=4)
     for example in data:
         prompt, answer = _format_example(example, args.dataset)
         msg0 = make_message(example, budget_bytes=args.budget_round0, style="text_summary_llm",
                             llm_generate_fn=lambda q, c, b: _generate_message(teacher, teacher_tokenizer, q, c, b))
         bytes_round0 += msg0["bytes"]
         prompt0 = f"Teacher message:\n{msg0['message']}\n\n{prompt}"
-        text0 = _generate_answer(receiver, receiver_tokenizer, prompt0)
-        pred0 = extract_answer_from_content(text0)
-        use_round2 = pred0 is None
+        pred0, margin0 = _score_options(receiver, receiver_tokenizer, prompt0, option_ids, args.response_text)
+        use_round2 = margin0 < args.margin_threshold
+        if pred0 is not None and answer is not None and pred0 == answer:
+            correct_round0 += 1
+            bytes_to_success_round0 += msg0["bytes"]
         if use_round2:
             round2_used += 1
             msg1 = make_message(example, budget_bytes=args.budget_round1, style="text_summary_llm",
                                 llm_generate_fn=lambda q, c, b: _generate_message(teacher, teacher_tokenizer, q, c, b))
             bytes_round1 += msg1["bytes"]
             prompt1 = f"Teacher message:\n{msg1['message']}\n\n{prompt}"
-            text1 = _generate_answer(receiver, receiver_tokenizer, prompt1)
-            pred = extract_answer_from_content(text1)
+            pred, _ = _score_options(receiver, receiver_tokenizer, prompt1, option_ids, args.response_text)
         else:
             pred = pred0
         if pred is not None and answer is not None and pred == answer:
             correct += 1
+            bytes_to_success += msg0["bytes"] + (msg1["bytes"] if use_round2 else 0)
         total += 1
 
     summary = {
         "dataset": args.dataset,
         "num_samples": total,
         "accuracy": correct / total if total else None,
+        "round0_accuracy": correct_round0 / total if total else None,
         "round2_used": round2_used,
         "avg_bytes_round0": bytes_round0 / total if total else None,
         "avg_bytes_round1": bytes_round1 / round2_used if round2_used else None,
+        "avg_bytes_to_success": bytes_to_success / correct if correct else None,
+        "avg_bytes_to_success_round0": bytes_to_success_round0 / correct_round0 if correct_round0 else None,
+        "margin_threshold": args.margin_threshold,
     }
     (run_root / "results" / f"pilot_{args.dataset}_summary.json").write_text(json.dumps(summary, indent=2))
-    (run_root / "manifests" / "step_15_manifest.json").write_text(json.dumps({"baseline_family": "refine_pilot"}, indent=2))
+    pilot_success = False
+    if summary["accuracy"] is not None and summary["round0_accuracy"] is not None:
+        if summary["accuracy"] > summary["round0_accuracy"]:
+            pilot_success = True
+        elif summary["accuracy"] == summary["round0_accuracy"]:
+            if summary["avg_bytes_to_success"] is not None and summary["avg_bytes_to_success_round0"] is not None:
+                pilot_success = summary["avg_bytes_to_success"] < summary["avg_bytes_to_success_round0"]
+    manifest = {
+        "baseline_family": "refine_pilot",
+        "pilot_success": pilot_success,
+        "margin_threshold": args.margin_threshold,
+        "response_text": args.response_text,
+    }
+    (run_root / "manifests" / "step_15_manifest.json").write_text(json.dumps(manifest, indent=2))
+    if not pilot_success:
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

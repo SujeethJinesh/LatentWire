@@ -355,6 +355,9 @@ def parse_run(run_root):
         kv_transfer_stats = None
         rd_bytes_used_mean = None
         rd_budget_bytes_mean = None
+        budget_cap_bytes_mean = None
+        budget_actual_bytes_mean = None
+        budget_slack_bytes_mean = None
         prefill_time_mean_ms = None
         selection_time_mean_ms = None
         projection_score_time_mean_ms = None
@@ -397,6 +400,9 @@ def parse_run(run_root):
                     kv_transfer_stats.get("projection_transfer_time_mean_ms")
                 )
                 fuse_time_mean_ms = safe_float(kv_transfer_stats.get("fuse_time_mean_ms"))
+                budget_cap_bytes_mean = safe_float(kv_transfer_stats.get("budget_cap_bytes_mean"))
+                budget_actual_bytes_mean = safe_float(kv_transfer_stats.get("budget_actual_bytes_mean"))
+                budget_slack_bytes_mean = safe_float(kv_transfer_stats.get("budget_slack_bytes_mean"))
         bytes_measured_total = None
         bytes_measured_breakdown = None
         if isinstance(manifest, dict):
@@ -408,6 +414,8 @@ def parse_run(run_root):
             breakdown = manifest.get("bytes_measured_breakdown")
             if isinstance(breakdown, dict):
                 bytes_measured_breakdown = breakdown.get(dataset_dir.name)
+            if budget_cap_bytes_mean is None:
+                budget_cap_bytes_mean = safe_float(manifest.get("budget_bytes"))
         if isinstance(timings, dict):
             eval_total_seconds = safe_float(timings.get("total_seconds"))
             datasets = timings.get("datasets") or {}
@@ -423,6 +431,10 @@ def parse_run(run_root):
             accuracy = length_stats["accuracy"]
             avg_input = length_stats["avg_input_length"]
             num_samples = length_stats["total"]
+        if budget_cap_bytes_mean is not None and bytes_measured_total is not None:
+            budget_actual_bytes_mean = budget_actual_bytes_mean or safe_float(bytes_measured_total)
+            if budget_actual_bytes_mean is not None:
+                budget_slack_bytes_mean = max(0.0, budget_cap_bytes_mean - budget_actual_bytes_mean)
         rows.append(
             {
                 "run_root": str(run_root),
@@ -442,6 +454,9 @@ def parse_run(run_root):
                 "token_precision_budget_bits": token_precision_budget_bits,
                 "rd_bytes_used_mean": rd_bytes_used_mean,
                 "rd_budget_bytes_mean": rd_budget_bytes_mean,
+                "budget_cap_bytes_mean": budget_cap_bytes_mean,
+                "budget_actual_bytes_mean": budget_actual_bytes_mean,
+                "budget_slack_bytes_mean": budget_slack_bytes_mean,
                 "prefill_time_mean_ms": prefill_time_mean_ms,
                 "selection_time_mean_ms": selection_time_mean_ms,
                 "projection_score_time_mean_ms": projection_score_time_mean_ms,
@@ -482,6 +497,9 @@ def write_csv(rows, out_path):
         "token_precision_budget_bits",
         "rd_bytes_used_mean",
         "rd_budget_bytes_mean",
+        "budget_cap_bytes_mean",
+        "budget_actual_bytes_mean",
+        "budget_slack_bytes_mean",
         "prefill_time_mean_ms",
         "selection_time_mean_ms",
         "projection_score_time_mean_ms",

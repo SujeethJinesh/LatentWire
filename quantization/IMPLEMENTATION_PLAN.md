@@ -1241,14 +1241,14 @@ Make the paper defensible: results at 7B+ and at least one cross-family pair.
 
 #### M12-P1 — Sequential mode as a production feature
 
-* [ ] Implement `--exec-mode sequential|simultaneous` and ensure:
+* [x] Implement `--exec-mode sequential|simultaneous` and ensure:
   * sequential mode saves payloads in `wire_blobs/` with a stable naming scheme
   * resume works if receiver run crashes (do not recompute sharer)
 
 #### M12-P2 — Hetero instability guard rails
 
-* [ ] Add a hard alignment on/off flag with a default for hetero pairs.
-* [ ] Require a smoke run (N=50) before full eval for any new pair/dataset.
+* [x] Add a hard alignment on/off flag with a default for hetero pairs.
+* [x] Require a smoke run (N=50) before full eval for any new pair/dataset.
 
 #### M12-P3 — Long-context setup
 
@@ -1338,11 +1338,11 @@ Baseline implementations:
 
 #### M13-P0 — Baseline IO contract
 
-* [ ] Every baseline must produce:
+* [x] Every baseline must produce:
   * `payload` (text string or KVWire blob)
   * `payload_bytes_measured`
   * `encode_ms` / `decode_ms` equivalents
-* [ ] The receiver must consume baselines through a single standardized interface:
+* [x] The receiver must consume baselines through a single standardized interface:
   * `apply_payload_to_receiver(example, payload, mode)`
 
 #### M13-P1 — Text baseline must be byte-capped exactly
@@ -1363,8 +1363,8 @@ Baseline implementations:
 
 #### M13-P3 — Budget matching
 
-* [ ] When plotting “equal bytes,” match by **byte cap** (same cap), not by achieved bytes.
-* [ ] Report slack distribution (median slack, % hitting cap).
+* [x] When plotting “equal bytes,” match by **byte cap** (same cap), not by achieved bytes.
+* [x] Report slack distribution (median slack, % hitting cap).
 
 #### M13.1 — Text-only baselines (must be fair + byte-accurate)
 
@@ -1446,10 +1446,10 @@ A paper-grade result that survives even if gains are modest: a clear map of regi
 
 #### M14-P0 — Define “best method in cell”
 
-* [ ] Decide tie-breakers:
+* [x] Decide tie-breakers:
   * primary: accuracy
   * secondary: lower bytes or lower latency
-* [ ] Keep this deterministic and log it.
+* [x] Keep this deterministic and log it.
 
 #### M14-P1 — Uncertainty / stability
 
@@ -1545,15 +1545,15 @@ Try a high-upside “new knob” without derailing the core plan. This should ne
 
 #### M15-P1 — Stop criteria defined upfront
 
-* [ ] Use task-structured criteria (MC margin / verifier pass), not generic “confidence.”
-* [ ] Log:
+* [x] Use task-structured criteria (MC margin / verifier pass), not generic “confidence.”
+* [x] Log:
   * % examples using round 2
   * bytes added by round 2
   * net accuracy change at fixed cap
 
 #### M15-P2 — Hard kill-switch
 
-* [ ] If pilot does not improve bytes-to-success or success-at-cap, do not proceed.
+* [x] If pilot does not improve bytes-to-success or success-at-cap, do not proceed.
 
 ### Full implementation only if pilot succeeds
 

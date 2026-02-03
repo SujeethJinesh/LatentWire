@@ -62,6 +62,10 @@ def main():
     parser.add_argument("--exec-mode", choices=["simultaneous", "sequential"], default="simultaneous")
     parser.add_argument("--method", choices=["m9", "m10"], default="m10")
     parser.add_argument("--run-tag-prefix", default=None)
+    parser.add_argument("--smoke-first", dest="smoke_first", action="store_true", help="Run a smoke eval (limit) before full runs.")
+    parser.add_argument("--no-smoke-first", dest="smoke_first", action="store_false", help="Disable smoke pre-run gate.")
+    parser.set_defaults(smoke_first=True)
+    parser.add_argument("--smoke-limit", type=int, default=50, help="Sample limit for smoke runs.")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -98,6 +102,67 @@ def main():
         for context_len in context_lens:
             long_context = context_len == "long"
             for task in tasks:
+                if args.smoke_first:
+                    smoke_tag = f"smoke_{run_tag_prefix}_{pair_id}_{context_len}_{task}_{args.method}"
+                    smoke_root = project_root / "quantization" / "data" / "step_8_selective_transfer" / smoke_tag
+                    if not smoke_root.exists():
+                        if args.method == "m9":
+                            smoke_prop = select_props[0] if select_props else 1.0
+                            cmd = [
+                                sys.executable,
+                                str(project_root / "quantization" / "scripts" / "run_step8_selective_transfer.py"),
+                                "--mode", args.mode,
+                                "--run-tag", smoke_tag,
+                                "--base-model-override", receiver,
+                                "--teacher-model-override", sharer,
+                                "--kv-quant-scheme", kv_quant_scheme,
+                                "--kv-select-mode", "delta_proj_vnorm_topk",
+                                "--kv-select-proportion", str(smoke_prop),
+                                "--wire-format", "kvwire_v1",
+                                "--wire-apply-pack",
+                                "--wire-record-per-sample",
+                                "--eval-datasets", task,
+                                "--eval-limit", str(args.smoke_limit),
+                                "--exec-mode", args.exec_mode,
+                            ]
+                        else:
+                            smoke_budget = budgets[0] if budgets else 0.125
+                            if isinstance(smoke_budget, str) and "/" in smoke_budget:
+                                num, den = smoke_budget.split("/", 1)
+                                smoke_budget = float(num) / float(den)
+                            smoke_budget = float(smoke_budget)
+                            per_layer_budget = smoke_budget * float(assumed_seq_len) * float(bpt)
+                            cmd = [
+                                sys.executable,
+                                str(project_root / "quantization" / "scripts" / "run_step8_selective_transfer.py"),
+                                "--mode", args.mode,
+                                "--run-tag", smoke_tag,
+                                "--base-model-override", receiver,
+                                "--teacher-model-override", sharer,
+                                "--kv-quant-scheme", kv_quant_scheme,
+                                "--token-precision-mode", "rd_greedy",
+                                "--token-precision-candidates", precision_candidates,
+                                "--token-precision-budget-bytes", str(per_layer_budget),
+                                "--wire-format", "kvwire_v1",
+                                "--wire-apply-pack",
+                                "--wire-record-per-sample",
+                                "--eval-datasets", task,
+                                "--eval-limit", str(args.smoke_limit),
+                                "--exec-mode", args.exec_mode,
+                            ]
+                        if alignment_on:
+                            cmd.append("--do-alignment")
+                        if alignment_strategy:
+                            cmd.extend(["--alignment-strategy", alignment_strategy])
+                        if long_context:
+                            cmd.extend([
+                                "--long-context",
+                                "--long-context-tokens", str(long_tokens),
+                                "--long-context-corpus", wire_corpus,
+                            ])
+                        run_cmd(cmd, cwd=str(project_root), dry_run=args.dry_run)
+                        if not args.dry_run:
+                            patch_manifest(project_root, smoke_tag, pair_id, context_len)
                 if args.method == "m9":
                     for prop in select_props:
                         tag = f"{run_tag_prefix}_{pair_id}_{context_len}_m9_p{prop}"
