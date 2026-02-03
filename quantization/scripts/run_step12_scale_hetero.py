@@ -87,6 +87,18 @@ def main():
         raise SystemExit("No pairs specified in grid")
 
     run_tag_prefix = args.run_tag_prefix or time.strftime("step12_%Y%m%d_%H%M%S")
+    run_root = project_root / "quantization" / "data" / "step_12_scale_hetero" / run_tag_prefix
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "manifests").mkdir(parents=True, exist_ok=True)
+    manifest_path = run_root / "manifests" / "step_12_manifest.json"
+    manifest = {
+        "grid": str(project_root / args.grid),
+        "method": args.method,
+        "exec_mode": args.exec_mode,
+        "run_tag_prefix": run_tag_prefix,
+        "runs": [],
+    }
+    manifest_path.write_text(json.dumps(manifest, indent=2))
 
     for pair_id in pairs:
         pair_cfg_path = project_root / "quantization" / "configs" / "pairs" / f"{pair_id}.json"
@@ -195,6 +207,15 @@ def main():
                         run_cmd(cmd, cwd=str(project_root), dry_run=args.dry_run)
                         if not args.dry_run:
                             patch_manifest(project_root, tag, pair_id, context_len)
+                            manifest["runs"].append({
+                                "run_tag": tag,
+                                "pair_id": pair_id,
+                                "task": task,
+                                "context_len": context_len,
+                                "method": "m9",
+                                "status": "submitted",
+                            })
+                            manifest_path.write_text(json.dumps(manifest, indent=2))
                 else:
                     for budget in budgets:
                         if isinstance(budget, str) and "/" in budget:
@@ -233,6 +254,16 @@ def main():
                         run_cmd(cmd, cwd=str(project_root), dry_run=args.dry_run)
                         if not args.dry_run:
                             patch_manifest(project_root, tag, pair_id, context_len)
+                            manifest["runs"].append({
+                                "run_tag": tag,
+                                "pair_id": pair_id,
+                                "task": task,
+                                "context_len": context_len,
+                                "method": "m10",
+                                "budget": budget,
+                                "status": "submitted",
+                            })
+                            manifest_path.write_text(json.dumps(manifest, indent=2))
 
 
 if __name__ == "__main__":

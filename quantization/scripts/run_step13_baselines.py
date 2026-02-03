@@ -192,6 +192,8 @@ def main():
     if args.run_tag is None:
         args.run_tag = time.strftime("step13_%Y%m%d_%H%M%S")
     run_root = data_root / args.run_tag
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "manifests").mkdir(parents=True, exist_ok=True)
 
     if args.baseline == "text":
         eval_text_baseline(args, run_root)
@@ -224,6 +226,14 @@ def main():
             manifest = {}
         manifest["baseline_family"] = args.baseline
         manifest_path.write_text(json.dumps(manifest, indent=2))
+    # Write a step13 manifest pointing to the underlying step8 run.
+    step13_manifest = {
+        "baseline_family": args.baseline,
+        "linked_run_root": str(project_root / "quantization" / "data" / "step_8_selective_transfer" / args.run_tag),
+        "base_model": args.base_model,
+        "teacher_model": args.teacher_model,
+    }
+    (run_root / "manifests" / "step_13_manifest.json").write_text(json.dumps(step13_manifest, indent=2))
 
 
 if __name__ == "__main__":

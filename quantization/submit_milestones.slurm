@@ -1580,13 +1580,41 @@ fi
 # =============================================================================
 if [ "${RUN_MILESTONE_11}" = "1" ]; then
   RUN_TAG="step11_kvwire_${RUN_TAG_PREFIX}"
-  "${PYTHON[@]}" quantization/scripts/run_step11_kvwire.py \
-    --mode gpu \
-    --kv-quant-scheme "${M11_KV_QUANT_SCHEME}" \
-    --wire-quant-mode "${M11_WIRE_QUANT_MODE}" \
-    --eval-datasets "${M11_EVAL_DATASETS}" \
-    $( [ "${M11_WIRE_APPLY_PACK}" = "1" ] && echo "--wire-apply-pack" ) \
-    --run-tag "${RUN_TAG}"
+  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
+  LOG_PATH="${RUN_ROOT}/logs/step11.log"
+  mkdir -p "${RUN_ROOT}/logs"
+  DATASETS="$(normalize_dataset_list "${M11_EVAL_DATASETS}")"
+  KEY="m11|${M11_KV_QUANT_SCHEME}|${M11_WIRE_QUANT_MODE}|applypack${M11_WIRE_APPLY_PACK}"
+  SKIP_ALL="1"
+  for DATASET in ${DATASETS}; do
+    if [ "$(registry_should_skip "${KEY}" "${DATASET}" "${EVAL_SMOKE}")" = "0" ]; then
+      SKIP_ALL="0"
+    fi
+  done
+  if [ "${SKIP_ALL}" = "1" ]; then
+    for DATASET in ${DATASETS}; do
+      registry_record "${KEY}" "${DATASET}" "skipped" "${RUN_ROOT}" "${EVAL_SMOKE}" "step11" "skip_done"
+    done
+    echo "Skipping M11 (registry says complete)."
+  else
+    set +e
+    "${PYTHON[@]}" quantization/scripts/run_step11_kvwire.py \
+      --mode gpu \
+      --kv-quant-scheme "${M11_KV_QUANT_SCHEME}" \
+      --wire-quant-mode "${M11_WIRE_QUANT_MODE}" \
+      --eval-datasets "${M11_EVAL_DATASETS}" \
+      $( [ "${M11_WIRE_APPLY_PACK}" = "1" ] && echo "--wire-apply-pack" ) \
+      --run-tag "${RUN_TAG}" 2>&1 | tee -a "${LOG_PATH}"
+    rc=$?
+    set -e
+    for DATASET in ${DATASETS}; do
+      if [ "${rc}" -eq 0 ]; then
+        registry_record "${KEY}" "${DATASET}" "complete" "${RUN_ROOT}" "${EVAL_SMOKE}" "step11"
+      else
+        registry_record "${KEY}" "${DATASET}" "failed" "${RUN_ROOT}" "${EVAL_SMOKE}" "step11" "exit_${rc}"
+      fi
+    done
+  fi
   git_autopush "m11"
 fi
 
@@ -1594,12 +1622,30 @@ fi
 # Milestone 12: Scale + heterogeneity grid.
 # =============================================================================
 if [ "${RUN_MILESTONE_12}" = "1" ]; then
-  "${PYTHON[@]}" quantization/scripts/run_step12_scale_hetero.py \
-    --mode gpu \
-    --grid "${M12_GRID}" \
-    --method "${M12_METHOD}" \
-    --exec-mode "${M12_EXEC_MODE}" \
-    --run-tag-prefix "${RUN_TAG_PREFIX}"
+  RUN_TAG="${RUN_TAG_PREFIX}"
+  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_12_scale_hetero/${RUN_TAG}"
+  LOG_PATH="${RUN_ROOT}/logs/step12.log"
+  mkdir -p "${RUN_ROOT}/logs"
+  KEY="m12|${M12_METHOD}|${M12_EXEC_MODE}|$(basename "${M12_GRID}")"
+  if [ "$(registry_should_skip "${KEY}" "grid" "${EVAL_SMOKE}")" = "1" ]; then
+    registry_record "${KEY}" "grid" "skipped" "${RUN_ROOT}" "${EVAL_SMOKE}" "$(config_hash "${M12_GRID}")" "skip_done"
+    echo "Skipping M12 (registry says complete)."
+  else
+    set +e
+    "${PYTHON[@]}" quantization/scripts/run_step12_scale_hetero.py \
+      --mode gpu \
+      --grid "${M12_GRID}" \
+      --method "${M12_METHOD}" \
+      --exec-mode "${M12_EXEC_MODE}" \
+      --run-tag-prefix "${RUN_TAG_PREFIX}" 2>&1 | tee -a "${LOG_PATH}"
+    rc=$?
+    set -e
+    if [ "${rc}" -eq 0 ]; then
+      registry_record "${KEY}" "grid" "complete" "${RUN_ROOT}" "${EVAL_SMOKE}" "$(config_hash "${M12_GRID}")"
+    else
+      registry_record "${KEY}" "grid" "failed" "${RUN_ROOT}" "${EVAL_SMOKE}" "$(config_hash "${M12_GRID}")" "exit_${rc}"
+    fi
+  fi
   git_autopush "m12"
 fi
 
@@ -1608,14 +1654,42 @@ fi
 # =============================================================================
 if [ "${RUN_MILESTONE_13}" = "1" ]; then
   RUN_TAG="step13_${M13_BASELINE}_${RUN_TAG_PREFIX}"
-  "${PYTHON[@]}" quantization/scripts/run_step13_baselines.py \
-    --mode gpu \
-    --baseline "${M13_BASELINE}" \
-    --text-style "${M13_TEXT_STYLE}" \
-    --budget-bytes "${M13_BUDGET_BYTES}" \
-    --eval-datasets "${M13_EVAL_DATASETS}" \
-    --eval-limit "${M13_EVAL_LIMIT}" \
-    --run-tag "${RUN_TAG}"
+  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_13_baselines/${RUN_TAG}"
+  LOG_PATH="${RUN_ROOT}/logs/step13.log"
+  mkdir -p "${RUN_ROOT}/logs"
+  DATASETS="$(normalize_dataset_list "${M13_EVAL_DATASETS}")"
+  KEY="m13|${M13_BASELINE}|${M13_TEXT_STYLE}|${M13_BUDGET_BYTES}"
+  SKIP_ALL="1"
+  for DATASET in ${DATASETS}; do
+    if [ "$(registry_should_skip "${KEY}" "${DATASET}" "${EVAL_SMOKE}")" = "0" ]; then
+      SKIP_ALL="0"
+    fi
+  done
+  if [ "${SKIP_ALL}" = "1" ]; then
+    for DATASET in ${DATASETS}; do
+      registry_record "${KEY}" "${DATASET}" "skipped" "${RUN_ROOT}" "${EVAL_SMOKE}" "step13" "skip_done"
+    done
+    echo "Skipping M13 (registry says complete)."
+  else
+    set +e
+    "${PYTHON[@]}" quantization/scripts/run_step13_baselines.py \
+      --mode gpu \
+      --baseline "${M13_BASELINE}" \
+      --text-style "${M13_TEXT_STYLE}" \
+      --budget-bytes "${M13_BUDGET_BYTES}" \
+      --eval-datasets "${M13_EVAL_DATASETS}" \
+      --eval-limit "${M13_EVAL_LIMIT}" \
+      --run-tag "${RUN_TAG}" 2>&1 | tee -a "${LOG_PATH}"
+    rc=$?
+    set -e
+    for DATASET in ${DATASETS}; do
+      if [ "${rc}" -eq 0 ]; then
+        registry_record "${KEY}" "${DATASET}" "complete" "${RUN_ROOT}" "${EVAL_SMOKE}" "step13"
+      else
+        registry_record "${KEY}" "${DATASET}" "failed" "${RUN_ROOT}" "${EVAL_SMOKE}" "step13" "exit_${rc}"
+      fi
+    done
+  fi
   git_autopush "m13"
 fi
 
@@ -1623,9 +1697,28 @@ fi
 # Milestone 14: Regime map.
 # =============================================================================
 if [ "${RUN_MILESTONE_14}" = "1" ]; then
-  "${PYTHON[@]}" quantization/scripts/run_step14_regime_map.py \
-    --runs-root "${M14_RUNS_ROOT}" \
-    --output-dir "${M14_OUTPUT_DIR}"
+  RUN_TAG="step14_${RUN_TAG_PREFIX}"
+  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_14_regime_map/${RUN_TAG}"
+  LOG_PATH="${RUN_ROOT}/logs/step14.log"
+  mkdir -p "${RUN_ROOT}/logs"
+  KEY="m14|$(basename "${M14_RUNS_ROOT}")|$(basename "${M14_OUTPUT_DIR}")"
+  if [ "$(registry_should_skip "${KEY}" "analysis" "${EVAL_SMOKE}")" = "1" ]; then
+    registry_record "${KEY}" "analysis" "skipped" "${RUN_ROOT}" "${EVAL_SMOKE}" "step14" "skip_done"
+    echo "Skipping M14 (registry says complete)."
+  else
+    set +e
+    "${PYTHON[@]}" quantization/scripts/run_step14_regime_map.py \
+      --runs-root "${M14_RUNS_ROOT}" \
+      --output-dir "${M14_OUTPUT_DIR}" \
+      --run-tag "${RUN_TAG}" 2>&1 | tee -a "${LOG_PATH}"
+    rc=$?
+    set -e
+    if [ "${rc}" -eq 0 ]; then
+      registry_record "${KEY}" "analysis" "complete" "${RUN_ROOT}" "${EVAL_SMOKE}" "step14"
+    else
+      registry_record "${KEY}" "analysis" "failed" "${RUN_ROOT}" "${EVAL_SMOKE}" "step14" "exit_${rc}"
+    fi
+  fi
   git_autopush "m14"
 fi
 
@@ -1634,12 +1727,29 @@ fi
 # =============================================================================
 if [ "${RUN_MILESTONE_15}" = "1" ]; then
   RUN_TAG="step15_pilot_${RUN_TAG_PREFIX}"
-  "${PYTHON[@]}" quantization/scripts/run_step15_refine_pilot.py \
-    --dataset "${M15_DATASET}" \
-    --limit "${M15_LIMIT}" \
-    --budget-round0 "${M15_BUDGET_ROUND0}" \
-    --budget-round1 "${M15_BUDGET_ROUND1}" \
-    --run-tag "${RUN_TAG}"
+  RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_15_refine_pilot/${RUN_TAG}"
+  LOG_PATH="${RUN_ROOT}/logs/step15.log"
+  mkdir -p "${RUN_ROOT}/logs"
+  KEY="m15|${M15_DATASET}|${M15_BUDGET_ROUND0}|${M15_BUDGET_ROUND1}"
+  if [ "$(registry_should_skip "${KEY}" "${M15_DATASET}" "${EVAL_SMOKE}")" = "1" ]; then
+    registry_record "${KEY}" "${M15_DATASET}" "skipped" "${RUN_ROOT}" "${EVAL_SMOKE}" "step15" "skip_done"
+    echo "Skipping M15 (registry says complete)."
+  else
+    set +e
+    "${PYTHON[@]}" quantization/scripts/run_step15_refine_pilot.py \
+      --dataset "${M15_DATASET}" \
+      --limit "${M15_LIMIT}" \
+      --budget-round0 "${M15_BUDGET_ROUND0}" \
+      --budget-round1 "${M15_BUDGET_ROUND1}" \
+      --run-tag "${RUN_TAG}" 2>&1 | tee -a "${LOG_PATH}"
+    rc=$?
+    set -e
+    if [ "${rc}" -eq 0 ]; then
+      registry_record "${KEY}" "${M15_DATASET}" "complete" "${RUN_ROOT}" "${EVAL_SMOKE}" "step15"
+    else
+      registry_record "${KEY}" "${M15_DATASET}" "failed" "${RUN_ROOT}" "${EVAL_SMOKE}" "step15" "exit_${rc}"
+    fi
+  fi
   git_autopush "m15"
 fi
 
