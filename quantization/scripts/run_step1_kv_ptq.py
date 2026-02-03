@@ -1016,6 +1016,13 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, args, run_root):
                 kv_cache_proportion=args.kv_cache_proportion,
                 kv_quant_config=kv_quant_config,
             ),
+            "bytes_estimated_total": estimate_bytes(
+                base_model_stats,
+                kv_cache_proportion=args.kv_cache_proportion,
+                kv_quant_config=kv_quant_config,
+            ),
+            "bytes_measured_total": None,
+            "bytes_measured_breakdown": None,
         }
         manifest_path = run_root / "manifests" / "step_1_manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2))

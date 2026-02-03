@@ -1001,6 +1001,15 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, kv_transfer_config, a
         check_hf_model_access(teacher_model, require_token=require_token)
 
         base_model_stats, base_model_stats_error = collect_model_stats(base_model)
+        if (
+            kv_transfer_config.get("token_precision_budget_bytes") is not None
+            and kv_transfer_config.get("wire_budget_bytes") is None
+            and isinstance(base_model_stats, dict)
+            and base_model_stats.get("num_layers")
+        ):
+            kv_transfer_config["wire_budget_bytes"] = float(kv_transfer_config["token_precision_budget_bytes"]) * float(
+                base_model_stats["num_layers"]
+            )
         if args.kv_quant_last_fp16:
             schedule = resolve_layer_schedule(args, base_model)
             if schedule:
@@ -1045,12 +1054,21 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, kv_transfer_config, a
             "kv_cache_proportion": args.kv_cache_proportion,
             "kv_cache_order_mode": args.kv_cache_order_mode,
             "eval_recipe_path": str(eval_recipe_path),
+            "context_len_bucket": "long" if args.long_context else "baseline",
             "bytes_estimate": estimate_bytes(
                 base_model_stats,
                 kv_cache_proportion=args.kv_cache_proportion,
                 kv_quant_config=kv_quant_config,
                 kv_transfer_config=kv_transfer_config,
             ),
+            "bytes_estimated_total": estimate_bytes(
+                base_model_stats,
+                kv_cache_proportion=args.kv_cache_proportion,
+                kv_quant_config=kv_quant_config,
+                kv_transfer_config=kv_transfer_config,
+            ),
+            "bytes_measured_total": None,
+            "bytes_measured_breakdown": None,
         }
         manifest_path = run_root / "manifests" / "step_8_manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2))
@@ -1078,6 +1096,14 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, kv_transfer_config, a
                 cfg["eval"]["use_cot"] = True
             if args.eval_no_template:
                 cfg["eval"]["use_template"] = False
+            if args.long_context:
+                cfg["eval"]["long_context"] = {
+                    "enabled": True,
+                    "target_tokens": int(args.long_context_tokens),
+                    "corpus_path": str(Path(args.long_context_corpus)),
+                    "corpus_version": args.long_context_version,
+                }
+                cfg["eval"]["context_len_bucket"] = "long"
             if args.eval_limit is not None:
                 cfg["eval"]["limit"] = int(args.eval_limit)
             elif args.eval_range is not None:
@@ -1120,6 +1146,75 @@ def run_gpu_eval(project_root, data_root, kv_quant_config, kv_transfer_config, a
 
         timings["total_seconds"] = time.time() - timings["start_time"]
         (run_root / "manifests" / "timings.json").write_text(json.dumps(timings, indent=2))
+
+        def _find_latest_summary(results_dir):
+            summaries = sorted(results_dir.glob("*_summary.json"), key=lambda p: p.stat().st_mtime)
+            return summaries[-1] if summaries else None
+
+        bytes_measured = {}
+        bytes_breakdown = {}
+        wire_timings = {}
+        manifest_path = run_root / "manifests" / "step_8_manifest.json"
+        try:
+            manifest_for_layers = json.loads(manifest_path.read_text())
+        except Exception:
+            manifest_for_layers = {}
+        num_layers = None
+        if isinstance(manifest_for_layers.get("base_model_stats"), dict):
+            num_layers = manifest_for_layers["base_model_stats"].get("num_layers")
+        for dataset in args.eval_datasets:
+            slug = dataset_slug(dataset)
+            summary_path = _find_latest_summary(run_root / "results" / slug)
+            if not summary_path:
+                continue
+            try:
+                summary = json.loads(summary_path.read_text())
+            except Exception:
+                continue
+            kv_transfer_stats = summary.get("kv_transfer_stats") or {}
+            wire_bytes = kv_transfer_stats.get("wire_bytes_mean")
+            if wire_bytes is not None:
+                total_bytes = wire_bytes
+                if num_layers:
+                    total_bytes = wire_bytes * float(num_layers)
+                bytes_measured[slug] = total_bytes
+                bytes_breakdown[slug] = {
+                    "payload_bytes": (kv_transfer_stats.get("wire_payload_bytes_mean") or 0.0) * float(num_layers or 1),
+                    "index_bytes": (kv_transfer_stats.get("wire_index_bytes_mean") or 0.0) * float(num_layers or 1),
+                    "scale_bytes": (kv_transfer_stats.get("wire_scale_bytes_mean") or 0.0) * float(num_layers or 1),
+                    "header_bytes": (kv_transfer_stats.get("wire_header_bytes_mean") or 0.0) * float(num_layers or 1),
+                }
+            if kv_transfer_stats:
+                prefill_ms = kv_transfer_stats.get("prefill_time_mean_ms")
+                select_ms = kv_transfer_stats.get("selection_time_mean_ms")
+                proj_score_ms = kv_transfer_stats.get("projection_score_time_mean_ms")
+                proj_ms = kv_transfer_stats.get("projection_transfer_time_mean_ms")
+                fuse_ms = kv_transfer_stats.get("fuse_time_mean_ms")
+                wire_encode_ms = kv_transfer_stats.get("wire_encode_time_mean_ms")
+                wire_decode_ms = kv_transfer_stats.get("wire_decode_time_mean_ms")
+                end_to_end_ms = None
+                if prefill_ms is not None or select_ms is not None or proj_ms is not None or fuse_ms is not None:
+                    end_to_end_ms = sum(v for v in [prefill_ms, select_ms, proj_score_ms, proj_ms, fuse_ms] if v is not None)
+                wire_timings[slug] = {
+                    "wire_encode_ms": wire_encode_ms,
+                    "wire_decode_ms": wire_decode_ms,
+                    "prefill_ms": prefill_ms,
+                    "select_ms": select_ms,
+                    "project_ms": proj_ms,
+                    "fuse_ms": fuse_ms,
+                    "end_to_end_ms": end_to_end_ms,
+                }
+
+        if bytes_measured:
+            try:
+                manifest = json.loads(manifest_path.read_text())
+            except Exception:
+                manifest = {}
+            manifest["bytes_measured_total"] = bytes_measured
+            manifest["bytes_measured_breakdown"] = bytes_breakdown
+            if wire_timings:
+                manifest["wire_timings"] = wire_timings
+            manifest_path.write_text(json.dumps(manifest, indent=2))
 
         write_status(run_root, "complete")
 
@@ -1311,6 +1406,83 @@ def main():
         help="Synchronize CUDA for KV transfer timing (slower but more accurate).",
     )
     parser.add_argument(
+        "--wire-format",
+        choices=["estimate", "kvwire_v1"],
+        default="estimate",
+        help="Wire format for measured bytes (estimate or kvwire_v1).",
+    )
+    parser.add_argument(
+        "--wire-apply-pack",
+        action="store_true",
+        help="Pack/unpack KVWire payloads to measure on-wire bytes + timings.",
+    )
+    parser.add_argument(
+        "--wire-index-dtype",
+        choices=["uint16", "uint32"],
+        default="uint16",
+        help="Index dtype for KVWire.",
+    )
+    parser.add_argument(
+        "--wire-scale-dtype",
+        choices=["fp16", "bf16"],
+        default="fp16",
+        help="Scale dtype for KVWire.",
+    )
+    parser.add_argument(
+        "--wire-scale-granularity",
+        choices=["per_block", "per_head", "per_tensor", "per_layer"],
+        default="per_block",
+        help="Scale granularity for KVWire.",
+    )
+    parser.add_argument(
+        "--wire-compression",
+        choices=["none", "zstd"],
+        default="none",
+        help="Optional wire compression mode (kvwire_v1).",
+    )
+    parser.add_argument(
+        "--wire-quant-mode",
+        choices=["int8", "int4", "fp16"],
+        default=None,
+        help="Override quant mode for KVWire payload sizing.",
+    )
+    parser.add_argument(
+        "--wire-include-headers",
+        dest="wire_include_headers",
+        action="store_true",
+        help="Include headers in KVWire measurement (default).",
+    )
+    parser.add_argument(
+        "--wire-no-headers",
+        dest="wire_include_headers",
+        action="store_false",
+        help="Exclude headers from KVWire measurement.",
+    )
+    parser.set_defaults(wire_include_headers=True)
+    parser.add_argument(
+        "--wire-record-per-sample",
+        action="store_true",
+        help="Record per-sample KVWire stats (limited by --wire-sample-limit).",
+    )
+    parser.add_argument(
+        "--wire-sample-limit",
+        type=int,
+        default=0,
+        help="Max number of per-sample records to retain (0 = unlimited).",
+    )
+    parser.add_argument(
+        "--wire-budget-bytes",
+        type=float,
+        default=None,
+        help="Optional per-sample byte cap for KVWire accounting.",
+    )
+    parser.add_argument(
+        "--exec-mode",
+        choices=["simultaneous", "sequential"],
+        default="simultaneous",
+        help="Execution mode for sharer/receiver (sequential reduces GPU concurrency).",
+    )
+    parser.add_argument(
         "--eval-datasets",
         default="openbookqa,ai2-arc",
         help="Comma/space-separated eval datasets (default: openbookqa,ai2-arc).",
@@ -1324,6 +1496,27 @@ def main():
         "--eval-no-template",
         action="store_true",
         help="Disable chat template in eval config (use raw prompts).",
+    )
+    parser.add_argument(
+        "--long-context",
+        action="store_true",
+        help="Enable long-context padding via eval config.",
+    )
+    parser.add_argument(
+        "--long-context-tokens",
+        type=int,
+        default=8192,
+        help="Target token length for long-context prompts.",
+    )
+    parser.add_argument(
+        "--long-context-corpus",
+        default="quantization/prompts/longctx_corpus.jsonl",
+        help="Path to long-context corpus JSONL.",
+    )
+    parser.add_argument(
+        "--long-context-version",
+        default=None,
+        help="Optional corpus version label to record.",
     )
     parser.add_argument(
         "--eval-limit",
@@ -1436,6 +1629,22 @@ def main():
         "include_scale_overhead": bool(args.kv_include_scale_overhead),
         "timing_sync": bool(args.kv_timing_sync),
     }
+    wire_index_dtype_bytes = 2 if args.wire_index_dtype == "uint16" else 4
+    kv_transfer_config["wire_format"] = args.wire_format
+    kv_transfer_config["wire_index_dtype"] = args.wire_index_dtype
+    kv_transfer_config["wire_index_dtype_bytes"] = wire_index_dtype_bytes
+    kv_transfer_config["wire_scale_dtype"] = args.wire_scale_dtype
+    kv_transfer_config["wire_scale_granularity"] = args.wire_scale_granularity
+    kv_transfer_config["wire_include_headers"] = bool(args.wire_include_headers)
+    kv_transfer_config["wire_apply_pack"] = bool(args.wire_apply_pack)
+    kv_transfer_config["wire_compression"] = args.wire_compression
+    kv_transfer_config["record_per_sample"] = bool(args.wire_record_per_sample)
+    kv_transfer_config["sample_limit"] = int(args.wire_sample_limit)
+    kv_transfer_config["exec_mode"] = args.exec_mode
+    if args.wire_quant_mode:
+        kv_transfer_config["wire_quant_mode"] = args.wire_quant_mode
+    if args.wire_budget_bytes is not None:
+        kv_transfer_config["wire_budget_bytes"] = float(args.wire_budget_bytes)
     if token_precision_mode:
         kv_transfer_config["token_precision_mode"] = token_precision_mode
         if token_precision_candidates:

@@ -1,0 +1,8 @@
+{
+  "pair_id": "large_hetero",
+  "receiver_model": "Qwen/Qwen3-8B",
+  "sharer_model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "alignment": true,
+  "alignment_strategy": "prefix",
+  "max_seq_len": 8192
+}

@@ -1,0 +1,12 @@
+{
+  "pairs": ["large_within", "large_hetero"],
+  "tasks": ["openbookqa", "ai2-arc"],
+  "context_len": ["baseline", "long"],
+  "budget": ["1/8", "1/16"],
+  "token_select_proportions": [0.25],
+  "assumed_seq_len": 512,
+  "kv_quant_scheme": "int8",
+  "token_precision_candidates": "drop,int4,int8",
+  "long_context_corpus": "quantization/prompts/longctx_corpus.jsonl",
+  "long_context_tokens": 8192
+}

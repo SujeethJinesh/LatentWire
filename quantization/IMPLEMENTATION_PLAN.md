@@ -1022,24 +1022,24 @@ For every point, record:
 
 ### P0 — Plumbing tasks (required before M11)
 
-* [ ] **Add milestone IDs and run scripts**
+* [x] **Add milestone IDs and run scripts**
   * `run_step11_kvwire.py`, `run_step12_scale_hetero.py`, `run_step13_baselines.py`, `run_step14_regime_map.py`, `run_step15_refine_pilot.py`
   * Keep naming consistent with existing `stepX_*` conventions.
-* [ ] **Update SLURM launcher**
+* [x] **Update SLURM launcher**
   * Add `RUN_MILESTONE_11`...`RUN_MILESTONE_15` and default them off.
   * Ensure `EVAL_SMOKE` and `SMOKE_LIMIT` flow into these steps.
-* [ ] **Registry key invariants (no collisions)**
+* [x] **Registry key invariants (no collisions)**
   * Add `wire_format`, `wire_version`, `wire_quant_mode`, `wire_scale_granularity`, `wire_index_dtype`, and (if used) `wire_compression` to the registry key.
-* [ ] **Manifest schema invariants**
+* [x] **Manifest schema invariants**
   * Guarantee every new run writes:
     * `bytes_measured_total`, `bytes_measured_breakdown`
     * `wire_encode_ms`, `wire_decode_ms`
     * per-stage timings: `prefill_ms`, `select_ms`, `project_ms`, `fuse_ms`, `end_to_end_ms`
-* [ ] **Per-sample cap rule**
+* [x] **Per-sample cap rule**
   * All byte budgets are **per-sample caps** (not dataset-average). Log `budget_cap_bytes`, `budget_actual_bytes`, and `budget_slack_bytes`.
-* [ ] **Compatibility layer**
+* [x] **Compatibility layer**
   * Update analysis to prefer `bytes_measured_total` when present and fall back to `bytes_estimated_total` / `bytes_estimate`.
-* [ ] **Glue tasks before large sweeps**
+* [x] **Glue tasks before large sweeps**
   * Add `quantization/scripts/check_model_access.py` (AutoConfig probe + shape print, fail fast on gated/missing models).
   * Add a manifest schema contract test (assert required fields per run).
   * Add a long-context corpus builder and corpus version pinning.
@@ -1106,27 +1106,27 @@ Replace “fake-quant + byte estimates” with **real serialization** and **meas
 
 #### M11-P0 — Wire contract lock
 
-* [ ] Decide whether indices are **absolute** positions or **delta-coded**; document it.
-* [ ] Decide quantization metadata layout (per-head / per-block) and how scales are stored.
-* [ ] Decide whether optional compression is included (keep off by default; add later as ablation).
+* [x] Decide whether indices are **absolute** positions or **delta-coded**; document it.
+* [x] Decide quantization metadata layout (per-head / per-block) and how scales are stored.
+* [x] Decide whether optional compression is included (keep off by default; add later as ablation).
 
 #### M11-P1 — Blob introspection + debug tooling
 
-* [ ] Add `quantization/scripts/kvwire_inspect.py` that prints:
+* [x] Add `quantization/scripts/kvwire_inspect.py` that prints:
   * section sizes (indices/payload/scales/headers)
   * dtype/shape info
   * checksums (optional)
 
 #### M11-P2 — Per-sample accounting + slack
 
-* [ ] For each example, log:
+* [x] For each example, log:
   * `bytes_measured_total`
   * `bytes_measured_breakdown`
   * if budgeted: `budget_cap_bytes`, `budget_slack_bytes`
 
 #### M11-P3 — Bridge drift report
 
-* [ ] Add `quantization/scripts/report_byte_drift.py`:
+* [x] Add `quantization/scripts/report_byte_drift.py`:
   * compare old estimate vs KVWire measured bytes on a small sample
   * output mean/median/p95 drift by method (INT8/INT4/sparse)
 
@@ -1236,8 +1236,8 @@ Make the paper defensible: results at 7B+ and at least one cross-family pair.
 
 #### M12-P0 — Model/pair configs are first-class artifacts
 
-* [ ] Create `configs/pairs/*.json` and require a `pair_id` in every run.
-* [ ] Log `pair_id` and resolved model IDs into manifests.
+* [x] Create `configs/pairs/*.json` and require a `pair_id` in every run.
+* [x] Log `pair_id` and resolved model IDs into manifests.
 
 #### M12-P1 — Sequential mode as a production feature
 
@@ -1252,8 +1252,8 @@ Make the paper defensible: results at 7B+ and at least one cross-family pair.
 
 #### M12-P3 — Long-context setup
 
-* [ ] Define exactly how long-context prompts are created (synthetic concat, retrieval chunks, etc.).
-* [ ] Log `context_len_bucket` and actual prompt length stats.
+* [x] Define exactly how long-context prompts are created (synthetic concat, retrieval chunks, etc.).
+* [x] Log `context_len_bucket` and actual prompt length stats.
 
 #### M12.1 — Define the evaluation grid (explicit table in repo)
 
@@ -1347,19 +1347,19 @@ Baseline implementations:
 
 #### M13-P1 — Text baseline must be byte-capped exactly
 
-* [ ] Implement strict enforcement:
+* [x] Implement strict enforcement:
   * count UTF-8 bytes
   * truncate safely (do not break JSON / tags if you use structured prompts)
   * log truncation rate
-* [ ] Add at least two text variants:
+* [x] Add at least two text variants:
   * “teacher hint / short rationale”
   * “teacher extracted facts”
 
 #### M13-P2 — Compute fairness note
 
-* [ ] Decide and document whether text message generation uses:
+* [x] Decide and document whether text message generation uses:
   * the teacher model (recommended) or a fixed heuristic
-* [ ] Log teacher generation settings used for text messages (temperature, max tokens).
+* [x] Log teacher generation settings used for text messages (temperature, max tokens).
 
 #### M13-P3 — Budget matching
 
@@ -1459,7 +1459,7 @@ A paper-grade result that survives even if gains are modest: a clear map of regi
 
 #### M14-P2 — One-click artifact generation
 
-* [ ] Create `make_regime_map.sh` that:
+* [x] Create `make_regime_map.sh` that:
   * ingests runs root
   * outputs plots + CSV tables + a single summary markdown
 
@@ -1537,7 +1537,7 @@ Try a high-upside “new knob” without derailing the core plan. This should ne
 
 #### M15-P0 — Pilot-only first
 
-* [ ] Implement only for:
+* [x] Implement only for:
   * 1 model pair
   * 1 dataset
   * 2 byte caps

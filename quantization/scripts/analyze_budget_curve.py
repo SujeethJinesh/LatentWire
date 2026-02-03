@@ -397,6 +397,17 @@ def parse_run(run_root):
                     kv_transfer_stats.get("projection_transfer_time_mean_ms")
                 )
                 fuse_time_mean_ms = safe_float(kv_transfer_stats.get("fuse_time_mean_ms"))
+        bytes_measured_total = None
+        bytes_measured_breakdown = None
+        if isinstance(manifest, dict):
+            measured = manifest.get("bytes_measured_total")
+            if isinstance(measured, dict):
+                bytes_measured_total = measured.get(dataset_dir.name)
+            elif measured is not None:
+                bytes_measured_total = measured
+            breakdown = manifest.get("bytes_measured_breakdown")
+            if isinstance(breakdown, dict):
+                bytes_measured_breakdown = breakdown.get(dataset_dir.name)
         if isinstance(timings, dict):
             eval_total_seconds = safe_float(timings.get("total_seconds"))
             datasets = timings.get("datasets") or {}
@@ -445,6 +456,8 @@ def parse_run(run_root):
                 "avg_input_length": avg_input,
                 "num_samples": num_samples,
                 "model_stats": manifest_stats,
+                "bytes_measured_total": bytes_measured_total,
+                "bytes_measured_breakdown": bytes_measured_breakdown,
             }
         )
     return rows
@@ -483,6 +496,7 @@ def write_csv(rows, out_path):
         "avg_input_length",
         "bytes_per_sequence",
         "bytes_per_sequence_mib",
+        "bytes_measured_total",
         "accuracy",
         "run_root",
     ]
@@ -686,6 +700,16 @@ def main():
                 continue
             avg_input_length = args.assume_input_length
             row["avg_input_length"] = avg_input_length
+        measured_total = row.get("bytes_measured_total")
+        if measured_total is not None:
+            try:
+                bytes_seq = float(measured_total)
+                row["bytes_per_sequence"] = bytes_seq
+                row["bytes_per_sequence_mib"] = bytes_seq / (1024.0 * 1024.0)
+                enriched.append(row)
+                continue
+            except Exception:
+                pass
         model_name = row["base_model"]
         if model_name not in model_stats_cache:
             override = row_overrides.get(model_name) or overrides.get(model_name)

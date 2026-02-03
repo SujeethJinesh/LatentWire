@@ -1,0 +1,8 @@
+{
+  "pair_id": "large_within",
+  "receiver_model": "Qwen/Qwen3-8B",
+  "sharer_model": "Qwen/Qwen2.5-7B",
+  "alignment": true,
+  "alignment_strategy": "prefix",
+  "max_seq_len": 8192
+}

@@ -719,8 +719,11 @@ def main():
             "hostname": socket.gethostname(),
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "prep_only": bool(args.prep_only),
-            "bytes_estimate": estimate_bytes(base_model_stats, kv_cache_proportion=1.0),
-        }
+                "bytes_estimate": estimate_bytes(base_model_stats, kv_cache_proportion=1.0),
+                "bytes_estimated_total": estimate_bytes(base_model_stats, kv_cache_proportion=1.0),
+                "bytes_measured_total": None,
+                "bytes_measured_breakdown": None,
+            }
         manifest_path = run_root / "manifests" / "step_0_checkpoint_manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2))
         print("Wrote manifest:", manifest_path)

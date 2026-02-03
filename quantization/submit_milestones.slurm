@@ -92,6 +92,11 @@ RUN_MILESTONE_7="${RUN_MILESTONE_7:-0}"
 RUN_MILESTONE_8="${RUN_MILESTONE_8:-0}"
 RUN_MILESTONE_9="${RUN_MILESTONE_9:-0}"
 RUN_MILESTONE_10="${RUN_MILESTONE_10:-0}"
+RUN_MILESTONE_11="${RUN_MILESTONE_11:-0}"
+RUN_MILESTONE_12="${RUN_MILESTONE_12:-0}"
+RUN_MILESTONE_13="${RUN_MILESTONE_13:-0}"
+RUN_MILESTONE_14="${RUN_MILESTONE_14:-0}"
+RUN_MILESTONE_15="${RUN_MILESTONE_15:-0}"
 RUN_FULL="${RUN_FULL:-0}"
 PREFLIGHT="${PREFLIGHT:-1}"
 DRY_RUN="${DRY_RUN:-0}"
@@ -181,6 +186,13 @@ M9_EVAL_DATASETS="${M9_EVAL_DATASETS:-}"
 M9_EVAL_USE_COT="${M9_EVAL_USE_COT:-0}"
 M9_EVAL_NO_TEMPLATE="${M9_EVAL_NO_TEMPLATE:-0}"
 M9_EVAL_LIMIT="${M9_EVAL_LIMIT:-}"
+M9_WIRE_FORMAT="${M9_WIRE_FORMAT:-estimate}"
+M9_WIRE_QUANT_MODE="${M9_WIRE_QUANT_MODE:-int8}"
+M9_WIRE_SCALE_GRANULARITY="${M9_WIRE_SCALE_GRANULARITY:-per_block}"
+M9_WIRE_INDEX_DTYPE="${M9_WIRE_INDEX_DTYPE:-uint16}"
+M9_WIRE_SCALE_DTYPE="${M9_WIRE_SCALE_DTYPE:-fp16}"
+M9_WIRE_COMPRESSION="${M9_WIRE_COMPRESSION:-none}"
+M9_WIRE_APPLY_PACK="${M9_WIRE_APPLY_PACK:-0}"
 M9_EVAL_RANGE="${M9_EVAL_RANGE:-}"
 M9_KEY_SUFFIX="${M9_KEY_SUFFIX:-}"
 
@@ -208,6 +220,41 @@ M10_EVAL_DATASETS="${M10_EVAL_DATASETS:-}"
 M10_EVAL_USE_COT="${M10_EVAL_USE_COT:-0}"
 M10_EVAL_NO_TEMPLATE="${M10_EVAL_NO_TEMPLATE:-0}"
 M10_EVAL_LIMIT="${M10_EVAL_LIMIT:-}"
+M10_WIRE_FORMAT="${M10_WIRE_FORMAT:-estimate}"
+M10_WIRE_QUANT_MODE="${M10_WIRE_QUANT_MODE:-int8}"
+M10_WIRE_SCALE_GRANULARITY="${M10_WIRE_SCALE_GRANULARITY:-per_block}"
+M10_WIRE_INDEX_DTYPE="${M10_WIRE_INDEX_DTYPE:-uint16}"
+M10_WIRE_SCALE_DTYPE="${M10_WIRE_SCALE_DTYPE:-fp16}"
+M10_WIRE_COMPRESSION="${M10_WIRE_COMPRESSION:-none}"
+M10_WIRE_APPLY_PACK="${M10_WIRE_APPLY_PACK:-0}"
+
+# Milestone 11 (KVWire validation).
+M11_KV_QUANT_SCHEME="${M11_KV_QUANT_SCHEME:-int8}"
+M11_WIRE_QUANT_MODE="${M11_WIRE_QUANT_MODE:-int8}"
+M11_EVAL_DATASETS="${M11_EVAL_DATASETS:-openbookqa,ai2-arc}"
+M11_WIRE_APPLY_PACK="${M11_WIRE_APPLY_PACK:-1}"
+
+# Milestone 12 (scale + hetero grid).
+M12_GRID="${M12_GRID:-quantization/configs/grids/scale_hetero_grid.json}"
+M12_METHOD="${M12_METHOD:-m10}"
+M12_EXEC_MODE="${M12_EXEC_MODE:-sequential}"
+
+# Milestone 13 (baselines).
+M13_BASELINE="${M13_BASELINE:-text}"
+M13_TEXT_STYLE="${M13_TEXT_STYLE:-text_summary_heur}"
+M13_BUDGET_BYTES="${M13_BUDGET_BYTES:-2048}"
+M13_EVAL_DATASETS="${M13_EVAL_DATASETS:-openbookqa,ai2-arc}"
+M13_EVAL_LIMIT="${M13_EVAL_LIMIT:-50}"
+
+# Milestone 14 (regime map).
+M14_RUNS_ROOT="${M14_RUNS_ROOT:-quantization/data}"
+M14_OUTPUT_DIR="${M14_OUTPUT_DIR:-quantization/analysis/regime_map}"
+
+# Milestone 15 (refine pilot).
+M15_DATASET="${M15_DATASET:-openbookqa}"
+M15_LIMIT="${M15_LIMIT:-100}"
+M15_BUDGET_ROUND0="${M15_BUDGET_ROUND0:-1024}"
+M15_BUDGET_ROUND1="${M15_BUDGET_ROUND1:-2048}"
 M10_EVAL_RANGE="${M10_EVAL_RANGE:-}"
 M10_KEY_SUFFIX="${M10_KEY_SUFFIX:-}"
 
@@ -1292,6 +1339,9 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
           if [ "${M9_TIMING_SYNC}" = "1" ]; then
             EXTRA_ARGS+=( "--kv-timing-sync" )
           fi
+          if [ "${M9_WIRE_APPLY_PACK}" = "1" ]; then
+            EXTRA_ARGS+=( "--wire-apply-pack" )
+          fi
           if [ -n "${M9_EVAL_LIMIT}" ]; then
             EXTRA_ARGS+=( "--eval-limit" "${M9_EVAL_LIMIT}" )
           fi
@@ -1313,6 +1363,12 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
             --kv-select-scope "${SCOPE}" \
             --kv-select-min-tokens "${M9_SELECT_MIN_TOKENS}" \
             --kv-scatter-fill "${M9_SCATTER_FILL}" \
+            --wire-format "${M9_WIRE_FORMAT}" \
+            --wire-quant-mode "${M9_WIRE_QUANT_MODE}" \
+            --wire-scale-granularity "${M9_WIRE_SCALE_GRANULARITY}" \
+            --wire-index-dtype "${M9_WIRE_INDEX_DTYPE}" \
+            --wire-scale-dtype "${M9_WIRE_SCALE_DTYPE}" \
+            --wire-compression "${M9_WIRE_COMPRESSION}" \
             --eval-datasets "${M9_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
             --prep-only \
             --run-tag "${RUN_TAG}" \
@@ -1320,7 +1376,7 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
           RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
           for DATASET in ${DATASETS}; do
             SLUG="$(dataset_slug "${DATASET}")"
-            KEY="m9|${M9_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}"
+            KEY="m9|${M9_KV_QUANT_SCHEME}|${MODE}|${PROP}|${SCOPE}|${SPARSE_FUSE_MODE}|${M9_WIRE_FORMAT}|${M9_WIRE_QUANT_MODE}|${M9_WIRE_SCALE_GRANULARITY}|${M9_WIRE_INDEX_DTYPE}|${M9_WIRE_SCALE_DTYPE}|${M9_WIRE_COMPRESSION}|applypack${M9_WIRE_APPLY_PACK}"
             if [ -n "${M9_KEY_SUFFIX}" ]; then
               KEY="${KEY}|${M9_KEY_SUFFIX}"
             fi
@@ -1355,6 +1411,9 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
     if [ "${M9_TIMING_SYNC}" = "1" ]; then
       EXTRA_ARGS+=( "--kv-timing-sync" )
     fi
+    if [ "${M9_WIRE_APPLY_PACK}" = "1" ]; then
+      EXTRA_ARGS+=( "--wire-apply-pack" )
+    fi
     if [ -n "${M9_EVAL_LIMIT}" ]; then
       EXTRA_ARGS+=( "--eval-limit" "${M9_EVAL_LIMIT}" )
     fi
@@ -1376,6 +1435,12 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
       --kv-select-scope "prompt" \
       --kv-select-min-tokens "${M9_SELECT_MIN_TOKENS}" \
       --kv-scatter-fill "${M9_SCATTER_FILL}" \
+      --wire-format "${M9_WIRE_FORMAT}" \
+      --wire-quant-mode "${M9_WIRE_QUANT_MODE}" \
+      --wire-scale-granularity "${M9_WIRE_SCALE_GRANULARITY}" \
+      --wire-index-dtype "${M9_WIRE_INDEX_DTYPE}" \
+      --wire-scale-dtype "${M9_WIRE_SCALE_DTYPE}" \
+      --wire-compression "${M9_WIRE_COMPRESSION}" \
       --eval-datasets "${M9_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
       --prep-only \
       --run-tag "${RUN_TAG}" \
@@ -1383,7 +1448,7 @@ if [ "${RUN_MILESTONE_9}" = "1" ]; then
     RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
     for DATASET in ${DATASETS}; do
       SLUG="$(dataset_slug "${DATASET}")"
-      KEY="m9|${M9_KV_QUANT_SCHEME}|${M9_EXTRA_LOW_MODE}|${M9_EXTRA_LOW_PROP}|prompt|${M9_SPARSE_FUSE}"
+      KEY="m9|${M9_KV_QUANT_SCHEME}|${M9_EXTRA_LOW_MODE}|${M9_EXTRA_LOW_PROP}|prompt|${M9_SPARSE_FUSE}|${M9_WIRE_FORMAT}|${M9_WIRE_QUANT_MODE}|${M9_WIRE_SCALE_GRANULARITY}|${M9_WIRE_INDEX_DTYPE}|${M9_WIRE_SCALE_DTYPE}|${M9_WIRE_COMPRESSION}|applypack${M9_WIRE_APPLY_PACK}"
       if [ -n "${M9_KEY_SUFFIX}" ]; then
         KEY="${KEY}|${M9_KEY_SUFFIX}"
       fi
@@ -1451,6 +1516,9 @@ if [ "${RUN_MILESTONE_10}" = "1" ]; then
     if [ "${M10_TIMING_SYNC}" = "1" ]; then
       EXTRA_ARGS+=( "--kv-timing-sync" )
     fi
+    if [ "${M10_WIRE_APPLY_PACK}" = "1" ]; then
+      EXTRA_ARGS+=( "--wire-apply-pack" )
+    fi
     if [ -n "${M10_EVAL_LIMIT}" ]; then
       EXTRA_ARGS+=( "--eval-limit" "${M10_EVAL_LIMIT}" )
     fi
@@ -1483,6 +1551,12 @@ if [ "${RUN_MILESTONE_10}" = "1" ]; then
         --token-precision-budget-bytes "${BUDGET}" \
         --token-precision-scope "${M10_SELECT_SCOPE}" \
         --kv-index-dtype-bytes "${M10_INDEX_BYTES}" \
+        --wire-format "${M10_WIRE_FORMAT}" \
+        --wire-quant-mode "${M10_WIRE_QUANT_MODE}" \
+        --wire-scale-granularity "${M10_WIRE_SCALE_GRANULARITY}" \
+        --wire-index-dtype "${M10_WIRE_INDEX_DTYPE}" \
+        --wire-scale-dtype "${M10_WIRE_SCALE_DTYPE}" \
+        --wire-compression "${M10_WIRE_COMPRESSION}" \
         --eval-datasets "${M10_EVAL_DATASETS:-${STEP8_EVAL_DATASETS}}" \
         --prep-only \
         --run-tag "${RUN_TAG}" \
@@ -1490,7 +1564,7 @@ if [ "${RUN_MILESTONE_10}" = "1" ]; then
       RUN_ROOT="${PROJECT_ROOT}/quantization/data/step_8_selective_transfer/${RUN_TAG}"
       for DATASET in ${DATASETS}; do
         SLUG="$(dataset_slug "${DATASET}")"
-        KEY="m10|${M10_KV_QUANT_SCHEME}|${TAG}|${M10_SELECT_SCOPE}"
+        KEY="m10|${M10_KV_QUANT_SCHEME}|${TAG}|${M10_SELECT_SCOPE}|${M10_WIRE_FORMAT}|${M10_WIRE_QUANT_MODE}|${M10_WIRE_SCALE_GRANULARITY}|${M10_WIRE_INDEX_DTYPE}|${M10_WIRE_SCALE_DTYPE}|${M10_WIRE_COMPRESSION}|applypack${M10_WIRE_APPLY_PACK}"
         if [ -n "${M10_KEY_SUFFIX}" ]; then
           KEY="${KEY}|${M10_KEY_SUFFIX}"
         fi
@@ -1499,6 +1573,74 @@ if [ "${RUN_MILESTONE_10}" = "1" ]; then
     done
   done
   git_autopush "m10"
+fi
+
+# =============================================================================
+# Milestone 11: KVWire v1 validation.
+# =============================================================================
+if [ "${RUN_MILESTONE_11}" = "1" ]; then
+  RUN_TAG="step11_kvwire_${RUN_TAG_PREFIX}"
+  "${PYTHON[@]}" quantization/scripts/run_step11_kvwire.py \
+    --mode gpu \
+    --kv-quant-scheme "${M11_KV_QUANT_SCHEME}" \
+    --wire-quant-mode "${M11_WIRE_QUANT_MODE}" \
+    --eval-datasets "${M11_EVAL_DATASETS}" \
+    $( [ "${M11_WIRE_APPLY_PACK}" = "1" ] && echo "--wire-apply-pack" ) \
+    --run-tag "${RUN_TAG}"
+  git_autopush "m11"
+fi
+
+# =============================================================================
+# Milestone 12: Scale + heterogeneity grid.
+# =============================================================================
+if [ "${RUN_MILESTONE_12}" = "1" ]; then
+  "${PYTHON[@]}" quantization/scripts/run_step12_scale_hetero.py \
+    --mode gpu \
+    --grid "${M12_GRID}" \
+    --method "${M12_METHOD}" \
+    --exec-mode "${M12_EXEC_MODE}" \
+    --run-tag-prefix "${RUN_TAG_PREFIX}"
+  git_autopush "m12"
+fi
+
+# =============================================================================
+# Milestone 13: Baselines.
+# =============================================================================
+if [ "${RUN_MILESTONE_13}" = "1" ]; then
+  RUN_TAG="step13_${M13_BASELINE}_${RUN_TAG_PREFIX}"
+  "${PYTHON[@]}" quantization/scripts/run_step13_baselines.py \
+    --mode gpu \
+    --baseline "${M13_BASELINE}" \
+    --text-style "${M13_TEXT_STYLE}" \
+    --budget-bytes "${M13_BUDGET_BYTES}" \
+    --eval-datasets "${M13_EVAL_DATASETS}" \
+    --eval-limit "${M13_EVAL_LIMIT}" \
+    --run-tag "${RUN_TAG}"
+  git_autopush "m13"
+fi
+
+# =============================================================================
+# Milestone 14: Regime map.
+# =============================================================================
+if [ "${RUN_MILESTONE_14}" = "1" ]; then
+  "${PYTHON[@]}" quantization/scripts/run_step14_regime_map.py \
+    --runs-root "${M14_RUNS_ROOT}" \
+    --output-dir "${M14_OUTPUT_DIR}"
+  git_autopush "m14"
+fi
+
+# =============================================================================
+# Milestone 15: Two-round refinement pilot.
+# =============================================================================
+if [ "${RUN_MILESTONE_15}" = "1" ]; then
+  RUN_TAG="step15_pilot_${RUN_TAG_PREFIX}"
+  "${PYTHON[@]}" quantization/scripts/run_step15_refine_pilot.py \
+    --dataset "${M15_DATASET}" \
+    --limit "${M15_LIMIT}" \
+    --budget-round0 "${M15_BUDGET_ROUND0}" \
+    --budget-round1 "${M15_BUDGET_ROUND1}" \
+    --run-tag "${RUN_TAG}"
+  git_autopush "m15"
 fi
 
 echo "Done."
