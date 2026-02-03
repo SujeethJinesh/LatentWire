@@ -1020,6 +1020,26 @@ For every point, record:
 
 ---
 
+### P0 — Plumbing tasks (required before M11)
+
+* [ ] **Add milestone IDs and run scripts**
+  * `run_step11_kvwire.py`, `run_step12_scale_hetero.py`, `run_step13_baselines.py`, `run_step14_regime_map.py`, `run_step15_refine_pilot.py`
+  * Keep naming consistent with existing `stepX_*` conventions.
+* [ ] **Update SLURM launcher**
+  * Add `RUN_MILESTONE_11`...`RUN_MILESTONE_15` and default them off.
+  * Ensure `EVAL_SMOKE` and `SMOKE_LIMIT` flow into these steps.
+* [ ] **Registry key invariants (no collisions)**
+  * Add `wire_format`, `wire_version`, `wire_quant_mode`, `wire_scale_granularity`, `wire_index_dtype`, and (if used) `wire_compression` to the registry key.
+* [ ] **Manifest schema invariants**
+  * Guarantee every new run writes:
+    * `bytes_measured_total`, `bytes_measured_breakdown`
+    * `wire_encode_ms`, `wire_decode_ms`
+    * per-stage timings: `prefill_ms`, `select_ms`, `project_ms`, `fuse_ms`, `end_to_end_ms`
+* [ ] **Per-sample cap rule**
+  * All byte budgets are **per-sample caps** (not dataset-average). Log `budget_cap_bytes`, `budget_actual_bytes`, and `budget_slack_bytes`.
+* [ ] **Compatibility layer**
+  * Update analysis to prefer `bytes_measured_total` when present and fall back to `bytes_estimated_total` / `bytes_estimate`.
+
 # Milestone M11 — KVWire v1 (Measured bytes + correct INT4 packing)
 
 ### Objective
@@ -1033,6 +1053,32 @@ Replace “fake-quant + byte estimates” with **real serialization** and **meas
 * Integration into existing selective-transfer and RD pipelines so all runs emit measured bytes + wire timings.
 
 ### Implementation steps
+
+#### M11-P0 — Wire contract lock
+
+* [ ] Decide whether indices are **absolute** positions or **delta-coded**; document it.
+* [ ] Decide quantization metadata layout (per-head / per-block) and how scales are stored.
+* [ ] Decide whether optional compression is included (keep off by default; add later as ablation).
+
+#### M11-P1 — Blob introspection + debug tooling
+
+* [ ] Add `quantization/scripts/kvwire_inspect.py` that prints:
+  * section sizes (indices/payload/scales/headers)
+  * dtype/shape info
+  * checksums (optional)
+
+#### M11-P2 — Per-sample accounting + slack
+
+* [ ] For each example, log:
+  * `bytes_measured_total`
+  * `bytes_measured_breakdown`
+  * if budgeted: `budget_cap_bytes`, `budget_slack_bytes`
+
+#### M11-P3 — Bridge drift report
+
+* [ ] Add `quantization/scripts/report_byte_drift.py`:
+  * compare old estimate vs KVWire measured bytes on a small sample
+  * output mean/median/p95 drift by method (INT8/INT4/sparse)
 
 #### M11.1 — Implement KVWire v1 serialization
 
@@ -1138,6 +1184,27 @@ Make the paper defensible: results at 7B+ and at least one cross-family pair.
 
 ### Implementation steps
 
+#### M12-P0 — Model/pair configs are first-class artifacts
+
+* [ ] Create `configs/pairs/*.json` and require a `pair_id` in every run.
+* [ ] Log `pair_id` and resolved model IDs into manifests.
+
+#### M12-P1 — Sequential mode as a production feature
+
+* [ ] Implement `--exec-mode sequential|simultaneous` and ensure:
+  * sequential mode saves payloads in `wire_blobs/` with a stable naming scheme
+  * resume works if receiver run crashes (do not recompute sharer)
+
+#### M12-P2 — Hetero instability guard rails
+
+* [ ] Add a hard alignment on/off flag with a default for hetero pairs.
+* [ ] Require a smoke run (N=50) before full eval for any new pair/dataset.
+
+#### M12-P3 — Long-context setup
+
+* [ ] Define exactly how long-context prompts are created (synthetic concat, retrieval chunks, etc.).
+* [ ] Log `context_len_bucket` and actual prompt length stats.
+
 #### M12.1 — Define the evaluation grid (explicit table in repo)
 
 Add a table in the plan + a machine-readable config (JSON/YAML) such as:
@@ -1219,6 +1286,36 @@ Baseline implementations:
 
 ### Implementation steps
 
+#### M13-P0 — Baseline IO contract
+
+* [ ] Every baseline must produce:
+  * `payload` (text string or KVWire blob)
+  * `payload_bytes_measured`
+  * `encode_ms` / `decode_ms` equivalents
+* [ ] The receiver must consume baselines through a single standardized interface:
+  * `apply_payload_to_receiver(example, payload, mode)`
+
+#### M13-P1 — Text baseline must be byte-capped exactly
+
+* [ ] Implement strict enforcement:
+  * count UTF-8 bytes
+  * truncate safely (do not break JSON / tags if you use structured prompts)
+  * log truncation rate
+* [ ] Add at least two text variants:
+  * “teacher hint / short rationale”
+  * “teacher extracted facts”
+
+#### M13-P2 — Compute fairness note
+
+* [ ] Decide and document whether text message generation uses:
+  * the teacher model (recommended) or a fixed heuristic
+* [ ] Log teacher generation settings used for text messages (temperature, max tokens).
+
+#### M13-P3 — Budget matching
+
+* [ ] When plotting “equal bytes,” match by **byte cap** (same cap), not by achieved bytes.
+* [ ] Report slack distribution (median slack, % hitting cap).
+
 #### M13.1 — Text-only baselines (must be fair + byte-accurate)
 
 Create:
@@ -1297,6 +1394,25 @@ A paper-grade result that survives even if gains are modest: a clear map of regi
 
 ### Implementation steps
 
+#### M14-P0 — Define “best method in cell”
+
+* [ ] Decide tie-breakers:
+  * primary: accuracy
+  * secondary: lower bytes or lower latency
+* [ ] Keep this deterministic and log it.
+
+#### M14-P1 — Uncertainty / stability
+
+* [ ] For 2–3 key cells, run:
+  * 2 seeds or 2 shards (bootstrap)
+* [ ] Plot error bars or include a stability table in appendix.
+
+#### M14-P2 — One-click artifact generation
+
+* [ ] Create `make_regime_map.sh` that:
+  * ingests runs root
+  * outputs plots + CSV tables + a single summary markdown
+
 #### M14.1 — Unified result ingestion
 
 Create:
@@ -1369,6 +1485,26 @@ Try a high-upside “new knob” without derailing the core plan. This should ne
   * numeric tasks: self-consistency / verifier-style check if available
 * Count request bytes and latency.
 
+#### M15-P0 — Pilot-only first
+
+* [ ] Implement only for:
+  * 1 model pair
+  * 1 dataset
+  * 2 byte caps
+  * max 2 rounds
+
+#### M15-P1 — Stop criteria defined upfront
+
+* [ ] Use task-structured criteria (MC margin / verifier pass), not generic “confidence.”
+* [ ] Log:
+  * % examples using round 2
+  * bytes added by round 2
+  * net accuracy change at fixed cap
+
+#### M15-P2 — Hard kill-switch
+
+* [ ] If pilot does not improve bytes-to-success or success-at-cap, do not proceed.
+
 ### Full implementation only if pilot succeeds
 
 * Hard cap: 2 rounds
@@ -1383,6 +1519,19 @@ Try a high-upside “new knob” without derailing the core plan. This should ne
 * If not, abandon and do not include except as a short negative appendix note.
 
 ---
+
+# Bridge plan: minimum re-sweep after KVWire
+
+Once M11 lands, do this targeted KVWire calibration sweep:
+
+* [ ] Full-transfer measured bytes at INT8 and INT4 on the primary pair for:
+  * OpenBookQA + ARC-C
+* [ ] One selective-transfer point (e.g., p=0.25) INT8 + INT4
+* [ ] One delta-selection point (e.g., p=0.10) INT8
+* [ ] One RD point (e.g., 1/16 budget) with `{drop,int8}` and `{drop,int4,int8}`
+* [ ] Run `report_byte_drift.py` and decide:
+  * drift small -> keep most legacy curves; upgrade future runs to measured bytes
+  * drift large -> re-run only the most important frontiers (not the entire grid)
 
 # Execution order (recommended)
 
