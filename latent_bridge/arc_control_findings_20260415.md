@@ -66,6 +66,25 @@ The gate-0.25 real-KV row is directionally interesting but not publishable
 evidence yet because the confidence interval still crosses zero and the best
 zero-byte attenuation result is higher overall.
 
+Held-out global-gate check:
+
+- Gate split: `data/arc_challenge_gate_15.jsonl`
+- Eval split: `data/arc_challenge_eval_35.jsonl`
+- Real translated KV gate sweep on the gate split chose gate `0.00`
+  (`0.4000` accuracy); every nonzero real-KV gate was worse.
+- Target attenuation tied at gates `0.00` and `0.05` (`0.4000` accuracy);
+  the smallest nonzero tied gate is `0.05`.
+
+Using the conservative real selected gate `0.00` against nonzero attenuation
+gate `0.05` on the eval split:
+
+| Comparison | Real Acc | Attenuation Acc | Delta | Real-only | Attenuation-only | 95% Bootstrap Delta | McNemar p |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| real gate `0.00` vs attenuation gate `0.05` | `0.4286` | `0.4857` | `-0.0571` | `0` | `2` | `[-0.1429, +0.0000]` | `0.4795` |
+
+This makes the current ARC conclusion stricter: held-out gate selection does
+not select source KV at all for the real translated condition.
+
 ## Interpretation
 
 The current ARC improvement is real as a small paired-split effect, but it is
@@ -86,9 +105,7 @@ This shifts the immediate project goal:
    attenuation" baseline in tables.
 2. Rerun ARC with real translated KV versus zero translated KV on a larger
    split and report paired flips.
-3. Rerun ARC with held-out gate selection, because choosing the best gate on
-   the same 50 examples can still overstate both real and zero-byte controls.
-4. Rerun any old MCQ headline numbers because pre-fix ARC MCQ results used
+3. Rerun any old MCQ headline numbers because pre-fix ARC MCQ results used
    the wrong answer-boundary scoring path.
-5. Continue using GSM8K generation as a separate reasoning check; that path is
+4. Continue using GSM8K generation as a separate reasoning check; that path is
    not affected by the MCQ answer-boundary fix.
