@@ -12,11 +12,12 @@ import time
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar
 
 
 DEFAULT_SOURCE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 DEFAULT_TARGET_MODEL = "Qwen/Qwen3-0.6B"
+NamedSpecT = TypeVar("NamedSpecT")
 
 
 @dataclass(frozen=True)
@@ -168,6 +169,19 @@ def default_eval_specs() -> list[EvalSpec]:
             include_baselines=True,
         ),
     ]
+
+
+def _filter_named_specs(
+    specs: list[NamedSpecT], selected_names: list[str] | None
+) -> list[NamedSpecT]:
+    if not selected_names:
+        return specs
+    wanted = list(dict.fromkeys(selected_names))
+    by_name = {getattr(spec, "name"): spec for spec in specs}
+    missing = [name for name in wanted if name not in by_name]
+    if missing:
+        raise ValueError(f"Unknown spec name(s): {', '.join(missing)}")
+    return [by_name[name] for name in wanted]
 
 
 def run_logged_command(cmd: list[str], log_path: Path, cwd: Path) -> str:
@@ -457,6 +471,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dtype", default="float32", choices=["float32", "float16", "bfloat16"])
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument(
+        "--calibration-specs",
+        nargs="+",
+        default=None,
+        help="Optional list of calibration spec names to run.",
+    )
+    parser.add_argument(
+        "--eval-specs",
+        nargs="+",
+        default=None,
+        help="Optional list of eval spec names to run.",
+    )
+    parser.add_argument(
         "--gate-search-file",
         default=None,
         help="Optional held-out JSONL split used for per-layer gate search before final evaluation.",
@@ -466,6 +492,13 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=30,
         help="Maximum number of held-out examples to use during gate search.",
+    )
+    parser.set_defaults(reuse_checkpoints=True)
+    parser.add_argument(
+        "--no-reuse-checkpoints",
+        dest="reuse_checkpoints",
+        action="store_false",
+        help="Always recalibrate even if a checkpoint already exists.",
     )
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
@@ -482,8 +515,8 @@ def main() -> None:
     logs_dir.mkdir(parents=True, exist_ok=True)
     checkpoints_dir.mkdir(parents=True, exist_ok=True)
 
-    calibration_specs = default_calibration_specs()
-    eval_specs = default_eval_specs()
+    calibration_specs = _filter_named_specs(default_calibration_specs(), args.calibration_specs)
+    eval_specs = _filter_named_specs(default_eval_specs(), args.eval_specs)
 
     plan = {
         "source_model": args.source_model,
@@ -500,6 +533,7 @@ def main() -> None:
         "max_new_tokens": args.max_new_tokens,
         "gate_search_file": args.gate_search_file,
         "gate_search_limit": args.gate_search_limit,
+        "reuse_checkpoints": args.reuse_checkpoints,
         "calibration_specs": [asdict(spec) for spec in calibration_specs],
         "eval_specs": [asdict(spec) for spec in eval_specs],
     }
@@ -550,22 +584,23 @@ def main() -> None:
             break
         checkpoint_path = checkpoints_dir / f"{spec.name}.pt"
         calibrate_log = logs_dir / f"{spec.name}_calibrate.log"
-        calibrate_cmd = build_calibrate_cmd(
-            python_exe=python_exe,
-            repo_root=repo_root,
-            source_model=args.source_model,
-            target_model=args.target_model,
-            calibration_file=args.calibration_file,
-            checkpoint_path=checkpoint_path,
-            bits=args.bits,
-            rotation=args.rotation,
-            alignment=args.alignment,
-            whitening=args.whitening,
-            device=args.device,
-            dtype=args.dtype,
-            spec=spec,
-        )
-        run_logged_command(calibrate_cmd, calibrate_log, repo_root)
+        if not (args.reuse_checkpoints and checkpoint_path.exists() and checkpoint_path.stat().st_size > 0):
+            calibrate_cmd = build_calibrate_cmd(
+                python_exe=python_exe,
+                repo_root=repo_root,
+                source_model=args.source_model,
+                target_model=args.target_model,
+                calibration_file=args.calibration_file,
+                checkpoint_path=checkpoint_path,
+                bits=args.bits,
+                rotation=args.rotation,
+                alignment=args.alignment,
+                whitening=args.whitening,
+                device=args.device,
+                dtype=args.dtype,
+                spec=spec,
+            )
+            run_logged_command(calibrate_cmd, calibrate_log, repo_root)
 
         for eval_spec in eval_specs:
             if time.monotonic() >= deadline:

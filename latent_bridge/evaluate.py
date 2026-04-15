@@ -581,6 +581,13 @@ def _search_per_layer_gates(
     }
 
 
+def _restore_gate_values(
+    translator: RotAlignKVTranslator, gate_values: list[tuple[float, float]]
+) -> None:
+    for layer_idx, (gate_k, gate_v) in enumerate(gate_values):
+        translator.set_layer_gates(layer_idx, alpha_k=gate_k, alpha_v=gate_v)
+
+
 def _mcq_prompt(question: str) -> str:
     return f"Question: {question}\nAnswer:"
 
@@ -1041,10 +1048,13 @@ def main() -> None:
 
     print(f"Loading translator from {args.translator}")
     translator = RotAlignKVTranslator.load(args.translator, map_location=args.device)
+    initial_gate_values = translator.gate_values()
 
     if args.gate_mode == "fixed":
         translator.set_fixed_gates(args.fixed_gate)
-    elif args.gate_mode == "search":
+    search_examples = None
+    search_task_type = None
+    if args.gate_mode == "search":
         if not args.gate_search_file:
             raise ValueError("--gate-search-file is required when --gate-mode search is used")
         search_task_type = infer_task_type(args.gate_search_file)
@@ -1053,28 +1063,6 @@ def main() -> None:
         else:
             search_examples = load_generation(args.gate_search_file)
         search_examples = _limit_examples(search_examples, args.gate_search_limit)
-        print(
-            f"Searching per-layer gates on {len(search_examples)} held-out "
-            f"{search_task_type} examples from {args.gate_search_file}"
-        )
-        search_stats = _search_per_layer_gates(
-            src,
-            tok_s,
-            tgt,
-            tok_t,
-            translator,
-            search_examples,
-            args.device,
-            quantize=not args.no_quantize,
-            protocol="fused",
-            source_reasoning_mode=args.source_reasoning_mode,
-            gate_values=args.gate_values,
-        )
-        print(
-            "Selected gate means: "
-            f"K={sum(search_stats['gate_K']) / max(len(search_stats['gate_K']), 1):.3f}, "
-            f"V={sum(search_stats['gate_V']) / max(len(search_stats['gate_V']), 1):.3f}"
-        )
 
     results: dict[str, float] = {}
     if task_type == "mcq":
@@ -1101,6 +1089,32 @@ def main() -> None:
         if args.gate_mode in {"checkpoint", "search"}:
             gate_values = [None]
         for key, protocol in rotalign_modes:
+            if args.gate_mode == "search":
+                assert search_examples is not None
+                _restore_gate_values(translator, initial_gate_values)
+                print(
+                    f"Searching per-layer gates on {len(search_examples)} held-out "
+                    f"{search_task_type} examples from {args.gate_search_file} "
+                    f"for protocol={protocol}"
+                )
+                search_stats = _search_per_layer_gates(
+                    src,
+                    tok_s,
+                    tgt,
+                    tok_t,
+                    translator,
+                    search_examples,
+                    args.device,
+                    quantize=not args.no_quantize,
+                    protocol=protocol,
+                    source_reasoning_mode=args.source_reasoning_mode,
+                    gate_values=args.gate_values,
+                )
+                print(
+                    "Selected gate means: "
+                    f"K={sum(search_stats['gate_K']) / max(len(search_stats['gate_K']), 1):.3f}, "
+                    f"V={sum(search_stats['gate_V']) / max(len(search_stats['gate_V']), 1):.3f}"
+                )
             for gate in gate_values:
                 if gate is not None:
                     translator.set_fixed_gates(gate)
@@ -1172,6 +1186,32 @@ def main() -> None:
         if args.gate_mode in {"checkpoint", "search"}:
             gate_values = [None]
         for key, protocol in rotalign_modes:
+            if args.gate_mode == "search":
+                assert search_examples is not None
+                _restore_gate_values(translator, initial_gate_values)
+                print(
+                    f"Searching per-layer gates on {len(search_examples)} held-out "
+                    f"{search_task_type} examples from {args.gate_search_file} "
+                    f"for protocol={protocol}"
+                )
+                search_stats = _search_per_layer_gates(
+                    src,
+                    tok_s,
+                    tgt,
+                    tok_t,
+                    translator,
+                    search_examples,
+                    args.device,
+                    quantize=not args.no_quantize,
+                    protocol=protocol,
+                    source_reasoning_mode=args.source_reasoning_mode,
+                    gate_values=args.gate_values,
+                )
+                print(
+                    "Selected gate means: "
+                    f"K={sum(search_stats['gate_K']) / max(len(search_stats['gate_K']), 1):.3f}, "
+                    f"V={sum(search_stats['gate_V']) / max(len(search_stats['gate_V']), 1):.3f}"
+                )
             for gate in gate_values:
                 if gate is not None:
                     translator.set_fixed_gates(gate)

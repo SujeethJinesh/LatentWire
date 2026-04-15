@@ -43,6 +43,29 @@ def test_default_specs_cover_the_control_axes() -> None:
     }
 
 
+def test_filter_named_specs_preserves_requested_order() -> None:
+    specs = control_suite.default_eval_specs()
+    filtered = control_suite._filter_named_specs(
+        specs,
+        ["fused_quant_brief", "baseline_plain", "translated_noquant_brief"],
+    )
+
+    assert [spec.name for spec in filtered] == [
+        "fused_quant_brief",
+        "baseline_plain",
+        "translated_noquant_brief",
+    ]
+
+
+def test_filter_named_specs_rejects_unknown_name() -> None:
+    try:
+        control_suite._filter_named_specs(control_suite.default_eval_specs(), ["missing"])
+    except ValueError as exc:
+        assert "Unknown spec name(s): missing" in str(exc)
+    else:  # pragma: no cover - defensive
+        raise AssertionError("expected ValueError for unknown spec name")
+
+
 def test_build_calibrate_cmd_includes_sparse_pairing_and_seed() -> None:
     spec = control_suite.CalibrationSpec("cka_half_seed1", "cka", 0.5, 1)
     cmd = control_suite.build_calibrate_cmd(
@@ -289,8 +312,11 @@ def test_control_suite_dry_run_writes_plan_and_skips_subprocesses(
             device="cpu",
             dtype="float32",
             max_new_tokens=64,
+            calibration_specs=["ckpt"],
+            eval_specs=["eval"],
             gate_search_file="gate.jsonl",
             gate_search_limit=9,
+            reuse_checkpoints=True,
             dry_run=True,
         ),
     )
@@ -308,4 +334,5 @@ def test_control_suite_dry_run_writes_plan_and_skips_subprocesses(
     assert plan["eval_specs"][0]["source_reasoning_mode"] == "cot"
     assert plan["gate_search_file"] == "gate.jsonl"
     assert plan["gate_search_limit"] == 9
+    assert plan["reuse_checkpoints"] is True
     assert not any((tmp_path / "checkpoints").iterdir())

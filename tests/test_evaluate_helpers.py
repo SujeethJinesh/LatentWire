@@ -313,6 +313,120 @@ def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> No
     assert gate1[1] == pytest.approx(0.0, abs=1e-5)
 
 
+def test_restore_gate_values_restores_each_layer(monkeypatch) -> None:
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.set_layer_gates(0, alpha_k=0.25, alpha_v=0.75)
+    translator.set_layer_gates(1, alpha_k=0.5, alpha_v=0.0)
+
+    evaluate._restore_gate_values(translator, [(0.1, 0.2), (0.3, 0.4)])
+
+    assert translator.gate_value(0) == pytest.approx((0.1, 0.2))
+    assert translator.gate_value(1) == pytest.approx((0.3, 0.4))
+
+
+def test_main_gate_search_uses_protocol_specific_objective(monkeypatch, tmp_path, capsys) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    search_protocols: list[str] = []
+
+    class _Factory:
+        def __init__(self, models):
+            self._models = list(models)
+
+        def from_pretrained(self, *args, **kwargs):
+            return self._models.pop(0)
+
+    monkeypatch.setattr(evaluate, "AutoTokenizer", SimpleNamespace(from_pretrained=lambda *a, **k: tok_s if "src" in a[0] else tok_t))
+    monkeypatch.setattr(evaluate, "AutoModelForCausalLM", _Factory([src, tgt]))
+    monkeypatch.setattr(evaluate.RotAlignKVTranslator, "load", classmethod(lambda cls, path, map_location="cpu": translator))
+    monkeypatch.setattr(evaluate, "infer_task_type", lambda path: "generation")
+    monkeypatch.setattr(evaluate, "load_generation", lambda path: [evaluate.GenerationExample(prompt="q", answers=["a"])])
+
+    def fake_search(
+        source_model,
+        source_tokenizer,
+        target_model,
+        target_tokenizer,
+        translator_obj,
+        examples,
+        device,
+        quantize,
+        protocol,
+        source_reasoning_mode,
+        gate_values,
+    ):
+        search_protocols.append(protocol)
+        return {"gate_K": [0.15, 0.15], "gate_V": [0.25, 0.25]}
+
+    monkeypatch.setattr(evaluate, "_search_per_layer_gates", fake_search)
+    monkeypatch.setattr(
+        evaluate,
+        "_eval_generation_rotalign_with_stats",
+        lambda *args, **kwargs: {
+            "accuracy": 0.2,
+            "bits": 16.0,
+            "bytes": 2.0,
+            "ttft_sec": 0.1,
+            "tokens_per_sec": 10.0,
+            "examples_per_sec": 1.0,
+            "latency_sec": 1.0,
+        },
+    )
+    monkeypatch.setattr(
+        evaluate,
+        "_eval_generation_text_to_text_with_stats",
+        lambda *args, **kwargs: {
+            "accuracy": 0.1,
+            "ttft_sec": 0.1,
+            "tokens_per_sec": 8.0,
+            "examples_per_sec": 1.0,
+            "latency_sec": 1.0,
+        },
+    )
+    monkeypatch.setattr(
+        evaluate,
+        "_eval_generation_target_alone_with_stats",
+        lambda *args, **kwargs: {
+            "accuracy": 0.05,
+            "ttft_sec": 0.1,
+            "tokens_per_sec": 12.0,
+            "examples_per_sec": 1.0,
+            "latency_sec": 1.0,
+        },
+    )
+    monkeypatch.setattr(
+        evaluate,
+        "parse_args",
+        lambda: SimpleNamespace(
+            translator=str(tmp_path / "translator.pt"),
+            source_model="src",
+            target_model="tgt",
+            eval_file=str(tmp_path / "eval.jsonl"),
+            task_type="generation",
+            device="cpu",
+            dtype="float32",
+            max_new_tokens=8,
+            source_reasoning_mode="brief_analysis",
+            no_quantize=False,
+            methods=["target", "t2t", "rotalign_translated"],
+            gate_mode="search",
+            fixed_gate=0.5,
+            gate_values=[0.15, 0.25, 0.30],
+            gate_search_file=str(tmp_path / "dev.jsonl"),
+            gate_search_limit=4,
+        ),
+    )
+
+    evaluate.main()
+
+    assert search_protocols == ["translated_only"]
+    out = capsys.readouterr().out
+    assert "protocol=translated_only" in out
+
+
 def test_eval_helpers_work_with_fakes(monkeypatch) -> None:
     tok_s = FakeTokenizer()
     tok_t = FakeTokenizer()
