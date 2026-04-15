@@ -85,6 +85,17 @@ def parse_summary_metrics(output: str) -> dict[str, float]:
     return metrics
 
 
+def load_existing_records(jsonl_path: Path) -> list[dict[str, Any]]:
+    if not jsonl_path.exists():
+        return []
+    records: list[dict[str, Any]] = []
+    for line in jsonl_path.read_text().splitlines():
+        if not line.strip():
+            continue
+        records.append(json.loads(line))
+    return records
+
+
 def default_calibration_specs() -> list[CalibrationSpec]:
     return [
         CalibrationSpec("interp_full_seed0", "interp", 1.0, 0),
@@ -293,6 +304,10 @@ def build_evaluate_cmd(
         method in {"rotalign", "rotalign_translated", "rotalign_fused", "rotalign_text_kv"}
         for method in methods
     )
+    uses_gate_dependent_rotalign = any(
+        method in {"rotalign", "rotalign_fused", "rotalign_text_kv"}
+        for method in methods
+    )
     cmd = [
         python_exe,
         str(repo_root / "scripts" / "evaluate.py"),
@@ -317,7 +332,7 @@ def build_evaluate_cmd(
         "--methods",
         *methods,
     ]
-    if uses_rotalign and gate_search_file:
+    if uses_gate_dependent_rotalign and gate_search_file:
         cmd.extend(
             [
                 "--gate-mode",
@@ -328,11 +343,11 @@ def build_evaluate_cmd(
                 str(gate_search_limit),
             ]
         )
-    elif uses_rotalign:
+    elif uses_gate_dependent_rotalign:
         cmd.extend(["--gate-mode", "sweep"])
     else:
         cmd.extend(["--gate-mode", "checkpoint"])
-    if uses_rotalign and spec.gate_values:
+    if uses_gate_dependent_rotalign and spec.gate_values:
         cmd.extend(["--gate-values", *[str(v) for v in spec.gate_values]])
     if not spec.quantize:
         cmd.append("--no-quantize")
@@ -577,7 +592,11 @@ def main() -> None:
 
     started = time.monotonic()
     deadline = started + args.budget_hours * 60 * 60
-    records: list[dict[str, Any]] = []
+    records = load_existing_records(results_dir / "suite_results.jsonl")
+    completed = {
+        (record.get("checkpoint_tag"), record.get("eval_name"))
+        for record in records
+    }
 
     for spec in calibration_specs:
         if time.monotonic() >= deadline:
@@ -605,6 +624,9 @@ def main() -> None:
         for eval_spec in eval_specs:
             if time.monotonic() >= deadline:
                 break
+            record_key = (spec.name, eval_spec.name)
+            if record_key in completed:
+                continue
             eval_log = logs_dir / f"{spec.name}_{eval_spec.name}.log"
             eval_cmd = build_evaluate_cmd(
                 python_exe=python_exe,
@@ -659,6 +681,7 @@ def main() -> None:
                 "metrics": metrics,
             }
             records.append(record)
+            completed.add(record_key)
             write_summary(records, results_dir)
 
 

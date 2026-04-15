@@ -189,6 +189,42 @@ def test_build_evaluate_cmd_uses_held_out_gate_search_when_requested() -> None:
     ]
 
 
+def test_build_evaluate_cmd_skips_noop_gate_search_for_translated_only() -> None:
+    spec = control_suite.EvalSpec(
+        name="translated_noquant_brief",
+        methods=("rotalign_translated",),
+        gate_values=(0.15, 0.25, 0.30),
+        quantize=False,
+        source_reasoning_mode="brief_analysis",
+        include_baselines=True,
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file="gate.jsonl",
+        gate_search_limit=12,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--gate-mode") + 1] == "checkpoint"
+    assert "--gate-search-file" not in cmd
+    assert "--gate-values" not in cmd
+    methods_index = cmd.index("--methods")
+    assert cmd[methods_index + 1 : methods_index + 4] == [
+        "target",
+        "t2t",
+        "rotalign_translated",
+    ]
+
+
 def test_best_metric_for_eval_ignores_system_metrics_and_picks_best_result() -> None:
     metrics = {
         "target_alone": 0.12,
@@ -263,6 +299,23 @@ def test_best_metric_for_eval_can_rank_baselines_with_evaluate_metric_names() ->
 
     assert best_metric == "text_to_text"
     assert best_value == 0.41
+
+
+def test_load_existing_records_reads_jsonl_rows(tmp_path) -> None:
+    jsonl_path = tmp_path / "suite_results.jsonl"
+    jsonl_path.write_text(
+        '{"checkpoint_tag":"ckpt","eval_name":"a"}\n'
+        "\n"
+        '{"checkpoint_tag":"ckpt","eval_name":"b"}\n',
+        encoding="utf-8",
+    )
+
+    records = control_suite.load_existing_records(jsonl_path)
+
+    assert [(record["checkpoint_tag"], record["eval_name"]) for record in records] == [
+        ("ckpt", "a"),
+        ("ckpt", "b"),
+    ]
 
 
 def test_control_suite_dry_run_writes_plan_and_skips_subprocesses(
