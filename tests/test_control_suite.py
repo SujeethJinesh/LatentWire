@@ -50,6 +50,8 @@ def test_default_specs_cover_the_control_axes() -> None:
         "fused_quant_random_kv_brief",
         "fused_quant_shuffle_kv_brief",
         "fused_quant_zero_kv_brief",
+        "fused_quant_zero_translated_brief",
+        "fused_quant_random_translated_brief",
     ]
     assert all(spec.include_baselines for spec in eval_specs)
     assert {spec.source_reasoning_mode for spec in eval_specs} == {
@@ -303,6 +305,34 @@ def test_build_evaluate_cmd_adds_quantization_control() -> None:
     )
 
     assert cmd[cmd.index("--quantization-control") + 1] == "matched_noise"
+
+
+def test_build_evaluate_cmd_adds_translated_kv_control() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_zero_translated_brief",
+        methods=("rotalign",),
+        gate_values=(0.15,),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        translated_kv_control="zero",
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="mcq",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file=None,
+        gate_search_limit=12,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--translated-kv-control") + 1] == "zero"
 
 
 def test_best_metric_for_eval_ignores_system_metrics_and_picks_best_result() -> None:

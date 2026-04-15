@@ -374,8 +374,19 @@ class RotAlignKVTranslator(nn.Module):
                 K_t_rot = K_q
                 V_t_rot = V_q
             elif quantization_control == "matched_noise":
-                K_t_rot = K_t_rot + torch.randn_like(K_t_rot) * (K_q - K_t_rot).std().clamp_min(1e-8)
-                V_t_rot = V_t_rot + torch.randn_like(V_t_rot) * (V_q - V_t_rot).std().clamp_min(1e-8)
+                def add_matched_noise(x: torch.Tensor, q: torch.Tensor, salt: int) -> torch.Tensor:
+                    err = (q - x).detach().float()
+                    mean = float(err.mean().detach().cpu())
+                    std = float(err.std().clamp_min(1e-8).detach().cpu())
+                    gen = torch.Generator(device="cpu").manual_seed(
+                        91_000 + int(self.config.seed) * 1_009 + int(tgt_layer_idx) * 31 + salt
+                    )
+                    noise = torch.randn(x.shape, generator=gen, dtype=torch.float32)
+                    noise = (noise * std + mean).to(device=x.device, dtype=x.dtype)
+                    return x + noise
+
+                K_t_rot = add_matched_noise(K_t_rot, K_q, salt=0)
+                V_t_rot = add_matched_noise(V_t_rot, V_q, salt=1)
             else:
                 raise ValueError(f"Unknown quantization_control: {quantization_control}")
 

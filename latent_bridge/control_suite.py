@@ -43,6 +43,7 @@ class EvalSpec:
     include_baselines: bool = False
     source_kv_control: str = "real"
     quantization_control: str = "real"
+    translated_kv_control: str = "real"
 
 
 def default_device() -> str:
@@ -233,6 +234,24 @@ def default_eval_specs() -> list[EvalSpec]:
             include_baselines=True,
             source_kv_control="zero",
         ),
+        EvalSpec(
+            name="fused_quant_zero_translated_brief",
+            methods=("rotalign",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            translated_kv_control="zero",
+        ),
+        EvalSpec(
+            name="fused_quant_random_translated_brief",
+            methods=("rotalign",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            translated_kv_control="random",
+        ),
     ]
 
 
@@ -414,6 +433,8 @@ def build_evaluate_cmd(
         cmd.extend(["--source-kv-control", spec.source_kv_control])
     if uses_rotalign and spec.quantization_control != "real":
         cmd.extend(["--quantization-control", spec.quantization_control])
+    if uses_rotalign and spec.translated_kv_control != "real":
+        cmd.extend(["--translated-kv-control", spec.translated_kv_control])
     if not spec.quantize:
         cmd.append("--no-quantize")
     if prediction_output is not None:
@@ -440,6 +461,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "source_reasoning_mode",
         "source_kv_control",
         "quantization_control",
+        "translated_kv_control",
         "quantize",
         "target_alone",
         "text_to_text",
@@ -473,6 +495,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "source_reasoning_mode": record["source_reasoning_mode"],
                     "source_kv_control": record["source_kv_control"],
                     "quantization_control": record.get("quantization_control", "real"),
+                    "translated_kv_control": record.get("translated_kv_control", "real"),
                     "quantize": record["quantize"],
                     "target_alone": record.get("target_alone"),
                     "text_to_text": record.get("text_to_text"),
@@ -772,6 +795,7 @@ def main() -> None:
                 "source_reasoning_mode": eval_spec.source_reasoning_mode,
                 "source_kv_control": eval_spec.source_kv_control,
                 "quantization_control": eval_spec.quantization_control,
+                "translated_kv_control": eval_spec.translated_kv_control,
                 "quantize": eval_spec.quantize,
                 "methods": list(eval_spec.methods),
                 "gate_values": list(eval_spec.gate_values),

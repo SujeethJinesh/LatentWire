@@ -211,9 +211,11 @@ For the rotation ablation, sweep `--rotation` across `identity`, `orthogonal`,
 whitening ablation, toggle `--whitening`. For pairing / sparsity / protocol
 ablations, sweep `--layer-pairing`, `--layer-selection-*`, `--gate-*`, and
 the `rotalign_*` evaluate modes. Use `--source-kv-control` for random/zero/
-shuffled-source negative controls and `--quantization-control matched_noise`
-to separate true discretization from noise smoothing. Use `--no-quantize` as
-the full-precision anchor before comparing 4-bit and lower-bit runs.
+shuffled-source negative controls, `--translated-kv-control` for stricter
+post-translation target-space controls, and `--quantization-control
+matched_noise` to separate true discretization from noise smoothing. Use
+`--no-quantize` as the full-precision anchor before comparing 4-bit and
+lower-bit runs.
 
 ## For the paper: what to run in what order
 

@@ -293,7 +293,8 @@ def score_with_injected_kv(
 
 
 def _score_mcq_with_prefix_state(model, tokenizer, prefix_state: PrefixState, choice: str, device: str) -> float:
-    continuation_ids = tokenizer(choice, return_tensors="pt").input_ids.to(device)
+    # Match `score_choice_loglik`, which evaluates "context + space + choice".
+    continuation_ids = tokenizer(" " + choice, return_tensors="pt").input_ids.to(device)
     return _logprob_tokens_from_prefix_state(model, prefix_state, continuation_ids, device)
 
 
@@ -545,6 +546,36 @@ def _apply_source_kv_control(
     raise ValueError(f"Unknown source_kv_control: {mode}")
 
 
+def _apply_translated_kv_control(
+    K_hat: torch.Tensor,
+    V_hat: torch.Tensor,
+    mode: str,
+    layer_idx: int,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Negative controls applied after translation into target KV space."""
+    if mode == "real":
+        return K_hat, V_hat
+    if mode == "zero":
+        return torch.zeros_like(K_hat), torch.zeros_like(V_hat)
+    if mode == "shuffle_positions":
+        if K_hat.shape[2] <= 1:
+            return K_hat, V_hat
+        return K_hat.flip(dims=[2]), V_hat.flip(dims=[2])
+    if mode == "random":
+        gen = torch.Generator(device="cpu").manual_seed(27_217 + int(layer_idx))
+
+        def matched_noise(x: torch.Tensor) -> torch.Tensor:
+            x_cpu = x.detach().to("cpu", dtype=torch.float32)
+            noise = torch.randn(x_cpu.shape, generator=gen, dtype=torch.float32)
+            return (noise * x_cpu.std().clamp_min(1e-6) + x_cpu.mean()).to(
+                device=x.device,
+                dtype=x.dtype,
+            )
+
+        return matched_noise(K_hat), matched_noise(V_hat)
+    raise ValueError(f"Unknown translated_kv_control: {mode}")
+
+
 def _translated_bits(translator: RotAlignKVTranslator, seq_len: int, quantize: bool) -> float:
     d_t = translator.config.tgt_num_heads * translator.config.tgt_head_dim
     selected_layers = max(1, len(translator.selected_layer_indices()))
@@ -569,6 +600,7 @@ def _build_rotalign_prefix_state(
     protocol: str,
     source_kv_control: str = "real",
     quantization_control: str = "real",
+    translated_kv_control: str = "real",
 ) -> tuple[PrefixState, dict[str, float]]:
     tgt_prompt_ids = target_tokenizer(target_prompt, return_tensors="pt").input_ids.to(device)
     tgt_prefix_ids, tgt_last_token = _split_prompt_prefix(tgt_prompt_ids)
@@ -605,6 +637,12 @@ def _build_rotalign_prefix_state(
             tgt_layer_idx=tgt_l,
             quantize=quantize,
             quantization_control=quantization_control,
+        )
+        K_hat, V_hat = _apply_translated_kv_control(
+            K_hat,
+            V_hat,
+            translated_kv_control,
+            tgt_l,
         )
         K_t_aligned, K_hat = _tail_align_pair(K_t, K_hat.to(dtype=K_t.dtype))
         V_t_aligned, V_hat = _tail_align_pair(V_t, V_hat.to(dtype=V_t.dtype))
@@ -651,6 +689,7 @@ def _search_per_layer_gates(
     gate_values: list[float],
     source_kv_control: str = "real",
     quantization_control: str = "real",
+    translated_kv_control: str = "real",
 ) -> dict[str, list[float]]:
     """Coordinate-descent line search over per-layer K/V fusion gates.
 
@@ -683,6 +722,7 @@ def _search_per_layer_gates(
                 source_reasoning_mode=source_reasoning_mode,
                 source_kv_control=source_kv_control,
                 quantization_control=quantization_control,
+                translated_kv_control=translated_kv_control,
             )[0]
         return eval_rotalign_kv(
             source_model,
@@ -697,6 +737,7 @@ def _search_per_layer_gates(
             source_reasoning_mode=source_reasoning_mode,
             source_kv_control=source_kv_control,
             quantization_control=quantization_control,
+            translated_kv_control=translated_kv_control,
         )
 
     for tgt_layer_idx in layer_indices:
@@ -915,6 +956,7 @@ def eval_rotalign_kv(
     source_reasoning_mode: str = "brief_analysis",
     source_kv_control: str = "real",
     quantization_control: str = "real",
+    translated_kv_control: str = "real",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> float:
@@ -936,6 +978,7 @@ def eval_rotalign_kv(
             protocol,
             source_kv_control,
             quantization_control,
+            translated_kv_control,
         )
         scores = [
             _score_mcq_with_prefix_state(target_model, target_tokenizer, prefix_state, c, device)
@@ -954,6 +997,7 @@ def eval_rotalign_kv(
                 "protocol": protocol,
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
+                "translated_kv_control": translated_kv_control,
             },
         )
         if is_correct:
@@ -1111,6 +1155,7 @@ def _eval_generation_rotalign(
     source_reasoning_mode: str = "brief_analysis",
     source_kv_control: str = "real",
     quantization_control: str = "real",
+    translated_kv_control: str = "real",
 ) -> tuple[float, float, float]:
     stats = _eval_generation_rotalign_with_stats(
         source_model,
@@ -1126,6 +1171,7 @@ def _eval_generation_rotalign(
         source_reasoning_mode,
         source_kv_control,
         quantization_control,
+        translated_kv_control,
     )
     return stats["accuracy"], stats["bits"], stats["latency_sec"]
 
@@ -1144,6 +1190,7 @@ def _eval_generation_rotalign_with_stats(
     source_reasoning_mode: str = "brief_analysis",
     source_kv_control: str = "real",
     quantization_control: str = "real",
+    translated_kv_control: str = "real",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> dict[str, float]:
@@ -1180,6 +1227,7 @@ def _eval_generation_rotalign_with_stats(
             protocol,
             source_kv_control,
             quantization_control,
+            translated_kv_control,
         )
         trace = _greedy_generate_with_stats(
             target_model,
@@ -1202,6 +1250,7 @@ def _eval_generation_rotalign_with_stats(
                 "protocol": protocol,
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
+                "translated_kv_control": translated_kv_control,
                 "bits": stats["bits"],
                 "generated_tokens": trace.num_generated_tokens,
             },
@@ -1251,6 +1300,12 @@ def parse_args() -> argparse.Namespace:
         choices=["real", "matched_noise"],
         default="real",
         help="Use real quantize/dequantize or inject matched Gaussian noise instead.",
+    )
+    p.add_argument(
+        "--translated-kv-control",
+        choices=["real", "zero", "random", "shuffle_positions"],
+        default="real",
+        help="Negative-control perturbation applied after translation into target KV space.",
     )
     p.add_argument(
         "--methods",
@@ -1391,6 +1446,7 @@ def main() -> None:
                     gate_values=args.gate_values,
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
+                    translated_kv_control=args.translated_kv_control,
                 )
                 print(
                     "Selected gate means: "
@@ -1415,6 +1471,7 @@ def main() -> None:
                     source_reasoning_mode=args.source_reasoning_mode,
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
+                    translated_kv_control=args.translated_kv_control,
                     records=prediction_records,
                     method_name=metric_key,
                 )
@@ -1495,6 +1552,7 @@ def main() -> None:
                     gate_values=args.gate_values,
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
+                    translated_kv_control=args.translated_kv_control,
                 )
                 print(
                     "Selected gate means: "
@@ -1519,6 +1577,7 @@ def main() -> None:
                     source_reasoning_mode=args.source_reasoning_mode,
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
+                    translated_kv_control=args.translated_kv_control,
                     records=prediction_records,
                     method_name=metric_key,
                 )

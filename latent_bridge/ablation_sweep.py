@@ -107,6 +107,13 @@ def parse_args() -> argparse.Namespace:
         choices=["real", "matched_noise"],
         help="Use true quantization or matched-noise control in the quantized path.",
     )
+    p.add_argument(
+        "--translated-kv-controls",
+        nargs="+",
+        default=["real"],
+        choices=["real", "zero", "random", "shuffle_positions"],
+        help="Target-space translated KV controls evaluated after translation.",
+    )
     p.add_argument("--device", default=default_device())
     p.add_argument("--dtype", default="float32")
     return p.parse_args()
@@ -168,6 +175,7 @@ def main() -> None:
             quantize_modes,
             getattr(args, "source_kv_controls", ["real"]),
             getattr(args, "quantization_controls", ["real"]),
+            getattr(args, "translated_kv_controls", ["real"]),
         )
     )
     print(f"Running {len(combos)} configurations...")
@@ -186,6 +194,7 @@ def main() -> None:
             quantize_mode,
             source_kv_control,
             quantization_control,
+            translated_kv_control,
         ) in enumerate(combos):
             tag = (
                 f"rot{rotation}_align{alignment}_bits{bits}_w{whiten}"
@@ -193,6 +202,7 @@ def main() -> None:
                 f"_reason{source_reasoning_mode}_proto{protocol}"
                 f"_q{quantize_mode}"
                 f"_srcctrl{source_kv_control}_qctrl{quantization_control}"
+                f"_tgtctrl{translated_kv_control}"
             )
             ckpt = ckpt_dir / f"{tag}.pt"
             start = time.time()
@@ -252,6 +262,8 @@ def main() -> None:
                 eval_cmd.extend(["--source-kv-control", source_kv_control])
             if quantization_control != "real":
                 eval_cmd.extend(["--quantization-control", quantization_control])
+            if translated_kv_control != "real":
+                eval_cmd.extend(["--translated-kv-control", translated_kv_control])
             try:
                 output = run_cmd(eval_cmd)
             except RuntimeError:
@@ -274,6 +286,7 @@ def main() -> None:
                 "quantize_mode": quantize_mode,
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
+                "translated_kv_control": translated_kv_control,
                 "gate_mode": getattr(args, "gate_mode", "fixed"),
                 "gate_values": getattr(args, "gate_values", [0.5]),
                 "elapsed_sec": round(elapsed, 1),

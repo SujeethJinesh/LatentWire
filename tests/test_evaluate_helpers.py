@@ -194,6 +194,26 @@ def test_score_helpers_rank_the_preferred_choice() -> None:
     assert score_a > score_b
 
 
+def test_prefix_mcq_scoring_matches_space_prefixed_choice_boundary() -> None:
+    class SpyTokenizer(FakeTokenizer):
+        def __init__(self) -> None:
+            super().__init__()
+            self.calls: list[str] = []
+
+        def __call__(self, text, return_tensors="pt", **kwargs):
+            if isinstance(text, str):
+                self.calls.append(text)
+            return super().__call__(text, return_tensors=return_tensors, **kwargs)
+
+    tok = SpyTokenizer()
+    model = FakeCausalLM(preferred_token_id=4)
+    prefix = evaluate.PrefixState(None, torch.tensor([[3]], dtype=torch.long), 1)
+
+    evaluate._score_mcq_with_prefix_state(model, tok, prefix, "A", "cpu")
+
+    assert tok.calls[-1] == " A"
+
+
 def test_score_with_injected_kv_passes_cache_and_attention_mask() -> None:
     tok = FakeTokenizer()
     model = FakeCausalLM()
@@ -249,6 +269,8 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "shuffle_positions",
             "--quantization-control",
             "matched_noise",
+            "--translated-kv-control",
+            "zero",
         ],
     )
 
@@ -258,6 +280,7 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.gate_search_limit == 8
     assert args.source_kv_control == "shuffle_positions"
     assert args.quantization_control == "matched_noise"
+    assert args.translated_kv_control == "zero"
 
 
 def test_source_kv_controls_are_negative_controls() -> None:
@@ -273,6 +296,24 @@ def test_source_kv_controls_are_negative_controls() -> None:
     assert torch.equal(V_flip, V.flip(dims=[2]))
 
     K_rand, V_rand = evaluate._apply_source_kv_control(K, V, "random", 0)
+    assert K_rand.shape == K.shape
+    assert V_rand.shape == V.shape
+    assert not torch.equal(K_rand, K)
+
+
+def test_translated_kv_controls_are_target_space_controls() -> None:
+    K = torch.arange(12, dtype=torch.float32).view(1, 2, 3, 2)
+    V = K + 100.0
+
+    K_zero, V_zero = evaluate._apply_translated_kv_control(K, V, "zero", 0)
+    assert torch.equal(K_zero, torch.zeros_like(K))
+    assert torch.equal(V_zero, torch.zeros_like(V))
+
+    K_flip, V_flip = evaluate._apply_translated_kv_control(K, V, "shuffle_positions", 0)
+    assert torch.equal(K_flip, K.flip(dims=[2]))
+    assert torch.equal(V_flip, V.flip(dims=[2]))
+
+    K_rand, V_rand = evaluate._apply_translated_kv_control(K, V, "random", 0)
     assert K_rand.shape == K.shape
     assert V_rand.shape == V.shape
     assert not torch.equal(K_rand, K)
@@ -322,6 +363,7 @@ def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> No
         source_reasoning_mode="brief_analysis",
         source_kv_control="real",
         quantization_control="real",
+        translated_kv_control="real",
         records=None,
         method_name="rotalign_kv",
     ) -> float:
@@ -382,6 +424,7 @@ def test_search_per_layer_gates_uses_generation_objective_for_generation_example
         source_reasoning_mode="brief_analysis",
         source_kv_control="real",
         quantization_control="real",
+        translated_kv_control="real",
     ):
         calls.append(protocol)
         return (0.25, 16.0, 1.0)
@@ -458,6 +501,7 @@ def test_main_gate_search_uses_protocol_specific_objective(monkeypatch, tmp_path
         gate_values,
         source_kv_control="real",
         quantization_control="real",
+        translated_kv_control="real",
     ):
         search_protocols.append(protocol)
         return {"gate_K": [0.15, 0.15], "gate_V": [0.25, 0.25]}
@@ -520,6 +564,7 @@ def test_main_gate_search_uses_protocol_specific_objective(monkeypatch, tmp_path
             gate_search_limit=4,
             source_kv_control="real",
             quantization_control="real",
+            translated_kv_control="real",
             prediction_output=None,
         ),
     )
@@ -635,6 +680,7 @@ def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
         protocol,
         source_kv_control="real",
         quantization_control="real",
+        translated_kv_control="real",
     ):
         captured["source_prompt"] = source_prompt
         captured["target_prompt"] = target_prompt
@@ -658,6 +704,7 @@ def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
         source_reasoning_mode="scratchpad",
         source_kv_control="real",
         quantization_control="real",
+        translated_kv_control="real",
     )
 
     assert score == 1.0
@@ -687,6 +734,7 @@ def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
         protocol,
         source_kv_control="real",
         quantization_control="real",
+        translated_kv_control="real",
     ):
         return evaluate.PrefixState(None, torch.tensor([[2]], dtype=torch.long), 1), {"bits": 32.0}
 

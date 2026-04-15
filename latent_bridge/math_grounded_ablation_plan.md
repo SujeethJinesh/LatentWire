@@ -72,6 +72,9 @@ Implemented now:
 
 - `fused_quant_noise_brief` runs `--quantization-control matched_noise`.
 - `bits2_`, `bits3_`, `bits6_`, and `bits8_` calibration specs bracket the current 4-bit default.
+- `fused_quant_zero_translated_brief` and `fused_quant_random_translated_brief`
+  test whether the gain remains when target-space translated KVs are removed or
+  replaced after translation.
 
 ## Linear-Algebra Structure Ablations
 
