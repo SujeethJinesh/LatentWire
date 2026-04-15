@@ -31,6 +31,15 @@ All rows use Qwen2.5-0.5B-Instruct as source, Qwen3-0.6B as target, and
 | Zero translated KV | `0.4857` | `0.05` / `0.10` | Target-cache attenuation helps |
 | Real translated KV | `0.4857` | `0.05` / `0.20` / `0.25` | No gain beyond zero-translated control |
 
+Quick check on `data/arc_challenge_50.jsonl`:
+
+- Target-alone: `0.4200`
+- Real translated KV: best `0.4400`
+- Zero translated KV: best `0.4600`
+
+This larger-but-still-small check points in the same direction: target-only
+attenuation is at least as strong as real source-KV transfer.
+
 ## Interpretation
 
 The current ARC improvement is real as a small paired-split effect, but it is
