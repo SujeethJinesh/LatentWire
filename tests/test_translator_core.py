@@ -11,6 +11,7 @@ from latent_bridge import (
     apply_rotation,
     fit_alignment,
     hadamard_matrix,
+    dct_matrix,
     make_rotation,
     random_orthogonal,
 )
@@ -26,6 +27,11 @@ class _TinyQuantizer:
 
     def to(self, *args, **kwargs):
         return self
+
+
+class _OffsetQuantizer(_TinyQuantizer):
+    def quantize_dequantize(self, x: torch.Tensor) -> torch.Tensor:
+        return x + 0.25
 
 
 def _make_identity_translator(monkeypatch, *, src_layers: int = 1, tgt_layers: int = 1) -> RotAlignKVTranslator:
@@ -56,11 +62,14 @@ def _make_identity_translator(monkeypatch, *, src_layers: int = 1, tgt_layers: i
 def test_rotation_helpers_are_orthogonal() -> None:
     R = random_orthogonal(4, seed=123)
     H = hadamard_matrix(4, seed=123)
+    D = dct_matrix(4, seed=123)
 
     assert R.shape == (4, 4)
     assert H.shape == (4, 4)
+    assert D.shape == (4, 4)
     assert torch.allclose(R.T @ R, torch.eye(4), atol=1e-5, rtol=1e-5)
     assert torch.allclose(H.T @ H, torch.eye(4), atol=1e-5, rtol=1e-5)
+    assert torch.allclose(D.T @ D, torch.eye(4), atol=1e-5, rtol=1e-5)
 
     x = torch.randn(2, 3, 4)
     y = apply_rotation(x, R)
@@ -69,6 +78,7 @@ def test_rotation_helpers_are_orthogonal() -> None:
     # `make_rotation` should dispatch to the same shapes for the supported kinds.
     assert make_rotation(4, kind="orthogonal", seed=0).shape == (4, 4)
     assert make_rotation(4, kind="hadamard", seed=0).shape == (4, 4)
+    assert make_rotation(4, kind="dct", seed=0).shape == (4, 4)
 
 
 def test_fit_alignment_and_quality_match_a_known_linear_map() -> None:
@@ -123,6 +133,27 @@ def test_translate_fuse_and_roundtrip_checkpointing(monkeypatch, tmp_path) -> No
     assert torch.equal(loaded.W_K[0], tr.W_K[0])
 
 
+def test_matched_noise_quantization_control_keeps_shape(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    tr.quantizer = _OffsetQuantizer(bits=2)
+    K = torch.zeros(1, 2, 3, 2)
+    V = torch.ones(1, 2, 3, 2)
+
+    K_real, V_real = tr.translate_layer(K, V, tgt_layer_idx=0, quantize=True, quantization_control="real")
+    K_noise, V_noise = tr.translate_layer(
+        K,
+        V,
+        tgt_layer_idx=0,
+        quantize=True,
+        quantization_control="matched_noise",
+    )
+
+    assert K_real.shape == K_noise.shape == K.shape
+    assert V_real.shape == V_noise.shape == V.shape
+    assert torch.allclose(K_real, torch.full_like(K, 0.25))
+    assert torch.allclose(V_real, torch.full_like(V, 1.25))
+
+
 def test_layer_pairing_interpolation_and_explicit_lists(monkeypatch) -> None:
     tr = _make_identity_translator(monkeypatch, src_layers=3, tgt_layers=5)
     assert tr.layer_map == [0, 1, 1, 2, 2]
@@ -140,6 +171,30 @@ def test_layer_pairing_interpolation_and_explicit_lists(monkeypatch) -> None:
     monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
     tr2 = RotAlignKVTranslator(cfg)
     assert tr2.layer_map == [2, 0, 1]
+
+    shifted_cfg = TranslatorConfig(
+        src_head_dim=2,
+        src_num_heads=2,
+        num_src_layers=3,
+        tgt_head_dim=2,
+        tgt_num_heads=2,
+        num_tgt_layers=5,
+        layer_pairing="shifted",
+    )
+    shifted = RotAlignKVTranslator(shifted_cfg)
+    assert shifted.layer_map == [1, 2, 2, 0, 0]
+
+    reverse_cfg = TranslatorConfig(
+        src_head_dim=2,
+        src_num_heads=2,
+        num_src_layers=3,
+        tgt_head_dim=2,
+        tgt_num_heads=2,
+        num_tgt_layers=5,
+        layer_pairing="reverse",
+    )
+    reverse = RotAlignKVTranslator(reverse_cfg)
+    assert reverse.layer_map == [2, 1, 1, 0, 0]
 
 
 def test_layer_selection_and_fixed_gate_helpers(monkeypatch) -> None:

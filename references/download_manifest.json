@@ -1,0 +1,488 @@
+[
+  {
+    "num": 1,
+    "slug": "cache_to_cache_c2c",
+    "url": "https://arxiv.org/pdf/2510.03215.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/01_cache_to_cache_c2c.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1056870
+  },
+  {
+    "num": 2,
+    "slug": "kvcomm",
+    "url": "https://arxiv.org/pdf/2510.03346.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/02_kvcomm.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 4445040
+  },
+  {
+    "num": 3,
+    "slug": "latent_space_communication_via_kv_cache_alignment",
+    "url": "https://arxiv.org/pdf/2601.06123.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/03_latent_space_communication_via_kv_cache_alignment.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1598465
+  },
+  {
+    "num": 4,
+    "slug": "communicating_activations_between_language_model_agents",
+    "url": "https://arxiv.org/pdf/2501.14082.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/04_communicating_activations_between_language_model_agents.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 4711535
+  },
+  {
+    "num": 5,
+    "slug": "interlat",
+    "url": "https://arxiv.org/pdf/2511.09149.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/05_interlat.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 11151704
+  },
+  {
+    "num": 6,
+    "slug": "latentmas",
+    "url": "https://arxiv.org/pdf/2511.20639.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/06_latentmas.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2908616
+  },
+  {
+    "num": 7,
+    "slug": "semalign_beyond_neural_incompatibility",
+    "url": "https://arxiv.org/pdf/2510.24208.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/07_semalign_beyond_neural_incompatibility.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 5691268
+  },
+  {
+    "num": 8,
+    "slug": "direct_semantic_communication_via_vector_translation",
+    "url": "https://arxiv.org/pdf/2511.03945.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/08_direct_semantic_communication_via_vector_translation.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 420322
+  },
+  {
+    "num": 9,
+    "slug": "state_delta_encoding_sde",
+    "url": "https://aclanthology.org/2025.emnlp-main.518.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/09_state_delta_encoding_sde.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 634705
+  },
+  {
+    "num": 10,
+    "slug": "let_models_speak_ciphers",
+    "url": "https://arxiv.org/pdf/2310.06272.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/10_let_models_speak_ciphers.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 5145500
+  },
+  {
+    "num": 11,
+    "slug": "platonic_representation_hypothesis",
+    "url": "https://arxiv.org/pdf/2405.07987.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/11_platonic_representation_hypothesis.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 3268833
+  },
+  {
+    "num": 12,
+    "slug": "vec2vec_universal_geometry_of_embeddings",
+    "url": "https://arxiv.org/pdf/2505.12540.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/12_vec2vec_universal_geometry_of_embeddings.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2896167
+  },
+  {
+    "num": 13,
+    "slug": "relative_representations_enable_zero_shot_latent_space_communication",
+    "url": "https://arxiv.org/pdf/2209.15430.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/13_relative_representations_enable_zero_shot_latent_space_communication.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 11413934
+  },
+  {
+    "num": 14,
+    "slug": "cross_model_transferability_on_platonic_representations_of_concepts",
+    "url": "https://arxiv.org/pdf/2501.02009.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/14_cross_model_transferability_on_platonic_representations_of_concepts.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2799229
+  },
+  {
+    "num": 15,
+    "slug": "turboquant",
+    "url": "https://arxiv.org/pdf/2504.19874.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/15_turboquant.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 861881
+  },
+  {
+    "num": 16,
+    "slug": "quip_sharp",
+    "url": "https://arxiv.org/pdf/2402.04396.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/16_quip_sharp.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1255058
+  },
+  {
+    "num": 17,
+    "slug": "kv_cache_transform_coding_kvtc",
+    "url": "https://arxiv.org/pdf/2511.01815.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/17_kv_cache_transform_coding_kvtc.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2194686
+  },
+  {
+    "num": 18,
+    "slug": "qjl_quantized_johnson_lindenstrauss",
+    "url": "https://arxiv.org/pdf/2406.03482.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/18_qjl_quantized_johnson_lindenstrauss.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 4956928
+  },
+  {
+    "num": 19,
+    "slug": "spinquant",
+    "url": "https://arxiv.org/pdf/2405.16406.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/19_spinquant.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 10207972
+  },
+  {
+    "num": 20,
+    "slug": "droidspeak",
+    "url": "https://arxiv.org/pdf/2411.02820.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/20_droidspeak.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1207782
+  },
+  {
+    "num": 21,
+    "slug": "lmcache",
+    "url": "https://arxiv.org/pdf/2510.09665.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/21_lmcache.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 799013
+  },
+  {
+    "num": 22,
+    "slug": "cacheblend",
+    "url": "https://arxiv.org/pdf/2405.16444.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/22_cacheblend.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1574337
+  },
+  {
+    "num": 23,
+    "slug": "cachegen",
+    "url": "https://arxiv.org/pdf/2310.07240.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/23_cachegen.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1657938
+  },
+  {
+    "num": 24,
+    "slug": "deliberation_in_latent_space_via_differentiable_cache_augmentation",
+    "url": "https://openreview.net/pdf?id=IaUJl5RCOu",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/24_deliberation_in_latent_space_via_differentiable_cache_augmentation.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 505623
+  },
+  {
+    "num": 25,
+    "slug": "cross_lora",
+    "url": "https://arxiv.org/pdf/2508.05232.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/25_cross_lora.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 929205
+  },
+  {
+    "num": 26,
+    "slug": "transport_and_merge",
+    "url": "https://arxiv.org/pdf/2602.05495.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/26_transport_and_merge.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 4557438
+  },
+  {
+    "num": 27,
+    "slug": "trans_lora",
+    "url": "https://arxiv.org/pdf/2405.17258.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/27_trans_lora.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2575174
+  },
+  {
+    "num": 28,
+    "slug": "coconut_chain_of_continuous_thought",
+    "url": "https://arxiv.org/pdf/2412.06769.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/28_coconut_chain_of_continuous_thought.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 3289091
+  },
+  {
+    "num": 29,
+    "slug": "soft_thinking",
+    "url": "https://arxiv.org/pdf/2505.15778.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/29_soft_thinking.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 646641
+  },
+  {
+    "num": 30,
+    "slug": "soft_tokens_hard_truths",
+    "url": "https://arxiv.org/pdf/2509.19170.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/30_soft_tokens_hard_truths.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2514241
+  },
+  {
+    "num": 31,
+    "slug": "reasoning_by_superposition",
+    "url": "https://arxiv.org/pdf/2505.12514.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/31_reasoning_by_superposition.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 3479342
+  },
+  {
+    "num": 32,
+    "slug": "xbridge_language_on_demand_knowledge_at_core",
+    "url": "https://arxiv.org/pdf/2603.17512.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/32_xbridge_language_on_demand_knowledge_at_core.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1256304
+  },
+  {
+    "num": 33,
+    "slug": "mosecrot",
+    "url": "https://arxiv.org/pdf/2401.04821.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/33_mosecrot.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 268573
+  },
+  {
+    "num": 34,
+    "slug": "gromov_wasserstein_alignment_of_word_embedding_spaces",
+    "url": "https://arxiv.org/pdf/1809.00013.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/34_gromov_wasserstein_alignment_of_word_embedding_spaces.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 7329423
+  },
+  {
+    "num": 35,
+    "slug": "linear_representation_hypothesis",
+    "url": "https://arxiv.org/pdf/2311.03658.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/35_linear_representation_hypothesis.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2534772
+  },
+  {
+    "num": 36,
+    "slug": "function_vectors_in_large_language_models",
+    "url": "https://arxiv.org/pdf/2310.15213.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/36_function_vectors_in_large_language_models.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 3236102
+  },
+  {
+    "num": 37,
+    "slug": "representation_engineering",
+    "url": "https://arxiv.org/pdf/2310.01405.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/37_representation_engineering.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 10661161
+  },
+  {
+    "num": 38,
+    "slug": "scaling_monosemanticity",
+    "url": "https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/38_scaling_monosemanticity.html",
+    "content_type": "text/html",
+    "status": "downloaded",
+    "bytes": 16314084
+  },
+  {
+    "num": 39,
+    "slug": "debate",
+    "url": "https://arxiv.org/pdf/2305.14325.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/39_debate.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1779875
+  },
+  {
+    "num": 40,
+    "slug": "mixture_of_agents",
+    "url": "https://arxiv.org/pdf/2406.04692.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/40_mixture_of_agents.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1157463
+  },
+  {
+    "num": 41,
+    "slug": "autogen",
+    "url": "https://arxiv.org/pdf/2308.08155.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/41_autogen.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 3571809
+  },
+  {
+    "num": 42,
+    "slug": "cka_similarity_of_neural_network_representations_revisited",
+    "url": "https://arxiv.org/pdf/1905.00414.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/42_cka_similarity_of_neural_network_representations_revisited.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2013617
+  },
+  {
+    "num": 43,
+    "slug": "svcca_singular_vector_canonical_correlation_analysis",
+    "url": "https://arxiv.org/pdf/1706.05806.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/43_svcca_singular_vector_canonical_correlation_analysis.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 3082487
+  },
+  {
+    "num": 44,
+    "slug": "pwcca_insights_on_representational_similarity",
+    "url": "https://arxiv.org/pdf/1806.05759.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/44_pwcca_insights_on_representational_similarity.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2362688
+  },
+  {
+    "num": 45,
+    "slug": "orthogonal_random_features",
+    "url": "https://arxiv.org/pdf/1610.09072.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/45_orthogonal_random_features.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 671619
+  },
+  {
+    "num": 46,
+    "slug": "fastfood_approximate_kernel_expansions",
+    "url": "https://arxiv.org/pdf/1408.3060.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/46_fastfood_approximate_kernel_expansions.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 972486
+  },
+  {
+    "num": 47,
+    "slug": "fnet_mixing_tokens_with_fourier_transforms",
+    "url": "https://arxiv.org/pdf/2105.03824.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/47_fnet_mixing_tokens_with_fourier_transforms.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1086849
+  },
+  {
+    "num": 48,
+    "slug": "butterfly_transform_fft_based_neural_architecture",
+    "url": "https://arxiv.org/pdf/1906.02256.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/48_butterfly_transform_fft_based_neural_architecture.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1038587
+  },
+  {
+    "num": 49,
+    "slug": "optimized_product_quantization",
+    "url": "https://people.csail.mit.edu/kaiming/publications/cvpr13opq.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/49_optimized_product_quantization.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1110261
+  },
+  {
+    "num": 50,
+    "slug": "quarot_outlier_free_4bit_inference_rotated_llms",
+    "url": "https://arxiv.org/pdf/2404.00456.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/50_quarot_outlier_free_4bit_inference_rotated_llms.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 624957
+  },
+  {
+    "num": 51,
+    "slug": "qtip_quantization_with_trellises_and_incoherence_processing",
+    "url": "https://arxiv.org/pdf/2406.11235.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/51_qtip_quantization_with_trellises_and_incoherence_processing.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1312806
+  },
+  {
+    "num": 52,
+    "slug": "finding_structure_with_randomness",
+    "url": "https://arxiv.org/pdf/0909.4061.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/52_finding_structure_with_randomness.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1287227
+  },
+  {
+    "num": 53,
+    "slug": "smoothquant",
+    "url": "https://arxiv.org/pdf/2211.10438.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/53_smoothquant.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 5378996
+  },
+  {
+    "num": 54,
+    "slug": "flatquant",
+    "url": "https://arxiv.org/pdf/2410.09426.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/54_flatquant.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 11932683
+  }
+]

@@ -174,7 +174,9 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
             "--alignment-rank",
             "2",
             "--rotation",
-            "hadamard",
+            "dct",
+            "--layer-pairing",
+            "random",
             "--whitening",
             "--source-reasoning-mode",
             "cot",
@@ -184,7 +186,8 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
     args = calibrate.parse_args()
     assert args.alignment == "reduced_rank"
     assert args.alignment_rank == 2
-    assert args.rotation == "hadamard"
+    assert args.rotation == "dct"
+    assert args.layer_pairing == "random"
     assert args.whitening is True
     assert args.source_reasoning_mode == "cot"
 

@@ -124,9 +124,9 @@ python scripts/calibrate.py \
 
 **New flags since the first version:**
 
-- `--rotation {identity, orthogonal, hadamard}` — choose rotation variant. `identity`
-  is the no-rotation ablation. Hadamard is
-  O(d log d) and scales to very large head dims; use it for 70B models.
+- `--rotation {identity, orthogonal, hadamard, dct}` — choose rotation variant.
+  `identity` is the no-rotation ablation. Hadamard is O(d log d) and scales
+  to very large head dims; `dct` is the Fourier-family dense-mixing control.
 - `--whitening` — apply ZCA whitening of source coordinates before alignment.
   Helps when the two models have very different coordinate scales.
 - `--alignment {auto, identity, procrustes, procrustes_rand, ridge, cca, reduced_rank}` —
@@ -135,7 +135,8 @@ python scripts/calibrate.py \
   primarily low-rank and partially diagonal; use `reduced_rank` with
   `--alignment-rank 64` when you want explicit compression.
 - `--alignment-rank N` — rank for CCA and reduced-rank regression.
-- `--layer-pairing {interp,cka}` — interpolation or SemAlign-style CKA pairing.
+- `--layer-pairing {interp,cka,reverse,shifted,random}` — interpolation,
+  SemAlign-style CKA pairing, or negative-control layer maps.
 - `--layer-selection-topk K` / `--layer-selection-ratio R` — selective
   transmission ablations inspired by KVComm-style sparsity.
 
@@ -206,12 +207,13 @@ done
 ```
 
 For the rotation ablation, sweep `--rotation` across `identity`, `orthogonal`,
-and `hadamard`. For the alignment ablation, sweep `--alignment`. For the
+`hadamard`, and `dct`. For the alignment ablation, sweep `--alignment`. For the
 whitening ablation, toggle `--whitening`. For pairing / sparsity / protocol
 ablations, sweep `--layer-pairing`, `--layer-selection-*`, `--gate-*`, and
-the `rotalign_*` evaluate modes. Use `--no-quantize` as the first diagnostic
-route until the full-precision path is clearly better than text-to-text; only
-then compare 4-bit and lower-bit runs.
+the `rotalign_*` evaluate modes. Use `--source-kv-control` for random/zero/
+shuffled-source negative controls and `--quantization-control matched_noise`
+to separate true discretization from noise smoothing. Use `--no-quantize` as
+the full-precision anchor before comparing 4-bit and lower-bit runs.
 
 ## For the paper: what to run in what order
 

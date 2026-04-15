@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import pathlib
 import re
 import sys
@@ -403,9 +404,145 @@ def _generation_metrics(
     }
 
 
+def _append_prediction_record(
+    records: list[dict[str, Any]] | None,
+    *,
+    index: int,
+    method: str,
+    prediction: Any,
+    answer: Any,
+    correct: bool,
+    extra: dict[str, Any] | None = None,
+) -> None:
+    if records is None:
+        return
+    record = {
+        "index": int(index),
+        "method": method,
+        "prediction": prediction,
+        "answer": answer,
+        "correct": bool(correct),
+    }
+    if extra:
+        record.update(extra)
+    records.append(record)
+
+
+def write_prediction_records(path: str, records: list[dict[str, Any]]) -> None:
+    output_path = pathlib.Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as handle:
+        for record in records:
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def paired_prediction_metrics(
+    records: list[dict[str, Any]],
+    method: str,
+    baseline: str,
+    *,
+    n_bootstrap: int = 1000,
+) -> dict[str, float]:
+    by_method: dict[str, dict[int, bool]] = {}
+    for record in records:
+        by_method.setdefault(str(record["method"]), {})[int(record["index"])] = bool(record["correct"])
+    method_rows = by_method.get(method, {})
+    baseline_rows = by_method.get(baseline, {})
+    indices = sorted(set(method_rows) & set(baseline_rows))
+    if not indices:
+        return {}
+
+    diffs = [
+        (1.0 if method_rows[idx] else 0.0) - (1.0 if baseline_rows[idx] else 0.0)
+        for idx in indices
+    ]
+    method_only = sum(method_rows[idx] and not baseline_rows[idx] for idx in indices)
+    baseline_only = sum(baseline_rows[idx] and not method_rows[idx] for idx in indices)
+    denom = method_only + baseline_only
+    if denom:
+        chi2 = (max(abs(method_only - baseline_only) - 1.0, 0.0) ** 2) / denom
+        # McNemar with one degree of freedom: survival function = erfc(sqrt(x/2)).
+        p_value = math.erfc(math.sqrt(chi2 / 2.0))
+    else:
+        p_value = 1.0
+
+    gen = torch.Generator(device="cpu").manual_seed(0)
+    diff_tensor = torch.tensor(diffs, dtype=torch.float32)
+    boot = []
+    for _ in range(n_bootstrap):
+        sample_idx = torch.randint(0, len(diffs), (len(diffs),), generator=gen)
+        boot.append(float(diff_tensor[sample_idx].mean()))
+    boot.sort()
+    lo_idx = int(0.025 * (len(boot) - 1))
+    hi_idx = int(0.975 * (len(boot) - 1))
+    return {
+        "paired_n": float(len(indices)),
+        "delta_accuracy": float(sum(diffs) / len(diffs)),
+        "method_only": float(method_only),
+        "baseline_only": float(baseline_only),
+        "both_correct": float(sum(method_rows[idx] and baseline_rows[idx] for idx in indices)),
+        "both_wrong": float(sum((not method_rows[idx]) and (not baseline_rows[idx]) for idx in indices)),
+        "mcnemar_chi2": float(chi2 if denom else 0.0),
+        "mcnemar_p": float(p_value),
+        "bootstrap_delta_low": float(boot[lo_idx]),
+        "bootstrap_delta_high": float(boot[hi_idx]),
+    }
+
+
+def _metric_slug(text: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_]+", "_", text).strip("_")
+
+
+def add_paired_prediction_summary(
+    results: dict[str, float],
+    records: list[dict[str, Any]],
+) -> None:
+    methods = sorted({str(record["method"]) for record in records})
+    for method in methods:
+        if method in {"target_alone", "text_to_text", "source_alone", "routing"}:
+            continue
+        for baseline in ("target_alone", "text_to_text"):
+            stats = paired_prediction_metrics(records, method, baseline)
+            if not stats:
+                continue
+            prefix = f"paired_{_metric_slug(method)}_vs_{baseline}"
+            for key, value in stats.items():
+                results[f"{prefix}_{key}"] = value
+
+
 def _tail_align_pair(left: torch.Tensor, right: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     seq = min(left.shape[2], right.shape[2])
     return left[:, :, -seq:, :], right[:, :, -seq:, :]
+
+
+def _apply_source_kv_control(
+    K_s: torch.Tensor,
+    V_s: torch.Tensor,
+    mode: str,
+    layer_idx: int,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Negative-control perturbations for source-side KV communication."""
+    if mode == "real":
+        return K_s, V_s
+    if mode == "zero":
+        return torch.zeros_like(K_s), torch.zeros_like(V_s)
+    if mode == "shuffle_positions":
+        if K_s.shape[2] <= 1:
+            return K_s, V_s
+        return K_s.flip(dims=[2]), V_s.flip(dims=[2])
+    if mode == "random":
+        gen = torch.Generator(device="cpu").manual_seed(17_171 + int(layer_idx))
+
+        def matched_noise(x: torch.Tensor) -> torch.Tensor:
+            x_cpu = x.detach().to("cpu", dtype=torch.float32)
+            noise = torch.randn(x_cpu.shape, generator=gen, dtype=torch.float32)
+            return (noise * x_cpu.std().clamp_min(1e-6) + x_cpu.mean()).to(
+                device=x.device,
+                dtype=x.dtype,
+            )
+
+        return matched_noise(K_s), matched_noise(V_s)
+    raise ValueError(f"Unknown source_kv_control: {mode}")
 
 
 def _translated_bits(translator: RotAlignKVTranslator, seq_len: int, quantize: bool) -> float:
@@ -430,6 +567,8 @@ def _build_rotalign_prefix_state(
     device: str,
     quantize: bool,
     protocol: str,
+    source_kv_control: str = "real",
+    quantization_control: str = "real",
 ) -> tuple[PrefixState, dict[str, float]]:
     tgt_prompt_ids = target_tokenizer(target_prompt, return_tensors="pt").input_ids.to(device)
     tgt_prefix_ids, tgt_last_token = _split_prompt_prefix(tgt_prompt_ids)
@@ -458,12 +597,14 @@ def _build_rotalign_prefix_state(
     for tgt_l in range(translator.config.num_tgt_layers):
         src_l = translator.layer_map[tgt_l]
         K_s, V_s = src_pkv[src_l]
+        K_s, V_s = _apply_source_kv_control(K_s, V_s, source_kv_control, tgt_l)
         K_t, V_t = tgt_pkv[tgt_l]
         K_hat, V_hat = translator.translate_layer(
             K_s.to(device=device, dtype=torch.float32),
             V_s.to(device=device, dtype=torch.float32),
             tgt_layer_idx=tgt_l,
             quantize=quantize,
+            quantization_control=quantization_control,
         )
         K_t_aligned, K_hat = _tail_align_pair(K_t, K_hat.to(dtype=K_t.dtype))
         V_t_aligned, V_hat = _tail_align_pair(V_t, V_hat.to(dtype=V_t.dtype))
@@ -508,6 +649,8 @@ def _search_per_layer_gates(
     protocol: str,
     source_reasoning_mode: str,
     gate_values: list[float],
+    source_kv_control: str = "real",
+    quantization_control: str = "real",
 ) -> dict[str, list[float]]:
     """Coordinate-descent line search over per-layer K/V fusion gates.
 
@@ -538,6 +681,8 @@ def _search_per_layer_gates(
                 quantize=quantize,
                 protocol=protocol,
                 source_reasoning_mode=source_reasoning_mode,
+                source_kv_control=source_kv_control,
+                quantization_control=quantization_control,
             )[0]
         return eval_rotalign_kv(
             source_model,
@@ -550,6 +695,8 @@ def _search_per_layer_gates(
             quantize=quantize,
             protocol=protocol,
             source_reasoning_mode=source_reasoning_mode,
+            source_kv_control=source_kv_control,
+            quantization_control=quantization_control,
         )
 
     for tgt_layer_idx in layer_indices:
@@ -635,39 +782,57 @@ def _generate_source_hint(
     return source_tokenizer.decode(out[0, hint_ids.shape[1] :], skip_special_tokens=True).strip()
 
 
-def eval_target_alone(target_model, target_tokenizer, examples, device):
+def eval_target_alone(target_model, target_tokenizer, examples, device, records: list[dict[str, Any]] | None = None):
     correct = 0
-    for ex in examples:
+    for idx, ex in enumerate(examples):
         prompt = _mcq_prompt(ex.question)
         scores = [
             score_choice_loglik(target_model, target_tokenizer, prompt, c, device)
             for c in ex.choices
         ]
         pred = int(torch.tensor(scores).argmax())
-        if pred == ex.answer:
+        is_correct = pred == ex.answer
+        _append_prediction_record(
+            records,
+            index=idx,
+            method="target_alone",
+            prediction=pred,
+            answer=ex.answer,
+            correct=is_correct,
+        )
+        if is_correct:
             correct += 1
     return correct / len(examples)
 
 
-def eval_source_alone(source_model, source_tokenizer, examples, device):
+def eval_source_alone(source_model, source_tokenizer, examples, device, records: list[dict[str, Any]] | None = None):
     correct = 0
-    for ex in examples:
+    for idx, ex in enumerate(examples):
         prompt = _mcq_prompt(ex.question)
         scores = [
             score_choice_loglik(source_model, source_tokenizer, prompt, c, device)
             for c in ex.choices
         ]
         pred = int(torch.tensor(scores).argmax())
-        if pred == ex.answer:
+        is_correct = pred == ex.answer
+        _append_prediction_record(
+            records,
+            index=idx,
+            method="source_alone",
+            prediction=pred,
+            answer=ex.answer,
+            correct=is_correct,
+        )
+        if is_correct:
             correct += 1
     return correct / len(examples)
 
 
 def eval_routing(
-    source_model, source_tokenizer, target_model, target_tokenizer, examples, device
+    source_model, source_tokenizer, target_model, target_tokenizer, examples, device, records: list[dict[str, Any]] | None = None
 ):
     correct = 0
-    for ex in examples:
+    for idx, ex in enumerate(examples):
         prompt = _mcq_prompt(ex.question)
         src_scores = [
             score_choice_loglik(source_model, source_tokenizer, prompt, c, device)
@@ -682,7 +847,17 @@ def eval_routing(
         src_margin = src_sorted[0] - src_sorted[1] if len(src_sorted) > 1 else src_sorted[0]
         tgt_margin = tgt_sorted[0] - tgt_sorted[1] if len(tgt_sorted) > 1 else tgt_sorted[0]
         pred = int(torch.tensor(src_scores if src_margin > tgt_margin else tgt_scores).argmax())
-        if pred == ex.answer:
+        is_correct = pred == ex.answer
+        _append_prediction_record(
+            records,
+            index=idx,
+            method="routing",
+            prediction=pred,
+            answer=ex.answer,
+            correct=is_correct,
+            extra={"src_margin": float(src_margin), "target_margin": float(tgt_margin)},
+        )
+        if is_correct:
             correct += 1
     return correct / len(examples)
 
@@ -695,9 +870,10 @@ def eval_text_to_text(
     examples,
     device,
     source_reasoning_mode: str = "brief_analysis",
+    records: list[dict[str, Any]] | None = None,
 ):
     correct = 0
-    for ex in examples:
+    for idx, ex in enumerate(examples):
         hint = _generate_source_hint(
             source_model,
             source_tokenizer,
@@ -711,7 +887,17 @@ def eval_text_to_text(
             for c in ex.choices
         ]
         pred = int(torch.tensor(scores).argmax())
-        if pred == ex.answer:
+        is_correct = pred == ex.answer
+        _append_prediction_record(
+            records,
+            index=idx,
+            method="text_to_text",
+            prediction=pred,
+            answer=ex.answer,
+            correct=is_correct,
+            extra={"hint": hint},
+        )
+        if is_correct:
             correct += 1
     return correct / len(examples)
 
@@ -727,10 +913,14 @@ def eval_rotalign_kv(
     quantize: bool = True,
     protocol: str = "fused",
     source_reasoning_mode: str = "brief_analysis",
+    source_kv_control: str = "real",
+    quantization_control: str = "real",
+    records: list[dict[str, Any]] | None = None,
+    method_name: str = "rotalign_kv",
 ) -> float:
     translator = translator.to(device).eval()
     correct = 0
-    for ex in examples:
+    for idx, ex in enumerate(examples):
         source_prompt = _source_reasoning_prompt(_mcq_prompt(ex.question), source_reasoning_mode)
         target_prompt = _mcq_prompt(ex.question)
         prefix_state, _ = _build_rotalign_prefix_state(
@@ -744,13 +934,29 @@ def eval_rotalign_kv(
             device,
             quantize,
             protocol,
+            source_kv_control,
+            quantization_control,
         )
         scores = [
             _score_mcq_with_prefix_state(target_model, target_tokenizer, prefix_state, c, device)
             for c in ex.choices
         ]
         pred = int(torch.tensor(scores).argmax())
-        if pred == ex.answer:
+        is_correct = pred == ex.answer
+        _append_prediction_record(
+            records,
+            index=idx,
+            method=method_name,
+            prediction=pred,
+            answer=ex.answer,
+            correct=is_correct,
+            extra={
+                "protocol": protocol,
+                "source_kv_control": source_kv_control,
+                "quantization_control": quantization_control,
+            },
+        )
+        if is_correct:
             correct += 1
     return correct / len(examples)
 
@@ -771,12 +977,14 @@ def _eval_generation_target_alone_with_stats(
     examples,
     device,
     max_new_tokens: int,
+    records: list[dict[str, Any]] | None = None,
+    method_name: str = "target_alone",
 ) -> dict[str, float]:
     correct = 0
     total_tokens = 0
     total_ttft = 0.0
     total_elapsed = 0.0
-    for ex in examples:
+    for idx, ex in enumerate(examples):
         prep_started = time.perf_counter()
         prefix_state = _prepare_prefix_state(model, tokenizer, ex.prompt, device)
         prep_elapsed = time.perf_counter() - prep_started
@@ -787,7 +995,17 @@ def _eval_generation_target_alone_with_stats(
             device,
             max_new_tokens,
         )
-        correct += int(_generation_match(trace.text, ex.answers))
+        is_correct = _generation_match(trace.text, ex.answers)
+        correct += int(is_correct)
+        _append_prediction_record(
+            records,
+            index=idx,
+            method=method_name,
+            prediction=trace.text,
+            answer=ex.answers,
+            correct=is_correct,
+            extra={"generated_tokens": trace.num_generated_tokens},
+        )
         total_tokens += trace.num_generated_tokens
         total_ttft += prep_elapsed + trace.ttft_sec
         total_elapsed += prep_elapsed + trace.elapsed_sec
@@ -831,12 +1049,13 @@ def _eval_generation_text_to_text_with_stats(
     device,
     max_new_tokens: int,
     source_reasoning_mode: str = "brief_analysis",
+    records: list[dict[str, Any]] | None = None,
 ) -> dict[str, float]:
     correct = 0
     total_tokens = 0
     total_ttft = 0.0
     total_elapsed = 0.0
-    for ex in examples:
+    for idx, ex in enumerate(examples):
         example_started = time.perf_counter()
         hint = _generate_source_hint(
             source_model,
@@ -855,7 +1074,17 @@ def _eval_generation_text_to_text_with_stats(
             max_new_tokens,
         )
         example_elapsed = time.perf_counter() - example_started
-        correct += int(_generation_match(trace.text, ex.answers))
+        is_correct = _generation_match(trace.text, ex.answers)
+        correct += int(is_correct)
+        _append_prediction_record(
+            records,
+            index=idx,
+            method="text_to_text",
+            prediction=trace.text,
+            answer=ex.answers,
+            correct=is_correct,
+            extra={"hint": hint, "generated_tokens": trace.num_generated_tokens},
+        )
         total_tokens += trace.num_generated_tokens
         total_ttft += example_elapsed - trace.elapsed_sec + trace.ttft_sec
         total_elapsed += example_elapsed
@@ -880,6 +1109,8 @@ def _eval_generation_rotalign(
     quantize: bool,
     protocol: str,
     source_reasoning_mode: str = "brief_analysis",
+    source_kv_control: str = "real",
+    quantization_control: str = "real",
 ) -> tuple[float, float, float]:
     stats = _eval_generation_rotalign_with_stats(
         source_model,
@@ -893,6 +1124,8 @@ def _eval_generation_rotalign(
         quantize,
         protocol,
         source_reasoning_mode,
+        source_kv_control,
+        quantization_control,
     )
     return stats["accuracy"], stats["bits"], stats["latency_sec"]
 
@@ -909,6 +1142,10 @@ def _eval_generation_rotalign_with_stats(
     quantize: bool,
     protocol: str,
     source_reasoning_mode: str = "brief_analysis",
+    source_kv_control: str = "real",
+    quantization_control: str = "real",
+    records: list[dict[str, Any]] | None = None,
+    method_name: str = "rotalign_kv",
 ) -> dict[str, float]:
     translator = translator.to(device).eval()
     correct = 0
@@ -916,7 +1153,7 @@ def _eval_generation_rotalign_with_stats(
     total_tokens = 0
     total_ttft = 0.0
     total_elapsed = 0.0
-    for ex in examples:
+    for idx, ex in enumerate(examples):
         example_started = time.perf_counter()
         source_prompt = _source_reasoning_prompt(ex.prompt, source_reasoning_mode)
         target_prompt = ex.prompt
@@ -941,6 +1178,8 @@ def _eval_generation_rotalign_with_stats(
             device,
             quantize,
             protocol,
+            source_kv_control,
+            quantization_control,
         )
         trace = _greedy_generate_with_stats(
             target_model,
@@ -950,7 +1189,23 @@ def _eval_generation_rotalign_with_stats(
             max_new_tokens,
         )
         example_elapsed = time.perf_counter() - example_started
-        correct += int(_generation_match(trace.text, ex.answers))
+        is_correct = _generation_match(trace.text, ex.answers)
+        correct += int(is_correct)
+        _append_prediction_record(
+            records,
+            index=idx,
+            method=method_name,
+            prediction=trace.text,
+            answer=ex.answers,
+            correct=is_correct,
+            extra={
+                "protocol": protocol,
+                "source_kv_control": source_kv_control,
+                "quantization_control": quantization_control,
+                "bits": stats["bits"],
+                "generated_tokens": trace.num_generated_tokens,
+            },
+        )
         total_bits += stats["bits"]
         total_tokens += trace.num_generated_tokens
         total_ttft += example_elapsed - trace.elapsed_sec + trace.ttft_sec
@@ -986,6 +1241,18 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-quantize", action="store_true",
                    help="Disable Lloyd-Max quantization during translation (ablation)")
     p.add_argument(
+        "--source-kv-control",
+        choices=["real", "zero", "random", "shuffle_positions"],
+        default="real",
+        help="Negative-control perturbation applied to source KVs before translation",
+    )
+    p.add_argument(
+        "--quantization-control",
+        choices=["real", "matched_noise"],
+        default="real",
+        help="Use real quantize/dequantize or inject matched Gaussian noise instead.",
+    )
+    p.add_argument(
         "--methods",
         nargs="+",
         default=["target", "t2t", "rotalign"],
@@ -1017,6 +1284,11 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=16,
         help="Maximum number of held-out examples to use for gate search",
+    )
+    p.add_argument(
+        "--prediction-output",
+        default=None,
+        help="Optional JSONL path for per-example predictions and correctness.",
     )
     return p.parse_args()
 
@@ -1072,15 +1344,16 @@ def main() -> None:
         search_examples = _limit_examples(search_examples, args.gate_search_limit)
 
     results: dict[str, float] = {}
+    prediction_records: list[dict[str, Any]] | None = [] if args.prediction_output else None
     if task_type == "mcq":
         if "target" in args.methods:
-            results["target_alone"] = eval_target_alone(tgt, tok_t, examples, args.device)
+            results["target_alone"] = eval_target_alone(tgt, tok_t, examples, args.device, prediction_records)
         if "source" in args.methods:
-            results["source_alone"] = eval_source_alone(src, tok_s, examples, args.device)
+            results["source_alone"] = eval_source_alone(src, tok_s, examples, args.device, prediction_records)
         if "routing" in args.methods:
-            results["routing"] = eval_routing(src, tok_s, tgt, tok_t, examples, args.device)
+            results["routing"] = eval_routing(src, tok_s, tgt, tok_t, examples, args.device, prediction_records)
         if "t2t" in args.methods:
-            results["text_to_text"] = eval_text_to_text(src, tok_s, tgt, tok_t, examples, args.device)
+            results["text_to_text"] = eval_text_to_text(src, tok_s, tgt, tok_t, examples, args.device, records=prediction_records)
 
         rotalign_modes = []
         if "rotalign" in args.methods:
@@ -1116,6 +1389,8 @@ def main() -> None:
                     protocol=protocol,
                     source_reasoning_mode=args.source_reasoning_mode,
                     gate_values=args.gate_values,
+                    source_kv_control=args.source_kv_control,
+                    quantization_control=args.quantization_control,
                 )
                 print(
                     "Selected gate means: "
@@ -1138,6 +1413,10 @@ def main() -> None:
                     quantize=not args.no_quantize,
                     protocol=protocol,
                     source_reasoning_mode=args.source_reasoning_mode,
+                    source_kv_control=args.source_kv_control,
+                    quantization_control=args.quantization_control,
+                    records=prediction_records,
+                    method_name=metric_key,
                 )
                 elapsed = time.perf_counter() - start
                 results[metric_key] = score
@@ -1147,10 +1426,11 @@ def main() -> None:
                     seq_len=1,
                     quantize=not args.no_quantize,
                 )
+                results[f"{metric_key}_bytes"] = results[f"{metric_key}_bits"] / 8.0
     else:
         if "target" in args.methods:
             target_stats = _eval_generation_target_alone_with_stats(
-                tgt, tok_t, examples, args.device, args.max_new_tokens
+                tgt, tok_t, examples, args.device, args.max_new_tokens, prediction_records
             )
             results["target_alone"] = target_stats["accuracy"]
             results["target_alone_ttft_sec"] = target_stats["ttft_sec"]
@@ -1159,7 +1439,7 @@ def main() -> None:
             results["target_alone_latency_sec"] = target_stats["latency_sec"]
         if "source" in args.methods:
             source_stats = _eval_generation_target_alone_with_stats(
-                src, tok_s, examples, args.device, args.max_new_tokens
+                src, tok_s, examples, args.device, args.max_new_tokens, prediction_records, "source_alone"
             )
             results["source_alone"] = source_stats["accuracy"]
             results["source_alone_ttft_sec"] = source_stats["ttft_sec"]
@@ -1171,7 +1451,7 @@ def main() -> None:
         if "t2t" in args.methods:
             t2t_stats = _eval_generation_text_to_text_with_stats(
                 src, tok_s, tgt, tok_t, examples, args.device, args.max_new_tokens
-                , source_reasoning_mode=args.source_reasoning_mode
+                , source_reasoning_mode=args.source_reasoning_mode, records=prediction_records
             )
             results["text_to_text"] = t2t_stats["accuracy"]
             results["text_to_text_ttft_sec"] = t2t_stats["ttft_sec"]
@@ -1213,6 +1493,8 @@ def main() -> None:
                     protocol=protocol,
                     source_reasoning_mode=args.source_reasoning_mode,
                     gate_values=args.gate_values,
+                    source_kv_control=args.source_kv_control,
+                    quantization_control=args.quantization_control,
                 )
                 print(
                     "Selected gate means: "
@@ -1235,6 +1517,10 @@ def main() -> None:
                     quantize=not args.no_quantize,
                     protocol=protocol,
                     source_reasoning_mode=args.source_reasoning_mode,
+                    source_kv_control=args.source_kv_control,
+                    quantization_control=args.quantization_control,
+                    records=prediction_records,
+                    method_name=metric_key,
                 )
                 results[metric_key] = rotalign_stats["accuracy"]
                 results[f"{metric_key}_bits"] = rotalign_stats["bits"]
@@ -1243,6 +1529,10 @@ def main() -> None:
                 results[f"{metric_key}_tokens_per_sec"] = rotalign_stats["tokens_per_sec"]
                 results[f"{metric_key}_examples_per_sec"] = rotalign_stats["examples_per_sec"]
                 results[f"{metric_key}_latency_sec"] = rotalign_stats["latency_sec"]
+
+    if prediction_records is not None:
+        add_paired_prediction_summary(results, prediction_records)
+        write_prediction_records(args.prediction_output, prediction_records)
 
     print("\n=== Summary ===")
     for key, value in results.items():

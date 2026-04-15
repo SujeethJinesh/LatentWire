@@ -60,7 +60,7 @@ def parse_args() -> argparse.Namespace:
         "--rotations",
         nargs="+",
         default=["orthogonal", "hadamard"],
-        choices=["identity", "orthogonal", "hadamard"],
+        choices=["identity", "orthogonal", "hadamard", "dct"],
     )
     p.add_argument(
         "--alignments",
@@ -70,7 +70,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--bits", nargs="+", type=int, default=[2, 3, 4, 8])
     p.add_argument("--whiten", nargs="+", default=["off", "on"], choices=["off", "on"])
-    p.add_argument("--layer-pairings", nargs="+", default=["interp"], choices=["interp", "cka"])
+    p.add_argument("--layer-pairings", nargs="+", default=["interp"], choices=["interp", "cka", "reverse", "shifted", "random"])
     p.add_argument("--selection-ratios", nargs="+", type=float, default=[1.0])
     p.add_argument("--rotation-seeds", nargs="+", type=int, default=[0])
     p.add_argument(
@@ -93,6 +93,20 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--gate-values", nargs="+", type=float, default=[0.5])
     p.add_argument("--full-precision-anchor", action="store_true")
+    p.add_argument(
+        "--source-kv-controls",
+        nargs="+",
+        default=["real"],
+        choices=["real", "zero", "random", "shuffle_positions"],
+        help="Source KV negative controls evaluated before translation.",
+    )
+    p.add_argument(
+        "--quantization-controls",
+        nargs="+",
+        default=["real"],
+        choices=["real", "matched_noise"],
+        help="Use true quantization or matched-noise control in the quantized path.",
+    )
     p.add_argument("--device", default=default_device())
     p.add_argument("--dtype", default="float32")
     return p.parse_args()
@@ -152,6 +166,8 @@ def main() -> None:
             getattr(args, "source_reasoning_modes", ["brief_analysis"]),
             getattr(args, "protocols", ["fused"]),
             quantize_modes,
+            getattr(args, "source_kv_controls", ["real"]),
+            getattr(args, "quantization_controls", ["real"]),
         )
     )
     print(f"Running {len(combos)} configurations...")
@@ -168,12 +184,15 @@ def main() -> None:
             source_reasoning_mode,
             protocol,
             quantize_mode,
+            source_kv_control,
+            quantization_control,
         ) in enumerate(combos):
             tag = (
                 f"rot{rotation}_align{alignment}_bits{bits}_w{whiten}"
                 f"_pair{layer_pairing}_sel{selection_ratio}_seed{seed}"
                 f"_reason{source_reasoning_mode}_proto{protocol}"
                 f"_q{quantize_mode}"
+                f"_srcctrl{source_kv_control}_qctrl{quantization_control}"
             )
             ckpt = ckpt_dir / f"{tag}.pt"
             start = time.time()
@@ -229,6 +248,10 @@ def main() -> None:
                     eval_cmd.extend(["--fixed-gate", str(gate_values[0])])
             if quantize_mode == "full_precision":
                 eval_cmd.append("--no-quantize")
+            if source_kv_control != "real":
+                eval_cmd.extend(["--source-kv-control", source_kv_control])
+            if quantization_control != "real":
+                eval_cmd.extend(["--quantization-control", quantization_control])
             try:
                 output = run_cmd(eval_cmd)
             except RuntimeError:
@@ -249,6 +272,8 @@ def main() -> None:
                 "source_reasoning_mode": source_reasoning_mode,
                 "protocol": protocol,
                 "quantize_mode": quantize_mode,
+                "source_kv_control": source_kv_control,
+                "quantization_control": quantization_control,
                 "gate_mode": getattr(args, "gate_mode", "fixed"),
                 "gate_values": getattr(args, "gate_values", [0.5]),
                 "elapsed_sec": round(elapsed, 1),

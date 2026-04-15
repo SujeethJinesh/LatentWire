@@ -8,6 +8,8 @@ Four rotation variants are supported:
     hadamard          - structured, O(d log d) apply, approximate but matches
                         the performance of full random orthogonal in the
                         Gaussianization regime (this is QuIP# / QuaRot's trick)
+    dct               - Fourier-family real orthogonal cosine transform,
+                        useful as a deterministic frequency-mixing ablation
     whiten_then_rotate - ZCA-whiten the source first, then apply a random
                          orthogonal. Handles anisotropic scaling that plain
                          rotation misses (important when KV dims have very
@@ -126,6 +128,25 @@ def hadamard_matrix(d: int, seed: int = 0, dtype: torch.dtype = torch.float32) -
     return H.to(dtype=dtype).contiguous()
 
 
+def dct_matrix(d: int, seed: int = 0, dtype: torch.dtype = torch.float32) -> torch.Tensor:
+    """Build an orthonormal DCT-II matrix with a random sign preconditioner.
+
+    This is a real Fourier-family transform. It gives us a deterministic dense
+    mixing ablation that is different from Haar random and Hadamard rotations
+    while preserving vector norms exactly.
+    """
+    n = torch.arange(d, dtype=torch.float64).unsqueeze(0)
+    k = torch.arange(d, dtype=torch.float64).unsqueeze(1)
+    mat = torch.cos(math.pi / d * (n + 0.5) * k)
+    mat[0, :] *= math.sqrt(1.0 / d)
+    if d > 1:
+        mat[1:, :] *= math.sqrt(2.0 / d)
+    gen = torch.Generator(device="cpu").manual_seed(int(seed))
+    signs = torch.randint(0, 2, (d,), generator=gen, dtype=torch.float64) * 2 - 1
+    mat = mat * signs.unsqueeze(0)
+    return mat.to(dtype=dtype).contiguous()
+
+
 def make_rotation(
     d: int,
     kind: str = "orthogonal",
@@ -139,6 +160,7 @@ def make_rotation(
         'identity'   - no rotation ablation
         'orthogonal' - Haar-uniform random orthogonal
         'hadamard'   - randomized Walsh-Hadamard
+        'dct'        - randomized-sign orthonormal DCT-II
     """
     if kind == "identity":
         return torch.eye(d, device=device, dtype=dtype)
@@ -155,6 +177,8 @@ def make_rotation(
             Q, _ = torch.linalg.qr(H)
             H = Q
         return H.to(device=device, dtype=dtype).contiguous()
+    if kind == "dct":
+        return dct_matrix(d, seed=seed, dtype=dtype).to(device=device).contiguous()
     raise ValueError(f"Unknown rotation kind: {kind}")
 
 

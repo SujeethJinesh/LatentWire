@@ -42,7 +42,8 @@ class TranslatorConfig:
     # Quantization
     quant_bits: int = 4
 
-    # Rotation variant: 'orthogonal' (Haar-uniform) or 'hadamard' (O(d log d))
+    # Rotation variant: 'orthogonal' (Haar-uniform), 'hadamard' (O(d log d)),
+    # 'dct' (Fourier-family dense mixing), or 'identity' (negative control).
     rotation_kind: str = "orthogonal"
 
     # Whitening: if True, fit a per-layer ZCA whitening as a pre-processing
@@ -55,7 +56,9 @@ class TranslatorConfig:
     ridge_lambda: float = 1e-3
     alignment_rank: int | None = None  # for cca / reduced_rank
 
-    # Layer pairing: 'interp', 'cka', or a list of length num_tgt_layers
+    # Layer pairing: 'interp', 'cka', 'reverse', 'shifted', 'random', or a list
+    # of length num_tgt_layers. The non-interp non-CKA modes are negative
+    # controls for proving that layer structure matters.
     layer_pairing: str | list[int] = "interp"
     layer_selection_topk: int | None = None
     layer_selection_ratio: float = 1.0
@@ -144,11 +147,24 @@ class RotAlignKVTranslator(nn.Module):
         if isinstance(cfg.layer_pairing, list):
             assert len(cfg.layer_pairing) == cfg.num_tgt_layers
             return list(cfg.layer_pairing)
+        interp = [
+            min(int(round(i * cfg.num_src_layers / cfg.num_tgt_layers)), cfg.num_src_layers - 1)
+            for i in range(cfg.num_tgt_layers)
+        ]
         if cfg.layer_pairing in {"interp", "cka"}:
-            return [
-                min(int(round(i * cfg.num_src_layers / cfg.num_tgt_layers)), cfg.num_src_layers - 1)
-                for i in range(cfg.num_tgt_layers)
-            ]
+            return interp
+        if cfg.layer_pairing == "reverse":
+            return [cfg.num_src_layers - 1 - idx for idx in interp]
+        if cfg.layer_pairing == "shifted":
+            return [(idx + 1) % cfg.num_src_layers for idx in interp]
+        if cfg.layer_pairing == "random":
+            gen = torch.Generator(device="cpu").manual_seed(int(cfg.seed))
+            return torch.randint(
+                low=0,
+                high=cfg.num_src_layers,
+                size=(cfg.num_tgt_layers,),
+                generator=gen,
+            ).tolist()
         raise ValueError(f"Unknown layer_pairing: {cfg.layer_pairing}")
 
     @staticmethod
@@ -306,6 +322,7 @@ class RotAlignKVTranslator(nn.Module):
         V_s: torch.Tensor,
         tgt_layer_idx: int,
         quantize: bool = True,
+        quantization_control: str = "real",
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Translate one source layer's KV into the target's KV space.
 
@@ -314,6 +331,9 @@ class RotAlignKVTranslator(nn.Module):
             tgt_layer_idx: target layer index l_t
             quantize: whether to round-trip through the Lloyd-Max quantizer
                       (simulates the compressed transmission channel)
+            quantization_control: 'real' for true quantize/dequantize, or
+                      'matched_noise' to add Gaussian noise with the same
+                      empirical scale as quantization error.
         Returns:
             K_t_hat, V_t_hat: [batch, tgt_num_heads, seq, tgt_head_dim]
         """
@@ -348,8 +368,16 @@ class RotAlignKVTranslator(nn.Module):
         #    compressed channel, but with a differentiable straight-through
         #    estimator if we wrap in a detach trick (omitted for clarity).
         if quantize:
-            K_t_rot = self.quantizer.quantize_dequantize(K_t_rot)
-            V_t_rot = self.quantizer.quantize_dequantize(V_t_rot)
+            K_q = self.quantizer.quantize_dequantize(K_t_rot)
+            V_q = self.quantizer.quantize_dequantize(V_t_rot)
+            if quantization_control == "real":
+                K_t_rot = K_q
+                V_t_rot = V_q
+            elif quantization_control == "matched_noise":
+                K_t_rot = K_t_rot + torch.randn_like(K_t_rot) * (K_q - K_t_rot).std().clamp_min(1e-8)
+                V_t_rot = V_t_rot + torch.randn_like(V_t_rot) * (V_q - V_t_rot).std().clamp_min(1e-8)
+            else:
+                raise ValueError(f"Unknown quantization_control: {quantization_control}")
 
         # 4) Un-rotate and un-flatten back to [batch, tgt_num_heads, seq, tgt_head_dim].
         K_t_hat = self._unflatten_and_inverse_rotate(

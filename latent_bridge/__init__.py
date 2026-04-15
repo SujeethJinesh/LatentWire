@@ -15,6 +15,7 @@ Core pipeline:
 from .rotation import (
     random_orthogonal,
     hadamard_matrix,
+    dct_matrix,
     make_rotation,
     apply_rotation,
     kurtosis,
@@ -45,6 +46,7 @@ __all__ = [
     # rotation
     "random_orthogonal",
     "hadamard_matrix",
+    "dct_matrix",
     "make_rotation",
     "apply_rotation",
     "kurtosis",

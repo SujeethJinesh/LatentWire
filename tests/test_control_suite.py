@@ -17,13 +17,25 @@ def test_default_specs_cover_the_control_axes() -> None:
         "cka_half_seed0",
         "cka_quarter_seed0",
         "cka_half_seed1",
+        "no_rotation_cka_half_seed1",
+        "hadamard_cka_half_seed1",
+        "dct_cka_half_seed1",
+        "identity_align_cka_half_seed1",
+        "shifted_layers_half_seed1",
+        "random_layers_half_seed1",
+        "lowrank128_cka_half_seed1",
+        "bits2_cka_half_seed1",
+        "bits3_cka_half_seed1",
+        "bits6_cka_half_seed1",
+        "bits8_cka_half_seed1",
     ]
-    assert {(spec.layer_pairing, spec.selection_ratio, spec.seed) for spec in calibration} == {
-        ("interp", 1.0, 0),
-        ("cka", 0.5, 0),
-        ("cka", 0.25, 0),
-        ("cka", 0.5, 1),
+    assert ("cka", 0.5, 1) in {
+        (spec.layer_pairing, spec.selection_ratio, spec.seed) for spec in calibration
     }
+    assert any(spec.rotation == "dct" for spec in calibration)
+    assert any(spec.alignment == "identity" for spec in calibration)
+    assert any(spec.layer_pairing == "random" for spec in calibration)
+    assert any(spec.bits == 2 for spec in calibration)
     assert [spec.name for spec in eval_specs] == [
         "baseline_plain",
         "baseline_brief",
@@ -34,6 +46,10 @@ def test_default_specs_cover_the_control_axes() -> None:
         "translated_noquant_brief",
         "text_kv_noquant_brief",
         "fused_quant_brief",
+        "fused_quant_noise_brief",
+        "fused_quant_random_kv_brief",
+        "fused_quant_shuffle_kv_brief",
+        "fused_quant_zero_kv_brief",
     ]
     assert all(spec.include_baselines for spec in eval_specs)
     assert {spec.source_reasoning_mode for spec in eval_specs} == {
@@ -67,7 +83,9 @@ def test_filter_named_specs_rejects_unknown_name() -> None:
 
 
 def test_build_calibrate_cmd_includes_sparse_pairing_and_seed() -> None:
-    spec = control_suite.CalibrationSpec("cka_half_seed1", "cka", 0.5, 1)
+    spec = control_suite.CalibrationSpec(
+        "dct_lowrank", "random", 0.5, 1, rotation="dct", alignment="reduced_rank", bits=3, alignment_rank=2
+    )
     cmd = control_suite.build_calibrate_cmd(
         python_exe="python",
         repo_root=Path("/repo"),
@@ -96,13 +114,13 @@ def test_build_calibrate_cmd_includes_sparse_pairing_and_seed() -> None:
         "--output",
         "/tmp/checkpoint.pt",
         "--bits",
-        "4",
+        "3",
         "--rotation",
-        "orthogonal",
+        "dct",
         "--alignment",
-        "ridge",
+        "reduced_rank",
         "--layer-pairing",
-        "cka",
+        "random",
         "--layer-selection-ratio",
         "0.5",
         "--seed",
@@ -111,6 +129,8 @@ def test_build_calibrate_cmd_includes_sparse_pairing_and_seed() -> None:
         "mps",
         "--dtype",
         "float32",
+        "--alignment-rank",
+        "2",
         "--whitening",
     ]
 
@@ -223,6 +243,66 @@ def test_build_evaluate_cmd_skips_noop_gate_search_for_translated_only() -> None
         "t2t",
         "rotalign_translated",
     ]
+
+
+def test_build_evaluate_cmd_adds_source_kv_control_and_prediction_output() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_random_kv_brief",
+        methods=("rotalign",),
+        gate_values=(0.15,),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        include_baselines=True,
+        source_kv_control="random",
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="mcq",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file="gate.jsonl",
+        gate_search_limit=12,
+        spec=spec,
+        prediction_output=Path("/tmp/preds.jsonl"),
+    )
+
+    assert cmd[cmd.index("--source-kv-control") + 1] == "random"
+    assert cmd[cmd.index("--prediction-output") + 1] == "/tmp/preds.jsonl"
+
+
+def test_build_evaluate_cmd_adds_quantization_control() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_noise_brief",
+        methods=("rotalign",),
+        gate_values=(0.15,),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        include_baselines=False,
+        quantization_control="matched_noise",
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="mcq",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file=None,
+        gate_search_limit=12,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--quantization-control") + 1] == "matched_noise"
 
 
 def test_best_metric_for_eval_ignores_system_metrics_and_picks_best_result() -> None:

@@ -26,6 +26,11 @@ class CalibrationSpec:
     layer_pairing: str
     selection_ratio: float
     seed: int
+    rotation: str | None = None
+    alignment: str | None = None
+    whitening: bool | None = None
+    bits: int | None = None
+    alignment_rank: int | None = None
 
 
 @dataclass(frozen=True)
@@ -36,6 +41,8 @@ class EvalSpec:
     quantize: bool
     source_reasoning_mode: str
     include_baselines: bool = False
+    source_kv_control: str = "real"
+    quantization_control: str = "real"
 
 
 def default_device() -> str:
@@ -102,6 +109,17 @@ def default_calibration_specs() -> list[CalibrationSpec]:
         CalibrationSpec("cka_half_seed0", "cka", 0.5, 0),
         CalibrationSpec("cka_quarter_seed0", "cka", 0.25, 0),
         CalibrationSpec("cka_half_seed1", "cka", 0.5, 1),
+        CalibrationSpec("no_rotation_cka_half_seed1", "cka", 0.5, 1, rotation="identity"),
+        CalibrationSpec("hadamard_cka_half_seed1", "cka", 0.5, 1, rotation="hadamard"),
+        CalibrationSpec("dct_cka_half_seed1", "cka", 0.5, 1, rotation="dct"),
+        CalibrationSpec("identity_align_cka_half_seed1", "cka", 0.5, 1, alignment="identity"),
+        CalibrationSpec("shifted_layers_half_seed1", "shifted", 0.5, 1),
+        CalibrationSpec("random_layers_half_seed1", "random", 0.5, 1),
+        CalibrationSpec("lowrank128_cka_half_seed1", "cka", 0.5, 1, alignment="reduced_rank", alignment_rank=128),
+        CalibrationSpec("bits2_cka_half_seed1", "cka", 0.5, 1, bits=2),
+        CalibrationSpec("bits3_cka_half_seed1", "cka", 0.5, 1, bits=3),
+        CalibrationSpec("bits6_cka_half_seed1", "cka", 0.5, 1, bits=6),
+        CalibrationSpec("bits8_cka_half_seed1", "cka", 0.5, 1, bits=8),
     ]
 
 
@@ -179,6 +197,42 @@ def default_eval_specs() -> list[EvalSpec]:
             source_reasoning_mode="brief_analysis",
             include_baselines=True,
         ),
+        EvalSpec(
+            name="fused_quant_noise_brief",
+            methods=("rotalign",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            quantization_control="matched_noise",
+        ),
+        EvalSpec(
+            name="fused_quant_random_kv_brief",
+            methods=("rotalign",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            source_kv_control="random",
+        ),
+        EvalSpec(
+            name="fused_quant_shuffle_kv_brief",
+            methods=("rotalign",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            source_kv_control="shuffle_positions",
+        ),
+        EvalSpec(
+            name="fused_quant_zero_kv_brief",
+            methods=("rotalign",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            source_kv_control="zero",
+        ),
     ]
 
 
@@ -248,6 +302,10 @@ def build_calibrate_cmd(
     dtype: str,
     spec: CalibrationSpec,
 ) -> list[str]:
+    effective_bits = spec.bits if spec.bits is not None else bits
+    effective_rotation = spec.rotation if spec.rotation is not None else rotation
+    effective_alignment = spec.alignment if spec.alignment is not None else alignment
+    effective_whitening = spec.whitening if spec.whitening is not None else whitening
     cmd = [
         python_exe,
         str(repo_root / "scripts" / "calibrate.py"),
@@ -260,11 +318,11 @@ def build_calibrate_cmd(
         "--output",
         str(checkpoint_path),
         "--bits",
-        str(bits),
+        str(effective_bits),
         "--rotation",
-        rotation,
+        effective_rotation,
         "--alignment",
-        alignment,
+        effective_alignment,
         "--layer-pairing",
         spec.layer_pairing,
         "--layer-selection-ratio",
@@ -276,7 +334,9 @@ def build_calibrate_cmd(
         "--dtype",
         dtype,
     ]
-    if whitening:
+    if spec.alignment_rank is not None:
+        cmd.extend(["--alignment-rank", str(spec.alignment_rank)])
+    if effective_whitening:
         cmd.append("--whitening")
     return cmd
 
@@ -296,6 +356,7 @@ def build_evaluate_cmd(
     gate_search_file: str | None,
     gate_search_limit: int,
     spec: EvalSpec,
+    prediction_output: Path | None = None,
 ) -> list[str]:
     methods = list(spec.methods)
     if spec.include_baselines:
@@ -349,8 +410,14 @@ def build_evaluate_cmd(
         cmd.extend(["--gate-mode", "checkpoint"])
     if uses_gate_dependent_rotalign and spec.gate_values:
         cmd.extend(["--gate-values", *[str(v) for v in spec.gate_values]])
+    if uses_rotalign and spec.source_kv_control != "real":
+        cmd.extend(["--source-kv-control", spec.source_kv_control])
+    if uses_rotalign and spec.quantization_control != "real":
+        cmd.extend(["--quantization-control", spec.quantization_control])
     if not spec.quantize:
         cmd.append("--no-quantize")
+    if prediction_output is not None:
+        cmd.extend(["--prediction-output", str(prediction_output)])
     return cmd
 
 
@@ -371,6 +438,8 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "selection_ratio",
         "seed",
         "source_reasoning_mode",
+        "source_kv_control",
+        "quantization_control",
         "quantize",
         "target_alone",
         "text_to_text",
@@ -379,6 +448,13 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "best_minus_target",
         "best_minus_text_to_text",
         "best_bytes",
+        "latent_metric",
+        "latent_value",
+        "latent_minus_target",
+        "latent_minus_text_to_text",
+        "latent_bytes",
+        "latent_bits",
+        "latent_latency_sec",
         "best_ttft_sec",
         "best_tokens_per_sec",
         "log_file",
@@ -395,6 +471,8 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "selection_ratio": record["selection_ratio"],
                     "seed": record["seed"],
                     "source_reasoning_mode": record["source_reasoning_mode"],
+                    "source_kv_control": record["source_kv_control"],
+                    "quantization_control": record.get("quantization_control", "real"),
                     "quantize": record["quantize"],
                     "target_alone": record.get("target_alone"),
                     "text_to_text": record.get("text_to_text"),
@@ -403,6 +481,13 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "best_minus_target": record.get("best_minus_target"),
                     "best_minus_text_to_text": record.get("best_minus_text_to_text"),
                     "best_bytes": record.get("best_bytes"),
+                    "latent_metric": record.get("latent_metric"),
+                    "latent_value": record.get("latent_value"),
+                    "latent_minus_target": record.get("latent_minus_target"),
+                    "latent_minus_text_to_text": record.get("latent_minus_text_to_text"),
+                    "latent_bytes": record.get("latent_bytes"),
+                    "latent_bits": record.get("latent_bits"),
+                    "latent_latency_sec": record.get("latent_latency_sec"),
                     "best_ttft_sec": record.get("best_ttft_sec"),
                     "best_tokens_per_sec": record.get("best_tokens_per_sec"),
                     "log_file": record["log_file"],
@@ -412,8 +497,8 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
     lines = [
         "# RotAlign Control Suite",
         "",
-        "| Checkpoint | Eval | Target | T2T | Best Metric | Value | Δ vs Target | Δ vs T2T | Bytes | TTFT (s) | Tok/s |",
-        "|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|",
+        "| Checkpoint | Eval | Target | T2T | Best Metric | Value | Δ vs Target | Latent Metric | Latent | Latent ΔT | Latent Bytes | Latency (s) |",
+        "|---|---|---:|---:|---|---:|---:|---|---:|---:|---:|---:|",
     ]
     for record in sorted(records, key=lambda r: float(r["best_value"]), reverse=True):
         lines.append(
@@ -425,13 +510,14 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
             f"{record['best_metric']} | "
             f"{record['best_value']:.4f} | "
             f"{_coerce_optional_float(record.get('best_minus_target')):.4f} | "
-            f"{_coerce_optional_float(record.get('best_minus_text_to_text')):.4f} | "
-            f"{_coerce_optional_float(record.get('best_bytes')):.1f} | "
-            f"{_coerce_optional_float(record.get('best_ttft_sec')):.4f} | "
-            f"{_coerce_optional_float(record.get('best_tokens_per_sec')):.3f} |"
+            f"{record.get('latent_metric') or 'none'} | "
+            f"{_coerce_optional_float(record.get('latent_value')):.4f} | "
+            f"{_coerce_optional_float(record.get('latent_minus_target')):.4f} | "
+            f"{_coerce_optional_float(record.get('latent_bytes')):.1f} | "
+            f"{_coerce_optional_float(record.get('latent_latency_sec')):.4f} |"
         )
     if not records:
-        lines.append("| pending | pending |  |  | pending |  |  |  |  |  |  |")
+        lines.append("| pending | pending |  |  | pending |  |  | pending |  |  |  |  |")
     md_path.write_text("\n".join(lines) + "\n")
 
 
@@ -467,6 +553,16 @@ def best_metric_for_eval(
     return max(candidates, key=lambda item: item[1])
 
 
+def metric_sidecar(metrics: dict[str, float], metric: str) -> dict[str, float | None]:
+    return {
+        "bits": metrics.get(f"{metric}_bits"),
+        "bytes": metrics.get(f"{metric}_bytes"),
+        "latency_sec": metrics.get(f"{metric}_latency_sec"),
+        "ttft_sec": metrics.get(f"{metric}_ttft_sec"),
+        "tokens_per_sec": metrics.get(f"{metric}_tokens_per_sec"),
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-model", default=DEFAULT_SOURCE_MODEL)
@@ -477,7 +573,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint-dir", default="checkpoints/overnight_control_suite")
     parser.add_argument("--budget-hours", type=float, default=10.0)
     parser.add_argument("--bits", type=int, default=4)
-    parser.add_argument("--rotation", default="orthogonal", choices=["identity", "orthogonal", "hadamard"])
+    parser.add_argument("--rotation", default="orthogonal", choices=["identity", "orthogonal", "hadamard", "dct"])
     parser.add_argument("--alignment", default="auto", choices=["auto", "identity", "procrustes", "procrustes_rand", "ridge", "cca", "reduced_rank"])
     parser.set_defaults(whitening=True)
     parser.add_argument("--no-whitening", dest="whitening", action="store_false")
@@ -587,6 +683,7 @@ def main() -> None:
                     gate_search_file=args.gate_search_file,
                     gate_search_limit=args.gate_search_limit,
                     spec=eval_spec,
+                    prediction_output=results_dir / "predictions" / f"{spec.name}_{eval_spec.name}.jsonl",
                 )))
         return
 
@@ -628,6 +725,7 @@ def main() -> None:
             if record_key in completed:
                 continue
             eval_log = logs_dir / f"{spec.name}_{eval_spec.name}.log"
+            prediction_output = results_dir / "predictions" / f"{spec.name}_{eval_spec.name}.jsonl"
             eval_cmd = build_evaluate_cmd(
                 python_exe=python_exe,
                 repo_root=repo_root,
@@ -642,6 +740,7 @@ def main() -> None:
                 gate_search_file=args.gate_search_file,
                 gate_search_limit=args.gate_search_limit,
                 spec=eval_spec,
+                prediction_output=prediction_output,
             )
             output = run_logged_command(eval_cmd, eval_log, repo_root)
             metrics = parse_summary_metrics(output)
@@ -651,11 +750,18 @@ def main() -> None:
                 eval_spec.gate_values,
                 include_baselines=eval_spec.include_baselines,
             )
+            latent_metric, latent_value = best_metric_for_eval(
+                metrics,
+                eval_spec.methods,
+                eval_spec.gate_values,
+                include_baselines=False,
+            )
             target_alone = metrics.get("target_alone")
             text_to_text = metrics.get("text_to_text")
             best_bytes = metrics.get(f"{best_metric}_bytes") if best_metric != "none" else None
             best_ttft = metrics.get(f"{best_metric}_ttft_sec") if best_metric != "none" else None
             best_toks = metrics.get(f"{best_metric}_tokens_per_sec") if best_metric != "none" else None
+            latent_sidecar = metric_sidecar(metrics, latent_metric) if latent_metric != "none" else {}
             record = {
                 "timestamp": iso_now(),
                 "checkpoint_tag": spec.name,
@@ -664,6 +770,8 @@ def main() -> None:
                 "seed": spec.seed,
                 "eval_name": eval_spec.name,
                 "source_reasoning_mode": eval_spec.source_reasoning_mode,
+                "source_kv_control": eval_spec.source_kv_control,
+                "quantization_control": eval_spec.quantization_control,
                 "quantize": eval_spec.quantize,
                 "methods": list(eval_spec.methods),
                 "gate_values": list(eval_spec.gate_values),
@@ -676,8 +784,18 @@ def main() -> None:
                 "best_bytes": best_bytes,
                 "best_ttft_sec": best_ttft,
                 "best_tokens_per_sec": best_toks,
+                "latent_metric": latent_metric,
+                "latent_value": None if latent_metric == "none" else latent_value,
+                "latent_minus_target": None if target_alone is None or latent_metric == "none" else latent_value - target_alone,
+                "latent_minus_text_to_text": None if text_to_text is None or latent_metric == "none" else latent_value - text_to_text,
+                "latent_bits": latent_sidecar.get("bits"),
+                "latent_bytes": latent_sidecar.get("bytes"),
+                "latent_latency_sec": latent_sidecar.get("latency_sec"),
+                "latent_ttft_sec": latent_sidecar.get("ttft_sec"),
+                "latent_tokens_per_sec": latent_sidecar.get("tokens_per_sec"),
                 "checkpoint_path": str(checkpoint_path),
                 "log_file": str(eval_log),
+                "prediction_file": str(prediction_output),
                 "metrics": metrics,
             }
             records.append(record)

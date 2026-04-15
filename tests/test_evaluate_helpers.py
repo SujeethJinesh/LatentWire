@@ -245,6 +245,10 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "dev.jsonl",
             "--gate-search-limit",
             "8",
+            "--source-kv-control",
+            "shuffle_positions",
+            "--quantization-control",
+            "matched_noise",
         ],
     )
 
@@ -252,6 +256,44 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.gate_mode == "search"
     assert args.gate_search_file == "dev.jsonl"
     assert args.gate_search_limit == 8
+    assert args.source_kv_control == "shuffle_positions"
+    assert args.quantization_control == "matched_noise"
+
+
+def test_source_kv_controls_are_negative_controls() -> None:
+    K = torch.arange(12, dtype=torch.float32).view(1, 2, 3, 2)
+    V = K + 100.0
+
+    K_zero, V_zero = evaluate._apply_source_kv_control(K, V, "zero", 0)
+    assert torch.equal(K_zero, torch.zeros_like(K))
+    assert torch.equal(V_zero, torch.zeros_like(V))
+
+    K_flip, V_flip = evaluate._apply_source_kv_control(K, V, "shuffle_positions", 0)
+    assert torch.equal(K_flip, K.flip(dims=[2]))
+    assert torch.equal(V_flip, V.flip(dims=[2]))
+
+    K_rand, V_rand = evaluate._apply_source_kv_control(K, V, "random", 0)
+    assert K_rand.shape == K.shape
+    assert V_rand.shape == V.shape
+    assert not torch.equal(K_rand, K)
+
+
+def test_paired_prediction_metrics_report_directional_flips() -> None:
+    records = [
+        {"index": 0, "method": "target_alone", "correct": False},
+        {"index": 0, "method": "rotalign_kv", "correct": True},
+        {"index": 1, "method": "target_alone", "correct": True},
+        {"index": 1, "method": "rotalign_kv", "correct": False},
+        {"index": 2, "method": "target_alone", "correct": True},
+        {"index": 2, "method": "rotalign_kv", "correct": True},
+    ]
+
+    stats = evaluate.paired_prediction_metrics(records, "rotalign_kv", "target_alone", n_bootstrap=32)
+
+    assert stats["paired_n"] == 3.0
+    assert stats["method_only"] == 1.0
+    assert stats["baseline_only"] == 1.0
+    assert stats["both_correct"] == 1.0
 
 
 def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> None:
@@ -278,6 +320,10 @@ def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> No
         quantize=True,
         protocol="fused",
         source_reasoning_mode="brief_analysis",
+        source_kv_control="real",
+        quantization_control="real",
+        records=None,
+        method_name="rotalign_kv",
     ) -> float:
         score = 0.0
         for layer_idx, (goal_k, goal_v) in target.items():
@@ -334,6 +380,8 @@ def test_search_per_layer_gates_uses_generation_objective_for_generation_example
         quantize=True,
         protocol="fused",
         source_reasoning_mode="brief_analysis",
+        source_kv_control="real",
+        quantization_control="real",
     ):
         calls.append(protocol)
         return (0.25, 16.0, 1.0)
@@ -408,6 +456,8 @@ def test_main_gate_search_uses_protocol_specific_objective(monkeypatch, tmp_path
         protocol,
         source_reasoning_mode,
         gate_values,
+        source_kv_control="real",
+        quantization_control="real",
     ):
         search_protocols.append(protocol)
         return {"gate_K": [0.15, 0.15], "gate_V": [0.25, 0.25]}
@@ -468,6 +518,9 @@ def test_main_gate_search_uses_protocol_specific_objective(monkeypatch, tmp_path
             gate_values=[0.15, 0.25, 0.30],
             gate_search_file=str(tmp_path / "dev.jsonl"),
             gate_search_limit=4,
+            source_kv_control="real",
+            quantization_control="real",
+            prediction_output=None,
         ),
     )
 
@@ -487,7 +540,7 @@ def test_eval_helpers_work_with_fakes(monkeypatch) -> None:
     translate_calls: list[tuple[int, bool]] = []
     hint_calls: list[tuple[str, str]] = []
 
-    def fake_translate_layer(K_s, V_s, tgt_layer_idx, quantize=True):
+    def fake_translate_layer(K_s, V_s, tgt_layer_idx, quantize=True, quantization_control="real"):
         translate_calls.append((tgt_layer_idx, quantize))
         return K_s.clone(), V_s.clone()
 
@@ -537,7 +590,7 @@ def test_build_rotalign_prefix_state_uses_matching_source_and_target_prefix_leng
     src = FakeCausalLM(preferred_token_id=4, n_layers=2)
     tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
     translator = _make_identity_translator(monkeypatch, layers=2)
-    translator.translate_layer = lambda K_s, V_s, tgt_layer_idx, quantize=True: (  # type: ignore[method-assign]
+    translator.translate_layer = lambda K_s, V_s, tgt_layer_idx, quantize=True, quantization_control="real": (  # type: ignore[method-assign]
         K_s.clone(),
         V_s.clone(),
     )
@@ -580,6 +633,8 @@ def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
         device,
         quantize,
         protocol,
+        source_kv_control="real",
+        quantization_control="real",
     ):
         captured["source_prompt"] = source_prompt
         captured["target_prompt"] = target_prompt
@@ -601,6 +656,8 @@ def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
         quantize=False,
         protocol="fused",
         source_reasoning_mode="scratchpad",
+        source_kv_control="real",
+        quantization_control="real",
     )
 
     assert score == 1.0
@@ -628,6 +685,8 @@ def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
         device,
         quantize,
         protocol,
+        source_kv_control="real",
+        quantization_control="real",
     ):
         return evaluate.PrefixState(None, torch.tensor([[2]], dtype=torch.long), 1), {"bits": 32.0}
 

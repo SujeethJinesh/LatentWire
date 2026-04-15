@@ -87,9 +87,9 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--rotation",
-        choices=["identity", "orthogonal", "hadamard"],
+        choices=["identity", "orthogonal", "hadamard", "dct"],
         default="orthogonal",
-        help="Identity, random orthogonal (O(d^2)), or randomized Hadamard (O(d log d))",
+        help="Identity, random orthogonal (O(d^2)), randomized Hadamard (O(d log d)), or DCT",
     )
     p.add_argument(
         "--whitening",
@@ -98,9 +98,9 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--layer-pairing",
-        choices=["interp", "cka"],
+        choices=["interp", "cka", "reverse", "shifted", "random"],
         default="interp",
-        help="Linear interpolation or SemAlign-style CKA ranking",
+        help="Linear interpolation, SemAlign-style CKA ranking, or negative-control pairing",
     )
     p.add_argument(
         "--layer-selection-topk",

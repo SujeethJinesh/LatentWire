@@ -1,0 +1,80 @@
+[
+  {
+    "num": 42,
+    "slug": "cka_similarity_of_neural_network_representations_revisited",
+    "url": "https://arxiv.org/pdf/1905.00414.pdf",
+    "reason": "Core reference for CKA layer-pairing and representation similarity diagnostics."
+  },
+  {
+    "num": 43,
+    "slug": "svcca_singular_vector_canonical_correlation_analysis",
+    "url": "https://arxiv.org/pdf/1706.05806.pdf",
+    "reason": "CCA-based representation comparison and possible layer-pairing ablation."
+  },
+  {
+    "num": 44,
+    "slug": "pwcca_insights_on_representational_similarity",
+    "url": "https://arxiv.org/pdf/1806.05759.pdf",
+    "reason": "Projection-weighted CCA alternative for comparing activation spaces."
+  },
+  {
+    "num": 45,
+    "slug": "orthogonal_random_features",
+    "url": "https://arxiv.org/pdf/1610.09072.pdf",
+    "reason": "Random orthogonal transforms as variance-reduced structured projections."
+  },
+  {
+    "num": 46,
+    "slug": "fastfood_approximate_kernel_expansions",
+    "url": "https://arxiv.org/pdf/1408.3060.pdf",
+    "reason": "Hadamard-based fast structured random transforms."
+  },
+  {
+    "num": 47,
+    "slug": "fnet_mixing_tokens_with_fourier_transforms",
+    "url": "https://arxiv.org/pdf/2105.03824.pdf",
+    "reason": "Fourier mixing reference for cheap dense transforms."
+  },
+  {
+    "num": 48,
+    "slug": "butterfly_transform_fft_based_neural_architecture",
+    "url": "https://arxiv.org/pdf/1906.02256.pdf",
+    "reason": "Learnable FFT-like structured transforms for rotation-family ablations."
+  },
+  {
+    "num": 49,
+    "slug": "optimized_product_quantization",
+    "url": "https://people.csail.mit.edu/kaiming/publications/cvpr13opq.pdf",
+    "reason": "Rotation plus product quantization as a direct compression analogue."
+  },
+  {
+    "num": 50,
+    "slug": "quarot_outlier_free_4bit_inference_rotated_llms",
+    "url": "https://arxiv.org/pdf/2404.00456.pdf",
+    "reason": "Hadamard rotations for outlier-free LLM quantization."
+  },
+  {
+    "num": 51,
+    "slug": "qtip_quantization_with_trellises_and_incoherence_processing",
+    "url": "https://arxiv.org/pdf/2406.11235.pdf",
+    "reason": "Incoherence processing and trellis quantization for low-bit LLM compression."
+  },
+  {
+    "num": 52,
+    "slug": "finding_structure_with_randomness",
+    "url": "https://arxiv.org/pdf/0909.4061.pdf",
+    "reason": "Randomized low-rank linear algebra for reduced-rank alignment ablations."
+  },
+  {
+    "num": 53,
+    "slug": "smoothquant",
+    "url": "https://arxiv.org/pdf/2211.10438.pdf",
+    "reason": "Activation outlier smoothing and per-channel scaling for quantization ablations."
+  },
+  {
+    "num": 54,
+    "slug": "flatquant",
+    "url": "https://arxiv.org/pdf/2410.09426.pdf",
+    "reason": "Affine transformation based post-training quantization for rotation/scale ablations."
+  }
+]
