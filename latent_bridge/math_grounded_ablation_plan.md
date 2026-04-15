@@ -113,6 +113,9 @@ Implemented now:
 
 - `--prediction-output` writes per-example JSONL predictions.
 - Evaluation summaries include paired bootstrap deltas and McNemar counts against target and text-to-text.
+- `scripts/compare_prediction_files.py` compares separate prediction files on
+  paired examples, which is required for real translated KV versus zero-byte
+  target attenuation.
 
 ## Failure Analysis
 

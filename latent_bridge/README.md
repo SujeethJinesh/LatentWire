@@ -219,6 +219,23 @@ attenuation baseline; source-communication claims require real translated KV to
 beat that baseline on paired examples. Use `--no-quantize` as the
 full-precision anchor before comparing 4-bit and lower-bit runs.
 
+To compare two prediction JSONL files on the same examples, use
+`scripts/compare_prediction_files.py`. This is the required check for real
+translated KV versus zero-byte target attenuation:
+
+```bash
+python scripts/compare_prediction_files.py \
+    --candidate results/run/predictions/real.jsonl \
+    --baseline results/run/predictions/target_attenuation.jsonl \
+    --candidate-label real_translated \
+    --baseline-label target_attenuation \
+    --method-prefix rotalign_kv_gate_ \
+    --output-md results/run/real_vs_target_attenuation.md
+```
+
+For best-row comparisons where the real and control gates differ, replace
+`--method-prefix` with `--candidate-method` and `--baseline-method`.
+
 ## For the paper: what to run in what order
 
 **Immediate pilot matrix (M1-friendly, 64 GB unified memory):**
