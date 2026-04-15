@@ -313,6 +313,57 @@ def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> No
     assert gate1[1] == pytest.approx(0.0, abs=1e-5)
 
 
+def test_search_per_layer_gates_uses_generation_objective_for_generation_examples(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    examples = [evaluate.GenerationExample(prompt="q", answers=["a"])]
+    calls: list[str] = []
+
+    def fake_eval_generation_rotalign(
+        source_model,
+        source_tokenizer,
+        target_model,
+        target_tokenizer,
+        translator_obj,
+        examples_arg,
+        device,
+        max_new_tokens,
+        quantize=True,
+        protocol="fused",
+        source_reasoning_mode="brief_analysis",
+    ):
+        calls.append(protocol)
+        return (0.25, 16.0, 1.0)
+
+    def fail_mcq(*args, **kwargs):  # pragma: no cover - defensive
+        raise AssertionError("MCQ evaluator should not be used for generation gate search")
+
+    monkeypatch.setattr(evaluate, "_eval_generation_rotalign", fake_eval_generation_rotalign)
+    monkeypatch.setattr(evaluate, "eval_rotalign_kv", fail_mcq)
+
+    stats = evaluate._search_per_layer_gates(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        examples,
+        "cpu",
+        quantize=False,
+        protocol="translated_only",
+        source_reasoning_mode="plain",
+        gate_values=[0.15, 0.25],
+    )
+
+    assert calls
+    assert set(calls) == {"translated_only"}
+    assert len(stats["gate_K"]) == 2
+    assert len(stats["gate_V"]) == 2
+
+
 def test_restore_gate_values_restores_each_layer(monkeypatch) -> None:
     translator = _make_identity_translator(monkeypatch, layers=2)
     translator.set_layer_gates(0, alpha_k=0.25, alpha_v=0.75)

@@ -522,6 +522,35 @@ def _search_per_layer_gates(
     layer_indices = translator.selected_layer_indices()
     if not layer_indices:
         layer_indices = list(range(translator.config.num_tgt_layers))
+    is_generation = bool(examples) and isinstance(examples[0], GenerationExample)
+
+    def _score_current_gates() -> float:
+        if is_generation:
+            return _eval_generation_rotalign(
+                source_model,
+                source_tokenizer,
+                target_model,
+                target_tokenizer,
+                translator,
+                examples,
+                device,
+                max_new_tokens=64,
+                quantize=quantize,
+                protocol=protocol,
+                source_reasoning_mode=source_reasoning_mode,
+            )[0]
+        return eval_rotalign_kv(
+            source_model,
+            source_tokenizer,
+            target_model,
+            target_tokenizer,
+            translator,
+            examples,
+            device,
+            quantize=quantize,
+            protocol=protocol,
+            source_reasoning_mode=source_reasoning_mode,
+        )
 
     for tgt_layer_idx in layer_indices:
         current_k, current_v = translator.gate_value(tgt_layer_idx)
@@ -530,18 +559,7 @@ def _search_per_layer_gates(
         best_k_score = float("-inf")
         for candidate in candidates:
             translator.set_layer_gates(tgt_layer_idx, alpha_k=candidate, alpha_v=current_v)
-            score = eval_rotalign_kv(
-                source_model,
-                source_tokenizer,
-                target_model,
-                target_tokenizer,
-                translator,
-                examples,
-                device,
-                quantize=quantize,
-                protocol=protocol,
-                source_reasoning_mode=source_reasoning_mode,
-            )
+            score = _score_current_gates()
             if score > best_k_score:
                 best_k_score = score
                 best_k = candidate
@@ -552,18 +570,7 @@ def _search_per_layer_gates(
         best_v_score = float("-inf")
         for candidate in candidates:
             translator.set_layer_gates(tgt_layer_idx, alpha_k=best_k, alpha_v=candidate)
-            score = eval_rotalign_kv(
-                source_model,
-                source_tokenizer,
-                target_model,
-                target_tokenizer,
-                translator,
-                examples,
-                device,
-                quantize=quantize,
-                protocol=protocol,
-                source_reasoning_mode=source_reasoning_mode,
-            )
+            score = _score_current_gates()
             if score > best_v_score:
                 best_v_score = score
                 best_v = candidate
