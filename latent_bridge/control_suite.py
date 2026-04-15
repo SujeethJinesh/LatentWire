@@ -235,9 +235,9 @@ def default_eval_specs() -> list[EvalSpec]:
             source_kv_control="zero",
         ),
         EvalSpec(
-            name="fused_quant_zero_translated_brief",
+            name="target_attenuation_brief",
             methods=("rotalign",),
-            gate_values=(0.15, 0.25, 0.30),
+            gate_values=(0.00, 0.05, 0.10, 0.15, 0.20, 0.25),
             quantize=True,
             source_reasoning_mode="brief_analysis",
             include_baselines=True,
@@ -262,10 +262,20 @@ def _filter_named_specs(
         return specs
     wanted = list(dict.fromkeys(selected_names))
     by_name = {getattr(spec, "name"): spec for spec in specs}
-    missing = [name for name in wanted if name not in by_name]
+    aliases = (
+        {"fused_quant_zero_translated_brief": "target_attenuation_brief"}
+        if "target_attenuation_brief" in by_name
+        else {}
+    )
+    canonical = [aliases.get(name, name) for name in wanted]
+    missing = [
+        name
+        for name, canonical_name in zip(wanted, canonical)
+        if canonical_name not in by_name
+    ]
     if missing:
         raise ValueError(f"Unknown spec name(s): {', '.join(missing)}")
-    return [by_name[name] for name in wanted]
+    return [by_name[name] for name in canonical]
 
 
 def run_logged_command(cmd: list[str], log_path: Path, cwd: Path) -> str:

@@ -56,7 +56,7 @@ This shifts the immediate project goal:
 
 ## Next Experiments
 
-1. Promote `translated_kv_control=zero` into an explicit "target KV
+1. Use `target_attenuation_brief` as the explicit zero-byte "target KV
    attenuation" baseline in tables.
 2. Rerun ARC with real translated KV versus zero translated KV on a larger
    split and report paired flips.

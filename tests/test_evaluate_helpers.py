@@ -659,6 +659,38 @@ def test_build_rotalign_prefix_state_uses_matching_source_and_target_prefix_leng
     assert stats["bits"] > 0.0
 
 
+def test_target_space_translated_controls_report_zero_communication(monkeypatch) -> None:
+    translator = _make_identity_translator(monkeypatch, layers=2)
+
+    assert (
+        evaluate._communication_bits(
+            translator,
+            seq_len=2,
+            quantize=True,
+            translated_kv_control="real",
+        )
+        > 0.0
+    )
+    assert (
+        evaluate._communication_bits(
+            translator,
+            seq_len=2,
+            quantize=True,
+            translated_kv_control="zero",
+        )
+        == 0.0
+    )
+    assert (
+        evaluate._communication_bits(
+            translator,
+            seq_len=2,
+            quantize=True,
+            translated_kv_control="random",
+        )
+        == 0.0
+    )
+
+
 def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
     tok_s = FakeTokenizer()
     tok_t = FakeTokenizer()

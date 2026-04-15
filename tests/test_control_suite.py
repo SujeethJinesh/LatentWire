@@ -50,7 +50,7 @@ def test_default_specs_cover_the_control_axes() -> None:
         "fused_quant_random_kv_brief",
         "fused_quant_shuffle_kv_brief",
         "fused_quant_zero_kv_brief",
-        "fused_quant_zero_translated_brief",
+        "target_attenuation_brief",
         "fused_quant_random_translated_brief",
     ]
     assert all(spec.include_baselines for spec in eval_specs)
@@ -73,6 +73,15 @@ def test_filter_named_specs_preserves_requested_order() -> None:
         "baseline_plain",
         "translated_noquant_brief",
     ]
+
+
+def test_filter_named_specs_supports_target_attenuation_alias() -> None:
+    filtered = control_suite._filter_named_specs(
+        control_suite.default_eval_specs(),
+        ["fused_quant_zero_translated_brief"],
+    )
+
+    assert [spec.name for spec in filtered] == ["target_attenuation_brief"]
 
 
 def test_filter_named_specs_rejects_unknown_name() -> None:
@@ -309,7 +318,7 @@ def test_build_evaluate_cmd_adds_quantization_control() -> None:
 
 def test_build_evaluate_cmd_adds_translated_kv_control() -> None:
     spec = control_suite.EvalSpec(
-        name="fused_quant_zero_translated_brief",
+        name="target_attenuation_brief",
         methods=("rotalign",),
         gate_values=(0.15,),
         quantize=True,
@@ -333,6 +342,18 @@ def test_build_evaluate_cmd_adds_translated_kv_control() -> None:
     )
 
     assert cmd[cmd.index("--translated-kv-control") + 1] == "zero"
+
+
+def test_target_attenuation_spec_is_zero_byte_control() -> None:
+    spec = next(
+        spec
+        for spec in control_suite.default_eval_specs()
+        if spec.name == "target_attenuation_brief"
+    )
+
+    assert spec.translated_kv_control == "zero"
+    assert spec.methods == ("rotalign",)
+    assert spec.gate_values == (0.00, 0.05, 0.10, 0.15, 0.20, 0.25)
 
 
 def test_best_metric_for_eval_ignores_system_metrics_and_picks_best_result() -> None:

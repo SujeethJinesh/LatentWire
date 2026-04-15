@@ -586,6 +586,17 @@ def _translated_bits(translator: RotAlignKVTranslator, seq_len: int, quantize: b
     return float(selected_layers * bits_per_layer)
 
 
+def _communication_bits(
+    translator: RotAlignKVTranslator,
+    seq_len: int,
+    quantize: bool,
+    translated_kv_control: str,
+) -> float:
+    if translated_kv_control != "real":
+        return 0.0
+    return _translated_bits(translator, seq_len, quantize)
+
+
 @torch.no_grad()
 def _build_rotalign_prefix_state(
     source_model,
@@ -666,7 +677,14 @@ def _build_rotalign_prefix_state(
         last_token=tgt_last_token,
         prefix_len=seq_len + 1,
     )
-    return prefix_state, {"bits": _translated_bits(translator, seq_len, quantize)}
+    return prefix_state, {
+        "bits": _communication_bits(
+            translator,
+            seq_len,
+            quantize,
+            translated_kv_control,
+        )
+    }
 
 
 def _limit_examples(examples, limit: int | None):
@@ -1478,10 +1496,11 @@ def main() -> None:
                 elapsed = time.perf_counter() - start
                 results[metric_key] = score
                 results[f"{metric_key}_latency_sec"] = elapsed / max(len(examples), 1)
-                results[f"{metric_key}_bits"] = _translated_bits(
+                results[f"{metric_key}_bits"] = _communication_bits(
                     translator,
                     seq_len=1,
                     quantize=not args.no_quantize,
+                    translated_kv_control=args.translated_kv_control,
                 )
                 results[f"{metric_key}_bytes"] = results[f"{metric_key}_bits"] / 8.0
     else:

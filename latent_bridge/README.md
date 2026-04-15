@@ -213,9 +213,11 @@ ablations, sweep `--layer-pairing`, `--layer-selection-*`, `--gate-*`, and
 the `rotalign_*` evaluate modes. Use `--source-kv-control` for random/zero/
 shuffled-source negative controls, `--translated-kv-control` for stricter
 post-translation target-space controls, and `--quantization-control
-matched_noise` to separate true discretization from noise smoothing. Use
-`--no-quantize` as the full-precision anchor before comparing 4-bit and
-lower-bit runs.
+matched_noise` to separate true discretization from noise smoothing. In the
+control suite, `target_attenuation_brief` is the zero-byte target-cache
+attenuation baseline; source-communication claims require real translated KV to
+beat that baseline on paired examples. Use `--no-quantize` as the
+full-precision anchor before comparing 4-bit and lower-bit runs.
 
 ## For the paper: what to run in what order
 
