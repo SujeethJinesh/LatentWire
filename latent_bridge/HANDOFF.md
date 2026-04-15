@@ -159,12 +159,15 @@ All solvers are closed-form (SVD / eigendecomp). The only trainable parameter is
 
 ### Workshop version (COLM, June 23 deadline): minimum viable set
 
-- **1 model pair**: Qwen2.5-0.5B-Instruct → Qwen3-0.6B (same family, different sizes)
+- **1 control pair**: Qwen2.5-0.5B-Instruct → Qwen3-0.6B
+- **1 stress test**: Qwen2.5-0.5B-Instruct → google/gemma-4-E2B-it
 - **3 benchmarks**: MMLU-Redux, ARC-Challenge, **GSM8K** (reasoning is the headline)
 - **4 baselines**: target alone, text-to-text, C2C, ours
 - **Rate-distortion sweep**: bits ∈ {2, 3, 4, 8}
-- **2 ablations**: no-rotation, identity-W
-- **Compute**: ~10–15 GPU-hours, ~$20 on rented A100
+- **Core ablations**: no-rotation, identity-W, interp-vs-CKA, low-gate full precision, sparse layer transmission
+- **Comparator runs**: translated-only, fused, text+KV hybrid, and one reasoning-state comparator
+- **Systems metrics**: bytes transmitted, TTFT, decode throughput, and end-to-end latency
+- **Compute**: ~10–15 GPU-hours, depending on calibration size and cache reuse
 - **Page budget**: 4 pages
 
 ### Full paper version (ICLR 2027, late September deadline): full component study
@@ -177,8 +180,8 @@ All solvers are closed-form (SVD / eigendecomp). The only trainable parameter is
 | Same family, weak-to-strong | Qwen2.5-0.5B → Qwen2.5-7B | Small teaches large |
 | Same family, strong-to-weak | Qwen2.5-7B → Qwen2.5-0.5B | Large teaches small |
 | Same tokenizer, cross size | Llama-3.2-1B → Llama-3.2-3B | Same-family control |
-| Cross family | Llama-3.2-3B → Qwen3-1.7B | Cross-tokenizer |
-| Cross family, hard | Gemma-2-2B → Llama-3.2-3B | Cross-tokenizer, hard |
+| Cross family | Llama-3.2-3B → Qwen3-1.7B | Cross-tokenizer stress test |
+| Cross family, hard | Gemma-2-2B → Llama-3.2-3B | Cross-tokenizer stress test |
 
 **Benchmarks (6, balanced):**
 - Knowledge: MMLU-Redux, ARC-Challenge
@@ -201,6 +204,13 @@ All solvers are closed-form (SVD / eigendecomp). The only trainable parameter is
 6. Bit rates {2, 3, 4, 6, 8, 16}
 7. Calibration size {100, 500, 1K, 5K, 10K}
 8. Fusion gate: fixed / trained / line-searched
+
+**Reporting requirements:**
+1. Accuracy
+2. Bytes transmitted per example
+3. TTFT
+4. Decode throughput
+5. End-to-end latency
 
 **Compute**: ~150–200 GPU-hours, ~$300–500 on cloud A100s
 **Page budget**: 8–9 pages + appendix
@@ -249,7 +259,8 @@ All solvers are closed-form (SVD / eigendecomp). The only trainable parameter is
 
 1. **Set up environment:**
    ```bash
-   cd rotalign_kv
+   cd /Users/sujeethjinesh/Desktop/LatentWire
+   source .venv/bin/activate
    pip install -r requirements.txt
    python scripts/demo.py  # sanity check, should all pass
    ```
@@ -287,32 +298,35 @@ All solvers are closed-form (SVD / eigendecomp). The only trainable parameter is
 
 **Expected: ~30 minutes on a rented A100. This single experiment determines whether the project lives or dies.**
 
-### Phase 1b: Expand to the agreed small-model matrix
+### Phase 1b: Expand only after the control path is stable
 
-Once the control pair works, immediately add these pairs in this order:
+Once the control pair works, expand in this order:
 
-1. `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-0.8B`
-2. `Qwen/Qwen3-0.6B -> Qwen/Qwen3.5-0.8B`
-3. `Qwen/Qwen2.5-0.5B-Instruct -> deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`
-4. `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it`
-5. Stretch once the first four are stable: `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-4B`
+1. `Qwen/Qwen2.5-0.5B-Instruct -> deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`
+2. `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it`
+3. `Qwen/Qwen3-0.6B -> google/gemma-4-E2B-it` if you want a second stress test
+4. Manual follow-up, not unattended default: `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-0.8B`
+5. Later stretch: `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-4B`
 
 Why this order:
-- The first two isolate same-family generational drift.
 - The DeepSeek pair checks whether the method still works on a reasoning-tuned receiver with partial Qwen lineage.
-- The Gemma 4 pair is the first clean small cross-family test.
-- The 4B Qwen3.5 pair is useful, but it should not block the earlier signal.
+- The Gemma 4 pair is the first clean small cross-family stress test.
+- Qwen3.5 is useful, but it should not block the earlier signal or be treated as the unattended default.
 
 ### Phase 2: Harden the evaluation harness
 
 Current `scripts/evaluate.py` now handles both MCQ and exact-match generation.
-The next step is to make it benchmark-grade:
+The next step is to make it benchmark-grade and systems-aware:
 
 1. **Integrate `lm-evaluation-harness`** (https://github.com/EleutherAI/lm-evaluation-harness) as an optional scoring backend. This gives you MMLU, ARC, GSM8K, MATH, BBH, GPQA with less custom dataset glue.
 
 2. **Wire in the RotAlign-KV method as a custom "model" wrapper** that intercepts the target model's forward pass and injects translated KVs.
 
 3. **Standardize exact-match and normalization rules** for generation tasks (GSM8K, MATH) so the paper numbers are reproducible.
+
+4. **Log systems metrics on every run**: bytes transmitted, TTFT, decode throughput, and end-to-end latency.
+
+5. **Keep `--no-quantize` as the main diagnostic path** until full-precision low-gate runs beat text-to-text.
 
 ### Phase 3: Add the C2C baseline
 
@@ -323,8 +337,11 @@ The next step is to make it benchmark-grade:
 ### Phase 4: Run the workshop experiments
 
 Given Phase 1 validates the method, run:
-- 4 small model pairs × 3 benchmarks × 4 methods × 4 bit rates = 192 cells
-- Plus 2 ablations (no-rotation, identity-W)
+- 2 small model pairs plus 1 cross-tokenizer stress test
+- 3 benchmarks × 4 methods × 4 bit rates
+- 4 core ablations: no-rotation, identity-W, interp-vs-CKA, low-gate full precision
+- 2 comparator runs: text+KV hybrid and reasoning-state comparator
+- Systems metrics for every cell
 - Total ~15 GPU-hours
 
 ### Phase 5: Write the workshop paper
@@ -352,7 +369,7 @@ Given Phase 1 validates the method, run:
 
 2. **The fusion gate is initialized at 0.5 and not yet trained.** The translator ships with gates at sigmoid(0) = 0.5. For real-model experiments you need to either (a) add a training loop that optimizes the gate via gradient descent on next-token CE, or (b) do a 1D line search over alpha per layer. I recommend option (b) for simplicity — it's a single-parameter grid search.
 
-3. **Cross-tokenizer pairs.** Current calibration assumes token-wise pairing. For Llama → Qwen this is only approximate. The fallback is to use only same-tokenizer pairs for the workshop version and mention cross-tokenizer as future work.
+3. **Cross-tokenizer pairs.** Current calibration assumes token-wise pairing. For Llama → Qwen this is only approximate. Treat Qwen → Gemma and similar pairs as stress tests, and fall back to same-tokenizer pairs if the alignment looks unstable.
 
 4. **Calibration memory.** For 60-layer models with long sequences, the Procrustes SVD may OOM on small GPUs. Use `--alignment procrustes_rand` (randomized SVD variant) if this happens.
 
@@ -432,10 +449,10 @@ Before the next agent writes any new code, they should answer these questions fr
 
 1. **Does the method beat text-to-text on GSM8K?** If yes → proceed. If no → debug.
 2. **What's the cosine similarity of the alignment on real KVs?** Expect ~0.7–0.95 per layer. If it's below 0.5, something is wrong.
-3. **How much does quantization hurt?** Compare `--bits 16` (essentially no quantization) to `--bits 4`. If the gap is >2 points, Lloyd-Max isn't doing its job and you need whitening.
+3. **How much does quantization hurt?** Compare `--no-quantize` or `--bits 16` to `--bits 4`. If the gap is >2 points, Lloyd-Max isn't doing its job and you need whitening.
 4. **Does whitening help?** Compare `--whitening` on vs off. This tells you whether anisotropy is actually a problem.
-5. **Does Hadamard match random orthogonal?** Compare `--rotation hadamard` to `--rotation orthogonal`. If Hadamard is noticeably worse, structured rotation isn't good enough.
-6. **Is the fusion gate meaningfully different from 0.5?** After training, inspect the learned gates. If they're all near 0 or near 1, the current balance is wrong.
+5. **Does CKA beat interpolation?** If yes, layer semantics matter more than depth matching.
+6. **Does the low-gate full-precision path beat fixed 0.5, and does text+KV hybrid beat translated-only?** If yes, the signal is in the reasoning-state comparator, not raw cache replay.
 
 The answers to these 6 questions determine the shape of the final paper.
 

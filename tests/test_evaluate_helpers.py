@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import torch
 import torch.nn as nn
+import pytest
 
 from latent_bridge import RotAlignKVTranslator, TranslatorConfig
 import latent_bridge.evaluate as evaluate
@@ -177,6 +178,12 @@ def test_generation_match_avoids_numeric_false_positive_for_textual_alias() -> N
     assert evaluate._generation_match("51", ["Area 51"]) is False
 
 
+def test_source_reasoning_prompt_variants() -> None:
+    assert evaluate._source_reasoning_prompt("solve this", "plain") == "solve this"
+    assert "Let's think step by step." in evaluate._source_reasoning_prompt("solve this", "cot")
+    assert "scratchpad" in evaluate._source_reasoning_prompt("solve this", "scratchpad").lower()
+
+
 def test_score_helpers_rank_the_preferred_choice() -> None:
     tok = FakeTokenizer()
     model = FakeCausalLM(preferred_token_id=4)
@@ -208,6 +215,104 @@ def test_score_with_injected_kv_passes_cache_and_attention_mask() -> None:
     assert model.last_call["input_shape"] == (1, 1)
 
 
+def test_translator_set_layer_gates_only_updates_one_layer(monkeypatch) -> None:
+    translator = _make_identity_translator(monkeypatch, layers=2)
+
+    translator.set_layer_gates(1, alpha_k=0.25, alpha_v=0.75)
+
+    assert translator.gate_value(0) == pytest.approx((0.5, 0.5))
+    assert translator.gate_value(1)[0] == pytest.approx(0.25)
+    assert translator.gate_value(1)[1] == pytest.approx(0.75)
+
+
+def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
+    monkeypatch.setattr(
+        evaluate.sys,
+        "argv",
+        [
+            "evaluate.py",
+            "--translator",
+            "translator.pt",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--eval-file",
+            "eval.jsonl",
+            "--gate-mode",
+            "search",
+            "--gate-search-file",
+            "dev.jsonl",
+            "--gate-search-limit",
+            "8",
+        ],
+    )
+
+    args = evaluate.parse_args()
+    assert args.gate_mode == "search"
+    assert args.gate_search_file == "dev.jsonl"
+    assert args.gate_search_limit == 8
+
+
+def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    examples = [evaluate.MCQExample(question="q", choices=["A", "B"], answer=0)]
+
+    target = {
+        0: (0.25, 0.75),
+        1: (0.50, 0.00),
+    }
+
+    def fake_eval_rotalign_kv(
+        source_model,
+        source_tokenizer,
+        target_model,
+        target_tokenizer,
+        translator_obj,
+        examples_arg,
+        device,
+        quantize=True,
+        protocol="fused",
+        source_reasoning_mode="brief_analysis",
+    ) -> float:
+        score = 0.0
+        for layer_idx, (goal_k, goal_v) in target.items():
+            cur_k, cur_v = translator_obj.gate_value(layer_idx)
+            score -= abs(cur_k - goal_k) + abs(cur_v - goal_v)
+        return score
+
+    monkeypatch.setattr(evaluate, "eval_rotalign_kv", fake_eval_rotalign_kv)
+
+    stats = evaluate._search_per_layer_gates(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        examples,
+        "cpu",
+        quantize=False,
+        protocol="fused",
+        source_reasoning_mode="plain",
+        gate_values=[0.0, 0.25, 0.5, 0.75],
+    )
+
+    assert stats["gate_K"][0] == pytest.approx(0.25)
+    assert stats["gate_K"][1] == pytest.approx(0.5)
+    assert stats["gate_V"][0] == pytest.approx(0.75)
+    assert stats["gate_V"][1] == pytest.approx(0.0, abs=1e-5)
+    gate0 = translator.gate_value(0)
+    gate1 = translator.gate_value(1)
+    assert gate0[0] == pytest.approx(0.25)
+    assert gate0[1] == pytest.approx(0.75)
+    assert gate1[0] == pytest.approx(0.5)
+    assert gate1[1] == pytest.approx(0.0, abs=1e-5)
+
+
 def test_eval_helpers_work_with_fakes(monkeypatch) -> None:
     tok_s = FakeTokenizer()
     tok_t = FakeTokenizer()
@@ -215,17 +320,34 @@ def test_eval_helpers_work_with_fakes(monkeypatch) -> None:
     tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
     translator = _make_identity_translator(monkeypatch, layers=2)
     translate_calls: list[tuple[int, bool]] = []
+    hint_calls: list[tuple[str, str]] = []
 
     def fake_translate_layer(K_s, V_s, tgt_layer_idx, quantize=True):
         translate_calls.append((tgt_layer_idx, quantize))
         return K_s.clone(), V_s.clone()
 
+    def fake_generate_source_hint(source_model, source_tokenizer, prompt, device, source_reasoning_mode):
+        hint_calls.append((prompt, source_reasoning_mode))
+        return "hint"
+
     translator.translate_layer = fake_translate_layer  # type: ignore[method-assign]
+    monkeypatch.setattr(evaluate, "_generate_source_hint", fake_generate_source_hint)
 
     examples = [evaluate.MCQExample(question="q", choices=["A", "B"], answer=0)]
 
     assert evaluate.eval_target_alone(tgt, tok_t, examples, "cpu") == 1.0
-    assert evaluate.eval_text_to_text(src, tok_s, tgt, tok_t, examples, "cpu") == 1.0
+    assert (
+        evaluate.eval_text_to_text(
+            src,
+            tok_s,
+            tgt,
+            tok_t,
+            examples,
+            "cpu",
+            source_reasoning_mode="cot",
+        )
+        == 1.0
+    )
     assert (
         evaluate.eval_rotalign_kv(
             src,
@@ -236,9 +358,11 @@ def test_eval_helpers_work_with_fakes(monkeypatch) -> None:
             examples,
             "cpu",
             quantize=False,
+            source_reasoning_mode="cot",
         )
         == 1.0
     )
+    assert hint_calls == [("Question: q\nAnswer:", "cot")]
     assert translate_calls == [(0, False), (1, False)]
 
 
@@ -270,6 +394,116 @@ def test_build_rotalign_prefix_state_uses_matching_source_and_target_prefix_leng
     assert tgt.last_call["input_shape"] == (1, 2)
     assert state.prefix_len == 3
     assert stats["bits"] > 0.0
+
+
+def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    captured: dict[str, str] = {}
+
+    def fake_build_rotalign_prefix_state(
+        source_model,
+        source_tokenizer,
+        target_model,
+        target_tokenizer,
+        translator_obj,
+        source_prompt,
+        target_prompt,
+        device,
+        quantize,
+        protocol,
+    ):
+        captured["source_prompt"] = source_prompt
+        captured["target_prompt"] = target_prompt
+        return evaluate.PrefixState(None, torch.tensor([[2]], dtype=torch.long), 1), {"bits": 0.0}
+
+    monkeypatch.setattr(evaluate, "_build_rotalign_prefix_state", fake_build_rotalign_prefix_state)
+
+    examples = [evaluate.GenerationExample(prompt="solve this", answers=["A"])]
+
+    score, bits, latency = evaluate._eval_generation_rotalign(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        examples,
+        "cpu",
+        max_new_tokens=1,
+        quantize=False,
+        protocol="fused",
+        source_reasoning_mode="scratchpad",
+    )
+
+    assert score == 1.0
+    assert bits == 0.0
+    assert latency >= 0.0
+    assert "scratchpad" in captured["source_prompt"].lower()
+    assert captured["target_prompt"] == "solve this"
+
+
+def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+
+    def fake_build_rotalign_prefix_state(
+        source_model,
+        source_tokenizer,
+        target_model,
+        target_tokenizer,
+        translator_obj,
+        source_prompt,
+        target_prompt,
+        device,
+        quantize,
+        protocol,
+    ):
+        return evaluate.PrefixState(None, torch.tensor([[2]], dtype=torch.long), 1), {"bits": 32.0}
+
+    monkeypatch.setattr(evaluate, "_build_rotalign_prefix_state", fake_build_rotalign_prefix_state)
+    examples = [evaluate.GenerationExample(prompt="solve this", answers=["A"])]
+
+    target_stats = evaluate._eval_generation_target_alone_with_stats(
+        tgt,
+        tok_t,
+        examples,
+        "cpu",
+        max_new_tokens=1,
+    )
+    rotalign_stats = evaluate._eval_generation_rotalign_with_stats(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        examples,
+        "cpu",
+        max_new_tokens=1,
+        quantize=False,
+        protocol="fused",
+        source_reasoning_mode="plain",
+    )
+
+    assert target_stats["accuracy"] == 1.0
+    assert target_stats["ttft_sec"] >= 0.0
+    assert target_stats["tokens_per_sec"] > 0.0
+    assert target_stats["examples_per_sec"] > 0.0
+    assert target_stats["latency_sec"] >= 0.0
+    assert target_stats["generated_tokens_avg"] == 1.0
+
+    assert rotalign_stats["accuracy"] == 1.0
+    assert rotalign_stats["bits"] == 32.0
+    assert rotalign_stats["bytes"] == 4.0
+    assert rotalign_stats["ttft_sec"] >= 0.0
+    assert rotalign_stats["tokens_per_sec"] > 0.0
+    assert rotalign_stats["examples_per_sec"] > 0.0
+    assert rotalign_stats["latency_sec"] >= 0.0
 
 
 def test_generation_text_to_text_passes_attention_mask_to_source_generate() -> None:

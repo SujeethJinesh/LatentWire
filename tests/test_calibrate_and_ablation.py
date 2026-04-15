@@ -125,6 +125,30 @@ def test_collect_aligned_kv_pairs_truncates_to_shorter_valid_length() -> None:
     assert tgt_kvs[0][0].flatten().tolist() == [1.0, 2.0, 1.0, 2.0, 3.0]
 
 
+def test_collect_aligned_kv_pairs_uses_source_reasoning_prompt() -> None:
+    src_model = _FakeModel()
+    tgt_model = _FakeModel()
+    prompt = "a"
+    source_prompt = calibrate._source_reasoning_prompt(prompt, "cot")
+    src_tokenizer = _FakeTokenizer({source_prompt: 4})
+    tgt_tokenizer = _FakeTokenizer({prompt: 2})
+
+    src_kvs, tgt_kvs = calibrate.collect_aligned_kv_pairs(
+        src_model,
+        src_tokenizer,
+        tgt_model,
+        tgt_tokenizer,
+        [prompt],
+        max_length=5,
+        batch_size=1,
+        device="cpu",
+        source_reasoning_mode="cot",
+    )
+
+    assert src_kvs[0][0].shape == (2, 1, 1, 1)
+    assert tgt_kvs[0][0].shape == (2, 1, 1, 1)
+
+
 def test_calibrate_config_helpers_parse_and_batch() -> None:
     assert calibrate.torch_dtype("float32") is torch.float32
     assert calibrate.torch_dtype("float16") is torch.float16
@@ -152,6 +176,8 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
             "--rotation",
             "hadamard",
             "--whitening",
+            "--source-reasoning-mode",
+            "cot",
         ],
     )
 
@@ -160,6 +186,7 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
     assert args.alignment_rank == 2
     assert args.rotation == "hadamard"
     assert args.whitening is True
+    assert args.source_reasoning_mode == "cot"
 
 
 def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path) -> None:
@@ -193,6 +220,7 @@ def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path
         whiten=["on"],
         device="cpu",
         dtype="float32",
+        source_reasoning_modes=["plain", "cot"],
     )
     monkeypatch.setattr(sweep, "parse_args", lambda: args)
 
@@ -210,20 +238,23 @@ def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path
         return "calibrated"
 
     monkeypatch.setattr(sweep, "run_cmd", fake_run_cmd)
-    times = iter([10.0, 16.0])
+    times = iter([10.0, 16.0, 20.0, 26.0, 30.0, 36.0, 40.0, 46.0, 50.0, 56.0])
     monkeypatch.setattr(sweep.time, "time", lambda: next(times))
 
     sweep.main()
 
-    assert len(commands) == 2
+    assert len(commands) == 4
     assert any(part.endswith("scripts/calibrate.py") for part in commands[0])
     assert any(part == "--whitening" for part in commands[0])
+    assert any(part == "--source-reasoning-mode" for part in commands[0])
     assert any(part.endswith("scripts/evaluate.py") for part in commands[1])
+    assert any(part == "--source-reasoning-mode" for part in commands[1])
 
     records = [json.loads(line) for line in out_path.read_text(encoding="utf-8").splitlines()]
-    assert len(records) == 1
+    assert len(records) == 2
     assert records[0]["rotation"] == "orthogonal"
     assert records[0]["alignment"] == "procrustes"
     assert records[0]["bits"] == 4
     assert records[0]["whitening"] is True
     assert records[0]["rotalign_kv"] == 0.3
+    assert {record["source_reasoning_mode"] for record in records} == {"plain", "cot"}

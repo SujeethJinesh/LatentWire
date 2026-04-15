@@ -242,11 +242,26 @@ class RotAlignKVTranslator(nn.Module):
         self.gate_K.data.fill_(float(logit_k))
         self.gate_V.data.fill_(float(logit_v))
 
+    def set_layer_gates(self, tgt_layer_idx: int, alpha_k: float | None = None, alpha_v: float | None = None) -> None:
+        """Update one layer's gates without touching the rest of the stack."""
+        eps = 1e-6
+        if alpha_k is not None:
+            a_k = min(max(alpha_k, eps), 1.0 - eps)
+            logit_k = torch.logit(torch.tensor(a_k, dtype=self.gate_K.dtype, device=self.gate_K.device))
+            self.gate_K.data[tgt_layer_idx] = logit_k
+        if alpha_v is not None:
+            a_v = min(max(alpha_v, eps), 1.0 - eps)
+            logit_v = torch.logit(torch.tensor(a_v, dtype=self.gate_V.dtype, device=self.gate_V.device))
+            self.gate_V.data[tgt_layer_idx] = logit_v
+
     def gate_value(self, tgt_layer_idx: int) -> tuple[float, float]:
         return (
             float(torch.sigmoid(self.gate_K[tgt_layer_idx]).detach()),
             float(torch.sigmoid(self.gate_V[tgt_layer_idx]).detach()),
         )
+
+    def gate_values(self) -> list[tuple[float, float]]:
+        return [self.gate_value(idx) for idx in range(self.config.num_tgt_layers)]
 
     # ------------------------------------------------------------------
     # Core geometric operations

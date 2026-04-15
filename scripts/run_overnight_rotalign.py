@@ -16,8 +16,12 @@ supported by the current KV-only runner:
 
 For each pair it writes incremental JSONL status rows, captures a per-pair log,
 retries failing subprocesses once, and records the parsed evaluation summary.
-If enough budget remains after the pilots, it runs a tiny 4-config ablation
-on the best pair.
+If enough budget remains after the pilots, it runs a small reasoning and
+geometry ablation on the best pair.
+
+The follow-up ablation now also sweeps source-side reasoning formats so the
+overnight batch can test whether `plain`, `brief_analysis`, or `cot` source
+prompts matter more than the raw KV path.
 """
 
 from __future__ import annotations
@@ -35,6 +39,10 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from rotalign import RotAlignKVTranslator
 
 
 DEFAULT_PAIRS: list[tuple[str, str]] = [
@@ -147,8 +155,15 @@ def write_pair_summaries(pair_records: list[dict[str, Any]], primary_metric: str
         "target_model",
         "elapsed_sec",
         "target_alone",
+        "target_alone_ttft_sec",
+        "target_alone_tokens_per_sec",
         "text_to_text",
+        "text_to_text_ttft_sec",
+        "text_to_text_tokens_per_sec",
         "rotalign_kv",
+        "rotalign_kv_bytes",
+        "rotalign_kv_ttft_sec",
+        "rotalign_kv_tokens_per_sec",
         "checkpoint_path",
         "log_file",
     ]
@@ -165,8 +180,15 @@ def write_pair_summaries(pair_records: list[dict[str, Any]], primary_metric: str
                     "target_model": record.get("target_model"),
                     "elapsed_sec": record.get("elapsed_sec"),
                     "target_alone": metrics.get("target_alone"),
+                    "target_alone_ttft_sec": metrics.get("target_alone_ttft_sec"),
+                    "target_alone_tokens_per_sec": metrics.get("target_alone_tokens_per_sec"),
                     "text_to_text": metrics.get("text_to_text"),
+                    "text_to_text_ttft_sec": metrics.get("text_to_text_ttft_sec"),
+                    "text_to_text_tokens_per_sec": metrics.get("text_to_text_tokens_per_sec"),
                     "rotalign_kv": metrics.get("rotalign_kv"),
+                    "rotalign_kv_bytes": metrics.get("rotalign_kv_bytes"),
+                    "rotalign_kv_ttft_sec": metrics.get("rotalign_kv_ttft_sec"),
+                    "rotalign_kv_tokens_per_sec": metrics.get("rotalign_kv_tokens_per_sec"),
                     "checkpoint_path": record.get("checkpoint_path"),
                     "log_file": record.get("log_file"),
                 }
@@ -177,8 +199,8 @@ def write_pair_summaries(pair_records: list[dict[str, Any]], primary_metric: str
         "",
         f"Primary metric: `{primary_metric}`",
         "",
-        "| Pair | Target | T2T | RotAlign | Elapsed (s) |",
-        "|---|---:|---:|---:|---:|",
+        "| Pair | Target | T2T | RotAlign | Bytes | TTFT (s) | Tok/s | Elapsed (s) |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     sorted_records = sorted(
         pair_records,
@@ -193,10 +215,13 @@ def write_pair_summaries(pair_records: list[dict[str, Any]], primary_metric: str
             f"{metrics.get('target_alone', float('nan')):.4f} | "
             f"{metrics.get('text_to_text', float('nan')):.4f} | "
             f"{metrics.get('rotalign_kv', float('nan')):.4f} | "
+            f"{metrics.get('rotalign_kv_bytes', float('nan')):.1f} | "
+            f"{metrics.get('rotalign_kv_ttft_sec', float('nan')):.4f} | "
+            f"{metrics.get('rotalign_kv_tokens_per_sec', float('nan')):.3f} | "
             f"{record.get('elapsed_sec', float('nan')):.1f} |"
         )
     if not pair_records:
-        lines.append("| pending |  |  |  |  |")
+        lines.append("| pending |  |  |  |  |  |  |  |")
     md_path.write_text("\n".join(lines) + "\n")
 
 
@@ -314,6 +339,16 @@ def run_with_retries(
     raise RuntimeError(f"{phase} failed after {max_attempts} attempts")
 
 
+def checkpoint_is_usable(path: Path) -> bool:
+    if not path.exists() or path.stat().st_size <= 0:
+        return False
+    try:
+        RotAlignKVTranslator.load(str(path), map_location="cpu")
+    except Exception:
+        return False
+    return True
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -353,6 +388,23 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default=default_device())
     parser.add_argument("--dtype", default="float32", choices=["float32", "float16", "bfloat16"])
     parser.add_argument("--max-new-tokens", type=int, default=128)
+    parser.add_argument(
+        "--source-reasoning-mode",
+        default="brief_analysis",
+        choices=["plain", "brief_analysis", "cot", "scratchpad"],
+    )
+    parser.add_argument(
+        "--ablation-source-reasoning-modes",
+        nargs="+",
+        default=["plain", "brief_analysis", "cot"],
+        choices=["plain", "brief_analysis", "cot", "scratchpad"],
+    )
+    parser.add_argument(
+        "--ablation-protocols",
+        nargs="+",
+        default=["translated_only", "fused", "text_kv_hybrid"],
+        choices=["translated_only", "fused", "text_kv_hybrid"],
+    )
     parser.add_argument("--fixed-gate", type=float, default=0.5)
     parser.add_argument(
         "--methods",
@@ -427,6 +479,8 @@ def build_calibrate_cmd(
         args.device,
         "--dtype",
         args.dtype,
+        "--source-reasoning-mode",
+        args.source_reasoning_mode,
     ]
     if args.whitening:
         cmd.append("--whitening")
@@ -461,6 +515,8 @@ def build_evaluate_cmd(
         args.dtype,
         "--max-new-tokens",
         str(args.max_new_tokens),
+        "--source-reasoning-mode",
+        args.source_reasoning_mode,
         "--methods",
         *args.methods,
         "--gate-mode",
@@ -509,8 +565,10 @@ def build_ablation_cmd(
         str(args.selection_ratio),
         "--rotation-seeds",
         str(args.seed),
+        "--source-reasoning-modes",
+        *args.ablation_source_reasoning_modes,
         "--protocols",
-        "fused",
+        *args.ablation_protocols,
         "--gate-mode",
         "checkpoint",
         "--device",
@@ -597,7 +655,7 @@ def main() -> None:
                 "target_model": target_model,
                 "checkpoint_path": str(checkpoint_path),
             }
-            if args.reuse_checkpoints and checkpoint_path.exists() and checkpoint_path.stat().st_size > 0:
+            if args.reuse_checkpoints and checkpoint_is_usable(checkpoint_path):
                 status.emit(
                     "calibration_reused",
                     phase="calibration",
@@ -606,6 +664,16 @@ def main() -> None:
                     **calibration_status,
                 )
             else:
+                if args.reuse_checkpoints and checkpoint_path.exists():
+                    status.emit(
+                        "calibration_reuse_rejected",
+                        phase="calibration",
+                        pair_tag=pair_tag,
+                        log_file=str(pair_log),
+                        reason="checkpoint_unreadable",
+                        **calibration_status,
+                    )
+                    checkpoint_path.unlink(missing_ok=True)
                 calibrate_cmd = build_calibrate_cmd(
                     python_exe=python_exe,
                     repo_root=repo_root,

@@ -86,6 +86,7 @@ over flag combinations.
 ### 1. Install
 
 ```bash
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -182,46 +183,54 @@ For the rotation ablation, sweep `--rotation` across `identity`, `orthogonal`,
 and `hadamard`. For the alignment ablation, sweep `--alignment`. For the
 whitening ablation, toggle `--whitening`. For pairing / sparsity / protocol
 ablations, sweep `--layer-pairing`, `--layer-selection-*`, `--gate-*`, and
-the `rotalign_*` evaluate modes.
+the `rotalign_*` evaluate modes. Use `--no-quantize` as the first diagnostic
+route until the full-precision path is clearly better than text-to-text; only
+then compare 4-bit and lower-bit runs.
 
 ## For the paper: what to run in what order
 
 **Immediate pilot matrix (M1-friendly, 64 GB unified memory):**
 
 1. `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3-0.6B`
-2. `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-0.8B`
-3. `Qwen/Qwen3-0.6B -> Qwen/Qwen3.5-0.8B`
-4. `Qwen/Qwen2.5-0.5B-Instruct -> deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`
-5. `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it`
-6. Stretch once the first five work: `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-4B`
+2. `Qwen/Qwen2.5-0.5B-Instruct -> deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`
+3. `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it`
+4. `Qwen/Qwen3-0.6B -> google/gemma-4-E2B-it` if you want a second
+   cross-tokenizer stress test
+5. Manual follow-up only, not unattended default: `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-0.8B`
+6. Later stretch: `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-4B`
 
-This ordering keeps the first pass focused on small, current models. It starts
-with same-family Qwen controls, then moves to a Qwen-derived reasoning model
-(DeepSeek R1 Distill), then a current small cross-family target (Gemma 4).
+This ordering keeps the first pass focused on the control pair, a reasoning-tuned
+receiver, and one cross-tokenizer stress test. Qwen3.5 is a follow-up target, not
+the default unattended run.
 
 **Workshop (COLM, June 23 deadline):** minimum viable experiment set.
 
-1. Validate the first three Qwen-family pairs above on **GSM8K**
-2. Add one cross-family check: `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it`
+1. Validate the control pair on **GSM8K** with `--no-quantize` first, then
+   compare 4-bit and lower-bit runs.
+2. Add one cross-family stress test: `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it`
 3. 3 benchmarks: MMLU-Redux, ARC-C, **GSM8K**
 4. Rate-distortion sweep: bits ∈ {2, 3, 4, 8}
 5. 4 core ablations: no-rotation, identity-W, interp-vs-CKA, full-precision-vs-4-bit
-6. ~10–20 GPU-hours equivalent, depending on calibration size and cache reuse
+6. Add source reasoning-format sweeps, low-gate full-precision runs, `text+KV hybrid`, and a reasoning-state comparator before expanding model breadth
+7. Report accuracy, bytes transmitted, TTFT, and decode throughput for every run
+8. ~10–20 GPU-hours equivalent, depending on calibration size and cache reuse
 
 **Full paper (ICLR 2027, late September):** component study + phased matrix.
 
 1. Factorial sweep on one control pair and one reasoning task
 2. Freeze the winning configuration
 3. Run the full benchmark on the M1-friendly matrix above
-4. Add larger or harder follow-ons: `Qwen/Qwen3.5-4B`, Llama controls, and explicit cross-tokenizer pairs
+4. Add larger or harder follow-ons: `Qwen/Qwen3.5-4B`, Llama controls, and explicit cross-tokenizer stress tests
 5. Add direct C2C and KVComm baseline runs on the strongest small-pair settings
-6. ~150–200 GPU-hours if the full benchmark is expanded to the larger matrix
+6. Include selective layer transmission and systems metrics as first-class results
+7. ~150–200 GPU-hours if the full benchmark is expanded to the larger matrix
 
 ## Known limitations
 
 - **Cross-tokenizer calibration** assumes approximate token-wise pairing.
   Best results come from same-tokenizer pairs (Qwen2.5 ↔ Qwen3, Llama-3 ↔ Llama-3.1).
-  Proper cross-tokenizer alignment via Gromov-Wasserstein is the natural follow-up.
+  Treat Qwen → Gemma and similar pairs as stress tests until anchor-style or
+  Gromov-Wasserstein alignment is added.
 - **Scalar quantization is suboptimal** for correlated dimensions. If residual
   correlation survives rotation, vector quantization (full TurboQuant) would
   outperform.

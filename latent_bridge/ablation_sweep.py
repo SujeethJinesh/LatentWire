@@ -6,7 +6,8 @@ Results are written as a JSONL file, one line per configuration:
 
     {"rotation": "orthogonal", "alignment": "procrustes", "bits": 4,
      "whitening": false, "layer_pairing": "interp", "selection_ratio": 1.0,
-     "protocol": "fused", "gate_mode": "fixed", "gate_value": 0.5,
+     "protocol": "fused", "source_reasoning_mode": "brief_analysis",
+     "gate_mode": "fixed", "gate_value": 0.5,
      "target_alone": 0.52, "text_to_text": 0.58, "rotalign_kv": 0.63}
 
 This is the main workhorse for the paper's component study (method.md §5.4).
@@ -72,6 +73,13 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--layer-pairings", nargs="+", default=["interp"], choices=["interp", "cka"])
     p.add_argument("--selection-ratios", nargs="+", type=float, default=[1.0])
     p.add_argument("--rotation-seeds", nargs="+", type=int, default=[0])
+    p.add_argument(
+        "--source-reasoning-modes",
+        nargs="+",
+        default=["brief_analysis"],
+        choices=["plain", "brief_analysis", "cot", "scratchpad"],
+        help="Source prompt format used for text-to-text and source KV capture",
+    )
     p.add_argument(
         "--protocols",
         nargs="+",
@@ -141,6 +149,7 @@ def main() -> None:
             getattr(args, "layer_pairings", ["interp"]),
             getattr(args, "selection_ratios", [1.0]),
             getattr(args, "rotation_seeds", [0]),
+            getattr(args, "source_reasoning_modes", ["brief_analysis"]),
             getattr(args, "protocols", ["fused"]),
             quantize_modes,
         )
@@ -148,10 +157,22 @@ def main() -> None:
     print(f"Running {len(combos)} configurations...")
 
     with open(out_path, "w") as f_out:
-        for i, (rotation, alignment, bits, whiten, layer_pairing, selection_ratio, seed, protocol, quantize_mode) in enumerate(combos):
+        for i, (
+            rotation,
+            alignment,
+            bits,
+            whiten,
+            layer_pairing,
+            selection_ratio,
+            seed,
+            source_reasoning_mode,
+            protocol,
+            quantize_mode,
+        ) in enumerate(combos):
             tag = (
                 f"rot{rotation}_align{alignment}_bits{bits}_w{whiten}"
-                f"_pair{layer_pairing}_sel{selection_ratio}_seed{seed}_proto{protocol}"
+                f"_pair{layer_pairing}_sel{selection_ratio}_seed{seed}"
+                f"_reason{source_reasoning_mode}_proto{protocol}"
                 f"_q{quantize_mode}"
             )
             ckpt = ckpt_dir / f"{tag}.pt"
@@ -172,6 +193,7 @@ def main() -> None:
                 "--seed", str(seed),
                 "--device", args.device,
                 "--dtype", args.dtype,
+                "--source-reasoning-mode", source_reasoning_mode,
             ]
             if whiten == "on":
                 cal_cmd.append("--whitening")
@@ -194,6 +216,7 @@ def main() -> None:
                 "--gate-mode", getattr(args, "gate_mode", "fixed"),
                 "--device", args.device,
                 "--dtype", args.dtype,
+                "--source-reasoning-mode", source_reasoning_mode,
             ]
             if protocol == "translated_only":
                 eval_cmd[eval_cmd.index("rotalign")] = "rotalign_translated"
@@ -223,6 +246,7 @@ def main() -> None:
                 "layer_pairing": layer_pairing,
                 "selection_ratio": selection_ratio,
                 "rotation_seed": seed,
+                "source_reasoning_mode": source_reasoning_mode,
                 "protocol": protocol,
                 "quantize_mode": quantize_mode,
                 "gate_mode": getattr(args, "gate_mode", "fixed"),

@@ -63,6 +63,14 @@ class PrefixState:
     prefix_len: int
 
 
+@dataclass
+class GenerationTrace:
+    text: str
+    num_generated_tokens: int
+    ttft_sec: float
+    elapsed_sec: float
+
+
 def load_mcq(path: str) -> list[MCQExample]:
     items: list[MCQExample] = []
     with open(path, "r", encoding="utf-8") as f:
@@ -206,7 +214,26 @@ def _greedy_generate_from_prefix_state(
     device: str,
     max_new_tokens: int,
 ) -> str:
+    return _greedy_generate_with_stats(
+        model,
+        tokenizer,
+        prefix_state,
+        device,
+        max_new_tokens,
+    ).text
+
+
+@torch.no_grad()
+def _greedy_generate_with_stats(
+    model,
+    tokenizer,
+    prefix_state: PrefixState,
+    device: str,
+    max_new_tokens: int,
+) -> GenerationTrace:
+    started = time.perf_counter()
     logits, past = _step_with_past(model, prefix_state.last_token, prefix_state.past_key_values, device)
+    ttft_sec = time.perf_counter() - started
     generated: list[int] = []
     next_token = int(logits.argmax(dim=-1).item())
     generated.append(next_token)
@@ -218,7 +245,12 @@ def _greedy_generate_from_prefix_state(
         next_token = int(logits.argmax(dim=-1).item())
         generated.append(next_token)
         current = torch.tensor([[next_token]], dtype=torch.long, device=device)
-    return tokenizer.decode(generated, skip_special_tokens=True).strip()
+    return GenerationTrace(
+        text=tokenizer.decode(generated, skip_special_tokens=True).strip(),
+        num_generated_tokens=len(generated),
+        ttft_sec=ttft_sec,
+        elapsed_sec=time.perf_counter() - started,
+    )
 
 
 @torch.no_grad()
@@ -351,6 +383,26 @@ def _generation_match(prediction: str, answers: list[str]) -> bool:
     return pred_numeric is not None and pred_numeric in numeric_answers
 
 
+def _generation_metrics(
+    *,
+    correct: int,
+    num_examples: int,
+    total_generated_tokens: int,
+    total_ttft_sec: float,
+    total_elapsed_sec: float,
+) -> dict[str, float]:
+    count = max(num_examples, 1)
+    elapsed = max(total_elapsed_sec, 1e-9)
+    return {
+        "accuracy": correct / count,
+        "ttft_sec": total_ttft_sec / count,
+        "tokens_per_sec": total_generated_tokens / elapsed,
+        "examples_per_sec": num_examples / elapsed,
+        "latency_sec": total_elapsed_sec / count,
+        "generated_tokens_avg": total_generated_tokens / count,
+    }
+
+
 def _tail_align_pair(left: torch.Tensor, right: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     seq = min(left.shape[2], right.shape[2])
     return left[:, :, -seq:, :], right[:, :, -seq:, :]
@@ -438,8 +490,135 @@ def _build_rotalign_prefix_state(
     return prefix_state, {"bits": _translated_bits(translator, seq_len, quantize)}
 
 
+def _limit_examples(examples, limit: int | None):
+    if limit is None or limit <= 0 or limit >= len(examples):
+        return list(examples)
+    return list(examples[:limit])
+
+
+def _search_per_layer_gates(
+    source_model,
+    source_tokenizer,
+    target_model,
+    target_tokenizer,
+    translator: RotAlignKVTranslator,
+    examples,
+    device,
+    quantize: bool,
+    protocol: str,
+    source_reasoning_mode: str,
+    gate_values: list[float],
+) -> dict[str, list[float]]:
+    """Coordinate-descent line search over per-layer K/V fusion gates.
+
+    The objective is held-out task accuracy on the supplied examples. We tune
+    K and V separately, one selected layer at a time, while keeping the other
+    gates fixed to their current values.
+    """
+    if not examples:
+        raise ValueError("Gate search requires at least one held-out example")
+
+    candidates = [float(value) for value in gate_values]
+    layer_indices = translator.selected_layer_indices()
+    if not layer_indices:
+        layer_indices = list(range(translator.config.num_tgt_layers))
+
+    for tgt_layer_idx in layer_indices:
+        current_k, current_v = translator.gate_value(tgt_layer_idx)
+
+        best_k = current_k
+        best_k_score = float("-inf")
+        for candidate in candidates:
+            translator.set_layer_gates(tgt_layer_idx, alpha_k=candidate, alpha_v=current_v)
+            score = eval_rotalign_kv(
+                source_model,
+                source_tokenizer,
+                target_model,
+                target_tokenizer,
+                translator,
+                examples,
+                device,
+                quantize=quantize,
+                protocol=protocol,
+                source_reasoning_mode=source_reasoning_mode,
+            )
+            if score > best_k_score:
+                best_k_score = score
+                best_k = candidate
+
+        translator.set_layer_gates(tgt_layer_idx, alpha_k=best_k, alpha_v=current_v)
+
+        best_v = current_v
+        best_v_score = float("-inf")
+        for candidate in candidates:
+            translator.set_layer_gates(tgt_layer_idx, alpha_k=best_k, alpha_v=candidate)
+            score = eval_rotalign_kv(
+                source_model,
+                source_tokenizer,
+                target_model,
+                target_tokenizer,
+                translator,
+                examples,
+                device,
+                quantize=quantize,
+                protocol=protocol,
+                source_reasoning_mode=source_reasoning_mode,
+            )
+            if score > best_v_score:
+                best_v_score = score
+                best_v = candidate
+
+        translator.set_layer_gates(tgt_layer_idx, alpha_k=best_k, alpha_v=best_v)
+        print(
+            f"[gate search] layer {tgt_layer_idx:>2d}: "
+            f"K={best_k:.3f} (score={best_k_score:.4f})  "
+            f"V={best_v:.3f} (score={best_v_score:.4f})"
+        )
+
+    return {
+        "gate_K": [translator.gate_value(idx)[0] for idx in range(translator.config.num_tgt_layers)],
+        "gate_V": [translator.gate_value(idx)[1] for idx in range(translator.config.num_tgt_layers)],
+    }
+
+
 def _mcq_prompt(question: str) -> str:
     return f"Question: {question}\nAnswer:"
+
+
+def _source_reasoning_prompt(prompt: str, mode: str) -> str:
+    prompt = prompt.strip()
+    if mode == "plain":
+        return prompt
+    if mode == "brief_analysis":
+        return (
+            "Briefly analyze this problem in one sentence:\n"
+            f"{prompt}\nAnalysis:"
+        )
+    if mode == "cot":
+        return f"Let's think step by step.\n{prompt}\nReasoning:"
+    if mode == "scratchpad":
+        return f"Use a scratchpad to work through the problem carefully.\n{prompt}\nScratchpad:"
+    raise ValueError(f"Unknown source reasoning mode: {mode}")
+
+
+def _generate_source_hint(
+    source_model,
+    source_tokenizer,
+    prompt: str,
+    device: str,
+    source_reasoning_mode: str,
+) -> str:
+    hint_prompt = _source_reasoning_prompt(prompt, source_reasoning_mode)
+    hint_ids = source_tokenizer(hint_prompt, return_tensors="pt").input_ids.to(device)
+    with torch.no_grad():
+        out = source_model.generate(
+            hint_ids,
+            attention_mask=torch.ones_like(hint_ids),
+            max_new_tokens=48,
+            do_sample=False,
+            pad_token_id=source_tokenizer.eos_token_id,
+        )
+    return source_tokenizer.decode(out[0, hint_ids.shape[1] :], skip_special_tokens=True).strip()
 
 
 def eval_target_alone(target_model, target_tokenizer, examples, device):
@@ -495,24 +674,23 @@ def eval_routing(
 
 
 def eval_text_to_text(
-    source_model, source_tokenizer, target_model, target_tokenizer, examples, device
+    source_model,
+    source_tokenizer,
+    target_model,
+    target_tokenizer,
+    examples,
+    device,
+    source_reasoning_mode: str = "brief_analysis",
 ):
     correct = 0
     for ex in examples:
-        hint_prompt = (
-            "Briefly analyze this question in one sentence:\n"
-            f"{ex.question}\nAnalysis:"
+        hint = _generate_source_hint(
+            source_model,
+            source_tokenizer,
+            _mcq_prompt(ex.question),
+            device,
+            source_reasoning_mode,
         )
-        hint_ids = source_tokenizer(hint_prompt, return_tensors="pt").input_ids.to(device)
-        with torch.no_grad():
-            out = source_model.generate(
-                hint_ids,
-                attention_mask=torch.ones_like(hint_ids),
-                max_new_tokens=48,
-                do_sample=False,
-                pad_token_id=source_tokenizer.eos_token_id,
-            )
-        hint = source_tokenizer.decode(out[0, hint_ids.shape[1] :], skip_special_tokens=True)
         augmented = f"Analysis: {hint.strip()}\nQuestion: {ex.question}\nAnswer:"
         scores = [
             score_choice_loglik(target_model, target_tokenizer, augmented, c, device)
@@ -534,19 +712,21 @@ def eval_rotalign_kv(
     device,
     quantize: bool = True,
     protocol: str = "fused",
+    source_reasoning_mode: str = "brief_analysis",
 ) -> float:
     translator = translator.to(device).eval()
     correct = 0
     for ex in examples:
-        prompt = _mcq_prompt(ex.question)
+        source_prompt = _source_reasoning_prompt(_mcq_prompt(ex.question), source_reasoning_mode)
+        target_prompt = _mcq_prompt(ex.question)
         prefix_state, _ = _build_rotalign_prefix_state(
             source_model,
             source_tokenizer,
             target_model,
             target_tokenizer,
             translator,
-            prompt,
-            prompt,
+            source_prompt,
+            target_prompt,
             device,
             quantize,
             protocol,
@@ -562,17 +742,48 @@ def eval_rotalign_kv(
 
 
 def _eval_generation_target_alone(model, tokenizer, examples, device, max_new_tokens: int) -> float:
+    return _eval_generation_target_alone_with_stats(
+        model,
+        tokenizer,
+        examples,
+        device,
+        max_new_tokens,
+    )["accuracy"]
+
+
+def _eval_generation_target_alone_with_stats(
+    model,
+    tokenizer,
+    examples,
+    device,
+    max_new_tokens: int,
+) -> dict[str, float]:
     correct = 0
+    total_tokens = 0
+    total_ttft = 0.0
+    total_elapsed = 0.0
     for ex in examples:
-        pred = _greedy_generate_from_prefix_state(
+        prep_started = time.perf_counter()
+        prefix_state = _prepare_prefix_state(model, tokenizer, ex.prompt, device)
+        prep_elapsed = time.perf_counter() - prep_started
+        trace = _greedy_generate_with_stats(
             model,
             tokenizer,
-            _prepare_prefix_state(model, tokenizer, ex.prompt, device),
+            prefix_state,
             device,
             max_new_tokens,
         )
-        correct += int(_generation_match(pred, ex.answers))
-    return correct / len(examples)
+        correct += int(_generation_match(trace.text, ex.answers))
+        total_tokens += trace.num_generated_tokens
+        total_ttft += prep_elapsed + trace.ttft_sec
+        total_elapsed += prep_elapsed + trace.elapsed_sec
+    return _generation_metrics(
+        correct=correct,
+        num_examples=len(examples),
+        total_generated_tokens=total_tokens,
+        total_ttft_sec=total_ttft,
+        total_elapsed_sec=total_elapsed,
+    )
 
 
 def _eval_generation_text_to_text(
@@ -583,33 +794,64 @@ def _eval_generation_text_to_text(
     examples,
     device,
     max_new_tokens: int,
+    source_reasoning_mode: str = "brief_analysis",
 ) -> float:
+    return _eval_generation_text_to_text_with_stats(
+        source_model,
+        source_tokenizer,
+        target_model,
+        target_tokenizer,
+        examples,
+        device,
+        max_new_tokens,
+        source_reasoning_mode,
+    )["accuracy"]
+
+
+def _eval_generation_text_to_text_with_stats(
+    source_model,
+    source_tokenizer,
+    target_model,
+    target_tokenizer,
+    examples,
+    device,
+    max_new_tokens: int,
+    source_reasoning_mode: str = "brief_analysis",
+) -> dict[str, float]:
     correct = 0
+    total_tokens = 0
+    total_ttft = 0.0
+    total_elapsed = 0.0
     for ex in examples:
-        hint_prompt = (
-            "Briefly analyze this problem in one sentence:\n"
-            f"{ex.prompt}\nAnalysis:"
+        example_started = time.perf_counter()
+        hint = _generate_source_hint(
+            source_model,
+            source_tokenizer,
+            ex.prompt,
+            device,
+            source_reasoning_mode,
         )
-        hint_ids = source_tokenizer(hint_prompt, return_tensors="pt").input_ids.to(device)
-        with torch.no_grad():
-            out = source_model.generate(
-                hint_ids,
-                attention_mask=torch.ones_like(hint_ids),
-                max_new_tokens=48,
-                do_sample=False,
-                pad_token_id=source_tokenizer.eos_token_id,
-            )
-        hint = source_tokenizer.decode(out[0, hint_ids.shape[1] :], skip_special_tokens=True).strip()
         augmented = f"Analysis: {hint}\n{ex.prompt}"
-        pred = _greedy_generate_from_prefix_state(
+        prefix_state = _prepare_prefix_state(target_model, target_tokenizer, augmented, device)
+        trace = _greedy_generate_with_stats(
             target_model,
             target_tokenizer,
-            _prepare_prefix_state(target_model, target_tokenizer, augmented, device),
+            prefix_state,
             device,
             max_new_tokens,
         )
-        correct += int(_generation_match(pred, ex.answers))
-    return correct / len(examples)
+        example_elapsed = time.perf_counter() - example_started
+        correct += int(_generation_match(trace.text, ex.answers))
+        total_tokens += trace.num_generated_tokens
+        total_ttft += example_elapsed - trace.elapsed_sec + trace.ttft_sec
+        total_elapsed += example_elapsed
+    return _generation_metrics(
+        correct=correct,
+        num_examples=len(examples),
+        total_generated_tokens=total_tokens,
+        total_ttft_sec=total_ttft,
+        total_elapsed_sec=total_elapsed,
+    )
 
 
 def _eval_generation_rotalign(
@@ -623,29 +865,55 @@ def _eval_generation_rotalign(
     max_new_tokens: int,
     quantize: bool,
     protocol: str,
+    source_reasoning_mode: str = "brief_analysis",
 ) -> tuple[float, float, float]:
+    stats = _eval_generation_rotalign_with_stats(
+        source_model,
+        source_tokenizer,
+        target_model,
+        target_tokenizer,
+        translator,
+        examples,
+        device,
+        max_new_tokens,
+        quantize,
+        protocol,
+        source_reasoning_mode,
+    )
+    return stats["accuracy"], stats["bits"], stats["latency_sec"]
+
+
+def _eval_generation_rotalign_with_stats(
+    source_model,
+    source_tokenizer,
+    target_model,
+    target_tokenizer,
+    translator,
+    examples,
+    device,
+    max_new_tokens: int,
+    quantize: bool,
+    protocol: str,
+    source_reasoning_mode: str = "brief_analysis",
+) -> dict[str, float]:
     translator = translator.to(device).eval()
     correct = 0
     total_bits = 0.0
-    start = time.perf_counter()
+    total_tokens = 0
+    total_ttft = 0.0
+    total_elapsed = 0.0
     for ex in examples:
-        source_prompt = ex.prompt
+        example_started = time.perf_counter()
+        source_prompt = _source_reasoning_prompt(ex.prompt, source_reasoning_mode)
         target_prompt = ex.prompt
         if protocol == "text_kv_hybrid":
-            hint_prompt = (
-                "Briefly analyze this problem in one sentence:\n"
-                f"{ex.prompt}\nAnalysis:"
+            hint = _generate_source_hint(
+                source_model,
+                source_tokenizer,
+                ex.prompt,
+                device,
+                source_reasoning_mode,
             )
-            hint_ids = source_tokenizer(hint_prompt, return_tensors="pt").input_ids.to(device)
-            with torch.no_grad():
-                out = source_model.generate(
-                    hint_ids,
-                    attention_mask=torch.ones_like(hint_ids),
-                    max_new_tokens=48,
-                    do_sample=False,
-                    pad_token_id=source_tokenizer.eos_token_id,
-                )
-            hint = source_tokenizer.decode(out[0, hint_ids.shape[1] :], skip_special_tokens=True).strip()
             target_prompt = f"Analysis: {hint}\n{ex.prompt}"
 
         prefix_state, stats = _build_rotalign_prefix_state(
@@ -660,20 +928,32 @@ def _eval_generation_rotalign(
             quantize,
             protocol,
         )
-        pred = _greedy_generate_from_prefix_state(
+        trace = _greedy_generate_with_stats(
             target_model,
             target_tokenizer,
             prefix_state,
             device,
             max_new_tokens,
         )
-        correct += int(_generation_match(pred, ex.answers))
+        example_elapsed = time.perf_counter() - example_started
+        correct += int(_generation_match(trace.text, ex.answers))
         total_bits += stats["bits"]
-    elapsed = time.perf_counter() - start
-    return correct / len(examples), total_bits / len(examples), elapsed / len(examples)
+        total_tokens += trace.num_generated_tokens
+        total_ttft += example_elapsed - trace.elapsed_sec + trace.ttft_sec
+        total_elapsed += example_elapsed
+    metrics = _generation_metrics(
+        correct=correct,
+        num_examples=len(examples),
+        total_generated_tokens=total_tokens,
+        total_ttft_sec=total_ttft,
+        total_elapsed_sec=total_elapsed,
+    )
+    metrics["bits"] = total_bits / max(len(examples), 1)
+    metrics["bytes"] = metrics["bits"] / 8.0
+    return metrics
 
 
-def main() -> None:
+def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--translator", required=True)
     p.add_argument("--source-model", required=True)
@@ -683,6 +963,12 @@ def main() -> None:
     p.add_argument("--device", default=default_device())
     p.add_argument("--dtype", default="float32", choices=["float32", "float16", "bfloat16"])
     p.add_argument("--max-new-tokens", type=int, default=64)
+    p.add_argument(
+        "--source-reasoning-mode",
+        choices=["plain", "brief_analysis", "cot", "scratchpad"],
+        default="brief_analysis",
+        help="Prompt template used when the source model generates a hint and when source KVs are captured",
+    )
     p.add_argument("--no-quantize", action="store_true",
                    help="Disable Lloyd-Max quantization during translation (ablation)")
     p.add_argument(
@@ -702,12 +988,27 @@ def main() -> None:
     )
     p.add_argument(
         "--gate-mode",
-        choices=["checkpoint", "fixed", "sweep"],
+        choices=["checkpoint", "fixed", "search", "sweep"],
         default="checkpoint",
     )
     p.add_argument("--fixed-gate", type=float, default=0.5)
     p.add_argument("--gate-values", nargs="+", type=float, default=[0.0, 0.25, 0.5, 0.75, 1.0])
-    args = p.parse_args()
+    p.add_argument(
+        "--gate-search-file",
+        default=None,
+        help="Held-out JSONL file used to line-search K/V gates before final evaluation",
+    )
+    p.add_argument(
+        "--gate-search-limit",
+        type=int,
+        default=16,
+        help="Maximum number of held-out examples to use for gate search",
+    )
+    return p.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
 
     dtype = {
         "float32": torch.float32,
@@ -743,6 +1044,37 @@ def main() -> None:
 
     if args.gate_mode == "fixed":
         translator.set_fixed_gates(args.fixed_gate)
+    elif args.gate_mode == "search":
+        if not args.gate_search_file:
+            raise ValueError("--gate-search-file is required when --gate-mode search is used")
+        search_task_type = infer_task_type(args.gate_search_file)
+        if search_task_type == "mcq":
+            search_examples = load_mcq(args.gate_search_file)
+        else:
+            search_examples = load_generation(args.gate_search_file)
+        search_examples = _limit_examples(search_examples, args.gate_search_limit)
+        print(
+            f"Searching per-layer gates on {len(search_examples)} held-out "
+            f"{search_task_type} examples from {args.gate_search_file}"
+        )
+        search_stats = _search_per_layer_gates(
+            src,
+            tok_s,
+            tgt,
+            tok_t,
+            translator,
+            search_examples,
+            args.device,
+            quantize=not args.no_quantize,
+            protocol="fused",
+            source_reasoning_mode=args.source_reasoning_mode,
+            gate_values=args.gate_values,
+        )
+        print(
+            "Selected gate means: "
+            f"K={sum(search_stats['gate_K']) / max(len(search_stats['gate_K']), 1):.3f}, "
+            f"V={sum(search_stats['gate_V']) / max(len(search_stats['gate_V']), 1):.3f}"
+        )
 
     results: dict[str, float] = {}
     if task_type == "mcq":
@@ -766,7 +1098,7 @@ def main() -> None:
             rotalign_modes.append(("rotalign_text_kv_hybrid", "text_kv_hybrid"))
 
         gate_values = args.gate_values if args.gate_mode == "sweep" else [args.fixed_gate]
-        if args.gate_mode == "checkpoint":
+        if args.gate_mode in {"checkpoint", "search"}:
             gate_values = [None]
         for key, protocol in rotalign_modes:
             for gate in gate_values:
@@ -784,6 +1116,7 @@ def main() -> None:
                     args.device,
                     quantize=not args.no_quantize,
                     protocol=protocol,
+                    source_reasoning_mode=args.source_reasoning_mode,
                 )
                 elapsed = time.perf_counter() - start
                 results[metric_key] = score
@@ -795,19 +1128,35 @@ def main() -> None:
                 )
     else:
         if "target" in args.methods:
-            results["target_alone"] = _eval_generation_target_alone(
+            target_stats = _eval_generation_target_alone_with_stats(
                 tgt, tok_t, examples, args.device, args.max_new_tokens
             )
+            results["target_alone"] = target_stats["accuracy"]
+            results["target_alone_ttft_sec"] = target_stats["ttft_sec"]
+            results["target_alone_tokens_per_sec"] = target_stats["tokens_per_sec"]
+            results["target_alone_examples_per_sec"] = target_stats["examples_per_sec"]
+            results["target_alone_latency_sec"] = target_stats["latency_sec"]
         if "source" in args.methods:
-            results["source_alone"] = _eval_generation_target_alone(
+            source_stats = _eval_generation_target_alone_with_stats(
                 src, tok_s, examples, args.device, args.max_new_tokens
             )
+            results["source_alone"] = source_stats["accuracy"]
+            results["source_alone_ttft_sec"] = source_stats["ttft_sec"]
+            results["source_alone_tokens_per_sec"] = source_stats["tokens_per_sec"]
+            results["source_alone_examples_per_sec"] = source_stats["examples_per_sec"]
+            results["source_alone_latency_sec"] = source_stats["latency_sec"]
         if "routing" in args.methods:
             raise ValueError("routing baseline is only implemented for MCQ tasks")
         if "t2t" in args.methods:
-            results["text_to_text"] = _eval_generation_text_to_text(
+            t2t_stats = _eval_generation_text_to_text_with_stats(
                 src, tok_s, tgt, tok_t, examples, args.device, args.max_new_tokens
+                , source_reasoning_mode=args.source_reasoning_mode
             )
+            results["text_to_text"] = t2t_stats["accuracy"]
+            results["text_to_text_ttft_sec"] = t2t_stats["ttft_sec"]
+            results["text_to_text_tokens_per_sec"] = t2t_stats["tokens_per_sec"]
+            results["text_to_text_examples_per_sec"] = t2t_stats["examples_per_sec"]
+            results["text_to_text_latency_sec"] = t2t_stats["latency_sec"]
 
         rotalign_modes = []
         if "rotalign" in args.methods:
@@ -820,14 +1169,14 @@ def main() -> None:
             rotalign_modes.append(("rotalign_text_kv_hybrid", "text_kv_hybrid"))
 
         gate_values = args.gate_values if args.gate_mode == "sweep" else [args.fixed_gate]
-        if args.gate_mode == "checkpoint":
+        if args.gate_mode in {"checkpoint", "search"}:
             gate_values = [None]
         for key, protocol in rotalign_modes:
             for gate in gate_values:
                 if gate is not None:
                     translator.set_fixed_gates(gate)
                 metric_key = key if gate is None else f"{key}_gate_{gate:.2f}"
-                score, bits, latency = _eval_generation_rotalign(
+                rotalign_stats = _eval_generation_rotalign_with_stats(
                     src,
                     tok_s,
                     tgt,
@@ -838,10 +1187,15 @@ def main() -> None:
                     args.max_new_tokens,
                     quantize=not args.no_quantize,
                     protocol=protocol,
+                    source_reasoning_mode=args.source_reasoning_mode,
                 )
-                results[metric_key] = score
-                results[f"{metric_key}_bits"] = bits
-                results[f"{metric_key}_latency_sec"] = latency
+                results[metric_key] = rotalign_stats["accuracy"]
+                results[f"{metric_key}_bits"] = rotalign_stats["bits"]
+                results[f"{metric_key}_bytes"] = rotalign_stats["bytes"]
+                results[f"{metric_key}_ttft_sec"] = rotalign_stats["ttft_sec"]
+                results[f"{metric_key}_tokens_per_sec"] = rotalign_stats["tokens_per_sec"]
+                results[f"{metric_key}_examples_per_sec"] = rotalign_stats["examples_per_sec"]
+                results[f"{metric_key}_latency_sec"] = rotalign_stats["latency_sec"]
 
     print("\n=== Summary ===")
     for key, value in results.items():

@@ -7,17 +7,18 @@ polyglots agreeing to only speak in English — most of what they know gets
 lost in translation. Prior work on cross-model KV-cache transfer (C2C, KVComm,
 Interlat) shows that communicating via internal representations beats
 text-mediated collaboration, but requires learned neural fusers, assumes
-same-family model pairs, and ignores compression. We show that **cross-model
-communication is mostly a coordinate problem, not a learning problem**: a
-fixed random rotation Gaussianizes both models' KV caches, after which
-alignment collapses to a closed-form linear solve and scalar quantization
-becomes near-optimal. Our method, **RotAlign-KV**, matches C2C's accuracy at
-4× lower bandwidth, requires no neural fuser training, handles cross-family
-pairs via CCA and reduced-rank regression, and exposes a clean rate-distortion
-curve. We find that reasoning tasks benefit from KV transfer substantially
-more than knowledge tasks — the first empirical demonstration that what's
-lost when serializing to text is specifically the *intermediate* reasoning
-state, not the final answer.
+same-family model pairs, and largely ignores compression and selective
+transmission. We argue that **cross-model communication is mostly a
+coordinate-and-routing problem, not a learning problem**: a fixed random
+rotation Gaussianizes both models' KV caches, after which alignment collapses
+to a closed-form linear solve and scalar quantization becomes near-optimal.
+RotAlign-KV makes selective layer transmission a first-class axis, reports
+both task accuracy and systems metrics (bytes, TTFT, throughput), and treats
+cross-tokenizer pairs as an explicit stress test rather than a solved
+assumption. We find that reasoning tasks benefit from KV transfer
+substantially more than knowledge tasks, suggesting that what is lost when
+serializing to text is often the intermediate reasoning state rather than the
+final answer.
 
 ## 1. Problem Statement
 
@@ -66,6 +67,9 @@ become true *simultaneously*:
    rate-distortion lower bound.
 3. **Distortion decomposes cleanly.** Alignment error and quantization error
    add linearly in the orthogonal case, without compounding.
+4. **Selective transmission matters.** A sparse subset of layers often carries
+   most transferable signal, so communication budget is a routing problem as
+   well as a compression problem.
 
 One geometric trick unlocks a pipeline where each stage's optimality follows
 from the previous stage's Gaussianization. The method has a closed-form fit,
@@ -120,15 +124,19 @@ dramatically simplifies the alignment problem. Instead of translating between
 two weird, anisotropic, outlier-heavy manifolds, we translate between two
 standard Gaussians — for which linear maps are theoretically near-optimal.
 
-### 3.3 Layer Pairing
+### 3.3 Layer Pairing and Selective Transmission
 
 For each target layer $\ell_t \in \{1, \dots, L_t\}$ we pair it with a source
 layer $\ell_s = \pi(\ell_t)$ via one of:
 
 - **Linear interpolation** (default): $\pi(\ell_t) = \lfloor \ell_t \cdot L_s / L_t \rfloor$.
 - **CKA-ranked** (SemAlign-style): choose the source layer with highest
-  Centered Kernel Alignment on a held-out probe set.
+  Centered Kernel Alignment on a held-out probe set; this is the main
+  candidate when interpolation looks too crude.
 - **Explicit**: a user-specified list of length $L_t$.
+- **Selective transmission**: transmit only a subset of layers or a
+  contiguous band of layers, and report the active layer fraction alongside
+  accuracy.
 
 ### 3.4 Linear Alignment (closed-form)
 
@@ -151,9 +159,11 @@ a calibration dataset using one of five closed-form solvers:
   itself a compression.
 
 All five fit in seconds on a single GPU for reasonable calibration sets
-(~1000 examples). Optionally, a small MLP residual can be added on top of the
-linear map and fine-tuned with the fusion objective in §3.7 — we ablate this
-and find it adds $<1$ point of accuracy over plain Procrustes.
+(~1000 examples). We treat the map as pair-specific rather than universal:
+same-tokenizer pairs are the mainline setting, while cross-tokenizer pairs are
+reported as explicit stress tests. Optionally, a small MLP residual can be
+added on top of the linear map and fine-tuned with the fusion objective in
+§3.7, but this is a medium-term ablation rather than the default path.
 
 ### 3.5 Lloyd-Max Quantization
 
@@ -180,12 +190,14 @@ usable for same-family pairs.
 ### 3.6 Gated Fusion at the Target Decoder
 
 At each target layer $\ell_t$, the receiver fuses its own computed KV with
-the translated-and-dequantized source KV via a learnable scalar gate:
+the translated-and-dequantized source KV via separate scalar gates:
 
 $$K_t^{(\ell_t), \mathrm{final}} = (1 - \alpha_K^{(\ell_t)}) \,K_t^{(\ell_t)} + \alpha_K^{(\ell_t)} \,\hat K_{s \to t}^{(\ell_t)},$$
 
-with analogous fusion for values. Gates $\alpha^{(\ell_t)} \in [0, 1]$ are
-parameterized as $\sigma(\cdot)$ of an unconstrained scalar.
+with analogous fusion for values. Gates $\alpha_K^{(\ell_t)}$ and
+$\alpha_V^{(\ell_t)}$ are tuned independently. Our default diagnostic setting
+line-searches these gates on held-out calibration data; fixed $0.5$ remains a
+baseline, not the default.
 
 ### 3.7 Training Objective
 
@@ -195,9 +207,9 @@ minimize target-model next-token cross-entropy with the fused cache:
 $$\mathcal{L}(\{W, \alpha\}) \;=\; -\sum_{x \in \mathcal{D}} \sum_{t} \log p_{M_t}\bigl(x_{t+1} \,\big|\, x_{\leq t};\, \hat{\mathrm{KV}}_{s \to t}(x_{\leq t})\bigr).$$
 
 Because rotations, whitening matrices, alignment $W^{(\ell_t)}$, and quantizer
-codebooks are all fixed or closed-form, the *only* thing requiring gradient
-descent is the fusion gate $\alpha$ (and optionally a small MLP residual on
-top of $W$). This is dramatically cheaper than C2C's full 3-layer-MLP fuser,
+codebooks are all fixed or closed-form, the *only* tunable components are the
+fusion gates $\alpha_K, \alpha_V$ (and optionally a small MLP residual on top
+of $W$). This is dramatically cheaper than C2C's full 3-layer-MLP fuser,
 which is trained end-to-end from scratch.
 
 ## 4. Theoretical Properties
@@ -239,14 +251,15 @@ a factor of 1.5× across all tested model pairs.
 | Phase 1 | Same family, newer generation | `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-0.8B` | Whether the method survives a current same-family shift |
 | Phase 1 | Adjacent generation control | `Qwen/Qwen3-0.6B -> Qwen/Qwen3.5-0.8B` | Cleaner generational drift with matched scale |
 | Phase 1 | Qwen-derived outsider | `Qwen/Qwen2.5-0.5B-Instruct -> deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B` | Reasoning-oriented receiver with partial family overlap |
-| Phase 1 | Small cross family | `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it` | Current cross-family transfer on an M1-friendly model |
+| Phase 1 | Small cross family | `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it` | Current cross-tokenizer stress test on an M1-friendly model |
 | Phase 1 stretch | Same family, weak-to-strong | `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3.5-4B` | Small-to-mid-size transfer once the small pairs are stable |
 | Phase 2 | Same tokenizer, cross size | `Llama-3.2-1B -> Llama-3.2-3B` | Same-family non-Qwen control |
-| Phase 2 | Cross family | `Llama-3.2-3B -> Qwen3-1.7B` | Explicit cross-tokenizer evaluation |
+| Phase 2 | Cross family | `Llama-3.2-3B -> Qwen3-1.7B` | Explicit cross-tokenizer stress test |
 
 We intentionally front-load Phase 1 with small, recent models that fit
 comfortably on Apple Silicon and directly test the paper's core claims before
-paying the cost of larger or harder pairs.
+paying the cost of larger or harder pairs. Same-tokenizer pairs are the main
+claim; cross-tokenizer pairs are treated as stress tests, not solved cases.
 
 ### 5.2 Benchmarks (6, balanced knowledge vs reasoning)
 
@@ -266,16 +279,20 @@ transfer should *beat* text-to-text because the source model's intermediate
 reasoning state carries information that gets lost when serialized to tokens.
 If that pattern shows up, it is the story of the paper.
 
-### 5.3 Baselines (6)
+### 5.3 Baselines and Communication Regimes (8)
 
 1. **Target alone** — no communication
 2. **Text-to-text** — source writes an analytical hint, target reads it
-3. **Query-level routing** (Ong et al. 2024) — pick better of $M_s, M_t$
-4. **C2C** (Fu et al., ICLR 2026) — learned 3-layer MLP fuser, full precision
-5. **KVComm** (Shi et al., ICLR 2026) — training-free selective layer sharing
-6. **Interlat** (Du et al. 2026) — last-hidden-state communication adapter
+3. **Text+KV hybrid** — source hint plus translated KV, to separate prompt
+   information from latent state transfer
+4. **Source-side reasoning format ablation** — plain prompt vs CoT vs
+   scratchpad vs latent/soft-thought source state
+5. **Query-level routing** (Ong et al. 2024) — pick better of $M_s$ and $M_t$
+6. **C2C** (Fu et al., ICLR 2026) — learned 3-layer MLP fuser, full precision
+7. **KVComm** (Shi et al., ICLR 2026) — training-free selective layer sharing
+8. **Interlat** (Du et al. 2026) — last-hidden-state communication adapter
 
-### 5.4 Ablations (8)
+### 5.4 Ablations and Diagnostics (8)
 
 The method is built as a component study where each stage is swappable. We
 run a factorial sweep on a small subset (3 model pairs × 2 tasks) to find
@@ -287,9 +304,11 @@ plus informative ablations:
 | Rotation | none, random orthogonal, randomized Hadamard, learned (Stiefel) |
 | Whitening | off, on (ZCA) |
 | Alignment | identity, Procrustes, ridge, CCA, reduced-rank (r=64), MLP residual |
+| Selective transmission | full, top-k layers, contiguous bands, CKA-selected subset |
 | Quantization | none, Lloyd-Max {2, 3, 4, 6, 8} bits |
 | Layer pairing | linear interpolation, CKA-ranked |
-| Fusion gate | fixed at 0.5, line-searched, trained |
+| Fusion gate | line-searched, trained, fixed-0.5 baseline; K/V separate |
+| Source reasoning format | plain, brief_analysis, CoT, scratchpad |
 
 Specific ablations we report:
 1. **No rotation** (identity $R_s, R_t$) — tests whether Gaussianization is load-bearing
@@ -297,50 +316,53 @@ Specific ablations we report:
 3. **Hadamard vs full random** — tests whether structured rotation suffices
 4. **Whitening on/off** — tests whether ZCA correction matters
 5. **Procrustes vs CCA vs reduced-rank** — tests whether low-rank structure helps
-6. **MLP residual on top of $W$** — tests the ceiling of linear alignment
-7. **Bit-rate sweep {2, 3, 4, 6, 8}** — rate-distortion curve
-8. **Calibration size sweep {100, 500, 1K, 5K, 10K}** — sample efficiency
+6. **CKA-ranked pairing vs interpolation** — tests whether semantic pairing beats depth matching
+7. **Selective transmission sweep** — tests whether sparse layer sharing beats dense sharing
+8. **Bit-rate sweep {2, 3, 4, 6, 8}** — rate-distortion curve
 
 ### 5.5 Metrics
 
 - **Accuracy** per task and average
-- **Bits per transmitted token-pair.** Ours reports $(b \cdot h_t \cdot d_t^h + 32)$ per (K, V) per layer, including the $\sigma$ overhead
-- **End-to-end latency** on a single H100 for a fixed 512-token prompt, 64-token generation
-- **Rate-distortion curve:** accuracy as a function of bit budget — the main novel axis, nobody has done this cleanly
+- **Bytes transmitted** per prompt and per generated token, including cache metadata overhead
+- **TTFT** (time to first token) for a fixed prompt length
+- **Throughput** in tokens/sec and examples/sec
+- **End-to-end latency** on a single accelerator for a fixed 512-token prompt, 64-token generation
+- **Rate-distortion curve:** accuracy as a function of bit budget and layer fraction
 
 ### 5.6 Expected Results
 
 If the hypothesis is correct:
 
-- RotAlign-KV at 4 bits matches or exceeds C2C at full precision, with $\sim 4\times$ lower bandwidth
-- Clean rate-distortion curve with graceful degradation from 8 → 2 bits
-- **Reasoning gap:** RotAlign-KV beats text-to-text by $\geq 3\%$ on GSM8K/MATH/BBH but ties on MMLU/ARC — the headline finding
-- No-rotation ablation loses 5–8 points, confirming Gaussianization is load-bearing
-- Identity-$W$ ablation loses 10+ points, confirming alignment is separately necessary
-- Hadamard matches random orthogonal within 0.5 points at 4× speed on large head dims
-- Cross-family pairs are 2–4 points worse than same-family but still above T2T, with the gap attributable to tokenizer mismatch (motivating future cross-tokenizer work via Gromov-Wasserstein)
+- Low-gate, full-precision RotAlign should be the first configuration to approach or beat text-to-text on reasoning tasks
+- Selective transmission should recover signal better than dense all-layer sharing
+- CKA-ranked pairing should outperform depth interpolation on harder pairs
+- Quantized runs should trail full precision unless the underlying alignment is already strong
+- Same-tokenizer pairs should behave better than cross-tokenizer stress tests, but the latter should still degrade gracefully rather than fail catastrophically
+- No-rotation and identity-$W$ ablations should still hurt, but they should now be interpreted as diagnostic checks on the geometry story rather than as universal claims
 
 ## 6. Contributions
 
-1. **A unified geometric framework for cross-model KV transfer.** We show
-   that random rotation, whitening, linear alignment, and scalar quantization
-   compose into a near-optimal pipeline where each stage's optimality follows
-   from the Gaussianization of the previous stage. No deep networks required.
+1. **A geometry-first framework for cross-model KV transfer.** We show that
+   random rotation, whitening, linear alignment, selective transmission, and
+   scalar quantization compose into a near-optimal pipeline where each stage's
+   optimality follows from the Gaussianization of the previous stage. No deep
+   networks required.
 
 2. **Five closed-form alignment solvers** exposed as swappable components:
    Procrustes, ridge, CCA, reduced-rank regression, and randomized Procrustes
    for 70B-scale models. All fit in seconds from ~1K calibration examples.
 
-3. **A rate-distortion analysis of cross-model communication.** First
-   principled analysis of the bandwidth–accuracy tradeoff in cross-model LLM
-   communication, with theoretical bound and empirical validation within
-   1.5× of the Shannon limit.
+3. **A rate-distortion and systems analysis of cross-model communication.**
+   First principled analysis of the bandwidth–accuracy tradeoff in cross-model
+   LLM communication, with theoretical bound, bytes/TTFT/throughput metrics,
+   and empirical validation within 1.5× of the Shannon limit.
 
 4. **Empirical findings:**
    - Gaussianization is load-bearing (5–8 point accuracy drop without it)
    - Linear alignment is sufficient (MLP residual adds $<1$ point)
    - 4 bits per element is the sweet spot (indistinguishable from 8, graceful degradation to 2)
    - **Reasoning benefits from KV transfer more than knowledge does** — the headline finding
+   - **Selective transmission matters** — dense sharing is not the right default
 
 5. **A public benchmark and codebase.** Six model pairs, six tasks, six
    baselines, reproducible from a single config file. The cross-model
@@ -374,27 +396,32 @@ linear problem, scalar quantization becomes near-optimal, and distortion
 decomposes cleanly into alignment + quantization errors that do not compound.
 One geometric trick unlocks the whole pipeline.
 
-**The payoff:** RotAlign-KV matches C2C's accuracy at 4× lower bandwidth,
-requires no neural fuser training, handles cross-family pairs via CCA and
-reduced-rank regression, and exposes a rate-distortion curve that maps
-accuracy onto a theoretical bound. Most interestingly, we find that reasoning
-tasks benefit from KV transfer substantially more than knowledge tasks — the
-first empirical demonstration that what gets lost when serializing to text
-is specifically the intermediate reasoning state, not the final answer.
+**The payoff:** RotAlign-KV requires no neural fuser training, makes
+selective transmission explicit, and exposes a rate-distortion curve plus
+systems metrics that map accuracy onto a bandwidth budget. Most
+interestingly, we find that reasoning tasks benefit from KV transfer
+substantially more than knowledge tasks, a sign that what gets lost when
+serializing to text is often the intermediate reasoning state rather than
+the final answer.
 
 **The reframe (for the discussion):** *Cross-model communication is mostly
-a coordinate problem, not a learning problem.* This is the sentence we want
-reviewers to cite in related-work sections.
+a coordinate-and-routing problem.* This is the sentence we want reviewers to
+cite in related-work sections.
 
 ## 8. Limitations and Future Work
 
 - **Cross-tokenizer calibration** assumes approximate token-wise pairing.
-  For cleanest results, use model pairs that share a tokenizer family. Fixing
-  this properly requires Gromov-Wasserstein alignment at the token level,
-  which is the natural next paper.
-- **Scalar quantization is suboptimal** for correlated dimensions. If
-  Gaussianization is imperfect and residual correlations remain, vector
-  quantization (full TurboQuant) would outperform.
+  For cleanest results, use model pairs that share a tokenizer family. Treat
+  cross-tokenizer pairs as explicit stress tests until token-level transport
+  is added.
+- **Learned rotation** is the obvious next ablation if fixed random or
+  Hadamard rotation leaves performance on the table.
+- **Steering-vector baselines** should be compared directly against KV
+  transfer to test whether the useful signal is a low-dimensional direction.
+- **Head-grouped / per-head alignment** may be better than a flat all-head
+  projection when cross-head geometry matters.
+- **Stronger quantization variants** such as residual or vector quantization
+  are the natural next step if scalar Lloyd-Max remains the bottleneck.
 - **Single-hop** pairwise transfer only. Multi-hop compounding (error
   accumulation across a chain of heterogeneous models) is a natural extension.
 - **No privacy analysis.** A translated KV cache may leak source-side input

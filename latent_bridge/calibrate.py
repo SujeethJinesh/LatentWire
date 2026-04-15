@@ -120,6 +120,12 @@ def parse_args() -> argparse.Namespace:
         default="mean_cosine_similarity",
         help="Metric used to rank layers for selective transmission",
     )
+    p.add_argument(
+        "--source-reasoning-mode",
+        choices=["plain", "brief_analysis", "cot", "scratchpad"],
+        default="plain",
+        help="Prompt template used on the source side during calibration",
+    )
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default=default_device())
     p.add_argument("--dtype", default="float32", choices=["float32", "float16", "bfloat16"])
@@ -138,6 +144,22 @@ def torch_dtype(name: str) -> torch.dtype:
 def load_prompts(path: str) -> list[str]:
     with open(path, "r", encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip()]
+
+
+def _source_reasoning_prompt(prompt: str, mode: str) -> str:
+    prompt = prompt.strip()
+    if mode == "plain":
+        return prompt
+    if mode == "brief_analysis":
+        return (
+            "Briefly analyze this problem in one sentence:\n"
+            f"{prompt}\nAnalysis:"
+        )
+    if mode == "cot":
+        return f"Let's think step by step.\n{prompt}\nReasoning:"
+    if mode == "scratchpad":
+        return f"Use a scratchpad to work through the problem carefully.\n{prompt}\nScratchpad:"
+    raise ValueError(f"Unknown source reasoning mode: {mode}")
 
 
 def batched(items: list, batch_size: int) -> Iterable[list]:
@@ -192,6 +214,7 @@ def collect_kvs(
     max_length: int,
     batch_size: int,
     device: str,
+    reasoning_mode: str = "plain",
 ) -> list[tuple[torch.Tensor, torch.Tensor]]:
     """Run the model on all prompts and concatenate only valid token KVs.
 
@@ -208,6 +231,7 @@ def collect_kvs(
     per_layer_V: list[list[torch.Tensor]] = []
 
     for batch in batched(prompts, batch_size):
+        batch = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
         enc = tokenizer(
             batch,
             return_tensors="pt",
@@ -242,6 +266,7 @@ def collect_aligned_kv_pairs(
     max_length: int,
     batch_size: int,
     device: str,
+    source_reasoning_mode: str = "plain",
 ) -> tuple[list[tuple[torch.Tensor, torch.Tensor]], list[tuple[torch.Tensor, torch.Tensor]]]:
     """Collect source/target KVs while masking pads and aligning prompt lengths.
 
@@ -260,15 +285,17 @@ def collect_aligned_kv_pairs(
     tgt_per_layer_V: list[list[torch.Tensor]] = []
 
     for batch in batched(prompts, batch_size):
+        src_batch = [_source_reasoning_prompt(prompt, source_reasoning_mode) for prompt in batch]
+        tgt_batch = list(batch)
         src_enc = src_tokenizer(
-            batch,
+            src_batch,
             return_tensors="pt",
             padding="max_length",
             truncation=True,
             max_length=max_length,
         ).to(device)
         tgt_enc = tgt_tokenizer(
-            batch,
+            tgt_batch,
             return_tensors="pt",
             padding="max_length",
             truncation=True,
@@ -369,6 +396,7 @@ def main() -> None:
         args.max_length,
         args.batch_size,
         args.device,
+        source_reasoning_mode=args.source_reasoning_mode,
     )
     del src
     del tgt
