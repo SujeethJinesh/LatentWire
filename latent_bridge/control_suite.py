@@ -96,6 +96,30 @@ def default_calibration_specs() -> list[CalibrationSpec]:
 def default_eval_specs() -> list[EvalSpec]:
     return [
         EvalSpec(
+            name="baseline_plain",
+            methods=(),
+            gate_values=(),
+            quantize=False,
+            source_reasoning_mode="plain",
+            include_baselines=True,
+        ),
+        EvalSpec(
+            name="baseline_brief",
+            methods=(),
+            gate_values=(),
+            quantize=False,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+        ),
+        EvalSpec(
+            name="baseline_cot",
+            methods=(),
+            gate_values=(),
+            quantize=False,
+            source_reasoning_mode="cot",
+            include_baselines=True,
+        ),
+        EvalSpec(
             name="fused_noquant_plain",
             methods=("rotalign",),
             gate_values=(0.15, 0.25, 0.30),
@@ -104,11 +128,28 @@ def default_eval_specs() -> list[EvalSpec]:
             include_baselines=True,
         ),
         EvalSpec(
+            name="fused_noquant_brief",
+            methods=("rotalign",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=False,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+        ),
+        EvalSpec(
             name="fused_noquant_cot",
             methods=("rotalign",),
             gate_values=(0.15, 0.25, 0.30),
             quantize=False,
             source_reasoning_mode="cot",
+            include_baselines=True,
+        ),
+        EvalSpec(
+            name="translated_noquant_brief",
+            methods=("rotalign_translated",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=False,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
         ),
         EvalSpec(
             name="text_kv_noquant_brief",
@@ -116,6 +157,7 @@ def default_eval_specs() -> list[EvalSpec]:
             gate_values=(0.15, 0.25, 0.30),
             quantize=False,
             source_reasoning_mode="brief_analysis",
+            include_baselines=True,
         ),
         EvalSpec(
             name="fused_quant_brief",
@@ -123,6 +165,7 @@ def default_eval_specs() -> list[EvalSpec]:
             gate_values=(0.15, 0.25, 0.30),
             quantize=True,
             source_reasoning_mode="brief_analysis",
+            include_baselines=True,
         ),
     ]
 
@@ -225,11 +268,17 @@ def build_evaluate_cmd(
     device: str,
     dtype: str,
     max_new_tokens: int,
+    gate_search_file: str | None,
+    gate_search_limit: int,
     spec: EvalSpec,
 ) -> list[str]:
     methods = list(spec.methods)
     if spec.include_baselines:
         methods = ["target", "t2t", *methods]
+    uses_rotalign = any(
+        method in {"rotalign", "rotalign_translated", "rotalign_fused", "rotalign_text_kv"}
+        for method in methods
+    )
     cmd = [
         python_exe,
         str(repo_root / "scripts" / "evaluate.py"),
@@ -253,11 +302,24 @@ def build_evaluate_cmd(
         spec.source_reasoning_mode,
         "--methods",
         *methods,
-        "--gate-mode",
-        "sweep",
-        "--gate-values",
-        *[str(v) for v in spec.gate_values],
     ]
+    if uses_rotalign and gate_search_file:
+        cmd.extend(
+            [
+                "--gate-mode",
+                "search",
+                "--gate-search-file",
+                gate_search_file,
+                "--gate-search-limit",
+                str(gate_search_limit),
+            ]
+        )
+    elif uses_rotalign:
+        cmd.extend(["--gate-mode", "sweep"])
+    else:
+        cmd.extend(["--gate-mode", "checkpoint"])
+    if uses_rotalign and spec.gate_values:
+        cmd.extend(["--gate-values", *[str(v) for v in spec.gate_values]])
     if not spec.quantize:
         cmd.append("--no-quantize")
     return cmd
@@ -354,11 +416,13 @@ def best_metric_for_eval(
     prefixes: list[str] = []
     for method in methods:
         if method == "rotalign":
-            prefixes.append("rotalign_kv_gate_")
+            prefixes.extend(["rotalign_kv_gate_", "rotalign_kv"])
+        elif method == "rotalign_fused":
+            prefixes.extend(["rotalign_fused_gate_", "rotalign_fused"])
         elif method == "rotalign_text_kv":
-            prefixes.append("rotalign_text_kv_hybrid_gate_")
+            prefixes.extend(["rotalign_text_kv_hybrid_gate_", "rotalign_text_kv_hybrid"])
         elif method == "rotalign_translated":
-            prefixes.append("rotalign_translated_only_gate_")
+            prefixes.extend(["rotalign_translated_only_gate_", "rotalign_translated_only"])
         elif method == "t2t":
             prefixes.append("text_to_text")
         else:
@@ -392,6 +456,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default=default_device())
     parser.add_argument("--dtype", default="float32", choices=["float32", "float16", "bfloat16"])
     parser.add_argument("--max-new-tokens", type=int, default=64)
+    parser.add_argument(
+        "--gate-search-file",
+        default=None,
+        help="Optional held-out JSONL split used for per-layer gate search before final evaluation.",
+    )
+    parser.add_argument(
+        "--gate-search-limit",
+        type=int,
+        default=30,
+        help="Maximum number of held-out examples to use during gate search.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
@@ -423,6 +498,8 @@ def main() -> None:
         "device": args.device,
         "dtype": args.dtype,
         "max_new_tokens": args.max_new_tokens,
+        "gate_search_file": args.gate_search_file,
+        "gate_search_limit": args.gate_search_limit,
         "calibration_specs": [asdict(spec) for spec in calibration_specs],
         "eval_specs": [asdict(spec) for spec in eval_specs],
     }
@@ -458,6 +535,8 @@ def main() -> None:
                     device=args.device,
                     dtype=args.dtype,
                     max_new_tokens=args.max_new_tokens,
+                    gate_search_file=args.gate_search_file,
+                    gate_search_limit=args.gate_search_limit,
                     spec=eval_spec,
                 )))
         return
@@ -503,6 +582,8 @@ def main() -> None:
                 device=args.device,
                 dtype=args.dtype,
                 max_new_tokens=args.max_new_tokens,
+                gate_search_file=args.gate_search_file,
+                gate_search_limit=args.gate_search_limit,
                 spec=eval_spec,
             )
             output = run_logged_command(eval_cmd, eval_log, repo_root)

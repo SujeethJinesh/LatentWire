@@ -279,7 +279,7 @@ transfer should *beat* text-to-text because the source model's intermediate
 reasoning state carries information that gets lost when serialized to tokens.
 If that pattern shows up, it is the story of the paper.
 
-### 5.3 Baselines and Communication Regimes (8)
+### 5.3 Baselines and Communication Regimes (9)
 
 1. **Target alone** — no communication
 2. **Text-to-text** — source writes an analytical hint, target reads it
@@ -291,6 +291,8 @@ If that pattern shows up, it is the story of the paper.
 6. **C2C** (Fu et al., ICLR 2026) — learned 3-layer MLP fuser, full precision
 7. **KVComm** (Shi et al., ICLR 2026) — training-free selective layer sharing
 8. **Interlat** (Du et al. 2026) — last-hidden-state communication adapter
+9. **Steering / function-vector baseline** — low-dimensional representation
+   transfer instead of full KV transport, motivated by RepE and function vectors
 
 ### 5.4 Ablations and Diagnostics (8)
 
@@ -303,11 +305,11 @@ plus informative ablations:
 |---|---|
 | Rotation | none, random orthogonal, randomized Hadamard, learned (Stiefel) |
 | Whitening | off, on (ZCA) |
-| Alignment | identity, Procrustes, ridge, CCA, reduced-rank (r=64), MLP residual |
+| Alignment | identity, Procrustes, ridge, CCA, reduced-rank (r=64), MLP residual, head-grouped / per-head |
 | Selective transmission | full, top-k layers, contiguous bands, CKA-selected subset |
 | Quantization | none, Lloyd-Max {2, 3, 4, 6, 8} bits |
 | Layer pairing | linear interpolation, CKA-ranked |
-| Fusion gate | line-searched, trained, fixed-0.5 baseline; K/V separate |
+| Fusion gate | held-out line-searched, trained, fixed-0.5 baseline; K/V separate |
 | Source reasoning format | plain, brief_analysis, CoT, scratchpad |
 
 Specific ablations we report:
@@ -319,6 +321,9 @@ Specific ablations we report:
 6. **CKA-ranked pairing vs interpolation** — tests whether semantic pairing beats depth matching
 7. **Selective transmission sweep** — tests whether sparse layer sharing beats dense sharing
 8. **Bit-rate sweep {2, 3, 4, 6, 8}** — rate-distortion curve
+9. **Per-head / grouped-head alignment** — tests whether the remaining error is head-structured
+10. **Held-out gate search vs eval-set sweep** — fairness check for small-slice pilot gains
+11. **Steering-vector comparator** — tests whether low-dimensional directions match full-KV transfer
 
 ### 5.5 Metrics
 
@@ -336,7 +341,11 @@ If the hypothesis is correct:
 - Low-gate, full-precision RotAlign should be the first configuration to approach or beat text-to-text on reasoning tasks
 - Selective transmission should recover signal better than dense all-layer sharing
 - CKA-ranked pairing should outperform depth interpolation on harder pairs
+- Head-grouped or per-head alignment should outperform flat all-head projection
+  if cross-head geometry is the remaining bottleneck
 - Quantized runs should trail full precision unless the underlying alignment is already strong
+- In small-model pilots, sparse quantized transfer may beat dense full precision
+  if sparsity removes more noise than quantization adds
 - Same-tokenizer pairs should behave better than cross-tokenizer stress tests, but the latter should still degrade gracefully rather than fail catastrophically
 - No-rotation and identity-$W$ ablations should still hurt, but they should now be interpreted as diagnostic checks on the geometry story rather than as universal claims
 

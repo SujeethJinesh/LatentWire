@@ -146,17 +146,43 @@ python scripts/evaluate.py \
     --translator checkpoints/qwen25_to_qwen3.pt \
     --source-model Qwen/Qwen2.5-0.5B-Instruct \
     --target-model Qwen/Qwen3-0.6B \
-    --eval-file data/gsm8k.jsonl \
+    --eval-file data/gsm8k_eval_70.jsonl \
     --task-type generation \
     --methods target t2t rotalign rotalign_translated rotalign_text_kv \
-    --gate-mode sweep \
-    --gate-values 0.0 0.25 0.5 0.75 1.0
+    --gate-mode search \
+    --gate-search-file data/gsm8k_gate_search_30.jsonl \
+    --gate-search-limit 30 \
+    --gate-values 0.15 0.25 0.30
 ```
 
 Supports MCQ and exact-match generation tasks. The default `rotalign` mode is
 the fused protocol that actually exercises the target-side fusion gate.
 Additional method modes expose translated-only and text+KV hybrid ablations.
 Pass `--no-quantize` to ablate the Lloyd-Max round-trip.
+
+For the current control pair, prefer held-out gate search over eval-set gate
+Sweeps. The earlier `0.06` pilot on `GSM8K-100` was directionally useful, but
+it selected the best gate on the same slice it reported on. The next cycle
+should use `data/gsm8k_gate_search_30.jsonl` for gate selection and
+`data/gsm8k_eval_70.jsonl` for the reported score.
+
+## Focused control-suite runner
+
+Use the focused control suite for the next fairness-corrected control cycle:
+
+```bash
+python scripts/run_control_suite.py \
+    --calibration-file data/calibration.txt \
+    --eval-file data/gsm8k_eval_70.jsonl \
+    --gate-search-file data/gsm8k_gate_search_30.jsonl \
+    --results-dir results/control_suite_rerun \
+    --checkpoint-dir checkpoints/control_suite_rerun
+```
+
+The default suite now does three things the earlier pilot did not:
+- runs matched `text-to-text` baselines under `plain`, `brief_analysis`, and `cot`
+- reports translated-only and text+KV protocol comparisons alongside fused KV
+- uses a held-out gate-selection split when `--gate-search-file` is provided
 
 ## Running ablations
 
@@ -205,15 +231,20 @@ the default unattended run.
 
 **Workshop (COLM, June 23 deadline):** minimum viable experiment set.
 
-1. Validate the control pair on **GSM8K** with `--no-quantize` first, then
-   compare 4-bit and lower-bit runs.
-2. Add one cross-family stress test: `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it`
-3. 3 benchmarks: MMLU-Redux, ARC-C, **GSM8K**
-4. Rate-distortion sweep: bits ∈ {2, 3, 4, 8}
-5. 4 core ablations: no-rotation, identity-W, interp-vs-CKA, full-precision-vs-4-bit
-6. Add source reasoning-format sweeps, low-gate full-precision runs, `text+KV hybrid`, and a reasoning-state comparator before expanding model breadth
-7. Report accuracy, bytes transmitted, TTFT, and decode throughput for every run
-8. ~10–20 GPU-hours equivalent, depending on calibration size and cache reuse
+1. Re-run the control pair on a held-out `30/70` GSM8K split with gate search
+   on the `30`-example dev slice and reporting only the `70`-example eval score.
+2. Run a fairness baseline sweep: `text-to-text` under `plain`,
+   `brief_analysis`, and `cot`, plus matched fused / translated-only / text+KV
+   latent runs under the same prompting.
+3. Add one knowledge task before widening the model matrix: `MMLU-Redux` or
+   `ARC-C`, using the same best control-pair config.
+4. Only after that, add one cross-family stress test:
+   `Qwen/Qwen2.5-0.5B-Instruct -> google/gemma-4-E2B-it`
+5. Rate-distortion sweep: bits ∈ {2, 3, 4, 8}
+6. 4 core ablations: no-rotation, identity-W, interp-vs-CKA, full-precision-vs-4-bit
+7. Follow-on structural studies: head-grouped / per-head alignment, steering-vector baseline
+8. Report accuracy, bytes transmitted, TTFT, decode throughput, and end-to-end latency
+9. ~10–20 GPU-hours equivalent, depending on calibration size and cache reuse
 
 **Full paper (ICLR 2027, late September):** component study + phased matrix.
 
@@ -231,6 +262,10 @@ the default unattended run.
   Best results come from same-tokenizer pairs (Qwen2.5 ↔ Qwen3, Llama-3 ↔ Llama-3.1).
   Treat Qwen → Gemma and similar pairs as stress tests until anchor-style or
   Gromov-Wasserstein alignment is added.
+- **Headline control results must use held-out gate selection.**
+  The current best local pilot (`0.06` on a 100-example GSM8K slice) came from
+  picking the best gate on the same slice it was reported on. Treat it as
+  directional until the `30/70` held-out rerun is done.
 - **Scalar quantization is suboptimal** for correlated dimensions. If residual
   correlation survives rotation, vector quantization (full TurboQuant) would
   outperform.

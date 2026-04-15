@@ -298,6 +298,17 @@ All solvers are closed-form (SVD / eigendecomp). The only trainable parameter is
 
 **Expected: ~30 minutes on a rented A100. This single experiment determines whether the project lives or dies.**
 
+**Current status note (April 14, 2026):**
+- The local control suite did reach a best row of `0.06` on a `100`-example
+  GSM8K slice, but that score came from sweeping gate values on the same slice
+  it reported on. Treat it as directional, not final.
+- The next control rerun must use held-out gate selection:
+  `data/gsm8k_gate_search_30.jsonl` for gate search, and
+  `data/gsm8k_eval_70.jsonl` for the reported score.
+- The next control matrix should compare `text-to-text`, fused KV,
+  translated-only KV, and `text+KV hybrid` under matched
+  `plain` / `brief_analysis` / `cot` prompting.
+
 ### Phase 1b: Expand only after the control path is stable
 
 Once the control pair works, expand in this order:
@@ -328,6 +339,10 @@ The next step is to make it benchmark-grade and systems-aware:
 
 5. **Keep `--no-quantize` as the main diagnostic path** until full-precision low-gate runs beat text-to-text.
 
+6. **Run at least one knowledge benchmark before broadening the model matrix.**
+   A small `MMLU-Redux` or `ARC-Challenge` slice with the best control-pair
+   config is the quickest test of the paper's headline reasoning-vs-knowledge claim.
+
 ### Phase 3: Add the C2C baseline
 
 1. Clone https://github.com/thu-nics/C2C
@@ -341,6 +356,7 @@ Given Phase 1 validates the method, run:
 - 3 benchmarks × 4 methods × 4 bit rates
 - 4 core ablations: no-rotation, identity-W, interp-vs-CKA, low-gate full precision
 - 2 comparator runs: text+KV hybrid and reasoning-state comparator
+- 1 fairness rerun block: held-out gate selection and matched text baselines
 - Systems metrics for every cell
 - Total ~15 GPU-hours
 
@@ -369,6 +385,10 @@ Given Phase 1 validates the method, run:
 
 2. **The fusion gate is initialized at 0.5 and not yet trained.** The translator ships with gates at sigmoid(0) = 0.5. For real-model experiments you need to either (a) add a training loop that optimizes the gate via gradient descent on next-token CE, or (b) do a 1D line search over alpha per layer. I recommend option (b) for simplicity — it's a single-parameter grid search.
 
+   Update after the first control suite: do not line-search on the same eval
+   slice you report. Use held-out gate search only, otherwise marginal wins on
+   70–100 example pilots are too optimistic.
+
 3. **Cross-tokenizer pairs.** Current calibration assumes token-wise pairing. For Llama → Qwen this is only approximate. Treat Qwen → Gemma and similar pairs as stress tests, and fall back to same-tokenizer pairs if the alignment looks unstable.
 
 4. **Calibration memory.** For 60-layer models with long sequences, the Procrustes SVD may OOM on small GPUs. Use `--alignment procrustes_rand` (randomized SVD variant) if this happens.
@@ -390,6 +410,14 @@ These didn't make it into the first paper but are natural follow-ups:
 1. **Cross-tokenizer via Gromov-Wasserstein.** The biggest open problem. Replace token-wise pairing with soft GW correspondences. Could be the core contribution of a second paper.
 
 2. **Multi-hop compounding.** What happens when a thought passes through 3+ heterogeneous models? Does rotation-based alignment compound errors better than C2C? Easy experiment, potentially striking result.
+
+3. **Head-grouped / per-head alignment.** KVTC suggests the remaining mismatch
+   may be head-structured rather than layer-structured. This is the first
+   structural ablation to add if sparse CKA remains positive but small.
+
+4. **Steering-vector comparator.** If a small set of residual directions
+   matches RotAlign-KV, the real story is semantic direction transfer rather
+   than full-KV transfer. That is publishable either way.
 
 3. **Privacy analysis.** Follow vec2vec's attack methodology: can an adversary reconstruct source input from translated KVs? If yes, quantify. If no, that's a feature.
 

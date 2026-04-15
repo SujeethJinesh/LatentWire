@@ -25,12 +25,17 @@ def test_default_specs_cover_the_control_axes() -> None:
         ("cka", 0.5, 1),
     }
     assert [spec.name for spec in eval_specs] == [
+        "baseline_plain",
+        "baseline_brief",
+        "baseline_cot",
         "fused_noquant_plain",
+        "fused_noquant_brief",
         "fused_noquant_cot",
+        "translated_noquant_brief",
         "text_kv_noquant_brief",
         "fused_quant_brief",
     ]
-    assert eval_specs[0].include_baselines is True
+    assert all(spec.include_baselines for spec in eval_specs)
     assert {spec.source_reasoning_mode for spec in eval_specs} == {
         "plain",
         "cot",
@@ -107,6 +112,8 @@ def test_build_evaluate_cmd_includes_baselines_gates_and_reasoning_mode() -> Non
         device="mps",
         dtype="float32",
         max_new_tokens=64,
+        gate_search_file=None,
+        gate_search_limit=30,
         spec=spec,
     )
 
@@ -122,6 +129,41 @@ def test_build_evaluate_cmd_includes_baselines_gates_and_reasoning_mode() -> Non
         "0.3",
     ]
     assert "--no-quantize" in cmd
+
+
+def test_build_evaluate_cmd_uses_held_out_gate_search_when_requested() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_brief",
+        methods=("rotalign",),
+        gate_values=(0.15, 0.25, 0.30),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        include_baselines=True,
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file="gate.jsonl",
+        gate_search_limit=12,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--gate-mode") + 1] == "search"
+    assert cmd[cmd.index("--gate-search-file") + 1] == "gate.jsonl"
+    assert cmd[cmd.index("--gate-search-limit") + 1] == "12"
+    assert cmd[cmd.index("--gate-values") + 1 : cmd.index("--gate-values") + 4] == [
+        "0.15",
+        "0.25",
+        "0.3",
+    ]
 
 
 def test_best_metric_for_eval_ignores_system_metrics_and_picks_best_result() -> None:
@@ -143,6 +185,42 @@ def test_best_metric_for_eval_ignores_system_metrics_and_picks_best_result() -> 
 
     assert best_metric == "rotalign_kv_gate_0.25"
     assert best_value == 0.33
+
+
+def test_best_metric_for_eval_handles_non_swept_rotalign_metrics() -> None:
+    metrics = {
+        "target_alone": 0.12,
+        "text_to_text": 0.10,
+        "rotalign_kv": 0.18,
+        "rotalign_kv_bytes": 512.0,
+    }
+
+    best_metric, best_value = control_suite.best_metric_for_eval(
+        metrics,
+        methods=("rotalign",),
+        gate_values=(0.15, 0.25),
+        include_baselines=True,
+    )
+
+    assert best_metric == "rotalign_kv"
+    assert best_value == 0.18
+
+
+def test_best_metric_for_eval_handles_explicit_fused_protocol_metrics() -> None:
+    metrics = {
+        "target_alone": 0.12,
+        "rotalign_fused": 0.19,
+        "rotalign_fused_bytes": 256.0,
+    }
+
+    best_metric, best_value = control_suite.best_metric_for_eval(
+        metrics,
+        methods=("rotalign_fused",),
+        gate_values=(0.15, 0.25),
+    )
+
+    assert best_metric == "rotalign_fused"
+    assert best_value == 0.19
 
 
 def test_best_metric_for_eval_can_rank_baselines_with_evaluate_metric_names() -> None:
@@ -211,6 +289,8 @@ def test_control_suite_dry_run_writes_plan_and_skips_subprocesses(
             device="cpu",
             dtype="float32",
             max_new_tokens=64,
+            gate_search_file="gate.jsonl",
+            gate_search_limit=9,
             dry_run=True,
         ),
     )
@@ -226,4 +306,6 @@ def test_control_suite_dry_run_writes_plan_and_skips_subprocesses(
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     assert plan["source_model"] == "src"
     assert plan["eval_specs"][0]["source_reasoning_mode"] == "cot"
+    assert plan["gate_search_file"] == "gate.jsonl"
+    assert plan["gate_search_limit"] == 9
     assert not any((tmp_path / "checkpoints").iterdir())

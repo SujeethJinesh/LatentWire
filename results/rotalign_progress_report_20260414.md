@@ -119,6 +119,15 @@ Takeaway:
 - this is the first control result that looks genuinely positive
 - however, the improvement is still small
 
+Important caveat:
+- this `0.06` row was selected by sweeping gate values on the same
+  `100`-example slice it was reported on
+- that makes it a useful directional result, but not yet a clean headline number
+- the next rerun should tune gates on
+  [data/gsm8k_gate_search_30.jsonl](/Users/sujeethjinesh/Desktop/LatentWire/data/gsm8k_gate_search_30.jsonl:1)
+  and report only on
+  [data/gsm8k_eval_70.jsonl](/Users/sujeethjinesh/Desktop/LatentWire/data/gsm8k_eval_70.jsonl:1)
+
 Reference:
 - [results/control_suite_20260414_125853/latest_summary.md](/Users/sujeethjinesh/Desktop/LatentWire/results/control_suite_20260414_125853/latest_summary.md:1)
 
@@ -185,17 +194,19 @@ That is a plausible research story, but not yet a paper-winning one.
 ## Immediate Next Step
 
 The next experiment should be:
-- merge the prepared **per-layer K/V gate search** patch
-- tune gates on [data/gsm8k_gate_search_30.jsonl](/Users/sujeethjinesh/Desktop/LatentWire/data/gsm8k_gate_search_30.jsonl:1)
-- evaluate on [data/gsm8k_eval_70.jsonl](/Users/sujeethjinesh/Desktop/LatentWire/data/gsm8k_eval_70.jsonl:1)
+- rerun the control pair with **held-out gate search**
+- compare `text-to-text` under `plain`, `brief_analysis`, and `cot`
+- compare fused KV, translated-only KV, and `text+KV hybrid` under the same prompting
 - focus first on the best-looking branch:
   - `cka_half_seed1`
   - low gates
   - quantized and no-quantized variants
+- then add one knowledge task before widening the model matrix
 
 Why:
 - the control suite suggests the method is real but fragile
-- per-layer gate tuning is the cleanest next attempt to turn a weak win into a clear one
+- the next run has to separate a real gain from a small-slice selection effect
+- the paper story also needs to show that the gain is stronger on reasoning than on knowledge
 
 ## Bottom Line
 
