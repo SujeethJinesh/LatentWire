@@ -76,5 +76,107 @@
     "slug": "flatquant",
     "url": "https://arxiv.org/pdf/2410.09426.pdf",
     "reason": "Affine transformation based post-training quantization for rotation/scale ablations."
+  },
+  {
+    "num": 55,
+    "slug": "kalmannet_neural_network_aided_kalman_filtering",
+    "url": "https://arxiv.org/pdf/2107.10043.pdf",
+    "reason": "Kalman-style latent-state estimation and confidence-weighted measurement fusion."
+  },
+  {
+    "num": 56,
+    "slug": "adaptive_computation_time",
+    "url": "https://arxiv.org/pdf/1603.08983.pdf",
+    "reason": "Confidence-based adaptive routing and compute allocation."
+  },
+  {
+    "num": 57,
+    "slug": "improving_normalization_with_the_james_stein_estimator",
+    "url": "https://openaccess.thecvf.com/content/WACV2024/papers/Khoshsirat_Improving_Normalization_With_the_James-Stein_Estimator_WACV_2024_paper.pdf",
+    "reason": "Shrinkage-style blending when translated KV is noisy."
+  },
+  {
+    "num": 58,
+    "slug": "xkv_cross_layer_svd_for_kv_cache_compression",
+    "url": "https://arxiv.org/pdf/2503.18893.pdf",
+    "reason": "Cross-layer singular-vector alignment for KV-cache compression."
+  },
+  {
+    "num": 59,
+    "slug": "moh_multi_head_attention_as_mixture_of_head_attention",
+    "url": "https://arxiv.org/pdf/2410.11842.pdf",
+    "reason": "Head-weighting and dynamic head selection instead of flat concatenation."
+  },
+  {
+    "num": 60,
+    "slug": "causal_head_gating_framework_for_interpreting_roles_of_attention_heads_in_transformers",
+    "url": "https://arxiv.org/pdf/2505.13737.pdf",
+    "reason": "Causal head diagnostics for deciding which heads to transmit."
+  },
+  {
+    "num": 61,
+    "slug": "zipcache_accurate_and_efficient_kv_cache_quantization_with_salient_token_identification",
+    "url": "https://arxiv.org/pdf/2405.14256.pdf",
+    "reason": "Saliency-guided KV compression and token selection."
+  },
+  {
+    "num": 62,
+    "slug": "kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction",
+    "url": "https://arxiv.org/pdf/2510.05373.pdf",
+    "reason": "Hadamard rotation plus linear correction for low-bit KV repair."
+  },
+  {
+    "num": 63,
+    "slug": "rotatekv_accurate_and_robust_2_bit_kv_cache_quantization_for_llms_via_outlier_aware_adaptive_rotations",
+    "url": "https://arxiv.org/pdf/2501.16383.pdf",
+    "reason": "Outlier-aware adaptive rotations and grouped-head quantization."
+  },
+  {
+    "num": 64,
+    "slug": "kivi_a_tuning_free_asymmetric_2bit_quantization_for_kv_cache",
+    "url": "https://arxiv.org/pdf/2402.02750.pdf",
+    "reason": "Asymmetric key/value quantization baseline for the fused KV path."
+  },
+  {
+    "num": 65,
+    "slug": "palu_compressing_kv_cache_with_low_rank_projection",
+    "url": "https://arxiv.org/pdf/2407.21118.pdf",
+    "reason": "Low-rank projection as a compact KV representation baseline."
+  },
+  {
+    "num": 66,
+    "slug": "matryoshkakv_adaptive_kv_compression_via_trainable_orthogonal_projection",
+    "url": "https://arxiv.org/pdf/2410.14731.pdf",
+    "reason": "Trainable orthogonal projection for adaptive KV compression."
+  },
+  {
+    "num": 67,
+    "slug": "distributed_indirect_source_coding_with_decoder_side_information",
+    "url": "https://arxiv.org/pdf/2405.13483.pdf",
+    "reason": "Source coding with decoder side information as a direct communication analogue."
+  },
+  {
+    "num": 68,
+    "slug": "adaptive_gating_in_mixture_of_experts_based_language_models",
+    "url": "https://aclanthology.org/2023.emnlp-main.217.pdf",
+    "reason": "Adaptive gating and routing for token-level compute allocation."
+  },
+  {
+    "num": 69,
+    "slug": "event_triggered_state_estimation_through_confidence_level",
+    "url": "https://arxiv.org/pdf/2403.15289.pdf",
+    "reason": "Event-triggered communication based on confidence thresholds."
+  },
+  {
+    "num": 70,
+    "slug": "rate_distortion_for_model_compression_from_theory_to_practice",
+    "url": "https://arxiv.org/pdf/1810.06401.pdf",
+    "reason": "Explicit rate-distortion framing for accuracy-versus-bytes sweeps."
+  },
+  {
+    "num": 71,
+    "slug": "predictive_coding_towards_a_future_of_deep_learning_beyond_backpropagation",
+    "url": "https://arxiv.org/pdf/2202.09467.pdf",
+    "reason": "Residual-error transmission and iterative correction as a KV-comms analogue."
   }
 ]
