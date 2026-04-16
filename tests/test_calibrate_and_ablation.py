@@ -291,6 +291,7 @@ def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path
         pre_quant_shrinkages=[0.25],
         quantization_corrections=["affine"],
         source_reasoning_modes=["plain", "cot"],
+        kv_transports=["k_only"],
     )
     monkeypatch.setattr(sweep, "parse_args", lambda: args)
 
@@ -323,6 +324,7 @@ def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path
     assert any(part == "--quantization-correction" for part in commands[0])
     assert any(part == "--source-reasoning-mode" for part in commands[0])
     assert any(part.endswith("scripts/evaluate.py") for part in commands[1])
+    assert any(part == "--kv-transport" for part in commands[1])
     assert any(part == "--source-reasoning-mode" for part in commands[1])
 
     records = [json.loads(line) for line in out_path.read_text(encoding="utf-8").splitlines()]
@@ -336,5 +338,6 @@ def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path
     assert records[0]["head_selection_metric"] == "negative_error"
     assert records[0]["pre_quant_rank"] == 64
     assert records[0]["quantization_correction"] == "affine"
+    assert records[0]["kv_transport"] == "k_only"
     assert records[0]["rotalign_kv"] == 0.3
     assert {record["source_reasoning_mode"] for record in records} == {"plain", "cot"}

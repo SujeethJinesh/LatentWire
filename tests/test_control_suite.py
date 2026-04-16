@@ -288,6 +288,34 @@ def test_build_evaluate_cmd_passes_nondefault_fusion_rule() -> None:
     assert cmd[cmd.index("--fusion-rule") + 1] == "cosine"
 
 
+def test_build_evaluate_cmd_passes_nondefault_kv_transport() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_k_only",
+        methods=("rotalign",),
+        gate_values=(0.15,),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        kv_transport="k_only",
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file=None,
+        gate_search_limit=30,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--kv-transport") + 1] == "k_only"
+
+
 def test_build_evaluate_cmd_skips_noop_gate_search_for_translated_only() -> None:
     spec = control_suite.EvalSpec(
         name="translated_noquant_brief",

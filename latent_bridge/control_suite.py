@@ -51,6 +51,7 @@ class EvalSpec:
     quantization_control: str = "real"
     translated_kv_control: str = "real"
     fusion_rule: str = "static"
+    kv_transport: str = "both"
 
 
 def default_device() -> str:
@@ -494,6 +495,8 @@ def build_evaluate_cmd(
         cmd.extend(["--translated-kv-control", spec.translated_kv_control])
     if uses_rotalign and spec.fusion_rule != "static":
         cmd.extend(["--fusion-rule", spec.fusion_rule])
+    if uses_rotalign and spec.kv_transport != "both":
+        cmd.extend(["--kv-transport", spec.kv_transport])
     if not spec.quantize:
         cmd.append("--no-quantize")
     if prediction_output is not None:
@@ -528,6 +531,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "quantization_control",
         "translated_kv_control",
         "fusion_rule",
+        "kv_transport",
         "quantize",
         "target_alone",
         "text_to_text",
@@ -569,6 +573,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "quantization_control": record.get("quantization_control", "real"),
                     "translated_kv_control": record.get("translated_kv_control", "real"),
                     "fusion_rule": record.get("fusion_rule", "static"),
+                    "kv_transport": record.get("kv_transport", "both"),
                     "quantize": record["quantize"],
                     "target_alone": record.get("target_alone"),
                     "text_to_text": record.get("text_to_text"),
@@ -895,6 +900,7 @@ def main() -> None:
                 "quantization_control": eval_spec.quantization_control,
                 "translated_kv_control": eval_spec.translated_kv_control,
                 "fusion_rule": eval_spec.fusion_rule,
+                "kv_transport": eval_spec.kv_transport,
                 "quantize": eval_spec.quantize,
                 "methods": list(eval_spec.methods),
                 "gate_values": list(eval_spec.gate_values),

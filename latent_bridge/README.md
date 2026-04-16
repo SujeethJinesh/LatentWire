@@ -171,7 +171,9 @@ Additional method modes expose translated-only and text+KV hybrid ablations.
 Pass `--no-quantize` to ablate the Lloyd-Max round-trip. Use `--fusion-rule
 cosine`, `cosine_shifted`, `js_shrinkage`, or `kalman` to make fusion
 source-dependent at runtime when translated KV disagrees with the target cache;
-keep `static` as the default control.
+keep `static` as the default control. Use `--kv-transport both`, `k_only`, or
+`v_only` to isolate whether the signal is carried by translated keys, values,
+or the full KV pair.
 
 For the current control pair, prefer held-out gate search over eval-set gate
 Sweeps. The earlier `0.06` pilot on `GSM8K-100` was directionally useful, but
@@ -234,7 +236,9 @@ full-precision anchor before comparing 4-bit and lower-bit runs. Treat
 the quantized path, not as the default headline method. For the new
 head-aware/low-rank branch, sweep `--head-selection-ratio`,
 `--pre-quant-rank`, `--pre-quant-shrinkage`, and
-`--quantization-correction affine` before widening the model matrix.
+`--quantization-correction affine` before widening the model matrix. For the
+next K-vs-V study, keep the checkpoint fixed and compare `--kv-transport
+k_only` against `--kv-transport v_only` at the same gate and fusion rule.
 
 To compare two prediction JSONL files on the same examples, use
 `scripts/compare_prediction_files.py`. This is the required check for real

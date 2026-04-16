@@ -144,6 +144,13 @@ def parse_args() -> argparse.Namespace:
         choices=["translated_only", "fused", "text_kv_hybrid"],
     )
     p.add_argument(
+        "--kv-transports",
+        nargs="+",
+        default=["both"],
+        choices=["both", "k_only", "v_only"],
+        help="Transmit both translated tensors or ablate to keys-only / values-only transport.",
+    )
+    p.add_argument(
         "--gate-mode",
         choices=["checkpoint", "fixed", "sweep"],
         default="fixed",
@@ -242,6 +249,7 @@ def main() -> None:
             getattr(args, "rotation_seeds", [0]),
             getattr(args, "source_reasoning_modes", ["brief_analysis"]),
             getattr(args, "protocols", ["fused"]),
+            getattr(args, "kv_transports", ["both"]),
             quantize_modes,
             getattr(args, "source_kv_controls", ["real"]),
             getattr(args, "quantization_controls", ["real"]),
@@ -268,6 +276,7 @@ def main() -> None:
             seed,
             source_reasoning_mode,
             protocol,
+            kv_transport,
             quantize_mode,
             source_kv_control,
             quantization_control,
@@ -282,6 +291,7 @@ def main() -> None:
                 f"_prerank{pre_quant_rank}_preshrink{pre_quant_shrinkage}"
                 f"_qcorr{quantization_correction}"
                 f"_reason{source_reasoning_mode}_proto{protocol}"
+                f"_kv{kv_transport}"
                 f"_q{quantize_mode}"
                 f"_srcctrl{source_kv_control}_qctrl{quantization_control}"
                 f"_tgtctrl{translated_kv_control}"
@@ -346,6 +356,8 @@ def main() -> None:
                 eval_cmd[eval_cmd.index("rotalign")] = "rotalign_translated"
             elif protocol == "text_kv_hybrid":
                 eval_cmd[eval_cmd.index("rotalign")] = "rotalign_text_kv"
+            if kv_transport != "both":
+                eval_cmd.extend(["--kv-transport", kv_transport])
             gate_values = getattr(args, "gate_values", [0.5])
             if getattr(args, "gate_mode", "fixed") in {"fixed", "sweep"}:
                 eval_cmd.extend(["--gate-values", *[str(v) for v in gate_values]])
@@ -386,6 +398,7 @@ def main() -> None:
                 "rotation_seed": seed,
                 "source_reasoning_mode": source_reasoning_mode,
                 "protocol": protocol,
+                "kv_transport": kv_transport,
                 "quantize_mode": quantize_mode,
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
