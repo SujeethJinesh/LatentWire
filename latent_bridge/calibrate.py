@@ -75,7 +75,22 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--alignment",
-        choices=["auto", "identity", "procrustes", "procrustes_rand", "ridge", "cca", "reduced_rank"],
+        choices=[
+            "auto",
+            "identity",
+            "procrustes",
+            "procrustes_rand",
+            "ridge",
+            "cca",
+            "reduced_rank",
+            "grouped_auto",
+            "grouped_identity",
+            "grouped_procrustes",
+            "grouped_procrustes_rand",
+            "grouped_ridge",
+            "grouped_cca",
+            "grouped_reduced_rank",
+        ],
         default="auto",
     )
     p.add_argument("--ridge-lambda", type=float, default=1e-3)
@@ -119,6 +134,42 @@ def parse_args() -> argparse.Namespace:
         choices=["mean_cosine_similarity", "negative_error"],
         default="mean_cosine_similarity",
         help="Metric used to rank layers for selective transmission",
+    )
+    p.add_argument(
+        "--head-selection-topk",
+        type=int,
+        default=None,
+        help="Only transmit the top-k aligned target head-groups ranked by calibration quality",
+    )
+    p.add_argument(
+        "--head-selection-ratio",
+        type=float,
+        default=1.0,
+        help="Fraction of aligned target head-groups to transmit when top-k is unset",
+    )
+    p.add_argument(
+        "--head-selection-metric",
+        choices=["mean_cosine_similarity", "negative_error"],
+        default="mean_cosine_similarity",
+        help="Metric used to rank head-groups for selective transmission",
+    )
+    p.add_argument(
+        "--pre-quant-rank",
+        type=int,
+        default=None,
+        help="Optional rank for target-space low-rank filtering before quantization",
+    )
+    p.add_argument(
+        "--pre-quant-shrinkage",
+        type=float,
+        default=0.0,
+        help="Optional shrinkage strength for the pre-quant low-rank filter",
+    )
+    p.add_argument(
+        "--quantization-correction",
+        choices=["none", "affine"],
+        default="none",
+        help="Optional decoder-side correction applied after quantize/dequantize",
     )
     p.add_argument(
         "--source-reasoning-mode",
@@ -439,6 +490,12 @@ def main() -> None:
         layer_selection_topk=args.layer_selection_topk,
         layer_selection_ratio=args.layer_selection_ratio,
         layer_selection_metric=args.layer_selection_metric,
+        head_selection_topk=args.head_selection_topk,
+        head_selection_ratio=args.head_selection_ratio,
+        head_selection_metric=args.head_selection_metric,
+        pre_quant_rank=args.pre_quant_rank,
+        pre_quant_shrinkage=args.pre_quant_shrinkage,
+        quantization_correction=args.quantization_correction,
         seed=args.seed,
     )
     print(f"\nBuilding translator with config:\n  {config}")

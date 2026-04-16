@@ -24,6 +24,7 @@ def test_default_specs_cover_the_control_axes() -> None:
         "shifted_layers_half_seed1",
         "random_layers_half_seed1",
         "lowrank128_cka_half_seed1",
+        "cka_half_headhalf_lowrank_affine_seed1",
         "bits2_cka_half_seed1",
         "bits3_cka_half_seed1",
         "bits6_cka_half_seed1",
@@ -46,6 +47,8 @@ def test_default_specs_cover_the_control_axes() -> None:
         "translated_noquant_brief",
         "text_kv_noquant_brief",
         "fused_quant_brief",
+        "fused_quant_cosine_shifted_brief",
+        "fused_quant_kalman_brief",
         "fused_quant_noise_brief",
         "fused_quant_random_kv_brief",
         "fused_quant_shuffle_kv_brief",
@@ -146,6 +149,43 @@ def test_build_calibrate_cmd_includes_sparse_pairing_and_seed() -> None:
     ]
 
 
+def test_build_calibrate_cmd_passes_head_prequant_and_correction_flags() -> None:
+    spec = control_suite.CalibrationSpec(
+        "head_lowrank_affine",
+        "cka",
+        0.5,
+        1,
+        head_selection_topk=1,
+        head_selection_ratio=0.5,
+        head_selection_metric="negative_error",
+        pre_quant_rank=64,
+        pre_quant_shrinkage=0.25,
+        quantization_correction="affine",
+    )
+    cmd = control_suite.build_calibrate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        calibration_file="cal.txt",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        bits=4,
+        rotation="orthogonal",
+        alignment="ridge",
+        whitening=False,
+        device="mps",
+        dtype="float32",
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--head-selection-topk") + 1] == "1"
+    assert cmd[cmd.index("--head-selection-ratio") + 1] == "0.5"
+    assert cmd[cmd.index("--head-selection-metric") + 1] == "negative_error"
+    assert cmd[cmd.index("--pre-quant-rank") + 1] == "64"
+    assert cmd[cmd.index("--pre-quant-shrinkage") + 1] == "0.25"
+    assert cmd[cmd.index("--quantization-correction") + 1] == "affine"
+
+
 def test_build_evaluate_cmd_includes_baselines_gates_and_reasoning_mode() -> None:
     spec = control_suite.EvalSpec(
         name="fused_noquant_plain",
@@ -218,6 +258,34 @@ def test_build_evaluate_cmd_uses_held_out_gate_search_when_requested() -> None:
         "0.25",
         "0.3",
     ]
+
+
+def test_build_evaluate_cmd_passes_nondefault_fusion_rule() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_cosine",
+        methods=("rotalign",),
+        gate_values=(0.15,),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        fusion_rule="cosine",
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file=None,
+        gate_search_limit=30,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--fusion-rule") + 1] == "cosine"
 
 
 def test_build_evaluate_cmd_skips_noop_gate_search_for_translated_only() -> None:

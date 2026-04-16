@@ -34,7 +34,13 @@ class _OffsetQuantizer(_TinyQuantizer):
         return x + 0.25
 
 
-def _make_identity_translator(monkeypatch, *, src_layers: int = 1, tgt_layers: int = 1) -> RotAlignKVTranslator:
+def _make_identity_translator(
+    monkeypatch,
+    *,
+    src_layers: int = 1,
+    tgt_layers: int = 1,
+    **config_overrides,
+) -> RotAlignKVTranslator:
     monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
     monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
 
@@ -48,6 +54,7 @@ def _make_identity_translator(monkeypatch, *, src_layers: int = 1, tgt_layers: i
         quant_bits=2,
         rotation_kind="orthogonal",
         layer_pairing="interp",
+        **config_overrides,
     )
     tr = RotAlignKVTranslator(cfg)
     with torch.no_grad():
@@ -131,6 +138,60 @@ def test_translate_fuse_and_roundtrip_checkpointing(monkeypatch, tmp_path) -> No
     assert loaded._fitted is True
     assert torch.equal(loaded.R_s, tr.R_s)
     assert torch.equal(loaded.W_K[0], tr.W_K[0])
+
+
+def test_cosine_fusion_rule_suppresses_opposing_translated_kv(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    tr.set_fixed_gates(0.8)
+
+    K_target = torch.ones(1, 2, 2, 2)
+    V_target = 2.0 * torch.ones(1, 2, 2, 2)
+    K_opposed = -K_target
+    V_opposed = -V_target
+
+    K_static, V_static = tr.fuse_layer(
+        K_target,
+        V_target,
+        K_opposed,
+        V_opposed,
+        0,
+        fusion_rule="static",
+    )
+    K_cos, V_cos = tr.fuse_layer(
+        K_target,
+        V_target,
+        K_opposed,
+        V_opposed,
+        0,
+        fusion_rule="cosine",
+    )
+
+    assert torch.allclose(K_static, (1.0 - 2.0 * 0.8) * K_target)
+    assert torch.allclose(V_static, (1.0 - 2.0 * 0.8) * V_target)
+    assert torch.allclose(K_cos, K_target)
+    assert torch.allclose(V_cos, V_target)
+
+
+def test_js_and_kalman_fusion_rules_downweight_noisy_translation(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    tr.set_fixed_gates(0.8)
+
+    K_target = torch.ones(1, 2, 2, 2)
+    V_target = 2.0 * torch.ones(1, 2, 2, 2)
+    K_noisy = 5.0 * torch.ones_like(K_target)
+    V_noisy = 5.0 * torch.ones_like(V_target)
+
+    K_js, V_js = tr.fuse_layer(K_target, V_target, K_noisy, V_noisy, 0, fusion_rule="js_shrinkage")
+    K_kal, V_kal = tr.fuse_layer(K_target, V_target, K_noisy, V_noisy, 0, fusion_rule="kalman")
+
+    assert torch.all(K_js <= K_noisy)
+    assert torch.all(K_js >= K_target)
+    assert torch.all(V_js <= V_noisy)
+    assert torch.all(V_js >= V_target)
+    assert torch.all(K_kal <= K_noisy)
+    assert torch.all(K_kal >= K_target)
+    assert torch.all(V_kal <= V_noisy)
+    assert torch.all(V_kal >= V_target)
 
 
 def test_matched_noise_quantization_control_keeps_shape(monkeypatch) -> None:
@@ -219,3 +280,129 @@ def test_layer_selection_and_fixed_gate_helpers(monkeypatch) -> None:
     gk, gv = tr.gate_value(0)
     assert abs(gk - 0.25) < 1e-5
     assert abs(gv - 0.75) < 1e-5
+
+
+def test_grouped_head_alignment_and_whitening_stay_block_diagonal(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    cfg = TranslatorConfig(
+        src_head_dim=2,
+        src_num_heads=2,
+        num_src_layers=1,
+        tgt_head_dim=2,
+        tgt_num_heads=4,
+        num_tgt_layers=1,
+        alignment_method="grouped_identity",
+        use_whitening=True,
+    )
+    tr = RotAlignKVTranslator(cfg)
+
+    src_kvs = [(torch.randn(2, 2, 3, 2), torch.randn(2, 2, 3, 2))]
+    tgt_kvs = [(torch.randn(2, 4, 3, 2), torch.randn(2, 4, 3, 2))]
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    W = tr.W_K[0].detach()
+    expected_block = torch.tensor(
+        [[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]],
+        dtype=W.dtype,
+    )
+    assert torch.allclose(W[:2, :4], expected_block)
+    assert torch.allclose(W[2:, 4:], expected_block)
+    assert torch.allclose(W[:2, 4:], torch.zeros(2, 4), atol=1e-6)
+    assert torch.allclose(W[2:, :4], torch.zeros(2, 4), atol=1e-6)
+
+    W_zca = tr.whiten_K_src[0].detach()
+    assert torch.allclose(W_zca[:2, 2:], torch.zeros(2, 2), atol=1e-6)
+    assert torch.allclose(W_zca[2:, :2], torch.zeros(2, 2), atol=1e-6)
+
+
+def test_head_selection_masks_unselected_heads(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    tr.head_selected_mask[0].copy_(torch.tensor([True, False]))
+
+    kv = torch.arange(8, dtype=torch.float32).view(1, 2, 2, 2)
+    masked = tr.apply_head_selection(kv, 0)
+
+    assert torch.equal(masked[:, 0], kv[:, 0])
+    assert torch.equal(masked[:, 1], torch.zeros_like(kv[:, 1]))
+
+
+def test_cosine_shifted_uses_only_selected_heads_for_adaptive_gate(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    tr.set_fixed_gates(0.8)
+    tr.head_selected_mask[0].copy_(torch.tensor([True, False]))
+
+    K_target = torch.ones(1, 2, 2, 2)
+    V_target = 2.0 * torch.ones(1, 2, 2, 2)
+    K_translated = K_target.clone()
+    V_translated = V_target.clone()
+    K_translated[:, 0] = -K_target[:, 0]
+    V_translated[:, 0] = -V_target[:, 0]
+
+    K_out, V_out = tr.fuse_layer(
+        K_target,
+        V_target,
+        K_translated,
+        V_translated,
+        0,
+        fusion_rule="cosine_shifted",
+    )
+
+    assert torch.allclose(K_out, K_target)
+    assert torch.allclose(V_out, V_target)
+
+
+def test_pre_quant_rank_zero_disables_filter_even_with_shrinkage(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        pre_quant_rank=0,
+        pre_quant_shrinkage=0.25,
+    )
+    Y = torch.randn(8, tr.d_t)
+
+    filt = tr._fit_pre_quant_filter(Y)
+
+    assert torch.allclose(filt, torch.eye(tr.d_t))
+
+
+def test_fit_from_pairs_populates_prequant_filter_and_affine_correction(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "GaussianQuantizer", _OffsetQuantizer)
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    tr = RotAlignKVTranslator(
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            pre_quant_rank=1,
+            pre_quant_shrinkage=0.25,
+            quantization_correction="affine",
+        )
+    )
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert not torch.allclose(tr.pre_quant_filter_K[0], torch.eye(tr.d_t))
+    assert (
+        not torch.allclose(tr.quant_scale_K[0], torch.ones_like(tr.quant_scale_K[0]))
+        or not torch.allclose(tr.quant_bias_K[0], torch.zeros_like(tr.quant_bias_K[0]))
+    )

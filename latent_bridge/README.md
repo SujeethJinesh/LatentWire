@@ -139,6 +139,15 @@ python scripts/calibrate.py \
   SemAlign-style CKA pairing, or negative-control layer maps.
 - `--layer-selection-topk K` / `--layer-selection-ratio R` — selective
   transmission ablations inspired by KVComm-style sparsity.
+- `--head-selection-topk K` / `--head-selection-ratio R` — selective aligned
+  head-group transmission. When the source and target have the same KV-head
+  count this becomes true per-head selection.
+- `--pre-quant-rank N` / `--pre-quant-shrinkage A` — apply a target-space
+  low-rank/shrinkage filter before quantization. This is a denoising step
+  after alignment, not a replacement for the alignment solver.
+- `--quantization-correction {none,affine}` — optional decoder-side affine
+  correction after quantize/dequantize to counter systematic bias in the
+  quantized path.
 
 ### 4. Evaluate against baselines
 
@@ -159,7 +168,10 @@ python scripts/evaluate.py \
 Supports MCQ and exact-match generation tasks. The default `rotalign` mode is
 the fused protocol that actually exercises the target-side fusion gate.
 Additional method modes expose translated-only and text+KV hybrid ablations.
-Pass `--no-quantize` to ablate the Lloyd-Max round-trip.
+Pass `--no-quantize` to ablate the Lloyd-Max round-trip. Use `--fusion-rule
+cosine`, `cosine_shifted`, `js_shrinkage`, or `kalman` to make fusion
+source-dependent at runtime when translated KV disagrees with the target cache;
+keep `static` as the default control.
 
 For the current control pair, prefer held-out gate search over eval-set gate
 Sweeps. The earlier `0.06` pilot on `GSM8K-100` was directionally useful, but
@@ -217,7 +229,12 @@ matched_noise` to separate true discretization from noise smoothing. In the
 control suite, `target_attenuation_brief` is the zero-byte target-cache
 attenuation baseline; source-communication claims require real translated KV to
 beat that baseline on paired examples. Use `--no-quantize` as the
-full-precision anchor before comparing 4-bit and lower-bit runs.
+full-precision anchor before comparing 4-bit and lower-bit runs. Treat
+`--fusion-rule cosine_shifted` as an experimental stabilization ablation for
+the quantized path, not as the default headline method. For the new
+head-aware/low-rank branch, sweep `--head-selection-ratio`,
+`--pre-quant-rank`, `--pre-quant-shrinkage`, and
+`--quantization-correction affine` before widening the model matrix.
 
 To compare two prediction JSONL files on the same examples, use
 `scripts/compare_prediction_files.py`. This is the required check for real

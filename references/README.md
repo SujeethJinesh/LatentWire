@@ -11,7 +11,7 @@ The search-only items were resolved to concrete paper links before download, so 
 
 ## Math Grounding Addendum
 
-Files `42_` through `71_` were added after the initial live validation runs. They cover representation similarity, CCA/CKA diagnostics, structured random/Fourier/Hadamard transforms, product quantization, incoherence processing, randomized linear algebra, control-theoretic gating, source coding, and predictive-coding style residual transmission. These are intended to ground the next RotAlign-KV ablations:
+Files `42_` through `75_` were added after the initial live validation runs. They cover representation similarity, CCA/CKA diagnostics, structured random/Fourier/Hadamard transforms, product quantization, incoherence processing, randomized linear algebra, control-theoretic gating, source coding, predictive-coding style residual transmission, model stitching, and representation-alignment theory. These are intended to ground the next RotAlign-KV ablations:
 
 - `42_` through `44_`: CKA/SVCCA/PWCCA layer-pairing and representation-similarity diagnostics.
 - `45_` through `48_`: random orthogonal, Hadamard/Fourier, and butterfly transform families.
@@ -21,5 +21,8 @@ Files `42_` through `71_` were added after the initial live validation runs. The
 - `58_` through `60_`: xKV, MoH, and causal head gating for head-aware transmission.
 - `61_` through `66_`: saliency-guided cache compression, rotation repair, and low-rank KV projection papers.
 - `67_` through `71_`: source coding, adaptive routing, event-triggered control, rate-distortion, and predictive-coding controls.
+- `72_` through `75_`: model stitching, representation-alignment theory, Fourier-domain compression, and multiresolution attention references.
+
+`75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

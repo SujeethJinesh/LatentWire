@@ -271,6 +271,8 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "matched_noise",
             "--translated-kv-control",
             "zero",
+            "--fusion-rule",
+            "cosine",
         ],
     )
 
@@ -281,6 +283,7 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.source_kv_control == "shuffle_positions"
     assert args.quantization_control == "matched_noise"
     assert args.translated_kv_control == "zero"
+    assert args.fusion_rule == "cosine"
 
 
 def test_source_kv_controls_are_negative_controls() -> None:
@@ -364,6 +367,7 @@ def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> No
         source_kv_control="real",
         quantization_control="real",
         translated_kv_control="real",
+        fusion_rule="static",
         records=None,
         method_name="rotalign_kv",
     ) -> float:
@@ -425,6 +429,7 @@ def test_search_per_layer_gates_uses_generation_objective_for_generation_example
         source_kv_control="real",
         quantization_control="real",
         translated_kv_control="real",
+        fusion_rule="static",
     ):
         calls.append(protocol)
         return (0.25, 16.0, 1.0)
@@ -502,6 +507,7 @@ def test_main_gate_search_uses_protocol_specific_objective(monkeypatch, tmp_path
         source_kv_control="real",
         quantization_control="real",
         translated_kv_control="real",
+        fusion_rule="static",
     ):
         search_protocols.append(protocol)
         return {"gate_K": [0.15, 0.15], "gate_V": [0.25, 0.25]}
@@ -717,6 +723,29 @@ def test_zero_fusion_gate_reports_zero_real_kv_communication(monkeypatch) -> Non
     )
 
 
+def test_head_selection_reduces_reported_real_kv_communication(monkeypatch) -> None:
+    translator = _make_identity_translator(monkeypatch, layers=2)
+
+    full_bits = evaluate._communication_bits(
+        translator,
+        seq_len=2,
+        quantize=True,
+        translated_kv_control="real",
+        protocol="translated_only",
+    )
+    translator.head_selected_mask.fill_(False)
+    translator.head_selected_mask[0].copy_(torch.tensor([1], dtype=torch.bool))
+    sparse_bits = evaluate._communication_bits(
+        translator,
+        seq_len=2,
+        quantize=True,
+        translated_kv_control="real",
+        protocol="translated_only",
+    )
+
+    assert sparse_bits < full_bits
+
+
 def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
     tok_s = FakeTokenizer()
     tok_t = FakeTokenizer()
@@ -739,6 +768,7 @@ def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
         source_kv_control="real",
         quantization_control="real",
         translated_kv_control="real",
+        fusion_rule="static",
     ):
         captured["source_prompt"] = source_prompt
         captured["target_prompt"] = target_prompt
@@ -793,6 +823,7 @@ def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
         source_kv_control="real",
         quantization_control="real",
         translated_kv_control="real",
+        fusion_rule="static",
     ):
         return evaluate.PrefixState(None, torch.tensor([[2]], dtype=torch.long), 1), {"bits": 32.0}
 

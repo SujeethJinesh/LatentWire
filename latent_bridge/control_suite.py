@@ -31,6 +31,12 @@ class CalibrationSpec:
     whitening: bool | None = None
     bits: int | None = None
     alignment_rank: int | None = None
+    head_selection_topk: int | None = None
+    head_selection_ratio: float | None = None
+    head_selection_metric: str | None = None
+    pre_quant_rank: int | None = None
+    pre_quant_shrinkage: float | None = None
+    quantization_correction: str | None = None
 
 
 @dataclass(frozen=True)
@@ -44,6 +50,7 @@ class EvalSpec:
     source_kv_control: str = "real"
     quantization_control: str = "real"
     translated_kv_control: str = "real"
+    fusion_rule: str = "static"
 
 
 def default_device() -> str:
@@ -117,6 +124,16 @@ def default_calibration_specs() -> list[CalibrationSpec]:
         CalibrationSpec("shifted_layers_half_seed1", "shifted", 0.5, 1),
         CalibrationSpec("random_layers_half_seed1", "random", 0.5, 1),
         CalibrationSpec("lowrank128_cka_half_seed1", "cka", 0.5, 1, alignment="reduced_rank", alignment_rank=128),
+        CalibrationSpec(
+            "cka_half_headhalf_lowrank_affine_seed1",
+            "cka",
+            0.5,
+            1,
+            head_selection_ratio=0.5,
+            pre_quant_rank=128,
+            pre_quant_shrinkage=0.25,
+            quantization_correction="affine",
+        ),
         CalibrationSpec("bits2_cka_half_seed1", "cka", 0.5, 1, bits=2),
         CalibrationSpec("bits3_cka_half_seed1", "cka", 0.5, 1, bits=3),
         CalibrationSpec("bits6_cka_half_seed1", "cka", 0.5, 1, bits=6),
@@ -197,6 +214,24 @@ def default_eval_specs() -> list[EvalSpec]:
             quantize=True,
             source_reasoning_mode="brief_analysis",
             include_baselines=True,
+        ),
+        EvalSpec(
+            name="fused_quant_cosine_shifted_brief",
+            methods=("rotalign",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            fusion_rule="cosine_shifted",
+        ),
+        EvalSpec(
+            name="fused_quant_kalman_brief",
+            methods=("rotalign",),
+            gate_values=(0.15, 0.25, 0.30),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            fusion_rule="kalman",
         ),
         EvalSpec(
             name="fused_quant_noise_brief",
@@ -365,6 +400,18 @@ def build_calibrate_cmd(
     ]
     if spec.alignment_rank is not None:
         cmd.extend(["--alignment-rank", str(spec.alignment_rank)])
+    if spec.head_selection_topk is not None:
+        cmd.extend(["--head-selection-topk", str(spec.head_selection_topk)])
+    if spec.head_selection_ratio is not None:
+        cmd.extend(["--head-selection-ratio", str(spec.head_selection_ratio)])
+    if spec.head_selection_metric is not None:
+        cmd.extend(["--head-selection-metric", spec.head_selection_metric])
+    if spec.pre_quant_rank is not None:
+        cmd.extend(["--pre-quant-rank", str(spec.pre_quant_rank)])
+    if spec.pre_quant_shrinkage is not None:
+        cmd.extend(["--pre-quant-shrinkage", str(spec.pre_quant_shrinkage)])
+    if spec.quantization_correction is not None:
+        cmd.extend(["--quantization-correction", spec.quantization_correction])
     if effective_whitening:
         cmd.append("--whitening")
     return cmd
@@ -445,6 +492,8 @@ def build_evaluate_cmd(
         cmd.extend(["--quantization-control", spec.quantization_control])
     if uses_rotalign and spec.translated_kv_control != "real":
         cmd.extend(["--translated-kv-control", spec.translated_kv_control])
+    if uses_rotalign and spec.fusion_rule != "static":
+        cmd.extend(["--fusion-rule", spec.fusion_rule])
     if not spec.quantize:
         cmd.append("--no-quantize")
     if prediction_output is not None:
@@ -467,11 +516,18 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "eval_name",
         "layer_pairing",
         "selection_ratio",
+        "head_selection_topk",
+        "head_selection_ratio",
+        "head_selection_metric",
+        "pre_quant_rank",
+        "pre_quant_shrinkage",
+        "quantization_correction",
         "seed",
         "source_reasoning_mode",
         "source_kv_control",
         "quantization_control",
         "translated_kv_control",
+        "fusion_rule",
         "quantize",
         "target_alone",
         "text_to_text",
@@ -501,11 +557,18 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "eval_name": record["eval_name"],
                     "layer_pairing": record["layer_pairing"],
                     "selection_ratio": record["selection_ratio"],
+                    "head_selection_topk": record.get("head_selection_topk"),
+                    "head_selection_ratio": record.get("head_selection_ratio"),
+                    "head_selection_metric": record.get("head_selection_metric"),
+                    "pre_quant_rank": record.get("pre_quant_rank"),
+                    "pre_quant_shrinkage": record.get("pre_quant_shrinkage"),
+                    "quantization_correction": record.get("quantization_correction"),
                     "seed": record["seed"],
                     "source_reasoning_mode": record["source_reasoning_mode"],
                     "source_kv_control": record["source_kv_control"],
                     "quantization_control": record.get("quantization_control", "real"),
                     "translated_kv_control": record.get("translated_kv_control", "real"),
+                    "fusion_rule": record.get("fusion_rule", "static"),
                     "quantize": record["quantize"],
                     "target_alone": record.get("target_alone"),
                     "text_to_text": record.get("text_to_text"),
@@ -607,7 +670,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--budget-hours", type=float, default=10.0)
     parser.add_argument("--bits", type=int, default=4)
     parser.add_argument("--rotation", default="orthogonal", choices=["identity", "orthogonal", "hadamard", "dct"])
-    parser.add_argument("--alignment", default="auto", choices=["auto", "identity", "procrustes", "procrustes_rand", "ridge", "cca", "reduced_rank"])
+    parser.add_argument(
+        "--alignment",
+        default="auto",
+        choices=[
+            "auto",
+            "identity",
+            "procrustes",
+            "procrustes_rand",
+            "ridge",
+            "cca",
+            "reduced_rank",
+            "grouped_auto",
+            "grouped_identity",
+            "grouped_procrustes",
+            "grouped_procrustes_rand",
+            "grouped_ridge",
+            "grouped_cca",
+            "grouped_reduced_rank",
+        ],
+    )
     parser.set_defaults(whitening=True)
     parser.add_argument("--no-whitening", dest="whitening", action="store_false")
     parser.add_argument("--task-type", default="generation", choices=["auto", "mcq", "generation"])
@@ -800,12 +882,19 @@ def main() -> None:
                 "checkpoint_tag": spec.name,
                 "layer_pairing": spec.layer_pairing,
                 "selection_ratio": spec.selection_ratio,
+                "head_selection_topk": spec.head_selection_topk,
+                "head_selection_ratio": spec.head_selection_ratio,
+                "head_selection_metric": spec.head_selection_metric,
+                "pre_quant_rank": spec.pre_quant_rank,
+                "pre_quant_shrinkage": spec.pre_quant_shrinkage,
+                "quantization_correction": spec.quantization_correction,
                 "seed": spec.seed,
                 "eval_name": eval_spec.name,
                 "source_reasoning_mode": eval_spec.source_reasoning_mode,
                 "source_kv_control": eval_spec.source_kv_control,
                 "quantization_control": eval_spec.quantization_control,
                 "translated_kv_control": eval_spec.translated_kv_control,
+                "fusion_rule": eval_spec.fusion_rule,
                 "quantize": eval_spec.quantize,
                 "methods": list(eval_spec.methods),
                 "gate_values": list(eval_spec.gate_values),

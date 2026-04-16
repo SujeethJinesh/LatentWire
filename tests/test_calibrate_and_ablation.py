@@ -192,6 +192,67 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
     assert args.source_reasoning_mode == "cot"
 
 
+def test_calibrate_parse_args_accepts_grouped_alignment(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_auto",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_auto"
+
+
+def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--head-selection-topk",
+            "1",
+            "--head-selection-ratio",
+            "0.5",
+            "--head-selection-metric",
+            "negative_error",
+            "--pre-quant-rank",
+            "64",
+            "--pre-quant-shrinkage",
+            "0.25",
+            "--quantization-correction",
+            "affine",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.head_selection_topk == 1
+    assert args.head_selection_ratio == 0.5
+    assert args.head_selection_metric == "negative_error"
+    assert args.pre_quant_rank == 64
+    assert args.pre_quant_shrinkage == 0.25
+    assert args.quantization_correction == "affine"
+
+
 def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path) -> None:
     summary = """
     noise before
@@ -223,6 +284,12 @@ def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path
         whiten=["on"],
         device="cpu",
         dtype="float32",
+        head_selection_topks=[1],
+        head_selection_ratios=[0.5],
+        head_selection_metrics=["negative_error"],
+        pre_quant_ranks=[64],
+        pre_quant_shrinkages=[0.25],
+        quantization_corrections=["affine"],
         source_reasoning_modes=["plain", "cot"],
     )
     monkeypatch.setattr(sweep, "parse_args", lambda: args)
@@ -249,6 +316,11 @@ def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path
     assert len(commands) == 4
     assert any(part.endswith("scripts/calibrate.py") for part in commands[0])
     assert any(part == "--whitening" for part in commands[0])
+    assert any(part == "--head-selection-topk" for part in commands[0])
+    assert any(part == "--head-selection-ratio" for part in commands[0])
+    assert any(part == "--head-selection-metric" for part in commands[0])
+    assert any(part == "--pre-quant-rank" for part in commands[0])
+    assert any(part == "--quantization-correction" for part in commands[0])
     assert any(part == "--source-reasoning-mode" for part in commands[0])
     assert any(part.endswith("scripts/evaluate.py") for part in commands[1])
     assert any(part == "--source-reasoning-mode" for part in commands[1])
@@ -259,5 +331,10 @@ def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path
     assert records[0]["alignment"] == "procrustes"
     assert records[0]["bits"] == 4
     assert records[0]["whitening"] is True
+    assert records[0]["head_selection_topk"] == 1
+    assert records[0]["head_selection_ratio"] == 0.5
+    assert records[0]["head_selection_metric"] == "negative_error"
+    assert records[0]["pre_quant_rank"] == 64
+    assert records[0]["quantization_correction"] == "affine"
     assert records[0]["rotalign_kv"] == 0.3
     assert {record["source_reasoning_mode"] for record in records} == {"plain", "cot"}

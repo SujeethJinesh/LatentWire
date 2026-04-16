@@ -66,12 +66,69 @@ def parse_args() -> argparse.Namespace:
         "--alignments",
         nargs="+",
         default=["auto", "ridge", "cca"],
-        choices=["auto", "identity", "procrustes", "procrustes_rand", "ridge", "cca", "reduced_rank"],
+        choices=[
+            "auto",
+            "identity",
+            "procrustes",
+            "procrustes_rand",
+            "ridge",
+            "cca",
+            "reduced_rank",
+            "grouped_auto",
+            "grouped_identity",
+            "grouped_procrustes",
+            "grouped_procrustes_rand",
+            "grouped_ridge",
+            "grouped_cca",
+            "grouped_reduced_rank",
+        ],
     )
     p.add_argument("--bits", nargs="+", type=int, default=[2, 3, 4, 8])
     p.add_argument("--whiten", nargs="+", default=["off", "on"], choices=["off", "on"])
     p.add_argument("--layer-pairings", nargs="+", default=["interp"], choices=["interp", "cka", "reverse", "shifted", "random"])
     p.add_argument("--selection-ratios", nargs="+", type=float, default=[1.0])
+    p.add_argument(
+        "--head-selection-topks",
+        nargs="+",
+        type=int,
+        default=[0],
+        help="Optional top-k target head-groups to transmit during calibration.",
+    )
+    p.add_argument(
+        "--head-selection-ratios",
+        nargs="+",
+        type=float,
+        default=[1.0],
+        help="Fraction of target head-groups to transmit during calibration.",
+    )
+    p.add_argument(
+        "--head-selection-metrics",
+        nargs="+",
+        default=["mean_cosine_similarity"],
+        choices=["mean_cosine_similarity", "negative_error"],
+        help="Score used to rank target head-groups before selecting top-k or ratio.",
+    )
+    p.add_argument(
+        "--pre-quant-ranks",
+        nargs="+",
+        type=int,
+        default=[0],
+        help="Optional low-rank target-space filter rank before quantization; 0 disables it.",
+    )
+    p.add_argument(
+        "--pre-quant-shrinkages",
+        nargs="+",
+        type=float,
+        default=[0.0],
+        help="Shrinkage strength for the pre-quant low-rank filter.",
+    )
+    p.add_argument(
+        "--quantization-corrections",
+        nargs="+",
+        default=["none"],
+        choices=["none", "affine"],
+        help="Optional decoder-side correction after quantize/dequantize.",
+    )
     p.add_argument("--rotation-seeds", nargs="+", type=int, default=[0])
     p.add_argument(
         "--source-reasoning-modes",
@@ -113,6 +170,13 @@ def parse_args() -> argparse.Namespace:
         default=["real"],
         choices=["real", "zero", "random", "shuffle_positions"],
         help="Target-space translated KV controls evaluated after translation.",
+    )
+    p.add_argument(
+        "--fusion-rules",
+        nargs="+",
+        default=["static"],
+        choices=["static", "cosine", "cosine_shifted", "js_shrinkage", "kalman"],
+        help="Runtime fusion rule used when combining target and translated KV.",
     )
     p.add_argument("--device", default=default_device())
     p.add_argument("--dtype", default="float32")
@@ -169,6 +233,12 @@ def main() -> None:
             args.whiten,
             getattr(args, "layer_pairings", ["interp"]),
             getattr(args, "selection_ratios", [1.0]),
+            getattr(args, "head_selection_topks", []),
+            getattr(args, "head_selection_ratios", [1.0]),
+            getattr(args, "head_selection_metrics", ["mean_cosine_similarity"]),
+            getattr(args, "pre_quant_ranks", [0]),
+            getattr(args, "pre_quant_shrinkages", [0.0]),
+            getattr(args, "quantization_corrections", ["none"]),
             getattr(args, "rotation_seeds", [0]),
             getattr(args, "source_reasoning_modes", ["brief_analysis"]),
             getattr(args, "protocols", ["fused"]),
@@ -176,6 +246,7 @@ def main() -> None:
             getattr(args, "source_kv_controls", ["real"]),
             getattr(args, "quantization_controls", ["real"]),
             getattr(args, "translated_kv_controls", ["real"]),
+            getattr(args, "fusion_rules", ["static"]),
         )
     )
     print(f"Running {len(combos)} configurations...")
@@ -188,6 +259,12 @@ def main() -> None:
             whiten,
             layer_pairing,
             selection_ratio,
+            head_selection_topk,
+            head_selection_ratio,
+            head_selection_metric,
+            pre_quant_rank,
+            pre_quant_shrinkage,
+            quantization_correction,
             seed,
             source_reasoning_mode,
             protocol,
@@ -195,14 +272,20 @@ def main() -> None:
             source_kv_control,
             quantization_control,
             translated_kv_control,
+            fusion_rule,
         ) in enumerate(combos):
             tag = (
                 f"rot{rotation}_align{alignment}_bits{bits}_w{whiten}"
                 f"_pair{layer_pairing}_sel{selection_ratio}_seed{seed}"
+                f"_headtopk{head_selection_topk if head_selection_topk else 'none'}"
+                f"_headsel{head_selection_ratio}_headmetric{head_selection_metric}"
+                f"_prerank{pre_quant_rank}_preshrink{pre_quant_shrinkage}"
+                f"_qcorr{quantization_correction}"
                 f"_reason{source_reasoning_mode}_proto{protocol}"
                 f"_q{quantize_mode}"
                 f"_srcctrl{source_kv_control}_qctrl{quantization_control}"
                 f"_tgtctrl{translated_kv_control}"
+                f"_fuse{fusion_rule}"
             )
             ckpt = ckpt_dir / f"{tag}.pt"
             start = time.time()
@@ -224,6 +307,18 @@ def main() -> None:
                 "--dtype", args.dtype,
                 "--source-reasoning-mode", source_reasoning_mode,
             ]
+            if head_selection_topk > 0:
+                cal_cmd.extend(["--head-selection-topk", str(head_selection_topk)])
+            if head_selection_ratio < 1.0:
+                cal_cmd.extend(["--head-selection-ratio", str(head_selection_ratio)])
+            if head_selection_metric != "mean_cosine_similarity":
+                cal_cmd.extend(["--head-selection-metric", head_selection_metric])
+            if pre_quant_rank > 0:
+                cal_cmd.extend(["--pre-quant-rank", str(pre_quant_rank)])
+            if pre_quant_shrinkage > 0.0:
+                cal_cmd.extend(["--pre-quant-shrinkage", str(pre_quant_shrinkage)])
+            if quantization_correction != "none":
+                cal_cmd.extend(["--quantization-correction", quantization_correction])
             if whiten == "on":
                 cal_cmd.append("--whitening")
 
@@ -264,6 +359,8 @@ def main() -> None:
                 eval_cmd.extend(["--quantization-control", quantization_control])
             if translated_kv_control != "real":
                 eval_cmd.extend(["--translated-kv-control", translated_kv_control])
+            if fusion_rule != "static":
+                eval_cmd.extend(["--fusion-rule", fusion_rule])
             try:
                 output = run_cmd(eval_cmd)
             except RuntimeError:
@@ -280,6 +377,12 @@ def main() -> None:
                 "whitening": whiten == "on",
                 "layer_pairing": layer_pairing,
                 "selection_ratio": selection_ratio,
+                "head_selection_topk": None if head_selection_topk <= 0 else head_selection_topk,
+                "head_selection_ratio": head_selection_ratio,
+                "head_selection_metric": head_selection_metric,
+                "pre_quant_rank": None if pre_quant_rank <= 0 else pre_quant_rank,
+                "pre_quant_shrinkage": pre_quant_shrinkage,
+                "quantization_correction": quantization_correction,
                 "rotation_seed": seed,
                 "source_reasoning_mode": source_reasoning_mode,
                 "protocol": protocol,
@@ -287,6 +390,7 @@ def main() -> None:
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
                 "translated_kv_control": translated_kv_control,
+                "fusion_rule": fusion_rule,
                 "gate_mode": getattr(args, "gate_mode", "fixed"),
                 "gate_values": getattr(args, "gate_values", [0.5]),
                 "elapsed_sec": round(elapsed, 1),

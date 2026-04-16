@@ -580,8 +580,13 @@ def _bits_per_kv_tensor(
     translator: RotAlignKVTranslator,
     seq_len: int,
     quantize: bool,
+    *,
+    selected_heads: int | None = None,
 ) -> float:
-    d_t = translator.config.tgt_num_heads * translator.config.tgt_head_dim
+    selected_heads = translator.config.tgt_num_heads if selected_heads is None else max(0, selected_heads)
+    d_t = selected_heads * translator.config.tgt_head_dim
+    if d_t <= 0:
+        return 0.0
     if quantize:
         return float(seq_len * (translator.config.quant_bits * d_t + 32))
     return float(seq_len * 32 * d_t)
@@ -592,15 +597,18 @@ def _translated_bits(
     seq_len: int,
     quantize: bool,
     *,
-    active_k_layers: int | None = None,
-    active_v_layers: int | None = None,
+    active_k_head_counts: list[int] | None = None,
+    active_v_head_counts: list[int] | None = None,
 ) -> float:
-    if active_k_layers is None or active_v_layers is None:
-        selected_layers = max(1, len(translator.selected_layer_indices()))
-        active_k_layers = selected_layers
-        active_v_layers = selected_layers
-    active_tensors = max(0, active_k_layers) + max(0, active_v_layers)
-    return float(active_tensors * _bits_per_kv_tensor(translator, seq_len, quantize))
+    selected_layers = translator.selected_layer_indices()
+    if active_k_head_counts is None:
+        active_k_head_counts = [translator.selected_head_count(layer_idx) for layer_idx in selected_layers]
+    if active_v_head_counts is None:
+        active_v_head_counts = [translator.selected_head_count(layer_idx) for layer_idx in selected_layers]
+    return float(
+        sum(_bits_per_kv_tensor(translator, seq_len, quantize, selected_heads=count) for count in active_k_head_counts)
+        + sum(_bits_per_kv_tensor(translator, seq_len, quantize, selected_heads=count) for count in active_v_head_counts)
+    )
 
 
 def _communication_bits(
@@ -614,18 +622,20 @@ def _communication_bits(
         return 0.0
     if protocol == "translated_only":
         return _translated_bits(translator, seq_len, quantize)
-    active_k_layers = 0
-    active_v_layers = 0
+    active_k_head_counts: list[int] = []
+    active_v_head_counts: list[int] = []
     for layer_idx in translator.selected_layer_indices():
         gate_k, gate_v = translator.gate_value(layer_idx)
-        active_k_layers += int(abs(gate_k) > 1e-5)
-        active_v_layers += int(abs(gate_v) > 1e-5)
+        if abs(gate_k) > 1e-5:
+            active_k_head_counts.append(translator.selected_head_count(layer_idx))
+        if abs(gate_v) > 1e-5:
+            active_v_head_counts.append(translator.selected_head_count(layer_idx))
     return _translated_bits(
         translator,
         seq_len,
         quantize,
-        active_k_layers=active_k_layers,
-        active_v_layers=active_v_layers,
+        active_k_head_counts=active_k_head_counts,
+        active_v_head_counts=active_v_head_counts,
     )
 
 
@@ -644,6 +654,7 @@ def _build_rotalign_prefix_state(
     source_kv_control: str = "real",
     quantization_control: str = "real",
     translated_kv_control: str = "real",
+    fusion_rule: str = "static",
 ) -> tuple[PrefixState, dict[str, float]]:
     tgt_prompt_ids = target_tokenizer(target_prompt, return_tensors="pt").input_ids.to(device)
     tgt_prefix_ids, tgt_last_token = _split_prompt_prefix(tgt_prompt_ids)
@@ -692,12 +703,26 @@ def _build_rotalign_prefix_state(
 
         if protocol == "translated_only":
             if translator.is_layer_selected(tgt_l):
-                fused_pkv.append((K_hat, V_hat))
+                fused_pkv.append(
+                    (
+                        translator.apply_head_selection(K_hat, tgt_l),
+                        translator.apply_head_selection(V_hat, tgt_l),
+                    )
+                )
             else:
                 fused_pkv.append((torch.zeros_like(K_t_aligned), torch.zeros_like(V_t_aligned)))
         elif protocol in {"fused", "text_kv_hybrid"}:
             if translator.is_layer_selected(tgt_l):
-                fused_pkv.append(translator.fuse_layer(K_t_aligned, V_t_aligned, K_hat, V_hat, tgt_l))
+                fused_pkv.append(
+                    translator.fuse_layer(
+                        K_t_aligned,
+                        V_t_aligned,
+                        K_hat,
+                        V_hat,
+                        tgt_l,
+                        fusion_rule=fusion_rule,
+                    )
+                )
             else:
                 fused_pkv.append((K_t_aligned, V_t_aligned))
         else:
@@ -741,6 +766,7 @@ def _search_per_layer_gates(
     source_kv_control: str = "real",
     quantization_control: str = "real",
     translated_kv_control: str = "real",
+    fusion_rule: str = "static",
 ) -> dict[str, list[float]]:
     """Coordinate-descent line search over per-layer K/V fusion gates.
 
@@ -774,6 +800,7 @@ def _search_per_layer_gates(
                 source_kv_control=source_kv_control,
                 quantization_control=quantization_control,
                 translated_kv_control=translated_kv_control,
+                fusion_rule=fusion_rule,
             )[0]
         return eval_rotalign_kv(
             source_model,
@@ -789,6 +816,7 @@ def _search_per_layer_gates(
             source_kv_control=source_kv_control,
             quantization_control=quantization_control,
             translated_kv_control=translated_kv_control,
+            fusion_rule=fusion_rule,
         )
 
     for tgt_layer_idx in layer_indices:
@@ -1008,6 +1036,7 @@ def eval_rotalign_kv(
     source_kv_control: str = "real",
     quantization_control: str = "real",
     translated_kv_control: str = "real",
+    fusion_rule: str = "static",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> float:
@@ -1030,6 +1059,7 @@ def eval_rotalign_kv(
             source_kv_control,
             quantization_control,
             translated_kv_control,
+            fusion_rule,
         )
         scores = [
             _score_mcq_with_prefix_state(target_model, target_tokenizer, prefix_state, c, device)
@@ -1049,6 +1079,7 @@ def eval_rotalign_kv(
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
                 "translated_kv_control": translated_kv_control,
+                "fusion_rule": fusion_rule,
             },
         )
         if is_correct:
@@ -1207,6 +1238,7 @@ def _eval_generation_rotalign(
     source_kv_control: str = "real",
     quantization_control: str = "real",
     translated_kv_control: str = "real",
+    fusion_rule: str = "static",
 ) -> tuple[float, float, float]:
     stats = _eval_generation_rotalign_with_stats(
         source_model,
@@ -1223,6 +1255,7 @@ def _eval_generation_rotalign(
         source_kv_control,
         quantization_control,
         translated_kv_control,
+        fusion_rule,
     )
     return stats["accuracy"], stats["bits"], stats["latency_sec"]
 
@@ -1242,6 +1275,7 @@ def _eval_generation_rotalign_with_stats(
     source_kv_control: str = "real",
     quantization_control: str = "real",
     translated_kv_control: str = "real",
+    fusion_rule: str = "static",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> dict[str, float]:
@@ -1279,6 +1313,7 @@ def _eval_generation_rotalign_with_stats(
             source_kv_control,
             quantization_control,
             translated_kv_control,
+            fusion_rule,
         )
         trace = _greedy_generate_with_stats(
             target_model,
@@ -1302,6 +1337,7 @@ def _eval_generation_rotalign_with_stats(
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
                 "translated_kv_control": translated_kv_control,
+                "fusion_rule": fusion_rule,
                 "bits": stats["bits"],
                 "generated_tokens": trace.num_generated_tokens,
             },
@@ -1359,6 +1395,12 @@ def parse_args() -> argparse.Namespace:
         help="Negative-control perturbation applied after translation into target KV space.",
     )
     p.add_argument(
+        "--fusion-rule",
+        choices=["static", "cosine", "cosine_shifted", "js_shrinkage", "kalman"],
+        default="static",
+        help="Static scalar gates or cosine-based runtime attenuation of translated KV.",
+    )
+    p.add_argument(
         "--methods",
         nargs="+",
         default=["target", "t2t", "rotalign"],
@@ -1401,6 +1443,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    fusion_rule = getattr(args, "fusion_rule", "static")
 
     dtype = {
         "float32": torch.float32,
@@ -1498,6 +1541,7 @@ def main() -> None:
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
                     translated_kv_control=args.translated_kv_control,
+                    fusion_rule=fusion_rule,
                 )
                 print(
                     "Selected gate means: "
@@ -1523,6 +1567,7 @@ def main() -> None:
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
                     translated_kv_control=args.translated_kv_control,
+                    fusion_rule=fusion_rule,
                     records=prediction_records,
                     method_name=metric_key,
                 )
@@ -1606,6 +1651,7 @@ def main() -> None:
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
                     translated_kv_control=args.translated_kv_control,
+                    fusion_rule=fusion_rule,
                 )
                 print(
                     "Selected gate means: "
@@ -1631,6 +1677,7 @@ def main() -> None:
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
                     translated_kv_control=args.translated_kv_control,
+                    fusion_rule=fusion_rule,
                     records=prediction_records,
                     method_name=metric_key,
                 )

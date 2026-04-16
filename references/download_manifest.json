@@ -637,5 +637,41 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 3450582
+  },
+  {
+    "num": 72,
+    "slug": "transferring_linear_features_across_language_models_with_model_stitching",
+    "url": "https://arxiv.org/pdf/2506.06609.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/72_transferring_linear_features_across_language_models_with_model_stitching.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 8195181
+  },
+  {
+    "num": 73,
+    "slug": "towards_a_learning_theory_of_representation_alignment",
+    "url": "https://arxiv.org/pdf/2502.14047.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/73_towards_a_learning_theory_of_representation_alignment.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 222077
+  },
+  {
+    "num": 74,
+    "slug": "fouriercompress_layer_aware_spectral_activation_compression",
+    "url": "https://arxiv.org/pdf/2510.16418.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/74_fouriercompress_layer_aware_spectral_activation_compression.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 5579373
+  },
+  {
+    "num": 75,
+    "slug": "transformers_with_multiresolution_attention_heads",
+    "url": "https://openreview.net/forum?id=L8qKBr_bht",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/75_transformers_with_multiresolution_attention_heads.md",
+    "content_type": "text/markdown",
+    "status": "canonical_link_note",
+    "bytes": 624
   }
 ]

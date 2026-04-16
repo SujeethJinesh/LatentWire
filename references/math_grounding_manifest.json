@@ -178,5 +178,29 @@
     "slug": "predictive_coding_towards_a_future_of_deep_learning_beyond_backpropagation",
     "url": "https://arxiv.org/pdf/2202.09467.pdf",
     "reason": "Residual-error transmission and iterative correction as a KV-comms analogue."
+  },
+  {
+    "num": 72,
+    "slug": "transferring_linear_features_across_language_models_with_model_stitching",
+    "url": "https://arxiv.org/pdf/2506.06609.pdf",
+    "reason": "Model stitching evidence that transferable linear features exist across language models."
+  },
+  {
+    "num": 73,
+    "slug": "towards_a_learning_theory_of_representation_alignment",
+    "url": "https://arxiv.org/pdf/2502.14047.pdf",
+    "reason": "Theory grounding for when linear or near-linear cross-model alignment should succeed."
+  },
+  {
+    "num": 74,
+    "slug": "fouriercompress_layer_aware_spectral_activation_compression",
+    "url": "https://arxiv.org/pdf/2510.16418.pdf",
+    "reason": "Spectral compression baseline for testing whether transformed latent signals are easier to transmit."
+  },
+  {
+    "num": 75,
+    "slug": "transformers_with_multiresolution_attention_heads",
+    "url": "https://openreview.net/forum?id=L8qKBr_bht",
+    "reason": "Exploratory multiresolution-attention reference for future frequency-aware head selection and routing."
   }
 ]
