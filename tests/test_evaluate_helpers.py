@@ -691,6 +691,32 @@ def test_target_space_translated_controls_report_zero_communication(monkeypatch)
     )
 
 
+def test_zero_fusion_gate_reports_zero_real_kv_communication(monkeypatch) -> None:
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.set_fixed_gates(0.0)
+
+    assert (
+        evaluate._communication_bits(
+            translator,
+            seq_len=2,
+            quantize=True,
+            translated_kv_control="real",
+            protocol="fused",
+        )
+        == 0.0
+    )
+    assert (
+        evaluate._communication_bits(
+            translator,
+            seq_len=2,
+            quantize=True,
+            translated_kv_control="real",
+            protocol="translated_only",
+        )
+        > 0.0
+    )
+
+
 def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
     tok_s = FakeTokenizer()
     tok_t = FakeTokenizer()

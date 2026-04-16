@@ -576,14 +576,31 @@ def _apply_translated_kv_control(
     raise ValueError(f"Unknown translated_kv_control: {mode}")
 
 
-def _translated_bits(translator: RotAlignKVTranslator, seq_len: int, quantize: bool) -> float:
+def _bits_per_kv_tensor(
+    translator: RotAlignKVTranslator,
+    seq_len: int,
+    quantize: bool,
+) -> float:
     d_t = translator.config.tgt_num_heads * translator.config.tgt_head_dim
-    selected_layers = max(1, len(translator.selected_layer_indices()))
     if quantize:
-        bits_per_layer = seq_len * (2 * (translator.config.quant_bits * d_t + 32))
-    else:
-        bits_per_layer = seq_len * (2 * 32 * d_t)
-    return float(selected_layers * bits_per_layer)
+        return float(seq_len * (translator.config.quant_bits * d_t + 32))
+    return float(seq_len * 32 * d_t)
+
+
+def _translated_bits(
+    translator: RotAlignKVTranslator,
+    seq_len: int,
+    quantize: bool,
+    *,
+    active_k_layers: int | None = None,
+    active_v_layers: int | None = None,
+) -> float:
+    if active_k_layers is None or active_v_layers is None:
+        selected_layers = max(1, len(translator.selected_layer_indices()))
+        active_k_layers = selected_layers
+        active_v_layers = selected_layers
+    active_tensors = max(0, active_k_layers) + max(0, active_v_layers)
+    return float(active_tensors * _bits_per_kv_tensor(translator, seq_len, quantize))
 
 
 def _communication_bits(
@@ -591,10 +608,25 @@ def _communication_bits(
     seq_len: int,
     quantize: bool,
     translated_kv_control: str,
+    protocol: str = "fused",
 ) -> float:
     if translated_kv_control != "real":
         return 0.0
-    return _translated_bits(translator, seq_len, quantize)
+    if protocol == "translated_only":
+        return _translated_bits(translator, seq_len, quantize)
+    active_k_layers = 0
+    active_v_layers = 0
+    for layer_idx in translator.selected_layer_indices():
+        gate_k, gate_v = translator.gate_value(layer_idx)
+        active_k_layers += int(abs(gate_k) > 1e-5)
+        active_v_layers += int(abs(gate_v) > 1e-5)
+    return _translated_bits(
+        translator,
+        seq_len,
+        quantize,
+        active_k_layers=active_k_layers,
+        active_v_layers=active_v_layers,
+    )
 
 
 @torch.no_grad()
@@ -683,6 +715,7 @@ def _build_rotalign_prefix_state(
             seq_len,
             quantize,
             translated_kv_control,
+            protocol,
         )
     }
 
@@ -1501,6 +1534,7 @@ def main() -> None:
                     seq_len=1,
                     quantize=not args.no_quantize,
                     translated_kv_control=args.translated_kv_control,
+                    protocol=protocol,
                 )
                 results[f"{metric_key}_bytes"] = results[f"{metric_key}_bits"] / 8.0
     else:
