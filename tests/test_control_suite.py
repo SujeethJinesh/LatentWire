@@ -55,6 +55,10 @@ def test_default_specs_cover_the_control_axes() -> None:
         "fused_quant_zero_kv_brief",
         "target_attenuation_brief",
         "fused_quant_random_translated_brief",
+        "fused_quant_k_only_brief",
+        "fused_quant_k_only_cosine_shifted_brief",
+        "translated_quant_k_only_brief",
+        "target_attenuation_k_only_brief",
     ]
     assert all(spec.include_baselines for spec in eval_specs)
     assert {spec.source_reasoning_mode for spec in eval_specs} == {
@@ -450,6 +454,76 @@ def test_target_attenuation_spec_is_zero_byte_control() -> None:
     assert spec.translated_kv_control == "zero"
     assert spec.methods == ("rotalign",)
     assert spec.gate_values == (0.00, 0.05, 0.10, 0.15, 0.20, 0.25)
+
+
+def test_k_only_specs_cover_fused_translated_and_zero_byte_controls() -> None:
+    specs = {spec.name: spec for spec in control_suite.default_eval_specs()}
+
+    assert specs["fused_quant_k_only_brief"].kv_transport == "k_only"
+    assert specs["fused_quant_k_only_cosine_shifted_brief"].fusion_rule == "cosine_shifted"
+    assert specs["translated_quant_k_only_brief"].methods == ("rotalign_translated",)
+    assert specs["translated_quant_k_only_brief"].gate_values == ()
+    assert specs["target_attenuation_k_only_brief"].translated_kv_control == "zero"
+
+
+def test_build_evaluate_cmd_for_k_only_followup_specs() -> None:
+    specs = {spec.name: spec for spec in control_suite.default_eval_specs()}
+
+    fused_cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file="gate.jsonl",
+        gate_search_limit=12,
+        spec=specs["fused_quant_k_only_cosine_shifted_brief"],
+    )
+    assert fused_cmd[fused_cmd.index("--fusion-rule") + 1] == "cosine_shifted"
+    assert fused_cmd[fused_cmd.index("--kv-transport") + 1] == "k_only"
+    assert fused_cmd[fused_cmd.index("--gate-mode") + 1] == "search"
+
+    translated_cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file="gate.jsonl",
+        gate_search_limit=12,
+        spec=specs["translated_quant_k_only_brief"],
+    )
+    assert translated_cmd[translated_cmd.index("--kv-transport") + 1] == "k_only"
+    assert translated_cmd[translated_cmd.index("--gate-mode") + 1] == "checkpoint"
+    assert "--gate-values" not in translated_cmd
+
+    attenuation_cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file="gate.jsonl",
+        gate_search_limit=12,
+        spec=specs["target_attenuation_k_only_brief"],
+    )
+    assert attenuation_cmd[attenuation_cmd.index("--translated-kv-control") + 1] == "zero"
+    assert attenuation_cmd[attenuation_cmd.index("--kv-transport") + 1] == "k_only"
 
 
 def test_best_metric_for_eval_ignores_system_metrics_and_picks_best_result() -> None:

@@ -23,6 +23,13 @@ Files `42_` through `75_` were added after the initial live validation runs. The
 - `67_` through `71_`: source coding, adaptive routing, event-triggered control, rate-distortion, and predictive-coding controls.
 - `72_` through `75_`: model stitching, representation-alignment theory, Fourier-domain compression, and multiresolution attention references.
 
+Files `76_` through `85_` extend the KV-specific compression and selection literature around the new `k_only` branch:
+
+- `76_`: layer-wise asymmetric KV quantization.
+- `77_` through `82_`: retrieval-head, head-level, key-token, heavy-hitter, and benchmark papers for selective KV retention.
+- `83_`: task-aware adaptive KV budgeting.
+- `84_` and `85_`: redundancy-aware reasoning compression and key/value-asymmetric quantization arguments.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

@@ -1,20 +1,23 @@
-.PHONY: setup-mac setup-linux smoke train eval
+.PHONY: install test calibrate evaluate control ablations
 
-setup-mac:
-	bash scripts/setup_mac.sh
+VENV ?= .venv
+PYTHON ?= $(VENV)/bin/python
+PIP ?= $(VENV)/bin/pip
 
-setup-linux:
-	bash scripts/setup_linux.sh
+install:
+	$(PIP) install -r requirements.txt
 
-smoke:
-	bash scripts/run_smoke_cpu.sh
+test:
+	$(PYTHON) -m pytest -q
 
-train:
-	bash scripts/run_train_small.sh
+calibrate:
+	$(PYTHON) scripts/calibrate.py --help
 
-eval:
-	bash scripts/run_eval_small.sh
+evaluate:
+	$(PYTHON) scripts/evaluate.py --help
 
-.PHONY: prefetch
-prefetch:
-	bash scripts/prefetch_assets.sh "meta-llama/Meta-Llama-3.1-8B-Instruct" "Qwen/Qwen2.5-7B-Instruct"
+control:
+	$(PYTHON) scripts/run_control_suite.py --help
+
+ablations:
+	$(PYTHON) scripts/ablation_sweep.py --help

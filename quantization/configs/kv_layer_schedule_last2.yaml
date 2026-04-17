@@ -1,5 +1,0 @@
-layer_schedule:
-  default: int8
-  overrides:
-    - layers: [26, 27]
-      scheme: fp16

@@ -199,6 +199,22 @@ The default suite now does three things the earlier pilot did not:
 - reports translated-only and text+KV protocol comparisons alongside fused KV
 - uses a held-out gate-selection split when `--gate-search-file` is provided
 
+For the tighter K-only follow-up, run only the new named specs:
+
+```bash
+python scripts/run_control_suite.py \
+    --calibration-file data/calibration.txt \
+    --eval-file data/gsm8k_eval_70.jsonl \
+    --gate-search-file data/gsm8k_gate_search_30.jsonl \
+    --results-dir results/gsm8k_k_only_suite \
+    --checkpoint-dir checkpoints/gsm8k_k_only_suite \
+    --eval-specs \
+      fused_quant_k_only_brief \
+      fused_quant_k_only_cosine_shifted_brief \
+      translated_quant_k_only_brief \
+      target_attenuation_k_only_brief
+```
+
 ## Running ablations
 
 The factorial sweep for the ICLR paper is a bash loop. Example for the

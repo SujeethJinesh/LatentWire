@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "/scratch/m000066/sujinesh/LatentWire/telepathy/run_enhanced_paper_evaluation.py", line 48, in <module>
-    import matplotlib
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/matplotlib/__init__.py", line 161, in <module>
-    from . import _api, _version, cbook, _docstring, rcsetup
-  File "/users/sujinesh/.local/lib/python3.10/site-packages/matplotlib/cbook.py", line 24, in <module>
-    import numpy as np
-ModuleNotFoundError: No module named 'numpy'

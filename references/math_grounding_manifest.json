@@ -202,5 +202,65 @@
     "slug": "transformers_with_multiresolution_attention_heads",
     "url": "https://openreview.net/forum?id=L8qKBr_bht",
     "reason": "Exploratory multiresolution-attention reference for future frequency-aware head selection and routing."
+  },
+  {
+    "num": 76,
+    "slug": "asymkv_layer_wise_asymmetric_quantization_configurations",
+    "url": "https://aclanthology.org/2025.coling-main.158.pdf",
+    "reason": "Layer-wise asymmetric KV quantization evidence that keys and values should not share the same compression policy."
+  },
+  {
+    "num": 77,
+    "slug": "razorattention_efficient_kv_cache_compression_through_retrieval_heads",
+    "url": "https://proceedings.iclr.cc/paper_files/paper/2025/file/2a98af4fea6a24b73af7b588ca95f755-Paper-Conference.pdf",
+    "reason": "Retrieval-head view of long-context inference; motivates selective K-only head retention."
+  },
+  {
+    "num": 78,
+    "slug": "headkv_not_all_heads_matter",
+    "url": "https://proceedings.iclr.cc/paper_files/paper/2025/file/f649556471416b35e60ae0de7c1e3619-Paper-Conference.pdf",
+    "reason": "Head-level KV cache retention directly supports the grouped-head and K-only branches."
+  },
+  {
+    "num": 79,
+    "slug": "keyformer_kv_cache_reduction_through_key_tokens_selection",
+    "url": "https://proceedings.mlsys.org/paper_files/paper/2024/file/48fecef47b19fe501d27d338b6d52582-Paper-Conference.pdf",
+    "reason": "Key-token selection evidence for position-sparse K-only transport."
+  },
+  {
+    "num": 80,
+    "slug": "snapkv_llm_knows_what_you_are_looking_for_before_generation",
+    "url": "https://papers.nips.cc/paper_files/paper/2024/file/28ab418242603e0f7323e54185d19bde-Paper-Conference.pdf",
+    "reason": "Per-head position selection for KV retention; useful for token-sparse communication ablations."
+  },
+  {
+    "num": 81,
+    "slug": "h2o_heavy_hitter_oracle_for_efficient_generative_inference_of_large_language_models",
+    "url": "https://proceedings.neurips.cc/paper_files/paper/2023/file/6ceefa7b15572587b78ecfcebb2827f8-Paper-Conference.pdf",
+    "reason": "Heavy-hitter token retention framing for selective cache transmission."
+  },
+  {
+    "num": 82,
+    "slug": "scbench_kv_cache_centric_analysis_of_long_context_methods",
+    "url": "https://proceedings.iclr.cc/paper_files/paper/2025/file/a540b17fb2295c736d5afd6c507acf66-Paper-Conference.pdf",
+    "reason": "KV-centric benchmark framing for evaluating communication and compression claims more directly."
+  },
+  {
+    "num": 83,
+    "slug": "dynamickv_task_aware_adaptive_kv_cache_compression_for_long_context_llms",
+    "url": "https://aclanthology.org/anthology-files/pdf/findings/2025.findings-emnlp.426.pdf",
+    "reason": "Task-aware adaptive KV budgets support content-dependent communication schedules."
+  },
+  {
+    "num": 84,
+    "slug": "r_kv_redundancy_aware_kv_cache_compression_for_training_free_reasoning_models_acceleration",
+    "url": "https://arxiv.org/pdf/2505.24133.pdf",
+    "reason": "Reasoning-specific redundancy analysis for KV compression; especially relevant for GSM8K-style tasks."
+  },
+  {
+    "num": 85,
+    "slug": "more_for_keys_less_for_values_adaptive_kv_cache_quantization",
+    "url": "https://arxiv.org/pdf/2502.15075.pdf",
+    "reason": "Direct support for asymmetric treatment of keys and values, matching the emerging K-only result."
   }
 ]
