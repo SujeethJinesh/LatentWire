@@ -10,6 +10,7 @@ The active code lives in:
 - `tests/` — regression coverage for the current layout
 - `data/` — calibration and evaluation inputs
 - `references/` — downloaded papers and citation manifest
+- `paper/` — workshop / ICLR writing scaffold, including the official `iclr2026` template
 
 For the detailed method, experiment plan, and current controls, read
 [latent_bridge/README.md](latent_bridge/README.md).
