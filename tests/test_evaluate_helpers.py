@@ -82,6 +82,7 @@ class FakeCausalLM(nn.Module):
         self.dummy = nn.Parameter(torch.zeros(1))
         self.last_call = None
         self.last_generate_call = None
+        self.attention_pattern: torch.Tensor | None = None
 
     def _make_pkv(self, batch: int, seq: int, device: torch.device):
         layers = []
@@ -92,19 +93,46 @@ class FakeCausalLM(nn.Module):
             layers.append((K, V))
         return FakeCache(layers)
 
-    def forward(self, input_ids, attention_mask=None, past_key_values=None, use_cache=False, labels=None):
+    def forward(
+        self,
+        input_ids,
+        attention_mask=None,
+        past_key_values=None,
+        use_cache=False,
+        labels=None,
+        output_attentions=False,
+        **kwargs,
+    ):
         self.last_call = {
             "input_shape": tuple(input_ids.shape),
             "attention_mask_shape": None if attention_mask is None else tuple(attention_mask.shape),
             "past_key_values": past_key_values,
             "use_cache": use_cache,
+            "output_attentions": output_attentions,
         }
         batch, seq = input_ids.shape
         logits = torch.full((batch, seq, self.vocab_size), -20.0, device=input_ids.device)
         logits[..., self.preferred_token_id] = 20.0
+        attentions = None
+        if output_attentions:
+            total_len = seq + (
+                past_key_values.get_seq_length()
+                if hasattr(past_key_values, "get_seq_length")
+                else (past_key_values[0][0].shape[2] if past_key_values is not None else 0)
+            )
+            pattern = self.attention_pattern
+            if pattern is None:
+                pattern = torch.ones(total_len, dtype=torch.float32)
+            pattern = pattern.to(device=input_ids.device, dtype=torch.float32)
+            pattern = pattern / pattern.sum().clamp_min(1e-8)
+            attentions = tuple(
+                pattern.view(1, 1, 1, total_len).expand(batch, 1, seq, total_len).clone()
+                for _ in range(self.n_layers)
+            )
         return SimpleNamespace(
             logits=logits,
             past_key_values=self._make_pkv(batch, seq, input_ids.device) if use_cache else None,
+            attentions=attentions,
         )
 
     def generate(self, input_ids, max_new_tokens, do_sample, pad_token_id, attention_mask=None):
@@ -302,7 +330,7 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "--kv-transport",
             "k_only",
             "--position-selection-metric",
-            "disagreement",
+            "attention_shuffled",
         ],
     )
 
@@ -315,7 +343,7 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.translated_kv_control == "zero"
     assert args.fusion_rule == "kalman_tokenwise"
     assert args.kv_transport == "k_only"
-    assert args.position_selection_metric == "disagreement"
+    assert args.position_selection_metric == "attention_shuffled"
 
 
 def test_source_kv_controls_are_negative_controls() -> None:
@@ -1056,6 +1084,143 @@ def test_build_rotalign_prefix_state_supports_disagreement_position_selection(mo
 
     assert torch.allclose(sparse_k[:, :, 0, :], torch.full_like(sparse_k[:, :, 0, :], 1.0))
     assert torch.allclose(sparse_k[:, :, 1, :], torch.full_like(sparse_k[:, :, 1, :], 6.0))
+
+
+def test_build_rotalign_prefix_state_supports_attention_position_selection(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt.attention_pattern = torch.tensor([0.9, 0.1, 0.0], dtype=torch.float32)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.set_fixed_gates(0.5)
+
+    def translated(K_s, V_s, tgt_layer_idx, quantize=True, quantization_control="real"):
+        K_hat = torch.zeros_like(K_s)
+        K_hat[:, :, 0, :] = 11.0
+        K_hat[:, :, 1, :] = 21.0
+        return K_hat, torch.zeros_like(V_s)
+
+    translator.translate_layer = translated  # type: ignore[method-assign]
+
+    sparse_state, _ = evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+        kv_transport="k_only",
+        position_selection_ratio=0.5,
+        position_selection_metric="attention",
+    )
+
+    sparse_k, _ = sparse_state.past_key_values[0]
+
+    assert torch.allclose(sparse_k[:, :, 0, :], torch.full_like(sparse_k[:, :, 0, :], 6.0))
+    assert torch.allclose(sparse_k[:, :, 1, :], torch.full_like(sparse_k[:, :, 1, :], 1.0))
+
+
+def test_build_rotalign_prefix_state_supports_source_attention_position_selection(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    src.attention_pattern = torch.tensor([0.9, 0.1, 0.0], dtype=torch.float32)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.set_fixed_gates(0.5)
+
+    def translated(K_s, V_s, tgt_layer_idx, quantize=True, quantization_control="real"):
+        K_hat = torch.zeros_like(K_s)
+        K_hat[:, :, 0, :] = 11.0
+        K_hat[:, :, 1, :] = 21.0
+        return K_hat, torch.zeros_like(V_s)
+
+    translator.translate_layer = translated  # type: ignore[method-assign]
+
+    sparse_state, _ = evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+        kv_transport="k_only",
+        position_selection_ratio=0.5,
+        position_selection_metric="source_attention",
+    )
+
+    sparse_k, _ = sparse_state.past_key_values[0]
+
+    assert torch.allclose(sparse_k[:, :, 0, :], torch.full_like(sparse_k[:, :, 0, :], 6.0))
+    assert torch.allclose(sparse_k[:, :, 1, :], torch.full_like(sparse_k[:, :, 1, :], 1.0))
+
+
+def test_position_selection_random_metric_is_deterministic() -> None:
+    K_t = torch.zeros(1, 1, 2, 1)
+    V_t = torch.zeros(1, 1, 2, 1)
+    K_hat = torch.tensor([[[[1.0], [2.0]]]])
+    V_hat = torch.zeros_like(K_hat)
+
+    first = evaluate._position_selection_scores(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        kv_transport="k_only",
+        position_selection_metric="random",
+    )
+    second = evaluate._position_selection_scores(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        kv_transport="k_only",
+        position_selection_metric="random",
+    )
+
+    assert first.shape == (2,)
+    assert torch.allclose(first, second)
+
+
+def test_position_selection_attention_shuffled_metric_is_deterministic() -> None:
+    K_t = torch.zeros(1, 1, 3, 1)
+    V_t = torch.zeros(1, 1, 3, 1)
+    K_hat = torch.tensor([[[[1.0], [2.0], [3.0]]]])
+    V_hat = torch.zeros_like(K_hat)
+    scores = torch.tensor([0.9, 0.1, 0.0], dtype=torch.float32)
+
+    first = evaluate._position_selection_scores(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        kv_transport="k_only",
+        position_selection_metric="attention_shuffled",
+        position_scores=scores,
+    )
+    second = evaluate._position_selection_scores(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        kv_transport="k_only",
+        position_selection_metric="attention_shuffled",
+        position_scores=scores,
+    )
+
+    assert first.shape == (3,)
+    assert torch.allclose(first, second)
+    assert torch.allclose(first.sort().values, scores.sort().values)
+    assert not torch.allclose(first, scores)
 
 
 def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:

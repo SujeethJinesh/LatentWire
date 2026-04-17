@@ -53,6 +53,7 @@ class EvalSpec:
     fusion_rule: str = "static"
     kv_transport: str = "both"
     position_selection_ratio: float = 1.0
+    position_selection_metric: str = "energy"
 
 
 def default_device() -> str:
@@ -366,6 +367,18 @@ def default_eval_specs() -> list[EvalSpec]:
             translated_kv_control="zero",
             kv_transport="v_only",
         ),
+        EvalSpec(
+            name="fused_quant_k_only_attention_sparse_brief",
+            methods=("rotalign",),
+            gate_values=(0.10,),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            fusion_rule="cosine",
+            kv_transport="k_only",
+            position_selection_ratio=0.5,
+            position_selection_metric="attention",
+        ),
     ]
 
 
@@ -577,6 +590,8 @@ def build_evaluate_cmd(
         cmd.extend(["--kv-transport", spec.kv_transport])
     if uses_rotalign and abs(float(spec.position_selection_ratio) - 1.0) > 1e-9:
         cmd.extend(["--position-selection-ratio", str(spec.position_selection_ratio)])
+    if uses_rotalign and spec.position_selection_metric != "energy":
+        cmd.extend(["--position-selection-metric", spec.position_selection_metric])
     if not spec.quantize:
         cmd.append("--no-quantize")
     if prediction_output is not None:
@@ -613,6 +628,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "fusion_rule",
         "kv_transport",
         "position_selection_ratio",
+        "position_selection_metric",
         "quantize",
         "target_alone",
         "text_to_text",
@@ -656,6 +672,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "fusion_rule": record.get("fusion_rule", "static"),
                     "kv_transport": record.get("kv_transport", "both"),
                     "position_selection_ratio": record.get("position_selection_ratio", 1.0),
+                    "position_selection_metric": record.get("position_selection_metric", "energy"),
                     "quantize": record["quantize"],
                     "target_alone": record.get("target_alone"),
                     "text_to_text": record.get("text_to_text"),
@@ -984,6 +1001,7 @@ def main() -> None:
                 "fusion_rule": eval_spec.fusion_rule,
                 "kv_transport": eval_spec.kv_transport,
                 "position_selection_ratio": eval_spec.position_selection_ratio,
+                "position_selection_metric": eval_spec.position_selection_metric,
                 "quantize": eval_spec.quantize,
                 "methods": list(eval_spec.methods),
                 "gate_values": list(eval_spec.gate_values),

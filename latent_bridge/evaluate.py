@@ -190,6 +190,45 @@ def _step_with_past(model, token_ids: torch.Tensor, past_key_values: tuple | Non
 
 
 @torch.no_grad()
+def _last_token_attention_scores(
+    model,
+    token_ids: torch.Tensor,
+    past_key_values: Any,
+    device: str,
+    *,
+    translator: RotAlignKVTranslator | None = None,
+) -> list[torch.Tensor]:
+    model_cache = _cache_for_model(model, past_key_values)
+    prefix_len = _cache_seq_length(model_cache)
+    out = model(
+        input_ids=token_ids,
+        attention_mask=_ones(prefix_len + token_ids.shape[1], device),
+        past_key_values=model_cache,
+        use_cache=False,
+        output_attentions=True,
+    )
+    attentions = getattr(out, "attentions", None)
+    if attentions is None:
+        raise ValueError("Target model did not return attentions for attention-based position selection")
+
+    layer_scores: list[torch.Tensor] = []
+    for layer_idx, attn in enumerate(attentions):
+        if attn is None:
+            raise ValueError(f"Missing attention tensor for layer {layer_idx}")
+        if attn.shape[-1] < prefix_len:
+            raise ValueError(
+                f"Attention tensor for layer {layer_idx} has length {attn.shape[-1]} < prefix length {prefix_len}"
+            )
+        score = attn[0, :, -1, :prefix_len].float()
+        if translator is not None and layer_idx < translator.config.num_tgt_layers:
+            head_mask = translator.head_selected_mask[layer_idx].to(device=score.device)
+            if head_mask.numel() == score.shape[0] and bool(head_mask.any()):
+                score = score[head_mask]
+        layer_scores.append(score.mean(dim=0))
+    return layer_scores
+
+
+@torch.no_grad()
 def _logprob_tokens_from_prefix_state(
     model,
     prefix_state: PrefixState,
@@ -711,6 +750,7 @@ def _position_selection_scores(
     *,
     kv_transport: str,
     position_selection_metric: str,
+    position_scores: torch.Tensor | None = None,
 ) -> torch.Tensor:
     if position_selection_metric == "energy":
         if kv_transport == "k_only":
@@ -729,6 +769,34 @@ def _position_selection_scores(
             (K_hat.float() - K_t.float()).pow(2).mean(dim=(0, 1, 3))
             + (V_hat.float() - V_t.float()).pow(2).mean(dim=(0, 1, 3))
         )
+    if position_selection_metric == "random":
+        if kv_transport == "k_only":
+            salt = float(K_hat.float().sum().detach().cpu())
+        elif kv_transport == "v_only":
+            salt = float(V_hat.float().sum().detach().cpu())
+        else:
+            salt = float((K_hat.float().sum() + V_hat.float().sum()).detach().cpu())
+        seed = 13_579 + (int(abs(salt) * 1_000) % 1_000_003)
+        gen = torch.Generator(device="cpu").manual_seed(seed)
+        return torch.rand(K_hat.shape[2], generator=gen, dtype=torch.float32).to(device=K_hat.device)
+    if position_selection_metric == "attention":
+        if position_scores is None:
+            raise ValueError("attention-based position selection requires explicit position scores")
+        return position_scores.float()
+    if position_selection_metric == "attention_shuffled":
+        if position_scores is None:
+            raise ValueError("attention_shuffled position selection requires explicit position scores")
+        salt = float(K_hat.float().sum().detach().cpu())
+        seed = 24_681 + (int(abs(salt) * 1_000) % 1_000_003)
+        gen = torch.Generator(device="cpu").manual_seed(seed)
+        perm = torch.randperm(position_scores.numel(), generator=gen)
+        if position_scores.numel() > 1 and torch.equal(perm, torch.arange(position_scores.numel())):
+            perm = torch.roll(perm, shifts=1)
+        return position_scores.float()[perm.to(device=position_scores.device)]
+    if position_selection_metric == "source_attention":
+        if position_scores is None:
+            raise ValueError("source_attention position selection requires explicit position scores")
+        return position_scores.float()
     raise ValueError(f"Unknown position_selection_metric: {position_selection_metric}")
 
 
@@ -742,6 +810,7 @@ def _apply_position_selection(
     kv_transport: str,
     position_selection_ratio: float,
     position_selection_metric: str,
+    position_scores: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     seq_len = K_hat.shape[2]
     keep = _selected_token_count(seq_len, position_selection_ratio)
@@ -755,6 +824,7 @@ def _apply_position_selection(
         V_hat,
         kv_transport=kv_transport,
         position_selection_metric=position_selection_metric,
+        position_scores=position_scores,
     )
     keep_indices = torch.topk(scores, k=keep, largest=True).indices
     mask = torch.zeros(seq_len, dtype=torch.bool, device=K_hat.device)
@@ -802,7 +872,7 @@ def _build_rotalign_prefix_state(
     tgt_pkv = list(_normalize_cache(tgt_out.past_key_values))
 
     src_ids = source_tokenizer(source_prompt, return_tensors="pt").input_ids.to(device)
-    src_prefix_ids, _ = _split_prompt_prefix(src_ids)
+    src_prefix_ids, src_last_token = _split_prompt_prefix(src_ids)
     if src_prefix_ids is None:
         src_pkv = []
     else:
@@ -812,6 +882,27 @@ def _build_rotalign_prefix_state(
             use_cache=True,
         )
         src_pkv = list(_normalize_cache(src_out.past_key_values))
+
+    layer_position_scores: list[torch.Tensor] | None = None
+    if position_selection_metric in {"attention", "attention_shuffled"} and position_selection_ratio < 1.0:
+        layer_position_scores = _last_token_attention_scores(
+            target_model,
+            tgt_last_token,
+            tuple(tgt_pkv),
+            device,
+            translator=translator,
+        )
+    source_layer_position_scores: list[torch.Tensor] | None = None
+    if position_selection_metric == "source_attention" and position_selection_ratio < 1.0:
+        if src_prefix_ids is None or src_last_token is None:
+            raise ValueError("source_attention position selection requires a non-empty source prefix")
+        source_layer_position_scores = _last_token_attention_scores(
+            source_model,
+            src_last_token,
+            tuple(src_pkv),
+            device,
+            translator=None,
+        )
 
     fused_pkv: list[tuple[torch.Tensor, torch.Tensor]] = []
     for tgt_l in range(translator.config.num_tgt_layers):
@@ -843,6 +934,18 @@ def _build_rotalign_prefix_state(
             kv_transport=kv_transport,
             position_selection_ratio=position_selection_ratio,
             position_selection_metric=position_selection_metric,
+            position_scores=(
+                None
+                if (
+                    layer_position_scores is None
+                    and source_layer_position_scores is None
+                )
+                else (
+                    layer_position_scores[tgt_l][-K_t_aligned.shape[2] :]
+                    if layer_position_scores is not None
+                    else source_layer_position_scores[src_l][-K_t_aligned.shape[2] :]
+                )
+            ),
         )
         K_hat, V_hat = _apply_kv_transport(
             K_t_aligned,
@@ -1619,7 +1722,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--position-selection-metric",
-        choices=["energy", "disagreement"],
+        choices=["energy", "disagreement", "random", "attention", "attention_shuffled", "source_attention"],
         default="energy",
         help="How to rank translated positions when position_selection_ratio < 1.0.",
     )
@@ -1684,20 +1787,36 @@ def main() -> None:
         examples = load_generation(args.eval_file)
     print(f"Loaded {len(examples)} {task_type} examples from {args.eval_file}")
 
+    attention_selector_metrics = {"attention", "attention_shuffled", "source_attention"}
+
     print(f"\nLoading source: {args.source_model}")
     tok_s = AutoTokenizer.from_pretrained(args.source_model, trust_remote_code=True)
     if tok_s.pad_token_id is None:
         tok_s.pad_token = tok_s.eos_token
+    source_model_kwargs = {
+        "torch_dtype": dtype,
+        "trust_remote_code": True,
+    }
+    if position_selection_metric == "source_attention":
+        source_model_kwargs["attn_implementation"] = "eager"
     src = AutoModelForCausalLM.from_pretrained(
-        args.source_model, torch_dtype=dtype, trust_remote_code=True
+        args.source_model,
+        **source_model_kwargs,
     ).to(args.device).eval()
 
     print(f"Loading target: {args.target_model}")
     tok_t = AutoTokenizer.from_pretrained(args.target_model, trust_remote_code=True)
     if tok_t.pad_token_id is None:
         tok_t.pad_token = tok_t.eos_token
+    target_model_kwargs = {
+        "torch_dtype": dtype,
+        "trust_remote_code": True,
+    }
+    if position_selection_metric in attention_selector_metrics:
+        target_model_kwargs["attn_implementation"] = "eager"
     tgt = AutoModelForCausalLM.from_pretrained(
-        args.target_model, torch_dtype=dtype, trust_remote_code=True
+        args.target_model,
+        **target_model_kwargs,
     ).to(args.device).eval()
 
     print(f"Loading translator from {args.translator}")
