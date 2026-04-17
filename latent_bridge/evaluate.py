@@ -824,6 +824,8 @@ def _search_per_layer_gates(
     if not layer_indices:
         layer_indices = list(range(translator.config.num_tgt_layers))
     is_generation = bool(examples) and isinstance(examples[0], GenerationExample)
+    search_k = kv_transport in {"both", "k_only"}
+    search_v = kv_transport in {"both", "v_only"}
 
     def _score_current_gates() -> float:
         if is_generation:
@@ -867,30 +869,36 @@ def _search_per_layer_gates(
         current_k, current_v = translator.gate_value(tgt_layer_idx)
 
         best_k = current_k
-        best_k_score = float("-inf")
-        for candidate in candidates:
-            translator.set_layer_gates(tgt_layer_idx, alpha_k=candidate, alpha_v=current_v)
-            score = _score_current_gates()
-            if score > best_k_score:
-                best_k_score = score
-                best_k = candidate
+        best_k_score: float | None = None
+        if search_k:
+            best_k_score = float("-inf")
+            for candidate in candidates:
+                translator.set_layer_gates(tgt_layer_idx, alpha_k=candidate, alpha_v=current_v)
+                score = _score_current_gates()
+                if score > best_k_score:
+                    best_k_score = score
+                    best_k = candidate
 
         translator.set_layer_gates(tgt_layer_idx, alpha_k=best_k, alpha_v=current_v)
 
         best_v = current_v
-        best_v_score = float("-inf")
-        for candidate in candidates:
-            translator.set_layer_gates(tgt_layer_idx, alpha_k=best_k, alpha_v=candidate)
-            score = _score_current_gates()
-            if score > best_v_score:
-                best_v_score = score
-                best_v = candidate
+        best_v_score: float | None = None
+        if search_v:
+            best_v_score = float("-inf")
+            for candidate in candidates:
+                translator.set_layer_gates(tgt_layer_idx, alpha_k=best_k, alpha_v=candidate)
+                score = _score_current_gates()
+                if score > best_v_score:
+                    best_v_score = score
+                    best_v = candidate
 
         translator.set_layer_gates(tgt_layer_idx, alpha_k=best_k, alpha_v=best_v)
+        k_score_display = "skipped" if best_k_score is None else f"{best_k_score:.4f}"
+        v_score_display = "skipped" if best_v_score is None else f"{best_v_score:.4f}"
         print(
             f"[gate search] layer {tgt_layer_idx:>2d}: "
-            f"K={best_k:.3f} (score={best_k_score:.4f})  "
-            f"V={best_v:.3f} (score={best_v_score:.4f})"
+            f"K={best_k:.3f} (score={k_score_display})  "
+            f"V={best_v:.3f} (score={v_score_display})"
         )
 
     return {

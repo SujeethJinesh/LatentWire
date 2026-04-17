@@ -465,6 +465,75 @@ def test_search_per_layer_gates_uses_generation_objective_for_generation_example
     assert len(stats["gate_V"]) == 2
 
 
+@pytest.mark.parametrize(
+    ("kv_transport", "expected_calls", "preserved_index"),
+    [
+        ("k_only", 4, 1),
+        ("v_only", 4, 0),
+    ],
+)
+def test_search_per_layer_gates_skips_irrelevant_transport_branch(
+    monkeypatch,
+    kv_transport: str,
+    expected_calls: int,
+    preserved_index: int,
+) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    examples = [evaluate.MCQExample(question="q", choices=["A", "B"], answer=0)]
+    calls = 0
+    initial_gates = [translator.gate_value(layer_idx) for layer_idx in range(2)]
+
+    def fake_eval_rotalign_kv(
+        source_model,
+        source_tokenizer,
+        target_model,
+        target_tokenizer,
+        translator_obj,
+        examples_arg,
+        device,
+        quantize=True,
+        protocol="fused",
+        source_reasoning_mode="brief_analysis",
+        source_kv_control="real",
+        quantization_control="real",
+        translated_kv_control="real",
+        fusion_rule="static",
+        kv_transport="both",
+        records=None,
+        method_name="rotalign_kv",
+    ) -> float:
+        nonlocal calls
+        calls += 1
+        return 0.0
+
+    monkeypatch.setattr(evaluate, "eval_rotalign_kv", fake_eval_rotalign_kv)
+
+    evaluate._search_per_layer_gates(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        examples,
+        "cpu",
+        quantize=False,
+        protocol="fused",
+        source_reasoning_mode="plain",
+        gate_values=[0.0, 0.25],
+        kv_transport=kv_transport,
+    )
+
+    assert calls == expected_calls
+    for layer_idx in range(2):
+        assert translator.gate_value(layer_idx)[preserved_index] == pytest.approx(
+            initial_gates[layer_idx][preserved_index]
+        )
+
+
 def test_restore_gate_values_restores_each_layer(monkeypatch) -> None:
     translator = _make_identity_translator(monkeypatch, layers=2)
     translator.set_layer_gates(0, alpha_k=0.25, alpha_v=0.75)
