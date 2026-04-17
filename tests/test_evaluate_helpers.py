@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from types import SimpleNamespace
 
 import torch
@@ -235,6 +236,31 @@ def test_score_with_injected_kv_passes_cache_and_attention_mask() -> None:
     assert model.last_call["input_shape"] == (1, 1)
 
 
+def test_cache_for_model_converts_legacy_cache_for_modern_transformers(monkeypatch) -> None:
+    legacy_cache = ((torch.zeros(1, 1, 2, 1), torch.ones(1, 1, 2, 1)),)
+
+    class _StubDynamicCache:
+        def __init__(self, layers):
+            self._layers = tuple(layers)
+
+        @classmethod
+        def from_legacy_cache(cls, pkv):
+            return cls(pkv)
+
+        def get_seq_length(self):
+            return self._layers[0][0].shape[2]
+
+        def to_legacy_cache(self):
+            return self._layers
+
+    monkeypatch.setitem(sys.modules, "transformers.cache_utils", SimpleNamespace(DynamicCache=_StubDynamicCache))
+    model_cache = evaluate._cache_for_model(SimpleNamespace(config=SimpleNamespace()), legacy_cache)
+
+    assert hasattr(model_cache, "get_seq_length")
+    assert model_cache.get_seq_length() == 2
+    assert tuple(model_cache.to_legacy_cache()) == legacy_cache
+
+
 def test_translator_set_layer_gates_only_updates_one_layer(monkeypatch) -> None:
     translator = _make_identity_translator(monkeypatch, layers=2)
 
@@ -272,9 +298,11 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "--translated-kv-control",
             "zero",
             "--fusion-rule",
-            "cosine",
+            "kalman_tokenwise",
             "--kv-transport",
             "k_only",
+            "--position-selection-metric",
+            "disagreement",
         ],
     )
 
@@ -285,8 +313,9 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.source_kv_control == "shuffle_positions"
     assert args.quantization_control == "matched_noise"
     assert args.translated_kv_control == "zero"
-    assert args.fusion_rule == "cosine"
+    assert args.fusion_rule == "kalman_tokenwise"
     assert args.kv_transport == "k_only"
+    assert args.position_selection_metric == "disagreement"
 
 
 def test_source_kv_controls_are_negative_controls() -> None:
@@ -372,6 +401,8 @@ def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> No
         translated_kv_control="real",
         fusion_rule="static",
         kv_transport="both",
+        position_selection_ratio=1.0,
+        position_selection_metric="energy",
         records=None,
         method_name="rotalign_kv",
     ) -> float:
@@ -435,6 +466,8 @@ def test_search_per_layer_gates_uses_generation_objective_for_generation_example
         translated_kv_control="real",
         fusion_rule="static",
         kv_transport="both",
+        position_selection_ratio=1.0,
+        position_selection_metric="energy",
     ):
         calls.append(protocol)
         return (0.25, 16.0, 1.0)
@@ -503,6 +536,8 @@ def test_search_per_layer_gates_skips_irrelevant_transport_branch(
         translated_kv_control="real",
         fusion_rule="static",
         kv_transport="both",
+        position_selection_ratio=1.0,
+        position_selection_metric="energy",
         records=None,
         method_name="rotalign_kv",
     ) -> float:
@@ -583,6 +618,8 @@ def test_main_gate_search_uses_protocol_specific_objective(monkeypatch, tmp_path
         translated_kv_control="real",
         fusion_rule="static",
         kv_transport="both",
+        position_selection_ratio=1.0,
+        position_selection_metric="energy",
     ):
         search_protocols.append(protocol)
         return {"gate_K": [0.15, 0.15], "gate_V": [0.25, 0.25]}
@@ -821,6 +858,29 @@ def test_head_selection_reduces_reported_real_kv_communication(monkeypatch) -> N
     assert sparse_bits < full_bits
 
 
+def test_position_selection_reduces_reported_real_kv_communication(monkeypatch) -> None:
+    translator = _make_identity_translator(monkeypatch, layers=2)
+
+    full_bits = evaluate._communication_bits(
+        translator,
+        seq_len=4,
+        quantize=True,
+        translated_kv_control="real",
+        protocol="translated_only",
+        position_selection_ratio=1.0,
+    )
+    sparse_bits = evaluate._communication_bits(
+        translator,
+        seq_len=4,
+        quantize=True,
+        translated_kv_control="real",
+        protocol="translated_only",
+        position_selection_ratio=0.5,
+    )
+
+    assert sparse_bits < full_bits
+
+
 def test_kv_transport_reduces_reported_real_kv_communication(monkeypatch) -> None:
     translator = _make_identity_translator(monkeypatch, layers=2)
 
@@ -904,6 +964,100 @@ def test_build_rotalign_prefix_state_supports_k_only_and_v_only_transport(monkey
     assert k_stats["bits"] == v_stats["bits"]
 
 
+def test_build_rotalign_prefix_state_supports_position_sparse_transport(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.set_fixed_gates(0.5)
+
+    def translated(K_s, V_s, tgt_layer_idx, quantize=True, quantization_control="real"):
+        K_hat = torch.zeros_like(K_s)
+        K_hat[:, :, 0, :] = 11.0
+        K_hat[:, :, 1, :] = 21.0
+        return K_hat, torch.zeros_like(V_s)
+
+    translator.translate_layer = translated  # type: ignore[method-assign]
+
+    sparse_state, sparse_stats = evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+        kv_transport="k_only",
+        position_selection_ratio=0.5,
+    )
+    full_state, full_stats = evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+        kv_transport="k_only",
+        position_selection_ratio=1.0,
+    )
+
+    sparse_k, sparse_v = sparse_state.past_key_values[0]
+    full_k, full_v = full_state.past_key_values[0]
+
+    assert torch.allclose(sparse_k[:, :, 0, :], torch.full_like(sparse_k[:, :, 0, :], 1.0))
+    assert torch.allclose(sparse_k[:, :, 1, :], torch.full_like(sparse_k[:, :, 1, :], 11.0))
+    assert torch.allclose(full_k[:, :, 0, :], torch.full_like(full_k[:, :, 0, :], 6.0))
+    assert torch.allclose(full_k[:, :, 1, :], torch.full_like(full_k[:, :, 1, :], 11.0))
+    assert torch.allclose(sparse_v, full_v)
+    assert sparse_stats["bits"] < full_stats["bits"]
+
+
+def test_build_rotalign_prefix_state_supports_disagreement_position_selection(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.set_fixed_gates(0.5)
+
+    def translated(K_s, V_s, tgt_layer_idx, quantize=True, quantization_control="real"):
+        K_hat = torch.zeros_like(K_s)
+        K_hat[:, :, 0, :] = 1.5
+        K_hat[:, :, 1, :] = 11.0
+        return K_hat, torch.zeros_like(V_s)
+
+    translator.translate_layer = translated  # type: ignore[method-assign]
+
+    sparse_state, _ = evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+        kv_transport="k_only",
+        position_selection_ratio=0.5,
+        position_selection_metric="disagreement",
+    )
+
+    sparse_k, _ = sparse_state.past_key_values[0]
+
+    assert torch.allclose(sparse_k[:, :, 0, :], torch.full_like(sparse_k[:, :, 0, :], 1.0))
+    assert torch.allclose(sparse_k[:, :, 1, :], torch.full_like(sparse_k[:, :, 1, :], 6.0))
+
+
 def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
     tok_s = FakeTokenizer()
     tok_t = FakeTokenizer()
@@ -928,6 +1082,8 @@ def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
         translated_kv_control="real",
         fusion_rule="static",
         kv_transport="both",
+        position_selection_ratio=1.0,
+        position_selection_metric="energy",
     ):
         captured["source_prompt"] = source_prompt
         captured["target_prompt"] = target_prompt
@@ -984,6 +1140,8 @@ def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
         translated_kv_control="real",
         fusion_rule="static",
         kv_transport="both",
+        position_selection_ratio=1.0,
+        position_selection_metric="energy",
     ):
         return evaluate.PrefixState(None, torch.tensor([[2]], dtype=torch.long), 1), {"bits": 32.0}
 

@@ -182,7 +182,17 @@ def parse_args() -> argparse.Namespace:
         "--fusion-rules",
         nargs="+",
         default=["static"],
-        choices=["static", "cosine", "cosine_shifted", "js_shrinkage", "kalman"],
+        choices=[
+            "static",
+            "cosine",
+            "cosine_shifted",
+            "js_shrinkage",
+            "kalman",
+            "cosine_tokenwise",
+            "cosine_shifted_tokenwise",
+            "js_shrinkage_tokenwise",
+            "kalman_tokenwise",
+        ],
         help="Runtime fusion rule used when combining target and translated KV.",
     )
     p.add_argument("--device", default=default_device())

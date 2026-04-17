@@ -763,5 +763,77 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 990368
+  },
+  {
+    "num": 86,
+    "slug": "homogeneous_keys_heterogeneous_values_exploiting_local_kv_cache_asymmetry_for_long_context_llms",
+    "url": "https://arxiv.org/pdf/2506.05410",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/86_homogeneous_keys_heterogeneous_values_exploiting_local_kv_cache_asymmetry_for_long_context_llms.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 918961
+  },
+  {
+    "num": 87,
+    "slug": "kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity",
+    "url": "https://arxiv.org/pdf/2512.05916",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/87_kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 424735
+  },
+  {
+    "num": 88,
+    "slug": "keepkv_achieving_periodic_lossless_kv_cache_compression_for_efficient_llm_inference",
+    "url": "https://arxiv.org/pdf/2504.09936",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/88_keepkv_achieving_periodic_lossless_kv_cache_compression_for_efficient_llm_inference.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2307237
+  },
+  {
+    "num": 89,
+    "slug": "tokenselect_efficient_long_context_inference_and_length_extrapolation_for_llms_via_dynamic_token_level_kv_cache_selection",
+    "url": "https://arxiv.org/pdf/2411.02886",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/89_tokenselect_efficient_long_context_inference_and_length_extrapolation_for_llms_via_dynamic_token_level_kv_cache_selection.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1473119
+  },
+  {
+    "num": 90,
+    "slug": "quest_query_aware_sparsity_for_efficient_long_context_llm_inference",
+    "url": "https://arxiv.org/pdf/2406.10774",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/90_quest_query_aware_sparsity_for_efficient_long_context_llm_inference.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2263609
+  },
+  {
+    "num": 91,
+    "slug": "weightedkv_attention_scores_weighted_key_value_cache_merging_for_large_language_models",
+    "url": "https://arxiv.org/pdf/2503.01330",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/91_weightedkv_attention_scores_weighted_key_value_cache_merging_for_large_language_models.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 491973
+  },
+  {
+    "num": 92,
+    "slug": "eigen_attention_attention_in_low_rank_space_for_kv_cache_compression",
+    "url": "https://arxiv.org/pdf/2408.05646",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/92_eigen_attention_attention_in_low_rank_space_for_kv_cache_compression.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 942097
+  },
+  {
+    "num": 93,
+    "slug": "qcfuse_query_centric_cache_fusion_for_efficient_rag_inference",
+    "url": "https://arxiv.org/pdf/2604.08585",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/93_qcfuse_query_centric_cache_fusion_for_efficient_rag_inference.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 3705019
   }
 ]

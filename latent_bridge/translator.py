@@ -353,6 +353,18 @@ class RotAlignKVTranslator(nn.Module):
         translated_flat = translated_kv.float().reshape(translated_kv.shape[0], -1)
         return torch.cosine_similarity(target_flat, translated_flat, dim=-1, eps=1e-8).mean()
 
+    @staticmethod
+    def _tokenwise_cosine_similarity(target_kv: torch.Tensor, translated_kv: torch.Tensor) -> torch.Tensor:
+        batch, _, seq_len, _ = target_kv.shape
+        target_flat = target_kv.float().permute(0, 2, 1, 3).reshape(batch, seq_len, -1)
+        translated_flat = translated_kv.float().permute(0, 2, 1, 3).reshape(batch, seq_len, -1)
+        cosine = torch.cosine_similarity(target_flat, translated_flat, dim=-1, eps=1e-8)
+        return cosine.unsqueeze(1).unsqueeze(-1)
+
+    @staticmethod
+    def _tokenwise_mean_square(x: torch.Tensor) -> torch.Tensor:
+        return x.float().pow(2).mean(dim=(1, 3), keepdim=True)
+
     def _effective_gate(
         self,
         base_gate: torch.Tensor,
@@ -363,18 +375,28 @@ class RotAlignKVTranslator(nn.Module):
         if fusion_rule == "static":
             return base_gate
 
-        cosine = self._flatten_cosine_similarity(target_kv, translated_kv)
         residual = (translated_kv - target_kv).float()
-        residual_var = residual.pow(2).mean()
-        target_var = target_kv.float().pow(2).mean().clamp_min(1e-8)
-        translated_var = translated_kv.float().pow(2).mean().clamp_min(1e-8)
-        if fusion_rule == "cosine":
+        tokenwise = fusion_rule.endswith("_tokenwise")
+        base_rule = fusion_rule.removesuffix("_tokenwise")
+
+        if tokenwise:
+            residual_var = self._tokenwise_mean_square(residual)
+            target_var = self._tokenwise_mean_square(target_kv).clamp_min(1e-8)
+            translated_var = self._tokenwise_mean_square(translated_kv).clamp_min(1e-8)
+            cosine = self._tokenwise_cosine_similarity(target_kv, translated_kv)
+        else:
+            residual_var = residual.pow(2).mean()
+            target_var = target_kv.float().pow(2).mean().clamp_min(1e-8)
+            translated_var = translated_kv.float().pow(2).mean().clamp_min(1e-8)
+            cosine = self._flatten_cosine_similarity(target_kv, translated_kv)
+
+        if base_rule == "cosine":
             scale = cosine.clamp(0.0, 1.0)
-        elif fusion_rule == "cosine_shifted":
+        elif base_rule == "cosine_shifted":
             scale = ((cosine + 1.0) * 0.5).clamp(0.0, 1.0)
-        elif fusion_rule == "js_shrinkage":
+        elif base_rule == "js_shrinkage":
             scale = (1.0 - residual_var / translated_var).clamp(0.0, 1.0)
-        elif fusion_rule == "kalman":
+        elif base_rule == "kalman":
             scale = (target_var / (target_var + residual_var)).clamp(0.0, 1.0)
         else:
             raise ValueError(f"Unknown fusion_rule: {fusion_rule}")

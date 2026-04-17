@@ -194,6 +194,34 @@ def test_js_and_kalman_fusion_rules_downweight_noisy_translation(monkeypatch) ->
     assert torch.all(V_kal >= V_target)
 
 
+def test_tokenwise_kalman_fusion_downweights_only_noisy_positions(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    tr.set_fixed_gates(0.8)
+
+    K_target = torch.ones(1, 2, 2, 2)
+    V_target = 2.0 * torch.ones(1, 2, 2, 2)
+    K_translated = K_target.clone()
+    V_translated = V_target.clone()
+    K_translated[:, :, 1] = 5.0
+    V_translated[:, :, 1] = 6.0
+
+    K_out, V_out = tr.fuse_layer(
+        K_target,
+        V_target,
+        K_translated,
+        V_translated,
+        0,
+        fusion_rule="kalman_tokenwise",
+    )
+
+    assert torch.allclose(K_out[:, :, 0], K_target[:, :, 0])
+    assert torch.allclose(V_out[:, :, 0], V_target[:, :, 0])
+    assert torch.all(K_out[:, :, 1] < 2.0)
+    assert torch.all(K_out[:, :, 1] > K_target[:, :, 1])
+    assert torch.all(V_out[:, :, 1] < 3.0)
+    assert torch.all(V_out[:, :, 1] > V_target[:, :, 1])
+
+
 def test_matched_noise_quantization_control_keeps_shape(monkeypatch) -> None:
     tr = _make_identity_translator(monkeypatch)
     tr.quantizer = _OffsetQuantizer(bits=2)
@@ -351,6 +379,32 @@ def test_cosine_shifted_uses_only_selected_heads_for_adaptive_gate(monkeypatch) 
 
     assert torch.allclose(K_out, K_target)
     assert torch.allclose(V_out, V_target)
+
+
+def test_cosine_shifted_tokenwise_preserves_agreeing_positions(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    tr.set_fixed_gates(0.8)
+
+    K_target = torch.ones(1, 2, 2, 2)
+    V_target = 2.0 * torch.ones(1, 2, 2, 2)
+    K_translated = K_target.clone()
+    V_translated = V_target.clone()
+    K_translated[:, :, 1] = -K_target[:, :, 1]
+    V_translated[:, :, 1] = -V_target[:, :, 1]
+
+    K_out, V_out = tr.fuse_layer(
+        K_target,
+        V_target,
+        K_translated,
+        V_translated,
+        0,
+        fusion_rule="cosine_shifted_tokenwise",
+    )
+
+    assert torch.allclose(K_out[:, :, 0], K_target[:, :, 0])
+    assert torch.allclose(V_out[:, :, 0], V_target[:, :, 0])
+    assert torch.allclose(K_out[:, :, 1], K_target[:, :, 1])
+    assert torch.allclose(V_out[:, :, 1], V_target[:, :, 1])
 
 
 def test_pre_quant_rank_zero_disables_filter_even_with_shrinkage(monkeypatch) -> None:

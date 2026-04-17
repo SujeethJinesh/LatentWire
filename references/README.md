@@ -30,6 +30,21 @@ Files `76_` through `85_` extend the KV-specific compression and selection liter
 - `83_`: task-aware adaptive KV budgeting.
 - `84_` and `85_`: redundancy-aware reasoning compression and key/value-asymmetric quantization arguments.
 
+Files `86_` through `89_` extend the current overnight branch around K/V asymmetry,
+attention-fidelity preservation, and token-level KV selection:
+
+- `86_`: stronger evidence that keys and values should be handled asymmetrically.
+- `87_` and `88_`: attention-fidelity and lossless-periodic KV compression ideas.
+- `89_`: dynamic token-level KV selection for selective key transport.
+
+Files `90_` through `93_` extend the same branch toward query-aware sparsity,
+attention-space preservation, and query-centric fusion:
+
+- `90_`: query-aware sparsity for selective key-position retention.
+- `91_`: attention-score-weighted KV merging as a reliability-weighted fusion baseline.
+- `92_`: low-rank attention-space compression for attention-preservation objectives.
+- `93_`: query-centric cache fusion as a direct source-conditioned fusion reference.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

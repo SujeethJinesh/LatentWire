@@ -57,8 +57,12 @@ def test_default_specs_cover_the_control_axes() -> None:
         "fused_quant_random_translated_brief",
         "fused_quant_k_only_brief",
         "fused_quant_k_only_cosine_shifted_brief",
+        "fused_quant_k_only_cosine_brief",
         "translated_quant_k_only_brief",
         "target_attenuation_k_only_brief",
+        "fused_quant_v_only_cosine_brief",
+        "translated_quant_v_only_brief",
+        "target_attenuation_v_only_brief",
     ]
     assert all(spec.include_baselines for spec in eval_specs)
     assert {spec.source_reasoning_mode for spec in eval_specs} == {
@@ -320,6 +324,35 @@ def test_build_evaluate_cmd_passes_nondefault_kv_transport() -> None:
     assert cmd[cmd.index("--kv-transport") + 1] == "k_only"
 
 
+def test_build_evaluate_cmd_passes_nondefault_position_selection_ratio() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_sparse_k_only",
+        methods=("rotalign",),
+        gate_values=(0.10,),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        kv_transport="k_only",
+        position_selection_ratio=0.5,
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file=None,
+        gate_search_limit=30,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--position-selection-ratio") + 1] == "0.5"
+
+
 def test_build_evaluate_cmd_skips_noop_gate_search_for_translated_only() -> None:
     spec = control_suite.EvalSpec(
         name="translated_noquant_brief",
@@ -461,9 +494,14 @@ def test_k_only_specs_cover_fused_translated_and_zero_byte_controls() -> None:
 
     assert specs["fused_quant_k_only_brief"].kv_transport == "k_only"
     assert specs["fused_quant_k_only_cosine_shifted_brief"].fusion_rule == "cosine_shifted"
+    assert specs["fused_quant_k_only_cosine_brief"].fusion_rule == "cosine"
     assert specs["translated_quant_k_only_brief"].methods == ("rotalign_translated",)
     assert specs["translated_quant_k_only_brief"].gate_values == ()
     assert specs["target_attenuation_k_only_brief"].translated_kv_control == "zero"
+    assert specs["fused_quant_v_only_cosine_brief"].kv_transport == "v_only"
+    assert specs["fused_quant_v_only_cosine_brief"].fusion_rule == "cosine"
+    assert specs["translated_quant_v_only_brief"].methods == ("rotalign_translated",)
+    assert specs["target_attenuation_v_only_brief"].translated_kv_control == "zero"
 
 
 def test_build_evaluate_cmd_for_k_only_followup_specs() -> None:
@@ -524,6 +562,42 @@ def test_build_evaluate_cmd_for_k_only_followup_specs() -> None:
     )
     assert attenuation_cmd[attenuation_cmd.index("--translated-kv-control") + 1] == "zero"
     assert attenuation_cmd[attenuation_cmd.index("--kv-transport") + 1] == "k_only"
+
+    cosine_cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file="gate.jsonl",
+        gate_search_limit=12,
+        spec=specs["fused_quant_k_only_cosine_brief"],
+    )
+    assert cosine_cmd[cosine_cmd.index("--fusion-rule") + 1] == "cosine"
+    assert cosine_cmd[cosine_cmd.index("--kv-transport") + 1] == "k_only"
+
+    v_only_cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file="gate.jsonl",
+        gate_search_limit=12,
+        spec=specs["fused_quant_v_only_cosine_brief"],
+    )
+    assert v_only_cmd[v_only_cmd.index("--fusion-rule") + 1] == "cosine"
+    assert v_only_cmd[v_only_cmd.index("--kv-transport") + 1] == "v_only"
 
 
 def test_best_metric_for_eval_ignores_system_metrics_and_picks_best_result() -> None:

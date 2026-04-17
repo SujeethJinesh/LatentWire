@@ -142,9 +142,12 @@ def _cache_for_model(model, past_key_values: Any):
     except Exception:
         return past_key_values
     try:
-        return DynamicCache(past_key_values, config=model.config)
+        return DynamicCache.from_legacy_cache(past_key_values)
     except Exception:
-        return past_key_values
+        try:
+            return DynamicCache(past_key_values)
+        except Exception:
+            return past_key_values
 
 
 def _ones(length: int, device: str) -> torch.Tensor:
@@ -576,6 +579,23 @@ def _apply_translated_kv_control(
     raise ValueError(f"Unknown translated_kv_control: {mode}")
 
 
+def _selected_token_count(seq_len: int, position_selection_ratio: float) -> int:
+    if seq_len <= 0:
+        return 0
+    ratio = float(position_selection_ratio)
+    if ratio >= 1.0:
+        return seq_len
+    if ratio <= 0.0:
+        return 1
+    return max(1, min(seq_len, int(round(seq_len * ratio))))
+
+
+def _position_selection_index_bits(seq_len: int, selected_tokens: int) -> float:
+    if seq_len <= 1 or selected_tokens >= seq_len:
+        return 0.0
+    return float(selected_tokens * max(1, math.ceil(math.log2(seq_len))))
+
+
 def _bits_per_kv_tensor(
     translator: RotAlignKVTranslator,
     seq_len: int,
@@ -600,6 +620,7 @@ def _translated_bits(
     active_k_head_counts: list[int] | None = None,
     active_v_head_counts: list[int] | None = None,
     kv_transport: str = "both",
+    position_selection_ratio: float = 1.0,
 ) -> float:
     transport_k = kv_transport in {"both", "k_only"}
     transport_v = kv_transport in {"both", "v_only"}
@@ -610,10 +631,14 @@ def _translated_bits(
         active_v_head_counts = [translator.selected_head_count(layer_idx) for layer_idx in selected_layers]
     active_k_head_counts = [] if not transport_k or active_k_head_counts is None else active_k_head_counts
     active_v_head_counts = [] if not transport_v or active_v_head_counts is None else active_v_head_counts
-    return float(
-        sum(_bits_per_kv_tensor(translator, seq_len, quantize, selected_heads=count) for count in active_k_head_counts)
-        + sum(_bits_per_kv_tensor(translator, seq_len, quantize, selected_heads=count) for count in active_v_head_counts)
+    selected_tokens = _selected_token_count(seq_len, position_selection_ratio)
+    payload_bits = float(
+        sum(_bits_per_kv_tensor(translator, selected_tokens, quantize, selected_heads=count) for count in active_k_head_counts)
+        + sum(_bits_per_kv_tensor(translator, selected_tokens, quantize, selected_heads=count) for count in active_v_head_counts)
     )
+    layer_count = max(len(active_k_head_counts), len(active_v_head_counts))
+    index_bits = float(layer_count) * _position_selection_index_bits(seq_len, selected_tokens)
+    return payload_bits + index_bits
 
 
 def _communication_bits(
@@ -623,11 +648,18 @@ def _communication_bits(
     translated_kv_control: str,
     protocol: str = "fused",
     kv_transport: str = "both",
+    position_selection_ratio: float = 1.0,
 ) -> float:
     if translated_kv_control != "real":
         return 0.0
     if protocol == "translated_only":
-        return _translated_bits(translator, seq_len, quantize, kv_transport=kv_transport)
+        return _translated_bits(
+            translator,
+            seq_len,
+            quantize,
+            kv_transport=kv_transport,
+            position_selection_ratio=position_selection_ratio,
+        )
     transport_k = kv_transport in {"both", "k_only"}
     transport_v = kv_transport in {"both", "v_only"}
     active_k_head_counts: list[int] = []
@@ -645,6 +677,7 @@ def _communication_bits(
         active_k_head_counts=active_k_head_counts,
         active_v_head_counts=active_v_head_counts,
         kv_transport=kv_transport,
+        position_selection_ratio=position_selection_ratio,
     )
 
 
@@ -670,6 +703,73 @@ def _apply_kv_transport(
     raise ValueError(f"Unknown kv_transport: {kv_transport}")
 
 
+def _position_selection_scores(
+    K_t: torch.Tensor,
+    V_t: torch.Tensor,
+    K_hat: torch.Tensor,
+    V_hat: torch.Tensor,
+    *,
+    kv_transport: str,
+    position_selection_metric: str,
+) -> torch.Tensor:
+    if position_selection_metric == "energy":
+        if kv_transport == "k_only":
+            active = K_hat.float()
+            return active.pow(2).mean(dim=(0, 1, 3))
+        if kv_transport == "v_only":
+            active = V_hat.float()
+            return active.pow(2).mean(dim=(0, 1, 3))
+        return K_hat.float().pow(2).mean(dim=(0, 1, 3)) + V_hat.float().pow(2).mean(dim=(0, 1, 3))
+    if position_selection_metric == "disagreement":
+        if kv_transport == "k_only":
+            return (K_hat.float() - K_t.float()).pow(2).mean(dim=(0, 1, 3))
+        if kv_transport == "v_only":
+            return (V_hat.float() - V_t.float()).pow(2).mean(dim=(0, 1, 3))
+        return (
+            (K_hat.float() - K_t.float()).pow(2).mean(dim=(0, 1, 3))
+            + (V_hat.float() - V_t.float()).pow(2).mean(dim=(0, 1, 3))
+        )
+    raise ValueError(f"Unknown position_selection_metric: {position_selection_metric}")
+
+
+def _apply_position_selection(
+    K_t: torch.Tensor,
+    V_t: torch.Tensor,
+    K_hat: torch.Tensor,
+    V_hat: torch.Tensor,
+    *,
+    protocol: str,
+    kv_transport: str,
+    position_selection_ratio: float,
+    position_selection_metric: str,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    seq_len = K_hat.shape[2]
+    keep = _selected_token_count(seq_len, position_selection_ratio)
+    if keep >= seq_len:
+        return K_hat, V_hat
+
+    scores = _position_selection_scores(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        kv_transport=kv_transport,
+        position_selection_metric=position_selection_metric,
+    )
+    keep_indices = torch.topk(scores, k=keep, largest=True).indices
+    mask = torch.zeros(seq_len, dtype=torch.bool, device=K_hat.device)
+    mask[keep_indices] = True
+    mask = mask.view(1, 1, seq_len, 1)
+
+    if protocol == "translated_only":
+        fill_k = torch.zeros_like(K_hat)
+        fill_v = torch.zeros_like(V_hat)
+    else:
+        fill_k = K_t
+        fill_v = V_t
+    return torch.where(mask, K_hat, fill_k), torch.where(mask, V_hat, fill_v)
+
+
 @torch.no_grad()
 def _build_rotalign_prefix_state(
     source_model,
@@ -687,6 +787,8 @@ def _build_rotalign_prefix_state(
     translated_kv_control: str = "real",
     fusion_rule: str = "static",
     kv_transport: str = "both",
+    position_selection_ratio: float = 1.0,
+    position_selection_metric: str = "energy",
 ) -> tuple[PrefixState, dict[str, float]]:
     tgt_prompt_ids = target_tokenizer(target_prompt, return_tensors="pt").input_ids.to(device)
     tgt_prefix_ids, tgt_last_token = _split_prompt_prefix(tgt_prompt_ids)
@@ -732,6 +834,16 @@ def _build_rotalign_prefix_state(
         )
         K_t_aligned, K_hat = _tail_align_pair(K_t, K_hat.to(dtype=K_t.dtype))
         V_t_aligned, V_hat = _tail_align_pair(V_t, V_hat.to(dtype=V_t.dtype))
+        K_hat, V_hat = _apply_position_selection(
+            K_t_aligned,
+            V_t_aligned,
+            K_hat,
+            V_hat,
+            protocol=protocol,
+            kv_transport=kv_transport,
+            position_selection_ratio=position_selection_ratio,
+            position_selection_metric=position_selection_metric,
+        )
         K_hat, V_hat = _apply_kv_transport(
             K_t_aligned,
             V_t_aligned,
@@ -782,6 +894,7 @@ def _build_rotalign_prefix_state(
             translated_kv_control,
             protocol,
             kv_transport,
+            position_selection_ratio,
         )
     }
 
@@ -809,6 +922,8 @@ def _search_per_layer_gates(
     translated_kv_control: str = "real",
     fusion_rule: str = "static",
     kv_transport: str = "both",
+    position_selection_ratio: float = 1.0,
+    position_selection_metric: str = "energy",
 ) -> dict[str, list[float]]:
     """Coordinate-descent line search over per-layer K/V fusion gates.
 
@@ -846,6 +961,8 @@ def _search_per_layer_gates(
                 translated_kv_control=translated_kv_control,
                 fusion_rule=fusion_rule,
                 kv_transport=kv_transport,
+                position_selection_ratio=position_selection_ratio,
+                position_selection_metric=position_selection_metric,
             )[0]
         return eval_rotalign_kv(
             source_model,
@@ -863,6 +980,8 @@ def _search_per_layer_gates(
             translated_kv_control=translated_kv_control,
             fusion_rule=fusion_rule,
             kv_transport=kv_transport,
+            position_selection_ratio=position_selection_ratio,
+            position_selection_metric=position_selection_metric,
         )
 
     for tgt_layer_idx in layer_indices:
@@ -1090,6 +1209,8 @@ def eval_rotalign_kv(
     translated_kv_control: str = "real",
     fusion_rule: str = "static",
     kv_transport: str = "both",
+    position_selection_ratio: float = 1.0,
+    position_selection_metric: str = "energy",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> float:
@@ -1114,6 +1235,8 @@ def eval_rotalign_kv(
             translated_kv_control,
             fusion_rule,
             kv_transport,
+            position_selection_ratio,
+            position_selection_metric,
         )
         scores = [
             _score_mcq_with_prefix_state(target_model, target_tokenizer, prefix_state, c, device)
@@ -1135,6 +1258,8 @@ def eval_rotalign_kv(
                 "translated_kv_control": translated_kv_control,
                 "fusion_rule": fusion_rule,
                 "kv_transport": kv_transport,
+                "position_selection_ratio": position_selection_ratio,
+                "position_selection_metric": position_selection_metric,
             },
         )
         if is_correct:
@@ -1295,6 +1420,8 @@ def _eval_generation_rotalign(
     translated_kv_control: str = "real",
     fusion_rule: str = "static",
     kv_transport: str = "both",
+    position_selection_ratio: float = 1.0,
+    position_selection_metric: str = "energy",
 ) -> tuple[float, float, float]:
     stats = _eval_generation_rotalign_with_stats(
         source_model,
@@ -1313,6 +1440,8 @@ def _eval_generation_rotalign(
         translated_kv_control,
         fusion_rule,
         kv_transport,
+        position_selection_ratio,
+        position_selection_metric,
     )
     return stats["accuracy"], stats["bits"], stats["latency_sec"]
 
@@ -1334,6 +1463,8 @@ def _eval_generation_rotalign_with_stats(
     translated_kv_control: str = "real",
     fusion_rule: str = "static",
     kv_transport: str = "both",
+    position_selection_ratio: float = 1.0,
+    position_selection_metric: str = "energy",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> dict[str, float]:
@@ -1373,6 +1504,8 @@ def _eval_generation_rotalign_with_stats(
             translated_kv_control,
             fusion_rule,
             kv_transport,
+            position_selection_ratio,
+            position_selection_metric,
         )
         trace = _greedy_generate_with_stats(
             target_model,
@@ -1398,6 +1531,8 @@ def _eval_generation_rotalign_with_stats(
                 "translated_kv_control": translated_kv_control,
                 "fusion_rule": fusion_rule,
                 "kv_transport": kv_transport,
+                "position_selection_ratio": position_selection_ratio,
+                "position_selection_metric": position_selection_metric,
                 "bits": stats["bits"],
                 "generated_tokens": trace.num_generated_tokens,
             },
@@ -1456,7 +1591,17 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--fusion-rule",
-        choices=["static", "cosine", "cosine_shifted", "js_shrinkage", "kalman"],
+        choices=[
+            "static",
+            "cosine",
+            "cosine_shifted",
+            "js_shrinkage",
+            "kalman",
+            "cosine_tokenwise",
+            "cosine_shifted_tokenwise",
+            "js_shrinkage_tokenwise",
+            "kalman_tokenwise",
+        ],
         default="static",
         help="Static scalar gates or cosine-based runtime attenuation of translated KV.",
     )
@@ -1465,6 +1610,18 @@ def parse_args() -> argparse.Namespace:
         choices=["both", "k_only", "v_only"],
         default="both",
         help="Transmit both translated tensors or ablate to keys-only / values-only transport.",
+    )
+    p.add_argument(
+        "--position-selection-ratio",
+        type=float,
+        default=1.0,
+        help="Fraction of prefix positions to keep from translated KV before transport/fusion.",
+    )
+    p.add_argument(
+        "--position-selection-metric",
+        choices=["energy", "disagreement"],
+        default="energy",
+        help="How to rank translated positions when position_selection_ratio < 1.0.",
     )
     p.add_argument(
         "--methods",
@@ -1511,6 +1668,8 @@ def main() -> None:
     args = parse_args()
     fusion_rule = getattr(args, "fusion_rule", "static")
     kv_transport = getattr(args, "kv_transport", "both")
+    position_selection_ratio = float(getattr(args, "position_selection_ratio", 1.0))
+    position_selection_metric = getattr(args, "position_selection_metric", "energy")
 
     dtype = {
         "float32": torch.float32,
@@ -1610,6 +1769,8 @@ def main() -> None:
                     translated_kv_control=args.translated_kv_control,
                     fusion_rule=fusion_rule,
                     kv_transport=kv_transport,
+                    position_selection_ratio=position_selection_ratio,
+                    position_selection_metric=position_selection_metric,
                 )
                 print(
                     "Selected gate means: "
@@ -1637,6 +1798,8 @@ def main() -> None:
                     translated_kv_control=args.translated_kv_control,
                     fusion_rule=fusion_rule,
                     kv_transport=kv_transport,
+                    position_selection_ratio=position_selection_ratio,
+                    position_selection_metric=position_selection_metric,
                     records=prediction_records,
                     method_name=metric_key,
                 )
@@ -1650,6 +1813,7 @@ def main() -> None:
                     translated_kv_control=args.translated_kv_control,
                     kv_transport=kv_transport,
                     protocol=protocol,
+                    position_selection_ratio=position_selection_ratio,
                 )
                 results[f"{metric_key}_bytes"] = results[f"{metric_key}_bits"] / 8.0
     else:
@@ -1723,6 +1887,8 @@ def main() -> None:
                     translated_kv_control=args.translated_kv_control,
                     fusion_rule=fusion_rule,
                     kv_transport=kv_transport,
+                    position_selection_ratio=position_selection_ratio,
+                    position_selection_metric=position_selection_metric,
                 )
                 print(
                     "Selected gate means: "
@@ -1750,6 +1916,8 @@ def main() -> None:
                     translated_kv_control=args.translated_kv_control,
                     fusion_rule=fusion_rule,
                     kv_transport=kv_transport,
+                    position_selection_ratio=position_selection_ratio,
+                    position_selection_metric=position_selection_metric,
                     records=prediction_records,
                     method_name=metric_key,
                 )

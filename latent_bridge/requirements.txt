@@ -1,5 +1,8 @@
 torch>=2.1
 numpy>=1.24
-transformers>=4.40
+transformers==4.51.0
+tokenizers==0.21.1
+huggingface_hub==0.36.2
 accelerate>=0.30
+safetensors>=0.4.3
 pytest>=8.0

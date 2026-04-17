@@ -52,6 +52,7 @@ class EvalSpec:
     translated_kv_control: str = "real"
     fusion_rule: str = "static"
     kv_transport: str = "both"
+    position_selection_ratio: float = 1.0
 
 
 def default_device() -> str:
@@ -308,6 +309,16 @@ def default_eval_specs() -> list[EvalSpec]:
             kv_transport="k_only",
         ),
         EvalSpec(
+            name="fused_quant_k_only_cosine_brief",
+            methods=("rotalign",),
+            gate_values=(0.05, 0.08, 0.10, 0.12, 0.15),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            fusion_rule="cosine",
+            kv_transport="k_only",
+        ),
+        EvalSpec(
             name="translated_quant_k_only_brief",
             methods=("rotalign_translated",),
             gate_values=(),
@@ -325,6 +336,35 @@ def default_eval_specs() -> list[EvalSpec]:
             include_baselines=True,
             translated_kv_control="zero",
             kv_transport="k_only",
+        ),
+        EvalSpec(
+            name="fused_quant_v_only_cosine_brief",
+            methods=("rotalign",),
+            gate_values=(0.05, 0.08, 0.10, 0.12, 0.15),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            fusion_rule="cosine",
+            kv_transport="v_only",
+        ),
+        EvalSpec(
+            name="translated_quant_v_only_brief",
+            methods=("rotalign_translated",),
+            gate_values=(),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            kv_transport="v_only",
+        ),
+        EvalSpec(
+            name="target_attenuation_v_only_brief",
+            methods=("rotalign",),
+            gate_values=(0.00, 0.05, 0.08, 0.10, 0.12, 0.15),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            translated_kv_control="zero",
+            kv_transport="v_only",
         ),
     ]
 
@@ -535,6 +575,8 @@ def build_evaluate_cmd(
         cmd.extend(["--fusion-rule", spec.fusion_rule])
     if uses_rotalign and spec.kv_transport != "both":
         cmd.extend(["--kv-transport", spec.kv_transport])
+    if uses_rotalign and abs(float(spec.position_selection_ratio) - 1.0) > 1e-9:
+        cmd.extend(["--position-selection-ratio", str(spec.position_selection_ratio)])
     if not spec.quantize:
         cmd.append("--no-quantize")
     if prediction_output is not None:
@@ -570,6 +612,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "translated_kv_control",
         "fusion_rule",
         "kv_transport",
+        "position_selection_ratio",
         "quantize",
         "target_alone",
         "text_to_text",
@@ -612,6 +655,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "translated_kv_control": record.get("translated_kv_control", "real"),
                     "fusion_rule": record.get("fusion_rule", "static"),
                     "kv_transport": record.get("kv_transport", "both"),
+                    "position_selection_ratio": record.get("position_selection_ratio", 1.0),
                     "quantize": record["quantize"],
                     "target_alone": record.get("target_alone"),
                     "text_to_text": record.get("text_to_text"),
@@ -939,6 +983,7 @@ def main() -> None:
                 "translated_kv_control": eval_spec.translated_kv_control,
                 "fusion_rule": eval_spec.fusion_rule,
                 "kv_transport": eval_spec.kv_transport,
+                "position_selection_ratio": eval_spec.position_selection_ratio,
                 "quantize": eval_spec.quantize,
                 "methods": list(eval_spec.methods),
                 "gate_values": list(eval_spec.gate_values),

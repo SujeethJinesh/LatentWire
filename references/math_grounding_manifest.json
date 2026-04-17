@@ -262,5 +262,53 @@
     "slug": "more_for_keys_less_for_values_adaptive_kv_cache_quantization",
     "url": "https://arxiv.org/pdf/2502.15075.pdf",
     "reason": "Direct support for asymmetric treatment of keys and values, matching the emerging K-only result."
+  },
+  {
+    "num": 86,
+    "slug": "homogeneous_keys_heterogeneous_values_exploiting_local_kv_cache_asymmetry_for_long_context_llms",
+    "url": "https://arxiv.org/pdf/2506.05410",
+    "reason": "Evidence that keys and values behave differently across local and global cache structure, supporting the K-only branch."
+  },
+  {
+    "num": 87,
+    "slug": "kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity",
+    "url": "https://arxiv.org/pdf/2512.05916",
+    "reason": "Attention-fidelity objective for preserving QK structure rather than only raw KV reconstruction."
+  },
+  {
+    "num": 88,
+    "slug": "keepkv_achieving_periodic_lossless_kv_cache_compression_for_efficient_llm_inference",
+    "url": "https://arxiv.org/pdf/2504.09936",
+    "reason": "Periodic lossless retention suggests structured position-level sparsity instead of uniform transmission."
+  },
+  {
+    "num": 89,
+    "slug": "tokenselect_efficient_long_context_inference_and_length_extrapolation_for_llms_via_dynamic_token_level_kv_cache_selection",
+    "url": "https://arxiv.org/pdf/2411.02886",
+    "reason": "Direct token-level KV selection method for the next sparse-key transport ablations."
+  },
+  {
+    "num": 90,
+    "slug": "quest_query_aware_sparsity_for_efficient_long_context_llm_inference",
+    "url": "https://arxiv.org/pdf/2406.10774",
+    "reason": "Primary query-aware sparsity reference for selective key-position retention instead of uniform transport."
+  },
+  {
+    "num": 91,
+    "slug": "weightedkv_attention_scores_weighted_key_value_cache_merging_for_large_language_models",
+    "url": "https://arxiv.org/pdf/2503.01330",
+    "reason": "Reliability-weighted KV fusion baseline that can inform source-dependent blending instead of one fixed gate."
+  },
+  {
+    "num": 92,
+    "slug": "eigen_attention_attention_in_low_rank_space_for_kv_cache_compression",
+    "url": "https://arxiv.org/pdf/2408.05646",
+    "reason": "Supports attention-space preservation objectives when KV reconstruction alone is not predictive of downstream quality."
+  },
+  {
+    "num": 93,
+    "slug": "qcfuse_query_centric_cache_fusion_for_efficient_rag_inference",
+    "url": "https://arxiv.org/pdf/2604.08585",
+    "reason": "Query-centric cache fusion is a direct architectural reference for source-conditioned fusion beyond scalar gate sweeps."
   }
 ]
