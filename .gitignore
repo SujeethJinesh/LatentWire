@@ -3,6 +3,7 @@
 __pycache__/
 *.py[cod]
 *.so
+results/
 *ckpt*
 .venv/*
 venv/
