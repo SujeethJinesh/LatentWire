@@ -478,5 +478,41 @@
     "slug": "streamingllm_efficient_streaming_language_models_with_attention_sinks",
     "url": "https://arxiv.org/pdf/2309.17453.pdf",
     "reason": "Attention sinks provide a strong blind prior and failure-boundary reference for streaming or sink-token retention controls."
+  },
+  {
+    "num": 122,
+    "slug": "entropy_meets_importance_unified_head_importance_entropy_score_for_stable_efficient_transformer_pruning",
+    "url": "https://arxiv.org/pdf/2510.13832.pdf",
+    "reason": "Entropy-aware head scoring is a direct next-step feature for making calibrated head priors more stable than plain attention peaks."
+  },
+  {
+    "num": 123,
+    "slug": "causal_head_gating_framework_for_interpreting_roles_of_attention_heads_in_transformers",
+    "url": "https://arxiv.org/pdf/2505.13737.pdf",
+    "reason": "Causal head scoring is a reviewer-facing mechanism check for whether the winning sparse priors actually target causally useful heads."
+  },
+  {
+    "num": 124,
+    "slug": "eigen_attention_attention_in_low_rank_space_for_kv_cache_compression",
+    "url": "https://aclanthology.org/2024.findings-emnlp.899.pdf",
+    "reason": "Low-rank attention geometry is a direct reference for factorizing or shrinking the head-prior tensor instead of using raw per-head scores."
+  },
+  {
+    "num": 125,
+    "slug": "retrieval_head_mechanistically_explains_long_context_factuality",
+    "url": "https://arxiv.org/pdf/2404.15574.pdf",
+    "reason": "Mechanistic retrieval-head evidence strengthens the claim that sparse key import is acting through a retrieval-style subcircuit rather than generic cache perturbation."
+  },
+  {
+    "num": 126,
+    "slug": "nonlinear_shrinkage_estimation_of_large_dimensional_covariance_matrices",
+    "url": "https://arxiv.org/pdf/1207.5322.pdf",
+    "reason": "Nonlinear shrinkage gives a mathematically grounded way to stabilize noisy per-head covariance and prior estimates before transfer."
+  },
+  {
+    "num": 127,
+    "slug": "rate_distortion_for_model_compression_from_theory_to_practice",
+    "url": "https://proceedings.mlr.press/v97/gao19c/gao19c.pdf",
+    "reason": "Rate-distortion theory is the cleanest formal framing for sparse head-budget allocation and accuracy-vs-bytes curves."
   }
 ]

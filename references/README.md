@@ -99,6 +99,20 @@ retrieval-vs-streaming head structure and sink-token priors:
 - `120_`: retrieval heads vs streaming heads as a direct head-budgeting baseline.
 - `121_`: attention sinks and streaming retention as a stronger blind prior / sink-token control.
 
+Files `122_` through `125_` extend the next method loop around more stable head
+scoring, low-rank attention structure, and mechanistic retrieval-head evidence:
+
+- `122_`: entropy-aware head scoring as a stronger calibrated-head-prior feature.
+- `123_`: causal head scoring as a reviewer-facing mechanism check for head budgets.
+- `124_`: low-rank attention geometry as a direct compression and prior-factorization reference.
+- `125_`: retrieval heads as a concrete mechanism for why sparse key import can help reasoning.
+
+Files `126_` and `127_` add explicit math grounding for the next prior and
+budgeting ideas:
+
+- `126_`: nonlinear covariance shrinkage as a direct template for stabilizing noisy head priors.
+- `127_`: rate-distortion theory for model compression as a principled framing for sparse head budgets.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

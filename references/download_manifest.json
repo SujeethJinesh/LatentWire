@@ -1083,5 +1083,59 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 16952848
+  },
+  {
+    "num": 122,
+    "slug": "entropy_meets_importance_unified_head_importance_entropy_score_for_stable_efficient_transformer_pruning",
+    "url": "https://arxiv.org/pdf/2510.13832.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/122_entropy_meets_importance_unified_head_importance_entropy_score_for_stable_efficient_transformer_pruning.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 11824392
+  },
+  {
+    "num": 123,
+    "slug": "causal_head_gating_framework_for_interpreting_roles_of_attention_heads_in_transformers",
+    "url": "https://arxiv.org/pdf/2505.13737.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/123_causal_head_gating_framework_for_interpreting_roles_of_attention_heads_in_transformers.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 939039
+  },
+  {
+    "num": 124,
+    "slug": "eigen_attention_attention_in_low_rank_space_for_kv_cache_compression",
+    "url": "https://aclanthology.org/2024.findings-emnlp.899.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/124_eigen_attention_attention_in_low_rank_space_for_kv_cache_compression.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 808776
+  },
+  {
+    "num": 125,
+    "slug": "retrieval_head_mechanistically_explains_long_context_factuality",
+    "url": "https://arxiv.org/pdf/2404.15574.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/125_retrieval_head_mechanistically_explains_long_context_factuality.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 951115
+  },
+  {
+    "num": 126,
+    "slug": "nonlinear_shrinkage_estimation_of_large_dimensional_covariance_matrices",
+    "url": "https://arxiv.org/pdf/1207.5322.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/126_nonlinear_shrinkage_estimation_of_large_dimensional_covariance_matrices.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 834228
+  },
+  {
+    "num": 127,
+    "slug": "rate_distortion_for_model_compression_from_theory_to_practice",
+    "url": "https://proceedings.mlr.press/v97/gao19c/gao19c.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/127_rate_distortion_for_model_compression_from_theory_to_practice.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 378646
   }
 ]
