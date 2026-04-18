@@ -925,5 +925,32 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 573126
+  },
+  {
+    "num": 104,
+    "slug": "dbudgetkv_dynamic_budget_in_kv_cache_compression_for_ensuring_optimal_performance",
+    "url": "https://arxiv.org/pdf/2502.16886",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/104_dbudgetkv_dynamic_budget_in_kv_cache_compression_for_ensuring_optimal_performance.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 405864
+  },
+  {
+    "num": 105,
+    "slug": "atp_enabling_fast_llm_serving_via_attention_on_top_principal_keys",
+    "url": "https://arxiv.org/pdf/2408.00713",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/105_atp_enabling_fast_llm_serving_via_attention_on_top_principal_keys.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 615716
+  },
+  {
+    "num": 106,
+    "slug": "atp_star_an_efficient_and_scalable_method_for_localizing_llm_behaviour_to_components",
+    "url": "https://arxiv.org/pdf/2403.00745",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/106_atp_star_an_efficient_and_scalable_method_for_localizing_llm_behaviour_to_components.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 16014058
   }
 ]

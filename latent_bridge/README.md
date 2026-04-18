@@ -186,11 +186,17 @@ attention-prior selector controls on the current GSM8K slices. The new
 `attention_disagreement` option multiplies live target attention by translated
 key disagreement, so it explicitly favors positions that are both query-relevant
 and likely to change the target's retrieval geometry.
+For runtime retrieval-head ablations, add
+`--runtime-head-selection-ratio <r>` with
+`--runtime-head-selection-metric attention_peak`, `attention_entropy`, or
+`random`. This keeps only a subset of the checkpoint-selected target heads at
+evaluation time and records per-layer `head_trace` metadata in the sidecar.
 
 When `--prediction-output` is set, the evaluator also writes a sidecar file at
 `<prediction-output>.meta.json`. That sidecar stores the run config, per-method
-bandwidth summaries, selector-trace aggregates, and paired prediction deltas so
-later paper analysis does not depend on ad-hoc notebook reconstruction.
+bandwidth summaries, selector-trace aggregates, head-trace aggregates, and
+paired prediction deltas so later paper analysis does not depend on ad-hoc
+notebook reconstruction.
 
 For the current control pair, prefer held-out gate search over eval-set gate
 Sweeps. The earlier `0.06` pilot on `GSM8K-100` was directionally useful, but

@@ -197,6 +197,41 @@ Second-pair GSM8K pilot:
   - baseline-only wins `0`
   - McNemar `p=0.4795`
 
+Runtime head-selection follow-up (`runtime_head_selection_ratio=0.5`):
+
+- Qwen GSM8K held-out, live target-attention sparse `K-only`, gate `0.10`:
+  - dense selected heads: `0.057143` at `149,628.475` bytes
+  - runtime `attention_peak` half-head pruning: `0.057143` at `74,308.018` bytes
+  - runtime random half-head pruning: `0.057143` at `86,696.361` bytes
+  - `attention_peak` vs dense:
+    - delta `0.000000`
+    - method-only wins `1`
+    - baseline-only wins `1`
+    - McNemar `p=1.0000`
+  - `attention_peak` vs random half-head:
+    - delta `0.000000`
+    - method-only wins `2`
+    - baseline-only wins `2`
+    - McNemar `p=1.0000`
+- DeepSeek GSM8K held-out, live target-attention sparse `K-only`, gate `0.10`:
+  - dense selected heads: `0.028571`
+  - runtime `attention_peak` half-head pruning: `0.014286` at `49,549.336` bytes
+  - runtime `attention_peak` vs dense:
+    - delta `-0.014286`
+    - method-only wins `0`
+    - baseline-only wins `1`
+    - McNemar `p=1.0000`
+  - runtime `attention_peak` vs fixed attention prior:
+    - delta `0.000000`
+    - method-only wins `0`
+    - baseline-only wins `0`
+    - McNemar `p=1.0000`
+  - runtime `attention_peak` vs zero-byte attenuation:
+    - delta `0.000000`
+    - method-only wins `1`
+    - baseline-only wins `1`
+    - McNemar `p=1.0000`
+
 Second reasoning task check:
 
 - task: `SVAMP`
@@ -248,6 +283,12 @@ Second reasoning task check:
   `0.014286`. The new selector controls are cleaner still: attention-shuffled,
   random-selector, and recency all collapse to `0.000000`, while
   source-attention and attention-disagreement sit at `0.014286`.
+- Runtime head pruning is a useful compression ablation but not yet a stable
+  mechanism claim. On Qwen GSM8K, retaining only half of the selected heads at
+  evaluation time preserves the current `0.057143` score while roughly halving
+  transmitted bytes, but the same move on DeepSeek drops the live-selector gain
+  back to the fixed-prior / zero-byte control level. The current evidence says
+  runtime head pruning is pair-sensitive rather than universally safe.
 - SVAMP is currently a negative transfer case. The sparse `K-only` branch does
   not beat target-alone there under the low-gate bracket, while text-to-text is
   much stronger. At the moment, SVAMP defines a failure boundary rather than a
@@ -270,6 +311,8 @@ The defensible statement now is:
   zero-byte controls on GSM8K held-out, and the same direction survives on
   `gsm8k_100` plus one DeepSeek-1.5B pilot with a stronger selector-control
   table
+- runtime head pruning improves accuracy-per-byte on the Qwen GSM slice, but
+  it does not yet transfer safely to the DeepSeek pair
 - the current evidence does **not** support a broad “all reasoning tasks”
   claim, because SVAMP is negative under the present method
 
@@ -279,4 +322,6 @@ useful checks are:
 
 1. improve the positive GSM regime further rather than widening benchmarks
 2. attention-logit-preserving alignment / selection inside the kept positions
-3. scale the DeepSeek GSM evaluation and finish the remaining selector controls there
+3. use head scoring as an offline calibration prior or per-pair budget, not a
+   universal runtime pruning rule
+4. scale the DeepSeek GSM evaluation after the next selector/alignment change

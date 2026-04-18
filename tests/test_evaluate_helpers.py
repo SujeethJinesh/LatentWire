@@ -336,6 +336,10 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "data/calibration.txt",
             "--position-selection-prior-bins",
             "64",
+            "--runtime-head-selection-ratio",
+            "0.5",
+            "--runtime-head-selection-metric",
+            "random",
         ],
     )
 
@@ -351,6 +355,8 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.position_selection_metric == "attention_disagreement"
     assert args.position_selection_prior_file == "data/calibration.txt"
     assert args.position_selection_prior_bins == 64
+    assert args.runtime_head_selection_ratio == 0.5
+    assert args.runtime_head_selection_metric == "random"
 
 
 def test_source_kv_controls_are_negative_controls() -> None:
@@ -438,6 +444,8 @@ def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> No
         kv_transport="both",
         position_selection_ratio=1.0,
         position_selection_metric="energy",
+        runtime_head_selection_ratio=1.0,
+        runtime_head_selection_metric="attention_peak",
         records=None,
         method_name="rotalign_kv",
     ) -> float:
@@ -503,6 +511,8 @@ def test_search_per_layer_gates_uses_generation_objective_for_generation_example
         kv_transport="both",
         position_selection_ratio=1.0,
         position_selection_metric="energy",
+        runtime_head_selection_ratio=1.0,
+        runtime_head_selection_metric="attention_peak",
     ):
         calls.append(protocol)
         return (0.25, 16.0, 1.0)
@@ -573,6 +583,8 @@ def test_search_per_layer_gates_skips_irrelevant_transport_branch(
         kv_transport="both",
         position_selection_ratio=1.0,
         position_selection_metric="energy",
+        runtime_head_selection_ratio=1.0,
+        runtime_head_selection_metric="attention_peak",
         records=None,
         method_name="rotalign_kv",
     ) -> float:
@@ -655,6 +667,9 @@ def test_main_gate_search_uses_protocol_specific_objective(monkeypatch, tmp_path
         kv_transport="both",
         position_selection_ratio=1.0,
         position_selection_metric="energy",
+        fixed_position_profiles=None,
+        runtime_head_selection_ratio=1.0,
+        runtime_head_selection_metric="attention_peak",
     ):
         search_protocols.append(protocol)
         return {"gate_K": [0.15, 0.15], "gate_V": [0.25, 0.25]}
@@ -1277,6 +1292,51 @@ def test_position_selection_recency_metric_prefers_latest_positions() -> None:
     assert torch.allclose(scores, torch.tensor([1.0, 2.0, 3.0]))
 
 
+def test_runtime_head_scores_support_attention_peak_and_random() -> None:
+    attention_map = torch.tensor([[0.9, 0.1], [0.4, 0.6]], dtype=torch.float32)
+
+    peak = evaluate._runtime_head_scores(
+        attention_map,
+        metric="attention_peak",
+        layer_idx=0,
+    )
+    first = evaluate._runtime_head_scores(
+        attention_map,
+        metric="random",
+        layer_idx=2,
+    )
+    second = evaluate._runtime_head_scores(
+        attention_map,
+        metric="random",
+        layer_idx=2,
+    )
+
+    assert torch.allclose(peak, torch.tensor([0.9, 0.6]))
+    assert torch.allclose(first, second)
+
+
+def test_apply_runtime_head_selection_fills_with_target_on_fused() -> None:
+    translated = torch.tensor([[[[10.0]], [[20.0]]]])
+    target = torch.tensor([[[[1.0]], [[2.0]]]])
+    mask = torch.tensor([True, False])
+
+    fused = evaluate._apply_runtime_head_selection(
+        translated,
+        target,
+        mask,
+        protocol="fused",
+    )
+    translated_only = evaluate._apply_runtime_head_selection(
+        translated,
+        target,
+        mask,
+        protocol="translated_only",
+    )
+
+    assert torch.allclose(fused, torch.tensor([[[[10.0]], [[2.0]]]]))
+    assert torch.allclose(translated_only, torch.tensor([[[[10.0]], [[0.0]]]]))
+
+
 def test_position_selection_attention_shuffled_metric_is_deterministic() -> None:
     K_t = torch.zeros(1, 1, 3, 1)
     V_t = torch.zeros(1, 1, 3, 1)
@@ -1357,6 +1417,9 @@ def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
         kv_transport="both",
         position_selection_ratio=1.0,
         position_selection_metric="energy",
+        fixed_position_profiles=None,
+        runtime_head_selection_ratio=1.0,
+        runtime_head_selection_metric="attention_peak",
     ):
         captured["source_prompt"] = source_prompt
         captured["target_prompt"] = target_prompt
@@ -1415,6 +1478,9 @@ def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
         kv_transport="both",
         position_selection_ratio=1.0,
         position_selection_metric="energy",
+        fixed_position_profiles=None,
+        runtime_head_selection_ratio=1.0,
+        runtime_head_selection_metric="attention_peak",
     ):
         return evaluate.PrefixState(None, torch.tensor([[2]], dtype=torch.long), 1), {"bits": 32.0}
 
@@ -1499,6 +1565,9 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
             "selector_trace": [
                 {"keep_fraction": 0.5, "score_entropy": 0.7, "selected_positions": [1]}
             ],
+            "head_trace": [
+                {"head_keep_fraction": 0.5, "head_score_entropy": 0.2, "selected_head_ids": [0]}
+            ],
         },
     ]
     results = {
@@ -1518,6 +1587,7 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
     assert payload["run_config"]["source_model"] == "src"
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["avg_bits"] == 16.0
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["selector_keep_fraction_avg"] == 0.5
+    assert payload["method_summary"]["rotalign_kv_gate_0.10"]["head_keep_fraction_avg"] == 0.5
     assert "paired_rotalign_kv_gate_0_10_vs_target_alone_delta_accuracy" in payload["paired_summary"]
 
 

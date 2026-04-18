@@ -64,6 +64,13 @@ reordering:
 - `102_`: variable per-head compression rates instead of one flat transport budget.
 - `103_`: offline-calibrated head reordering for stronger retrieval-head-only transport.
 
+Files `104_` through `106_` extend the next likely branch around dynamic
+budgeting, principal-key concentration, and mechanistic head localization:
+
+- `104_`: dynamic KV budgets for task-adaptive selector and head-budget ablations.
+- `105_`: principal-key attention as a direct sparse-key concentration reference.
+- `106_`: scalable component localization for causal or attribution-based head selection.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

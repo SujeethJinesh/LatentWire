@@ -370,5 +370,23 @@
     "slug": "recalkv_low_rank_kv_cache_compression_via_head_reordering_and_offline_calibration",
     "url": "https://arxiv.org/pdf/2505.24357",
     "reason": "Supports offline head reordering and calibration-guided retrieval-head transport as the next mechanistic ablation."
+  },
+  {
+    "num": 104,
+    "slug": "dbudgetkv_dynamic_budget_in_kv_cache_compression_for_ensuring_optimal_performance",
+    "url": "https://arxiv.org/pdf/2502.16886",
+    "reason": "Motivates task-adaptive or query-adaptive per-head budget schedules instead of one fixed runtime head ratio."
+  },
+  {
+    "num": 105,
+    "slug": "atp_enabling_fast_llm_serving_via_attention_on_top_principal_keys",
+    "url": "https://arxiv.org/pdf/2408.00713",
+    "reason": "Direct sparse principal-key reference for retrieval-head concentration and top-key transport ablations."
+  },
+  {
+    "num": 106,
+    "slug": "atp_star_an_efficient_and_scalable_method_for_localizing_llm_behaviour_to_components",
+    "url": "https://arxiv.org/pdf/2403.00745",
+    "reason": "Provides a mechanistic localization route for future causal head scoring instead of purely similarity-based or attention-based selection."
   }
 ]
