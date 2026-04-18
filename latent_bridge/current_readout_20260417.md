@@ -143,11 +143,33 @@ Second-pair GSM8K pilot:
 - `gsm8k_eval_70` target-alone: `0.000000`
 - `gsm8k_eval_70` target-attention sparse `K-only`: `0.028571`
 - `gsm8k_eval_70` fixed attention prior (`64` calibration prompts): `0.014286`
+- `gsm8k_eval_70` zero-byte attenuation: `0.014286`
+- `gsm8k_eval_70` random translated: `0.014286`
 - `gsm8k_eval_70` target-attention sparse vs fixed prior:
   - delta `+0.014286`
   - method-only wins `1`
   - baseline-only wins `0`
   - McNemar `p=1.0000`
+- `gsm8k_eval_70` target-attention sparse vs zero-byte attenuation:
+  - delta `+0.014286`
+  - method-only wins `2`
+  - baseline-only wins `1`
+  - McNemar `p=1.0000`
+- `gsm8k_eval_70` target-attention sparse vs random translated:
+  - delta `+0.014286`
+  - method-only wins `2`
+  - baseline-only wins `1`
+  - McNemar `p=1.0000`
+
+Second reasoning task check:
+
+- task: `SVAMP`
+- split: `data/svamp_gate_search_30.jsonl` / `data/svamp_eval_70.jsonl`
+- target-alone: `0.071429`
+- text-to-text: `0.414286`
+- target-attention sparse `K-only`, gate `0.05`: `0.071429`
+- target-attention sparse `K-only`, gate `0.10`: `0.028571`
+- target-attention sparse `K-only`, gate `0.15`: `0.042857`
 
 ## Read
 
@@ -184,7 +206,12 @@ Second-pair GSM8K pilot:
   is still not clean selector-specific evidence.
 - The DeepSeek-1.5B pilot is directionally consistent with GSM8K: target-alone
   is `0.000000`, target-attention sparse `K-only` reaches `0.028571`, and the
-  fixed attention prior drops to `0.014286`.
+  fixed attention prior plus zero/random translated controls all sit at
+  `0.014286`.
+- SVAMP is currently a negative transfer case. The sparse `K-only` branch does
+  not beat target-alone there under the low-gate bracket, while text-to-text is
+  much stronger. At the moment, SVAMP defines a failure boundary rather than a
+  supporting replication.
 - This shifts the best current interpretation from generic cross-model KV
   transfer to target-guided sparse key import.
 
@@ -200,13 +227,15 @@ The defensible statement now is:
 - dense `K-only` still does not beat matched zero/random controls in a clean
   environment
 - but target-guided sparse `K-only` does beat the matched selector and
-  zero-byte controls on GSM8K held-out, albeit by a small non-significant
-  controls on GSM8K held-out, and the same direction survives on `gsm8k_100`
-  plus one DeepSeek-1.5B pilot
+  zero-byte controls on GSM8K held-out, and the same direction survives on
+  `gsm8k_100` plus one DeepSeek-1.5B pilot
+- the current evidence does **not** support a broad “all reasoning tasks”
+  claim, because SVAMP is negative under the present method
 
 That means the best current path is no longer broad KV transport. It is
-query-aware sparse key routing. The next most useful checks are:
+query-aware sparse key routing with a limited success regime. The next most
+useful checks are:
 
-1. a true second reasoning dataset with the fixed-prior control, not ARC alone
+1. improve the positive GSM regime further rather than widening benchmarks
 2. attention-logit-preserving alignment / selection inside the kept positions
-3. a larger second-pair GSM evaluation now that the DeepSeek pilot is positive
+3. scale the DeepSeek GSM evaluation and finish the remaining selector controls there
