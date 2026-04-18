@@ -161,6 +161,32 @@ Interpretation:
 - This means the next meaningful structure-aware pivots should target
   **head matching or QK geometry**, not just a sharper retrieval heuristic.
 
+## Attention-Margin Check
+
+Same Qwen sparse `k_only` protocol, but using the new last-token top-1 vs
+top-2 attention gap as the head score:
+
+- GSM8K-100, fixed `attention_margin` prior: `0.050000`
+- GSM8K-100, matched shuffled null: `0.040000`
+- GSM8K-100, live `attention_margin` budget: `0.040000`
+- GSM8K-100, fixed prior vs shuffled:
+  - delta `+0.0100`
+  - prior-only wins `1`
+  - null-only wins `0`
+  - bootstrap `[0.0000, 0.0300]`
+  - McNemar `1.0000`
+- SVAMP-70, fixed `attention_margin` prior: `0.071429`
+- DeepSeek GSM8K-70 transfer, fixed `attention_margin` prior: `0.014286`
+
+Interpretation:
+
+- The `attention_margin` prior is directionally cleaner than its shuffled null.
+- It does **not** beat the older peak-based fixed prior (`0.0700` on
+  `gsm8k_100`).
+- The live `attention_margin` branch collapses back to target-alone.
+- SVAMP and DeepSeek remain unchanged boundary cases.
+- So `attention_margin` is a useful bounded ablation, not a new headline method.
+
 ## Seed Stability
 
 Fixed peak-based prior on `gsm8k_100`, same branch, same budget, recalibrated
@@ -190,6 +216,7 @@ Interpretation:
   - text-to-text
 - Cross-family transfer is still weak.
 - Simple retrieval-head-style scoring is not enough on its own.
+- A logit-gap-style attention proxy is also not enough on its own.
 
 ## What This Means For The Paper
 
@@ -216,6 +243,7 @@ paper only if the next replication steps succeed.
 3. Next method pivots from the new literature:
    - OT / permutation or gauge-aware head matching across models
    - attention-logit-preserving or QK-geometry head ranking
+   - subspace / CCA-style matching as a lighter-weight structural pivot
    - causal head scoring once the matching space is less noisy
    - only then revisit retrieval-head routing with a stronger structure-aware score
 4. Keep SVAMP, ARC, cross-family transfer, and now seed instability in the

@@ -598,5 +598,35 @@
     "slug": "linear_shrinkage_estimation_of_covariance_matrices_using_low_complexity_cross_validation",
     "url": "https://arxiv.org/pdf/1810.08360.pdf",
     "reason": "Linear covariance shrinkage is a lightweight statistical template for stabilizing noisy head-prior estimates across calibration seeds."
+  },
+  {
+    "num": 142,
+    "slug": "expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution",
+    "url": "https://arxiv.org/pdf/2510.00636.pdf",
+    "reason": "Expected-attention priors are a stronger query-blind comparator for sparse routing and a useful control against overclaiming live query dependence."
+  },
+  {
+    "num": 143,
+    "slug": "kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity",
+    "url": "https://arxiv.org/pdf/2512.05916.pdf",
+    "reason": "Attention-fidelity guarantees are the cleanest direct reference for preserving QK geometry rather than only matching head scores or norms."
+  },
+  {
+    "num": 144,
+    "slug": "transformer_fusion_with_optimal_transport",
+    "url": "https://arxiv.org/pdf/2310.05719.pdf",
+    "reason": "Transformer fusion with OT is a direct symmetry-aware baseline for head or layer matching when identities are not canonical across models."
+  },
+  {
+    "num": 145,
+    "slug": "selective_induction_heads_how_transformers_select_causal_structures_in_context",
+    "url": "https://arxiv.org/pdf/2509.08184.pdf",
+    "reason": "Selective induction heads provide a causal-structure explanation for why useful head sets should vary with context instead of staying fixed."
+  },
+  {
+    "num": 146,
+    "slug": "unsupervised_alignment_of_embeddings_with_wasserstein_procrustes",
+    "url": "https://arxiv.org/pdf/1805.11222.pdf",
+    "reason": "Wasserstein Procrustes is a canonical unsupervised alignment reference for cross-space matching under permutation and geometry ambiguity."
   }
 ]

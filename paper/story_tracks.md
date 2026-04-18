@@ -29,6 +29,13 @@
   - Qwen -> Qwen, `svamp_eval_70`: `0.071429`
   - Qwen -> DeepSeek, `gsm8k_eval_70`: `0.014286`
   so simple retrieval-peak scoring is another **negative boundary**, not yet a stable mechanistic solution.
+- A direct attention-logit / confidence proxy also fails to become the new lead:
+  - Qwen -> Qwen, `gsm8k_100`, fixed `attention_margin` prior: `0.0500`
+  - matched shuffled null: `0.0400`
+  - live `attention_margin` budget: `0.0400`
+  - SVAMP stays at `0.071429`
+  - DeepSeek stays at `0.014286`
+  so simple top-1 vs top-2 attention gap scoring is a useful bounded ablation, but not a replacement for the older peak-based prior.
 - The saved-prior transfer matrix is now clearly **asymmetric**:
   - Qwen prior -> Qwen is strong
   - Qwen prior -> DeepSeek collapses
@@ -45,6 +52,7 @@
   - **how to stabilize that budget without diluting the useful calibrated prior**
   - **whether that budget should be shrinkage-regularized, permutation-matched, or attention-logit-preserving**
   - **whether the useful structure is retrieval-head-specific, permutation-matched, or attention-logit-preserving**
+  - **whether a lighter subspace / CCA-style match is enough before trying full OT**
 
 ## COLM workshop path
 
@@ -108,6 +116,7 @@ What we still need:
 3. Implement the next method pivots suggested by the literature:
    - OT / permutation or gauge-aware head matching
    - attention-logit-preserving / QK-geometry head ranking
+   - subspace / CCA-style matching as the cheapest structural follow-up
    - retrieval-head routing only after the head space is made more canonical
    - causal head scoring
 4. Preserve the negative controls and failure cases in the main paper, not just the appendix.

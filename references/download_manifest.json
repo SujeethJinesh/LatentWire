@@ -1262,5 +1262,50 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 435721
+  },
+  {
+    "num": 142,
+    "slug": "expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution",
+    "url": "https://arxiv.org/pdf/2510.00636.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/142_expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1528084
+  },
+  {
+    "num": 143,
+    "slug": "kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity",
+    "url": "https://arxiv.org/pdf/2512.05916.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/143_kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 424735
+  },
+  {
+    "num": 144,
+    "slug": "transformer_fusion_with_optimal_transport",
+    "url": "https://arxiv.org/pdf/2310.05719.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/144_transformer_fusion_with_optimal_transport.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1217671
+  },
+  {
+    "num": 145,
+    "slug": "selective_induction_heads_how_transformers_select_causal_structures_in_context",
+    "url": "https://arxiv.org/pdf/2509.08184.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/145_selective_induction_heads_how_transformers_select_causal_structures_in_context.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 6736566
+  },
+  {
+    "num": 146,
+    "slug": "unsupervised_alignment_of_embeddings_with_wasserstein_procrustes",
+    "url": "https://arxiv.org/pdf/1805.11222.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/146_unsupervised_alignment_of_embeddings_with_wasserstein_procrustes.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 357973
   }
 ]

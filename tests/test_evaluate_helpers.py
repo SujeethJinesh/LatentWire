@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from types import SimpleNamespace
 
@@ -1355,12 +1356,17 @@ def test_position_selection_recency_metric_prefers_latest_positions() -> None:
     assert torch.allclose(scores, torch.tensor([1.0, 2.0, 3.0]))
 
 
-def test_runtime_head_scores_support_attention_peak_retrieval_and_random() -> None:
+def test_runtime_head_scores_support_attention_peak_margin_retrieval_and_random() -> None:
     attention_map = torch.tensor([[0.9, 0.1], [0.1, 0.9]], dtype=torch.float32)
 
     peak = evaluate._runtime_head_scores(
         attention_map,
         metric="attention_peak",
+        layer_idx=0,
+    )
+    margin = evaluate._runtime_head_scores(
+        attention_map,
+        metric="attention_margin",
         layer_idx=0,
     )
     retrieval = evaluate._runtime_head_scores(
@@ -1380,8 +1386,21 @@ def test_runtime_head_scores_support_attention_peak_retrieval_and_random() -> No
     )
 
     assert torch.allclose(peak, torch.tensor([0.9, 0.9]))
+    assert torch.allclose(margin, torch.full_like(margin, math.log(9.0)))
     assert float(retrieval[1]) > float(retrieval[0])
     assert torch.allclose(first, second)
+
+
+def test_runtime_head_scores_attention_margin_prefers_sharper_head() -> None:
+    attention_map = torch.tensor([[0.95, 0.05], [0.60, 0.40]], dtype=torch.float32)
+
+    margin = evaluate._runtime_head_scores(
+        attention_map,
+        metric="attention_margin",
+        layer_idx=0,
+    )
+
+    assert float(margin[0]) > float(margin[1])
 
 
 def test_runtime_head_scores_with_prior_supports_prior_and_blend() -> None:

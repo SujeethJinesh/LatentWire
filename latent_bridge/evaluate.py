@@ -321,6 +321,11 @@ def _runtime_head_scores(
         return scores.max(dim=-1).values
     if metric == "attention_entropy":
         return (probs * probs.clamp_min(1e-8).log()).sum(dim=-1)
+    if metric == "attention_margin":
+        if probs.shape[-1] <= 1:
+            return probs.max(dim=-1).values.log()
+        top2 = torch.topk(probs, k=2, dim=-1, largest=True).values.clamp_min(1e-8)
+        return top2[:, 0].log() - top2[:, 1].log()
     if metric == "retrieval_peak":
         if scores.shape[-1] <= 1:
             return scores.max(dim=-1).values
@@ -628,7 +633,7 @@ def _runtime_head_scores_with_prior(
     prior_alpha: float = 0.5,
 ) -> tuple[torch.Tensor, torch.Tensor | None]:
     prior_topk: torch.Tensor | None = None
-    if metric in {"attention_peak", "attention_entropy", "retrieval_peak", "random"}:
+    if metric in {"attention_peak", "attention_entropy", "attention_margin", "retrieval_peak", "random"}:
         if attention_map is None:
             raise ValueError(f"{metric} runtime head selection requires target attention maps")
         return _runtime_head_scores(attention_map, metric=metric, layer_idx=layer_idx), None
@@ -2943,7 +2948,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--runtime-head-selection-metric",
-        choices=["attention_peak", "attention_entropy", "retrieval_peak", "random", "attention_prior", "attention_blend"],
+        choices=["attention_peak", "attention_entropy", "attention_margin", "retrieval_peak", "random", "attention_prior", "attention_blend"],
         default="attention_peak",
         help="How to rank heads when runtime_head_selection_ratio < 1.0.",
     )
@@ -2964,7 +2969,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--runtime-head-prior-metric",
-        choices=["attention_peak", "attention_entropy", "retrieval_peak"],
+        choices=["attention_peak", "attention_entropy", "attention_margin", "retrieval_peak"],
         default="attention_peak",
         help="How to score heads when building a fixed head prior from calibration prompts.",
     )
@@ -2992,6 +2997,7 @@ def parse_args() -> argparse.Namespace:
             "none",
             "attention_peak",
             "attention_entropy",
+            "attention_margin",
             "retrieval_peak",
             "random",
             "attention_prior",
@@ -3083,6 +3089,7 @@ def main() -> None:
     runtime_head_attention_metrics = {
         "attention_peak",
         "attention_entropy",
+        "attention_margin",
         "retrieval_peak",
         "attention_prior",
         "attention_blend",

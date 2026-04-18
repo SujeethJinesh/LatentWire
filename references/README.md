@@ -144,6 +144,16 @@ symmetry, QK geometry, OT matching, and statistical prior repair:
 - `140_`: graph optimal transport as a principled head-matching objective across non-identical spaces.
 - `141_`: linear covariance shrinkage as a lighter-weight statistical stabilizer for noisy head priors.
 
+Files `142_` through `146_` extend the next branch around expected-attention
+priors, attention-fidelity objectives, OT fusion, causal induction structure,
+and Wasserstein alignment:
+
+- `142_`: expected-attention priors as a stronger query-blind baseline for sparse routing.
+- `143_`: attention-fidelity guarantees as a direct reference for QK-geometry-preserving compression and ranking.
+- `144_`: transformer fusion with OT as a direct symmetry-aware matching baseline across model spaces.
+- `145_`: selective induction heads as a causal-structure reference for context-dependent head importance.
+- `146_`: Wasserstein Procrustes as a canonical unsupervised alignment reference for cross-space matching.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
