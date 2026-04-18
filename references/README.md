@@ -71,6 +71,17 @@ budgeting, principal-key concentration, and mechanistic head localization:
 - `105_`: principal-key attention as a direct sparse-key concentration reference.
 - `106_`: scalable component localization for causal or attribution-based head selection.
 
+Files `107_` through `113_` deepen the next head-routing branch around
+head-wise offloading, fine-grained retrieval, asymmetric K/V importance, and
+OpenReview-only head-budget papers that are currently stored as link notes:
+
+- `107_`: head-wise offloading as a direct head-specific transport systems baseline.
+- `108_`: fine-grained KV retrieval for stronger query-aware token and head routing.
+- `109_`: asymmetric K/V quantization, reinforcing the current `K-only` paper direction.
+- `110_` through `113_`: link notes for hierarchical sharing, head-specific retention,
+  adaptive budgeting, and head-level key pruning where direct shell PDF download
+  returned HTML landing pages on this machine.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

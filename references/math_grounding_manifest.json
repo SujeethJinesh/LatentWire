@@ -388,5 +388,47 @@
     "slug": "atp_star_an_efficient_and_scalable_method_for_localizing_llm_behaviour_to_components",
     "url": "https://arxiv.org/pdf/2403.00745",
     "reason": "Provides a mechanistic localization route for future causal head scoring instead of purely similarity-based or attention-based selection."
+  },
+  {
+    "num": 107,
+    "slug": "headinfer_memory_efficient_llm_inference_by_head_wise_offloading",
+    "url": "https://arxiv.org/pdf/2502.12574",
+    "reason": "Head-wise offloading turns heads into an explicit systems budget axis for sparse transport ablations."
+  },
+  {
+    "num": 108,
+    "slug": "fier_fine_grained_and_efficient_kv_cache_retrieval_for_long_context_llm_inference",
+    "url": "https://arxiv.org/pdf/2508.08256",
+    "reason": "Supports fine-grained query-aware retrieval and routing beyond coarse position-only selection."
+  },
+  {
+    "num": 109,
+    "slug": "more_for_keys_less_for_values_adaptive_kv_cache_quantization",
+    "url": "https://arxiv.org/pdf/2502.15075",
+    "reason": "Reinforces the current K-only direction by arguing keys deserve more budget than values."
+  },
+  {
+    "num": 110,
+    "slug": "hshare_fast_llm_decoding_by_hierarchical_key_value_sharing",
+    "url": "https://openreview.net/forum?id=Tb5PY5vwp6",
+    "reason": "Hierarchical KV sharing motivates multi-level routing across layers, heads, and queries."
+  },
+  {
+    "num": 111,
+    "slug": "contextkeeper_head_specific_kv_cache_retention_for_long_context_llm_inference",
+    "url": "https://openreview.net/forum?id=7zQy4iHoZ8",
+    "reason": "Head-specific retention is a direct reference for retrieval-head-only or calibration-mask transport."
+  },
+  {
+    "num": 112,
+    "slug": "ada_kv_optimizing_kv_cache_eviction_by_adaptive_budget_allocation_for_efficient_llm_inference",
+    "url": "https://openreview.net/forum?id=tcisuhGsQZ",
+    "reason": "Adaptive budget allocation motivates variable per-head budgets instead of one flat keep ratio."
+  },
+  {
+    "num": 113,
+    "slug": "ropk_a_head_level_key_cache_channel_pruning_method_for_efficient_long_context_llm_inference",
+    "url": "https://openreview.net/forum?id=SRXVoLJEaq",
+    "reason": "Head-level key pruning is directly relevant to calibrated head-mask and head-pruning ablations."
   }
 ]

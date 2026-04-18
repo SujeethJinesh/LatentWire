@@ -203,6 +203,8 @@ Runtime head-selection follow-up (`runtime_head_selection_ratio=0.5`):
   - dense selected heads: `0.057143` at `149,628.475` bytes
   - runtime `attention_peak` half-head pruning: `0.057143` at `74,308.018` bytes
   - runtime random half-head pruning: `0.057143` at `86,696.361` bytes
+  - fixed head prior from `64` calibration prompts: `0.028571` at `76,207.675` bytes
+  - live+prior head blend (`alpha=0.5`): `0.014286` at `76,207.675` bytes
   - `attention_peak` vs dense:
     - delta `0.000000`
     - method-only wins `1`
@@ -213,6 +215,16 @@ Runtime head-selection follow-up (`runtime_head_selection_ratio=0.5`):
     - method-only wins `2`
     - baseline-only wins `2`
     - McNemar `p=1.0000`
+  - fixed head prior vs live `attention_peak`:
+    - delta `-0.028571`
+    - method-only wins `1`
+    - baseline-only wins `3`
+    - McNemar `p=0.6171`
+  - live+prior blend vs live `attention_peak`:
+    - delta `-0.042857`
+    - method-only wins `0`
+    - baseline-only wins `3`
+    - McNemar `p=0.2482`
 - DeepSeek GSM8K held-out, live target-attention sparse `K-only`, gate `0.10`:
   - dense selected heads: `0.028571`
   - runtime `attention_peak` half-head pruning: `0.014286` at `49,549.336` bytes
@@ -289,6 +301,12 @@ Second reasoning task check:
   transmitted bytes, but the same move on DeepSeek drops the live-selector gain
   back to the fixed-prior / zero-byte control level. The current evidence says
   runtime head pruning is pair-sensitive rather than universally safe.
+- Frozen calibration-only head masks are also not enough on the Qwen pair. A
+  fixed head prior built from `64` calibration prompts drops the Qwen GSM8K
+  score to `0.028571`, and a naive live+prior blend drops further to
+  `0.014286`, both below the live `attention_peak` routing branch. So the best
+  current interpretation is that live query-conditioned head routing still
+  matters; a reusable fixed head mask does not replay the gain by itself.
 - SVAMP is currently a negative transfer case. The sparse `K-only` branch does
   not beat target-alone there under the low-gate bracket, while text-to-text is
   much stronger. At the moment, SVAMP defines a failure boundary rather than a
@@ -313,6 +331,8 @@ The defensible statement now is:
   table
 - runtime head pruning improves accuracy-per-byte on the Qwen GSM slice, but
   it does not yet transfer safely to the DeepSeek pair
+- fixed calibration head priors do not preserve the Qwen gain, so the current
+  head-localized story still depends on live query-conditioned routing
 - the current evidence does **not** support a broad “all reasoning tasks”
   claim, because SVAMP is negative under the present method
 
@@ -322,6 +342,8 @@ useful checks are:
 
 1. improve the positive GSM regime further rather than widening benchmarks
 2. attention-logit-preserving alignment / selection inside the kept positions
-3. use head scoring as an offline calibration prior or per-pair budget, not a
-   universal runtime pruning rule
-4. scale the DeepSeek GSM evaluation after the next selector/alignment change
+3. test calibration-transfer masks more explicitly, but do not treat fixed head
+   priors as a replacement for live routing
+4. move the next method step toward per-head budgets or head scoring that is
+   query-aware rather than a naive live+prior average
+5. scale the DeepSeek GSM evaluation after the next selector/alignment change

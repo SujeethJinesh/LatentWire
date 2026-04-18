@@ -188,9 +188,14 @@ key disagreement, so it explicitly favors positions that are both query-relevant
 and likely to change the target's retrieval geometry.
 For runtime retrieval-head ablations, add
 `--runtime-head-selection-ratio <r>` with
-`--runtime-head-selection-metric attention_peak`, `attention_entropy`, or
-`random`. This keeps only a subset of the checkpoint-selected target heads at
-evaluation time and records per-layer `head_trace` metadata in the sidecar.
+`--runtime-head-selection-metric attention_peak`, `attention_entropy`,
+`random`, `attention_prior`, or `attention_blend`. Use
+`--runtime-head-prior-file <path>` to build a fixed calibration-derived head
+prior, and `--runtime-head-prior-alpha` to blend that prior with live
+attention-based head scores. This keeps only a subset of the
+checkpoint-selected target heads at evaluation time and records per-layer
+`head_trace` metadata in the sidecar, including prior-overlap statistics when a
+fixed head prior is active.
 
 When `--prediction-output` is set, the evaluator also writes a sidecar file at
 `<prediction-output>.meta.json`. That sidecar stores the run config, per-method

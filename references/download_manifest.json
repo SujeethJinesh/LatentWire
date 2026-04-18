@@ -952,5 +952,64 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 16014058
+  },
+  {
+    "num": 107,
+    "slug": "headinfer_memory_efficient_llm_inference_by_head_wise_offloading",
+    "url": "https://arxiv.org/pdf/2502.12574",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/107_headinfer_memory_efficient_llm_inference_by_head_wise_offloading.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1438659
+  },
+  {
+    "num": 108,
+    "slug": "fier_fine_grained_and_efficient_kv_cache_retrieval_for_long_context_llm_inference",
+    "url": "https://arxiv.org/pdf/2508.08256",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/108_fier_fine_grained_and_efficient_kv_cache_retrieval_for_long_context_llm_inference.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 5060248
+  },
+  {
+    "num": 109,
+    "slug": "more_for_keys_less_for_values_adaptive_kv_cache_quantization",
+    "url": "https://arxiv.org/pdf/2502.15075",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/109_more_for_keys_less_for_values_adaptive_kv_cache_quantization.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 990368
+  },
+  {
+    "num": 110,
+    "slug": "hshare_fast_llm_decoding_by_hierarchical_key_value_sharing",
+    "url": "https://openreview.net/forum?id=Tb5PY5vwp6",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/110_hshare_fast_llm_decoding_by_hierarchical_key_value_sharing.md",
+    "content_type": "text/markdown",
+    "status": "link_note"
+  },
+  {
+    "num": 111,
+    "slug": "contextkeeper_head_specific_kv_cache_retention_for_long_context_llm_inference",
+    "url": "https://openreview.net/forum?id=7zQy4iHoZ8",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/111_contextkeeper_head_specific_kv_cache_retention_for_long_context_llm_inference.md",
+    "content_type": "text/markdown",
+    "status": "link_note"
+  },
+  {
+    "num": 112,
+    "slug": "ada_kv_optimizing_kv_cache_eviction_by_adaptive_budget_allocation_for_efficient_llm_inference",
+    "url": "https://openreview.net/forum?id=tcisuhGsQZ",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/112_ada_kv_optimizing_kv_cache_eviction_by_adaptive_budget_allocation_for_efficient_llm_inference.md",
+    "content_type": "text/markdown",
+    "status": "link_note"
+  },
+  {
+    "num": 113,
+    "slug": "ropk_a_head_level_key_cache_channel_pruning_method_for_efficient_long_context_llm_inference",
+    "url": "https://openreview.net/forum?id=SRXVoLJEaq",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/113_ropk_a_head_level_key_cache_channel_pruning_method_for_efficient_long_context_llm_inference.md",
+    "content_type": "text/markdown",
+    "status": "link_note"
   }
 ]
