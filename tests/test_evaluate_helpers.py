@@ -330,7 +330,11 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "--kv-transport",
             "k_only",
             "--position-selection-metric",
-            "attention_shuffled",
+            "attention_prior",
+            "--position-selection-prior-file",
+            "data/calibration.txt",
+            "--position-selection-prior-bins",
+            "64",
         ],
     )
 
@@ -343,7 +347,9 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.translated_kv_control == "zero"
     assert args.fusion_rule == "kalman_tokenwise"
     assert args.kv_transport == "k_only"
-    assert args.position_selection_metric == "attention_shuffled"
+    assert args.position_selection_metric == "attention_prior"
+    assert args.position_selection_prior_file == "data/calibration.txt"
+    assert args.position_selection_prior_bins == 64
 
 
 def test_source_kv_controls_are_negative_controls() -> None:
@@ -1156,6 +1162,65 @@ def test_build_rotalign_prefix_state_supports_source_attention_position_selectio
         kv_transport="k_only",
         position_selection_ratio=0.5,
         position_selection_metric="source_attention",
+    )
+
+    sparse_k, _ = sparse_state.past_key_values[0]
+
+    assert torch.allclose(sparse_k[:, :, 0, :], torch.full_like(sparse_k[:, :, 0, :], 6.0))
+    assert torch.allclose(sparse_k[:, :, 1, :], torch.full_like(sparse_k[:, :, 1, :], 1.0))
+
+
+def test_mean_attention_prior_from_prompts_averages_last_token_attention(monkeypatch) -> None:
+    tok = FakeTokenizer()
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt.attention_pattern = torch.tensor([0.9, 0.1, 0.0], dtype=torch.float32)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+
+    priors = evaluate._mean_attention_prior_from_prompts(
+        tgt,
+        tok,
+        ["alpha beta gamma", "delta epsilon zeta"],
+        "cpu",
+        translator=translator,
+        bins=2,
+    )
+
+    assert len(priors) == 2
+    for prior in priors:
+        assert torch.allclose(prior, torch.tensor([0.9, 0.1], dtype=torch.float32))
+
+
+def test_build_rotalign_prefix_state_supports_attention_prior_selection(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.set_fixed_gates(0.5)
+
+    def translated(K_s, V_s, tgt_layer_idx, quantize=True, quantization_control="real"):
+        K_hat = torch.zeros_like(K_s)
+        K_hat[:, :, 0, :] = 11.0
+        K_hat[:, :, 1, :] = 21.0
+        return K_hat, torch.zeros_like(V_s)
+
+    translator.translate_layer = translated  # type: ignore[method-assign]
+
+    sparse_state, _ = evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+        kv_transport="k_only",
+        position_selection_ratio=0.5,
+        position_selection_metric="attention_prior",
+        fixed_position_profiles=[torch.tensor([0.9, 0.1]), torch.tensor([0.9, 0.1])],
     )
 
     sparse_k, _ = sparse_state.past_key_values[0]

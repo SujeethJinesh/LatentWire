@@ -112,6 +112,43 @@ Paired checks on the same 70 examples:
   - ratio-0.75-only wins `0`
   - McNemar `p=1.0000`
 
+Fixed-prior follow-up:
+
+- `gsm8k_100` target-alone: `0.040000`
+- `gsm8k_100` text-to-text: `0.100000`
+- `gsm8k_100` target-attention sparse `K-only`: `0.050000`
+- `gsm8k_100` fixed attention prior (`64` calibration prompts): `0.030000`
+- `gsm8k_100` target-attention sparse vs fixed prior:
+  - delta `+0.020000`
+  - method-only wins `2`
+  - baseline-only wins `0`
+  - McNemar `p=0.4795`
+- `arc_challenge_eval_35` target-alone: `0.428571`
+- `arc_challenge_eval_35` target-attention sparse `K-only`: `0.485714`
+- `arc_challenge_eval_35` fixed attention prior (`64` calibration prompts): `0.485714`
+- `arc_challenge_eval_35` target-attention sparse vs fixed prior:
+  - delta `0.000000`
+  - method-only wins `0`
+  - baseline-only wins `0`
+  - McNemar `p=1.0000`
+
+Second-pair GSM8K pilot:
+
+- checkpoint: `checkpoints/qwen25_to_deepseek15b_query_pilot.pt`
+- target: `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`
+- calibration: `.debug/calibration_128.txt`
+- calibration quality:
+  - `K` cosine `0.858`
+  - `V` cosine `0.635`
+- `gsm8k_eval_70` target-alone: `0.000000`
+- `gsm8k_eval_70` target-attention sparse `K-only`: `0.028571`
+- `gsm8k_eval_70` fixed attention prior (`64` calibration prompts): `0.014286`
+- `gsm8k_eval_70` target-attention sparse vs fixed prior:
+  - delta `+0.014286`
+  - method-only wins `1`
+  - baseline-only wins `0`
+  - McNemar `p=1.0000`
+
 ## Read
 
 - The clean rerun removes the earlier source-communication win.
@@ -139,6 +176,15 @@ Paired checks on the same 70 examples:
   (`0.028571`), `50%` is best (`0.057143`), and `75%` / dense `100%` both
   fall back to `0.042857`. The current best branch is a real middle-band sparse
   selector, not “more retained KV is always better.”
+- On the larger `gsm8k_100` slice, the selector story strengthens slightly:
+  target-attention sparse `K-only` reaches `0.050000`, target-alone is
+  `0.040000`, and the fixed calibration prior drops to `0.030000`.
+- ARC remains ambiguous. The target-attention branch is above target-alone, but
+  the fixed attention prior ties it exactly on `arc_challenge_eval_35`, so ARC
+  is still not clean selector-specific evidence.
+- The DeepSeek-1.5B pilot is directionally consistent with GSM8K: target-alone
+  is `0.000000`, target-attention sparse `K-only` reaches `0.028571`, and the
+  fixed attention prior drops to `0.014286`.
 - This shifts the best current interpretation from generic cross-model KV
   transfer to target-guided sparse key import.
 
@@ -155,11 +201,12 @@ The defensible statement now is:
   environment
 - but target-guided sparse `K-only` does beat the matched selector and
   zero-byte controls on GSM8K held-out, albeit by a small non-significant
-  margin on the current 70-example split
+  controls on GSM8K held-out, and the same direction survives on `gsm8k_100`
+  plus one DeepSeek-1.5B pilot
 
 That means the best current path is no longer broad KV transport. It is
 query-aware sparse key routing. The next most useful checks are:
 
-1. rate-distortion on the target-attention sparse branch
+1. a true second reasoning dataset with the fixed-prior control, not ARC alone
 2. attention-logit-preserving alignment / selection inside the kept positions
-3. one second reasoning task before any broader model expansion
+3. a larger second-pair GSM evaluation now that the DeepSeek pilot is positive

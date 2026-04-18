@@ -31,6 +31,7 @@ from typing import Any
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 import torch
+import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from rotalign import RotAlignKVTranslator
@@ -116,6 +117,11 @@ def infer_task_type(path: str) -> str:
             obj = json.loads(line)
             return "mcq" if "choices" in obj else "generation"
     raise ValueError(f"No examples found in {path}")
+
+
+def load_prompt_lines(path: str) -> list[str]:
+    with open(path, "r", encoding="utf-8") as f:
+        return [line.strip() for line in f if line.strip()]
 
 
 def _normalize_cache(pkv: Any) -> tuple | None:
@@ -226,6 +232,61 @@ def _last_token_attention_scores(
                 score = score[head_mask]
         layer_scores.append(score.mean(dim=0))
     return layer_scores
+
+
+def _resample_position_profile(profile: torch.Tensor, target_len: int) -> torch.Tensor:
+    if target_len <= 0:
+        raise ValueError("target_len must be positive")
+    profile = profile.float()
+    if profile.numel() == target_len:
+        out = profile
+    else:
+        out = F.interpolate(
+            profile.view(1, 1, -1),
+            size=target_len,
+            mode="linear",
+            align_corners=False,
+        ).view(-1)
+    return out / out.sum().clamp_min(1e-8)
+
+
+@torch.no_grad()
+def _mean_attention_prior_from_prompts(
+    model,
+    tokenizer,
+    prompts: list[str],
+    device: str,
+    *,
+    translator: RotAlignKVTranslator | None = None,
+    bins: int = 128,
+) -> list[torch.Tensor]:
+    if bins <= 0:
+        raise ValueError("bins must be positive")
+
+    layer_sums: list[torch.Tensor] | None = None
+    used_prompts = 0
+    for prompt in prompts:
+        prefix_state = _prepare_prefix_state(model, tokenizer, prompt, device)
+        if prefix_state.prefix_len <= 1:
+            continue
+        layer_scores = _last_token_attention_scores(
+            model,
+            prefix_state.last_token,
+            prefix_state.past_key_values,
+            device,
+            translator=translator,
+        )
+        layer_scores = [_resample_position_profile(scores, bins) for scores in layer_scores]
+        if layer_sums is None:
+            layer_sums = [scores.clone() for scores in layer_scores]
+        else:
+            for layer_idx, scores in enumerate(layer_scores):
+                layer_sums[layer_idx] += scores
+        used_prompts += 1
+
+    if layer_sums is None or used_prompts == 0:
+        raise ValueError("Could not build attention prior from calibration prompts")
+    return [(scores / float(used_prompts)).cpu() for scores in layer_sums]
 
 
 @torch.no_grad()
@@ -797,6 +858,10 @@ def _position_selection_scores(
         if position_scores is None:
             raise ValueError("source_attention position selection requires explicit position scores")
         return position_scores.float()
+    if position_selection_metric == "attention_prior":
+        if position_scores is None:
+            raise ValueError("attention_prior position selection requires explicit position scores")
+        return position_scores.float()
     raise ValueError(f"Unknown position_selection_metric: {position_selection_metric}")
 
 
@@ -859,6 +924,7 @@ def _build_rotalign_prefix_state(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    fixed_position_profiles: list[torch.Tensor] | None = None,
 ) -> tuple[PrefixState, dict[str, float]]:
     tgt_prompt_ids = target_tokenizer(target_prompt, return_tensors="pt").input_ids.to(device)
     tgt_prefix_ids, tgt_last_token = _split_prompt_prefix(tgt_prompt_ids)
@@ -903,6 +969,8 @@ def _build_rotalign_prefix_state(
             device,
             translator=None,
         )
+    if position_selection_metric == "attention_prior" and position_selection_ratio < 1.0 and fixed_position_profiles is None:
+        raise ValueError("attention_prior position selection requires fixed_position_profiles")
 
     fused_pkv: list[tuple[torch.Tensor, torch.Tensor]] = []
     for tgt_l in range(translator.config.num_tgt_layers):
@@ -935,15 +1003,19 @@ def _build_rotalign_prefix_state(
             position_selection_ratio=position_selection_ratio,
             position_selection_metric=position_selection_metric,
             position_scores=(
-                None
-                if (
-                    layer_position_scores is None
-                    and source_layer_position_scores is None
-                )
+                layer_position_scores[tgt_l][-K_t_aligned.shape[2] :]
+                if layer_position_scores is not None
                 else (
-                    layer_position_scores[tgt_l][-K_t_aligned.shape[2] :]
-                    if layer_position_scores is not None
-                    else source_layer_position_scores[src_l][-K_t_aligned.shape[2] :]
+                    source_layer_position_scores[src_l][-K_t_aligned.shape[2] :]
+                    if source_layer_position_scores is not None
+                    else (
+                        _resample_position_profile(
+                            fixed_position_profiles[tgt_l].to(device=K_t_aligned.device),
+                            K_t_aligned.shape[2],
+                        )
+                        if fixed_position_profiles is not None
+                        else None
+                    )
                 )
             ),
         )
@@ -1027,6 +1099,7 @@ def _search_per_layer_gates(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    fixed_position_profiles: list[torch.Tensor] | None = None,
 ) -> dict[str, list[float]]:
     """Coordinate-descent line search over per-layer K/V fusion gates.
 
@@ -1046,6 +1119,9 @@ def _search_per_layer_gates(
     search_v = kv_transport in {"both", "v_only"}
 
     def _score_current_gates() -> float:
+        eval_kwargs: dict[str, Any] = {}
+        if fixed_position_profiles is not None:
+            eval_kwargs["fixed_position_profiles"] = fixed_position_profiles
         if is_generation:
             return _eval_generation_rotalign(
                 source_model,
@@ -1066,6 +1142,7 @@ def _search_per_layer_gates(
                 kv_transport=kv_transport,
                 position_selection_ratio=position_selection_ratio,
                 position_selection_metric=position_selection_metric,
+                **eval_kwargs,
             )[0]
         return eval_rotalign_kv(
             source_model,
@@ -1085,6 +1162,7 @@ def _search_per_layer_gates(
             kv_transport=kv_transport,
             position_selection_ratio=position_selection_ratio,
             position_selection_metric=position_selection_metric,
+            **eval_kwargs,
         )
 
     for tgt_layer_idx in layer_indices:
@@ -1314,6 +1392,7 @@ def eval_rotalign_kv(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    fixed_position_profiles: list[torch.Tensor] | None = None,
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> float:
@@ -1322,6 +1401,9 @@ def eval_rotalign_kv(
     for idx, ex in enumerate(examples):
         source_prompt = _source_reasoning_prompt(_mcq_prompt(ex.question), source_reasoning_mode)
         target_prompt = _mcq_prompt(ex.question)
+        build_kwargs: dict[str, Any] = {}
+        if fixed_position_profiles is not None:
+            build_kwargs["fixed_position_profiles"] = fixed_position_profiles
         prefix_state, _ = _build_rotalign_prefix_state(
             source_model,
             source_tokenizer,
@@ -1340,6 +1422,7 @@ def eval_rotalign_kv(
             kv_transport,
             position_selection_ratio,
             position_selection_metric,
+            **build_kwargs,
         )
         scores = [
             _score_mcq_with_prefix_state(target_model, target_tokenizer, prefix_state, c, device)
@@ -1525,7 +1608,11 @@ def _eval_generation_rotalign(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    fixed_position_profiles: list[torch.Tensor] | None = None,
 ) -> tuple[float, float, float]:
+    eval_kwargs: dict[str, Any] = {}
+    if fixed_position_profiles is not None:
+        eval_kwargs["fixed_position_profiles"] = fixed_position_profiles
     stats = _eval_generation_rotalign_with_stats(
         source_model,
         source_tokenizer,
@@ -1545,6 +1632,7 @@ def _eval_generation_rotalign(
         kv_transport,
         position_selection_ratio,
         position_selection_metric,
+        **eval_kwargs,
     )
     return stats["accuracy"], stats["bits"], stats["latency_sec"]
 
@@ -1568,6 +1656,7 @@ def _eval_generation_rotalign_with_stats(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    fixed_position_profiles: list[torch.Tensor] | None = None,
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> dict[str, float]:
@@ -1591,6 +1680,9 @@ def _eval_generation_rotalign_with_stats(
             )
             target_prompt = f"Analysis: {hint}\n{ex.prompt}"
 
+        build_kwargs: dict[str, Any] = {}
+        if fixed_position_profiles is not None:
+            build_kwargs["fixed_position_profiles"] = fixed_position_profiles
         prefix_state, stats = _build_rotalign_prefix_state(
             source_model,
             source_tokenizer,
@@ -1609,6 +1701,7 @@ def _eval_generation_rotalign_with_stats(
             kv_transport,
             position_selection_ratio,
             position_selection_metric,
+            **build_kwargs,
         )
         trace = _greedy_generate_with_stats(
             target_model,
@@ -1722,9 +1815,20 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--position-selection-metric",
-        choices=["energy", "disagreement", "random", "attention", "attention_shuffled", "source_attention"],
+        choices=["energy", "disagreement", "random", "attention", "attention_shuffled", "source_attention", "attention_prior"],
         default="energy",
         help="How to rank translated positions when position_selection_ratio < 1.0.",
+    )
+    p.add_argument(
+        "--position-selection-prior-file",
+        default=None,
+        help="Optional calibration prompt file used to build a fixed query-blind attention prior.",
+    )
+    p.add_argument(
+        "--position-selection-prior-bins",
+        type=int,
+        default=128,
+        help="Number of normalized position bins used for fixed attention priors.",
     )
     p.add_argument(
         "--methods",
@@ -1787,7 +1891,7 @@ def main() -> None:
         examples = load_generation(args.eval_file)
     print(f"Loaded {len(examples)} {task_type} examples from {args.eval_file}")
 
-    attention_selector_metrics = {"attention", "attention_shuffled", "source_attention"}
+    attention_selector_metrics = {"attention", "attention_shuffled", "source_attention", "attention_prior"}
 
     print(f"\nLoading source: {args.source_model}")
     tok_s = AutoTokenizer.from_pretrained(args.source_model, trust_remote_code=True)
@@ -1822,6 +1926,23 @@ def main() -> None:
     print(f"Loading translator from {args.translator}")
     translator = RotAlignKVTranslator.load(args.translator, map_location=args.device)
     initial_gate_values = translator.gate_values()
+    fixed_position_profiles = None
+    if position_selection_metric == "attention_prior":
+        if not args.position_selection_prior_file:
+            raise ValueError("--position-selection-prior-file is required for --position-selection-metric attention_prior")
+        prior_prompts = load_prompt_lines(args.position_selection_prior_file)
+        print(
+            f"Building fixed attention prior from {len(prior_prompts)} calibration prompts "
+            f"({args.position_selection_prior_file})"
+        )
+        fixed_position_profiles = _mean_attention_prior_from_prompts(
+            tgt,
+            tok_t,
+            prior_prompts,
+            args.device,
+            translator=translator,
+            bins=args.position_selection_prior_bins,
+        )
 
     if args.gate_mode == "fixed":
         translator.set_fixed_gates(args.fixed_gate)
@@ -1871,6 +1992,9 @@ def main() -> None:
                     f"{search_task_type} examples from {args.gate_search_file} "
                     f"for protocol={protocol}"
                 )
+                search_kwargs: dict[str, Any] = {}
+                if fixed_position_profiles is not None:
+                    search_kwargs["fixed_position_profiles"] = fixed_position_profiles
                 search_stats = _search_per_layer_gates(
                     src,
                     tok_s,
@@ -1890,6 +2014,7 @@ def main() -> None:
                     kv_transport=kv_transport,
                     position_selection_ratio=position_selection_ratio,
                     position_selection_metric=position_selection_metric,
+                    **search_kwargs,
                 )
                 print(
                     "Selected gate means: "
@@ -1919,6 +2044,7 @@ def main() -> None:
                     kv_transport=kv_transport,
                     position_selection_ratio=position_selection_ratio,
                     position_selection_metric=position_selection_metric,
+                    fixed_position_profiles=fixed_position_profiles,
                     records=prediction_records,
                     method_name=metric_key,
                 )
@@ -1989,6 +2115,9 @@ def main() -> None:
                     f"{search_task_type} examples from {args.gate_search_file} "
                     f"for protocol={protocol}"
                 )
+                search_kwargs: dict[str, Any] = {}
+                if fixed_position_profiles is not None:
+                    search_kwargs["fixed_position_profiles"] = fixed_position_profiles
                 search_stats = _search_per_layer_gates(
                     src,
                     tok_s,
@@ -2008,6 +2137,7 @@ def main() -> None:
                     kv_transport=kv_transport,
                     position_selection_ratio=position_selection_ratio,
                     position_selection_metric=position_selection_metric,
+                    **search_kwargs,
                 )
                 print(
                     "Selected gate means: "
@@ -2037,6 +2167,7 @@ def main() -> None:
                     kv_transport=kv_transport,
                     position_selection_ratio=position_selection_ratio,
                     position_selection_metric=position_selection_metric,
+                    fixed_position_profiles=fixed_position_profiles,
                     records=prediction_records,
                     method_name=metric_key,
                 )
