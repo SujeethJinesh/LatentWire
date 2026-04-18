@@ -1065,5 +1065,23 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 4451460
+  },
+  {
+    "num": 120,
+    "slug": "duoattention_efficient_long_context_llm_inference_with_retrieval_and_streaming_heads",
+    "url": "https://arxiv.org/pdf/2410.10819.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/120_duoattention_efficient_long_context_llm_inference_with_retrieval_and_streaming_heads.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 6304770
+  },
+  {
+    "num": 121,
+    "slug": "streamingllm_efficient_streaming_language_models_with_attention_sinks",
+    "url": "https://arxiv.org/pdf/2309.17453.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/121_streamingllm_efficient_streaming_language_models_with_attention_sinks.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 16952848
   }
 ]

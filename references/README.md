@@ -93,6 +93,12 @@ dynamic budgeting alternatives:
 - `118_`: heterogeneous group-attention experts for dynamic token-wise KV optimization.
 - `119_`: evolutionary KV compression as a broader search-based budgeting reference.
 
+Files `120_` and `121_` extend the next head-budget and transfer loop around
+retrieval-vs-streaming head structure and sink-token priors:
+
+- `120_`: retrieval heads vs streaming heads as a direct head-budgeting baseline.
+- `121_`: attention sinks and streaming retention as a stronger blind prior / sink-token control.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

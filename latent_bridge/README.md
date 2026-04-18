@@ -195,6 +195,9 @@ active heads instead of giving every head the same keep ratio.
 fixed head prior built from `--runtime-head-prior-file`.
 `attention_prior_shuffled` is the budget-matched null that keeps the prior's
 mass profile but permutes which heads receive it.
+Use `--runtime-head-prior-save <path>` to export the concrete fixed head-profile
+bundle after building it, and `--runtime-head-prior-load <path>` to reuse that
+bundle across later runs, including cross-pair transfer tests.
 For runtime retrieval-head ablations, add
 `--runtime-head-selection-ratio <r>` with
 `--runtime-head-selection-metric attention_peak`, `attention_entropy`,

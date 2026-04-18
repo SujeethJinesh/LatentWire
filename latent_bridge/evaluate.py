@@ -412,6 +412,81 @@ def _mean_head_prior_from_prompts(
     ]
 
 
+def _resample_head_profile_stack(
+    profiles: list[torch.Tensor],
+    *,
+    target_layers: int,
+) -> list[torch.Tensor]:
+    if target_layers <= 0:
+        raise ValueError("target_layers must be positive")
+    if not profiles:
+        raise ValueError("profiles must be non-empty")
+    normalized = [torch.as_tensor(profile, dtype=torch.float32).view(-1).cpu() for profile in profiles]
+    if len(normalized) == target_layers:
+        return [profile.clone() for profile in normalized]
+    if len(normalized) == 1:
+        return [normalized[0].clone() for _ in range(target_layers)]
+
+    positions = torch.linspace(0, len(normalized) - 1, steps=target_layers, dtype=torch.float32)
+    out: list[torch.Tensor] = []
+    for pos in positions.tolist():
+        lo = int(math.floor(pos))
+        hi = int(math.ceil(pos))
+        if lo == hi:
+            out.append(normalized[lo].clone())
+            continue
+        alpha = float(pos - lo)
+        lo_profile = normalized[lo]
+        hi_profile = normalized[hi]
+        target_heads = max(lo_profile.numel(), hi_profile.numel())
+        lo_profile = _resample_head_profile(lo_profile, target_heads)
+        hi_profile = _resample_head_profile(hi_profile, target_heads)
+        out.append(((1.0 - alpha) * lo_profile + alpha * hi_profile).cpu())
+    return out
+
+
+def _save_head_profile_bundle(
+    path: str,
+    profiles: list[torch.Tensor],
+    *,
+    metadata: dict[str, Any] | None = None,
+) -> None:
+    bundle = {
+        "profiles": [torch.as_tensor(profile, dtype=torch.float32).view(-1).cpu() for profile in profiles],
+        "metadata": dict(metadata or {}),
+    }
+    output_path = pathlib.Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(bundle, output_path)
+
+
+def _load_head_profile_bundle(
+    path: str,
+    *,
+    target_layers: int | None = None,
+) -> tuple[list[torch.Tensor], dict[str, Any]]:
+    payload = torch.load(path, map_location="cpu")
+    metadata: dict[str, Any]
+    if isinstance(payload, dict) and "profiles" in payload:
+        raw_profiles = payload["profiles"]
+        metadata = dict(payload.get("metadata") or {})
+    elif isinstance(payload, list):
+        raw_profiles = payload
+        metadata = {}
+    else:
+        raise ValueError(f"Unsupported head profile bundle format: {type(payload)!r}")
+    profiles = [torch.as_tensor(profile, dtype=torch.float32).view(-1).cpu() for profile in raw_profiles]
+    if not profiles:
+        raise ValueError("Head profile bundle contains no profiles")
+    metadata.setdefault("bundle_path", str(path))
+    metadata.setdefault("stored_layer_count", len(profiles))
+    metadata.setdefault("stored_head_counts", [int(profile.numel()) for profile in profiles])
+    if target_layers is not None and len(profiles) != target_layers:
+        profiles = _resample_head_profile_stack(profiles, target_layers=target_layers)
+        metadata["resampled_to_layer_count"] = int(target_layers)
+    return profiles, metadata
+
+
 def _head_trace(
     scores: torch.Tensor,
     keep_local_indices: torch.Tensor,
@@ -2767,6 +2842,16 @@ def parse_args() -> argparse.Namespace:
         help="Optional calibration prompt file used to build a fixed head prior.",
     )
     p.add_argument(
+        "--runtime-head-prior-load",
+        default=None,
+        help="Optional saved fixed head-profile bundle to load instead of rebuilding from prompts.",
+    )
+    p.add_argument(
+        "--runtime-head-prior-save",
+        default=None,
+        help="Optional path to save the built fixed head-profile bundle for reuse across runs.",
+    )
+    p.add_argument(
         "--runtime-head-prior-metric",
         choices=["attention_peak", "attention_entropy"],
         default="attention_peak",
@@ -2842,6 +2927,9 @@ def main() -> None:
     runtime_head_selection_ratio = float(getattr(args, "runtime_head_selection_ratio", 1.0))
     runtime_head_selection_metric = getattr(args, "runtime_head_selection_metric", "attention_peak")
     runtime_head_prior_alpha = float(getattr(args, "runtime_head_prior_alpha", 0.5))
+    runtime_head_prior_file = getattr(args, "runtime_head_prior_file", None)
+    runtime_head_prior_load = getattr(args, "runtime_head_prior_load", None)
+    runtime_head_prior_save = getattr(args, "runtime_head_prior_save", None)
     per_head_position_budget_mode = getattr(args, "per_head_position_budget_mode", "none")
 
     dtype = {
@@ -2913,6 +3001,7 @@ def main() -> None:
     initial_gate_values = translator.gate_values()
     fixed_position_profiles = None
     fixed_head_profiles = None
+    loaded_head_prior_metadata: dict[str, Any] | None = None
     if position_selection_metric == "attention_prior":
         if not args.position_selection_prior_file:
             raise ValueError("--position-selection-prior-file is required for --position-selection-metric attention_prior")
@@ -2929,22 +3018,63 @@ def main() -> None:
             translator=translator,
             bins=args.position_selection_prior_bins,
         )
-    if (
+    needs_fixed_head_prior = (
         (
             runtime_head_selection_ratio < 1.0
             and runtime_head_selection_metric in {"attention_prior", "attention_blend"}
         )
         or per_head_position_budget_mode in {"attention_prior", "attention_prior_shuffled", "attention_blend"}
-    ):
-        if not args.runtime_head_prior_file:
-            raise ValueError(
-                "--runtime-head-prior-file is required when "
-                "a fixed head prior is required"
+    )
+    if needs_fixed_head_prior:
+        if runtime_head_prior_load:
+            print(f"Loading fixed head prior bundle from {runtime_head_prior_load}")
+            fixed_head_profiles, loaded_head_prior_metadata = _load_head_profile_bundle(
+                runtime_head_prior_load,
+                target_layers=translator.config.num_tgt_layers,
             )
-        head_prior_prompts = load_prompt_lines(args.runtime_head_prior_file)
+        else:
+            if not runtime_head_prior_file:
+                raise ValueError(
+                    "--runtime-head-prior-file or --runtime-head-prior-load is required when "
+                    "a fixed head prior is required"
+                )
+            head_prior_prompts = load_prompt_lines(runtime_head_prior_file)
+            print(
+                f"Building fixed head prior from {len(head_prior_prompts)} calibration prompts "
+                f"({runtime_head_prior_file})"
+            )
+            fixed_head_profiles = _mean_head_prior_from_prompts(
+                tgt,
+                tok_t,
+                head_prior_prompts,
+                args.device,
+                translator=translator,
+                metric=args.runtime_head_prior_metric,
+            )
+            if runtime_head_prior_save:
+                _save_head_profile_bundle(
+                    runtime_head_prior_save,
+                    fixed_head_profiles,
+                    metadata={
+                        "source_model": args.source_model,
+                        "target_model": args.target_model,
+                        "translator": args.translator,
+                        "metric": args.runtime_head_prior_metric,
+                        "prompt_file": runtime_head_prior_file,
+                        "layer_count": len(fixed_head_profiles),
+                        "head_counts": [int(profile.numel()) for profile in fixed_head_profiles],
+                    },
+                )
+                print(f"Saved fixed head prior bundle to {runtime_head_prior_save}")
+    elif runtime_head_prior_save:
+        if not runtime_head_prior_file:
+            raise ValueError(
+                "--runtime-head-prior-file is required when saving a newly built fixed head prior"
+            )
+        head_prior_prompts = load_prompt_lines(runtime_head_prior_file)
         print(
             f"Building fixed head prior from {len(head_prior_prompts)} calibration prompts "
-            f"({args.runtime_head_prior_file})"
+            f"({runtime_head_prior_file}) for bundle export"
         )
         fixed_head_profiles = _mean_head_prior_from_prompts(
             tgt,
@@ -2954,6 +3084,20 @@ def main() -> None:
             translator=translator,
             metric=args.runtime_head_prior_metric,
         )
+        _save_head_profile_bundle(
+            runtime_head_prior_save,
+            fixed_head_profiles,
+            metadata={
+                "source_model": args.source_model,
+                "target_model": args.target_model,
+                "translator": args.translator,
+                "metric": args.runtime_head_prior_metric,
+                "prompt_file": runtime_head_prior_file,
+                "layer_count": len(fixed_head_profiles),
+                "head_counts": [int(profile.numel()) for profile in fixed_head_profiles],
+            },
+        )
+        print(f"Saved fixed head prior bundle to {runtime_head_prior_save}")
 
     if args.gate_mode == "fixed":
         translator.set_fixed_gates(args.fixed_gate)
@@ -3249,9 +3393,12 @@ def main() -> None:
                 "position_selection_prior_bins": args.position_selection_prior_bins,
                 "runtime_head_selection_ratio": runtime_head_selection_ratio,
                 "runtime_head_selection_metric": runtime_head_selection_metric,
-                "runtime_head_prior_file": args.runtime_head_prior_file,
+                "runtime_head_prior_file": runtime_head_prior_file,
+                "runtime_head_prior_load": runtime_head_prior_load,
+                "runtime_head_prior_save": runtime_head_prior_save,
                 "runtime_head_prior_metric": args.runtime_head_prior_metric,
                 "runtime_head_prior_alpha": runtime_head_prior_alpha,
+                "runtime_head_prior_bundle_metadata": loaded_head_prior_metadata,
                 "per_head_position_budget_mode": per_head_position_budget_mode,
             },
         )

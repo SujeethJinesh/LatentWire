@@ -466,5 +466,17 @@
     "slug": "evolkv_evolutionary_kv_cache_compression_for_llm_inference",
     "url": "https://arxiv.org/pdf/2509.08315.pdf",
     "reason": "Search-based KV budget optimization is a useful contrast to simple fixed-prior or live-attention routing."
+  },
+  {
+    "num": 120,
+    "slug": "duoattention_efficient_long_context_llm_inference_with_retrieval_and_streaming_heads",
+    "url": "https://arxiv.org/pdf/2410.10819.pdf",
+    "reason": "Retrieval-vs-streaming head separation is a direct inspiration for fixed head-prior budgeting and head-type transfer tests."
+  },
+  {
+    "num": 121,
+    "slug": "streamingllm_efficient_streaming_language_models_with_attention_sinks",
+    "url": "https://arxiv.org/pdf/2309.17453.pdf",
+    "reason": "Attention sinks provide a strong blind prior and failure-boundary reference for streaming or sink-token retention controls."
   }
 ]

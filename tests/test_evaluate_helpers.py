@@ -342,6 +342,10 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "attention_blend",
             "--runtime-head-prior-file",
             "data/head_calibration.txt",
+            "--runtime-head-prior-load",
+            "data/head_prior.pt",
+            "--runtime-head-prior-save",
+            "artifacts/head_prior.pt",
             "--runtime-head-prior-metric",
             "attention_entropy",
             "--runtime-head-prior-alpha",
@@ -366,6 +370,8 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.runtime_head_selection_ratio == 0.5
     assert args.runtime_head_selection_metric == "attention_blend"
     assert args.runtime_head_prior_file == "data/head_calibration.txt"
+    assert args.runtime_head_prior_load == "data/head_prior.pt"
+    assert args.runtime_head_prior_save == "artifacts/head_prior.pt"
     assert args.runtime_head_prior_metric == "attention_entropy"
     assert args.runtime_head_prior_alpha == 0.25
     assert args.per_head_position_budget_mode == "attention_peak"
@@ -1434,6 +1440,27 @@ def test_translated_bit_breakdown_splits_payload_and_selector_bits() -> None:
         kv_transport="k_only",
         position_selection_ratio=0.5,
     ) == pytest.approx(payload_bits + selector_bits)
+
+
+def test_save_and_load_head_profile_bundle_resamples_layers(tmp_path) -> None:
+    bundle_path = tmp_path / "head_prior.pt"
+    profiles = [
+        torch.tensor([1.0, 3.0], dtype=torch.float32),
+        torch.tensor([2.0, 2.0], dtype=torch.float32),
+    ]
+
+    evaluate._save_head_profile_bundle(
+        str(bundle_path),
+        profiles,
+        metadata={"source_model": "src", "target_model": "tgt"},
+    )
+    loaded, metadata = evaluate._load_head_profile_bundle(str(bundle_path), target_layers=4)
+
+    assert len(loaded) == 4
+    assert all(profile.ndim == 1 for profile in loaded)
+    assert metadata["source_model"] == "src"
+    assert metadata["stored_layer_count"] == 2
+    assert metadata["resampled_to_layer_count"] == 4
 
 
 def test_apply_per_head_position_selection_prefers_top_positions_per_head() -> None:

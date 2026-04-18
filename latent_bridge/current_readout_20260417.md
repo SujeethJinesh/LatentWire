@@ -274,6 +274,11 @@ Larger held-out follow-up on the same Qwen pair (`data/gsm8k_100.jsonl`):
   - method-only wins `2`
   - baseline-only wins `0`
   - McNemar `p=0.4795`
+- fixed prior vs shuffled prior:
+  - delta `+0.030000`
+  - method-only wins `3`
+  - baseline-only wins `0`
+  - McNemar `p=0.2482`
 - fixed prior vs old fixed position prior:
   - delta `+0.040000`
   - method-only wins `4`
@@ -285,6 +290,38 @@ Updated interpretation:
 - The fixed per-head prior branch now has **directional support on both GSM8K-70 and GSM8K-100**.
 - It still falls short of text-to-text, so this is not yet a “replace text communication” result.
 - It remains best described as a **same-pair calibrated sparse key-routing mechanism**, not a general cross-model head-budget prior.
+
+Saved-prior transfer matrix (`gsm8k_eval_70`, bundle-based runs):
+
+- Qwen prior -> Qwen target: `0.085714`
+- Qwen prior -> DeepSeek target: `0.014286`
+- DeepSeek prior -> DeepSeek target: `0.014286`
+- DeepSeek prior -> Qwen target: `0.057143`
+
+Paired comparisons:
+
+- Qwen prior on DeepSeek vs DeepSeek native prior:
+  - delta `0.000000`
+  - method-only wins `1`
+  - baseline-only wins `1`
+  - McNemar `p=1.0000`
+- DeepSeek prior on Qwen vs Qwen native prior:
+  - delta `-0.028571`
+  - method-only wins `0`
+  - baseline-only wins `2`
+  - McNemar `p=0.4795`
+- DeepSeek prior on Qwen vs Qwen uniform sparse baseline:
+  - delta `0.000000`
+  - method-only wins `0`
+  - baseline-only wins `0`
+  - McNemar `p=1.0000`
+
+Transfer read:
+
+- The head-prior story is now clearly **asymmetric**.
+- The Qwen-native prior is the strongest branch and does not transfer to DeepSeek.
+- The DeepSeek-native prior is weak on DeepSeek but partially lifts Qwen to the old uniform-sparse level.
+- So the current best claim is **pair-conditioned calibrated head budgeting**, not a universal transferable head prior.
     - baseline-only wins `3`
     - McNemar `p=0.6171`
   - live+prior blend vs live `attention_peak`:
