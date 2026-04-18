@@ -1355,12 +1355,17 @@ def test_position_selection_recency_metric_prefers_latest_positions() -> None:
     assert torch.allclose(scores, torch.tensor([1.0, 2.0, 3.0]))
 
 
-def test_runtime_head_scores_support_attention_peak_and_random() -> None:
-    attention_map = torch.tensor([[0.9, 0.1], [0.4, 0.6]], dtype=torch.float32)
+def test_runtime_head_scores_support_attention_peak_retrieval_and_random() -> None:
+    attention_map = torch.tensor([[0.9, 0.1], [0.1, 0.9]], dtype=torch.float32)
 
     peak = evaluate._runtime_head_scores(
         attention_map,
         metric="attention_peak",
+        layer_idx=0,
+    )
+    retrieval = evaluate._runtime_head_scores(
+        attention_map,
+        metric="retrieval_peak",
         layer_idx=0,
     )
     first = evaluate._runtime_head_scores(
@@ -1374,7 +1379,8 @@ def test_runtime_head_scores_support_attention_peak_and_random() -> None:
         layer_idx=2,
     )
 
-    assert torch.allclose(peak, torch.tensor([0.9, 0.6]))
+    assert torch.allclose(peak, torch.tensor([0.9, 0.9]))
+    assert float(retrieval[1]) > float(retrieval[0])
     assert torch.allclose(first, second)
 
 

@@ -1218,5 +1218,49 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 392601
+  },
+  {
+    "num": 137,
+    "slug": "maximal_gauge_symmetry_in_transformer_architectures",
+    "url": "https://openreview.net/forum?id=K1df8mmncF",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/137_maximal_gauge_symmetry_in_transformer_architectures.md",
+    "content_type": "text/markdown",
+    "status": "link_note"
+  },
+  {
+    "num": 138,
+    "slug": "alignment_attention_by_matching_key_and_query_distributions",
+    "url": "https://arxiv.org/pdf/2110.12567.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/138_alignment_attention_by_matching_key_and_query_distributions.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 945642
+  },
+  {
+    "num": 139,
+    "slug": "q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression",
+    "url": "https://arxiv.org/pdf/2503.02812.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/139_q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 4595394
+  },
+  {
+    "num": 140,
+    "slug": "graph_optimal_transport_for_cross_domain_alignment",
+    "url": "https://arxiv.org/pdf/2006.14744.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/140_graph_optimal_transport_for_cross_domain_alignment.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1635370
+  },
+  {
+    "num": 141,
+    "slug": "linear_shrinkage_estimation_of_covariance_matrices_using_low_complexity_cross_validation",
+    "url": "https://arxiv.org/pdf/1810.08360.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/141_linear_shrinkage_estimation_of_covariance_matrices_using_low_complexity_cross_validation.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 435721
   }
 ]

@@ -24,6 +24,11 @@
   - `seed1 = 0.0400`
   - `seed2 = 0.0200`
   on `gsm8k_100`, so the earlier single-seed live-sparsity signal also does not currently scale into a robust headline result.
+- A direct retrieval-head-style heuristic also fails to rescue the method:
+  - Qwen -> Qwen, `gsm8k_100`: `0.0300`
+  - Qwen -> Qwen, `svamp_eval_70`: `0.071429`
+  - Qwen -> DeepSeek, `gsm8k_eval_70`: `0.014286`
+  so simple retrieval-peak scoring is another **negative boundary**, not yet a stable mechanistic solution.
 - The saved-prior transfer matrix is now clearly **asymmetric**:
   - Qwen prior -> Qwen is strong
   - Qwen prior -> DeepSeek collapses
@@ -38,8 +43,8 @@
 - The next mechanism question is no longer “keys or values?” We answered that directionally. It is now:
   - **which heads get the sparse key budget**
   - **how to stabilize that budget without diluting the useful calibrated prior**
-  - **whether that budget should be shrinkage-regularized, retrieval-head-specific, or attention-logit-preserving**
-  - **whether the useful structure is retrieval-head-specific or attention-logit-preserving**
+  - **whether that budget should be shrinkage-regularized, permutation-matched, or attention-logit-preserving**
+  - **whether the useful structure is retrieval-head-specific, permutation-matched, or attention-logit-preserving**
 
 ## COLM workshop path
 
@@ -101,8 +106,8 @@ What we still need:
 1. Treat both the fixed-prior and current live-sparse branches as mechanism clues, not final methods.
 2. Keep the DeepSeek pair as the main transfer stress test instead of widening to many models too early.
 3. Implement the next method pivots suggested by the literature:
-   - retrieval-head-only routing
-   - attention-logit-preserving head ranking
-   - OT / permutation head matching
+   - OT / permutation or gauge-aware head matching
+   - attention-logit-preserving / QK-geometry head ranking
+   - retrieval-head routing only after the head space is made more canonical
    - causal head scoring
 4. Preserve the negative controls and failure cases in the main paper, not just the appendix.

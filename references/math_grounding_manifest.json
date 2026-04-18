@@ -568,5 +568,35 @@
     "slug": "contributions_of_transformer_attention_heads_in_multi_and_cross_lingual_tasks",
     "url": "https://arxiv.org/pdf/2108.08375.pdf",
     "reason": "Cross-task and cross-lingual head contribution analysis supports the claim that head importance can shift systematically across settings, complicating static prior reuse."
+  },
+  {
+    "num": 137,
+    "slug": "maximal_gauge_symmetry_in_transformer_architectures",
+    "url": "https://openreview.net/forum?id=K1df8mmncF",
+    "reason": "Gauge symmetry gives a direct mathematical explanation for why fixed head identities can be unstable across seeds and model pairs, motivating explicit head matching before routing."
+  },
+  {
+    "num": 138,
+    "slug": "alignment_attention_by_matching_key_and_query_distributions",
+    "url": "https://arxiv.org/pdf/2110.12567.pdf",
+    "reason": "Matching key/query distributions is a direct reference for attention-logit-preserving head ranking and QK-geometry-aware alignment."
+  },
+  {
+    "num": 139,
+    "slug": "q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression",
+    "url": "https://arxiv.org/pdf/2503.02812.pdf",
+    "reason": "Q-Filters is the clearest direct reference for using QK geometry, rather than raw cache statistics, to preserve useful sparse attention structure."
+  },
+  {
+    "num": 140,
+    "slug": "graph_optimal_transport_for_cross_domain_alignment",
+    "url": "https://arxiv.org/pdf/2006.14744.pdf",
+    "reason": "Graph optimal transport supplies a principled cross-space matching objective for aligning head or layer structure across different model geometries."
+  },
+  {
+    "num": 141,
+    "slug": "linear_shrinkage_estimation_of_covariance_matrices_using_low_complexity_cross_validation",
+    "url": "https://arxiv.org/pdf/1810.08360.pdf",
+    "reason": "Linear covariance shrinkage is a lightweight statistical template for stabilizing noisy head-prior estimates across calibration seeds."
   }
 ]

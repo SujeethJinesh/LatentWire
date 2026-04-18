@@ -188,6 +188,7 @@ key disagreement, so it explicitly favors positions that are both query-relevant
 and likely to change the target's retrieval geometry.
 For head-aware retrieval routing, add
 `--per-head-position-budget-mode attention_peak`, `attention_entropy`,
+`retrieval_peak`,
 `random`, `attention_prior`, `attention_prior_shuffled`, or
 `attention_blend` to spend the same overall position budget unevenly across
 active heads instead of giving every head the same keep ratio.
@@ -205,6 +206,7 @@ head profile; `uniform` shrinks toward a flat per-layer prior.
 For runtime retrieval-head ablations, add
 `--runtime-head-selection-ratio <r>` with
 `--runtime-head-selection-metric attention_peak`, `attention_entropy`,
+`retrieval_peak`,
 `random`, `attention_prior`, or `attention_blend`. Use
 `--runtime-head-prior-file <path>` to build a fixed calibration-derived head
 prior, and `--runtime-head-prior-alpha` to blend that prior with live
@@ -212,6 +214,8 @@ attention-based head scores. This keeps only a subset of the
 checkpoint-selected target heads at evaluation time and records per-layer
 `head_trace` metadata in the sidecar, including prior-overlap statistics when a
 fixed head prior is active.
+`retrieval_peak` scores heads by how sharply they focus on farther-back prefix
+positions, as a first retrieval-head-style routing heuristic.
 
 When `--prediction-output` is set, the evaluator also writes a sidecar file at
 `<prediction-output>.meta.json`. That sidecar stores the run config, per-method

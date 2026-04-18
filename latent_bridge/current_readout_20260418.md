@@ -13,6 +13,13 @@ also shows that the current fixed-prior branch is **not stable enough yet**:
 `seed0=0.0200`, `seed1=0.0700`, `seed2=0.0100` on `gsm8k_100`.
 The live query-aware sparse `k_only` branch also fails the same stability test
 on `gsm8k_100`: `seed0=0.0200`, `seed1=0.0400`, `seed2=0.0200`.
+A direct retrieval-head-style heuristic, `retrieval_peak`, also fails to
+rescue the method:
+- Qwen -> Qwen, `gsm8k_100`: `0.0300`
+- Qwen -> Qwen, `svamp_eval_70`: `0.071429`
+- Qwen -> DeepSeek, `gsm8k_eval_70`: `0.014286`
+So simple retrieval-head scoring is currently another **negative boundary**,
+not a stable new branch.
 
 ## Strongest Positive Regime
 
@@ -135,6 +142,25 @@ Interpretation:
 - So shrinkage is currently a **null or weak regularization result**, not a new
   positive method branch.
 
+## Retrieval-Head Routing Check
+
+Same sparse `k_only` Qwen protocol, but replacing the previous head-budget
+heuristics with `--per-head-position-budget-mode retrieval_peak`:
+
+- Qwen -> Qwen, `gsm8k_100`: `0.030000`
+- Qwen -> Qwen, `svamp_eval_70`: `0.071429`
+- Qwen -> DeepSeek, `gsm8k_eval_70`: `0.014286`
+
+Interpretation:
+
+- The simple retrieval-head heuristic does **not** stabilize the current method.
+- On `gsm8k_100`, it falls below target-alone (`0.0400`), below the older live
+  sparse branch (`0.0400`), and well below the fixed-prior branch (`0.0700`).
+- On SVAMP it only ties the existing boundary level rather than improving it.
+- On DeepSeek it remains weak, so it does not improve transfer either.
+- This means the next meaningful structure-aware pivots should target
+  **head matching or QK geometry**, not just a sharper retrieval heuristic.
+
 ## Seed Stability
 
 Fixed peak-based prior on `gsm8k_100`, same branch, same budget, recalibrated
@@ -163,6 +189,7 @@ Interpretation:
   - translated-only
   - text-to-text
 - Cross-family transfer is still weak.
+- Simple retrieval-head-style scoring is not enough on its own.
 
 ## What This Means For The Paper
 
@@ -187,10 +214,10 @@ paper only if the next replication steps succeed.
 2. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
    is stabilized across seeds.
 3. Next method pivots from the new literature:
-   - OT / permutation head matching across models
-   - causal head scoring
-   - retrieval-head-only routing
-   - attention-logit-preserving head ranking
+   - OT / permutation or gauge-aware head matching across models
+   - attention-logit-preserving or QK-geometry head ranking
+   - causal head scoring once the matching space is less noisy
+   - only then revisit retrieval-head routing with a stronger structure-aware score
 4. Keep SVAMP, ARC, cross-family transfer, and now seed instability in the
    paper as explicit failure boundaries.
 5. Treat the live query-aware sparse branch as another mechanism clue unless a

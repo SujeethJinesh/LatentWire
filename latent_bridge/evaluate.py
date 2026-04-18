@@ -315,14 +315,22 @@ def _runtime_head_scores(
     metric: str,
     layer_idx: int,
 ) -> torch.Tensor:
+    scores = attention_map.float()
+    probs = scores / scores.sum(dim=-1, keepdim=True).clamp_min(1e-8)
     if metric == "attention_peak":
-        return attention_map.float().max(dim=-1).values
+        return scores.max(dim=-1).values
     if metric == "attention_entropy":
-        probs = attention_map.float() / attention_map.float().sum(dim=-1, keepdim=True).clamp_min(1e-8)
         return (probs * probs.clamp_min(1e-8).log()).sum(dim=-1)
+    if metric == "retrieval_peak":
+        if scores.shape[-1] <= 1:
+            return scores.max(dim=-1).values
+        positions = torch.linspace(0.0, 1.0, steps=scores.shape[-1], device=scores.device, dtype=scores.dtype)
+        centroid = (probs * positions).sum(dim=-1)
+        peak = probs.max(dim=-1).values
+        return centroid * peak
     if metric == "random":
         gen = torch.Generator(device="cpu").manual_seed(91_001 + int(layer_idx))
-        return torch.rand(attention_map.shape[0], generator=gen, dtype=torch.float32).to(device=attention_map.device)
+        return torch.rand(scores.shape[0], generator=gen, dtype=torch.float32).to(device=scores.device)
     raise ValueError(f"Unknown runtime_head_selection_metric: {metric}")
 
 
@@ -569,6 +577,7 @@ def _head_trace(
     *,
     keep: int,
     prior_local_indices: torch.Tensor | None = None,
+    attention_map: torch.Tensor | None = None,
 ) -> dict[str, Any]:
     selected_head_ids = sorted(
         int(idx)
@@ -594,6 +603,19 @@ def _head_trace(
         prior_head_ids = sorted(int(idx) for idx in original_head_indices[prior_local_indices].detach().cpu().tolist())
         trace["prior_head_ids"] = prior_head_ids[:16]
         trace["prior_head_count_truncated"] = int(max(len(prior_head_ids) - 16, 0))
+    if attention_map is not None and attention_map.shape[-1] > 0 and keep_local_indices.numel() > 0:
+        selected_attention = attention_map[keep_local_indices].float()
+        probs = selected_attention / selected_attention.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+        positions = torch.linspace(
+            0.0,
+            1.0,
+            steps=selected_attention.shape[-1],
+            device=selected_attention.device,
+            dtype=selected_attention.dtype,
+        )
+        centroid = (probs * positions).sum(dim=-1)
+        trace["selected_head_centroid_mean"] = float(centroid.mean().item())
+        trace["selected_head_peak_mean"] = float(probs.max(dim=-1).values.mean().item())
     return trace
 
 
@@ -606,7 +628,7 @@ def _runtime_head_scores_with_prior(
     prior_alpha: float = 0.5,
 ) -> tuple[torch.Tensor, torch.Tensor | None]:
     prior_topk: torch.Tensor | None = None
-    if metric in {"attention_peak", "attention_entropy", "random"}:
+    if metric in {"attention_peak", "attention_entropy", "retrieval_peak", "random"}:
         if attention_map is None:
             raise ValueError(f"{metric} runtime head selection requires target attention maps")
         return _runtime_head_scores(attention_map, metric=metric, layer_idx=layer_idx), None
@@ -1881,6 +1903,7 @@ def _build_rotalign_prefix_state(
                 original_head_indices,
                 keep=keep_heads,
                 prior_local_indices=prior_keep_local,
+                attention_map=attention_map,
             )
             head_trace["target_layer"] = int(tgt_l)
             head_trace["source_layer"] = int(src_l)
@@ -2920,7 +2943,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--runtime-head-selection-metric",
-        choices=["attention_peak", "attention_entropy", "random", "attention_prior", "attention_blend"],
+        choices=["attention_peak", "attention_entropy", "retrieval_peak", "random", "attention_prior", "attention_blend"],
         default="attention_peak",
         help="How to rank heads when runtime_head_selection_ratio < 1.0.",
     )
@@ -2941,7 +2964,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--runtime-head-prior-metric",
-        choices=["attention_peak", "attention_entropy"],
+        choices=["attention_peak", "attention_entropy", "retrieval_peak"],
         default="attention_peak",
         help="How to score heads when building a fixed head prior from calibration prompts.",
     )
@@ -2969,6 +2992,7 @@ def parse_args() -> argparse.Namespace:
             "none",
             "attention_peak",
             "attention_entropy",
+            "retrieval_peak",
             "random",
             "attention_prior",
             "attention_prior_shuffled",
@@ -3059,6 +3083,7 @@ def main() -> None:
     runtime_head_attention_metrics = {
         "attention_peak",
         "attention_entropy",
+        "retrieval_peak",
         "attention_prior",
         "attention_blend",
     }

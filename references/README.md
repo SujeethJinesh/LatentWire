@@ -135,6 +135,15 @@ permutation, query-aware reranking, and cross-task head transfer:
 - `135_`: query-focused memory-aware reranking as a stronger live query-conditioned comparator.
 - `136_`: cross-lingual head contribution analysis as evidence that head importance can vary systematically across tasks and settings.
 
+Files `137_` through `141_` deepen the next stabilization loop around
+symmetry, QK geometry, OT matching, and statistical prior repair:
+
+- `137_`: gauge symmetry as a direct explanation for brittle fixed head identities and a motivation for explicit head matching.
+- `138_`: key/query distribution matching as a direct QK-geometry reference for attention-logit-preserving routing.
+- `139_`: QK-geometry filters as a direct sparse-selection reference for preserving useful attention structure.
+- `140_`: graph optimal transport as a principled head-matching objective across non-identical spaces.
+- `141_`: linear covariance shrinkage as a lighter-weight statistical stabilizer for noisy head priors.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
