@@ -186,6 +186,15 @@ attention-prior selector controls on the current GSM8K slices. The new
 `attention_disagreement` option multiplies live target attention by translated
 key disagreement, so it explicitly favors positions that are both query-relevant
 and likely to change the target's retrieval geometry.
+For head-aware retrieval routing, add
+`--per-head-position-budget-mode attention_peak`, `attention_entropy`,
+`random`, `attention_prior`, `attention_prior_shuffled`, or
+`attention_blend` to spend the same overall position budget unevenly across
+active heads instead of giving every head the same keep ratio.
+`attention_prior`, `attention_prior_shuffled`, and `attention_blend` reuse the
+fixed head prior built from `--runtime-head-prior-file`.
+`attention_prior_shuffled` is the budget-matched null that keeps the prior's
+mass profile but permutes which heads receive it.
 For runtime retrieval-head ablations, add
 `--runtime-head-selection-ratio <r>` with
 `--runtime-head-selection-metric attention_peak`, `attention_entropy`,

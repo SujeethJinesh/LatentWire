@@ -337,6 +337,23 @@ def _normalize_selection_scores(scores: torch.Tensor) -> torch.Tensor:
     return (values - min_value) / (max_value - min_value).clamp_min(1e-8)
 
 
+def _deterministic_score_permutation(
+    scores: torch.Tensor,
+    *,
+    layer_idx: int,
+    seed_offset: int = 0,
+) -> torch.Tensor:
+    values = scores.float().view(-1)
+    if values.numel() <= 1:
+        return values
+    gen = torch.Generator(device="cpu").manual_seed(101_113 + seed_offset + int(layer_idx))
+    perm = torch.randperm(values.numel(), generator=gen)
+    identity = torch.arange(values.numel())
+    if torch.equal(perm, identity):
+        perm = torch.roll(perm, shifts=1)
+    return values[perm.to(device=values.device)]
+
+
 def _resample_head_profile(profile: torch.Tensor, target_heads: int) -> torch.Tensor:
     if target_heads <= 0:
         raise ValueError("target_heads must be positive")
@@ -447,6 +464,11 @@ def _runtime_head_scores_with_prior(
         if prior_scores is None:
             raise ValueError("attention_prior runtime head selection requires fixed_head_profiles")
         return _normalize_selection_scores(prior_scores), None
+    if metric == "attention_prior_shuffled":
+        if prior_scores is None:
+            raise ValueError("attention_prior_shuffled runtime head selection requires fixed_head_profiles")
+        shuffled_scores = _deterministic_score_permutation(prior_scores, layer_idx=layer_idx, seed_offset=7_009)
+        return _normalize_selection_scores(shuffled_scores), None
     if metric == "attention_blend":
         if attention_map is None:
             raise ValueError("attention_blend runtime head selection requires target attention maps")
@@ -799,6 +821,18 @@ def prediction_record_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
         if bits:
             method_summary["avg_bits"] = sum(bits) / len(bits)
             method_summary["avg_bytes"] = method_summary["avg_bits"] / 8.0
+        payload_bits = [float(row["payload_bits"]) for row in rows if row.get("payload_bits") is not None]
+        if payload_bits:
+            method_summary["payload_bits_avg"] = sum(payload_bits) / len(payload_bits)
+            method_summary["payload_bytes_avg"] = method_summary["payload_bits_avg"] / 8.0
+        selector_bits = [float(row["selector_bits"]) for row in rows if row.get("selector_bits") is not None]
+        if selector_bits:
+            method_summary["selector_bits_avg"] = sum(selector_bits) / len(selector_bits)
+            method_summary["selector_bytes_avg"] = method_summary["selector_bits_avg"] / 8.0
+        metadata_bits = [float(row["metadata_bits"]) for row in rows if row.get("metadata_bits") is not None]
+        if metadata_bits:
+            method_summary["metadata_bits_avg"] = sum(metadata_bits) / len(metadata_bits)
+            method_summary["metadata_bytes_avg"] = method_summary["metadata_bits_avg"] / 8.0
         traces = [row.get("selector_trace") for row in rows if row.get("selector_trace")]
         if traces:
             flattened = [layer for trace in traces for layer in trace]
@@ -836,6 +870,25 @@ def prediction_record_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
                     method_summary["head_score_entropy_avg"] = sum(entropies) / len(entropies)
                 if prior_overlaps:
                     method_summary["head_prior_overlap_jaccard_avg"] = sum(prior_overlaps) / len(prior_overlaps)
+        head_budget_traces = [row.get("head_budget_trace") for row in rows if row.get("head_budget_trace")]
+        if head_budget_traces:
+            flattened_budgets = [layer for trace in head_budget_traces for layer in trace]
+            if flattened_budgets:
+                keep_fractions = [
+                    float(layer["head_budget_keep_fraction"])
+                    for layer in flattened_budgets
+                    if "head_budget_keep_fraction" in layer
+                ]
+                nonzero_fractions = [
+                    float(layer["head_budget_nonzero_fraction"])
+                    for layer in flattened_budgets
+                    if "head_budget_nonzero_fraction" in layer
+                ]
+                method_summary["head_budget_layers_logged"] = len(flattened_budgets)
+                if keep_fractions:
+                    method_summary["head_budget_keep_fraction_avg"] = sum(keep_fractions) / len(keep_fractions)
+                if nonzero_fractions:
+                    method_summary["head_budget_nonzero_fraction_avg"] = sum(nonzero_fractions) / len(nonzero_fractions)
         summary[method] = method_summary
     return summary
 
@@ -1015,6 +1068,18 @@ def _selected_token_count(seq_len: int, position_selection_ratio: float) -> int:
     return max(1, min(seq_len, int(round(seq_len * ratio))))
 
 
+def _selected_total_token_budget(seq_len: int, head_count: int, position_selection_ratio: float) -> int:
+    if seq_len <= 0 or head_count <= 0:
+        return 0
+    ratio = float(position_selection_ratio)
+    total = seq_len * head_count
+    if ratio >= 1.0:
+        return total
+    if ratio <= 0.0:
+        return 1
+    return max(1, min(total, int(round(total * ratio))))
+
+
 def _position_selection_index_bits(seq_len: int, selected_tokens: int) -> float:
     if seq_len <= 1 or selected_tokens >= seq_len:
         return 0.0
@@ -1037,16 +1102,18 @@ def _bits_per_kv_tensor(
     return float(seq_len * 32 * d_t)
 
 
-def _translated_bits(
+def _translated_bit_breakdown(
     translator: RotAlignKVTranslator,
     seq_len: int,
     quantize: bool,
     *,
     active_k_head_counts: list[int] | None = None,
     active_v_head_counts: list[int] | None = None,
+    active_k_token_counts: list[list[int]] | None = None,
+    active_v_token_counts: list[list[int]] | None = None,
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
-) -> float:
+) -> tuple[float, float]:
     transport_k = kv_transport in {"both", "k_only"}
     transport_v = kv_transport in {"both", "v_only"}
     selected_layers = translator.selected_layer_indices()
@@ -1056,14 +1123,72 @@ def _translated_bits(
         active_v_head_counts = [translator.selected_head_count(layer_idx) for layer_idx in selected_layers]
     active_k_head_counts = [] if not transport_k or active_k_head_counts is None else active_k_head_counts
     active_v_head_counts = [] if not transport_v or active_v_head_counts is None else active_v_head_counts
+    if active_k_token_counts is not None or active_v_token_counts is not None:
+        active_k_token_counts = [] if not transport_k or active_k_token_counts is None else active_k_token_counts
+        active_v_token_counts = [] if not transport_v or active_v_token_counts is None else active_v_token_counts
+        payload_bits = float(
+            sum(
+                _bits_per_kv_tensor(translator, int(token_count), quantize, selected_heads=1)
+                for layer_counts in active_k_token_counts
+                for token_count in layer_counts
+                if int(token_count) > 0
+            )
+            + sum(
+                _bits_per_kv_tensor(translator, int(token_count), quantize, selected_heads=1)
+                for layer_counts in active_v_token_counts
+                for token_count in layer_counts
+                if int(token_count) > 0
+            )
+        )
+        selector_bits = float(
+            sum(
+                _position_selection_index_bits(seq_len, int(token_count))
+                for layer_counts in active_k_token_counts
+                for token_count in layer_counts
+                if int(token_count) > 0
+            )
+            + sum(
+                _position_selection_index_bits(seq_len, int(token_count))
+                for layer_counts in active_v_token_counts
+                for token_count in layer_counts
+                if int(token_count) > 0
+            )
+        )
+        return payload_bits, selector_bits
     selected_tokens = _selected_token_count(seq_len, position_selection_ratio)
     payload_bits = float(
         sum(_bits_per_kv_tensor(translator, selected_tokens, quantize, selected_heads=count) for count in active_k_head_counts)
         + sum(_bits_per_kv_tensor(translator, selected_tokens, quantize, selected_heads=count) for count in active_v_head_counts)
     )
     layer_count = max(len(active_k_head_counts), len(active_v_head_counts))
-    index_bits = float(layer_count) * _position_selection_index_bits(seq_len, selected_tokens)
-    return payload_bits + index_bits
+    selector_bits = float(layer_count) * _position_selection_index_bits(seq_len, selected_tokens)
+    return payload_bits, selector_bits
+
+
+def _translated_bits(
+    translator: RotAlignKVTranslator,
+    seq_len: int,
+    quantize: bool,
+    *,
+    active_k_head_counts: list[int] | None = None,
+    active_v_head_counts: list[int] | None = None,
+    active_k_token_counts: list[list[int]] | None = None,
+    active_v_token_counts: list[list[int]] | None = None,
+    kv_transport: str = "both",
+    position_selection_ratio: float = 1.0,
+) -> float:
+    payload_bits, selector_bits = _translated_bit_breakdown(
+        translator,
+        seq_len,
+        quantize,
+        active_k_head_counts=active_k_head_counts,
+        active_v_head_counts=active_v_head_counts,
+        active_k_token_counts=active_k_token_counts,
+        active_v_token_counts=active_v_token_counts,
+        kv_transport=kv_transport,
+        position_selection_ratio=position_selection_ratio,
+    )
+    return payload_bits + selector_bits
 
 
 def _communication_bits(
@@ -1077,6 +1202,8 @@ def _communication_bits(
     *,
     active_k_head_counts: list[int] | None = None,
     active_v_head_counts: list[int] | None = None,
+    active_k_token_counts: list[list[int]] | None = None,
+    active_v_token_counts: list[list[int]] | None = None,
 ) -> float:
     if translated_kv_control != "real":
         return 0.0
@@ -1087,6 +1214,8 @@ def _communication_bits(
             quantize,
             active_k_head_counts=active_k_head_counts,
             active_v_head_counts=active_v_head_counts,
+            active_k_token_counts=active_k_token_counts,
+            active_v_token_counts=active_v_token_counts,
             kv_transport=kv_transport,
             position_selection_ratio=position_selection_ratio,
         )
@@ -1110,6 +1239,8 @@ def _communication_bits(
         quantize,
         active_k_head_counts=active_k_head_counts,
         active_v_head_counts=active_v_head_counts,
+        active_k_token_counts=active_k_token_counts,
+        active_v_token_counts=active_v_token_counts,
         kv_transport=kv_transport,
         position_selection_ratio=position_selection_ratio,
     )
@@ -1245,6 +1376,125 @@ def _selector_trace(
     return trace
 
 
+def _allocate_per_head_token_budgets(
+    head_scores: torch.Tensor,
+    *,
+    seq_len: int,
+    position_selection_ratio: float,
+) -> torch.Tensor:
+    head_scores = head_scores.float().view(-1)
+    if head_scores.numel() == 0:
+        return torch.zeros(0, dtype=torch.long, device=head_scores.device)
+    total_keep = _selected_total_token_budget(seq_len, head_scores.numel(), position_selection_ratio)
+    if total_keep >= seq_len * head_scores.numel():
+        return torch.full((head_scores.numel(),), seq_len, dtype=torch.long, device=head_scores.device)
+
+    weights = _normalize_selection_scores(head_scores)
+    if float(weights.sum().abs()) < 1e-8:
+        weights = torch.ones_like(weights) / float(max(weights.numel(), 1))
+    else:
+        weights = weights / weights.sum().clamp_min(1e-8)
+
+    raw = weights * float(total_keep)
+    keep = torch.floor(raw).to(dtype=torch.long)
+    keep = keep.clamp(min=0, max=seq_len)
+    remainder = int(total_keep - int(keep.sum().item()))
+    if remainder > 0:
+        fractional = raw - keep.float()
+        order = torch.argsort(fractional, descending=True)
+        for idx in order.detach().cpu().tolist():
+            if remainder <= 0:
+                break
+            if int(keep[idx].item()) >= seq_len:
+                continue
+            keep[idx] += 1
+            remainder -= 1
+    return keep
+
+
+def _head_budget_trace(
+    head_scores: torch.Tensor,
+    head_keep_counts: torch.Tensor,
+    active_head_indices: torch.Tensor,
+    *,
+    seq_len: int,
+) -> dict[str, Any]:
+    counts = [int(value) for value in head_keep_counts.detach().cpu().tolist()]
+    active_heads = [int(idx) for idx in active_head_indices.detach().cpu().tolist()]
+    total_keep = int(sum(counts))
+    weights = _normalize_selection_scores(head_scores.float())
+    weights = weights / weights.sum().clamp_min(1e-8)
+    keep_weights = head_keep_counts.float()
+    if float(keep_weights.sum().abs()) > 1e-8:
+        keep_probs = keep_weights / keep_weights.sum().clamp_min(1e-8)
+        keep_entropy = float((-(keep_probs * keep_probs.clamp_min(1e-8).log()).sum()).item())
+    else:
+        keep_entropy = 0.0
+    preview = [
+        {"head": head, "keep": keep}
+        for head, keep in zip(active_heads[:8], counts[:8])
+    ]
+    return {
+        "head_budget_total_keep": total_keep,
+        "head_budget_keep_fraction": float(total_keep / max(seq_len * max(len(counts), 1), 1)),
+        "head_budget_nonzero_heads": int(sum(1 for value in counts if value > 0)),
+        "head_budget_nonzero_fraction": float(sum(1 for value in counts if value > 0) / max(len(counts), 1)),
+        "head_budget_score_entropy": float((-(weights * weights.clamp_min(1e-8).log()).sum()).item()),
+        "head_budget_keep_entropy": keep_entropy,
+        "head_budget_preview": preview,
+        "head_budget_preview_truncated": int(max(len(counts) - len(preview), 0)),
+    }
+
+
+def _apply_per_head_position_selection(
+    K_t: torch.Tensor,
+    V_t: torch.Tensor,
+    K_hat: torch.Tensor,
+    V_hat: torch.Tensor,
+    *,
+    protocol: str,
+    kv_transport: str,
+    position_selection_ratio: float,
+    head_scores: torch.Tensor,
+    per_head_position_scores: torch.Tensor,
+    active_head_indices: torch.Tensor,
+    return_trace: bool = False,
+) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, dict[str, Any], torch.Tensor]:
+    seq_len = K_hat.shape[2]
+    keep_counts = _allocate_per_head_token_budgets(
+        head_scores,
+        seq_len=seq_len,
+        position_selection_ratio=position_selection_ratio,
+    )
+    if int(keep_counts.sum().item()) >= seq_len * max(int(active_head_indices.numel()), 1):
+        trace = _head_budget_trace(head_scores, keep_counts, active_head_indices, seq_len=seq_len)
+        return (K_hat, V_hat, trace, keep_counts) if return_trace else (K_hat, V_hat)
+
+    full_mask = torch.zeros(
+        K_hat.shape[1],
+        seq_len,
+        dtype=torch.bool,
+        device=K_hat.device,
+    )
+    for local_idx, keep in enumerate(keep_counts.detach().cpu().tolist()):
+        if keep <= 0:
+            continue
+        positions = torch.topk(per_head_position_scores[local_idx], k=int(keep), largest=True).indices
+        full_mask[active_head_indices[local_idx], positions] = True
+    mask = full_mask.view(1, full_mask.shape[0], seq_len, 1)
+
+    if protocol == "translated_only":
+        fill_k = torch.zeros_like(K_hat)
+        fill_v = torch.zeros_like(V_hat)
+    else:
+        fill_k = K_t
+        fill_v = V_t
+    selected_k = torch.where(mask, K_hat, fill_k)
+    selected_v = torch.where(mask, V_hat, fill_v)
+    trace = _head_budget_trace(head_scores, keep_counts, active_head_indices, seq_len=seq_len)
+    return (selected_k, selected_v, trace, keep_counts) if return_trace else (selected_k, selected_v)
+
+
 def _apply_position_selection(
     K_t: torch.Tensor,
     V_t: torch.Tensor,
@@ -1314,6 +1564,7 @@ def _build_rotalign_prefix_state(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    per_head_position_budget_mode: str = "none",
 ) -> tuple[PrefixState, dict[str, float]]:
     tgt_prompt_ids = target_tokenizer(target_prompt, return_tensors="pt").input_ids.to(device)
     tgt_prefix_ids, tgt_last_token = _split_prompt_prefix(tgt_prompt_ids)
@@ -1346,6 +1597,8 @@ def _build_rotalign_prefix_state(
     ) or (
         runtime_head_selection_ratio < 1.0
         and runtime_head_selection_metric in runtime_head_attention_metrics
+    ) or (
+        per_head_position_budget_mode != "none"
     ):
         layer_attention_maps = _last_token_attention_maps(
             target_model,
@@ -1375,14 +1628,21 @@ def _build_rotalign_prefix_state(
         raise ValueError(
             f"{runtime_head_selection_metric} runtime head selection requires fixed_head_profiles"
         )
+    if per_head_position_budget_mode in {"attention_prior", "attention_prior_shuffled", "attention_blend"} and fixed_head_profiles is None:
+        raise ValueError(
+            f"{per_head_position_budget_mode} per-head position budgets require fixed_head_profiles"
+        )
 
     fused_pkv: list[tuple[torch.Tensor, torch.Tensor]] = []
     selector_layers: list[dict[str, Any]] = []
     head_layers: list[dict[str, Any]] = []
+    head_budget_layers: list[dict[str, Any]] = []
     layer_runtime_head_counts = [
         translator.selected_head_count(layer_idx)
         for layer_idx in range(translator.config.num_tgt_layers)
     ]
+    active_k_token_counts: list[list[int]] = []
+    active_v_token_counts: list[list[int]] = []
     for tgt_l in range(translator.config.num_tgt_layers):
         src_l = translator.layer_map[tgt_l]
         K_s, V_s = src_pkv[src_l]
@@ -1404,23 +1664,27 @@ def _build_rotalign_prefix_state(
         K_t_aligned, K_hat = _tail_align_pair(K_t, K_hat.to(dtype=K_t.dtype))
         V_t_aligned, V_hat = _tail_align_pair(V_t, V_hat.to(dtype=V_t.dtype))
         runtime_position_scores: torch.Tensor | None = None
-        if runtime_head_selection_ratio < 1.0:
-            attention_map = None
-            if layer_attention_maps is not None:
-                attention_map = layer_attention_maps[tgt_l][:, -K_t_aligned.shape[2] :]
-            original_head_indices = _translator_selected_head_indices(
-                translator,
-                tgt_l,
-                device=K_t_aligned.device,
+        active_head_indices = _translator_selected_head_indices(
+            translator,
+            tgt_l,
+            device=K_t_aligned.device,
+        )
+        active_attention_map = (
+            layer_attention_maps[tgt_l][:, -K_t_aligned.shape[2] :]
+            if layer_attention_maps is not None
+            else None
+        )
+        prior_scores = None
+        if fixed_head_profiles is not None:
+            prior_scores = _resample_head_profile(
+                fixed_head_profiles[tgt_l].to(device=K_t_aligned.device),
+                active_head_indices.numel(),
             )
+        if runtime_head_selection_ratio < 1.0:
+            attention_map = active_attention_map
+            original_head_indices = active_head_indices
             available_heads = attention_map.shape[0] if attention_map is not None else original_head_indices.numel()
             keep_heads = _selected_head_count(available_heads, runtime_head_selection_ratio)
-            prior_scores = None
-            if fixed_head_profiles is not None:
-                prior_scores = _resample_head_profile(
-                    fixed_head_profiles[tgt_l].to(device=K_t_aligned.device),
-                    original_head_indices.numel(),
-                )
             head_scores, prior_ranking = _runtime_head_scores_with_prior(
                 attention_map,
                 metric=runtime_head_selection_metric,
@@ -1469,39 +1733,97 @@ def _build_rotalign_prefix_state(
                 head_trace["prior_alpha"] = float(runtime_head_prior_alpha)
             head_layers.append(head_trace)
             layer_runtime_head_counts[tgt_l] = int(full_head_mask.sum().item())
+            active_head_indices = original_head_indices[keep_local]
+            if attention_map is not None:
+                active_attention_map = attention_map[keep_local]
+            if prior_scores is not None:
+                prior_scores = prior_scores[keep_local]
         elif layer_attention_maps is not None:
             runtime_position_scores = layer_attention_maps[tgt_l][-K_t_aligned.shape[2] :].mean(dim=0)
-        K_hat, V_hat, selector_trace = _apply_position_selection(
-            K_t_aligned,
-            V_t_aligned,
-            K_hat,
-            V_hat,
-            protocol=protocol,
-            kv_transport=kv_transport,
-            position_selection_ratio=position_selection_ratio,
-            position_selection_metric=position_selection_metric,
-            position_scores=(
-                runtime_position_scores
-                if runtime_position_scores is not None
-                else (
-                    source_layer_position_scores[src_l][-K_t_aligned.shape[2] :]
-                    if source_layer_position_scores is not None
+        if per_head_position_budget_mode != "none" and position_selection_ratio < 1.0:
+            if active_attention_map is None:
+                raise ValueError("per-head position budgets require target attention maps")
+            head_budget_scores, _ = _runtime_head_scores_with_prior(
+                active_attention_map,
+                metric=per_head_position_budget_mode,
+                layer_idx=tgt_l,
+                prior_scores=prior_scores,
+                prior_alpha=runtime_head_prior_alpha,
+            )
+            K_hat, V_hat, head_budget_trace, keep_counts = _apply_per_head_position_selection(
+                K_t_aligned,
+                V_t_aligned,
+                K_hat,
+                V_hat,
+                protocol=protocol,
+                kv_transport=kv_transport,
+                position_selection_ratio=position_selection_ratio,
+                head_scores=head_budget_scores,
+                per_head_position_scores=active_attention_map,
+                active_head_indices=active_head_indices,
+                return_trace=True,
+            )
+            head_budget_trace["target_layer"] = int(tgt_l)
+            head_budget_trace["source_layer"] = int(src_l)
+            head_budget_trace["metric"] = per_head_position_budget_mode
+            head_budget_layers.append(head_budget_trace)
+            selector_layers.append(
+                {
+                    "target_layer": int(tgt_l),
+                    "source_layer": int(src_l),
+                    "metric": f"per_head_{per_head_position_budget_mode}",
+                    "keep_fraction": float(
+                        keep_counts.sum().item()
+                        / max(K_t_aligned.shape[2] * max(active_head_indices.numel(), 1), 1)
+                    ),
+                }
+            )
+            keep_list = [int(value) for value in keep_counts.detach().cpu().tolist()]
+            gate_k_now, gate_v_now = translator.gate_value(tgt_l)
+            if (
+                translator.is_layer_selected(tgt_l)
+                and kv_transport in {"both", "k_only"}
+                and (protocol == "translated_only" or abs(gate_k_now) > 1e-5)
+            ):
+                active_k_token_counts.append(keep_list)
+            if (
+                translator.is_layer_selected(tgt_l)
+                and kv_transport in {"both", "v_only"}
+                and (protocol == "translated_only" or abs(gate_v_now) > 1e-5)
+            ):
+                active_v_token_counts.append(keep_list)
+        else:
+            K_hat, V_hat, selector_trace = _apply_position_selection(
+                K_t_aligned,
+                V_t_aligned,
+                K_hat,
+                V_hat,
+                protocol=protocol,
+                kv_transport=kv_transport,
+                position_selection_ratio=position_selection_ratio,
+                position_selection_metric=position_selection_metric,
+                position_scores=(
+                    runtime_position_scores
+                    if runtime_position_scores is not None
                     else (
-                        _resample_position_profile(
-                            fixed_position_profiles[tgt_l].to(device=K_t_aligned.device),
-                            K_t_aligned.shape[2],
+                        source_layer_position_scores[src_l][-K_t_aligned.shape[2] :]
+                        if source_layer_position_scores is not None
+                        else (
+                            _resample_position_profile(
+                                fixed_position_profiles[tgt_l].to(device=K_t_aligned.device),
+                                K_t_aligned.shape[2],
+                            )
+                            if fixed_position_profiles is not None
+                            else None
                         )
-                        if fixed_position_profiles is not None
-                        else None
                     )
-                )
-            ),
-            return_trace=True,
-        )
-        selector_trace["target_layer"] = int(tgt_l)
-        selector_trace["source_layer"] = int(src_l)
-        selector_trace["metric"] = position_selection_metric
-        selector_layers.append(selector_trace)
+                ),
+                return_trace=True,
+            )
+            selector_trace["target_layer"] = int(tgt_l)
+            selector_trace["source_layer"] = int(src_l)
+            selector_trace["metric"] = position_selection_metric
+            selector_layers.append(selector_trace)
         K_hat, V_hat = _apply_kv_transport(
             K_t_aligned,
             V_t_aligned,
@@ -1548,36 +1870,34 @@ def _build_rotalign_prefix_state(
             active_k_head_counts.append(selected_heads)
         if kv_transport in {"both", "v_only"} and (protocol == "translated_only" or abs(gate_v) > 1e-5):
             active_v_head_counts.append(selected_heads)
+    payload_bits, selector_bits = (0.0, 0.0)
+    if translated_kv_control == "real":
+        payload_bits, selector_bits = _translated_bit_breakdown(
+            translator,
+            seq_len,
+            quantize,
+            active_k_head_counts=active_k_head_counts,
+            active_v_head_counts=active_v_head_counts,
+            active_k_token_counts=active_k_token_counts if active_k_token_counts else None,
+            active_v_token_counts=active_v_token_counts if active_v_token_counts else None,
+            kv_transport=kv_transport,
+            position_selection_ratio=position_selection_ratio,
+        )
     prefix_state = PrefixState(
         past_key_values=tuple(fused_pkv),
         last_token=tgt_last_token,
         prefix_len=seq_len + 1,
     )
+    total_bits = float(payload_bits + selector_bits)
     return prefix_state, {
-        "bits": _communication_bits(
-            translator,
-            seq_len,
-            quantize,
-            translated_kv_control,
-            protocol,
-            kv_transport,
-            position_selection_ratio,
-            active_k_head_counts=active_k_head_counts,
-            active_v_head_counts=active_v_head_counts,
-        ),
-        "bytes": _communication_bits(
-            translator,
-            seq_len,
-            quantize,
-            translated_kv_control,
-            protocol,
-            kv_transport,
-            position_selection_ratio,
-            active_k_head_counts=active_k_head_counts,
-            active_v_head_counts=active_v_head_counts,
-        ) / 8.0,
+        "bits": total_bits,
+        "bytes": total_bits / 8.0,
+        "payload_bits": float(payload_bits),
+        "selector_bits": float(selector_bits),
+        "metadata_bits": float(selector_bits),
         "selector_trace": selector_layers,
         "head_trace": head_layers,
+        "head_budget_trace": head_budget_layers,
         "selected_target_layers": [int(layer) for layer in translator.selected_layer_indices()],
     }
 
@@ -1612,6 +1932,7 @@ def _search_per_layer_gates(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    per_head_position_budget_mode: str = "none",
 ) -> dict[str, list[float]]:
     """Coordinate-descent line search over per-layer K/V fusion gates.
 
@@ -1637,6 +1958,7 @@ def _search_per_layer_gates(
         if fixed_head_profiles is not None:
             eval_kwargs["fixed_head_profiles"] = fixed_head_profiles
         eval_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
+        eval_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
         if is_generation:
             return _eval_generation_rotalign(
                 source_model,
@@ -1920,6 +2242,7 @@ def eval_rotalign_kv(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    per_head_position_budget_mode: str = "none",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> float:
@@ -1936,6 +2259,7 @@ def eval_rotalign_kv(
         build_kwargs["runtime_head_selection_ratio"] = runtime_head_selection_ratio
         build_kwargs["runtime_head_selection_metric"] = runtime_head_selection_metric
         build_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
+        build_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
         prefix_state, stats = _build_rotalign_prefix_state(
             source_model,
             source_tokenizer,
@@ -1982,11 +2306,18 @@ def eval_rotalign_kv(
                 "runtime_head_selection_ratio": runtime_head_selection_ratio,
                 "runtime_head_selection_metric": runtime_head_selection_metric,
                 "runtime_head_prior_alpha": runtime_head_prior_alpha,
+                "per_head_position_budget_mode": per_head_position_budget_mode,
+                "bits": stats.get("bits"),
+                "bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
                 "communication_bits": stats.get("bits"),
                 "communication_bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
+                "payload_bits": stats.get("payload_bits"),
+                "selector_bits": stats.get("selector_bits"),
+                "metadata_bits": stats.get("metadata_bits"),
                 "selected_target_layers": stats.get("selected_target_layers"),
                 "selector_trace": stats.get("selector_trace"),
                 "head_trace": stats.get("head_trace"),
+                "head_budget_trace": stats.get("head_budget_trace"),
             },
         )
         if is_correct:
@@ -2156,6 +2487,7 @@ def _eval_generation_rotalign(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    per_head_position_budget_mode: str = "none",
 ) -> tuple[float, float, float]:
     eval_kwargs: dict[str, Any] = {}
     if fixed_position_profiles is not None:
@@ -2163,6 +2495,7 @@ def _eval_generation_rotalign(
     if fixed_head_profiles is not None:
         eval_kwargs["fixed_head_profiles"] = fixed_head_profiles
     eval_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
+    eval_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
     stats = _eval_generation_rotalign_with_stats(
         source_model,
         source_tokenizer,
@@ -2213,6 +2546,7 @@ def _eval_generation_rotalign_with_stats(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    per_head_position_budget_mode: str = "none",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> dict[str, float]:
@@ -2244,6 +2578,7 @@ def _eval_generation_rotalign_with_stats(
         build_kwargs["runtime_head_selection_ratio"] = runtime_head_selection_ratio
         build_kwargs["runtime_head_selection_metric"] = runtime_head_selection_metric
         build_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
+        build_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
         prefix_state, stats = _build_rotalign_prefix_state(
             source_model,
             source_tokenizer,
@@ -2294,12 +2629,17 @@ def _eval_generation_rotalign_with_stats(
                     "runtime_head_selection_ratio": runtime_head_selection_ratio,
                     "runtime_head_selection_metric": runtime_head_selection_metric,
                     "runtime_head_prior_alpha": runtime_head_prior_alpha,
+                    "per_head_position_budget_mode": per_head_position_budget_mode,
                     "bits": stats["bits"],
                     "bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
+                    "payload_bits": stats.get("payload_bits"),
+                    "selector_bits": stats.get("selector_bits"),
+                    "metadata_bits": stats.get("metadata_bits"),
                     "generated_tokens": trace.num_generated_tokens,
                     "selected_target_layers": stats.get("selected_target_layers"),
                     "selector_trace": stats.get("selector_trace"),
                     "head_trace": stats.get("head_trace"),
+                    "head_budget_trace": stats.get("head_budget_trace"),
                 },
         )
         total_bits += stats["bits"]
@@ -2439,6 +2779,20 @@ def parse_args() -> argparse.Namespace:
         help="Blend weight for the fixed head prior when runtime_head_selection_metric=attention_blend.",
     )
     p.add_argument(
+        "--per-head-position-budget-mode",
+        choices=[
+            "none",
+            "attention_peak",
+            "attention_entropy",
+            "random",
+            "attention_prior",
+            "attention_prior_shuffled",
+            "attention_blend",
+        ],
+        default="none",
+        help="Allocate the position budget unevenly across active heads instead of using one flat per-layer position ratio.",
+    )
+    p.add_argument(
         "--methods",
         nargs="+",
         default=["target", "t2t", "rotalign"],
@@ -2488,6 +2842,7 @@ def main() -> None:
     runtime_head_selection_ratio = float(getattr(args, "runtime_head_selection_ratio", 1.0))
     runtime_head_selection_metric = getattr(args, "runtime_head_selection_metric", "attention_peak")
     runtime_head_prior_alpha = float(getattr(args, "runtime_head_prior_alpha", 0.5))
+    per_head_position_budget_mode = getattr(args, "per_head_position_budget_mode", "none")
 
     dtype = {
         "float32": torch.float32,
@@ -2545,6 +2900,7 @@ def main() -> None:
             runtime_head_selection_ratio < 1.0
             and runtime_head_selection_metric in runtime_head_attention_metrics
         )
+        or per_head_position_budget_mode != "none"
     ):
         target_model_kwargs["attn_implementation"] = "eager"
     tgt = AutoModelForCausalLM.from_pretrained(
@@ -2574,13 +2930,16 @@ def main() -> None:
             bins=args.position_selection_prior_bins,
         )
     if (
-        runtime_head_selection_ratio < 1.0
-        and runtime_head_selection_metric in {"attention_prior", "attention_blend"}
+        (
+            runtime_head_selection_ratio < 1.0
+            and runtime_head_selection_metric in {"attention_prior", "attention_blend"}
+        )
+        or per_head_position_budget_mode in {"attention_prior", "attention_prior_shuffled", "attention_blend"}
     ):
         if not args.runtime_head_prior_file:
             raise ValueError(
                 "--runtime-head-prior-file is required when "
-                f"--runtime-head-selection-metric={runtime_head_selection_metric}"
+                "a fixed head prior is required"
             )
         head_prior_prompts = load_prompt_lines(args.runtime_head_prior_file)
         print(
@@ -2671,6 +3030,7 @@ def main() -> None:
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
+                    per_head_position_budget_mode=per_head_position_budget_mode,
                     **search_kwargs,
                 )
                 print(
@@ -2706,6 +3066,7 @@ def main() -> None:
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     fixed_head_profiles=fixed_head_profiles,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
+                    per_head_position_budget_mode=per_head_position_budget_mode,
                     records=prediction_records,
                     method_name=metric_key,
                 )
@@ -2805,6 +3166,7 @@ def main() -> None:
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
+                    per_head_position_budget_mode=per_head_position_budget_mode,
                     **search_kwargs,
                 )
                 print(
@@ -2840,6 +3202,7 @@ def main() -> None:
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     fixed_head_profiles=fixed_head_profiles,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
+                    per_head_position_budget_mode=per_head_position_budget_mode,
                     records=prediction_records,
                     method_name=metric_key,
                 )
@@ -2889,6 +3252,7 @@ def main() -> None:
                 "runtime_head_prior_file": args.runtime_head_prior_file,
                 "runtime_head_prior_metric": args.runtime_head_prior_metric,
                 "runtime_head_prior_alpha": runtime_head_prior_alpha,
+                "per_head_position_budget_mode": per_head_position_budget_mode,
             },
         )
 

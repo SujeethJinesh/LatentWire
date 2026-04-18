@@ -430,5 +430,41 @@
     "slug": "ropk_a_head_level_key_cache_channel_pruning_method_for_efficient_long_context_llm_inference",
     "url": "https://openreview.net/forum?id=SRXVoLJEaq",
     "reason": "Head-level key pruning is directly relevant to calibrated head-mask and head-pruning ablations."
+  },
+  {
+    "num": 114,
+    "slug": "lava_layer_wise_dynamic_budget_allocation_for_kv_cache_compression",
+    "url": "https://aclanthology.org/2025.findings-emnlp.737.pdf",
+    "reason": "Layer-wise dynamic budget allocation is a direct next-step comparator for fixed calibration-derived head budgets."
+  },
+  {
+    "num": 115,
+    "slug": "are_sixteen_heads_really_better_than_one",
+    "url": "https://arxiv.org/pdf/1905.10650.pdf",
+    "reason": "Classic evidence that attention-head utility is sharply nonuniform, supporting head-prior and retrieval-head stories."
+  },
+  {
+    "num": 116,
+    "slug": "attention_is_not_explanation",
+    "url": "https://aclanthology.org/N19-1357.pdf",
+    "reason": "Provides the cautionary framing needed if fixed head priors outperform live attention-derived routing."
+  },
+  {
+    "num": 117,
+    "slug": "learning_what_to_remember_adaptive_probabilistic_memory_retention_for_memory_efficient_language_models",
+    "url": "https://aclanthology.org/2025.findings-emnlp.212.pdf",
+    "reason": "Adaptive probabilistic retention is a stronger query-blind baseline for sparse-key routing and budget allocation."
+  },
+  {
+    "num": 118,
+    "slug": "mixture_of_weight_shared_heterogeneous_group_attention_experts_for_dynamic_token_wise_kv_optimization",
+    "url": "https://aclanthology.org/2025.emnlp-main.1166.pdf",
+    "reason": "Dynamic heterogeneous group attention offers a stronger learned alternative to one flat per-head budget rule."
+  },
+  {
+    "num": 119,
+    "slug": "evolkv_evolutionary_kv_cache_compression_for_llm_inference",
+    "url": "https://arxiv.org/pdf/2509.08315.pdf",
+    "reason": "Search-based KV budget optimization is a useful contrast to simple fixed-prior or live-attention routing."
   }
 ]

@@ -1011,5 +1011,59 @@
     "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/113_ropk_a_head_level_key_cache_channel_pruning_method_for_efficient_long_context_llm_inference.md",
     "content_type": "text/markdown",
     "status": "link_note"
+  },
+  {
+    "num": 114,
+    "slug": "lava_layer_wise_dynamic_budget_allocation_for_kv_cache_compression",
+    "url": "https://aclanthology.org/2025.findings-emnlp.737.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/114_lava_layer_wise_dynamic_budget_allocation_for_kv_cache_compression.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1868147
+  },
+  {
+    "num": 115,
+    "slug": "are_sixteen_heads_really_better_than_one",
+    "url": "https://arxiv.org/pdf/1905.10650.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/115_are_sixteen_heads_really_better_than_one.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 576411
+  },
+  {
+    "num": 116,
+    "slug": "attention_is_not_explanation",
+    "url": "https://aclanthology.org/N19-1357.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/116_attention_is_not_explanation.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1206018
+  },
+  {
+    "num": 117,
+    "slug": "learning_what_to_remember_adaptive_probabilistic_memory_retention_for_memory_efficient_language_models",
+    "url": "https://aclanthology.org/2025.findings-emnlp.212.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/117_learning_what_to_remember_adaptive_probabilistic_memory_retention_for_memory_efficient_language_models.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 580079
+  },
+  {
+    "num": 118,
+    "slug": "mixture_of_weight_shared_heterogeneous_group_attention_experts_for_dynamic_token_wise_kv_optimization",
+    "url": "https://aclanthology.org/2025.emnlp-main.1166.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/118_mixture_of_weight_shared_heterogeneous_group_attention_experts_for_dynamic_token_wise_kv_optimization.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 8364477
+  },
+  {
+    "num": 119,
+    "slug": "evolkv_evolutionary_kv_cache_compression_for_llm_inference",
+    "url": "https://arxiv.org/pdf/2509.08315.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/119_evolkv_evolutionary_kv_cache_compression_for_llm_inference.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 4451460
   }
 ]

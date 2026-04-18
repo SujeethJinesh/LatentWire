@@ -219,6 +219,73 @@ Runtime head-selection follow-up (`runtime_head_selection_ratio=0.5`):
     - delta `-0.028571`
     - method-only wins `1`
     - baseline-only wins `3`
+    - McNemar `p=0.6250`
+
+Per-head position-budget follow-up (`position_selection_ratio=0.5`, `gate=0.10`):
+
+- Qwen GSM8K held-out, same checkpoint and sparse `k_only` branch:
+  - uniform target-attention sparse baseline: `0.057143` at `149,628.475` bytes
+  - live per-head `attention_peak` budget: `0.042857` at `154,905.966` bytes
+  - fixed calibration-derived per-head budget prior: `0.085714` at `151,163.659` bytes
+  - shuffled per-head budget prior: `0.042857` at `151,163.659` bytes
+  - fixed prior vs uniform sparse:
+    - delta `+0.028571`
+    - method-only wins `2`
+    - baseline-only wins `0`
+    - McNemar `p=0.4795`
+  - fixed prior vs shuffled prior:
+    - delta `+0.042857`
+    - method-only wins `3`
+    - baseline-only wins `0`
+    - McNemar `p=0.2482`
+  - shuffled prior vs uniform sparse:
+    - delta `-0.014286`
+    - method-only wins `0`
+    - baseline-only wins `1`
+    - McNemar `p=1.0000`
+
+- DeepSeek GSM8K held-out pilot:
+  - live target-attention sparse `k_only`: `0.028571`
+  - fixed calibration-derived per-head budget prior: `0.014286`
+  - fixed prior vs uniform sparse:
+    - delta `-0.014286`
+    - method-only wins `0`
+    - baseline-only wins `1`
+    - McNemar `p=1.0000`
+
+Interpretation:
+
+- The Qwen gain is **not** “any uneven per-head budget helps.”
+- The live per-head budget and shuffled-prior controls both fall back to `0.042857`.
+- The only strong branch here is the **specific calibration-derived head assignment** on the same-family Qwen pair.
+- That branch does **not** transfer as-is to DeepSeek, so this is still a narrow mechanism result, not a general head-budget law.
+
+Larger held-out follow-up on the same Qwen pair (`data/gsm8k_100.jsonl`):
+
+- fixed calibration-derived per-head budget prior: `0.070000`
+- old uniform sparse `k_only` baseline: `0.050000`
+- target alone: `0.040000`
+- text-to-text: `0.100000`
+- transmitted payload: `151,386.360` bytes
+- selector / metadata overhead: `1,567.079` bytes
+- total transmitted bytes: `152,953.439`
+- fixed prior vs uniform sparse:
+  - delta `+0.020000`
+  - method-only wins `2`
+  - baseline-only wins `0`
+  - McNemar `p=0.4795`
+- fixed prior vs old fixed position prior:
+  - delta `+0.040000`
+  - method-only wins `4`
+  - baseline-only wins `0`
+  - McNemar `p=0.1336`
+
+Updated interpretation:
+
+- The fixed per-head prior branch now has **directional support on both GSM8K-70 and GSM8K-100**.
+- It still falls short of text-to-text, so this is not yet a “replace text communication” result.
+- It remains best described as a **same-pair calibrated sparse key-routing mechanism**, not a general cross-model head-budget prior.
+    - baseline-only wins `3`
     - McNemar `p=0.6171`
   - live+prior blend vs live `attention_peak`:
     - delta `-0.042857`

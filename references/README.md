@@ -82,6 +82,17 @@ OpenReview-only head-budget papers that are currently stored as link notes:
   adaptive budgeting, and head-level key pruning where direct shell PDF download
   returned HTML landing pages on this machine.
 
+Files `114_` through `119_` extend the current paper-tightening loop around
+calibration-derived head priors, attention-causality cautions, and stronger
+dynamic budgeting alternatives:
+
+- `114_`: layer-wise dynamic budget allocation as a direct next-step comparator for fixed head priors.
+- `115_`: classic evidence that attention-head importance is sharply nonuniform.
+- `116_`: a cautionary reference against overclaiming live attention as explanation or mechanism.
+- `117_`: adaptive probabilistic memory retention as a stronger query-blind retention baseline.
+- `118_`: heterogeneous group-attention experts for dynamic token-wise KV optimization.
+- `119_`: evolutionary KV compression as a broader search-based budgeting reference.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
