@@ -1164,5 +1164,32 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 537000
+  },
+  {
+    "num": 131,
+    "slug": "query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking",
+    "url": "https://arxiv.org/pdf/2506.09944.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/131_query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1374733
+  },
+  {
+    "num": 132,
+    "slug": "retrieval_heads_are_dynamic",
+    "url": "https://arxiv.org/pdf/2602.11162.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/132_retrieval_heads_are_dynamic.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1029101
+  },
+  {
+    "num": 133,
+    "slug": "greedy_attention_logit_interpolation",
+    "url": "https://arxiv.org/pdf/2502.02659.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/133_greedy_attention_logit_interpolation.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 8363776
   }
 ]

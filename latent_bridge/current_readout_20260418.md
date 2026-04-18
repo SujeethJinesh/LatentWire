@@ -8,7 +8,9 @@ The strongest surviving result is now a **pair-conditioned calibrated sparse
 key-head budget prior** on the Qwen2.5-0.5B -> Qwen3-0.6B control pair. That
 result survives a matched shuffled-prior null and beats the older uniform
 sparse baseline on GSM8K, but it does **not** transfer cleanly to DeepSeek and
-it does **not** replicate as a clear win on SVAMP.
+it does **not** replicate as a clear win on SVAMP. The new multi-seed repeat
+also shows that the current fixed-prior branch is **not stable enough yet**:
+`seed0=0.0200`, `seed1=0.0700`, `seed2=0.0100` on `gsm8k_100`.
 
 ## Strongest Positive Regime
 
@@ -28,6 +30,9 @@ Interpretation:
 - The specific calibrated head assignment matters.
 - The effect is still narrower than text-to-text and therefore not yet a
   replacement for token communication.
+- The new seed repeat materially weakens this branch as a headline result:
+  across `seed0/1/2`, the fixed-prior mean is only `0.0333`, below the
+  target-alone baseline `0.0400`.
 
 ## Budget Sweep
 
@@ -111,6 +116,39 @@ Interpretation:
 - Right now the best branch is still the **pure fixed peak-based prior** rather
   than a live-corrected or entropy-derived variant.
 
+## Shrinkage Ablations
+
+Same protocol, with shrinkage applied to the fixed head prior before use:
+
+- GSM8K-100, shrinkage `0.25`, target `global`: `0.050000`
+- GSM8K-100, shrinkage `0.25`, target `uniform`: `0.070000`
+- SVAMP-70, shrinkage `0.25`, target `global`: `0.071429`
+- DeepSeek GSM8K-70 transfer, shrinkage `0.25`, target `global`: `0.014286`
+
+Interpretation:
+
+- Global shrinkage hurts the main GSM branch.
+- Uniform shrinkage ties the unshrunken fixed prior rather than improving it.
+- Shrinkage does not rescue SVAMP or cross-pair transfer.
+- So shrinkage is currently a **null or weak regularization result**, not a new
+  positive method branch.
+
+## Seed Stability
+
+Fixed peak-based prior on `gsm8k_100`, same branch, same budget, recalibrated
+translator seeds:
+
+- `seed0`: `0.020000`
+- `seed1`: `0.070000`
+- `seed2`: `0.010000`
+
+Interpretation:
+
+- The current fixed-prior result is **high variance across calibration seeds**.
+- That makes it unsuitable as the main paper headline in its current form.
+- The fixed-prior branch remains interesting as a mechanism clue, but not yet
+  as a stable method claim.
+
 ## What Survives
 
 - `k_only` matters more than `v_only`.
@@ -130,7 +168,8 @@ Best honest claim today:
 
 > Calibrated sparse key-head budgets can improve cross-model latent transport on
 > a compatible same-family pair under matched bandwidth, but the effect is
-> pair-conditioned, asymmetric, and not yet a broad reasoning benchmark win.
+> pair-conditioned, asymmetric, and not yet stable enough across calibration
+> seeds for a broad reasoning-time method claim.
 
 That is strong enough for a tighter workshop story and promising for a main
 paper only if the next replication steps succeed.
@@ -139,11 +178,15 @@ paper only if the next replication steps succeed.
 
 1. Budget sweep for the fixed-prior branch: `0.25 / 0.50 / 0.75`, each with
    shuffled-prior and uniform baselines.
-2. Three-seed repeat on the positive GSM branch.
+2. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
+   is stabilized across seeds.
 3. Next method pivots from the new literature:
    - shrinkage-regularized head priors
+   - OT / permutation head matching across models
    - entropy / causal head scoring
    - retrieval-head-only routing
    - attention-logit-preserving head ranking
-4. Keep SVAMP, ARC, and cross-family transfer in the paper as explicit failure
-   boundaries.
+4. Keep SVAMP, ARC, cross-family transfer, and now seed instability in the
+   paper as explicit failure boundaries.
+5. Run the seed repeat for the stronger live query-aware sparse `k_only` branch,
+   not just the fixed-prior branch.

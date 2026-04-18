@@ -487,6 +487,81 @@ def _load_head_profile_bundle(
     return profiles, metadata
 
 
+def _shrink_head_profiles(
+    profiles: list[torch.Tensor],
+    *,
+    strength: float,
+    target: str,
+) -> list[torch.Tensor]:
+    if not profiles:
+        raise ValueError("profiles must be non-empty")
+    amount = float(strength)
+    if amount <= 0.0:
+        return [torch.as_tensor(profile, dtype=torch.float32).view(-1).cpu().clone() for profile in profiles]
+    if amount > 1.0:
+        raise ValueError("strength must be in [0, 1]")
+
+    normalized = [
+        _normalize_selection_scores(torch.as_tensor(profile, dtype=torch.float32).view(-1).cpu())
+        for profile in profiles
+    ]
+    if target == "uniform":
+        targets = [torch.ones_like(profile) for profile in normalized]
+    elif target == "global":
+        max_heads = max(int(profile.numel()) for profile in normalized)
+        global_profile = torch.stack(
+            [_resample_head_profile(profile, max_heads) for profile in normalized],
+            dim=0,
+        ).mean(dim=0)
+        global_profile = _normalize_selection_scores(global_profile)
+        targets = [
+            _normalize_selection_scores(_resample_head_profile(global_profile, int(profile.numel())))
+            for profile in normalized
+        ]
+    else:
+        raise ValueError(f"Unknown shrink target: {target}")
+
+    out: list[torch.Tensor] = []
+    for profile, target_profile in zip(normalized, targets):
+        blended = (1.0 - amount) * profile + amount * target_profile
+        out.append(_normalize_selection_scores(blended).cpu())
+    return out
+
+
+def _head_profile_summary(profiles: list[torch.Tensor]) -> dict[str, float]:
+    entropies: list[float] = []
+    top1_masses: list[float] = []
+    for profile in profiles:
+        weights = torch.as_tensor(profile, dtype=torch.float32).view(-1).clamp_min(0.0)
+        if float(weights.sum().abs()) < 1e-8:
+            weights = torch.ones_like(weights) / float(max(weights.numel(), 1))
+        else:
+            weights = weights / weights.sum().clamp_min(1e-8)
+        entropies.append(float((-(weights * weights.clamp_min(1e-8).log()).sum()).item()))
+        top1_masses.append(float(weights.max().item()))
+    return {
+        "profile_entropy_mean": float(sum(entropies) / max(len(entropies), 1)),
+        "profile_top1_mass_mean": float(sum(top1_masses) / max(len(top1_masses), 1)),
+    }
+
+
+def _head_profile_topk_overlap(
+    left: list[torch.Tensor],
+    right: list[torch.Tensor],
+    *,
+    keep_fraction: float = 0.25,
+) -> float:
+    overlaps: list[float] = []
+    for lhs, rhs in zip(left, right):
+        lhs = torch.as_tensor(lhs, dtype=torch.float32).view(-1)
+        rhs = torch.as_tensor(rhs, dtype=torch.float32).view(-1)
+        count = max(1, min(lhs.numel(), int(round(lhs.numel() * keep_fraction))))
+        lhs_keep = set(torch.topk(lhs, k=count, largest=True).indices.detach().cpu().tolist())
+        rhs_keep = set(torch.topk(rhs, k=count, largest=True).indices.detach().cpu().tolist())
+        overlaps.append(float(len(lhs_keep & rhs_keep) / max(len(lhs_keep | rhs_keep), 1)))
+    return float(sum(overlaps) / max(len(overlaps), 1))
+
+
 def _head_trace(
     scores: torch.Tensor,
     keep_local_indices: torch.Tensor,
@@ -1456,6 +1531,7 @@ def _allocate_per_head_token_budgets(
     *,
     seq_len: int,
     position_selection_ratio: float,
+    score_normalization: str = "minmax",
 ) -> torch.Tensor:
     head_scores = head_scores.float().view(-1)
     if head_scores.numel() == 0:
@@ -1464,7 +1540,12 @@ def _allocate_per_head_token_budgets(
     if total_keep >= seq_len * head_scores.numel():
         return torch.full((head_scores.numel(),), seq_len, dtype=torch.long, device=head_scores.device)
 
-    weights = _normalize_selection_scores(head_scores)
+    if score_normalization == "minmax":
+        weights = _normalize_selection_scores(head_scores)
+    elif score_normalization == "sum":
+        weights = head_scores.clamp_min(0.0)
+    else:
+        raise ValueError(f"Unknown score_normalization: {score_normalization}")
     if float(weights.sum().abs()) < 1e-8:
         weights = torch.ones_like(weights) / float(max(weights.numel(), 1))
     else:
@@ -1533,6 +1614,7 @@ def _apply_per_head_position_selection(
     head_scores: torch.Tensor,
     per_head_position_scores: torch.Tensor,
     active_head_indices: torch.Tensor,
+    score_normalization: str = "minmax",
     return_trace: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, dict[str, Any], torch.Tensor]:
     seq_len = K_hat.shape[2]
@@ -1540,6 +1622,7 @@ def _apply_per_head_position_selection(
         head_scores,
         seq_len=seq_len,
         position_selection_ratio=position_selection_ratio,
+        score_normalization=score_normalization,
     )
     if int(keep_counts.sum().item()) >= seq_len * max(int(active_head_indices.numel()), 1):
         trace = _head_budget_trace(head_scores, keep_counts, active_head_indices, seq_len=seq_len)
@@ -1836,6 +1919,11 @@ def _build_rotalign_prefix_state(
                 head_scores=head_budget_scores,
                 per_head_position_scores=active_attention_map,
                 active_head_indices=active_head_indices,
+                score_normalization=(
+                    "sum"
+                    if per_head_position_budget_mode in {"attention_prior", "attention_prior_shuffled", "attention_blend"}
+                    else "minmax"
+                ),
                 return_trace=True,
             )
             head_budget_trace["target_layer"] = int(tgt_l)
@@ -2864,6 +2952,18 @@ def parse_args() -> argparse.Namespace:
         help="Blend weight for the fixed head prior when runtime_head_selection_metric=attention_blend.",
     )
     p.add_argument(
+        "--runtime-head-prior-shrinkage",
+        type=float,
+        default=0.0,
+        help="Optional shrinkage strength in [0,1] applied to fixed head priors before use.",
+    )
+    p.add_argument(
+        "--runtime-head-prior-shrink-target",
+        choices=["uniform", "global"],
+        default="uniform",
+        help="Shrink fixed head priors toward a uniform or global cross-layer prior.",
+    )
+    p.add_argument(
         "--per-head-position-budget-mode",
         choices=[
             "none",
@@ -2930,7 +3030,11 @@ def main() -> None:
     runtime_head_prior_file = getattr(args, "runtime_head_prior_file", None)
     runtime_head_prior_load = getattr(args, "runtime_head_prior_load", None)
     runtime_head_prior_save = getattr(args, "runtime_head_prior_save", None)
+    runtime_head_prior_shrinkage = float(getattr(args, "runtime_head_prior_shrinkage", 0.0))
+    runtime_head_prior_shrink_target = getattr(args, "runtime_head_prior_shrink_target", "uniform")
     per_head_position_budget_mode = getattr(args, "per_head_position_budget_mode", "none")
+    if not 0.0 <= runtime_head_prior_shrinkage <= 1.0:
+        raise ValueError("--runtime-head-prior-shrinkage must be in [0, 1]")
 
     dtype = {
         "float32": torch.float32,
@@ -3051,21 +3155,57 @@ def main() -> None:
                 translator=translator,
                 metric=args.runtime_head_prior_metric,
             )
-            if runtime_head_prior_save:
-                _save_head_profile_bundle(
-                    runtime_head_prior_save,
-                    fixed_head_profiles,
-                    metadata={
-                        "source_model": args.source_model,
-                        "target_model": args.target_model,
-                        "translator": args.translator,
-                        "metric": args.runtime_head_prior_metric,
-                        "prompt_file": runtime_head_prior_file,
-                        "layer_count": len(fixed_head_profiles),
-                        "head_counts": [int(profile.numel()) for profile in fixed_head_profiles],
-                    },
-                )
-                print(f"Saved fixed head prior bundle to {runtime_head_prior_save}")
+        if runtime_head_prior_shrinkage > 0.0:
+            original_head_profiles = [
+                torch.as_tensor(profile, dtype=torch.float32).view(-1).cpu().clone()
+                for profile in fixed_head_profiles
+            ]
+            print(
+                "Applying fixed head prior shrinkage "
+                f"(strength={runtime_head_prior_shrinkage:.3f}, target={runtime_head_prior_shrink_target})"
+            )
+            fixed_head_profiles = _shrink_head_profiles(
+                fixed_head_profiles,
+                strength=runtime_head_prior_shrinkage,
+                target=runtime_head_prior_shrink_target,
+            )
+            if loaded_head_prior_metadata is None:
+                loaded_head_prior_metadata = {}
+            loaded_head_prior_metadata["applied_shrinkage"] = float(runtime_head_prior_shrinkage)
+            loaded_head_prior_metadata["applied_shrink_target"] = runtime_head_prior_shrink_target
+            loaded_head_prior_metadata.update(
+                {
+                    f"{key}_before": value
+                    for key, value in _head_profile_summary(original_head_profiles).items()
+                }
+            )
+            loaded_head_prior_metadata.update(
+                {
+                    f"{key}_after": value
+                    for key, value in _head_profile_summary(fixed_head_profiles).items()
+                }
+            )
+            loaded_head_prior_metadata["profile_topk_overlap_jaccard"] = _head_profile_topk_overlap(
+                original_head_profiles,
+                fixed_head_profiles,
+            )
+        if runtime_head_prior_save:
+            _save_head_profile_bundle(
+                runtime_head_prior_save,
+                fixed_head_profiles,
+                metadata={
+                    "source_model": args.source_model,
+                    "target_model": args.target_model,
+                    "translator": args.translator,
+                    "metric": args.runtime_head_prior_metric,
+                    "prompt_file": runtime_head_prior_file,
+                    "layer_count": len(fixed_head_profiles),
+                    "head_counts": [int(profile.numel()) for profile in fixed_head_profiles],
+                    "shrinkage": float(runtime_head_prior_shrinkage),
+                    "shrink_target": runtime_head_prior_shrink_target,
+                },
+            )
+            print(f"Saved fixed head prior bundle to {runtime_head_prior_save}")
     elif runtime_head_prior_save:
         if not runtime_head_prior_file:
             raise ValueError(
@@ -3084,6 +3224,20 @@ def main() -> None:
             translator=translator,
             metric=args.runtime_head_prior_metric,
         )
+        if runtime_head_prior_shrinkage > 0.0:
+            original_head_profiles = [
+                torch.as_tensor(profile, dtype=torch.float32).view(-1).cpu().clone()
+                for profile in fixed_head_profiles
+            ]
+            print(
+                "Applying fixed head prior shrinkage "
+                f"(strength={runtime_head_prior_shrinkage:.3f}, target={runtime_head_prior_shrink_target})"
+            )
+            fixed_head_profiles = _shrink_head_profiles(
+                fixed_head_profiles,
+                strength=runtime_head_prior_shrinkage,
+                target=runtime_head_prior_shrink_target,
+            )
         _save_head_profile_bundle(
             runtime_head_prior_save,
             fixed_head_profiles,
@@ -3095,6 +3249,34 @@ def main() -> None:
                 "prompt_file": runtime_head_prior_file,
                 "layer_count": len(fixed_head_profiles),
                 "head_counts": [int(profile.numel()) for profile in fixed_head_profiles],
+                "shrinkage": float(runtime_head_prior_shrinkage),
+                "shrink_target": runtime_head_prior_shrink_target,
+                **(
+                    {
+                        f"{key}_before": value
+                        for key, value in _head_profile_summary(original_head_profiles).items()
+                    }
+                    if runtime_head_prior_shrinkage > 0.0
+                    else {}
+                ),
+                **(
+                    {
+                        f"{key}_after": value
+                        for key, value in _head_profile_summary(fixed_head_profiles).items()
+                    }
+                    if runtime_head_prior_shrinkage > 0.0
+                    else {}
+                ),
+                **(
+                    {
+                        "profile_topk_overlap_jaccard": _head_profile_topk_overlap(
+                            original_head_profiles,
+                            fixed_head_profiles,
+                        )
+                    }
+                    if runtime_head_prior_shrinkage > 0.0
+                    else {}
+                ),
             },
         )
         print(f"Saved fixed head prior bundle to {runtime_head_prior_save}")
@@ -3398,6 +3580,8 @@ def main() -> None:
                 "runtime_head_prior_save": runtime_head_prior_save,
                 "runtime_head_prior_metric": args.runtime_head_prior_metric,
                 "runtime_head_prior_alpha": runtime_head_prior_alpha,
+                "runtime_head_prior_shrinkage": runtime_head_prior_shrinkage,
+                "runtime_head_prior_shrink_target": runtime_head_prior_shrink_target,
                 "runtime_head_prior_bundle_metadata": loaded_head_prior_metadata,
                 "per_head_position_budget_mode": per_head_position_budget_mode,
             },

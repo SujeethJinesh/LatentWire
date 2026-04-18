@@ -350,6 +350,10 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "attention_entropy",
             "--runtime-head-prior-alpha",
             "0.25",
+            "--runtime-head-prior-shrinkage",
+            "0.3",
+            "--runtime-head-prior-shrink-target",
+            "global",
             "--per-head-position-budget-mode",
             "attention_peak",
         ],
@@ -374,6 +378,8 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.runtime_head_prior_save == "artifacts/head_prior.pt"
     assert args.runtime_head_prior_metric == "attention_entropy"
     assert args.runtime_head_prior_alpha == 0.25
+    assert args.runtime_head_prior_shrinkage == 0.3
+    assert args.runtime_head_prior_shrink_target == "global"
     assert args.per_head_position_budget_mode == "attention_peak"
 
 
@@ -1461,6 +1467,35 @@ def test_save_and_load_head_profile_bundle_resamples_layers(tmp_path) -> None:
     assert metadata["source_model"] == "src"
     assert metadata["stored_layer_count"] == 2
     assert metadata["resampled_to_layer_count"] == 4
+
+
+def test_shrink_head_profiles_blends_toward_uniform_and_global() -> None:
+    profiles = [
+        torch.tensor([0.0, 1.0, 0.2], dtype=torch.float32),
+        torch.tensor([1.0, 0.0, 0.5], dtype=torch.float32),
+    ]
+
+    uniform = evaluate._shrink_head_profiles(profiles, strength=0.5, target="uniform")
+    global_profiles = evaluate._shrink_head_profiles(profiles, strength=0.5, target="global")
+
+    assert len(uniform) == len(profiles)
+    assert len(global_profiles) == len(profiles)
+    assert uniform[0].shape == profiles[0].shape
+    assert global_profiles[1].shape == profiles[1].shape
+    assert float(uniform[0][2]) > float(profiles[0][2])
+    assert all(torch.isfinite(profile).all() for profile in uniform)
+    assert all(torch.isfinite(profile).all() for profile in global_profiles)
+
+
+def test_allocate_per_head_token_budgets_sum_normalization_preserves_shrinkage_effect() -> None:
+    keep = evaluate._allocate_per_head_token_budgets(
+        torch.tensor([0.4, 0.35, 0.25], dtype=torch.float32),
+        seq_len=4,
+        position_selection_ratio=0.5,
+        score_normalization="sum",
+    )
+
+    assert keep.tolist() == [2, 2, 2]
 
 
 def test_apply_per_head_position_selection_prefers_top_positions_per_head() -> None:

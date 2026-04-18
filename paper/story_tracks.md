@@ -11,6 +11,14 @@
 - Two simple follow-up tweaks did **not** beat the fixed prior:
   - prior/live blends help somewhat but top out below the pure fixed prior
   - entropy-based fixed priors are positive but weaker than peak-based priors
+- Shrinkage-regularized priors also did **not** rescue the branch:
+  - global shrinkage hurts GSM and leaves SVAMP / DeepSeek unchanged
+  - uniform shrinkage only ties the original fixed prior
+- The new seed repeat is the most important negative update:
+  - `seed0 = 0.0200`
+  - `seed1 = 0.0700`
+  - `seed2 = 0.0100`
+  on `gsm8k_100`, so the fixed-prior branch is currently **high variance and not stable enough to headline**.
 - The saved-prior transfer matrix is now clearly **asymmetric**:
   - Qwen prior -> Qwen is strong
   - Qwen prior -> DeepSeek collapses
@@ -37,6 +45,9 @@ Proposed claim:
 - The only reliable gains so far come from **selective sparse key import**, not generic KV fusion.
 - The newest same-pair gain may come from **calibrated head identity**, not just live query-aware sparsity.
 - The current best workshop-safe statement is: calibrated sparse key head budgets help on GSM8K for a compatible same-family pair, but the effect weakens on SVAMP and across target families.
+- The fixed-prior story is now best used as a **mechanism clue**:
+  there is structure in which heads matter, but the current fixed prior is not
+  stable enough across seeds to present as the final method.
 - The transfer story is not “universal head priors.” It is currently **pair-conditioned and asymmetric**.
 - Strong zero-byte, random-source, and query-blind selector controls are necessary because naive cache perturbations or blind sparsity can look like communication gains.
 
@@ -60,6 +71,7 @@ Target claim:
 What we still need:
 - better than `target alone` on held-out reasoning more than once
 - better than `target alone` on more than one reasoning task, not just GSM8K
+- better than `target alone` across seeds, not just on one calibration seed
 - stronger gap over zero-byte controls
 - one second reasoning benchmark
 - one second model pair with at least directional support
@@ -68,6 +80,7 @@ What we still need:
   - live query-aware position selection vs blind priors
   - head selection vs per-head budgets
   - fixed calibrated head priors vs shuffled-prior nulls
+  - fixed calibrated head priors vs seed repeats
   - asymmetric prior transfer across target models
   - SVAMP as an explicit boundary case for the calibrated-prior branch
   - quantized vs no-quantized
@@ -76,10 +89,10 @@ What we still need:
 
 ## Immediate next experiments
 
-1. Add a **3-seed repeat** on the positive GSM branch before widening the model matrix.
+1. Run the **3-seed repeat on the stronger live query-aware sparse `k_only` branch**, because the fixed-prior branch is now too unstable to carry the story by itself.
 2. Keep the DeepSeek pair as the main transfer stress test instead of widening to many models too early.
 3. Implement the next method pivots suggested by the literature:
-   - shrinkage-regularized head priors
+   - OT / permutation head matching
    - causal head scoring
    - retrieval-head-only routing
    - attention-logit-preserving head ranking

@@ -532,5 +532,23 @@
     "slug": "efficient_reasoning_at_fixed_test_time_cost_via_length_aware_attention_priors_and_gain_aware_training",
     "url": "https://arxiv.org/pdf/2603.09253.pdf",
     "reason": "Length-aware attention priors are a direct reference for using cached priors to bias test-time reasoning under a fixed inference budget."
+  },
+  {
+    "num": 131,
+    "slug": "query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking",
+    "url": "https://arxiv.org/pdf/2506.09944.pdf",
+    "reason": "Query-focused retrieval heads are a direct mechanism reference for the live query-aware sparse routing branch and for retrieval-head-only ablations."
+  },
+  {
+    "num": 132,
+    "slug": "retrieval_heads_are_dynamic",
+    "url": "https://arxiv.org/pdf/2602.11162.pdf",
+    "reason": "Dynamic retrieval heads directly support the current concern that static fixed priors may be brittle across queries and seeds."
+  },
+  {
+    "num": 133,
+    "slug": "greedy_attention_logit_interpolation",
+    "url": "https://arxiv.org/pdf/2502.02659.pdf",
+    "reason": "Attention-logit interpolation is a direct reference for preserving the useful attention geometry rather than only preserving raw head-score magnitudes."
   }
 ]

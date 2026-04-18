@@ -121,6 +121,13 @@ reasoning:
 - `129_`: layer-wise dissimilar KV sharing as a close systems analogue for pair-conditioned transfer.
 - `130_`: length-aware attention priors as a direct reference for cached-prior test-time reasoning.
 
+Files `131_` through `133_` extend the next loop around query-conditioned
+retrieval heads, dynamic head behavior, and attention-logit preservation:
+
+- `131_`: query-focused retrieval heads as a direct target for query-aware sparse routing.
+- `132_`: dynamic retrieval heads as a warning that fixed head identities may be brittle across queries.
+- `133_`: attention-logit interpolation as a direct reference for preserving useful attention geometry under sparse transport.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

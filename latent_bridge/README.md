@@ -198,6 +198,10 @@ mass profile but permutes which heads receive it.
 Use `--runtime-head-prior-save <path>` to export the concrete fixed head-profile
 bundle after building it, and `--runtime-head-prior-load <path>` to reuse that
 bundle across later runs, including cross-pair transfer tests.
+Use `--runtime-head-prior-shrinkage <alpha>` with
+`--runtime-head-prior-shrink-target {uniform,global}` to regularize a fixed
+head prior before use. `global` shrinks each layer toward a shared cross-layer
+head profile; `uniform` shrinks toward a flat per-layer prior.
 For runtime retrieval-head ablations, add
 `--runtime-head-selection-ratio <r>` with
 `--runtime-head-selection-metric attention_peak`, `attention_entropy`,
