@@ -1137,5 +1137,32 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 378646
+  },
+  {
+    "num": 128,
+    "slug": "compresskv_semantic_retrieval_heads_know_what_tokens_are_not_important_before_generation",
+    "url": "https://arxiv.org/pdf/2508.02401.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/128_compresskv_semantic_retrieval_heads_know_what_tokens_are_not_important_before_generation.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 32573098
+  },
+  {
+    "num": 129,
+    "slug": "kvsharer_efficient_inference_via_layer_wise_dissimilar_kv_cache_sharing",
+    "url": "https://arxiv.org/pdf/2410.18517.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/129_kvsharer_efficient_inference_via_layer_wise_dissimilar_kv_cache_sharing.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 702932
+  },
+  {
+    "num": 130,
+    "slug": "efficient_reasoning_at_fixed_test_time_cost_via_length_aware_attention_priors_and_gain_aware_training",
+    "url": "https://arxiv.org/pdf/2603.09253.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/130_efficient_reasoning_at_fixed_test_time_cost_via_length_aware_attention_priors_and_gain_aware_training.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 537000
   }
 ]

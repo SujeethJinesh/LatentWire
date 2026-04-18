@@ -514,5 +514,23 @@
     "slug": "rate_distortion_for_model_compression_from_theory_to_practice",
     "url": "https://proceedings.mlr.press/v97/gao19c/gao19c.pdf",
     "reason": "Rate-distortion theory is the cleanest formal framing for sparse head-budget allocation and accuracy-vs-bytes curves."
+  },
+  {
+    "num": 128,
+    "slug": "compresskv_semantic_retrieval_heads_know_what_tokens_are_not_important_before_generation",
+    "url": "https://arxiv.org/pdf/2508.02401.pdf",
+    "reason": "Semantic retrieval heads directly support the current paper direction that a small retrieval-oriented head subset determines which key positions are worth transporting."
+  },
+  {
+    "num": 129,
+    "slug": "kvsharer_efficient_inference_via_layer_wise_dissimilar_kv_cache_sharing",
+    "url": "https://arxiv.org/pdf/2410.18517.pdf",
+    "reason": "Layer-wise dissimilar KV sharing is a close systems analogue for pair-conditioned cross-model cache reuse and a useful comparison point for asymmetric transfer."
+  },
+  {
+    "num": 130,
+    "slug": "efficient_reasoning_at_fixed_test_time_cost_via_length_aware_attention_priors_and_gain_aware_training",
+    "url": "https://arxiv.org/pdf/2603.09253.pdf",
+    "reason": "Length-aware attention priors are a direct reference for using cached priors to bias test-time reasoning under a fixed inference budget."
   }
 ]

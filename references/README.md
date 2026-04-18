@@ -113,6 +113,14 @@ budgeting ideas:
 - `126_`: nonlinear covariance shrinkage as a direct template for stabilizing noisy head priors.
 - `127_`: rate-distortion theory for model compression as a principled framing for sparse head budgets.
 
+Files `128_` through `130_` extend the current fixed-prior branch around
+semantic retrieval heads, layer-wise KV sharing, and explicit attention-prior
+reasoning:
+
+- `128_`: semantic retrieval heads as a direct mechanism for pruning tokens before generation.
+- `129_`: layer-wise dissimilar KV sharing as a close systems analogue for pair-conditioned transfer.
+- `130_`: length-aware attention priors as a direct reference for cached-prior test-time reasoning.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

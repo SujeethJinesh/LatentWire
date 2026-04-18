@@ -29,6 +29,32 @@ Interpretation:
 - The effect is still narrower than text-to-text and therefore not yet a
   replacement for token communication.
 
+## Budget Sweep
+
+Same Qwen pair, same fixed-prior branch, `gsm8k_100`, matched `k_only` /
+`gate=0.10` / quantized setup:
+
+- `25%` budget:
+  - fixed prior: `0.050000`
+  - shuffled prior: `0.040000`
+  - uniform sparse baseline: `0.040000`
+- `50%` budget:
+  - fixed prior: `0.070000`
+  - shuffled prior: `0.040000`
+  - uniform sparse baseline: `0.050000`
+- `75%` budget:
+  - fixed prior: `0.050000`
+  - shuffled prior: `0.040000`
+  - uniform sparse baseline: `0.040000`
+
+Interpretation:
+
+- The fixed prior stays directionally better than the matched shuffled and
+  uniform baselines at every tested budget.
+- The effect still has a clear **middle-band sweet spot** at `50%`.
+- Tightening to `25%` or loosening to `75%` keeps the direction but loses most
+  of the gain.
+
 ## Transfer Read
 
 Saved-prior transfer on `gsm8k_eval_70`:
@@ -65,6 +91,25 @@ Interpretation:
 - But it only recovers to **target-alone**, not beyond it.
 - So SVAMP is currently a **boundary condition**, not a second positive
   replication.
+
+## Live-Blend And Entropy Ablations
+
+Same Qwen pair, `gsm8k_100`, `50%` budget:
+
+- fixed peak-based prior: `0.070000`
+- prior/live blend, `alpha=0.10`: `0.040000`
+- prior/live blend, `alpha=0.25`: `0.060000`
+- prior/live blend, `alpha=0.50`: `0.060000`
+- fixed entropy-based prior: `0.050000`
+
+Interpretation:
+
+- A little live correction helps over the weakest baselines, but it still does
+  **not** beat the pure fixed prior.
+- Entropy-based head priors are directionally positive, but they underperform
+  the peak-based calibrated prior.
+- Right now the best branch is still the **pure fixed peak-based prior** rather
+  than a live-corrected or entropy-derived variant.
 
 ## What Survives
 

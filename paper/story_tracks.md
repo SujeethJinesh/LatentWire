@@ -6,7 +6,11 @@
 - The strongest surviving regime is **sparse `k_only` transport on GSM8K**, not dense all-layer transfer.
 - The cleanest same-pair positive signal is now on Qwen2.5-0.5B -> Qwen3-0.6B with sparse key import under matched controls.
 - The strongest new mechanistic lead is even narrower: on that same Qwen pair, a **fixed calibration-derived per-head budget prior** beat both the old uniform sparse baseline and a budget-matched shuffled-prior null, and it held directionally on `gsm8k_100`.
+- The fixed-prior budget sweep now sharpens that story: the branch is best at the **middle budget** (`50%`), while `25%` and `75%` keep only a smaller directional edge over shuffled and uniform baselines.
 - The second reasoning-task check is mixed: on SVAMP, the same fixed head-prior branch beats the shuffled-prior null but only climbs back to **target-alone**, so it is a boundary condition rather than a second positive benchmark.
+- Two simple follow-up tweaks did **not** beat the fixed prior:
+  - prior/live blends help somewhat but top out below the pure fixed prior
+  - entropy-based fixed priors are positive but weaker than peak-based priors
 - The saved-prior transfer matrix is now clearly **asymmetric**:
   - Qwen prior -> Qwen is strong
   - Qwen prior -> DeepSeek collapses
@@ -20,7 +24,8 @@
   - the fixed per-head prior did not carry over cleanly to DeepSeek
 - The next mechanism question is no longer “keys or values?” We answered that directionally. It is now:
   - **which heads get the sparse key budget**
-  - **whether that budget should be live, calibrated, shrinkage-regularized, or query-aware**
+  - **how to stabilize that budget without diluting the useful calibrated prior**
+  - **whether that budget should be shrinkage-regularized, retrieval-head-specific, or attention-logit-preserving**
   - **whether the useful structure is retrieval-head-specific or attention-logit-preserving**
 
 ## COLM workshop path
@@ -71,12 +76,11 @@ What we still need:
 
 ## Immediate next experiments
 
-1. Add a **budget sweep** for the fixed per-head prior branch (`0.25 / 0.50 / 0.75`) with matched shuffled-prior and uniform baselines.
-2. Add a **3-seed repeat** on the positive GSM branch before widening the model matrix.
-3. Keep the DeepSeek pair as the main transfer stress test instead of widening to many models too early.
-4. Implement the next method pivots suggested by the literature:
+1. Add a **3-seed repeat** on the positive GSM branch before widening the model matrix.
+2. Keep the DeepSeek pair as the main transfer stress test instead of widening to many models too early.
+3. Implement the next method pivots suggested by the literature:
    - shrinkage-regularized head priors
-   - entropy / causal head scoring
+   - causal head scoring
    - retrieval-head-only routing
    - attention-logit-preserving head ranking
-5. Preserve the negative controls and failure cases in the main paper, not just the appendix.
+4. Preserve the negative controls and failure cases in the main paper, not just the appendix.
