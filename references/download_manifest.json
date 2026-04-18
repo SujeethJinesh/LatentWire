@@ -1191,5 +1191,32 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 8363776
+  },
+  {
+    "num": 134,
+    "slug": "learnable_permutation_for_structured_sparsity_on_transformer_models",
+    "url": "https://arxiv.org/pdf/2601.22980.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/134_learnable_permutation_for_structured_sparsity_on_transformer_models.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 672759
+  },
+  {
+    "num": 135,
+    "slug": "query_focused_and_memory_aware_reranker_for_long_context_processing",
+    "url": "https://arxiv.org/pdf/2602.12192.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/135_query_focused_and_memory_aware_reranker_for_long_context_processing.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 544771
+  },
+  {
+    "num": 136,
+    "slug": "contributions_of_transformer_attention_heads_in_multi_and_cross_lingual_tasks",
+    "url": "https://arxiv.org/pdf/2108.08375.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/136_contributions_of_transformer_attention_heads_in_multi_and_cross_lingual_tasks.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 392601
   }
 ]

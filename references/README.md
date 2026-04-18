@@ -128,6 +128,13 @@ retrieval heads, dynamic head behavior, and attention-logit preservation:
 - `132_`: dynamic retrieval heads as a warning that fixed head identities may be brittle across queries.
 - `133_`: attention-logit interpolation as a direct reference for preserving useful attention geometry under sparse transport.
 
+Files `134_` through `136_` extend the next symmetry-aware loop around
+permutation, query-aware reranking, and cross-task head transfer:
+
+- `134_`: learnable permutation as a direct reference for head or channel reordering before sparse routing.
+- `135_`: query-focused memory-aware reranking as a stronger live query-conditioned comparator.
+- `136_`: cross-lingual head contribution analysis as evidence that head importance can vary systematically across tasks and settings.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

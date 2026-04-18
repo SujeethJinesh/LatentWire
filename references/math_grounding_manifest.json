@@ -550,5 +550,23 @@
     "slug": "greedy_attention_logit_interpolation",
     "url": "https://arxiv.org/pdf/2502.02659.pdf",
     "reason": "Attention-logit interpolation is a direct reference for preserving the useful attention geometry rather than only preserving raw head-score magnitudes."
+  },
+  {
+    "num": 134,
+    "slug": "learnable_permutation_for_structured_sparsity_on_transformer_models",
+    "url": "https://arxiv.org/pdf/2601.22980.pdf",
+    "reason": "Learnable permutation is a direct symmetry-aware reference for reordering heads or channels before sparse routing or cross-model matching."
+  },
+  {
+    "num": 135,
+    "slug": "query_focused_and_memory_aware_reranker_for_long_context_processing",
+    "url": "https://arxiv.org/pdf/2602.12192.pdf",
+    "reason": "Query-focused memory-aware reranking is a strong live query-conditioned comparator for sparse key routing and selector stability."
+  },
+  {
+    "num": 136,
+    "slug": "contributions_of_transformer_attention_heads_in_multi_and_cross_lingual_tasks",
+    "url": "https://arxiv.org/pdf/2108.08375.pdf",
+    "reason": "Cross-task and cross-lingual head contribution analysis supports the claim that head importance can shift systematically across settings, complicating static prior reuse."
   }
 ]

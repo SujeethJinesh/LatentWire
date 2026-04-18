@@ -19,6 +19,11 @@
   - `seed1 = 0.0700`
   - `seed2 = 0.0100`
   on `gsm8k_100`, so the fixed-prior branch is currently **high variance and not stable enough to headline**.
+- The live query-aware sparse `k_only` branch also fails the larger-slice seed repeat:
+  - `seed0 = 0.0200`
+  - `seed1 = 0.0400`
+  - `seed2 = 0.0200`
+  on `gsm8k_100`, so the earlier single-seed live-sparsity signal also does not currently scale into a robust headline result.
 - The saved-prior transfer matrix is now clearly **asymmetric**:
   - Qwen prior -> Qwen is strong
   - Qwen prior -> DeepSeek collapses
@@ -48,6 +53,9 @@ Proposed claim:
 - The fixed-prior story is now best used as a **mechanism clue**:
   there is structure in which heads matter, but the current fixed prior is not
   stable enough across seeds to present as the final method.
+- The live query-aware sparse story is also now best used as a **mechanism clue**:
+  query-aware sparsity matters directionally, but the current implementation is
+  not stable enough across seeds or held-out slices to headline the paper.
 - The transfer story is not “universal head priors.” It is currently **pair-conditioned and asymmetric**.
 - Strong zero-byte, random-source, and query-blind selector controls are necessary because naive cache perturbations or blind sparsity can look like communication gains.
 
@@ -81,6 +89,7 @@ What we still need:
   - head selection vs per-head budgets
   - fixed calibrated head priors vs shuffled-prior nulls
   - fixed calibrated head priors vs seed repeats
+  - live query-aware sparse routing vs seed repeats
   - asymmetric prior transfer across target models
   - SVAMP as an explicit boundary case for the calibrated-prior branch
   - quantized vs no-quantized
@@ -89,11 +98,11 @@ What we still need:
 
 ## Immediate next experiments
 
-1. Run the **3-seed repeat on the stronger live query-aware sparse `k_only` branch**, because the fixed-prior branch is now too unstable to carry the story by itself.
+1. Treat both the fixed-prior and current live-sparse branches as mechanism clues, not final methods.
 2. Keep the DeepSeek pair as the main transfer stress test instead of widening to many models too early.
 3. Implement the next method pivots suggested by the literature:
-   - OT / permutation head matching
-   - causal head scoring
    - retrieval-head-only routing
    - attention-logit-preserving head ranking
+   - OT / permutation head matching
+   - causal head scoring
 4. Preserve the negative controls and failure cases in the main paper, not just the appendix.

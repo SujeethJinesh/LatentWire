@@ -11,6 +11,8 @@ sparse baseline on GSM8K, but it does **not** transfer cleanly to DeepSeek and
 it does **not** replicate as a clear win on SVAMP. The new multi-seed repeat
 also shows that the current fixed-prior branch is **not stable enough yet**:
 `seed0=0.0200`, `seed1=0.0700`, `seed2=0.0100` on `gsm8k_100`.
+The live query-aware sparse `k_only` branch also fails the same stability test
+on `gsm8k_100`: `seed0=0.0200`, `seed1=0.0400`, `seed2=0.0200`.
 
 ## Strongest Positive Regime
 
@@ -171,6 +173,10 @@ Best honest claim today:
 > pair-conditioned, asymmetric, and not yet stable enough across calibration
 > seeds for a broad reasoning-time method claim.
 
+The live query-aware sparse branch no longer rescues that story on the larger
+held-out GSM slice, because it is also unstable across seeds and averages below
+target-alone.
+
 That is strong enough for a tighter workshop story and promising for a main
 paper only if the next replication steps succeed.
 
@@ -181,12 +187,12 @@ paper only if the next replication steps succeed.
 2. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
    is stabilized across seeds.
 3. Next method pivots from the new literature:
-   - shrinkage-regularized head priors
    - OT / permutation head matching across models
-   - entropy / causal head scoring
+   - causal head scoring
    - retrieval-head-only routing
    - attention-logit-preserving head ranking
 4. Keep SVAMP, ARC, cross-family transfer, and now seed instability in the
    paper as explicit failure boundaries.
-5. Run the seed repeat for the stronger live query-aware sparse `k_only` branch,
-   not just the fixed-prior branch.
+5. Treat the live query-aware sparse branch as another mechanism clue unless a
+   stronger retrieval-head or logit-preserving variant survives the same seed
+   repeat.
