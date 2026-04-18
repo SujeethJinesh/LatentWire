@@ -310,5 +310,65 @@
     "slug": "qcfuse_query_centric_cache_fusion_for_efficient_rag_inference",
     "url": "https://arxiv.org/pdf/2604.08585",
     "reason": "Query-centric cache fusion is a direct architectural reference for source-conditioned fusion beyond scalar gate sweeps."
+  },
+  {
+    "num": 94,
+    "slug": "llms_know_what_to_drop_self_attention_guided_kv_cache_eviction_for_efficient_long_context_inference",
+    "url": "https://arxiv.org/pdf/2503.08879",
+    "reason": "Adds a query-aware token-retention baseline where live self-attention decides which KV positions survive."
+  },
+  {
+    "num": 95,
+    "slug": "task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads",
+    "url": "https://arxiv.org/pdf/2501.15113",
+    "reason": "Direct motivation for task-aware head and selector ablations instead of one universal sparse policy."
+  },
+  {
+    "num": 96,
+    "slug": "kvzip_query_agnostic_kv_cache_compression_with_context_reconstruction",
+    "url": "https://arxiv.org/pdf/2505.23416",
+    "reason": "Provides a stronger query-blind compression baseline to compare against live query-aware sparse import."
+  },
+  {
+    "num": 97,
+    "slug": "retrieval_head_mechanistically_explains_long_context_factuality",
+    "url": "https://arxiv.org/pdf/2404.15574",
+    "reason": "Mechanistic evidence that only certain heads matter for retrieval, supporting retrieval-head-only sparse transport."
+  },
+  {
+    "num": 98,
+    "slug": "query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking",
+    "url": "https://arxiv.org/pdf/2506.09944",
+    "reason": "Supports query-focused retrieval-head selection and attention-logit-preserving routing for reasoning tasks."
+  },
+  {
+    "num": 99,
+    "slug": "a_simple_and_effective_l2_norm_based_strategy_for_kv_cache_compression",
+    "url": "https://aclanthology.org/2024.emnlp-main.1027.pdf",
+    "reason": "Adds a simple norm-based sparse-selector baseline so we can compare complex query-aware routing against a cheap heuristic."
+  },
+  {
+    "num": 100,
+    "slug": "expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution",
+    "url": "https://arxiv.org/pdf/2510.00636",
+    "reason": "Provides a future-query expected-attention prior for stronger fixed selector baselines beyond last-token attention."
+  },
+  {
+    "num": 101,
+    "slug": "q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression",
+    "url": "https://arxiv.org/pdf/2503.02812",
+    "reason": "Direct QK-geometry reference for attention-logit-preserving sparse selection and selector scoring."
+  },
+  {
+    "num": 102,
+    "slug": "kv_compress_paged_kv_cache_compression_with_variable_compression_rates_per_attention_head",
+    "url": "https://arxiv.org/pdf/2410.00161",
+    "reason": "Motivates variable per-head budgets instead of a flat head-selection ratio across the bridge."
+  },
+  {
+    "num": 103,
+    "slug": "recalkv_low_rank_kv_cache_compression_via_head_reordering_and_offline_calibration",
+    "url": "https://arxiv.org/pdf/2505.24357",
+    "reason": "Supports offline head reordering and calibration-guided retrieval-head transport as the next mechanistic ablation."
   }
 ]

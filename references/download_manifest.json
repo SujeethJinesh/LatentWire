@@ -835,5 +835,95 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 3705019
+  },
+  {
+    "num": 94,
+    "slug": "llms_know_what_to_drop_self_attention_guided_kv_cache_eviction_for_efficient_long_context_inference",
+    "url": "https://arxiv.org/pdf/2503.08879",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/94_llms_know_what_to_drop_self_attention_guided_kv_cache_eviction_for_efficient_long_context_inference.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 673507
+  },
+  {
+    "num": 95,
+    "slug": "task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads",
+    "url": "https://arxiv.org/pdf/2501.15113",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/95_task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1746156
+  },
+  {
+    "num": 96,
+    "slug": "kvzip_query_agnostic_kv_cache_compression_with_context_reconstruction",
+    "url": "https://arxiv.org/pdf/2505.23416",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/96_kvzip_query_agnostic_kv_cache_compression_with_context_reconstruction.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 759314
+  },
+  {
+    "num": 97,
+    "slug": "retrieval_head_mechanistically_explains_long_context_factuality",
+    "url": "https://arxiv.org/pdf/2404.15574",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/97_retrieval_head_mechanistically_explains_long_context_factuality.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 951115
+  },
+  {
+    "num": 98,
+    "slug": "query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking",
+    "url": "https://arxiv.org/pdf/2506.09944",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/98_query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1374733
+  },
+  {
+    "num": 99,
+    "slug": "a_simple_and_effective_l2_norm_based_strategy_for_kv_cache_compression",
+    "url": "https://aclanthology.org/2024.emnlp-main.1027.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/99_a_simple_and_effective_l2_norm_based_strategy_for_kv_cache_compression.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2726849
+  },
+  {
+    "num": 100,
+    "slug": "expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution",
+    "url": "https://arxiv.org/pdf/2510.00636",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/100_expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1528084
+  },
+  {
+    "num": 101,
+    "slug": "q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression",
+    "url": "https://arxiv.org/pdf/2503.02812",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/101_q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 4594972
+  },
+  {
+    "num": 102,
+    "slug": "kv_compress_paged_kv_cache_compression_with_variable_compression_rates_per_attention_head",
+    "url": "https://arxiv.org/pdf/2410.00161",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/102_kv_compress_paged_kv_cache_compression_with_variable_compression_rates_per_attention_head.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1335920
+  },
+  {
+    "num": 103,
+    "slug": "recalkv_low_rank_kv_cache_compression_via_head_reordering_and_offline_calibration",
+    "url": "https://arxiv.org/pdf/2505.24357",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/103_recalkv_low_rank_kv_cache_compression_via_head_reordering_and_offline_calibration.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 573126
   }
 ]

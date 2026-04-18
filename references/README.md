@@ -45,6 +45,25 @@ attention-space preservation, and query-centric fusion:
 - `92_`: low-rank attention-space compression for attention-preservation objectives.
 - `93_`: query-centric cache fusion as a direct source-conditioned fusion reference.
 
+Files `94_` through `99_` deepen the current selective-routing branch around
+query-aware eviction, task-aware head differentiation, and retrieval-head
+interpretability:
+
+- `94_`: self-attention-guided KV eviction as a query-aware token-retention baseline.
+- `95_`: task-aware semantic differentiation of attention heads for task-conditioned selector ablations.
+- `96_`: query-agnostic KV compression with context reconstruction as a stronger blind-selector baseline.
+- `97_` and `98_`: retrieval-head mechanistic papers linking head subsets to long-context factuality and reasoning.
+- `99_`: an L2-norm KV compression baseline that grounds simple norm-based sparse selectors.
+
+Files `100_` through `103_` extend the same branch toward future-query priors,
+QK-geometry preservation, variable per-head budgets, and offline head
+reordering:
+
+- `100_`: future-query expected-attention priors for stronger fixed-selector baselines.
+- `101_`: QK-geometry filters for attention-logit-preserving sparse selection.
+- `102_`: variable per-head compression rates instead of one flat transport budget.
+- `103_`: offline-calibrated head reordering for stronger retrieval-head-only transport.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

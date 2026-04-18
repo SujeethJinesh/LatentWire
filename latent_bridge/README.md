@@ -175,13 +175,22 @@ keep `static` as the default control. Use `--kv-transport both`, `k_only`, or
 `v_only` to isolate whether the signal is carried by translated keys, values,
 or the full KV pair. When probing sparse transport, use
 `--position-selection-ratio <r>` with `--position-selection-metric` set to one
-of `energy`, `disagreement`, `random`, `attention`, `attention_shuffled`,
-`source_attention`, or `attention_prior`. Use
+of `energy`, `disagreement`, `random`, `recency`, `attention`,
+`attention_disagreement`, `attention_shuffled`, `source_attention`, or
+`attention_prior`. Use
 `--position-selection-prior-file <path>` to build the fixed query-blind prior
 from calibration prompts when running `attention_prior`. The current best GSM8K
 heuristic is target-attention sparse `k_only`, where `attention` at ratio
 `0.5` is better than the matched shuffled, `source_attention`, and fixed
-attention-prior selector controls on the current GSM8K slices.
+attention-prior selector controls on the current GSM8K slices. The new
+`attention_disagreement` option multiplies live target attention by translated
+key disagreement, so it explicitly favors positions that are both query-relevant
+and likely to change the target's retrieval geometry.
+
+When `--prediction-output` is set, the evaluator also writes a sidecar file at
+`<prediction-output>.meta.json`. That sidecar stores the run config, per-method
+bandwidth summaries, selector-trace aggregates, and paired prediction deltas so
+later paper analysis does not depend on ad-hoc notebook reconstruction.
 
 For the current control pair, prefer held-out gate search over eval-set gate
 Sweeps. The earlier `0.06` pilot on `GSM8K-100` was directionally useful, but

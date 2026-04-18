@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from types import SimpleNamespace
 
@@ -330,7 +331,7 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "--kv-transport",
             "k_only",
             "--position-selection-metric",
-            "attention_prior",
+            "attention_disagreement",
             "--position-selection-prior-file",
             "data/calibration.txt",
             "--position-selection-prior-bins",
@@ -347,7 +348,7 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.translated_kv_control == "zero"
     assert args.fusion_rule == "kalman_tokenwise"
     assert args.kv_transport == "k_only"
-    assert args.position_selection_metric == "attention_prior"
+    assert args.position_selection_metric == "attention_disagreement"
     assert args.position_selection_prior_file == "data/calibration.txt"
     assert args.position_selection_prior_bins == 64
 
@@ -1070,7 +1071,7 @@ def test_build_rotalign_prefix_state_supports_disagreement_position_selection(mo
 
     translator.translate_layer = translated  # type: ignore[method-assign]
 
-    sparse_state, _ = evaluate._build_rotalign_prefix_state(
+    sparse_state, stats = evaluate._build_rotalign_prefix_state(
         src,
         tok_s,
         tgt,
@@ -1109,7 +1110,7 @@ def test_build_rotalign_prefix_state_supports_attention_position_selection(monke
 
     translator.translate_layer = translated  # type: ignore[method-assign]
 
-    sparse_state, _ = evaluate._build_rotalign_prefix_state(
+    sparse_state, stats = evaluate._build_rotalign_prefix_state(
         src,
         tok_s,
         tgt,
@@ -1129,6 +1130,8 @@ def test_build_rotalign_prefix_state_supports_attention_position_selection(monke
 
     assert torch.allclose(sparse_k[:, :, 0, :], torch.full_like(sparse_k[:, :, 0, :], 6.0))
     assert torch.allclose(sparse_k[:, :, 1, :], torch.full_like(sparse_k[:, :, 1, :], 1.0))
+    assert stats["selector_trace"][0]["selected_positions"] == [0]
+    assert stats["selector_trace"][0]["metric"] == "attention"
 
 
 def test_build_rotalign_prefix_state_supports_source_attention_position_selection(monkeypatch) -> None:
@@ -1256,6 +1259,24 @@ def test_position_selection_random_metric_is_deterministic() -> None:
     assert torch.allclose(first, second)
 
 
+def test_position_selection_recency_metric_prefers_latest_positions() -> None:
+    K_t = torch.zeros(1, 1, 3, 1)
+    V_t = torch.zeros(1, 1, 3, 1)
+    K_hat = torch.tensor([[[[1.0], [2.0], [3.0]]]])
+    V_hat = torch.zeros_like(K_hat)
+
+    scores = evaluate._position_selection_scores(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        kv_transport="k_only",
+        position_selection_metric="recency",
+    )
+
+    assert torch.allclose(scores, torch.tensor([1.0, 2.0, 3.0]))
+
+
 def test_position_selection_attention_shuffled_metric_is_deterministic() -> None:
     K_t = torch.zeros(1, 1, 3, 1)
     V_t = torch.zeros(1, 1, 3, 1)
@@ -1286,6 +1307,28 @@ def test_position_selection_attention_shuffled_metric_is_deterministic() -> None
     assert torch.allclose(first, second)
     assert torch.allclose(first.sort().values, scores.sort().values)
     assert not torch.allclose(first, scores)
+
+
+def test_position_selection_attention_disagreement_combines_query_and_delta() -> None:
+    K_t = torch.zeros(1, 1, 2, 1)
+    V_t = torch.zeros(1, 1, 2, 1)
+    K_hat = torch.tensor([[[[1.0], [6.0]]]])
+    V_hat = torch.zeros_like(K_hat)
+    scores = torch.tensor([0.9, 0.1], dtype=torch.float32)
+
+    combined = evaluate._position_selection_scores(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        kv_transport="k_only",
+        position_selection_metric="attention_disagreement",
+        position_scores=scores,
+    )
+
+    expected = torch.tensor([0.2, 0.8], dtype=torch.float32)
+    assert combined.shape == (2,)
+    assert torch.allclose(combined, expected, atol=1e-6)
 
 
 def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
@@ -1434,3 +1477,64 @@ def test_generation_text_to_text_passes_attention_mask_to_source_generate() -> N
 
     assert 0.0 <= score <= 1.0
     assert src.last_generate_call["attention_mask_shape"] == src.last_generate_call["input_shape"]
+
+
+def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> None:
+    pred_path = tmp_path / "predictions.jsonl"
+    records = [
+        {
+            "index": 0,
+            "method": "target_alone",
+            "prediction": "42",
+            "answer": ["42"],
+            "correct": True,
+        },
+        {
+            "index": 0,
+            "method": "rotalign_kv_gate_0.10",
+            "prediction": "42",
+            "answer": ["42"],
+            "correct": True,
+            "bits": 16.0,
+            "selector_trace": [
+                {"keep_fraction": 0.5, "score_entropy": 0.7, "selected_positions": [1]}
+            ],
+        },
+    ]
+    results = {
+        "target_alone": 1.0,
+        "rotalign_kv_gate_0.10": 1.0,
+        "paired_rotalign_kv_gate_0_10_vs_target_alone_delta_accuracy": 0.0,
+    }
+
+    evaluate.write_prediction_sidecar(
+        str(pred_path),
+        records,
+        results,
+        {"source_model": "src", "target_model": "tgt"},
+    )
+
+    payload = json.loads((tmp_path / "predictions.jsonl.meta.json").read_text())
+    assert payload["run_config"]["source_model"] == "src"
+    assert payload["method_summary"]["rotalign_kv_gate_0.10"]["avg_bits"] == 16.0
+    assert payload["method_summary"]["rotalign_kv_gate_0.10"]["selector_keep_fraction_avg"] == 0.5
+    assert "paired_rotalign_kv_gate_0_10_vs_target_alone_delta_accuracy" in payload["paired_summary"]
+
+
+def test_append_prediction_record_preserves_stable_example_id() -> None:
+    records: list[dict[str, object]] = []
+    example = evaluate.GenerationExample(prompt="p", answers=["1"])
+    example_id = evaluate._generation_example_id(example)
+
+    evaluate._append_prediction_record(
+        records,
+        index=0,
+        example_id=example_id,
+        method="target_alone",
+        prediction="1",
+        answer=["1"],
+        correct=True,
+    )
+
+    assert records[0]["example_id"] == example_id
+    assert example_id == evaluate._generation_example_id(example)

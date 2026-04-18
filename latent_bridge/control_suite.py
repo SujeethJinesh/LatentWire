@@ -379,6 +379,18 @@ def default_eval_specs() -> list[EvalSpec]:
             position_selection_ratio=0.5,
             position_selection_metric="attention",
         ),
+        EvalSpec(
+            name="fused_quant_k_only_attention_disagreement_sparse_brief",
+            methods=("rotalign",),
+            gate_values=(0.10,),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            fusion_rule="cosine",
+            kv_transport="k_only",
+            position_selection_ratio=0.5,
+            position_selection_metric="attention_disagreement",
+        ),
     ]
 
 

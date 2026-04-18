@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import hashlib
 import math
 import pathlib
 import re
@@ -107,6 +108,30 @@ def load_generation(path: str) -> list[GenerationExample]:
             answers = [str(raw_answer), *[str(alias) for alias in aliases]]
             items.append(GenerationExample(prompt=str(prompt), answers=answers))
     return items
+
+
+def _stable_example_id(payload: dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, ensure_ascii=True)
+    return hashlib.sha1(canonical.encode("utf-8")).hexdigest()[:16]
+
+
+def _mcq_example_id(example: MCQExample) -> str:
+    return _stable_example_id(
+        {
+            "question": example.question,
+            "choices": example.choices,
+            "answer": example.answer,
+        }
+    )
+
+
+def _generation_example_id(example: GenerationExample) -> str:
+    return _stable_example_id(
+        {
+            "prompt": example.prompt,
+            "answers": example.answers,
+        }
+    )
 
 
 def infer_task_type(path: str) -> str:
@@ -512,6 +537,7 @@ def _append_prediction_record(
     records: list[dict[str, Any]] | None,
     *,
     index: int,
+    example_id: str | None = None,
     method: str,
     prediction: Any,
     answer: Any,
@@ -527,6 +553,8 @@ def _append_prediction_record(
         "answer": answer,
         "correct": bool(correct),
     }
+    if example_id is not None:
+        record["example_id"] = example_id
     if extra:
         record.update(extra)
     records.append(record)
@@ -538,6 +566,62 @@ def write_prediction_records(path: str, records: list[dict[str, Any]]) -> None:
     with output_path.open("w", encoding="utf-8") as handle:
         for record in records:
             handle.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def prediction_record_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
+    by_method: dict[str, list[dict[str, Any]]] = {}
+    for record in records:
+        by_method.setdefault(str(record["method"]), []).append(record)
+
+    summary: dict[str, Any] = {}
+    for method, rows in by_method.items():
+        correct = sum(bool(row.get("correct")) for row in rows)
+        method_summary: dict[str, Any] = {
+            "count": len(rows),
+            "accuracy": correct / max(len(rows), 1),
+        }
+        bits = [float(row["bits"]) for row in rows if row.get("bits") is not None]
+        if bits:
+            method_summary["avg_bits"] = sum(bits) / len(bits)
+            method_summary["avg_bytes"] = method_summary["avg_bits"] / 8.0
+        traces = [row.get("selector_trace") for row in rows if row.get("selector_trace")]
+        if traces:
+            flattened = [layer for trace in traces for layer in trace]
+            if flattened:
+                keep_fractions = [float(layer["keep_fraction"]) for layer in flattened if "keep_fraction" in layer]
+                entropies = [float(layer["score_entropy"]) for layer in flattened if "score_entropy" in layer]
+                method_summary["selector_layers_logged"] = len(flattened)
+                if keep_fractions:
+                    method_summary["selector_keep_fraction_avg"] = sum(keep_fractions) / len(keep_fractions)
+                if entropies:
+                    method_summary["selector_entropy_avg"] = sum(entropies) / len(entropies)
+        summary[method] = method_summary
+    return summary
+
+
+def write_prediction_sidecar(
+    path: str,
+    records: list[dict[str, Any]],
+    results: dict[str, float],
+    run_config: dict[str, Any],
+) -> None:
+    output_path = pathlib.Path(path)
+    sidecar_path = output_path.with_suffix(output_path.suffix + ".meta.json")
+    payload = {
+        "run_config": run_config,
+        "method_summary": prediction_record_summary(records),
+        "paired_summary": {
+            key: value
+            for key, value in results.items()
+            if key.startswith("paired_")
+        },
+        "metric_summary": {
+            key: value
+            for key, value in results.items()
+            if not key.startswith("paired_")
+        },
+    }
+    sidecar_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def paired_prediction_metrics(
@@ -840,10 +924,28 @@ def _position_selection_scores(
         seed = 13_579 + (int(abs(salt) * 1_000) % 1_000_003)
         gen = torch.Generator(device="cpu").manual_seed(seed)
         return torch.rand(K_hat.shape[2], generator=gen, dtype=torch.float32).to(device=K_hat.device)
+    if position_selection_metric == "recency":
+        return torch.arange(1, K_hat.shape[2] + 1, device=K_hat.device, dtype=torch.float32)
     if position_selection_metric == "attention":
         if position_scores is None:
             raise ValueError("attention-based position selection requires explicit position scores")
         return position_scores.float()
+    if position_selection_metric == "attention_disagreement":
+        if position_scores is None:
+            raise ValueError("attention_disagreement position selection requires explicit position scores")
+        attention_scores = position_scores.float()
+        attention_scores = attention_scores / attention_scores.sum().clamp_min(1e-8)
+        disagreement_scores = _position_selection_scores(
+            K_t,
+            V_t,
+            K_hat,
+            V_hat,
+            kv_transport=kv_transport,
+            position_selection_metric="disagreement",
+        ).float()
+        disagreement_scores = disagreement_scores / disagreement_scores.sum().clamp_min(1e-8)
+        combined = attention_scores * disagreement_scores
+        return combined / combined.sum().clamp_min(1e-8)
     if position_selection_metric == "attention_shuffled":
         if position_scores is None:
             raise ValueError("attention_shuffled position selection requires explicit position scores")
@@ -865,6 +967,34 @@ def _position_selection_scores(
     raise ValueError(f"Unknown position_selection_metric: {position_selection_metric}")
 
 
+def _selector_trace(
+    scores: torch.Tensor | None,
+    keep_indices: torch.Tensor,
+    seq_len: int,
+    keep: int,
+) -> dict[str, Any]:
+    positions = sorted(int(idx) for idx in keep_indices.detach().cpu().tolist())
+    trace: dict[str, Any] = {
+        "seq_len": int(seq_len),
+        "keep": int(keep),
+        "keep_fraction": float(keep / max(seq_len, 1)),
+        "selected_positions": positions[:16],
+        "selected_count_truncated": int(max(len(positions) - 16, 0)),
+    }
+    if positions:
+        trace["selected_min_pos"] = int(positions[0])
+        trace["selected_max_pos"] = int(positions[-1])
+        trace["selected_mean_pos"] = float(sum(positions) / len(positions))
+    if scores is not None:
+        probs = scores.float().detach()
+        probs = probs / probs.sum().clamp_min(1e-8)
+        sorted_scores = probs.sort(descending=True).values
+        trace["score_entropy"] = float((-(probs * probs.clamp_min(1e-8).log()).sum()).item())
+        trace["score_top"] = float(sorted_scores[0].item())
+        trace["score_gap"] = float((sorted_scores[0] - sorted_scores[1]).item()) if sorted_scores.numel() > 1 else float(sorted_scores[0].item())
+    return trace
+
+
 def _apply_position_selection(
     K_t: torch.Tensor,
     V_t: torch.Tensor,
@@ -876,11 +1006,13 @@ def _apply_position_selection(
     position_selection_ratio: float,
     position_selection_metric: str,
     position_scores: torch.Tensor | None = None,
-) -> tuple[torch.Tensor, torch.Tensor]:
+    return_trace: bool = False,
+) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, dict[str, Any]]:
     seq_len = K_hat.shape[2]
     keep = _selected_token_count(seq_len, position_selection_ratio)
     if keep >= seq_len:
-        return K_hat, V_hat
+        trace = _selector_trace(None, torch.arange(seq_len, device=K_hat.device), seq_len, seq_len)
+        return (K_hat, V_hat, trace) if return_trace else (K_hat, V_hat)
 
     scores = _position_selection_scores(
         K_t,
@@ -902,7 +1034,10 @@ def _apply_position_selection(
     else:
         fill_k = K_t
         fill_v = V_t
-    return torch.where(mask, K_hat, fill_k), torch.where(mask, V_hat, fill_v)
+    selected_k = torch.where(mask, K_hat, fill_k)
+    selected_v = torch.where(mask, V_hat, fill_v)
+    trace = _selector_trace(scores, keep_indices, seq_len, keep)
+    return (selected_k, selected_v, trace) if return_trace else (selected_k, selected_v)
 
 
 @torch.no_grad()
@@ -950,7 +1085,7 @@ def _build_rotalign_prefix_state(
         src_pkv = list(_normalize_cache(src_out.past_key_values))
 
     layer_position_scores: list[torch.Tensor] | None = None
-    if position_selection_metric in {"attention", "attention_shuffled"} and position_selection_ratio < 1.0:
+    if position_selection_metric in {"attention", "attention_disagreement", "attention_shuffled"} and position_selection_ratio < 1.0:
         layer_position_scores = _last_token_attention_scores(
             target_model,
             tgt_last_token,
@@ -973,6 +1108,7 @@ def _build_rotalign_prefix_state(
         raise ValueError("attention_prior position selection requires fixed_position_profiles")
 
     fused_pkv: list[tuple[torch.Tensor, torch.Tensor]] = []
+    selector_layers: list[dict[str, Any]] = []
     for tgt_l in range(translator.config.num_tgt_layers):
         src_l = translator.layer_map[tgt_l]
         K_s, V_s = src_pkv[src_l]
@@ -993,7 +1129,7 @@ def _build_rotalign_prefix_state(
         )
         K_t_aligned, K_hat = _tail_align_pair(K_t, K_hat.to(dtype=K_t.dtype))
         V_t_aligned, V_hat = _tail_align_pair(V_t, V_hat.to(dtype=V_t.dtype))
-        K_hat, V_hat = _apply_position_selection(
+        K_hat, V_hat, selector_trace = _apply_position_selection(
             K_t_aligned,
             V_t_aligned,
             K_hat,
@@ -1018,7 +1154,12 @@ def _build_rotalign_prefix_state(
                     )
                 )
             ),
+            return_trace=True,
         )
+        selector_trace["target_layer"] = int(tgt_l)
+        selector_trace["source_layer"] = int(src_l)
+        selector_trace["metric"] = position_selection_metric
+        selector_layers.append(selector_trace)
         K_hat, V_hat = _apply_kv_transport(
             K_t_aligned,
             V_t_aligned,
@@ -1070,7 +1211,18 @@ def _build_rotalign_prefix_state(
             protocol,
             kv_transport,
             position_selection_ratio,
-        )
+        ),
+        "bytes": _communication_bits(
+            translator,
+            seq_len,
+            quantize,
+            translated_kv_control,
+            protocol,
+            kv_transport,
+            position_selection_ratio,
+        ) / 8.0,
+        "selector_trace": selector_layers,
+        "selected_target_layers": [int(layer) for layer in translator.selected_layer_indices()],
     }
 
 
@@ -1267,6 +1419,7 @@ def eval_target_alone(target_model, target_tokenizer, examples, device, records:
         _append_prediction_record(
             records,
             index=idx,
+            example_id=_mcq_example_id(ex),
             method="target_alone",
             prediction=pred,
             answer=ex.answer,
@@ -1290,6 +1443,7 @@ def eval_source_alone(source_model, source_tokenizer, examples, device, records:
         _append_prediction_record(
             records,
             index=idx,
+            example_id=_mcq_example_id(ex),
             method="source_alone",
             prediction=pred,
             answer=ex.answer,
@@ -1323,6 +1477,7 @@ def eval_routing(
         _append_prediction_record(
             records,
             index=idx,
+            example_id=_mcq_example_id(ex),
             method="routing",
             prediction=pred,
             answer=ex.answer,
@@ -1363,6 +1518,7 @@ def eval_text_to_text(
         _append_prediction_record(
             records,
             index=idx,
+            example_id=_mcq_example_id(ex),
             method="text_to_text",
             prediction=pred,
             answer=ex.answer,
@@ -1404,7 +1560,7 @@ def eval_rotalign_kv(
         build_kwargs: dict[str, Any] = {}
         if fixed_position_profiles is not None:
             build_kwargs["fixed_position_profiles"] = fixed_position_profiles
-        prefix_state, _ = _build_rotalign_prefix_state(
+        prefix_state, stats = _build_rotalign_prefix_state(
             source_model,
             source_tokenizer,
             target_model,
@@ -1433,6 +1589,7 @@ def eval_rotalign_kv(
         _append_prediction_record(
             records,
             index=idx,
+            example_id=_mcq_example_id(ex),
             method=method_name,
             prediction=pred,
             answer=ex.answer,
@@ -1446,6 +1603,10 @@ def eval_rotalign_kv(
                 "kv_transport": kv_transport,
                 "position_selection_ratio": position_selection_ratio,
                 "position_selection_metric": position_selection_metric,
+                "communication_bits": stats.get("bits"),
+                "communication_bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
+                "selected_target_layers": stats.get("selected_target_layers"),
+                "selector_trace": stats.get("selector_trace"),
             },
         )
         if is_correct:
@@ -1492,6 +1653,7 @@ def _eval_generation_target_alone_with_stats(
         _append_prediction_record(
             records,
             index=idx,
+            example_id=_generation_example_id(ex),
             method=method_name,
             prediction=trace.text,
             answer=ex.answers,
@@ -1571,6 +1733,7 @@ def _eval_generation_text_to_text_with_stats(
         _append_prediction_record(
             records,
             index=idx,
+            example_id=_generation_example_id(ex),
             method="text_to_text",
             prediction=trace.text,
             answer=ex.answers,
@@ -1716,6 +1879,7 @@ def _eval_generation_rotalign_with_stats(
         _append_prediction_record(
             records,
             index=idx,
+            example_id=_generation_example_id(ex),
             method=method_name,
             prediction=trace.text,
             answer=ex.answers,
@@ -1725,13 +1889,16 @@ def _eval_generation_rotalign_with_stats(
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
                 "translated_kv_control": translated_kv_control,
-                "fusion_rule": fusion_rule,
-                "kv_transport": kv_transport,
-                "position_selection_ratio": position_selection_ratio,
-                "position_selection_metric": position_selection_metric,
-                "bits": stats["bits"],
-                "generated_tokens": trace.num_generated_tokens,
-            },
+                    "fusion_rule": fusion_rule,
+                    "kv_transport": kv_transport,
+                    "position_selection_ratio": position_selection_ratio,
+                    "position_selection_metric": position_selection_metric,
+                    "bits": stats["bits"],
+                    "bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
+                    "generated_tokens": trace.num_generated_tokens,
+                    "selected_target_layers": stats.get("selected_target_layers"),
+                    "selector_trace": stats.get("selector_trace"),
+                },
         )
         total_bits += stats["bits"]
         total_tokens += trace.num_generated_tokens
@@ -1815,7 +1982,17 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--position-selection-metric",
-        choices=["energy", "disagreement", "random", "attention", "attention_shuffled", "source_attention", "attention_prior"],
+        choices=[
+            "energy",
+            "disagreement",
+            "random",
+            "recency",
+            "attention",
+            "attention_disagreement",
+            "attention_shuffled",
+            "source_attention",
+            "attention_prior",
+        ],
         default="energy",
         help="How to rank translated positions when position_selection_ratio < 1.0.",
     )
@@ -1891,7 +2068,13 @@ def main() -> None:
         examples = load_generation(args.eval_file)
     print(f"Loaded {len(examples)} {task_type} examples from {args.eval_file}")
 
-    attention_selector_metrics = {"attention", "attention_shuffled", "source_attention", "attention_prior"}
+    attention_selector_metrics = {
+        "attention",
+        "attention_disagreement",
+        "attention_shuffled",
+        "source_attention",
+        "attention_prior",
+    }
 
     print(f"\nLoading source: {args.source_model}")
     tok_s = AutoTokenizer.from_pretrained(args.source_model, trust_remote_code=True)
@@ -2182,6 +2365,38 @@ def main() -> None:
     if prediction_records is not None:
         add_paired_prediction_summary(results, prediction_records)
         write_prediction_records(args.prediction_output, prediction_records)
+        write_prediction_sidecar(
+            args.prediction_output,
+            prediction_records,
+            results,
+            {
+                "translator": args.translator,
+                "source_model": args.source_model,
+                "target_model": args.target_model,
+                "eval_file": args.eval_file,
+                "task_type": task_type,
+                "device": args.device,
+                "dtype": args.dtype,
+                "max_new_tokens": getattr(args, "max_new_tokens", None),
+                "source_reasoning_mode": args.source_reasoning_mode,
+                "methods": list(args.methods),
+                "gate_mode": args.gate_mode,
+                "fixed_gate": args.fixed_gate,
+                "gate_values": list(args.gate_values),
+                "gate_search_file": args.gate_search_file,
+                "gate_search_limit": args.gate_search_limit,
+                "quantize": not args.no_quantize,
+                "source_kv_control": args.source_kv_control,
+                "quantization_control": args.quantization_control,
+                "translated_kv_control": args.translated_kv_control,
+                "fusion_rule": fusion_rule,
+                "kv_transport": kv_transport,
+                "position_selection_ratio": position_selection_ratio,
+                "position_selection_metric": position_selection_metric,
+                "position_selection_prior_file": args.position_selection_prior_file,
+                "position_selection_prior_bins": args.position_selection_prior_bins,
+            },
+        )
 
     print("\n=== Summary ===")
     for key, value in results.items():

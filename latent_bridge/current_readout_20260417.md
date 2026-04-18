@@ -117,12 +117,18 @@ Fixed-prior follow-up:
 - `gsm8k_100` target-alone: `0.040000`
 - `gsm8k_100` text-to-text: `0.100000`
 - `gsm8k_100` target-attention sparse `K-only`: `0.050000`
+- `gsm8k_100` attention-disagreement sparse `K-only`: `0.050000`
 - `gsm8k_100` fixed attention prior (`64` calibration prompts): `0.030000`
 - `gsm8k_100` target-attention sparse vs fixed prior:
   - delta `+0.020000`
   - method-only wins `2`
   - baseline-only wins `0`
   - McNemar `p=0.4795`
+- `gsm8k_100` attention-disagreement vs target-attention sparse:
+  - delta `0.000000`
+  - method-only wins `0`
+  - baseline-only wins `0`
+  - McNemar `p=1.0000`
 - `arc_challenge_eval_35` target-alone: `0.428571`
 - `arc_challenge_eval_35` target-attention sparse `K-only`: `0.485714`
 - `arc_challenge_eval_35` fixed attention prior (`64` calibration prompts): `0.485714`
@@ -145,6 +151,11 @@ Second-pair GSM8K pilot:
 - `gsm8k_eval_70` fixed attention prior (`64` calibration prompts): `0.014286`
 - `gsm8k_eval_70` zero-byte attenuation: `0.014286`
 - `gsm8k_eval_70` random translated: `0.014286`
+- `gsm8k_eval_70` attention-shuffled selector: `0.000000`
+- `gsm8k_eval_70` source-attention selector: `0.014286`
+- `gsm8k_eval_70` random selector: `0.000000`
+- `gsm8k_eval_70` attention-disagreement selector: `0.014286`
+- `gsm8k_eval_70` recency selector: `0.000000`
 - `gsm8k_eval_70` target-attention sparse vs fixed prior:
   - delta `+0.014286`
   - method-only wins `1`
@@ -160,6 +171,31 @@ Second-pair GSM8K pilot:
   - method-only wins `2`
   - baseline-only wins `1`
   - McNemar `p=1.0000`
+- `gsm8k_eval_70` target-attention sparse vs attention-shuffled:
+  - delta `+0.028571`
+  - method-only wins `2`
+  - baseline-only wins `0`
+  - McNemar `p=0.4795`
+- `gsm8k_eval_70` target-attention sparse vs source-attention:
+  - delta `+0.014286`
+  - method-only wins `1`
+  - baseline-only wins `0`
+  - McNemar `p=1.0000`
+- `gsm8k_eval_70` target-attention sparse vs random selector:
+  - delta `+0.028571`
+  - method-only wins `2`
+  - baseline-only wins `0`
+  - McNemar `p=0.4795`
+- `gsm8k_eval_70` target-attention sparse vs attention-disagreement:
+  - delta `+0.014286`
+  - method-only wins `1`
+  - baseline-only wins `0`
+  - McNemar `p=1.0000`
+- `gsm8k_eval_70` target-attention sparse vs recency:
+  - delta `+0.028571`
+  - method-only wins `2`
+  - baseline-only wins `0`
+  - McNemar `p=0.4795`
 
 Second reasoning task check:
 
@@ -200,14 +236,18 @@ Second reasoning task check:
   selector, not “more retained KV is always better.”
 - On the larger `gsm8k_100` slice, the selector story strengthens slightly:
   target-attention sparse `K-only` reaches `0.050000`, target-alone is
-  `0.040000`, and the fixed calibration prior drops to `0.030000`.
+  `0.040000`, and the fixed calibration prior drops to `0.030000`. The new
+  attention-disagreement ablation ties target-attention exactly at `0.050000`,
+  so extra disagreement weighting does not improve the current branch.
 - ARC remains ambiguous. The target-attention branch is above target-alone, but
   the fixed attention prior ties it exactly on `arc_challenge_eval_35`, so ARC
   is still not clean selector-specific evidence.
 - The DeepSeek-1.5B pilot is directionally consistent with GSM8K: target-alone
   is `0.000000`, target-attention sparse `K-only` reaches `0.028571`, and the
   fixed attention prior plus zero/random translated controls all sit at
-  `0.014286`.
+  `0.014286`. The new selector controls are cleaner still: attention-shuffled,
+  random-selector, and recency all collapse to `0.000000`, while
+  source-attention and attention-disagreement sit at `0.014286`.
 - SVAMP is currently a negative transfer case. The sparse `K-only` branch does
   not beat target-alone there under the low-gate bracket, while text-to-text is
   much stronger. At the moment, SVAMP defines a failure boundary rather than a
@@ -228,7 +268,8 @@ The defensible statement now is:
   environment
 - but target-guided sparse `K-only` does beat the matched selector and
   zero-byte controls on GSM8K held-out, and the same direction survives on
-  `gsm8k_100` plus one DeepSeek-1.5B pilot
+  `gsm8k_100` plus one DeepSeek-1.5B pilot with a stronger selector-control
+  table
 - the current evidence does **not** support a broad “all reasoning tasks”
   claim, because SVAMP is negative under the present method
 

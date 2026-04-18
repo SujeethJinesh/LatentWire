@@ -64,6 +64,7 @@ def test_default_specs_cover_the_control_axes() -> None:
         "translated_quant_v_only_brief",
         "target_attenuation_v_only_brief",
         "fused_quant_k_only_attention_sparse_brief",
+        "fused_quant_k_only_attention_disagreement_sparse_brief",
     ]
     assert all(spec.include_baselines for spec in eval_specs)
     assert {spec.source_reasoning_mode for spec in eval_specs} == {
