@@ -112,6 +112,11 @@ def parse_args() -> argparse.Namespace:
         help="Apply ZCA whitening of source coords before alignment",
     )
     p.add_argument(
+        "--target-whitening",
+        action="store_true",
+        help="Canonicalize target rotated coordinates too, then dewhiten after projection",
+    )
+    p.add_argument(
         "--layer-pairing",
         choices=["interp", "cka", "reverse", "shifted", "random"],
         default="interp",
@@ -483,6 +488,7 @@ def main() -> None:
         quant_bits=args.bits,
         rotation_kind=args.rotation,
         use_whitening=args.whitening,
+        use_target_whitening=args.target_whitening,
         alignment_method=args.alignment,
         ridge_lambda=args.ridge_lambda,
         alignment_rank=args.alignment_rank,

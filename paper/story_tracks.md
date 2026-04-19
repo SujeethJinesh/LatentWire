@@ -138,6 +138,13 @@ Proposed claim:
 - So the paper should not frame linear cleanup alone as the answer; the next
   credible path is still better transport, likely OT / gauge-aware matching,
   with correction only as a secondary add-on.
+- The first symmetric-canonicalization follow-up is also bounded rather than a
+  rescue:
+  symmetric source+target whitening reaches `0.071429` on the same Qwen GSM70
+  split, which is better than several failed routing probes but still below
+  the old fixed prior `0.085714` and below `C2C` `0.128571`.
+- So canonicalization by itself is not the story either; if we keep it, it
+  should be framed as a possible component inside a stronger transport map.
 - The second external baseline is currently more useful as a blocker signal
   than a competitive bar:
   stock `KVComm` is not directly runnable on the same heterogeneous Qwen pair

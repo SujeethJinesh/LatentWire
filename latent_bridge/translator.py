@@ -21,7 +21,7 @@ from typing import Sequence
 import torch
 import torch.nn as nn
 
-from .rotation import make_rotation, fit_zca_whitening, apply_whitening
+from .rotation import make_rotation, fit_zca_whitening, apply_whitening, undo_whitening
 from .procrustes import fit_alignment, alignment_quality
 from .quantize import GaussianQuantizer
 
@@ -50,6 +50,9 @@ class TranslatorConfig:
     # Whitening: if True, fit a per-layer ZCA whitening as a pre-processing
     # step before rotation + alignment. Corrects anisotropic scaling.
     use_whitening: bool = False
+    # Canonicalize the target rotated coordinates too, then dewhiten after
+    # projection. This gives us a symmetric quotient-space style alignment.
+    use_target_whitening: bool = False
 
     # Alignment solver: 'auto' | 'identity' | 'procrustes'
     #                 | 'procrustes_rand' | 'ridge' | 'cca' | 'reduced_rank'
@@ -153,6 +156,33 @@ class RotAlignKVTranslator(nn.Module):
             self.whiten_V_src = None
             self.whiten_K_mean = None
             self.whiten_V_mean = None
+
+        if config.use_target_whitening:
+            self.whiten_K_tgt = nn.ParameterList(
+                [nn.Parameter(torch.eye(self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+            )
+            self.whiten_V_tgt = nn.ParameterList(
+                [nn.Parameter(torch.eye(self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+            )
+            self.whiten_K_tgt_inv = nn.ParameterList(
+                [nn.Parameter(torch.eye(self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+            )
+            self.whiten_V_tgt_inv = nn.ParameterList(
+                [nn.Parameter(torch.eye(self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+            )
+            self.whiten_K_tgt_mean = nn.ParameterList(
+                [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+            )
+            self.whiten_V_tgt_mean = nn.ParameterList(
+                [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+            )
+        else:
+            self.whiten_K_tgt = None
+            self.whiten_V_tgt = None
+            self.whiten_K_tgt_inv = None
+            self.whiten_V_tgt_inv = None
+            self.whiten_K_tgt_mean = None
+            self.whiten_V_tgt_mean = None
 
         # --- Per-layer scalar fusion gates (stored as logits; sigmoid at use) ---
         # Start at 0 -> sigmoid(0) = 0.5, equal weight on own vs translated.
@@ -465,10 +495,16 @@ class RotAlignKVTranslator(nn.Module):
             for group_idx in range(group_count)
         ]
 
-    def _fit_grouped_whitening(self, X: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        W = torch.zeros(self.d_s, self.d_s, dtype=X.dtype, device=X.device)
-        mean = torch.zeros(1, self.d_s, dtype=X.dtype, device=X.device)
-        for feature_slice in self._group_feature_slices(use_target=False):
+    def _fit_grouped_whitening(
+        self,
+        X: torch.Tensor,
+        *,
+        use_target: bool,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        dim = self.d_t if use_target else self.d_s
+        W = torch.zeros(dim, dim, dtype=X.dtype, device=X.device)
+        mean = torch.zeros(1, dim, dtype=X.dtype, device=X.device)
+        for feature_slice in self._group_feature_slices(use_target=use_target):
             W_group, mean_group = fit_zca_whitening(X[:, feature_slice])
             W[feature_slice, feature_slice] = W_group.to(dtype=X.dtype)
             mean[:, feature_slice] = mean_group.to(dtype=X.dtype)
@@ -685,6 +721,18 @@ class RotAlignKVTranslator(nn.Module):
             else:
                 raise ValueError(f"Unknown quantization_control: {quantization_control}")
 
+        if self.config.use_target_whitening:
+            K_t_rot = undo_whitening(
+                K_t_rot,
+                self.whiten_K_tgt_inv[tgt_layer_idx],
+                self.whiten_K_tgt_mean[tgt_layer_idx],
+            )
+            V_t_rot = undo_whitening(
+                V_t_rot,
+                self.whiten_V_tgt_inv[tgt_layer_idx],
+                self.whiten_V_tgt_mean[tgt_layer_idx],
+            )
+
         # 4) Un-rotate and un-flatten back to [batch, tgt_num_heads, seq, tgt_head_dim].
         K_t_hat = self._unflatten_and_inverse_rotate(
             K_t_rot, self.config.tgt_num_heads, self.config.tgt_head_dim, self.R_t.T
@@ -792,8 +840,8 @@ class RotAlignKVTranslator(nn.Module):
             # interpretable.
             if self.config.use_whitening:
                 if grouped_alignment:
-                    W_zca_k, mean_k = self._fit_grouped_whitening(Xk)
-                    W_zca_v, mean_v = self._fit_grouped_whitening(Xv)
+                    W_zca_k, mean_k = self._fit_grouped_whitening(Xk, use_target=False)
+                    W_zca_v, mean_v = self._fit_grouped_whitening(Xv, use_target=False)
                 else:
                     W_zca_k, mean_k = fit_zca_whitening(Xk)
                     W_zca_v, mean_v = fit_zca_whitening(Xv)
@@ -804,17 +852,36 @@ class RotAlignKVTranslator(nn.Module):
                 Xk = apply_whitening(Xk, W_zca_k, mean_k)
                 Xv = apply_whitening(Xv, W_zca_v, mean_v)
 
+            if self.config.use_target_whitening:
+                if grouped_alignment:
+                    W_tgt_k, mean_tgt_k = self._fit_grouped_whitening(Yk, use_target=True)
+                    W_tgt_v, mean_tgt_v = self._fit_grouped_whitening(Yv, use_target=True)
+                else:
+                    W_tgt_k, mean_tgt_k = fit_zca_whitening(Yk)
+                    W_tgt_v, mean_tgt_v = fit_zca_whitening(Yv)
+                self.whiten_K_tgt[tgt_l].data.copy_(W_tgt_k)
+                self.whiten_V_tgt[tgt_l].data.copy_(W_tgt_v)
+                self.whiten_K_tgt_inv[tgt_l].data.copy_(torch.linalg.pinv(W_tgt_k).to(dtype=W_tgt_k.dtype))
+                self.whiten_V_tgt_inv[tgt_l].data.copy_(torch.linalg.pinv(W_tgt_v).to(dtype=W_tgt_v.dtype))
+                self.whiten_K_tgt_mean[tgt_l].data.copy_(mean_tgt_k)
+                self.whiten_V_tgt_mean[tgt_l].data.copy_(mean_tgt_v)
+                Yk_fit = apply_whitening(Yk, W_tgt_k, mean_tgt_k)
+                Yv_fit = apply_whitening(Yv, W_tgt_v, mean_tgt_v)
+            else:
+                Yk_fit = Yk
+                Yv_fit = Yv
+
             if grouped_alignment:
                 W_K = self._fit_grouped_alignment(
                     Xk,
-                    Yk,
+                    Yk_fit,
                     method=self.config.alignment_method,
                     lam=self.config.ridge_lambda,
                     rank=self.config.alignment_rank,
                 )
                 W_V = self._fit_grouped_alignment(
                     Xv,
-                    Yv,
+                    Yv_fit,
                     method=self.config.alignment_method,
                     lam=self.config.ridge_lambda,
                     rank=self.config.alignment_rank,
@@ -822,14 +889,14 @@ class RotAlignKVTranslator(nn.Module):
             else:
                 W_K = fit_alignment(
                     Xk,
-                    Yk,
+                    Yk_fit,
                     method=self.config.alignment_method,
                     lam=self.config.ridge_lambda,
                     rank=self.config.alignment_rank,
                 )
                 W_V = fit_alignment(
                     Xv,
-                    Yv,
+                    Yv_fit,
                     method=self.config.alignment_method,
                     lam=self.config.ridge_lambda,
                     rank=self.config.alignment_rank,
@@ -838,8 +905,8 @@ class RotAlignKVTranslator(nn.Module):
             self.W_V[tgt_l].data.copy_(W_V.to(self.W_V[tgt_l].dtype))
 
             # Fit optional target-space denoising before quantization.
-            pre_quant_filter_k = self._fit_pre_quant_filter(Yk)
-            pre_quant_filter_v = self._fit_pre_quant_filter(Yv)
+            pre_quant_filter_k = self._fit_pre_quant_filter(Yk_fit)
+            pre_quant_filter_v = self._fit_pre_quant_filter(Yv_fit)
             self.pre_quant_filter_K[tgt_l].data.copy_(pre_quant_filter_k.to(self.pre_quant_filter_K[tgt_l].dtype))
             self.pre_quant_filter_V[tgt_l].data.copy_(pre_quant_filter_v.to(self.pre_quant_filter_V[tgt_l].dtype))
 
@@ -855,8 +922,8 @@ class RotAlignKVTranslator(nn.Module):
                 V_pred = (Xv @ W_V) @ pre_quant_filter_v
                 K_quant = self.quantizer.quantize_dequantize(K_pred)
                 V_quant = self.quantizer.quantize_dequantize(V_pred)
-                scale_k, bias_k = self._fit_affine_correction(K_quant, Yk)
-                scale_v, bias_v = self._fit_affine_correction(V_quant, Yv)
+                scale_k, bias_k = self._fit_affine_correction(K_quant, Yk_fit)
+                scale_v, bias_v = self._fit_affine_correction(V_quant, Yv_fit)
                 self.quant_scale_K[tgt_l].data.copy_(scale_k.to(self.quant_scale_K[tgt_l].dtype))
                 self.quant_scale_V[tgt_l].data.copy_(scale_v.to(self.quant_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
@@ -866,8 +933,8 @@ class RotAlignKVTranslator(nn.Module):
                 V_pred = (Xv @ W_V) @ pre_quant_filter_v
                 K_quant = self.quantizer.quantize_dequantize(K_pred)
                 V_quant = self.quantizer.quantize_dequantize(V_pred)
-                proj_k, bias_k = self._fit_ridge_correction(K_quant, Yk, lam=self.config.ridge_lambda)
-                proj_v, bias_v = self._fit_ridge_correction(V_quant, Yv, lam=self.config.ridge_lambda)
+                proj_k, bias_k = self._fit_ridge_correction(K_quant, Yk_fit, lam=self.config.ridge_lambda)
+                proj_v, bias_v = self._fit_ridge_correction(V_quant, Yv_fit, lam=self.config.ridge_lambda)
                 self.quant_proj_K[tgt_l].data.copy_(proj_k.to(self.quant_proj_K[tgt_l].dtype))
                 self.quant_proj_V[tgt_l].data.copy_(proj_v.to(self.quant_proj_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
@@ -875,8 +942,19 @@ class RotAlignKVTranslator(nn.Module):
             elif self.config.quantization_correction != "none":
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
-            q_k = alignment_quality(Xk, Yk, W_K)
-            q_v = alignment_quality(Xv, Yv, W_V)
+            q_k = alignment_quality(Xk, Yk_fit, W_K)
+            q_v = alignment_quality(Xv, Yv_fit, W_V)
+            if self.config.use_target_whitening:
+                Yk_hat = Xk @ W_K
+                Yv_hat = Xv @ W_V
+                q_k["original_space_relative_frobenius_error"] = float(
+                    (undo_whitening(Yk_hat, self.whiten_K_tgt_inv[tgt_l], self.whiten_K_tgt_mean[tgt_l]) - Yk).norm()
+                    / (Yk.norm() + 1e-12)
+                )
+                q_v["original_space_relative_frobenius_error"] = float(
+                    (undo_whitening(Yv_hat, self.whiten_V_tgt_inv[tgt_l], self.whiten_V_tgt_mean[tgt_l]) - Yv).norm()
+                    / (Yv.norm() + 1e-12)
+                )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
 
             # Fit optional head-group saliency from local aligned slices.
@@ -887,20 +965,20 @@ class RotAlignKVTranslator(nn.Module):
             ):
                 WgK = fit_alignment(
                     Xk[:, src_slice],
-                    Yk[:, tgt_slice],
+                    Yk_fit[:, tgt_slice],
                     method=base_method,
                     lam=self.config.ridge_lambda,
                     rank=self.config.alignment_rank,
                 )
                 WgV = fit_alignment(
                     Xv[:, src_slice],
-                    Yv[:, tgt_slice],
+                    Yv_fit[:, tgt_slice],
                     method=base_method,
                     lam=self.config.ridge_lambda,
                     rank=self.config.alignment_rank,
                 )
-                qg_k = alignment_quality(Xk[:, src_slice], Yk[:, tgt_slice], WgK)
-                qg_v = alignment_quality(Xv[:, src_slice], Yv[:, tgt_slice], WgV)
+                qg_k = alignment_quality(Xk[:, src_slice], Yk_fit[:, tgt_slice], WgK)
+                qg_v = alignment_quality(Xv[:, src_slice], Yv_fit[:, tgt_slice], WgV)
                 if self.config.head_selection_metric == "mean_cosine_similarity":
                     score = 0.5 * (
                         qg_k["mean_cosine_similarity"] + qg_v["mean_cosine_similarity"]

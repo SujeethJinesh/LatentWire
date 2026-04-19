@@ -430,6 +430,33 @@ And an eighth external-baseline constraint:
 > sharing appears to be extremely brittle once KV-head geometry itself stops
 > matching.
 
+And a ninth canonicalization constraint:
+
+> target-only whitening is clearly the wrong quotient-space shortcut on the
+> Qwen pair: its calibration quality collapses to roughly `K cos 0.284 / V cos
+> 0.274` with relative error around `0.965`.
+
+And a tenth symmetric-canonicalization constraint:
+
+> even symmetric source+target whitening only reaches `0.071429` on Qwen
+> GSM70, which is better than some failed routing probes but still below the
+> old fixed prior `0.085714` and below `C2C` `0.128571`.
+
+Paired reads for the symmetric-whitening branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.014286`
+  - symwhite-only wins `3`
+  - fixed-prior-only wins `4`
+  - bootstrap `[-0.085714, +0.057143]`
+  - McNemar `1.0000`
+- vs `C2C`:
+  - delta `-0.057143`
+  - symwhite-only wins `3`
+  - `C2C`-only wins `7`
+  - bootstrap `[-0.128571, +0.028571]`
+  - McNemar `0.3428`
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
@@ -444,6 +471,8 @@ And an eighth external-baseline constraint:
    - move toward transport plus tiny correction layers once pure routing stops improving against `C2C`
    - deprioritize standalone correction-only variants if they stay below the old fixed prior on GSM70
    - deprioritize evaluator-level soft-transport variants if they also stay below the old fixed prior on GSM70
+   - deprioritize whitening-only or symmetric-canonicalization-only pivots if
+     they stay below the old fixed prior on GSM70
    - causal head scoring once the matching space is less noisy
    - only then revisit retrieval-head routing with a stronger structure-aware score
 3. Keep `C2C` as the main external bar on the exact Qwen pair; treat the

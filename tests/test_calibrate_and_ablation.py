@@ -178,6 +178,7 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
             "--layer-pairing",
             "random",
             "--whitening",
+            "--target-whitening",
             "--source-reasoning-mode",
             "cot",
         ],
@@ -189,6 +190,7 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
     assert args.rotation == "dct"
     assert args.layer_pairing == "random"
     assert args.whitening is True
+    assert args.target_whitening is True
     assert args.source_reasoning_mode == "cot"
 
 

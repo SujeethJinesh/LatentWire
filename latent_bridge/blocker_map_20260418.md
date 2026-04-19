@@ -130,6 +130,30 @@ Next fix:
 - keep baseline notes explicit about which methods natively support
   heterogeneous head geometry and which require a lift or learned adapter
 
+### Blocker 6: Symmetric canonicalization alone is too weak
+
+Observed symptom:
+
+- target-only whitening collapsed calibration quality on the Qwen pair
+- symmetric source+target whitening recovered to a bounded GSM70 result
+  (`0.071429`) but still stayed below the old fixed-prior branch (`0.085714`)
+  and below `C2C` (`0.128571`)
+
+Interpretation:
+
+- plain covariance canonicalization is not the missing ingredient
+- the problem is richer than anisotropy or mean-shift mismatch alone
+
+Current status:
+
+- newly checked and not promising as a standalone method class
+
+Next fix:
+
+- keep canonicalization only as a component inside a stronger transport map
+- prioritize learned or OT-style transport plus correction over whitening-only
+  pivots
+
 ## Immediate Plan
 
 ### Today

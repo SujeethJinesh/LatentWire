@@ -220,3 +220,13 @@ def apply_whitening(
 ) -> torch.Tensor:
     """Apply a fitted ZCA whitening: (X - mean) @ W_zca."""
     return (X - mean) @ W_zca
+
+
+def undo_whitening(
+    X_white: torch.Tensor, W_unzca: torch.Tensor, mean: torch.Tensor
+) -> torch.Tensor:
+    """Undo a whitening transform with a stored inverse map.
+
+    If X_white = (X - mean) @ W_zca, then X ~= X_white @ W_unzca + mean.
+    """
+    return X_white @ W_unzca + mean

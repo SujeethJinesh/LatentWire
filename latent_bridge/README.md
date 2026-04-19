@@ -129,6 +129,9 @@ python scripts/calibrate.py \
   to very large head dims; `dct` is the Fourier-family dense-mixing control.
 - `--whitening` — apply ZCA whitening of source coordinates before alignment.
   Helps when the two models have very different coordinate scales.
+- `--target-whitening` — canonicalize target rotated coordinates too, then
+  dewhiten after transport. This is a symmetric geometry ablation: on the
+  current Qwen control pair it is a bounded branch, not the best method.
 - `--alignment {auto, identity, procrustes, procrustes_rand, ridge, cca, reduced_rank}` —
   pick the alignment solver. `auto` uses Procrustes if dimensions match and
   ridge otherwise. Use `cca` when you suspect the cross-model map is

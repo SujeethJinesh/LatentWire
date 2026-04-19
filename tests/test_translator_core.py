@@ -345,6 +345,86 @@ def test_grouped_head_alignment_and_whitening_stay_block_diagonal(monkeypatch) -
     assert torch.allclose(W_zca[2:, :2], torch.zeros(2, 2), atol=1e-6)
 
 
+def test_target_whitening_recovers_anisotropic_target_under_procrustes(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    torch.manual_seed(0)
+    cfg_base = dict(
+        src_head_dim=2,
+        src_num_heads=2,
+        num_src_layers=1,
+        tgt_head_dim=2,
+        tgt_num_heads=2,
+        num_tgt_layers=1,
+        alignment_method="procrustes",
+    )
+    tr_plain = RotAlignKVTranslator(TranslatorConfig(**cfg_base))
+    tr_whiten = RotAlignKVTranslator(TranslatorConfig(**cfg_base, use_target_whitening=True))
+
+    src = torch.randn(8, 2, 4, 2, dtype=torch.float32)
+    flat = src.permute(0, 2, 1, 3).reshape(-1, 4)
+    scale = torch.diag(torch.tensor([3.0, 0.5, 2.0, 0.25], dtype=torch.float32))
+    bias = torch.tensor([[0.3, -0.2, 0.15, 0.4]], dtype=torch.float32)
+    tgt_flat = flat @ scale + bias
+    tgt = tgt_flat.reshape(8, 4, 2, 2).permute(0, 2, 1, 3).contiguous()
+
+    src_kvs = [(src, src + 0.1)]
+    tgt_kvs = [(tgt, tgt + 0.1)]
+
+    tr_plain.fit_from_pairs(src_kvs, tgt_kvs)
+    diagnostics = tr_whiten.fit_from_pairs(src_kvs, tgt_kvs)
+
+    pred_plain, _ = tr_plain.translate_layer(src, src + 0.1, tgt_layer_idx=0, quantize=False)
+    pred_whiten, _ = tr_whiten.translate_layer(src, src + 0.1, tgt_layer_idx=0, quantize=False)
+
+    err_plain = (pred_plain - tgt).pow(2).mean()
+    err_whiten = (pred_whiten - tgt).pow(2).mean()
+
+    assert err_whiten < err_plain * 0.25
+    assert tr_whiten.whiten_K_tgt is not None
+    assert tr_whiten.whiten_K_tgt_inv is not None
+    assert "original_space_relative_frobenius_error" in diagnostics[0]["K"]
+
+
+def test_target_whitening_save_load_preserves_translation(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    torch.manual_seed(1)
+    tr = RotAlignKVTranslator(
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            alignment_method="procrustes",
+            use_target_whitening=True,
+        )
+    )
+    src = torch.randn(4, 2, 3, 2, dtype=torch.float32)
+    flat = src.permute(0, 2, 1, 3).reshape(-1, 4)
+    scale = torch.diag(torch.tensor([2.0, 0.5, 1.5, 0.75], dtype=torch.float32))
+    bias = torch.tensor([[0.1, -0.3, 0.2, 0.05]], dtype=torch.float32)
+    tgt = (flat @ scale + bias).reshape(4, 3, 2, 2).permute(0, 2, 1, 3).contiguous()
+    tr.fit_from_pairs([(src, src + 0.2)], [(tgt, tgt + 0.2)])
+
+    before, _ = tr.translate_layer(src, src + 0.2, tgt_layer_idx=0, quantize=False)
+
+    path = tmp_path / "target_whitening.pt"
+    tr.save(str(path))
+    loaded = RotAlignKVTranslator.load(str(path))
+
+    after, _ = loaded.translate_layer(src, src + 0.2, tgt_layer_idx=0, quantize=False)
+
+    assert loaded.config.use_target_whitening is True
+    assert torch.allclose(after, before)
+    assert torch.allclose(loaded.whiten_K_tgt[0], tr.whiten_K_tgt[0])
+    assert torch.allclose(loaded.whiten_K_tgt_inv[0], tr.whiten_K_tgt_inv[0])
+
+
 def test_head_selection_masks_unselected_heads(monkeypatch) -> None:
     tr = _make_identity_translator(monkeypatch)
     tr.head_selected_mask[0].copy_(torch.tensor([True, False]))
