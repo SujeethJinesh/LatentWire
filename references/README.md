@@ -230,6 +230,11 @@ Files `179_` and `180_` extend the transport-geometry lane:
 - `179_`: Probabilistic Geometric Alignment via Bayesian Latent Transport for Domain-Adaptive Foundation Models as a fresh latent-transport reference for uncertainty-aware geometry matching.
 - `180_`: Constrained Gaussian Wasserstein Optimal Transport with Commutative Covariance Matrices as a direct Bures/Wasserstein-style geometry reference for richer transport costs.
 
+Files `183_` and `185_` extend the gauge-and-correction lane:
+
+- `183_`: GaugeKV as a direct gauge-canonicalization note for the hypothesis that some of the remaining cross-model KV mismatch is a coordinate / symmetry problem rather than just a weak transport score.
+- `185_`: KVLinC as the cleanest recent transport-plus-lightweight-correction reference for the current “transport first, then small repair” method lane.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

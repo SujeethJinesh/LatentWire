@@ -439,6 +439,40 @@ Next fix:
   retrieval-template transport rather than another local combination inside the
   current grouped transport family
 
+## Blocker 18: Escaping the grouped `2 x 2` bottleneck still does not rescue transport
+
+Observed symptom:
+
+- a new `broadcast_template_transport` branch fit a true rectangular `2 -> 8`
+  head transport on Qwen2.5-0.5B -> Qwen3-0.6B using per-head calibration-time
+  attention templates and the same rank-4 residual correction
+- offline fit looked materially better than several earlier grouped probes
+  (`K` cosine `0.868`, relative Frobenius error `0.470` on the `64`-prompt
+  calibration slice)
+- but exact Qwen GSM70 still collapsed to `0.000000`
+- that is below grouped subspace transport + rank-4 residual (`0.057143`),
+  below the old fixed prior (`0.085714`), and below `C2C` (`0.128571`)
+
+Interpretation:
+
+- the grouped family was not failing **only** because `gcd(2, 8) = 2`
+  restricted it to a coarse `2 x 2` plan
+- finer per-head transport without a richer cost or stronger correction is
+  still too brittle
+- better calibration fit is again not the same thing as better reasoning-time
+  communication
+
+Current status:
+
+- newly checked and negative
+
+Next fix:
+
+- stop treating “more granular head transport” as sufficient by itself
+- if the positive-method lane stays alive, move to richer OT or
+  retrieval-/QK-template transport costs and judge them directly against fixed
+  prior, grouped-subspace-plus-rank4, and `C2C`
+
 Next fix:
 
 - keep pushing transport-first, but only with richer costs or canonicalization

@@ -100,6 +100,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_covariance_transport",
             "grouped_template_transport",
             "grouped_template_subspace_transport",
+            "broadcast_template_transport",
         ],
         default="auto",
     )
@@ -669,11 +670,13 @@ def main() -> None:
     print(f"\nBuilding translator with config:\n  {config}")
     translator = RotAlignKVTranslator(config)
 
-    if args.alignment in {"grouped_template_transport", "grouped_template_subspace_transport"}:
+    if args.alignment in {"grouped_template_transport", "grouped_template_subspace_transport", "broadcast_template_transport"}:
         group_count = math.gcd(config.src_num_heads, config.tgt_num_heads)
+        src_template_groups = config.src_num_heads if args.alignment == "broadcast_template_transport" else group_count
+        tgt_template_groups = config.tgt_num_heads if args.alignment == "broadcast_template_transport" else group_count
         print(
             "\nBuilding grouped attention templates from calibration prompts "
-            f"(groups={group_count}, bins={args.transport_template_bins})..."
+            f"(source groups={src_template_groups}, target groups={tgt_template_groups}, bins={args.transport_template_bins})..."
         )
         translator._transport_src_group_templates = collect_group_attention_templates(
             src,
@@ -683,7 +686,7 @@ def main() -> None:
             batch_size=args.batch_size,
             device=args.device,
             kv_heads=config.src_num_heads,
-            group_count=group_count,
+            group_count=src_template_groups,
             bins=args.transport_template_bins,
             reasoning_mode=args.source_reasoning_mode,
         )
@@ -695,7 +698,7 @@ def main() -> None:
             batch_size=args.batch_size,
             device=args.device,
             kv_heads=config.tgt_num_heads,
-            group_count=group_count,
+            group_count=tgt_template_groups,
             bins=args.transport_template_bins,
             reasoning_mode="plain",
         )

@@ -90,6 +90,10 @@ def main() -> None:
     _, tmpsubr4 = _first_method_summary(tmpsubr4_meta)
     rows.append(_row("gsm8k_eval_70", "grouped template-subspace transport + rank-4 residual", tmpsubr4["accuracy"], tmpsubr4.get("avg_bytes"), "stacked grouped-penalty failure (64-prompt calibration slice)"))
 
+    broadcast_meta = _load_meta(ROOT / "results/broadcast_template_transport_20260419/qwen_gsm70_broadcast_template_transport_w010_r4_cal64.jsonl.meta.json")
+    _, broadcast = _first_method_summary(broadcast_meta)
+    rows.append(_row("gsm8k_eval_70", "broadcast template transport + rank-4 residual", broadcast["accuracy"], broadcast.get("avg_bytes"), "rectangular 2->8 head transport probe (64-prompt calibration slice)"))
+
     can70_meta = _load_meta(ROOT / "results/grouped_canonical_transport_20260419/qwen_gsm70_grouped_canonical_transport_r8.jsonl.meta.json")
     _, can70 = _first_method_summary(can70_meta)
     rows.append(_row("gsm8k_eval_70", "grouped canonical transport", can70["accuracy"], can70.get("avg_bytes"), "low-rank canonical basis shortcut"))

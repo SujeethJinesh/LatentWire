@@ -866,3 +866,45 @@ Interpretation:
   branch at `0.057143`
 - so the next serious method change has to be a different transport class,
   not another grouped-penalty combination
+
+And a twenty-second broadcast transport update:
+
+> to break the grouped `gcd(2, 8) = 2` bottleneck directly, I fit a new
+> `broadcast_template_transport` branch with a true rectangular `2 -> 8`
+> head-transport plan built from per-head calibration-time attention
+> templates, then kept the same rank-4 residual correction on top. Offline
+> calibration fit looked directionally promising on the same `64`-prompt
+> slice: average `K` cosine `0.868` with relative Frobenius error `0.470`.
+> But on exact Qwen GSM70 the held-out result collapsed to `0.000000`.
+
+Paired reads for the broadcast-template-plus-rank4-residual branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.085714`
+  - broadcast-template-resid4-only wins `0`
+  - fixed-prior-only wins `6`
+  - bootstrap `[-0.157143, -0.028571]`
+  - McNemar `0.0412`
+- vs `C2C`:
+  - delta `-0.128571`
+  - broadcast-template-resid4-only wins `0`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.214286, -0.057143]`
+  - McNemar `0.0077`
+- vs grouped subspace transport + rank-4 residual:
+  - delta `-0.057143`
+  - broadcast-template-resid4-only wins `0`
+  - grouped-subspace-resid4-only wins `4`
+  - bootstrap `[-0.114286, -0.014286]`
+  - McNemar `0.1336`
+
+Interpretation:
+
+- escaping the grouped `2 x 2` transport bottleneck is **not** enough by
+  itself; a finer rectangular `2 -> 8` head map still does not recover the
+  missing reasoning signal
+- better offline transport fit is again not predictive of held-out reasoning
+  behavior
+- the remaining live positive-method lane is now narrower: richer OT /
+  retrieval-template / QK-fidelity transport, not more grouped or lightly
+  behavior-matched transport variants

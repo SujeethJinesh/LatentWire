@@ -1541,5 +1541,23 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 429563
+  },
+  {
+    "num": 183,
+    "slug": "gaugekv_composable_exact_kv_cache_compression",
+    "url": "https://openreview.net/forum?id=rSxYPLzyBu",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/183_gaugekv_composable_exact_kv_cache_compression.md",
+    "content_type": "text/markdown",
+    "status": "link_note",
+    "bytes": 0
+  },
+  {
+    "num": 185,
+    "slug": "kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction",
+    "url": "https://arxiv.org/pdf/2510.05373.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/185_kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1318346
   }
 ]

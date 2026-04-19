@@ -206,6 +206,10 @@ Proposed claim:
 - A hybrid template-plus-subspace version then falls further to `0.014286`, so
   naively stacking the two best grouped penalties is not the right direction
   either.
+- A finer rectangular `2 -> 8` broadcast-template transport branch with the
+  same rank-4 residual then collapses to `0.000000`, so the grouped family was
+  not failing only because the earlier solver was bottlenecked by coarse
+  grouped transport.
 - But it is still below the old fixed prior `0.085714` and below `C2C`
   `0.128571`, so this is still a bounded mechanistic gain rather than a
   publishable headline result.
@@ -264,3 +268,6 @@ What we still need:
    - treat `C2C` as the first real external bar on the exact Qwen pair before
      spending more time on weaker internal heuristics
 4. Preserve the negative controls and failure cases in the main paper, not just the appendix.
+5. If we give the positive-method lane one more serious chance, make it a
+   richer retrieval-template / attention-fidelity OT branch, not another
+   grouped or lightly behavior-matched transport tweak.

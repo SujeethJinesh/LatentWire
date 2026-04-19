@@ -784,5 +784,17 @@
     "slug": "constrained_gaussian_wasserstein_optimal_transport_with_commutative_covariance_matrices",
     "url": "https://arxiv.org/pdf/2503.03744.pdf",
     "reason": "This is a direct Gaussian Wasserstein / Bures transport reference for richer covariance-aware costs, useful if the next transport branch moves from heuristic penalties toward principled OT geometry."
+  },
+  {
+    "num": 183,
+    "slug": "gaugekv_composable_exact_kv_cache_compression",
+    "url": "https://openreview.net/forum?id=rSxYPLzyBu",
+    "reason": "This is the cleanest current reference for gauge-aware KV canonicalization, directly supporting the blocker that head-space mismatch is partly a symmetry problem rather than just a weak selector or poor local cost."
+  },
+  {
+    "num": 185,
+    "slug": "kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction",
+    "url": "https://arxiv.org/pdf/2510.05373.pdf",
+    "reason": "This is the most relevant transport-plus-lightweight-correction reference for the remaining positive-method lane after correction-only and weak transport variants have already failed."
   }
 ]
