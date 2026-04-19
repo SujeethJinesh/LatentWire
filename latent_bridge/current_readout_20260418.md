@@ -1008,35 +1008,40 @@ And a twenty-fifth retrieval-spectrum-OT update:
 > per-head key-spectrum descriptor, keeping the same rectangular Sinkhorn-style
 > `2 -> 8` plan and the same rank-4 residual on the same `64`-prompt
 > calibration slice. Offline fit improved materially (`K` cosine `0.931`,
-> relative Frobenius error `0.350`), but exact Qwen GSM70 still collapsed to
-> `0.000000`.
+> relative Frobenius error `0.350`). The first dense replay collapsed to
+> `0.000000`, but that was not the matched-budget protocol. Under the fair
+> sparse `K-only` evaluation used for the other transport branches, exact Qwen
+> GSM70 recovered only to `0.014286`.
 
 Paired reads for the broadcast-retrieval-spectrum-OT-plus-rank4-residual branch on Qwen GSM70:
 
 - vs old fixed prior:
-  - delta `-0.085714`
+  - delta `-0.071429`
   - broadcast-retrieval-spectrum-ot-resid4-only wins `0`
-  - fixed-prior-only wins `6`
-  - bootstrap `[-0.157143, -0.028571]`
-  - McNemar `0.0412`
+  - fixed-prior-only wins `5`
+  - bootstrap `[-0.128571, -0.014286]`
+  - McNemar `0.0736`
 - vs `C2C`:
-  - delta `-0.128571`
-  - broadcast-retrieval-spectrum-ot-resid4-only wins `0`
+  - delta `-0.114286`
+  - broadcast-retrieval-spectrum-ot-resid4-only wins `1`
   - `C2C`-only wins `9`
-  - bootstrap `[-0.214286, -0.057143]`
-  - McNemar `0.0077`
+  - bootstrap `[-0.200000, -0.028571]`
+  - McNemar `0.0269`
 - vs grouped subspace transport + rank-4 residual:
-  - delta `-0.057143`
+  - delta `-0.042857`
   - broadcast-retrieval-spectrum-ot-resid4-only wins `0`
-  - grouped-subspace-resid4-only wins `4`
-  - bootstrap `[-0.114286, -0.014286]`
-  - McNemar `0.1336`
+  - grouped-subspace-resid4-only wins `3`
+  - bootstrap `[-0.100000, +0.000000]`
+  - McNemar `0.2482`
 
 Interpretation:
 
 - “use a richer calibration-time key descriptor” is also not enough in this
   simple spectral form
 - better offline fit is still not predictive of held-out reasoning utility
+- the dense replay was too pessimistic, but the fair matched sparse replay is
+  still only tied with the peak-template OT branch and remains far below the
+  fixed-prior branch and `C2C`
 - the remaining positive-method lane is now extremely narrow:
   transport in a genuinely different query-conditioned representation space,
   such as QK-fidelity or richer retrieval templates, or else a pivot to a

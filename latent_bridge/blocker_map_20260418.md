@@ -548,9 +548,11 @@ Observed symptom:
   retrieval-weighted key-spectrum signature
 - offline fit improved materially on the same `64`-prompt calibration slice
   (`K` cosine `0.931`, relative Frobenius error `0.350`)
-- but exact Qwen GSM70 still collapsed to `0.000000`
-- bytes also exploded to about `2.37M` per example, far above the sparse
-  branches it was meant to improve on
+- the first dense replay collapsed to `0.000000`, but that was not the
+  reviewer-facing protocol; under the matched sparse `K-only` setup the branch
+  recovered only to `0.014286`
+- even under that fair sparse protocol, bytes stayed much higher than the live
+  sparse branches at about `625k` per example
 
 Interpretation:
 

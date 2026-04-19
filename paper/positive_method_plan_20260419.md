@@ -84,8 +84,10 @@ lifted that score slightly to `0.0143`. That means:
 The follow-up `broadcast_retrieval_spectrum_ot_transport + rank-4 residual`
 branch then moved into a richer per-head key-geometry space, using
 retrieval-weighted key spectra instead of attention templates. Offline fit
-improved materially (`K` cosine `0.931`), but exact Qwen GSM70 still collapsed
-to `0.0000`, and at a much higher byte cost than the sparse branches.
+improved materially (`K` cosine `0.931`). Under the fair matched sparse
+`K-only` protocol, exact Qwen GSM70 recovered only to `0.0143`, tying the
+peak-template OT branch and still using far more bytes than the live sparse
+branches.
 
 That means:
 

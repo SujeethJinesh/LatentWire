@@ -15,7 +15,7 @@
 | gsm8k_eval_70 | broadcast template transport + rank-4 residual | 0.0000 | 149,129.8 | rectangular 2->8 head transport probe (64-prompt calibration slice) |
 | gsm8k_eval_70 | broadcast template OT transport + rank-4 residual | 0.0000 | 149,129.8 | rectangular Sinkhorn-style 2->8 head transport probe (64-prompt calibration slice) |
 | gsm8k_eval_70 | broadcast peak-template OT transport + rank-4 residual | 0.0143 | 149,129.8 | rectangular Sinkhorn-style 2->8 transport using peak-location templates (64-prompt calibration slice) |
-| gsm8k_eval_70 | broadcast retrieval-spectrum OT transport + rank-4 residual | 0.0000 | 2,367,820.8 | rectangular Sinkhorn-style 2->8 transport using retrieval-weighted key spectra (64-prompt calibration slice) |
+| gsm8k_eval_70 | broadcast retrieval-spectrum OT transport + rank-4 residual | 0.0143 | 625,463.7 | rectangular Sinkhorn-style 2->8 transport using retrieval-weighted key spectra under matched sparse K-only evaluation (64-prompt calibration slice) |
 | gsm8k_eval_70 | grouped canonical transport | 0.0286 | 149,496.2 | low-rank canonical basis shortcut |
 | gsm8k_eval_70 | C2C | 0.1286 | - | strongest external baseline so far |
 | gsm8k_eval_70 | KVComm-compatible replay | 0.0000 | - | compatibility-lifted heterogeneous replay |

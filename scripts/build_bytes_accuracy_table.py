@@ -102,9 +102,9 @@ def main() -> None:
     _, broadcast_peak_ot = _first_method_summary(broadcast_peak_ot_meta)
     rows.append(_row("gsm8k_eval_70", "broadcast peak-template OT transport + rank-4 residual", broadcast_peak_ot["accuracy"], broadcast_peak_ot.get("avg_bytes"), "rectangular Sinkhorn-style 2->8 transport using peak-location templates (64-prompt calibration slice)"))
 
-    broadcast_retrieval_meta = _load_meta(ROOT / "results/broadcast_retrieval_spectrum_ot_transport_20260419/qwen_gsm70_broadcast_retrieval_spectrum_ot_transport_w010_r4_cal64.jsonl.meta.json")
+    broadcast_retrieval_meta = _load_meta(ROOT / "results/broadcast_retrieval_spectrum_ot_transport_20260419/qwen_gsm70_broadcast_retrieval_spectrum_ot_transport_w010_r4_cal64_fair.jsonl.meta.json")
     _, broadcast_retrieval = _first_method_summary(broadcast_retrieval_meta)
-    rows.append(_row("gsm8k_eval_70", "broadcast retrieval-spectrum OT transport + rank-4 residual", broadcast_retrieval["accuracy"], broadcast_retrieval.get("avg_bytes"), "rectangular Sinkhorn-style 2->8 transport using retrieval-weighted key spectra (64-prompt calibration slice)"))
+    rows.append(_row("gsm8k_eval_70", "broadcast retrieval-spectrum OT transport + rank-4 residual", broadcast_retrieval["accuracy"], broadcast_retrieval.get("avg_bytes"), "rectangular Sinkhorn-style 2->8 transport using retrieval-weighted key spectra under matched sparse K-only evaluation (64-prompt calibration slice)"))
 
     can70_meta = _load_meta(ROOT / "results/grouped_canonical_transport_20260419/qwen_gsm70_grouped_canonical_transport_r8.jsonl.meta.json")
     _, can70 = _first_method_summary(can70_meta)
