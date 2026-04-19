@@ -954,3 +954,50 @@ Interpretation:
 - so if OT still lives as the final positive-method lane, it likely has to
   live in a different representation space: retrieval-template or QK-fidelity
   transport, not the current attention-template space alone
+
+And a twenty-fourth peak-template OT update:
+
+> I then changed only the broadcast OT template representation, replacing mean
+> attention mass with a simple peak-location histogram per head across the
+> same `64`-prompt calibration slice. This `broadcast_peak_template_ot_transport`
+> branch keeps the same rectangular Sinkhorn-style `2 -> 8` plan and the same
+> rank-4 residual. On exact Qwen GSM70 it improves from `0.000000` to
+> `0.014286`.
+
+Paired reads for the broadcast-peak-template-OT-plus-rank4-residual branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.071429`
+  - broadcast-peak-template-ot-resid4-only wins `1`
+  - fixed-prior-only wins `6`
+  - bootstrap `[-0.142857, +0.000000]`
+  - McNemar `0.1306`
+- vs `C2C`:
+  - delta `-0.114286`
+  - broadcast-peak-template-ot-resid4-only wins `0`
+  - `C2C`-only wins `8`
+  - bootstrap `[-0.185714, -0.042857]`
+  - McNemar `0.0133`
+- vs grouped subspace transport + rank-4 residual:
+  - delta `-0.042857`
+  - broadcast-peak-template-ot-resid4-only wins `1`
+  - grouped-subspace-resid4-only wins `4`
+  - bootstrap `[-0.100000, +0.014286]`
+  - McNemar `0.3711`
+- vs broadcast template OT transport + rank-4 residual:
+  - delta `+0.014286`
+  - broadcast-peak-template-ot-resid4-only wins `1`
+  - broadcast-template-ot-resid4-only wins `0`
+  - bootstrap `[+0.000000, +0.042857]`
+  - McNemar `1.0000`
+
+Interpretation:
+
+- the template representation does matter a little: retrieval-like peak
+  templates are directionally better than mean attention templates in the same
+  OT solver
+- but the gain is still tiny and far below the fixed-prior branch and `C2C`
+- so the remaining positive-method lane is now even narrower:
+  retrieval-template or QK-fidelity transport may still be alive, but the
+  current simple peak-template proxy is not enough to make the paper a
+  positive-method result

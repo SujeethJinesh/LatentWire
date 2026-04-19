@@ -71,3 +71,12 @@ collapsed to `0.0000` on exact Qwen GSM70, exactly tying the simpler
   - retrieval-template OT
   - QK-fidelity OT
   - or a residual-stream bridge if we pivot more aggressively
+
+The follow-up `broadcast_peak_template_ot_transport + rank-4 residual` branch
+lifted that score slightly to `0.0143`. That means:
+
+- representation does matter somewhat
+- but a simple peak-location proxy is still far too weak
+- if we give the positive-method lane one more serious try, it should be a
+  **richer retrieval-template or QK-fidelity transport**, not more tweaks to
+  mean-attention templates

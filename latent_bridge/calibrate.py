@@ -102,6 +102,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_template_subspace_transport",
             "broadcast_template_transport",
             "broadcast_template_ot_transport",
+            "broadcast_peak_template_ot_transport",
         ],
         default="auto",
     )
@@ -532,6 +533,7 @@ def collect_group_attention_templates(
     kv_heads: int,
     group_count: int,
     bins: int,
+    template_mode: str = "mean",
     reasoning_mode: str = "plain",
 ) -> list[torch.Tensor]:
     if bins <= 0:
@@ -540,6 +542,8 @@ def collect_group_attention_templates(
         raise ValueError("group_count must be positive")
     if kv_heads % group_count != 0:
         raise ValueError(f"kv_heads={kv_heads} must be divisible by group_count={group_count}")
+    if template_mode not in {"mean", "peak"}:
+        raise ValueError(f"Unknown template_mode: {template_mode}")
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -571,10 +575,20 @@ def collect_group_attention_templates(
                 head_scores = _reduce_attention_heads_to_kv_heads(head_scores, kv_heads=kv_heads)
                 head_scores = head_scores / head_scores.sum(dim=-1, keepdim=True).clamp_min(1e-8)
                 grouped = head_scores.reshape(group_count, group_heads, valid_len - 1).mean(dim=1)
-                grouped = torch.stack(
-                    [_resample_position_profile(group_scores, bins) for group_scores in grouped],
-                    dim=0,
-                )
+                if template_mode == "mean":
+                    grouped = torch.stack(
+                        [_resample_position_profile(group_scores, bins) for group_scores in grouped],
+                        dim=0,
+                    )
+                else:
+                    peak_templates = []
+                    for group_scores in grouped:
+                        peak_idx = int(torch.argmax(group_scores).item())
+                        peak_bin = min(bins - 1, int(peak_idx * bins / max(group_scores.numel(), 1)))
+                        one_hot = torch.zeros(bins, dtype=torch.float32)
+                        one_hot[peak_bin] = 1.0
+                        peak_templates.append(one_hot)
+                    grouped = torch.stack(peak_templates, dim=0)
                 grouped = grouped / grouped.sum(dim=-1, keepdim=True).clamp_min(1e-8)
                 layer_sums[layer_idx] += grouped
             used_prompts += 1
@@ -671,14 +685,15 @@ def main() -> None:
     print(f"\nBuilding translator with config:\n  {config}")
     translator = RotAlignKVTranslator(config)
 
-    if args.alignment in {"grouped_template_transport", "grouped_template_subspace_transport", "broadcast_template_transport", "broadcast_template_ot_transport"}:
+    if args.alignment in {"grouped_template_transport", "grouped_template_subspace_transport", "broadcast_template_transport", "broadcast_template_ot_transport", "broadcast_peak_template_ot_transport"}:
         group_count = math.gcd(config.src_num_heads, config.tgt_num_heads)
-        is_broadcast = args.alignment in {"broadcast_template_transport", "broadcast_template_ot_transport"}
+        is_broadcast = args.alignment in {"broadcast_template_transport", "broadcast_template_ot_transport", "broadcast_peak_template_ot_transport"}
+        template_mode = "peak" if args.alignment == "broadcast_peak_template_ot_transport" else "mean"
         src_template_groups = config.src_num_heads if is_broadcast else group_count
         tgt_template_groups = config.tgt_num_heads if is_broadcast else group_count
         print(
             "\nBuilding grouped attention templates from calibration prompts "
-            f"(source groups={src_template_groups}, target groups={tgt_template_groups}, bins={args.transport_template_bins})..."
+            f"(source groups={src_template_groups}, target groups={tgt_template_groups}, bins={args.transport_template_bins}, mode={template_mode})..."
         )
         translator._transport_src_group_templates = collect_group_attention_templates(
             src,
@@ -690,6 +705,7 @@ def main() -> None:
             kv_heads=config.src_num_heads,
             group_count=src_template_groups,
             bins=args.transport_template_bins,
+            template_mode=template_mode,
             reasoning_mode=args.source_reasoning_mode,
         )
         translator._transport_tgt_group_templates = collect_group_attention_templates(
@@ -702,6 +718,7 @@ def main() -> None:
             kv_heads=config.tgt_num_heads,
             group_count=tgt_template_groups,
             bins=args.transport_template_bins,
+            template_mode=template_mode,
             reasoning_mode="plain",
         )
         print(

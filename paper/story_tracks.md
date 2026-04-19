@@ -213,6 +213,9 @@ Proposed claim:
 - Replacing that broadcast row-softmax plan with a true rectangular
   Sinkhorn-style OT plan still collapses to `0.000000`, so richer many-to-many
   transport inside the same attention-template space is also not enough.
+- Switching that OT branch from mean attention templates to simple peak-location
+  templates lifts it slightly to `0.014286`, so the template representation
+  matters a bit, but still nowhere near enough for a positive-method story.
 - But it is still below the old fixed prior `0.085714` and below `C2C`
   `0.128571`, so this is still a bounded mechanistic gain rather than a
   publishable headline result.
@@ -275,3 +278,6 @@ What we still need:
    richer retrieval-template / attention-fidelity OT branch in a different
    representation space, not another grouped or attention-template-only
    transport tweak.
+6. Treat the simple peak-template result as a weak directional hint, not a
+   success: it says representation matters, not that the current transport
+   family is competitive.

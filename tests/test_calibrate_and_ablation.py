@@ -70,6 +70,20 @@ class _FakeModel:
         return SimpleNamespace(past_key_values=_FakeCache(layers))
 
 
+class _FakeAttentionModel:
+    def __call__(self, **enc):
+        input_ids = enc["input_ids"]
+        batch, seq = input_ids.shape
+        attn = torch.zeros(batch, 2, seq, seq, dtype=torch.float32)
+        for batch_idx in range(batch):
+            valid_len = int(enc["attention_mask"][batch_idx].sum().item())
+            if valid_len <= 1:
+                continue
+            attn[batch_idx, 0, valid_len - 1, 0] = 1.0
+            attn[batch_idx, 1, valid_len - 1, valid_len - 2] = 1.0
+        return SimpleNamespace(attentions=(attn,))
+
+
 def test_collect_kvs_masks_padding_tokens_and_concatenates_valid_positions() -> None:
     model = _FakeModel()
     tokenizer = _FakeTokenizer({"a": 4, "b": 2, "c": 1})
@@ -147,6 +161,30 @@ def test_collect_aligned_kv_pairs_uses_source_reasoning_prompt() -> None:
 
     assert src_kvs[0][0].shape == (2, 1, 1, 1)
     assert tgt_kvs[0][0].shape == (2, 1, 1, 1)
+
+
+def test_collect_group_attention_templates_supports_peak_mode() -> None:
+    model = _FakeAttentionModel()
+    tokenizer = _FakeTokenizer({"a": 4, "b": 4})
+
+    templates = calibrate.collect_group_attention_templates(
+        model,
+        tokenizer,
+        ["a", "b"],
+        max_length=4,
+        batch_size=2,
+        device="cpu",
+        kv_heads=2,
+        group_count=2,
+        bins=4,
+        template_mode="peak",
+    )
+
+    assert len(templates) == 1
+    layer0 = templates[0]
+    assert layer0.shape == (2, 4)
+    assert torch.allclose(layer0[0], torch.tensor([1.0, 0.0, 0.0, 0.0]))
+    assert torch.allclose(layer0[1], torch.tensor([0.0, 0.0, 1.0, 0.0]))
 
 
 def test_calibrate_config_helpers_parse_and_batch() -> None:
@@ -484,6 +522,32 @@ def test_calibrate_parse_args_accepts_broadcast_template_ot_transport(monkeypatc
     args = calibrate.parse_args()
     assert args.alignment == "broadcast_template_ot_transport"
     assert args.transport_template_bins == 32
+
+
+def test_calibrate_parse_args_accepts_broadcast_peak_template_ot_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "broadcast_peak_template_ot_transport",
+            "--transport-template-bins",
+            "24",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "broadcast_peak_template_ot_transport"
+    assert args.transport_template_bins == 24
 
 
 def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> None:

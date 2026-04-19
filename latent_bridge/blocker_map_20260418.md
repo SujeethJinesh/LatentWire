@@ -506,6 +506,38 @@ Next fix:
   template or QK-fidelity OT and judge it directly against fixed prior,
   grouped-subspace-plus-rank4, and `C2C`
 
+## Blocker 20: Simple retrieval-like peak templates help only a little
+
+Observed symptom:
+
+- a new `broadcast_peak_template_ot_transport` branch changed only the
+  calibration-time template representation, replacing mean attention mass with
+  a simple peak-location histogram per head
+- it kept the same rectangular Sinkhorn-style `2 -> 8` plan and the same
+  rank-4 residual correction
+- exact Qwen GSM70 improved from `0.000000` to `0.014286`
+
+Interpretation:
+
+- the template representation does matter somewhat; retrieval-like peak
+  templates are directionally better than mean attention templates in the same
+  OT solver
+- but the gain is still far too small to rescue the method family
+- so the remaining live idea is not “any retrieval-ish template helps”; it has
+  to be a richer retrieval-template or QK-fidelity representation
+
+Current status:
+
+- newly checked and weakly positive, but still sub-baseline
+
+Next fix:
+
+- if the positive-method lane gets one last serious try, build a richer
+  retrieval-template or QK-fidelity transport representation rather than more
+  tweaks to mean-attention templates
+- if that still fails, the paper should stop chasing a positive-method claim
+  and lock to the blocker/mechanism framing
+
 Next fix:
 
 - keep pushing transport-first, but only with richer costs or canonicalization
