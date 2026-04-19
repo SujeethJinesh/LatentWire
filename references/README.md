@@ -195,6 +195,11 @@ File `163_` adds a newer cross-model KV reuse system angle:
 
 - `163_`: activated-LoRA cross-model KV reuse as a recent systems reference for combining reusable transport paths with lightweight adaptation rather than treating transport as a fully fixed map.
 
+Files `164_` and `165_` extend that same systems-and-adaptation lane:
+
+- `164_`: LRAgent as a direct multi-LoRA KV-sharing reference for separating reusable shared-cache structure from adapter-specific deltas.
+- `165_`: ForkKV as a copy-on-write KV reuse reference for splitting stable shared transport from branch-specific cache growth.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

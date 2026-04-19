@@ -1460,5 +1460,23 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 2790386
+  },
+  {
+    "num": 164,
+    "slug": "lragent_efficient_kv_cache_sharing_for_multi_lora_llm_agents",
+    "url": "https://arxiv.org/pdf/2602.01053.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/164_lragent_efficient_kv_cache_sharing_for_multi_lora_llm_agents.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 3544108
+  },
+  {
+    "num": 165,
+    "slug": "forkkv_scaling_multi_lora_agent_serving_via_copy_on_write_disaggregated_kv_cache",
+    "url": "https://arxiv.org/pdf/2604.06370.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/165_forkkv_scaling_multi_lora_agent_serving_via_copy_on_write_disaggregated_kv_cache.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1961213
   }
 ]

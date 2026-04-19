@@ -329,6 +329,24 @@ Interpretation:
   ridge-correction it is `-0.014286` with `0` Sinkhorn-only wins and `1`
   ridge-only win; paired against `C2C` it is `-0.085714` with `3`
   Sinkhorn-only wins and `9` C2C-only wins.
+- `KVComm` is now partially bootstrapped on the exact same Qwen GSM70 split,
+  but only with a clearly labeled heterogeneous-geometry compatibility lift:
+  stock `KVComm` could not run on `Qwen/Qwen2.5-0.5B-Instruct ->
+  Qwen/Qwen3-0.6B` because the pair mismatches both KV-head count (`2 -> 8`)
+  and per-head dimensionality (`64 -> 128`).
+- Under that compatibility lift, the held-out `KVComm` replay on
+  `data/gsm8k_eval_70.jsonl` scored `0.000000`, so it is not competitive on
+  this pair even after a fair held-out layer-selection pass.
+- The held-out calibration sweep still found a weak dev-side signal:
+  on `data/gsm8k_gate_search_30.jsonl`, `KVComm` peaked at `0.033333` with a
+  `0.50` top-layer fraction and `14` selected layers, while `0.25`, `0.75`,
+  and `1.00` all fell back to `0.000000`.
+- Paired against our old fixed-prior branch (`0.085714`), the compatibility-
+  lifted `KVComm` replay is `-0.085714`, with `0` KVComm-only wins and `6`
+  fixed-prior-only wins.
+- Paired against published `C2C` (`0.128571`), the compatibility-lifted
+  `KVComm` replay is `-0.128571`, with `0` KVComm-only wins and `9`
+  `C2C`-only wins.
 - The competitor baseline path is now real:
   `C2C` ran end to end on the exact Qwen pair and scored `0.128571` on
   `data/gsm8k_eval_70.jsonl`, above our current best same-pair GSM70 branch
@@ -405,22 +423,33 @@ And a seventh transport constraint:
 > `0.042857` on Qwen GSM70, so evaluator-level soft matching alone is not
 > enough either.
 
+And an eighth external-baseline constraint:
+
+> even a compatibility-lifted `KVComm` replay collapses to `0.000000` on the
+> exact heterogeneous Qwen GSM70 pair, so training-free raw selective KV
+> sharing appears to be extremely brittle once KV-head geometry itself stops
+> matching.
+
 ## Next Highest-Value Steps
 
-1. Budget sweep for the fixed-prior branch: `0.25 / 0.50 / 0.75`, each with
-   shuffled-prior and uniform baselines.
-2. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
+1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
    is stabilized across seeds.
-3. Next method pivots from the new literature:
+2. Next method pivots from the new literature:
    - OT / permutation or gauge-aware head matching across models
-   - attention-fidelity-preserving head ranking after expected-attention ties the shuffled null
+   - deeper transport maps in the translation path rather than evaluator-only
+     soft scores
+   - attention-fidelity-preserving head ranking after expected-attention ties
+     the shuffled null
    - extend the grouped CCA branch on SVAMP-like tasks before treating it as a general method
    - move toward transport plus tiny correction layers once pure routing stops improving against `C2C`
    - deprioritize standalone correction-only variants if they stay below the old fixed prior on GSM70
    - deprioritize evaluator-level soft-transport variants if they also stay below the old fixed prior on GSM70
    - causal head scoring once the matching space is less noisy
    - only then revisit retrieval-head routing with a stronger structure-aware score
-   - use `C2C` as the first external bar and try to beat it on the exact Qwen GSM and SVAMP splits
+3. Keep `C2C` as the main external bar on the exact Qwen pair; treat the
+   compatibility-lifted `KVComm` result as evidence that heterogeneous raw KV
+   sharing is itself a hard blocker, not yet as a clean apples-to-apples
+   leaderboard baseline.
 4. Keep SVAMP, ARC, cross-family transfer, and now seed instability in the
    paper as explicit failure boundaries.
 5. Treat the live query-aware sparse branch as another mechanism clue unless a

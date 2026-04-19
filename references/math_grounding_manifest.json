@@ -730,5 +730,17 @@
     "slug": "efficient_multi_adapter_llm_serving_via_cross_model_kv_cache_reuse_with_activated_lora",
     "url": "https://arxiv.org/pdf/2512.17910.pdf",
     "reason": "This is a recent cross-model KV reuse reference that supports pairing reusable transport maps with lightweight adaptation instead of relying on a fully fixed head-routing heuristic."
+  },
+  {
+    "num": 164,
+    "slug": "lragent_efficient_kv_cache_sharing_for_multi_lora_llm_agents",
+    "url": "https://arxiv.org/pdf/2602.01053.pdf",
+    "reason": "This is a direct multi-LoRA KV-sharing reference for separating reusable shared-cache structure from adapter-specific cache deltas rather than treating reuse as all-or-nothing."
+  },
+  {
+    "num": 165,
+    "slug": "forkkv_scaling_multi_lora_agent_serving_via_copy_on_write_disaggregated_kv_cache",
+    "url": "https://arxiv.org/pdf/2604.06370.pdf",
+    "reason": "This is a recent copy-on-write KV reuse reference that supports splitting stable shared transport from branch-specific cache growth, which matches the current blocker around brittle fully fixed transport maps."
   }
 ]

@@ -25,6 +25,10 @@ Current status:
 - a direct gauge-aware Procrustes head-overlap score also failed on the same
   branch (`0.028571`), so cheap orthogonal-invariant head scoring is too weak
   on its own as well
+- the compatibility-lifted `KVComm` replay also collapsed on the same Qwen
+  pair (`0.000000` on GSM70), which is consistent with head identity and raw
+  cache geometry becoming too brittle once KV-head count and per-head
+  dimensionality stop matching directly
 
 Next fix:
 
@@ -100,6 +104,32 @@ Next fix:
 - keep `k_only` central
 - test structured corrections on top of sparse key transport, not symmetric KV
 
+### Blocker 5: Heterogeneous KV-head geometry itself is a transport barrier
+
+Observed symptom:
+
+- `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3-0.6B` mismatches both KV-head
+  count (`2 -> 8`) and per-head dimensionality (`64 -> 128`)
+- stock `KVComm` could not run on this pair without an explicit compatibility
+  lift
+- even with that lift, held-out GSM70 collapsed to `0.000000`
+
+Interpretation:
+
+- some baselines implicitly rely on matched or near-matched KV geometry
+- once KV-head layout itself differs, training-free raw selective sharing may
+  fail before higher-level routing logic even has a chance to help
+
+Current status:
+
+- newly identified and partially validated by the lifted `KVComm` replay
+
+Next fix:
+
+- canonicalize or transport KV geometry before selective routing
+- keep baseline notes explicit about which methods natively support
+  heterogeneous head geometry and which require a lift or learned adapter
+
 ## Immediate Plan
 
 ### Today
@@ -107,6 +137,8 @@ Next fix:
 1. bootstrap `C2C` on the exact Qwen pair
 2. record a fair baseline replay path for our GSM split
 3. stop investing in weak expected-attention variants that only tie nulls
+4. use the lifted `KVComm` failure as further evidence that deeper transport,
+   not evaluator-side routing alone, is the next method class
 
 ### Next 1-2 days
 

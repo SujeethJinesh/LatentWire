@@ -1,0 +1,240 @@
+diff --git a/model_attn.py b/model_attn.py
+index b41b2f1..5f48bde 100644
+--- a/model_attn.py
++++ b/model_attn.py
+@@ -10,6 +10,8 @@ from transformers.models.llama.configuration_llama import LlamaConfig
+ from transformers.models.llama.modeling_llama import LlamaAttention, apply_rotary_pos_emb as apply_rotary_pos_emb_llama, eager_attention_forward as eager_attention_forward_llama
+ from transformers.models.qwen2.configuration_qwen2 import Qwen2Config
+ from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, apply_rotary_pos_emb as apply_rotary_pos_emb_qwen2, eager_attention_forward as eager_attention_forward_qwen2
++from transformers.models.qwen3.configuration_qwen3 import Qwen3Config
++from transformers.models.qwen3.modeling_qwen3 import Qwen3Attention, apply_rotary_pos_emb as apply_rotary_pos_emb_qwen3, eager_attention_forward as eager_attention_forward_qwen3
+ from transformers.models.gemma3.modeling_gemma3 import Gemma3Attention, apply_rotary_pos_emb as apply_rotary_pos_emb_gemma3, eager_attention_forward as eager_attention_forward_gemma3
+ from transformers.models.gemma3.configuration_gemma3 import Gemma3TextConfig
+ 
+@@ -122,6 +124,60 @@ class Qwen2AttentionTracer(Qwen2Attention):
+         attn_output = self.o_proj(attn_output)
+         return attn_output, attn_weights
+ 
++class Qwen3AttentionTracer(Qwen3Attention):
++    def __init__(self, config: Qwen3Config, layer_idx: int):
++        super().__init__(config, layer_idx)
++        self.attn_inputs = None
++
++    def forward(
++        self,
++        hidden_states: torch.Tensor,
++        position_embeddings: tuple[torch.Tensor, torch.Tensor],
++        attention_mask: Optional[torch.Tensor],
++        past_key_value: Optional[Cache] = None,
++        cache_position: Optional[torch.LongTensor] = None,
++        **kwargs: Unpack[FlashAttentionKwargs],
++    ) -> tuple[torch.Tensor, Optional[torch.Tensor], Optional[tuple[torch.Tensor]]]:
++        input_shape = hidden_states.shape[:-1]
++        hidden_shape = (*input_shape, -1, self.head_dim)
++
++        query_states = self.q_proj(hidden_states).view(hidden_shape).transpose(1, 2)
++        key_states = self.k_proj(hidden_states).view(hidden_shape).transpose(1, 2)
++        value_states = self.v_proj(hidden_states).view(hidden_shape).transpose(1, 2)
++
++        cos, sin = position_embeddings
++        query_states, key_states = apply_rotary_pos_emb_qwen3(query_states, key_states, cos, sin)
++
++        if past_key_value is not None:
++            cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
++            key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
++
++        attention_interface: Callable = eager_attention_forward_qwen3
++        if self.config._attn_implementation != "eager":
++            attention_interface = ALL_ATTENTION_FUNCTIONS[self.config._attn_implementation]
++
++        attn_inputs = {
++            "query": query_states,
++            "key": key_states,
++            "value": value_states,
++            "attention_mask": attention_mask,
++            "dropout": 0.0 if not self.training else self.attention_dropout,
++            "scaling": self.scaling,
++            "sliding_window": self.sliding_window,
++            **kwargs,
++        }
++        if hidden_states.shape[-2] > 1:
++            self.attn_inputs = attn_inputs
++
++        attn_output, attn_weights = attention_interface(
++            self,
++            **attn_inputs,
++        )
++
++        attn_output = attn_output.reshape(*input_shape, -1).contiguous()
++        attn_output = self.o_proj(attn_output)
++        return attn_output, attn_weights
++
+ class Gemma3AttentionTracer(Gemma3Attention):
+     def __init__(self, config: Gemma3TextConfig, layer_idx: int):
+         super().__init__(config, layer_idx)
+diff --git a/models.py b/models.py
+index 944c954..b05d1d1 100644
+--- a/models.py
++++ b/models.py
+@@ -7,9 +7,10 @@ from transformers.generation.utils import GenerationMixin
+ from transformers.cache_utils import DynamicCache, Cache
+ from transformers.modeling_outputs import CausalLMOutputWithPast
+ import logging
+-from model_attn import LlamaAttentionTracer, Qwen2AttentionTracer, Gemma3AttentionTracer
++from model_attn import LlamaAttentionTracer, Qwen2AttentionTracer, Qwen3AttentionTracer, Gemma3AttentionTracer
+ from transformers.models.llama.modeling_llama import LlamaAttention, LlamaModel, repeat_kv
+ from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, Qwen2Model
++from transformers.models.qwen3.modeling_qwen3 import Qwen3Attention, Qwen3Model
+ from transformers.models.gemma3.modeling_gemma3 import Gemma3Attention
+ 
+ def get_layer_map(L_A, L_B):
+@@ -18,6 +19,61 @@ def get_layer_map(L_A, L_B):
+         layer_map[l_a] = round( (l_a + 0.5) * L_B / L_A - 0.5 )
+     return layer_map
+ 
++
++def _match_kv_shape(
++    tensor: torch.Tensor,
++    target_num_kv_heads: int,
++    target_head_dim: int,
++) -> torch.Tensor:
++    current_num_kv_heads = int(tensor.shape[1])
++    if current_num_kv_heads == target_num_kv_heads:
++        aligned = tensor
++    elif target_num_kv_heads % current_num_kv_heads == 0:
++        repeat_factor = target_num_kv_heads // current_num_kv_heads
++        aligned = tensor.repeat_interleave(repeat_factor, dim=1)
++    elif current_num_kv_heads % target_num_kv_heads == 0:
++        group_size = current_num_kv_heads // target_num_kv_heads
++        new_shape = (
++            tensor.shape[0],
++            target_num_kv_heads,
++            group_size,
++            tensor.shape[2],
++            tensor.shape[3],
++        )
++        aligned = tensor.view(new_shape).mean(dim=2)
++    else:
++        index = torch.linspace(
++            0,
++            current_num_kv_heads - 1,
++            steps=target_num_kv_heads,
++            device=tensor.device,
++        ).round().long()
++        aligned = tensor.index_select(1, index)
++
++    current_head_dim = int(aligned.shape[-1])
++    if current_head_dim == target_head_dim:
++        return aligned
++    if target_head_dim % current_head_dim == 0:
++        repeat_factor = target_head_dim // current_head_dim
++        return aligned.repeat_interleave(repeat_factor, dim=-1)
++    if current_head_dim % target_head_dim == 0:
++        group_size = current_head_dim // target_head_dim
++        new_shape = (
++            aligned.shape[0],
++            aligned.shape[1],
++            aligned.shape[2],
++            target_head_dim,
++            group_size,
++        )
++        return aligned.view(new_shape).mean(dim=-1)
++    index = torch.linspace(
++        0,
++        current_head_dim - 1,
++        steps=target_head_dim,
++        device=aligned.device,
++    ).round().long()
++    return aligned.index_select(-1, index)
++
+ class CVCommunicator(PreTrainedModel, GenerationMixin):
+     def __init__(
+         self,
+@@ -81,6 +137,10 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
+                 new = Qwen2AttentionTracer(old.config, old.layer_idx).to(device, dtype)
+                 new.load_state_dict(old.state_dict(), strict=True)
+                 block.self_attn = new
++            elif type(old) is Qwen3Attention:
++                new = Qwen3AttentionTracer(old.config, old.layer_idx).to(device, dtype)
++                new.load_state_dict(old.state_dict(), strict=True)
++                block.self_attn = new
+             elif type(old) is LlamaAttention:
+                 new = LlamaAttentionTracer(old.config, old.layer_idx).to(device, dtype)
+                 new.load_state_dict(old.state_dict(), strict=True)
+@@ -97,13 +157,23 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
+         value_cache = past_key_values.value_cache
+         assert len(key_cache) == len(self.layer_map), "key_cache and layer_map must have the same length"
+         past_key_values_new = DynamicCache()
++        if hasattr(self.B.config, "num_key_value_heads"):
++            target_num_kv_heads = int(self.B.config.num_key_value_heads)
++        else:
++            target_num_kv_heads = int(self.B.config.text_config.num_key_value_heads)
++        if hasattr(self.B.model, "layers"):
++            target_head_dim = int(self.B.model.layers[0].self_attn.head_dim)
++        else:
++            target_head_dim = int(self.B.model.language_model.layers[0].self_attn.head_dim)
+         for i in range(len(key_cache)): # i is the layer index of model A
+             if i in self.layers_list or i == 0:
+-                past_key_values_new.update(key_cache[i], value_cache[i], self.layer_map[i])
++                key_cache_i = _match_kv_shape(key_cache[i], target_num_kv_heads, target_head_dim)
++                value_cache_i = _match_kv_shape(value_cache[i], target_num_kv_heads, target_head_dim)
++                past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
+             else:
+                 # keep the first token due to attention sink
+-                key_cache_i = key_cache[i][:, :, :1, :]
+-                value_cache_i = value_cache[i][:, :, :1, :]
++                key_cache_i = _match_kv_shape(key_cache[i][:, :, :1, :], target_num_kv_heads, target_head_dim)
++                value_cache_i = _match_kv_shape(value_cache[i][:, :, :1, :], target_num_kv_heads, target_head_dim)
+                 past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
+         return past_key_values_new
+ 
+@@ -140,6 +210,13 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
+                     past_key_values=out_A_past_key_values,
+                     **kwargs
+                 )
++            elif type(self.B.model) == Qwen3Model:
++                out_B = forward_shift_back_qwen2(
++                    model=self.B,
++                    input_ids=input_ids,
++                    past_key_values=out_A_past_key_values,
++                    **kwargs
++                )
+             else:
+                 raise NotImplementedError(f"shift_back is not implemented for model type {type(self.B)}")
+         else:
+@@ -249,7 +326,11 @@ def get_short_past_key_values(past_key_values: DynamicCache):
+     return short_past_key_values, short_length
+ 
+ 
+-from transformers.masking_utils import create_causal_mask, create_sliding_window_causal_mask
++try:
++    from transformers.masking_utils import create_causal_mask, create_sliding_window_causal_mask
++except ImportError:
++    create_causal_mask = None
++    create_sliding_window_causal_mask = None
+ def forward_shift_back_llama(
+     model: PreTrainedModel,
+     input_ids: Optional[torch.LongTensor] = None,
+@@ -257,6 +338,8 @@ def forward_shift_back_llama(
+     past_key_values=None,
+     **kwargs,
+ ):
++    if create_causal_mask is None:
++        raise ImportError("transformers.masking_utils is unavailable in this environment; shift_back is unsupported")
+     inputs_embeds = model.get_input_embeddings()(input_ids)
+     if past_key_values is None:
+         past_key_values = DynamicCache()
+@@ -365,6 +448,8 @@ def forward_shift_back_qwen2(
+     past_key_values=None,
+     **kwargs,
+ ):
++    if create_causal_mask is None or create_sliding_window_causal_mask is None:
++        raise ImportError("transformers.masking_utils is unavailable in this environment; shift_back is unsupported")
+     inputs_embeds = model.get_input_embeddings()(input_ids)
+     if past_key_values is None:
+         past_key_values = DynamicCache()
+@@ -485,4 +570,3 @@ def forward_shift_back_qwen2(
+         hidden_states=all_hidden_states,
+         attentions=None,
+     )
+-

@@ -138,6 +138,15 @@ Proposed claim:
 - So the paper should not frame linear cleanup alone as the answer; the next
   credible path is still better transport, likely OT / gauge-aware matching,
   with correction only as a secondary add-on.
+- The second external baseline is currently more useful as a blocker signal
+  than a competitive bar:
+  stock `KVComm` is not directly runnable on the same heterogeneous Qwen pair
+  because the pair mismatches both KV-head count and per-head dimensionality,
+  and a compatibility-lifted replay still collapses to `0.000000` on GSM70.
+- That makes the next honest story sharper:
+  some training-free raw KV sharing methods appear to depend on matched or
+  near-matched KV geometry, while our own failure mode already points toward
+  the same deeper blocker.
 - The first lightweight OT-style follow-up is also bounded:
   `attention_sinkhorn` reaches only `0.042857` on the same Qwen GSM70 split,
   below the old fixed prior, below ridge correction, and below `C2C`.

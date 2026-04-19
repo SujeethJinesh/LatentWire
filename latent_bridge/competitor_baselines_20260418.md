@@ -39,6 +39,10 @@ Current blocker on `KVComm`:
   not a drop-in replay
 - its evaluator expects its own task format, so our GSM JSONL split still
   needs a thin adapter before it becomes a fair apples-to-apples comparison
+- the exact Qwen pair also mismatches both KV-head count and per-head
+  dimensionality (`2 -> 8` KV heads and `64 -> 128` head dim), so stock
+  selective KV sharing is not directly executable on this heterogeneous pair
+  without an explicit compatibility lift
 
 `LatentMAS` is useful for broader latent-collaboration context, but it is not
 the cleanest direct protocol match for our current pairwise sparse-K routing
@@ -84,3 +88,13 @@ Current read:
 - `C2C` on `svamp_eval_70`: `0.442857`
 - current best same-pair internal SVAMP branch on the same split: `0.171429`
 - older text-to-text reference on the same SVAMP split: `0.414286`
+- stock `KVComm` is not natively runnable on the same Qwen pair because of the
+  geometry mismatch above
+- a compatibility-lifted `KVComm` replay on `gsm8k_eval_70` still scored
+  `0.000000`
+- the held-out dev sweep for that lifted replay peaked only at `0.033333` on
+  `gsm8k_gate_search_30` with a `0.50` top-layer fraction
+- paired against our best internal GSM70 branch, lifted `KVComm` is
+  `-0.085714` with `0` KVComm-only wins and `6` internal-only wins
+- paired against `C2C`, lifted `KVComm` is `-0.128571` with `0` KVComm-only
+  wins and `9` C2C-only wins
