@@ -118,6 +118,14 @@ semantic retrieval heads, layer-wise KV sharing, and explicit attention-prior
 reasoning:
 
 - `128_`: semantic retrieval heads as a direct mechanism for pruning tokens before generation.
+
+Files `191_` through `194_` extend the last live positive-method lane around
+retrieval-head transport, QK geometry, and heterogeneous cache behavior:
+
+- `191_`: query-focused retrieval heads as the clearest recent argument for retrieval-aware transport descriptors.
+- `192_`: QK-geometry filtering as the strongest direct compression/transport inspiration.
+- `193_`: query-key alignment as a meaningful structural objective rather than a cosmetic score.
+- `194_`: heterogeneous KV compression via dynamic retrieval as the closest recent systems-style reminder that head mismatch is dynamic, not just static.
 - `129_`: layer-wise dissimilar KV sharing as a close systems analogue for pair-conditioned transfer.
 - `130_`: length-aware attention priors as a direct reference for cached-prior test-time reasoning.
 

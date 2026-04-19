@@ -80,3 +80,18 @@ lifted that score slightly to `0.0143`. That means:
 - if we give the positive-method lane one more serious try, it should be a
   **richer retrieval-template or QK-fidelity transport**, not more tweaks to
   mean-attention templates
+
+The follow-up `broadcast_retrieval_spectrum_ot_transport + rank-4 residual`
+branch then moved into a richer per-head key-geometry space, using
+retrieval-weighted key spectra instead of attention templates. Offline fit
+improved materially (`K` cosine `0.931`), but exact Qwen GSM70 still collapsed
+to `0.0000`, and at a much higher byte cost than the sparse branches.
+
+That means:
+
+- “use a richer calibration-time key descriptor” is also not enough in this
+  simple spectral form
+- better offline geometry fit still does not predict held-out reasoning gains
+- if we give the positive-method lane one last serious try, it should be a
+  **QK-fidelity or retrieval-template transport in a genuinely different
+  representation space**, not another attention- or key-descriptor OT tweak

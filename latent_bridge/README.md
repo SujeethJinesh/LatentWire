@@ -154,7 +154,10 @@ python scripts/calibrate.py \
   grouped source/target heads by calibration-time last-token attention
   templates before fitting the transport map, or
   `grouped_template_subspace_transport` to combine the template penalty with
-  the grouped subspace penalty in one transport score.
+  the grouped subspace penalty in one transport score. For heterogeneous
+  head-count probes, `broadcast_retrieval_spectrum_ot_transport` swaps the
+  attention template for a per-head retrieval-weighted key-spectrum descriptor
+  before solving a rectangular OT plan.
 - `--canonical-subspace-rank R` — shared low-rank basis size for
   `grouped_canonical_transport`.
 - `--transport-template-bins B` — number of bins used when summarizing grouped

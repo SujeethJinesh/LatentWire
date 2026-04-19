@@ -103,6 +103,7 @@ def parse_args() -> argparse.Namespace:
             "broadcast_template_transport",
             "broadcast_template_ot_transport",
             "broadcast_peak_template_ot_transport",
+            "broadcast_retrieval_spectrum_ot_transport",
         ],
         default="auto",
     )
@@ -597,6 +598,97 @@ def collect_group_attention_templates(
     return [(templates / float(used_prompts)).cpu() for templates in layer_sums]
 
 
+def _weighted_key_spectrum(
+    head_keys: torch.Tensor,
+    head_weights: torch.Tensor,
+    *,
+    rank: int,
+) -> torch.Tensor:
+    weights = head_weights.float()
+    if weights.numel() == 0:
+        raise ValueError("head_weights must be non-empty")
+    weights = weights / weights.sum().clamp_min(1e-8)
+    keys = head_keys.float()
+    mean = (weights[:, None] * keys).sum(dim=0, keepdim=True)
+    centered = (keys - mean) * weights.sqrt()[:, None]
+    spectrum = torch.linalg.svdvals(centered)
+    if float(spectrum.sum()) <= 1e-8:
+        spectrum = torch.linalg.svdvals(keys * weights.sqrt()[:, None])
+    out = torch.zeros(rank, dtype=torch.float32)
+    take = min(rank, int(spectrum.numel()))
+    if take > 0:
+        out[:take] = spectrum[:take]
+    return out / out.sum().clamp_min(1e-8)
+
+
+@torch.no_grad()
+def collect_group_key_signatures(
+    model: AutoModelForCausalLM,
+    tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    max_length: int,
+    batch_size: int,
+    device: str,
+    kv_heads: int,
+    group_count: int,
+    rank: int,
+    reasoning_mode: str = "plain",
+) -> list[torch.Tensor]:
+    if rank <= 0:
+        raise ValueError("rank must be positive")
+    if group_count <= 0:
+        raise ValueError("group_count must be positive")
+    if kv_heads % group_count != 0:
+        raise ValueError(f"kv_heads={kv_heads} must be divisible by group_count={group_count}")
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    group_heads = kv_heads // group_count
+    layer_sums: list[torch.Tensor] | None = None
+    used_prompts = 0
+    for batch in batched(prompts, batch_size):
+        batch_text = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        enc = tokenizer(
+            batch_text,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        ).to(device)
+        out = model(**enc, use_cache=True, output_attentions=True, return_dict=True)
+        attentions = getattr(out, "attentions", None)
+        if attentions is None:
+            raise ValueError("Model did not return attentions while building grouped key signatures")
+        pkv = _normalize_past_key_values(out.past_key_values)
+        if layer_sums is None:
+            layer_sums = [torch.zeros(group_count, rank, dtype=torch.float32) for _ in range(len(attentions))]
+        mask_cpu = enc["attention_mask"].to("cpu")
+        for batch_idx in range(mask_cpu.shape[0]):
+            valid_len = int(mask_cpu[batch_idx].sum().item())
+            if valid_len <= 1:
+                continue
+            for layer_idx, attn in enumerate(attentions):
+                head_scores = attn[batch_idx, :, valid_len - 1, : valid_len - 1].detach().to("cpu", dtype=torch.float32)
+                head_scores = _reduce_attention_heads_to_kv_heads(head_scores, kv_heads=kv_heads)
+                head_scores = head_scores / head_scores.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+                layer_keys = pkv[layer_idx][0][batch_idx, :, : valid_len - 1, :].detach().to("cpu", dtype=torch.float32)
+                group_signatures = []
+                for group_idx in range(group_count):
+                    start = group_idx * group_heads
+                    stop = start + group_heads
+                    head_sigs = [
+                        _weighted_key_spectrum(layer_keys[head_idx], head_scores[head_idx], rank=rank)
+                        for head_idx in range(start, stop)
+                    ]
+                    group_signatures.append(torch.stack(head_sigs, dim=0).mean(dim=0))
+                layer_sums[layer_idx] += torch.stack(group_signatures, dim=0)
+            used_prompts += 1
+    if layer_sums is None or used_prompts == 0:
+        raise ValueError("Could not build grouped key signatures from calibration prompts")
+    return [(signatures / float(used_prompts)).cpu() for signatures in layer_sums]
+
+
 def main() -> None:
     args = parse_args()
     dtype = torch_dtype(args.dtype)
@@ -685,47 +777,94 @@ def main() -> None:
     print(f"\nBuilding translator with config:\n  {config}")
     translator = RotAlignKVTranslator(config)
 
-    if args.alignment in {"grouped_template_transport", "grouped_template_subspace_transport", "broadcast_template_transport", "broadcast_template_ot_transport", "broadcast_peak_template_ot_transport"}:
+    if args.alignment in {
+        "grouped_template_transport",
+        "grouped_template_subspace_transport",
+        "broadcast_template_transport",
+        "broadcast_template_ot_transport",
+        "broadcast_peak_template_ot_transport",
+        "broadcast_retrieval_spectrum_ot_transport",
+    }:
         group_count = math.gcd(config.src_num_heads, config.tgt_num_heads)
-        is_broadcast = args.alignment in {"broadcast_template_transport", "broadcast_template_ot_transport", "broadcast_peak_template_ot_transport"}
+        is_broadcast = args.alignment in {
+            "broadcast_template_transport",
+            "broadcast_template_ot_transport",
+            "broadcast_peak_template_ot_transport",
+            "broadcast_retrieval_spectrum_ot_transport",
+        }
         template_mode = "peak" if args.alignment == "broadcast_peak_template_ot_transport" else "mean"
         src_template_groups = config.src_num_heads if is_broadcast else group_count
         tgt_template_groups = config.tgt_num_heads if is_broadcast else group_count
-        print(
-            "\nBuilding grouped attention templates from calibration prompts "
-            f"(source groups={src_template_groups}, target groups={tgt_template_groups}, bins={args.transport_template_bins}, mode={template_mode})..."
-        )
-        translator._transport_src_group_templates = collect_group_attention_templates(
-            src,
-            tok_s,
-            prompts,
-            max_length=args.max_length,
-            batch_size=args.batch_size,
-            device=args.device,
-            kv_heads=config.src_num_heads,
-            group_count=src_template_groups,
-            bins=args.transport_template_bins,
-            template_mode=template_mode,
-            reasoning_mode=args.source_reasoning_mode,
-        )
-        translator._transport_tgt_group_templates = collect_group_attention_templates(
-            tgt,
-            tok_t,
-            prompts,
-            max_length=args.max_length,
-            batch_size=args.batch_size,
-            device=args.device,
-            kv_heads=config.tgt_num_heads,
-            group_count=tgt_template_groups,
-            bins=args.transport_template_bins,
-            template_mode=template_mode,
-            reasoning_mode="plain",
-        )
-        print(
-            "Built grouped attention templates: "
-            f"source layers={len(translator._transport_src_group_templates)}, "
-            f"target layers={len(translator._transport_tgt_group_templates)}"
-        )
+        if args.alignment == "broadcast_retrieval_spectrum_ot_transport":
+            print(
+                "\nBuilding grouped retrieval-weighted key signatures from calibration prompts "
+                f"(source groups={src_template_groups}, target groups={tgt_template_groups}, rank={args.transport_signature_rank})..."
+            )
+            translator._transport_src_group_templates = collect_group_key_signatures(
+                src,
+                tok_s,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.src_num_heads,
+                group_count=src_template_groups,
+                rank=args.transport_signature_rank,
+                reasoning_mode=args.source_reasoning_mode,
+            )
+            translator._transport_tgt_group_templates = collect_group_key_signatures(
+                tgt,
+                tok_t,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.tgt_num_heads,
+                group_count=tgt_template_groups,
+                rank=args.transport_signature_rank,
+                reasoning_mode="plain",
+            )
+            print(
+                "Built grouped key signatures: "
+                f"source layers={len(translator._transport_src_group_templates)}, "
+                f"target layers={len(translator._transport_tgt_group_templates)}"
+            )
+        else:
+            print(
+                "\nBuilding grouped attention templates from calibration prompts "
+                f"(source groups={src_template_groups}, target groups={tgt_template_groups}, bins={args.transport_template_bins}, mode={template_mode})..."
+            )
+            translator._transport_src_group_templates = collect_group_attention_templates(
+                src,
+                tok_s,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.src_num_heads,
+                group_count=src_template_groups,
+                bins=args.transport_template_bins,
+                template_mode=template_mode,
+                reasoning_mode=args.source_reasoning_mode,
+            )
+            translator._transport_tgt_group_templates = collect_group_attention_templates(
+                tgt,
+                tok_t,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.tgt_num_heads,
+                group_count=tgt_template_groups,
+                bins=args.transport_template_bins,
+                template_mode=template_mode,
+                reasoning_mode="plain",
+            )
+            print(
+                "Built grouped attention templates: "
+                f"source layers={len(translator._transport_src_group_templates)}, "
+                f"target layers={len(translator._transport_tgt_group_templates)}"
+            )
 
     del src
     del tgt

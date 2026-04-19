@@ -281,3 +281,7 @@ What we still need:
 6. Treat the simple peak-template result as a weak directional hint, not a
    success: it says representation matters, not that the current transport
    family is competitive.
+7. Treat the retrieval-spectrum broadcast failure as a stronger constraint:
+   richer calibration-time key descriptors and better offline fit still do not
+   imply held-out reasoning gains, so the next branch must be genuinely
+   query-conditioned or the paper should lock to the blocker/mechanism story.

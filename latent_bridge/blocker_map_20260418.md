@@ -538,11 +538,43 @@ Next fix:
 - if that still fails, the paper should stop chasing a positive-method claim
   and lock to the blocker/mechanism framing
 
+## Blocker 21: Retrieval-weighted key spectra still fail in the broadcast OT lane
+
+Observed symptom:
+
+- a new `broadcast_retrieval_spectrum_ot_transport` branch kept the same
+  rectangular Sinkhorn-style `2 -> 8` transport and the same rank-4 residual
+  correction, but replaced the calibration-time head descriptor with a
+  retrieval-weighted key-spectrum signature
+- offline fit improved materially on the same `64`-prompt calibration slice
+  (`K` cosine `0.931`, relative Frobenius error `0.350`)
+- but exact Qwen GSM70 still collapsed to `0.000000`
+- bytes also exploded to about `2.37M` per example, far above the sparse
+  branches it was meant to improve on
+
+Interpretation:
+
+- the current failure is not just “the attention-template space is too weak”
+- a richer calibration-time key descriptor is still not enough in this simple
+  spectral form
+- better offline key-space fit still does not imply held-out reasoning gains
+- so the remaining live lane is narrower still: a genuinely different
+  retrieval-template or QK-fidelity representation, or else a pivot away from
+  the positive-method framing
+
+Current status:
+
+- newly checked and negative
+
 Next fix:
 
-- keep pushing transport-first, but only with richer costs or canonicalization
-- if the next transport improvement is still small, the paper should present
-  this as evidence that *some* geometry-aware transport helps while still
+- stop treating calibration-time descriptor richness by itself as the answer
+- if the positive-method lane gets one last serious try, make it a transport
+  cost defined in a richer query-conditioned space rather than another static
+  descriptor OT variant
+- if that still fails, the paper should present this as evidence that *some*
+  geometry-aware transport helps locally while the broader heterogeneous
+  transport problem remains unsolved
   falling short of a publishable positive method claim
 
 ## Immediate Plan

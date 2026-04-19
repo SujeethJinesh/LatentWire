@@ -1001,3 +1001,43 @@ Interpretation:
   retrieval-template or QK-fidelity transport may still be alive, but the
   current simple peak-template proxy is not enough to make the paper a
   positive-method result
+
+And a twenty-fifth retrieval-spectrum-OT update:
+
+> I then replaced the broadcast OT attention template with a retrieval-weighted
+> per-head key-spectrum descriptor, keeping the same rectangular Sinkhorn-style
+> `2 -> 8` plan and the same rank-4 residual on the same `64`-prompt
+> calibration slice. Offline fit improved materially (`K` cosine `0.931`,
+> relative Frobenius error `0.350`), but exact Qwen GSM70 still collapsed to
+> `0.000000`.
+
+Paired reads for the broadcast-retrieval-spectrum-OT-plus-rank4-residual branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.085714`
+  - broadcast-retrieval-spectrum-ot-resid4-only wins `0`
+  - fixed-prior-only wins `6`
+  - bootstrap `[-0.157143, -0.028571]`
+  - McNemar `0.0412`
+- vs `C2C`:
+  - delta `-0.128571`
+  - broadcast-retrieval-spectrum-ot-resid4-only wins `0`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.214286, -0.057143]`
+  - McNemar `0.0077`
+- vs grouped subspace transport + rank-4 residual:
+  - delta `-0.057143`
+  - broadcast-retrieval-spectrum-ot-resid4-only wins `0`
+  - grouped-subspace-resid4-only wins `4`
+  - bootstrap `[-0.114286, -0.014286]`
+  - McNemar `0.1336`
+
+Interpretation:
+
+- “use a richer calibration-time key descriptor” is also not enough in this
+  simple spectral form
+- better offline fit is still not predictive of held-out reasoning utility
+- the remaining positive-method lane is now extremely narrow:
+  transport in a genuinely different query-conditioned representation space,
+  such as QK-fidelity or richer retrieval templates, or else a pivot to a
+  blocker/mechanism paper
