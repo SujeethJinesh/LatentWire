@@ -9,6 +9,7 @@
 | gsm8k_eval_70 | grouped signature transport | 0.0429 | 147,812.6 | best current transport-only branch |
 | gsm8k_eval_70 | grouped subspace transport | 0.0429 | 147,812.6 | ties grouped signature transport |
 | gsm8k_eval_70 | grouped subspace transport + rank-4 residual | 0.0571 | 145,508.8 | best current transport-plus-correction branch |
+| gsm8k_eval_70 | grouped covariance transport + rank-4 residual | 0.0143 | 146,417.7 | covariance-aware transport-plus-correction failure |
 | gsm8k_eval_70 | grouped canonical transport | 0.0286 | 149,496.2 | low-rank canonical basis shortcut |
 | gsm8k_eval_70 | C2C | 0.1286 | - | strongest external baseline so far |
 | gsm8k_eval_70 | KVComm-compatible replay | 0.0000 | - | compatibility-lifted heterogeneous replay |

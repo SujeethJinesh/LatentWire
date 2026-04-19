@@ -710,6 +710,39 @@ Interpretation:
 - that keeps the paper in blocker/mechanism territory, while pointing to the
   next live method lane more clearly than before
 
+And a nineteenth covariance-aware transport-plus-correction update:
+
+> replacing the subspace-aware cost with a covariance-aware cost and keeping
+> the same rank-4 residual drops exact Qwen GSM70 to `0.014286`. So covariance
+> geometry is **not** the next shortcut in the current transport family.
+
+Paired reads for the grouped-covariance-plus-rank4-residual branch on Qwen GSM70:
+
+- vs grouped subspace transport + rank-4 residual:
+  - delta `-0.042857`
+  - grouped-covariance-resid4-only wins `0`
+  - grouped-subspace-resid4-only wins `3`
+  - bootstrap `[-0.100000, +0.000000]`
+  - McNemar `0.2482`
+- vs old fixed prior:
+  - delta `-0.071429`
+  - grouped-covariance-resid4-only wins `0`
+  - fixed-prior-only wins `5`
+  - bootstrap `[-0.128571, -0.014286]`
+  - McNemar `0.0736`
+- vs `C2C`:
+  - delta `-0.114286`
+  - grouped-covariance-resid4-only wins `1`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.200000, -0.028571]`
+  - McNemar `0.0269`
+
+Interpretation:
+
+- richer covariance geometry is not helping in this regime
+- the best internal transport-plus-correction branch remains grouped-subspace
+  transport plus a rank-4 residual at `0.057143`
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it

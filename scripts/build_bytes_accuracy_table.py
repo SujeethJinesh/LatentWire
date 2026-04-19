@@ -78,6 +78,10 @@ def main() -> None:
     _, subr4 = _first_method_summary(subr4_meta)
     rows.append(_row("gsm8k_eval_70", "grouped subspace transport + rank-4 residual", subr4["accuracy"], subr4.get("avg_bytes"), "best current transport-plus-correction branch"))
 
+    covr4_meta = _load_meta(ROOT / "results/grouped_covariance_resid4_20260419/qwen_gsm70_grouped_covariance_transport_w010_r4.jsonl.meta.json")
+    _, covr4 = _first_method_summary(covr4_meta)
+    rows.append(_row("gsm8k_eval_70", "grouped covariance transport + rank-4 residual", covr4["accuracy"], covr4.get("avg_bytes"), "covariance-aware transport-plus-correction failure"))
+
     can70_meta = _load_meta(ROOT / "results/grouped_canonical_transport_20260419/qwen_gsm70_grouped_canonical_transport_r8.jsonl.meta.json")
     _, can70 = _first_method_summary(can70_meta)
     rows.append(_row("gsm8k_eval_70", "grouped canonical transport", can70["accuracy"], can70.get("avg_bytes"), "low-rank canonical basis shortcut"))

@@ -60,7 +60,7 @@ class TranslatorConfig:
     #                 | 'grouped_' + any of the above
     #                 | 'grouped_transport' | 'grouped_permutation'
     #                 | 'grouped_signature_transport' | 'grouped_subspace_transport'
-    #                 | 'grouped_canonical_transport'
+    #                 | 'grouped_canonical_transport' | 'grouped_covariance_transport'
     # Grouped variants fit one block per head-group instead of a single flat
     # all-head projection. When src/tgt head counts match, this degenerates to
     # true per-head alignment.
@@ -678,6 +678,15 @@ class RotAlignKVTranslator(nn.Module):
         proj_tgt = basis_tgt @ basis_tgt.T
         return (proj_hat - proj_tgt).pow(2).mean()
 
+    def _covariance_distance(self, Y_hat: torch.Tensor, Y: torch.Tensor) -> torch.Tensor:
+        Yh = Y_hat.float() - Y_hat.float().mean(dim=0, keepdim=True)
+        Yt = Y.float() - Y.float().mean(dim=0, keepdim=True)
+        cov_hat = (Yh.T @ Yh) / max(1, Yh.shape[0] - 1)
+        cov_tgt = (Yt.T @ Yt) / max(1, Yt.shape[0] - 1)
+        cov_hat = cov_hat / cov_hat.trace().clamp_min(1e-8)
+        cov_tgt = cov_tgt / cov_tgt.trace().clamp_min(1e-8)
+        return (cov_hat - cov_tgt).pow(2).mean()
+
     def _sinkhorn_transport(self, scores: torch.Tensor) -> torch.Tensor:
         temp = max(float(self.config.transport_temperature), 1e-6)
         log_plan = scores / temp
@@ -774,6 +783,10 @@ class RotAlignKVTranslator(nn.Module):
                     y_hat = X[:, src_slice] @ W_block
                     subspace_dist = self._subspace_distance(y_hat, Y[:, tgt_slice])
                     score = score - signature_weight * float(subspace_dist)
+                elif self.config.alignment_method == "grouped_covariance_transport" and signature_weight > 0.0:
+                    y_hat = X[:, src_slice] @ W_block
+                    cov_dist = self._covariance_distance(y_hat, Y[:, tgt_slice])
+                    score = score - signature_weight * float(cov_dist)
                 scores[src_idx, tgt_idx] = score
                 blocks[(src_idx, tgt_idx)] = W_block
         if self.config.alignment_method == "grouped_permutation":
@@ -1279,7 +1292,7 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport"}:
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -1449,14 +1462,14 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport"}:
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
 
             # Fit optional head-group saliency from local aligned slices.
             group_scores: list[tuple[float, int]] = []
             base_method = self.config.alignment_method.removeprefix("grouped_")
-            if base_method in {"transport", "permutation", "signature_transport", "subspace_transport", "canonical_transport"}:
+            if base_method in {"transport", "permutation", "signature_transport", "subspace_transport", "canonical_transport", "covariance_transport"}:
                 base_method = "auto"
             for group_idx, (src_slice, tgt_slice) in enumerate(
                 zip(self._group_feature_slices(use_target=False), self._group_feature_slices(use_target=True))

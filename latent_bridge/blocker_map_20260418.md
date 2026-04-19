@@ -354,6 +354,32 @@ Next fix:
 - but it should be judged directly against fixed prior and `C2C`, not against
   weaker transport-only branches
 
+## Blocker 15: Covariance-aware transport does not improve on the best subspace-plus-correction branch
+
+Observed symptom:
+
+- grouped covariance transport plus the same rank-4 residual drops exact Qwen
+  GSM70 to `0.014286`
+- that is far below grouped subspace transport plus rank-4 residual
+  (`0.057143`), below the old fixed prior (`0.085714`), and below `C2C`
+  (`0.128571`)
+
+Interpretation:
+
+- covariance shape alone is not the right transport geometry shortcut here
+- the best remaining evidence inside the current family is still:
+  decent transport map first, then tiny correction
+
+Current status:
+
+- newly checked and negative
+
+Next fix:
+
+- stop spending time on covariance-aware grouped transport in this regime
+- if we keep pushing internally, use the grouped-subspace-plus-rank4 branch as
+  the baseline for any richer OT or attention-template transport
+
 Next fix:
 
 - keep pushing transport-first, but only with richer costs or canonicalization

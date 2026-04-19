@@ -197,6 +197,8 @@ Proposed claim:
 - A first transport-plus-correction branch finally gives a directional lift:
   grouped subspace transport plus a rank-4 residual reaches `0.057143` on
   Qwen GSM70.
+- A covariance-aware version of that same branch then falls back to `0.014286`,
+  so covariance geometry is not the next shortcut in the current family.
 - But it is still below the old fixed prior `0.085714` and below `C2C`
   `0.128571`, so this is still a bounded mechanistic gain rather than a
   publishable headline result.

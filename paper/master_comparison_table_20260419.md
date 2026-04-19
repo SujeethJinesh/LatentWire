@@ -15,6 +15,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `gsm8k_eval_70` | grouped signature transport | `0.0429` | `147,812.6` | best current transport-only branch |
 | `gsm8k_eval_70` | grouped subspace transport | `0.0429` | `147,812.6` | tied grouped signature transport |
 | `gsm8k_eval_70` | grouped subspace transport + rank-4 residual | `0.0571` | `145,508.8` | best current transport-plus-correction branch |
+| `gsm8k_eval_70` | grouped covariance transport + rank-4 residual | `0.0143` | `146,417.7` | covariance-aware transport-plus-correction failure |
 | `gsm8k_eval_70` | grouped canonical transport | `0.0286` | `149,496.2` | low-rank canonical basis shortcut |
 | `gsm8k_eval_70` | `C2C` | `0.1286` | `-` | strongest external baseline so far |
 | `gsm8k_eval_70` | lifted `KVComm` replay | `0.0000` | `-` | compatibility-lifted heterogeneous replay |
@@ -43,6 +44,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 - Best external baseline is still `C2C`, and it beats us on both GSM and SVAMP.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
+- A covariance-aware version of that same transport-plus-correction branch falls back to `0.0143`, so covariance geometry is not the next shortcut here.
 - The paper is currently strongest as a **blocker / mechanism** story:
   head-space mismatch and transport quality matter, but the current transport
   family does not yet produce a competitive positive method on the main split.
