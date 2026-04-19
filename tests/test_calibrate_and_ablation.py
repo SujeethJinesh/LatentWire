@@ -408,6 +408,32 @@ def test_calibrate_parse_args_accepts_grouped_template_transport(monkeypatch) ->
     assert args.transport_signature_weight == 0.0
 
 
+def test_calibrate_parse_args_accepts_grouped_template_subspace_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_template_subspace_transport",
+            "--transport-template-bins",
+            "48",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_template_subspace_transport"
+    assert args.transport_template_bins == 48
+
+
 def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

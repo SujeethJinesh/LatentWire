@@ -411,6 +411,34 @@ Next fix:
   retrieval-template transport and judge it directly against grouped-subspace
   plus rank-4 residual, fixed prior, and `C2C`
 
+## Blocker 17: Naively stacking the best grouped penalties makes the transport worse
+
+Observed symptom:
+
+- grouped template-subspace transport plus the same rank-4 residual drops exact
+  Qwen GSM70 to `0.014286`
+- that is below grouped template transport plus rank-4 residual (`0.042857`),
+  below grouped subspace transport plus rank-4 residual (`0.057143`), below
+  the old fixed prior (`0.085714`), and below `C2C` (`0.128571`)
+
+Interpretation:
+
+- the grouped template penalty and grouped subspace penalty are not simply
+  additive inside the current transport solver
+- the remaining blocker is not “we need one more grouped penalty term”; the
+  method class itself likely has to change
+
+Current status:
+
+- newly checked and negative
+
+Next fix:
+
+- stop stacking light grouped penalties
+- if the positive-method lane stays alive at all, move to richer OT or
+  retrieval-template transport rather than another local combination inside the
+  current grouped transport family
+
 Next fix:
 
 - keep pushing transport-first, but only with richer costs or canonicalization

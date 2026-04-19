@@ -823,3 +823,46 @@ Interpretation:
 - adding templates to the grouped transport cost is therefore not enough by
   itself; the next live lane is still richer transport-plus-correction rather
   than another light grouped penalty
+
+And a twenty-first hybrid transport update:
+
+> combining the grouped attention-template penalty and the grouped subspace
+> penalty in one transport score, then keeping the same rank-4 residual,
+> drops exact Qwen GSM70 to `0.014286`. So naively stacking the two best
+> partial transport hints does **not** improve the branch; it makes it worse.
+
+Paired reads for the grouped-template-subspace-plus-rank4-residual branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.071429`
+  - grouped-template-subspace-resid4-only wins `1`
+  - fixed-prior-only wins `6`
+  - bootstrap `[-0.142857, +0.000000]`
+  - McNemar `0.1306`
+- vs `C2C`:
+  - delta `-0.114286`
+  - grouped-template-subspace-resid4-only wins `0`
+  - `C2C`-only wins `8`
+  - bootstrap `[-0.185714, -0.042857]`
+  - McNemar `0.0133`
+- vs grouped subspace transport + rank-4 residual:
+  - delta `-0.042857`
+  - grouped-template-subspace-resid4-only wins `1`
+  - grouped-subspace-resid4-only wins `4`
+  - bootstrap `[-0.100000, +0.014286]`
+  - McNemar `0.3711`
+- vs grouped template transport + rank-4 residual:
+  - delta `-0.028571`
+  - grouped-template-subspace-resid4-only wins `0`
+  - grouped-template-resid4-only wins `2`
+  - bootstrap `[-0.071429, +0.000000]`
+  - McNemar `0.4795`
+
+Interpretation:
+
+- the grouped subspace penalty and grouped template penalty are not additive
+  in the current solver
+- the best internal lane is still the simpler grouped-subspace-plus-rank4
+  branch at `0.057143`
+- so the next serious method change has to be a different transport class,
+  not another grouped-penalty combination

@@ -1523,5 +1523,23 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 2661978
+  },
+  {
+    "num": 179,
+    "slug": "probabilistic_geometric_alignment_via_bayesian_latent_transport_for_domain_adaptive_foundation_models",
+    "url": "https://arxiv.org/pdf/2603.23783.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/179_probabilistic_geometric_alignment_via_bayesian_latent_transport_for_domain_adaptive_foundation_models.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 739526
+  },
+  {
+    "num": 180,
+    "slug": "constrained_gaussian_wasserstein_optimal_transport_with_commutative_covariance_matrices",
+    "url": "https://arxiv.org/pdf/2503.03744.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/180_constrained_gaussian_wasserstein_optimal_transport_with_commutative_covariance_matrices.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 429563
   }
 ]

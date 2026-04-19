@@ -150,9 +150,11 @@ python scripts/calibrate.py \
   `grouped_subspace_transport` for grouped transport with a principal-subspace
   mismatch penalty on post-map source/target blocks. Use
   `grouped_canonical_transport` to fit each grouped block in a shared low-rank
-  canonical basis before transport, or `grouped_template_transport` to match
+  canonical basis before transport, `grouped_template_transport` to match
   grouped source/target heads by calibration-time last-token attention
-  templates before fitting the transport map.
+  templates before fitting the transport map, or
+  `grouped_template_subspace_transport` to combine the template penalty with
+  the grouped subspace penalty in one transport score.
 - `--canonical-subspace-rank R` — shared low-rank basis size for
   `grouped_canonical_transport`.
 - `--transport-template-bins B` — number of bins used when summarizing grouped

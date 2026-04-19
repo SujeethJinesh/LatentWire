@@ -62,6 +62,7 @@ class TranslatorConfig:
     #                 | 'grouped_signature_transport' | 'grouped_subspace_transport'
     #                 | 'grouped_canonical_transport' | 'grouped_covariance_transport'
     #                 | 'grouped_template_transport'
+    #                 | 'grouped_template_subspace_transport'
     # Grouped variants fit one block per head-group instead of a single flat
     # all-head projection. When src/tgt head counts match, this degenerates to
     # true per-head alignment.
@@ -785,7 +786,7 @@ class RotAlignKVTranslator(nn.Module):
         if self.config.alignment_method == "grouped_signature_transport" and signature_weight > 0.0:
             src_signatures = [self._group_signature(X[:, src_slice]) for src_slice in src_slices]
             tgt_signatures = [self._group_signature(Y[:, tgt_slice]) for tgt_slice in tgt_slices]
-        if self.config.alignment_method == "grouped_template_transport" and signature_weight > 0.0:
+        if self.config.alignment_method in {"grouped_template_transport", "grouped_template_subspace_transport"} and signature_weight > 0.0:
             if self._transport_src_group_templates is None or self._transport_tgt_group_templates is None:
                 raise ValueError("grouped_template_transport requires calibration-time group templates")
             src_templates = self._transport_src_group_templates[src_layer_idx].to(device=X.device, dtype=X.dtype)
@@ -830,6 +831,11 @@ class RotAlignKVTranslator(nn.Module):
                 elif self.config.alignment_method == "grouped_template_transport" and signature_weight > 0.0:
                     template_dist = self._template_distance(src_templates[src_idx], tgt_templates[tgt_idx])
                     score = score - signature_weight * float(template_dist)
+                elif self.config.alignment_method == "grouped_template_subspace_transport" and signature_weight > 0.0:
+                    y_hat = X[:, src_slice] @ W_block
+                    template_dist = self._template_distance(src_templates[src_idx], tgt_templates[tgt_idx])
+                    subspace_dist = self._subspace_distance(y_hat, Y[:, tgt_slice])
+                    score = score - signature_weight * float(template_dist + subspace_dist)
                 scores[src_idx, tgt_idx] = score
                 blocks[(src_idx, tgt_idx)] = W_block
         if self.config.alignment_method == "grouped_permutation":
@@ -1335,7 +1341,7 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport"}:
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_template_subspace_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -1509,14 +1515,14 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport"}:
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_template_subspace_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
 
             # Fit optional head-group saliency from local aligned slices.
             group_scores: list[tuple[float, int]] = []
             base_method = self.config.alignment_method.removeprefix("grouped_")
-            if base_method in {"transport", "permutation", "signature_transport", "subspace_transport", "canonical_transport", "covariance_transport", "template_transport"}:
+            if base_method in {"transport", "permutation", "signature_transport", "subspace_transport", "canonical_transport", "covariance_transport", "template_transport", "template_subspace_transport"}:
                 base_method = "auto"
             for group_idx, (src_slice, tgt_slice) in enumerate(
                 zip(self._group_feature_slices(use_target=False), self._group_feature_slices(use_target=True))

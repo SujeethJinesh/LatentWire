@@ -99,6 +99,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_canonical_transport",
             "grouped_covariance_transport",
             "grouped_template_transport",
+            "grouped_template_subspace_transport",
         ],
         default="auto",
     )
@@ -668,7 +669,7 @@ def main() -> None:
     print(f"\nBuilding translator with config:\n  {config}")
     translator = RotAlignKVTranslator(config)
 
-    if args.alignment == "grouped_template_transport":
+    if args.alignment in {"grouped_template_transport", "grouped_template_subspace_transport"}:
         group_count = math.gcd(config.src_num_heads, config.tgt_num_heads)
         print(
             "\nBuilding grouped attention templates from calibration prompts "

@@ -772,5 +772,17 @@
     "slug": "cross_model_transferability_among_large_language_models_on_the_platonic_representations_of_concepts",
     "url": "https://aclanthology.org/2025.acl-long.185.pdf",
     "reason": "This is a direct theory-and-evidence citation for why lightweight cross-model correction should be possible under a platonic/shared-concept representation view."
+  },
+  {
+    "num": 179,
+    "slug": "probabilistic_geometric_alignment_via_bayesian_latent_transport_for_domain_adaptive_foundation_models",
+    "url": "https://arxiv.org/pdf/2603.23783.pdf",
+    "reason": "This is a recent latent-transport reference that motivates uncertainty-aware geometric alignment rather than fixed hard maps when cross-model coordinates are only partially compatible."
+  },
+  {
+    "num": 180,
+    "slug": "constrained_gaussian_wasserstein_optimal_transport_with_commutative_covariance_matrices",
+    "url": "https://arxiv.org/pdf/2503.03744.pdf",
+    "reason": "This is a direct Gaussian Wasserstein / Bures transport reference for richer covariance-aware costs, useful if the next transport branch moves from heuristic penalties toward principled OT geometry."
   }
 ]

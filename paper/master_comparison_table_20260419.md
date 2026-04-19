@@ -17,6 +17,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `gsm8k_eval_70` | grouped subspace transport + rank-4 residual | `0.0571` | `145,508.8` | best current transport-plus-correction branch |
 | `gsm8k_eval_70` | grouped covariance transport + rank-4 residual | `0.0143` | `146,417.7` | covariance-aware transport-plus-correction failure |
 | `gsm8k_eval_70` | grouped template transport + rank-4 residual | `0.0429` | `150,038.8` | attention-template transport-plus-correction probe (`64`-prompt calibration slice) |
+| `gsm8k_eval_70` | grouped template-subspace transport + rank-4 residual | `0.0143` | `149,129.8` | stacked grouped-penalty failure (`64`-prompt calibration slice) |
 | `gsm8k_eval_70` | grouped canonical transport | `0.0286` | `149,496.2` | low-rank canonical basis shortcut |
 | `gsm8k_eval_70` | `C2C` | `0.1286` | `-` | strongest external baseline so far |
 | `gsm8k_eval_70` | lifted `KVComm` replay | `0.0000` | `-` | compatibility-lifted heterogeneous replay |
@@ -47,6 +48,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - A covariance-aware version of that same transport-plus-correction branch falls back to `0.0143`, so covariance geometry is not the next shortcut here.
 - A calibration-time attention-template version of that same branch lands at `0.0429`, so light behavior matching inside the current grouped solver is also not enough.
+- A hybrid template-plus-subspace version falls further to `0.0143`, so stacking the two best grouped penalties is not the right fix either.
 - The paper is currently strongest as a **blocker / mechanism** story:
   head-space mismatch and transport quality matter, but the current transport
   family does not yet produce a competitive positive method on the main split.

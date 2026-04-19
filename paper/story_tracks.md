@@ -203,6 +203,9 @@ Proposed claim:
   correction idea then reaches only `0.042857`, tying the earlier
   transport-only plateau instead of improving on the best subspace-plus-
   correction branch.
+- A hybrid template-plus-subspace version then falls further to `0.014286`, so
+  naively stacking the two best grouped penalties is not the right direction
+  either.
 - But it is still below the old fixed prior `0.085714` and below `C2C`
   `0.128571`, so this is still a bounded mechanistic gain rather than a
   publishable headline result.
