@@ -673,6 +673,43 @@ Interpretation:
 - the likely remaining gap is now richer transport or transport-plus-correction,
   not another small grouped or canonical-basis shortcut
 
+And an eighteenth transport-plus-correction update:
+
+> adding a **rank-4 residual** on top of grouped-subspace transport lifts the
+> exact Qwen GSM70 result to `0.057143`. That is still below the old fixed
+> prior `0.085714` and below `C2C` `0.128571`, but it is the first
+> transport-plus-correction branch that clearly improves over the pure
+> transport-only grouped family.
+
+Paired reads for the grouped-subspace-plus-rank4-residual branch on Qwen GSM70:
+
+- vs grouped subspace transport:
+  - delta `+0.014286`
+  - grouped-subspace-resid4-only wins `1`
+  - grouped-subspace-only wins `0`
+  - bootstrap `[+0.000000, +0.042857]`
+  - McNemar `1.0000`
+- vs old fixed prior:
+  - delta `-0.028571`
+  - grouped-subspace-resid4-only wins `0`
+  - fixed-prior-only wins `2`
+  - bootstrap `[-0.071429, +0.000000]`
+  - McNemar `0.4795`
+- vs `C2C`:
+  - delta `-0.071429`
+  - grouped-subspace-resid4-only wins `4`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.171429, +0.028571]`
+  - McNemar `0.2673`
+
+Interpretation:
+
+- transport-plus-correction is directionally better than transport alone
+- but the first small residual still does not clear the old fixed prior or
+  the `C2C` baseline
+- that keeps the paper in blocker/mechanism territory, while pointing to the
+  next live method lane more clearly than before
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it

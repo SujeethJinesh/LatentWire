@@ -327,6 +327,33 @@ Next fix:
   transport or transport-plus-correction
 - otherwise start tightening the paper around a blocker/mechanism contribution
 
+## Blocker 14: Small residual correction helps only after the transport map gets somewhat reasonable
+
+Observed symptom:
+
+- adding a rank-4 residual on top of grouped-subspace transport lifts exact
+  Qwen GSM70 from `0.042857` to `0.057143`
+- but that is still below the old fixed prior `0.085714` and below `C2C`
+  `0.128571`
+
+Interpretation:
+
+- correction is not useless; it just does not rescue a weak map by itself
+- the first positive sign in the transport-plus-correction lane appears only
+  once the transport map is already one of the better internal transport
+  variants
+
+Current status:
+
+- newly checked and directionally positive, but still bounded
+
+Next fix:
+
+- if we keep pushing the positive-method path, transport-plus-correction is now
+  the best remaining internal lane
+- but it should be judged directly against fixed prior and `C2C`, not against
+  weaker transport-only branches
+
 Next fix:
 
 - keep pushing transport-first, but only with richer costs or canonicalization

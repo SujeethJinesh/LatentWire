@@ -194,6 +194,9 @@ Proposed claim:
   saturated on the main same-pair GSM split.
 - A low-rank grouped canonical-subspace transport branch then falls back to
   `0.028571`, so canonical-basis fitting alone is not the rescue either.
+- A first transport-plus-correction branch finally gives a directional lift:
+  grouped subspace transport plus a rank-4 residual reaches `0.057143` on
+  Qwen GSM70.
 - But it is still below the old fixed prior `0.085714` and below `C2C`
   `0.128571`, so this is still a bounded mechanistic gain rather than a
   publishable headline result.

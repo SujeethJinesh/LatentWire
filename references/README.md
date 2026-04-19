@@ -219,6 +219,12 @@ Files `171_` through `175_` extend the transport-and-canonicalization lane:
 - `174_`: Complete Characterization of Gauge Symmetries in Transformer Architectures as a source-note reference for transformer gauge freedom and non-identifiable coordinates; stored as markdown because OpenReview returned HTML from this machine during download.
 - `175_`: Scalpel as a recent attention-manifold transport reference, useful for dynamic transport-plus-correction ideas beyond static head matching.
 
+Files `176_` through `178_` extend the transport-plus-correction lane:
+
+- `176_`: Reconstructing KV Caches with Cross-layer Fusion For Enhanced Transformers as a direct transport-plus-reconstruction reference for repairing imperfect cache maps with structured fusion.
+- `177_`: SkipV1Former as a residual/skip-style KV correction reference, useful for cheap correction paths layered on top of transport.
+- `178_`: The Residual Stream Is All You Need as a strong reconstruction-side reference, useful if the paper pivots from full KV transport toward smaller transported state plus correction.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
