@@ -1436,6 +1436,31 @@ def test_runtime_head_scores_with_prior_supports_prior_and_blend() -> None:
     assert torch.allclose(blended, torch.tensor([0.5, 0.5]))
 
 
+def test_runtime_head_scores_with_prior_supports_expected_attention() -> None:
+    attention_map = torch.tensor(
+        [[0.9, 0.05, 0.05], [0.05, 0.05, 0.9]],
+        dtype=torch.float32,
+    )
+    position_prior = torch.tensor([0.8, 0.1, 0.1], dtype=torch.float32)
+
+    expected_scores, _ = evaluate._runtime_head_scores_with_prior(
+        attention_map,
+        metric="attention_expected",
+        layer_idx=0,
+        position_prior=position_prior,
+    )
+    shuffled_scores, _ = evaluate._runtime_head_scores_with_prior(
+        attention_map,
+        metric="attention_expected_shuffled",
+        layer_idx=0,
+        position_prior=position_prior,
+    )
+
+    assert float(expected_scores[0]) > float(expected_scores[1])
+    assert shuffled_scores.shape == torch.Size([2])
+    assert not torch.allclose(expected_scores, shuffled_scores)
+
+
 def test_resample_head_profile_preserves_distribution() -> None:
     resampled = evaluate._resample_head_profile(torch.tensor([1.0, 3.0]), 4)
     assert resampled.shape == torch.Size([4])

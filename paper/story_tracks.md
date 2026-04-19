@@ -81,6 +81,10 @@ Proposed claim:
 - The fixed-prior story is now best used as a **mechanism clue**:
   there is structure in which heads matter, but the current fixed prior is not
   stable enough across seeds to present as the final method.
+- The grouped-CCA + head-level expected-attention follow-up is also best used
+  as a **bounded mechanism clue**:
+  it rescues GSM from `0.0300` to `0.0600`, but only back to the old
+  grouped-CCA shuffled-null level rather than creating a new clean win.
 - The live query-aware sparse story is also now best used as a **mechanism clue**:
   query-aware sparsity matters directionally, but the current implementation is
   not stable enough across seeds or held-out slices to headline the paper.
@@ -130,8 +134,11 @@ What we still need:
 2. Keep the DeepSeek pair as the main transfer stress test instead of widening to many models too early.
 3. Implement the next method pivots suggested by the literature:
    - OT / permutation or gauge-aware head matching
-   - head-level expected-attention or attention-fidelity-preserving routing
+   - attention-fidelity-preserving routing after head-level expected-attention
+     proved bounded on GSM
    - use grouped CCA as a task-conditioned branch to test on more SVAMP-like slices
    - retrieval-head routing only after the head space is made more canonical
    - causal head scoring
+   - run `C2C` on the exact Qwen pair before spending more time on weaker
+     internal heuristics
 4. Preserve the negative controls and failure cases in the main paper, not just the appendix.

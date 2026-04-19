@@ -339,6 +339,16 @@ def _runtime_head_scores(
     raise ValueError(f"Unknown runtime_head_selection_metric: {metric}")
 
 
+def _expected_attention_head_scores(
+    attention_map: torch.Tensor,
+    position_prior: torch.Tensor,
+) -> torch.Tensor:
+    probs = attention_map.float()
+    probs = probs / probs.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    prior = _resample_position_profile(position_prior.to(device=probs.device), probs.shape[-1]).view(1, -1)
+    return (probs * prior).sum(dim=-1)
+
+
 def _normalize_selection_scores(scores: torch.Tensor) -> torch.Tensor:
     values = scores.float()
     if values.numel() == 0:
@@ -630,6 +640,7 @@ def _runtime_head_scores_with_prior(
     metric: str,
     layer_idx: int,
     prior_scores: torch.Tensor | None = None,
+    position_prior: torch.Tensor | None = None,
     prior_alpha: float = 0.5,
 ) -> tuple[torch.Tensor, torch.Tensor | None]:
     prior_topk: torch.Tensor | None = None
@@ -637,6 +648,23 @@ def _runtime_head_scores_with_prior(
         if attention_map is None:
             raise ValueError(f"{metric} runtime head selection requires target attention maps")
         return _runtime_head_scores(attention_map, metric=metric, layer_idx=layer_idx), None
+    if metric == "attention_expected":
+        if attention_map is None:
+            raise ValueError("attention_expected runtime head selection requires target attention maps")
+        if position_prior is None:
+            raise ValueError("attention_expected runtime head selection requires fixed_position_profiles")
+        return _expected_attention_head_scores(attention_map, position_prior), None
+    if metric == "attention_expected_shuffled":
+        if attention_map is None:
+            raise ValueError("attention_expected_shuffled runtime head selection requires target attention maps")
+        if position_prior is None:
+            raise ValueError("attention_expected_shuffled runtime head selection requires fixed_position_profiles")
+        shuffled_prior = _deterministic_score_permutation(
+            _resample_position_profile(position_prior, attention_map.shape[-1]),
+            layer_idx=layer_idx,
+            seed_offset=8_117,
+        )
+        return _expected_attention_head_scores(attention_map, shuffled_prior), None
     if metric == "attention_prior":
         if prior_scores is None:
             raise ValueError("attention_prior runtime head selection requires fixed_head_profiles")
@@ -1788,7 +1816,15 @@ def _build_rotalign_prefix_state(
         src_pkv = list(_normalize_cache(src_out.past_key_values))
 
     layer_attention_maps: list[torch.Tensor] | None = None
-    runtime_head_attention_metrics = {"attention_peak", "attention_entropy", "attention_blend"}
+    runtime_head_attention_metrics = {
+        "attention_peak",
+        "attention_entropy",
+        "attention_margin",
+        "retrieval_peak",
+        "attention_expected",
+        "attention_expected_shuffled",
+        "attention_blend",
+    }
     if (
         position_selection_metric in {"attention", "attention_disagreement", "attention_shuffled"}
         and position_selection_ratio < 1.0
@@ -1873,11 +1909,14 @@ def _build_rotalign_prefix_state(
             else None
         )
         prior_scores = None
+        position_prior_scores = None
         if fixed_head_profiles is not None:
             prior_scores = _resample_head_profile(
                 fixed_head_profiles[tgt_l].to(device=K_t_aligned.device),
                 active_head_indices.numel(),
             )
+        if fixed_position_profiles is not None:
+            position_prior_scores = fixed_position_profiles[tgt_l].to(device=K_t_aligned.device)
         if runtime_head_selection_ratio < 1.0:
             attention_map = active_attention_map
             original_head_indices = active_head_indices
@@ -1888,6 +1927,7 @@ def _build_rotalign_prefix_state(
                 metric=runtime_head_selection_metric,
                 layer_idx=tgt_l,
                 prior_scores=prior_scores,
+                position_prior=position_prior_scores,
                 prior_alpha=runtime_head_prior_alpha,
             )
             keep_heads = min(keep_heads, int(head_scores.numel()))
@@ -1947,6 +1987,7 @@ def _build_rotalign_prefix_state(
                 metric=per_head_position_budget_mode,
                 layer_idx=tgt_l,
                 prior_scores=prior_scores,
+                position_prior=position_prior_scores,
                 prior_alpha=runtime_head_prior_alpha,
             )
             K_hat, V_hat, head_budget_trace, keep_counts = _apply_per_head_position_selection(
@@ -1962,7 +2003,13 @@ def _build_rotalign_prefix_state(
                 active_head_indices=active_head_indices,
                 score_normalization=(
                     "sum"
-                    if per_head_position_budget_mode in {"attention_prior", "attention_prior_shuffled", "attention_blend"}
+                    if per_head_position_budget_mode in {
+                        "attention_prior",
+                        "attention_prior_shuffled",
+                        "attention_blend",
+                        "attention_expected",
+                        "attention_expected_shuffled",
+                    }
                     else "minmax"
                 ),
                 return_trace=True,
@@ -2967,7 +3014,17 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--runtime-head-selection-metric",
-        choices=["attention_peak", "attention_entropy", "attention_margin", "retrieval_peak", "random", "attention_prior", "attention_blend"],
+        choices=[
+            "attention_peak",
+            "attention_entropy",
+            "attention_margin",
+            "retrieval_peak",
+            "random",
+            "attention_expected",
+            "attention_expected_shuffled",
+            "attention_prior",
+            "attention_blend",
+        ],
         default="attention_peak",
         help="How to rank heads when runtime_head_selection_ratio < 1.0.",
     )
@@ -3019,6 +3076,8 @@ def parse_args() -> argparse.Namespace:
             "attention_margin",
             "retrieval_peak",
             "random",
+            "attention_expected",
+            "attention_expected_shuffled",
             "attention_prior",
             "attention_prior_shuffled",
             "attention_blend",
@@ -3110,6 +3169,8 @@ def main() -> None:
         "attention_entropy",
         "attention_margin",
         "retrieval_peak",
+        "attention_expected",
+        "attention_expected_shuffled",
         "attention_prior",
         "attention_blend",
     }
@@ -3157,7 +3218,15 @@ def main() -> None:
     fixed_position_profiles = None
     fixed_head_profiles = None
     loaded_head_prior_metadata: dict[str, Any] | None = None
-    if position_selection_metric == "attention_prior":
+    needs_fixed_position_prior = (
+        position_selection_metric == "attention_prior"
+        or (
+            runtime_head_selection_ratio < 1.0
+            and runtime_head_selection_metric in {"attention_expected", "attention_expected_shuffled"}
+        )
+        or per_head_position_budget_mode in {"attention_expected", "attention_expected_shuffled"}
+    )
+    if needs_fixed_position_prior:
         if args.position_selection_prior_source == "uniform":
             print(
                 "Building uniform fixed attention prior "
@@ -3170,9 +3239,9 @@ def main() -> None:
         else:
             if not args.position_selection_prior_file:
                 raise ValueError(
-                    "--position-selection-prior-file is required when "
-                    "--position-selection-metric attention_prior and "
-                    "--position-selection-prior-source calibration_mean_attention"
+                    "--position-selection-prior-file is required when a fixed attention prior "
+                    "is needed and --position-selection-prior-source "
+                    "calibration_mean_attention is selected"
                 )
             prior_prompts = load_prompt_lines(args.position_selection_prior_file)
             print(

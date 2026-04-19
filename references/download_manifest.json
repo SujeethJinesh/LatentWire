@@ -1325,5 +1325,32 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 673507
+  },
+  {
+    "num": 149,
+    "slug": "thin_keys_full_values_reducing_kv_cache_via_low_dimensional_attention_selection",
+    "url": "https://arxiv.org/pdf/2603.04427.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/149_thin_keys_full_values_reducing_kv_cache_via_low_dimensional_attention_selection.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 542148
+  },
+  {
+    "num": 150,
+    "slug": "crystal_kv_efficient_kv_cache_management_for_chain_of_thought_llms_via_answer_first_principle",
+    "url": "https://arxiv.org/pdf/2601.16986.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/150_crystal_kv_efficient_kv_cache_management_for_chain_of_thought_llms_via_answer_first_principle.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2064796
+  },
+  {
+    "num": 151,
+    "slug": "low_rank_key_value_attention",
+    "url": "https://arxiv.org/pdf/2601.11471.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/151_low_rank_key_value_attention.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 3964218
   }
 ]

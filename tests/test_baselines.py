@@ -6,15 +6,17 @@ from latent_bridge.baselines import (
     BaselineContext,
     C2CAdapter,
     KVCommAdapter,
+    LatentMASAdapter,
     available_baselines,
     get_baseline,
 )
 
 
 def test_baseline_registry_exposes_expected_placeholders() -> None:
-    assert available_baselines() == ["c2c", "kvcomm"]
+    assert available_baselines() == ["c2c", "kvcomm", "latentmas"]
     assert get_baseline("c2c") is C2CAdapter
     assert get_baseline("kvcomm") is KVCommAdapter
+    assert get_baseline("latentmas") is LatentMASAdapter
 
 
 def test_unknown_baseline_raises_key_error() -> None:
@@ -32,10 +34,14 @@ def test_placeholder_adapters_fail_explicitly() -> None:
 
     c2c = C2CAdapter()
     kvcomm = KVCommAdapter()
+    latentmas = LatentMASAdapter()
     c2c.fit(context)
     kvcomm.fit(context)
+    latentmas.fit(context)
 
     with pytest.raises(NotImplementedError):
         c2c.evaluate_generation()
     with pytest.raises(NotImplementedError):
         kvcomm.evaluate_mcq()
+    with pytest.raises(NotImplementedError):
+        latentmas.evaluate_generation()

@@ -189,12 +189,16 @@ key disagreement, so it explicitly favors positions that are both query-relevant
 and likely to change the target's retrieval geometry.
 For head-aware retrieval routing, add
 `--per-head-position-budget-mode attention_peak`, `attention_entropy`,
-`attention_margin`, `retrieval_peak`,
-`random`, `attention_prior`, `attention_prior_shuffled`, or
+`attention_margin`, `retrieval_peak`, `attention_expected`,
+`attention_expected_shuffled`, `random`, `attention_prior`,
+`attention_prior_shuffled`, or
 `attention_blend` to spend the same overall position budget unevenly across
 active heads instead of giving every head the same keep ratio.
 `attention_prior`, `attention_prior_shuffled`, and `attention_blend` reuse the
 fixed head prior built from `--runtime-head-prior-file`.
+`attention_expected` and `attention_expected_shuffled` instead reuse the fixed
+position prior from `--position-selection-prior-file` and score heads by how
+well their live attention aligns to the expected future-attention profile.
 `attention_prior_shuffled` is the budget-matched null that keeps the prior's
 mass profile but permutes which heads receive it.
 Use `--runtime-head-prior-save <path>` to export the concrete fixed head-profile
@@ -207,10 +211,12 @@ head profile; `uniform` shrinks toward a flat per-layer prior.
 For runtime retrieval-head ablations, add
 `--runtime-head-selection-ratio <r>` with
 `--runtime-head-selection-metric attention_peak`, `attention_entropy`,
-`attention_margin`, `retrieval_peak`,
-`random`, `attention_prior`, or `attention_blend`. Use
-`--runtime-head-prior-file <path>` to build a fixed calibration-derived head
-prior, and `--runtime-head-prior-alpha` to blend that prior with live
+`attention_margin`, `retrieval_peak`, `attention_expected`,
+`attention_expected_shuffled`, `random`, `attention_prior`, or
+`attention_blend`. Use `--runtime-head-prior-file <path>` to build a fixed
+calibration-derived head prior, `--position-selection-prior-file <path>` to
+build the expected-attention profile for the new expected-attention metrics,
+and `--runtime-head-prior-alpha` to blend a fixed head prior with live
 attention-based head scores. This keeps only a subset of the
 checkpoint-selected target heads at evaluation time and records per-layer
 `head_trace` metadata in the sidecar, including prior-overlap statistics when a

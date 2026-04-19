@@ -35,6 +35,8 @@ build/
 experimental/learning/reproduce_coconut/coconut/data/*.json
 experimental/learning/reproduce_coconut/coconut/data/*.txt
 venv_arm64/
+.debug/
+references/repos/
 experimental/learning/reproduce_coconut/coconut/YOUR_PATH_TO_SAVE_THE_MODEL/*
 *.safetensors*
 

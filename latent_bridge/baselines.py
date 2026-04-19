@@ -74,3 +74,14 @@ class KVCommAdapter(BaselineAdapter):
 
     def evaluate_generation(self, *args: Any, **kwargs: Any) -> dict[str, float]:
         raise NotImplementedError("KVComm adapter is not wired yet.")
+
+
+@register_baseline
+class LatentMASAdapter(BaselineAdapter):
+    name = "latentmas"
+
+    def evaluate_mcq(self, *args: Any, **kwargs: Any) -> dict[str, float]:
+        raise NotImplementedError("LatentMAS adapter is not wired yet.")
+
+    def evaluate_generation(self, *args: Any, **kwargs: Any) -> dict[str, float]:
+        raise NotImplementedError("LatentMAS adapter is not wired yet.")

@@ -285,6 +285,13 @@ Interpretation:
 - A structural subspace pivot can help on one reasoning boundary (SVAMP) while
   hurting another (GSM8K), so task-conditioned geometry is now a live hypothesis.
 - Fixed query-blind position priors do not explain that split.
+- Head-level expected-attention scoring on top of grouped CCA improves the weak
+  GSM fixed-prior branch from `0.0300` to `0.0600`, but that only ties the old
+  grouped-CCA shuffled-null result `0.0600`, so it is another bounded ablation
+  rather than a new source-specific win.
+- The competitor baseline path is now clearer: the cloned `C2C` repo matches
+  our exact Qwen pair, and the published HF bundle path
+  `qwen3_0.6b+qwen2.5_0.5b_Fuser/config.json` is reachable from this machine.
 
 ## What This Means For The Paper
 
@@ -310,10 +317,11 @@ paper only if the next replication steps succeed.
    is stabilized across seeds.
 3. Next method pivots from the new literature:
    - OT / permutation or gauge-aware head matching across models
-   - head-level expected-attention or attention-fidelity-preserving head ranking
+   - attention-fidelity-preserving head ranking after expected-attention ties the shuffled null
    - extend the grouped CCA branch on SVAMP-like tasks before treating it as a general method
    - causal head scoring once the matching space is less noisy
    - only then revisit retrieval-head routing with a stronger structure-aware score
+   - run `C2C` first on the exact Qwen GSM split before spending more time on weaker internal heuristics
 4. Keep SVAMP, ARC, cross-family transfer, and now seed instability in the
    paper as explicit failure boundaries.
 5. Treat the live query-aware sparse branch as another mechanism clue unless a

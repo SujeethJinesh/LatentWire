@@ -163,6 +163,13 @@ File `148_` adds a stronger query-blind retention / eviction control:
 
 - `148_`: self-attention-guided KV eviction as a direct query-blind sparse-retention baseline against which expected-attention or structured routing branches should be compared.
 
+Files `149_` through `151_` extend the current loop around K/V asymmetry,
+task-conditioned budgeting, and low-rank head geometry:
+
+- `149_`: low-dimensional attention selection as a direct reference for why thin keys and full values can outperform symmetric KV treatment.
+- `150_`: answer-first KV budgeting as a direct reference for task-conditioned cache allocation under chain-of-thought reasoning.
+- `151_`: low-rank key-value attention as a direct reference for head-space redundancy and shared subspace geometry.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
