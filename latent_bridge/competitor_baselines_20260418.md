@@ -54,3 +54,20 @@ python scripts/bootstrap_c2c.py \
   --target-model Qwen/Qwen3-0.6B \
   --download
 ```
+
+Replay command:
+
+```bash
+python scripts/run_c2c_eval.py \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file data/gsm8k_eval_70.jsonl \
+  --device mps \
+  --max-new-tokens 64 \
+  --prediction-output results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl
+```
+
+Current read:
+
+- `C2C` on `gsm8k_eval_70`: `0.128571`
+- current best same-pair internal branch on the same split: `0.085714`

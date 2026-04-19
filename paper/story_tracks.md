@@ -85,6 +85,9 @@ Proposed claim:
   as a **bounded mechanism clue**:
   it rescues GSM from `0.0300` to `0.0600`, but only back to the old
   grouped-CCA shuffled-null level rather than creating a new clean win.
+- The first external baseline now tightens the claim further:
+  on the exact Qwen GSM70 split, published `C2C` is at `0.128571`, above our
+  current best same-pair branch `0.085714`.
 - The live query-aware sparse story is also now best used as a **mechanism clue**:
   query-aware sparsity matters directionally, but the current implementation is
   not stable enough across seeds or held-out slices to headline the paper.
@@ -139,6 +142,6 @@ What we still need:
    - use grouped CCA as a task-conditioned branch to test on more SVAMP-like slices
    - retrieval-head routing only after the head space is made more canonical
    - causal head scoring
-   - run `C2C` on the exact Qwen pair before spending more time on weaker
-     internal heuristics
+   - treat `C2C` as the first real external bar on the exact Qwen pair before
+     spending more time on weaker internal heuristics
 4. Preserve the negative controls and failure cases in the main paper, not just the appendix.

@@ -289,9 +289,10 @@ Interpretation:
   GSM fixed-prior branch from `0.0300` to `0.0600`, but that only ties the old
   grouped-CCA shuffled-null result `0.0600`, so it is another bounded ablation
   rather than a new source-specific win.
-- The competitor baseline path is now clearer: the cloned `C2C` repo matches
-  our exact Qwen pair, and the published HF bundle path
-  `qwen3_0.6b+qwen2.5_0.5b_Fuser/config.json` is reachable from this machine.
+- The competitor baseline path is now real:
+  `C2C` ran end to end on the exact Qwen pair and scored `0.128571` on
+  `data/gsm8k_eval_70.jsonl`, above our current best same-pair GSM70 branch
+  `0.085714`.
 
 ## What This Means For The Paper
 
@@ -309,6 +310,11 @@ target-alone.
 That is strong enough for a tighter workshop story and promising for a main
 paper only if the next replication steps succeed.
 
+There is now a stronger constraint on the paper than before:
+
+> even in the favorable same-family Qwen setting, our best current branch still
+> trails a published baseline (`C2C`) on the held-out GSM70 split.
+
 ## Next Highest-Value Steps
 
 1. Budget sweep for the fixed-prior branch: `0.25 / 0.50 / 0.75`, each with
@@ -321,7 +327,7 @@ paper only if the next replication steps succeed.
    - extend the grouped CCA branch on SVAMP-like tasks before treating it as a general method
    - causal head scoring once the matching space is less noisy
    - only then revisit retrieval-head routing with a stronger structure-aware score
-   - run `C2C` first on the exact Qwen GSM split before spending more time on weaker internal heuristics
+   - use `C2C` as the first external bar and try to beat it on the exact Qwen GSM split
 4. Keep SVAMP, ARC, cross-family transfer, and now seed instability in the
    paper as explicit failure boundaries.
 5. Treat the live query-aware sparse branch as another mechanism clue unless a
