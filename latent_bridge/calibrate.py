@@ -101,6 +101,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_template_transport",
             "grouped_template_subspace_transport",
             "broadcast_template_transport",
+            "broadcast_template_ot_transport",
         ],
         default="auto",
     )
@@ -670,10 +671,11 @@ def main() -> None:
     print(f"\nBuilding translator with config:\n  {config}")
     translator = RotAlignKVTranslator(config)
 
-    if args.alignment in {"grouped_template_transport", "grouped_template_subspace_transport", "broadcast_template_transport"}:
+    if args.alignment in {"grouped_template_transport", "grouped_template_subspace_transport", "broadcast_template_transport", "broadcast_template_ot_transport"}:
         group_count = math.gcd(config.src_num_heads, config.tgt_num_heads)
-        src_template_groups = config.src_num_heads if args.alignment == "broadcast_template_transport" else group_count
-        tgt_template_groups = config.tgt_num_heads if args.alignment == "broadcast_template_transport" else group_count
+        is_broadcast = args.alignment in {"broadcast_template_transport", "broadcast_template_ot_transport"}
+        src_template_groups = config.src_num_heads if is_broadcast else group_count
+        tgt_template_groups = config.tgt_num_heads if is_broadcast else group_count
         print(
             "\nBuilding grouped attention templates from calibration prompts "
             f"(source groups={src_template_groups}, target groups={tgt_template_groups}, bins={args.transport_template_bins})..."

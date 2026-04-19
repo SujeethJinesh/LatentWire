@@ -64,6 +64,7 @@ class TranslatorConfig:
     #                 | 'grouped_template_transport'
     #                 | 'grouped_template_subspace_transport'
     #                 | 'broadcast_template_transport'
+    #                 | 'broadcast_template_ot_transport'
     # Grouped variants fit one block per head-group instead of a single flat
     # all-head projection. When src/tgt head counts match, this degenerates to
     # true per-head alignment.
@@ -738,6 +739,23 @@ class RotAlignKVTranslator(nn.Module):
         plan = plan / plan.sum(dim=1, keepdim=True).clamp_min(1e-8)
         return plan
 
+    def _rectangular_sinkhorn_transport(
+        self,
+        scores: torch.Tensor,
+        *,
+        row_mass: torch.Tensor,
+        col_mass: torch.Tensor,
+    ) -> torch.Tensor:
+        temp = max(float(self.config.transport_temperature), 1e-6)
+        kernel = torch.exp((scores - scores.max()) / temp).clamp_min(1e-8)
+        u = torch.ones_like(row_mass)
+        v = torch.ones_like(col_mass)
+        for _ in range(max(1, int(self.config.transport_sinkhorn_iters))):
+            u = row_mass / (kernel @ v).clamp_min(1e-8)
+            v = col_mass / (kernel.T @ u).clamp_min(1e-8)
+        plan = (u[:, None] * kernel) * v[None, :]
+        return plan
+
     @staticmethod
     def _greedy_assignment(scores: torch.Tensor) -> torch.Tensor:
         n = scores.shape[0]
@@ -880,9 +898,10 @@ class RotAlignKVTranslator(nn.Module):
         residual_rank: int | None,
         src_layer_idx: int,
         tgt_layer_idx: int,
+        use_ot: bool,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         if self._transport_src_group_templates is None or self._transport_tgt_group_templates is None:
-            raise ValueError("broadcast_template_transport requires calibration-time head templates")
+            raise ValueError("broadcast_template transport requires calibration-time head templates")
         src_slices = self._head_feature_slices(use_target=False)
         tgt_slices = self._head_feature_slices(use_target=True)
         src_templates = self._transport_src_group_templates[src_layer_idx].to(device=X.device, dtype=X.dtype)
@@ -905,8 +924,18 @@ class RotAlignKVTranslator(nn.Module):
                     score = score - weight * float(template_dist)
                 scores[src_idx, tgt_idx] = score
                 blocks[(src_idx, tgt_idx)] = W_block
-        temp = max(float(self.config.transport_temperature), 1e-6)
-        plan = torch.softmax(scores / temp, dim=1)
+        if use_ot:
+            row_mass = torch.full(
+                (len(src_slices),),
+                float(len(tgt_slices)) / float(len(src_slices)),
+                dtype=X.dtype,
+                device=X.device,
+            )
+            col_mass = torch.ones(len(tgt_slices), dtype=X.dtype, device=X.device)
+            plan = self._rectangular_sinkhorn_transport(scores, row_mass=row_mass, col_mass=col_mass)
+        else:
+            temp = max(float(self.config.transport_temperature), 1e-6)
+            plan = torch.softmax(scores / temp, dim=1)
         W = torch.zeros(self.d_s, self.d_t, dtype=X.dtype, device=X.device)
         for src_idx, src_slice in enumerate(src_slices):
             for tgt_idx, tgt_slice in enumerate(tgt_slices):
@@ -1349,7 +1378,7 @@ class RotAlignKVTranslator(nn.Module):
             self.layer_map = self._fit_cka_layer_map(src_kvs, tgt_kvs)
 
         grouped_alignment = self.config.alignment_method.startswith("grouped_") or (
-            self.config.alignment_method == "broadcast_template_transport"
+            self.config.alignment_method in {"broadcast_template_transport", "broadcast_template_ot_transport"}
         )
         diagnostics: dict[int, dict] = {}
 
@@ -1427,7 +1456,7 @@ class RotAlignKVTranslator(nn.Module):
                     )
                     self.transport_plan_K[tgt_l].copy_(plan_k.to(dtype=self.transport_plan_K.dtype))
                     self.transport_plan_V[tgt_l].copy_(plan_v.to(dtype=self.transport_plan_V.dtype))
-                elif self.config.alignment_method == "broadcast_template_transport":
+                elif self.config.alignment_method in {"broadcast_template_transport", "broadcast_template_ot_transport"}:
                     W_K, plan_k = self._fit_broadcast_template_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -1435,6 +1464,7 @@ class RotAlignKVTranslator(nn.Module):
                         residual_rank=self.config.transport_residual_rank,
                         src_layer_idx=src_l,
                         tgt_layer_idx=tgt_l,
+                        use_ot=self.config.alignment_method == "broadcast_template_ot_transport",
                     )
                     W_V, plan_v = self._fit_broadcast_template_transport_alignment(
                         Xv,
@@ -1443,6 +1473,7 @@ class RotAlignKVTranslator(nn.Module):
                         residual_rank=self.config.transport_residual_rank,
                         src_layer_idx=src_l,
                         tgt_layer_idx=tgt_l,
+                        use_ot=self.config.alignment_method == "broadcast_template_ot_transport",
                     )
                     if self._broadcast_transport_plan_K is None:
                         self._broadcast_transport_plan_K = [
@@ -1623,14 +1654,14 @@ class RotAlignKVTranslator(nn.Module):
             if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_template_subspace_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
-            elif self.config.alignment_method == "broadcast_template_transport" and self._broadcast_transport_plan_K is not None and self._broadcast_transport_plan_V is not None:
+            elif self.config.alignment_method in {"broadcast_template_transport", "broadcast_template_ot_transport"} and self._broadcast_transport_plan_K is not None and self._broadcast_transport_plan_V is not None:
                 diagnostics[tgt_l]["K_transport_plan"] = self._broadcast_transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self._broadcast_transport_plan_V[tgt_l].detach().cpu().tolist()
 
             # Fit optional head-group saliency from local aligned slices.
             group_scores: list[tuple[float, int]] = []
             base_method = self.config.alignment_method.removeprefix("grouped_")
-            if base_method in {"transport", "permutation", "signature_transport", "subspace_transport", "canonical_transport", "covariance_transport", "template_transport", "template_subspace_transport", "broadcast_template_transport"}:
+            if base_method in {"transport", "permutation", "signature_transport", "subspace_transport", "canonical_transport", "covariance_transport", "template_transport", "template_subspace_transport", "broadcast_template_transport", "broadcast_template_ot_transport"}:
                 base_method = "auto"
             for group_idx, (src_slice, tgt_slice) in enumerate(
                 zip(self._group_feature_slices(use_target=False), self._group_feature_slices(use_target=True))

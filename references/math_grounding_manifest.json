@@ -796,5 +796,35 @@
     "slug": "kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction",
     "url": "https://arxiv.org/pdf/2510.05373.pdf",
     "reason": "This is the most relevant transport-plus-lightweight-correction reference for the remaining positive-method lane after correction-only and weak transport variants have already failed."
+  },
+  {
+    "num": 186,
+    "slug": "resa_bringing_back_what_sparse_attention_ignores_with_residual_estimation",
+    "url": "https://openreview.net/forum?id=ktcq26hMCH",
+    "reason": "This is a direct sparse-attention residual-repair reference for the live transport-plus-correction lane, and a useful citation if the next method still needs a repair term after transport."
+  },
+  {
+    "num": 187,
+    "slug": "contextkeeper_head_specific_kv_cache_retention_for_long_context_llm_inference",
+    "url": "https://openreview.net/forum?id=7zQy4iHoZ8",
+    "reason": "This is a strong head-specific retention reference that supports moving from uniform transport to retrieval-head-aware or head-specific transport rules."
+  },
+  {
+    "num": 188,
+    "slug": "real_retrieval_augmented_and_logic_constructed_attention_behaviors_for_robust_kv_cache_compression",
+    "url": "https://openreview.net/forum?id=XCqrMBh1Uj",
+    "reason": "This is a useful retrieval-vs-logic attention-behavior reference for refining the next template space beyond simple mean attention or grouped geometry."
+  },
+  {
+    "num": 189,
+    "slug": "freekv_boosting_kv_cache_retrieval_for_efficient_llm_inference",
+    "url": "https://arxiv.org/abs/2505.13109",
+    "reason": "This is a retrieval-focused KV reuse/compression reference that motivates trying retrieval-template transport instead of pure attention-template transport."
+  },
+  {
+    "num": 190,
+    "slug": "racc_retrieval_augmented_kv_cache_compression_in_long_context_generation",
+    "url": "https://openreview.net/forum?id=F7kDkYjBVa",
+    "reason": "This is a retrieval-augmented KV compression reference that helps frame the next retrieval-template transport pivot and the bytes-vs-accuracy tradeoff."
   }
 ]

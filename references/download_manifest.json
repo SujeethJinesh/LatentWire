@@ -1559,5 +1559,50 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 1318346
+  },
+  {
+    "num": 186,
+    "slug": "resa_bringing_back_what_sparse_attention_ignores_with_residual_estimation",
+    "url": "https://openreview.net/forum?id=ktcq26hMCH",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/186_resa_bringing_back_what_sparse_attention_ignores_with_residual_estimation.md",
+    "content_type": "text/markdown",
+    "status": "link_note",
+    "bytes": 0
+  },
+  {
+    "num": 187,
+    "slug": "contextkeeper_head_specific_kv_cache_retention_for_long_context_llm_inference",
+    "url": "https://openreview.net/forum?id=7zQy4iHoZ8",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/187_contextkeeper_head_specific_kv_cache_retention_for_long_context_llm_inference.md",
+    "content_type": "text/markdown",
+    "status": "link_note",
+    "bytes": 0
+  },
+  {
+    "num": 188,
+    "slug": "real_retrieval_augmented_and_logic_constructed_attention_behaviors_for_robust_kv_cache_compression",
+    "url": "https://openreview.net/forum?id=XCqrMBh1Uj",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/188_real_retrieval_augmented_and_logic_constructed_attention_behaviors_for_robust_kv_cache_compression.md",
+    "content_type": "text/markdown",
+    "status": "link_note",
+    "bytes": 0
+  },
+  {
+    "num": 189,
+    "slug": "freekv_boosting_kv_cache_retrieval_for_efficient_llm_inference",
+    "url": "https://arxiv.org/abs/2505.13109",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/189_freekv_boosting_kv_cache_retrieval_for_efficient_llm_inference.md",
+    "content_type": "text/markdown",
+    "status": "link_note",
+    "bytes": 0
+  },
+  {
+    "num": 190,
+    "slug": "racc_retrieval_augmented_kv_cache_compression_in_long_context_generation",
+    "url": "https://openreview.net/forum?id=F7kDkYjBVa",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/190_racc_retrieval_augmented_kv_cache_compression_in_long_context_generation.md",
+    "content_type": "text/markdown",
+    "status": "link_note",
+    "bytes": 0
   }
 ]

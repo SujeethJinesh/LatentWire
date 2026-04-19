@@ -94,6 +94,10 @@ def main() -> None:
     _, broadcast = _first_method_summary(broadcast_meta)
     rows.append(_row("gsm8k_eval_70", "broadcast template transport + rank-4 residual", broadcast["accuracy"], broadcast.get("avg_bytes"), "rectangular 2->8 head transport probe (64-prompt calibration slice)"))
 
+    broadcast_ot_meta = _load_meta(ROOT / "results/broadcast_template_ot_transport_20260419/qwen_gsm70_broadcast_template_ot_transport_w010_r4_cal64.jsonl.meta.json")
+    _, broadcast_ot = _first_method_summary(broadcast_ot_meta)
+    rows.append(_row("gsm8k_eval_70", "broadcast template OT transport + rank-4 residual", broadcast_ot["accuracy"], broadcast_ot.get("avg_bytes"), "rectangular Sinkhorn-style 2->8 head transport probe (64-prompt calibration slice)"))
+
     can70_meta = _load_meta(ROOT / "results/grouped_canonical_transport_20260419/qwen_gsm70_grouped_canonical_transport_r8.jsonl.meta.json")
     _, can70 = _first_method_summary(can70_meta)
     rows.append(_row("gsm8k_eval_70", "grouped canonical transport", can70["accuracy"], can70.get("avg_bytes"), "low-rank canonical basis shortcut"))

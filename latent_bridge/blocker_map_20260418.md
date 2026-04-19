@@ -473,6 +473,39 @@ Next fix:
   retrieval-/QK-template transport costs and judge them directly against fixed
   prior, grouped-subspace-plus-rank4, and `C2C`
 
+## Blocker 19: Richer many-to-many OT in the same attention-template space still fails
+
+Observed symptom:
+
+- a new `broadcast_template_ot_transport` branch replaced the broadcast
+  row-softmax plan with a rectangular Sinkhorn-style OT plan so each target
+  head receives a normalized mixture over source heads and each source head
+  carries balanced mass across the larger target head set
+- offline fit improved again on the same `64`-prompt calibration slice
+  (`K` cosine `0.883`, relative Frobenius error `0.447`)
+- but exact Qwen GSM70 still collapsed to `0.000000`, exactly tying the
+  simpler `broadcast_template_transport` branch
+
+Interpretation:
+
+- the current failure is not just “we need true many-to-many transport”
+- it is also not enough to apply richer OT **inside the same current
+  attention-template representation**
+- if OT still lives as the final positive-method lane, it likely has to move
+  to a richer template space such as retrieval-template or QK-fidelity
+
+Current status:
+
+- newly checked and negative
+
+Next fix:
+
+- stop spending time on attention-template OT variants in the current
+  representation space
+- if the positive-method lane gets one more serious try, move to retrieval-
+  template or QK-fidelity OT and judge it directly against fixed prior,
+  grouped-subspace-plus-rank4, and `C2C`
+
 Next fix:
 
 - keep pushing transport-first, but only with richer costs or canonicalization

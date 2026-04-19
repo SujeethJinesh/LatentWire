@@ -57,3 +57,17 @@ The paper should narrow explicitly to a blocker/mechanism contribution:
 - transport-plus-correction can help locally
 - but simple canonicalization, grouped penalties, and light behavior matching
   do not recover a competitive positive method
+
+## Status After Broadcast-Template OT
+
+The latest `broadcast_template_ot_transport + rank-4 residual` branch still
+collapsed to `0.0000` on exact Qwen GSM70, exactly tying the simpler
+`broadcast_template_transport` branch. That means:
+
+- richer many-to-many OT **inside the current attention-template space** is not
+  enough
+- if we keep the positive-method lane alive, the next branch should move to a
+  **different representation space**, not just a richer solver:
+  - retrieval-template OT
+  - QK-fidelity OT
+  - or a residual-stream bridge if we pivot more aggressively

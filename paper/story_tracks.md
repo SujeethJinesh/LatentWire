@@ -210,6 +210,9 @@ Proposed claim:
   same rank-4 residual then collapses to `0.000000`, so the grouped family was
   not failing only because the earlier solver was bottlenecked by coarse
   grouped transport.
+- Replacing that broadcast row-softmax plan with a true rectangular
+  Sinkhorn-style OT plan still collapses to `0.000000`, so richer many-to-many
+  transport inside the same attention-template space is also not enough.
 - But it is still below the old fixed prior `0.085714` and below `C2C`
   `0.128571`, so this is still a bounded mechanistic gain rather than a
   publishable headline result.
@@ -269,5 +272,6 @@ What we still need:
      spending more time on weaker internal heuristics
 4. Preserve the negative controls and failure cases in the main paper, not just the appendix.
 5. If we give the positive-method lane one more serious chance, make it a
-   richer retrieval-template / attention-fidelity OT branch, not another
-   grouped or lightly behavior-matched transport tweak.
+   richer retrieval-template / attention-fidelity OT branch in a different
+   representation space, not another grouped or attention-template-only
+   transport tweak.

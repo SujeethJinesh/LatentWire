@@ -908,3 +908,49 @@ Interpretation:
 - the remaining live positive-method lane is now narrower: richer OT /
   retrieval-template / QK-fidelity transport, not more grouped or lightly
   behavior-matched transport variants
+
+And a twenty-third OT transport update:
+
+> I then replaced the broadcast row-softmax plan with a true rectangular
+> Sinkhorn-style OT plan so each target head receives a normalized mixture over
+> source heads while the two source heads carry balanced load across the eight
+> target heads. This `broadcast_template_ot_transport` branch fit even better
+> offline on the same `64`-prompt slice: average `K` cosine `0.883` with
+> relative Frobenius error `0.447`. But on exact Qwen GSM70 it still collapsed
+> to `0.000000`.
+
+Paired reads for the broadcast-template-OT-plus-rank4-residual branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.085714`
+  - broadcast-template-ot-resid4-only wins `0`
+  - fixed-prior-only wins `6`
+  - bootstrap `[-0.157143, -0.028571]`
+  - McNemar `0.0412`
+- vs `C2C`:
+  - delta `-0.128571`
+  - broadcast-template-ot-resid4-only wins `0`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.214286, -0.057143]`
+  - McNemar `0.0077`
+- vs grouped subspace transport + rank-4 residual:
+  - delta `-0.057143`
+  - broadcast-template-ot-resid4-only wins `0`
+  - grouped-subspace-resid4-only wins `4`
+  - bootstrap `[-0.114286, -0.014286]`
+  - McNemar `0.1336`
+- vs broadcast template transport + rank-4 residual:
+  - delta `+0.000000`
+  - broadcast-template-ot-resid4-only wins `0`
+  - broadcast-template-resid4-only wins `0`
+  - bootstrap `[+0.000000, +0.000000]`
+  - McNemar `1.0000`
+
+Interpretation:
+
+- in the current calibration-time attention-template space, richer many-to-many
+  OT is **not** enough; it exactly matches the `0.000000` collapse of the
+  simpler broadcast branch
+- so if OT still lives as the final positive-method lane, it likely has to
+  live in a different representation space: retrieval-template or QK-fidelity
+  transport, not the current attention-template space alone

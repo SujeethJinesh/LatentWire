@@ -235,6 +235,14 @@ Files `183_` and `185_` extend the gauge-and-correction lane:
 - `183_`: GaugeKV as a direct gauge-canonicalization note for the hypothesis that some of the remaining cross-model KV mismatch is a coordinate / symmetry problem rather than just a weak transport score.
 - `185_`: KVLinC as the cleanest recent transport-plus-lightweight-correction reference for the current “transport first, then small repair” method lane.
 
+Files `186_` through `190_` extend the retrieval-and-repair lane:
+
+- `186_`: RESA as a direct sparse-attention residual-repair reference, useful for motivating transport-plus-residual rather than transport-only.
+- `187_`: ContextKeeper as a head-specific retention reference, useful for retrieval-head-aware transport and budgeting.
+- `188_`: REAL as a retrieval-vs-logic attention-behavior reference, useful for refining the head-behavior template space beyond simple mean attention.
+- `189_`: FreeKV as a retrieval-focused KV reuse/compression reference, useful for the next retrieval-template transport pivot.
+- `190_`: RACC as a retrieval-augmented KV compression reference, useful for framing accuracy-vs-bytes under retrieval-aware transport rules.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

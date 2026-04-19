@@ -460,6 +460,32 @@ def test_calibrate_parse_args_accepts_broadcast_template_transport(monkeypatch) 
     assert args.transport_template_bins == 40
 
 
+def test_calibrate_parse_args_accepts_broadcast_template_ot_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "broadcast_template_ot_transport",
+            "--transport-template-bins",
+            "32",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "broadcast_template_ot_transport"
+    assert args.transport_template_bins == 32
+
+
 def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,
