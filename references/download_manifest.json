@@ -1496,5 +1496,32 @@
     "content_type": "text/markdown",
     "status": "link_note",
     "bytes": 0
+  },
+  {
+    "num": 168,
+    "slug": "yoco_plus_plus_enhancing_yoco_with_kv_residual_connections_for_efficient_llm_inference",
+    "url": "https://arxiv.org/pdf/2604.13556.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/168_yoco_plus_plus_enhancing_yoco_with_kv_residual_connections_for_efficient_llm_inference.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 446597
+  },
+  {
+    "num": 169,
+    "slug": "kv_car_kv_cache_compression_using_autoencoders_and_kv_reuse_in_large_language_models",
+    "url": "https://arxiv.org/pdf/2512.06727.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/169_kv_car_kv_cache_compression_using_autoencoders_and_kv_reuse_in_large_language_models.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 914920
+  },
+  {
+    "num": 170,
+    "slug": "cross_model_transferability_among_large_language_models_on_the_platonic_representations_of_concepts",
+    "url": "https://aclanthology.org/2025.acl-long.185.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/170_cross_model_transferability_among_large_language_models_on_the_platonic_representations_of_concepts.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2661978
   }
 ]

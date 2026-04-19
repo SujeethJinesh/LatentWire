@@ -3422,6 +3422,7 @@ def parse_args() -> argparse.Namespace:
             "js_shrinkage",
             "kalman",
             "learned_affine",
+            "learned_head_ridge",
             "cosine_tokenwise",
             "cosine_shifted_tokenwise",
             "js_shrinkage_tokenwise",

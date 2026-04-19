@@ -511,6 +511,34 @@ Interpretation:
 - the next missing ingredient is likely a **stronger transport map plus**
   correction, not correction alone
 
+And a thirteenth stronger-correction constraint:
+
+> a richer per-head ridge fuser over `[translated, target]` also collapses to
+> `0.000000` on the same Qwen GSM70 split, matching the failure of the smaller
+> diagonal learned-affine branch and staying below the old fixed prior
+> `0.085714` and below `C2C` `0.128571`.
+
+Paired reads for the learned-head-ridge branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.085714`
+  - learned-head-ridge-only wins `0`
+  - fixed-prior-only wins `6`
+  - bootstrap `[-0.157143, -0.028571]`
+  - McNemar `0.0412`
+- vs `C2C`:
+  - delta `-0.128571`
+  - learned-head-ridge-only wins `0`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.214286, -0.057143]`
+  - McNemar `0.0077`
+
+Interpretation:
+
+- a stronger fusion family still does not rescue the current transport path
+- the next credible move is **transport-first**: improve the transport map
+  itself, then reconsider learned correction on top
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
@@ -529,6 +557,9 @@ Interpretation:
    - deprioritize standalone correction-only variants if they stay below the old fixed prior on GSM70
    - after the learned-affine collapse to `0.000000`, treat diagonal
      correction-only fusers as ruled out on the main Qwen GSM70 split
+   - after the per-head ridge collapse to the same `0.000000`, treat
+     richer correction-only fusers as ruled out too until the transport map
+     itself improves
    - deprioritize evaluator-level soft-transport variants if they also stay below the old fixed prior on GSM70
    - deprioritize whitening-only or symmetric-canonicalization-only pivots if
      they stay below the old fixed prior on GSM70

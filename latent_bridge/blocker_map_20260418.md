@@ -204,6 +204,31 @@ Next fix:
 - move to stronger translator-side transport plus correction, ideally closer
   to OT / permutation-aware transport with a lightweight learned residual
 
+### Blocker 9: Richer fusion still cannot rescue a weak transport map
+
+Observed symptom:
+
+- a stronger per-head ridge fuser over `[translated, target]` also reaches only
+  `0.000000` on Qwen GSM70
+- it matches the failure of the smaller diagonal learned-affine branch rather
+  than improving it
+
+Interpretation:
+
+- the issue is not just that the learned correction was too small
+- if the transported state is wrong enough, even a richer small fuser cannot
+  recover the reasoning signal
+
+Current status:
+
+- newly checked and strongly negative
+
+Next fix:
+
+- stop spending cycles on fusion-only upgrades before the transport map changes
+- move to transport-first branches: OT / permutation / gauge-aware transport,
+  then correction on top only if transport itself becomes competitive
+
 ## Immediate Plan
 
 ### Today

@@ -500,6 +500,46 @@ def test_learned_affine_fusion_uses_stored_coordinatewise_scales(monkeypatch) ->
     assert torch.allclose(V_out, 1.5 * V_translated + 0.25 * V_target + 0.5)
 
 
+def test_learned_head_ridge_fusion_uses_stored_headwise_projection(monkeypatch) -> None:
+    cfg = TranslatorConfig(
+        src_head_dim=2,
+        src_num_heads=2,
+        num_src_layers=1,
+        tgt_head_dim=2,
+        tgt_num_heads=2,
+        num_tgt_layers=1,
+        learned_fusion_dropout=0.5,
+    )
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+    tr = RotAlignKVTranslator(cfg)
+    with torch.no_grad():
+        for head_idx in range(2):
+            weight = torch.zeros(4, 2)
+            weight[:2] = 2.0 * torch.eye(2)
+            weight[2:] = 0.5 * torch.eye(2)
+            tr.fusion_head_proj_K[0][head_idx].copy_(weight)
+            tr.fusion_head_proj_V[0][head_idx].copy_(weight)
+            tr.fusion_head_bias_K[0][head_idx].fill_(1.0)
+            tr.fusion_head_bias_V[0][head_idx].fill_(0.5)
+
+    K_target = torch.ones(1, 2, 2, 2)
+    V_target = 2.0 * torch.ones(1, 2, 2, 2)
+    K_translated = 3.0 * torch.ones_like(K_target)
+    V_translated = 4.0 * torch.ones_like(V_target)
+
+    K_out, V_out = tr.fuse_layer(
+        K_target,
+        V_target,
+        K_translated,
+        V_translated,
+        0,
+        fusion_rule="learned_head_ridge",
+    )
+
+    assert torch.allclose(K_out, 2.0 * K_translated + 0.5 * K_target + 1.0)
+    assert torch.allclose(V_out, 2.0 * V_translated + 0.5 * V_target + 0.5)
+
+
 def test_head_selection_masks_unselected_heads(monkeypatch) -> None:
     tr = _make_identity_translator(monkeypatch)
     tr.head_selected_mask[0].copy_(torch.tensor([True, False]))
@@ -709,3 +749,40 @@ def test_fit_from_pairs_with_learned_affine_and_no_quant_correction_does_not_cra
     tr.fit_from_pairs(src_kvs, tgt_kvs)
 
     assert not torch.allclose(tr.fusion_src_scale_K[0], torch.zeros_like(tr.fusion_src_scale_K[0]))
+
+
+def test_fit_from_pairs_populates_learned_head_ridge_projection(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    cfg = TranslatorConfig(
+        src_head_dim=2,
+        src_num_heads=2,
+        num_src_layers=1,
+        tgt_head_dim=2,
+        tgt_num_heads=2,
+        num_tgt_layers=1,
+        quantization_correction="none",
+        learned_fusion_dropout=0.5,
+        ridge_lambda=1e-4,
+    )
+    tr = RotAlignKVTranslator(cfg)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert not torch.allclose(tr.fusion_head_proj_K[0], torch.zeros_like(tr.fusion_head_proj_K[0]))

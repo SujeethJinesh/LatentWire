@@ -754,5 +754,23 @@
     "slug": "llm_layers_immediately_correct_each_other",
     "url": "https://openreview.net/forum?id=7DY7kB8wyZ",
     "reason": "This is the cleanest layer-dynamics reference for the hypothesis that runtime layer-to-layer correction matters more than another static transport-only shortcut."
+  },
+  {
+    "num": 168,
+    "slug": "yoco_plus_plus_enhancing_yoco_with_kv_residual_connections_for_efficient_llm_inference",
+    "url": "https://arxiv.org/pdf/2604.13556.pdf",
+    "reason": "This is a direct residual-KV correction reference that supports trying transport plus a small residual path rather than transport-only or selector-only shortcuts."
+  },
+  {
+    "num": 169,
+    "slug": "kv_car_kv_cache_compression_using_autoencoders_and_kv_reuse_in_large_language_models",
+    "url": "https://arxiv.org/pdf/2512.06727.pdf",
+    "reason": "This is a learned KV autoencoding and reuse reference, useful for motivating compact learned correction layers on top of transported caches."
+  },
+  {
+    "num": 170,
+    "slug": "cross_model_transferability_among_large_language_models_on_the_platonic_representations_of_concepts",
+    "url": "https://aclanthology.org/2025.acl-long.185.pdf",
+    "reason": "This is a direct theory-and-evidence citation for why lightweight cross-model correction should be possible under a platonic/shared-concept representation view."
   }
 ]

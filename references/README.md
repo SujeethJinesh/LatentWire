@@ -205,6 +205,12 @@ Files `166_` and `167_` extend the runtime-correction lane:
 - `166_`: Decomposing LLM Self-Correction as a fresh direct reference for why runtime correction behavior can matter even when static alignment looks plausible.
 - `167_`: LLM Layers Immediately Correct Each Other as a canonical-link note for layer-to-layer corrective dynamics; OpenReview blocked direct shell download from this machine, so this is stored as a markdown note rather than a PDF.
 
+Files `168_` through `170_` extend the correction-and-transfer lane:
+
+- `168_`: YOCO++ as a direct residual-KV correction reference, useful for motivating “transport plus residual” rather than transport-only.
+- `169_`: KV-CAR as a learned KV autoencoding / reuse reference, useful for the idea that compact learned correction can matter more than another static map.
+- `170_`: Cross-model Transferability among Large Language Models on the Platonic Representations of Concepts as a direct theory-and-evidence citation for why lightweight cross-model correction should be possible at all.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

@@ -260,6 +260,48 @@ class RotAlignKVTranslator(nn.Module):
         self.fusion_bias_V = nn.ParameterList(
             [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
+        if config.learned_fusion_dropout > 0.0:
+            self.fusion_head_proj_K = nn.ParameterList(
+                [
+                    nn.Parameter(
+                        torch.zeros(config.tgt_num_heads, 2 * config.tgt_head_dim, config.tgt_head_dim),
+                        requires_grad=False,
+                    )
+                    for _ in range(config.num_tgt_layers)
+                ]
+            )
+            self.fusion_head_proj_V = nn.ParameterList(
+                [
+                    nn.Parameter(
+                        torch.zeros(config.tgt_num_heads, 2 * config.tgt_head_dim, config.tgt_head_dim),
+                        requires_grad=False,
+                    )
+                    for _ in range(config.num_tgt_layers)
+                ]
+            )
+            self.fusion_head_bias_K = nn.ParameterList(
+                [
+                    nn.Parameter(
+                        torch.zeros(config.tgt_num_heads, config.tgt_head_dim),
+                        requires_grad=False,
+                    )
+                    for _ in range(config.num_tgt_layers)
+                ]
+            )
+            self.fusion_head_bias_V = nn.ParameterList(
+                [
+                    nn.Parameter(
+                        torch.zeros(config.tgt_num_heads, config.tgt_head_dim),
+                        requires_grad=False,
+                    )
+                    for _ in range(config.num_tgt_layers)
+                ]
+            )
+        else:
+            self.fusion_head_proj_K = None
+            self.fusion_head_proj_V = None
+            self.fusion_head_bias_K = None
+            self.fusion_head_bias_V = None
         self._fitted = False
 
     @staticmethod
@@ -774,6 +816,55 @@ class RotAlignKVTranslator(nn.Module):
             bias.to(dtype=target.dtype, device=target.device),
         )
 
+    def _fit_head_ridge_fuser(
+        self,
+        translated: torch.Tensor,
+        target: torch.Tensor,
+        *,
+        dropout: float,
+        salt: int,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        x1 = translated.float()
+        y = target.float()
+        b, h, s, d = x1.shape
+        if dropout > 0.0:
+            gen = torch.Generator(device="cpu").manual_seed(
+                211_000 + int(self.config.seed) * 1_009 + int(salt)
+            )
+            mask = (
+                torch.rand(y.shape, generator=gen, dtype=torch.float32) >= float(dropout)
+            ).to(device=y.device, dtype=y.dtype)
+            x2 = y * mask
+        else:
+            x2 = y
+        lam = float(self.config.ridge_lambda)
+        weights: list[torch.Tensor] = []
+        biases: list[torch.Tensor] = []
+        for head_idx in range(h):
+            x1_h = x1[:, head_idx].reshape(-1, d)
+            x2_h = x2[:, head_idx].reshape(-1, d)
+            y_h = y[:, head_idx].reshape(-1, d)
+            x_h = torch.cat([x1_h, x2_h], dim=-1)
+            x_mean = x_h.mean(dim=0, keepdim=True)
+            y_mean = y_h.mean(dim=0, keepdim=True)
+            x_center = x_h - x_mean
+            y_center = y_h - y_mean
+            xtx = x_center.T @ x_center
+            eye = torch.eye(xtx.shape[0], dtype=xtx.dtype, device=xtx.device)
+            rhs = x_center.T @ y_center
+            system = xtx + lam * eye
+            try:
+                weight = torch.linalg.solve(system, rhs)
+            except RuntimeError:
+                weight = torch.linalg.pinv(system) @ rhs
+            bias = y_mean - x_mean @ weight
+            weights.append(weight)
+            biases.append(bias.squeeze(0))
+        return (
+            torch.stack(weights, dim=0).to(dtype=target.dtype, device=target.device),
+            torch.stack(biases, dim=0).to(dtype=target.dtype, device=target.device),
+        )
+
     def _apply_quantization_correction(self, x: torch.Tensor, tgt_layer_idx: int, kind: str) -> torch.Tensor:
         if self.config.quantization_correction == "none":
             return x
@@ -929,6 +1020,31 @@ class RotAlignKVTranslator(nn.Module):
                 + V_t * self.fusion_tgt_scale_V[tgt_layer_idx].view(1, h, 1, d)
                 + self.fusion_bias_V[tgt_layer_idx].view(1, h, 1, d)
             )
+            return K_out, V_out
+        if fusion_rule == "learned_head_ridge":
+            if self.fusion_head_proj_K is None or self.fusion_head_proj_V is None:
+                raise RuntimeError("learned_head_ridge requires a translator fit with learned_fusion_dropout > 0")
+            K_trans = self.apply_head_selection(K_t_hat, tgt_layer_idx)
+            V_trans = self.apply_head_selection(V_t_hat, tgt_layer_idx)
+            K_features = torch.cat([K_trans, K_t], dim=-1)
+            V_features = torch.cat([V_trans, V_t], dim=-1)
+            K_pred = torch.einsum(
+                "bhsm,hmd->bhsd",
+                K_features,
+                self.fusion_head_proj_K[tgt_layer_idx].to(device=K_features.device, dtype=K_features.dtype),
+            ) + self.fusion_head_bias_K[tgt_layer_idx].to(device=K_features.device, dtype=K_features.dtype).view(
+                1, -1, 1, self.config.tgt_head_dim
+            )
+            V_pred = torch.einsum(
+                "bhsm,hmd->bhsd",
+                V_features,
+                self.fusion_head_proj_V[tgt_layer_idx].to(device=V_features.device, dtype=V_features.dtype),
+            ) + self.fusion_head_bias_V[tgt_layer_idx].to(device=V_features.device, dtype=V_features.dtype).view(
+                1, -1, 1, self.config.tgt_head_dim
+            )
+            selected = self.head_selected_mask[tgt_layer_idx].to(device=K_t.device).view(1, -1, 1, 1)
+            K_out = torch.where(selected, K_pred, K_t)
+            V_out = torch.where(selected, V_pred, V_t)
             return K_out, V_out
         K_t_hat_selected = self.apply_head_selection(K_t_hat, tgt_layer_idx)
         V_t_hat_selected = self.apply_head_selection(V_t_hat, tgt_layer_idx)
@@ -1180,6 +1296,23 @@ class RotAlignKVTranslator(nn.Module):
             self.fusion_tgt_scale_V[tgt_l].data.copy_(tgt_scale_v.to(self.fusion_tgt_scale_V[tgt_l].dtype))
             self.fusion_bias_K[tgt_l].data.copy_(bias_k.to(self.fusion_bias_K[tgt_l].dtype))
             self.fusion_bias_V[tgt_l].data.copy_(bias_v.to(self.fusion_bias_V[tgt_l].dtype))
+            if self.fusion_head_proj_K is not None and self.fusion_head_proj_V is not None:
+                head_proj_k, head_bias_k = self._fit_head_ridge_fuser(
+                    K_runtime_orig,
+                    K_t,
+                    dropout=float(self.config.learned_fusion_dropout),
+                    salt=10_000 + tgt_l * 2,
+                )
+                head_proj_v, head_bias_v = self._fit_head_ridge_fuser(
+                    V_runtime_orig,
+                    V_t,
+                    dropout=float(self.config.learned_fusion_dropout),
+                    salt=10_000 + tgt_l * 2 + 1,
+                )
+                self.fusion_head_proj_K[tgt_l].data.copy_(head_proj_k.to(self.fusion_head_proj_K[tgt_l].dtype))
+                self.fusion_head_proj_V[tgt_l].data.copy_(head_proj_v.to(self.fusion_head_proj_V[tgt_l].dtype))
+                self.fusion_head_bias_K[tgt_l].data.copy_(head_bias_k.to(self.fusion_head_bias_K[tgt_l].dtype))
+                self.fusion_head_bias_V[tgt_l].data.copy_(head_bias_v.to(self.fusion_head_bias_V[tgt_l].dtype))
 
             q_k = alignment_quality(Xk, Yk_fit, W_K)
             q_v = alignment_quality(Xv, Yv_fit, W_V)

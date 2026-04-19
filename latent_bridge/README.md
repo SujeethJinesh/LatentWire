@@ -189,7 +189,9 @@ Pass `--no-quantize` to ablate the Lloyd-Max round-trip. Use `--fusion-rule
 cosine`, `cosine_shifted`, `js_shrinkage`, or `kalman` to make fusion
 source-dependent at runtime when translated KV disagrees with the target cache;
 `learned_affine` is an experimental tiny learned source/target blend fitted
-from calibration pairs. Keep `static` as the default control. Use
+from calibration pairs, and `learned_head_ridge` is a stronger per-head linear
+fuser over `[translated, target]` fitted from the same calibration data. Keep
+`static` as the default control. Use
 `--kv-transport both`, `k_only`, or `v_only` to isolate whether the signal is
 carried by translated keys, values, or the full KV pair. When probing sparse transport, use
 `--position-selection-ratio <r>` with `--position-selection-metric` set to one
