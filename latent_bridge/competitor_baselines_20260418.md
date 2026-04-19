@@ -45,3 +45,12 @@ story.
    - text-to-text
    - zero-byte attenuation
    - our best current sparse routing branch
+
+Bootstrap command:
+
+```bash
+python scripts/bootstrap_c2c.py \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --download
+```
