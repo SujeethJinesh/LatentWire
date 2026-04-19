@@ -36,6 +36,12 @@
   - SVAMP stays at `0.071429`
   - DeepSeek stays at `0.014286`
   so simple top-1 vs top-2 attention gap scoring is a useful bounded ablation, but not a replacement for the older peak-based prior.
+- The first structural subspace pivot is **split by task**:
+  - Qwen -> Qwen, `gsm8k_100`, grouped-CCA + fixed prior: `0.0300`
+  - matched shuffled null: `0.0600`
+  - Qwen -> Qwen, `svamp_eval_70`, grouped-CCA + fixed prior: `0.171429`
+  - matched shuffled null: `0.128571`
+  so grouped CCA is not a broad rescue, but it is the first branch that pushes the old SVAMP boundary meaningfully upward.
 - The saved-prior transfer matrix is now clearly **asymmetric**:
   - Qwen prior -> Qwen is strong
   - Qwen prior -> DeepSeek collapses
@@ -53,6 +59,7 @@
   - **whether that budget should be shrinkage-regularized, permutation-matched, or attention-logit-preserving**
   - **whether the useful structure is retrieval-head-specific, permutation-matched, or attention-logit-preserving**
   - **whether a lighter subspace / CCA-style match is enough before trying full OT**
+  - **whether the useful geometry is task-conditioned, with different subspace structure on GSM-style vs SVAMP-style reasoning**
 
 ## COLM workshop path
 
@@ -115,8 +122,8 @@ What we still need:
 2. Keep the DeepSeek pair as the main transfer stress test instead of widening to many models too early.
 3. Implement the next method pivots suggested by the literature:
    - OT / permutation or gauge-aware head matching
-   - attention-logit-preserving / QK-geometry head ranking
-   - subspace / CCA-style matching as the cheapest structural follow-up
+   - expected-attention or attention-fidelity-preserving routing
+   - use grouped CCA as a task-conditioned branch to test on more SVAMP-like slices
    - retrieval-head routing only after the head space is made more canonical
    - causal head scoring
 4. Preserve the negative controls and failure cases in the main paper, not just the appendix.

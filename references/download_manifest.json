@@ -1307,5 +1307,14 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 357973
+  },
+  {
+    "num": 147,
+    "slug": "quantized_wasserstein_procrustes_alignment_of_word_embedding_spaces",
+    "url": "https://arxiv.org/pdf/2212.02468.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/147_quantized_wasserstein_procrustes_alignment_of_word_embedding_spaces.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 434317
   }
 ]

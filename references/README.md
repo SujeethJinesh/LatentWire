@@ -154,6 +154,11 @@ and Wasserstein alignment:
 - `145_`: selective induction heads as a causal-structure reference for context-dependent head importance.
 - `146_`: Wasserstein Procrustes as a canonical unsupervised alignment reference for cross-space matching.
 
+File `147_` extends that same matching branch with a cheaper, more practical
+OT-style alignment variant:
+
+- `147_`: quantized Wasserstein Procrustes as a direct reference for lighter-weight OT alignment under finite precision and tighter compute budgets.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

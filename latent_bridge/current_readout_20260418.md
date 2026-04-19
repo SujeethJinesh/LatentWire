@@ -187,6 +187,53 @@ Interpretation:
 - SVAMP and DeepSeek remain unchanged boundary cases.
 - So `attention_margin` is a useful bounded ablation, not a new headline method.
 
+## Grouped-CCA Structural Pivot
+
+New checkpoint:
+
+- `checkpoints/cca_pivot_20260418/qwen25_to_qwen3_grouped_cca_headhalf_affine.pt`
+
+Calibration read:
+
+- `K cos = 0.023`, `K rel_err = 1.040`
+- `V cos = 0.058`, `V rel_err = 3.042`
+
+Held-out results:
+
+- GSM8K-100, grouped-CCA + fixed peak prior: `0.030000`
+- GSM8K-100, grouped-CCA + shuffled-prior null: `0.060000`
+- SVAMP-70, grouped-CCA + fixed peak prior: `0.171429`
+- SVAMP-70, grouped-CCA + shuffled-prior null: `0.128571`
+
+Paired reads:
+
+- GSM8K-100, fixed prior vs shuffled:
+  - delta `-0.0300`
+  - prior-only wins `1`
+  - shuffled-only wins `4`
+  - bootstrap `[-0.0800, +0.0100]`
+- SVAMP-70, fixed prior vs shuffled:
+  - delta `+0.042857`
+  - prior-only wins `7`
+  - shuffled-only wins `4`
+  - bootstrap `[-0.042857, +0.128571]`
+- SVAMP-70, grouped-CCA prior vs old peak-prior branch:
+  - old branch: `0.071429`
+  - grouped CCA: `0.171429`
+  - delta `+0.1000`
+  - grouped-only wins `11`
+  - old-only wins `4`
+  - bootstrap `[0.0000, +0.2000]`
+
+Interpretation:
+
+- Grouped CCA is **bad on GSM8K-100** under the same control ladder.
+- But it is the first structural pivot that **materially lifts SVAMP**, even
+  though the matched shuffled null also rises.
+- The real story is now more specific:
+  useful latent structure may be **task-conditioned subspace geometry**, not a
+  single routing rule that transfers cleanly across all reasoning sets.
+
 ## Seed Stability
 
 Fixed peak-based prior on `gsm8k_100`, same branch, same budget, recalibrated
@@ -217,6 +264,8 @@ Interpretation:
 - Cross-family transfer is still weak.
 - Simple retrieval-head-style scoring is not enough on its own.
 - A logit-gap-style attention proxy is also not enough on its own.
+- A structural subspace pivot can help on one reasoning boundary (SVAMP) while
+  hurting another (GSM8K), so task-conditioned geometry is now a live hypothesis.
 
 ## What This Means For The Paper
 
@@ -242,8 +291,8 @@ paper only if the next replication steps succeed.
    is stabilized across seeds.
 3. Next method pivots from the new literature:
    - OT / permutation or gauge-aware head matching across models
-   - attention-logit-preserving or QK-geometry head ranking
-   - subspace / CCA-style matching as a lighter-weight structural pivot
+   - expected-attention or attention-fidelity-preserving head ranking
+   - extend the grouped CCA branch on SVAMP-like tasks before treating it as a general method
    - causal head scoring once the matching space is less noisy
    - only then revisit retrieval-head routing with a stronger structure-aware score
 4. Keep SVAMP, ARC, cross-family transfer, and now seed instability in the
