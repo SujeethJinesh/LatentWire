@@ -349,6 +349,31 @@ def _expected_attention_head_scores(
     return (probs * prior).sum(dim=-1)
 
 
+def _match_prior_scores_to_live_order(
+    live_scores: torch.Tensor,
+    prior_scores: torch.Tensor,
+    *,
+    layer_idx: int,
+    shuffled: bool = False,
+) -> torch.Tensor:
+    live = _normalize_selection_scores(live_scores).view(-1)
+    fixed = _normalize_selection_scores(prior_scores).view(-1)
+    if live.numel() != fixed.numel():
+        raise ValueError(
+            f"live_scores and prior_scores must have the same length, got {live.numel()} and {fixed.numel()}"
+        )
+    if live.numel() <= 1:
+        return fixed
+    live_order = torch.argsort(live, descending=True)
+    if shuffled:
+        matched_values = _deterministic_score_permutation(fixed, layer_idx=layer_idx, seed_offset=11_417)
+    else:
+        matched_values = fixed[torch.argsort(fixed, descending=True)]
+    matched = torch.empty_like(fixed)
+    matched[live_order] = matched_values
+    return _normalize_selection_scores(matched)
+
+
 def _normalize_selection_scores(scores: torch.Tensor) -> torch.Tensor:
     values = scores.float()
     if values.numel() == 0:
@@ -674,6 +699,25 @@ def _runtime_head_scores_with_prior(
             raise ValueError("attention_prior_shuffled runtime head selection requires fixed_head_profiles")
         shuffled_scores = _deterministic_score_permutation(prior_scores, layer_idx=layer_idx, seed_offset=7_009)
         return _normalize_selection_scores(shuffled_scores), None
+    if metric == "attention_match":
+        if attention_map is None:
+            raise ValueError("attention_match runtime head selection requires target attention maps")
+        if prior_scores is None:
+            raise ValueError("attention_match runtime head selection requires fixed_head_profiles")
+        live_scores = _runtime_head_scores(attention_map, metric="attention_peak", layer_idx=layer_idx)
+        return _match_prior_scores_to_live_order(live_scores, prior_scores, layer_idx=layer_idx), None
+    if metric == "attention_match_shuffled":
+        if attention_map is None:
+            raise ValueError("attention_match_shuffled runtime head selection requires target attention maps")
+        if prior_scores is None:
+            raise ValueError("attention_match_shuffled runtime head selection requires fixed_head_profiles")
+        live_scores = _runtime_head_scores(attention_map, metric="attention_peak", layer_idx=layer_idx)
+        return _match_prior_scores_to_live_order(
+            live_scores,
+            prior_scores,
+            layer_idx=layer_idx,
+            shuffled=True,
+        ), None
     if metric == "attention_blend":
         if attention_map is None:
             raise ValueError("attention_blend runtime head selection requires target attention maps")
@@ -1823,6 +1867,8 @@ def _build_rotalign_prefix_state(
         "retrieval_peak",
         "attention_expected",
         "attention_expected_shuffled",
+        "attention_match",
+        "attention_match_shuffled",
         "attention_blend",
     }
     if (
@@ -1856,13 +1902,24 @@ def _build_rotalign_prefix_state(
         raise ValueError("attention_prior position selection requires fixed_position_profiles")
     if (
         runtime_head_selection_ratio < 1.0
-        and runtime_head_selection_metric in {"attention_prior", "attention_blend"}
+        and runtime_head_selection_metric in {
+            "attention_prior",
+            "attention_match",
+            "attention_match_shuffled",
+            "attention_blend",
+        }
         and fixed_head_profiles is None
     ):
         raise ValueError(
             f"{runtime_head_selection_metric} runtime head selection requires fixed_head_profiles"
         )
-    if per_head_position_budget_mode in {"attention_prior", "attention_prior_shuffled", "attention_blend"} and fixed_head_profiles is None:
+    if per_head_position_budget_mode in {
+        "attention_prior",
+        "attention_prior_shuffled",
+        "attention_match",
+        "attention_match_shuffled",
+        "attention_blend",
+    } and fixed_head_profiles is None:
         raise ValueError(
             f"{per_head_position_budget_mode} per-head position budgets require fixed_head_profiles"
         )
@@ -2006,6 +2063,8 @@ def _build_rotalign_prefix_state(
                     if per_head_position_budget_mode in {
                         "attention_prior",
                         "attention_prior_shuffled",
+                        "attention_match",
+                        "attention_match_shuffled",
                         "attention_blend",
                         "attention_expected",
                         "attention_expected_shuffled",
@@ -3023,6 +3082,8 @@ def parse_args() -> argparse.Namespace:
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
+            "attention_match",
+            "attention_match_shuffled",
             "attention_blend",
         ],
         default="attention_peak",
@@ -3080,6 +3141,8 @@ def parse_args() -> argparse.Namespace:
             "attention_expected_shuffled",
             "attention_prior",
             "attention_prior_shuffled",
+            "attention_match",
+            "attention_match_shuffled",
             "attention_blend",
         ],
         default="none",
@@ -3172,6 +3235,8 @@ def main() -> None:
         "attention_expected",
         "attention_expected_shuffled",
         "attention_prior",
+        "attention_match",
+        "attention_match_shuffled",
         "attention_blend",
     }
 
@@ -3259,9 +3324,20 @@ def main() -> None:
     needs_fixed_head_prior = (
         (
             runtime_head_selection_ratio < 1.0
-            and runtime_head_selection_metric in {"attention_prior", "attention_blend"}
+            and runtime_head_selection_metric in {
+                "attention_prior",
+                "attention_match",
+                "attention_match_shuffled",
+                "attention_blend",
+            }
         )
-        or per_head_position_budget_mode in {"attention_prior", "attention_prior_shuffled", "attention_blend"}
+        or per_head_position_budget_mode in {
+            "attention_prior",
+            "attention_prior_shuffled",
+            "attention_match",
+            "attention_match_shuffled",
+            "attention_blend",
+        }
     )
     if needs_fixed_head_prior:
         if runtime_head_prior_load:

@@ -170,6 +170,13 @@ task-conditioned budgeting, and low-rank head geometry:
 - `150_`: answer-first KV budgeting as a direct reference for task-conditioned cache allocation under chain-of-thought reasoning.
 - `151_`: low-rank key-value attention as a direct reference for head-space redundancy and shared subspace geometry.
 
+Files `152_` through `155_` extend the next symmetry-aware matching loop:
+
+- `152_`: learnable permutation for structured transformer sparsity as the closest direct reference for permutation-aware head remapping.
+- `153_`: PermLLM as a Sinkhorn-style soft-permutation reference for sparse channel / head ordering.
+- `154_`: Task-KV as a direct task-aware head-importance and KV-budgeting reference.
+- `155_`: KVLinC as the cleanest lightweight linear-correction reference to pair with matched sparse transport.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

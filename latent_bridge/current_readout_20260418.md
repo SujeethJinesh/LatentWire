@@ -289,6 +289,10 @@ Interpretation:
   GSM fixed-prior branch from `0.0300` to `0.0600`, but that only ties the old
   grouped-CCA shuffled-null result `0.0600`, so it is another bounded ablation
   rather than a new source-specific win.
+- A simple permutation-invariant head-prior shortcut also failed cleanly:
+  `attention_match` on the exact Qwen GSM70 branch scored `0.042857`, below the
+  old fixed head-prior branch `0.085714` and equal to the old shuffled-prior
+  null `0.042857`.
 - The competitor baseline path is now real:
   `C2C` ran end to end on the exact Qwen pair and scored `0.128571` on
   `data/gsm8k_eval_70.jsonl`, above our current best same-pair GSM70 branch
@@ -314,6 +318,12 @@ There is now a stronger constraint on the paper than before:
 
 > even in the favorable same-family Qwen setting, our best current branch still
 > trails a published baseline (`C2C`) on the held-out GSM70 split.
+
+And a second structural constraint:
+
+> simple permutation-aware rank matching is not enough to rescue the same
+> branch, so the remaining blockers are more likely QK-geometry / attention
+> fidelity or a richer symmetry problem than plain head-order mismatch.
 
 ## Next Highest-Value Steps
 

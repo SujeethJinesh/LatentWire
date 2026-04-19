@@ -32,6 +32,14 @@ Primary blocker:
 less turnkey for our current GSM JSONL path and is better treated as the second
 comparison after `C2C`.
 
+Current blocker on `KVComm`:
+
+- the checked-in repo is not Qwen3-ready; its wrappers special-case `Llama`,
+  `Qwen2`, and `Gemma3`, so `Qwen/Qwen3-0.6B` is a real compatibility patch,
+  not a drop-in replay
+- its evaluator expects its own task format, so our GSM JSONL split still
+  needs a thin adapter before it becomes a fair apples-to-apples comparison
+
 `LatentMAS` is useful for broader latent-collaboration context, but it is not
 the cleanest direct protocol match for our current pairwise sparse-K routing
 story.

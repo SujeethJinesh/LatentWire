@@ -658,5 +658,29 @@
     "slug": "low_rank_key_value_attention",
     "url": "https://arxiv.org/pdf/2601.11471.pdf",
     "reason": "Low-Rank Key Value Attention is a direct head-subspace geometry reference for why grouped CCA or other shared low-rank bases may help on some reasoning tasks."
+  },
+  {
+    "num": 152,
+    "slug": "learnable_permutation_for_structured_sparsity_on_transformer_models",
+    "url": "https://arxiv.org/pdf/2601.22980.pdf",
+    "reason": "Learnable permutation is the closest direct structured-sparsity reference for fixing non-canonical head order before sparse routing."
+  },
+  {
+    "num": 153,
+    "slug": "permllm_learnable_channel_permutation_for_nm_sparse_large_language_models",
+    "url": "https://arxiv.org/pdf/2510.10136.pdf",
+    "reason": "PermLLM provides a lightweight Sinkhorn-style soft-permutation template for channel or head remapping under sparsity constraints."
+  },
+  {
+    "num": 154,
+    "slug": "task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads",
+    "url": "https://arxiv.org/pdf/2501.15113.pdf",
+    "reason": "Task-KV is a direct reference for task-conditioned head utility, which matches the current GSM versus SVAMP split."
+  },
+  {
+    "num": 155,
+    "slug": "kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction",
+    "url": "https://arxiv.org/pdf/2510.05373.pdf",
+    "reason": "KVLinC is the cleanest lightweight linear-correction reference to pair with matched sparse transport when pure routing heuristics plateau."
   }
 ]

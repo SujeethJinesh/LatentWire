@@ -191,11 +191,15 @@ For head-aware retrieval routing, add
 `--per-head-position-budget-mode attention_peak`, `attention_entropy`,
 `attention_margin`, `retrieval_peak`, `attention_expected`,
 `attention_expected_shuffled`, `random`, `attention_prior`,
-`attention_prior_shuffled`, or
+`attention_prior_shuffled`, `attention_match`, `attention_match_shuffled`, or
 `attention_blend` to spend the same overall position budget unevenly across
 active heads instead of giving every head the same keep ratio.
 `attention_prior`, `attention_prior_shuffled`, and `attention_blend` reuse the
 fixed head prior built from `--runtime-head-prior-file`.
+`attention_match` treats head identity as permutation-variant: it sorts the
+fixed head-prior mass onto the live attention-ranked heads, while
+`attention_match_shuffled` is the matched null that preserves the same mass
+profile but shuffles which prior weights are assigned to the live ranking.
 `attention_expected` and `attention_expected_shuffled` instead reuse the fixed
 position prior from `--position-selection-prior-file` and score heads by how
 well their live attention aligns to the expected future-attention profile.
@@ -212,7 +216,8 @@ For runtime retrieval-head ablations, add
 `--runtime-head-selection-ratio <r>` with
 `--runtime-head-selection-metric attention_peak`, `attention_entropy`,
 `attention_margin`, `retrieval_peak`, `attention_expected`,
-`attention_expected_shuffled`, `random`, `attention_prior`, or
+`attention_expected_shuffled`, `random`, `attention_prior`,
+`attention_match`, `attention_match_shuffled`, or
 `attention_blend`. Use `--runtime-head-prior-file <path>` to build a fixed
 calibration-derived head prior, `--position-selection-prior-file <path>` to
 build the expected-attention profile for the new expected-attention metrics,

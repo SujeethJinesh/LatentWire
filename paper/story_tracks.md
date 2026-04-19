@@ -49,6 +49,12 @@
   - SVAMP expected-attention prior: `0.171429`
   - SVAMP uniform prior: `0.171429`
   so the grouped-CCA split is more likely about checkpoint / head-subspace geometry than better fixed position routing.
+- A simple permutation-aware shortcut also failed cleanly:
+  - Qwen -> Qwen, `gsm8k_eval_70`, `attention_match`: `0.042857`
+  - old fixed per-head prior on the same split: `0.085714`
+  - `C2C` on the same split: `0.128571`
+  so rank-sorting the fixed prior onto live attention-ranked heads is not enough
+  to rescue the branch.
 - The saved-prior transfer matrix is now clearly **asymmetric**:
   - Qwen prior -> Qwen is strong
   - Qwen prior -> DeepSeek collapses
@@ -88,6 +94,9 @@ Proposed claim:
 - The first external baseline now tightens the claim further:
   on the exact Qwen GSM70 split, published `C2C` is at `0.128571`, above our
   current best same-pair branch `0.085714`.
+- The permutation-aware follow-up tightens it again:
+  simple head-rank matching drops back to `0.042857`, so the remaining blocker
+  is likely richer than plain head-order mismatch.
 - The live query-aware sparse story is also now best used as a **mechanism clue**:
   query-aware sparsity matters directionally, but the current implementation is
   not stable enough across seeds or held-out slices to headline the paper.
@@ -137,8 +146,8 @@ What we still need:
 2. Keep the DeepSeek pair as the main transfer stress test instead of widening to many models too early.
 3. Implement the next method pivots suggested by the literature:
    - OT / permutation or gauge-aware head matching
-   - attention-fidelity-preserving routing after head-level expected-attention
-     proved bounded on GSM
+   - attention-fidelity-preserving routing after both head-level
+     expected-attention and simple permutation-matching proved bounded on GSM
    - use grouped CCA as a task-conditioned branch to test on more SVAMP-like slices
    - retrieval-head routing only after the head space is made more canonical
    - causal head scoring

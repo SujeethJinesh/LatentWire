@@ -1352,5 +1352,41 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 3964218
+  },
+  {
+    "num": 152,
+    "slug": "learnable_permutation_for_structured_sparsity_on_transformer_models",
+    "url": "https://arxiv.org/pdf/2601.22980.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/152_learnable_permutation_for_structured_sparsity_on_transformer_models.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 672075
+  },
+  {
+    "num": 153,
+    "slug": "permllm_learnable_channel_permutation_for_nm_sparse_large_language_models",
+    "url": "https://arxiv.org/pdf/2510.10136.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/153_permllm_learnable_channel_permutation_for_nm_sparse_large_language_models.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2419957
+  },
+  {
+    "num": 154,
+    "slug": "task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads",
+    "url": "https://arxiv.org/pdf/2501.15113.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/154_task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1746324
+  },
+  {
+    "num": 155,
+    "slug": "kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction",
+    "url": "https://arxiv.org/pdf/2510.05373.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/155_kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1317815
   }
 ]

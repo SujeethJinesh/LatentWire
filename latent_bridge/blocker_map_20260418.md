@@ -20,6 +20,8 @@ Interpretation:
 Current status:
 
 - not solved
+- simple permutation-aware rank matching also failed on the exact Qwen GSM70
+  branch (`0.042857`), so plain head-order remapping is too weak on its own
 
 Next fix:
 

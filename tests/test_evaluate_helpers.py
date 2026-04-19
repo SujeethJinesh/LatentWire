@@ -1461,6 +1461,53 @@ def test_runtime_head_scores_with_prior_supports_expected_attention() -> None:
     assert not torch.allclose(expected_scores, shuffled_scores)
 
 
+def test_match_prior_scores_to_live_order_is_permutation_invariant() -> None:
+    live_scores = torch.tensor([0.2, 0.7, 0.9], dtype=torch.float32)
+    prior_scores = torch.tensor([0.1, 0.8, 0.4], dtype=torch.float32)
+
+    matched = evaluate._match_prior_scores_to_live_order(
+        live_scores,
+        prior_scores,
+        layer_idx=0,
+    )
+    shuffled = evaluate._match_prior_scores_to_live_order(
+        live_scores,
+        prior_scores,
+        layer_idx=0,
+        shuffled=True,
+    )
+
+    assert torch.argsort(matched, descending=True).tolist() == torch.argsort(live_scores, descending=True).tolist()
+    assert shuffled.shape == matched.shape
+    assert not torch.allclose(matched, shuffled)
+
+
+def test_runtime_head_scores_with_prior_supports_attention_match() -> None:
+    attention_map = torch.tensor(
+        [[0.2, 0.8], [0.9, 0.1], [0.6, 0.4]],
+        dtype=torch.float32,
+    )
+    prior = torch.tensor([0.1, 0.9, 0.4], dtype=torch.float32)
+
+    matched_scores, _ = evaluate._runtime_head_scores_with_prior(
+        attention_map,
+        metric="attention_match",
+        layer_idx=0,
+        prior_scores=prior,
+    )
+    shuffled_scores, _ = evaluate._runtime_head_scores_with_prior(
+        attention_map,
+        metric="attention_match_shuffled",
+        layer_idx=0,
+        prior_scores=prior,
+    )
+
+    keep = torch.topk(matched_scores, k=1, largest=True).indices.item()
+    assert keep == 1
+    assert shuffled_scores.shape == matched_scores.shape
+    assert not torch.allclose(matched_scores, shuffled_scores)
+
+
 def test_resample_head_profile_preserves_distribution() -> None:
     resampled = evaluate._resample_head_profile(torch.tensor([1.0, 3.0]), 4)
     assert resampled.shape == torch.Size([4])
