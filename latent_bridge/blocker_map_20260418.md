@@ -301,6 +301,32 @@ Next fix:
 - move to stronger OT / canonicalized transport or explicitly narrow the paper
   to a blocker/mechanism contribution if the next transport branch still fails
 
+## Blocker 13: Low-rank canonical subspace fitting still does not clear the main bar
+
+Observed symptom:
+
+- fitting each grouped block in a shared low-rank canonical basis reaches only
+  `0.028571` on exact Qwen GSM70
+- that is below the earlier grouped-signature transport `0.042857`, below the
+  old fixed prior `0.085714`, and below `C2C` `0.128571`
+
+Interpretation:
+
+- denoising the block map into a shared low-rank basis is not enough by itself
+- this pushes the blocker away from “we just need a canonical basis” and
+  toward “we still need a richer transport objective or a stronger post-map
+  correction”
+
+Current status:
+
+- newly checked and negative
+
+Next fix:
+
+- if we stay on the positive-method path, move to richer OT / attention-template
+  transport or transport-plus-correction
+- otherwise start tightening the paper around a blocker/mechanism contribution
+
 Next fix:
 
 - keep pushing transport-first, but only with richer costs or canonicalization

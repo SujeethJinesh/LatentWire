@@ -192,6 +192,8 @@ Proposed claim:
 - A follow-up grouped subspace-aware transport branch stays at the same
   `0.042857`, so the current grouped geometry-aware transport family now looks
   saturated on the main same-pair GSM split.
+- A low-rank grouped canonical-subspace transport branch then falls back to
+  `0.028571`, so canonical-basis fitting alone is not the rescue either.
 - But it is still below the old fixed prior `0.085714` and below `C2C`
   `0.128571`, so this is still a bounded mechanistic gain rather than a
   publishable headline result.

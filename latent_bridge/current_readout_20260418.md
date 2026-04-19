@@ -640,6 +640,39 @@ Interpretation:
   (stronger OT / canonicalization), not another small tweak to the current
   grouped cost family
 
+And a seventeenth canonical-subspace transport update:
+
+> fitting each grouped block in a shared low-rank canonical basis drops the
+> exact Qwen GSM70 result to `0.028571`. So the first clean low-rank
+> canonical-subspace shortcut is also a negative result.
+
+Paired reads for the grouped-canonical-transport branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.057143`
+  - grouped-canonical-only wins `1`
+  - fixed-prior-only wins `5`
+  - bootstrap `[-0.128571, +0.014286]`
+  - McNemar `0.2207`
+- vs `C2C`:
+  - delta `-0.100000`
+  - grouped-canonical-only wins `1`
+  - `C2C`-only wins `8`
+  - bootstrap `[-0.185714, -0.014286]`
+  - McNemar `0.0455`
+- vs grouped signature transport:
+  - delta `-0.014286`
+  - grouped-canonical-only wins `1`
+  - grouped-signature-only wins `2`
+  - bootstrap `[-0.071429, +0.028571]`
+  - McNemar `1.0000`
+
+Interpretation:
+
+- low-rank canonicalization by itself does not rescue the transport map
+- the likely remaining gap is now richer transport or transport-plus-correction,
+  not another small grouped or canonical-basis shortcut
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it

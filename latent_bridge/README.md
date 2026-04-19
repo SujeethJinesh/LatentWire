@@ -148,7 +148,11 @@ python scripts/calibrate.py \
   matching, `grouped_signature_transport` for grouped transport with a
   spectral-signature penalty on mismatched source/target groups, or
   `grouped_subspace_transport` for grouped transport with a principal-subspace
-  mismatch penalty on post-map source/target blocks.
+  mismatch penalty on post-map source/target blocks. Use
+  `grouped_canonical_transport` to fit each grouped block in a shared low-rank
+  canonical basis before transport.
+- `--canonical-subspace-rank R` — shared low-rank basis size for
+  `grouped_canonical_transport`.
 - `--transport-temperature T` / `--transport-sinkhorn-iters K` — control the
   softness of the grouped transport plan.
 - `--layer-pairing {interp,cka,reverse,shifted,random}` — interpolation,

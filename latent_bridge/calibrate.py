@@ -94,6 +94,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_permutation",
             "grouped_signature_transport",
             "grouped_subspace_transport",
+            "grouped_canonical_transport",
         ],
         default="auto",
     )
@@ -133,6 +134,12 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=0.0,
         help="Penalty weight for mismatched grouped spectral signatures during grouped transport",
+    )
+    p.add_argument(
+        "--canonical-subspace-rank",
+        type=int,
+        default=None,
+        help="Shared low-rank basis size for grouped canonical transport blocks",
     )
     p.add_argument(
         "--rotation",
@@ -537,6 +544,7 @@ def main() -> None:
         transport_sinkhorn_iters=args.transport_sinkhorn_iters,
         transport_signature_rank=args.transport_signature_rank,
         transport_signature_weight=args.transport_signature_weight,
+        canonical_subspace_rank=args.canonical_subspace_rank,
         layer_pairing=args.layer_pairing,
         layer_selection_topk=args.layer_selection_topk,
         layer_selection_ratio=args.layer_selection_ratio,
