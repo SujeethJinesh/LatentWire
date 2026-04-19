@@ -298,6 +298,11 @@ Interpretation:
   `attention_fidelity` on the same Qwen GSM70 branch scored `0.057143`, which
   is still below the old fixed head-prior branch `0.085714` and below `C2C`
   at `0.128571`.
+- A richer calibration-time template transport branch also failed on the same
+  Qwen GSM70 path:
+  `attention_template_transport` scored `0.042857`, so upgrading the fixed
+  prior from scalar head scores to full per-head attention templates still did
+  not beat the old fixed prior or `C2C`.
 - The competitor baseline path is now real:
   `C2C` ran end to end on the exact Qwen pair and scored `0.128571` on
   `data/gsm8k_eval_70.jsonl`, above our current best same-pair GSM70 branch
@@ -338,6 +343,12 @@ And a third bounded update:
 > a cheap attention-fidelity proxy partially repairs the failed permutation
 > shortcut, but it still does not beat the old fixed prior or the external
 > `C2C` baseline, so this alone is not the missing ingredient either.
+
+And a fourth constraint:
+
+> even richer calibration-time head templates still collapse back to
+> `0.042857` on Qwen GSM70, so the selector family itself is likely saturated
+> on this branch.
 
 ## Next Highest-Value Steps
 

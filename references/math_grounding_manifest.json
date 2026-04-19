@@ -682,5 +682,23 @@
     "slug": "kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction",
     "url": "https://arxiv.org/pdf/2510.05373.pdf",
     "reason": "KVLinC is the cleanest lightweight linear-correction reference to pair with matched sparse transport when pure routing heuristics plateau."
+  },
+  {
+    "num": 156,
+    "slug": "maximal_gauge_symmetry_in_transformer_architectures",
+    "url": "https://openreview.net/forum?id=K1df8mmncF",
+    "reason": "Maximal gauge symmetry is the clearest direct mathematical explanation for why head identity can remain non-canonical even after naive matching."
+  },
+  {
+    "num": 157,
+    "slug": "transport_and_merge_cross_architecture_merging_for_large_language_models",
+    "url": "https://arxiv.org/pdf/2602.05495.pdf",
+    "reason": "Transport and Merge is a direct OT / transport reference for cross-architecture alignment when component identity is not canonical."
+  },
+  {
+    "num": 158,
+    "slug": "flashsinkhorn_io_aware_entropic_optimal_transport",
+    "url": "https://arxiv.org/pdf/2602.03067.pdf",
+    "reason": "FlashSinkhorn is a practical entropic-OT reference for making soft transport cheap enough to prototype on this machine."
   }
 ]

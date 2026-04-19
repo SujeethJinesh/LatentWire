@@ -61,6 +61,13 @@
   - `C2C` on the same split: `0.128571`
   so a simple QK-geometry proxy is better than `attention_match`, but still
   not enough to create a new best branch.
+- A richer calibration-time template-transport branch also fails on the same
+  path:
+  - Qwen -> Qwen, `gsm8k_eval_70`, `attention_template_transport`: `0.042857`
+  - old fixed per-head prior on the same split: `0.085714`
+  - `C2C` on the same split: `0.128571`
+  so richer fixed head templates still do not rescue the current selector
+  family.
 - The saved-prior transfer matrix is now clearly **asymmetric**:
   - Qwen prior -> Qwen is strong
   - Qwen prior -> DeepSeek collapses
@@ -109,6 +116,10 @@ Proposed claim:
 - The cheap attention-fidelity follow-up keeps that same conclusion:
   it partly repairs the failed permutation shortcut, but it still does not beat
   the old fixed prior or `C2C`.
+- The richer template-transport follow-up sharpens it further:
+  even upgrading the fixed prior to per-head calibration templates does not
+  lift the branch, so the current selector family likely is not where the main
+  gain will come from.
 - The live query-aware sparse story is also now best used as a **mechanism clue**:
   query-aware sparsity matters directionally, but the current implementation is
   not stable enough across seeds or held-out slices to headline the paper.

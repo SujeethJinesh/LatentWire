@@ -499,6 +499,110 @@ def _mean_head_prior_from_prompts(
     ]
 
 
+@torch.no_grad()
+def _mean_head_attention_templates_from_prompts(
+    model,
+    tokenizer,
+    prompts: list[str],
+    device: str,
+    *,
+    translator: RotAlignKVTranslator | None = None,
+    bins: int = 128,
+) -> list[torch.Tensor]:
+    if bins <= 0:
+        raise ValueError("bins must be positive")
+
+    layer_sums: list[torch.Tensor] | None = None
+    used_prompts = 0
+    for prompt in prompts:
+        prefix_state = _prepare_prefix_state(model, tokenizer, prompt, device)
+        if prefix_state.prefix_len <= 1:
+            continue
+        layer_maps = _last_token_attention_maps(
+            model,
+            prefix_state.last_token,
+            prefix_state.past_key_values,
+            device,
+            translator=translator,
+        )
+        layer_templates = []
+        for attention_map in layer_maps:
+            resampled = torch.stack(
+                [_resample_position_profile(head_scores, bins) for head_scores in attention_map.float()],
+                dim=0,
+            )
+            resampled = resampled / resampled.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+            layer_templates.append(resampled)
+        if layer_sums is None:
+            layer_sums = [templates.clone() for templates in layer_templates]
+        else:
+            for layer_idx, templates in enumerate(layer_templates):
+                layer_sums[layer_idx] += templates
+        used_prompts += 1
+
+    if layer_sums is None or used_prompts == 0:
+        raise ValueError("Could not build head attention templates from calibration prompts")
+    out: list[torch.Tensor] = []
+    for templates in layer_sums:
+        averaged = templates / float(used_prompts)
+        averaged = averaged / averaged.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+        out.append(averaged.cpu())
+    return out
+
+
+def _attention_template_transport_scores(
+    attention_map: torch.Tensor,
+    head_templates: torch.Tensor,
+    prior_scores: torch.Tensor,
+    *,
+    layer_idx: int,
+    shuffled: bool = False,
+    temperature: float = 0.1,
+) -> torch.Tensor:
+    if attention_map.ndim != 2:
+        raise ValueError(f"attention_map must be rank-2 [heads, positions], got shape {tuple(attention_map.shape)}")
+    if head_templates.ndim != 2:
+        raise ValueError(f"head_templates must be rank-2 [heads, bins], got shape {tuple(head_templates.shape)}")
+    if prior_scores.ndim != 1:
+        raise ValueError(f"prior_scores must be rank-1 [heads], got shape {tuple(prior_scores.shape)}")
+    if head_templates.shape[0] != prior_scores.numel():
+        raise ValueError(
+            "head_templates and prior_scores must agree on head count, "
+            f"got {head_templates.shape[0]} and {prior_scores.numel()}"
+        )
+    template_count = head_templates.shape[0]
+    live_count = attention_map.shape[0]
+    if live_count <= 0:
+        raise ValueError("attention_template_transport requires at least one live head")
+    weights = _normalize_selection_scores(prior_scores).view(-1)
+    templates = head_templates.float()
+    if live_count != template_count:
+        keep = min(live_count, template_count)
+        order = torch.argsort(weights, descending=True)[:keep]
+        templates = templates[order]
+        weights = weights[order]
+    if shuffled:
+        weights = _deterministic_score_permutation(weights, layer_idx=layer_idx, seed_offset=13_211)
+    bins = templates.shape[-1]
+    live = torch.stack(
+        [_resample_position_profile(head_scores.float(), bins) for head_scores in attention_map],
+        dim=0,
+    )
+    live = live / live.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    templates = templates.to(device=live.device)
+    weights = weights.to(device=live.device)
+    p = templates[:, None, :]
+    q = live[None, :, :]
+    m = 0.5 * (p + q)
+    js = 0.5 * (
+        (p * (p.clamp_min(1e-8).log() - m.clamp_min(1e-8).log())).sum(dim=-1)
+        + (q * (q.clamp_min(1e-8).log() - m.clamp_min(1e-8).log())).sum(dim=-1)
+    )
+    kernel = torch.softmax(-js / max(float(temperature), 1e-4), dim=-1)
+    aligned = (weights[:, None] * kernel).sum(dim=0)
+    return _normalize_selection_scores(aligned)
+
+
 def _resample_head_profile_stack(
     profiles: list[torch.Tensor],
     *,
@@ -707,6 +811,7 @@ def _runtime_head_scores_with_prior(
     position_prior: torch.Tensor | None = None,
     target_keys: torch.Tensor | None = None,
     translated_keys: torch.Tensor | None = None,
+    head_templates: torch.Tensor | None = None,
     prior_alpha: float = 0.5,
 ) -> tuple[torch.Tensor, torch.Tensor | None]:
     prior_topk: torch.Tensor | None = None
@@ -753,6 +858,29 @@ def _runtime_head_scores_with_prior(
             raise ValueError("attention_prior_shuffled runtime head selection requires fixed_head_profiles")
         shuffled_scores = _deterministic_score_permutation(prior_scores, layer_idx=layer_idx, seed_offset=7_009)
         return _normalize_selection_scores(shuffled_scores), None
+    if metric == "attention_template_transport":
+        if attention_map is None:
+            raise ValueError("attention_template_transport runtime head selection requires target attention maps")
+        if prior_scores is None or head_templates is None:
+            raise ValueError("attention_template_transport requires fixed_head_profiles and fixed_head_templates")
+        return _attention_template_transport_scores(
+            attention_map,
+            head_templates,
+            prior_scores,
+            layer_idx=layer_idx,
+        ), None
+    if metric == "attention_template_transport_shuffled":
+        if attention_map is None:
+            raise ValueError("attention_template_transport_shuffled runtime head selection requires target attention maps")
+        if prior_scores is None or head_templates is None:
+            raise ValueError("attention_template_transport_shuffled requires fixed_head_profiles and fixed_head_templates")
+        return _attention_template_transport_scores(
+            attention_map,
+            head_templates,
+            prior_scores,
+            layer_idx=layer_idx,
+            shuffled=True,
+        ), None
     if metric == "attention_match":
         if attention_map is None:
             raise ValueError("attention_match runtime head selection requires target attention maps")
@@ -1887,6 +2015,7 @@ def _build_rotalign_prefix_state(
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
+    fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     per_head_position_budget_mode: str = "none",
 ) -> tuple[PrefixState, dict[str, float]]:
@@ -1921,6 +2050,8 @@ def _build_rotalign_prefix_state(
         "retrieval_peak",
         "attention_fidelity",
         "attention_fidelity_shuffled",
+        "attention_template_transport",
+        "attention_template_transport_shuffled",
         "attention_expected",
         "attention_expected_shuffled",
         "attention_match",
@@ -1960,6 +2091,8 @@ def _build_rotalign_prefix_state(
         runtime_head_selection_ratio < 1.0
         and runtime_head_selection_metric in {
             "attention_prior",
+            "attention_template_transport",
+            "attention_template_transport_shuffled",
             "attention_match",
             "attention_match_shuffled",
             "attention_blend",
@@ -1969,15 +2102,32 @@ def _build_rotalign_prefix_state(
         raise ValueError(
             f"{runtime_head_selection_metric} runtime head selection requires fixed_head_profiles"
         )
+    if (
+        runtime_head_selection_ratio < 1.0
+        and runtime_head_selection_metric in {"attention_template_transport", "attention_template_transport_shuffled"}
+        and fixed_head_templates is None
+    ):
+        raise ValueError(
+            f"{runtime_head_selection_metric} runtime head selection requires fixed_head_templates"
+        )
     if per_head_position_budget_mode in {
         "attention_prior",
         "attention_prior_shuffled",
+        "attention_template_transport",
+        "attention_template_transport_shuffled",
         "attention_match",
         "attention_match_shuffled",
         "attention_blend",
     } and fixed_head_profiles is None:
         raise ValueError(
             f"{per_head_position_budget_mode} per-head position budgets require fixed_head_profiles"
+        )
+    if per_head_position_budget_mode in {
+        "attention_template_transport",
+        "attention_template_transport_shuffled",
+    } and fixed_head_templates is None:
+        raise ValueError(
+            f"{per_head_position_budget_mode} per-head position budgets require fixed_head_templates"
         )
 
     fused_pkv: list[tuple[torch.Tensor, torch.Tensor]] = []
@@ -2030,6 +2180,9 @@ def _build_rotalign_prefix_state(
             )
         if fixed_position_profiles is not None:
             position_prior_scores = fixed_position_profiles[tgt_l].to(device=K_t_aligned.device)
+        template_scores = None
+        if fixed_head_templates is not None:
+            template_scores = fixed_head_templates[tgt_l].to(device=K_t_aligned.device)
         active_target_keys = K_t_aligned[:, active_head_indices]
         active_translated_keys = K_hat[:, active_head_indices]
         if runtime_head_selection_ratio < 1.0:
@@ -2045,6 +2198,7 @@ def _build_rotalign_prefix_state(
                 position_prior=position_prior_scores,
                 target_keys=active_target_keys,
                 translated_keys=active_translated_keys,
+                head_templates=template_scores,
                 prior_alpha=runtime_head_prior_alpha,
             )
             keep_heads = min(keep_heads, int(head_scores.numel()))
@@ -2096,6 +2250,8 @@ def _build_rotalign_prefix_state(
             active_translated_keys = K_hat[:, active_head_indices]
             if prior_scores is not None:
                 prior_scores = prior_scores[keep_local]
+            if template_scores is not None:
+                template_scores = template_scores[keep_local]
         elif layer_attention_maps is not None:
             runtime_position_scores = layer_attention_maps[tgt_l][-K_t_aligned.shape[2] :].mean(dim=0)
         if per_head_position_budget_mode != "none" and position_selection_ratio < 1.0:
@@ -2109,6 +2265,7 @@ def _build_rotalign_prefix_state(
                 position_prior=position_prior_scores,
                 target_keys=active_target_keys,
                 translated_keys=active_translated_keys,
+                head_templates=template_scores,
                 prior_alpha=runtime_head_prior_alpha,
             )
             K_hat, V_hat, head_budget_trace, keep_counts = _apply_per_head_position_selection(
@@ -2127,6 +2284,8 @@ def _build_rotalign_prefix_state(
                     if per_head_position_budget_mode in {
                         "attention_prior",
                         "attention_prior_shuffled",
+                        "attention_template_transport",
+                        "attention_template_transport_shuffled",
                         "attention_match",
                         "attention_match_shuffled",
                         "attention_blend",
@@ -2305,6 +2464,7 @@ def _search_per_layer_gates(
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
+    fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     per_head_position_budget_mode: str = "none",
 ) -> dict[str, list[float]]:
@@ -2331,6 +2491,8 @@ def _search_per_layer_gates(
             eval_kwargs["fixed_position_profiles"] = fixed_position_profiles
         if fixed_head_profiles is not None:
             eval_kwargs["fixed_head_profiles"] = fixed_head_profiles
+        if fixed_head_templates is not None:
+            eval_kwargs["fixed_head_templates"] = fixed_head_templates
         eval_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
         eval_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
         if is_generation:
@@ -2615,6 +2777,7 @@ def eval_rotalign_kv(
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
+    fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     per_head_position_budget_mode: str = "none",
     records: list[dict[str, Any]] | None = None,
@@ -2630,6 +2793,8 @@ def eval_rotalign_kv(
             build_kwargs["fixed_position_profiles"] = fixed_position_profiles
         if fixed_head_profiles is not None:
             build_kwargs["fixed_head_profiles"] = fixed_head_profiles
+        if fixed_head_templates is not None:
+            build_kwargs["fixed_head_templates"] = fixed_head_templates
         build_kwargs["runtime_head_selection_ratio"] = runtime_head_selection_ratio
         build_kwargs["runtime_head_selection_metric"] = runtime_head_selection_metric
         build_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
@@ -2860,6 +3025,7 @@ def _eval_generation_rotalign(
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
+    fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     per_head_position_budget_mode: str = "none",
 ) -> tuple[float, float, float]:
@@ -2868,6 +3034,8 @@ def _eval_generation_rotalign(
         eval_kwargs["fixed_position_profiles"] = fixed_position_profiles
     if fixed_head_profiles is not None:
         eval_kwargs["fixed_head_profiles"] = fixed_head_profiles
+    if fixed_head_templates is not None:
+        eval_kwargs["fixed_head_templates"] = fixed_head_templates
     eval_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
     eval_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
     stats = _eval_generation_rotalign_with_stats(
@@ -2919,6 +3087,7 @@ def _eval_generation_rotalign_with_stats(
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
+    fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     per_head_position_budget_mode: str = "none",
     records: list[dict[str, Any]] | None = None,
@@ -2949,6 +3118,8 @@ def _eval_generation_rotalign_with_stats(
             build_kwargs["fixed_position_profiles"] = fixed_position_profiles
         if fixed_head_profiles is not None:
             build_kwargs["fixed_head_profiles"] = fixed_head_profiles
+        if fixed_head_templates is not None:
+            build_kwargs["fixed_head_templates"] = fixed_head_templates
         build_kwargs["runtime_head_selection_ratio"] = runtime_head_selection_ratio
         build_kwargs["runtime_head_selection_metric"] = runtime_head_selection_metric
         build_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
@@ -3148,6 +3319,8 @@ def parse_args() -> argparse.Namespace:
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
+            "attention_template_transport",
+            "attention_template_transport_shuffled",
             "attention_match",
             "attention_match_shuffled",
             "attention_blend",
@@ -3209,6 +3382,8 @@ def parse_args() -> argparse.Namespace:
             "attention_expected_shuffled",
             "attention_prior",
             "attention_prior_shuffled",
+            "attention_template_transport",
+            "attention_template_transport_shuffled",
             "attention_match",
             "attention_match_shuffled",
             "attention_blend",
@@ -3305,6 +3480,8 @@ def main() -> None:
         "attention_expected",
         "attention_expected_shuffled",
         "attention_prior",
+        "attention_template_transport",
+        "attention_template_transport_shuffled",
         "attention_match",
         "attention_match_shuffled",
         "attention_blend",
@@ -3352,6 +3529,7 @@ def main() -> None:
     initial_gate_values = translator.gate_values()
     fixed_position_profiles = None
     fixed_head_profiles = None
+    fixed_head_templates = None
     loaded_head_prior_metadata: dict[str, Any] | None = None
     needs_fixed_position_prior = (
         position_selection_metric == "attention_prior"
@@ -3396,6 +3574,8 @@ def main() -> None:
             runtime_head_selection_ratio < 1.0
             and runtime_head_selection_metric in {
                 "attention_prior",
+                "attention_template_transport",
+                "attention_template_transport_shuffled",
                 "attention_match",
                 "attention_match_shuffled",
                 "attention_blend",
@@ -3404,9 +3584,24 @@ def main() -> None:
         or per_head_position_budget_mode in {
             "attention_prior",
             "attention_prior_shuffled",
+            "attention_template_transport",
+            "attention_template_transport_shuffled",
             "attention_match",
             "attention_match_shuffled",
             "attention_blend",
+        }
+    )
+    needs_fixed_head_templates = (
+        (
+            runtime_head_selection_ratio < 1.0
+            and runtime_head_selection_metric in {
+                "attention_template_transport",
+                "attention_template_transport_shuffled",
+            }
+        )
+        or per_head_position_budget_mode in {
+            "attention_template_transport",
+            "attention_template_transport_shuffled",
         }
     )
     if needs_fixed_head_prior:
@@ -3560,6 +3755,24 @@ def main() -> None:
             },
         )
         print(f"Saved fixed head prior bundle to {runtime_head_prior_save}")
+    if needs_fixed_head_templates:
+        if not runtime_head_prior_file:
+            raise ValueError(
+                "--runtime-head-prior-file is required when building fixed head attention templates"
+            )
+        head_template_prompts = load_prompt_lines(runtime_head_prior_file)
+        print(
+            f"Building fixed head attention templates from {len(head_template_prompts)} calibration prompts "
+            f"({runtime_head_prior_file})"
+        )
+        fixed_head_templates = _mean_head_attention_templates_from_prompts(
+            tgt,
+            tok_t,
+            head_template_prompts,
+            args.device,
+            translator=translator,
+            bins=args.position_selection_prior_bins,
+        )
 
     if args.gate_mode == "fixed":
         translator.set_fixed_gates(args.fixed_gate)
@@ -3614,6 +3827,8 @@ def main() -> None:
                     search_kwargs["fixed_position_profiles"] = fixed_position_profiles
                 if fixed_head_profiles is not None:
                     search_kwargs["fixed_head_profiles"] = fixed_head_profiles
+                if fixed_head_templates is not None:
+                    search_kwargs["fixed_head_templates"] = fixed_head_templates
                 search_stats = _search_per_layer_gates(
                     src,
                     tok_s,
@@ -3671,6 +3886,7 @@ def main() -> None:
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     fixed_head_profiles=fixed_head_profiles,
+                    fixed_head_templates=fixed_head_templates,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
                     per_head_position_budget_mode=per_head_position_budget_mode,
                     records=prediction_records,
@@ -3750,6 +3966,8 @@ def main() -> None:
                     search_kwargs["fixed_position_profiles"] = fixed_position_profiles
                 if fixed_head_profiles is not None:
                     search_kwargs["fixed_head_profiles"] = fixed_head_profiles
+                if fixed_head_templates is not None:
+                    search_kwargs["fixed_head_templates"] = fixed_head_templates
                 search_stats = _search_per_layer_gates(
                     src,
                     tok_s,
@@ -3807,6 +4025,7 @@ def main() -> None:
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     fixed_head_profiles=fixed_head_profiles,
+                    fixed_head_templates=fixed_head_templates,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
                     per_head_position_budget_mode=per_head_position_budget_mode,
                     records=prediction_records,

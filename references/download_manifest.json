@@ -1388,5 +1388,32 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 1317815
+  },
+  {
+    "num": 156,
+    "slug": "maximal_gauge_symmetry_in_transformer_architectures",
+    "url": "https://openreview.net/forum?id=K1df8mmncF",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/156_maximal_gauge_symmetry_in_transformer_architectures.md",
+    "content_type": "text/markdown",
+    "status": "linked_note",
+    "bytes": 394
+  },
+  {
+    "num": 157,
+    "slug": "transport_and_merge_cross_architecture_merging_for_large_language_models",
+    "url": "https://arxiv.org/pdf/2602.05495.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/157_transport_and_merge_cross_architecture_merging_for_large_language_models.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 4557438
+  },
+  {
+    "num": 158,
+    "slug": "flashsinkhorn_io_aware_entropic_optimal_transport",
+    "url": "https://arxiv.org/pdf/2602.03067.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/158_flashsinkhorn_io_aware_entropic_optimal_transport.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 1098558
   }
 ]
