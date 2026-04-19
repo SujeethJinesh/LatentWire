@@ -137,7 +137,16 @@ python scripts/calibrate.py \
   ridge otherwise. Use `cca` when you suspect the cross-model map is
   primarily low-rank and partially diagonal; use `reduced_rank` with
   `--alignment-rank 64` when you want explicit compression.
+- `--alignment grouped_transport` — fit a grouped soft transport map across
+  source/target head-groups, then optionally add a low-rank residual on top.
+  On the current Qwen pair this improves calibration fit sharply but is still a
+  negative task result on GSM70, so treat it as a blocker probe rather than a
+  default recipe.
 - `--alignment-rank N` — rank for CCA and reduced-rank regression.
+- `--transport-residual-rank N` — optional low-rank residual on top of
+  `grouped_transport`.
+- `--transport-temperature T` / `--transport-sinkhorn-iters K` — control the
+  softness of the grouped transport plan.
 - `--layer-pairing {interp,cka,reverse,shifted,random}` — interpolation,
   SemAlign-style CKA pairing, or negative-control layer maps.
 - `--layer-selection-topk K` / `--layer-selection-ratio R` — selective

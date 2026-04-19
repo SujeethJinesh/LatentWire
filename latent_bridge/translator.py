@@ -56,13 +56,17 @@ class TranslatorConfig:
 
     # Alignment solver: 'auto' | 'identity' | 'procrustes'
     #                 | 'procrustes_rand' | 'ridge' | 'cca' | 'reduced_rank'
-    #                 | 'grouped_' + any of the above
+    #                 | 'grouped_' + any of the above | 'grouped_transport'
     # Grouped variants fit one block per head-group instead of a single flat
     # all-head projection. When src/tgt head counts match, this degenerates to
     # true per-head alignment.
     alignment_method: str = "auto"
     ridge_lambda: float = 1e-3
     alignment_rank: int | None = None  # for cca / reduced_rank
+    # Optional low-rank residual added on top of grouped soft transport.
+    transport_residual_rank: int | None = None
+    transport_temperature: float = 1.0
+    transport_sinkhorn_iters: int = 8
 
     # Layer pairing: 'interp', 'cka', 'reverse', 'shifted', 'random', or a list
     # of length num_tgt_layers. The non-interp non-CKA modes are negative
@@ -201,6 +205,15 @@ class RotAlignKVTranslator(nn.Module):
         self.register_buffer(
             "head_selected_mask",
             torch.ones(config.num_tgt_layers, config.tgt_num_heads, dtype=torch.bool),
+        )
+        group_count, _, _ = self._head_group_layout()
+        self.register_buffer(
+            "transport_plan_K",
+            torch.zeros(config.num_tgt_layers, group_count, group_count),
+        )
+        self.register_buffer(
+            "transport_plan_V",
+            torch.zeros(config.num_tgt_layers, group_count, group_count),
         )
 
         # --- Optional pre-quant denoising filters and quantization repair ---
@@ -535,6 +548,67 @@ class RotAlignKVTranslator(nn.Module):
             )
             W[src_slice, tgt_slice] = W_block.to(dtype=X.dtype)
         return W
+
+    @staticmethod
+    def _transport_score(quality: dict[str, float]) -> float:
+        return float(
+            quality["mean_cosine_similarity"] - quality["relative_frobenius_error"]
+        )
+
+    def _sinkhorn_transport(self, scores: torch.Tensor) -> torch.Tensor:
+        temp = max(float(self.config.transport_temperature), 1e-6)
+        log_plan = scores / temp
+        log_plan = log_plan - log_plan.max()
+        plan = torch.exp(log_plan)
+        plan = plan.clamp_min(1e-8)
+        for _ in range(max(1, int(self.config.transport_sinkhorn_iters))):
+            plan = plan / plan.sum(dim=1, keepdim=True).clamp_min(1e-8)
+            plan = plan / plan.sum(dim=0, keepdim=True).clamp_min(1e-8)
+        plan = plan / plan.sum(dim=1, keepdim=True).clamp_min(1e-8)
+        return plan
+
+    def _fit_group_transport_alignment(
+        self,
+        X: torch.Tensor,
+        Y: torch.Tensor,
+        *,
+        lam: float,
+        residual_rank: int | None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        group_count, _, _ = self._head_group_layout()
+        src_slices = self._group_feature_slices(use_target=False)
+        tgt_slices = self._group_feature_slices(use_target=True)
+        scores = torch.zeros(group_count, group_count, dtype=X.dtype, device=X.device)
+        blocks: dict[tuple[int, int], torch.Tensor] = {}
+        for src_idx, src_slice in enumerate(src_slices):
+            for tgt_idx, tgt_slice in enumerate(tgt_slices):
+                method = "procrustes" if (src_slice.stop - src_slice.start) == (tgt_slice.stop - tgt_slice.start) else "ridge"
+                W_block = fit_alignment(
+                    X[:, src_slice],
+                    Y[:, tgt_slice],
+                    method=method,
+                    lam=lam,
+                )
+                q = alignment_quality(X[:, src_slice], Y[:, tgt_slice], W_block)
+                scores[src_idx, tgt_idx] = self._transport_score(q)
+                blocks[(src_idx, tgt_idx)] = W_block
+        plan = self._sinkhorn_transport(scores)
+        W = torch.zeros(self.d_s, self.d_t, dtype=X.dtype, device=X.device)
+        for src_idx, src_slice in enumerate(src_slices):
+            for tgt_idx, tgt_slice in enumerate(tgt_slices):
+                W[src_slice, tgt_slice] = plan[src_idx, tgt_idx] * blocks[(src_idx, tgt_idx)].to(dtype=X.dtype)
+        if residual_rank is not None and int(residual_rank) > 0:
+            resid_rank = max(1, min(int(residual_rank), min(X.shape[1], Y.shape[1])))
+            base_pred = X @ W
+            W_resid = fit_alignment(
+                X,
+                Y - base_pred,
+                method="reduced_rank",
+                lam=lam,
+                rank=resid_rank,
+            )
+            W = W + W_resid.to(dtype=X.dtype)
+        return W, plan
 
     def _target_head_group_ranges(self) -> list[tuple[int, int]]:
         group_count, _, tgt_heads_per_group = self._head_group_layout()
@@ -872,20 +946,36 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                W_K = self._fit_grouped_alignment(
-                    Xk,
-                    Yk_fit,
-                    method=self.config.alignment_method,
-                    lam=self.config.ridge_lambda,
-                    rank=self.config.alignment_rank,
-                )
-                W_V = self._fit_grouped_alignment(
-                    Xv,
-                    Yv_fit,
-                    method=self.config.alignment_method,
-                    lam=self.config.ridge_lambda,
-                    rank=self.config.alignment_rank,
-                )
+                if self.config.alignment_method == "grouped_transport":
+                    W_K, plan_k = self._fit_group_transport_alignment(
+                        Xk,
+                        Yk_fit,
+                        lam=self.config.ridge_lambda,
+                        residual_rank=self.config.transport_residual_rank,
+                    )
+                    W_V, plan_v = self._fit_group_transport_alignment(
+                        Xv,
+                        Yv_fit,
+                        lam=self.config.ridge_lambda,
+                        residual_rank=self.config.transport_residual_rank,
+                    )
+                    self.transport_plan_K[tgt_l].copy_(plan_k.to(dtype=self.transport_plan_K.dtype))
+                    self.transport_plan_V[tgt_l].copy_(plan_v.to(dtype=self.transport_plan_V.dtype))
+                else:
+                    W_K = self._fit_grouped_alignment(
+                        Xk,
+                        Yk_fit,
+                        method=self.config.alignment_method,
+                        lam=self.config.ridge_lambda,
+                        rank=self.config.alignment_rank,
+                    )
+                    W_V = self._fit_grouped_alignment(
+                        Xv,
+                        Yv_fit,
+                        method=self.config.alignment_method,
+                        lam=self.config.ridge_lambda,
+                        rank=self.config.alignment_rank,
+                    )
             else:
                 W_K = fit_alignment(
                     Xk,
@@ -956,10 +1046,15 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
+            if grouped_alignment and self.config.alignment_method == "grouped_transport":
+                diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
+                diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
 
             # Fit optional head-group saliency from local aligned slices.
             group_scores: list[tuple[float, int]] = []
             base_method = self.config.alignment_method.removeprefix("grouped_")
+            if base_method == "transport":
+                base_method = "auto"
             for group_idx, (src_slice, tgt_slice) in enumerate(
                 zip(self._group_feature_slices(use_target=False), self._group_feature_slices(use_target=True))
             ):

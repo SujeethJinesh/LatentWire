@@ -90,6 +90,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_ridge",
             "grouped_cca",
             "grouped_reduced_rank",
+            "grouped_transport",
         ],
         default="auto",
     )
@@ -99,6 +100,24 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=None,
         help="Rank for CCA / reduced-rank regression (defaults to min(d_in, d_out))",
+    )
+    p.add_argument(
+        "--transport-residual-rank",
+        type=int,
+        default=None,
+        help="Optional low-rank residual on top of grouped soft transport",
+    )
+    p.add_argument(
+        "--transport-temperature",
+        type=float,
+        default=1.0,
+        help="Temperature for grouped soft transport weights",
+    )
+    p.add_argument(
+        "--transport-sinkhorn-iters",
+        type=int,
+        default=8,
+        help="Number of Sinkhorn row/column normalization steps for grouped soft transport",
     )
     p.add_argument(
         "--rotation",
@@ -492,6 +511,9 @@ def main() -> None:
         alignment_method=args.alignment,
         ridge_lambda=args.ridge_lambda,
         alignment_rank=args.alignment_rank,
+        transport_residual_rank=args.transport_residual_rank,
+        transport_temperature=args.transport_temperature,
+        transport_sinkhorn_iters=args.transport_sinkhorn_iters,
         layer_pairing=args.layer_pairing,
         layer_selection_topk=args.layer_selection_topk,
         layer_selection_ratio=args.layer_selection_ratio,

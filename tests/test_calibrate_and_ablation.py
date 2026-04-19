@@ -217,6 +217,38 @@ def test_calibrate_parse_args_accepts_grouped_alignment(monkeypatch) -> None:
     assert args.alignment == "grouped_auto"
 
 
+def test_calibrate_parse_args_accepts_grouped_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_transport",
+            "--transport-residual-rank",
+            "8",
+            "--transport-temperature",
+            "0.5",
+            "--transport-sinkhorn-iters",
+            "12",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_transport"
+    assert args.transport_residual_rank == 8
+    assert args.transport_temperature == 0.5
+    assert args.transport_sinkhorn_iters == 12
+
+
 def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

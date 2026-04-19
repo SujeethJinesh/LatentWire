@@ -145,6 +145,12 @@ Proposed claim:
   the old fixed prior `0.085714` and below `C2C` `0.128571`.
 - So canonicalization by itself is not the story either; if we keep it, it
   should be framed as a possible component inside a stronger transport map.
+- The first stronger transport-map follow-up sharpens the story further:
+  grouped soft transport plus a rank-64 residual improves calibration fit a
+  lot, but still collapses to `0.014286` on the same Qwen GSM70 split.
+- That means better offline transport quality is not enough either; the likely
+  missing ingredient is example-conditioned correction or fusion, closer to the
+  learned-fuser behavior of `C2C`.
 - The second external baseline is currently more useful as a blocker signal
   than a competitive bar:
   stock `KVComm` is not directly runnable on the same heterogeneous Qwen pair

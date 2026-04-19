@@ -154,6 +154,30 @@ Next fix:
 - prioritize learned or OT-style transport plus correction over whitening-only
   pivots
 
+### Blocker 7: Better calibration fit can still hurt reasoning
+
+Observed symptom:
+
+- grouped soft transport plus a rank-64 residual improves calibration quality
+  sharply on the Qwen pair (`K cos 0.925`, rel err `0.370`)
+- the same checkpoint then collapses to `0.014286` on held-out GSM70
+
+Interpretation:
+
+- offline reconstruction quality is not a sufficient target
+- the remaining gap is likely runtime-conditional: the model needs
+  example-conditioned correction or fusion, not just a better static map
+
+Current status:
+
+- newly identified and strongly supported by the grouped-transport probe
+
+Next fix:
+
+- keep transport, but add a tiny example-conditioned correction / fusion layer
+- stop investing in more static transport-map variants unless they also change
+  runtime conditioning
+
 ## Immediate Plan
 
 ### Today

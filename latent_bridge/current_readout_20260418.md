@@ -457,6 +457,33 @@ Paired reads for the symmetric-whitening branch on Qwen GSM70:
   - bootstrap `[-0.128571, +0.028571]`
   - McNemar `0.3428`
 
+And an eleventh transport-fit constraint:
+
+> a much stronger grouped transport map with residual rank `64` improves
+> calibration quality sharply (`K cos 0.925`, rel err `0.370`) but still
+> collapses to `0.014286` on Qwen GSM70.
+
+Paired reads for the grouped-transport branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.071429`
+  - grouped-transport-only wins `0`
+  - fixed-prior-only wins `5`
+  - bootstrap `[-0.128571, -0.014286]`
+  - McNemar `0.0736`
+- vs `C2C`:
+  - delta `-0.114286`
+  - grouped-transport-only wins `1`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.200000, -0.028571]`
+  - McNemar `0.0269`
+
+Interpretation:
+
+- better offline transport fit is not enough
+- the next missing ingredient looks more like runtime or example-conditioned
+  correction / fusion than another static transport map
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
@@ -469,6 +496,9 @@ Paired reads for the symmetric-whitening branch on Qwen GSM70:
      the shuffled null
    - extend the grouped CCA branch on SVAMP-like tasks before treating it as a general method
    - move toward transport plus tiny correction layers once pure routing stops improving against `C2C`
+   - after grouped transport failed despite much better calibration fit, move
+     specifically toward example-conditioned or learned correction on top of a
+     transport map rather than more static transport variants
    - deprioritize standalone correction-only variants if they stay below the old fixed prior on GSM70
    - deprioritize evaluator-level soft-transport variants if they also stay below the old fixed prior on GSM70
    - deprioritize whitening-only or symmetric-canonicalization-only pivots if
