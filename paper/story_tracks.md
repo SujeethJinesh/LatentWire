@@ -131,6 +131,13 @@ Proposed claim:
   `attention_procrustes` drops to `0.028571` on the same Qwen GSM70 split,
   below the old fixed prior `0.085714` and far below `C2C` `0.128571`, so
   cheap orthogonal-invariant head scoring is not the rescue path either.
+- The first tiny-correction follow-up is still bounded:
+  the new ridge-corrected checkpoint reaches `0.057143` on the same Qwen
+  GSM70 split, which is better than the Procrustes branch but still below the
+  old fixed prior `0.085714` and below `C2C` `0.128571`.
+- So the paper should not frame linear cleanup alone as the answer; the next
+  credible path is still better transport, likely OT / gauge-aware matching,
+  with correction only as a secondary add-on.
 - The live query-aware sparse story is also now best used as a **mechanism clue**:
   query-aware sparsity matters directionally, but the current implementation is
   not stable enough across seeds or held-out slices to headline the paper.

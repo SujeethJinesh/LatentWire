@@ -51,6 +51,9 @@ Current status:
 Next fix:
 
 - attention-fidelity or QK-geometry-preserving ranking / correction
+- a stronger linear correction layer is still only a bounded repair on GSM70,
+  so correction likely has to sit on top of a better transport map rather than
+  replace it
 
 ### Blocker 3: Head importance is query- and task-conditional
 

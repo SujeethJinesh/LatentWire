@@ -167,7 +167,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--quantization-correction",
-        choices=["none", "affine"],
+        choices=["none", "affine", "ridge"],
         default="none",
         help="Optional decoder-side correction applied after quantize/dequantize",
     )

@@ -126,7 +126,7 @@ def parse_args() -> argparse.Namespace:
         "--quantization-corrections",
         nargs="+",
         default=["none"],
-        choices=["none", "affine"],
+        choices=["none", "affine", "ridge"],
         help="Optional decoder-side correction after quantize/dequantize.",
     )
     p.add_argument("--rotation-seeds", nargs="+", type=int, default=[0])

@@ -145,9 +145,10 @@ python scripts/calibrate.py \
 - `--pre-quant-rank N` / `--pre-quant-shrinkage A` — apply a target-space
   low-rank/shrinkage filter before quantization. This is a denoising step
   after alignment, not a replacement for the alignment solver.
-- `--quantization-correction {none,affine}` — optional decoder-side affine
-  correction after quantize/dequantize to counter systematic bias in the
-  quantized path.
+- `--quantization-correction {none,affine,ridge}` — optional decoder-side
+  correction after quantize/dequantize. `affine` is a diagonal scale+bias
+  repair; `ridge` is a small full linear correction layer in rotated target
+  space.
 
 ### 4. Evaluate against baselines
 
@@ -326,8 +327,8 @@ full-precision anchor before comparing 4-bit and lower-bit runs. Treat
 the quantized path, not as the default headline method. For the new
 head-aware/low-rank branch, sweep `--head-selection-ratio`,
 `--pre-quant-rank`, `--pre-quant-shrinkage`, and
-`--quantization-correction affine` before widening the model matrix. For the
-next K-vs-V study, keep the checkpoint fixed and compare `--kv-transport
+`--quantization-correction affine` or `ridge` before widening the model
+matrix. For the next K-vs-V study, keep the checkpoint fixed and compare `--kv-transport
 k_only` against `--kv-transport v_only` at the same gate and fusion rule.
 
 To compare two prediction JSONL files on the same examples, use

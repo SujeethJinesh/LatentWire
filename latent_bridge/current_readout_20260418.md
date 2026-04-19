@@ -311,6 +311,15 @@ Interpretation:
   compared with the old fixed prior, `attention_procrustes` is `-0.057143`
   with `0` Procrustes-only wins and `4` fixed-prior-only wins; compared with
   `C2C` it is `-0.100000` with `2` Procrustes-only wins and `9` C2C-only wins.
+- A stronger post-quantization linear correction layer is still only a bounded
+  repair:
+  the new `ridge` quantization-correction checkpoint scored `0.057143` on the
+  same Qwen GSM70 split, better than `attention_procrustes` but still below
+  the old fixed prior `0.085714` and below `C2C` `0.128571`.
+- Paired against the old fixed prior, the ridge-correction branch is
+  `-0.028571` with `1` ridge-only win and `3` fixed-prior-only wins; paired
+  against `C2C` it is `-0.071429` with `3` ridge-only wins and `8` C2C-only
+  wins.
 - The competitor baseline path is now real:
   `C2C` ran end to end on the exact Qwen pair and scored `0.128571` on
   `data/gsm8k_eval_70.jsonl`, above our current best same-pair GSM70 branch
@@ -375,6 +384,12 @@ And a fifth structural constraint:
 > same split, so simple orthogonal-invariant head scoring is not the missing
 > ingredient either.
 
+And a sixth method-class constraint:
+
+> even a stronger full linear post-quantization correction layer only climbs to
+> `0.057143` on Qwen GSM70, so post-transport cleanup alone is not enough to
+> close the gap to either the old fixed prior or `C2C`.
+
 ## Next Highest-Value Steps
 
 1. Budget sweep for the fixed-prior branch: `0.25 / 0.50 / 0.75`, each with
@@ -386,6 +401,7 @@ And a fifth structural constraint:
    - attention-fidelity-preserving head ranking after expected-attention ties the shuffled null
    - extend the grouped CCA branch on SVAMP-like tasks before treating it as a general method
    - move toward transport plus tiny correction layers once pure routing stops improving against `C2C`
+   - deprioritize standalone correction-only variants if they stay below the old fixed prior on GSM70
    - causal head scoring once the matching space is less noisy
    - only then revisit retrieval-head routing with a stronger structure-aware score
    - use `C2C` as the first external bar and try to beat it on the exact Qwen GSM and SVAMP splits

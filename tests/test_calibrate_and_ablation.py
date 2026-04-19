@@ -253,6 +253,30 @@ def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> N
     assert args.quantization_correction == "affine"
 
 
+def test_calibrate_parse_args_accepts_ridge_quantization_correction(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "ridge",
+        ],
+    )
+
+    args = calibrate.parse_args()
+
+    assert args.quantization_correction == "ridge"
+
+
 def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path) -> None:
     summary = """
     noise before
