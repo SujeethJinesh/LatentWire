@@ -183,6 +183,14 @@ Files `156_` through `158_` extend the heavier symmetry / transport path:
 - `157_`: Transport and Merge as a direct OT / transport reference for cross-architecture alignment under component mismatch.
 - `158_`: FlashSinkhorn as a practical entropic-OT reference for making soft transport cheaper enough to prototype locally.
 
+Files `159_` through `162_` tighten the same lane around gauge fixing,
+orthogonal alignment, and OT-based transport:
+
+- `159_`: complete gauge-symmetry characterization as a stronger mathematical reference for why naive head identity can stay non-canonical.
+- `160_`: Procrustes bounds as a cleaner direct citation for orthogonal alignment under representation mismatch.
+- `161_`: transformers-as-OT as a principled geometric framing for soft transport rather than heuristic head matching.
+- `162_`: OT alignment for contextual embeddings as a practical reference for alignment objectives under contextual, not static, representations.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

@@ -1415,5 +1415,41 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 1098558
+  },
+  {
+    "num": 159,
+    "slug": "complete_characterization_of_gauge_symmetries_in_transformer_architectures",
+    "url": "https://openreview.net/forum?id=KrkbYbK0cH",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/159_complete_characterization_of_gauge_symmetries_in_transformer_architectures.md",
+    "content_type": "text/markdown",
+    "status": "linked_note",
+    "bytes": 516
+  },
+  {
+    "num": 160,
+    "slug": "when_embeddings_models_meet_procrustes_bounds_and_applications",
+    "url": "https://openreview.net/forum?id=DLEzSo1DIk",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/160_when_embeddings_models_meet_procrustes_bounds_and_applications.md",
+    "content_type": "text/markdown",
+    "status": "linked_note",
+    "bytes": 420
+  },
+  {
+    "num": 161,
+    "slug": "transformers_as_optimal_transport_a_geometric_framework_for_representation_evolution",
+    "url": "https://openreview.net/forum?id=IzAooxm1yv",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/161_transformers_as_optimal_transport_a_geometric_framework_for_representation_evolution.md",
+    "content_type": "text/markdown",
+    "status": "linked_note",
+    "bytes": 519
+  },
+  {
+    "num": 162,
+    "slug": "using_optimal_transport_as_alignment_objective_for_finetuning_multilingual_contextualized_embeddings",
+    "url": "https://arxiv.org/pdf/2110.02887.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/162_using_optimal_transport_as_alignment_objective_for_finetuning_multilingual_contextualized_embeddings.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 521664
   }
 ]

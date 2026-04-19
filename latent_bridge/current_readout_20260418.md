@@ -303,6 +303,14 @@ Interpretation:
   `attention_template_transport` scored `0.042857`, so upgrading the fixed
   prior from scalar head scores to full per-head attention templates still did
   not beat the old fixed prior or `C2C`.
+- A direct gauge-aware Procrustes overlap score also failed cleanly on the same
+  Qwen GSM70 path:
+  `attention_procrustes` scored `0.028571`, which is below the old fixed
+  head-prior branch `0.085714` and far below `C2C` at `0.128571`.
+- The paired gap is not small:
+  compared with the old fixed prior, `attention_procrustes` is `-0.057143`
+  with `0` Procrustes-only wins and `4` fixed-prior-only wins; compared with
+  `C2C` it is `-0.100000` with `2` Procrustes-only wins and `9` C2C-only wins.
 - The competitor baseline path is now real:
   `C2C` ran end to end on the exact Qwen pair and scored `0.128571` on
   `data/gsm8k_eval_70.jsonl`, above our current best same-pair GSM70 branch
@@ -310,6 +318,10 @@ Interpretation:
 - That external gap is not just a small-split artifact:
   `C2C` also scored `0.110000` on `data/gsm8k_100.jsonl`, above our current
   best same-pair GSM100 branch `0.070000`.
+- The SVAMP external bar is even stronger:
+  `C2C` scored `0.442857` on `data/svamp_eval_70.jsonl`, which is far above
+  our best current SVAMP branch (`0.171429` from grouped CCA) and above the
+  older text-to-text reference (`0.414286`).
 
 ## What This Means For The Paper
 
@@ -332,6 +344,13 @@ There is now a stronger constraint on the paper than before:
 > even in the favorable same-family Qwen setting, our best current branch still
 > trails a published baseline (`C2C`) on the held-out GSM70 split.
 
+And a stronger external-task constraint:
+
+> on SVAMP, the published `C2C` baseline is not just ahead of our sparse or
+> grouped-CCA branches; it also clears the older text-to-text reference, so the
+> next method class has to compete with a stronger reasoning bar than our
+> internal control ladder alone.
+
 And a second structural constraint:
 
 > simple permutation-aware rank matching is not enough to rescue the same
@@ -350,6 +369,12 @@ And a fourth constraint:
 > `0.042857` on Qwen GSM70, so the selector family itself is likely saturated
 > on this branch.
 
+And a fifth structural constraint:
+
+> a cheap gauge-aware Procrustes overlap score is both slower and weaker on the
+> same split, so simple orthogonal-invariant head scoring is not the missing
+> ingredient either.
+
 ## Next Highest-Value Steps
 
 1. Budget sweep for the fixed-prior branch: `0.25 / 0.50 / 0.75`, each with
@@ -360,9 +385,10 @@ And a fourth constraint:
    - OT / permutation or gauge-aware head matching across models
    - attention-fidelity-preserving head ranking after expected-attention ties the shuffled null
    - extend the grouped CCA branch on SVAMP-like tasks before treating it as a general method
+   - move toward transport plus tiny correction layers once pure routing stops improving against `C2C`
    - causal head scoring once the matching space is less noisy
    - only then revisit retrieval-head routing with a stronger structure-aware score
-   - use `C2C` as the first external bar and try to beat it on the exact Qwen GSM split
+   - use `C2C` as the first external bar and try to beat it on the exact Qwen GSM and SVAMP splits
 4. Keep SVAMP, ARC, cross-family transfer, and now seed instability in the
    paper as explicit failure boundaries.
 5. Treat the live query-aware sparse branch as another mechanism clue unless a

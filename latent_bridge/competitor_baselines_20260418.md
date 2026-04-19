@@ -81,3 +81,6 @@ Current read:
 - current best same-pair internal branch on the same split: `0.085714`
 - `C2C` on `gsm8k_100`: `0.110000`
 - current best same-pair internal branch on the same larger slice: `0.070000`
+- `C2C` on `svamp_eval_70`: `0.442857`
+- current best same-pair internal SVAMP branch on the same split: `0.171429`
+- older text-to-text reference on the same SVAMP split: `0.414286`

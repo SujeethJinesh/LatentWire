@@ -388,6 +388,62 @@ def _attention_fidelity_head_scores(
     return (probs * fidelity).sum(dim=-1)
 
 
+def _attention_procrustes_head_scores(
+    attention_map: torch.Tensor,
+    target_keys: torch.Tensor,
+    translated_keys: torch.Tensor,
+) -> torch.Tensor:
+    if target_keys.ndim == 4:
+        if target_keys.shape[0] != 1:
+            raise ValueError(f"target_keys batch dimension must be 1, got shape {tuple(target_keys.shape)}")
+        target_keys = target_keys.squeeze(0)
+    if translated_keys.ndim == 4:
+        if translated_keys.shape[0] != 1:
+            raise ValueError(
+                f"translated_keys batch dimension must be 1, got shape {tuple(translated_keys.shape)}"
+            )
+        translated_keys = translated_keys.squeeze(0)
+    if attention_map.ndim != 2:
+        raise ValueError(f"attention_map must be rank-2 [heads, positions], got shape {tuple(attention_map.shape)}")
+    if target_keys.ndim != 3 or translated_keys.ndim != 3:
+        raise ValueError(
+            "target_keys and translated_keys must be rank-3 [heads, positions, dim], "
+            f"got {tuple(target_keys.shape)} and {tuple(translated_keys.shape)}"
+        )
+    if target_keys.shape[0] != attention_map.shape[0] or translated_keys.shape[0] != attention_map.shape[0]:
+        raise ValueError(
+            "attention_map, target_keys, and translated_keys must agree on head count, "
+            f"got {attention_map.shape[0]}, {target_keys.shape[0]}, and {translated_keys.shape[0]}"
+        )
+    prefix_len = min(attention_map.shape[-1], target_keys.shape[1], translated_keys.shape[1])
+    if prefix_len <= 0:
+        raise ValueError("attention_procrustes requires at least one shared prefix position")
+    probs = attention_map[:, -prefix_len:].float()
+    probs = probs / probs.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    tgt = target_keys[:, -prefix_len:, :].float()
+    trans = translated_keys[:, -prefix_len:, :].float()
+    scores: list[torch.Tensor] = []
+    for head_idx in range(probs.shape[0]):
+        weight = probs[head_idx].sqrt().unsqueeze(-1)
+        tgt_head = tgt[head_idx]
+        trans_head = trans[head_idx]
+        tgt_mean = (probs[head_idx].unsqueeze(-1) * tgt_head).sum(dim=0, keepdim=True)
+        trans_mean = (probs[head_idx].unsqueeze(-1) * trans_head).sum(dim=0, keepdim=True)
+        x = weight * (tgt_head - tgt_mean)
+        y = weight * (trans_head - trans_mean)
+        if float(x.norm().item()) < 1e-8 or float(y.norm().item()) < 1e-8:
+            scores.append(torch.tensor(0.0, device=tgt.device))
+            continue
+        cross = x @ y.transpose(0, 1)
+        # Per-head cross matrices are tiny; CPU SVD avoids missing MPS kernels
+        # without materially affecting runtime.
+        cross_cpu = cross.to("cpu")
+        nuclear_norm = torch.linalg.svdvals(cross_cpu).sum().to(tgt.device)
+        score = nuclear_norm / (x.norm() * y.norm()).clamp_min(1e-8)
+        scores.append(score.clamp_min(0.0))
+    return torch.stack(scores)
+
+
 def _match_prior_scores_to_live_order(
     live_scores: torch.Tensor,
     prior_scores: torch.Tensor,
@@ -849,6 +905,19 @@ def _runtime_head_scores_with_prior(
             raise ValueError("attention_fidelity_shuffled runtime head selection requires target_keys and translated_keys")
         scores = _attention_fidelity_head_scores(attention_map, target_keys, translated_keys)
         return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_019), None
+    if metric == "attention_procrustes":
+        if attention_map is None:
+            raise ValueError("attention_procrustes runtime head selection requires target attention maps")
+        if target_keys is None or translated_keys is None:
+            raise ValueError("attention_procrustes runtime head selection requires target_keys and translated_keys")
+        return _attention_procrustes_head_scores(attention_map, target_keys, translated_keys), None
+    if metric == "attention_procrustes_shuffled":
+        if attention_map is None:
+            raise ValueError("attention_procrustes_shuffled runtime head selection requires target attention maps")
+        if target_keys is None or translated_keys is None:
+            raise ValueError("attention_procrustes_shuffled runtime head selection requires target_keys and translated_keys")
+        scores = _attention_procrustes_head_scores(attention_map, target_keys, translated_keys)
+        return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_427), None
     if metric == "attention_prior":
         if prior_scores is None:
             raise ValueError("attention_prior runtime head selection requires fixed_head_profiles")
@@ -2050,6 +2119,8 @@ def _build_rotalign_prefix_state(
         "retrieval_peak",
         "attention_fidelity",
         "attention_fidelity_shuffled",
+        "attention_procrustes",
+        "attention_procrustes_shuffled",
         "attention_template_transport",
         "attention_template_transport_shuffled",
         "attention_expected",
@@ -2284,6 +2355,8 @@ def _build_rotalign_prefix_state(
                     if per_head_position_budget_mode in {
                         "attention_prior",
                         "attention_prior_shuffled",
+                        "attention_procrustes",
+                        "attention_procrustes_shuffled",
                         "attention_template_transport",
                         "attention_template_transport_shuffled",
                         "attention_match",
@@ -3316,6 +3389,8 @@ def parse_args() -> argparse.Namespace:
             "random",
             "attention_fidelity",
             "attention_fidelity_shuffled",
+            "attention_procrustes",
+            "attention_procrustes_shuffled",
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
@@ -3378,6 +3453,8 @@ def parse_args() -> argparse.Namespace:
             "random",
             "attention_fidelity",
             "attention_fidelity_shuffled",
+            "attention_procrustes",
+            "attention_procrustes_shuffled",
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
@@ -3477,6 +3554,8 @@ def main() -> None:
         "retrieval_peak",
         "attention_fidelity",
         "attention_fidelity_shuffled",
+        "attention_procrustes",
+        "attention_procrustes_shuffled",
         "attention_expected",
         "attention_expected_shuffled",
         "attention_prior",

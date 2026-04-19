@@ -97,6 +97,10 @@ Proposed claim:
 - The only reliable gains so far come from **selective sparse key import**, not generic KV fusion.
 - The newest same-pair gain may come from **calibrated head identity**, not just live query-aware sparsity.
 - The current best workshop-safe statement is: calibrated sparse key head budgets help on GSM8K for a compatible same-family pair, but the effect weakens on SVAMP and across target families.
+- The external-bar version of that statement is tighter:
+  our internal branches expose real structure and failure boundaries, but they
+  still trail published `C2C` replays on both GSM and SVAMP for the same Qwen
+  pair.
 - The fixed-prior story is now best used as a **mechanism clue**:
   there is structure in which heads matter, but the current fixed prior is not
   stable enough across seeds to present as the final method.
@@ -110,6 +114,9 @@ Proposed claim:
 - That baseline lead persists on the larger held-out GSM slice too:
   on `gsm8k_100`, `C2C` is at `0.110000`, above our current best same-pair
   branch `0.070000`.
+- The SVAMP bar is stronger still:
+  on `svamp_eval_70`, `C2C` is at `0.442857`, above our best current SVAMP
+  branch `0.171429` and above the older text-to-text reference `0.414286`.
 - The permutation-aware follow-up tightens it again:
   simple head-rank matching drops back to `0.042857`, so the remaining blocker
   is likely richer than plain head-order mismatch.
@@ -120,6 +127,10 @@ Proposed claim:
   even upgrading the fixed prior to per-head calibration templates does not
   lift the branch, so the current selector family likely is not where the main
   gain will come from.
+- The direct gauge-aware follow-up also fails:
+  `attention_procrustes` drops to `0.028571` on the same Qwen GSM70 split,
+  below the old fixed prior `0.085714` and far below `C2C` `0.128571`, so
+  cheap orthogonal-invariant head scoring is not the rescue path either.
 - The live query-aware sparse story is also now best used as a **mechanism clue**:
   query-aware sparsity matters directionally, but the current implementation is
   not stable enough across seeds or held-out slices to headline the paper.

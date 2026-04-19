@@ -1526,6 +1526,71 @@ def test_runtime_head_scores_with_prior_supports_attention_fidelity() -> None:
     assert not torch.allclose(scores, shuffled_scores)
 
 
+def test_attention_procrustes_head_scores_prefers_rotationally_aligned_head() -> None:
+    attention_map = torch.tensor(
+        [[0.9, 0.1], [0.1, 0.9]],
+        dtype=torch.float32,
+    )
+    target_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [0.0, 1.0]],
+            [[1.0, 0.0], [0.0, 1.0]],
+        ],
+        dtype=torch.float32,
+    )
+    translated_keys = torch.tensor(
+        [
+            [[0.0, 1.0], [-1.0, 0.0]],
+            [[1.0, 0.0], [1.0, 0.0]],
+        ],
+        dtype=torch.float32,
+    )
+
+    scores = evaluate._attention_procrustes_head_scores(attention_map, target_keys, translated_keys)
+
+    assert float(scores[0]) > float(scores[1])
+
+
+def test_runtime_head_scores_with_prior_supports_attention_procrustes() -> None:
+    attention_map = torch.tensor(
+        [[0.9, 0.1], [0.1, 0.9]],
+        dtype=torch.float32,
+    )
+    target_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [0.0, 1.0]],
+            [[1.0, 0.0], [0.0, 1.0]],
+        ],
+        dtype=torch.float32,
+    )
+    translated_keys = torch.tensor(
+        [
+            [[0.0, 1.0], [-1.0, 0.0]],
+            [[1.0, 0.0], [1.0, 0.0]],
+        ],
+        dtype=torch.float32,
+    )
+
+    scores, _ = evaluate._runtime_head_scores_with_prior(
+        attention_map,
+        metric="attention_procrustes",
+        layer_idx=0,
+        target_keys=target_keys,
+        translated_keys=translated_keys,
+    )
+    shuffled_scores, _ = evaluate._runtime_head_scores_with_prior(
+        attention_map,
+        metric="attention_procrustes_shuffled",
+        layer_idx=0,
+        target_keys=target_keys,
+        translated_keys=translated_keys,
+    )
+
+    assert float(scores[0]) > float(scores[1])
+    assert shuffled_scores.shape == scores.shape
+    assert not torch.allclose(scores, shuffled_scores)
+
+
 def test_attention_template_transport_scores_prefers_matching_template() -> None:
     attention_map = torch.tensor(
         [[0.9, 0.1], [0.1, 0.9]],

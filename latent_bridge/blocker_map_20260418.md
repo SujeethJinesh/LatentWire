@@ -22,6 +22,9 @@ Current status:
 - not solved
 - simple permutation-aware rank matching also failed on the exact Qwen GSM70
   branch (`0.042857`), so plain head-order remapping is too weak on its own
+- a direct gauge-aware Procrustes head-overlap score also failed on the same
+  branch (`0.028571`), so cheap orthogonal-invariant head scoring is too weak
+  on its own as well
 
 Next fix:
 

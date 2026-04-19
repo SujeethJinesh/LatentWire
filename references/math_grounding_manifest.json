@@ -700,5 +700,29 @@
     "slug": "flashsinkhorn_io_aware_entropic_optimal_transport",
     "url": "https://arxiv.org/pdf/2602.03067.pdf",
     "reason": "FlashSinkhorn is a practical entropic-OT reference for making soft transport cheap enough to prototype on this machine."
+  },
+  {
+    "num": 159,
+    "slug": "complete_characterization_of_gauge_symmetries_in_transformer_architectures",
+    "url": "https://openreview.net/forum?id=KrkbYbK0cH",
+    "reason": "This sharper gauge-symmetry characterization strengthens the current blocker claim that head identity can stay non-canonical even after naive matching or sparse routing."
+  },
+  {
+    "num": 160,
+    "slug": "when_embeddings_models_meet_procrustes_bounds_and_applications",
+    "url": "https://openreview.net/forum?id=DLEzSo1DIk",
+    "reason": "This is a cleaner direct citation for orthogonal Procrustes as a geometry-preserving alignment primitive before sparse transport."
+  },
+  {
+    "num": 161,
+    "slug": "transformers_as_optimal_transport_a_geometric_framework_for_representation_evolution",
+    "url": "https://openreview.net/forum?id=IzAooxm1yv",
+    "reason": "This gives a principled OT framing for representation evolution and supports moving from heuristic head ranking toward soft transport plans."
+  },
+  {
+    "num": 162,
+    "slug": "using_optimal_transport_as_alignment_objective_for_finetuning_multilingual_contextualized_embeddings",
+    "url": "https://arxiv.org/pdf/2110.02887.pdf",
+    "reason": "This is a practical contextual-embedding OT alignment reference for matching relations and geometry rather than raw coordinates."
   }
 ]
