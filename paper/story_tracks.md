@@ -186,6 +186,12 @@ Proposed claim:
 - So the paper should not frame simple head reassignment as the missing
   symmetry fix either; if the transport lane still lives, it likely needs
   richer OT/canonicalized transport rather than one-shot permutation recovery.
+- The first richer geometry-aware transport cost is directionally better:
+  grouped signature-aware transport reaches `0.042857` on Qwen GSM70, beating
+  grouped transport `0.014286` and grouped permutation `0.028571`.
+- But it is still below the old fixed prior `0.085714` and below `C2C`
+  `0.128571`, so this is still a bounded mechanistic gain rather than a
+  publishable headline result.
 - The transfer story is not “universal head priors.” It is currently **pair-conditioned and asymmetric**.
 - Strong zero-byte, random-source, and query-blind selector controls are necessary because naive cache perturbations or blind sparsity can look like communication gains.
 

@@ -59,6 +59,7 @@ class TranslatorConfig:
     #                 | 'procrustes_rand' | 'ridge' | 'cca' | 'reduced_rank'
     #                 | 'grouped_' + any of the above
     #                 | 'grouped_transport' | 'grouped_permutation'
+    #                 | 'grouped_signature_transport'
     # Grouped variants fit one block per head-group instead of a single flat
     # all-head projection. When src/tgt head counts match, this degenerates to
     # true per-head alignment.
@@ -69,6 +70,8 @@ class TranslatorConfig:
     transport_residual_rank: int | None = None
     transport_temperature: float = 1.0
     transport_sinkhorn_iters: int = 8
+    transport_signature_rank: int = 8
+    transport_signature_weight: float = 0.0
 
     # Layer pairing: 'interp', 'cka', 'reverse', 'shifted', 'random', or a list
     # of length num_tgt_layers. The non-interp non-CKA modes are negative
@@ -623,6 +626,16 @@ class RotAlignKVTranslator(nn.Module):
             quality["mean_cosine_similarity"] - quality["relative_frobenius_error"]
         )
 
+    def _group_signature(self, X: torch.Tensor) -> torch.Tensor:
+        rank = max(1, int(self.config.transport_signature_rank))
+        Xc = X.float() - X.float().mean(dim=0, keepdim=True)
+        vals = torch.linalg.svdvals(Xc)
+        vals = vals[: min(rank, vals.shape[0])]
+        vals = vals / vals.sum().clamp_min(1e-8)
+        if vals.shape[0] < rank:
+            vals = torch.cat([vals, torch.zeros(rank - vals.shape[0], dtype=vals.dtype, device=vals.device)], dim=0)
+        return vals
+
     def _sinkhorn_transport(self, scores: torch.Tensor) -> torch.Tensor:
         temp = max(float(self.config.transport_temperature), 1e-6)
         log_plan = scores / temp
@@ -685,6 +698,9 @@ class RotAlignKVTranslator(nn.Module):
         src_slices = self._group_feature_slices(use_target=False)
         tgt_slices = self._group_feature_slices(use_target=True)
         scores = torch.zeros(group_count, group_count, dtype=X.dtype, device=X.device)
+        signature_weight = float(self.config.transport_signature_weight)
+        src_signatures = [self._group_signature(X[:, src_slice]) for src_slice in src_slices]
+        tgt_signatures = [self._group_signature(Y[:, tgt_slice]) for tgt_slice in tgt_slices]
         blocks: dict[tuple[int, int], torch.Tensor] = {}
         for src_idx, src_slice in enumerate(src_slices):
             for tgt_idx, tgt_slice in enumerate(tgt_slices):
@@ -696,7 +712,11 @@ class RotAlignKVTranslator(nn.Module):
                     lam=lam,
                 )
                 q = alignment_quality(X[:, src_slice], Y[:, tgt_slice], W_block)
-                scores[src_idx, tgt_idx] = self._transport_score(q)
+                score = self._transport_score(q)
+                if signature_weight > 0.0:
+                    sig_dist = (src_signatures[src_idx] - tgt_signatures[tgt_idx]).pow(2).mean()
+                    score = score - signature_weight * float(sig_dist)
+                scores[src_idx, tgt_idx] = score
                 blocks[(src_idx, tgt_idx)] = W_block
         if self.config.alignment_method == "grouped_permutation":
             plan = self._hard_transport_assignment(scores)
@@ -1201,7 +1221,7 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method in {"grouped_transport", "grouped_permutation"}:
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -1371,14 +1391,14 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation"}:
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
 
             # Fit optional head-group saliency from local aligned slices.
             group_scores: list[tuple[float, int]] = []
             base_method = self.config.alignment_method.removeprefix("grouped_")
-            if base_method in {"transport", "permutation"}:
+            if base_method in {"transport", "permutation", "signature_transport"}:
                 base_method = "auto"
             for group_idx, (src_slice, tgt_slice) in enumerate(
                 zip(self._group_feature_slices(use_target=False), self._group_feature_slices(use_target=True))

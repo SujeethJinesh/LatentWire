@@ -272,6 +272,35 @@ def test_calibrate_parse_args_accepts_grouped_permutation(monkeypatch) -> None:
     assert args.alignment == "grouped_permutation"
 
 
+def test_calibrate_parse_args_accepts_grouped_signature_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_signature_transport",
+            "--transport-signature-rank",
+            "6",
+            "--transport-signature-weight",
+            "0.25",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_signature_transport"
+    assert args.transport_signature_rank == 6
+    assert args.transport_signature_weight == 0.25
+
+
 def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

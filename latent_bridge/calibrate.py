@@ -92,6 +92,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_reduced_rank",
             "grouped_transport",
             "grouped_permutation",
+            "grouped_signature_transport",
         ],
         default="auto",
     )
@@ -119,6 +120,18 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=8,
         help="Number of Sinkhorn row/column normalization steps for grouped soft transport",
+    )
+    p.add_argument(
+        "--transport-signature-rank",
+        type=int,
+        default=8,
+        help="Top-k singular-value signature size for geometry-aware grouped transport",
+    )
+    p.add_argument(
+        "--transport-signature-weight",
+        type=float,
+        default=0.0,
+        help="Penalty weight for mismatched grouped spectral signatures during grouped transport",
     )
     p.add_argument(
         "--rotation",
@@ -521,6 +534,8 @@ def main() -> None:
         transport_residual_rank=args.transport_residual_rank,
         transport_temperature=args.transport_temperature,
         transport_sinkhorn_iters=args.transport_sinkhorn_iters,
+        transport_signature_rank=args.transport_signature_rank,
+        transport_signature_weight=args.transport_signature_weight,
         layer_pairing=args.layer_pairing,
         layer_selection_topk=args.layer_selection_topk,
         layer_selection_ratio=args.layer_selection_ratio,

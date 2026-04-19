@@ -254,6 +254,33 @@ Next fix:
   with a better cost or canonicalized subspace basis
 - only revisit learned correction after that transport becomes competitive
 
+### Blocker 11: Better transport cost helps, but only a little
+
+Observed symptom:
+
+- adding a grouped spectral-signature penalty to the transport cost raises
+  Qwen GSM70 from grouped transport `0.014286` and grouped permutation
+  `0.028571` up to `0.042857`
+- that still stays below the old fixed prior `0.085714` and below `C2C`
+  `0.128571`
+
+Interpretation:
+
+- transport cost quality matters; the transport lane is not fully dead
+- but lightweight geometry-aware OT alone is still not enough to close the
+  main gap
+
+Current status:
+
+- newly checked and directionally positive, but still bounded
+
+Next fix:
+
+- keep pushing transport-first, but only with richer costs or canonicalization
+- if the next transport improvement is still small, the paper should present
+  this as evidence that *some* geometry-aware transport helps while still
+  falling short of a publishable positive method claim
+
 ## Immediate Plan
 
 ### Today

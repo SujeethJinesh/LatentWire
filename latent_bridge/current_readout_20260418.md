@@ -567,6 +567,41 @@ Interpretation:
   still does not recover the main Qwen reasoning signal
 - that suggests naive permutation recovery alone is not the whole symmetry fix
 
+And a fifteenth geometry-aware transport update:
+
+> adding a small grouped spectral-signature penalty to the soft transport cost
+> lifts the same Qwen GSM70 setting to `0.042857`. That is still below the old
+> fixed prior `0.085714` and below `C2C` `0.128571`, but it is materially
+> better than grouped transport `0.014286` and grouped permutation `0.028571`.
+
+Paired reads for the grouped-signature-transport branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.042857`
+  - grouped-signature-only wins `0`
+  - fixed-prior-only wins `3`
+  - bootstrap `[-0.100000, +0.000000]`
+  - McNemar `0.2482`
+- vs `C2C`:
+  - delta `-0.085714`
+  - grouped-signature-only wins `3`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.185714, +0.000000]`
+  - McNemar `0.1489`
+- vs grouped permutation:
+  - delta `+0.014286`
+  - grouped-signature-only wins `2`
+  - grouped-permutation-only wins `1`
+  - bootstrap `[-0.028571, +0.057143]`
+  - McNemar `1.0000`
+
+Interpretation:
+
+- geometry-aware transport cost is the first transport-only change that helps
+  directionally on the main Qwen split
+- but it is still a bounded gain, not a competitive result against the old
+  fixed prior or `C2C`
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
