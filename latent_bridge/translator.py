@@ -67,6 +67,7 @@ class TranslatorConfig:
     #                 | 'broadcast_template_ot_transport'
     #                 | 'broadcast_peak_template_ot_transport'
     #                 | 'broadcast_retrieval_spectrum_ot_transport'
+    #                 | 'broadcast_qk_template_ot_transport'
     # Grouped variants fit one block per head-group instead of a single flat
     # all-head projection. When src/tgt head counts match, this degenerates to
     # true per-head alignment.
@@ -729,6 +730,22 @@ class RotAlignKVTranslator(nn.Module):
             + (tgt * (tgt.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum()
         )
 
+    def _descriptor_distance(
+        self,
+        src_descriptor: torch.Tensor,
+        tgt_descriptor: torch.Tensor,
+    ) -> torch.Tensor:
+        src = src_descriptor.float().view(-1)
+        tgt = tgt_descriptor.float().view(-1)
+        if src.numel() != tgt.numel():
+            raise ValueError(
+                "source and target descriptors must agree on size, "
+                f"got {src.numel()} and {tgt.numel()}"
+            )
+        src = src / src.norm().clamp_min(1e-8)
+        tgt = tgt / tgt.norm().clamp_min(1e-8)
+        return 1.0 - torch.dot(src, tgt)
+
     def _sinkhorn_transport(self, scores: torch.Tensor) -> torch.Tensor:
         temp = max(float(self.config.transport_temperature), 1e-6)
         log_plan = scores / temp
@@ -922,7 +939,10 @@ class RotAlignKVTranslator(nn.Module):
                 q = alignment_quality(X[:, src_slice], Y[:, tgt_slice], W_block)
                 score = self._transport_score(q)
                 if weight > 0.0:
-                    template_dist = self._template_distance(src_templates[src_idx], tgt_templates[tgt_idx])
+                    if self.config.alignment_method == "broadcast_qk_template_ot_transport":
+                        template_dist = self._descriptor_distance(src_templates[src_idx], tgt_templates[tgt_idx])
+                    else:
+                        template_dist = self._template_distance(src_templates[src_idx], tgt_templates[tgt_idx])
                     score = score - weight * float(template_dist)
                 scores[src_idx, tgt_idx] = score
                 blocks[(src_idx, tgt_idx)] = W_block
@@ -1385,6 +1405,7 @@ class RotAlignKVTranslator(nn.Module):
                 "broadcast_template_ot_transport",
                 "broadcast_peak_template_ot_transport",
                 "broadcast_retrieval_spectrum_ot_transport",
+                "broadcast_qk_template_ot_transport",
             }
         )
         diagnostics: dict[int, dict] = {}
@@ -1468,6 +1489,7 @@ class RotAlignKVTranslator(nn.Module):
                     "broadcast_template_ot_transport",
                     "broadcast_peak_template_ot_transport",
                     "broadcast_retrieval_spectrum_ot_transport",
+                    "broadcast_qk_template_ot_transport",
                 }:
                     W_K, plan_k = self._fit_broadcast_template_transport_alignment(
                         Xk,
@@ -1480,6 +1502,7 @@ class RotAlignKVTranslator(nn.Module):
                             "broadcast_template_ot_transport",
                             "broadcast_peak_template_ot_transport",
                             "broadcast_retrieval_spectrum_ot_transport",
+                            "broadcast_qk_template_ot_transport",
                         },
                     )
                     W_V, plan_v = self._fit_broadcast_template_transport_alignment(
@@ -1493,6 +1516,7 @@ class RotAlignKVTranslator(nn.Module):
                             "broadcast_template_ot_transport",
                             "broadcast_peak_template_ot_transport",
                             "broadcast_retrieval_spectrum_ot_transport",
+                            "broadcast_qk_template_ot_transport",
                         },
                     )
                     if self._broadcast_transport_plan_K is None:
@@ -1679,6 +1703,7 @@ class RotAlignKVTranslator(nn.Module):
                 "broadcast_template_ot_transport",
                 "broadcast_peak_template_ot_transport",
                 "broadcast_retrieval_spectrum_ot_transport",
+                "broadcast_qk_template_ot_transport",
             } and self._broadcast_transport_plan_K is not None and self._broadcast_transport_plan_V is not None:
                 diagnostics[tgt_l]["K_transport_plan"] = self._broadcast_transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self._broadcast_transport_plan_V[tgt_l].detach().cpu().tolist()
@@ -1699,6 +1724,7 @@ class RotAlignKVTranslator(nn.Module):
                 "broadcast_template_ot_transport",
                 "broadcast_peak_template_ot_transport",
                 "broadcast_retrieval_spectrum_ot_transport",
+                "broadcast_qk_template_ot_transport",
             }:
                 base_method = "auto"
             for group_idx, (src_slice, tgt_slice) in enumerate(

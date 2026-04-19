@@ -285,3 +285,7 @@ What we still need:
    richer calibration-time key descriptors and better offline fit still do not
    imply held-out reasoning gains, so the next branch must be genuinely
    query-conditioned or the paper should lock to the blocker/mechanism story.
+8. Treat the QK-template broadcast tie as a stronger constraint again:
+   a shallow last-token QK/logit descriptor only ties the retrieval-spectrum
+   OT branch at `0.0143`, so the remaining positive-method lane has to be a
+   genuinely richer query-conditioned transport or the paper should narrow.

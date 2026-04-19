@@ -579,6 +579,46 @@ Next fix:
   transport problem remains unsolved
   falling short of a publishable positive method claim
 
+## Blocker 22: Last-token QK templates also plateau in the broadcast OT lane
+
+Observed symptom:
+
+- a new `broadcast_qk_template_ot_transport` branch kept the same rectangular
+  Sinkhorn-style `2 -> 8` transport and the same rank-4 residual correction,
+  but replaced the calibration-time head descriptor with a last-token
+  query-key logit template
+- offline fit stayed strong on the same `64`-prompt calibration slice
+  (`K` cosine `0.931`, relative Frobenius error `0.350`; `V` cosine `0.613`,
+  relative Frobenius error `0.781`)
+- under the fair matched sparse `K-only` evaluation, exact Qwen GSM70 again
+  recovered only to `0.014286`
+- bytes stayed at the same very high level as the retrieval-spectrum branch,
+  about `625k` per example
+
+Interpretation:
+
+- moving from a static key-spectrum descriptor to a simple last-token QK/logit
+  descriptor is not enough in the current broadcast OT family
+- the current failure is not just “the key descriptor is not query-aware
+  enough” in a shallow sense; this simple QK template still ties the
+  retrieval-spectrum branch exactly
+- so the next live idea, if any, has to be a genuinely richer
+  query-conditioned QK-fidelity or retrieval-template cost rather than another
+  static calibration-time descriptor
+
+Current status:
+
+- newly checked and negative
+
+Next fix:
+
+- stop expecting static descriptor swaps inside the current broadcast OT family
+  to rescue the method
+- if the positive-method lane gets one last serious try, make it a stronger
+  query-conditioned transport cost rather than another broadcast descriptor OT
+  probe
+- if that still fails, lock the paper to the blocker/mechanism framing
+
 ## Immediate Plan
 
 ### Today

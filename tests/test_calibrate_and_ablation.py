@@ -71,12 +71,24 @@ class _FakeModel:
 
 
 class _FakeAttentionModel:
+    def __init__(self) -> None:
+        self.model = SimpleNamespace(
+            layers=[
+                SimpleNamespace(
+                    self_attn=SimpleNamespace(
+                        q_proj=lambda hidden: hidden
+                    )
+                )
+            ]
+        )
+
     def __call__(self, **enc):
         input_ids = enc["input_ids"]
         batch, seq = input_ids.shape
         attn = torch.zeros(batch, 2, seq, seq, dtype=torch.float32)
         layers = []
         keys = torch.zeros(batch, 2, seq, 2, dtype=torch.float32)
+        hidden = torch.zeros(batch, seq, 4, dtype=torch.float32)
         for batch_idx in range(batch):
             valid_len = int(enc["attention_mask"][batch_idx].sum().item())
             if valid_len <= 1:
@@ -86,8 +98,9 @@ class _FakeAttentionModel:
             positions = torch.arange(1, valid_len + 1, dtype=torch.float32)
             keys[batch_idx, 0, :valid_len, 0] = positions
             keys[batch_idx, 1, :valid_len, 1] = positions
+            hidden[batch_idx, valid_len - 1] = torch.tensor([1.0, 0.0, 0.0, 2.0], dtype=torch.float32)
         layers.append((keys, keys + 0.5, None))
-        return SimpleNamespace(attentions=(attn,), past_key_values=_FakeCache(layers))
+        return SimpleNamespace(attentions=(attn,), past_key_values=_FakeCache(layers), hidden_states=(hidden, hidden + 0.1))
 
 
 def test_collect_kvs_masks_padding_tokens_and_concatenates_valid_positions() -> None:
@@ -214,6 +227,29 @@ def test_collect_group_key_signatures_returns_normalized_spectra() -> None:
     assert layer0.shape == (2, 2)
     assert torch.allclose(layer0.sum(dim=1), torch.ones(2), atol=1e-6)
     assert torch.all(layer0 >= 0.0)
+
+
+def test_collect_group_qk_templates_returns_finite_profiles() -> None:
+    model = _FakeAttentionModel()
+    tokenizer = _FakeTokenizer({"a": 4, "b": 4})
+
+    templates = calibrate.collect_group_qk_templates(
+        model,
+        tokenizer,
+        ["a", "b"],
+        max_length=4,
+        batch_size=2,
+        device="cpu",
+        kv_heads=2,
+        group_count=2,
+        bins=4,
+    )
+
+    assert len(templates) == 1
+    layer0 = templates[0]
+    assert layer0.shape == (2, 4)
+    assert torch.isfinite(layer0).all()
+    assert layer0.abs().sum() > 0
 
 
 def test_calibrate_config_helpers_parse_and_batch() -> None:
@@ -605,6 +641,35 @@ def test_calibrate_parse_args_accepts_broadcast_retrieval_spectrum_ot_transport(
     assert args.alignment == "broadcast_retrieval_spectrum_ot_transport"
     assert args.transport_signature_rank == 6
     assert args.transport_signature_weight == 0.2
+
+
+def test_calibrate_parse_args_accepts_broadcast_qk_template_ot_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "broadcast_qk_template_ot_transport",
+            "--transport-template-bins",
+            "16",
+            "--transport-signature-weight",
+            "0.15",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "broadcast_qk_template_ot_transport"
+    assert args.transport_template_bins == 16
+    assert args.transport_signature_weight == 0.15
 
 
 def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> None:

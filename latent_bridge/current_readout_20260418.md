@@ -1046,3 +1046,51 @@ Interpretation:
   transport in a genuinely different query-conditioned representation space,
   such as QK-fidelity or richer retrieval templates, or else a pivot to a
   blocker/mechanism paper
+
+And a twenty-sixth QK-template-OT update:
+
+> I then replaced the retrieval-spectrum descriptor with a last-token QK-logit
+> template, still keeping the same rectangular Sinkhorn-style `2 -> 8` plan
+> and the same rank-4 residual on the same `64`-prompt calibration slice.
+> Offline fit stayed strong (`K` cosine `0.931`, relative Frobenius error
+> `0.350`; `V` cosine `0.613`, relative Frobenius error `0.781`). Under the
+> fair matched sparse `K-only` evaluation used for the other transport
+> branches, exact Qwen GSM70 again recovered only to `0.014286`.
+
+Paired reads for the broadcast-QK-template-OT-plus-rank4-residual branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.071429`
+  - broadcast-qk-template-ot-resid4-only wins `0`
+  - fixed-prior-only wins `5`
+  - bootstrap `[-0.128571, -0.014286]`
+  - McNemar `0.0736`
+- vs `C2C`:
+  - delta `-0.114286`
+  - broadcast-qk-template-ot-resid4-only wins `1`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.200000, -0.028571]`
+  - McNemar `0.0269`
+- vs grouped subspace transport + rank-4 residual:
+  - delta `-0.042857`
+  - broadcast-qk-template-ot-resid4-only wins `0`
+  - grouped-subspace-resid4-only wins `3`
+  - bootstrap `[-0.100000, +0.000000]`
+  - McNemar `0.2482`
+- vs broadcast retrieval-spectrum OT + rank-4 residual:
+  - delta `+0.000000`
+  - broadcast-qk-template-ot-resid4-only wins `0`
+  - broadcast-retrieval-spectrum-ot-resid4-only wins `0`
+  - bootstrap `[+0.000000, +0.000000]`
+  - McNemar `1.0000`
+
+Interpretation:
+
+- moving into a simple last-token QK/logit template space is still not enough
+- in this current broadcast OT family, QK templates do not outperform the
+  retrieval-spectrum descriptor; they tie it exactly on both accuracy and
+  paired behavior
+- that makes the remaining positive-method lane narrower again:
+  the next live idea would have to be a genuinely query-conditioned
+  QK-fidelity or retrieval-template transport, not another static calibration-
+  time descriptor inside the same transport family

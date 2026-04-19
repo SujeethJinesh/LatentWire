@@ -97,3 +97,18 @@ That means:
 - if we give the positive-method lane one last serious try, it should be a
   **QK-fidelity or retrieval-template transport in a genuinely different
   representation space**, not another attention- or key-descriptor OT tweak
+
+The follow-up `broadcast_qk_template_ot_transport + rank-4 residual` branch
+then replaced the retrieval-spectrum descriptor with a last-token QK/logit
+template while keeping the same rectangular `2 -> 8` OT solver and the same
+rank-4 residual. Under the fair matched sparse `K-only` protocol, exact Qwen
+GSM70 again recovered only to `0.0143`, tying the retrieval-spectrum branch
+exactly and using the same high byte budget.
+
+That means:
+
+- a shallow move into last-token QK/logit space is also not enough inside the
+  current broadcast OT family
+- the next serious try, if any, has to be a **genuinely richer
+  query-conditioned QK-fidelity or retrieval-template transport**, not another
+  static calibration-time descriptor swap

@@ -22,6 +22,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `gsm8k_eval_70` | broadcast template OT transport + rank-4 residual | `0.0000` | `149,129.8` | rectangular Sinkhorn-style `2 -> 8` head transport probe (`64`-prompt calibration slice) |
 | `gsm8k_eval_70` | broadcast peak-template OT transport + rank-4 residual | `0.0143` | `149,129.8` | rectangular Sinkhorn-style `2 -> 8` transport using peak-location templates (`64`-prompt calibration slice) |
 | `gsm8k_eval_70` | broadcast retrieval-spectrum OT transport + rank-4 residual | `0.0143` | `625,463.7` | rectangular Sinkhorn-style `2 -> 8` transport using retrieval-weighted key spectra under matched sparse `K-only` evaluation (`64`-prompt calibration slice) |
+| `gsm8k_eval_70` | broadcast QK-template OT transport + rank-4 residual | `0.0143` | `625,463.7` | rectangular Sinkhorn-style `2 -> 8` transport using last-token QK logit templates under matched sparse `K-only` evaluation (`64`-prompt calibration slice) |
 | `gsm8k_eval_70` | grouped canonical transport | `0.0286` | `149,496.2` | low-rank canonical basis shortcut |
 | `gsm8k_eval_70` | `C2C` | `0.1286` | `-` | strongest external baseline so far |
 | `gsm8k_eval_70` | lifted `KVComm` replay | `0.0000` | `-` | compatibility-lifted heterogeneous replay |
@@ -56,6 +57,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 - A finer rectangular `2 -> 8` broadcast-template transport branch falls all the way to `0.0000`, so the grouped family was not failing only because of coarse grouped transport.
 - A richer rectangular Sinkhorn-style OT plan in that same attention-template space still lands at `0.0000`, so the remaining issue is not just transport granularity or many-to-many mass assignment.
 - Replacing mean attention templates with simple peak-location templates lifts that OT branch to `0.0143`, so representation matters a bit, but the gain is still far below the fixed prior and `C2C`.
+- Replacing the retrieval-spectrum descriptor with simple last-token QK logit templates does not move that frontier at all: it ties the retrieval-spectrum OT branch at `0.0143` while staying far less byte-efficient than the live sparse branches.
 - The paper is currently strongest as a **blocker / mechanism** story:
   head-space mismatch and transport quality matter, but the current transport
   family does not yet produce a competitive positive method on the main split.
