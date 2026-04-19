@@ -199,6 +199,10 @@ Proposed claim:
   Qwen GSM70.
 - A covariance-aware version of that same branch then falls back to `0.014286`,
   so covariance geometry is not the next shortcut in the current family.
+- A calibration-time attention-template version of that same transport-plus-
+  correction idea then reaches only `0.042857`, tying the earlier
+  transport-only plateau instead of improving on the best subspace-plus-
+  correction branch.
 - But it is still below the old fixed prior `0.085714` and below `C2C`
   `0.128571`, so this is still a bounded mechanistic gain rather than a
   publishable headline result.

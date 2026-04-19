@@ -225,6 +225,11 @@ Files `176_` through `178_` extend the transport-plus-correction lane:
 - `177_`: SkipV1Former as a residual/skip-style KV correction reference, useful for cheap correction paths layered on top of transport.
 - `178_`: The Residual Stream Is All You Need as a strong reconstruction-side reference, useful if the paper pivots from full KV transport toward smaller transported state plus correction.
 
+Files `179_` and `180_` extend the transport-geometry lane:
+
+- `179_`: Probabilistic Geometric Alignment via Bayesian Latent Transport for Domain-Adaptive Foundation Models as a fresh latent-transport reference for uncertainty-aware geometry matching.
+- `180_`: Constrained Gaussian Wasserstein Optimal Transport with Commutative Covariance Matrices as a direct Bures/Wasserstein-style geometry reference for richer transport costs.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

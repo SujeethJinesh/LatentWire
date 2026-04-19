@@ -782,3 +782,44 @@ Interpretation:
 5. Treat the live query-aware sparse branch as another mechanism clue unless a
    stronger retrieval-head or logit-preserving variant survives the same seed
    repeat.
+
+And a twentieth attention-template transport-plus-correction update:
+
+> adding calibration-time grouped last-token attention templates to the
+> grouped transport cost, then keeping the same rank-4 residual, reaches
+> `0.042857` on exact Qwen GSM70. This first template run used a practical
+> `64`-prompt calibration slice because full-attention template extraction over
+> all `600` prompts is too slow for the current inner loop. It ties the earlier
+> transport-only plateau and stays below the old fixed prior `0.085714`, below
+> the best internal transport-plus-correction branch `0.057143`, and below
+> `C2C` `0.128571`.
+
+Paired reads for the grouped-template-plus-rank4-residual branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.042857`
+  - grouped-template-resid4-only wins `1`
+  - fixed-prior-only wins `4`
+  - bootstrap `[-0.114286, +0.014286]`
+  - McNemar `0.3711`
+- vs `C2C`:
+  - delta `-0.085714`
+  - grouped-template-resid4-only wins `2`
+  - `C2C`-only wins `8`
+  - bootstrap `[-0.171429, +0.000000]`
+  - McNemar `0.1138`
+- vs grouped subspace transport + rank-4 residual:
+  - delta `-0.014286`
+  - grouped-template-resid4-only wins `1`
+  - grouped-subspace-resid4-only wins `2`
+  - bootstrap `[-0.071429, +0.028571]`
+  - McNemar `1.0000`
+
+Interpretation:
+
+- behavior-matched head transport is more principled than the earlier grouped
+  geometry probes, but on the main held-out GSM70 split it still does not
+  recover the missing reasoning signal
+- adding templates to the grouped transport cost is therefore not enough by
+  itself; the next live lane is still richer transport-plus-correction rather
+  than another light grouped penalty

@@ -380,6 +380,37 @@ Next fix:
 - if we keep pushing internally, use the grouped-subspace-plus-rank4 branch as
   the baseline for any richer OT or attention-template transport
 
+## Blocker 16: Behavior-matched grouped attention templates still plateau on the main split
+
+Observed symptom:
+
+- grouped template transport plus the same rank-4 residual reaches only
+  `0.042857` on exact Qwen GSM70, using a practical `64`-prompt calibration
+  slice for the attention templates
+- that ties the earlier transport-only plateau, stays below grouped subspace
+  transport plus rank-4 residual (`0.057143`), below the old fixed prior
+  (`0.085714`), and below `C2C` (`0.128571`)
+
+Interpretation:
+
+- matching grouped heads by calibration-time last-token attention behavior is
+  more principled than a blind grouped cost, but it is still not enough to
+  recover the held-out reasoning signal
+- the missing ingredient is likely richer transport plus correction, not a
+  lighter behavior-matching penalty inside the current grouped solver
+
+Current status:
+
+- newly checked and negative
+
+Next fix:
+
+- stop treating calibration-time attention-template matching as an obvious
+  shortcut
+- if we keep pushing the positive-method lane, move to richer OT or
+  retrieval-template transport and judge it directly against grouped-subspace
+  plus rank-4 residual, fixed prior, and `C2C`
+
 Next fix:
 
 - keep pushing transport-first, but only with richer costs or canonicalization

@@ -61,6 +61,7 @@ class TranslatorConfig:
     #                 | 'grouped_transport' | 'grouped_permutation'
     #                 | 'grouped_signature_transport' | 'grouped_subspace_transport'
     #                 | 'grouped_canonical_transport' | 'grouped_covariance_transport'
+    #                 | 'grouped_template_transport'
     # Grouped variants fit one block per head-group instead of a single flat
     # all-head projection. When src/tgt head counts match, this degenerates to
     # true per-head alignment.
@@ -73,6 +74,7 @@ class TranslatorConfig:
     transport_sinkhorn_iters: int = 8
     transport_signature_rank: int = 8
     transport_signature_weight: float = 0.0
+    transport_template_bins: int = 64
     canonical_subspace_rank: int | None = None
 
     # Layer pairing: 'interp', 'cka', 'reverse', 'shifted', 'random', or a list
@@ -223,6 +225,10 @@ class RotAlignKVTranslator(nn.Module):
             "transport_plan_V",
             torch.zeros(config.num_tgt_layers, group_count, group_count),
         )
+        # Calibration-time grouped attention templates are used only while
+        # fitting grouped template transport and are not checkpoint state.
+        self._transport_src_group_templates: list[torch.Tensor] | None = None
+        self._transport_tgt_group_templates: list[torch.Tensor] | None = None
 
         # --- Optional pre-quant denoising filters and quantization repair ---
         self.pre_quant_filter_K = nn.ParameterList(
@@ -687,6 +693,26 @@ class RotAlignKVTranslator(nn.Module):
         cov_tgt = cov_tgt / cov_tgt.trace().clamp_min(1e-8)
         return (cov_hat - cov_tgt).pow(2).mean()
 
+    def _template_distance(
+        self,
+        src_template: torch.Tensor,
+        tgt_template: torch.Tensor,
+    ) -> torch.Tensor:
+        src = src_template.float()
+        tgt = tgt_template.float()
+        if src.numel() != tgt.numel():
+            raise ValueError(
+                "source and target group templates must agree on bin count, "
+                f"got {src.numel()} and {tgt.numel()}"
+            )
+        src = src / src.sum().clamp_min(1e-8)
+        tgt = tgt / tgt.sum().clamp_min(1e-8)
+        mid = 0.5 * (src + tgt)
+        return 0.5 * (
+            (src * (src.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum()
+            + (tgt * (tgt.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum()
+        )
+
     def _sinkhorn_transport(self, scores: torch.Tensor) -> torch.Tensor:
         temp = max(float(self.config.transport_temperature), 1e-6)
         log_plan = scores / temp
@@ -744,6 +770,8 @@ class RotAlignKVTranslator(nn.Module):
         *,
         lam: float,
         residual_rank: int | None,
+        src_layer_idx: int,
+        tgt_layer_idx: int,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         group_count, _, _ = self._head_group_layout()
         src_slices = self._group_feature_slices(use_target=False)
@@ -752,9 +780,21 @@ class RotAlignKVTranslator(nn.Module):
         signature_weight = float(self.config.transport_signature_weight)
         src_signatures = None
         tgt_signatures = None
+        src_templates = None
+        tgt_templates = None
         if self.config.alignment_method == "grouped_signature_transport" and signature_weight > 0.0:
             src_signatures = [self._group_signature(X[:, src_slice]) for src_slice in src_slices]
             tgt_signatures = [self._group_signature(Y[:, tgt_slice]) for tgt_slice in tgt_slices]
+        if self.config.alignment_method == "grouped_template_transport" and signature_weight > 0.0:
+            if self._transport_src_group_templates is None or self._transport_tgt_group_templates is None:
+                raise ValueError("grouped_template_transport requires calibration-time group templates")
+            src_templates = self._transport_src_group_templates[src_layer_idx].to(device=X.device, dtype=X.dtype)
+            tgt_templates = self._transport_tgt_group_templates[tgt_layer_idx].to(device=X.device, dtype=X.dtype)
+            if src_templates.shape[0] != group_count or tgt_templates.shape[0] != group_count:
+                raise ValueError(
+                    "grouped template counts must match the transport group count, "
+                    f"got {tuple(src_templates.shape)} and {tuple(tgt_templates.shape)} for {group_count} groups"
+                )
         blocks: dict[tuple[int, int], torch.Tensor] = {}
         for src_idx, src_slice in enumerate(src_slices):
             for tgt_idx, tgt_slice in enumerate(tgt_slices):
@@ -787,6 +827,9 @@ class RotAlignKVTranslator(nn.Module):
                     y_hat = X[:, src_slice] @ W_block
                     cov_dist = self._covariance_distance(y_hat, Y[:, tgt_slice])
                     score = score - signature_weight * float(cov_dist)
+                elif self.config.alignment_method == "grouped_template_transport" and signature_weight > 0.0:
+                    template_dist = self._template_distance(src_templates[src_idx], tgt_templates[tgt_idx])
+                    score = score - signature_weight * float(template_dist)
                 scores[src_idx, tgt_idx] = score
                 blocks[(src_idx, tgt_idx)] = W_block
         if self.config.alignment_method == "grouped_permutation":
@@ -1292,18 +1335,22 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport"}:
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
                         lam=self.config.ridge_lambda,
                         residual_rank=self.config.transport_residual_rank,
+                        src_layer_idx=src_l,
+                        tgt_layer_idx=tgt_l,
                     )
                     W_V, plan_v = self._fit_group_transport_alignment(
                         Xv,
                         Yv_fit,
                         lam=self.config.ridge_lambda,
                         residual_rank=self.config.transport_residual_rank,
+                        src_layer_idx=src_l,
+                        tgt_layer_idx=tgt_l,
                     )
                     self.transport_plan_K[tgt_l].copy_(plan_k.to(dtype=self.transport_plan_K.dtype))
                     self.transport_plan_V[tgt_l].copy_(plan_v.to(dtype=self.transport_plan_V.dtype))
@@ -1462,14 +1509,14 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport"}:
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
 
             # Fit optional head-group saliency from local aligned slices.
             group_scores: list[tuple[float, int]] = []
             base_method = self.config.alignment_method.removeprefix("grouped_")
-            if base_method in {"transport", "permutation", "signature_transport", "subspace_transport", "canonical_transport", "covariance_transport"}:
+            if base_method in {"transport", "permutation", "signature_transport", "subspace_transport", "canonical_transport", "covariance_transport", "template_transport"}:
                 base_method = "auto"
             for group_idx, (src_slice, tgt_slice) in enumerate(
                 zip(self._group_feature_slices(use_target=False), self._group_feature_slices(use_target=True))

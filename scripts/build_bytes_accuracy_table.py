@@ -82,6 +82,10 @@ def main() -> None:
     _, covr4 = _first_method_summary(covr4_meta)
     rows.append(_row("gsm8k_eval_70", "grouped covariance transport + rank-4 residual", covr4["accuracy"], covr4.get("avg_bytes"), "covariance-aware transport-plus-correction failure"))
 
+    tmplr4_meta = _load_meta(ROOT / "results/grouped_template_resid4_20260419/qwen_gsm70_grouped_template_transport_w025_r4_cal64.jsonl.meta.json")
+    _, tmplr4 = _first_method_summary(tmplr4_meta)
+    rows.append(_row("gsm8k_eval_70", "grouped template transport + rank-4 residual", tmplr4["accuracy"], tmplr4.get("avg_bytes"), "attention-template transport-plus-correction probe (64-prompt calibration slice)"))
+
     can70_meta = _load_meta(ROOT / "results/grouped_canonical_transport_20260419/qwen_gsm70_grouped_canonical_transport_r8.jsonl.meta.json")
     _, can70 = _first_method_summary(can70_meta)
     rows.append(_row("gsm8k_eval_70", "grouped canonical transport", can70["accuracy"], can70.get("avg_bytes"), "low-rank canonical basis shortcut"))

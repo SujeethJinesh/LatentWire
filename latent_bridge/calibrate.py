@@ -32,6 +32,7 @@ cross-family pairs; see method.md §5.
 from __future__ import annotations
 
 import argparse
+import math
 import pathlib
 import sys
 from typing import Iterable, Sequence
@@ -40,6 +41,7 @@ from typing import Iterable, Sequence
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 import torch
+import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from rotalign import RotAlignKVTranslator, TranslatorConfig
@@ -96,6 +98,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_subspace_transport",
             "grouped_canonical_transport",
             "grouped_covariance_transport",
+            "grouped_template_transport",
         ],
         default="auto",
     )
@@ -135,6 +138,12 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=0.0,
         help="Penalty weight for mismatched grouped spectral signatures during grouped transport",
+    )
+    p.add_argument(
+        "--transport-template-bins",
+        type=int,
+        default=64,
+        help="Number of bins for grouped attention-template transport",
     )
     p.add_argument(
         "--canonical-subspace-rank",
@@ -471,6 +480,106 @@ def collect_aligned_kv_pairs(
     return src_kvs, tgt_kvs
 
 
+def _resample_position_profile(profile: torch.Tensor, target_len: int) -> torch.Tensor:
+    if target_len <= 0:
+        raise ValueError("target_len must be positive")
+    values = profile.float().view(-1)
+    if values.numel() == target_len:
+        out = values
+    else:
+        out = F.interpolate(
+            values.view(1, 1, -1),
+            size=target_len,
+            mode="linear",
+            align_corners=False,
+        ).view(-1)
+    return out / out.sum().clamp_min(1e-8)
+
+
+def _reduce_attention_heads_to_kv_heads(
+    attention_map: torch.Tensor,
+    *,
+    kv_heads: int,
+) -> torch.Tensor:
+    if kv_heads <= 0:
+        raise ValueError("kv_heads must be positive")
+    if attention_map.shape[0] == kv_heads:
+        return attention_map
+    if attention_map.shape[0] % kv_heads == 0:
+        factor = attention_map.shape[0] // kv_heads
+        return attention_map.view(kv_heads, factor, attention_map.shape[-1]).mean(dim=1)
+    interpolated = F.interpolate(
+        attention_map.transpose(0, 1).unsqueeze(0),
+        size=kv_heads,
+        mode="linear",
+        align_corners=False,
+    ).squeeze(0).transpose(0, 1)
+    return interpolated
+
+
+@torch.no_grad()
+def collect_group_attention_templates(
+    model: AutoModelForCausalLM,
+    tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    max_length: int,
+    batch_size: int,
+    device: str,
+    kv_heads: int,
+    group_count: int,
+    bins: int,
+    reasoning_mode: str = "plain",
+) -> list[torch.Tensor]:
+    if bins <= 0:
+        raise ValueError("bins must be positive")
+    if group_count <= 0:
+        raise ValueError("group_count must be positive")
+    if kv_heads % group_count != 0:
+        raise ValueError(f"kv_heads={kv_heads} must be divisible by group_count={group_count}")
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    group_heads = kv_heads // group_count
+    layer_sums: list[torch.Tensor] | None = None
+    used_prompts = 0
+    for batch in batched(prompts, batch_size):
+        batch_text = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        enc = tokenizer(
+            batch_text,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        ).to(device)
+        out = model(**enc, use_cache=False, output_attentions=True, return_dict=True)
+        attentions = getattr(out, "attentions", None)
+        if attentions is None:
+            raise ValueError("Model did not return attentions while building grouped templates")
+        if layer_sums is None:
+            layer_sums = [torch.zeros(group_count, bins, dtype=torch.float32) for _ in range(len(attentions))]
+        mask_cpu = enc["attention_mask"].to("cpu")
+        for batch_idx in range(mask_cpu.shape[0]):
+            valid_len = int(mask_cpu[batch_idx].sum().item())
+            if valid_len <= 1:
+                continue
+            for layer_idx, attn in enumerate(attentions):
+                head_scores = attn[batch_idx, :, valid_len - 1, : valid_len - 1].detach().to("cpu", dtype=torch.float32)
+                head_scores = _reduce_attention_heads_to_kv_heads(head_scores, kv_heads=kv_heads)
+                head_scores = head_scores / head_scores.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+                grouped = head_scores.reshape(group_count, group_heads, valid_len - 1).mean(dim=1)
+                grouped = torch.stack(
+                    [_resample_position_profile(group_scores, bins) for group_scores in grouped],
+                    dim=0,
+                )
+                grouped = grouped / grouped.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+                layer_sums[layer_idx] += grouped
+            used_prompts += 1
+    if layer_sums is None or used_prompts == 0:
+        raise ValueError("Could not build grouped attention templates from calibration prompts")
+    return [(templates / float(used_prompts)).cpu() for templates in layer_sums]
+
+
 def main() -> None:
     args = parse_args()
     dtype = torch_dtype(args.dtype)
@@ -502,10 +611,6 @@ def main() -> None:
         args.device,
         source_reasoning_mode=args.source_reasoning_mode,
     )
-    del src
-    del tgt
-    if args.device.startswith("cuda"):
-        torch.cuda.empty_cache()
 
     # Inspect shapes to build the config.
     K_s0 = src_kvs[0][0]  # [N, h_s, S, d_s]
@@ -545,6 +650,7 @@ def main() -> None:
         transport_sinkhorn_iters=args.transport_sinkhorn_iters,
         transport_signature_rank=args.transport_signature_rank,
         transport_signature_weight=args.transport_signature_weight,
+        transport_template_bins=args.transport_template_bins,
         canonical_subspace_rank=args.canonical_subspace_rank,
         layer_pairing=args.layer_pairing,
         layer_selection_topk=args.layer_selection_topk,
@@ -561,6 +667,47 @@ def main() -> None:
     )
     print(f"\nBuilding translator with config:\n  {config}")
     translator = RotAlignKVTranslator(config)
+
+    if args.alignment == "grouped_template_transport":
+        group_count = math.gcd(config.src_num_heads, config.tgt_num_heads)
+        print(
+            "\nBuilding grouped attention templates from calibration prompts "
+            f"(groups={group_count}, bins={args.transport_template_bins})..."
+        )
+        translator._transport_src_group_templates = collect_group_attention_templates(
+            src,
+            tok_s,
+            prompts,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            device=args.device,
+            kv_heads=config.src_num_heads,
+            group_count=group_count,
+            bins=args.transport_template_bins,
+            reasoning_mode=args.source_reasoning_mode,
+        )
+        translator._transport_tgt_group_templates = collect_group_attention_templates(
+            tgt,
+            tok_t,
+            prompts,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            device=args.device,
+            kv_heads=config.tgt_num_heads,
+            group_count=group_count,
+            bins=args.transport_template_bins,
+            reasoning_mode="plain",
+        )
+        print(
+            "Built grouped attention templates: "
+            f"source layers={len(translator._transport_src_group_templates)}, "
+            f"target layers={len(translator._transport_tgt_group_templates)}"
+        )
+
+    del src
+    del tgt
+    if args.device.startswith("cuda"):
+        torch.cuda.empty_cache()
 
     print("\nFitting closed-form alignments (Procrustes / ridge)...")
     diagnostics = translator.fit_from_pairs(src_kvs, tgt_kvs, verbose=args.verbose)
