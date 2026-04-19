@@ -79,3 +79,5 @@ Current read:
 
 - `C2C` on `gsm8k_eval_70`: `0.128571`
 - current best same-pair internal branch on the same split: `0.085714`
+- `C2C` on `gsm8k_100`: `0.110000`
+- current best same-pair internal branch on the same larger slice: `0.070000`

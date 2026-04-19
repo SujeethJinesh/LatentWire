@@ -55,6 +55,12 @@
   - `C2C` on the same split: `0.128571`
   so rank-sorting the fixed prior onto live attention-ranked heads is not enough
   to rescue the branch.
+- A cheap attention-fidelity proxy also remains bounded:
+  - Qwen -> Qwen, `gsm8k_eval_70`, `attention_fidelity`: `0.057143`
+  - old fixed per-head prior on the same split: `0.085714`
+  - `C2C` on the same split: `0.128571`
+  so a simple QK-geometry proxy is better than `attention_match`, but still
+  not enough to create a new best branch.
 - The saved-prior transfer matrix is now clearly **asymmetric**:
   - Qwen prior -> Qwen is strong
   - Qwen prior -> DeepSeek collapses
@@ -94,9 +100,15 @@ Proposed claim:
 - The first external baseline now tightens the claim further:
   on the exact Qwen GSM70 split, published `C2C` is at `0.128571`, above our
   current best same-pair branch `0.085714`.
+- That baseline lead persists on the larger held-out GSM slice too:
+  on `gsm8k_100`, `C2C` is at `0.110000`, above our current best same-pair
+  branch `0.070000`.
 - The permutation-aware follow-up tightens it again:
   simple head-rank matching drops back to `0.042857`, so the remaining blocker
   is likely richer than plain head-order mismatch.
+- The cheap attention-fidelity follow-up keeps that same conclusion:
+  it partly repairs the failed permutation shortcut, but it still does not beat
+  the old fixed prior or `C2C`.
 - The live query-aware sparse story is also now best used as a **mechanism clue**:
   query-aware sparsity matters directionally, but the current implementation is
   not stable enough across seeds or held-out slices to headline the paper.

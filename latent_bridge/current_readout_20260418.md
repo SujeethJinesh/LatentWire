@@ -293,10 +293,18 @@ Interpretation:
   `attention_match` on the exact Qwen GSM70 branch scored `0.042857`, below the
   old fixed head-prior branch `0.085714` and equal to the old shuffled-prior
   null `0.042857`.
+- A cheap attention-fidelity / QK-geometry proxy is directionally better than
+  `attention_match`, but still bounded:
+  `attention_fidelity` on the same Qwen GSM70 branch scored `0.057143`, which
+  is still below the old fixed head-prior branch `0.085714` and below `C2C`
+  at `0.128571`.
 - The competitor baseline path is now real:
   `C2C` ran end to end on the exact Qwen pair and scored `0.128571` on
   `data/gsm8k_eval_70.jsonl`, above our current best same-pair GSM70 branch
   `0.085714`.
+- That external gap is not just a small-split artifact:
+  `C2C` also scored `0.110000` on `data/gsm8k_100.jsonl`, above our current
+  best same-pair GSM100 branch `0.070000`.
 
 ## What This Means For The Paper
 
@@ -324,6 +332,12 @@ And a second structural constraint:
 > simple permutation-aware rank matching is not enough to rescue the same
 > branch, so the remaining blockers are more likely QK-geometry / attention
 > fidelity or a richer symmetry problem than plain head-order mismatch.
+
+And a third bounded update:
+
+> a cheap attention-fidelity proxy partially repairs the failed permutation
+> shortcut, but it still does not beat the old fixed prior or the external
+> `C2C` baseline, so this alone is not the missing ingredient either.
 
 ## Next Highest-Value Steps
 

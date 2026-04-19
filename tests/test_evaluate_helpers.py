@@ -1461,6 +1461,71 @@ def test_runtime_head_scores_with_prior_supports_expected_attention() -> None:
     assert not torch.allclose(expected_scores, shuffled_scores)
 
 
+def test_attention_fidelity_head_scores_prefers_geometry_preserving_head() -> None:
+    attention_map = torch.tensor(
+        [[0.9, 0.1], [0.1, 0.9]],
+        dtype=torch.float32,
+    )
+    target_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [1.0, 0.0]],
+            [[0.0, 1.0], [0.0, 1.0]],
+        ],
+        dtype=torch.float32,
+    )
+    translated_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [1.0, 0.0]],
+            [[1.0, 0.0], [1.0, 0.0]],
+        ],
+        dtype=torch.float32,
+    )
+
+    scores = evaluate._attention_fidelity_head_scores(attention_map, target_keys, translated_keys)
+
+    assert float(scores[0]) > float(scores[1])
+
+
+def test_runtime_head_scores_with_prior_supports_attention_fidelity() -> None:
+    attention_map = torch.tensor(
+        [[0.9, 0.1], [0.1, 0.9]],
+        dtype=torch.float32,
+    )
+    target_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [1.0, 0.0]],
+            [[0.0, 1.0], [0.0, 1.0]],
+        ],
+        dtype=torch.float32,
+    )
+    translated_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [1.0, 0.0]],
+            [[1.0, 0.0], [1.0, 0.0]],
+        ],
+        dtype=torch.float32,
+    )
+
+    scores, _ = evaluate._runtime_head_scores_with_prior(
+        attention_map,
+        metric="attention_fidelity",
+        layer_idx=0,
+        target_keys=target_keys,
+        translated_keys=translated_keys,
+    )
+    shuffled_scores, _ = evaluate._runtime_head_scores_with_prior(
+        attention_map,
+        metric="attention_fidelity_shuffled",
+        layer_idx=0,
+        target_keys=target_keys,
+        translated_keys=translated_keys,
+    )
+
+    assert float(scores[0]) > float(scores[1])
+    assert shuffled_scores.shape == scores.shape
+    assert not torch.allclose(scores, shuffled_scores)
+
+
 def test_match_prior_scores_to_live_order_is_permutation_invariant() -> None:
     live_scores = torch.tensor([0.2, 0.7, 0.9], dtype=torch.float32)
     prior_scores = torch.tensor([0.1, 0.8, 0.4], dtype=torch.float32)

@@ -349,6 +349,45 @@ def _expected_attention_head_scores(
     return (probs * prior).sum(dim=-1)
 
 
+def _attention_fidelity_head_scores(
+    attention_map: torch.Tensor,
+    target_keys: torch.Tensor,
+    translated_keys: torch.Tensor,
+) -> torch.Tensor:
+    if target_keys.ndim == 4:
+        if target_keys.shape[0] != 1:
+            raise ValueError(f"target_keys batch dimension must be 1, got shape {tuple(target_keys.shape)}")
+        target_keys = target_keys.squeeze(0)
+    if translated_keys.ndim == 4:
+        if translated_keys.shape[0] != 1:
+            raise ValueError(
+                f"translated_keys batch dimension must be 1, got shape {tuple(translated_keys.shape)}"
+            )
+        translated_keys = translated_keys.squeeze(0)
+    if attention_map.ndim != 2:
+        raise ValueError(f"attention_map must be rank-2 [heads, positions], got shape {tuple(attention_map.shape)}")
+    if target_keys.ndim != 3 or translated_keys.ndim != 3:
+        raise ValueError(
+            "target_keys and translated_keys must be rank-3 [heads, positions, dim], "
+            f"got {tuple(target_keys.shape)} and {tuple(translated_keys.shape)}"
+        )
+    if target_keys.shape[0] != attention_map.shape[0] or translated_keys.shape[0] != attention_map.shape[0]:
+        raise ValueError(
+            "attention_map, target_keys, and translated_keys must agree on head count, "
+            f"got {attention_map.shape[0]}, {target_keys.shape[0]}, and {translated_keys.shape[0]}"
+        )
+    prefix_len = min(attention_map.shape[-1], target_keys.shape[1], translated_keys.shape[1])
+    if prefix_len <= 0:
+        raise ValueError("attention_fidelity requires at least one shared prefix position")
+    probs = attention_map[:, -prefix_len:].float()
+    probs = probs / probs.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    tgt = target_keys[:, -prefix_len:, :].float()
+    trans = translated_keys[:, -prefix_len:, :].float()
+    cosine = F.cosine_similarity(trans, tgt, dim=-1).clamp(-1.0, 1.0)
+    fidelity = 0.5 * (cosine + 1.0)
+    return (probs * fidelity).sum(dim=-1)
+
+
 def _match_prior_scores_to_live_order(
     live_scores: torch.Tensor,
     prior_scores: torch.Tensor,
@@ -666,6 +705,8 @@ def _runtime_head_scores_with_prior(
     layer_idx: int,
     prior_scores: torch.Tensor | None = None,
     position_prior: torch.Tensor | None = None,
+    target_keys: torch.Tensor | None = None,
+    translated_keys: torch.Tensor | None = None,
     prior_alpha: float = 0.5,
 ) -> tuple[torch.Tensor, torch.Tensor | None]:
     prior_topk: torch.Tensor | None = None
@@ -690,6 +731,19 @@ def _runtime_head_scores_with_prior(
             seed_offset=8_117,
         )
         return _expected_attention_head_scores(attention_map, shuffled_prior), None
+    if metric == "attention_fidelity":
+        if attention_map is None:
+            raise ValueError("attention_fidelity runtime head selection requires target attention maps")
+        if target_keys is None or translated_keys is None:
+            raise ValueError("attention_fidelity runtime head selection requires target_keys and translated_keys")
+        return _attention_fidelity_head_scores(attention_map, target_keys, translated_keys), None
+    if metric == "attention_fidelity_shuffled":
+        if attention_map is None:
+            raise ValueError("attention_fidelity_shuffled runtime head selection requires target attention maps")
+        if target_keys is None or translated_keys is None:
+            raise ValueError("attention_fidelity_shuffled runtime head selection requires target_keys and translated_keys")
+        scores = _attention_fidelity_head_scores(attention_map, target_keys, translated_keys)
+        return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_019), None
     if metric == "attention_prior":
         if prior_scores is None:
             raise ValueError("attention_prior runtime head selection requires fixed_head_profiles")
@@ -1865,6 +1919,8 @@ def _build_rotalign_prefix_state(
         "attention_entropy",
         "attention_margin",
         "retrieval_peak",
+        "attention_fidelity",
+        "attention_fidelity_shuffled",
         "attention_expected",
         "attention_expected_shuffled",
         "attention_match",
@@ -1974,6 +2030,8 @@ def _build_rotalign_prefix_state(
             )
         if fixed_position_profiles is not None:
             position_prior_scores = fixed_position_profiles[tgt_l].to(device=K_t_aligned.device)
+        active_target_keys = K_t_aligned[:, active_head_indices]
+        active_translated_keys = K_hat[:, active_head_indices]
         if runtime_head_selection_ratio < 1.0:
             attention_map = active_attention_map
             original_head_indices = active_head_indices
@@ -1985,6 +2043,8 @@ def _build_rotalign_prefix_state(
                 layer_idx=tgt_l,
                 prior_scores=prior_scores,
                 position_prior=position_prior_scores,
+                target_keys=active_target_keys,
+                translated_keys=active_translated_keys,
                 prior_alpha=runtime_head_prior_alpha,
             )
             keep_heads = min(keep_heads, int(head_scores.numel()))
@@ -2032,6 +2092,8 @@ def _build_rotalign_prefix_state(
             active_head_indices = original_head_indices[keep_local]
             if attention_map is not None:
                 active_attention_map = attention_map[keep_local]
+            active_target_keys = K_t_aligned[:, active_head_indices]
+            active_translated_keys = K_hat[:, active_head_indices]
             if prior_scores is not None:
                 prior_scores = prior_scores[keep_local]
         elif layer_attention_maps is not None:
@@ -2045,6 +2107,8 @@ def _build_rotalign_prefix_state(
                 layer_idx=tgt_l,
                 prior_scores=prior_scores,
                 position_prior=position_prior_scores,
+                target_keys=active_target_keys,
+                translated_keys=active_translated_keys,
                 prior_alpha=runtime_head_prior_alpha,
             )
             K_hat, V_hat, head_budget_trace, keep_counts = _apply_per_head_position_selection(
@@ -3079,6 +3143,8 @@ def parse_args() -> argparse.Namespace:
             "attention_margin",
             "retrieval_peak",
             "random",
+            "attention_fidelity",
+            "attention_fidelity_shuffled",
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
@@ -3137,6 +3203,8 @@ def parse_args() -> argparse.Namespace:
             "attention_margin",
             "retrieval_peak",
             "random",
+            "attention_fidelity",
+            "attention_fidelity_shuffled",
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
@@ -3232,6 +3300,8 @@ def main() -> None:
         "attention_entropy",
         "attention_margin",
         "retrieval_peak",
+        "attention_fidelity",
+        "attention_fidelity_shuffled",
         "attention_expected",
         "attention_expected_shuffled",
         "attention_prior",

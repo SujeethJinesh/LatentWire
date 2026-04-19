@@ -189,7 +189,8 @@ key disagreement, so it explicitly favors positions that are both query-relevant
 and likely to change the target's retrieval geometry.
 For head-aware retrieval routing, add
 `--per-head-position-budget-mode attention_peak`, `attention_entropy`,
-`attention_margin`, `retrieval_peak`, `attention_expected`,
+`attention_margin`, `retrieval_peak`, `attention_fidelity`,
+`attention_fidelity_shuffled`, `attention_expected`,
 `attention_expected_shuffled`, `random`, `attention_prior`,
 `attention_prior_shuffled`, `attention_match`, `attention_match_shuffled`, or
 `attention_blend` to spend the same overall position budget unevenly across
@@ -200,6 +201,10 @@ fixed head prior built from `--runtime-head-prior-file`.
 fixed head-prior mass onto the live attention-ranked heads, while
 `attention_match_shuffled` is the matched null that preserves the same mass
 profile but shuffles which prior weights are assigned to the live ranking.
+`attention_fidelity` instead scores heads by how well the translated keys
+preserve target-key geometry on the positions the target is actually attending
+to, and `attention_fidelity_shuffled` is the matched null that preserves the
+same score mass but permutes it across heads.
 `attention_expected` and `attention_expected_shuffled` instead reuse the fixed
 position prior from `--position-selection-prior-file` and score heads by how
 well their live attention aligns to the expected future-attention profile.
@@ -215,7 +220,8 @@ head profile; `uniform` shrinks toward a flat per-layer prior.
 For runtime retrieval-head ablations, add
 `--runtime-head-selection-ratio <r>` with
 `--runtime-head-selection-metric attention_peak`, `attention_entropy`,
-`attention_margin`, `retrieval_peak`, `attention_expected`,
+`attention_margin`, `retrieval_peak`, `attention_fidelity`,
+`attention_fidelity_shuffled`, `attention_expected`,
 `attention_expected_shuffled`, `random`, `attention_prior`,
 `attention_match`, `attention_match_shuffled`, or
 `attention_blend`. Use `--runtime-head-prior-file <path>` to build a fixed
