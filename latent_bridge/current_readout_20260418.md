@@ -484,6 +484,33 @@ Interpretation:
 - the next missing ingredient looks more like runtime or example-conditioned
   correction / fusion than another static transport map
 
+And a twelfth tiny-correction constraint:
+
+> the first learned example-conditioned diagonal affine fuser also fails
+> cleanly: on the same Qwen GSM70 split it collapses to `0.000000`, below the
+> old fixed prior `0.085714` and below `C2C` `0.128571`.
+
+Paired reads for the learned-affine branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.085714`
+  - learned-affine-only wins `0`
+  - fixed-prior-only wins `6`
+  - bootstrap `[-0.157143, -0.028571]`
+  - McNemar `0.0412`
+- vs `C2C`:
+  - delta `-0.128571`
+  - learned-affine-only wins `0`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.214286, -0.057143]`
+  - McNemar `0.0077`
+
+Interpretation:
+
+- a tiny diagonal example-conditioned correction is not enough either
+- the next missing ingredient is likely a **stronger transport map plus**
+  correction, not correction alone
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
@@ -500,6 +527,8 @@ Interpretation:
      specifically toward example-conditioned or learned correction on top of a
      transport map rather than more static transport variants
    - deprioritize standalone correction-only variants if they stay below the old fixed prior on GSM70
+   - after the learned-affine collapse to `0.000000`, treat diagonal
+     correction-only fusers as ruled out on the main Qwen GSM70 split
    - deprioritize evaluator-level soft-transport variants if they also stay below the old fixed prior on GSM70
    - deprioritize whitening-only or symmetric-canonicalization-only pivots if
      they stay below the old fixed prior on GSM70

@@ -200,6 +200,11 @@ Files `164_` and `165_` extend that same systems-and-adaptation lane:
 - `164_`: LRAgent as a direct multi-LoRA KV-sharing reference for separating reusable shared-cache structure from adapter-specific deltas.
 - `165_`: ForkKV as a copy-on-write KV reuse reference for splitting stable shared transport from branch-specific cache growth.
 
+Files `166_` and `167_` extend the runtime-correction lane:
+
+- `166_`: Decomposing LLM Self-Correction as a fresh direct reference for why runtime correction behavior can matter even when static alignment looks plausible.
+- `167_`: LLM Layers Immediately Correct Each Other as a canonical-link note for layer-to-layer corrective dynamics; OpenReview blocked direct shell download from this machine, so this is stored as a markdown note rather than a PDF.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

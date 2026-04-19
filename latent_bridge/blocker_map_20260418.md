@@ -178,6 +178,32 @@ Next fix:
 - stop investing in more static transport-map variants unless they also change
   runtime conditioning
 
+### Blocker 8: Tiny diagonal correction alone is too weak
+
+Observed symptom:
+
+- a learned diagonal affine fuser trained from calibration pairs with target
+  dropout reaches only `0.000000` on Qwen GSM70
+- the same split still has the old fixed prior at `0.085714` and `C2C` at
+  `0.128571`
+
+Interpretation:
+
+- some runtime conditioning may matter, but a tiny coordinatewise correction
+  alone is not the missing ingredient
+- the likely missing structure is **joint transport plus correction**, not a
+  correction layer bolted onto a weak transport path
+
+Current status:
+
+- newly checked and strongly negative
+
+Next fix:
+
+- stop investing in diagonal correction-only probes on the main Qwen split
+- move to stronger translator-side transport plus correction, ideally closer
+  to OT / permutation-aware transport with a lightweight learned residual
+
 ## Immediate Plan
 
 ### Today
@@ -187,6 +213,8 @@ Next fix:
 3. stop investing in weak expected-attention variants that only tie nulls
 4. use the lifted `KVComm` failure as further evidence that deeper transport,
    not evaluator-side routing alone, is the next method class
+5. treat the learned-affine collapse as evidence that correction-only is not
+   enough; the next branch must change the transport itself
 
 ### Next 1-2 days
 

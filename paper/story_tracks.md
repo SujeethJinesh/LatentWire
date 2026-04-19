@@ -169,6 +169,13 @@ Proposed claim:
 - The live query-aware sparse story is also now best used as a **mechanism clue**:
   query-aware sparsity matters directionally, but the current implementation is
   not stable enough across seeds or held-out slices to headline the paper.
+- The first tiny learned-correction follow-up is also clearly bounded:
+  a diagonal learned-affine fuser trained from calibration pairs with target
+  dropout collapses to `0.000000` on Qwen GSM70, below the old fixed prior
+  `0.085714` and far below `C2C` `0.128571`.
+- So the paper should not frame “just add a tiny affine adapter” as the
+  answer; if correction matters, it likely has to sit on top of a **stronger
+  transport map** rather than replace it.
 - The transfer story is not “universal head priors.” It is currently **pair-conditioned and asymmetric**.
 - Strong zero-byte, random-source, and query-blind selector controls are necessary because naive cache perturbations or blind sparsity can look like communication gains.
 
@@ -220,6 +227,7 @@ What we still need:
    - use grouped CCA as a task-conditioned branch to test on more SVAMP-like slices
    - retrieval-head routing only after the head space is made more canonical
    - causal head scoring
+   - move from diagonal correction-only probes to stronger transport-plus-correction branches
    - treat `C2C` as the first real external bar on the exact Qwen pair before
      spending more time on weaker internal heuristics
 4. Preserve the negative controls and failure cases in the main paper, not just the appendix.

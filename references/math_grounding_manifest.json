@@ -742,5 +742,17 @@
     "slug": "forkkv_scaling_multi_lora_agent_serving_via_copy_on_write_disaggregated_kv_cache",
     "url": "https://arxiv.org/pdf/2604.06370.pdf",
     "reason": "This is a recent copy-on-write KV reuse reference that supports splitting stable shared transport from branch-specific cache growth, which matches the current blocker around brittle fully fixed transport maps."
+  },
+  {
+    "num": 166,
+    "slug": "decomposing_llm_self_correction",
+    "url": "https://arxiv.org/pdf/2601.00828.pdf",
+    "reason": "This is a direct reference for why runtime self-correction can matter even when a static upstream transformation looks plausible, which matches the new correction-versus-transport blocker."
+  },
+  {
+    "num": 167,
+    "slug": "llm_layers_immediately_correct_each_other",
+    "url": "https://openreview.net/forum?id=7DY7kB8wyZ",
+    "reason": "This is the cleanest layer-dynamics reference for the hypothesis that runtime layer-to-layer correction matters more than another static transport-only shortcut."
   }
 ]

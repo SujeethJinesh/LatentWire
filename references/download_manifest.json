@@ -1478,5 +1478,23 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 1961213
+  },
+  {
+    "num": 166,
+    "slug": "decomposing_llm_self_correction",
+    "url": "https://arxiv.org/pdf/2601.00828.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/166_decomposing_llm_self_correction.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 186548
+  },
+  {
+    "num": 167,
+    "slug": "llm_layers_immediately_correct_each_other",
+    "url": "https://openreview.net/forum?id=7DY7kB8wyZ",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/167_llm_layers_immediately_correct_each_other.md",
+    "content_type": "text/markdown",
+    "status": "link_note",
+    "bytes": 0
   }
 ]

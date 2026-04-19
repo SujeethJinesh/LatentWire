@@ -98,6 +98,7 @@ class TranslatorConfig:
     # checkpointed scalar gates as-is; cosine-based rules attenuate translated
     # KV when its flattened direction disagrees with the target cache.
     fusion_rule: str = "static"
+    learned_fusion_dropout: float = 0.0
 
     # Rotation RNG
     seed: int = 0
@@ -239,6 +240,24 @@ class RotAlignKVTranslator(nn.Module):
             [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_bias_V = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.fusion_src_scale_K = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.fusion_src_scale_V = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.fusion_tgt_scale_K = nn.ParameterList(
+            [nn.Parameter(torch.ones(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.fusion_tgt_scale_V = nn.ParameterList(
+            [nn.Parameter(torch.ones(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.fusion_bias_K = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.fusion_bias_V = nn.ParameterList(
             [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self._fitted = False
@@ -473,6 +492,11 @@ class RotAlignKVTranslator(nn.Module):
         # [b, h, s, d] -> [b, s, h, d] -> [b, s, h*d]
         return rotated.transpose(1, 2).contiguous().view(b, s, h * d)
 
+    @staticmethod
+    def _flatten_without_rotation(kv: torch.Tensor) -> torch.Tensor:
+        b, h, s, d = kv.shape
+        return kv.transpose(1, 2).contiguous().view(b, s, h * d)
+
     def _unflatten_and_inverse_rotate(
         self,
         kv_flat: torch.Tensor,
@@ -693,6 +717,63 @@ class RotAlignKVTranslator(nn.Module):
             bias.to(dtype=target.dtype, device=target.device),
         )
 
+    def _fit_coordinate_fuser(
+        self,
+        translated: torch.Tensor,
+        target: torch.Tensor,
+        *,
+        dropout: float,
+        salt: int,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        if dropout <= 0.0:
+            zeros = torch.zeros(1, translated.shape[1], dtype=target.dtype, device=target.device)
+            ones = torch.ones(1, translated.shape[1], dtype=target.dtype, device=target.device)
+            return zeros, ones, zeros
+
+        x1 = translated.float()
+        y = target.float()
+        gen = torch.Generator(device="cpu").manual_seed(
+            131_000 + int(self.config.seed) * 1_009 + int(salt)
+        )
+        mask = (
+            torch.rand(y.shape, generator=gen, dtype=torch.float32) >= float(dropout)
+        ).to(device=y.device, dtype=y.dtype)
+        x2 = y * mask
+        lam = float(self.config.ridge_lambda)
+
+        a11 = (x1 * x1).sum(dim=0) + lam
+        a22 = (x2 * x2).sum(dim=0) + lam
+        a12 = (x1 * x2).sum(dim=0)
+        a13 = x1.sum(dim=0)
+        a23 = x2.sum(dim=0)
+        a33 = torch.full_like(a11, float(x1.shape[0]))
+        b1 = (x1 * y).sum(dim=0)
+        b2 = (x2 * y).sum(dim=0)
+        b3 = y.sum(dim=0)
+
+        mat = torch.stack(
+            [
+                torch.stack([a11, a12, a13], dim=-1),
+                torch.stack([a12, a22, a23], dim=-1),
+                torch.stack([a13, a23, a33], dim=-1),
+            ],
+            dim=-2,
+        )
+        rhs = torch.stack([b1, b2, b3], dim=-1).unsqueeze(-1)
+        try:
+            sol = torch.linalg.solve(mat, rhs).squeeze(-1)
+        except RuntimeError:
+            eye = torch.eye(3, dtype=mat.dtype, device=mat.device).unsqueeze(0)
+            sol = torch.linalg.solve(mat + 1e-4 * eye, rhs).squeeze(-1)
+        src_scale = sol[:, 0].unsqueeze(0)
+        tgt_scale = sol[:, 1].unsqueeze(0)
+        bias = sol[:, 2].unsqueeze(0)
+        return (
+            src_scale.to(dtype=target.dtype, device=target.device),
+            tgt_scale.to(dtype=target.dtype, device=target.device),
+            bias.to(dtype=target.dtype, device=target.device),
+        )
+
     def _apply_quantization_correction(self, x: torch.Tensor, tgt_layer_idx: int, kind: str) -> torch.Tensor:
         if self.config.quantization_correction == "none":
             return x
@@ -834,6 +915,21 @@ class RotAlignKVTranslator(nn.Module):
         alignment (e.g., by concatenating along seq).
         """
         fusion_rule = self.config.fusion_rule if fusion_rule is None else fusion_rule
+        if fusion_rule == "learned_affine":
+            K_trans = self.apply_head_selection(K_t_hat, tgt_layer_idx)
+            V_trans = self.apply_head_selection(V_t_hat, tgt_layer_idx)
+            b, h, s, d = K_t.shape
+            K_out = (
+                K_trans * self.fusion_src_scale_K[tgt_layer_idx].view(1, h, 1, d)
+                + K_t * self.fusion_tgt_scale_K[tgt_layer_idx].view(1, h, 1, d)
+                + self.fusion_bias_K[tgt_layer_idx].view(1, h, 1, d)
+            )
+            V_out = (
+                V_trans * self.fusion_src_scale_V[tgt_layer_idx].view(1, h, 1, d)
+                + V_t * self.fusion_tgt_scale_V[tgt_layer_idx].view(1, h, 1, d)
+                + self.fusion_bias_V[tgt_layer_idx].view(1, h, 1, d)
+            )
+            return K_out, V_out
         K_t_hat_selected = self.apply_head_selection(K_t_hat, tgt_layer_idx)
         V_t_hat_selected = self.apply_head_selection(V_t_hat, tgt_layer_idx)
         K_t_selected = self.apply_head_selection(K_t, tgt_layer_idx)
@@ -1007,11 +1103,11 @@ class RotAlignKVTranslator(nn.Module):
             self.quant_proj_V[tgt_l].data.copy_(torch.eye(self.d_t, dtype=self.quant_proj_V[tgt_l].dtype))
             self.quant_bias_K[tgt_l].data.zero_()
             self.quant_bias_V[tgt_l].data.zero_()
+            K_pred = (Xk @ W_K) @ pre_quant_filter_k
+            V_pred = (Xv @ W_V) @ pre_quant_filter_v
+            K_quant = self.quantizer.quantize_dequantize(K_pred)
+            V_quant = self.quantizer.quantize_dequantize(V_pred)
             if self.config.quantization_correction == "affine":
-                K_pred = (Xk @ W_K) @ pre_quant_filter_k
-                V_pred = (Xv @ W_V) @ pre_quant_filter_v
-                K_quant = self.quantizer.quantize_dequantize(K_pred)
-                V_quant = self.quantizer.quantize_dequantize(V_pred)
                 scale_k, bias_k = self._fit_affine_correction(K_quant, Yk_fit)
                 scale_v, bias_v = self._fit_affine_correction(V_quant, Yv_fit)
                 self.quant_scale_K[tgt_l].data.copy_(scale_k.to(self.quant_scale_K[tgt_l].dtype))
@@ -1019,10 +1115,6 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
             elif self.config.quantization_correction == "ridge":
-                K_pred = (Xk @ W_K) @ pre_quant_filter_k
-                V_pred = (Xv @ W_V) @ pre_quant_filter_v
-                K_quant = self.quantizer.quantize_dequantize(K_pred)
-                V_quant = self.quantizer.quantize_dequantize(V_pred)
                 proj_k, bias_k = self._fit_ridge_correction(K_quant, Yk_fit, lam=self.config.ridge_lambda)
                 proj_v, bias_v = self._fit_ridge_correction(V_quant, Yv_fit, lam=self.config.ridge_lambda)
                 self.quant_proj_K[tgt_l].data.copy_(proj_k.to(self.quant_proj_K[tgt_l].dtype))
@@ -1031,6 +1123,63 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
             elif self.config.quantization_correction != "none":
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
+
+            K_runtime = K_quant if self.config.quantization_correction == "none" else self._apply_quantization_correction(
+                K_quant,
+                tgt_l,
+                "K",
+            )
+            V_runtime = V_quant if self.config.quantization_correction == "none" else self._apply_quantization_correction(
+                V_quant,
+                tgt_l,
+                "V",
+            )
+            if self.config.use_target_whitening:
+                K_runtime = undo_whitening(
+                    K_runtime,
+                    self.whiten_K_tgt_inv[tgt_l],
+                    self.whiten_K_tgt_mean[tgt_l],
+                )
+                V_runtime = undo_whitening(
+                    V_runtime,
+                    self.whiten_V_tgt_inv[tgt_l],
+                    self.whiten_V_tgt_mean[tgt_l],
+                )
+            B, S = Ks_rot.shape[0], Ks_rot.shape[1]
+            K_runtime_orig = self._unflatten_and_inverse_rotate(
+                K_runtime.view(B, S, self.d_t),
+                self.config.tgt_num_heads,
+                self.config.tgt_head_dim,
+                self.R_t.T,
+            )
+            V_runtime_orig = self._unflatten_and_inverse_rotate(
+                V_runtime.view(B, S, self.d_t),
+                self.config.tgt_num_heads,
+                self.config.tgt_head_dim,
+                self.R_t.T,
+            )
+            Yk_orig = self._flatten_without_rotation(K_t).reshape(-1, self.d_t)
+            Yv_orig = self._flatten_without_rotation(V_t).reshape(-1, self.d_t)
+            K_runtime_orig_flat = self._flatten_without_rotation(K_runtime_orig).reshape(-1, self.d_t)
+            V_runtime_orig_flat = self._flatten_without_rotation(V_runtime_orig).reshape(-1, self.d_t)
+            src_scale_k, tgt_scale_k, bias_k = self._fit_coordinate_fuser(
+                K_runtime_orig_flat,
+                Yk_orig,
+                dropout=float(self.config.learned_fusion_dropout),
+                salt=tgt_l * 2,
+            )
+            src_scale_v, tgt_scale_v, bias_v = self._fit_coordinate_fuser(
+                V_runtime_orig_flat,
+                Yv_orig,
+                dropout=float(self.config.learned_fusion_dropout),
+                salt=tgt_l * 2 + 1,
+            )
+            self.fusion_src_scale_K[tgt_l].data.copy_(src_scale_k.to(self.fusion_src_scale_K[tgt_l].dtype))
+            self.fusion_src_scale_V[tgt_l].data.copy_(src_scale_v.to(self.fusion_src_scale_V[tgt_l].dtype))
+            self.fusion_tgt_scale_K[tgt_l].data.copy_(tgt_scale_k.to(self.fusion_tgt_scale_K[tgt_l].dtype))
+            self.fusion_tgt_scale_V[tgt_l].data.copy_(tgt_scale_v.to(self.fusion_tgt_scale_V[tgt_l].dtype))
+            self.fusion_bias_K[tgt_l].data.copy_(bias_k.to(self.fusion_bias_K[tgt_l].dtype))
+            self.fusion_bias_V[tgt_l].data.copy_(bias_v.to(self.fusion_bias_V[tgt_l].dtype))
 
             q_k = alignment_quality(Xk, Yk_fit, W_K)
             q_v = alignment_quality(Xv, Yv_fit, W_V)

@@ -311,6 +311,29 @@ def test_calibrate_parse_args_accepts_ridge_quantization_correction(monkeypatch)
     assert args.quantization_correction == "ridge"
 
 
+def test_calibrate_parse_args_accepts_learned_fusion_dropout(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--learned-fusion-dropout",
+            "0.5",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.learned_fusion_dropout == 0.5
+
+
 def test_ablation_sweep_parse_accuracies_and_main_plumbing(monkeypatch, tmp_path) -> None:
     summary = """
     noise before

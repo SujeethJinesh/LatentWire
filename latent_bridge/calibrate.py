@@ -196,6 +196,12 @@ def parse_args() -> argparse.Namespace:
         help="Optional decoder-side correction applied after quantize/dequantize",
     )
     p.add_argument(
+        "--learned-fusion-dropout",
+        type=float,
+        default=0.0,
+        help="Dropout rate used when fitting the tiny coordinatewise learned fusion layer",
+    )
+    p.add_argument(
         "--source-reasoning-mode",
         choices=["plain", "brief_analysis", "cot", "scratchpad"],
         default="plain",
@@ -524,6 +530,7 @@ def main() -> None:
         pre_quant_rank=args.pre_quant_rank,
         pre_quant_shrinkage=args.pre_quant_shrinkage,
         quantization_correction=args.quantization_correction,
+        learned_fusion_dropout=args.learned_fusion_dropout,
         seed=args.seed,
     )
     print(f"\nBuilding translator with config:\n  {config}")

@@ -161,6 +161,10 @@ python scripts/calibrate.py \
   correction after quantize/dequantize. `affine` is a diagonal scale+bias
   repair; `ridge` is a small full linear correction layer in rotated target
   space.
+- `--learned-fusion-dropout P` — calibration-time target dropout used only for
+  the experimental `learned_affine` fusion rule. This fits a tiny per-layer,
+  per-coordinate source/target affine blend on top of the transported cache;
+  it is a correction probe, not a headline method.
 
 ### 4. Evaluate against baselines
 
@@ -184,9 +188,10 @@ Additional method modes expose translated-only and text+KV hybrid ablations.
 Pass `--no-quantize` to ablate the Lloyd-Max round-trip. Use `--fusion-rule
 cosine`, `cosine_shifted`, `js_shrinkage`, or `kalman` to make fusion
 source-dependent at runtime when translated KV disagrees with the target cache;
-keep `static` as the default control. Use `--kv-transport both`, `k_only`, or
-`v_only` to isolate whether the signal is carried by translated keys, values,
-or the full KV pair. When probing sparse transport, use
+`learned_affine` is an experimental tiny learned source/target blend fitted
+from calibration pairs. Keep `static` as the default control. Use
+`--kv-transport both`, `k_only`, or `v_only` to isolate whether the signal is
+carried by translated keys, values, or the full KV pair. When probing sparse transport, use
 `--position-selection-ratio <r>` with `--position-selection-metric` set to one
 of `energy`, `disagreement`, `random`, `recency`, `attention`,
 `attention_disagreement`, `attention_shuffled`, `source_attention`, or
