@@ -371,6 +371,7 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.kv_transport == "k_only"
     assert args.position_selection_metric == "attention_disagreement"
     assert args.position_selection_prior_file == "data/calibration.txt"
+    assert args.position_selection_prior_source == "calibration_mean_attention"
     assert args.position_selection_prior_bins == 64
     assert args.runtime_head_selection_ratio == 0.5
     assert args.runtime_head_selection_metric == "attention_blend"
@@ -1243,6 +1244,14 @@ def test_mean_attention_prior_from_prompts_averages_last_token_attention(monkeyp
     assert len(priors) == 2
     for prior in priors:
         assert torch.allclose(prior, torch.tensor([0.9, 0.1], dtype=torch.float32))
+
+
+def test_uniform_attention_prior_builds_flat_profiles() -> None:
+    priors = evaluate._uniform_attention_prior(layer_count=3, bins=4)
+
+    assert len(priors) == 3
+    for prior in priors:
+        assert torch.allclose(prior, torch.full((4,), 0.25, dtype=torch.float32))
 
 
 def test_mean_head_prior_from_prompts_averages_runtime_head_scores(monkeypatch) -> None:

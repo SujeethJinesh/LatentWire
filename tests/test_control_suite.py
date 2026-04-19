@@ -385,6 +385,38 @@ def test_build_evaluate_cmd_passes_nondefault_position_selection_metric() -> Non
     assert cmd[cmd.index("--position-selection-metric") + 1] == "attention"
 
 
+def test_build_evaluate_cmd_passes_position_selection_prior_source() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_expected_attention_sparse_k_only",
+        methods=("rotalign",),
+        gate_values=(0.10,),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        kv_transport="k_only",
+        position_selection_ratio=0.5,
+        position_selection_metric="attention_prior",
+        position_selection_prior_source="uniform",
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file=None,
+        gate_search_limit=30,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--position-selection-metric") + 1] == "attention_prior"
+    assert cmd[cmd.index("--position-selection-prior-source") + 1] == "uniform"
+
+
 def test_build_evaluate_cmd_skips_noop_gate_search_for_translated_only() -> None:
     spec = control_suite.EvalSpec(
         name="translated_noquant_brief",

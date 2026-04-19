@@ -1316,5 +1316,14 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 434317
+  },
+  {
+    "num": 148,
+    "slug": "sage_kv_self_attention_guided_kv_cache_eviction_for_llms",
+    "url": "https://arxiv.org/pdf/2503.08879.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/148_sage_kv_self_attention_guided_kv_cache_eviction_for_llms.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 673507
   }
 ]

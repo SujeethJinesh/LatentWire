@@ -159,6 +159,10 @@ OT-style alignment variant:
 
 - `147_`: quantized Wasserstein Procrustes as a direct reference for lighter-weight OT alignment under finite precision and tighter compute budgets.
 
+File `148_` adds a stronger query-blind retention / eviction control:
+
+- `148_`: self-attention-guided KV eviction as a direct query-blind sparse-retention baseline against which expected-attention or structured routing branches should be compared.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

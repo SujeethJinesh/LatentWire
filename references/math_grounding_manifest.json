@@ -634,5 +634,11 @@
     "slug": "quantized_wasserstein_procrustes_alignment_of_word_embedding_spaces",
     "url": "https://arxiv.org/pdf/2212.02468.pdf",
     "reason": "Quantized Wasserstein Procrustes is a practical lighter-weight OT alignment reference that may fit head or group matching better than full transport on this machine."
+  },
+  {
+    "num": 148,
+    "slug": "sage_kv_self_attention_guided_kv_cache_eviction_for_llms",
+    "url": "https://arxiv.org/pdf/2503.08879.pdf",
+    "reason": "SAGE-KV is a strong query-blind sparse-retention baseline for testing whether structured routing really beats self-attention-guided eviction heuristics."
   }
 ]

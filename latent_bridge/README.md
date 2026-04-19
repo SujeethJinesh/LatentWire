@@ -179,7 +179,8 @@ of `energy`, `disagreement`, `random`, `recency`, `attention`,
 `attention_disagreement`, `attention_shuffled`, `source_attention`, or
 `attention_prior`. Use
 `--position-selection-prior-file <path>` to build the fixed query-blind prior
-from calibration prompts when running `attention_prior`. The current best GSM8K
+from calibration prompts when running `attention_prior`, or set
+`--position-selection-prior-source uniform` for a flat null prior. The current best GSM8K
 heuristic is target-attention sparse `k_only`, where `attention` at ratio
 `0.5` is better than the matched shuffled, `source_attention`, and fixed
 attention-prior selector controls on the current GSM8K slices. The new

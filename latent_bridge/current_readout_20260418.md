@@ -234,6 +234,24 @@ Interpretation:
   useful latent structure may be **task-conditioned subspace geometry**, not a
   single routing rule that transfers cleanly across all reasoning sets.
 
+## Grouped-CCA Expected-Attention Follow-Up
+
+Same grouped-CCA checkpoint, but replacing the live position selector with
+fixed query-blind position priors:
+
+- GSM8K-100, calibration expected-attention prior: `0.030000`
+- GSM8K-100, uniform prior null: `0.030000`
+- SVAMP-70, calibration expected-attention prior: `0.171429`
+- SVAMP-70, uniform prior null: `0.171429`
+
+Interpretation:
+
+- On the grouped-CCA branch, the **position prior is not the lever**.
+- The task split remains unchanged under both calibration-derived and uniform
+  query-blind priors.
+- That means the grouped-CCA behavior is being driven much more by the
+  checkpoint / head-subspace geometry than by better fixed position routing.
+
 ## Seed Stability
 
 Fixed peak-based prior on `gsm8k_100`, same branch, same budget, recalibrated
@@ -266,6 +284,7 @@ Interpretation:
 - A logit-gap-style attention proxy is also not enough on its own.
 - A structural subspace pivot can help on one reasoning boundary (SVAMP) while
   hurting another (GSM8K), so task-conditioned geometry is now a live hypothesis.
+- Fixed query-blind position priors do not explain that split.
 
 ## What This Means For The Paper
 
@@ -291,7 +310,7 @@ paper only if the next replication steps succeed.
    is stabilized across seeds.
 3. Next method pivots from the new literature:
    - OT / permutation or gauge-aware head matching across models
-   - expected-attention or attention-fidelity-preserving head ranking
+   - head-level expected-attention or attention-fidelity-preserving head ranking
    - extend the grouped CCA branch on SVAMP-like tasks before treating it as a general method
    - causal head scoring once the matching space is less noisy
    - only then revisit retrieval-head routing with a stronger structure-aware score

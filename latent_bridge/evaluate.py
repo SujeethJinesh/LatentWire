@@ -728,6 +728,19 @@ def _mean_attention_prior_from_prompts(
     return [(scores / float(used_prompts)).cpu() for scores in layer_sums]
 
 
+def _uniform_attention_prior(
+    *,
+    layer_count: int,
+    bins: int,
+) -> list[torch.Tensor]:
+    if layer_count <= 0:
+        raise ValueError("layer_count must be positive")
+    if bins <= 0:
+        raise ValueError("bins must be positive")
+    prior = torch.full((bins,), 1.0 / float(bins), dtype=torch.float32)
+    return [prior.clone() for _ in range(layer_count)]
+
+
 @torch.no_grad()
 def _logprob_tokens_from_prefix_state(
     model,
@@ -2935,6 +2948,12 @@ def parse_args() -> argparse.Namespace:
         help="Optional calibration prompt file used to build a fixed query-blind attention prior.",
     )
     p.add_argument(
+        "--position-selection-prior-source",
+        choices=["calibration_mean_attention", "uniform"],
+        default="calibration_mean_attention",
+        help="How to build fixed query-blind attention priors when position_selection_metric=attention_prior.",
+    )
+    p.add_argument(
         "--position-selection-prior-bins",
         type=int,
         default=128,
@@ -3139,21 +3158,35 @@ def main() -> None:
     fixed_head_profiles = None
     loaded_head_prior_metadata: dict[str, Any] | None = None
     if position_selection_metric == "attention_prior":
-        if not args.position_selection_prior_file:
-            raise ValueError("--position-selection-prior-file is required for --position-selection-metric attention_prior")
-        prior_prompts = load_prompt_lines(args.position_selection_prior_file)
-        print(
-            f"Building fixed attention prior from {len(prior_prompts)} calibration prompts "
-            f"({args.position_selection_prior_file})"
-        )
-        fixed_position_profiles = _mean_attention_prior_from_prompts(
-            tgt,
-            tok_t,
-            prior_prompts,
-            args.device,
-            translator=translator,
-            bins=args.position_selection_prior_bins,
-        )
+        if args.position_selection_prior_source == "uniform":
+            print(
+                "Building uniform fixed attention prior "
+                f"(layers={translator.config.num_tgt_layers}, bins={args.position_selection_prior_bins})"
+            )
+            fixed_position_profiles = _uniform_attention_prior(
+                layer_count=translator.config.num_tgt_layers,
+                bins=args.position_selection_prior_bins,
+            )
+        else:
+            if not args.position_selection_prior_file:
+                raise ValueError(
+                    "--position-selection-prior-file is required when "
+                    "--position-selection-metric attention_prior and "
+                    "--position-selection-prior-source calibration_mean_attention"
+                )
+            prior_prompts = load_prompt_lines(args.position_selection_prior_file)
+            print(
+                f"Building fixed attention prior from {len(prior_prompts)} calibration prompts "
+                f"({args.position_selection_prior_file})"
+            )
+            fixed_position_profiles = _mean_attention_prior_from_prompts(
+                tgt,
+                tok_t,
+                prior_prompts,
+                args.device,
+                translator=translator,
+                bins=args.position_selection_prior_bins,
+            )
     needs_fixed_head_prior = (
         (
             runtime_head_selection_ratio < 1.0
@@ -3604,6 +3637,7 @@ def main() -> None:
                 "position_selection_ratio": position_selection_ratio,
                 "position_selection_metric": position_selection_metric,
                 "position_selection_prior_file": args.position_selection_prior_file,
+                "position_selection_prior_source": args.position_selection_prior_source,
                 "position_selection_prior_bins": args.position_selection_prior_bins,
                 "runtime_head_selection_ratio": runtime_head_selection_ratio,
                 "runtime_head_selection_metric": runtime_head_selection_metric,
