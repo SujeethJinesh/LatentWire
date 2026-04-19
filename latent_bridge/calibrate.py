@@ -93,6 +93,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_transport",
             "grouped_permutation",
             "grouped_signature_transport",
+            "grouped_subspace_transport",
         ],
         default="auto",
     )

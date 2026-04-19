@@ -301,6 +301,35 @@ def test_calibrate_parse_args_accepts_grouped_signature_transport(monkeypatch) -
     assert args.transport_signature_weight == 0.25
 
 
+def test_calibrate_parse_args_accepts_grouped_subspace_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_subspace_transport",
+            "--transport-signature-rank",
+            "4",
+            "--transport-signature-weight",
+            "0.1",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_subspace_transport"
+    assert args.transport_signature_rank == 4
+    assert args.transport_signature_weight == 0.1
+
+
 def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

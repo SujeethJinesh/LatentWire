@@ -189,6 +189,9 @@ Proposed claim:
 - The first richer geometry-aware transport cost is directionally better:
   grouped signature-aware transport reaches `0.042857` on Qwen GSM70, beating
   grouped transport `0.014286` and grouped permutation `0.028571`.
+- A follow-up grouped subspace-aware transport branch stays at the same
+  `0.042857`, so the current grouped geometry-aware transport family now looks
+  saturated on the main same-pair GSM split.
 - But it is still below the old fixed prior `0.085714` and below `C2C`
   `0.128571`, so this is still a bounded mechanistic gain rather than a
   publishable headline result.

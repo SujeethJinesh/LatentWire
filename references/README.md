@@ -211,6 +211,14 @@ Files `168_` through `170_` extend the correction-and-transfer lane:
 - `169_`: KV-CAR as a learned KV autoencoding / reuse reference, useful for the idea that compact learned correction can matter more than another static map.
 - `170_`: Cross-model Transferability among Large Language Models on the Platonic Representations of Concepts as a direct theory-and-evidence citation for why lightweight cross-model correction should be possible at all.
 
+Files `171_` through `175_` extend the transport-and-canonicalization lane:
+
+- `171_`: KVCOMM Online Cross-context KV-cache Communication as a recent runtime KV-communication reference, useful for contrasting selective sharing against heterogeneous transport mismatch.
+- `172_`: Query-Focused Retrieval Heads Improve Long-Context Reasoning and Re-ranking as a direct retrieval-head routing reference for transport decisions tied to live query structure.
+- `173_`: PRAC as a recent principal-subspace compression reference, useful for low-rank canonical subspace ideas before cross-model transport.
+- `174_`: Complete Characterization of Gauge Symmetries in Transformer Architectures as a source-note reference for transformer gauge freedom and non-identifiable coordinates; stored as markdown because OpenReview returned HTML from this machine during download.
+- `175_`: Scalpel as a recent attention-manifold transport reference, useful for dynamic transport-plus-correction ideas beyond static head matching.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

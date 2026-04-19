@@ -602,6 +602,44 @@ Interpretation:
 - but it is still a bounded gain, not a competitive result against the old
   fixed prior or `C2C`
 
+And a sixteenth subspace-aware transport update:
+
+> replacing the spectral-signature penalty with a principal-subspace mismatch
+> penalty leaves the exact Qwen GSM70 result unchanged at `0.042857`. So
+> subspace-aware grouped transport does not improve on the earlier
+> grouped-signature branch in the current regime.
+
+Paired reads for the grouped-subspace-transport branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.042857`
+  - grouped-subspace-only wins `0`
+  - fixed-prior-only wins `3`
+  - bootstrap `[-0.100000, +0.000000]`
+  - McNemar `0.2482`
+- vs `C2C`:
+  - delta `-0.085714`
+  - grouped-subspace-only wins `3`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.185714, +0.000000]`
+  - McNemar `0.1489`
+- vs grouped signature transport:
+  - delta `+0.000000`
+  - grouped-subspace-only wins `0`
+  - grouped-signature-only wins `0`
+  - bootstrap `[+0.000000, +0.000000]`
+  - McNemar `1.0000`
+
+Interpretation:
+
+- geometry-aware transport is still the right direction, but the current
+  grouped transport family seems saturated on exact Qwen GSM70
+- moving from coarse spectral signatures to principal-subspace mismatch does
+  not change held-out behavior here
+- the remaining viable internal branch is now richer transport itself
+  (stronger OT / canonicalization), not another small tweak to the current
+  grouped cost family
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it

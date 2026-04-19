@@ -274,6 +274,33 @@ Current status:
 
 - newly checked and directionally positive, but still bounded
 
+## Blocker 12: Subspace-aware grouped transport does not move past the earlier geometry-aware branch
+
+Observed symptom:
+
+- replacing the spectral-signature penalty with a principal-subspace mismatch
+  penalty leaves exact Qwen GSM70 unchanged at `0.042857`
+- that ties grouped-signature transport exactly and still stays below the old
+  fixed prior `0.085714` and below `C2C` `0.128571`
+
+Interpretation:
+
+- better geometry in the grouped-transport cost is not enough by itself
+- the current grouped family is likely saturated on the main same-pair GSM
+  setting
+- the remaining plausible method class is richer transport or transport plus
+  correction, not more small grouped-cost variants
+
+Current status:
+
+- newly checked and negative
+
+Next fix:
+
+- stop spending time on small grouped-cost tweaks
+- move to stronger OT / canonicalized transport or explicitly narrow the paper
+  to a blocker/mechanism contribution if the next transport branch still fails
+
 Next fix:
 
 - keep pushing transport-first, but only with richer costs or canonicalization

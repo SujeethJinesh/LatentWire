@@ -59,7 +59,7 @@ class TranslatorConfig:
     #                 | 'procrustes_rand' | 'ridge' | 'cca' | 'reduced_rank'
     #                 | 'grouped_' + any of the above
     #                 | 'grouped_transport' | 'grouped_permutation'
-    #                 | 'grouped_signature_transport'
+    #                 | 'grouped_signature_transport' | 'grouped_subspace_transport'
     # Grouped variants fit one block per head-group instead of a single flat
     # all-head projection. When src/tgt head counts match, this degenerates to
     # true per-head alignment.
@@ -636,6 +636,19 @@ class RotAlignKVTranslator(nn.Module):
             vals = torch.cat([vals, torch.zeros(rank - vals.shape[0], dtype=vals.dtype, device=vals.device)], dim=0)
         return vals
 
+    def _subspace_distance(self, Y_hat: torch.Tensor, Y: torch.Tensor) -> torch.Tensor:
+        rank = max(1, int(self.config.transport_signature_rank))
+        Yh = Y_hat.float() - Y_hat.float().mean(dim=0, keepdim=True)
+        Yt = Y.float() - Y.float().mean(dim=0, keepdim=True)
+        _, _, vh_hat = torch.linalg.svd(Yh, full_matrices=False)
+        _, _, vh_tgt = torch.linalg.svd(Yt, full_matrices=False)
+        r = min(rank, vh_hat.shape[0], vh_tgt.shape[0], Y.shape[1])
+        basis_hat = vh_hat[:r].T
+        basis_tgt = vh_tgt[:r].T
+        proj_hat = basis_hat @ basis_hat.T
+        proj_tgt = basis_tgt @ basis_tgt.T
+        return (proj_hat - proj_tgt).pow(2).mean()
+
     def _sinkhorn_transport(self, scores: torch.Tensor) -> torch.Tensor:
         temp = max(float(self.config.transport_temperature), 1e-6)
         log_plan = scores / temp
@@ -699,8 +712,11 @@ class RotAlignKVTranslator(nn.Module):
         tgt_slices = self._group_feature_slices(use_target=True)
         scores = torch.zeros(group_count, group_count, dtype=X.dtype, device=X.device)
         signature_weight = float(self.config.transport_signature_weight)
-        src_signatures = [self._group_signature(X[:, src_slice]) for src_slice in src_slices]
-        tgt_signatures = [self._group_signature(Y[:, tgt_slice]) for tgt_slice in tgt_slices]
+        src_signatures = None
+        tgt_signatures = None
+        if self.config.alignment_method == "grouped_signature_transport" and signature_weight > 0.0:
+            src_signatures = [self._group_signature(X[:, src_slice]) for src_slice in src_slices]
+            tgt_signatures = [self._group_signature(Y[:, tgt_slice]) for tgt_slice in tgt_slices]
         blocks: dict[tuple[int, int], torch.Tensor] = {}
         for src_idx, src_slice in enumerate(src_slices):
             for tgt_idx, tgt_slice in enumerate(tgt_slices):
@@ -713,9 +729,13 @@ class RotAlignKVTranslator(nn.Module):
                 )
                 q = alignment_quality(X[:, src_slice], Y[:, tgt_slice], W_block)
                 score = self._transport_score(q)
-                if signature_weight > 0.0:
+                if self.config.alignment_method == "grouped_signature_transport" and signature_weight > 0.0:
                     sig_dist = (src_signatures[src_idx] - tgt_signatures[tgt_idx]).pow(2).mean()
                     score = score - signature_weight * float(sig_dist)
+                elif self.config.alignment_method == "grouped_subspace_transport" and signature_weight > 0.0:
+                    y_hat = X[:, src_slice] @ W_block
+                    subspace_dist = self._subspace_distance(y_hat, Y[:, tgt_slice])
+                    score = score - signature_weight * float(subspace_dist)
                 scores[src_idx, tgt_idx] = score
                 blocks[(src_idx, tgt_idx)] = W_block
         if self.config.alignment_method == "grouped_permutation":
@@ -1221,7 +1241,7 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport"}:
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -1391,14 +1411,14 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport"}:
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
 
             # Fit optional head-group saliency from local aligned slices.
             group_scores: list[tuple[float, int]] = []
             base_method = self.config.alignment_method.removeprefix("grouped_")
-            if base_method in {"transport", "permutation", "signature_transport"}:
+            if base_method in {"transport", "permutation", "signature_transport", "subspace_transport"}:
                 base_method = "auto"
             for group_idx, (src_slice, tgt_slice) in enumerate(
                 zip(self._group_feature_slices(use_target=False), self._group_feature_slices(use_target=True))
