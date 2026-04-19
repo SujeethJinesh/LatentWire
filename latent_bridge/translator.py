@@ -15,6 +15,7 @@ in `fit_from_pairs`, which fills in W_K and W_V via closed-form solvers.
 from __future__ import annotations
 
 import math
+import itertools
 from dataclasses import dataclass, asdict
 from typing import Sequence
 
@@ -56,7 +57,8 @@ class TranslatorConfig:
 
     # Alignment solver: 'auto' | 'identity' | 'procrustes'
     #                 | 'procrustes_rand' | 'ridge' | 'cca' | 'reduced_rank'
-    #                 | 'grouped_' + any of the above | 'grouped_transport'
+    #                 | 'grouped_' + any of the above
+    #                 | 'grouped_transport' | 'grouped_permutation'
     # Grouped variants fit one block per head-group instead of a single flat
     # all-head projection. When src/tgt head counts match, this degenerates to
     # true per-head alignment.
@@ -633,6 +635,44 @@ class RotAlignKVTranslator(nn.Module):
         plan = plan / plan.sum(dim=1, keepdim=True).clamp_min(1e-8)
         return plan
 
+    @staticmethod
+    def _greedy_assignment(scores: torch.Tensor) -> torch.Tensor:
+        n = scores.shape[0]
+        plan = torch.zeros_like(scores)
+        used_rows: set[int] = set()
+        used_cols: set[int] = set()
+        flat = [
+            (float(scores[i, j]), i, j)
+            for i in range(n)
+            for j in range(n)
+        ]
+        for _, i, j in sorted(flat, reverse=True):
+            if i in used_rows or j in used_cols:
+                continue
+            plan[i, j] = 1.0
+            used_rows.add(i)
+            used_cols.add(j)
+            if len(used_rows) == n:
+                break
+        return plan
+
+    def _hard_transport_assignment(self, scores: torch.Tensor) -> torch.Tensor:
+        n = scores.shape[0]
+        if n <= 6:
+            best_perm: tuple[int, ...] | None = None
+            best_score = -float("inf")
+            for perm in itertools.permutations(range(n)):
+                score = sum(float(scores[i, perm[i]]) for i in range(n))
+                if score > best_score:
+                    best_score = score
+                    best_perm = perm
+            plan = torch.zeros_like(scores)
+            assert best_perm is not None
+            for i, j in enumerate(best_perm):
+                plan[i, j] = 1.0
+            return plan
+        return self._greedy_assignment(scores)
+
     def _fit_group_transport_alignment(
         self,
         X: torch.Tensor,
@@ -658,7 +698,10 @@ class RotAlignKVTranslator(nn.Module):
                 q = alignment_quality(X[:, src_slice], Y[:, tgt_slice], W_block)
                 scores[src_idx, tgt_idx] = self._transport_score(q)
                 blocks[(src_idx, tgt_idx)] = W_block
-        plan = self._sinkhorn_transport(scores)
+        if self.config.alignment_method == "grouped_permutation":
+            plan = self._hard_transport_assignment(scores)
+        else:
+            plan = self._sinkhorn_transport(scores)
         W = torch.zeros(self.d_s, self.d_t, dtype=X.dtype, device=X.device)
         for src_idx, src_slice in enumerate(src_slices):
             for tgt_idx, tgt_slice in enumerate(tgt_slices):
@@ -1158,7 +1201,7 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method == "grouped_transport":
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -1328,14 +1371,14 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method == "grouped_transport":
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
 
             # Fit optional head-group saliency from local aligned slices.
             group_scores: list[tuple[float, int]] = []
             base_method = self.config.alignment_method.removeprefix("grouped_")
-            if base_method == "transport":
+            if base_method in {"transport", "permutation"}:
                 base_method = "auto"
             for group_idx, (src_slice, tgt_slice) in enumerate(
                 zip(self._group_feature_slices(use_target=False), self._group_feature_slices(use_target=True))

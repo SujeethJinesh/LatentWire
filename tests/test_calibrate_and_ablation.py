@@ -249,6 +249,29 @@ def test_calibrate_parse_args_accepts_grouped_transport(monkeypatch) -> None:
     assert args.transport_sinkhorn_iters == 12
 
 
+def test_calibrate_parse_args_accepts_grouped_permutation(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_permutation",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_permutation"
+
+
 def test_calibrate_parse_args_supports_head_and_prequant_flags(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

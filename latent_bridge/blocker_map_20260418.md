@@ -229,6 +229,31 @@ Next fix:
 - move to transport-first branches: OT / permutation / gauge-aware transport,
   then correction on top only if transport itself becomes competitive
 
+### Blocker 10: Simple hard permutation recovery is not enough
+
+Observed symptom:
+
+- a translator-side grouped permutation map improves over the worst transport
+  collapses, but still reaches only `0.028571` on Qwen GSM70
+- that stays below the old fixed prior `0.085714` and below `C2C` `0.128571`
+
+Interpretation:
+
+- some symmetry mismatch is clearly real, but a simple hard assignment between
+  grouped head blocks is not the full fix
+- the remaining gap likely needs richer OT/canonicalized transport, not just a
+  one-shot permutation
+
+Current status:
+
+- newly checked and directionally informative, but still negative as a method
+
+Next fix:
+
+- move beyond simple hard assignment toward richer OT / Sinkhorn transport
+  with a better cost or canonicalized subspace basis
+- only revisit learned correction after that transport becomes competitive
+
 ## Immediate Plan
 
 ### Today

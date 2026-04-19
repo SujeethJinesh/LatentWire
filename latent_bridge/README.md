@@ -144,7 +144,8 @@ python scripts/calibrate.py \
   default recipe.
 - `--alignment-rank N` — rank for CCA and reduced-rank regression.
 - `--transport-residual-rank N` — optional low-rank residual on top of
-  `grouped_transport`.
+  `grouped_transport`, or `grouped_permutation` for hard one-to-one grouped
+  matching.
 - `--transport-temperature T` / `--transport-sinkhorn-iters K` — control the
   softness of the grouped transport plan.
 - `--layer-pairing {interp,cka,reverse,shifted,random}` — interpolation,

@@ -539,6 +539,34 @@ Interpretation:
 - the next credible move is **transport-first**: improve the transport map
   itself, then reconsider learned correction on top
 
+And a fourteenth hard-matching transport constraint:
+
+> a translator-side hard grouped permutation map reaches only `0.028571` on
+> Qwen GSM70. That is better than the total collapse of some other transport
+> probes, but still below the old fixed prior `0.085714` and below `C2C`
+> `0.128571`.
+
+Paired reads for the grouped-permutation branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.057143`
+  - grouped-permutation-only wins `0`
+  - fixed-prior-only wins `4`
+  - bootstrap `[-0.114286, -0.014286]`
+  - McNemar `0.1336`
+- vs `C2C`:
+  - delta `-0.100000`
+  - grouped-permutation-only wins `1`
+  - `C2C`-only wins `8`
+  - bootstrap `[-0.185714, -0.028571]`
+  - McNemar `0.0455`
+
+Interpretation:
+
+- hard matching is directionally less bad than soft grouped transport, but it
+  still does not recover the main Qwen reasoning signal
+- that suggests naive permutation recovery alone is not the whole symmetry fix
+
 ## Next Highest-Value Steps
 
 1. Treat the fixed-prior branch as a mechanism clue, not the headline, until it
@@ -560,6 +588,10 @@ Interpretation:
    - after the per-head ridge collapse to the same `0.000000`, treat
      richer correction-only fusers as ruled out too until the transport map
      itself improves
+   - after grouped permutation only reaches `0.028571`, treat simple
+     transport-only symmetry fixes as bounded too; the remaining viable branch
+     is likely richer OT/canonicalized transport rather than simple hard
+     assignment
    - deprioritize evaluator-level soft-transport variants if they also stay below the old fixed prior on GSM70
    - deprioritize whitening-only or symmetric-canonicalization-only pivots if
      they stay below the old fixed prior on GSM70

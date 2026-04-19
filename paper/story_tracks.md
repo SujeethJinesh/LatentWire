@@ -179,6 +179,13 @@ Proposed claim:
 - So the paper should not frame “just add a small learned correction layer” as
   the answer; if correction matters, it likely has to sit on top of a
   **stronger transport map** rather than replace it.
+- A translator-side hard grouped permutation map is also only a bounded move:
+  it reaches `0.028571` on Qwen GSM70, which is better than the worst transport
+  collapses but still far below the old fixed prior `0.085714` and below
+  `C2C` `0.128571`.
+- So the paper should not frame simple head reassignment as the missing
+  symmetry fix either; if the transport lane still lives, it likely needs
+  richer OT/canonicalized transport rather than one-shot permutation recovery.
 - The transfer story is not “universal head priors.” It is currently **pair-conditioned and asymmetric**.
 - Strong zero-byte, random-source, and query-blind selector controls are necessary because naive cache perturbations or blind sparsity can look like communication gains.
 

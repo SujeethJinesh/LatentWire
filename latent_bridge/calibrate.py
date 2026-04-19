@@ -91,6 +91,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_cca",
             "grouped_reduced_rank",
             "grouped_transport",
+            "grouped_permutation",
         ],
         default="auto",
     )

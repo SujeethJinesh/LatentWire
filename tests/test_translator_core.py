@@ -392,6 +392,36 @@ def test_grouped_transport_can_swap_head_groups(monkeypatch) -> None:
     assert plan[1, 0] > plan[1, 1]
 
 
+def test_grouped_permutation_can_swap_head_groups(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    tr = RotAlignKVTranslator(
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            alignment_method="grouped_permutation",
+        )
+    )
+
+    torch.manual_seed(0)
+    src = torch.randn(6, 2, 3, 2)
+    tgt = src.flip(1).contiguous()
+
+    tr.fit_from_pairs([(src, src + 0.1)], [(tgt, tgt + 0.1)])
+    pred, _ = tr.translate_layer(src, src + 0.1, tgt_layer_idx=0, quantize=False)
+
+    err = (pred - tgt).pow(2).mean()
+    plan = tr.transport_plan_K[0].detach()
+
+    assert err < 1e-4
+    assert torch.equal(plan, torch.tensor([[0.0, 1.0], [1.0, 0.0]], dtype=plan.dtype))
+
+
 def test_target_whitening_recovers_anisotropic_target_under_procrustes(monkeypatch) -> None:
     monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
     monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
