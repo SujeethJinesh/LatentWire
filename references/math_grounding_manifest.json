@@ -724,5 +724,11 @@
     "slug": "using_optimal_transport_as_alignment_objective_for_finetuning_multilingual_contextualized_embeddings",
     "url": "https://arxiv.org/pdf/2110.02887.pdf",
     "reason": "This is a practical contextual-embedding OT alignment reference for matching relations and geometry rather than raw coordinates."
+  },
+  {
+    "num": 163,
+    "slug": "efficient_multi_adapter_llm_serving_via_cross_model_kv_cache_reuse_with_activated_lora",
+    "url": "https://arxiv.org/pdf/2512.17910.pdf",
+    "reason": "This is a recent cross-model KV reuse reference that supports pairing reusable transport maps with lightweight adaptation instead of relying on a fully fixed head-routing heuristic."
   }
 ]

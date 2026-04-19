@@ -659,6 +659,69 @@ def _attention_template_transport_scores(
     return _normalize_selection_scores(aligned)
 
 
+def _attention_sinkhorn_transport_scores(
+    attention_map: torch.Tensor,
+    head_templates: torch.Tensor,
+    prior_scores: torch.Tensor,
+    *,
+    layer_idx: int,
+    shuffled: bool = False,
+    temperature: float = 0.1,
+    iterations: int = 4,
+) -> torch.Tensor:
+    if attention_map.ndim != 2:
+        raise ValueError(f"attention_map must be rank-2 [heads, positions], got shape {tuple(attention_map.shape)}")
+    if head_templates.ndim != 2:
+        raise ValueError(f"head_templates must be rank-2 [heads, bins], got shape {tuple(head_templates.shape)}")
+    if prior_scores.ndim != 1:
+        raise ValueError(f"prior_scores must be rank-1 [heads], got shape {tuple(prior_scores.shape)}")
+    if head_templates.shape[0] != prior_scores.numel():
+        raise ValueError(
+            "head_templates and prior_scores must agree on head count, "
+            f"got {head_templates.shape[0]} and {prior_scores.numel()}"
+        )
+    template_count = head_templates.shape[0]
+    live_count = attention_map.shape[0]
+    if live_count <= 0:
+        raise ValueError("attention_sinkhorn requires at least one live head")
+    weights = _normalize_selection_scores(prior_scores).view(-1)
+    templates = head_templates.float()
+    if live_count != template_count:
+        keep = min(live_count, template_count)
+        order = torch.argsort(weights, descending=True)[:keep]
+        templates = templates[order]
+        weights = weights[order]
+    if shuffled:
+        weights = _deterministic_score_permutation(weights, layer_idx=layer_idx, seed_offset=15_173)
+    bins = templates.shape[-1]
+    live = torch.stack(
+        [_resample_position_profile(head_scores.float(), bins) for head_scores in attention_map],
+        dim=0,
+    )
+    live = live / live.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    templates = templates.to(device=live.device)
+    weights = weights.to(device=live.device)
+    live_peak = _normalize_selection_scores(_runtime_head_scores(attention_map, metric="attention_peak", layer_idx=layer_idx))
+    live_peak = live_peak.to(device=live.device)
+    p = templates[:, None, :]
+    q = live[None, :, :]
+    m = 0.5 * (p + q)
+    js = 0.5 * (
+        (p * (p.clamp_min(1e-8).log() - m.clamp_min(1e-8).log())).sum(dim=-1)
+        + (q * (q.clamp_min(1e-8).log() - m.clamp_min(1e-8).log())).sum(dim=-1)
+    )
+    similarity = torch.exp(-js / max(float(temperature), 1e-4))
+    kernel = similarity.clamp_min(1e-8)
+    u = torch.ones_like(weights)
+    v = torch.ones_like(live_peak)
+    for _ in range(max(int(iterations), 1)):
+        u = weights / (kernel @ v).clamp_min(1e-8)
+        v = live_peak / (kernel.transpose(0, 1) @ u).clamp_min(1e-8)
+    transport = u[:, None] * kernel * v[None, :]
+    aligned = (transport * similarity).sum(dim=0)
+    return _normalize_selection_scores(aligned)
+
+
 def _resample_head_profile_stack(
     profiles: list[torch.Tensor],
     *,
@@ -944,6 +1007,29 @@ def _runtime_head_scores_with_prior(
         if prior_scores is None or head_templates is None:
             raise ValueError("attention_template_transport_shuffled requires fixed_head_profiles and fixed_head_templates")
         return _attention_template_transport_scores(
+            attention_map,
+            head_templates,
+            prior_scores,
+            layer_idx=layer_idx,
+            shuffled=True,
+        ), None
+    if metric == "attention_sinkhorn":
+        if attention_map is None:
+            raise ValueError("attention_sinkhorn runtime head selection requires target attention maps")
+        if prior_scores is None or head_templates is None:
+            raise ValueError("attention_sinkhorn requires fixed_head_profiles and fixed_head_templates")
+        return _attention_sinkhorn_transport_scores(
+            attention_map,
+            head_templates,
+            prior_scores,
+            layer_idx=layer_idx,
+        ), None
+    if metric == "attention_sinkhorn_shuffled":
+        if attention_map is None:
+            raise ValueError("attention_sinkhorn_shuffled runtime head selection requires target attention maps")
+        if prior_scores is None or head_templates is None:
+            raise ValueError("attention_sinkhorn_shuffled requires fixed_head_profiles and fixed_head_templates")
+        return _attention_sinkhorn_transport_scores(
             attention_map,
             head_templates,
             prior_scores,
@@ -2123,6 +2209,8 @@ def _build_rotalign_prefix_state(
         "attention_procrustes_shuffled",
         "attention_template_transport",
         "attention_template_transport_shuffled",
+        "attention_sinkhorn",
+        "attention_sinkhorn_shuffled",
         "attention_expected",
         "attention_expected_shuffled",
         "attention_match",
@@ -2164,6 +2252,8 @@ def _build_rotalign_prefix_state(
             "attention_prior",
             "attention_template_transport",
             "attention_template_transport_shuffled",
+            "attention_sinkhorn",
+            "attention_sinkhorn_shuffled",
             "attention_match",
             "attention_match_shuffled",
             "attention_blend",
@@ -2175,7 +2265,12 @@ def _build_rotalign_prefix_state(
         )
     if (
         runtime_head_selection_ratio < 1.0
-        and runtime_head_selection_metric in {"attention_template_transport", "attention_template_transport_shuffled"}
+        and runtime_head_selection_metric in {
+            "attention_template_transport",
+            "attention_template_transport_shuffled",
+            "attention_sinkhorn",
+            "attention_sinkhorn_shuffled",
+        }
         and fixed_head_templates is None
     ):
         raise ValueError(
@@ -2186,6 +2281,8 @@ def _build_rotalign_prefix_state(
         "attention_prior_shuffled",
         "attention_template_transport",
         "attention_template_transport_shuffled",
+        "attention_sinkhorn",
+        "attention_sinkhorn_shuffled",
         "attention_match",
         "attention_match_shuffled",
         "attention_blend",
@@ -2196,6 +2293,8 @@ def _build_rotalign_prefix_state(
     if per_head_position_budget_mode in {
         "attention_template_transport",
         "attention_template_transport_shuffled",
+        "attention_sinkhorn",
+        "attention_sinkhorn_shuffled",
     } and fixed_head_templates is None:
         raise ValueError(
             f"{per_head_position_budget_mode} per-head position budgets require fixed_head_templates"
@@ -2359,6 +2458,8 @@ def _build_rotalign_prefix_state(
                         "attention_procrustes_shuffled",
                         "attention_template_transport",
                         "attention_template_transport_shuffled",
+                        "attention_sinkhorn",
+                        "attention_sinkhorn_shuffled",
                         "attention_match",
                         "attention_match_shuffled",
                         "attention_blend",
@@ -3396,6 +3497,8 @@ def parse_args() -> argparse.Namespace:
             "attention_prior",
             "attention_template_transport",
             "attention_template_transport_shuffled",
+            "attention_sinkhorn",
+            "attention_sinkhorn_shuffled",
             "attention_match",
             "attention_match_shuffled",
             "attention_blend",
@@ -3461,6 +3564,8 @@ def parse_args() -> argparse.Namespace:
             "attention_prior_shuffled",
             "attention_template_transport",
             "attention_template_transport_shuffled",
+            "attention_sinkhorn",
+            "attention_sinkhorn_shuffled",
             "attention_match",
             "attention_match_shuffled",
             "attention_blend",
@@ -3561,6 +3666,8 @@ def main() -> None:
         "attention_prior",
         "attention_template_transport",
         "attention_template_transport_shuffled",
+        "attention_sinkhorn",
+        "attention_sinkhorn_shuffled",
         "attention_match",
         "attention_match_shuffled",
         "attention_blend",
@@ -3655,6 +3762,8 @@ def main() -> None:
                 "attention_prior",
                 "attention_template_transport",
                 "attention_template_transport_shuffled",
+                "attention_sinkhorn",
+                "attention_sinkhorn_shuffled",
                 "attention_match",
                 "attention_match_shuffled",
                 "attention_blend",
@@ -3665,6 +3774,8 @@ def main() -> None:
             "attention_prior_shuffled",
             "attention_template_transport",
             "attention_template_transport_shuffled",
+            "attention_sinkhorn",
+            "attention_sinkhorn_shuffled",
             "attention_match",
             "attention_match_shuffled",
             "attention_blend",
@@ -3676,11 +3787,15 @@ def main() -> None:
             and runtime_head_selection_metric in {
                 "attention_template_transport",
                 "attention_template_transport_shuffled",
+                "attention_sinkhorn",
+                "attention_sinkhorn_shuffled",
             }
         )
         or per_head_position_budget_mode in {
             "attention_template_transport",
             "attention_template_transport_shuffled",
+            "attention_sinkhorn",
+            "attention_sinkhorn_shuffled",
         }
     )
     if needs_fixed_head_prior:

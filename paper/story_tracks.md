@@ -138,6 +138,12 @@ Proposed claim:
 - So the paper should not frame linear cleanup alone as the answer; the next
   credible path is still better transport, likely OT / gauge-aware matching,
   with correction only as a secondary add-on.
+- The first lightweight OT-style follow-up is also bounded:
+  `attention_sinkhorn` reaches only `0.042857` on the same Qwen GSM70 split,
+  below the old fixed prior, below ridge correction, and below `C2C`.
+- So the paper should not frame evaluator-level soft transport as the answer
+  either; the next credible move is a heavier transport map or the next
+  external baseline, not more score-level transport tweaks.
 - The live query-aware sparse story is also now best used as a **mechanism clue**:
   query-aware sparsity matters directionally, but the current implementation is
   not stable enough across seeds or held-out slices to headline the paper.

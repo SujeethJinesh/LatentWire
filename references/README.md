@@ -191,6 +191,10 @@ orthogonal alignment, and OT-based transport:
 - `161_`: transformers-as-OT as a principled geometric framing for soft transport rather than heuristic head matching.
 - `162_`: OT alignment for contextual embeddings as a practical reference for alignment objectives under contextual, not static, representations.
 
+File `163_` adds a newer cross-model KV reuse system angle:
+
+- `163_`: activated-LoRA cross-model KV reuse as a recent systems reference for combining reusable transport paths with lightweight adaptation rather than treating transport as a fully fixed map.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

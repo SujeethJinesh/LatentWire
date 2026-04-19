@@ -29,6 +29,8 @@ Current status:
 Next fix:
 
 - permutation- or OT-aware head matching before sparse routing
+- lightweight evaluator-level soft transport is also too weak on its own, so a
+  stronger transport map likely has to move deeper into the translation path
 
 ### Blocker 2: Attention geometry is more important than raw KV similarity
 

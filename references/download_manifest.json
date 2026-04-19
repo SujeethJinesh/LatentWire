@@ -1451,5 +1451,14 @@
     "content_type": "application/pdf",
     "status": "downloaded",
     "bytes": 521664
+  },
+  {
+    "num": 163,
+    "slug": "efficient_multi_adapter_llm_serving_via_cross_model_kv_cache_reuse_with_activated_lora",
+    "url": "https://arxiv.org/pdf/2512.17910.pdf",
+    "path": "/Users/sujeethjinesh/Desktop/LatentWire/references/163_efficient_multi_adapter_llm_serving_via_cross_model_kv_cache_reuse_with_activated_lora.pdf",
+    "content_type": "application/pdf",
+    "status": "downloaded",
+    "bytes": 2790386
   }
 ]
