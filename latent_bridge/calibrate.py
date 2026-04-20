@@ -231,7 +231,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--quantization-correction",
-        choices=["none", "affine", "bridge_affine", "bridge_ridge", "ridge", "low_rank"],
+        choices=["none", "affine", "bridge_affine", "bridge_ridge", "bridge_ridge_query", "ridge", "low_rank"],
         default="none",
         help="Optional decoder-side correction applied after quantize/dequantize",
     )
@@ -1435,13 +1435,36 @@ def main() -> None:
                 f"target layers={len(translator._transport_tgt_group_templates)}"
             )
 
+    print("\nFitting closed-form alignments (Procrustes / ridge)...")
+    diagnostics = translator.fit_from_pairs(src_kvs, tgt_kvs, verbose=args.verbose)
+
+    if args.quantization_correction == "bridge_ridge_query":
+        print(
+            "\nBuilding target runtime attention templates for query-conditioned bridge gating "
+            f"(bins={args.transport_template_bins})..."
+        )
+        bridge_templates = collect_group_attention_templates(
+            tgt,
+            tok_t,
+            prompts,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            device=args.device,
+            kv_heads=config.tgt_num_heads,
+            group_count=1,
+            bins=args.transport_template_bins,
+            template_mode="mean",
+            reasoning_mode="plain",
+            use_chat_template=args.target_use_chat_template,
+            enable_thinking=target_enable_thinking,
+        )
+        translator.set_bridge_runtime_templates([template.squeeze(0) for template in bridge_templates])
+        print(f"Built {len(bridge_templates)} bridge runtime templates")
+
     del src
     del tgt
     if args.device.startswith("cuda"):
         torch.cuda.empty_cache()
-
-    print("\nFitting closed-form alignments (Procrustes / ridge)...")
-    diagnostics = translator.fit_from_pairs(src_kvs, tgt_kvs, verbose=args.verbose)
 
     avg_cos_K = sum(d["K"]["mean_cosine_similarity"] for d in diagnostics.values()) / len(diagnostics)
     avg_cos_V = sum(d["V"]["mean_cosine_similarity"] for d in diagnostics.values()) / len(diagnostics)

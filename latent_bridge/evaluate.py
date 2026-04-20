@@ -1658,6 +1658,37 @@ def _resample_position_profile(profile: torch.Tensor, target_len: int) -> torch.
     return out / out.sum().clamp_min(1e-8)
 
 
+def _translate_layer_with_optional_runtime_attention(
+    translator: RotAlignKVTranslator,
+    K_s: torch.Tensor,
+    V_s: torch.Tensor,
+    *,
+    tgt_layer_idx: int,
+    quantize: bool,
+    quantization_control: str,
+    runtime_attention_profile: torch.Tensor | None,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    try:
+        return translator.translate_layer(
+            K_s,
+            V_s,
+            tgt_layer_idx=tgt_layer_idx,
+            quantize=quantize,
+            quantization_control=quantization_control,
+            runtime_attention_profile=runtime_attention_profile,
+        )
+    except TypeError as exc:
+        if "runtime_attention_profile" not in str(exc):
+            raise
+        return translator.translate_layer(
+            K_s,
+            V_s,
+            tgt_layer_idx=tgt_layer_idx,
+            quantize=quantize,
+            quantization_control=quantization_control,
+        )
+
+
 @torch.no_grad()
 def _mean_attention_prior_from_prompts(
     model,
@@ -2954,12 +2985,20 @@ def _build_rotalign_prefix_state(
         K_s, V_s = src_pkv[src_l]
         K_s, V_s = _apply_source_kv_control(K_s, V_s, source_kv_control, tgt_l)
         K_t, V_t = tgt_pkv[tgt_l]
-        K_hat, V_hat = translator.translate_layer(
+        runtime_attention_profile = None
+        if layer_attention_maps is not None:
+            runtime_attention_profile = _resample_position_profile(
+                layer_attention_maps[tgt_l].mean(dim=0),
+                translator.config.transport_template_bins,
+            )
+        K_hat, V_hat = _translate_layer_with_optional_runtime_attention(
+            translator,
             K_s.to(device=device, dtype=torch.float32),
             V_s.to(device=device, dtype=torch.float32),
             tgt_layer_idx=tgt_l,
             quantize=quantize,
             quantization_control=quantization_control,
+            runtime_attention_profile=runtime_attention_profile,
         )
         K_hat, V_hat = _apply_translated_kv_control(
             K_hat,

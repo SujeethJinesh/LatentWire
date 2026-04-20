@@ -353,3 +353,24 @@ but the next positive-method attempt has to come from the method itself:
 - query-conditioned bridge / projector
 - richer token-interaction or distillation target
 - or both together
+
+I then tried the cheapest dynamic version of that bridge idea:
+`bridge_ridge_query`. This keeps the same `bridge_ridge` correction but gates
+the correction by live target attention-template agreement with a calibration
+mean template. It was calibrated and evaluated under the fair shared-chat /
+`enable_thinking=False` regime.
+
+Controlled held-out results:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.0000`
+
+So the branch is negative. The cheapest query-conditioned bridge gate is not
+enough, and in this form it is worse than the static `bridge_ridge` branch.
+
+That sharpens the next move again:
+
+- not a scalar bridge gate
+- not another static bridge
+- next serious bridge attempt should be a **query-conditioned bridge bank /
+  projector** or a bridge fit against a richer token-interaction target

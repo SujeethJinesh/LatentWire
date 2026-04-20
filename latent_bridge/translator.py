@@ -109,9 +109,11 @@ class TranslatorConfig:
     # Optional decoder-side correction after quantize/dequantize. `affine`
     # learns a diagonal scale+bias, `bridge_affine` learns a small coordinatewise
     # bridge over both the dequantized tensor and the pre-quant prediction,
-    # `bridge_ridge` learns a full linear bridge over both signals, `ridge`
-    # learns a full linear map plus bias in rotated target space, and `low_rank`
-    # learns a reduced-rank linear map plus bias as a tiny bridge adapter.
+    # `bridge_ridge` learns a full linear bridge over both signals,
+    # `bridge_ridge_query` reuses that full bridge but gates it by live
+    # target attention-template agreement, `ridge` learns a full linear map plus
+    # bias in rotated target space, and `low_rank` learns a reduced-rank linear
+    # map plus bias as a tiny bridge adapter.
     quantization_correction: str = "none"
     quantization_correction_rank: int | None = None
 
@@ -245,6 +247,10 @@ class RotAlignKVTranslator(nn.Module):
         self._transport_tgt_group_template_banks: list[torch.Tensor] | None = None
         self._broadcast_transport_plan_K: list[torch.Tensor] | None = None
         self._broadcast_transport_plan_V: list[torch.Tensor] | None = None
+        self.register_buffer(
+            "bridge_runtime_templates",
+            torch.zeros(config.num_tgt_layers, config.transport_template_bins, dtype=torch.float32),
+        )
 
         # --- Optional pre-quant denoising filters and quantization repair ---
         self.pre_quant_filter_K = nn.ParameterList(
@@ -1360,6 +1366,65 @@ class RotAlignKVTranslator(nn.Module):
             torch.stack(biases, dim=0).to(dtype=target.dtype, device=target.device),
         )
 
+    @staticmethod
+    def _js_template_distance(
+        src_template: torch.Tensor,
+        tgt_template: torch.Tensor,
+    ) -> torch.Tensor:
+        src = src_template.float().view(-1)
+        tgt = tgt_template.float().view(-1)
+        if src.numel() != tgt.numel():
+            raise ValueError(
+                "bridge templates must agree on bin count, "
+                f"got {src.numel()} and {tgt.numel()}"
+            )
+        src = src / src.sum().clamp_min(1e-8)
+        tgt = tgt / tgt.sum().clamp_min(1e-8)
+        mid = 0.5 * (src + tgt)
+        return 0.5 * (
+            (src * (src.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum()
+            + (tgt * (tgt.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum()
+        )
+
+    def set_bridge_runtime_templates(self, templates: Sequence[torch.Tensor]) -> None:
+        if len(templates) != self.config.num_tgt_layers:
+            raise ValueError(
+                "bridge runtime template count must match target layers, "
+                f"got {len(templates)} vs {self.config.num_tgt_layers}"
+            )
+        stacked = []
+        for template in templates:
+            vec = template.float().view(-1)
+            if vec.numel() != self.config.transport_template_bins:
+                raise ValueError(
+                    "bridge runtime templates must match transport_template_bins, "
+                    f"got {vec.numel()} vs {self.config.transport_template_bins}"
+                )
+            vec = vec / vec.sum().clamp_min(1e-8)
+            stacked.append(vec)
+        self.bridge_runtime_templates.copy_(
+            torch.stack(stacked, dim=0).to(self.bridge_runtime_templates.device)
+        )
+
+    def _bridge_runtime_gate(
+        self,
+        tgt_layer_idx: int,
+        runtime_profile: torch.Tensor | None,
+        *,
+        device: torch.device,
+        dtype: torch.dtype,
+    ) -> torch.Tensor:
+        if runtime_profile is None:
+            return torch.tensor(1.0, device=device, dtype=dtype)
+        reference = self.bridge_runtime_templates[tgt_layer_idx].to(device=device, dtype=dtype)
+        if float(reference.sum()) <= 1e-8:
+            return torch.tensor(1.0, device=device, dtype=dtype)
+        runtime = runtime_profile.to(device=device, dtype=dtype).view(-1)
+        runtime = runtime / runtime.sum().clamp_min(1e-8)
+        js = self._js_template_distance(runtime, reference.to(dtype=runtime.dtype))
+        gate = (1.0 - js / math.log(2.0)).clamp(0.0, 1.0)
+        return gate.to(device=device, dtype=dtype)
+
     def _apply_quantization_correction(
         self,
         x: torch.Tensor,
@@ -1367,6 +1432,7 @@ class RotAlignKVTranslator(nn.Module):
         kind: str,
         *,
         aux_input: torch.Tensor | None = None,
+        runtime_profile: torch.Tensor | None = None,
     ) -> torch.Tensor:
         if self.config.quantization_correction == "none":
             return x
@@ -1402,6 +1468,21 @@ class RotAlignKVTranslator(nn.Module):
                 + aux_input @ aux_proj.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
+        if self.config.quantization_correction == "bridge_ridge_query":
+            if aux_input is None:
+                raise ValueError("bridge_ridge_query quantization correction requires aux_input")
+            corrected = (
+                x @ proj.to(device=x.device, dtype=x.dtype)
+                + aux_input @ aux_proj.to(device=x.device, dtype=x.dtype)
+                + bias.to(device=x.device, dtype=x.dtype)
+            )
+            gate = self._bridge_runtime_gate(
+                tgt_layer_idx,
+                runtime_profile,
+                device=x.device,
+                dtype=x.dtype,
+            )
+            return x + gate * (corrected - x)
         if self.config.quantization_correction in {"ridge", "low_rank"}:
             return x @ proj.to(device=x.device, dtype=x.dtype) + bias.to(device=x.device, dtype=x.dtype)
         raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
@@ -1417,6 +1498,7 @@ class RotAlignKVTranslator(nn.Module):
         tgt_layer_idx: int,
         quantize: bool = True,
         quantization_control: str = "real",
+        runtime_attention_profile: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Translate one source layer's KV into the target's KV space.
 
@@ -1471,8 +1553,20 @@ class RotAlignKVTranslator(nn.Module):
             K_q = self.quantizer.quantize_dequantize(K_t_rot)
             V_q = self.quantizer.quantize_dequantize(V_t_rot)
             if quantization_control == "real":
-                K_t_rot = self._apply_quantization_correction(K_q, tgt_layer_idx, "K", aux_input=K_pred)
-                V_t_rot = self._apply_quantization_correction(V_q, tgt_layer_idx, "V", aux_input=V_pred)
+                K_t_rot = self._apply_quantization_correction(
+                    K_q,
+                    tgt_layer_idx,
+                    "K",
+                    aux_input=K_pred,
+                    runtime_profile=runtime_attention_profile,
+                )
+                V_t_rot = self._apply_quantization_correction(
+                    V_q,
+                    tgt_layer_idx,
+                    "V",
+                    aux_input=V_pred,
+                    runtime_profile=runtime_attention_profile,
+                )
             elif quantization_control == "matched_noise":
                 def add_matched_noise(x: torch.Tensor, q: torch.Tensor, salt: int) -> torch.Tensor:
                     q = self._apply_quantization_correction(
@@ -1480,6 +1574,7 @@ class RotAlignKVTranslator(nn.Module):
                         tgt_layer_idx,
                         "K" if salt == 0 else "V",
                         aux_input=x,
+                        runtime_profile=runtime_attention_profile,
                     )
                     err = (q - x).detach().float()
                     mean = float(err.mean().detach().cpu())
@@ -1866,7 +1961,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction == "bridge_ridge":
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query"}:
                 proj_k, aux_proj_k, bias_k = self._fit_bridge_ridge_correction(
                     K_quant,
                     K_pred,

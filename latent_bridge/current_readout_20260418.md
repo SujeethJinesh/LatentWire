@@ -1390,3 +1390,28 @@ Interpretation:
   serialization and `enable_thinking=False`, but the next method step still has
   to be a **query-conditioned bridge / projector**, not another serialization
   tweak
+
+And a thirty-ninth query-conditioned bridge-gating update:
+
+> I then implemented the cheapest dynamic bridge variant that still changes the
+> method class: `bridge_ridge_query`, which reuses the same decoder-side
+> `bridge_ridge` correction but gates that correction by live target
+> attention-template agreement with a calibration-time mean template. This was
+> calibrated under the same fair prompt regime as the new Qwen control:
+> shared chat serialization and `enable_thinking=False` on both sides. The
+> resulting checkpoint fit looked like the old grouped-subspace family
+> (`K` cosine `0.864`, relative Frobenius error `0.476`; `V` cosine `0.381`,
+> relative Frobenius error `0.915`). Held-out controlled smokes were then:
+> - `gsm8k_5`: `0.200000` at `722,107.700` average bytes
+> - controlled `gsm8k_eval_10`: `0.000000` at `720,487.313` average bytes
+
+Interpretation:
+
+- a simple live template-agreement gate on top of `bridge_ridge` is **not**
+  enough; it makes the bridge less stable, not more stable
+- this rules out the cheapest “Activated-LoRA-style” bridge-on/off variant in
+  the current form
+- the next bridge lane, if it stays alive, has to be **richer than a single
+  scalar agreement gate**:
+  likely a query-conditioned bridge bank, a low-rank dynamic projector, or a
+  bridge trained against a richer interaction target
