@@ -85,6 +85,12 @@ class FakeCausalLM(nn.Module):
         self.last_call = None
         self.last_generate_call = None
         self.attention_pattern: torch.Tensor | None = None
+        self.model = SimpleNamespace(
+            layers=[
+                SimpleNamespace(self_attn=SimpleNamespace(q_proj=nn.Identity(), num_heads=1))
+                for _ in range(n_layers)
+            ]
+        )
 
     def _make_pkv(self, batch: int, seq: int, device: torch.device):
         layers = []
@@ -103,6 +109,7 @@ class FakeCausalLM(nn.Module):
         use_cache=False,
         labels=None,
         output_attentions=False,
+        output_hidden_states=False,
         **kwargs,
     ):
         self.last_call = {
@@ -116,6 +123,7 @@ class FakeCausalLM(nn.Module):
         logits = torch.full((batch, seq, self.vocab_size), -20.0, device=input_ids.device)
         logits[..., self.preferred_token_id] = 20.0
         attentions = None
+        hidden_states = None
         if output_attentions:
             total_len = seq + (
                 past_key_values.get_seq_length()
@@ -131,10 +139,14 @@ class FakeCausalLM(nn.Module):
                 pattern.view(1, 1, 1, total_len).expand(batch, 1, seq, total_len).clone()
                 for _ in range(self.n_layers)
             )
+        if output_hidden_states:
+            hidden = input_ids.to(dtype=torch.float32).unsqueeze(-1)
+            hidden_states = tuple(hidden.clone() for _ in range(self.n_layers + 1))
         return SimpleNamespace(
             logits=logits,
             past_key_values=self._make_pkv(batch, seq, input_ids.device) if use_cache else None,
             attentions=attentions,
+            hidden_states=hidden_states,
         )
 
     def generate(self, input_ids, max_new_tokens, do_sample, pad_token_id, attention_mask=None):
@@ -477,6 +489,7 @@ def test_search_per_layer_gates_updates_k_and_v_independently(monkeypatch) -> No
         per_head_position_budget_mode="none",
         records=None,
         method_name="rotalign_kv",
+        **kwargs,
     ) -> float:
         score = 0.0
         for layer_idx, (goal_k, goal_v) in target.items():
@@ -545,6 +558,7 @@ def test_search_per_layer_gates_uses_generation_objective_for_generation_example
         fixed_head_profiles=None,
         runtime_head_prior_alpha=0.5,
         per_head_position_budget_mode="none",
+        **kwargs,
     ):
         calls.append(protocol)
         return (0.25, 16.0, 1.0)
@@ -622,6 +636,7 @@ def test_search_per_layer_gates_skips_irrelevant_transport_branch(
         per_head_position_budget_mode="none",
         records=None,
         method_name="rotalign_kv",
+        **kwargs,
     ) -> float:
         nonlocal calls
         calls += 1
@@ -708,6 +723,7 @@ def test_main_gate_search_uses_protocol_specific_objective(monkeypatch, tmp_path
         fixed_head_profiles=None,
         runtime_head_prior_alpha=0.5,
         per_head_position_budget_mode="none",
+        **kwargs,
     ):
         search_protocols.append(protocol)
         return {"gate_K": [0.15, 0.15], "gate_V": [0.25, 0.25]}
@@ -1591,6 +1607,82 @@ def test_runtime_head_scores_with_prior_supports_attention_procrustes() -> None:
     assert not torch.allclose(scores, shuffled_scores)
 
 
+def test_attention_qk_fidelity_head_scores_prefers_query_preserving_head() -> None:
+    query_heads = torch.tensor(
+        [[1.0, 0.0], [0.0, 1.0]],
+        dtype=torch.float32,
+    )
+    target_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [0.0, 1.0]],
+            [[0.0, 1.0], [1.0, 0.0]],
+        ],
+        dtype=torch.float32,
+    )
+    translated_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [0.0, 1.0]],
+            [[1.0, 0.0], [0.0, 1.0]],
+        ],
+        dtype=torch.float32,
+    )
+
+    scores = evaluate._attention_qk_fidelity_head_scores(query_heads, target_keys, translated_keys)
+
+    assert float(scores[0]) > float(scores[1])
+
+
+def test_runtime_head_scores_with_prior_supports_attention_qk_fidelity() -> None:
+    query_heads = torch.tensor(
+        [[1.0, 0.0], [0.0, 1.0]],
+        dtype=torch.float32,
+    )
+    target_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [0.0, 1.0]],
+            [[0.0, 1.0], [1.0, 0.0]],
+        ],
+        dtype=torch.float32,
+    )
+    translated_keys = torch.tensor(
+        [
+            [[1.0, 0.0], [0.0, 1.0]],
+            [[1.0, 0.0], [0.0, 1.0]],
+        ],
+        dtype=torch.float32,
+    )
+
+    scores, _ = evaluate._runtime_head_scores_with_prior(
+        None,
+        metric="attention_qk_fidelity",
+        layer_idx=0,
+        query_heads=query_heads,
+        target_keys=target_keys,
+        translated_keys=translated_keys,
+    )
+    shuffled_scores, _ = evaluate._runtime_head_scores_with_prior(
+        None,
+        metric="attention_qk_fidelity_shuffled",
+        layer_idx=0,
+        query_heads=query_heads,
+        target_keys=target_keys,
+        translated_keys=translated_keys,
+    )
+
+    assert float(scores[0]) > float(scores[1])
+    assert shuffled_scores.shape == scores.shape
+    assert not torch.allclose(scores, shuffled_scores)
+
+
+def test_per_head_gate_override_from_scores_preserves_mean_gate() -> None:
+    scores = torch.tensor([0.0, 2.0], dtype=torch.float32)
+
+    gate = evaluate._per_head_gate_override_from_scores(0.2, scores, strength=1.0)
+
+    assert float(gate[1]) > float(gate[0])
+    assert float(gate.mean()) == pytest.approx(0.2, abs=1e-6)
+
+
 def test_attention_template_transport_scores_prefers_matching_template() -> None:
     attention_map = torch.tensor(
         [[0.9, 0.1], [0.1, 0.9]],
@@ -2008,6 +2100,7 @@ def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
         fixed_head_profiles=None,
         runtime_head_prior_alpha=0.5,
         per_head_position_budget_mode="none",
+        **kwargs,
     ):
         captured["source_prompt"] = source_prompt
         captured["target_prompt"] = target_prompt
@@ -2072,6 +2165,7 @@ def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
         fixed_head_profiles=None,
         runtime_head_prior_alpha=0.5,
         per_head_position_budget_mode="none",
+        **kwargs,
     ):
         return evaluate.PrefixState(None, torch.tensor([[2]], dtype=torch.long), 1), {"bits": 32.0}
 

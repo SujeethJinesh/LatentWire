@@ -275,6 +275,11 @@ attention-based head scores. This keeps only a subset of the
 checkpoint-selected target heads at evaluation time and records per-layer
 `head_trace` metadata in the sidecar, including prior-overlap statistics when a
 fixed head prior is active.
+Use `--runtime-head-gate-metric <metric>` with
+`--runtime-head-gate-strength <alpha>` to keep the existing scalar gate but
+modulate it per head at runtime from the same live scores. This is a soft
+query-conditioned fusion variant rather than a hard head-pruning rule, and it
+records per-layer `head_gate_trace` metadata in the sidecar.
 `attention_margin` scores heads by the last-token top-1 vs top-2 attention gap,
 which acts as a cheap attention-logit / confidence proxy.
 `retrieval_peak` scores heads by how sharply they focus on farther-back prefix

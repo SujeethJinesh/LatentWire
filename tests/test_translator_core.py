@@ -172,6 +172,31 @@ def test_cosine_fusion_rule_suppresses_opposing_translated_kv(monkeypatch) -> No
     assert torch.allclose(V_cos, V_target)
 
 
+def test_fuse_layer_supports_per_head_gate_override(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    tr.set_fixed_gates(0.5)
+
+    K_target = torch.zeros(1, 2, 2, 2)
+    V_target = torch.zeros(1, 2, 2, 2)
+    K_translated = torch.ones(1, 2, 2, 2)
+    V_translated = 2.0 * torch.ones(1, 2, 2, 2)
+
+    K_out, V_out = tr.fuse_layer(
+        K_target,
+        V_target,
+        K_translated,
+        V_translated,
+        0,
+        head_gate_override_K=torch.tensor([1.0, 0.0]),
+        head_gate_override_V=torch.tensor([1.0, 0.0]),
+    )
+
+    assert torch.allclose(K_out[:, 0], K_translated[:, 0])
+    assert torch.allclose(K_out[:, 1], K_target[:, 1])
+    assert torch.allclose(V_out[:, 0], V_translated[:, 0])
+    assert torch.allclose(V_out[:, 1], V_target[:, 1])
+
+
 def test_js_and_kalman_fusion_rules_downweight_noisy_translation(monkeypatch) -> None:
     tr = _make_identity_translator(monkeypatch)
     tr.set_fixed_gates(0.8)

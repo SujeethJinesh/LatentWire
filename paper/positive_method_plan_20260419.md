@@ -112,3 +112,27 @@ That means:
 - the next serious try, if any, has to be a **genuinely richer
   query-conditioned QK-fidelity or retrieval-template transport**, not another
   static calibration-time descriptor swap
+
+The follow-up `attention_qk_fidelity` per-head budget branch then stopped
+changing the translator and changed only the live sparse budget rule on top of
+the best current internal transport-plus-correction checkpoint,
+`grouped_subspace_transport + rank-4 residual`. On exact Qwen GSM70 it
+recovered to `0.0429` at `157,989.2` average bytes.
+
+That means:
+
+- a genuinely query-conditioned budget is a real branch, not a crash or a null
+- but it is still below grouped-subspace-plus-rank4 (`0.0571`), fixed prior
+  (`0.0857`), and `C2C` (`0.1286`)
+- query-conditioning at evaluation time alone is still not enough
+
+The next follow-up added runtime per-head soft gate overrides on top of that
+same frozen grouped-subspace-plus-rank4 checkpoint. The first two held-out
+smokes, `attention_qk_fidelity` gating and `attention_fidelity` gating, both
+collapsed to `0.0000` on `gsm8k_eval_10`.
+
+That means:
+
+- the first gate-only query-conditioned rescue path looks weak
+- if the positive-method lane gets one more serious try, it should stay
+  **transport-first**, not shift to another gate-only or selector-only branch

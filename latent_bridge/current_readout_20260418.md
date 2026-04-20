@@ -1094,3 +1094,58 @@ Interpretation:
   the next live idea would have to be a genuinely query-conditioned
   QK-fidelity or retrieval-template transport, not another static calibration-
   time descriptor inside the same transport family
+
+And a twenty-seventh query-conditioned-budget update:
+
+> I then stopped changing the translator and changed only the live sparse
+> budget rule on top of the best current internal transport-plus-correction
+> checkpoint, `grouped_subspace_transport + rank-4 residual`. Using
+> `--per-head-position-budget-mode attention_qk_fidelity` on the exact same
+> Qwen GSM70 setup gave `0.042857` at `157,989.2` average bytes.
+
+Paired reads for the query-conditioned QK-fidelity budget branch on Qwen GSM70:
+
+- vs old fixed prior:
+  - delta `-0.042857`
+  - qk-fidelity-budget-only wins `1`
+  - fixed-prior-only wins `4`
+  - bootstrap `[-0.100000, +0.014286]`
+  - McNemar `0.3711`
+- vs grouped subspace transport + rank-4 residual:
+  - delta `-0.014286`
+  - qk-fidelity-budget-only wins `1`
+  - grouped-subspace-resid4-only wins `2`
+  - bootstrap `[-0.071429, +0.028571]`
+  - McNemar `1.0000`
+- vs `C2C`:
+  - delta `-0.085714`
+  - qk-fidelity-budget-only wins `3`
+  - `C2C`-only wins `9`
+  - bootstrap `[-0.171429, +0.014286]`
+  - McNemar `0.1489`
+
+Interpretation:
+
+- a genuinely query-conditioned QK-fidelity budget is a real branch, not a
+  crash or a null replay
+- but it is still below the best current grouped-subspace-plus-residual branch
+  and still far below the fixed-prior branch and `C2C`
+- it is also less byte-efficient than the best sparse internal branches
+- so live query-conditioning at evaluation time alone is still not the missing
+  ingredient
+
+And a first runtime-head-gating update:
+
+> I then added a new runtime path that keeps the same grouped-subspace-plus-
+> rank4 checkpoint frozen and uses live head scores only to modulate the
+> fusion gate per head. The first two smoke tests,
+> `attention_qk_fidelity` and `attention_fidelity`, both collapsed to
+> `0.000000` on the held-out `gsm8k_eval_10` slice.
+
+Interpretation:
+
+- the first soft query-conditioned gate variants do not look like the rescue
+  path either
+- that makes the next serious positive-method try narrower again:
+  a richer query-conditioned transport cost is still more plausible than
+  another gate-only variant on top of the same frozen transport map

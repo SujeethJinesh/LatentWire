@@ -284,6 +284,75 @@ def _last_token_attention_scores(
     ]
 
 
+def _model_layers(model):
+    if hasattr(model, "model") and hasattr(model.model, "layers"):
+        return model.model.layers
+    if hasattr(model, "transformer") and hasattr(model.transformer, "h"):
+        return model.transformer.h
+    if hasattr(model, "gpt_neox") and hasattr(model.gpt_neox, "layers"):
+        return model.gpt_neox.layers
+    raise ValueError("Unsupported model architecture for query extraction")
+
+
+@torch.no_grad()
+def _last_token_query_heads(
+    model,
+    token_ids: torch.Tensor,
+    past_key_values: Any,
+    device: str,
+    *,
+    translator: RotAlignKVTranslator,
+) -> list[torch.Tensor]:
+    model_cache = _cache_for_model(model, past_key_values)
+    prefix_len = _cache_seq_length(model_cache)
+    out = model(
+        input_ids=token_ids,
+        attention_mask=_ones(prefix_len + token_ids.shape[1], device),
+        past_key_values=model_cache,
+        use_cache=False,
+        output_hidden_states=True,
+    )
+    hidden_states = getattr(out, "hidden_states", None)
+    if hidden_states is None:
+        raise ValueError("Target model did not return hidden_states for QK-fidelity scoring")
+    layers = _model_layers(model)
+    query_heads: list[torch.Tensor] = []
+    for layer_idx in range(min(len(layers), len(hidden_states) - 1, translator.config.num_tgt_layers)):
+        layer = layers[layer_idx]
+        attn = getattr(layer, "self_attn", None)
+        if attn is None:
+            attn = getattr(layer, "attention", None)
+        if attn is None or not hasattr(attn, "q_proj"):
+            raise ValueError(f"Layer {layer_idx} does not expose a q_proj module")
+        hidden = hidden_states[layer_idx][:, -1, :]
+        q = attn.q_proj(hidden).float()
+        head_dim = int(getattr(attn, "head_dim", translator.config.tgt_head_dim))
+        num_query_heads = getattr(attn, "num_heads", None)
+        if num_query_heads is None:
+            num_query_heads = getattr(attn, "num_attention_heads", None)
+        if num_query_heads is None:
+            num_query_heads = q.shape[-1] // max(head_dim, 1)
+        num_query_heads = int(num_query_heads)
+        if q.shape[-1] % num_query_heads != 0:
+            raise ValueError(
+                f"Layer {layer_idx} query projection width {q.shape[-1]} is not divisible by num_query_heads={num_query_heads}"
+            )
+        head_dim = q.shape[-1] // num_query_heads
+        q = q.view(q.shape[0], num_query_heads, head_dim)
+        if hasattr(attn, "q_norm") and attn.q_norm is not None:
+            q = attn.q_norm(q)
+        target_heads = translator.config.tgt_num_heads
+        if q.shape[1] != target_heads and q.shape[1] % target_heads == 0:
+            group = q.shape[1] // target_heads
+            q = q.view(q.shape[0], target_heads, group, head_dim).mean(dim=2)
+        if q.shape[1] != target_heads:
+            raise ValueError(
+                f"Layer {layer_idx} query head count {q.shape[1]} does not match target KV heads {target_heads}"
+            )
+        query_heads.append(q[0].detach())
+    return query_heads
+
+
 def _translator_selected_head_indices(
     translator: RotAlignKVTranslator,
     tgt_layer_idx: int,
@@ -444,6 +513,59 @@ def _attention_procrustes_head_scores(
     return torch.stack(scores)
 
 
+def _attention_qk_fidelity_head_scores(
+    query_heads: torch.Tensor,
+    target_keys: torch.Tensor,
+    translated_keys: torch.Tensor,
+) -> torch.Tensor:
+    if query_heads.ndim == 3:
+        if query_heads.shape[0] != 1:
+            raise ValueError(f"query_heads batch dimension must be 1, got shape {tuple(query_heads.shape)}")
+        query_heads = query_heads.squeeze(0)
+    if target_keys.ndim == 4:
+        if target_keys.shape[0] != 1:
+            raise ValueError(f"target_keys batch dimension must be 1, got shape {tuple(target_keys.shape)}")
+        target_keys = target_keys.squeeze(0)
+    if translated_keys.ndim == 4:
+        if translated_keys.shape[0] != 1:
+            raise ValueError(
+                f"translated_keys batch dimension must be 1, got shape {tuple(translated_keys.shape)}"
+            )
+        translated_keys = translated_keys.squeeze(0)
+    if query_heads.ndim != 2:
+        raise ValueError(f"query_heads must be rank-2 [heads, dim], got shape {tuple(query_heads.shape)}")
+    if target_keys.ndim != 3 or translated_keys.ndim != 3:
+        raise ValueError(
+            "target_keys and translated_keys must be rank-3 [heads, positions, dim], "
+            f"got {tuple(target_keys.shape)} and {tuple(translated_keys.shape)}"
+        )
+    if (
+        query_heads.shape[0] != target_keys.shape[0]
+        or query_heads.shape[0] != translated_keys.shape[0]
+    ):
+        raise ValueError(
+            "query_heads, target_keys, and translated_keys must agree on head count, "
+            f"got {query_heads.shape[0]}, {target_keys.shape[0]}, and {translated_keys.shape[0]}"
+        )
+    prefix_len = min(target_keys.shape[1], translated_keys.shape[1])
+    if prefix_len <= 0:
+        raise ValueError("attention_qk_fidelity requires at least one shared prefix position")
+    q = query_heads.float()
+    tgt = target_keys[:, -prefix_len:, :].float()
+    trans = translated_keys[:, -prefix_len:, :].float()
+    scale = math.sqrt(max(int(tgt.shape[-1]), 1))
+    tgt_logits = torch.einsum("hd,hpd->hp", q, tgt) / scale
+    trans_logits = torch.einsum("hd,hpd->hp", q, trans) / scale
+    tgt_probs = torch.softmax(tgt_logits, dim=-1)
+    trans_probs = torch.softmax(trans_logits, dim=-1)
+    mid = 0.5 * (tgt_probs + trans_probs)
+    js = 0.5 * (
+        (tgt_probs * (tgt_probs.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum(dim=-1)
+        + (trans_probs * (trans_probs.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum(dim=-1)
+    )
+    return (1.0 - js.clamp_min(0.0)).clamp_min(0.0)
+
+
 def _match_prior_scores_to_live_order(
     live_scores: torch.Tensor,
     prior_scores: torch.Tensor,
@@ -478,6 +600,21 @@ def _normalize_selection_scores(scores: torch.Tensor) -> torch.Tensor:
     if float((max_value - min_value).abs()) < 1e-8:
         return torch.ones_like(values)
     return (values - min_value) / (max_value - min_value).clamp_min(1e-8)
+
+
+def _per_head_gate_override_from_scores(
+    base_gate: float,
+    scores: torch.Tensor,
+    *,
+    strength: float,
+) -> torch.Tensor:
+    values = _normalize_selection_scores(scores.float().view(-1))
+    if values.numel() == 0:
+        return values
+    mean_value = values.mean().clamp_min(1e-8)
+    scaled = values / mean_value
+    blend = (1.0 - float(strength)) + float(strength) * scaled
+    return (float(base_gate) * blend).clamp(0.0, 1.0)
 
 
 def _deterministic_score_permutation(
@@ -930,6 +1067,7 @@ def _runtime_head_scores_with_prior(
     position_prior: torch.Tensor | None = None,
     target_keys: torch.Tensor | None = None,
     translated_keys: torch.Tensor | None = None,
+    query_heads: torch.Tensor | None = None,
     head_templates: torch.Tensor | None = None,
     prior_alpha: float = 0.5,
 ) -> tuple[torch.Tensor, torch.Tensor | None]:
@@ -981,6 +1119,19 @@ def _runtime_head_scores_with_prior(
             raise ValueError("attention_procrustes_shuffled runtime head selection requires target_keys and translated_keys")
         scores = _attention_procrustes_head_scores(attention_map, target_keys, translated_keys)
         return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_427), None
+    if metric == "attention_qk_fidelity":
+        if query_heads is None or target_keys is None or translated_keys is None:
+            raise ValueError(
+                "attention_qk_fidelity runtime head selection requires query_heads, target_keys, and translated_keys"
+            )
+        return _attention_qk_fidelity_head_scores(query_heads, target_keys, translated_keys), None
+    if metric == "attention_qk_fidelity_shuffled":
+        if query_heads is None or target_keys is None or translated_keys is None:
+            raise ValueError(
+                "attention_qk_fidelity_shuffled runtime head selection requires query_heads, target_keys, and translated_keys"
+            )
+        scores = _attention_qk_fidelity_head_scores(query_heads, target_keys, translated_keys)
+        return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_881), None
     if metric == "attention_prior":
         if prior_scores is None:
             raise ValueError("attention_prior runtime head selection requires fixed_head_profiles")
@@ -2172,6 +2323,8 @@ def _build_rotalign_prefix_state(
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    runtime_head_gate_metric: str = "none",
+    runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
 ) -> tuple[PrefixState, dict[str, float]]:
     tgt_prompt_ids = target_tokenizer(target_prompt, return_tensors="pt").input_ids.to(device)
@@ -2198,6 +2351,7 @@ def _build_rotalign_prefix_state(
         src_pkv = list(_normalize_cache(src_out.past_key_values))
 
     layer_attention_maps: list[torch.Tensor] | None = None
+    layer_query_heads: list[torch.Tensor] | None = None
     runtime_head_attention_metrics = {
         "attention_peak",
         "attention_entropy",
@@ -2207,6 +2361,8 @@ def _build_rotalign_prefix_state(
         "attention_fidelity_shuffled",
         "attention_procrustes",
         "attention_procrustes_shuffled",
+        "attention_qk_fidelity",
+        "attention_qk_fidelity_shuffled",
         "attention_template_transport",
         "attention_template_transport_shuffled",
         "attention_sinkhorn",
@@ -2224,9 +2380,22 @@ def _build_rotalign_prefix_state(
         runtime_head_selection_ratio < 1.0
         and runtime_head_selection_metric in runtime_head_attention_metrics
     ) or (
+        runtime_head_gate_metric in runtime_head_attention_metrics
+    ) or (
         per_head_position_budget_mode != "none"
     ):
         layer_attention_maps = _last_token_attention_maps(
+            target_model,
+            tgt_last_token,
+            tuple(tgt_pkv),
+            device,
+            translator=translator,
+        )
+    if (
+        runtime_head_selection_ratio < 1.0
+        and runtime_head_selection_metric in {"attention_qk_fidelity", "attention_qk_fidelity_shuffled"}
+    ) or runtime_head_gate_metric in {"attention_qk_fidelity", "attention_qk_fidelity_shuffled"} or per_head_position_budget_mode in {"attention_qk_fidelity", "attention_qk_fidelity_shuffled"}:
+        layer_query_heads = _last_token_query_heads(
             target_model,
             tgt_last_token,
             tuple(tgt_pkv),
@@ -2304,6 +2473,7 @@ def _build_rotalign_prefix_state(
     selector_layers: list[dict[str, Any]] = []
     head_layers: list[dict[str, Any]] = []
     head_budget_layers: list[dict[str, Any]] = []
+    head_gate_layers: list[dict[str, Any]] = []
     layer_runtime_head_counts = [
         translator.selected_head_count(layer_idx)
         for layer_idx in range(translator.config.num_tgt_layers)
@@ -2355,6 +2525,13 @@ def _build_rotalign_prefix_state(
             template_scores = fixed_head_templates[tgt_l].to(device=K_t_aligned.device)
         active_target_keys = K_t_aligned[:, active_head_indices]
         active_translated_keys = K_hat[:, active_head_indices]
+        active_query_heads = (
+            layer_query_heads[tgt_l][active_head_indices]
+            if layer_query_heads is not None
+            else None
+        )
+        head_gate_override_k: torch.Tensor | None = None
+        head_gate_override_v: torch.Tensor | None = None
         if runtime_head_selection_ratio < 1.0:
             attention_map = active_attention_map
             original_head_indices = active_head_indices
@@ -2368,6 +2545,7 @@ def _build_rotalign_prefix_state(
                 position_prior=position_prior_scores,
                 target_keys=active_target_keys,
                 translated_keys=active_translated_keys,
+                query_heads=active_query_heads,
                 head_templates=template_scores,
                 prior_alpha=runtime_head_prior_alpha,
             )
@@ -2422,8 +2600,58 @@ def _build_rotalign_prefix_state(
                 prior_scores = prior_scores[keep_local]
             if template_scores is not None:
                 template_scores = template_scores[keep_local]
+            if active_query_heads is not None:
+                active_query_heads = active_query_heads[keep_local]
         elif layer_attention_maps is not None:
             runtime_position_scores = layer_attention_maps[tgt_l][-K_t_aligned.shape[2] :].mean(dim=0)
+        gate_k_now, gate_v_now = translator.gate_value(tgt_l)
+        if runtime_head_gate_metric != "none" and translator.is_layer_selected(tgt_l):
+            gate_scores, _ = _runtime_head_scores_with_prior(
+                active_attention_map,
+                metric=runtime_head_gate_metric,
+                layer_idx=tgt_l,
+                prior_scores=prior_scores,
+                position_prior=position_prior_scores,
+                target_keys=active_target_keys,
+                translated_keys=active_translated_keys,
+                query_heads=active_query_heads,
+                head_templates=template_scores,
+                prior_alpha=runtime_head_prior_alpha,
+            )
+            full_gate = torch.zeros(
+                translator.config.tgt_num_heads,
+                dtype=K_t_aligned.dtype,
+                device=K_t_aligned.device,
+            )
+            if kv_transport in {"both", "k_only"}:
+                full_gate[active_head_indices] = _per_head_gate_override_from_scores(
+                    gate_k_now,
+                    gate_scores,
+                    strength=runtime_head_gate_strength,
+                ).to(device=full_gate.device, dtype=full_gate.dtype)
+                head_gate_override_k = full_gate
+            if kv_transport in {"both", "v_only"}:
+                full_gate_v = torch.zeros_like(full_gate)
+                full_gate_v[active_head_indices] = _per_head_gate_override_from_scores(
+                    gate_v_now,
+                    gate_scores,
+                    strength=runtime_head_gate_strength,
+                ).to(device=full_gate_v.device, dtype=full_gate_v.dtype)
+                head_gate_override_v = full_gate_v
+            top_local = torch.topk(gate_scores, k=min(int(gate_scores.numel()), 3), largest=True).indices
+            head_gate_layers.append(
+                {
+                    "target_layer": int(tgt_l),
+                    "source_layer": int(src_l),
+                    "metric": runtime_head_gate_metric,
+                    "strength": float(runtime_head_gate_strength),
+                    "base_gate_k": float(gate_k_now),
+                    "base_gate_v": float(gate_v_now),
+                    "mean_score": float(gate_scores.mean().item()),
+                    "score_gap": float((gate_scores.max() - gate_scores.min()).item()),
+                    "top_target_heads": [int(active_head_indices[idx].item()) for idx in top_local],
+                }
+            )
         if per_head_position_budget_mode != "none" and position_selection_ratio < 1.0:
             if active_attention_map is None:
                 raise ValueError("per-head position budgets require target attention maps")
@@ -2435,6 +2663,7 @@ def _build_rotalign_prefix_state(
                 position_prior=position_prior_scores,
                 target_keys=active_target_keys,
                 translated_keys=active_translated_keys,
+                query_heads=active_query_heads,
                 head_templates=template_scores,
                 prior_alpha=runtime_head_prior_alpha,
             )
@@ -2456,6 +2685,8 @@ def _build_rotalign_prefix_state(
                         "attention_prior_shuffled",
                         "attention_procrustes",
                         "attention_procrustes_shuffled",
+                        "attention_qk_fidelity",
+                        "attention_qk_fidelity_shuffled",
                         "attention_template_transport",
                         "attention_template_transport_shuffled",
                         "attention_sinkhorn",
@@ -2486,7 +2717,6 @@ def _build_rotalign_prefix_state(
                 }
             )
             keep_list = [int(value) for value in keep_counts.detach().cpu().tolist()]
-            gate_k_now, gate_v_now = translator.gate_value(tgt_l)
             if (
                 translator.is_layer_selected(tgt_l)
                 and kv_transport in {"both", "k_only"}
@@ -2560,6 +2790,8 @@ def _build_rotalign_prefix_state(
                         V_hat,
                         tgt_l,
                         fusion_rule=fusion_rule,
+                        head_gate_override_K=head_gate_override_k,
+                        head_gate_override_V=head_gate_override_v,
                     )
                 )
             else:
@@ -2604,6 +2836,7 @@ def _build_rotalign_prefix_state(
         "metadata_bits": float(selector_bits),
         "selector_trace": selector_layers,
         "head_trace": head_layers,
+        "head_gate_trace": head_gate_layers,
         "head_budget_trace": head_budget_layers,
         "selected_target_layers": [int(layer) for layer in translator.selected_layer_indices()],
     }
@@ -2640,6 +2873,8 @@ def _search_per_layer_gates(
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    runtime_head_gate_metric: str = "none",
+    runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
 ) -> dict[str, list[float]]:
     """Coordinate-descent line search over per-layer K/V fusion gates.
@@ -2668,6 +2903,8 @@ def _search_per_layer_gates(
         if fixed_head_templates is not None:
             eval_kwargs["fixed_head_templates"] = fixed_head_templates
         eval_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
+        eval_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
+        eval_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
         eval_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
         if is_generation:
             return _eval_generation_rotalign(
@@ -2953,6 +3190,8 @@ def eval_rotalign_kv(
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    runtime_head_gate_metric: str = "none",
+    runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
@@ -2972,6 +3211,8 @@ def eval_rotalign_kv(
         build_kwargs["runtime_head_selection_ratio"] = runtime_head_selection_ratio
         build_kwargs["runtime_head_selection_metric"] = runtime_head_selection_metric
         build_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
+        build_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
+        build_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
         build_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
         prefix_state, stats = _build_rotalign_prefix_state(
             source_model,
@@ -3019,6 +3260,8 @@ def eval_rotalign_kv(
                 "runtime_head_selection_ratio": runtime_head_selection_ratio,
                 "runtime_head_selection_metric": runtime_head_selection_metric,
                 "runtime_head_prior_alpha": runtime_head_prior_alpha,
+                "runtime_head_gate_metric": runtime_head_gate_metric,
+                "runtime_head_gate_strength": runtime_head_gate_strength,
                 "per_head_position_budget_mode": per_head_position_budget_mode,
                 "bits": stats.get("bits"),
                 "bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
@@ -3030,6 +3273,7 @@ def eval_rotalign_kv(
                 "selected_target_layers": stats.get("selected_target_layers"),
                 "selector_trace": stats.get("selector_trace"),
                 "head_trace": stats.get("head_trace"),
+                "head_gate_trace": stats.get("head_gate_trace"),
                 "head_budget_trace": stats.get("head_budget_trace"),
             },
         )
@@ -3201,6 +3445,8 @@ def _eval_generation_rotalign(
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    runtime_head_gate_metric: str = "none",
+    runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
 ) -> tuple[float, float, float]:
     eval_kwargs: dict[str, Any] = {}
@@ -3211,6 +3457,8 @@ def _eval_generation_rotalign(
     if fixed_head_templates is not None:
         eval_kwargs["fixed_head_templates"] = fixed_head_templates
     eval_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
+    eval_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
+    eval_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
     eval_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
     stats = _eval_generation_rotalign_with_stats(
         source_model,
@@ -3263,6 +3511,8 @@ def _eval_generation_rotalign_with_stats(
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
+    runtime_head_gate_metric: str = "none",
+    runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
@@ -3297,6 +3547,8 @@ def _eval_generation_rotalign_with_stats(
         build_kwargs["runtime_head_selection_ratio"] = runtime_head_selection_ratio
         build_kwargs["runtime_head_selection_metric"] = runtime_head_selection_metric
         build_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
+        build_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
+        build_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
         build_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
         prefix_state, stats = _build_rotalign_prefix_state(
             source_model,
@@ -3348,6 +3600,8 @@ def _eval_generation_rotalign_with_stats(
                     "runtime_head_selection_ratio": runtime_head_selection_ratio,
                     "runtime_head_selection_metric": runtime_head_selection_metric,
                     "runtime_head_prior_alpha": runtime_head_prior_alpha,
+                    "runtime_head_gate_metric": runtime_head_gate_metric,
+                    "runtime_head_gate_strength": runtime_head_gate_strength,
                     "per_head_position_budget_mode": per_head_position_budget_mode,
                     "bits": stats["bits"],
                     "bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
@@ -3358,6 +3612,7 @@ def _eval_generation_rotalign_with_stats(
                     "selected_target_layers": stats.get("selected_target_layers"),
                     "selector_trace": stats.get("selector_trace"),
                     "head_trace": stats.get("head_trace"),
+                    "head_gate_trace": stats.get("head_gate_trace"),
                     "head_budget_trace": stats.get("head_budget_trace"),
                 },
         )
@@ -3494,6 +3749,8 @@ def parse_args() -> argparse.Namespace:
             "attention_fidelity_shuffled",
             "attention_procrustes",
             "attention_procrustes_shuffled",
+            "attention_qk_fidelity",
+            "attention_qk_fidelity_shuffled",
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
@@ -3507,6 +3764,41 @@ def parse_args() -> argparse.Namespace:
         ],
         default="attention_peak",
         help="How to rank heads when runtime_head_selection_ratio < 1.0.",
+    )
+    p.add_argument(
+        "--runtime-head-gate-metric",
+        choices=[
+            "none",
+            "attention_peak",
+            "attention_entropy",
+            "attention_margin",
+            "retrieval_peak",
+            "random",
+            "attention_fidelity",
+            "attention_fidelity_shuffled",
+            "attention_procrustes",
+            "attention_procrustes_shuffled",
+            "attention_qk_fidelity",
+            "attention_qk_fidelity_shuffled",
+            "attention_expected",
+            "attention_expected_shuffled",
+            "attention_prior",
+            "attention_template_transport",
+            "attention_template_transport_shuffled",
+            "attention_sinkhorn",
+            "attention_sinkhorn_shuffled",
+            "attention_match",
+            "attention_match_shuffled",
+            "attention_blend",
+        ],
+        default="none",
+        help="Use a runtime per-head soft gate on top of the existing fusion gate instead of only hard head selection.",
+    )
+    p.add_argument(
+        "--runtime-head-gate-strength",
+        type=float,
+        default=1.0,
+        help="Blend strength in [0,1] for runtime per-head gate overrides; 0 keeps the scalar gate unchanged.",
     )
     p.add_argument(
         "--runtime-head-prior-file",
@@ -3560,6 +3852,8 @@ def parse_args() -> argparse.Namespace:
             "attention_fidelity_shuffled",
             "attention_procrustes",
             "attention_procrustes_shuffled",
+            "attention_qk_fidelity",
+            "attention_qk_fidelity_shuffled",
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
@@ -3625,6 +3919,8 @@ def main() -> None:
     runtime_head_selection_ratio = float(getattr(args, "runtime_head_selection_ratio", 1.0))
     runtime_head_selection_metric = getattr(args, "runtime_head_selection_metric", "attention_peak")
     runtime_head_prior_alpha = float(getattr(args, "runtime_head_prior_alpha", 0.5))
+    runtime_head_gate_metric = getattr(args, "runtime_head_gate_metric", "none")
+    runtime_head_gate_strength = float(getattr(args, "runtime_head_gate_strength", 1.0))
     runtime_head_prior_file = getattr(args, "runtime_head_prior_file", None)
     runtime_head_prior_load = getattr(args, "runtime_head_prior_load", None)
     runtime_head_prior_save = getattr(args, "runtime_head_prior_save", None)
@@ -3633,6 +3929,8 @@ def main() -> None:
     per_head_position_budget_mode = getattr(args, "per_head_position_budget_mode", "none")
     if not 0.0 <= runtime_head_prior_shrinkage <= 1.0:
         raise ValueError("--runtime-head-prior-shrinkage must be in [0, 1]")
+    if not 0.0 <= runtime_head_gate_strength <= 1.0:
+        raise ValueError("--runtime-head-gate-strength must be in [0, 1]")
 
     dtype = {
         "float32": torch.float32,
@@ -3663,6 +3961,8 @@ def main() -> None:
         "attention_fidelity_shuffled",
         "attention_procrustes",
         "attention_procrustes_shuffled",
+        "attention_qk_fidelity",
+        "attention_qk_fidelity_shuffled",
         "attention_expected",
         "attention_expected_shuffled",
         "attention_prior",
@@ -3704,6 +4004,7 @@ def main() -> None:
             runtime_head_selection_ratio < 1.0
             and runtime_head_selection_metric in runtime_head_attention_metrics
         )
+        or runtime_head_gate_metric in runtime_head_attention_metrics
         or per_head_position_budget_mode != "none"
     ):
         target_model_kwargs["attn_implementation"] = "eager"
@@ -3725,6 +4026,7 @@ def main() -> None:
             runtime_head_selection_ratio < 1.0
             and runtime_head_selection_metric in {"attention_expected", "attention_expected_shuffled"}
         )
+        or runtime_head_gate_metric in {"attention_expected", "attention_expected_shuffled"}
         or per_head_position_budget_mode in {"attention_expected", "attention_expected_shuffled"}
     )
     if needs_fixed_position_prior:
@@ -3771,6 +4073,16 @@ def main() -> None:
                 "attention_blend",
             }
         )
+        or runtime_head_gate_metric in {
+            "attention_prior",
+            "attention_template_transport",
+            "attention_template_transport_shuffled",
+            "attention_sinkhorn",
+            "attention_sinkhorn_shuffled",
+            "attention_match",
+            "attention_match_shuffled",
+            "attention_blend",
+        }
         or per_head_position_budget_mode in {
             "attention_prior",
             "attention_prior_shuffled",
@@ -3793,6 +4105,12 @@ def main() -> None:
                 "attention_sinkhorn_shuffled",
             }
         )
+        or runtime_head_gate_metric in {
+            "attention_template_transport",
+            "attention_template_transport_shuffled",
+            "attention_sinkhorn",
+            "attention_sinkhorn_shuffled",
+        }
         or per_head_position_budget_mode in {
             "attention_template_transport",
             "attention_template_transport_shuffled",
@@ -4047,6 +4365,8 @@ def main() -> None:
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
+                    runtime_head_gate_metric=runtime_head_gate_metric,
+                    runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
                     **search_kwargs,
                 )
@@ -4084,6 +4404,8 @@ def main() -> None:
                     fixed_head_profiles=fixed_head_profiles,
                     fixed_head_templates=fixed_head_templates,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
+                    runtime_head_gate_metric=runtime_head_gate_metric,
+                    runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
                     records=prediction_records,
                     method_name=metric_key,
@@ -4186,6 +4508,8 @@ def main() -> None:
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
+                    runtime_head_gate_metric=runtime_head_gate_metric,
+                    runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
                     **search_kwargs,
                 )
@@ -4223,6 +4547,8 @@ def main() -> None:
                     fixed_head_profiles=fixed_head_profiles,
                     fixed_head_templates=fixed_head_templates,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
+                    runtime_head_gate_metric=runtime_head_gate_metric,
+                    runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
                     records=prediction_records,
                     method_name=metric_key,
@@ -4276,6 +4602,8 @@ def main() -> None:
                 "runtime_head_prior_save": runtime_head_prior_save,
                 "runtime_head_prior_metric": args.runtime_head_prior_metric,
                 "runtime_head_prior_alpha": runtime_head_prior_alpha,
+                "runtime_head_gate_metric": runtime_head_gate_metric,
+                "runtime_head_gate_strength": runtime_head_gate_strength,
                 "runtime_head_prior_shrinkage": runtime_head_prior_shrinkage,
                 "runtime_head_prior_shrink_target": runtime_head_prior_shrink_target,
                 "runtime_head_prior_bundle_metadata": loaded_head_prior_metadata,

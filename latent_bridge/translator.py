@@ -1295,6 +1295,8 @@ class RotAlignKVTranslator(nn.Module):
         V_t_hat: torch.Tensor,
         tgt_layer_idx: int,
         fusion_rule: str | None = None,
+        head_gate_override_K: torch.Tensor | None = None,
+        head_gate_override_V: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Gated fusion of target's own KV with translated source KV.
 
@@ -1349,14 +1351,20 @@ class RotAlignKVTranslator(nn.Module):
         V_t_hat_selected = self.apply_head_selection(V_t_hat, tgt_layer_idx)
         K_t_selected = self.apply_head_selection(K_t, tgt_layer_idx)
         V_t_selected = self.apply_head_selection(V_t, tgt_layer_idx)
+        base_gate_k: torch.Tensor | float = torch.sigmoid(self.gate_K[tgt_layer_idx])
+        base_gate_v: torch.Tensor | float = torch.sigmoid(self.gate_V[tgt_layer_idx])
+        if head_gate_override_K is not None:
+            base_gate_k = self._reshape_head_gate_override(head_gate_override_K, K_t)
+        if head_gate_override_V is not None:
+            base_gate_v = self._reshape_head_gate_override(head_gate_override_V, V_t)
         a_k = self._effective_gate(
-            torch.sigmoid(self.gate_K[tgt_layer_idx]),
+            base_gate_k,
             K_t_selected,
             K_t_hat_selected,
             fusion_rule,
         )
         a_v = self._effective_gate(
-            torch.sigmoid(self.gate_V[tgt_layer_idx]),
+            base_gate_v,
             V_t_selected,
             V_t_hat_selected,
             fusion_rule,
@@ -1366,6 +1374,24 @@ class RotAlignKVTranslator(nn.Module):
         K_out = (1.0 - a_k) * K_t + a_k * K_t_hat
         V_out = (1.0 - a_v) * V_t + a_v * V_t_hat
         return K_out, V_out
+
+    @staticmethod
+    def _reshape_head_gate_override(head_gate_override: torch.Tensor, reference_kv: torch.Tensor) -> torch.Tensor:
+        gate = head_gate_override.to(device=reference_kv.device, dtype=reference_kv.dtype)
+        if gate.ndim == 1:
+            gate = gate.view(1, -1, 1, 1)
+        elif gate.ndim == 2 and gate.shape[0] == 1:
+            gate = gate.view(1, gate.shape[1], 1, 1)
+        elif gate.ndim != 4:
+            raise ValueError(
+                "head_gate_override must have shape [heads], [1, heads], or [1, heads, 1, 1], "
+                f"got {tuple(gate.shape)}"
+            )
+        if gate.shape[1] != reference_kv.shape[1]:
+            raise ValueError(
+                f"head_gate_override head count {gate.shape[1]} does not match reference KV heads {reference_kv.shape[1]}"
+            )
+        return gate.clamp(0.0, 1.0)
 
     # ------------------------------------------------------------------
     # Calibration (closed-form)
