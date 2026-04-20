@@ -1567,3 +1567,27 @@ Interpretation:
 - the next serious bridge branch now has to use a **stronger teacher target**:
   explicit attention-behavior distillation, richer affinity supervision, or a
   prediction-level distillation term, not just another local residual loss
+
+And a forty-fifth attention-KL adapter update:
+
+> I then tried the strongest teacher target we could still graft onto the same
+> calibration path without collecting new artifacts:
+> `bridge_ridge_qk_attnkl_adapter`. This keeps the same learned
+> query-conditioned residual adapter, but adds a sampled attention-logit KL
+> loss over calibration query/key tensors. It still sits on top of the same
+> grouped-subspace transport + rank-4 residual checkpoint and the same fair
+> shared-chat / `enable_thinking=False` control. Calibration fit again matched
+> the older bridge family (`K` cosine `0.864`, relative Frobenius error
+> `0.476`; `V` cosine `0.381`, relative Frobenius error `0.915`). The first
+> held-out fair smoke then collapsed immediately:
+> - `gsm8k_5`: `0.000000` at `722,107.700` average bytes
+
+Interpretation:
+
+- a sampled attention-logit KL target is **not** enough in this local bridge
+  form; it is strictly worse than the plain learned adapter on the cheapest
+  fair smoke
+- that closes the current cheap “stronger local teacher” family
+- the next serious method step should now be either a materially stronger
+  distillation target or a fair external comparator lane, not another small
+  residual loss variant

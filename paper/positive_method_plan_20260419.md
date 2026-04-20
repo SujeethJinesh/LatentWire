@@ -540,3 +540,25 @@ So the highest-value next branch is now:
 1. keep the fair Qwen control on
 2. keep the tiny learned bridge framing
 3. move to a **stronger distillation target**, not another local residual loss
+
+I then tried the strongest teacher target we could add cheaply without
+collecting new calibration artifacts:
+`bridge_ridge_qk_attnkl_adapter`. This keeps the same learned
+query-conditioned residual adapter, but adds sampled attention-logit KL over
+calibration query/key tensors.
+
+Held-out behavior under the same fair shared-chat / `enable_thinking=False`
+regime:
+
+- `gsm8k_5`: `0.0000`
+- bytes on the smoke: `722,107.7`
+
+That means:
+
+- even the strongest cheap local teacher target we could add inside the
+  existing calibration path is still **not enough**
+- this effectively closes the current “small residual plus one more local
+  distillation loss” family
+- the next rational move is now either:
+  - a materially stronger teacher signal, or
+  - the external comparator lane, especially Expected Attention / KVPress

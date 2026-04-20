@@ -1567,7 +1567,7 @@ def test_fit_bridge_ridge_query_projector_correction_uses_query_features(monkeyp
 
 
 def test_bridge_ridge_qk_adapter_adds_query_conditioned_residual(monkeypatch) -> None:
-    for mode in ("bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter"):
+    for mode in ("bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter"):
         tr = _make_identity_translator(
             monkeypatch,
             quantization_correction=mode,
