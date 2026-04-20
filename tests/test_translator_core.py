@@ -2679,6 +2679,86 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_module_replace_reuses_module_re
     assert torch.allclose(tr.quant_query_module_V_out[0], torch.full_like(tr.quant_query_module_V_out[0], 7.0))
 
 
+def test_fit_from_pairs_bridge_ridge_qk_dynalign_dwakd_module_replace_uses_dynamic_teacher_and_weights(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_dwakd_module_replace",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+    tr.set_bridge_sample_weights([torch.tensor([1.0, 2.0, 3.0, 4.0], dtype=torch.float32)])
+
+    calls: list[tuple[float, float, bool]] = []
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        prediction_distill_weight=0.0,
+        dynamic_prediction_weight=0.0,
+        teacher_topk_log_probs=None,
+        teacher_topk_output_rows=None,
+        sample_weights=None,
+        **kwargs,
+    ):
+        calls.append(
+            (
+                float(prediction_distill_weight),
+                float(dynamic_prediction_weight),
+                sample_weights is not None,
+            )
+        )
+        return (
+            torch.full((self.config.bridge_bank_size, self.d_t), 1.0, dtype=target_k.dtype),
+            torch.full((self.d_t, rank), 2.0, dtype=target_k.dtype),
+            torch.full((self.d_t, rank), 3.0, dtype=target_k.dtype),
+            torch.full((self.d_t, rank), 4.0, dtype=target_k.dtype),
+            torch.full((rank, rank), 5.0, dtype=target_k.dtype),
+            torch.full((rank, self.d_t), 6.0, dtype=target_k.dtype),
+            torch.full((rank, self.d_t), 7.0, dtype=target_v.dtype),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert calls == [(0.25, 0.25, True)]
+    assert torch.allclose(tr.quant_query_module_slots[0], torch.ones_like(tr.quant_query_module_slots[0]))
+    assert torch.allclose(tr.quant_query_module_q[0], torch.full_like(tr.quant_query_module_q[0], 2.0))
+    assert torch.allclose(tr.quant_query_module_k[0], torch.full_like(tr.quant_query_module_k[0], 3.0))
+    assert torch.allclose(tr.quant_query_module_v[0], torch.full_like(tr.quant_query_module_v[0], 4.0))
+    assert torch.allclose(tr.quant_query_module_hidden[0], torch.full_like(tr.quant_query_module_hidden[0], 5.0))
+    assert torch.allclose(tr.quant_query_module_K_out[0], torch.full_like(tr.quant_query_module_K_out[0], 6.0))
+    assert torch.allclose(tr.quant_query_module_V_out[0], torch.full_like(tr.quant_query_module_V_out[0], 7.0))
+
+
 def test_fit_from_pairs_bridge_ridge_qk_dpalign_module_replace_reuses_module_replace_fit(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

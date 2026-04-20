@@ -264,6 +264,7 @@ def parse_args() -> argparse.Namespace:
             "bridge_ridge_qk_spanalign_module_replace",
             "bridge_ridge_qk_ctxalign_module_replace",
             "bridge_ridge_qk_dynalign_module_replace",
+            "bridge_ridge_qk_dynalign_dwakd_module_replace",
             "bridge_ridge_qk_dpalign_module_replace",
             "bridge_ridge_qk_tokenbasis_replace",
             "bridge_ridge_qk_sae_adapter",
@@ -1013,6 +1014,49 @@ def collect_dynamic_prompt_position_mixtures(
             ]
         mixtures.append(prompt_mixtures)
     return mixtures
+
+
+def _normalized_entropy_confidence(prob_vector: torch.Tensor) -> float:
+    probs = prob_vector.float().view(-1)
+    if probs.numel() <= 1:
+        return 1.0
+    probs = probs / probs.sum().clamp_min(1e-8)
+    entropy = float((-(probs * probs.clamp_min(1e-30).log()).sum()).item())
+    max_entropy = math.log(float(probs.numel()))
+    if max_entropy <= 1e-8:
+        return 1.0
+    return max(0.0, 1.0 - entropy / max_entropy)
+
+
+def collect_alignment_confidence_weights(
+    aligned_position_mixtures: Sequence[Sequence[tuple[int, Sequence[int], Sequence[float]]]],
+) -> torch.Tensor:
+    weights: list[float] = []
+    for prompt_mixtures in aligned_position_mixtures:
+        for _, _, tgt_weights in prompt_mixtures:
+            probs = torch.tensor(list(tgt_weights), dtype=torch.float32)
+            concentration = _normalized_entropy_confidence(probs)
+            max_prob = float(probs.max().item()) if probs.numel() > 0 else 0.0
+            weights.append(0.5 * concentration + 0.5 * max_prob)
+    if not weights:
+        raise ValueError("Could not build alignment confidence weights from empty mixtures")
+    out = torch.tensor(weights, dtype=torch.float32)
+    return out / out.mean().clamp_min(1e-8)
+
+
+def collect_prediction_confidence_weights(
+    teacher_log_probs: torch.Tensor,
+) -> torch.Tensor:
+    if teacher_log_probs.ndim != 2:
+        raise ValueError(f"teacher_log_probs must be [samples, topk], got {tuple(teacher_log_probs.shape)}")
+    probs = torch.softmax(teacher_log_probs.float(), dim=-1)
+    confidences = []
+    for row in probs:
+        concentration = _normalized_entropy_confidence(row)
+        max_prob = float(row.max().item()) if row.numel() > 0 else 0.0
+        confidences.append(0.5 * concentration + 0.5 * max_prob)
+    out = torch.tensor(confidences, dtype=torch.float32)
+    return out / out.mean().clamp_min(1e-8)
 
 
 def _align_score_matrix_monotone(
@@ -2520,7 +2564,7 @@ def main() -> None:
             f"prompts={len(aligned_position_mixtures)}, samples={total_samples}, "
             f"mean_targets_per_sample={total_targets / max(total_samples, 1):.2f}"
         )
-    elif args.quantization_correction == "bridge_ridge_qk_dynalign_module_replace":
+    elif args.quantization_correction in {"bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace"}:
         print(
             "\nBuilding dynamic source->target token mixtures "
             "(span-anchor plus context and output-overlap remapping)..."
@@ -2881,7 +2925,7 @@ def main() -> None:
             )
 
     aligned_lengths: list[int] | None = None
-    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
         if aligned_position_mixtures is not None:
             aligned_lengths = [len(mixture) for mixture in aligned_position_mixtures]
         elif aligned_position_pairs is not None:
@@ -2995,7 +3039,7 @@ def main() -> None:
             f"layers={len(bridge_sample_weights)}, samples={int(bridge_sample_weights[0].numel())}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target query features for query-conditioned bridge projector/adapter "
@@ -3023,7 +3067,7 @@ def main() -> None:
             f"layers={len(bridge_query_features)}, samples={int(bridge_query_features[0].shape[0])}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target next-token teacher for prediction-level bridge distillation "
@@ -3049,6 +3093,25 @@ def main() -> None:
             "Built aligned prediction teacher: "
             f"samples={int(teacher_log_probs.shape[0])}, topk={int(teacher_log_probs.shape[1])}"
         )
+        if args.quantization_correction == "bridge_ridge_qk_dynalign_dwakd_module_replace":
+            if aligned_position_mixtures is None:
+                raise ValueError("bridge_ridge_qk_dynalign_dwakd_module_replace requires aligned_position_mixtures")
+            alignment_weights = collect_alignment_confidence_weights(aligned_position_mixtures)
+            prediction_weights = collect_prediction_confidence_weights(teacher_log_probs)
+            if alignment_weights.shape[0] != prediction_weights.shape[0]:
+                raise ValueError(
+                    "alignment and prediction confidence weights must align, "
+                    f"got {alignment_weights.shape[0]} vs {prediction_weights.shape[0]}"
+                )
+            combined = 0.5 * alignment_weights + 0.5 * prediction_weights
+            combined = combined / combined.mean().clamp_min(1e-8)
+            combined = combined.clamp(0.25, 4.0)
+            translator.set_bridge_sample_weights([combined.clone() for _ in range(config.num_tgt_layers)])
+            print(
+                "Built DWA-KD-style bridge sample weights: "
+                f"samples={int(combined.numel())}, mean={float(combined.mean().item()):.3f}, "
+                f"min={float(combined.min().item()):.3f}, max={float(combined.max().item()):.3f}"
+            )
 
     print("\nFitting closed-form alignments (Procrustes / ridge)...")
     diagnostics = translator.fit_from_pairs(src_kvs, tgt_kvs, verbose=args.verbose)

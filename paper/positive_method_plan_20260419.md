@@ -1468,3 +1468,35 @@ That means:
   - span-level / likelihood-style teachers,
   - multi-view remapping losses,
   - or byte/token shared interfaces before another global solver pivot
+
+I then tested the first DWA-KD-style teacher follow-up as
+`bridge_ridge_qk_dynalign_dwakd_module_replace`.
+
+This keeps the same `dynalign` token mixtures, but strengthens the teacher
+inside the same direct-output module fit:
+
+- confidence-weighted calibration samples from alignment concentration and
+  prediction entropy,
+- plus both plain prediction KL and the dynamic context-shaped teacher term.
+
+On a 16-prompt diagnostic calibration slice:
+
+- samples: `660`
+- mean target tokens per source sample: `3.00`
+- DWA-KD-style weight range: `0.588` to `1.400`
+- `K` cosine `0.948`, relative Frobenius error `0.304`
+- `V` cosine `0.699`, relative Frobenius error `0.697`
+
+Held-out diagnostic reads:
+
+- `gsm8k_5`: `0.4000`
+- controlled `gsm8k_eval_10`: `0.1000`
+
+That means:
+
+- a stronger teacher does preserve the live dynalign smoke signal
+- but the first weighted-teacher version still only ties the controlled floor
+- so the next method step should continue in the teacher lane:
+  - span-level / likelihood-style supervision,
+  - token/span interaction losses,
+  - or byte/token shared interfaces

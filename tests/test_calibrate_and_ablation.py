@@ -1637,6 +1637,35 @@ def test_collect_dynamic_prompt_position_mixtures_uses_prediction_overlap(monkey
     assert mixtures == [[(0, (1,), (1.0,)), (1, (3,), (1.0,))]]
 
 
+def test_collect_alignment_confidence_weights_prefers_concentrated_mixtures() -> None:
+    weights = calibrate.collect_alignment_confidence_weights(
+        [
+            [(0, (1,), (1.0,))],
+            [(0, (1, 2), (0.5, 0.5))],
+        ]
+    )
+
+    assert weights.shape == (2,)
+    assert float(weights[0].item()) > float(weights[1].item())
+
+
+def test_collect_prediction_confidence_weights_prefers_low_entropy_teacher() -> None:
+    teacher_log_probs = torch.log(
+        torch.tensor(
+            [
+                [0.95, 0.05],
+                [0.5, 0.5],
+            ],
+            dtype=torch.float32,
+        )
+    )
+
+    weights = calibrate.collect_prediction_confidence_weights(teacher_log_probs)
+
+    assert weights.shape == (2,)
+    assert float(weights[0].item()) > float(weights[1].item())
+
+
 def test_align_score_matrix_monotone_prefers_global_monotone_path() -> None:
     score_matrix = torch.tensor(
         [
@@ -1742,6 +1771,33 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_module_replace(mo
     args = calibrate.parse_args()
 
     assert args.quantization_correction == "bridge_ridge_qk_dynalign_module_replace"
+    assert args.quantization_correction_rank == 8
+
+
+def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_dwakd_module_replace(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "bridge_ridge_qk_dynalign_dwakd_module_replace",
+            "--quantization-correction-rank",
+            "8",
+        ],
+    )
+
+    args = calibrate.parse_args()
+
+    assert args.quantization_correction == "bridge_ridge_qk_dynalign_dwakd_module_replace"
     assert args.quantization_correction_rank == 8
 
 

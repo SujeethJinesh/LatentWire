@@ -2366,3 +2366,33 @@ Interpretation:
 - so the local scorer was not the only issue:
   - a stronger **teacher/loss** is still the next live lane,
   - not merely a better alignment solver over the same local scores
+
+And a seventy-third DWA-KD-style teacher diagnostic:
+
+> I then implemented `bridge_ridge_qk_dynalign_dwakd_module_replace`, which
+> keeps the same `dynalign` source-to-target token mixtures but strengthens the
+> teacher side during module fitting:
+> - calibration samples are confidence-weighted from both alignment
+>   concentration and prediction entropy,
+> - and the module uses both the plain prediction KL and the dynamic
+>   context-shaped teacher term already used in the dynmap bridge family.
+>
+> On a 16-prompt diagnostic calibration slice:
+> - dynamic calibration samples: `660`
+> - mean target tokens per source sample: `3.00`
+> - DWA-KD-style weight range: `0.588` to `1.400`
+> - `K` cosine `0.948`, relative Frobenius error `0.304`
+> - `V` cosine `0.699`, relative Frobenius error `0.697`
+>
+> Held-out diagnostic reads:
+> - `gsm8k_5`: `0.400000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- strengthening the **teacher** does preserve the live dynalign smoke signal
+- but this first weighted-teacher version still only ties the controlled floor
+- so the next live step should strengthen the supervision itself further:
+  - span-level or likelihood-style targets,
+  - token/span interaction supervision,
+  - or a tokenizer-agnostic shared byte/span interface

@@ -178,6 +178,9 @@ class TranslatorConfig:
     # tokens are scored by both local span/context agreement and prediction-side
     # token overlap, so calibration sees an output-aware token/span mixture
     # rather than only a context-weighted local mixture, and
+    # `bridge_ridge_qk_dynalign_dwakd_module_replace` keeps that same dynalign
+    # upstream remapping but adds DWA-KD-style confidence weighting and a
+    # stronger dynamic prediction teacher during module fitting, and
     # `bridge_ridge_qk_dpalign_module_replace` keeps that same direct-output
     # module shape but switches from local candidate mixtures to a global
     # monotone dynamic-program alignment over context-plus-output scores before
@@ -2418,6 +2421,7 @@ class RotAlignKVTranslator(nn.Module):
         dynamic_prediction_weight: float = 0.0,
         teacher_topk_log_probs: torch.Tensor | None = None,
         teacher_topk_output_rows: torch.Tensor | None = None,
+        sample_weights: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, ...]:
         tensors = (
             quantized_k.float(),
@@ -2449,6 +2453,15 @@ class RotAlignKVTranslator(nn.Module):
             [slot_tokens, q_proj, k_proj, v_proj, hidden_proj, out_k, out_v],
             lr=float(lr),
         )
+        sample_w = None
+        if sample_weights is not None:
+            sample_w = sample_weights.float().view(-1)
+            if sample_w.numel() != qk.shape[0]:
+                raise ValueError(
+                    "sample_weights must align with calibration samples, "
+                    f"got {int(sample_w.numel())} vs {qk.shape[0]}"
+                )
+            sample_w = sample_w / sample_w.mean().clamp_min(1e-8)
 
         with torch.enable_grad():
             for _ in range(max(1, int(steps))):
@@ -2465,14 +2478,24 @@ class RotAlignKVTranslator(nn.Module):
                 hidden = F.gelu(context @ hidden_proj)
                 pred_k = hidden @ out_k
                 pred_v = hidden @ out_v
-                loss = F.mse_loss(pred_k, yk) + F.mse_loss(pred_v, yv)
+                if sample_w is None:
+                    loss = F.mse_loss(pred_k, yk) + F.mse_loss(pred_v, yv)
+                else:
+                    weights = sample_w.to(device=pred_k.device, dtype=pred_k.dtype).view(-1, 1)
+                    loss = ((weights * (pred_k - yk).pow(2)).mean() + (weights * (pred_v - yv).pow(2)).mean())
                 logit_pred_k = (pred_k * query).sum(dim=-1)
                 logit_tgt_k = (yk * query).sum(dim=-1)
                 logit_pred_v = (pred_v * query).sum(dim=-1)
                 logit_tgt_v = (yv * query).sum(dim=-1)
-                loss = loss + float(logit_weight) * (
-                    F.mse_loss(logit_pred_k, logit_tgt_k) + F.mse_loss(logit_pred_v, logit_tgt_v)
-                )
+                if sample_w is None:
+                    logit_loss = F.mse_loss(logit_pred_k, logit_tgt_k) + F.mse_loss(logit_pred_v, logit_tgt_v)
+                else:
+                    weights_1d = sample_w.to(device=pred_k.device, dtype=pred_k.dtype)
+                    logit_loss = (
+                        (weights_1d * (logit_pred_k - logit_tgt_k).pow(2)).mean()
+                        + (weights_1d * (logit_pred_v - logit_tgt_v).pow(2)).mean()
+                    )
+                loss = loss + float(logit_weight) * logit_loss
                 if (
                     (float(prediction_distill_weight) > 0.0 or float(dynamic_prediction_weight) > 0.0)
                     and teacher_topk_log_probs is not None
@@ -2484,21 +2507,30 @@ class RotAlignKVTranslator(nn.Module):
                     hidden_pred = 0.5 * ((pred_k * query) + (pred_v * query))
                     student_logits = torch.einsum("nd,nkd->nk", hidden_pred, teacher_rows) / math.sqrt(float(self.d_t))
                     student_log_probs = torch.log_softmax(student_logits, dim=-1)
+                    per_sample_kl = torch.sum(
+                        teacher_probs * (teacher_logits - student_log_probs),
+                        dim=-1,
+                    )
                     if float(prediction_distill_weight) > 0.0:
-                        loss = loss + float(prediction_distill_weight) * F.kl_div(
-                            student_log_probs,
-                            teacher_probs,
-                            reduction="batchmean",
-                        )
+                        if sample_w is None:
+                            loss = loss + float(prediction_distill_weight) * per_sample_kl.mean()
+                        else:
+                            weights_1d = sample_w.to(device=pred_k.device, dtype=pred_k.dtype)
+                            loss = loss + float(prediction_distill_weight) * (weights_1d * per_sample_kl).mean()
                     if float(dynamic_prediction_weight) > 0.0:
                         context_hidden = 0.5 * ((qk + qv) * query)
                         context_logits = torch.einsum("nd,nkd->nk", context_hidden, teacher_rows) / math.sqrt(float(self.d_t))
                         dynamic_teacher_probs = torch.softmax(teacher_logits + context_logits, dim=-1)
-                        loss = loss + float(dynamic_prediction_weight) * F.kl_div(
-                            student_log_probs,
-                            dynamic_teacher_probs,
-                            reduction="batchmean",
+                        dynamic_per_sample_kl = torch.sum(
+                            dynamic_teacher_probs
+                            * (torch.log(dynamic_teacher_probs.clamp_min(1e-30)) - student_log_probs),
+                            dim=-1,
                         )
+                        if sample_w is None:
+                            loss = loss + float(dynamic_prediction_weight) * dynamic_per_sample_kl.mean()
+                        else:
+                            weights_1d = sample_w.to(device=pred_k.device, dtype=pred_k.dtype)
+                            loss = loss + float(dynamic_prediction_weight) * (weights_1d * dynamic_per_sample_kl).mean()
                 loss.backward()
                 optimizer.step()
 
@@ -3487,7 +3519,7 @@ class RotAlignKVTranslator(nn.Module):
                 + (aux_input * qfeat) @ query_aux_proj.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
-        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
             if aux_input is None:
                 raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
             if runtime_query_features is None:
@@ -3623,7 +3655,7 @@ class RotAlignKVTranslator(nn.Module):
                 attn = torch.softmax(attn_logits, dim=-1)
                 context = torch.einsum("...m,...mr->...r", attn, value_hidden)
                 resid = resid + context @ xattn_out.to(device=x.device, dtype=x.dtype)
-            if self.config.quantization_correction in {"bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
                 if paired_input is None or paired_aux_input is None:
                     raise ValueError(f"{self.config.quantization_correction} requires paired_input and paired_aux_input")
                 live_memory = torch.stack(
@@ -3649,7 +3681,7 @@ class RotAlignKVTranslator(nn.Module):
                 context = torch.einsum("...m,...mr->...r", attn, value_hidden)
                 hidden = F.gelu(context @ module_hidden.to(device=x.device, dtype=x.dtype))
                 module_pred = hidden @ module_out.to(device=x.device, dtype=x.dtype)
-                if self.config.quantization_correction in {"bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace"}:
+                if self.config.quantization_correction in {"bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace"}:
                     return module_pred
                 if self.config.quantization_correction == "bridge_ridge_qk_tokenbasis_replace":
                     coeff = hidden @ token_coeff.to(device=x.device, dtype=x.dtype)
@@ -4279,12 +4311,12 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                 sample_weights = None
-                if self.config.quantization_correction == "bridge_ridge_qk_weighted":
+                if self.config.quantization_correction in {"bridge_ridge_qk_weighted", "bridge_ridge_qk_dynalign_dwakd_module_replace"}:
                     if self._bridge_sample_weights is None:
                         raise ValueError(
-                            "bridge_ridge_qk_weighted requires bridge sample weights; "
+                            f"{self.config.quantization_correction} requires bridge sample weights; "
                             "call set_bridge_sample_weights() before fit_from_pairs"
                         )
                     sample_weights = self._bridge_sample_weights[tgt_l].to(device=Xk.device)
@@ -4328,7 +4360,7 @@ class RotAlignKVTranslator(nn.Module):
                         lam=self.config.ridge_lambda,
                         sample_weights=sample_weights,
                     )
-                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                         if self._bridge_sample_query_features is None:
                             raise ValueError(
                                 f"{self.config.quantization_correction} requires bridge sample query features; "
@@ -4349,7 +4381,7 @@ class RotAlignKVTranslator(nn.Module):
                             sample_prompt_ids = self._bridge_sample_prompt_ids.to(device=Xk.device)
                         teacher_log_probs = None
                         teacher_output_rows = None
-                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
+                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
                             if self._bridge_prediction_teacher_log_probs is None or self._bridge_prediction_teacher_output_rows is None:
                                 raise ValueError(
                                     f"{self.config.quantization_correction} requires prediction-teacher tensors; "
@@ -4450,7 +4482,7 @@ class RotAlignKVTranslator(nn.Module):
                             self.quant_query_module_hidden[tgt_l].data.copy_(module_hidden.to(self.quant_query_module_hidden[tgt_l].dtype))
                             self.quant_query_module_K_out[tgt_l].data.copy_(module_k_out.to(self.quant_query_module_K_out[tgt_l].dtype))
                             self.quant_query_module_V_out[tgt_l].data.copy_(module_v_out.to(self.quant_query_module_V_out[tgt_l].dtype))
-                        if self.config.quantization_correction in {"bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace"}:
+                        if self.config.quantization_correction in {"bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace"}:
                             (
                                 module_slots,
                                 module_q,
@@ -4469,8 +4501,10 @@ class RotAlignKVTranslator(nn.Module):
                                 Yv_fit,
                                 rank=int(self.config.quantization_correction_rank or 8),
                                 prediction_distill_weight=0.25,
+                                dynamic_prediction_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_dynalign_dwakd_module_replace" else 0.0,
                                 teacher_topk_log_probs=teacher_log_probs,
                                 teacher_topk_output_rows=teacher_output_rows,
+                                sample_weights=sample_weights if self.config.quantization_correction == "bridge_ridge_qk_dynalign_dwakd_module_replace" else None,
                             )
                             self.quant_query_module_slots[tgt_l].data.copy_(module_slots.to(self.quant_query_module_slots[tgt_l].dtype))
                             self.quant_query_module_q[tgt_l].data.copy_(module_q.to(self.quant_query_module_q[tgt_l].dtype))
@@ -4965,7 +4999,7 @@ class RotAlignKVTranslator(nn.Module):
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
             fit_runtime_query_features = None
-            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
                 if self._bridge_sample_query_features is None:
                     raise ValueError(
                         f"{self.config.quantization_correction} requires bridge sample query features during fit; "
