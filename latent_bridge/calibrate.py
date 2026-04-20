@@ -245,6 +245,7 @@ def parse_args() -> argparse.Namespace:
             "bridge_ridge_qk_adapter",
             "bridge_ridge_qk_affinity_adapter",
             "bridge_ridge_qk_attnkl_adapter",
+            "bridge_ridge_qk_cab_adapter",
             "ridge",
             "low_rank",
         ],
@@ -1786,7 +1787,7 @@ def main() -> None:
             )
 
     aligned_lengths: list[int] | None = None
-    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter"}:
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter"}:
         aligned_lengths = collect_aligned_prompt_valid_lengths(
             tok_s,
             tok_t,
@@ -1798,6 +1799,19 @@ def main() -> None:
             source_enable_thinking=source_enable_thinking,
             target_use_chat_template=args.target_use_chat_template,
             target_enable_thinking=target_enable_thinking,
+        )
+
+    sample_prompt_ids = None
+    if aligned_lengths is not None:
+        if any(length <= 0 for length in aligned_lengths):
+            print("Skipping zero-length calibration prompts while building bridge prompt ids")
+        sample_prompt_ids = torch.cat(
+            [
+                torch.full((int(length),), prompt_idx, dtype=torch.long)
+                for prompt_idx, length in enumerate(aligned_lengths)
+                if int(length) > 0
+            ],
+            dim=0,
         )
 
     if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank"}:
@@ -1841,20 +1855,19 @@ def main() -> None:
                 enable_thinking=target_enable_thinking,
             )
         assert aligned_lengths is not None
-        if any(length <= 0 for length in aligned_lengths):
-            print("Skipping zero-length calibration prompts while building bridge prompt ids")
-        sample_prompt_ids = torch.cat(
-            [
-                torch.full((int(length),), prompt_idx, dtype=torch.long)
-                for prompt_idx, length in enumerate(aligned_lengths)
-                if int(length) > 0
-            ],
-            dim=0,
-        )
+        assert sample_prompt_ids is not None
         translator.set_bridge_runtime_template_bank(bridge_template_bank, sample_prompt_ids)
         print(
             "Built bridge template bank: "
             f"layers={len(bridge_template_bank)}, prompts={len(aligned_lengths)}, "
+            f"samples={int(sample_prompt_ids.numel())}"
+        )
+
+    if args.quantization_correction == "bridge_ridge_qk_cab_adapter":
+        assert sample_prompt_ids is not None
+        translator.set_bridge_sample_prompt_ids(sample_prompt_ids)
+        print(
+            "Built bridge sample prompt ids for local attention distillation: "
             f"samples={int(sample_prompt_ids.numel())}"
         )
 
@@ -1883,7 +1896,7 @@ def main() -> None:
             f"layers={len(bridge_sample_weights)}, samples={int(bridge_sample_weights[0].numel())}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter"}:
+    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target query features for query-conditioned bridge projector/adapter "

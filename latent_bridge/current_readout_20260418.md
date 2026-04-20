@@ -1620,3 +1620,30 @@ Interpretation:
 - the right next step is still to move the internal method lane toward a
   materially stronger teacher signal rather than another selector or local
   bridge-loss variant
+
+And a forty-seventh CAB-style bridge-distillation update:
+
+> I then tried the first bridge branch in this repo that changes the teacher
+> signal in a materially more faithful way: `bridge_ridge_qk_cab_adapter`.
+> This keeps the same learned query-conditioned residual adapter on top of the
+> same grouped-subspace transport + rank-4 residual checkpoint and the same
+> fair shared-chat / `enable_thinking=False` Qwen control, but replaces the
+> old global/local residual losses with a prompt-local **causal attention
+> behavior** target inspired by CAB. The checkpoint fit again matched the older
+> bridge family (`K` cosine `0.864`, relative Frobenius error `0.476`; `V`
+> cosine `0.381`, relative Frobenius error `0.915`). Held-out behavior was:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.000000` at `681,668.400` average bytes
+
+Interpretation:
+
+- this is a more principled teacher signal than the earlier local affinity or
+  global attention-KL variants, and it is modestly cheaper in bytes than the
+  earlier learned-adapter family
+- but it still does **not** stabilize beyond the cheapest fair smoke, so even
+  prompt-local causal attention behavior is not enough in the current tiny
+  bridge form
+- that pushes the next serious lane one step further: if we keep the bridge
+  framing, the teacher target probably has to move beyond local attention
+  behavior alone toward richer affinity or prediction-level distillation, or we
+  need a more expressive routed bridge on top of the same frozen transport

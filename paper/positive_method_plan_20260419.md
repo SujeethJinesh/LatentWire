@@ -590,3 +590,35 @@ So the highest-value next stack is now:
    comparator
 4. implement a **CAB / EM-KD / prediction-level distillation** bridge target
    next
+
+I then tried the first materially stronger bridge teacher in that family:
+`bridge_ridge_qk_cab_adapter`. This keeps the tiny learned
+query-conditioned residual bridge, but supervises it with **prompt-local
+causal attention behavior** instead of plain latent regression, cheap
+affinity matching, or global attention KL.
+
+Held-out behavior under the same fair shared-chat / `enable_thinking=False`
+regime:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.0000`
+- bytes on the controlled slice: `681,668.4`
+
+That means:
+
+- CAB-style local attention supervision is **more principled** than the older
+  local losses, and it is slightly lighter than the earlier learned-adapter
+  family
+- but it still does **not** stabilize on the next held-out slice
+- so even this stronger local attention teacher is not enough in the current
+  tiny bridge form
+
+So the next highest-value stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep `attention_expected` plus its shuffled null as a negative-boundary
+   comparator
+4. if we keep pushing the bridge lane, move beyond local attention behavior
+   alone to **richer affinity or prediction-level distillation**, or make the
+   bridge itself more expressive via a routed expert mixture
