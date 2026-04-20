@@ -1219,6 +1219,33 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_sae_adapter(monkeypatch) -
     assert args.quantization_correction_rank == 8
 
 
+def test_calibrate_parse_args_accepts_bridge_ridge_qk_generated_adapter(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "calibration.txt",
+            "--output",
+            "translator.pt",
+            "--quantization-correction",
+            "bridge_ridge_qk_generated_adapter",
+            "--quantization-correction-rank",
+            "8",
+        ],
+    )
+
+    args = calibrate.parse_args()
+
+    assert args.quantization_correction == "bridge_ridge_qk_generated_adapter"
+    assert args.quantization_correction_rank == 8
+
+
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_predkl_bank(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

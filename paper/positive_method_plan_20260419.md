@@ -1054,3 +1054,33 @@ Comparator guidance also sharpened:
 2. keep exact KVPress / Expected Attention as the negative-boundary comparator
 3. if we spend another comparator day, do **KVzip** next
 4. keep **Quest** as the next fallback comparator after KVzip
+
+I then pushed the dynamic modular lane one step further with
+`bridge_ridge_qk_generated_adapter`.
+
+This keeps the same `grouped_subspace_transport + rank-4 residual` base and the
+same fair shared-chat / `enable_thinking=false` Qwen control, but it replaces
+the fixed residual bridge with a continuous query-conditioned mixture over a
+shared bank of low-rank bridge atoms, in the SHINE / Text-to-LoRA / MoRA
+direction.
+
+On the same 64-prompt calibration slice, offline fit remained:
+
+- `K` cosine `0.870`, relative Frobenius error `0.468`
+- `V` cosine `0.397`, relative Frobenius error `0.907`
+
+Held-out read:
+
+- `gsm8k_5`: `0.0000`
+- bytes: `686,026.6`
+
+That means:
+
+- the first generated / instance-specific bridge is also a **clean negative**
+- simply moving from a fixed bridge to a continuous generated low-rank mixture
+  is not enough in the current transport family
+- the next serious method pivots are now:
+  - a more materially different attention/module replacement in the
+    Attention Editing direction, or
+  - a dynamic output-alignment teacher with contextual mapping / token
+    interaction supervision

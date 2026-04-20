@@ -1989,3 +1989,31 @@ Interpretation:
 - comparator priority also shifted again: after exact KVPress, the next
   highest-value external control day is now **KVzip** first and **Quest**
   second, with **KVComm** dropping below them in immediate value
+
+And a sixty-first generated-interface update:
+
+> I then implemented `bridge_ridge_qk_generated_adapter`, the first explicit
+> **generated / instance-specific bridge** in this repo. It keeps the same
+> `grouped_subspace_transport + rank-4 residual` base and the same fair
+> shared-chat / `enable_thinking=False` Qwen control, but it replaces the
+> fixed bridge residual with a continuous query-conditioned mixture over a
+> shared bank of low-rank bridge atoms, in the MoRA / SHINE direction rather
+> than the fixed residual or routed-bank direction.
+>
+> On the same 64-prompt calibration slice, offline fit was unchanged:
+> - `K` cosine `0.870`, relative Frobenius error `0.468`
+> - `V` cosine `0.397`, relative Frobenius error `0.907`
+>
+> The first held-out fair smoke was:
+> - `gsm8k_5`: `0.000000` at `686,026.600` average bytes
+
+Interpretation:
+
+- the first generated / instance-specific bridge is also a **clean negative**
+  on the first fair held-out smoke
+- that means the current bridge family is not rescued simply by moving from a
+  fixed adapter to a continuous generated mixture over low-rank atoms
+- the strongest remaining live pivots are now even narrower:
+  - a more materially different **module replacement** in the Attention Editing
+    direction, or
+  - a **dynamic output-alignment teacher** beyond static next-token KL

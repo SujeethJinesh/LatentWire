@@ -189,7 +189,7 @@ python scripts/calibrate.py \
 - `--pre-quant-rank N` / `--pre-quant-shrinkage A` — apply a target-space
   low-rank/shrinkage filter before quantization. This is a denoising step
   after alignment, not a replacement for the alignment solver.
-- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_cab_bank,bridge_ridge_qk_predkl_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,bridge_ridge_qk_adapter,bridge_ridge_qk_affinity_adapter,bridge_ridge_qk_attnkl_adapter,bridge_ridge_qk_cab_adapter,bridge_ridge_qk_emkd_adapter,bridge_ridge_qk_readout_adapter,bridge_ridge_qk_predkl_adapter,bridge_ridge_qk_asym_adapter,bridge_ridge_qk_asym_predkl_adapter,bridge_ridge_qk_sae_adapter,ridge,low_rank}` —
+- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_cab_bank,bridge_ridge_qk_predkl_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,bridge_ridge_qk_adapter,bridge_ridge_qk_affinity_adapter,bridge_ridge_qk_attnkl_adapter,bridge_ridge_qk_cab_adapter,bridge_ridge_qk_emkd_adapter,bridge_ridge_qk_readout_adapter,bridge_ridge_qk_predkl_adapter,bridge_ridge_qk_asym_adapter,bridge_ridge_qk_asym_predkl_adapter,bridge_ridge_qk_sae_adapter,bridge_ridge_qk_generated_adapter,ridge,low_rank}` —
   optional decoder-side correction after quantize/dequantize. `affine` is a
   diagonal scale+bias repair; `bridge_affine` is a coordinatewise bridge over
   both the dequantized tensor and the pre-quant translated prediction;
@@ -233,7 +233,10 @@ python scripts/calibrate.py \
   sparse shared codebook: paired K/V query-conditioned signals are encoded
   into a small top-k latent code and then decoded separately for K and V,
   giving the bridge an SAE-style shared interface rather than a dense
-  low-rank one;
+  low-rank one; `bridge_ridge_qk_generated_adapter` keeps the same
+  paired-K/V query-conditioned interface but turns it into a continuous
+  instance-specific bridge by generating per-sample mixture weights over a
+  shared bank of low-rank bridge atoms;
   all of the `bridge_ridge_qk_*adapter` variants now fit both K-side and
   V-side query-conditioned residuals during calibration rather than only a
   K-side residual;
@@ -249,7 +252,8 @@ python scripts/calibrate.py \
   `bridge_ridge_qk_attnkl_adapter`, or `bridge_ridge_qk_cab_adapter`, or
   `bridge_ridge_qk_emkd_adapter`, or `bridge_ridge_qk_readout_adapter`, or
   `bridge_ridge_qk_predkl_adapter`, or `bridge_ridge_qk_asym_adapter`, or
-  `bridge_ridge_qk_asym_predkl_adapter`, or `bridge_ridge_qk_sae_adapter` with
+  `bridge_ridge_qk_asym_predkl_adapter`, or `bridge_ridge_qk_sae_adapter`, or
+  `bridge_ridge_qk_generated_adapter` with
   `--quantization-correction-rank <r>`
   to control the adapter size, and use `--bridge-bank-size <k>` to set the
   number of bridge experts in the banked variants.
