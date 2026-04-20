@@ -4,6 +4,8 @@ Cloned repos:
 
 - `references/repos/C2C`
 - `references/repos/KVComm`
+- `references/repos/KVzip`
+- `references/repos/Quest`
 - `references/repos/LatentMAS`
 
 ### First fair comparison
@@ -28,9 +30,42 @@ Primary blocker:
 
 ### Secondary baselines
 
-`KVComm` is the next cleanest control because it is training-free, but it is
-less turnkey for our current GSM JSONL path and is better treated as the second
-comparison after `C2C`.
+`KVzip` is now the next highest-value external control after `C2C`.
+
+Why:
+
+- it is the strongest modern **compression-side control** for separating
+  cross-model communication from generic cache compression / reconstruction
+- it has public code and is now cloned locally at `references/repos/KVzip`
+- it is a better next comparator day than `KVComm` because it sharpens the
+  “transport vs compression” question more directly
+
+Current blocker on `KVzip`:
+
+- it is a cache-compression control rather than a cross-model transport method,
+  so the paper should present it as an external control, not an apples-to-
+  apples heterogeneous communication baseline
+- its stock path still needs a thin replay harness on our GSM JSONL slices to
+  become a fair direct table row
+
+`Quest` is the next cleanest query-aware sparsity control after `KVzip`.
+
+Why:
+
+- it is the strongest older query-aware pruning control and is now cloned
+  locally at `references/repos/Quest`
+- it is useful if we want to rule out “any query-aware KV pruning works” as a
+  confound for our method family
+
+Current blocker on `Quest`:
+
+- it is a long-context inference method, not a heterogeneous communication
+  baseline
+- its evaluation path still needs a thin adapter to replay on our GSM JSONL
+  splits
+
+`KVComm` is still useful, but it has dropped below `KVzip` and `Quest` in
+immediate comparator value.
 
 Current blocker on `KVComm`:
 
@@ -60,9 +95,10 @@ Latest read on `LatentMAS`:
 
 ### Immediate next steps
 
-1. bootstrap `C2C` on the exact Qwen pair with its published checkpoint
-2. replay it on `data/gsm8k_eval_70.jsonl` or `data/gsm8k_100.jsonl`
-3. compare against:
+1. keep `C2C` as the main external bar
+2. bootstrap `KVzip` next as the highest-value external control day
+3. keep `Quest` as the fallback control after `KVzip`
+4. compare against:
    - target-alone
    - text-to-text
    - zero-byte attenuation
@@ -141,3 +177,8 @@ Interpretation:
   comparator** on our current pair, not a live positive baseline
 - `C2C` remains the main external bar; KVPress is useful as a compression-side
   boundary and calibration sanity check
+- immediate comparator priority is now:
+  1. `C2C` as the main bar
+  2. `KVzip` as the next compression-side control
+  3. `Quest` as the next query-aware pruning control
+  4. `KVComm` as a lower-priority adjacent replay
