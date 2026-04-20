@@ -189,6 +189,13 @@ python scripts/calibrate.py \
   is a small full linear correction layer in rotated target space; `low_rank`
   is a reduced-rank bridge adapter in the same rotated target space. Pair `low_rank` with
   `--quantization-correction-rank <r>` to control the adapter size.
+- `--source-use-chat-template` / `--target-use-chat-template` and
+  `--source-enable-thinking {auto,true,false}` /
+  `--target-enable-thinking {auto,true,false}` — format prompts through the
+  tokenizer chat template during calibration / evaluation. For fair Qwen3
+  controls, set `--target-use-chat-template --target-enable-thinking false`;
+  for matched Qwen2.5 -> Qwen3 generation comparisons, use the source and
+  target flags together.
 - `--learned-fusion-dropout P` — calibration-time target dropout used only for
   the experimental `learned_affine` fusion rule. This fits a tiny per-layer,
   per-coordinate source/target affine blend on top of the transported cache;
@@ -235,6 +242,12 @@ attention-prior selector controls on the current GSM8K slices. The new
 `attention_disagreement` option multiplies live target attention by translated
 key disagreement, so it explicitly favors positions that are both query-relevant
 and likely to change the target's retrieval geometry.
+For fair Qwen3 comparisons, the evaluator also supports
+`--source-use-chat-template`, `--target-use-chat-template`,
+`--source-enable-thinking {auto,true,false}`, and
+`--target-enable-thinking {auto,true,false}`. The cheapest fairness control on
+the current Qwen2.5 -> Qwen3 pair is shared chat serialization with
+`--target-enable-thinking false` or both sides forced to `false`.
 For head-aware retrieval routing, add
 `--per-head-position-budget-mode attention_peak`, `attention_entropy`,
 `attention_margin`, `retrieval_peak`, `attention_fidelity`,

@@ -284,6 +284,13 @@ File `209_` records the prompt/control backlog:
 
 - `209_`: Qwen3 hybrid thinking and prompt controls as the official-source note for the next fairness ablation around `enable_thinking=False` and shared prompt serialization.
 
+Files `210_` through `213_` extend the query-conditioned bridge backlog:
+
+- `210_`: Task-KV as an instruction/task-conditioned KV reuse reference, useful for making the bridge or transport path depend on the live query rather than one static descriptor.
+- `211_`: Activated LoRA as a runtime-activated low-rank adapter reference, useful for query-conditioned bridge modules that should only fire when needed.
+- `212_`: Expected Attention as a direct query-conditioned attention-estimation reference, useful for transport or bridge costs that preserve live retrieval behavior rather than mean templates.
+- `213_`: MoRA as an on-the-fly low-rank adaptation reference, useful for the next dynamic bridge/projector attempt beyond static `bridge_ridge`.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

@@ -149,6 +149,41 @@ def load_prompt_lines(path: str) -> list[str]:
         return [line.strip() for line in f if line.strip()]
 
 
+def _optional_bool_from_arg(value: str) -> bool | None:
+    lowered = value.lower()
+    if lowered == "auto":
+        return None
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    raise ValueError(f"Unknown tri-state bool value: {value}")
+
+
+def _format_prompt_for_tokenizer(
+    tokenizer,
+    prompt: str,
+    *,
+    use_chat_template: bool,
+    enable_thinking: bool | None,
+) -> str:
+    prompt = prompt.strip()
+    if not use_chat_template or not hasattr(tokenizer, "apply_chat_template"):
+        return prompt
+    messages = [{"role": "user", "content": prompt}]
+    kwargs: dict[str, Any] = {
+        "tokenize": False,
+        "add_generation_prompt": True,
+    }
+    if enable_thinking is not None:
+        kwargs["enable_thinking"] = enable_thinking
+    try:
+        return tokenizer.apply_chat_template(messages, **kwargs)
+    except TypeError:
+        kwargs.pop("enable_thinking", None)
+        return tokenizer.apply_chat_template(messages, **kwargs)
+
+
 def _normalize_cache(pkv: Any) -> tuple | None:
     if pkv is None:
         return None
@@ -194,8 +229,22 @@ def _split_prompt_prefix(prompt_ids: torch.Tensor) -> tuple[torch.Tensor | None,
 
 
 @torch.no_grad()
-def _prepare_prefix_state(model, tokenizer, prompt: str, device: str) -> PrefixState:
-    prompt_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
+def _prepare_prefix_state(
+    model,
+    tokenizer,
+    prompt: str,
+    device: str,
+    *,
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
+) -> PrefixState:
+    formatted_prompt = _format_prompt_for_tokenizer(
+        tokenizer,
+        prompt,
+        use_chat_template=use_chat_template,
+        enable_thinking=enable_thinking,
+    )
+    prompt_ids = tokenizer(formatted_prompt, return_tensors="pt").input_ids.to(device)
     prefix_ids, last_token = _split_prompt_prefix(prompt_ids)
     if prefix_ids is None:
         return PrefixState(past_key_values=None, last_token=last_token, prefix_len=1)
@@ -2688,8 +2737,18 @@ def _build_rotalign_prefix_state(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    source_use_chat_template: bool = False,
+    target_use_chat_template: bool = False,
+    source_enable_thinking: bool | None = None,
+    target_enable_thinking: bool | None = None,
 ) -> tuple[PrefixState, dict[str, float]]:
-    tgt_prompt_ids = target_tokenizer(target_prompt, return_tensors="pt").input_ids.to(device)
+    formatted_target_prompt = _format_prompt_for_tokenizer(
+        target_tokenizer,
+        target_prompt,
+        use_chat_template=target_use_chat_template,
+        enable_thinking=target_enable_thinking,
+    )
+    tgt_prompt_ids = target_tokenizer(formatted_target_prompt, return_tensors="pt").input_ids.to(device)
     tgt_prefix_ids, tgt_last_token = _split_prompt_prefix(tgt_prompt_ids)
     if tgt_prefix_ids is None:
         return PrefixState(None, tgt_last_token, 1), {"bits": 0.0}
@@ -2700,7 +2759,13 @@ def _build_rotalign_prefix_state(
     )
     tgt_pkv = list(_normalize_cache(tgt_out.past_key_values))
 
-    src_ids = source_tokenizer(source_prompt, return_tensors="pt").input_ids.to(device)
+    formatted_source_prompt = _format_prompt_for_tokenizer(
+        source_tokenizer,
+        source_prompt,
+        use_chat_template=source_use_chat_template,
+        enable_thinking=source_enable_thinking,
+    )
+    src_ids = source_tokenizer(formatted_source_prompt, return_tensors="pt").input_ids.to(device)
     src_prefix_ids, src_last_token = _split_prompt_prefix(src_ids)
     if src_prefix_ids is None:
         src_pkv = []
@@ -3519,9 +3584,18 @@ def _generate_source_hint(
     prompt: str,
     device: str,
     source_reasoning_mode: str,
+    *,
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
 ) -> str:
     hint_prompt = _source_reasoning_prompt(prompt, source_reasoning_mode)
-    hint_ids = source_tokenizer(hint_prompt, return_tensors="pt").input_ids.to(device)
+    formatted_hint_prompt = _format_prompt_for_tokenizer(
+        source_tokenizer,
+        hint_prompt,
+        use_chat_template=use_chat_template,
+        enable_thinking=enable_thinking,
+    )
+    hint_ids = source_tokenizer(formatted_hint_prompt, return_tensors="pt").input_ids.to(device)
     with torch.no_grad():
         out = source_model.generate(
             hint_ids,
@@ -3795,6 +3869,8 @@ def _eval_generation_target_alone_with_stats(
     examples,
     device,
     max_new_tokens: int,
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
     records: list[dict[str, Any]] | None = None,
     method_name: str = "target_alone",
 ) -> dict[str, float]:
@@ -3804,7 +3880,14 @@ def _eval_generation_target_alone_with_stats(
     total_elapsed = 0.0
     for idx, ex in enumerate(examples):
         prep_started = time.perf_counter()
-        prefix_state = _prepare_prefix_state(model, tokenizer, ex.prompt, device)
+        prefix_state = _prepare_prefix_state(
+            model,
+            tokenizer,
+            ex.prompt,
+            device,
+            use_chat_template=use_chat_template,
+            enable_thinking=enable_thinking,
+        )
         prep_elapsed = time.perf_counter() - prep_started
         trace = _greedy_generate_with_stats(
             model,
@@ -3868,6 +3951,10 @@ def _eval_generation_text_to_text_with_stats(
     device,
     max_new_tokens: int,
     source_reasoning_mode: str = "brief_analysis",
+    source_use_chat_template: bool = False,
+    target_use_chat_template: bool = False,
+    source_enable_thinking: bool | None = None,
+    target_enable_thinking: bool | None = None,
     records: list[dict[str, Any]] | None = None,
 ) -> dict[str, float]:
     correct = 0
@@ -3882,9 +3969,18 @@ def _eval_generation_text_to_text_with_stats(
             ex.prompt,
             device,
             source_reasoning_mode,
+            use_chat_template=source_use_chat_template,
+            enable_thinking=source_enable_thinking,
         )
         augmented = f"Analysis: {hint}\n{ex.prompt}"
-        prefix_state = _prepare_prefix_state(target_model, target_tokenizer, augmented, device)
+        prefix_state = _prepare_prefix_state(
+            target_model,
+            target_tokenizer,
+            augmented,
+            device,
+            use_chat_template=target_use_chat_template,
+            enable_thinking=target_enable_thinking,
+        )
         trace = _greedy_generate_with_stats(
             target_model,
             target_tokenizer,
@@ -4019,6 +4115,10 @@ def _eval_generation_rotalign_with_stats(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    source_use_chat_template: bool = False,
+    target_use_chat_template: bool = False,
+    source_enable_thinking: bool | None = None,
+    target_enable_thinking: bool | None = None,
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> dict[str, float]:
@@ -4039,6 +4139,8 @@ def _eval_generation_rotalign_with_stats(
                 ex.prompt,
                 device,
                 source_reasoning_mode,
+                use_chat_template=source_use_chat_template,
+                enable_thinking=source_enable_thinking,
             )
             target_prompt = f"Analysis: {hint}\n{ex.prompt}"
 
@@ -4059,6 +4161,10 @@ def _eval_generation_rotalign_with_stats(
         build_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
         build_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
         build_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
+        build_kwargs["source_use_chat_template"] = source_use_chat_template
+        build_kwargs["target_use_chat_template"] = target_use_chat_template
+        build_kwargs["source_enable_thinking"] = source_enable_thinking
+        build_kwargs["target_enable_thinking"] = target_enable_thinking
         prefix_state, stats = _build_rotalign_prefix_state(
             source_model,
             source_tokenizer,
@@ -4156,6 +4262,28 @@ def parse_args() -> argparse.Namespace:
         choices=["plain", "brief_analysis", "cot", "scratchpad"],
         default="brief_analysis",
         help="Prompt template used when the source model generates a hint and when source KVs are captured",
+    )
+    p.add_argument(
+        "--source-use-chat-template",
+        action="store_true",
+        help="Format source prompts through tokenizer.apply_chat_template when available.",
+    )
+    p.add_argument(
+        "--target-use-chat-template",
+        action="store_true",
+        help="Format target prompts through tokenizer.apply_chat_template when available.",
+    )
+    p.add_argument(
+        "--source-enable-thinking",
+        choices=["auto", "true", "false"],
+        default="auto",
+        help="Thinking flag passed into the source tokenizer chat template when supported.",
+    )
+    p.add_argument(
+        "--target-enable-thinking",
+        choices=["auto", "true", "false"],
+        default="auto",
+        help="Thinking flag passed into the target tokenizer chat template when supported.",
     )
     p.add_argument("--no-quantize", action="store_true",
                    help="Disable Lloyd-Max quantization during translation (ablation)")
@@ -4449,6 +4577,10 @@ def main() -> None:
     runtime_head_prior_shrinkage = float(getattr(args, "runtime_head_prior_shrinkage", 0.0))
     runtime_head_prior_shrink_target = getattr(args, "runtime_head_prior_shrink_target", "uniform")
     per_head_position_budget_mode = getattr(args, "per_head_position_budget_mode", "none")
+    source_use_chat_template = bool(getattr(args, "source_use_chat_template", False))
+    target_use_chat_template = bool(getattr(args, "target_use_chat_template", False))
+    source_enable_thinking = _optional_bool_from_arg(getattr(args, "source_enable_thinking", "auto"))
+    target_enable_thinking = _optional_bool_from_arg(getattr(args, "target_enable_thinking", "auto"))
     if not 0.0 <= runtime_head_prior_shrinkage <= 1.0:
         raise ValueError("--runtime-head-prior-shrinkage must be in [0, 1]")
     if not 0.0 <= runtime_head_gate_strength <= 1.0:
@@ -5033,7 +5165,14 @@ def main() -> None:
     else:
         if "target" in args.methods:
             target_stats = _eval_generation_target_alone_with_stats(
-                tgt, tok_t, examples, args.device, args.max_new_tokens, prediction_records
+                tgt,
+                tok_t,
+                examples,
+                args.device,
+                args.max_new_tokens,
+                use_chat_template=target_use_chat_template,
+                enable_thinking=target_enable_thinking,
+                records=prediction_records,
             )
             results["target_alone"] = target_stats["accuracy"]
             results["target_alone_ttft_sec"] = target_stats["ttft_sec"]
@@ -5042,7 +5181,15 @@ def main() -> None:
             results["target_alone_latency_sec"] = target_stats["latency_sec"]
         if "source" in args.methods:
             source_stats = _eval_generation_target_alone_with_stats(
-                src, tok_s, examples, args.device, args.max_new_tokens, prediction_records, "source_alone"
+                src,
+                tok_s,
+                examples,
+                args.device,
+                args.max_new_tokens,
+                use_chat_template=source_use_chat_template,
+                enable_thinking=source_enable_thinking,
+                records=prediction_records,
+                method_name="source_alone",
             )
             results["source_alone"] = source_stats["accuracy"]
             results["source_alone_ttft_sec"] = source_stats["ttft_sec"]
@@ -5053,8 +5200,19 @@ def main() -> None:
             raise ValueError("routing baseline is only implemented for MCQ tasks")
         if "t2t" in args.methods:
             t2t_stats = _eval_generation_text_to_text_with_stats(
-                src, tok_s, tgt, tok_t, examples, args.device, args.max_new_tokens
-                , source_reasoning_mode=args.source_reasoning_mode, records=prediction_records
+                src,
+                tok_s,
+                tgt,
+                tok_t,
+                examples,
+                args.device,
+                args.max_new_tokens,
+                source_reasoning_mode=args.source_reasoning_mode,
+                source_use_chat_template=source_use_chat_template,
+                target_use_chat_template=target_use_chat_template,
+                source_enable_thinking=source_enable_thinking,
+                target_enable_thinking=target_enable_thinking,
+                records=prediction_records,
             )
             results["text_to_text"] = t2t_stats["accuracy"]
             results["text_to_text_ttft_sec"] = t2t_stats["ttft_sec"]
@@ -5161,6 +5319,10 @@ def main() -> None:
                     runtime_head_gate_metric=runtime_head_gate_metric,
                     runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
+                    source_use_chat_template=source_use_chat_template,
+                    target_use_chat_template=target_use_chat_template,
+                    source_enable_thinking=source_enable_thinking,
+                    target_enable_thinking=target_enable_thinking,
                     records=prediction_records,
                     method_name=metric_key,
                 )
@@ -5189,6 +5351,10 @@ def main() -> None:
                 "dtype": args.dtype,
                 "max_new_tokens": getattr(args, "max_new_tokens", None),
                 "source_reasoning_mode": args.source_reasoning_mode,
+                "source_use_chat_template": source_use_chat_template,
+                "target_use_chat_template": target_use_chat_template,
+                "source_enable_thinking": getattr(args, "source_enable_thinking", "auto"),
+                "target_enable_thinking": getattr(args, "target_enable_thinking", "auto"),
                 "methods": list(args.methods),
                 "gate_mode": args.gate_mode,
                 "fixed_gate": args.fixed_gate,

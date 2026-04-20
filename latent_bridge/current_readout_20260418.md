@@ -1365,3 +1365,28 @@ Interpretation:
   positive-method win
 - the strongest next bridge step is now likely **query-conditioned or
   distillation-shaped**, not another static linear variant
+
+And a thirty-eighth Qwen3 prompt/thinking control update:
+
+> I then finished the end-to-end prompt-control patch in both calibration and
+> evaluation so we can run shared chat-template / thinking-mode controls
+> cleanly. On the cheapest held-out fairness slice (`/tmp/gsm8k_eval_10.jsonl`)
+> with shared chat serialization on both sides and `enable_thinking=False` for
+> both tokenizers, the controlled results were:
+> - `target-alone`: `0.100000`
+> - `grouped_subspace + rank-4 residual + bridge_ridge`: `0.100000`
+>   at `340,375.975` average bytes
+
+Interpretation:
+
+- the Qwen3 serialization / thinking-mode control is worth keeping because it
+  removes a real fairness confound in the evaluation path
+- but it does **not** rescue the bridge method: under the controlled prompt
+  regime, `bridge_ridge` ties `target-alone` on `gsm8k_eval_10` instead of
+  opening a new bridge margin
+- prompt/thinking mismatch is therefore not the main explanation for why the
+  bridge lane still trails the live internal bars
+- future fair comparisons on this exact Qwen pair should keep the same prompt
+  serialization and `enable_thinking=False`, but the next method step still has
+  to be a **query-conditioned bridge / projector**, not another serialization
+  tweak

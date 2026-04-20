@@ -339,3 +339,17 @@ The cheapest missing fairness control is still:
 - Qwen3 prompt serialization / `enable_thinking=False` alignment in the main
   evaluator, because the official Qwen3 docs say that non-thinking mode is the
   setting that aligns Qwen3 with earlier Qwen2.5-Instruct behavior
+
+That control is now done on the cheapest held-out slice. With shared chat
+serialization and `enable_thinking=False` on both sides:
+
+- `target-alone` on `gsm8k_eval_10`: `0.1000`
+- `bridge_ridge` on the same controlled slice: `0.1000`
+
+So prompt/thinking alignment is a fairness control we should keep, but it does
+**not** create a bridge advantage by itself. The bridge lane is still alive,
+but the next positive-method attempt has to come from the method itself:
+
+- query-conditioned bridge / projector
+- richer token-interaction or distillation target
+- or both together

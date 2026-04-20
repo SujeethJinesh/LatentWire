@@ -45,6 +45,19 @@ class _FakeTokenizer:
         return _Encoded(tensor, mask)
 
 
+class _FakeChatTokenizer(_FakeTokenizer):
+    def __init__(self, lengths_by_prompt: dict[str, int]) -> None:
+        super().__init__(lengths_by_prompt)
+        self.chat_calls: list[tuple[str, bool | None]] = []
+
+    def apply_chat_template(self, messages, tokenize=False, add_generation_prompt=True, enable_thinking=None):
+        assert tokenize is False
+        assert add_generation_prompt is True
+        content = messages[0]["content"]
+        self.chat_calls.append((content, enable_thinking))
+        return f"chat::{enable_thinking}::{content}"
+
+
 class _FakeCache:
     def __init__(self, layers):
         self.layers = layers
@@ -180,6 +193,23 @@ def test_collect_aligned_kv_pairs_uses_source_reasoning_prompt() -> None:
 
     assert src_kvs[0][0].shape == (2, 1, 1, 1)
     assert tgt_kvs[0][0].shape == (2, 1, 1, 1)
+
+
+def test_prepare_prompt_text_supports_chat_template_and_enable_thinking() -> None:
+    prompt = "a"
+    source_prompt = calibrate._source_reasoning_prompt(prompt, "cot")
+    tokenizer = _FakeChatTokenizer({f"chat::False::{source_prompt}": 4})
+
+    formatted = calibrate._prepare_prompt_text(
+        prompt,
+        reasoning_mode="cot",
+        tokenizer=tokenizer,
+        use_chat_template=True,
+        enable_thinking=False,
+    )
+
+    assert formatted == f"chat::False::{source_prompt}"
+    assert tokenizer.chat_calls == [(source_prompt, False)]
 
 
 def test_collect_group_attention_templates_supports_peak_mode() -> None:
@@ -321,6 +351,36 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
     assert args.whitening is True
     assert args.target_whitening is True
     assert args.source_reasoning_mode == "cot"
+
+
+def test_calibrate_parse_args_accepts_chat_template_and_thinking_flags(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--source-use-chat-template",
+            "--target-use-chat-template",
+            "--source-enable-thinking",
+            "false",
+            "--target-enable-thinking",
+            "true",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.source_use_chat_template is True
+    assert args.target_use_chat_template is True
+    assert args.source_enable_thinking == "false"
+    assert args.target_enable_thinking == "true"
 
 
 def test_calibrate_parse_args_accepts_grouped_alignment(monkeypatch) -> None:

@@ -60,6 +60,13 @@ class FakeTokenizer:
         tokens = [self.inverse.get(int(i), f"tok{i}") for i in ids]
         return " ".join(tokens)
 
+    def apply_chat_template(self, messages, tokenize=False, add_generation_prompt=True, enable_thinking=None):
+        assert tokenize is False
+        assert add_generation_prompt is True
+        content = messages[0]["content"]
+        suffix = "" if enable_thinking is None else f" thinking={str(enable_thinking).lower()}"
+        return f"<chat{suffix}> {content}"
+
 
 class FakeCache:
     def __init__(self, layers):
@@ -225,6 +232,19 @@ def test_source_reasoning_prompt_variants() -> None:
     assert evaluate._source_reasoning_prompt("solve this", "plain") == "solve this"
     assert "Let's think step by step." in evaluate._source_reasoning_prompt("solve this", "cot")
     assert "scratchpad" in evaluate._source_reasoning_prompt("solve this", "scratchpad").lower()
+
+
+def test_format_prompt_for_tokenizer_supports_chat_template_and_enable_thinking() -> None:
+    tok = FakeTokenizer()
+
+    formatted = evaluate._format_prompt_for_tokenizer(
+        tok,
+        "solve this",
+        use_chat_template=True,
+        enable_thinking=False,
+    )
+
+    assert formatted == "<chat thinking=false> solve this"
 
 
 def test_score_helpers_rank_the_preferred_choice() -> None:
@@ -395,6 +415,36 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.runtime_head_prior_shrinkage == 0.3
     assert args.runtime_head_prior_shrink_target == "global"
     assert args.per_head_position_budget_mode == "attention_peak"
+
+
+def test_evaluate_parse_args_accepts_chat_template_and_thinking_flags(monkeypatch) -> None:
+    monkeypatch.setattr(
+        evaluate.sys,
+        "argv",
+        [
+            "evaluate.py",
+            "--translator",
+            "translator.pt",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--eval-file",
+            "eval.jsonl",
+            "--source-use-chat-template",
+            "--target-use-chat-template",
+            "--source-enable-thinking",
+            "false",
+            "--target-enable-thinking",
+            "false",
+        ],
+    )
+
+    args = evaluate.parse_args()
+    assert args.source_use_chat_template is True
+    assert args.target_use_chat_template is True
+    assert args.source_enable_thinking == "false"
+    assert args.target_enable_thinking == "false"
 
 
 def test_evaluate_parse_args_accepts_attention_qk_bank_transport_metrics(monkeypatch) -> None:

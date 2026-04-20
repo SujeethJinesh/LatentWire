@@ -253,6 +253,28 @@ def parse_args() -> argparse.Namespace:
         default="plain",
         help="Prompt template used on the source side during calibration",
     )
+    p.add_argument(
+        "--source-use-chat-template",
+        action="store_true",
+        help="Format source calibration prompts through tokenizer.apply_chat_template when available.",
+    )
+    p.add_argument(
+        "--target-use-chat-template",
+        action="store_true",
+        help="Format target calibration prompts through tokenizer.apply_chat_template when available.",
+    )
+    p.add_argument(
+        "--source-enable-thinking",
+        choices=["auto", "true", "false"],
+        default="auto",
+        help="Thinking flag passed into the source tokenizer chat template when supported.",
+    )
+    p.add_argument(
+        "--target-enable-thinking",
+        choices=["auto", "true", "false"],
+        default="auto",
+        help="Thinking flag passed into the target tokenizer chat template when supported.",
+    )
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default=default_device())
     p.add_argument("--dtype", default="float32", choices=["float32", "float16", "bfloat16"])
@@ -273,6 +295,17 @@ def load_prompts(path: str) -> list[str]:
         return [line.strip() for line in f if line.strip()]
 
 
+def _optional_bool_from_arg(value: str) -> bool | None:
+    lowered = value.lower()
+    if lowered == "auto":
+        return None
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    raise ValueError(f"Unknown tri-state bool value: {value}")
+
+
 def _source_reasoning_prompt(prompt: str, mode: str) -> str:
     prompt = prompt.strip()
     if mode == "plain":
@@ -287,6 +320,43 @@ def _source_reasoning_prompt(prompt: str, mode: str) -> str:
     if mode == "scratchpad":
         return f"Use a scratchpad to work through the problem carefully.\n{prompt}\nScratchpad:"
     raise ValueError(f"Unknown source reasoning mode: {mode}")
+
+
+def _format_prompt_for_tokenizer(
+    tokenizer: AutoTokenizer,
+    prompt: str,
+    *,
+    use_chat_template: bool,
+    enable_thinking: bool | None,
+) -> str:
+    prompt = prompt.strip()
+    if not use_chat_template or not hasattr(tokenizer, "apply_chat_template"):
+        return prompt
+    messages = [{"role": "user", "content": prompt}]
+    kwargs = {"tokenize": False, "add_generation_prompt": True}
+    if enable_thinking is not None:
+        kwargs["enable_thinking"] = enable_thinking
+    try:
+        return tokenizer.apply_chat_template(messages, **kwargs)
+    except TypeError:
+        kwargs.pop("enable_thinking", None)
+        return tokenizer.apply_chat_template(messages, **kwargs)
+
+
+def _prepare_prompt_text(
+    prompt: str,
+    *,
+    reasoning_mode: str,
+    tokenizer: AutoTokenizer,
+    use_chat_template: bool,
+    enable_thinking: bool | None,
+) -> str:
+    return _format_prompt_for_tokenizer(
+        tokenizer,
+        _source_reasoning_prompt(prompt, reasoning_mode),
+        use_chat_template=use_chat_template,
+        enable_thinking=enable_thinking,
+    )
 
 
 def batched(items: list, batch_size: int) -> Iterable[list]:
@@ -342,6 +412,8 @@ def collect_kvs(
     batch_size: int,
     device: str,
     reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
 ) -> list[tuple[torch.Tensor, torch.Tensor]]:
     """Run the model on all prompts and concatenate only valid token KVs.
 
@@ -358,7 +430,16 @@ def collect_kvs(
     per_layer_V: list[list[torch.Tensor]] = []
 
     for batch in batched(prompts, batch_size):
-        batch = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        batch = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
         enc = tokenizer(
             batch,
             return_tensors="pt",
@@ -394,6 +475,10 @@ def collect_aligned_kv_pairs(
     batch_size: int,
     device: str,
     source_reasoning_mode: str = "plain",
+    source_use_chat_template: bool = False,
+    target_use_chat_template: bool = False,
+    source_enable_thinking: bool | None = None,
+    target_enable_thinking: bool | None = None,
 ) -> tuple[list[tuple[torch.Tensor, torch.Tensor]], list[tuple[torch.Tensor, torch.Tensor]]]:
     """Collect source/target KVs while masking pads and aligning prompt lengths.
 
@@ -412,8 +497,25 @@ def collect_aligned_kv_pairs(
     tgt_per_layer_V: list[list[torch.Tensor]] = []
 
     for batch in batched(prompts, batch_size):
-        src_batch = [_source_reasoning_prompt(prompt, source_reasoning_mode) for prompt in batch]
-        tgt_batch = list(batch)
+        src_batch = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=source_reasoning_mode,
+                tokenizer=src_tokenizer,
+                use_chat_template=source_use_chat_template,
+                enable_thinking=source_enable_thinking,
+            )
+            for prompt in batch
+        ]
+        tgt_batch = [
+            _format_prompt_for_tokenizer(
+                tgt_tokenizer,
+                prompt,
+                use_chat_template=target_use_chat_template,
+                enable_thinking=target_enable_thinking,
+            )
+            for prompt in batch
+        ]
         src_enc = src_tokenizer(
             src_batch,
             return_tensors="pt",
@@ -545,6 +647,8 @@ def collect_group_attention_templates(
     bins: int,
     template_mode: str = "mean",
     reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
 ) -> list[torch.Tensor]:
     if bins <= 0:
         raise ValueError("bins must be positive")
@@ -561,7 +665,16 @@ def collect_group_attention_templates(
     layer_sums: list[torch.Tensor] | None = None
     used_prompts = 0
     for batch in batched(prompts, batch_size):
-        batch_text = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        batch_text = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
         enc = tokenizer(
             batch_text,
             return_tensors="pt",
@@ -621,6 +734,8 @@ def collect_group_attention_template_bank(
     bins: int,
     template_mode: str = "mean",
     reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
 ) -> list[torch.Tensor]:
     if bins <= 0:
         raise ValueError("bins must be positive")
@@ -637,7 +752,16 @@ def collect_group_attention_template_bank(
     layer_templates: list[list[torch.Tensor]] | None = None
     used_prompts = 0
     for batch in batched(prompts, batch_size):
-        batch_text = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        batch_text = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
         enc = tokenizer(
             batch_text,
             return_tensors="pt",
@@ -719,6 +843,8 @@ def collect_group_key_signatures(
     group_count: int,
     rank: int,
     reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
 ) -> list[torch.Tensor]:
     if rank <= 0:
         raise ValueError("rank must be positive")
@@ -733,7 +859,16 @@ def collect_group_key_signatures(
     layer_sums: list[torch.Tensor] | None = None
     used_prompts = 0
     for batch in batched(prompts, batch_size):
-        batch_text = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        batch_text = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
         enc = tokenizer(
             batch_text,
             return_tensors="pt",
@@ -804,6 +939,8 @@ def collect_group_qk_templates(
     group_count: int,
     bins: int,
     reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
 ) -> list[torch.Tensor]:
     if bins <= 0:
         raise ValueError("bins must be positive")
@@ -819,7 +956,16 @@ def collect_group_qk_templates(
     layer_sums: list[torch.Tensor] | None = None
     used_prompts = 0
     for batch in batched(prompts, batch_size):
-        batch_text = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        batch_text = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
         enc = tokenizer(
             batch_text,
             return_tensors="pt",
@@ -887,6 +1033,8 @@ def collect_group_qk_retrieval_templates(
     group_count: int,
     bins: int,
     reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
 ) -> list[torch.Tensor]:
     if bins <= 0:
         raise ValueError("bins must be positive")
@@ -902,7 +1050,16 @@ def collect_group_qk_retrieval_templates(
     layer_sums: list[torch.Tensor] | None = None
     used_prompts = 0
     for batch in batched(prompts, batch_size):
-        batch_text = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        batch_text = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
         enc = tokenizer(
             batch_text,
             return_tensors="pt",
@@ -961,6 +1118,8 @@ def collect_group_qk_retrieval_templates(
 def main() -> None:
     args = parse_args()
     dtype = torch_dtype(args.dtype)
+    source_enable_thinking = _optional_bool_from_arg(args.source_enable_thinking)
+    target_enable_thinking = _optional_bool_from_arg(args.target_enable_thinking)
 
     prompts = load_prompts(args.calibration_file)
     print(f"Loaded {len(prompts)} calibration prompts from {args.calibration_file}")
@@ -988,6 +1147,10 @@ def main() -> None:
         args.batch_size,
         args.device,
         source_reasoning_mode=args.source_reasoning_mode,
+        source_use_chat_template=args.source_use_chat_template,
+        target_use_chat_template=args.target_use_chat_template,
+        source_enable_thinking=source_enable_thinking,
+        target_enable_thinking=target_enable_thinking,
     )
 
     # Inspect shapes to build the config.
@@ -1085,6 +1248,8 @@ def main() -> None:
                 group_count=src_template_groups,
                 rank=args.transport_signature_rank,
                 reasoning_mode=args.source_reasoning_mode,
+                use_chat_template=args.source_use_chat_template,
+                enable_thinking=source_enable_thinking,
             )
             translator._transport_tgt_group_templates = collect_group_key_signatures(
                 tgt,
@@ -1097,6 +1262,8 @@ def main() -> None:
                 group_count=tgt_template_groups,
                 rank=args.transport_signature_rank,
                 reasoning_mode="plain",
+                use_chat_template=args.target_use_chat_template,
+                enable_thinking=target_enable_thinking,
             )
             print(
                 "Built grouped key signatures: "
@@ -1119,6 +1286,8 @@ def main() -> None:
                 group_count=src_template_groups,
                 bins=args.transport_template_bins,
                 reasoning_mode=args.source_reasoning_mode,
+                use_chat_template=args.source_use_chat_template,
+                enable_thinking=source_enable_thinking,
             )
             translator._transport_tgt_group_templates = collect_group_qk_templates(
                 tgt,
@@ -1131,6 +1300,8 @@ def main() -> None:
                 group_count=tgt_template_groups,
                 bins=args.transport_template_bins,
                 reasoning_mode="plain",
+                use_chat_template=args.target_use_chat_template,
+                enable_thinking=target_enable_thinking,
             )
             print(
                 "Built grouped QK templates: "
@@ -1153,6 +1324,8 @@ def main() -> None:
                 group_count=src_template_groups,
                 bins=args.transport_template_bins,
                 reasoning_mode=args.source_reasoning_mode,
+                use_chat_template=args.source_use_chat_template,
+                enable_thinking=source_enable_thinking,
             )
             translator._transport_tgt_group_templates = collect_group_qk_retrieval_templates(
                 tgt,
@@ -1165,6 +1338,8 @@ def main() -> None:
                 group_count=tgt_template_groups,
                 bins=args.transport_template_bins,
                 reasoning_mode="plain",
+                use_chat_template=args.target_use_chat_template,
+                enable_thinking=target_enable_thinking,
             )
             print(
                 "Built grouped QK retrieval templates: "
@@ -1188,6 +1363,8 @@ def main() -> None:
                 bins=args.transport_template_bins,
                 template_mode="mean",
                 reasoning_mode=args.source_reasoning_mode,
+                use_chat_template=args.source_use_chat_template,
+                enable_thinking=source_enable_thinking,
             )
             translator._transport_tgt_group_template_banks = collect_group_attention_template_bank(
                 tgt,
@@ -1201,6 +1378,8 @@ def main() -> None:
                 bins=args.transport_template_bins,
                 template_mode="mean",
                 reasoning_mode="plain",
+                use_chat_template=args.target_use_chat_template,
+                enable_thinking=target_enable_thinking,
             )
             translator._transport_src_group_templates = [
                 bank.mean(dim=0) / bank.mean(dim=0).sum(dim=-1, keepdim=True).clamp_min(1e-8)
@@ -1232,6 +1411,8 @@ def main() -> None:
                 bins=args.transport_template_bins,
                 template_mode=template_mode,
                 reasoning_mode=args.source_reasoning_mode,
+                use_chat_template=args.source_use_chat_template,
+                enable_thinking=source_enable_thinking,
             )
             translator._transport_tgt_group_templates = collect_group_attention_templates(
                 tgt,
@@ -1245,6 +1426,8 @@ def main() -> None:
                 bins=args.transport_template_bins,
                 template_mode=template_mode,
                 reasoning_mode="plain",
+                use_chat_template=args.target_use_chat_template,
+                enable_thinking=target_enable_thinking,
             )
             print(
                 "Built grouped attention templates: "
