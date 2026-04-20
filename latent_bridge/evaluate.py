@@ -743,6 +743,96 @@ def _mean_head_attention_templates_from_prompts(
     return out
 
 
+def _qk_position_distributions(
+    query_heads: torch.Tensor,
+    keys: torch.Tensor,
+    *,
+    bins: int | None = None,
+) -> torch.Tensor:
+    if query_heads.ndim == 3:
+        if query_heads.shape[0] != 1:
+            raise ValueError(f"query_heads batch dimension must be 1, got shape {tuple(query_heads.shape)}")
+        query_heads = query_heads.squeeze(0)
+    if keys.ndim == 4:
+        if keys.shape[0] != 1:
+            raise ValueError(f"keys batch dimension must be 1, got shape {tuple(keys.shape)}")
+        keys = keys.squeeze(0)
+    if query_heads.ndim != 2:
+        raise ValueError(f"query_heads must be rank-2 [heads, dim], got shape {tuple(query_heads.shape)}")
+    if keys.ndim != 3:
+        raise ValueError(f"keys must be rank-3 [heads, positions, dim], got shape {tuple(keys.shape)}")
+    if query_heads.shape[0] != keys.shape[0]:
+        raise ValueError(
+            "query_heads and keys must agree on head count, "
+            f"got {query_heads.shape[0]} and {keys.shape[0]}"
+        )
+    prefix_len = keys.shape[1]
+    if prefix_len <= 0:
+        raise ValueError("QK templates require at least one prefix position")
+    scale = math.sqrt(max(int(keys.shape[-1]), 1))
+    logits = torch.einsum("hd,hpd->hp", query_heads.float(), keys.float()) / scale
+    probs = torch.softmax(logits, dim=-1)
+    if bins is not None:
+        if bins <= 0:
+            raise ValueError("bins must be positive")
+        probs = torch.stack(
+            [_resample_position_profile(head_probs, bins) for head_probs in probs],
+            dim=0,
+        )
+    return probs / probs.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+
+
+@torch.no_grad()
+def _mean_head_qk_templates_from_prompts(
+    model,
+    tokenizer,
+    prompts: list[str],
+    device: str,
+    *,
+    translator: RotAlignKVTranslator,
+    bins: int = 128,
+) -> list[torch.Tensor]:
+    if bins <= 0:
+        raise ValueError("bins must be positive")
+
+    layer_sums: list[torch.Tensor] | None = None
+    used_prompts = 0
+    for prompt in prompts:
+        prefix_state = _prepare_prefix_state(model, tokenizer, prompt, device)
+        if prefix_state.prefix_len <= 1:
+            continue
+        query_heads = _last_token_query_heads(
+            model,
+            prefix_state.last_token,
+            prefix_state.past_key_values,
+            device,
+            translator=translator,
+        )
+        normalized_cache = _normalize_cache(prefix_state.past_key_values)
+        if normalized_cache is None:
+            continue
+        layer_templates: list[torch.Tensor] = []
+        layer_limit = min(len(query_heads), len(normalized_cache), translator.config.num_tgt_layers)
+        for layer_idx in range(layer_limit):
+            keys = normalized_cache[layer_idx][0]
+            layer_templates.append(_qk_position_distributions(query_heads[layer_idx], keys, bins=bins))
+        if layer_sums is None:
+            layer_sums = [templates.clone() for templates in layer_templates]
+        else:
+            for layer_idx, templates in enumerate(layer_templates):
+                layer_sums[layer_idx] += templates
+        used_prompts += 1
+
+    if layer_sums is None or used_prompts == 0:
+        raise ValueError("Could not build head QK templates from calibration prompts")
+    out: list[torch.Tensor] = []
+    for templates in layer_sums:
+        averaged = templates / float(used_prompts)
+        averaged = averaged / averaged.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+        out.append(averaged.cpu())
+    return out
+
+
 def _attention_template_transport_scores(
     attention_map: torch.Tensor,
     head_templates: torch.Tensor,
@@ -782,6 +872,53 @@ def _attention_template_transport_scores(
         dim=0,
     )
     live = live / live.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    templates = templates.to(device=live.device)
+    weights = weights.to(device=live.device)
+    p = templates[:, None, :]
+    q = live[None, :, :]
+    m = 0.5 * (p + q)
+    js = 0.5 * (
+        (p * (p.clamp_min(1e-8).log() - m.clamp_min(1e-8).log())).sum(dim=-1)
+        + (q * (q.clamp_min(1e-8).log() - m.clamp_min(1e-8).log())).sum(dim=-1)
+    )
+    kernel = torch.softmax(-js / max(float(temperature), 1e-4), dim=-1)
+    aligned = (weights[:, None] * kernel).sum(dim=0)
+    return _normalize_selection_scores(aligned)
+
+
+def _attention_qk_template_transport_scores(
+    query_heads: torch.Tensor,
+    target_keys: torch.Tensor,
+    qk_templates: torch.Tensor,
+    prior_scores: torch.Tensor,
+    *,
+    layer_idx: int,
+    shuffled: bool = False,
+    temperature: float = 0.1,
+) -> torch.Tensor:
+    if qk_templates.ndim != 2:
+        raise ValueError(f"qk_templates must be rank-2 [heads, bins], got shape {tuple(qk_templates.shape)}")
+    if prior_scores.ndim != 1:
+        raise ValueError(f"prior_scores must be rank-1 [heads], got shape {tuple(prior_scores.shape)}")
+    if qk_templates.shape[0] != prior_scores.numel():
+        raise ValueError(
+            "qk_templates and prior_scores must agree on head count, "
+            f"got {qk_templates.shape[0]} and {prior_scores.numel()}"
+        )
+    live = _qk_position_distributions(query_heads, target_keys, bins=qk_templates.shape[-1])
+    template_count = qk_templates.shape[0]
+    live_count = live.shape[0]
+    if live_count <= 0:
+        raise ValueError("attention_qk_template_transport requires at least one live head")
+    weights = _normalize_selection_scores(prior_scores).view(-1)
+    templates = qk_templates.float()
+    if live_count != template_count:
+        keep = min(live_count, template_count)
+        order = torch.argsort(weights, descending=True)[:keep]
+        templates = templates[order]
+        weights = weights[order]
+    if shuffled:
+        weights = _deterministic_score_permutation(weights, layer_idx=layer_idx, seed_offset=14_407)
     templates = templates.to(device=live.device)
     weights = weights.to(device=live.device)
     p = templates[:, None, :]
@@ -1069,6 +1206,7 @@ def _runtime_head_scores_with_prior(
     translated_keys: torch.Tensor | None = None,
     query_heads: torch.Tensor | None = None,
     head_templates: torch.Tensor | None = None,
+    qk_templates: torch.Tensor | None = None,
     prior_alpha: float = 0.5,
 ) -> tuple[torch.Tensor, torch.Tensor | None]:
     prior_topk: torch.Tensor | None = None
@@ -1132,6 +1270,39 @@ def _runtime_head_scores_with_prior(
             )
         scores = _attention_qk_fidelity_head_scores(query_heads, target_keys, translated_keys)
         return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_881), None
+    if metric == "attention_qk_template_transport":
+        if query_heads is None or target_keys is None:
+            raise ValueError(
+                "attention_qk_template_transport runtime head selection requires query_heads and target_keys"
+            )
+        if prior_scores is None or qk_templates is None:
+            raise ValueError(
+                "attention_qk_template_transport requires fixed_head_profiles and fixed_head_qk_templates"
+            )
+        return _attention_qk_template_transport_scores(
+            query_heads,
+            target_keys,
+            qk_templates,
+            prior_scores,
+            layer_idx=layer_idx,
+        ), None
+    if metric == "attention_qk_template_transport_shuffled":
+        if query_heads is None or target_keys is None:
+            raise ValueError(
+                "attention_qk_template_transport_shuffled runtime head selection requires query_heads and target_keys"
+            )
+        if prior_scores is None or qk_templates is None:
+            raise ValueError(
+                "attention_qk_template_transport_shuffled requires fixed_head_profiles and fixed_head_qk_templates"
+            )
+        return _attention_qk_template_transport_scores(
+            query_heads,
+            target_keys,
+            qk_templates,
+            prior_scores,
+            layer_idx=layer_idx,
+            shuffled=True,
+        ), None
     if metric == "attention_prior":
         if prior_scores is None:
             raise ValueError("attention_prior runtime head selection requires fixed_head_profiles")
@@ -2322,6 +2493,7 @@ def _build_rotalign_prefix_state(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
+    fixed_head_qk_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
@@ -2393,8 +2565,23 @@ def _build_rotalign_prefix_state(
         )
     if (
         runtime_head_selection_ratio < 1.0
-        and runtime_head_selection_metric in {"attention_qk_fidelity", "attention_qk_fidelity_shuffled"}
-    ) or runtime_head_gate_metric in {"attention_qk_fidelity", "attention_qk_fidelity_shuffled"} or per_head_position_budget_mode in {"attention_qk_fidelity", "attention_qk_fidelity_shuffled"}:
+        and runtime_head_selection_metric in {
+            "attention_qk_fidelity",
+            "attention_qk_fidelity_shuffled",
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
+        }
+    ) or runtime_head_gate_metric in {
+        "attention_qk_fidelity",
+        "attention_qk_fidelity_shuffled",
+        "attention_qk_template_transport",
+        "attention_qk_template_transport_shuffled",
+    } or per_head_position_budget_mode in {
+        "attention_qk_fidelity",
+        "attention_qk_fidelity_shuffled",
+        "attention_qk_template_transport",
+        "attention_qk_template_transport_shuffled",
+    }:
         layer_query_heads = _last_token_query_heads(
             target_model,
             tgt_last_token,
@@ -2419,6 +2606,8 @@ def _build_rotalign_prefix_state(
         runtime_head_selection_ratio < 1.0
         and runtime_head_selection_metric in {
             "attention_prior",
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
             "attention_template_transport",
             "attention_template_transport_shuffled",
             "attention_sinkhorn",
@@ -2435,19 +2624,24 @@ def _build_rotalign_prefix_state(
     if (
         runtime_head_selection_ratio < 1.0
         and runtime_head_selection_metric in {
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
             "attention_template_transport",
             "attention_template_transport_shuffled",
             "attention_sinkhorn",
             "attention_sinkhorn_shuffled",
         }
         and fixed_head_templates is None
+        and fixed_head_qk_templates is None
     ):
         raise ValueError(
-            f"{runtime_head_selection_metric} runtime head selection requires fixed_head_templates"
+            f"{runtime_head_selection_metric} runtime head selection requires fixed_head_templates or fixed_head_qk_templates"
         )
     if per_head_position_budget_mode in {
         "attention_prior",
         "attention_prior_shuffled",
+        "attention_qk_template_transport",
+        "attention_qk_template_transport_shuffled",
         "attention_template_transport",
         "attention_template_transport_shuffled",
         "attention_sinkhorn",
@@ -2460,13 +2654,15 @@ def _build_rotalign_prefix_state(
             f"{per_head_position_budget_mode} per-head position budgets require fixed_head_profiles"
         )
     if per_head_position_budget_mode in {
+        "attention_qk_template_transport",
+        "attention_qk_template_transport_shuffled",
         "attention_template_transport",
         "attention_template_transport_shuffled",
         "attention_sinkhorn",
         "attention_sinkhorn_shuffled",
-    } and fixed_head_templates is None:
+    } and fixed_head_templates is None and fixed_head_qk_templates is None:
         raise ValueError(
-            f"{per_head_position_budget_mode} per-head position budgets require fixed_head_templates"
+            f"{per_head_position_budget_mode} per-head position budgets require fixed_head_templates or fixed_head_qk_templates"
         )
 
     fused_pkv: list[tuple[torch.Tensor, torch.Tensor]] = []
@@ -2514,15 +2710,30 @@ def _build_rotalign_prefix_state(
         prior_scores = None
         position_prior_scores = None
         if fixed_head_profiles is not None:
-            prior_scores = _resample_head_profile(
-                fixed_head_profiles[tgt_l].to(device=K_t_aligned.device),
-                active_head_indices.numel(),
-            )
+            layer_head_profile = fixed_head_profiles[tgt_l].to(device=K_t_aligned.device)
+            if layer_head_profile.numel() == translator.config.tgt_num_heads:
+                prior_scores = _normalize_selection_scores(layer_head_profile[active_head_indices])
+            else:
+                prior_scores = _resample_head_profile(
+                    layer_head_profile,
+                    active_head_indices.numel(),
+                )
         if fixed_position_profiles is not None:
             position_prior_scores = fixed_position_profiles[tgt_l].to(device=K_t_aligned.device)
         template_scores = None
         if fixed_head_templates is not None:
-            template_scores = fixed_head_templates[tgt_l].to(device=K_t_aligned.device)
+            layer_templates = fixed_head_templates[tgt_l].to(device=K_t_aligned.device)
+            if layer_templates.shape[0] == translator.config.tgt_num_heads:
+                template_scores = layer_templates[active_head_indices]
+            else:
+                template_scores = layer_templates
+        qk_template_scores = None
+        if fixed_head_qk_templates is not None:
+            layer_qk_templates = fixed_head_qk_templates[tgt_l].to(device=K_t_aligned.device)
+            if layer_qk_templates.shape[0] == translator.config.tgt_num_heads:
+                qk_template_scores = layer_qk_templates[active_head_indices]
+            else:
+                qk_template_scores = layer_qk_templates
         active_target_keys = K_t_aligned[:, active_head_indices]
         active_translated_keys = K_hat[:, active_head_indices]
         active_query_heads = (
@@ -2547,6 +2758,7 @@ def _build_rotalign_prefix_state(
                 translated_keys=active_translated_keys,
                 query_heads=active_query_heads,
                 head_templates=template_scores,
+                qk_templates=qk_template_scores,
                 prior_alpha=runtime_head_prior_alpha,
             )
             keep_heads = min(keep_heads, int(head_scores.numel()))
@@ -2600,6 +2812,8 @@ def _build_rotalign_prefix_state(
                 prior_scores = prior_scores[keep_local]
             if template_scores is not None:
                 template_scores = template_scores[keep_local]
+            if qk_template_scores is not None:
+                qk_template_scores = qk_template_scores[keep_local]
             if active_query_heads is not None:
                 active_query_heads = active_query_heads[keep_local]
         elif layer_attention_maps is not None:
@@ -2616,6 +2830,7 @@ def _build_rotalign_prefix_state(
                 translated_keys=active_translated_keys,
                 query_heads=active_query_heads,
                 head_templates=template_scores,
+                qk_templates=qk_template_scores,
                 prior_alpha=runtime_head_prior_alpha,
             )
             full_gate = torch.zeros(
@@ -2665,6 +2880,7 @@ def _build_rotalign_prefix_state(
                 translated_keys=active_translated_keys,
                 query_heads=active_query_heads,
                 head_templates=template_scores,
+                qk_templates=qk_template_scores,
                 prior_alpha=runtime_head_prior_alpha,
             )
             K_hat, V_hat, head_budget_trace, keep_counts = _apply_per_head_position_selection(
@@ -2687,6 +2903,8 @@ def _build_rotalign_prefix_state(
                         "attention_procrustes_shuffled",
                         "attention_qk_fidelity",
                         "attention_qk_fidelity_shuffled",
+                        "attention_qk_template_transport",
+                        "attention_qk_template_transport_shuffled",
                         "attention_template_transport",
                         "attention_template_transport_shuffled",
                         "attention_sinkhorn",
@@ -2872,6 +3090,7 @@ def _search_per_layer_gates(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
+    fixed_head_qk_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
@@ -2902,6 +3121,8 @@ def _search_per_layer_gates(
             eval_kwargs["fixed_head_profiles"] = fixed_head_profiles
         if fixed_head_templates is not None:
             eval_kwargs["fixed_head_templates"] = fixed_head_templates
+        if fixed_head_qk_templates is not None:
+            eval_kwargs["fixed_head_qk_templates"] = fixed_head_qk_templates
         eval_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
         eval_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
         eval_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
@@ -3189,6 +3410,7 @@ def eval_rotalign_kv(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
+    fixed_head_qk_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
@@ -3208,6 +3430,8 @@ def eval_rotalign_kv(
             build_kwargs["fixed_head_profiles"] = fixed_head_profiles
         if fixed_head_templates is not None:
             build_kwargs["fixed_head_templates"] = fixed_head_templates
+        if fixed_head_qk_templates is not None:
+            build_kwargs["fixed_head_qk_templates"] = fixed_head_qk_templates
         build_kwargs["runtime_head_selection_ratio"] = runtime_head_selection_ratio
         build_kwargs["runtime_head_selection_metric"] = runtime_head_selection_metric
         build_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
@@ -3444,6 +3668,7 @@ def _eval_generation_rotalign(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
+    fixed_head_qk_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
@@ -3456,6 +3681,8 @@ def _eval_generation_rotalign(
         eval_kwargs["fixed_head_profiles"] = fixed_head_profiles
     if fixed_head_templates is not None:
         eval_kwargs["fixed_head_templates"] = fixed_head_templates
+    if fixed_head_qk_templates is not None:
+        eval_kwargs["fixed_head_qk_templates"] = fixed_head_qk_templates
     eval_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
     eval_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
     eval_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
@@ -3510,6 +3737,7 @@ def _eval_generation_rotalign_with_stats(
     runtime_head_selection_metric: str = "attention_peak",
     fixed_head_profiles: list[torch.Tensor] | None = None,
     fixed_head_templates: list[torch.Tensor] | None = None,
+    fixed_head_qk_templates: list[torch.Tensor] | None = None,
     runtime_head_prior_alpha: float = 0.5,
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
@@ -3544,6 +3772,8 @@ def _eval_generation_rotalign_with_stats(
             build_kwargs["fixed_head_profiles"] = fixed_head_profiles
         if fixed_head_templates is not None:
             build_kwargs["fixed_head_templates"] = fixed_head_templates
+        if fixed_head_qk_templates is not None:
+            build_kwargs["fixed_head_qk_templates"] = fixed_head_qk_templates
         build_kwargs["runtime_head_selection_ratio"] = runtime_head_selection_ratio
         build_kwargs["runtime_head_selection_metric"] = runtime_head_selection_metric
         build_kwargs["runtime_head_prior_alpha"] = runtime_head_prior_alpha
@@ -3751,6 +3981,8 @@ def parse_args() -> argparse.Namespace:
             "attention_procrustes_shuffled",
             "attention_qk_fidelity",
             "attention_qk_fidelity_shuffled",
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
@@ -3780,6 +4012,8 @@ def parse_args() -> argparse.Namespace:
             "attention_procrustes_shuffled",
             "attention_qk_fidelity",
             "attention_qk_fidelity_shuffled",
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
@@ -3854,6 +4088,8 @@ def parse_args() -> argparse.Namespace:
             "attention_procrustes_shuffled",
             "attention_qk_fidelity",
             "attention_qk_fidelity_shuffled",
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
             "attention_expected",
             "attention_expected_shuffled",
             "attention_prior",
@@ -3963,6 +4199,8 @@ def main() -> None:
         "attention_procrustes_shuffled",
         "attention_qk_fidelity",
         "attention_qk_fidelity_shuffled",
+        "attention_qk_template_transport",
+        "attention_qk_template_transport_shuffled",
         "attention_expected",
         "attention_expected_shuffled",
         "attention_prior",
@@ -4019,6 +4257,7 @@ def main() -> None:
     fixed_position_profiles = None
     fixed_head_profiles = None
     fixed_head_templates = None
+    fixed_head_qk_templates = None
     loaded_head_prior_metadata: dict[str, Any] | None = None
     needs_fixed_position_prior = (
         position_selection_metric == "attention_prior"
@@ -4064,6 +4303,8 @@ def main() -> None:
             runtime_head_selection_ratio < 1.0
             and runtime_head_selection_metric in {
                 "attention_prior",
+                "attention_qk_template_transport",
+                "attention_qk_template_transport_shuffled",
                 "attention_template_transport",
                 "attention_template_transport_shuffled",
                 "attention_sinkhorn",
@@ -4075,6 +4316,8 @@ def main() -> None:
         )
         or runtime_head_gate_metric in {
             "attention_prior",
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
             "attention_template_transport",
             "attention_template_transport_shuffled",
             "attention_sinkhorn",
@@ -4086,6 +4329,8 @@ def main() -> None:
         or per_head_position_budget_mode in {
             "attention_prior",
             "attention_prior_shuffled",
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
             "attention_template_transport",
             "attention_template_transport_shuffled",
             "attention_sinkhorn",
@@ -4099,6 +4344,8 @@ def main() -> None:
         (
             runtime_head_selection_ratio < 1.0
             and runtime_head_selection_metric in {
+                "attention_qk_template_transport",
+                "attention_qk_template_transport_shuffled",
                 "attention_template_transport",
                 "attention_template_transport_shuffled",
                 "attention_sinkhorn",
@@ -4106,12 +4353,16 @@ def main() -> None:
             }
         )
         or runtime_head_gate_metric in {
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
             "attention_template_transport",
             "attention_template_transport_shuffled",
             "attention_sinkhorn",
             "attention_sinkhorn_shuffled",
         }
         or per_head_position_budget_mode in {
+            "attention_qk_template_transport",
+            "attention_qk_template_transport_shuffled",
             "attention_template_transport",
             "attention_template_transport_shuffled",
             "attention_sinkhorn",
@@ -4287,6 +4538,24 @@ def main() -> None:
             translator=translator,
             bins=args.position_selection_prior_bins,
         )
+    if needs_fixed_head_templates:
+        if not runtime_head_prior_file:
+            raise ValueError(
+                "--runtime-head-prior-file is required when building fixed head QK templates"
+            )
+        head_qk_template_prompts = load_prompt_lines(runtime_head_prior_file)
+        print(
+            f"Building fixed head QK templates from {len(head_qk_template_prompts)} calibration prompts "
+            f"({runtime_head_prior_file})"
+        )
+        fixed_head_qk_templates = _mean_head_qk_templates_from_prompts(
+            tgt,
+            tok_t,
+            head_qk_template_prompts,
+            args.device,
+            translator=translator,
+            bins=args.position_selection_prior_bins,
+        )
 
     if args.gate_mode == "fixed":
         translator.set_fixed_gates(args.fixed_gate)
@@ -4343,6 +4612,8 @@ def main() -> None:
                     search_kwargs["fixed_head_profiles"] = fixed_head_profiles
                 if fixed_head_templates is not None:
                     search_kwargs["fixed_head_templates"] = fixed_head_templates
+                if fixed_head_qk_templates is not None:
+                    search_kwargs["fixed_head_qk_templates"] = fixed_head_qk_templates
                 search_stats = _search_per_layer_gates(
                     src,
                     tok_s,
@@ -4403,6 +4674,7 @@ def main() -> None:
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     fixed_head_profiles=fixed_head_profiles,
                     fixed_head_templates=fixed_head_templates,
+                    fixed_head_qk_templates=fixed_head_qk_templates,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
                     runtime_head_gate_metric=runtime_head_gate_metric,
                     runtime_head_gate_strength=runtime_head_gate_strength,
@@ -4486,6 +4758,8 @@ def main() -> None:
                     search_kwargs["fixed_head_profiles"] = fixed_head_profiles
                 if fixed_head_templates is not None:
                     search_kwargs["fixed_head_templates"] = fixed_head_templates
+                if fixed_head_qk_templates is not None:
+                    search_kwargs["fixed_head_qk_templates"] = fixed_head_qk_templates
                 search_stats = _search_per_layer_gates(
                     src,
                     tok_s,
@@ -4546,6 +4820,7 @@ def main() -> None:
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     fixed_head_profiles=fixed_head_profiles,
                     fixed_head_templates=fixed_head_templates,
+                    fixed_head_qk_templates=fixed_head_qk_templates,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
                     runtime_head_gate_metric=runtime_head_gate_metric,
                     runtime_head_gate_strength=runtime_head_gate_strength,

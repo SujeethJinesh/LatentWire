@@ -48,6 +48,16 @@ Current blocker on `KVComm`:
 the cleanest direct protocol match for our current pairwise sparse-K routing
 story.
 
+Latest read on `LatentMAS`:
+
+- the public examples center on `Qwen/Qwen3-14B` and sequential multi-agent
+  collaboration rather than direct heterogeneous source-target transport
+- it is better treated as a broader latent-collaboration context citation than
+  as the next fair apples-to-apples baseline for the current
+  `Qwen2.5-0.5B -> Qwen3-0.6B` pair
+- `KVComm` remains the faster adjacent systems-style comparator to add after
+  `C2C`, while `LatentMAS` is higher risk as a direct replay
+
 ### Immediate next steps
 
 1. bootstrap `C2C` on the exact Qwen pair with its published checkpoint

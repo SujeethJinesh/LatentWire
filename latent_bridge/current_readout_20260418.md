@@ -1171,3 +1171,23 @@ Interpretation:
   if we keep pushing, the next transport cost has to be genuinely
   query-conditioned in a richer retrieval/QK space, not another grouped
   calibration-time template variant
+
+And a twenty-ninth query-conditioned QK-template update:
+
+> I then added `attention_qk_template_transport` as a new evaluator-side
+> query-conditioned per-head budget metric. It builds fixed calibration-time
+> QK templates from `--runtime-head-prior-file`, then soft-transports the fixed
+> head-prior mass onto the live heads using the current example's last-token
+> QK distributions. On the best current grouped-subspace-plus-rank4
+> checkpoint, under the matched sparse `K-only` protocol, the first held-out
+> `gsm8k_5` smoke scored `0.000000` at `142,353.225` average bytes.
+
+Interpretation:
+
+- adding fixed QK templates to evaluator-side budgeting is not enough to
+  rescue the best current transport checkpoint
+- query-conditioning at evaluation time keeps looking weaker than changing the
+  transport itself
+- if the positive-method lane gets another serious try, it should move
+  query-conditioning into the transport cost or translator, not another
+  evaluator-side budget rule

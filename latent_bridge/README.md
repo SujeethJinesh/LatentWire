@@ -231,12 +231,14 @@ and likely to change the target's retrieval geometry.
 For head-aware retrieval routing, add
 `--per-head-position-budget-mode attention_peak`, `attention_entropy`,
 `attention_margin`, `retrieval_peak`, `attention_fidelity`,
-`attention_fidelity_shuffled`, `attention_template_transport`,
-`attention_template_transport_shuffled`, `attention_expected`,
-`attention_expected_shuffled`, `random`, `attention_prior`,
-`attention_prior_shuffled`, `attention_match`, `attention_match_shuffled`, or
-`attention_blend` to spend the same overall position budget unevenly across
-active heads instead of giving every head the same keep ratio.
+`attention_fidelity_shuffled`, `attention_qk_template_transport`,
+`attention_qk_template_transport_shuffled`,
+`attention_template_transport`, `attention_template_transport_shuffled`,
+`attention_expected`, `attention_expected_shuffled`, `random`,
+`attention_prior`, `attention_prior_shuffled`, `attention_match`,
+`attention_match_shuffled`, or `attention_blend` to spend the same overall
+position budget unevenly across active heads instead of giving every head the
+same keep ratio.
 `attention_prior`, `attention_prior_shuffled`, and `attention_blend` reuse the
 fixed head prior built from `--runtime-head-prior-file`.
 `attention_match` treats head identity as permutation-variant: it sorts the
@@ -247,6 +249,12 @@ profile but shuffles which prior weights are assigned to the live ranking.
 preserve target-key geometry on the positions the target is actually attending
 to, and `attention_fidelity_shuffled` is the matched null that preserves the
 same score mass but permutes it across heads.
+`attention_qk_template_transport` upgrades that idea from scalar QK-fidelity
+into a calibration-time per-head QK template bank: it builds fixed last-token
+query-key distributions from `--runtime-head-prior-file`, then soft-transports
+the fixed head-prior mass onto the live heads using the current example's QK
+distributions. Its shuffled variant keeps the same template family but
+permutes the transported prior mass.
 `attention_template_transport` upgrades the fixed-prior branch from a scalar
 head score to a full calibration-time per-head attention template and then
 soft-transports the prior mass onto the live heads. Its shuffled variant keeps
@@ -267,14 +275,16 @@ For runtime retrieval-head ablations, add
 `--runtime-head-selection-ratio <r>` with
 `--runtime-head-selection-metric attention_peak`, `attention_entropy`,
 `attention_margin`, `retrieval_peak`, `attention_fidelity`,
-`attention_fidelity_shuffled`, `attention_template_transport`,
-`attention_template_transport_shuffled`, `attention_expected`,
-`attention_expected_shuffled`, `random`, `attention_prior`,
-`attention_match`, `attention_match_shuffled`, or
+`attention_fidelity_shuffled`, `attention_qk_template_transport`,
+`attention_qk_template_transport_shuffled`,
+`attention_template_transport`, `attention_template_transport_shuffled`,
+`attention_expected`, `attention_expected_shuffled`, `random`,
+`attention_prior`, `attention_match`, `attention_match_shuffled`, or
 `attention_blend`. Use `--runtime-head-prior-file <path>` to build a fixed
-calibration-derived head prior, `--position-selection-prior-file <path>` to
-build the expected-attention profile for the new expected-attention metrics,
-and `--runtime-head-prior-alpha` to blend a fixed head prior with live
+calibration-derived head prior and any template banks, use
+`--position-selection-prior-file <path>` to build the expected-attention
+profile for the new expected-attention metrics, and use
+`--runtime-head-prior-alpha` to blend a fixed head prior with live
 attention-based head scores. This keeps only a subset of the
 checkpoint-selected target heads at evaluation time and records per-layer
 `head_trace` metadata in the sidecar, including prior-overlap statistics when a

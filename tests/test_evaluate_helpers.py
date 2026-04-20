@@ -1674,6 +1674,87 @@ def test_runtime_head_scores_with_prior_supports_attention_qk_fidelity() -> None
     assert not torch.allclose(scores, shuffled_scores)
 
 
+def test_attention_qk_template_transport_scores_prefers_matching_template() -> None:
+    query_heads = torch.tensor(
+        [[1.0, 0.0], [0.0, 1.0]],
+        dtype=torch.float32,
+    )
+    target_keys = torch.tensor(
+        [
+            [[2.0, 0.0], [0.0, 0.0]],
+            [[0.0, 0.0], [0.0, 2.0]],
+        ],
+        dtype=torch.float32,
+    )
+    qk_templates = torch.tensor(
+        [[0.85, 0.15], [0.15, 0.85]],
+        dtype=torch.float32,
+    )
+    prior_scores = torch.tensor([0.8, 0.2], dtype=torch.float32)
+
+    scores = evaluate._attention_qk_template_transport_scores(
+        query_heads,
+        target_keys,
+        qk_templates,
+        prior_scores,
+        layer_idx=0,
+    )
+    shuffled_scores = evaluate._attention_qk_template_transport_scores(
+        query_heads,
+        target_keys,
+        qk_templates,
+        prior_scores,
+        layer_idx=0,
+        shuffled=True,
+    )
+
+    assert float(scores[0]) > float(scores[1])
+    assert shuffled_scores.shape == scores.shape
+    assert not torch.allclose(scores, shuffled_scores)
+
+
+def test_runtime_head_scores_with_prior_supports_attention_qk_template_transport() -> None:
+    query_heads = torch.tensor(
+        [[1.0, 0.0], [0.0, 1.0]],
+        dtype=torch.float32,
+    )
+    target_keys = torch.tensor(
+        [
+            [[2.0, 0.0], [0.0, 0.0]],
+            [[0.0, 0.0], [0.0, 2.0]],
+        ],
+        dtype=torch.float32,
+    )
+    qk_templates = torch.tensor(
+        [[0.85, 0.15], [0.15, 0.85]],
+        dtype=torch.float32,
+    )
+    prior_scores = torch.tensor([0.8, 0.2], dtype=torch.float32)
+
+    scores, _ = evaluate._runtime_head_scores_with_prior(
+        None,
+        metric="attention_qk_template_transport",
+        layer_idx=0,
+        query_heads=query_heads,
+        target_keys=target_keys,
+        prior_scores=prior_scores,
+        qk_templates=qk_templates,
+    )
+    shuffled_scores, _ = evaluate._runtime_head_scores_with_prior(
+        None,
+        metric="attention_qk_template_transport_shuffled",
+        layer_idx=0,
+        query_heads=query_heads,
+        target_keys=target_keys,
+        prior_scores=prior_scores,
+        qk_templates=qk_templates,
+    )
+
+    assert float(scores[0]) > float(scores[1])
+    assert shuffled_scores.shape == scores.shape
+    assert not torch.allclose(scores, shuffled_scores)
+
+
 def test_per_head_gate_override_from_scores_preserves_mean_gate() -> None:
     scores = torch.tensor([0.0, 2.0], dtype=torch.float32)
 

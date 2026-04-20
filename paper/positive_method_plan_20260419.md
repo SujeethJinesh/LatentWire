@@ -151,3 +151,22 @@ That means:
 - if the positive-method lane gets one more serious try, it should move to a
   **genuinely query-conditioned retrieval/QK transport**, not another grouped
   static-template variant
+
+The next follow-up then tested that same idea one layer later in the stack,
+without changing the translator: `attention_qk_template_transport` as a new
+query-conditioned per-head sparse budget on top of the best current internal
+checkpoint, `grouped_subspace_transport + rank-4 residual`. It builds fixed
+calibration-time QK templates from `--runtime-head-prior-file`, then scores the
+live heads by how well their current last-token QK distributions match those
+templates. On the first matched sparse `K-only` smoke, `gsm8k_5`, it still
+collapsed to `0.0000` at `142,353.225` average bytes.
+
+That means:
+
+- fixed QK templates inside the evaluator are not enough to rescue the live
+  checkpoint
+- query-conditioning keeps helping less when it is applied only at evaluation
+  time than when it is baked into the transport hypothesis
+- if we keep the positive-method lane alive, the next real shot should be
+  **transport-first and query-conditioned in the transport itself**, not
+  another evaluator-side budget or gate variant

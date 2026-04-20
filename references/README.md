@@ -251,6 +251,12 @@ Files `186_` through `190_` extend the retrieval-and-repair lane:
 - `189_`: FreeKV as a retrieval-focused KV reuse/compression reference, useful for the next retrieval-template transport pivot.
 - `190_`: RACC as a retrieval-augmented KV compression reference, useful for framing accuracy-vs-bytes under retrieval-aware transport rules.
 
+Files `195_` through `197_` extend the query-conditioned transport backlog:
+
+- `195_`: A2ATS as a direct query-aware KV reduction reference, useful for transport costs that try to preserve attention behavior under the live query.
+- `196_`: HybridKV as a recent static-vs-dynamic head heterogeneity reference, useful for motivating query-conditioned transport rather than one static head map.
+- `197_`: TokAlign as a tokenizer-alignment reference for the longer-term blocker stack when broader heterogeneous pairs make vocabulary mismatch unavoidable.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
