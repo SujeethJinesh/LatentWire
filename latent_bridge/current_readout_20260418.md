@@ -2202,7 +2202,8 @@ And a first layer-localization artifact update:
 > Across the current weakly-alive modular family
 > (`shared_plus_private_asym_adapter`, `shared_plus_private_dynmap_adapter`,
 > `xattn_adapter`, `xattn_dynmap_adapter`, `module_adapter`,
-> `module_replace`), the same top target-layer pattern repeats:
+> `module_replace`, `tokenbasis_replace`), the same top target-layer pattern
+> repeats:
 > - `L27 <- S23`
 > - `L5 <- S4`
 > - `L23 <- S20`
@@ -2217,3 +2218,30 @@ Interpretation:
   than the exact local bridge parameterization
 - this makes upstream pivots like **token/span remapping** or a more global
   **module replacement** even more plausible than further local bridge edits
+
+And a sixty-eighth token-basis interface update:
+
+> I then implemented `bridge_ridge_qk_tokenbasis_replace`, which keeps the
+> same slotted attention-side module shape as `bridge_ridge_qk_module_replace`
+> but constrains its direct K/V outputs to a basis distilled from target
+> next-token output rows rather than a free dense output map.
+>
+> On the same 64-prompt calibration slice, offline fit remained:
+> - `K` cosine `0.869`, relative Frobenius error `0.469`
+> - `V` cosine `0.393`, relative Frobenius error `0.908`
+>
+> Under the matched-bytes fair controlled regime, the held-out reads were:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- even a target-native basis constraint on the direct-output module still only
+  ties the same weak controlled floor as the other surviving modular branches
+- that is stronger evidence that the current saturation point is **upstream of
+  local bridge parameterization**, not just caused by free dense outputs
+- the next serious positive-method shots should now prioritize:
+  - explicit **token/span remapping** or vocabulary-side alignment before the
+    local bridge, or
+  - a more global **Attention Editing / LLM Modules** style replacement that
+    changes the interface beyond the current local module family

@@ -166,6 +166,9 @@ class TranslatorConfig:
     # `bridge_ridge_qk_module_replace` keeps that same slotted attention-side
     # module shape but trains it to predict the full corrected K/V directly
     # rather than only a residual on top of the fixed bridge, and
+    # `bridge_ridge_qk_tokenbasis_replace` keeps the same slotted
+    # attention-side module shape but constrains the direct-output replacement
+    # to a basis distilled from the target next-token output rows, and
     # `bridge_ridge_qk_sae_adapter` swaps the dense shared bottleneck for a
     # sparse shared codebook: paired K/V query-conditioned signals produce a
     # small top-k latent code that is decoded separately for K and V, and
@@ -469,6 +472,15 @@ class RotAlignKVTranslator(nn.Module):
         )
         self.quant_query_module_V_out = nn.ParameterList(
             [nn.Parameter(torch.zeros(bridge_rank, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_token_basis = nn.ParameterList(
+            [nn.Parameter(torch.zeros(bridge_rank, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_token_K_coeff = nn.ParameterList(
+            [nn.Parameter(torch.zeros(bridge_rank, bridge_rank), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_token_V_coeff = nn.ParameterList(
+            [nn.Parameter(torch.zeros(bridge_rank, bridge_rank), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_bias_K = nn.ParameterList(
             [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
@@ -2484,6 +2496,128 @@ class RotAlignKVTranslator(nn.Module):
             out_v.detach().to(dtype=target_v.dtype, device=target_v.device),
         )
 
+    def _fit_bridge_query_tokenbasis_replace(
+        self,
+        quantized_k: torch.Tensor,
+        predicted_k: torch.Tensor,
+        quantized_v: torch.Tensor,
+        predicted_v: torch.Tensor,
+        query_features: torch.Tensor,
+        target_k: torch.Tensor,
+        target_v: torch.Tensor,
+        *,
+        rank: int,
+        steps: int = 100,
+        lr: float = 5e-2,
+        logit_weight: float = 0.5,
+        prediction_distill_weight: float = 0.0,
+        dynamic_prediction_weight: float = 0.0,
+        teacher_topk_log_probs: torch.Tensor | None = None,
+        teacher_topk_output_rows: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, ...]:
+        if teacher_topk_output_rows is None:
+            raise ValueError("bridge_ridge_qk_tokenbasis_replace requires teacher_topk_output_rows")
+        tensors = (
+            quantized_k.float(),
+            predicted_k.float(),
+            quantized_v.float(),
+            predicted_v.float(),
+            query_features.float(),
+            target_k.float(),
+            target_v.float(),
+        )
+        shapes = sorted({tuple(t.shape) for t in tensors})
+        if len(shapes) != 1:
+            raise ValueError(f"all tokenbasis-replace tensors must match, got shapes {shapes}")
+
+        qk, pk, qv, pv, query, yk, yv = tensors
+        rank = max(1, min(int(rank), self.d_t))
+        num_slots = max(1, int(self.config.bridge_bank_size))
+        teacher_rows = teacher_topk_output_rows.to(device=qk.device, dtype=torch.float32).reshape(-1, self.d_t)
+        if teacher_rows.shape[0] < rank:
+            raise ValueError(
+                f"teacher_topk_output_rows only has {teacher_rows.shape[0]} flattened rows, need at least rank={rank}"
+            )
+        basis_cols = self._top_feature_basis(teacher_rows, rank)
+        token_basis = basis_cols.T.contiguous().to(dtype=torch.float32)
+
+        gen = torch.Generator(device="cpu").manual_seed(941_771 + int(self.config.seed) * 197 + int(rank))
+        scale = 1e-2
+        slot_tokens = torch.nn.Parameter(torch.randn(num_slots, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        q_proj = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        k_proj = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        v_proj = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        hidden_proj = torch.nn.Parameter(torch.randn(rank, rank, generator=gen, dtype=torch.float32) * scale)
+        coeff_k = torch.nn.Parameter(torch.randn(rank, rank, generator=gen, dtype=torch.float32) * scale)
+        coeff_v = torch.nn.Parameter(torch.randn(rank, rank, generator=gen, dtype=torch.float32) * scale)
+        optimizer = torch.optim.Adam(
+            [slot_tokens, q_proj, k_proj, v_proj, hidden_proj, coeff_k, coeff_v],
+            lr=float(lr),
+        )
+
+        with torch.enable_grad():
+            for _ in range(max(1, int(steps))):
+                optimizer.zero_grad(set_to_none=True)
+                live_memory = torch.stack([qk, pk, qv, pv], dim=1)
+                slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
+                memory = torch.cat([live_memory, slot_memory], dim=1)
+                q_hidden = query @ q_proj
+                key_hidden = torch.einsum("nmd,dr->nmr", memory, k_proj)
+                value_hidden = torch.einsum("nmd,dr->nmr", memory, v_proj)
+                attn_logits = torch.einsum("nr,nmr->nm", q_hidden, key_hidden) / math.sqrt(float(rank))
+                attn = torch.softmax(attn_logits, dim=-1)
+                context = torch.einsum("nm,nmr->nr", attn, value_hidden)
+                hidden = F.gelu(context @ hidden_proj)
+                pred_k = (hidden @ coeff_k) @ token_basis
+                pred_v = (hidden @ coeff_v) @ token_basis
+                loss = F.mse_loss(pred_k, yk) + F.mse_loss(pred_v, yv)
+                logit_pred_k = (pred_k * query).sum(dim=-1)
+                logit_tgt_k = (yk * query).sum(dim=-1)
+                logit_pred_v = (pred_v * query).sum(dim=-1)
+                logit_tgt_v = (yv * query).sum(dim=-1)
+                loss = loss + float(logit_weight) * (
+                    F.mse_loss(logit_pred_k, logit_tgt_k) + F.mse_loss(logit_pred_v, logit_tgt_v)
+                )
+                if (
+                    (float(prediction_distill_weight) > 0.0 or float(dynamic_prediction_weight) > 0.0)
+                    and teacher_topk_log_probs is not None
+                    and teacher_topk_output_rows is not None
+                ):
+                    teacher_logits = teacher_topk_log_probs.to(device=qk.device, dtype=torch.float32)
+                    teacher_probs = torch.softmax(teacher_logits, dim=-1)
+                    teacher_rows_now = teacher_topk_output_rows.to(device=qk.device, dtype=torch.float32)
+                    hidden_pred = 0.5 * ((pred_k * query) + (pred_v * query))
+                    student_logits = torch.einsum("nd,nkd->nk", hidden_pred, teacher_rows_now) / math.sqrt(float(self.d_t))
+                    student_log_probs = torch.log_softmax(student_logits, dim=-1)
+                    if float(prediction_distill_weight) > 0.0:
+                        loss = loss + float(prediction_distill_weight) * F.kl_div(
+                            student_log_probs,
+                            teacher_probs,
+                            reduction="batchmean",
+                        )
+                    if float(dynamic_prediction_weight) > 0.0:
+                        context_hidden = 0.5 * ((qk + qv) * query)
+                        context_logits = torch.einsum("nd,nkd->nk", context_hidden, teacher_rows_now) / math.sqrt(float(self.d_t))
+                        dynamic_teacher_probs = torch.softmax(teacher_logits + context_logits, dim=-1)
+                        loss = loss + float(dynamic_prediction_weight) * F.kl_div(
+                            student_log_probs,
+                            dynamic_teacher_probs,
+                            reduction="batchmean",
+                        )
+                loss.backward()
+                optimizer.step()
+
+        return (
+            slot_tokens.detach().to(dtype=target_k.dtype, device=target_k.device),
+            q_proj.detach().to(dtype=target_k.dtype, device=target_k.device),
+            k_proj.detach().to(dtype=target_k.dtype, device=target_k.device),
+            v_proj.detach().to(dtype=target_k.dtype, device=target_k.device),
+            hidden_proj.detach().to(dtype=target_k.dtype, device=target_k.device),
+            token_basis.detach().to(dtype=target_k.dtype, device=target_k.device),
+            coeff_k.detach().to(dtype=target_k.dtype, device=target_k.device),
+            coeff_v.detach().to(dtype=target_v.dtype, device=target_v.device),
+        )
+
     @staticmethod
     def _topk_sparse_codes(logits: torch.Tensor, active_k: int) -> torch.Tensor:
         active_k = max(1, min(int(active_k), logits.shape[-1]))
@@ -3217,6 +3351,8 @@ class RotAlignKVTranslator(nn.Module):
             module_v = self.quant_query_module_v[tgt_layer_idx]
             module_hidden = self.quant_query_module_hidden[tgt_layer_idx]
             module_out = self.quant_query_module_K_out[tgt_layer_idx]
+            token_basis = self.quant_query_token_basis[tgt_layer_idx]
+            token_coeff = self.quant_query_token_K_coeff[tgt_layer_idx]
             bias = self.quant_bias_K[tgt_layer_idx]
             bank_left = self.bridge_bank_proj_K_left[tgt_layer_idx]
             bank_right = self.bridge_bank_proj_K_right[tgt_layer_idx]
@@ -3256,6 +3392,8 @@ class RotAlignKVTranslator(nn.Module):
             module_v = self.quant_query_module_v[tgt_layer_idx]
             module_hidden = self.quant_query_module_hidden[tgt_layer_idx]
             module_out = self.quant_query_module_V_out[tgt_layer_idx]
+            token_basis = self.quant_query_token_basis[tgt_layer_idx]
+            token_coeff = self.quant_query_token_V_coeff[tgt_layer_idx]
             bias = self.quant_bias_V[tgt_layer_idx]
             bank_left = self.bridge_bank_proj_V_left[tgt_layer_idx]
             bank_right = self.bridge_bank_proj_V_right[tgt_layer_idx]
@@ -3333,7 +3471,7 @@ class RotAlignKVTranslator(nn.Module):
                 + (aux_input * qfeat) @ query_aux_proj.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
-        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
             if aux_input is None:
                 raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
             if runtime_query_features is None:
@@ -3469,7 +3607,7 @@ class RotAlignKVTranslator(nn.Module):
                 attn = torch.softmax(attn_logits, dim=-1)
                 context = torch.einsum("...m,...mr->...r", attn, value_hidden)
                 resid = resid + context @ xattn_out.to(device=x.device, dtype=x.dtype)
-            if self.config.quantization_correction in {"bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
                 if paired_input is None or paired_aux_input is None:
                     raise ValueError(f"{self.config.quantization_correction} requires paired_input and paired_aux_input")
                 live_memory = torch.stack(
@@ -3497,6 +3635,9 @@ class RotAlignKVTranslator(nn.Module):
                 module_pred = hidden @ module_out.to(device=x.device, dtype=x.dtype)
                 if self.config.quantization_correction == "bridge_ridge_qk_module_replace":
                     return module_pred
+                if self.config.quantization_correction == "bridge_ridge_qk_tokenbasis_replace":
+                    coeff = hidden @ token_coeff.to(device=x.device, dtype=x.dtype)
+                    return coeff @ token_basis.to(device=x.device, dtype=x.dtype)
                 resid = resid + module_pred
             return base + resid
         if self.config.quantization_correction == "bridge_ridge_query":
@@ -4099,6 +4240,9 @@ class RotAlignKVTranslator(nn.Module):
             self.quant_query_module_hidden[tgt_l].data.zero_()
             self.quant_query_module_K_out[tgt_l].data.zero_()
             self.quant_query_module_V_out[tgt_l].data.zero_()
+            self.quant_query_token_basis[tgt_l].data.zero_()
+            self.quant_query_token_K_coeff[tgt_l].data.zero_()
+            self.quant_query_token_V_coeff[tgt_l].data.zero_()
             K_pred = (Xk @ W_K) @ pre_quant_filter_k
             V_pred = (Xv @ W_V) @ pre_quant_filter_v
             K_quant = self.quantizer.quantize_dequantize(K_pred)
@@ -4119,7 +4263,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                 sample_weights = None
                 if self.config.quantization_correction == "bridge_ridge_qk_weighted":
                     if self._bridge_sample_weights is None:
@@ -4168,7 +4312,7 @@ class RotAlignKVTranslator(nn.Module):
                         lam=self.config.ridge_lambda,
                         sample_weights=sample_weights,
                     )
-                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                         if self._bridge_sample_query_features is None:
                             raise ValueError(
                                 f"{self.config.quantization_correction} requires bridge sample query features; "
@@ -4189,7 +4333,7 @@ class RotAlignKVTranslator(nn.Module):
                             sample_prompt_ids = self._bridge_sample_prompt_ids.to(device=Xk.device)
                         teacher_log_probs = None
                         teacher_output_rows = None
-                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace"}:
+                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
                             if self._bridge_prediction_teacher_log_probs is None or self._bridge_prediction_teacher_output_rows is None:
                                 raise ValueError(
                                     f"{self.config.quantization_correction} requires prediction-teacher tensors; "
@@ -4319,6 +4463,37 @@ class RotAlignKVTranslator(nn.Module):
                             self.quant_query_module_hidden[tgt_l].data.copy_(module_hidden.to(self.quant_query_module_hidden[tgt_l].dtype))
                             self.quant_query_module_K_out[tgt_l].data.copy_(module_k_out.to(self.quant_query_module_K_out[tgt_l].dtype))
                             self.quant_query_module_V_out[tgt_l].data.copy_(module_v_out.to(self.quant_query_module_V_out[tgt_l].dtype))
+                        if self.config.quantization_correction == "bridge_ridge_qk_tokenbasis_replace":
+                            (
+                                module_slots,
+                                module_q,
+                                module_k,
+                                module_v,
+                                module_hidden,
+                                token_basis,
+                                token_k_coeff,
+                                token_v_coeff,
+                            ) = self._fit_bridge_query_tokenbasis_replace(
+                                K_quant,
+                                K_pred,
+                                V_quant,
+                                V_pred,
+                                query_features,
+                                Yk_fit,
+                                Yv_fit,
+                                rank=int(self.config.quantization_correction_rank or 8),
+                                prediction_distill_weight=0.25,
+                                teacher_topk_log_probs=teacher_log_probs,
+                                teacher_topk_output_rows=teacher_output_rows,
+                            )
+                            self.quant_query_module_slots[tgt_l].data.copy_(module_slots.to(self.quant_query_module_slots[tgt_l].dtype))
+                            self.quant_query_module_q[tgt_l].data.copy_(module_q.to(self.quant_query_module_q[tgt_l].dtype))
+                            self.quant_query_module_k[tgt_l].data.copy_(module_k.to(self.quant_query_module_k[tgt_l].dtype))
+                            self.quant_query_module_v[tgt_l].data.copy_(module_v.to(self.quant_query_module_v[tgt_l].dtype))
+                            self.quant_query_module_hidden[tgt_l].data.copy_(module_hidden.to(self.quant_query_module_hidden[tgt_l].dtype))
+                            self.quant_query_token_basis[tgt_l].data.copy_(token_basis.to(self.quant_query_token_basis[tgt_l].dtype))
+                            self.quant_query_token_K_coeff[tgt_l].data.copy_(token_k_coeff.to(self.quant_query_token_K_coeff[tgt_l].dtype))
+                            self.quant_query_token_V_coeff[tgt_l].data.copy_(token_v_coeff.to(self.quant_query_token_V_coeff[tgt_l].dtype))
                         if self.config.quantization_correction in {"bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter"}:
                             (
                                 shared_left,
@@ -4774,7 +4949,7 @@ class RotAlignKVTranslator(nn.Module):
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
             fit_runtime_query_features = None
-            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
                 if self._bridge_sample_query_features is None:
                     raise ValueError(
                         f"{self.config.quantization_correction} requires bridge sample query features during fit; "

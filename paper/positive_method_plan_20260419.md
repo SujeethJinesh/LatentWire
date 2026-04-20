@@ -1291,7 +1291,8 @@ I also built a first layer-localization artifact from the live
 The main read is that the current weakly-alive modular family
 (`shared_plus_private_asym_adapter`, `shared_plus_private_dynmap_adapter`,
 `xattn_adapter`, `xattn_dynmap_adapter`, `module_adapter`,
-`module_replace`) all reuse the same top target-layer pattern:
+`module_replace`, `tokenbasis_replace`) all reuse the same top target-layer
+pattern:
 
 - `L27 <- S23`
 - `L5 <- S4`
@@ -1309,3 +1310,35 @@ That means:
   the current local bridge fit, such as:
   - a more global **Attention Editing / LLM Modules** style replacement
   - or a **token/span remapping** or richer token-output alignment teacher
+
+I then tested a target-native basis version of that same direct-output module
+idea as `bridge_ridge_qk_tokenbasis_replace`.
+
+This keeps the same grouped-subspace transport + rank-4 residual base and the
+same slotted attention-side module shape as `bridge_ridge_qk_module_replace`,
+but it constrains the direct K/V outputs to a basis distilled from target
+next-token output rows instead of allowing a free dense output map.
+
+On the same 64-prompt calibration slice, offline fit remained:
+
+- `K` cosine `0.869`, relative Frobenius error `0.469`
+- `V` cosine `0.393`, relative Frobenius error `0.908`
+
+Under the matched-bytes fair controlled regime, the held-out reads were:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- anchoring the direct-output module to a target next-token basis is still not
+  enough to move above the controlled floor
+- so the current modular/interface lane now looks saturated in an even more
+  specific sense: free dense outputs and target-native basis outputs both land
+  on the same weakly-alive pattern
+- the next serious method pivots should therefore move **upstream** of the
+  current local bridge:
+  - explicit **token/span remapping** or vocabulary-side alignment before the
+    bridge
+  - or a more global **Attention Editing / LLM Modules** style replacement

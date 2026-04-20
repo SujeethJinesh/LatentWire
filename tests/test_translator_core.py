@@ -2448,6 +2448,132 @@ def test_fit_from_pairs_bridge_ridge_qk_module_replace_populates_module_and_uses
     assert torch.allclose(tr.quant_query_module_V_out[0], torch.full_like(tr.quant_query_module_V_out[0], 7.0))
 
 
+def test_bridge_ridge_qk_tokenbasis_replace_uses_token_basis_output(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_tokenbasis_replace",
+        quantization_correction_rank=1,
+    )
+    with torch.no_grad():
+        tr.quant_proj_K[0].copy_(torch.eye(tr.d_t))
+        tr.quant_proj_V[0].copy_(torch.eye(tr.d_t))
+        tr.quant_aux_proj_K[0].zero_()
+        tr.quant_aux_proj_V[0].zero_()
+        tr.quant_bias_K[0].zero_()
+        tr.quant_bias_V[0].zero_()
+        tr.quant_query_resid_K_left[0].zero_()
+        tr.quant_query_resid_K_right[0].zero_()
+        tr.quant_query_aux_resid_K_left[0].zero_()
+        tr.quant_query_aux_resid_K_right[0].zero_()
+        tr.quant_query_resid_V_left[0].zero_()
+        tr.quant_query_resid_V_right[0].zero_()
+        tr.quant_query_aux_resid_V_left[0].zero_()
+        tr.quant_query_aux_resid_V_right[0].zero_()
+        tr.quant_query_module_slots[0].copy_(torch.tensor([[1.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.quant_query_module_q[0].copy_(torch.tensor([[1.0], [0.0], [1.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_module_k[0].copy_(torch.tensor([[1.0], [0.0], [1.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_module_v[0].copy_(torch.tensor([[1.0], [0.0], [0.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_module_hidden[0].copy_(torch.tensor([[1.0]], dtype=torch.float32))
+        tr.quant_query_token_basis[0].copy_(torch.tensor([[3.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.quant_query_token_K_coeff[0].copy_(torch.tensor([[1.0]], dtype=torch.float32))
+        tr.quant_query_token_V_coeff[0].copy_(torch.tensor([[2.0]], dtype=torch.float32))
+
+    K_base = torch.tensor([[[[1.0, 0.0]], [[1.0, 0.0]]]], dtype=torch.float32)
+    V_base = torch.tensor([[[[2.0, 0.0]], [[2.0, 0.0]]]], dtype=torch.float32)
+    out_k, out_v = tr.translate_layer(
+        K_base,
+        V_base,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_query_features=torch.tensor([[[1.0, 0.0, 1.0, 0.0]]], dtype=torch.float32),
+    )
+
+    assert out_k.shape == K_base.shape
+    assert out_v.shape == V_base.shape
+    assert not torch.allclose(out_k, K_base)
+    assert not torch.allclose(out_v, V_base)
+    assert out_v.abs().max().item() > out_k.abs().max().item()
+
+
+def test_fit_from_pairs_bridge_ridge_qk_tokenbasis_replace_populates_basis_and_uses_teacher(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_tokenbasis_replace",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+
+    calls: list[tuple[float, bool, bool]] = []
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        prediction_distill_weight=0.0,
+        teacher_topk_log_probs=None,
+        teacher_topk_output_rows=None,
+        **kwargs,
+    ):
+        calls.append(
+            (
+                float(prediction_distill_weight),
+                teacher_topk_log_probs is not None,
+                teacher_topk_output_rows is not None,
+            )
+        )
+        return (
+            torch.full((self.config.bridge_bank_size, self.d_t), 1.0, dtype=target_k.dtype),
+            torch.full((self.d_t, rank), 2.0, dtype=target_k.dtype),
+            torch.full((self.d_t, rank), 3.0, dtype=target_k.dtype),
+            torch.full((self.d_t, rank), 4.0, dtype=target_k.dtype),
+            torch.full((rank, rank), 5.0, dtype=target_k.dtype),
+            torch.full((rank, self.d_t), 6.0, dtype=target_k.dtype),
+            torch.full((rank, rank), 7.0, dtype=target_k.dtype),
+            torch.full((rank, rank), 8.0, dtype=target_v.dtype),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_tokenbasis_replace", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert calls == [(0.25, True, True)]
+    assert torch.allclose(tr.quant_query_module_slots[0], torch.ones_like(tr.quant_query_module_slots[0]))
+    assert torch.allclose(tr.quant_query_module_q[0], torch.full_like(tr.quant_query_module_q[0], 2.0))
+    assert torch.allclose(tr.quant_query_module_k[0], torch.full_like(tr.quant_query_module_k[0], 3.0))
+    assert torch.allclose(tr.quant_query_module_v[0], torch.full_like(tr.quant_query_module_v[0], 4.0))
+    assert torch.allclose(tr.quant_query_module_hidden[0], torch.full_like(tr.quant_query_module_hidden[0], 5.0))
+    assert torch.allclose(tr.quant_query_token_basis[0], torch.full_like(tr.quant_query_token_basis[0], 6.0))
+    assert torch.allclose(tr.quant_query_token_K_coeff[0], torch.full_like(tr.quant_query_token_K_coeff[0], 7.0))
+    assert torch.allclose(tr.quant_query_token_V_coeff[0], torch.full_like(tr.quant_query_token_V_coeff[0], 8.0))
+
+
 def test_fit_from_pairs_bridge_ridge_qk_asym_predkl_adapter_passes_teacher(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

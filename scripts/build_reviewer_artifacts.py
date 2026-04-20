@@ -399,6 +399,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_eval_10_controlled",
+            method="token-basis replace",
+            family="token-native attention bridge",
+            meta_path="results/bridge_ridge_qk_tokenbasis_replace_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_tokenbasis_replace_cal64_chat.jsonl.meta.json",
+            notes="slotted attention-side module constrained to a basis distilled from target next-token output rows",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_10_controlled",
             method="grouped rotational transport",
             family="geometry",
             meta_path="results/grouped_rotational_transport_20260420/qwen_gsm10_grouped_rotational_transport_w010_r4_cal64_chat.jsonl.meta.json",
@@ -494,6 +503,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
             family="attention bridge",
             meta_path="results/bridge_ridge_qk_module_replace_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_module_replace_cal64_chat.jsonl.meta.json",
             notes="slotted attention-side transfer module trained to predict full corrected K/V directly",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
+            method="token-basis replace",
+            family="token-native attention bridge",
+            meta_path="results/bridge_ridge_qk_tokenbasis_replace_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_tokenbasis_replace_cal64_chat.jsonl.meta.json",
+            notes="direct-output slotted module constrained to a target next-token output basis",
         )
     )
     rows.append(
@@ -666,6 +684,14 @@ def _build_paired_rows() -> list[dict[str, Any]]:
             "candidate_label": "module_replace",
             "baseline_label": "target_alone_control",
         },
+        {
+            "candidate": "results/bridge_ridge_qk_tokenbasis_replace_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_tokenbasis_replace_cal64_chat.jsonl",
+            "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
+            "candidate_method": "rotalign_kv_gate_0.10",
+            "baseline_method": "target_alone",
+            "candidate_label": "tokenbasis_replace",
+            "baseline_label": "target_alone_control",
+        },
     ]
 
     rows: list[dict[str, Any]] = []
@@ -742,6 +768,12 @@ def _build_layer_localization_rows() -> list[dict[str, Any]]:
             "family": "attention bridge",
             "jsonl": "results/bridge_ridge_qk_module_replace_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_module_replace_cal64_chat.jsonl",
             "notes": "direct-output slotted attention-side module on controlled gsm8k_eval_10",
+        },
+        {
+            "method": "tokenbasis_replace",
+            "family": "token-native attention bridge",
+            "jsonl": "results/bridge_ridge_qk_tokenbasis_replace_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_tokenbasis_replace_cal64_chat.jsonl",
+            "notes": "direct-output slotted module constrained to a target next-token output basis on controlled gsm8k_eval_10",
         },
     ]
 

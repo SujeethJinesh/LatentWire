@@ -146,6 +146,14 @@
   {
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
+    "family": "token-native attention bridge",
+    "method": "token-basis replace",
+    "notes": "slotted attention-side module constrained to a basis distilled from target next-token output rows",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
     "family": "geometry",
     "method": "grouped rotational transport",
     "notes": "first geometry-side branch to survive the controlled slice",
@@ -229,6 +237,14 @@
     "family": "attention bridge",
     "method": "module replace",
     "notes": "slotted attention-side transfer module trained to predict full corrected K/V directly",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "token-native attention bridge",
+    "method": "token-basis replace",
+    "notes": "direct-output slotted module constrained to a target next-token output basis",
     "split": "gsm8k_5_controlled_smoke"
   },
   {
