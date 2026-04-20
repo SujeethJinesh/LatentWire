@@ -1405,3 +1405,37 @@ That means:
   - dynamic token/span alignment,
   - span-level or likelihood-style remapping teachers,
   - or multi-view remapping losses rather than one fixed local score
+
+I then tested the first explicit output-aware dynamic-remapping branch as
+`bridge_ridge_qk_dynalign_module_replace`.
+
+This keeps the same slotted direct-output module as
+`bridge_ridge_qk_module_replace`, but it upgrades the upstream pairing again:
+candidate target tokens are scored by both **local span/context agreement**
+and **next-token output overlap** before the source-to-target token mixture is
+formed.
+
+On the same 64-prompt calibration slice:
+
+- dynamic remapping samples: `2702`
+- mean target tokens per source sample: `3.00`
+- `K` cosine `0.937`, relative Frobenius error `0.334`
+- `V` cosine `0.633`, relative Frobenius error `0.763`
+
+Held-out reads:
+
+- `gsm8k_5`: `0.4000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- output-aware dynamic remapping is the strongest recent **live upstream
+  method lane**, because it improves on the older remapping smokes
+- but the first version still only ties the controlled `target-alone` floor
+- so the next method step should keep this upstream dynamic-alignment framing
+  and strengthen the teacher:
+  - likelihood-style or span-level alignment,
+  - multi-view remapping losses,
+  - or a stronger dynamic matching rule before pivoting to a broader module
+    replacement

@@ -1579,6 +1579,64 @@ def test_collect_contextual_prompt_position_mixtures_tracks_split_target_tokens(
     assert abs(sum(second_weights) - 1.0) < 1e-6
 
 
+def test_prediction_token_overlap_score_prefers_matching_text() -> None:
+    match = calibrate._prediction_token_overlap_score(
+        ("ab", "zz"),
+        (-0.01, -4.0),
+        ("ab", "yy"),
+        (-0.02, -4.0),
+    )
+    mismatch = calibrate._prediction_token_overlap_score(
+        ("ab", "zz"),
+        (-0.01, -4.0),
+        ("cd", "yy"),
+        (-0.02, -4.0),
+    )
+
+    assert match > mismatch
+
+
+def test_collect_dynamic_prompt_position_mixtures_uses_prediction_overlap(monkeypatch) -> None:
+    prompt = "abcd"
+    src_tok = _ScriptedOffsetTokenizer({prompt: [(0, 2), (2, 4)]})
+    tgt_tok = _ScriptedOffsetTokenizer({prompt: [(0, 1), (1, 2), (2, 3), (3, 4)]})
+
+    def fake_signatures(model, tokenizer, prompt_text, *, max_length, device, topk):
+        del model, max_length, device, topk
+        if tokenizer is src_tok:
+            return [
+                (("ab",), (0.0,)),
+                (("cd",), (0.0,)),
+            ]
+        return [
+            (("a",), (0.0,)),
+            (("ab",), (0.0,)),
+            (("c",), (0.0,)),
+            (("cd",), (0.0,)),
+        ]
+
+    monkeypatch.setattr(calibrate, "_collect_prompt_prediction_signatures", fake_signatures)
+
+    mixtures = calibrate.collect_dynamic_prompt_position_mixtures(
+        object(),
+        src_tok,
+        object(),
+        tgt_tok,
+        [prompt],
+        max_length=128,
+        batch_size=1,
+        device="cpu",
+        source_reasoning_mode="plain",
+        source_use_chat_template=False,
+        source_enable_thinking=None,
+        target_use_chat_template=False,
+        target_enable_thinking=None,
+        max_targets_per_source=1,
+    )
+
+    assert mixtures == [[(0, (1,), (1.0,)), (1, (3,), (1.0,))]]
+
+
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_ctxalign_module_replace(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,
@@ -1603,6 +1661,33 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_ctxalign_module_replace(mo
     args = calibrate.parse_args()
 
     assert args.quantization_correction == "bridge_ridge_qk_ctxalign_module_replace"
+    assert args.quantization_correction_rank == 8
+
+
+def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_module_replace(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "bridge_ridge_qk_dynalign_module_replace",
+            "--quantization-correction-rank",
+            "8",
+        ],
+    )
+
+    args = calibrate.parse_args()
+
+    assert args.quantization_correction == "bridge_ridge_qk_dynalign_module_replace"
     assert args.quantization_correction_rank == 8
 
 

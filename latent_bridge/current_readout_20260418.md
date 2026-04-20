@@ -2309,3 +2309,34 @@ Interpretation:
   - dynamic token/span alignment or span-level likelihood matching,
   - multi-view remapping losses,
   - or a more global module replacement after the remapped interface
+
+And a seventy-first dynamic-alignment update:
+
+> I then implemented `bridge_ridge_qk_dynalign_module_replace`, which keeps
+> the same direct-output slotted attention-side module as
+> `bridge_ridge_qk_module_replace` but upgrades the upstream remapping again:
+> candidate target tokens are now scored by both **local span/context
+> agreement** and **next-token output overlap** before forming the
+> source-to-target token mixture.
+>
+> On the same 64-prompt calibration slice:
+> - dynamic calibration samples: `2702`
+> - mean target tokens per source sample: `3.00`
+> - `K` cosine `0.937`, relative Frobenius error `0.334`
+> - `V` cosine `0.633`, relative Frobenius error `0.763`
+>
+> Under the fair held-out reads:
+> - `gsm8k_5`: `0.400000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- this is the first upstream remapping branch that clearly beats the recent
+  smoke floor, so **output-aware dynamic alignment is a live lane**
+- but it still only ties the controlled `target-alone` floor on the harder
+  10-example slice
+- so the next step is not another local bridge tweak:
+  - strengthen the dynamic alignment teacher itself,
+  - add span-level / likelihood-style alignment losses,
+  - and keep the same fair controlled readout to test whether the smoke lift
+    becomes real held-out signal
