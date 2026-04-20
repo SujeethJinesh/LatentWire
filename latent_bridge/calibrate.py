@@ -98,6 +98,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_subspace_transport",
             "grouped_canonical_transport",
             "grouped_rotational_transport",
+            "grouped_fitted_rotation_transport",
             "grouped_covariance_transport",
             "grouped_template_transport",
             "grouped_qk_retrieval_transport",

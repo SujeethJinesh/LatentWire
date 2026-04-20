@@ -743,3 +743,37 @@ So the highest-value next stack is now:
 4. if we keep the method lane alive, the two live paths are:
    - a **stronger teacher closer to prediction space**
    - a **stronger geometry / canonicalization step** than the current grouped rotational fit
+
+I then tried the next stronger geometry-side follow-up:
+`grouped_fitted_rotation_transport`. This keeps the same grouped soft-transport plus rank-4 residual structure and the same fair shared-chat / `enable_thinking=false` Qwen control, but it replaces the generic rotational canonicalization with a **calibration-fit grouped gauge fix**: each grouped block is ZCA-whitened, a rectangular orthogonal map is fit directly in that whitened space, and the grouped transport is assembled from those fitted blockwise gauges.
+
+Offline fit improved modestly over `grouped_rotational_transport`:
+
+- `K` cosine: `0.853`
+- `K` relative Frobenius error: `0.493`
+- `V` cosine: `0.355`
+- `V` relative Frobenius error: `0.923`
+
+Held-out behavior under the same fair controlled regime was:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- bytes on the controlled slice: `681,668.4`
+
+That means:
+
+- a more explicit calibration-fit gauge fix is more principled and does improve
+  offline alignment quality a bit
+- but it exactly ties the earlier `grouped_rotational_transport` branch on the
+  held-out slices that matter
+- so stronger grouped canonicalization is still **not** a positive method
+  result by itself
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
+4. if we keep the method lane alive, the two live paths are:
+   - a **stronger teacher closer to prediction space**
+   - a **shared-basis / dictionary-style canonicalization** beyond the current rotational and fitted-gauge probes

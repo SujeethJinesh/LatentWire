@@ -1750,3 +1750,26 @@ Interpretation:
   slices but it does **not** improve over its own no-press floor
 - so it should stay in the paper as an honest external null / boundary
   comparator, not as a live positive baseline and not as the next method lane
+
+And a fifty-second fitted-gauge transport update:
+
+> I then pushed the geometry lane one step further with
+> `grouped_fitted_rotation_transport`. This keeps the same fair shared-chat /
+> `enable_thinking=False` control and the same grouped soft-transport +
+> rank-4 residual structure, but it replaces the generic covariance-normalized
+> rotational quotient with a **calibration-fit per-group ZCA-whitened
+> rectangular orthogonal gauge map** before assembling the grouped transport.
+> Offline alignment improved modestly over `grouped_rotational_transport`
+> (`K` cosine `0.853`, relative Frobenius error `0.493`; `V` cosine `0.355`,
+> relative Frobenius error `0.923`). Held-out behavior, however, was unchanged:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- a calibration-fit grouped gauge fix is more principled and does improve
+  offline fit a bit
+- but it exactly ties the earlier `grouped_rotational_transport` read on both
+  held-out slices
+- that is another useful blocker result: stronger grouped canonicalization
+  alone still does **not** clear the controlled target floor

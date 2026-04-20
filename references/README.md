@@ -324,6 +324,10 @@ File `241_` extends the routed-bridge backlog:
 
 - `241_`: Libra as a decoupled routed-bridge reference for using a small expert/bridge module instead of one monolithic projector.
 
+File `242_` extends the shared-latent bridge backlog:
+
+- `242_`: Latent Space Communication via K-V Cache Alignment as a direct shared-latent-interface reference for future learned bridge/projector branches.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
