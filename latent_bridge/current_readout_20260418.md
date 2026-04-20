@@ -1215,3 +1215,20 @@ Interpretation:
 - if the positive-method lane stays alive, the next transport hypothesis has to
   be genuinely query-conditioned at runtime, not another calibration-time
   averaged descriptor
+
+And a thirty-first prompt-conditioned QK-bank update:
+
+> I then tried the lighter evaluator-side version of the same hypothesis on the
+> best current internal checkpoint, `grouped_subspace_transport + rank-4
+> residual`, using a prompt-indexed QK template bank instead of one averaged
+> template. This new per-head budget metric,
+> `attention_qk_bank_transport`, still collapsed on the first matched sparse
+> `gsm8k_5` smoke to `0.000000` at `143,636.825` average bytes.
+
+Interpretation:
+
+- prompt-conditioning at the evaluator overlay level is still not enough to
+  rescue the live checkpoint
+- this is evidence that the remaining query mismatch probably lives in the
+  transport or fusion path itself, not only in how we spend the sparse budget
+- the evaluator-overlay lane now looks close to saturated

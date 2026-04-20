@@ -258,6 +258,10 @@ query-key distributions from `--runtime-head-prior-file`, then soft-transports
 the fixed head-prior mass onto the live heads using the current example's QK
 distributions. Its shuffled variant keeps the same template family but
 permutes the transported prior mass.
+`attention_qk_bank_transport` replaces the single averaged QK template with a
+prompt-indexed calibration bank and lets the live example soft-select a prompt
+family before transporting the fixed head-prior mass. Its shuffled variant
+keeps the same prompt bank but permutes the prior mass afterward.
 `attention_template_transport` upgrades the fixed-prior branch from a scalar
 head score to a full calibration-time per-head attention template and then
 soft-transports the prior mass onto the live heads. Its shuffled variant keeps

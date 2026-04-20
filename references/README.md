@@ -257,6 +257,11 @@ Files `195_` through `197_` extend the query-conditioned transport backlog:
 - `196_`: HybridKV as a recent static-vs-dynamic head heterogeneity reference, useful for motivating query-conditioned transport rather than one static head map.
 - `197_`: TokAlign as a tokenizer-alignment reference for the longer-term blocker stack when broader heterogeneous pairs make vocabulary mismatch unavoidable.
 
+Files `198_` and `199_` extend the same runtime-query backlog:
+
+- `198_`: Retrieval Heads are Dynamic as direct evidence that averaged calibration-time retrieval templates are too static, supporting live query-conditioned transport.
+- `199_`: Query-Focused and Memory-Aware Reranker for Long Context Processing as a recent query-relevance routing reference, useful for prompt- or query-conditioned template-bank transport ideas.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

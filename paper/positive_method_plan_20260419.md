@@ -187,3 +187,19 @@ That means:
   utility
 - the next transport-first shot has to be **genuinely query-conditioned at
   runtime**, not another grouped calibration-time summary
+
+I also tested the lighter evaluator-side version of the same idea on the best
+current internal checkpoint, `grouped_subspace_transport + rank-4 residual`:
+`attention_qk_bank_transport`, which replaces the single averaged QK template
+with a prompt-indexed calibration bank and lets each live example soft-select a
+template family before budgeting the sparse positions. On the first matched
+sparse `K-only` smoke, `gsm8k_5`, it still scored `0.0000` at `143,636.825`
+average bytes.
+
+That means:
+
+- the weak point is probably not just that we averaged the calibration templates
+- the evaluator-overlay lane now looks close to saturated
+- if we keep the positive-method lane alive, query-conditioning probably has to
+  change the transport or fusion path itself, not only the per-head sparse
+  budget metric
