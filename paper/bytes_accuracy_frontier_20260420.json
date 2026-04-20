@@ -130,6 +130,22 @@
   {
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
+    "family": "attention bridge",
+    "method": "module adapter",
+    "notes": "slotted attention-side transfer module with nonlinear readout and prediction distillation",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
+    "family": "attention bridge",
+    "method": "module replace",
+    "notes": "slotted attention-side transfer module trained to predict full corrected K/V directly",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
     "family": "geometry",
     "method": "grouped rotational transport",
     "notes": "first geometry-side branch to survive the controlled slice",
@@ -197,6 +213,22 @@
     "family": "attention bridge",
     "method": "xattn dynmap adapter",
     "notes": "xattn bridge plus context-reweighted top-k output teacher",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "attention bridge",
+    "method": "module adapter",
+    "notes": "slotted attention-side transfer module with nonlinear readout and prediction distillation",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "attention bridge",
+    "method": "module replace",
+    "notes": "slotted attention-side transfer module trained to predict full corrected K/V directly",
     "split": "gsm8k_5_controlled_smoke"
   },
   {

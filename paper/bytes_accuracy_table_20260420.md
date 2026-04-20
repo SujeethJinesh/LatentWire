@@ -18,6 +18,8 @@
 | gsm8k_eval_10_controlled | shared-plus-private dynmap adapter | modular bridge | 0.1000 | 681,668.4 | shared-plus-private bridge with context-reweighted top-k teacher |
 | gsm8k_eval_10_controlled | xattn adapter | attention bridge | 0.1000 | 681,668.4 | tiny query-conditioned cross-attention bridge over live K/V-side memory signals |
 | gsm8k_eval_10_controlled | xattn dynmap adapter | attention bridge | 0.1000 | 681,668.4 | xattn bridge plus context-reweighted top-k output teacher |
+| gsm8k_eval_10_controlled | module adapter | attention bridge | 0.1000 | 681,668.4 | slotted attention-side transfer module with nonlinear readout and prediction distillation |
+| gsm8k_eval_10_controlled | module replace | attention bridge | 0.1000 | 681,668.4 | slotted attention-side transfer module trained to predict full corrected K/V directly |
 | gsm8k_eval_10_controlled | grouped rotational transport | geometry | 0.1000 | 681,668.4 | first geometry-side branch to survive the controlled slice |
 | gsm8k_eval_10_controlled | grouped fitted rotation transport | geometry | 0.1000 | 681,668.4 | calibration-fit gauge-fixing follow-up |
 | gsm8k_eval_10_controlled | grouped shared-basis transport | geometry | 0.1000 | 681,668.4 | shared-basis coefficient-space transport |
@@ -27,6 +29,8 @@
 | gsm8k_5_controlled_smoke | shared-plus-private dynmap adapter | modular bridge | 0.2000 | 686,026.6 | shared-plus-private bridge with context-reweighted top-k teacher |
 | gsm8k_5_controlled_smoke | xattn adapter | attention bridge | 0.2000 | 686,026.6 | tiny query-conditioned cross-attention bridge over live K/V-side memory signals |
 | gsm8k_5_controlled_smoke | xattn dynmap adapter | attention bridge | 0.2000 | 686,026.6 | xattn bridge plus context-reweighted top-k output teacher |
+| gsm8k_5_controlled_smoke | module adapter | attention bridge | 0.2000 | 686,026.6 | slotted attention-side transfer module with nonlinear readout and prediction distillation |
+| gsm8k_5_controlled_smoke | module replace | attention bridge | 0.2000 | 686,026.6 | slotted attention-side transfer module trained to predict full corrected K/V directly |
 | gsm8k_5_controlled_smoke | shared-plus-private asym projector | projector bridge | 0.0000 | 686,026.6 | shared-plus-private post-transport projector combining full-rank query projector with the paired K/V interface |
 | gsm8k_5_controlled_smoke | readout adapter | stronger-teacher bridge | 0.2000 | 686,026.6 | stronger prompt-local teacher survives smoke only |
 | gsm8k_5_controlled_smoke | prediction-KL adapter | stronger-teacher bridge | 0.0000 | 722,107.7 | first prediction-level bridge teacher |

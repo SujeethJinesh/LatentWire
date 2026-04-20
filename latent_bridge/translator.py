@@ -159,6 +159,13 @@ class TranslatorConfig:
     # query-conditioned cross-attention bridge interface from
     # `bridge_ridge_qk_xattn_adapter`, but adds that same
     # context-reweighted top-k teacher on top of the xattn bridge fit, and
+    # `bridge_ridge_qk_module_adapter` upgrades that tiny xattn bridge into a
+    # fuller attention-side transfer module with learned bridge slots and a
+    # nonlinear readout, so the interface looks more like a small module
+    # replacement than a local correction term,
+    # `bridge_ridge_qk_module_replace` keeps that same slotted attention-side
+    # module shape but trains it to predict the full corrected K/V directly
+    # rather than only a residual on top of the fixed bridge, and
     # `bridge_ridge_qk_sae_adapter` swaps the dense shared bottleneck for a
     # sparse shared codebook: paired K/V query-conditioned signals produce a
     # small top-k latent code that is decoded separately for K and V, and
@@ -440,6 +447,27 @@ class RotAlignKVTranslator(nn.Module):
             [nn.Parameter(torch.zeros(bridge_rank, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_query_xattn_V_out = nn.ParameterList(
+            [nn.Parameter(torch.zeros(bridge_rank, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_module_slots = nn.ParameterList(
+            [nn.Parameter(torch.zeros(config.bridge_bank_size, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_module_q = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, bridge_rank), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_module_k = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, bridge_rank), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_module_v = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, bridge_rank), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_module_hidden = nn.ParameterList(
+            [nn.Parameter(torch.zeros(bridge_rank, bridge_rank), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_module_K_out = nn.ParameterList(
+            [nn.Parameter(torch.zeros(bridge_rank, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_module_V_out = nn.ParameterList(
             [nn.Parameter(torch.zeros(bridge_rank, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_bias_K = nn.ParameterList(
@@ -2228,6 +2256,234 @@ class RotAlignKVTranslator(nn.Module):
             out_v.detach().to(dtype=residual_target_v.dtype, device=residual_target_v.device),
         )
 
+    def _fit_bridge_query_module_adapter(
+        self,
+        quantized_k: torch.Tensor,
+        predicted_k: torch.Tensor,
+        quantized_v: torch.Tensor,
+        predicted_v: torch.Tensor,
+        query_features: torch.Tensor,
+        base_prediction_k: torch.Tensor,
+        base_prediction_v: torch.Tensor,
+        residual_target_k: torch.Tensor,
+        residual_target_v: torch.Tensor,
+        *,
+        rank: int,
+        steps: int = 100,
+        lr: float = 5e-2,
+        logit_weight: float = 0.5,
+        prediction_distill_weight: float = 0.0,
+        dynamic_prediction_weight: float = 0.0,
+        teacher_topk_log_probs: torch.Tensor | None = None,
+        teacher_topk_output_rows: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, ...]:
+        tensors = (
+            quantized_k.float(),
+            predicted_k.float(),
+            quantized_v.float(),
+            predicted_v.float(),
+            query_features.float(),
+            base_prediction_k.float(),
+            base_prediction_v.float(),
+            residual_target_k.float(),
+            residual_target_v.float(),
+        )
+        shapes = sorted({tuple(t.shape) for t in tensors})
+        if len(shapes) != 1:
+            raise ValueError(f"all module-adapter tensors must match, got shapes {shapes}")
+
+        qk, pk, qv, pv, query, base_k, base_v, target_k, target_v = tensors
+        rank = max(1, min(int(rank), self.d_t))
+        num_slots = max(1, int(self.config.bridge_bank_size))
+        gen = torch.Generator(device="cpu").manual_seed(923_177 + int(self.config.seed) * 191 + int(rank))
+        scale = 1e-2
+
+        slot_tokens = torch.nn.Parameter(torch.randn(num_slots, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        q_proj = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        k_proj = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        v_proj = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        hidden_proj = torch.nn.Parameter(torch.randn(rank, rank, generator=gen, dtype=torch.float32) * scale)
+        out_k = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        out_v = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        optimizer = torch.optim.Adam(
+            [slot_tokens, q_proj, k_proj, v_proj, hidden_proj, out_k, out_v],
+            lr=float(lr),
+        )
+
+        with torch.enable_grad():
+            for _ in range(max(1, int(steps))):
+                optimizer.zero_grad(set_to_none=True)
+                live_memory = torch.stack([qk, pk, qv, pv], dim=1)
+                slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
+                memory = torch.cat([live_memory, slot_memory], dim=1)
+                q_hidden = query @ q_proj
+                key_hidden = torch.einsum("nmd,dr->nmr", memory, k_proj)
+                value_hidden = torch.einsum("nmd,dr->nmr", memory, v_proj)
+                attn_logits = torch.einsum("nr,nmr->nm", q_hidden, key_hidden) / math.sqrt(float(rank))
+                attn = torch.softmax(attn_logits, dim=-1)
+                context = torch.einsum("nm,nmr->nr", attn, value_hidden)
+                hidden = F.gelu(context @ hidden_proj)
+                pred_k = hidden @ out_k
+                pred_v = hidden @ out_v
+                loss = F.mse_loss(pred_k, target_k) + F.mse_loss(pred_v, target_v)
+                logit_pred_k = ((base_k + pred_k) * query).sum(dim=-1)
+                logit_tgt_k = ((base_k + target_k) * query).sum(dim=-1)
+                logit_pred_v = ((base_v + pred_v) * query).sum(dim=-1)
+                logit_tgt_v = ((base_v + target_v) * query).sum(dim=-1)
+                loss = loss + float(logit_weight) * (
+                    F.mse_loss(logit_pred_k, logit_tgt_k) + F.mse_loss(logit_pred_v, logit_tgt_v)
+                )
+                if (
+                    (float(prediction_distill_weight) > 0.0 or float(dynamic_prediction_weight) > 0.0)
+                    and teacher_topk_log_probs is not None
+                    and teacher_topk_output_rows is not None
+                ):
+                    teacher_logits = teacher_topk_log_probs.to(device=qk.device, dtype=torch.float32)
+                    teacher_probs = torch.softmax(teacher_logits, dim=-1)
+                    teacher_rows = teacher_topk_output_rows.to(device=qk.device, dtype=torch.float32)
+                    hidden_pred = 0.5 * (((base_k + pred_k) * query) + ((base_v + pred_v) * query))
+                    student_logits = torch.einsum("nd,nkd->nk", hidden_pred, teacher_rows) / math.sqrt(float(self.d_t))
+                    student_log_probs = torch.log_softmax(student_logits, dim=-1)
+                    if float(prediction_distill_weight) > 0.0:
+                        loss = loss + float(prediction_distill_weight) * F.kl_div(
+                            student_log_probs,
+                            teacher_probs,
+                            reduction="batchmean",
+                        )
+                    if float(dynamic_prediction_weight) > 0.0:
+                        context_hidden = 0.5 * ((qk + qv) * query)
+                        context_logits = torch.einsum("nd,nkd->nk", context_hidden, teacher_rows) / math.sqrt(float(self.d_t))
+                        dynamic_teacher_probs = torch.softmax(teacher_logits + context_logits, dim=-1)
+                        loss = loss + float(dynamic_prediction_weight) * F.kl_div(
+                            student_log_probs,
+                            dynamic_teacher_probs,
+                            reduction="batchmean",
+                        )
+                loss.backward()
+                optimizer.step()
+
+        return (
+            slot_tokens.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            q_proj.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            k_proj.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            v_proj.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            hidden_proj.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            out_k.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            out_v.detach().to(dtype=residual_target_v.dtype, device=residual_target_v.device),
+        )
+
+    def _fit_bridge_query_module_replace(
+        self,
+        quantized_k: torch.Tensor,
+        predicted_k: torch.Tensor,
+        quantized_v: torch.Tensor,
+        predicted_v: torch.Tensor,
+        query_features: torch.Tensor,
+        target_k: torch.Tensor,
+        target_v: torch.Tensor,
+        *,
+        rank: int,
+        steps: int = 100,
+        lr: float = 5e-2,
+        logit_weight: float = 0.5,
+        prediction_distill_weight: float = 0.0,
+        dynamic_prediction_weight: float = 0.0,
+        teacher_topk_log_probs: torch.Tensor | None = None,
+        teacher_topk_output_rows: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, ...]:
+        tensors = (
+            quantized_k.float(),
+            predicted_k.float(),
+            quantized_v.float(),
+            predicted_v.float(),
+            query_features.float(),
+            target_k.float(),
+            target_v.float(),
+        )
+        shapes = sorted({tuple(t.shape) for t in tensors})
+        if len(shapes) != 1:
+            raise ValueError(f"all module-replace tensors must match, got shapes {shapes}")
+
+        qk, pk, qv, pv, query, yk, yv = tensors
+        rank = max(1, min(int(rank), self.d_t))
+        num_slots = max(1, int(self.config.bridge_bank_size))
+        gen = torch.Generator(device="cpu").manual_seed(931_771 + int(self.config.seed) * 193 + int(rank))
+        scale = 1e-2
+
+        slot_tokens = torch.nn.Parameter(torch.randn(num_slots, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        q_proj = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        k_proj = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        v_proj = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        hidden_proj = torch.nn.Parameter(torch.randn(rank, rank, generator=gen, dtype=torch.float32) * scale)
+        out_k = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        out_v = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        optimizer = torch.optim.Adam(
+            [slot_tokens, q_proj, k_proj, v_proj, hidden_proj, out_k, out_v],
+            lr=float(lr),
+        )
+
+        with torch.enable_grad():
+            for _ in range(max(1, int(steps))):
+                optimizer.zero_grad(set_to_none=True)
+                live_memory = torch.stack([qk, pk, qv, pv], dim=1)
+                slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
+                memory = torch.cat([live_memory, slot_memory], dim=1)
+                q_hidden = query @ q_proj
+                key_hidden = torch.einsum("nmd,dr->nmr", memory, k_proj)
+                value_hidden = torch.einsum("nmd,dr->nmr", memory, v_proj)
+                attn_logits = torch.einsum("nr,nmr->nm", q_hidden, key_hidden) / math.sqrt(float(rank))
+                attn = torch.softmax(attn_logits, dim=-1)
+                context = torch.einsum("nm,nmr->nr", attn, value_hidden)
+                hidden = F.gelu(context @ hidden_proj)
+                pred_k = hidden @ out_k
+                pred_v = hidden @ out_v
+                loss = F.mse_loss(pred_k, yk) + F.mse_loss(pred_v, yv)
+                logit_pred_k = (pred_k * query).sum(dim=-1)
+                logit_tgt_k = (yk * query).sum(dim=-1)
+                logit_pred_v = (pred_v * query).sum(dim=-1)
+                logit_tgt_v = (yv * query).sum(dim=-1)
+                loss = loss + float(logit_weight) * (
+                    F.mse_loss(logit_pred_k, logit_tgt_k) + F.mse_loss(logit_pred_v, logit_tgt_v)
+                )
+                if (
+                    (float(prediction_distill_weight) > 0.0 or float(dynamic_prediction_weight) > 0.0)
+                    and teacher_topk_log_probs is not None
+                    and teacher_topk_output_rows is not None
+                ):
+                    teacher_logits = teacher_topk_log_probs.to(device=qk.device, dtype=torch.float32)
+                    teacher_probs = torch.softmax(teacher_logits, dim=-1)
+                    teacher_rows = teacher_topk_output_rows.to(device=qk.device, dtype=torch.float32)
+                    hidden_pred = 0.5 * ((pred_k * query) + (pred_v * query))
+                    student_logits = torch.einsum("nd,nkd->nk", hidden_pred, teacher_rows) / math.sqrt(float(self.d_t))
+                    student_log_probs = torch.log_softmax(student_logits, dim=-1)
+                    if float(prediction_distill_weight) > 0.0:
+                        loss = loss + float(prediction_distill_weight) * F.kl_div(
+                            student_log_probs,
+                            teacher_probs,
+                            reduction="batchmean",
+                        )
+                    if float(dynamic_prediction_weight) > 0.0:
+                        context_hidden = 0.5 * ((qk + qv) * query)
+                        context_logits = torch.einsum("nd,nkd->nk", context_hidden, teacher_rows) / math.sqrt(float(self.d_t))
+                        dynamic_teacher_probs = torch.softmax(teacher_logits + context_logits, dim=-1)
+                        loss = loss + float(dynamic_prediction_weight) * F.kl_div(
+                            student_log_probs,
+                            dynamic_teacher_probs,
+                            reduction="batchmean",
+                        )
+                loss.backward()
+                optimizer.step()
+
+        return (
+            slot_tokens.detach().to(dtype=target_k.dtype, device=target_k.device),
+            q_proj.detach().to(dtype=target_k.dtype, device=target_k.device),
+            k_proj.detach().to(dtype=target_k.dtype, device=target_k.device),
+            v_proj.detach().to(dtype=target_k.dtype, device=target_k.device),
+            hidden_proj.detach().to(dtype=target_k.dtype, device=target_k.device),
+            out_k.detach().to(dtype=target_k.dtype, device=target_k.device),
+            out_v.detach().to(dtype=target_v.dtype, device=target_v.device),
+        )
+
     @staticmethod
     def _topk_sparse_codes(logits: torch.Tensor, active_k: int) -> torch.Tensor:
         active_k = max(1, min(int(active_k), logits.shape[-1]))
@@ -2955,6 +3211,12 @@ class RotAlignKVTranslator(nn.Module):
             xattn_k = self.quant_query_xattn_k[tgt_layer_idx]
             xattn_v = self.quant_query_xattn_v[tgt_layer_idx]
             xattn_out = self.quant_query_xattn_K_out[tgt_layer_idx]
+            module_slots = self.quant_query_module_slots[tgt_layer_idx]
+            module_q = self.quant_query_module_q[tgt_layer_idx]
+            module_k = self.quant_query_module_k[tgt_layer_idx]
+            module_v = self.quant_query_module_v[tgt_layer_idx]
+            module_hidden = self.quant_query_module_hidden[tgt_layer_idx]
+            module_out = self.quant_query_module_K_out[tgt_layer_idx]
             bias = self.quant_bias_K[tgt_layer_idx]
             bank_left = self.bridge_bank_proj_K_left[tgt_layer_idx]
             bank_right = self.bridge_bank_proj_K_right[tgt_layer_idx]
@@ -2988,6 +3250,12 @@ class RotAlignKVTranslator(nn.Module):
             xattn_k = self.quant_query_xattn_k[tgt_layer_idx]
             xattn_v = self.quant_query_xattn_v[tgt_layer_idx]
             xattn_out = self.quant_query_xattn_V_out[tgt_layer_idx]
+            module_slots = self.quant_query_module_slots[tgt_layer_idx]
+            module_q = self.quant_query_module_q[tgt_layer_idx]
+            module_k = self.quant_query_module_k[tgt_layer_idx]
+            module_v = self.quant_query_module_v[tgt_layer_idx]
+            module_hidden = self.quant_query_module_hidden[tgt_layer_idx]
+            module_out = self.quant_query_module_V_out[tgt_layer_idx]
             bias = self.quant_bias_V[tgt_layer_idx]
             bank_left = self.bridge_bank_proj_V_left[tgt_layer_idx]
             bank_right = self.bridge_bank_proj_V_right[tgt_layer_idx]
@@ -3065,7 +3333,7 @@ class RotAlignKVTranslator(nn.Module):
                 + (aux_input * qfeat) @ query_aux_proj.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
-        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
             if aux_input is None:
                 raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
             if runtime_query_features is None:
@@ -3201,6 +3469,35 @@ class RotAlignKVTranslator(nn.Module):
                 attn = torch.softmax(attn_logits, dim=-1)
                 context = torch.einsum("...m,...mr->...r", attn, value_hidden)
                 resid = resid + context @ xattn_out.to(device=x.device, dtype=x.dtype)
+            if self.config.quantization_correction in {"bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace"}:
+                if paired_input is None or paired_aux_input is None:
+                    raise ValueError(f"{self.config.quantization_correction} requires paired_input and paired_aux_input")
+                live_memory = torch.stack(
+                    [
+                        x,
+                        aux_input,
+                        paired_input.to(device=x.device, dtype=x.dtype),
+                        paired_aux_input.to(device=x.device, dtype=x.dtype),
+                    ],
+                    dim=-2,
+                )
+                slot_memory = module_slots.to(device=x.device, dtype=x.dtype)
+                if x.ndim == 3:
+                    slot_memory = slot_memory.unsqueeze(0).unsqueeze(0).expand(x.shape[0], x.shape[1], -1, -1)
+                else:
+                    slot_memory = slot_memory.unsqueeze(0).expand(x.shape[0], -1, -1)
+                memory = torch.cat([live_memory, slot_memory], dim=-2)
+                q_hidden = qfeat @ module_q.to(device=x.device, dtype=x.dtype)
+                key_hidden = torch.einsum("...md,dr->...mr", memory, module_k.to(device=x.device, dtype=x.dtype))
+                value_hidden = torch.einsum("...md,dr->...mr", memory, module_v.to(device=x.device, dtype=x.dtype))
+                attn_logits = torch.einsum("...r,...mr->...m", q_hidden, key_hidden) / math.sqrt(float(max(1, module_q.shape[-1])))
+                attn = torch.softmax(attn_logits, dim=-1)
+                context = torch.einsum("...m,...mr->...r", attn, value_hidden)
+                hidden = F.gelu(context @ module_hidden.to(device=x.device, dtype=x.dtype))
+                module_pred = hidden @ module_out.to(device=x.device, dtype=x.dtype)
+                if self.config.quantization_correction == "bridge_ridge_qk_module_replace":
+                    return module_pred
+                resid = resid + module_pred
             return base + resid
         if self.config.quantization_correction == "bridge_ridge_query":
             if aux_input is None:
@@ -3790,6 +4087,18 @@ class RotAlignKVTranslator(nn.Module):
             self.bridge_bank_query_aux_resid_V_left[tgt_l].data.zero_()
             self.bridge_bank_query_aux_resid_V_right[tgt_l].data.zero_()
             self.bridge_bank_bias_V[tgt_l].data.zero_()
+            self.quant_query_xattn_q[tgt_l].data.zero_()
+            self.quant_query_xattn_k[tgt_l].data.zero_()
+            self.quant_query_xattn_v[tgt_l].data.zero_()
+            self.quant_query_xattn_K_out[tgt_l].data.zero_()
+            self.quant_query_xattn_V_out[tgt_l].data.zero_()
+            self.quant_query_module_slots[tgt_l].data.zero_()
+            self.quant_query_module_q[tgt_l].data.zero_()
+            self.quant_query_module_k[tgt_l].data.zero_()
+            self.quant_query_module_v[tgt_l].data.zero_()
+            self.quant_query_module_hidden[tgt_l].data.zero_()
+            self.quant_query_module_K_out[tgt_l].data.zero_()
+            self.quant_query_module_V_out[tgt_l].data.zero_()
             K_pred = (Xk @ W_K) @ pre_quant_filter_k
             V_pred = (Xv @ W_V) @ pre_quant_filter_v
             K_quant = self.quantizer.quantize_dequantize(K_pred)
@@ -3810,7 +4119,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                 sample_weights = None
                 if self.config.quantization_correction == "bridge_ridge_qk_weighted":
                     if self._bridge_sample_weights is None:
@@ -3859,7 +4168,7 @@ class RotAlignKVTranslator(nn.Module):
                         lam=self.config.ridge_lambda,
                         sample_weights=sample_weights,
                     )
-                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                         if self._bridge_sample_query_features is None:
                             raise ValueError(
                                 f"{self.config.quantization_correction} requires bridge sample query features; "
@@ -3880,7 +4189,7 @@ class RotAlignKVTranslator(nn.Module):
                             sample_prompt_ids = self._bridge_sample_prompt_ids.to(device=Xk.device)
                         teacher_log_probs = None
                         teacher_output_rows = None
-                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter"}:
+                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace"}:
                             if self._bridge_prediction_teacher_log_probs is None or self._bridge_prediction_teacher_output_rows is None:
                                 raise ValueError(
                                     f"{self.config.quantization_correction} requires prediction-teacher tensors; "
@@ -3950,6 +4259,66 @@ class RotAlignKVTranslator(nn.Module):
                             self.quant_query_xattn_v[tgt_l].data.copy_(xattn_v.to(self.quant_query_xattn_v[tgt_l].dtype))
                             self.quant_query_xattn_K_out[tgt_l].data.copy_(xattn_k_out.to(self.quant_query_xattn_K_out[tgt_l].dtype))
                             self.quant_query_xattn_V_out[tgt_l].data.copy_(xattn_v_out.to(self.quant_query_xattn_V_out[tgt_l].dtype))
+                        if self.config.quantization_correction == "bridge_ridge_qk_module_adapter":
+                            (
+                                module_slots,
+                                module_q,
+                                module_k,
+                                module_v,
+                                module_hidden,
+                                module_k_out,
+                                module_v_out,
+                            ) = self._fit_bridge_query_module_adapter(
+                                K_quant,
+                                K_pred,
+                                V_quant,
+                                V_pred,
+                                query_features,
+                                base_k,
+                                base_v,
+                                resid_target_k,
+                                resid_target_v,
+                                rank=int(self.config.quantization_correction_rank or 8),
+                                prediction_distill_weight=0.25,
+                                teacher_topk_log_probs=teacher_log_probs,
+                                teacher_topk_output_rows=teacher_output_rows,
+                            )
+                            self.quant_query_module_slots[tgt_l].data.copy_(module_slots.to(self.quant_query_module_slots[tgt_l].dtype))
+                            self.quant_query_module_q[tgt_l].data.copy_(module_q.to(self.quant_query_module_q[tgt_l].dtype))
+                            self.quant_query_module_k[tgt_l].data.copy_(module_k.to(self.quant_query_module_k[tgt_l].dtype))
+                            self.quant_query_module_v[tgt_l].data.copy_(module_v.to(self.quant_query_module_v[tgt_l].dtype))
+                            self.quant_query_module_hidden[tgt_l].data.copy_(module_hidden.to(self.quant_query_module_hidden[tgt_l].dtype))
+                            self.quant_query_module_K_out[tgt_l].data.copy_(module_k_out.to(self.quant_query_module_K_out[tgt_l].dtype))
+                            self.quant_query_module_V_out[tgt_l].data.copy_(module_v_out.to(self.quant_query_module_V_out[tgt_l].dtype))
+                        if self.config.quantization_correction == "bridge_ridge_qk_module_replace":
+                            (
+                                module_slots,
+                                module_q,
+                                module_k,
+                                module_v,
+                                module_hidden,
+                                module_k_out,
+                                module_v_out,
+                            ) = self._fit_bridge_query_module_replace(
+                                K_quant,
+                                K_pred,
+                                V_quant,
+                                V_pred,
+                                query_features,
+                                Yk_fit,
+                                Yv_fit,
+                                rank=int(self.config.quantization_correction_rank or 8),
+                                prediction_distill_weight=0.25,
+                                teacher_topk_log_probs=teacher_log_probs,
+                                teacher_topk_output_rows=teacher_output_rows,
+                            )
+                            self.quant_query_module_slots[tgt_l].data.copy_(module_slots.to(self.quant_query_module_slots[tgt_l].dtype))
+                            self.quant_query_module_q[tgt_l].data.copy_(module_q.to(self.quant_query_module_q[tgt_l].dtype))
+                            self.quant_query_module_k[tgt_l].data.copy_(module_k.to(self.quant_query_module_k[tgt_l].dtype))
+                            self.quant_query_module_v[tgt_l].data.copy_(module_v.to(self.quant_query_module_v[tgt_l].dtype))
+                            self.quant_query_module_hidden[tgt_l].data.copy_(module_hidden.to(self.quant_query_module_hidden[tgt_l].dtype))
+                            self.quant_query_module_K_out[tgt_l].data.copy_(module_k_out.to(self.quant_query_module_K_out[tgt_l].dtype))
+                            self.quant_query_module_V_out[tgt_l].data.copy_(module_v_out.to(self.quant_query_module_V_out[tgt_l].dtype))
                         if self.config.quantization_correction in {"bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter"}:
                             (
                                 shared_left,
@@ -4405,7 +4774,7 @@ class RotAlignKVTranslator(nn.Module):
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
             fit_runtime_query_features = None
-            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
                 if self._bridge_sample_query_features is None:
                     raise ValueError(
                         f"{self.config.quantization_correction} requires bridge sample query features during fit; "

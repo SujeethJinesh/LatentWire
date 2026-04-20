@@ -2135,3 +2135,60 @@ Interpretation:
   - a richer dynamic remapping teacher with explicit token alignment /
     interaction structure, not another small contextual reweighting of the
     same top-k rows
+
+And a sixty-sixth module-replacement update:
+
+> I then implemented `bridge_ridge_qk_module_adapter`, a fuller
+> **attention-side transfer module** on top of the same
+> `grouped_subspace_transport + rank-4 residual` base.
+>
+> Instead of a tiny residual bridge or a single small xattn block, this branch
+> adds learned bridge slots, a query-conditioned cross-attention over the live
+> K/V-side transport signals plus those slots, and a nonlinear readout trained
+> with calibration-time top-k prediction distillation.
+>
+> On the same 64-prompt calibration slice, offline fit again stayed at:
+> - `K` cosine `0.870`, relative Frobenius error `0.468`
+> - `V` cosine `0.397`, relative Frobenius error `0.907`
+>
+> Under the matched-bytes fair controlled regime, the held-out reads were:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- even the first fuller slotted module-replacement style bridge only ties the
+  same weak controlled floor as the other surviving modular interfaces
+- that strengthens the case that **local interface elaboration is saturated**
+  in the current transport family
+- the next serious positive-method shot should be more literal:
+  - a fuller **Attention Editing / LLM Modules** style module replacement, or
+  - a richer **dynamic token/output remapping** teacher with explicit
+    contextual alignment rather than another local top-k reweighting
+
+And a sixty-seventh direct-module-replacement update:
+
+> I then implemented `bridge_ridge_qk_module_replace`, which keeps the same
+> slotted attention-side module shape as `bridge_ridge_qk_module_adapter` but
+> trains that module to predict the full corrected K/V directly rather than
+> only a residual on top of the fixed bridge.
+>
+> On the same 64-prompt calibration slice, offline fit again stayed at:
+> - `K` cosine `0.870`, relative Frobenius error `0.468`
+> - `V` cosine `0.397`, relative Frobenius error `0.907`
+>
+> Under the matched-bytes fair controlled regime, the held-out reads were:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- even a more literal direct-output module replacement still only ties the
+  same weak controlled floor as the other surviving modular interfaces
+- that strengthens the current read that **local module elaboration is
+  saturated**, not just residual correction capacity
+- the next serious positive-method shot likely needs:
+  - an even more literal **Attention Editing / LLM Modules** style
+    replacement that changes the interface more globally, or
+  - a richer **dynamic token/output remapping** teacher with explicit
+    contextual alignment rather than another local top-k target

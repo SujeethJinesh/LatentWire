@@ -1220,3 +1220,66 @@ That means:
   - or a richer dynamic remapping teacher with explicit token alignment /
     interaction structure rather than another local reweighting of the same
     top-k target rows
+
+I then tested the first fuller slotted module-replacement style bridge
+directly as `bridge_ridge_qk_module_adapter`.
+
+This keeps the same grouped-subspace transport + rank-4 residual base, but it
+replaces the smaller residual / xattn bridge variants with a learned
+query-conditioned cross-attention module over live K/V-side transport signals
+plus learned bridge slots, followed by a nonlinear readout trained with
+calibration-time top-k prediction distillation.
+
+On the same 64-prompt calibration slice, offline fit remained:
+
+- `K` cosine `0.870`, relative Frobenius error `0.468`
+- `V` cosine `0.397`, relative Frobenius error `0.907`
+
+Under the matched-bytes fair controlled regime, the held-out reads were:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- even a fuller slotted attention-side transfer module still only ties the
+  same controlled floor as the other weakly-alive modular branches
+- so the current local interface-elaboration lane is now looking saturated,
+  not just the tiny residual lane
+- the next serious method pivots should now be even more concrete:
+  - a more literal **Attention Editing / LLM Modules** style module
+    replacement
+  - or a richer **dynamic token/output remapping** teacher with explicit
+    contextual alignment rather than another local top-k reweighting
+
+I then tested the more literal direct-output version of that same idea as
+`bridge_ridge_qk_module_replace`.
+
+This keeps the same grouped-subspace transport + rank-4 residual base and the
+same slotted attention-side module shape, but it trains that module to predict
+the full corrected K/V directly rather than only a residual on top of the
+fixed bridge.
+
+On the same 64-prompt calibration slice, offline fit remained:
+
+- `K` cosine `0.870`, relative Frobenius error `0.468`
+- `V` cosine `0.397`, relative Frobenius error `0.907`
+
+Under the matched-bytes fair controlled regime, the held-out reads were:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- even the direct-output module-replacement variant only ties the same weak
+  controlled floor
+- so the current local module-elaboration lane is looking saturated in a
+  stronger sense than before: additive modules, contextual-teacher modules,
+  and now direct-output modules all land on the same floor
+- the next serious method pivots should now be:
+  - a more global **Attention Editing / LLM Modules** style replacement
+  - or a richer **dynamic token/output remapping** teacher with explicit
+    contextual alignment rather than another local top-k target
