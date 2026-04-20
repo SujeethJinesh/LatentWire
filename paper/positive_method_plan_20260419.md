@@ -1342,3 +1342,36 @@ That means:
   - explicit **token/span remapping** or vocabulary-side alignment before the
     bridge
   - or a more global **Attention Editing / LLM Modules** style replacement
+
+I then tested the first explicit upstream remapping branch as
+`bridge_ridge_qk_spanalign_module_replace`.
+
+This keeps the same grouped-subspace transport + rank-4 residual base and the
+same slotted attention-side module shape as `bridge_ridge_qk_module_replace`,
+but it changes calibration pairing itself: source and target samples are
+aligned by monotone overlap on the raw prompt span rather than by truncated
+absolute token position.
+
+On the same 64-prompt calibration slice, that changed the calibration geometry
+substantially:
+
+- aligned token pairs: `2702`
+- `K` cosine `0.937`, relative Frobenius error `0.334`
+- `V` cosine `0.632`, relative Frobenius error `0.763`
+
+Under the matched-bytes fair controlled regime, the held-out reads were still:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- the old same-position pairing was indeed part of the upstream problem,
+  because offline fit improves sharply once raw prompt content is aligned
+- but raw-span overlap alone is still not enough to change held-out behavior
+- so the next live remapping step should be:
+  - a **contextual** token/span alignment teacher or dynamic remapping cost,
+    not just raw prompt overlap, or
+  - a more global **Attention Editing / LLM Modules** style replacement on
+    top of the better-aligned interface

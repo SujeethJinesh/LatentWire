@@ -8,6 +8,7 @@ Telemetry source: `selector_trace` from controlled `gsm8k_eval_10` runs under th
 | module_replace | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | shared_plus_private_asym_adapter | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | shared_plus_private_dynmap_adapter | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
+| spanalign_module_replace | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | tokenbasis_replace | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | xattn_adapter | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | xattn_dynmap_adapter | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |

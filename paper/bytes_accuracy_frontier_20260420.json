@@ -146,6 +146,14 @@
   {
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
+    "family": "token-remapped attention bridge",
+    "method": "span-aligned module replace",
+    "notes": "direct-output slotted module fit from raw-prompt monotone span-aligned calibration pairs",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
     "family": "token-native attention bridge",
     "method": "token-basis replace",
     "notes": "slotted attention-side module constrained to a basis distilled from target next-token output rows",
@@ -237,6 +245,14 @@
     "family": "attention bridge",
     "method": "module replace",
     "notes": "slotted attention-side transfer module trained to predict full corrected K/V directly",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "token-remapped attention bridge",
+    "method": "span-aligned module replace",
+    "notes": "direct-output slotted module fit from raw-prompt monotone span-aligned calibration pairs",
     "split": "gsm8k_5_controlled_smoke"
   },
   {

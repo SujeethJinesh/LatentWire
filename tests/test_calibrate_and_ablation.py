@@ -58,6 +58,52 @@ class _FakeChatTokenizer(_FakeTokenizer):
         return f"chat::{enable_thinking}::{content}"
 
 
+class _FakeOffsetTokenizer(_FakeTokenizer):
+    def __init__(self) -> None:
+        super().__init__({})
+
+    def __call__(
+        self,
+        batch,
+        return_tensors="pt",
+        padding=None,
+        truncation=None,
+        max_length=None,
+        return_offsets_mapping=False,
+    ):
+        if isinstance(batch, str):
+            texts = [batch]
+            single = True
+        else:
+            texts = list(batch)
+            single = False
+        if return_offsets_mapping:
+            encoded = {
+                "input_ids": [],
+                "offset_mapping": [],
+            }
+            for text in texts:
+                if truncation and max_length is not None:
+                    text = text[:max_length]
+                encoded["input_ids"].append(list(range(len(text))))
+                encoded["offset_mapping"].append([(idx, idx + 1) for idx in range(len(text))])
+            if single:
+                return {
+                    "input_ids": encoded["input_ids"][0],
+                    "offset_mapping": encoded["offset_mapping"][0],
+                }
+            return encoded
+        lengths = {text: min(len(text), max_length or len(text)) for text in texts}
+        self.lengths_by_prompt = lengths
+        return super().__call__(
+            texts if not single else texts[0],
+            return_tensors=return_tensors,
+            padding=padding,
+            truncation=truncation,
+            max_length=max_length,
+        )
+
+
 class _FakeCache:
     def __init__(self, layers):
         self.layers = layers
@@ -1354,6 +1400,33 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_module_replace(monkeypatch
     assert args.quantization_correction_rank == 8
 
 
+def test_calibrate_parse_args_accepts_bridge_ridge_qk_spanalign_module_replace(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "bridge_ridge_qk_spanalign_module_replace",
+            "--quantization-correction-rank",
+            "8",
+        ],
+    )
+
+    args = calibrate.parse_args()
+
+    assert args.quantization_correction == "bridge_ridge_qk_spanalign_module_replace"
+    assert args.quantization_correction_rank == 8
+
+
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_tokenbasis_replace(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,
@@ -1379,6 +1452,34 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_tokenbasis_replace(monkeyp
 
     assert args.quantization_correction == "bridge_ridge_qk_tokenbasis_replace"
     assert args.quantization_correction_rank == 8
+
+
+def test_collect_aligned_prompt_position_pairs_aligns_raw_prompt_content() -> None:
+    tok = _FakeOffsetTokenizer()
+    prompt = "abc"
+    pairs = calibrate.collect_aligned_prompt_position_pairs(
+        tok,
+        tok,
+        [prompt],
+        max_length=128,
+        batch_size=1,
+        source_reasoning_mode="brief_analysis",
+        source_use_chat_template=False,
+        source_enable_thinking=None,
+        target_use_chat_template=False,
+        target_enable_thinking=None,
+    )
+
+    src_text = calibrate._prepare_prompt_text(
+        prompt,
+        reasoning_mode="brief_analysis",
+        tokenizer=tok,
+        use_chat_template=False,
+        enable_thinking=None,
+    )
+    src_start = src_text.find(prompt)
+
+    assert pairs == [[(src_start + 0, 0), (src_start + 1, 1), (src_start + 2, 2)]]
 
 
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_sae_adapter(monkeypatch) -> None:
