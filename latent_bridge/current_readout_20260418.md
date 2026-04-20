@@ -2340,3 +2340,29 @@ Interpretation:
   - add span-level / likelihood-style alignment losses,
   - and keep the same fair controlled readout to test whether the smoke lift
     becomes real held-out signal
+
+And a seventy-second dynamic-program alignment diagnostic:
+
+> I then implemented `bridge_ridge_qk_dpalign_module_replace`, which keeps
+> the same direct-output slotted attention-side module as
+> `bridge_ridge_qk_module_replace` but swaps the local source-to-target
+> mixtures for a **global monotone dynamic-program alignment** scored by the
+> same local span/context agreement plus next-token output overlap.
+>
+> On a smaller 16-prompt diagnostic calibration slice:
+> - dynamic-program pairs: `660`
+> - mean pairs per prompt: `41.25`
+> - `K` cosine `0.948`, relative Frobenius error `0.304`
+> - `V` cosine `0.699`, relative Frobenius error `0.697`
+>
+> The first fair smoke read was a clean negative:
+> - `gsm8k_5`: `0.000000` at `686,026.600` average bytes
+
+Interpretation:
+
+- making the remapping **global and monotone** does improve the offline fit
+  geometry again
+- but the first diagnostic version still dies on the first held-out smoke
+- so the local scorer was not the only issue:
+  - a stronger **teacher/loss** is still the next live lane,
+  - not merely a better alignment solver over the same local scores

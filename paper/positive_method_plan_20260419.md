@@ -1439,3 +1439,32 @@ That means:
   - multi-view remapping losses,
   - or a stronger dynamic matching rule before pivoting to a broader module
     replacement
+
+I then ran a smaller diagnostic on the first explicit **global monotone**
+alignment variant as `bridge_ridge_qk_dpalign_module_replace`.
+
+This keeps the same direct-output slotted module as
+`bridge_ridge_qk_module_replace`, but instead of fitting against local
+token-mixtures it builds a **global monotone dynamic-program alignment** using
+the same context-plus-output score that powered `dynalign`.
+
+On a 16-prompt diagnostic calibration slice:
+
+- dynamic-program pairs: `660`
+- mean pairs per prompt: `41.25`
+- `K` cosine `0.948`, relative Frobenius error `0.304`
+- `V` cosine `0.699`, relative Frobenius error `0.697`
+
+Held-out diagnostic read:
+
+- `gsm8k_5`: `0.0000`
+
+That means:
+
+- improving the alignment **solver** alone is not enough
+- the dynalign signal is therefore still best interpreted as a **teacher**
+  improvement, not just an alignment-path improvement
+- so the next method step should stay on:
+  - span-level / likelihood-style teachers,
+  - multi-view remapping losses,
+  - or byte/token shared interfaces before another global solver pivot
