@@ -107,9 +107,11 @@ class TranslatorConfig:
     pre_quant_shrinkage: float = 0.0
 
     # Optional decoder-side correction after quantize/dequantize. `affine`
-    # learns a diagonal scale+bias, while `ridge` learns a full linear map
-    # plus bias in rotated target space.
+    # learns a diagonal scale+bias, `ridge` learns a full linear map plus bias
+    # in rotated target space, and `low_rank` learns a reduced-rank linear map
+    # plus bias as a tiny bridge adapter.
     quantization_correction: str = "none"
+    quantization_correction_rank: int | None = None
 
     # Fusion rule for combining target and translated K/V. 'static' keeps the
     # checkpointed scalar gates as-is; cosine-based rules attenuate translated
@@ -1134,6 +1136,36 @@ class RotAlignKVTranslator(nn.Module):
             bias.to(dtype=target.dtype, device=target.device),
         )
 
+    def _fit_low_rank_correction(
+        self,
+        quantized: torch.Tensor,
+        target: torch.Tensor,
+        *,
+        rank: int | None,
+        lam: float,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        q = quantized.float()
+        y = target.float()
+        q_mean = q.mean(dim=0, keepdim=True)
+        y_mean = y.mean(dim=0, keepdim=True)
+        q_center = q - q_mean
+        y_center = y - y_mean
+        if rank is None:
+            rank = min(8, q_center.shape[1], y_center.shape[1])
+        rank = max(1, min(int(rank), min(q_center.shape[1], y_center.shape[1])))
+        weight = fit_alignment(
+            q_center,
+            y_center,
+            method="reduced_rank",
+            lam=lam,
+            rank=rank,
+        )
+        bias = y_mean - q_mean @ weight
+        return (
+            weight.to(dtype=target.dtype, device=target.device),
+            bias.to(dtype=target.dtype, device=target.device),
+        )
+
     def _fit_coordinate_fuser(
         self,
         translated: torch.Tensor,
@@ -1255,7 +1287,7 @@ class RotAlignKVTranslator(nn.Module):
             raise ValueError(f"Unknown correction kind: {kind}")
         if self.config.quantization_correction == "affine":
             return x * scale.to(device=x.device, dtype=x.dtype) + bias.to(device=x.device, dtype=x.dtype)
-        if self.config.quantization_correction == "ridge":
+        if self.config.quantization_correction in {"ridge", "low_rank"}:
             return x @ proj.to(device=x.device, dtype=x.dtype) + bias.to(device=x.device, dtype=x.dtype)
         raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
@@ -1702,6 +1734,23 @@ class RotAlignKVTranslator(nn.Module):
             elif self.config.quantization_correction == "ridge":
                 proj_k, bias_k = self._fit_ridge_correction(K_quant, Yk_fit, lam=self.config.ridge_lambda)
                 proj_v, bias_v = self._fit_ridge_correction(V_quant, Yv_fit, lam=self.config.ridge_lambda)
+                self.quant_proj_K[tgt_l].data.copy_(proj_k.to(self.quant_proj_K[tgt_l].dtype))
+                self.quant_proj_V[tgt_l].data.copy_(proj_v.to(self.quant_proj_V[tgt_l].dtype))
+                self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
+                self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
+            elif self.config.quantization_correction == "low_rank":
+                proj_k, bias_k = self._fit_low_rank_correction(
+                    K_quant,
+                    Yk_fit,
+                    rank=self.config.quantization_correction_rank,
+                    lam=self.config.ridge_lambda,
+                )
+                proj_v, bias_v = self._fit_low_rank_correction(
+                    V_quant,
+                    Yv_fit,
+                    rank=self.config.quantization_correction_rank,
+                    lam=self.config.ridge_lambda,
+                )
                 self.quant_proj_K[tgt_l].data.copy_(proj_k.to(self.quant_proj_K[tgt_l].dtype))
                 self.quant_proj_V[tgt_l].data.copy_(proj_v.to(self.quant_proj_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))

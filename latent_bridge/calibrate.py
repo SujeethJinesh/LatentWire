@@ -231,9 +231,15 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--quantization-correction",
-        choices=["none", "affine", "ridge"],
+        choices=["none", "affine", "ridge", "low_rank"],
         default="none",
         help="Optional decoder-side correction applied after quantize/dequantize",
+    )
+    p.add_argument(
+        "--quantization-correction-rank",
+        type=int,
+        default=None,
+        help="Optional rank for low-rank decoder-side correction after quantize/dequantize",
     )
     p.add_argument(
         "--learned-fusion-dropout",
@@ -1034,6 +1040,7 @@ def main() -> None:
         pre_quant_rank=args.pre_quant_rank,
         pre_quant_shrinkage=args.pre_quant_shrinkage,
         quantization_correction=args.quantization_correction,
+        quantization_correction_rank=args.quantization_correction_rank,
         learned_fusion_dropout=args.learned_fusion_dropout,
         seed=args.seed,
     )

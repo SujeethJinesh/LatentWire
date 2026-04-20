@@ -1255,3 +1255,28 @@ Interpretation:
 - if the positive-method lane stays alive, the next real shot has to be a
   query-conditioned transport or a tiny learned bridge, not another evaluator-
   side overlay on a frozen map
+
+And a thirty-third low-rank bridge-correction update:
+
+> I then added a tiny decoder-side low-rank bridge correction after
+> quantize/dequantize, keeping the same grouped-subspace transport, the same
+> rank-4 residual, and the same head-selection ratio. This new branch uses a
+> reduced-rank linear correction (`rank=8`) in rotated target space instead of
+> the older affine or full-ridge decoder repair. On the `64`-prompt
+> calibration slice (`.debug/head_prior_64.txt`), the checkpoint fit looked
+> similar to the old grouped-subspace family (`K` cosine `0.881`, relative
+> Frobenius error `0.452`; `V` cosine `0.399`, relative Frobenius error
+> `0.915`). The first matched sparse `gsm8k_5` smoke then reached `0.200000`
+> at `298,063.425` average bytes, but the follow-up matched sparse
+> `gsm8k_eval_10` slice fell back to `0.000000` at `297,233.538` average
+> bytes.
+
+Interpretation:
+
+- this is the first adapter-style branch in a while with any nonzero held-out
+  smoke signal at all, but it is not yet stable
+- the low-rank bridge lane is therefore weakly alive, but currently too
+  byte-heavy and too unstable to count as a real method win
+- if the positive-method lane stays alive, a tiny learned bridge is still more
+  promising than another evaluator overlay, but it likely needs either
+  query-conditioning or a better training target to stabilize

@@ -1268,6 +1268,64 @@ def test_fit_from_pairs_ridge_correction_reduces_quantized_error(monkeypatch) ->
     assert not torch.allclose(tr_ridge.quant_proj_K[0], torch.eye(tr_ridge.d_t))
 
 
+def test_fit_from_pairs_low_rank_correction_reduces_quantized_error(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "GaussianQuantizer", _OffsetQuantizer)
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    cfg_none = translator_mod.TranslatorConfig(
+        src_head_dim=2,
+        src_num_heads=2,
+        num_src_layers=1,
+        tgt_head_dim=2,
+        tgt_num_heads=2,
+        num_tgt_layers=1,
+        quantization_correction="none",
+        ridge_lambda=1e-4,
+    )
+    cfg_low_rank = translator_mod.TranslatorConfig(
+        src_head_dim=2,
+        src_num_heads=2,
+        num_src_layers=1,
+        tgt_head_dim=2,
+        tgt_num_heads=2,
+        num_tgt_layers=1,
+        quantization_correction="low_rank",
+        quantization_correction_rank=1,
+        ridge_lambda=1e-4,
+    )
+    tr_none = RotAlignKVTranslator(cfg_none)
+    tr_low_rank = RotAlignKVTranslator(cfg_low_rank)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr_none.fit_from_pairs(src_kvs, tgt_kvs)
+    tr_low_rank.fit_from_pairs(src_kvs, tgt_kvs)
+
+    K_none, _ = tr_none.translate_layer(base, base + 0.5, tgt_layer_idx=0, quantize=True)
+    K_low_rank, _ = tr_low_rank.translate_layer(base, base + 0.5, tgt_layer_idx=0, quantize=True)
+    target = base * 1.5
+
+    err_none = (K_none - target).pow(2).mean()
+    err_low_rank = (K_low_rank - target).pow(2).mean()
+
+    assert err_low_rank < err_none
+    assert not torch.allclose(tr_low_rank.quant_proj_K[0], torch.eye(tr_low_rank.d_t))
+
+
 def test_fit_from_pairs_with_learned_affine_and_no_quant_correction_does_not_crash(monkeypatch) -> None:
     monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
 

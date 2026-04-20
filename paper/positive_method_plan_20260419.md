@@ -225,3 +225,24 @@ That means:
 - if the positive-method lane stays alive, the next real shot should be a
   query-conditioned transport or tiny learned bridge, not another evaluator-side
   overlay on a frozen map
+
+I then tried exactly that tiny bridge lane: a decoder-side low-rank correction
+after quantize/dequantize on top of the same grouped-subspace transport and the
+same rank-4 transport residual. This new `low_rank` quantization correction is
+a reduced-rank linear repair in rotated target space (`rank=8`), meant to act
+as a small bridge adapter rather than a full learned projector. On the `64`-
+prompt calibration slice, the resulting checkpoint was the first adapter-style
+branch in a while to show any nonzero held-out smoke signal: it reached
+`0.2000` on the first matched sparse `gsm8k_5` check. But the larger matched
+`gsm8k_eval_10` follow-up dropped back to `0.0000`, while staying roughly
+twice as expensive in bytes as the older grouped-subspace-plus-rank4 branch.
+
+That means:
+
+- the tiny learned bridge lane is still more promising than another evaluator
+  overlay, because it at least produced the first weak positive smoke
+- but the current low-rank bridge is not yet stable enough to claim a real
+  method improvement
+- if we keep pushing the positive-method story, the next adapter-style step
+  should add either live query-conditioning or a better interaction-level
+  training target, not just a static low-rank correction
