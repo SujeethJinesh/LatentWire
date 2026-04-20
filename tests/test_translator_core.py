@@ -1501,6 +1501,71 @@ def test_fit_bridge_ridge_correction_accepts_sample_weights(monkeypatch) -> None
     assert err_w <= err_u + 1e-6
 
 
+def test_fit_bridge_ridge_query_projector_correction_uses_query_features(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+    tr = RotAlignKVTranslator(
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_projector",
+            ridge_lambda=1e-4,
+        )
+    )
+
+    quantized = torch.tensor(
+        [
+            [1.0, 0.0, 0.5, 0.0],
+            [1.0, 0.0, 0.5, 0.0],
+            [0.0, 1.0, 0.0, 0.5],
+            [0.0, 1.0, 0.0, 0.5],
+        ],
+        dtype=torch.float32,
+    )
+    predicted = quantized.clone()
+    query_features = torch.tensor(
+        [
+            [1.0, 0.0, 1.0, 0.0],
+            [2.0, 0.0, 2.0, 0.0],
+            [0.0, 1.0, 0.0, 1.0],
+            [0.0, 2.0, 0.0, 2.0],
+        ],
+        dtype=torch.float32,
+    )
+    target = quantized + quantized * query_features
+
+    proj_b, aux_b, bias_b = tr._fit_bridge_ridge_correction(
+        quantized,
+        predicted,
+        target,
+        lam=1e-4,
+    )
+    proj_q, aux_q, q_proj, q_aux_proj, bias_q = tr._fit_bridge_ridge_query_projector_correction(
+        quantized,
+        predicted,
+        query_features,
+        target,
+        lam=1e-4,
+    )
+
+    pred_b = quantized @ proj_b + predicted @ aux_b + bias_b
+    pred_q = (
+        quantized @ proj_q
+        + predicted @ aux_q
+        + (quantized * query_features) @ q_proj
+        + (predicted * query_features) @ q_aux_proj
+        + bias_q
+    )
+
+    err_b = (pred_b - target).pow(2).mean()
+    err_q = (pred_q - target).pow(2).mean()
+
+    assert err_q <= err_b + 1e-6
+
+
 def test_bridge_low_rank_bank_selects_runtime_matched_expert(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

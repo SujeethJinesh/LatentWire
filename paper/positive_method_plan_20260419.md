@@ -453,3 +453,33 @@ So the positive-method lane is now narrower:
 2. stop spending cycles on attention-template or QK-routed residual banks
 3. if we keep pushing, the next serious branch should be a **query-conditioned
    bridge/projector trained against richer interaction targets**
+
+I then tried the cleanest remaining “query-conditioned projector” version:
+`bridge_ridge_qk_projector`. This branch feeds aligned target query features
+directly into the bridge itself, rather than using them only for routing or
+sample weighting. Concretely, it fits the bridge over both the translated
+state and the elementwise query-conditioned translated state.
+
+That is the first genuinely query-conditioned bridge **inside the translator**
+rather than another evaluator overlay or residual bank.
+
+Held-out result under the same fair shared-chat / `enable_thinking=False`
+regime:
+
+- `gsm8k_5`: `0.0000`
+
+That means:
+
+- richer live query features alone are still **not** enough when the bridge is
+  still trained against plain latent targets
+- the remaining positive-method lane is now even narrower than before:
+  if we keep pushing, the next serious bridge attempt should change the
+  **training target**, not only the featureization or routing
+
+So the strongest next step is now:
+
+1. keep the fair Qwen control on
+2. stop spending cycles on more latent-regression bridge gates, banks, or
+   query projectors
+3. move to a **token-interaction / affinity / attention-behavior distillation**
+   bridge target

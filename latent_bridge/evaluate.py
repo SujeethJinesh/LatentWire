@@ -884,6 +884,29 @@ def _qk_position_distributions(
     return probs / probs.sum(dim=-1, keepdim=True).clamp_min(1e-8)
 
 
+def _query_feature_vector(
+    query_heads: torch.Tensor,
+    *,
+    target_heads: int,
+    head_dim: int,
+) -> torch.Tensor:
+    if query_heads.ndim == 3:
+        if query_heads.shape[0] != 1:
+            raise ValueError(f"query_heads batch dimension must be 1, got shape {tuple(query_heads.shape)}")
+        query_heads = query_heads.squeeze(0)
+    if query_heads.ndim != 2:
+        raise ValueError(f"query_heads must be rank-2 [heads, dim], got shape {tuple(query_heads.shape)}")
+    if query_heads.shape[0] != target_heads:
+        raise ValueError(
+            f"query_heads head count {query_heads.shape[0]} does not match target_heads {target_heads}"
+        )
+    if query_heads.shape[1] != head_dim:
+        raise ValueError(
+            f"query_heads dim {query_heads.shape[1]} does not match head_dim {head_dim}"
+        )
+    return query_heads.float().reshape(1, 1, target_heads * head_dim)
+
+
 @torch.no_grad()
 def _mean_head_qk_templates_from_prompts(
     model,
@@ -1667,6 +1690,7 @@ def _translate_layer_with_optional_runtime_attention(
     quantize: bool,
     quantization_control: str,
     runtime_attention_profile: torch.Tensor | None,
+    runtime_query_features: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     try:
         return translator.translate_layer(
@@ -1676,9 +1700,10 @@ def _translate_layer_with_optional_runtime_attention(
             quantize=quantize,
             quantization_control=quantization_control,
             runtime_attention_profile=runtime_attention_profile,
+            runtime_query_features=runtime_query_features,
         )
     except TypeError as exc:
-        if "runtime_attention_profile" not in str(exc):
+        if "runtime_attention_profile" not in str(exc) and "runtime_query_features" not in str(exc):
             raise
         return translator.translate_layer(
             K_s,
@@ -2876,7 +2901,7 @@ def _build_rotalign_prefix_state(
         "attention_qk_template_transport_shuffled",
         "attention_qk_bank_transport",
         "attention_qk_bank_transport_shuffled",
-    } or translator.config.quantization_correction == "bridge_ridge_qk_residual_bank":
+    } or translator.config.quantization_correction in {"bridge_ridge_qk_residual_bank", "bridge_ridge_qk_projector"}:
         layer_query_heads = _last_token_query_heads(
             target_model,
             tgt_last_token,
@@ -2986,6 +3011,7 @@ def _build_rotalign_prefix_state(
         K_s, V_s = _apply_source_kv_control(K_s, V_s, source_kv_control, tgt_l)
         K_t, V_t = tgt_pkv[tgt_l]
         runtime_attention_profile = None
+        runtime_query_features = None
         if translator.config.quantization_correction == "bridge_ridge_qk_residual_bank":
             if layer_query_heads is None:
                 raise ValueError("bridge_ridge_qk_residual_bank requires live query heads")
@@ -2994,6 +3020,14 @@ def _build_rotalign_prefix_state(
                 K_t.to(device=device, dtype=torch.float32),
                 bins=translator.config.transport_template_bins,
             ).mean(dim=0)
+        elif translator.config.quantization_correction == "bridge_ridge_qk_projector":
+            if layer_query_heads is None:
+                raise ValueError("bridge_ridge_qk_projector requires live query heads")
+            runtime_query_features = _query_feature_vector(
+                layer_query_heads[tgt_l],
+                target_heads=translator.config.tgt_num_heads,
+                head_dim=translator.config.tgt_head_dim,
+            )
         elif layer_attention_maps is not None:
             runtime_attention_profile = _resample_position_profile(
                 layer_attention_maps[tgt_l].mean(dim=0),
@@ -3007,6 +3041,7 @@ def _build_rotalign_prefix_state(
             quantize=quantize,
             quantization_control=quantization_control,
             runtime_attention_profile=runtime_attention_profile,
+            runtime_query_features=runtime_query_features,
         )
         K_hat, V_hat = _apply_translated_kv_control(
             K_hat,

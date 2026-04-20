@@ -1491,3 +1491,28 @@ Interpretation:
 - the bridge lane remains weakly alive, but the next serious attempt should
   probably move from weighted latent regression to a **richer interaction /
   affinity distillation target**
+
+And a forty-second query-feature projector update:
+
+> I then tried the first genuinely query-conditioned bridge inside the
+> translator itself: `bridge_ridge_qk_projector`. Instead of using live query
+> structure only as a gate, bank router, or calibration weight, this branch
+> feeds aligned target query features directly into the decoder-side bridge by
+> fitting a correction over both the translated state and the elementwise
+> query-conditioned translated state. The checkpoint still sits on top of the
+> same grouped-subspace transport + rank-4 residual and the same fair shared-
+> chat / `enable_thinking=False` regime. Calibration fit again matched the
+> older grouped-subspace family (`K` cosine `0.864`, relative Frobenius error
+> `0.476`; `V` cosine `0.381`, relative Frobenius error `0.915`), but the
+> first held-out fair smoke still collapsed:
+> - `gsm8k_5`: `0.000000` at `722,107.700` average bytes
+
+Interpretation:
+
+- simply injecting live query features into a closed-form bridge projector is
+  **not** enough in this first form
+- that makes the blocker more precise: the missing ingredient is likely **not**
+  just richer routing or richer live query features
+- the next plausible bridge step now has to change the **supervision target**
+  more substantially, likely toward token-interaction / affinity distillation,
+  rather than another latent-regression projector variant

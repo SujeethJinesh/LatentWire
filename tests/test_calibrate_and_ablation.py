@@ -373,6 +373,29 @@ def test_collect_aligned_qk_position_weights_matches_aligned_lengths() -> None:
     assert abs(float(layer0.mean().item()) - 1.0) < 1e-5
 
 
+def test_collect_aligned_query_features_matches_aligned_lengths() -> None:
+    model = _FakeAttentionModel()
+    tokenizer = _FakeTokenizer({"a": 4, "b": 3})
+
+    features = calibrate.collect_aligned_query_features(
+        model,
+        tokenizer,
+        ["a", "b"],
+        aligned_lengths=[4, 3],
+        max_length=4,
+        batch_size=2,
+        device="cpu",
+        kv_heads=2,
+        head_dim=2,
+    )
+
+    assert len(features) == 1
+    layer0 = features[0]
+    assert layer0.shape == (7, 4)
+    assert torch.isfinite(layer0).all()
+    assert layer0.abs().sum() > 0
+
+
 def test_calibrate_config_helpers_parse_and_batch() -> None:
     assert calibrate.torch_dtype("float32") is torch.float32
     assert calibrate.torch_dtype("float16") is torch.float16

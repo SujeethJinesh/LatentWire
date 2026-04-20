@@ -118,9 +118,10 @@ class TranslatorConfig:
     # top, `bridge_ridge_qk_residual_bank` swaps that routing signal for a live
     # QK/retrieval profile, `bridge_ridge_qk_weighted` keeps the global bridge
     # but fits it with calibration samples reweighted by target retrieval
-    # importance, `ridge` learns a full linear map plus bias in rotated target
-    # space, and `low_rank` learns a reduced-rank linear map plus bias as a
-    # tiny bridge adapter.
+    # importance, `bridge_ridge_qk_projector` feeds live query-conditioned
+    # projector features directly into the bridge itself, `ridge` learns a full
+    # linear map plus bias in rotated target space, and `low_rank` learns a
+    # reduced-rank linear map plus bias as a tiny bridge adapter.
     quantization_correction: str = "none"
     quantization_correction_rank: int | None = None
     bridge_bank_size: int = 4
@@ -259,6 +260,7 @@ class RotAlignKVTranslator(nn.Module):
         self._bridge_prompt_cluster_labels: list[torch.Tensor] | None = None
         self._bridge_sample_prompt_ids: torch.Tensor | None = None
         self._bridge_sample_weights: list[torch.Tensor] | None = None
+        self._bridge_sample_query_features: list[torch.Tensor] | None = None
         self.register_buffer(
             "bridge_runtime_templates",
             torch.zeros(config.num_tgt_layers, config.transport_template_bins, dtype=torch.float32),
@@ -307,6 +309,18 @@ class RotAlignKVTranslator(nn.Module):
             [nn.Parameter(torch.zeros(self.d_t, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_aux_proj_V = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_proj_K = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_proj_V = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_aux_proj_K = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_aux_proj_V = nn.ParameterList(
             [nn.Parameter(torch.zeros(self.d_t, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_bias_K = nn.ParameterList(
@@ -1341,6 +1355,56 @@ class RotAlignKVTranslator(nn.Module):
             bias.to(dtype=target.dtype, device=target.device),
         )
 
+    def _fit_bridge_ridge_query_projector_correction(
+        self,
+        quantized: torch.Tensor,
+        predicted: torch.Tensor,
+        query_features: torch.Tensor,
+        target: torch.Tensor,
+        *,
+        lam: float,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        qfeat = query_features.float()
+        if qfeat.shape != quantized.shape:
+            raise ValueError(
+                "query_features must match quantized/predicted bridge samples, "
+                f"got {tuple(qfeat.shape)} vs {tuple(quantized.shape)}"
+            )
+        x = torch.cat(
+            [
+                quantized.float(),
+                predicted.float(),
+                quantized.float() * qfeat,
+                predicted.float() * qfeat,
+            ],
+            dim=-1,
+        )
+        y = target.float()
+        x_mean = x.mean(dim=0, keepdim=True)
+        y_mean = y.mean(dim=0, keepdim=True)
+        x_center = x - x_mean
+        y_center = y - y_mean
+        xtx = x_center.T @ x_center
+        eye = torch.eye(xtx.shape[0], dtype=xtx.dtype, device=xtx.device)
+        rhs = x_center.T @ y_center
+        system = xtx + lam * eye
+        try:
+            weight = torch.linalg.solve(system, rhs)
+        except RuntimeError:
+            weight = torch.linalg.pinv(system) @ rhs
+        bias = y_mean - x_mean @ weight
+        q_weight = weight[: self.d_t]
+        aux_weight = weight[self.d_t : 2 * self.d_t]
+        q_query_weight = weight[2 * self.d_t : 3 * self.d_t]
+        aux_query_weight = weight[3 * self.d_t :]
+        return (
+            q_weight.to(dtype=target.dtype, device=target.device),
+            aux_weight.to(dtype=target.dtype, device=target.device),
+            q_query_weight.to(dtype=target.dtype, device=target.device),
+            aux_query_weight.to(dtype=target.dtype, device=target.device),
+            bias.to(dtype=target.dtype, device=target.device),
+        )
+
     def _factorize_low_rank_matrix(
         self,
         weight: torch.Tensor,
@@ -1705,6 +1769,27 @@ class RotAlignKVTranslator(nn.Module):
             prepared.append(vec)
         self._bridge_sample_weights = prepared
 
+    def set_bridge_sample_query_features(self, sample_query_features: Sequence[torch.Tensor]) -> None:
+        if len(sample_query_features) != self.config.num_tgt_layers:
+            raise ValueError(
+                f"Expected {self.config.num_tgt_layers} bridge sample-query tensors, got {len(sample_query_features)}"
+            )
+        prepared: list[torch.Tensor] = []
+        for layer_idx, features in enumerate(sample_query_features):
+            mat = features.detach().to("cpu", dtype=torch.float32)
+            if mat.ndim != 2:
+                raise ValueError(
+                    f"Bridge sample query features at layer {layer_idx} must be rank-2 [samples, d_t], got {tuple(mat.shape)}"
+                )
+            if mat.shape[1] != self.d_t:
+                raise ValueError(
+                    f"Bridge sample query features at layer {layer_idx} expected width {self.d_t}, got {mat.shape[1]}"
+                )
+            if not bool(torch.isfinite(mat).all()):
+                raise ValueError(f"Bridge sample query features at layer {layer_idx} must be finite")
+            prepared.append(mat)
+        self._bridge_sample_query_features = prepared
+
     def _bridge_runtime_gate(
         self,
         tgt_layer_idx: int,
@@ -1767,6 +1852,7 @@ class RotAlignKVTranslator(nn.Module):
         *,
         aux_input: torch.Tensor | None = None,
         runtime_profile: torch.Tensor | None = None,
+        runtime_query_features: torch.Tensor | None = None,
     ) -> torch.Tensor:
         if self.config.quantization_correction == "none":
             return x
@@ -1775,6 +1861,8 @@ class RotAlignKVTranslator(nn.Module):
             aux_scale = self.quant_aux_scale_K[tgt_layer_idx]
             proj = self.quant_proj_K[tgt_layer_idx]
             aux_proj = self.quant_aux_proj_K[tgt_layer_idx]
+            query_proj = self.quant_query_proj_K[tgt_layer_idx]
+            query_aux_proj = self.quant_query_aux_proj_K[tgt_layer_idx]
             bias = self.quant_bias_K[tgt_layer_idx]
             bank_left = self.bridge_bank_proj_K_left[tgt_layer_idx]
             bank_right = self.bridge_bank_proj_K_right[tgt_layer_idx]
@@ -1786,6 +1874,8 @@ class RotAlignKVTranslator(nn.Module):
             aux_scale = self.quant_aux_scale_V[tgt_layer_idx]
             proj = self.quant_proj_V[tgt_layer_idx]
             aux_proj = self.quant_aux_proj_V[tgt_layer_idx]
+            query_proj = self.quant_query_proj_V[tgt_layer_idx]
+            query_aux_proj = self.quant_query_aux_proj_V[tgt_layer_idx]
             bias = self.quant_bias_V[tgt_layer_idx]
             bank_left = self.bridge_bank_proj_V_left[tgt_layer_idx]
             bank_right = self.bridge_bank_proj_V_right[tgt_layer_idx]
@@ -1810,6 +1900,53 @@ class RotAlignKVTranslator(nn.Module):
             return (
                 x @ proj.to(device=x.device, dtype=x.dtype)
                 + aux_input @ aux_proj.to(device=x.device, dtype=x.dtype)
+                + bias.to(device=x.device, dtype=x.dtype)
+            )
+        if self.config.quantization_correction == "bridge_ridge_qk_projector":
+            if aux_input is None:
+                raise ValueError("bridge_ridge_qk_projector quantization correction requires aux_input")
+            if runtime_query_features is None:
+                raise ValueError("bridge_ridge_qk_projector quantization correction requires runtime_query_features")
+            qfeat = runtime_query_features.to(device=x.device, dtype=x.dtype)
+            if x.ndim == 2:
+                if qfeat.ndim == 3 and qfeat.shape[1] == 1:
+                    qfeat = qfeat.squeeze(1)
+                if qfeat.ndim != 2:
+                    raise ValueError(
+                        "runtime_query_features must have shape [samples, d_t] for calibration-time projector correction, "
+                        f"got {tuple(qfeat.shape)}"
+                    )
+                if qfeat.shape != x.shape:
+                    raise ValueError(
+                        "runtime_query_features must align with calibration bridge samples, "
+                        f"got {tuple(qfeat.shape)} vs {tuple(x.shape)}"
+                    )
+            elif qfeat.ndim == 2:
+                qfeat = qfeat.unsqueeze(0)
+            if x.ndim == 3 and qfeat.ndim != 3:
+                raise ValueError(
+                    "runtime_query_features must have shape [seq, d_t] or [batch, seq, d_t], "
+                    f"got {tuple(qfeat.shape)}"
+                )
+            if qfeat.shape[-1] != self.d_t:
+                raise ValueError(
+                    f"runtime_query_features width {qfeat.shape[-1]} does not match target width {self.d_t}"
+                )
+            if x.ndim == 3:
+                if qfeat.shape[0] == 1 and x.shape[0] != 1:
+                    qfeat = qfeat.expand(x.shape[0], -1, -1)
+                if qfeat.shape[1] == 1 and x.shape[1] != 1:
+                    qfeat = qfeat.expand(-1, x.shape[1], -1)
+                if qfeat.shape[:2] != x.shape[:2]:
+                    raise ValueError(
+                        "runtime_query_features must align with translated samples, "
+                        f"got {tuple(qfeat.shape[:2])} vs {tuple(x.shape[:2])}"
+                    )
+            return (
+                x @ proj.to(device=x.device, dtype=x.dtype)
+                + aux_input @ aux_proj.to(device=x.device, dtype=x.dtype)
+                + (x * qfeat) @ query_proj.to(device=x.device, dtype=x.dtype)
+                + (aux_input * qfeat) @ query_aux_proj.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
         if self.config.quantization_correction == "bridge_ridge_query":
@@ -1872,6 +2009,7 @@ class RotAlignKVTranslator(nn.Module):
         quantize: bool = True,
         quantization_control: str = "real",
         runtime_attention_profile: torch.Tensor | None = None,
+        runtime_query_features: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Translate one source layer's KV into the target's KV space.
 
@@ -1932,6 +2070,7 @@ class RotAlignKVTranslator(nn.Module):
                     "K",
                     aux_input=K_pred,
                     runtime_profile=runtime_attention_profile,
+                    runtime_query_features=runtime_query_features,
                 )
                 V_t_rot = self._apply_quantization_correction(
                     V_q,
@@ -1939,6 +2078,7 @@ class RotAlignKVTranslator(nn.Module):
                     "V",
                     aux_input=V_pred,
                     runtime_profile=runtime_attention_profile,
+                    runtime_query_features=runtime_query_features,
                 )
             elif quantization_control == "matched_noise":
                 def add_matched_noise(x: torch.Tensor, q: torch.Tensor, salt: int) -> torch.Tensor:
@@ -1948,6 +2088,7 @@ class RotAlignKVTranslator(nn.Module):
                         "K" if salt == 0 else "V",
                         aux_input=x,
                         runtime_profile=runtime_attention_profile,
+                        runtime_query_features=runtime_query_features,
                     )
                     err = (q - x).detach().float()
                     mean = float(err.mean().detach().cpu())
@@ -2312,6 +2453,10 @@ class RotAlignKVTranslator(nn.Module):
             self.quant_proj_V[tgt_l].data.copy_(torch.eye(self.d_t, dtype=self.quant_proj_V[tgt_l].dtype))
             self.quant_aux_proj_K[tgt_l].data.zero_()
             self.quant_aux_proj_V[tgt_l].data.zero_()
+            self.quant_query_proj_K[tgt_l].data.zero_()
+            self.quant_query_proj_V[tgt_l].data.zero_()
+            self.quant_query_aux_proj_K[tgt_l].data.zero_()
+            self.quant_query_aux_proj_V[tgt_l].data.zero_()
             self.quant_bias_K[tgt_l].data.zero_()
             self.quant_bias_V[tgt_l].data.zero_()
             self.bridge_bank_proj_K_left[tgt_l].data.zero_()
@@ -2344,7 +2489,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_weighted"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector"}:
                 sample_weights = None
                 if self.config.quantization_correction == "bridge_ridge_qk_weighted":
                     if self._bridge_sample_weights is None:
@@ -2353,20 +2498,46 @@ class RotAlignKVTranslator(nn.Module):
                             "call set_bridge_sample_weights() before fit_from_pairs"
                         )
                     sample_weights = self._bridge_sample_weights[tgt_l].to(device=Xk.device)
-                proj_k, aux_proj_k, bias_k = self._fit_bridge_ridge_correction(
-                    K_quant,
-                    K_pred,
-                    Yk_fit,
-                    lam=self.config.ridge_lambda,
-                    sample_weights=sample_weights,
-                )
-                proj_v, aux_proj_v, bias_v = self._fit_bridge_ridge_correction(
-                    V_quant,
-                    V_pred,
-                    Yv_fit,
-                    lam=self.config.ridge_lambda,
-                    sample_weights=sample_weights,
-                )
+                if self.config.quantization_correction == "bridge_ridge_qk_projector":
+                    if self._bridge_sample_query_features is None:
+                        raise ValueError(
+                            "bridge_ridge_qk_projector requires bridge sample query features; "
+                            "call set_bridge_sample_query_features() before fit_from_pairs"
+                        )
+                    query_features = self._bridge_sample_query_features[tgt_l].to(device=Xk.device)
+                    proj_k, aux_proj_k, query_proj_k, query_aux_proj_k, bias_k = self._fit_bridge_ridge_query_projector_correction(
+                        K_quant,
+                        K_pred,
+                        query_features,
+                        Yk_fit,
+                        lam=self.config.ridge_lambda,
+                    )
+                    proj_v, aux_proj_v, query_proj_v, query_aux_proj_v, bias_v = self._fit_bridge_ridge_query_projector_correction(
+                        V_quant,
+                        V_pred,
+                        query_features,
+                        Yv_fit,
+                        lam=self.config.ridge_lambda,
+                    )
+                    self.quant_query_proj_K[tgt_l].data.copy_(query_proj_k.to(self.quant_query_proj_K[tgt_l].dtype))
+                    self.quant_query_proj_V[tgt_l].data.copy_(query_proj_v.to(self.quant_query_proj_V[tgt_l].dtype))
+                    self.quant_query_aux_proj_K[tgt_l].data.copy_(query_aux_proj_k.to(self.quant_query_aux_proj_K[tgt_l].dtype))
+                    self.quant_query_aux_proj_V[tgt_l].data.copy_(query_aux_proj_v.to(self.quant_query_aux_proj_V[tgt_l].dtype))
+                else:
+                    proj_k, aux_proj_k, bias_k = self._fit_bridge_ridge_correction(
+                        K_quant,
+                        K_pred,
+                        Yk_fit,
+                        lam=self.config.ridge_lambda,
+                        sample_weights=sample_weights,
+                    )
+                    proj_v, aux_proj_v, bias_v = self._fit_bridge_ridge_correction(
+                        V_quant,
+                        V_pred,
+                        Yv_fit,
+                        lam=self.config.ridge_lambda,
+                        sample_weights=sample_weights,
+                    )
                 self.quant_proj_K[tgt_l].data.copy_(proj_k.to(self.quant_proj_K[tgt_l].dtype))
                 self.quant_proj_V[tgt_l].data.copy_(proj_v.to(self.quant_proj_V[tgt_l].dtype))
                 self.quant_aux_proj_K[tgt_l].data.copy_(aux_proj_k.to(self.quant_aux_proj_K[tgt_l].dtype))
@@ -2572,17 +2743,29 @@ class RotAlignKVTranslator(nn.Module):
             elif self.config.quantization_correction != "none":
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
+            fit_runtime_query_features = None
+            if self.config.quantization_correction == "bridge_ridge_qk_projector":
+                if self._bridge_sample_query_features is None:
+                    raise ValueError(
+                        "bridge_ridge_qk_projector requires bridge sample query features during fit; "
+                        "call set_bridge_sample_query_features() before fit_from_pairs"
+                    )
+                fit_runtime_query_features = self._bridge_sample_query_features[tgt_l].to(device=Xk.device).view(
+                    K_quant.shape[0], 1, self.d_t
+                )
             K_runtime = K_quant if self.config.quantization_correction == "none" else self._apply_quantization_correction(
                 K_quant,
                 tgt_l,
                 "K",
                 aux_input=K_pred,
+                runtime_query_features=fit_runtime_query_features,
             )
             V_runtime = V_quant if self.config.quantization_correction == "none" else self._apply_quantization_correction(
                 V_quant,
                 tgt_l,
                 "V",
                 aux_input=V_pred,
+                runtime_query_features=fit_runtime_query_features,
             )
             if self.config.use_target_whitening:
                 K_runtime = undo_whitening(

@@ -241,6 +241,7 @@ def parse_args() -> argparse.Namespace:
             "bridge_ridge_residual_bank",
             "bridge_ridge_qk_residual_bank",
             "bridge_ridge_qk_weighted",
+            "bridge_ridge_qk_projector",
             "ridge",
             "low_rank",
         ],
@@ -1288,6 +1289,84 @@ def collect_aligned_qk_position_weights(
 
 
 @torch.no_grad()
+def collect_aligned_query_features(
+    model: AutoModelForCausalLM,
+    tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    aligned_lengths: Sequence[int],
+    max_length: int,
+    batch_size: int,
+    device: str,
+    kv_heads: int,
+    head_dim: int,
+    reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
+) -> list[torch.Tensor]:
+    if len(aligned_lengths) != len(prompts):
+        raise ValueError(
+            f"aligned_lengths must match prompts, got {len(aligned_lengths)} lengths for {len(prompts)} prompts"
+        )
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    layers = _model_layers(model)
+    layer_features: list[list[torch.Tensor]] | None = None
+    prompt_offset = 0
+    for batch in batched(prompts, batch_size):
+        batch_text = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
+        enc = tokenizer(
+            batch_text,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        ).to(device)
+        out = model(**enc, use_cache=True, output_hidden_states=True, return_dict=True)
+        hidden_states = getattr(out, "hidden_states", None)
+        if hidden_states is None:
+            raise ValueError("Model did not return hidden_states while building aligned query features")
+        if layer_features is None:
+            layer_features = [[] for _ in range(min(len(layers), len(hidden_states) - 1))]
+        mask_cpu = enc["attention_mask"].to("cpu")
+        for batch_idx in range(mask_cpu.shape[0]):
+            prompt_idx = prompt_offset + batch_idx
+            valid_len = min(int(mask_cpu[batch_idx].sum().item()), int(aligned_lengths[prompt_idx]))
+            if valid_len <= 0:
+                continue
+            for layer_idx in range(len(layer_features)):
+                attn_mod = layers[layer_idx].self_attn
+                q_proj = getattr(attn_mod, "q_proj", None)
+                if q_proj is None:
+                    raise ValueError("self_attn.q_proj is required for aligned query features")
+                hidden = hidden_states[layer_idx][batch_idx, :valid_len].to(device)
+                q_flat = q_proj(hidden).detach().to("cpu", dtype=torch.float32)
+                num_query_heads = q_flat.shape[-1] // head_dim
+                if num_query_heads % kv_heads != 0:
+                    raise ValueError(
+                        f"num_query_heads={num_query_heads} must be divisible by kv_heads={kv_heads} for aligned query features"
+                    )
+                q = q_flat.view(valid_len, num_query_heads, head_dim)
+                q_per_kv = num_query_heads // kv_heads
+                q = q.view(valid_len, kv_heads, q_per_kv, head_dim).mean(dim=2)
+                layer_features[layer_idx].append(q.reshape(valid_len, kv_heads * head_dim))
+        prompt_offset += len(batch)
+    if layer_features is None or not layer_features:
+        raise ValueError("Could not build aligned query features from calibration prompts")
+    return [torch.cat(features, dim=0).cpu() for features in layer_features]
+
+
+@torch.no_grad()
 def collect_group_qk_retrieval_templates(
     model: AutoModelForCausalLM,
     tokenizer: AutoTokenizer,
@@ -1704,7 +1783,7 @@ def main() -> None:
             )
 
     aligned_lengths: list[int] | None = None
-    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_weighted"}:
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector"}:
         aligned_lengths = collect_aligned_prompt_valid_lengths(
             tok_s,
             tok_t,
@@ -1799,6 +1878,32 @@ def main() -> None:
         print(
             "Built aligned QK position weights: "
             f"layers={len(bridge_sample_weights)}, samples={int(bridge_sample_weights[0].numel())}"
+        )
+
+    if args.quantization_correction == "bridge_ridge_qk_projector":
+        assert aligned_lengths is not None
+        print(
+            "\nBuilding aligned target query features for query-conditioned bridge projector "
+            f"(width={config.tgt_num_heads * config.tgt_head_dim})..."
+        )
+        bridge_query_features = collect_aligned_query_features(
+            tgt,
+            tok_t,
+            prompts,
+            aligned_lengths=aligned_lengths,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            device=args.device,
+            kv_heads=config.tgt_num_heads,
+            head_dim=config.tgt_head_dim,
+            reasoning_mode="plain",
+            use_chat_template=args.target_use_chat_template,
+            enable_thinking=target_enable_thinking,
+        )
+        translator.set_bridge_sample_query_features(bridge_query_features)
+        print(
+            "Built aligned query features: "
+            f"layers={len(bridge_query_features)}, samples={int(bridge_query_features[0].shape[0])}"
         )
 
     print("\nFitting closed-form alignments (Procrustes / ridge)...")
