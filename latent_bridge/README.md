@@ -181,7 +181,7 @@ python scripts/calibrate.py \
 - `--pre-quant-rank N` / `--pre-quant-shrinkage A` — apply a target-space
   low-rank/shrinkage filter before quantization. This is a denoising step
   after alignment, not a replacement for the alignment solver.
-- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,ridge,low_rank}` —
+- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,bridge_ridge_qk_adapter,ridge,low_rank}` —
   optional decoder-side correction after quantize/dequantize. `affine` is a
   diagonal scale+bias repair; `bridge_affine` is a coordinatewise bridge over
   both the dequantized tensor and the pre-quant translated prediction;
@@ -195,10 +195,13 @@ python scripts/calibrate.py \
   same global `bridge_ridge` form but reweights calibration samples by target
   QK retrieval importance during fitting; `bridge_ridge_qk_projector` feeds
   aligned target query features directly into the bridge projector itself;
-  `ridge` is a small full linear correction layer in rotated target space;
-  `low_rank` is a reduced-rank bridge adapter in the same rotated target space. Pair `low_rank`,
-  `bridge_low_rank_bank`, `bridge_ridge_residual_bank`, or
-  `bridge_ridge_qk_residual_bank` with `--quantization-correction-rank <r>` to
+  `bridge_ridge_qk_adapter` keeps the same `bridge_ridge` base but learns a
+  low-rank residual adapter over query-conditioned translated features during
+  calibration; `ridge` is a small full linear correction layer in rotated
+  target space; `low_rank` is a reduced-rank bridge adapter in the same
+  rotated target space. Pair `low_rank`, `bridge_low_rank_bank`,
+  `bridge_ridge_residual_bank`, `bridge_ridge_qk_residual_bank`, or
+  `bridge_ridge_qk_adapter` with `--quantization-correction-rank <r>` to
   control the adapter size, and use `--bridge-bank-size <k>` to set the number
   of bridge experts in the banked variants.
 - `--source-use-chat-template` / `--target-use-chat-template` and

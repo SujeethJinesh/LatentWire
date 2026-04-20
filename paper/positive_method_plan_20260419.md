@@ -483,3 +483,31 @@ So the strongest next step is now:
    query projectors
 3. move to a **token-interaction / affinity / attention-behavior distillation**
    bridge target
+
+I then tried one more bridge branch before fully conceding the latent-
+regression family: `bridge_ridge_qk_adapter`. This keeps the same closed-form
+`bridge_ridge` base but adds a tiny learned low-rank residual adapter over
+query-conditioned translated features during calibration.
+
+Held-out behavior under the same fair shared-chat / `enable_thinking=False`
+regime:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.0000`
+- bytes on the controlled slice: `720,487.3`
+
+That means:
+
+- the first **learned** query-conditioned bridge residual is at least weakly
+  alive on the cheapest fair smoke
+- but it is still not stable enough to claim a positive method
+- the next serious bridge step should therefore keep the tiny learned-adapter
+  framing, but change the **training target** to an interaction/distillation
+  target rather than another latent-regression variant
+
+So the next highest-value branch is now:
+
+1. keep the fair Qwen control on
+2. keep the tiny learned bridge framing
+3. train it against **attention / affinity / interaction distillation**, not
+   plain hidden-state regression

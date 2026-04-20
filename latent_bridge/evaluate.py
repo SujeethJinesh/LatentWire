@@ -2901,7 +2901,7 @@ def _build_rotalign_prefix_state(
         "attention_qk_template_transport_shuffled",
         "attention_qk_bank_transport",
         "attention_qk_bank_transport_shuffled",
-    } or translator.config.quantization_correction in {"bridge_ridge_qk_residual_bank", "bridge_ridge_qk_projector"}:
+    } or translator.config.quantization_correction in {"bridge_ridge_qk_residual_bank", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter"}:
         layer_query_heads = _last_token_query_heads(
             target_model,
             tgt_last_token,
@@ -3020,9 +3020,9 @@ def _build_rotalign_prefix_state(
                 K_t.to(device=device, dtype=torch.float32),
                 bins=translator.config.transport_template_bins,
             ).mean(dim=0)
-        elif translator.config.quantization_correction == "bridge_ridge_qk_projector":
+        elif translator.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter"}:
             if layer_query_heads is None:
-                raise ValueError("bridge_ridge_qk_projector requires live query heads")
+                raise ValueError(f"{translator.config.quantization_correction} requires live query heads")
             runtime_query_features = _query_feature_vector(
                 layer_query_heads[tgt_l],
                 target_heads=translator.config.tgt_num_heads,

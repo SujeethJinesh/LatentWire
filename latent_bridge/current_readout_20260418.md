@@ -1516,3 +1516,29 @@ Interpretation:
 - the next plausible bridge step now has to change the **supervision target**
   more substantially, likely toward token-interaction / affinity distillation,
   rather than another latent-regression projector variant
+
+And a forty-third learned query-conditioned adapter update:
+
+> I then tried the first tiny learned query-conditioned bridge on top of the
+> same grouped-subspace transport + rank-4 residual checkpoint:
+> `bridge_ridge_qk_adapter`. This branch keeps the closed-form `bridge_ridge`
+> base but learns a low-rank residual adapter over query-conditioned translated
+> features during calibration, under the same fair shared-chat /
+> `enable_thinking=False` Qwen control. The checkpoint fit stayed in the same
+> family as the older bridge branches (`K` cosine `0.864`, relative Frobenius
+> error `0.476`; `V` cosine `0.381`, relative Frobenius error `0.915`). Held-
+> out behavior was:
+> - `gsm8k_5`: `0.200000` at `722,107.700` average bytes
+> - controlled `gsm8k_eval_10`: `0.000000` at `720,487.313` average bytes
+
+Interpretation:
+
+- this is the first **learned** query-conditioned bridge residual that stays
+  nonzero on the cheapest fair smoke, so the adapter lane is not dead-on-
+  arrival
+- but it still fails to stabilize on the next controlled held-out slice, so it
+  is not yet a real positive-method result
+- the best next step is now sharper than before: keep the fair control on, but
+  stop spending cycles on more latent-regression routing tricks and move the
+  bridge supervision target toward **attention / affinity / token-interaction
+  distillation**

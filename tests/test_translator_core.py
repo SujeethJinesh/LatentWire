@@ -1566,6 +1566,34 @@ def test_fit_bridge_ridge_query_projector_correction_uses_query_features(monkeyp
     assert err_q <= err_b + 1e-6
 
 
+def test_bridge_ridge_qk_adapter_adds_query_conditioned_residual(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_adapter",
+        quantization_correction_rank=1,
+    )
+    with torch.no_grad():
+        tr.quant_proj_K[0].copy_(torch.eye(tr.d_t))
+        tr.quant_aux_proj_K[0].zero_()
+        tr.quant_bias_K[0].zero_()
+        tr.quant_query_resid_K_left[0].copy_(torch.tensor([[1.0], [0.0], [1.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_resid_K_right[0].copy_(torch.tensor([[1.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.quant_query_aux_resid_K_left[0].zero_()
+        tr.quant_query_aux_resid_K_right[0].zero_()
+
+    base = torch.tensor([[[[1.0, 0.0]], [[1.0, 0.0]]]], dtype=torch.float32)
+    out, _ = tr.translate_layer(
+        base,
+        torch.zeros_like(base),
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_query_features=torch.tensor([[[1.0, 0.0, 1.0, 0.0]]], dtype=torch.float32),
+    )
+
+    assert out.shape == base.shape
+    assert not torch.allclose(out, base)
+
+
 def test_bridge_low_rank_bank_selects_runtime_matched_expert(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,
