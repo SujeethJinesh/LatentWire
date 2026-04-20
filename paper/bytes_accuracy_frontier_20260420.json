@@ -122,6 +122,14 @@
   {
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
+    "family": "attention bridge",
+    "method": "xattn dynmap adapter",
+    "notes": "xattn bridge plus context-reweighted top-k output teacher",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
     "family": "geometry",
     "method": "grouped rotational transport",
     "notes": "first geometry-side branch to survive the controlled slice",
@@ -181,6 +189,14 @@
     "family": "attention bridge",
     "method": "xattn adapter",
     "notes": "tiny query-conditioned cross-attention bridge over live K/V-side memory signals",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "attention bridge",
+    "method": "xattn dynmap adapter",
+    "notes": "xattn bridge plus context-reweighted top-k output teacher",
     "split": "gsm8k_5_controlled_smoke"
   },
   {

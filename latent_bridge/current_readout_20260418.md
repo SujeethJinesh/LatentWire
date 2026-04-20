@@ -2100,3 +2100,38 @@ Interpretation:
     direction, or
   - a richer **dynamic output-alignment teacher** with explicit contextual
     remapping, not another small reweighting of the same top-k rows
+
+And a sixty-fifth stacked-xattn update:
+
+> I then stacked the strongest current contextual output-side teacher directly
+> on top of that same explicit xattn interface as
+> `bridge_ridge_qk_xattn_dynmap_adapter`.
+>
+> This keeps the same grouped-subspace transport + rank-4 residual base and
+> the same tiny query-conditioned cross-attention bridge over the live K/V-side
+> transport signals, but it adds the same context-reweighted top-k teacher used
+> by `bridge_ridge_qk_asym_dynmap_adapter`.
+>
+> On the same 64-prompt calibration slice, offline fit again stayed at:
+> - `K` cosine `0.870`, relative Frobenius error `0.468`
+> - `V` cosine `0.397`, relative Frobenius error `0.907`
+>
+> Under the matched-bytes fair controlled regime, the held-out reads were:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- stacking the dynamic contextual teacher on top of the weakly-alive xattn
+  interface does **not** improve it
+- the xattn branch and the xattn-plus-dynmap branch now sit at exactly the
+  same weak `0.2000 / 0.1000` pattern as the other surviving modular
+  interfaces
+- that means the current local-teacher lane is saturated even when attached to
+  the current explicit attention-side bridge
+- the next serious positive-method shot should now be either:
+  - a fuller **module replacement** in the Attention Editing / LLM Modules
+    direction, or
+  - a richer dynamic remapping teacher with explicit token alignment /
+    interaction structure, not another small contextual reweighting of the
+    same top-k rows

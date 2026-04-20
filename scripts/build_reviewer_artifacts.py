@@ -371,6 +371,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_eval_10_controlled",
+            method="xattn dynmap adapter",
+            family="attention bridge",
+            meta_path="results/bridge_ridge_qk_xattn_dynmap_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_xattn_dynmap_adapter_cal64_chat.jsonl.meta.json",
+            notes="xattn bridge plus context-reweighted top-k output teacher",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_10_controlled",
             method="grouped rotational transport",
             family="geometry",
             meta_path="results/grouped_rotational_transport_20260420/qwen_gsm10_grouped_rotational_transport_w010_r4_cal64_chat.jsonl.meta.json",
@@ -439,6 +448,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
             family="attention bridge",
             meta_path="results/bridge_ridge_qk_xattn_adapter_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_xattn_adapter_cal64_chat.jsonl.meta.json",
             notes="tiny query-conditioned cross-attention bridge over live K/V-side memory signals",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
+            method="xattn dynmap adapter",
+            family="attention bridge",
+            meta_path="results/bridge_ridge_qk_xattn_dynmap_adapter_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_xattn_dynmap_adapter_cal64_chat.jsonl.meta.json",
+            notes="xattn bridge plus context-reweighted top-k output teacher",
         )
     )
     rows.append(
@@ -585,6 +603,14 @@ def _build_paired_rows() -> list[dict[str, Any]]:
             "candidate_method": "rotalign_kv_gate_0.10",
             "baseline_method": "target_alone",
             "candidate_label": "xattn_adapter",
+            "baseline_label": "target_alone_control",
+        },
+        {
+            "candidate": "results/bridge_ridge_qk_xattn_dynmap_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_xattn_dynmap_adapter_cal64_chat.jsonl",
+            "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
+            "candidate_method": "rotalign_kv_gate_0.10",
+            "baseline_method": "target_alone",
+            "candidate_label": "xattn_dynmap_adapter",
             "baseline_label": "target_alone_control",
         },
     ]

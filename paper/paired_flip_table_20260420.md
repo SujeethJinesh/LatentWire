@@ -13,3 +13,4 @@
 | shared_plus_private_asym_adapter vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | shared_plus_private_dynmap_adapter vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | xattn_adapter vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
+| xattn_dynmap_adapter vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |

@@ -1672,6 +1672,7 @@ def test_bridge_ridge_qk_adapter_adds_query_conditioned_residual(monkeypatch) ->
         "bridge_ridge_qk_asym_predkl_adapter",
         "bridge_ridge_qk_asym_dynmap_adapter",
         "bridge_ridge_qk_xattn_adapter",
+        "bridge_ridge_qk_xattn_dynmap_adapter",
     ):
         tr = _make_identity_translator(
             monkeypatch,
@@ -2127,6 +2128,76 @@ def test_fit_from_pairs_bridge_ridge_qk_xattn_adapter_populates_cross_attention_
     assert torch.allclose(tr.quant_query_xattn_v[0], torch.full_like(tr.quant_query_xattn_v[0], 3.0))
     assert torch.allclose(tr.quant_query_xattn_K_out[0], torch.full_like(tr.quant_query_xattn_K_out[0], 4.0))
     assert torch.allclose(tr.quant_query_xattn_V_out[0], torch.full_like(tr.quant_query_xattn_V_out[0], 5.0))
+
+
+def test_fit_from_pairs_bridge_ridge_qk_xattn_dynmap_adapter_passes_dynamic_teacher(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_xattn_dynmap_adapter",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+
+    calls: list[tuple[float, bool, bool]] = []
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        base_prediction_k,
+        base_prediction_v,
+        residual_target_k,
+        residual_target_v,
+        *,
+        rank,
+        dynamic_prediction_weight=0.0,
+        teacher_topk_log_probs=None,
+        teacher_topk_output_rows=None,
+        **kwargs,
+    ):
+        calls.append(
+            (
+                float(dynamic_prediction_weight),
+                teacher_topk_log_probs is not None,
+                teacher_topk_output_rows is not None,
+            )
+        )
+        return (
+            torch.full((self.d_t, rank), 1.0, dtype=residual_target_k.dtype),
+            torch.full((self.d_t, rank), 2.0, dtype=residual_target_k.dtype),
+            torch.full((self.d_t, rank), 3.0, dtype=residual_target_k.dtype),
+            torch.full((rank, self.d_t), 4.0, dtype=residual_target_k.dtype),
+            torch.full((rank, self.d_t), 5.0, dtype=residual_target_v.dtype),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_xattn_adapter", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert calls == [(0.25, True, True)]
 
 
 def test_fit_from_pairs_bridge_ridge_qk_asym_predkl_adapter_passes_teacher(monkeypatch) -> None:
