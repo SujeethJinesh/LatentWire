@@ -652,3 +652,36 @@ So the highest-value next stack is now:
    comparator
 4. if we keep the bridge lane alive, move to **richer affinity or prediction-level distillation**
 5. in parallel, test a **rotation-canonicalized grouped transport** shortcut
+
+I then tried the first explicit prompt-local token-interaction target in this
+bridge family: `bridge_ridge_qk_emkd_adapter`. This keeps the same grouped-
+subspace transport + rank-4 residual checkpoint and the same tiny learned
+query-conditioned residual bridge, but it swaps in a prompt-local
+token-interaction distribution loss inspired by EM-KD rather than CAB-style
+causal attention behavior alone.
+
+Held-out behavior under the same fair shared-chat / `enable_thinking=false`
+regime:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.0000`
+- bytes on the controlled slice: `681,668.4`
+
+That means:
+
+- a richer **local interaction** teacher is more principled, but still not
+  enough to stabilize the bridge on the next held-out slice
+- the current “tiny learned bridge + local teacher upgrade” family is now
+  looking saturated
+- the next highest-value method move is no longer another small local loss
+  tweak; it should be either:
+  - a **prediction-level / stronger teacher** branch, or
+  - a **stronger canonicalization / transport** branch before the bridge
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep `attention_expected` plus its shuffled null as a negative-boundary comparator
+4. if we keep the bridge lane alive, move beyond local interaction matching to a **stronger teacher signal**
+5. in parallel, test a **rotation-canonicalized grouped transport** shortcut

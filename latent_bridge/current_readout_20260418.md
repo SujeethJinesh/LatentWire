@@ -1672,3 +1672,30 @@ Interpretation:
 - if we keep the positive-method lane alive, the next move should probably be a
   richer **teacher target** or a stronger canonicalization step, not just more
   bridge experts
+
+And a forty-ninth EM-KD-style interaction-distillation update:
+
+> I then tried `bridge_ridge_qk_emkd_adapter`. This keeps the same grouped-
+> subspace transport + rank-4 residual checkpoint, the same fair shared-chat /
+> `enable_thinking=False` Qwen control, and the same learned
+> query-conditioned residual bridge form as the earlier adapter family, but it
+> replaces the local CAB-style teacher with a prompt-local **token-interaction
+> distribution** target inspired by EM-KD / interaction distillation. The
+> checkpoint fit again matched the recent bridge family (`K` cosine `0.864`,
+> relative Frobenius error `0.476`; `V` cosine `0.381`, relative Frobenius
+> error `0.915`). Held-out behavior was:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.000000` at `681,668.400` average bytes
+
+Interpretation:
+
+- the richer prompt-local interaction target is more principled than plain
+  latent regression, cheap affinity matching, or local CAB-style attention
+  behavior alone
+- but in the current tiny bridge form it still does **not** stabilize beyond
+  the cheapest fair smoke
+- this makes the current local bridge-distillation family look saturated:
+  richer **local** teachers are no longer buying held-out gains by themselves
+- the next serious positive-method move should probably be either a
+  materially stronger teacher signal still closer to prediction space, or a
+  stronger canonicalization / transport step before the bridge

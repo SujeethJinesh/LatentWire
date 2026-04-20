@@ -312,6 +312,14 @@ Files `221_` through `225_` extend the next distillation-and-benchmark pivot:
 - `224_`: Quest as a fast query-aware KV-selection comparator.
 - `225_`: DuoAttention as a retrieval-vs-streaming head baseline for head-routing diagnostics.
 
+Files `236_` through `240_` extend the symmetry-and-routed-bridge backlog:
+
+- `236_`: Basis Decomposition for Attention as a shared-basis canonicalization reference beyond plain grouped canonical transport.
+- `237_`: MOSA as a lightweight mixture-of-adapters reference for routed bridge variants.
+- `238_`: MedBridge as a query-encoder / mixture-of-experts projector reference for query-conditioned bridge banks.
+- `239_`: Share Your Attention as a matrix-dictionary / shared-basis reference for stronger canonicalization before transport.
+- `240_`: Dynamic Multi-Expert Projectors as a modern routed-projector reference for small query-conditioned bridge mixtures.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
