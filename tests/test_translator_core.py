@@ -1441,6 +1441,66 @@ def test_bridge_ridge_query_scales_bridge_by_runtime_template_agreement(monkeypa
     assert not torch.allclose(K_match, K_mismatch)
 
 
+def test_fit_bridge_ridge_correction_accepts_sample_weights(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+    tr = RotAlignKVTranslator(
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_weighted",
+            ridge_lambda=1e-4,
+        )
+    )
+
+    quantized = torch.tensor(
+        [
+            [0.0, 0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0, 1.0],
+        ],
+        dtype=torch.float32,
+    )
+    predicted = torch.tensor(
+        [
+            [0.0, 0.0, 0.0, 0.0],
+            [0.5, 0.0, 0.0, 0.5],
+        ],
+        dtype=torch.float32,
+    )
+    target = torch.tensor(
+        [
+            [0.0, 0.0, 0.0, 0.0],
+            [3.0, 0.0, 0.0, 3.0],
+        ],
+        dtype=torch.float32,
+    )
+
+    proj_u, aux_u, bias_u = tr._fit_bridge_ridge_correction(
+        quantized,
+        predicted,
+        target,
+        lam=1e-4,
+    )
+    proj_w, aux_w, bias_w = tr._fit_bridge_ridge_correction(
+        quantized,
+        predicted,
+        target,
+        lam=1e-4,
+        sample_weights=torch.tensor([1.0, 16.0]),
+    )
+
+    pred_u = quantized @ proj_u + predicted @ aux_u + bias_u
+    pred_w = quantized @ proj_w + predicted @ aux_w + bias_w
+
+    err_u = (pred_u[1] - target[1]).pow(2).mean()
+    err_w = (pred_w[1] - target[1]).pow(2).mean()
+
+    assert err_w <= err_u + 1e-6
+
+
 def test_bridge_low_rank_bank_selects_runtime_matched_expert(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

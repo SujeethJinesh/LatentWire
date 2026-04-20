@@ -327,6 +327,52 @@ def test_collect_group_qk_templates_returns_finite_profiles() -> None:
     assert layer0.abs().sum() > 0
 
 
+def test_collect_group_qk_template_bank_preserves_prompt_axis() -> None:
+    model = _FakeAttentionModel()
+    tokenizer = _FakeTokenizer({"a": 4, "b": 4})
+
+    bank = calibrate.collect_group_qk_template_bank(
+        model,
+        tokenizer,
+        ["a", "b"],
+        max_length=4,
+        batch_size=2,
+        device="cpu",
+        kv_heads=2,
+        group_count=2,
+        bins=4,
+    )
+
+    assert len(bank) == 1
+    layer0 = bank[0]
+    assert layer0.shape == (2, 2, 4)
+    assert torch.isfinite(layer0).all()
+    assert layer0[0].abs().sum() > 0
+
+
+def test_collect_aligned_qk_position_weights_matches_aligned_lengths() -> None:
+    model = _FakeAttentionModel()
+    tokenizer = _FakeTokenizer({"a": 4, "b": 3})
+
+    weights = calibrate.collect_aligned_qk_position_weights(
+        model,
+        tokenizer,
+        ["a", "b"],
+        aligned_lengths=[3, 2],
+        max_length=4,
+        batch_size=2,
+        device="cpu",
+        kv_heads=2,
+    )
+
+    assert len(weights) == 1
+    layer0 = weights[0]
+    assert layer0.shape == (5,)
+    assert torch.isfinite(layer0).all()
+    assert bool((layer0 > 0).all())
+    assert abs(float(layer0.mean().item()) - 1.0) < 1e-5
+
+
 def test_calibrate_config_helpers_parse_and_batch() -> None:
     assert calibrate.torch_dtype("float32") is torch.float32
     assert calibrate.torch_dtype("float16") is torch.float16

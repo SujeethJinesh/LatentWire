@@ -239,6 +239,8 @@ def parse_args() -> argparse.Namespace:
             "bridge_ridge_query",
             "bridge_low_rank_bank",
             "bridge_ridge_residual_bank",
+            "bridge_ridge_qk_residual_bank",
+            "bridge_ridge_qk_weighted",
             "ridge",
             "low_rank",
         ],
@@ -1097,6 +1099,195 @@ def collect_group_qk_templates(
 
 
 @torch.no_grad()
+def collect_group_qk_template_bank(
+    model: AutoModelForCausalLM,
+    tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    max_length: int,
+    batch_size: int,
+    device: str,
+    kv_heads: int,
+    group_count: int,
+    bins: int,
+    reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
+) -> list[torch.Tensor]:
+    if bins <= 0:
+        raise ValueError("bins must be positive")
+    if group_count <= 0:
+        raise ValueError("group_count must be positive")
+    if kv_heads % group_count != 0:
+        raise ValueError(f"kv_heads={kv_heads} must be divisible by group_count={group_count}")
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    layers = _model_layers(model)
+    group_heads = kv_heads // group_count
+    layer_bank: list[list[torch.Tensor]] | None = None
+    for batch in batched(prompts, batch_size):
+        batch_text = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
+        enc = tokenizer(
+            batch_text,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        ).to(device)
+        out = model(**enc, use_cache=True, output_hidden_states=True, return_dict=True)
+        hidden_states = getattr(out, "hidden_states", None)
+        if hidden_states is None:
+            raise ValueError("Model did not return hidden_states while building grouped QK template bank")
+        pkv = _normalize_past_key_values(out.past_key_values)
+        if layer_bank is None:
+            layer_bank = [[] for _ in range(len(pkv))]
+        mask_cpu = enc["attention_mask"].to("cpu")
+        for batch_idx in range(mask_cpu.shape[0]):
+            valid_len = int(mask_cpu[batch_idx].sum().item())
+            if valid_len <= 1:
+                continue
+            for layer_idx, layer_cache in enumerate(pkv):
+                attn_mod = layers[layer_idx].self_attn
+                q_proj = getattr(attn_mod, "q_proj", None)
+                if q_proj is None:
+                    raise ValueError("self_attn.q_proj is required for grouped QK template bank")
+                hidden = hidden_states[layer_idx][batch_idx, valid_len - 1 : valid_len].to(device)
+                q_flat = q_proj(hidden).squeeze(0).squeeze(0).detach().to("cpu", dtype=torch.float32)
+                keys = layer_cache[0][batch_idx, :, : valid_len - 1, :].detach().to("cpu", dtype=torch.float32)
+                num_q_heads = q_flat.numel() // keys.shape[-1]
+                if num_q_heads % kv_heads != 0:
+                    raise ValueError(
+                        f"num_q_heads={num_q_heads} must be divisible by kv_heads={kv_heads} for grouped QK template bank"
+                    )
+                q = q_flat.view(num_q_heads, keys.shape[-1])
+                q_per_kv = num_q_heads // kv_heads
+                group_templates = []
+                for group_idx in range(group_count):
+                    start = group_idx * group_heads
+                    stop = start + group_heads
+                    head_profiles = []
+                    for kv_head in range(start, stop):
+                        q_start = kv_head * q_per_kv
+                        q_stop = q_start + q_per_kv
+                        logits = torch.einsum("hd,td->ht", q[q_start:q_stop], keys[kv_head]) / math.sqrt(keys.shape[-1])
+                        logit_profile = logits.mean(dim=0)
+                        logit_profile = (logit_profile - logit_profile.mean()) / logit_profile.std(unbiased=False).clamp_min(1e-6)
+                        head_profiles.append(_resample_signed_profile(logit_profile, bins))
+                    group_templates.append(torch.stack(head_profiles, dim=0).mean(dim=0))
+                layer_bank[layer_idx].append(torch.stack(group_templates, dim=0))
+    if layer_bank is None or not layer_bank:
+        raise ValueError("Could not build grouped QK template bank from calibration prompts")
+    return [torch.stack(templates, dim=0).cpu() for templates in layer_bank]
+
+
+@torch.no_grad()
+def collect_aligned_qk_position_weights(
+    model: AutoModelForCausalLM,
+    tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    aligned_lengths: Sequence[int],
+    max_length: int,
+    batch_size: int,
+    device: str,
+    kv_heads: int,
+    reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
+    floor: float = 0.25,
+) -> list[torch.Tensor]:
+    if not 0.0 < floor <= 1.0:
+        raise ValueError(f"floor must be in (0, 1], got {floor}")
+    if len(aligned_lengths) != len(prompts):
+        raise ValueError(
+            f"aligned_lengths must match prompts, got {len(aligned_lengths)} lengths for {len(prompts)} prompts"
+        )
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    layers = _model_layers(model)
+    layer_weights: list[list[torch.Tensor]] | None = None
+    prompt_offset = 0
+    for batch in batched(prompts, batch_size):
+        batch_text = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
+        enc = tokenizer(
+            batch_text,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        ).to(device)
+        out = model(**enc, use_cache=True, output_hidden_states=True, return_dict=True)
+        hidden_states = getattr(out, "hidden_states", None)
+        if hidden_states is None:
+            raise ValueError("Model did not return hidden_states while building aligned QK position weights")
+        pkv = _normalize_past_key_values(out.past_key_values)
+        if layer_weights is None:
+            layer_weights = [[] for _ in range(len(pkv))]
+        mask_cpu = enc["attention_mask"].to("cpu")
+        for batch_idx in range(mask_cpu.shape[0]):
+            prompt_idx = prompt_offset + batch_idx
+            valid_len = int(mask_cpu[batch_idx].sum().item())
+            aligned_len = min(valid_len, int(aligned_lengths[prompt_idx]))
+            if aligned_len <= 0:
+                continue
+            for layer_idx, layer_cache in enumerate(pkv):
+                if aligned_len <= 1:
+                    layer_weights[layer_idx].append(torch.ones(aligned_len, dtype=torch.float32))
+                    continue
+                attn_mod = layers[layer_idx].self_attn
+                q_proj = getattr(attn_mod, "q_proj", None)
+                if q_proj is None:
+                    raise ValueError("self_attn.q_proj is required for aligned QK position weights")
+                hidden = hidden_states[layer_idx][batch_idx, valid_len - 1 : valid_len].to(device)
+                q_flat = q_proj(hidden).squeeze(0).squeeze(0).detach().to("cpu", dtype=torch.float32)
+                keys = layer_cache[0][batch_idx, :, : aligned_len - 1, :].detach().to("cpu", dtype=torch.float32)
+                num_q_heads = q_flat.numel() // keys.shape[-1]
+                if num_q_heads % kv_heads != 0:
+                    raise ValueError(
+                        f"num_q_heads={num_q_heads} must be divisible by kv_heads={kv_heads} for aligned QK weights"
+                    )
+                q = q_flat.view(num_q_heads, keys.shape[-1])
+                q_per_kv = num_q_heads // kv_heads
+                per_head_probs = []
+                for kv_head in range(kv_heads):
+                    q_start = kv_head * q_per_kv
+                    q_stop = q_start + q_per_kv
+                    logits = torch.einsum("hd,td->ht", q[q_start:q_stop], keys[kv_head]) / math.sqrt(keys.shape[-1])
+                    probs = torch.softmax(logits, dim=-1).mean(dim=0)
+                    per_head_probs.append(probs)
+                position_probs = torch.stack(per_head_probs, dim=0).mean(dim=0)
+                scaled = torch.ones(aligned_len, dtype=torch.float32)
+                scaled[:-1] = position_probs * float(max(aligned_len - 1, 1))
+                scaled = scaled / scaled.mean().clamp_min(1e-8)
+                weights = floor + (1.0 - floor) * scaled
+                layer_weights[layer_idx].append(weights / weights.mean().clamp_min(1e-8))
+        prompt_offset += len(batch)
+    if layer_weights is None or not layer_weights:
+        raise ValueError("Could not build aligned QK position weights from calibration prompts")
+    return [torch.cat(weights, dim=0).cpu() for weights in layer_weights]
+
+
+@torch.no_grad()
 def collect_group_qk_retrieval_templates(
     model: AutoModelForCausalLM,
     tokenizer: AutoTokenizer,
@@ -1512,26 +1703,8 @@ def main() -> None:
                 f"target layers={len(translator._transport_tgt_group_templates)}"
             )
 
-    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank"}:
-        print(
-            "\nBuilding target attention template bank for query-conditioned bridge experts "
-            f"(experts={args.bridge_bank_size}, bins={args.transport_template_bins})..."
-        )
-        bridge_template_bank = collect_group_attention_template_bank(
-            tgt,
-            tok_t,
-            prompts,
-            max_length=args.max_length,
-            batch_size=args.batch_size,
-            device=args.device,
-            kv_heads=config.tgt_num_heads,
-            group_count=1,
-            bins=args.transport_template_bins,
-            template_mode="mean",
-            reasoning_mode="plain",
-            use_chat_template=args.target_use_chat_template,
-            enable_thinking=target_enable_thinking,
-        )
+    aligned_lengths: list[int] | None = None
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_weighted"}:
         aligned_lengths = collect_aligned_prompt_valid_lengths(
             tok_s,
             tok_t,
@@ -1544,6 +1717,48 @@ def main() -> None:
             target_use_chat_template=args.target_use_chat_template,
             target_enable_thinking=target_enable_thinking,
         )
+
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank"}:
+        if args.quantization_correction == "bridge_ridge_qk_residual_bank":
+            print(
+                "\nBuilding target QK template bank for query-conditioned bridge experts "
+                f"(experts={args.bridge_bank_size}, bins={args.transport_template_bins})..."
+            )
+            bridge_template_bank = collect_group_qk_template_bank(
+                tgt,
+                tok_t,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.tgt_num_heads,
+                group_count=1,
+                bins=args.transport_template_bins,
+                reasoning_mode="plain",
+                use_chat_template=args.target_use_chat_template,
+                enable_thinking=target_enable_thinking,
+            )
+        else:
+            print(
+                "\nBuilding target attention template bank for query-conditioned bridge experts "
+                f"(experts={args.bridge_bank_size}, bins={args.transport_template_bins})..."
+            )
+            bridge_template_bank = collect_group_attention_template_bank(
+                tgt,
+                tok_t,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.tgt_num_heads,
+                group_count=1,
+                bins=args.transport_template_bins,
+                template_mode="mean",
+                reasoning_mode="plain",
+                use_chat_template=args.target_use_chat_template,
+                enable_thinking=target_enable_thinking,
+            )
+        assert aligned_lengths is not None
         if any(length <= 0 for length in aligned_lengths):
             print("Skipping zero-length calibration prompts while building bridge prompt ids")
         sample_prompt_ids = torch.cat(
@@ -1559,6 +1774,31 @@ def main() -> None:
             "Built bridge template bank: "
             f"layers={len(bridge_template_bank)}, prompts={len(aligned_lengths)}, "
             f"samples={int(sample_prompt_ids.numel())}"
+        )
+
+    if args.quantization_correction == "bridge_ridge_qk_weighted":
+        assert aligned_lengths is not None
+        print(
+            "\nBuilding aligned target QK position weights for retrieval-weighted bridge fit "
+            f"(bins={args.transport_template_bins})..."
+        )
+        bridge_sample_weights = collect_aligned_qk_position_weights(
+            tgt,
+            tok_t,
+            prompts,
+            aligned_lengths=aligned_lengths,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            device=args.device,
+            kv_heads=config.tgt_num_heads,
+            reasoning_mode="plain",
+            use_chat_template=args.target_use_chat_template,
+            enable_thinking=target_enable_thinking,
+        )
+        translator.set_bridge_sample_weights(bridge_sample_weights)
+        print(
+            "Built aligned QK position weights: "
+            f"layers={len(bridge_sample_weights)}, samples={int(bridge_sample_weights[0].numel())}"
         )
 
     print("\nFitting closed-form alignments (Procrustes / ridge)...")

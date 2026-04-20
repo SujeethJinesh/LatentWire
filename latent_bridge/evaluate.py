@@ -2876,7 +2876,7 @@ def _build_rotalign_prefix_state(
         "attention_qk_template_transport_shuffled",
         "attention_qk_bank_transport",
         "attention_qk_bank_transport_shuffled",
-    }:
+    } or translator.config.quantization_correction == "bridge_ridge_qk_residual_bank":
         layer_query_heads = _last_token_query_heads(
             target_model,
             tgt_last_token,
@@ -2986,7 +2986,15 @@ def _build_rotalign_prefix_state(
         K_s, V_s = _apply_source_kv_control(K_s, V_s, source_kv_control, tgt_l)
         K_t, V_t = tgt_pkv[tgt_l]
         runtime_attention_profile = None
-        if layer_attention_maps is not None:
+        if translator.config.quantization_correction == "bridge_ridge_qk_residual_bank":
+            if layer_query_heads is None:
+                raise ValueError("bridge_ridge_qk_residual_bank requires live query heads")
+            runtime_attention_profile = _qk_position_distributions(
+                layer_query_heads[tgt_l],
+                K_t.to(device=device, dtype=torch.float32),
+                bins=translator.config.transport_template_bins,
+            ).mean(dim=0)
+        elif layer_attention_maps is not None:
             runtime_attention_profile = _resample_position_profile(
                 layer_attention_maps[tgt_l].mean(dim=0),
                 translator.config.transport_template_bins,

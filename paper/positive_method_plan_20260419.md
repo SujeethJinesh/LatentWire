@@ -402,3 +402,54 @@ That sharpens the next move again:
 - not another static bridge
 - next serious bridge attempt should be a **query-conditioned bridge bank /
   projector** or a bridge fit against a richer token-interaction target
+
+I then tried both of those “next bridge bank” variants under the same fair
+shared-chat / `enable_thinking=False` regime:
+
+- `bridge_low_rank_bank`, which swaps the whole bridge for a routed low-rank
+  bank
+- `bridge_ridge_residual_bank`, which keeps the stable `bridge_ridge` base and
+  only routes a low-rank residual on top
+
+Both collapsed immediately on the first `gsm8k_5` smoke (`0.0000` at
+`722,107.7` bytes), so the bridge-bank lane was not rescued by attention-based
+query routing alone.
+
+I then tried the richer version of the same idea:
+`bridge_ridge_qk_residual_bank`, which keeps the full `bridge_ridge` base but
+routes the residual bank with live QK/retrieval profiles rather than mean
+attention templates. That also collapsed immediately on the same fair
+`gsm8k_5` smoke (`0.0000` at `722,107.7` bytes).
+
+That means:
+
+- richer routing signals are still **not** enough on top of a bridge trained
+  only with plain latent regression
+- the likely missing piece is now the **training target**, not just the router
+
+I then changed the training target instead of the router:
+`bridge_ridge_qk_weighted` keeps the same global `bridge_ridge` form but fits
+it with calibration samples reweighted by target last-token QK retrieval
+importance. This is still cheap and closed-form, but it stops treating all
+positions equally during bridge fitting.
+
+Held-out behavior under the same fair regime:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.0000`
+
+That means:
+
+- changing the supervision target is more plausible than changing only the
+  router, because it still reproduces a nonzero smoke
+- but the first retrieval-weighted bridge fit is still **not stable**
+- the next serious bridge attempt should likely move one step further toward a
+  **token-interaction / affinity distillation target**, not just another
+  weighted latent-regression variant
+
+So the positive-method lane is now narrower:
+
+1. keep the fair Qwen control on
+2. stop spending cycles on attention-template or QK-routed residual banks
+3. if we keep pushing, the next serious branch should be a **query-conditioned
+   bridge/projector trained against richer interaction targets**

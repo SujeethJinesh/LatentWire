@@ -298,6 +298,12 @@ Files `214_` through `217_` extend the routed-projector backlog:
 - `216_`: QMoP as the cleanest current mixture-of-projectors reference for selecting among a few tiny bridge experts from live query structure.
 - `217_`: SEMI as a shared-projector / shared-interface reference, useful for transferring multimodal bridge ideas into a lightweight cross-model KV interface.
 
+Files `218_` through `220_` extend the richer bridge-supervision backlog:
+
+- `218_`: Activated LoRA as a direct runtime adapter-routing reference for query-conditioned bridge modules.
+- `219_`: Cross-Tokenizer Distillation via Approximate Likelihood Matching as a higher-level supervision reference when plain latent regression stops improving.
+- `220_`: Attention Editing as a direct reference for training a bridge to preserve attention behavior rather than only KV coordinates.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

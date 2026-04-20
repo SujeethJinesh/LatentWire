@@ -114,10 +114,13 @@ class TranslatorConfig:
     # target attention-template agreement, `bridge_low_rank_bank` fits a small
     # bank of low-rank bridge experts and mixes them online from the live
     # target attention profile, `bridge_ridge_residual_bank` keeps the global
-    # bridge_ridge map and adds a query-routed low-rank residual bank on top,
-    # `ridge` learns a full linear map plus bias in rotated target space, and
-    # `low_rank` learns a reduced-rank linear map plus bias as a tiny bridge
-    # adapter.
+    # bridge_ridge map and adds an attention-routed low-rank residual bank on
+    # top, `bridge_ridge_qk_residual_bank` swaps that routing signal for a live
+    # QK/retrieval profile, `bridge_ridge_qk_weighted` keeps the global bridge
+    # but fits it with calibration samples reweighted by target retrieval
+    # importance, `ridge` learns a full linear map plus bias in rotated target
+    # space, and `low_rank` learns a reduced-rank linear map plus bias as a
+    # tiny bridge adapter.
     quantization_correction: str = "none"
     quantization_correction_rank: int | None = None
     bridge_bank_size: int = 4
@@ -255,6 +258,7 @@ class RotAlignKVTranslator(nn.Module):
         self._broadcast_transport_plan_V: list[torch.Tensor] | None = None
         self._bridge_prompt_cluster_labels: list[torch.Tensor] | None = None
         self._bridge_sample_prompt_ids: torch.Tensor | None = None
+        self._bridge_sample_weights: list[torch.Tensor] | None = None
         self.register_buffer(
             "bridge_runtime_templates",
             torch.zeros(config.num_tgt_layers, config.transport_template_bins, dtype=torch.float32),
@@ -1293,16 +1297,37 @@ class RotAlignKVTranslator(nn.Module):
         target: torch.Tensor,
         *,
         lam: float,
+        sample_weights: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         x = torch.cat([quantized.float(), predicted.float()], dim=-1)
         y = target.float()
-        x_mean = x.mean(dim=0, keepdim=True)
-        y_mean = y.mean(dim=0, keepdim=True)
+        if sample_weights is not None:
+            weights = sample_weights.float().view(-1, 1)
+            if weights.shape[0] != x.shape[0]:
+                raise ValueError(
+                    "sample_weights must align with bridge samples, "
+                    f"got {weights.shape[0]} vs {x.shape[0]}"
+                )
+            weights = weights / weights.mean().clamp_min(1e-8)
+            norm = weights.sum().clamp_min(1e-8)
+            x_mean = (weights * x).sum(dim=0, keepdim=True) / norm
+            y_mean = (weights * y).sum(dim=0, keepdim=True) / norm
+        else:
+            weights = None
+            x_mean = x.mean(dim=0, keepdim=True)
+            y_mean = y.mean(dim=0, keepdim=True)
         x_center = x - x_mean
         y_center = y - y_mean
-        xtx = x_center.T @ x_center
+        if weights is not None:
+            sqrt_w = weights.sqrt()
+            x_weighted = x_center * sqrt_w
+            y_weighted = y_center * sqrt_w
+            xtx = x_weighted.T @ x_weighted
+            rhs = x_weighted.T @ y_weighted
+        else:
+            xtx = x_center.T @ x_center
+            rhs = x_center.T @ y_center
         eye = torch.eye(xtx.shape[0], dtype=xtx.dtype, device=xtx.device)
-        rhs = x_center.T @ y_center
         system = xtx + lam * eye
         try:
             weight = torch.linalg.solve(system, rhs)
@@ -1663,6 +1688,23 @@ class RotAlignKVTranslator(nn.Module):
         self._bridge_prompt_cluster_labels = labels_out
         self._bridge_sample_prompt_ids = prompt_ids
 
+    def set_bridge_sample_weights(self, sample_weights: Sequence[torch.Tensor]) -> None:
+        if len(sample_weights) != self.config.num_tgt_layers:
+            raise ValueError(
+                f"Expected {self.config.num_tgt_layers} bridge sample-weight vectors, got {len(sample_weights)}"
+            )
+        prepared: list[torch.Tensor] = []
+        for layer_idx, weights in enumerate(sample_weights):
+            vec = weights.detach().to("cpu", dtype=torch.float32).view(-1)
+            if vec.numel() == 0:
+                raise ValueError(f"Bridge sample weights at layer {layer_idx} must be non-empty")
+            if not bool(torch.isfinite(vec).all()):
+                raise ValueError(f"Bridge sample weights at layer {layer_idx} must be finite")
+            if float(vec.min().item()) <= 0.0:
+                raise ValueError(f"Bridge sample weights at layer {layer_idx} must be positive")
+            prepared.append(vec)
+        self._bridge_sample_weights = prepared
+
     def _bridge_runtime_gate(
         self,
         tgt_layer_idx: int,
@@ -1762,9 +1804,9 @@ class RotAlignKVTranslator(nn.Module):
                 + aux_input * aux_scale.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
-        if self.config.quantization_correction == "bridge_ridge":
+        if self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_qk_weighted"}:
             if aux_input is None:
-                raise ValueError("bridge_ridge quantization correction requires aux_input")
+                raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
             return (
                 x @ proj.to(device=x.device, dtype=x.dtype)
                 + aux_input @ aux_proj.to(device=x.device, dtype=x.dtype)
@@ -1785,11 +1827,11 @@ class RotAlignKVTranslator(nn.Module):
                 dtype=x.dtype,
             )
             return x + gate * (corrected - x)
-        if self.config.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank"}:
+        if self.config.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank"}:
             if aux_input is None:
                 raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
             base = x
-            if self.config.quantization_correction == "bridge_ridge_residual_bank":
+            if self.config.quantization_correction in {"bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank"}:
                 base = (
                     x @ proj.to(device=x.device, dtype=x.dtype)
                     + aux_input @ aux_proj.to(device=x.device, dtype=x.dtype)
@@ -2302,18 +2344,28 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_weighted"}:
+                sample_weights = None
+                if self.config.quantization_correction == "bridge_ridge_qk_weighted":
+                    if self._bridge_sample_weights is None:
+                        raise ValueError(
+                            "bridge_ridge_qk_weighted requires bridge sample weights; "
+                            "call set_bridge_sample_weights() before fit_from_pairs"
+                        )
+                    sample_weights = self._bridge_sample_weights[tgt_l].to(device=Xk.device)
                 proj_k, aux_proj_k, bias_k = self._fit_bridge_ridge_correction(
                     K_quant,
                     K_pred,
                     Yk_fit,
                     lam=self.config.ridge_lambda,
+                    sample_weights=sample_weights,
                 )
                 proj_v, aux_proj_v, bias_v = self._fit_bridge_ridge_correction(
                     V_quant,
                     V_pred,
                     Yv_fit,
                     lam=self.config.ridge_lambda,
+                    sample_weights=sample_weights,
                 )
                 self.quant_proj_K[tgt_l].data.copy_(proj_k.to(self.quant_proj_K[tgt_l].dtype))
                 self.quant_proj_V[tgt_l].data.copy_(proj_v.to(self.quant_proj_V[tgt_l].dtype))
@@ -2321,7 +2373,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_proj_V[tgt_l].data.copy_(aux_proj_v.to(self.quant_aux_proj_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-                if self.config.quantization_correction == "bridge_ridge_residual_bank":
+                if self.config.quantization_correction in {"bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank"}:
                     if self._bridge_prompt_cluster_labels is None or self._bridge_sample_prompt_ids is None:
                         raise ValueError(
                             "bridge_ridge_residual_bank requires bridge template-bank metadata; "

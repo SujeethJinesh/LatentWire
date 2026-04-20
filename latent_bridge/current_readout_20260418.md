@@ -1444,3 +1444,50 @@ Interpretation:
   scalar agreement gate**:
   likely a query-conditioned bridge bank, a low-rank dynamic projector, or a
   bridge trained against a richer interaction target
+
+And a fortieth QK-routed residual-bank update:
+
+> I then kept the stable `bridge_ridge` base but swapped the attention-template
+> router for a live QK/retrieval-profile router:
+> `bridge_ridge_qk_residual_bank`. This still uses a `4`-expert low-rank
+> residual bank on top of grouped-subspace transport + rank-4 residual, and it
+> was calibrated under the same fair shared-chat / `enable_thinking=False`
+> regime. Calibration fit remained essentially unchanged from the grouped-
+> subspace family (`K` cosine `0.864`, relative Frobenius error `0.476`; `V`
+> cosine `0.381`, relative Frobenius error `0.915`), but the first held-out
+> controlled smoke still collapsed:
+> - `gsm8k_5`: `0.000000` at `722,107.700` average bytes
+
+Interpretation:
+
+- simply improving the router signal from mean attention to live QK/retrieval
+  profiles is **not** enough
+- the blocker is now more likely the **supervision target** than the routing
+  signal by itself
+- if the bridge lane stays alive, the next step should change what the bridge
+  is trained to preserve, not just how experts are selected
+
+And a forty-first retrieval-weighted bridge-fit update:
+
+> I then kept the same global `bridge_ridge` form but changed the calibration
+> objective itself: `bridge_ridge_qk_weighted` fits the bridge with aligned
+> calibration samples reweighted by the target model's last-token QK retrieval
+> importance instead of plain uniform latent regression. The checkpoint still
+> sits on top of grouped-subspace transport + rank-4 residual and the same
+> `64`-prompt calibration slice under the fair shared-chat /
+> `enable_thinking=False` regime. Calibration fit again looked like the older
+> grouped-subspace family (`K` cosine `0.864`, relative Frobenius error
+> `0.476`; `V` cosine `0.381`, relative Frobenius error `0.915`). Held-out
+> behavior was:
+> - `gsm8k_5`: `0.200000` at `722,107.700` average bytes
+> - controlled `gsm8k_eval_10`: `0.000000` at `720,487.313` average bytes
+
+Interpretation:
+
+- changing the bridge **supervision target** is directionally more plausible
+  than another router-only tweak, because it reproduced a nonzero smoke
+- but this first retrieval-weighted version still does **not** stabilize on the
+  larger controlled slice
+- the bridge lane remains weakly alive, but the next serious attempt should
+  probably move from weighted latent regression to a **richer interaction /
+  affinity distillation target**
