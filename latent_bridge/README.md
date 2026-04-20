@@ -189,7 +189,7 @@ python scripts/calibrate.py \
 - `--pre-quant-rank N` / `--pre-quant-shrinkage A` — apply a target-space
   low-rank/shrinkage filter before quantization. This is a denoising step
   after alignment, not a replacement for the alignment solver.
-- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_cab_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,bridge_ridge_qk_adapter,bridge_ridge_qk_affinity_adapter,bridge_ridge_qk_attnkl_adapter,bridge_ridge_qk_cab_adapter,bridge_ridge_qk_emkd_adapter,ridge,low_rank}` —
+- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_cab_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,bridge_ridge_qk_adapter,bridge_ridge_qk_affinity_adapter,bridge_ridge_qk_attnkl_adapter,bridge_ridge_qk_cab_adapter,bridge_ridge_qk_emkd_adapter,bridge_ridge_qk_readout_adapter,ridge,low_rank}` —
   optional decoder-side correction after quantize/dequantize. `affine` is a
   diagonal scale+bias repair; `bridge_affine` is a coordinatewise bridge over
   both the dequantized tensor and the pre-quant translated prediction;
@@ -213,8 +213,14 @@ python scripts/calibrate.py \
   in a prompt-local causal attention-behavior loss inspired by CAB during
   calibration; `bridge_ridge_qk_emkd_adapter` keeps the same learned residual
   form but swaps in a prompt-local token-interaction distribution loss
-  inspired by richer example / relation distillation during
-  calibration; `bridge_ridge_qk_cab_bank` keeps that same CAB-style local
+  inspired by richer example / relation distillation during calibration;
+  `bridge_ridge_qk_readout_adapter` keeps the same learned residual form but
+  supervises it with prompt-local attention readouts so the bridge is trained
+  against a signal closer to layer-level prediction behavior;
+  all of the `bridge_ridge_qk_*adapter` variants now fit both K-side and
+  V-side query-conditioned residuals during calibration rather than only a
+  K-side residual;
+  `bridge_ridge_qk_cab_bank` keeps that same CAB-style local
   teacher but uses a QK-routed bank of query-conditioned bridge experts
   instead of one monolithic residual bridge;
   `ridge` is a small full linear correction layer in rotated target space;
@@ -224,7 +230,7 @@ python scripts/calibrate.py \
   `bridge_ridge_qk_cab_bank`, or
   `bridge_ridge_qk_adapter`, `bridge_ridge_qk_affinity_adapter`, or
   `bridge_ridge_qk_attnkl_adapter`, or `bridge_ridge_qk_cab_adapter`, or
-  `bridge_ridge_qk_emkd_adapter` with
+  `bridge_ridge_qk_emkd_adapter`, or `bridge_ridge_qk_readout_adapter` with
   `--quantization-correction-rank <r>`
   to control the adapter size, and use `--bridge-bank-size <k>` to set the
   number of bridge experts in the banked variants.

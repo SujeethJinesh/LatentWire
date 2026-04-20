@@ -328,6 +328,12 @@ File `242_` extends the shared-latent bridge backlog:
 
 - `242_`: Latent Space Communication via K-V Cache Alignment as a direct shared-latent-interface reference for future learned bridge/projector branches.
 
+Files `243_` through `245_` extend the stronger-teacher bridge backlog:
+
+- `243_`: DWA-KD as a weighted prediction-level distillation reference when uniform local bridge losses stop helping.
+- `244_`: X2I as an attention-distillation-across-architectures reference for supervising a small bridge by behavior rather than coordinates.
+- `245_`: CTPD as a reserve higher-level teacher reference if tokenizer-aware or output-side supervision becomes necessary.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

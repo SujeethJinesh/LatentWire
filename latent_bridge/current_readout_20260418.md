@@ -1798,3 +1798,33 @@ Interpretation:
   earlier geometry probes on the held-out slices that matter
 - so even stronger shared-basis canonicalization is **not** enough by itself in
   the current grouped transport family
+
+And a fifty-fourth stronger-teacher bridge update:
+
+> I then implemented `bridge_ridge_qk_readout_adapter` on top of the same fair
+> shared-chat / `enable_thinking=False` Qwen control and the same
+> `grouped_subspace_transport + rank-4 residual` base. This keeps the tiny
+> query-conditioned residual bridge framing, but it changes the calibration
+> teacher from local CAB / EM-KD-style structural losses to a prompt-local
+> **attention readout** target, so the bridge is trained against a signal
+> closer to layer-level prediction behavior. While wiring that branch I also
+> fixed a real implementation bug in the `bridge_ridge_qk_*adapter` family:
+> those modes had only been fitting the K-side residual, leaving the V-side
+> query residual at zero. The new branch now fits both K and V query residuals.
+> Offline fit on the 64-prompt calibration slice was:
+> - `K` cosine `0.864`, relative Frobenius error `0.476`
+> - `V` cosine `0.381`, relative Frobenius error `0.915`
+> Held-out behavior under the same fair controlled regime was still negative:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.000000` at `681,668.400` average bytes
+
+Interpretation:
+
+- the stronger readout-style teacher is more principled than the earlier local
+  bridge losses, and the K-side offline fit does improve
+- but even after fixing the missing V-side bridge fit, this tiny
+  query-conditioned bridge still does **not** survive the controlled
+  `gsm8k_eval_10` slice
+- that narrows the live lane further: the next bridge teacher likely has to be
+  even closer to prediction space, such as approximate likelihood / logit
+  matching, not another prompt-local structural loss

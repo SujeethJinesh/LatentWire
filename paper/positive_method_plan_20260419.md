@@ -808,3 +808,38 @@ So the highest-value next stack is now:
 2. keep `C2C` as the main external bar
 3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
 4. if we keep the method lane alive, the best next move is now more likely a **stronger teacher closer to prediction space** than another small canonicalization variant
+
+I then tried one more explicit stronger-teacher bridge follow-up:
+`bridge_ridge_qk_readout_adapter`.
+
+This keeps the same `grouped_subspace_transport + rank-4 residual` base and
+the same fair shared-chat / `enable_thinking=false` Qwen control, but it
+changes the tiny bridge teacher from local CAB / EM-KD-style structural losses
+to a prompt-local **attention readout** target. While wiring that branch I also
+fixed a real implementation bug in the `bridge_ridge_qk_*adapter` family: the
+earlier adapter modes had only been fitting the K-side query residual and were
+leaving the V-side query residual at zero.
+
+The result was still negative under the fair controlled regime:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.0000`
+- bytes on the controlled slice: `681,668.4`
+
+That means:
+
+- moving the local bridge teacher from plain latent regression to local
+  attention readouts is still not enough
+- fixing the missing V-side adapter fit did not, by itself, rescue the bridge
+  lane
+- the stronger-teacher lane is still the best live lane, but the next bridge
+  teacher should likely move **above prompt-local structural losses** toward a
+  prediction-level target such as approximate likelihood / output-distribution
+  matching
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
+4. if we keep the method lane alive, the best next move is now a **prediction-level / stronger-teacher bridge** rather than another local bridge-loss tweak or another small geometry variant

@@ -1660,7 +1660,14 @@ def test_fit_bridge_ridge_query_projector_correction_uses_query_features(monkeyp
 
 
 def test_bridge_ridge_qk_adapter_adds_query_conditioned_residual(monkeypatch) -> None:
-    for mode in ("bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter"):
+    for mode in (
+        "bridge_ridge_qk_adapter",
+        "bridge_ridge_qk_affinity_adapter",
+        "bridge_ridge_qk_attnkl_adapter",
+        "bridge_ridge_qk_cab_adapter",
+        "bridge_ridge_qk_emkd_adapter",
+        "bridge_ridge_qk_readout_adapter",
+    ):
         tr = _make_identity_translator(
             monkeypatch,
             quantization_correction=mode,
@@ -1674,18 +1681,82 @@ def test_bridge_ridge_qk_adapter_adds_query_conditioned_residual(monkeypatch) ->
             tr.quant_query_resid_K_right[0].copy_(torch.tensor([[1.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
             tr.quant_query_aux_resid_K_left[0].zero_()
             tr.quant_query_aux_resid_K_right[0].zero_()
+            tr.quant_proj_V[0].zero_()
+            tr.quant_query_resid_V_left[0].copy_(torch.tensor([[0.5], [0.0], [0.5], [0.0]], dtype=torch.float32))
+            tr.quant_query_resid_V_right[0].copy_(torch.tensor([[1.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+            tr.quant_query_aux_resid_V_left[0].zero_()
+            tr.quant_query_aux_resid_V_right[0].zero_()
 
         base = torch.tensor([[[[1.0, 0.0]], [[1.0, 0.0]]]], dtype=torch.float32)
-        out, _ = tr.translate_layer(
+        out_k, out_v = tr.translate_layer(
             base,
-            torch.zeros_like(base),
+            base,
             tgt_layer_idx=0,
             quantize=True,
             runtime_query_features=torch.tensor([[[1.0, 0.0, 1.0, 0.0]]], dtype=torch.float32),
         )
 
-        assert out.shape == base.shape
-        assert not torch.allclose(out, base)
+        assert out_k.shape == base.shape
+        assert out_v.shape == base.shape
+        assert not torch.allclose(out_k, base)
+        assert not torch.allclose(out_v, base)
+
+
+def test_fit_from_pairs_bridge_ridge_qk_readout_adapter_populates_k_and_v_residuals(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_readout_adapter",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_sample_prompt_ids(torch.tensor([0, 0, 1, 1], dtype=torch.long))
+
+    calls: list[str] = []
+
+    def fake_fit(
+        self,
+        quantized,
+        predicted,
+        query_features,
+        base_prediction,
+        residual_target,
+        *,
+        rank,
+        readout_partner_kind=None,
+        **kwargs,
+    ):
+        calls.append(str(readout_partner_kind))
+        fill = float(len(calls))
+        left = torch.full((self.d_t, rank), fill, dtype=residual_target.dtype)
+        right = torch.zeros(rank, self.d_t, dtype=residual_target.dtype)
+        right[0, 0] = fill
+        aux_left = torch.zeros_like(left)
+        aux_right = torch.zeros_like(right)
+        return left, right, aux_left, aux_right
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_residual_adapter", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert calls == ["V", "K"]
+    assert torch.allclose(tr.quant_query_resid_K_left[0], torch.ones_like(tr.quant_query_resid_K_left[0]))
+    assert torch.allclose(tr.quant_query_resid_V_left[0], torch.full_like(tr.quant_query_resid_V_left[0], 2.0))
 
 
 def test_bridge_low_rank_bank_selects_runtime_matched_expert(monkeypatch) -> None:
