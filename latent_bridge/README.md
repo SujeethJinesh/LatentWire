@@ -311,6 +311,10 @@ the same template family but permutes the transported prior mass.
 `attention_expected` and `attention_expected_shuffled` instead reuse the fixed
 position prior from `--position-selection-prior-file` and score heads by how
 well their live attention aligns to the expected future-attention profile.
+On the current Qwen2.5 -> Qwen3 setup, this should be described as an
+**Expected Attention-style approximation** unless you actually run the external
+KVPress implementation; the fair paper readout should include the matched
+`attention_expected_shuffled` null beside it.
 `attention_prior_shuffled` is the budget-matched null that keeps the prior's
 mass profile but permutes which heads receive it.
 Use `--runtime-head-prior-save <path>` to export the concrete fixed head-profile

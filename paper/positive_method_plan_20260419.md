@@ -562,3 +562,31 @@ That means:
 - the next rational move is now either:
   - a materially stronger teacher signal, or
   - the external comparator lane, especially Expected Attention / KVPress
+
+I then closed the fastest fair external-comparator lane we could test in-repo:
+an **Expected Attention-style** selector on top of the same grouped-subspace +
+rank-4 residual checkpoint, still under shared chat serialization and
+`enable_thinking=False`. The result is useful but negative:
+
+- `gsm8k_5`: `attention_expected = 0.2000`
+- `gsm8k_5`: `attention_expected_shuffled = 0.2000`
+- controlled `gsm8k_eval_10`: `attention_expected = 0.1000`
+- controlled `gsm8k_eval_10`: `attention_expected_shuffled = 0.1000`
+
+That means:
+
+- our current in-repo Expected Attention-style approximation is a **fair
+  negative-boundary comparator**, not a live new baseline
+- it should be reported explicitly as **Expected Attention-style**, not as
+  exact KVPress parity
+- the next highest-value method step is still a **stronger teacher signal**
+  for the tiny bridge, not another selector tweak
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. report `attention_expected` with its shuffled null as a negative-boundary
+   comparator
+4. implement a **CAB / EM-KD / prediction-level distillation** bridge target
+   next

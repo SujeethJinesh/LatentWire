@@ -1591,3 +1591,32 @@ Interpretation:
 - the next serious method step should now be either a materially stronger
   distillation target or a fair external comparator lane, not another small
   residual loss variant
+
+And a forty-sixth Expected Attention-style comparator update:
+
+> I then switched from method branches to the fastest fair extra comparator
+> lane: an in-repo **Expected Attention-style** sparse selector on top of the
+> same grouped-subspace transport + rank-4 residual checkpoint, still under the
+> shared-chat / `enable_thinking=False` Qwen control. This is an approximation
+> to the Expected Attention / KVPress family, not exact KVPress parity, because
+> it reuses our in-repo `attention_expected` scoring path rather than the
+> external library implementation. Held-out behavior was:
+> - `gsm8k_5`: `attention_expected = 0.200000` at `729,580.825` average bytes
+> - `gsm8k_5`: `attention_expected_shuffled = 0.200000` at `722,050.950`
+>   average bytes
+> - controlled `gsm8k_eval_10`: `attention_expected = 0.100000` at
+>   `727,855.375` average bytes
+> - controlled `gsm8k_eval_10`: `attention_expected_shuffled = 0.100000` at
+>   `720,900.538` average bytes
+
+Interpretation:
+
+- the in-repo Expected Attention-style comparator is fair enough to keep in the
+  paper as a query-aware sparse-control baseline
+- but it does **not** separate from its matched shuffled null on either the
+  cheap smoke or the controlled held-out slice
+- that makes it a useful **negative-boundary comparator**, not a new positive
+  method result
+- the right next step is still to move the internal method lane toward a
+  materially stronger teacher signal rather than another selector or local
+  bridge-loss variant
