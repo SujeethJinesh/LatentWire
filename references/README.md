@@ -334,6 +334,11 @@ Files `243_` through `245_` extend the stronger-teacher bridge backlog:
 - `244_`: X2I as an attention-distillation-across-architectures reference for supervising a small bridge by behavior rather than coordinates.
 - `245_`: CTPD as a reserve higher-level teacher reference if tokenizer-aware or output-side supervision becomes necessary.
 
+Files `246_` and `247_` extend the bridge-interpretability backlog:
+
+- `246_`: UniCrossAdapter as a modular-adapter reference if one monolithic bridge keeps saturating.
+- `247_`: AtP* as a paired-flip / component-localization reference for reviewer-facing interpretability artifacts.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

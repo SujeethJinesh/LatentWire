@@ -1667,6 +1667,7 @@ def test_bridge_ridge_qk_adapter_adds_query_conditioned_residual(monkeypatch) ->
         "bridge_ridge_qk_cab_adapter",
         "bridge_ridge_qk_emkd_adapter",
         "bridge_ridge_qk_readout_adapter",
+        "bridge_ridge_qk_predkl_adapter",
     ):
         tr = _make_identity_translator(
             monkeypatch,
@@ -1755,6 +1756,74 @@ def test_fit_from_pairs_bridge_ridge_qk_readout_adapter_populates_k_and_v_residu
     tr.fit_from_pairs(src_kvs, tgt_kvs)
 
     assert calls == ["V", "K"]
+    assert torch.allclose(tr.quant_query_resid_K_left[0], torch.ones_like(tr.quant_query_resid_K_left[0]))
+    assert torch.allclose(tr.quant_query_resid_V_left[0], torch.full_like(tr.quant_query_resid_V_left[0], 2.0))
+
+
+def test_fit_from_pairs_bridge_ridge_qk_predkl_adapter_passes_teacher_and_populates_k_and_v_residuals(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_predkl_adapter",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+
+    calls: list[tuple[float, bool, bool]] = []
+
+    def fake_fit(
+        self,
+        quantized,
+        predicted,
+        query_features,
+        base_prediction,
+        residual_target,
+        *,
+        rank,
+        prediction_distill_weight=0.0,
+        teacher_topk_log_probs=None,
+        teacher_topk_output_rows=None,
+        **kwargs,
+    ):
+        calls.append(
+            (
+                float(prediction_distill_weight),
+                teacher_topk_log_probs is not None,
+                teacher_topk_output_rows is not None,
+            )
+        )
+        fill = float(len(calls))
+        left = torch.full((self.d_t, rank), fill, dtype=residual_target.dtype)
+        right = torch.zeros(rank, self.d_t, dtype=residual_target.dtype)
+        right[0, 0] = fill
+        aux_left = torch.zeros_like(left)
+        aux_right = torch.zeros_like(right)
+        return left, right, aux_left, aux_right
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_residual_adapter", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert calls == [(0.25, True, True), (0.25, True, True)]
     assert torch.allclose(tr.quant_query_resid_K_left[0], torch.ones_like(tr.quant_query_resid_K_left[0]))
     assert torch.allclose(tr.quant_query_resid_V_left[0], torch.full_like(tr.quant_query_resid_V_left[0], 2.0))
 

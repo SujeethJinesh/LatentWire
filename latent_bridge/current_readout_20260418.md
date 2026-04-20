@@ -1828,3 +1828,29 @@ Interpretation:
 - that narrows the live lane further: the next bridge teacher likely has to be
   even closer to prediction space, such as approximate likelihood / logit
   matching, not another prompt-local structural loss
+
+And a fifty-fifth stronger-teacher bridge update:
+
+> I then implemented `bridge_ridge_qk_predkl_adapter`, the first explicit
+> prediction-level bridge teacher in this repo. This keeps the same
+> `grouped_subspace_transport + rank-4 residual` base and the same fair
+> shared-chat / `enable_thinking=False` Qwen control, but it replaces the
+> prompt-local structural teachers with a calibration-time **top-k next-token
+> teacher**. Concretely, the bridge now sees aligned target query features plus
+> a prompt-local approximate likelihood target built from the target model's
+> top-k next-token log-probabilities and output-embedding rows. On the full
+> 64-prompt calibration slice, offline fit was:
+> - `K` cosine `0.869`, relative Frobenius error `0.469`
+> - `V` cosine `0.393`, relative Frobenius error `0.908`
+> The first fair held-out smoke was still a clean negative:
+> - `gsm8k_5`: `0.000000` at `722,107.700` average bytes
+
+Interpretation:
+
+- the repo now has a real prediction-level / likelihood-style bridge-teacher
+  branch rather than only local structural teachers
+- but even that stronger teacher still died immediately on the first fair
+  held-out slice
+- so the stronger-teacher lane is still conceptually the right lane, but the
+  current **tiny local residual bridge** looks saturated even under a more
+  ambitious teacher target

@@ -843,3 +843,42 @@ So the highest-value next stack is now:
 2. keep `C2C` as the main external bar
 3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
 4. if we keep the method lane alive, the best next move is now a **prediction-level / stronger-teacher bridge** rather than another local bridge-loss tweak or another small geometry variant
+
+I then implemented the first explicit prediction-level bridge teacher:
+`bridge_ridge_qk_predkl_adapter`.
+
+This keeps the same `grouped_subspace_transport + rank-4 residual` base and
+the same fair shared-chat / `enable_thinking=false` Qwen control, but it
+replaces the prompt-local structural teachers with a calibration-time
+**top-k next-token teacher**. The bridge now sees aligned target query
+features plus an approximate likelihood target built from target next-token
+log-probabilities and output-embedding rows. On the full 64-prompt calibration
+slice, offline fit was:
+
+- `K` cosine: `0.869`
+- `K` relative Frobenius error: `0.469`
+- `V` cosine: `0.393`
+- `V` relative Frobenius error: `0.908`
+
+The first fair held-out smoke was a clean negative:
+
+- `gsm8k_5`: `0.0000`
+- bytes on the smoke slice: `722,107.7`
+
+That means:
+
+- the repo now contains a real prediction-level / likelihood-style bridge
+  branch rather than only local structural teachers
+- but even with that stronger teacher, the current tiny local residual bridge
+  still dies immediately on the first fair held-out slice
+- so the stronger-teacher lane is still the right conceptual lane, but the
+  next live step likely needs either a richer bridge family or a more direct
+  output-side teacher than the current low-capacity residual form
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
+4. if we keep the method lane alive, move to a **richer prediction-level bridge**
+   rather than another local bridge-loss tweak or another small geometry variant

@@ -252,6 +252,7 @@ def parse_args() -> argparse.Namespace:
             "bridge_ridge_qk_cab_adapter",
             "bridge_ridge_qk_emkd_adapter",
             "bridge_ridge_qk_readout_adapter",
+            "bridge_ridge_qk_predkl_adapter",
             "ridge",
             "low_rank",
         ],
@@ -1377,6 +1378,75 @@ def collect_aligned_query_features(
 
 
 @torch.no_grad()
+def collect_aligned_prediction_teacher(
+    model: AutoModelForCausalLM,
+    tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    aligned_lengths: Sequence[int],
+    max_length: int,
+    batch_size: int,
+    device: str,
+    topk: int = 8,
+    reasoning_mode: str = "plain",
+    use_chat_template: bool = False,
+    enable_thinking: bool | None = None,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    if len(aligned_lengths) != len(prompts):
+        raise ValueError(
+            f"aligned_lengths must match prompts, got {len(aligned_lengths)} lengths for {len(prompts)} prompts"
+        )
+    if topk <= 0:
+        raise ValueError("topk must be positive")
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    output_embeddings = model.get_output_embeddings()
+    if output_embeddings is None or getattr(output_embeddings, "weight", None) is None:
+        raise ValueError("Model must expose output embeddings for prediction-teacher collection")
+    output_weight = output_embeddings.weight.detach().to("cpu", dtype=torch.float32)
+
+    sample_log_probs: list[torch.Tensor] = []
+    sample_output_rows: list[torch.Tensor] = []
+    prompt_offset = 0
+    for batch in batched(prompts, batch_size):
+        batch_text = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=reasoning_mode,
+                tokenizer=tokenizer,
+                use_chat_template=use_chat_template,
+                enable_thinking=enable_thinking,
+            )
+            for prompt in batch
+        ]
+        enc = tokenizer(
+            batch_text,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        ).to(device)
+        out = model(**enc, use_cache=True, return_dict=True)
+        logits = out.logits.detach().to("cpu", dtype=torch.float32)
+        mask_cpu = enc["attention_mask"].to("cpu")
+        for batch_idx in range(mask_cpu.shape[0]):
+            prompt_idx = prompt_offset + batch_idx
+            valid_len = min(int(mask_cpu[batch_idx].sum().item()), int(aligned_lengths[prompt_idx]))
+            if valid_len <= 0:
+                continue
+            prompt_logits = logits[batch_idx, :valid_len]
+            prompt_log_z = torch.logsumexp(prompt_logits, dim=-1, keepdim=True)
+            k = min(int(topk), int(prompt_logits.shape[-1]))
+            top_logits, top_ids = torch.topk(prompt_logits, k=k, dim=-1)
+            sample_log_probs.append(top_logits - prompt_log_z)
+            sample_output_rows.append(output_weight[top_ids])
+        prompt_offset += len(batch)
+    if not sample_log_probs:
+        raise ValueError("Could not build aligned prediction teachers from calibration prompts")
+    return torch.cat(sample_log_probs, dim=0).cpu(), torch.cat(sample_output_rows, dim=0).cpu()
+
+
+@torch.no_grad()
 def collect_group_qk_retrieval_templates(
     model: AutoModelForCausalLM,
     tokenizer: AutoTokenizer,
@@ -1793,7 +1863,7 @@ def main() -> None:
             )
 
     aligned_lengths: list[int] | None = None
-    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter"}:
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter"}:
         aligned_lengths = collect_aligned_prompt_valid_lengths(
             tok_s,
             tok_t,
@@ -1902,7 +1972,7 @@ def main() -> None:
             f"layers={len(bridge_sample_weights)}, samples={int(bridge_sample_weights[0].numel())}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_cab_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_cab_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target query features for query-conditioned bridge projector/adapter "
@@ -1926,6 +1996,31 @@ def main() -> None:
         print(
             "Built aligned query features: "
             f"layers={len(bridge_query_features)}, samples={int(bridge_query_features[0].shape[0])}"
+        )
+
+    if args.quantization_correction == "bridge_ridge_qk_predkl_adapter":
+        assert aligned_lengths is not None
+        print(
+            "\nBuilding aligned target next-token teacher for prediction-level bridge distillation "
+            "(topk=8)..."
+        )
+        teacher_log_probs, teacher_output_rows = collect_aligned_prediction_teacher(
+            tgt,
+            tok_t,
+            prompts,
+            aligned_lengths=aligned_lengths,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            device=args.device,
+            topk=8,
+            reasoning_mode="plain",
+            use_chat_template=args.target_use_chat_template,
+            enable_thinking=target_enable_thinking,
+        )
+        translator.set_bridge_prediction_teacher(teacher_log_probs, teacher_output_rows)
+        print(
+            "Built aligned prediction teacher: "
+            f"samples={int(teacher_log_probs.shape[0])}, topk={int(teacher_log_probs.shape[1])}"
         )
 
     print("\nFitting closed-form alignments (Procrustes / ridge)...")
