@@ -313,3 +313,29 @@ The strongest sidecar consensus after this update is now:
    - add a tiny query-conditioned bridge / projector
    - use a richer target such as token-interaction or target-refinement
      distillation if the bridge is trained
+
+I then widened the bridge one more step with `bridge_ridge`: a full linear
+bridge over both the dequantized translated state and the pre-quant translated
+prediction, still on top of grouped-subspace transport + rank-4 residual. This
+was the first bridge branch to survive beyond tiny smokes:
+
+- `gsm8k_5`: `0.4000`
+- matched `gsm8k_eval_10`: `0.1000`
+- `gsm8k_gate_search_30`: `0.0667`
+- exact `gsm8k_eval_70`: `0.0429`
+
+That means:
+
+- the bridge lane is now the first internal method family that looks **stable
+  enough to keep pushing**
+- but it still does **not** beat grouped-subspace + rank-4 residual (`0.0571`)
+  or the old fixed-prior branch (`0.0857`)
+- so the strongest next positive-method shot is now **query-conditioned
+  bridge/projector on top of the live transport**, not another static transport
+  descriptor and not another evaluator-only overlay
+
+The cheapest missing fairness control is still:
+
+- Qwen3 prompt serialization / `enable_thinking=False` alignment in the main
+  evaluator, because the official Qwen3 docs say that non-thinking mode is the
+  setting that aligns Qwen3 with earlier Qwen2.5-Instruct behavior

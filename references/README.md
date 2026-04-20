@@ -280,6 +280,10 @@ Files `206_` through `208_` extend the bridge-and-geometry backlog:
 - `207_`: Complete Characterization of Gauge Symmetries in Transformer Architectures as the strongest recent symmetry note for why head identities and bases are not canonical.
 - `208_`: ViSpec as a lightweight adaptor / speculative-bridge reference from multimodal decoding that supports the current query-conditioned bridge lane.
 
+File `209_` records the prompt/control backlog:
+
+- `209_`: Qwen3 hybrid thinking and prompt controls as the official-source note for the next fairness ablation around `enable_thinking=False` and shared prompt serialization.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

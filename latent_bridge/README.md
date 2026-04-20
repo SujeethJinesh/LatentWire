@@ -181,10 +181,11 @@ python scripts/calibrate.py \
 - `--pre-quant-rank N` / `--pre-quant-shrinkage A` — apply a target-space
   low-rank/shrinkage filter before quantization. This is a denoising step
   after alignment, not a replacement for the alignment solver.
-- `--quantization-correction {none,affine,bridge_affine,ridge,low_rank}` —
+- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,ridge,low_rank}` —
   optional decoder-side correction after quantize/dequantize. `affine` is a
   diagonal scale+bias repair; `bridge_affine` is a coordinatewise bridge over
-  both the dequantized tensor and the pre-quant translated prediction; `ridge`
+  both the dequantized tensor and the pre-quant translated prediction;
+  `bridge_ridge` is a full linear bridge over those same two signals; `ridge`
   is a small full linear correction layer in rotated target space; `low_rank`
   is a reduced-rank bridge adapter in the same rotated target space. Pair `low_rank` with
   `--quantization-correction-rank <r>` to control the adapter size.

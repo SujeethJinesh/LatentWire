@@ -842,6 +842,30 @@ def test_calibrate_parse_args_accepts_bridge_affine_quantization_correction(monk
     assert args.quantization_correction == "bridge_affine"
 
 
+def test_calibrate_parse_args_accepts_bridge_ridge_quantization_correction(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "bridge_ridge",
+        ],
+    )
+
+    args = calibrate.parse_args()
+
+    assert args.quantization_correction == "bridge_ridge"
+
+
 def test_calibrate_parse_args_accepts_low_rank_quantization_correction(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

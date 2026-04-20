@@ -109,9 +109,9 @@ class TranslatorConfig:
     # Optional decoder-side correction after quantize/dequantize. `affine`
     # learns a diagonal scale+bias, `bridge_affine` learns a small coordinatewise
     # bridge over both the dequantized tensor and the pre-quant prediction,
-    # `ridge` learns a full linear map plus bias in rotated target space, and
-    # `low_rank` learns a reduced-rank linear map plus bias as a tiny bridge
-    # adapter.
+    # `bridge_ridge` learns a full linear bridge over both signals, `ridge`
+    # learns a full linear map plus bias in rotated target space, and `low_rank`
+    # learns a reduced-rank linear map plus bias as a tiny bridge adapter.
     quantization_correction: str = "none"
     quantization_correction_rank: int | None = None
 
@@ -270,6 +270,12 @@ class RotAlignKVTranslator(nn.Module):
         )
         self.quant_proj_V = nn.ParameterList(
             [nn.Parameter(torch.eye(self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_aux_proj_K = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_aux_proj_V = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_bias_K = nn.ParameterList(
             [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
@@ -1162,6 +1168,36 @@ class RotAlignKVTranslator(nn.Module):
             bias.to(dtype=target.dtype, device=target.device),
         )
 
+    def _fit_bridge_ridge_correction(
+        self,
+        quantized: torch.Tensor,
+        predicted: torch.Tensor,
+        target: torch.Tensor,
+        *,
+        lam: float,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        x = torch.cat([quantized.float(), predicted.float()], dim=-1)
+        y = target.float()
+        x_mean = x.mean(dim=0, keepdim=True)
+        y_mean = y.mean(dim=0, keepdim=True)
+        x_center = x - x_mean
+        y_center = y - y_mean
+        xtx = x_center.T @ x_center
+        eye = torch.eye(xtx.shape[0], dtype=xtx.dtype, device=xtx.device)
+        rhs = x_center.T @ y_center
+        system = xtx + lam * eye
+        try:
+            weight = torch.linalg.solve(system, rhs)
+        except RuntimeError:
+            weight = torch.linalg.pinv(system) @ rhs
+        bias = y_mean - x_mean @ weight
+        q_weight, aux_weight = weight[: self.d_t], weight[self.d_t :]
+        return (
+            q_weight.to(dtype=target.dtype, device=target.device),
+            aux_weight.to(dtype=target.dtype, device=target.device),
+            bias.to(dtype=target.dtype, device=target.device),
+        )
+
     def _fit_ridge_correction(
         self,
         quantized: torch.Tensor,
@@ -1338,11 +1374,13 @@ class RotAlignKVTranslator(nn.Module):
             scale = self.quant_scale_K[tgt_layer_idx]
             aux_scale = self.quant_aux_scale_K[tgt_layer_idx]
             proj = self.quant_proj_K[tgt_layer_idx]
+            aux_proj = self.quant_aux_proj_K[tgt_layer_idx]
             bias = self.quant_bias_K[tgt_layer_idx]
         elif kind == "V":
             scale = self.quant_scale_V[tgt_layer_idx]
             aux_scale = self.quant_aux_scale_V[tgt_layer_idx]
             proj = self.quant_proj_V[tgt_layer_idx]
+            aux_proj = self.quant_aux_proj_V[tgt_layer_idx]
             bias = self.quant_bias_V[tgt_layer_idx]
         else:
             raise ValueError(f"Unknown correction kind: {kind}")
@@ -1354,6 +1392,14 @@ class RotAlignKVTranslator(nn.Module):
             return (
                 x * scale.to(device=x.device, dtype=x.dtype)
                 + aux_input * aux_scale.to(device=x.device, dtype=x.dtype)
+                + bias.to(device=x.device, dtype=x.dtype)
+            )
+        if self.config.quantization_correction == "bridge_ridge":
+            if aux_input is None:
+                raise ValueError("bridge_ridge quantization correction requires aux_input")
+            return (
+                x @ proj.to(device=x.device, dtype=x.dtype)
+                + aux_input @ aux_proj.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
         if self.config.quantization_correction in {"ridge", "low_rank"}:
@@ -1796,6 +1842,8 @@ class RotAlignKVTranslator(nn.Module):
             self.quant_aux_scale_V[tgt_l].data.zero_()
             self.quant_proj_K[tgt_l].data.copy_(torch.eye(self.d_t, dtype=self.quant_proj_K[tgt_l].dtype))
             self.quant_proj_V[tgt_l].data.copy_(torch.eye(self.d_t, dtype=self.quant_proj_V[tgt_l].dtype))
+            self.quant_aux_proj_K[tgt_l].data.zero_()
+            self.quant_aux_proj_V[tgt_l].data.zero_()
             self.quant_bias_K[tgt_l].data.zero_()
             self.quant_bias_V[tgt_l].data.zero_()
             K_pred = (Xk @ W_K) @ pre_quant_filter_k
@@ -1816,6 +1864,25 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_scale_V[tgt_l].data.copy_(scale_v.to(self.quant_scale_V[tgt_l].dtype))
                 self.quant_aux_scale_K[tgt_l].data.copy_(aux_scale_k.to(self.quant_aux_scale_K[tgt_l].dtype))
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
+                self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
+                self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
+            elif self.config.quantization_correction == "bridge_ridge":
+                proj_k, aux_proj_k, bias_k = self._fit_bridge_ridge_correction(
+                    K_quant,
+                    K_pred,
+                    Yk_fit,
+                    lam=self.config.ridge_lambda,
+                )
+                proj_v, aux_proj_v, bias_v = self._fit_bridge_ridge_correction(
+                    V_quant,
+                    V_pred,
+                    Yv_fit,
+                    lam=self.config.ridge_lambda,
+                )
+                self.quant_proj_K[tgt_l].data.copy_(proj_k.to(self.quant_proj_K[tgt_l].dtype))
+                self.quant_proj_V[tgt_l].data.copy_(proj_v.to(self.quant_proj_V[tgt_l].dtype))
+                self.quant_aux_proj_K[tgt_l].data.copy_(aux_proj_k.to(self.quant_aux_proj_K[tgt_l].dtype))
+                self.quant_aux_proj_V[tgt_l].data.copy_(aux_proj_v.to(self.quant_aux_proj_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
             elif self.config.quantization_correction == "ridge":

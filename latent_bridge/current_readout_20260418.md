@@ -1338,3 +1338,30 @@ Interpretation:
 - the adapter lane is still weakly alive, but the next bridge-style step
   probably has to be **query-conditioned or trained against a richer
   interaction target**, not another static linear repair
+
+And a thirty-seventh bridge-ridge correction update:
+
+> I then widened that bridge one more step, replacing the coordinatewise
+> `bridge_affine` repair with a full `bridge_ridge` correction over both the
+> dequantized translated tensor and the pre-quant translated prediction, while
+> keeping the same grouped-subspace transport, the same rank-4 residual, and
+> the same `64`-prompt calibration slice. Calibration fit again looked the same
+> as the older grouped-subspace family (`K` cosine `0.881`, relative Frobenius
+> error `0.452`; `V` cosine `0.399`, relative Frobenius error `0.915`), but
+> the held-out behavior finally stabilized beyond a one-off smoke:
+> - `gsm8k_5`: `0.400000` at `298,063.425` average bytes
+> - matched `gsm8k_eval_10`: `0.100000` at `297,233.538` average bytes
+> - `gsm8k_gate_search_30`: `0.066667` at `307,244.558` average bytes
+> - exact `gsm8k_eval_70`: `0.042857` at `295,614.896` average bytes
+
+Interpretation:
+
+- this is the **first bridge-style branch that survives multiple held-out
+  slices** instead of collapsing immediately after the first smoke
+- it still does **not** beat the best internal transport-plus-correction branch
+  (`grouped_subspace + rank-4 residual = 0.0571`) and it still stays well
+  below the old fixed-prior bar (`0.0857`)
+- the bridge lane is therefore now a **real live method family**, but not yet a
+  positive-method win
+- the strongest next bridge step is now likely **query-conditioned or
+  distillation-shaped**, not another static linear variant

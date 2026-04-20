@@ -15,6 +15,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `gsm8k_eval_70` | grouped signature transport | `0.0429` | `147,812.6` | best current transport-only branch |
 | `gsm8k_eval_70` | grouped subspace transport | `0.0429` | `147,812.6` | tied grouped signature transport |
 | `gsm8k_eval_70` | grouped subspace transport + rank-4 residual | `0.0571` | `145,508.8` | best current transport-plus-correction branch |
+| `gsm8k_eval_70` | grouped subspace transport + rank-4 residual + bridge-ridge correction | `0.0429` | `295,614.9` | first bridge branch that survives held-out slices, but still below the live internal bars |
 | `gsm8k_eval_70` | grouped subspace transport + rank-4 residual + QK-fidelity budget | `0.0429` | `157,989.2` | query-conditioned per-head budget on top of the best transport-plus-correction checkpoint |
 | `gsm8k_eval_70` | grouped covariance transport + rank-4 residual | `0.0143` | `146,417.7` | covariance-aware transport-plus-correction failure |
 | `gsm8k_eval_70` | grouped template transport + rank-4 residual | `0.0429` | `150,038.8` | attention-template transport-plus-correction probe (`64`-prompt calibration slice) |
@@ -52,6 +53,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 - Best external baseline is still `C2C`, and it beats us on both GSM and SVAMP.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
+- The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.
 - A genuinely query-conditioned QK-fidelity budget on top of that same best transport-plus-correction checkpoint recovers only to `0.0429`, so live query-conditioning alone is still not enough.
 - A covariance-aware version of that same transport-plus-correction branch falls back to `0.0143`, so covariance geometry is not the next shortcut here.
 - A calibration-time attention-template version of that same branch lands at `0.0429`, so light behavior matching inside the current grouped solver is also not enough.
