@@ -212,6 +212,8 @@ Interpretation:
 - immediate comparator priority is now:
   1. `C2C` as the main bar
   2. `DeltaKV` as the next residual-style compression control
-  3. `KVzip` as the next already-cloned compression-side control
-  4. `Quest` as the next query-aware pruning control
-  5. `KVComm` as a lower-priority adjacent replay
+  3. `DapQ` as the next decoding-aligned query-aware control if the public
+     code path becomes practical
+  4. `KVzip` as the next already-cloned compression-side control
+  5. `Quest` as the next query-aware pruning control
+  6. `KVComm` as a lower-priority adjacent replay

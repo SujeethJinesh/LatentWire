@@ -2068,3 +2068,35 @@ Interpretation:
 - that strengthens the case that the next live branch has to be a **more
   explicit attention/module replacement** or a richer dynamic output-alignment
   mechanism, not another small projector or residual variation
+
+And a sixty-fourth attention-interface update:
+
+> I then implemented `bridge_ridge_qk_xattn_adapter`, the first explicit
+> **attention-side transfer module** in the current bridge family. It keeps the
+> same `grouped_subspace_transport + rank-4 residual` base and the same fair
+> shared-chat / `enable_thinking=False` Qwen control, but it replaces the
+> small residual-style shared bridge with a tiny query-conditioned
+> cross-attention module over live K/V-side transport signals
+> (`x`, `aux_input`, `paired_input`, `paired_aux_input`).
+>
+> On the same 64-prompt calibration slice, offline fit again stayed at:
+> - `K` cosine `0.870`, relative Frobenius error `0.468`
+> - `V` cosine `0.397`, relative Frobenius error `0.907`
+>
+> Under the matched-bytes fair controlled regime, the held-out reads were:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- the first explicit attention-side transfer module is **weakly alive**
+- but it still only ties the controlled `target_alone` floor rather than
+  beating it
+- that means the current modular-interface lane is still alive only in the
+  weakest possible sense: new interface classes can survive the controlled
+  slice, but they are still not producing a positive method result
+- the next serious method pivots should now be even more concrete:
+  - an actual **module replacement** in the Attention Editing / LLM Modules
+    direction, or
+  - a richer **dynamic output-alignment teacher** with explicit contextual
+    remapping, not another small reweighting of the same top-k rows

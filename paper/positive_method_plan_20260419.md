@@ -1153,3 +1153,37 @@ That means:
     Editing / LLM Modules direction
   - or a richer contextual token/output mapping teacher on top of a genuinely
     different interface
+
+I then tested the smallest explicit attention-side transfer-module version of
+that idea directly as `bridge_ridge_qk_xattn_adapter`.
+
+This keeps the same grouped-subspace transport + rank-4 residual base, but it
+replaces the residual-style shared bridge with a tiny query-conditioned
+cross-attention module over the live K/V-side transport signals
+(`x`, `aux_input`, `paired_input`, `paired_aux_input`).
+
+On the same 64-prompt calibration slice, offline fit remained:
+
+- `K` cosine `0.870`, relative Frobenius error `0.468`
+- `V` cosine `0.397`, relative Frobenius error `0.907`
+
+Under the matched-bytes fair controlled regime, the held-out reads were:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- the first explicit attention-side transfer module is **weakly alive**
+- but it still only ties the controlled `target-alone` floor
+- the current live methodological conclusion is now sharper:
+  - tiny residual bridges are saturated
+  - small projector variants are saturated
+  - the first explicit attention-side transfer module still does not beat the
+    floor
+- so the next serious positive-method shot should be either:
+  - a more complete **module replacement** in the Attention Editing / LLM
+    Modules direction
+  - or a stronger **dynamic output-alignment teacher** with explicit
+    contextual remapping rather than another local top-k reweighting
