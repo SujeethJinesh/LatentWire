@@ -1896,6 +1896,34 @@ And a fifty-seventh paper-artifact update:
 > - controlled `gsm8k_eval_10`: `target-alone = 0.1000`, `bridge_ridge = 0.1000`, `grouped_rotational_transport = 0.1000`, `grouped_fitted_rotation_transport = 0.1000`, `grouped_shared_basis_transport = 0.1000`, exact `KVPress no-press = 0.1000`, exact `ExpectedAttentionPress = 0.1000`
 > - paired flips: `fixed_prior` still beats its shuffled null, `grouped_subspace_resid4` still loses to `fixed_prior`, `bridge_ridge` still does not recover that gap, and none of the controlled survivors beat the controlled target floor
 
+And a fifty-eighth modular-interface update:
+
+> I then implemented `bridge_ridge_qk_asym_adapter`, the first explicit
+> **shared-plus-private modular bridge** in this repo. It keeps the same
+> `grouped_subspace_transport + rank-4 residual` base and the same fair
+> shared-chat / `enable_thinking=False` Qwen control, but it replaces the
+> fully separate K-side and V-side query adapters with one shared
+> query-conditioned bottleneck plus private K and V residual heads. This is the
+> closest branch here to an AsymLoRA-style interface rather than another
+> monolithic tiny residual.
+>
+> On the 64-prompt calibration slice, offline fit was:
+> - `K` cosine `0.870`, relative Frobenius error `0.468`
+> - `V` cosine `0.397`, relative Frobenius error `0.907`
+>
+> Under the matched-bytes fair controlled regime, the held-out reads were:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- the first materially different shared-plus-private modular interface is
+  **weakly alive**
+- but it still only ties the controlled `target_alone` floor rather than
+  beating it
+- so the modular-interface lane remains plausible, but this first AsymLoRA-
+  style bridge is not yet a positive method result
+
 Interpretation:
 
 - the repo now has a machine-readable frontier and paired-flip layer that is

@@ -14,11 +14,13 @@
 | gsm8k_eval_70 | C2C | external comparator | 0.1286 | - | main external fair bar |
 | gsm8k_eval_10_controlled | target-alone | control | 0.1000 | 0 | shared chat serialization + enable_thinking=false |
 | gsm8k_eval_10_controlled | bridge_ridge | bridge | 0.1000 | 340,376.0 | fair controlled bridge baseline |
+| gsm8k_eval_10_controlled | shared-plus-private asym adapter | modular bridge | 0.1000 | 681,668.4 | AsymLoRA-style shared bottleneck plus private K/V residual heads |
 | gsm8k_eval_10_controlled | grouped rotational transport | geometry | 0.1000 | 681,668.4 | first geometry-side branch to survive the controlled slice |
 | gsm8k_eval_10_controlled | grouped fitted rotation transport | geometry | 0.1000 | 681,668.4 | calibration-fit gauge-fixing follow-up |
 | gsm8k_eval_10_controlled | grouped shared-basis transport | geometry | 0.1000 | 681,668.4 | shared-basis coefficient-space transport |
 | gsm8k_eval_10_controlled | KVPress no-press | external comparator | 0.1000 | - | exact external KVPress harness floor |
 | gsm8k_eval_10_controlled | KVPress ExpectedAttentionPress | external comparator | 0.1000 | - | exact external Expected Attention comparator |
+| gsm8k_5_controlled_smoke | shared-plus-private asym adapter | modular bridge | 0.2000 | 686,026.6 | AsymLoRA-style shared-plus-private bridge survives smoke and controlled slice |
 | gsm8k_5_controlled_smoke | readout adapter | stronger-teacher bridge | 0.2000 | 686,026.6 | stronger prompt-local teacher survives smoke only |
 | gsm8k_5_controlled_smoke | prediction-KL adapter | stronger-teacher bridge | 0.0000 | 722,107.7 | first prediction-level bridge teacher |
 | gsm8k_5_controlled_smoke | prediction-KL bank | stronger-teacher bridge | 0.0000 | 722,107.7 | small modular bank follow-up to prediction-level teacher |

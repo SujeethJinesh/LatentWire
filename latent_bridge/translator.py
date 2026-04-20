@@ -140,8 +140,12 @@ class TranslatorConfig:
     # instead matches prompt-local token-interaction distributions inspired by
     # richer relational distillation, `bridge_ridge_qk_readout_adapter`
     # distills prompt-local attention readouts so the teacher is closer to
-    # layer-level prediction behavior, and `bridge_ridge_qk_predkl_adapter`
-    # distills a top-k next-token teacher during calibration; `ridge` learns a
+    # layer-level prediction behavior, `bridge_ridge_qk_predkl_adapter`
+    # distills a top-k next-token teacher during calibration, and
+    # `bridge_ridge_qk_asym_adapter` upgrades the tiny residual bridge to a
+    # shared-plus-private modular interface: one shared query-conditioned
+    # bottleneck is fit jointly for K and V, then private K/V residual heads
+    # sit on top of that shared bridge; `ridge` learns a
     # full linear map plus bias
     # in rotated
     # target space, and `low_rank` learns a reduced-rank linear map plus bias
@@ -371,6 +375,18 @@ class RotAlignKVTranslator(nn.Module):
             [nn.Parameter(torch.zeros(self.d_t, bridge_rank), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_query_aux_resid_V_right = nn.ParameterList(
+            [nn.Parameter(torch.zeros(bridge_rank, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_shared_left = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, bridge_rank), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_shared_aux_left = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, bridge_rank), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_shared_K_right = nn.ParameterList(
+            [nn.Parameter(torch.zeros(bridge_rank, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_shared_V_right = nn.ParameterList(
             [nn.Parameter(torch.zeros(bridge_rank, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_bias_K = nn.ParameterList(
@@ -1912,6 +1928,118 @@ class RotAlignKVTranslator(nn.Module):
             aux_right.detach().to(dtype=residual_target.dtype, device=residual_target.device),
         )
 
+    def _fit_bridge_query_shared_residual_adapter(
+        self,
+        quantized_k: torch.Tensor,
+        predicted_k: torch.Tensor,
+        quantized_v: torch.Tensor,
+        predicted_v: torch.Tensor,
+        query_features: torch.Tensor,
+        base_prediction_k: torch.Tensor,
+        base_prediction_v: torch.Tensor,
+        residual_target_k: torch.Tensor,
+        residual_target_v: torch.Tensor,
+        *,
+        rank: int,
+        steps: int = 100,
+        lr: float = 5e-2,
+        logit_weight: float = 0.5,
+    ) -> tuple[torch.Tensor, ...]:
+        tensors = (
+            quantized_k.float(),
+            predicted_k.float(),
+            quantized_v.float(),
+            predicted_v.float(),
+            query_features.float(),
+            base_prediction_k.float(),
+            base_prediction_v.float(),
+            residual_target_k.float(),
+            residual_target_v.float(),
+        )
+        shapes = sorted({tuple(t.shape) for t in tensors})
+        if len(shapes) != 1:
+            raise ValueError(f"all shared adapter tensors must match, got shapes {shapes}")
+
+        qk, pk, qv, pv, query, base_k, base_v, target_k, target_v = tensors
+        rank = max(1, min(int(rank), self.d_t))
+        gen = torch.Generator(device="cpu").manual_seed(871_337 + int(self.config.seed) * 131 + int(rank))
+        scale = 1e-2
+
+        shared_left = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        shared_aux_left = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        shared_k_right = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        shared_v_right = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        priv_k_left = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        priv_k_right = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        priv_k_aux_left = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        priv_k_aux_right = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        priv_v_left = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        priv_v_right = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+        priv_v_aux_left = torch.nn.Parameter(torch.randn(self.d_t, rank, generator=gen, dtype=torch.float32) * scale)
+        priv_v_aux_right = torch.nn.Parameter(torch.randn(rank, self.d_t, generator=gen, dtype=torch.float32) * scale)
+
+        optimizer = torch.optim.Adam(
+            [
+                shared_left,
+                shared_aux_left,
+                shared_k_right,
+                shared_v_right,
+                priv_k_left,
+                priv_k_right,
+                priv_k_aux_left,
+                priv_k_aux_right,
+                priv_v_left,
+                priv_v_right,
+                priv_v_aux_left,
+                priv_v_aux_right,
+            ],
+            lr=float(lr),
+        )
+
+        with torch.enable_grad():
+            for _ in range(max(1, int(steps))):
+                optimizer.zero_grad(set_to_none=True)
+                shared_query = 0.5 * ((qk + qv) * query)
+                shared_aux = 0.5 * ((pk + pv) * query)
+                shared_latent = shared_query @ shared_left + shared_aux @ shared_aux_left
+
+                pred_k = (
+                    shared_latent @ shared_k_right
+                    + ((qk * query) @ priv_k_left) @ priv_k_right
+                    + ((pk * query) @ priv_k_aux_left) @ priv_k_aux_right
+                )
+                pred_v = (
+                    shared_latent @ shared_v_right
+                    + ((qv * query) @ priv_v_left) @ priv_v_right
+                    + ((pv * query) @ priv_v_aux_left) @ priv_v_aux_right
+                )
+
+                loss = F.mse_loss(pred_k, target_k) + F.mse_loss(pred_v, target_v)
+                logit_pred_k = ((base_k + pred_k) * query).sum(dim=-1)
+                logit_tgt_k = ((base_k + target_k) * query).sum(dim=-1)
+                logit_pred_v = ((base_v + pred_v) * query).sum(dim=-1)
+                logit_tgt_v = ((base_v + target_v) * query).sum(dim=-1)
+                loss = loss + float(logit_weight) * (
+                    F.mse_loss(logit_pred_k, logit_tgt_k) + F.mse_loss(logit_pred_v, logit_tgt_v)
+                )
+                loss.backward()
+                optimizer.step()
+
+        return (
+            shared_left.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            shared_aux_left.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            shared_k_right.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            shared_v_right.detach().to(dtype=residual_target_v.dtype, device=residual_target_v.device),
+            priv_k_left.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            priv_k_right.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            priv_k_aux_left.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            priv_k_aux_right.detach().to(dtype=residual_target_k.dtype, device=residual_target_k.device),
+            priv_v_left.detach().to(dtype=residual_target_v.dtype, device=residual_target_v.device),
+            priv_v_right.detach().to(dtype=residual_target_v.dtype, device=residual_target_v.device),
+            priv_v_aux_left.detach().to(dtype=residual_target_v.dtype, device=residual_target_v.device),
+            priv_v_aux_right.detach().to(dtype=residual_target_v.dtype, device=residual_target_v.device),
+        )
+
     def _factorize_low_rank_matrix(
         self,
         weight: torch.Tensor,
@@ -2395,6 +2523,8 @@ class RotAlignKVTranslator(nn.Module):
         kind: str,
         *,
         aux_input: torch.Tensor | None = None,
+        paired_input: torch.Tensor | None = None,
+        paired_aux_input: torch.Tensor | None = None,
         runtime_profile: torch.Tensor | None = None,
         runtime_query_features: torch.Tensor | None = None,
     ) -> torch.Tensor:
@@ -2411,6 +2541,9 @@ class RotAlignKVTranslator(nn.Module):
             query_resid_right = self.quant_query_resid_K_right[tgt_layer_idx]
             query_aux_resid_left = self.quant_query_aux_resid_K_left[tgt_layer_idx]
             query_aux_resid_right = self.quant_query_aux_resid_K_right[tgt_layer_idx]
+            shared_left = self.quant_query_shared_left[tgt_layer_idx]
+            shared_aux_left = self.quant_query_shared_aux_left[tgt_layer_idx]
+            shared_right = self.quant_query_shared_K_right[tgt_layer_idx]
             bias = self.quant_bias_K[tgt_layer_idx]
             bank_left = self.bridge_bank_proj_K_left[tgt_layer_idx]
             bank_right = self.bridge_bank_proj_K_right[tgt_layer_idx]
@@ -2432,6 +2565,9 @@ class RotAlignKVTranslator(nn.Module):
             query_resid_right = self.quant_query_resid_V_right[tgt_layer_idx]
             query_aux_resid_left = self.quant_query_aux_resid_V_left[tgt_layer_idx]
             query_aux_resid_right = self.quant_query_aux_resid_V_right[tgt_layer_idx]
+            shared_left = self.quant_query_shared_left[tgt_layer_idx]
+            shared_aux_left = self.quant_query_shared_aux_left[tgt_layer_idx]
+            shared_right = self.quant_query_shared_V_right[tgt_layer_idx]
             bias = self.quant_bias_V[tgt_layer_idx]
             bank_left = self.bridge_bank_proj_V_left[tgt_layer_idx]
             bank_right = self.bridge_bank_proj_V_right[tgt_layer_idx]
@@ -2509,7 +2645,7 @@ class RotAlignKVTranslator(nn.Module):
                 + (aux_input * qfeat) @ query_aux_proj.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
-        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter"}:
+        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter"}:
             if aux_input is None:
                 raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
             if runtime_query_features is None:
@@ -2550,6 +2686,19 @@ class RotAlignKVTranslator(nn.Module):
                 + ((aux_input * qfeat) @ query_aux_resid_left.to(device=x.device, dtype=x.dtype))
                 @ query_aux_resid_right.to(device=x.device, dtype=x.dtype)
             )
+            if self.config.quantization_correction == "bridge_ridge_qk_asym_adapter":
+                if paired_input is None or paired_aux_input is None:
+                    raise ValueError("bridge_ridge_qk_asym_adapter requires paired_input and paired_aux_input")
+                shared_query = 0.5 * (
+                    (x + paired_input.to(device=x.device, dtype=x.dtype)) * qfeat
+                )
+                shared_aux = 0.5 * (
+                    (aux_input + paired_aux_input.to(device=x.device, dtype=x.dtype)) * qfeat
+                )
+                resid = resid + (
+                    shared_query @ shared_left.to(device=x.device, dtype=x.dtype)
+                    + shared_aux @ shared_aux_left.to(device=x.device, dtype=x.dtype)
+                ) @ shared_right.to(device=x.device, dtype=x.dtype)
             return base + resid
         if self.config.quantization_correction == "bridge_ridge_query":
             if aux_input is None:
@@ -2707,6 +2856,8 @@ class RotAlignKVTranslator(nn.Module):
                     tgt_layer_idx,
                     "K",
                     aux_input=K_pred,
+                    paired_input=V_q,
+                    paired_aux_input=V_pred,
                     runtime_profile=runtime_attention_profile,
                     runtime_query_features=runtime_query_features,
                 )
@@ -2715,6 +2866,8 @@ class RotAlignKVTranslator(nn.Module):
                     tgt_layer_idx,
                     "V",
                     aux_input=V_pred,
+                    paired_input=K_q,
+                    paired_aux_input=K_pred,
                     runtime_profile=runtime_attention_profile,
                     runtime_query_features=runtime_query_features,
                 )
@@ -2725,6 +2878,8 @@ class RotAlignKVTranslator(nn.Module):
                         tgt_layer_idx,
                         "K" if salt == 0 else "V",
                         aux_input=x,
+                        paired_input=V_q if salt == 0 else K_q,
+                        paired_aux_input=V_pred if salt == 0 else K_pred,
                         runtime_profile=runtime_attention_profile,
                         runtime_query_features=runtime_query_features,
                     )
@@ -3103,6 +3258,10 @@ class RotAlignKVTranslator(nn.Module):
             self.quant_query_resid_V_right[tgt_l].data.zero_()
             self.quant_query_aux_resid_V_left[tgt_l].data.zero_()
             self.quant_query_aux_resid_V_right[tgt_l].data.zero_()
+            self.quant_query_shared_left[tgt_l].data.zero_()
+            self.quant_query_shared_aux_left[tgt_l].data.zero_()
+            self.quant_query_shared_K_right[tgt_l].data.zero_()
+            self.quant_query_shared_V_right[tgt_l].data.zero_()
             self.quant_bias_K[tgt_l].data.zero_()
             self.quant_bias_V[tgt_l].data.zero_()
             self.bridge_bank_proj_K_left[tgt_l].data.zero_()
@@ -3143,7 +3302,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter"}:
                 sample_weights = None
                 if self.config.quantization_correction == "bridge_ridge_qk_weighted":
                     if self._bridge_sample_weights is None:
@@ -3192,7 +3351,7 @@ class RotAlignKVTranslator(nn.Module):
                         lam=self.config.ridge_lambda,
                         sample_weights=sample_weights,
                     )
-                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter"}:
+                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter"}:
                         if self._bridge_sample_query_features is None:
                             raise ValueError(
                                 f"{self.config.quantization_correction} requires bridge sample query features; "
@@ -3221,44 +3380,75 @@ class RotAlignKVTranslator(nn.Module):
                                 )
                             teacher_log_probs = self._bridge_prediction_teacher_log_probs.to(device=Xk.device)
                             teacher_output_rows = self._bridge_prediction_teacher_output_rows.to(device=Xk.device)
-                        left_k, right_k, aux_left_k, aux_right_k = self._fit_bridge_query_residual_adapter(
-                            K_quant,
-                            K_pred,
-                            query_features,
-                            base_k,
-                            resid_target_k,
-                            rank=int(self.config.quantization_correction_rank or 8),
-                            affinity_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_affinity_adapter" else 0.0,
-                            attention_kl_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_attnkl_adapter" else 0.0,
-                            local_attention_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_cab_adapter" else 0.0,
-                            interaction_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_emkd_adapter" else 0.0,
-                            readout_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else 0.0,
-                            prediction_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_predkl_adapter" else 0.0,
-                            teacher_topk_log_probs=teacher_log_probs,
-                            teacher_topk_output_rows=teacher_output_rows,
-                            readout_partner=Yv_fit if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else None,
-                            readout_partner_kind="V" if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else None,
-                            sample_prompt_ids=sample_prompt_ids,
-                        )
-                        left_v, right_v, aux_left_v, aux_right_v = self._fit_bridge_query_residual_adapter(
-                            V_quant,
-                            V_pred,
-                            query_features,
-                            base_v,
-                            resid_target_v,
-                            rank=int(self.config.quantization_correction_rank or 8),
-                            affinity_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_affinity_adapter" else 0.0,
-                            attention_kl_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_attnkl_adapter" else 0.0,
-                            local_attention_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_cab_adapter" else 0.0,
-                            interaction_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_emkd_adapter" else 0.0,
-                            readout_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else 0.0,
-                            prediction_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_predkl_adapter" else 0.0,
-                            teacher_topk_log_probs=teacher_log_probs,
-                            teacher_topk_output_rows=teacher_output_rows,
-                            readout_partner=Yk_fit if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else None,
-                            readout_partner_kind="K" if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else None,
-                            sample_prompt_ids=sample_prompt_ids,
-                        )
+                        if self.config.quantization_correction == "bridge_ridge_qk_asym_adapter":
+                            (
+                                shared_left,
+                                shared_aux_left,
+                                shared_k_right,
+                                shared_v_right,
+                                left_k,
+                                right_k,
+                                aux_left_k,
+                                aux_right_k,
+                                left_v,
+                                right_v,
+                                aux_left_v,
+                                aux_right_v,
+                            ) = self._fit_bridge_query_shared_residual_adapter(
+                                K_quant,
+                                K_pred,
+                                V_quant,
+                                V_pred,
+                                query_features,
+                                base_k,
+                                base_v,
+                                resid_target_k,
+                                resid_target_v,
+                                rank=int(self.config.quantization_correction_rank or 8),
+                            )
+                            self.quant_query_shared_left[tgt_l].data.copy_(shared_left.to(self.quant_query_shared_left[tgt_l].dtype))
+                            self.quant_query_shared_aux_left[tgt_l].data.copy_(shared_aux_left.to(self.quant_query_shared_aux_left[tgt_l].dtype))
+                            self.quant_query_shared_K_right[tgt_l].data.copy_(shared_k_right.to(self.quant_query_shared_K_right[tgt_l].dtype))
+                            self.quant_query_shared_V_right[tgt_l].data.copy_(shared_v_right.to(self.quant_query_shared_V_right[tgt_l].dtype))
+                        else:
+                            left_k, right_k, aux_left_k, aux_right_k = self._fit_bridge_query_residual_adapter(
+                                K_quant,
+                                K_pred,
+                                query_features,
+                                base_k,
+                                resid_target_k,
+                                rank=int(self.config.quantization_correction_rank or 8),
+                                affinity_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_affinity_adapter" else 0.0,
+                                attention_kl_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_attnkl_adapter" else 0.0,
+                                local_attention_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_cab_adapter" else 0.0,
+                                interaction_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_emkd_adapter" else 0.0,
+                                readout_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else 0.0,
+                                prediction_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_predkl_adapter" else 0.0,
+                                teacher_topk_log_probs=teacher_log_probs,
+                                teacher_topk_output_rows=teacher_output_rows,
+                                readout_partner=Yv_fit if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else None,
+                                readout_partner_kind="V" if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else None,
+                                sample_prompt_ids=sample_prompt_ids,
+                            )
+                            left_v, right_v, aux_left_v, aux_right_v = self._fit_bridge_query_residual_adapter(
+                                V_quant,
+                                V_pred,
+                                query_features,
+                                base_v,
+                                resid_target_v,
+                                rank=int(self.config.quantization_correction_rank or 8),
+                                affinity_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_affinity_adapter" else 0.0,
+                                attention_kl_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_attnkl_adapter" else 0.0,
+                                local_attention_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_cab_adapter" else 0.0,
+                                interaction_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_emkd_adapter" else 0.0,
+                                readout_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else 0.0,
+                                prediction_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_predkl_adapter" else 0.0,
+                                teacher_topk_log_probs=teacher_log_probs,
+                                teacher_topk_output_rows=teacher_output_rows,
+                                readout_partner=Yk_fit if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else None,
+                                readout_partner_kind="K" if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else None,
+                                sample_prompt_ids=sample_prompt_ids,
+                            )
                         self.quant_query_resid_K_left[tgt_l].data.copy_(left_k.to(self.quant_query_resid_K_left[tgt_l].dtype))
                         self.quant_query_resid_K_right[tgt_l].data.copy_(right_k.to(self.quant_query_resid_K_right[tgt_l].dtype))
                         self.quant_query_aux_resid_K_left[tgt_l].data.copy_(aux_left_k.to(self.quant_query_aux_resid_K_left[tgt_l].dtype))
@@ -3588,7 +3778,7 @@ class RotAlignKVTranslator(nn.Module):
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
             fit_runtime_query_features = None
-            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
                 if self._bridge_sample_query_features is None:
                     raise ValueError(
                         f"{self.config.quantization_correction} requires bridge sample query features during fit; "
@@ -3602,6 +3792,8 @@ class RotAlignKVTranslator(nn.Module):
                 tgt_l,
                 "K",
                 aux_input=K_pred,
+                paired_input=V_quant,
+                paired_aux_input=V_pred,
                 runtime_query_features=fit_runtime_query_features,
             )
             V_runtime = V_quant if self.config.quantization_correction == "none" else self._apply_quantization_correction(
@@ -3609,6 +3801,8 @@ class RotAlignKVTranslator(nn.Module):
                 tgt_l,
                 "V",
                 aux_input=V_pred,
+                paired_input=K_quant,
+                paired_aux_input=K_pred,
                 runtime_query_features=fit_runtime_query_features,
             )
             if self.config.use_target_whitening:

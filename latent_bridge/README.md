@@ -223,6 +223,10 @@ python scripts/calibrate.py \
   `bridge_ridge_qk_predkl_adapter` keeps the same learned residual form but
   supervises it with a calibration-time top-k next-token teacher so the bridge
   is pushed toward prediction-space behavior rather than only local structure;
+  `bridge_ridge_qk_asym_adapter` replaces the fully separate K-side and V-side
+  query adapters with one shared query-conditioned bottleneck plus private K
+  and V residual heads, so the bridge can learn shared structure before
+  specializing its corrections;
   all of the `bridge_ridge_qk_*adapter` variants now fit both K-side and
   V-side query-conditioned residuals during calibration rather than only a
   K-side residual;
@@ -237,7 +241,7 @@ python scripts/calibrate.py \
   `bridge_ridge_qk_adapter`, `bridge_ridge_qk_affinity_adapter`, or
   `bridge_ridge_qk_attnkl_adapter`, or `bridge_ridge_qk_cab_adapter`, or
   `bridge_ridge_qk_emkd_adapter`, or `bridge_ridge_qk_readout_adapter`, or
-  `bridge_ridge_qk_predkl_adapter` with
+  `bridge_ridge_qk_predkl_adapter`, or `bridge_ridge_qk_asym_adapter` with
   `--quantization-correction-rank <r>`
   to control the adapter size, and use `--bridge-bank-size <k>` to set the
   number of bridge experts in the banked variants.

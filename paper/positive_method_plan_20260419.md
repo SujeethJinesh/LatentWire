@@ -947,3 +947,44 @@ So the highest-value next stack is now:
 4. use the new frontier + paired-flip artifacts as the main reviewer-facing evidence layer
 5. if the method lane stays alive, move to a **materially different modular interface**
    or a stronger output-side teacher, not another tiny residual family
+
+I then implemented the first explicit shared-plus-private modular bridge in the
+repo: `bridge_ridge_qk_asym_adapter`.
+
+This keeps the same `grouped_subspace_transport + rank-4 residual` base and the
+same fair shared-chat / `enable_thinking=false` Qwen control, but it replaces
+the fully separate K-side and V-side query adapters with one shared
+query-conditioned bottleneck plus private K and V residual heads. This is the
+closest branch here to an AsymLoRA-style interface rather than another
+monolithic tiny residual.
+
+On the 64-prompt calibration slice, offline fit was:
+
+- `K` cosine `0.870`, relative Frobenius error `0.468`
+- `V` cosine `0.397`, relative Frobenius error `0.907`
+
+Under the matched-bytes fair controlled regime, the held-out reads were:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- the first materially different shared-plus-private interface is **weakly
+  alive**
+- but it still only ties the controlled `target-alone` floor rather than
+  beating it
+- so the modular-interface lane remains plausible, but this first AsymLoRA-
+  style bridge is not yet a positive method result
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
+4. keep the new frontier + paired-flip artifacts as the reviewer-facing evidence layer
+5. if the method lane stays alive, the next live pivots are:
+   - a stronger output-side / likelihood-style teacher on top of a more
+     materially different interface, or
+   - a shared sparse dictionary / SAE bridge rather than another dense tiny residual

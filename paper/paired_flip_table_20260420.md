@@ -10,3 +10,4 @@
 | grouped_rotational_transport vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | grouped_fitted_rotation_transport vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | grouped_shared_basis_transport vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
+| shared_plus_private_asym_adapter vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
