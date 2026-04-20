@@ -1,0 +1,162 @@
+[
+  {
+    "accuracy": 0.04285714285714286,
+    "avg_bytes": 0.0,
+    "family": "control",
+    "method": "target-alone",
+    "notes": "no source communication",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": null,
+    "family": "control",
+    "method": "text-to-text",
+    "notes": "text communication baseline",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.04285714285714286,
+    "avg_bytes": 151163.6589285714,
+    "family": "selector-null",
+    "method": "shuffled fixed prior",
+    "notes": "query-blind prior null",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.08571428571428572,
+    "avg_bytes": 151163.6589285714,
+    "family": "selector",
+    "method": "fixed prior",
+    "notes": "best internal same-pair branch",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.04285714285714286,
+    "avg_bytes": 147812.58392857143,
+    "family": "transport",
+    "method": "grouped signature transport",
+    "notes": "best transport-only branch",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.05714285714285714,
+    "avg_bytes": 145508.775,
+    "family": "transport+correction",
+    "method": "grouped subspace + rank-4 residual",
+    "notes": "best transport-plus-correction branch",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.04285714285714286,
+    "avg_bytes": 295614.89642857143,
+    "family": "bridge",
+    "method": "bridge_ridge",
+    "notes": "best bridge branch that survives held-out slices",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.04285714285714286,
+    "avg_bytes": 157989.2,
+    "family": "query-conditioned selector",
+    "method": "QK-fidelity budget",
+    "notes": "runtime query-conditioned selector on top of best transport+correction checkpoint",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.0,
+    "avg_bytes": null,
+    "family": "external comparator",
+    "method": "KVComm-compatible replay",
+    "notes": "adjacent heterogeneous replay baseline",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.12857142857142856,
+    "avg_bytes": null,
+    "family": "external comparator",
+    "method": "C2C",
+    "notes": "main external fair bar",
+    "split": "gsm8k_eval_70"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 0.0,
+    "family": "control",
+    "method": "target-alone",
+    "notes": "shared chat serialization + enable_thinking=false",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 340375.975,
+    "family": "bridge",
+    "method": "bridge_ridge",
+    "notes": "fair controlled bridge baseline",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
+    "family": "geometry",
+    "method": "grouped rotational transport",
+    "notes": "first geometry-side branch to survive the controlled slice",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
+    "family": "geometry",
+    "method": "grouped fitted rotation transport",
+    "notes": "calibration-fit gauge-fixing follow-up",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
+    "family": "geometry",
+    "method": "grouped shared-basis transport",
+    "notes": "shared-basis coefficient-space transport",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": null,
+    "family": "external comparator",
+    "method": "KVPress no-press",
+    "notes": "exact external KVPress harness floor",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": null,
+    "family": "external comparator",
+    "method": "KVPress ExpectedAttentionPress",
+    "notes": "exact external Expected Attention comparator",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "stronger-teacher bridge",
+    "method": "readout adapter",
+    "notes": "stronger prompt-local teacher survives smoke only",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.0,
+    "avg_bytes": 722107.7,
+    "family": "stronger-teacher bridge",
+    "method": "prediction-KL adapter",
+    "notes": "first prediction-level bridge teacher",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.0,
+    "avg_bytes": 722107.7,
+    "family": "stronger-teacher bridge",
+    "method": "prediction-KL bank",
+    "notes": "small modular bank follow-up to prediction-level teacher",
+    "split": "gsm8k_5_controlled_smoke"
+  }
+]

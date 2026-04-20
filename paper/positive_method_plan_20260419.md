@@ -914,3 +914,36 @@ So the highest-value next stack is now:
 3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
 4. if we keep the method lane alive, move to a **more materially different modular bridge**
    rather than another tiny residual or banked variant
+
+I then hardened the paper-facing artifact layer instead of spending the next
+cycle on another small bridge tweak. The new builder,
+`scripts/build_reviewer_artifacts.py`, produces:
+
+- `paper/bytes_accuracy_frontier_20260420.json`
+- `paper/bytes_accuracy_table_20260420.md`
+- `paper/paired_flip_table_20260420.jsonl`
+- `paper/paired_flip_table_20260420.md`
+
+Those artifacts make the current paper story much sharper:
+
+- exact `gsm8k_eval_70`: `fixed prior = 0.0857`,
+  `grouped_subspace + rank-4 residual = 0.0571`, `bridge_ridge = 0.0429`,
+  `C2C = 0.1286`
+- controlled `gsm8k_eval_10`: `target-alone = 0.1000`, `bridge_ridge = 0.1000`,
+  `grouped_rotational_transport = 0.1000`,
+  `grouped_fitted_rotation_transport = 0.1000`,
+  `grouped_shared_basis_transport = 0.1000`, exact `KVPress no-press = 0.1000`,
+  exact `ExpectedAttentionPress = 0.1000`
+- paired flips: `fixed prior` still beats its shuffled null, but
+  `grouped_subspace + rank-4 residual` still loses to `fixed prior`,
+  `bridge_ridge` still does not close that gap, and the controlled survivor
+  family still exactly ties the controlled target floor
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
+4. use the new frontier + paired-flip artifacts as the main reviewer-facing evidence layer
+5. if the method lane stays alive, move to a **materially different modular interface**
+   or a stronger output-side teacher, not another tiny residual family

@@ -1877,3 +1877,30 @@ Interpretation:
 - that makes the current tiny modular bank family look close to saturated too
 - the next live bridge step should likely be a more materially different
   modular interface, not another small residual-bank tweak
+
+And a fifty-seventh paper-artifact update:
+
+> I then stopped pushing another tiny bridge variant and hardened the reviewer-
+> facing paper artifacts around the **current live bars**. I added
+> `scripts/build_reviewer_artifacts.py`, which rebuilds a concise current
+> bytes/accuracy frontier plus a paired-flip table directly from the live
+> result JSONL/meta files without importing the heavy training stack. The new
+> outputs are:
+> - `paper/bytes_accuracy_frontier_20260420.json`
+> - `paper/bytes_accuracy_table_20260420.md`
+> - `paper/paired_flip_table_20260420.jsonl`
+> - `paper/paired_flip_table_20260420.md`
+>
+> The current artifact read is:
+> - exact `gsm8k_eval_70`: `fixed prior = 0.0857`, `grouped_subspace + rank-4 residual = 0.0571`, `bridge_ridge = 0.0429`, `C2C = 0.1286`
+> - controlled `gsm8k_eval_10`: `target-alone = 0.1000`, `bridge_ridge = 0.1000`, `grouped_rotational_transport = 0.1000`, `grouped_fitted_rotation_transport = 0.1000`, `grouped_shared_basis_transport = 0.1000`, exact `KVPress no-press = 0.1000`, exact `ExpectedAttentionPress = 0.1000`
+> - paired flips: `fixed_prior` still beats its shuffled null, `grouped_subspace_resid4` still loses to `fixed_prior`, `bridge_ridge` still does not recover that gap, and none of the controlled survivors beat the controlled target floor
+
+Interpretation:
+
+- the repo now has a machine-readable frontier and paired-flip layer that is
+  aligned to the live methods rather than stale early transport branches
+- that makes the current paper story easier to defend: the main live bar is
+  still `fixed prior`, the best internal mechanism branch is still
+  `grouped_subspace + rank-4 residual`, and the whole recent controlled family
+  is best read as blocker evidence rather than as a hidden positive method
