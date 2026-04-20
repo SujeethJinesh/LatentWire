@@ -1280,3 +1280,38 @@ Interpretation:
 - if the positive-method lane stays alive, a tiny learned bridge is still more
   promising than another evaluator overlay, but it likely needs either
   query-conditioning or a better training target to stabilize
+
+And a thirty-fourth low-rank bridge stacking update:
+
+> I then tried to stabilize that weak low-rank bridge signal by stacking the
+> best existing live routing knobs on top of the same low-rank bridge
+> checkpoint, all under the matched sparse `K-only` protocol on
+> `gsm8k_eval_10`: retrieval-head-style runtime head selection
+> (`runtime_head_selection_metric=retrieval_peak`, ratio `0.5`), direct
+> QK-fidelity runtime head selection (`attention_qk_fidelity`, ratio `0.5`),
+> and a prior-plus-live blend selector (`attention_blend`, ratio `0.5`,
+> prior-alpha `0.25`). All three collapsed back to `0.000000` at the same
+> reduced byte budget, `156,889.600` average bytes.
+
+Interpretation:
+
+- the current selector stack does not stabilize the weak low-rank bridge clue
+- live routing can cut the byte cost of the bridge substantially, but it does
+  not yet turn that bridge into a real reasoning improvement
+- if the positive-method lane stays alive, the next step should be a
+  query-conditioned bridge or projector, not just a more selective runtime mask
+
+And a thirty-fifth low-rank bridge plus learned-fusion update:
+
+> I then stacked one more existing small fix on top of that same bridge:
+> grouped-subspace transport, rank-4 residual, low-rank bridge correction, and
+> the stronger `learned_head_ridge` fusion head fit from the same `64`-prompt
+> calibration slice. On the first matched sparse `gsm8k_5` smoke it still
+> collapsed to `0.000000` at `298,063.425` average bytes.
+
+Interpretation:
+
+- simply stacking the current tiny linear fixes is not enough
+- the next bridge-style attempt probably needs a better query-conditioned or
+  interaction-level training target, not just another static linear layer on
+  top of the existing map

@@ -246,3 +246,36 @@ That means:
 - if we keep pushing the positive-method story, the next adapter-style step
   should add either live query-conditioning or a better interaction-level
   training target, not just a static low-rank correction
+
+I then tried the obvious stacked follow-up on that weak bridge clue: keep the
+same low-rank bridge checkpoint and add the best current runtime routing knobs
+on top. Three variants all failed on the matched sparse `gsm8k_eval_10` slice:
+
+- retrieval-head-style runtime head selection (`retrieval_peak`, ratio `0.5`)
+- direct QK-fidelity runtime head selection (`attention_qk_fidelity`, ratio `0.5`)
+- prior-plus-live blend head selection (`attention_blend`, ratio `0.5`, `alpha=0.25`)
+
+All three fell to `0.0000`, though they did cut the bridge bytes from roughly
+`297k` down to roughly `157k`.
+
+That means:
+
+- the weak low-rank bridge clue does not stabilize under the current selector
+  stack
+- runtime routing is still useful as a byte-control knob, but not yet as a
+  method rescue
+- if the positive-method lane stays alive, the next bridge step has to change
+  the bridge itself, not only the runtime selector
+
+I then tried one more “stack the small fixes” move: grouped-subspace transport,
+rank-4 residual, low-rank bridge correction, and the stronger
+`learned_head_ridge` fusion head fit from the same `64`-prompt calibration
+slice. On the first matched sparse `gsm8k_5` smoke it also collapsed to
+`0.0000`.
+
+That means:
+
+- we are close to saturating the current family of static linear stack-ups
+- the next bridge-style attempt should probably be query-conditioned or trained
+  against a richer token-interaction target, not just another fixed linear
+  correction layer
