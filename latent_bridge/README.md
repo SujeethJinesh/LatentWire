@@ -150,7 +150,9 @@ python scripts/calibrate.py \
   `grouped_subspace_transport` for grouped transport with a principal-subspace
   mismatch penalty on post-map source/target blocks. Use
   `grouped_canonical_transport` to fit each grouped block in a shared low-rank
-  canonical basis before transport, `grouped_template_transport` to match
+  canonical basis before transport, `grouped_rotational_transport` to
+  covariance-whiten each grouped block into a canonical rotational gauge
+  before fitting the transport map, `grouped_template_transport` to match
   grouped source/target heads by calibration-time last-token attention
   templates before fitting the transport map,
   `grouped_qk_retrieval_transport` to match grouped heads using calibration-time

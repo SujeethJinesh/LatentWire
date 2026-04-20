@@ -1699,3 +1699,30 @@ Interpretation:
 - the next serious positive-method move should probably be either a
   materially stronger teacher signal still closer to prediction space, or a
   stronger canonicalization / transport step before the bridge
+
+And a fiftieth rotational-canonicalized transport update:
+
+> I then tried the first stronger geometry-side follow-up after the saturated
+> local bridge-distillation family: `grouped_rotational_transport`. This keeps
+> the same fair shared-chat / `enable_thinking=False` Qwen control and the
+> same grouped soft-transport + rank-4 residual structure, but changes the
+> grouped block fit itself. Each grouped source/target block is first
+> covariance-normalized into its own canonical rotational gauge, then a shared
+> orthogonal map is fit in that quotient space before the transport map is
+> assembled. Calibration fit was actually *worse* than grouped-subspace
+> transport (`K` cosine `0.827`, relative Frobenius error `0.530`; `V` cosine
+> `0.285`, relative Frobenius error `0.958`). Held-out behavior was:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- this is the first recent “new method class” branch that does **not** fall
+  straight to `0.0000` on the controlled `gsm8k_eval_10` slice
+- but it only climbs to the same `0.1000` level as the controlled
+  `target_alone` read, so it is still **not** a positive method result
+- that means the geometry / canonicalization lane is still weakly alive, but
+  the current covariance-normalized rotational fit is not yet creating a real
+  gain over the controlled target baseline
+- the strongest read now is that richer geometry may matter, but not in a way
+  that simple local bridge losses were able to capture

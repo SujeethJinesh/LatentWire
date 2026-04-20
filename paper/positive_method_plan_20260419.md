@@ -685,3 +685,32 @@ So the highest-value next stack is now:
 3. keep `attention_expected` plus its shuffled null as a negative-boundary comparator
 4. if we keep the bridge lane alive, move beyond local interaction matching to a **stronger teacher signal**
 5. in parallel, test a **rotation-canonicalized grouped transport** shortcut
+
+I then tried that geometry-side shortcut directly: `grouped_rotational_transport`.
+This keeps the same grouped soft-transport + rank-4 residual structure, but
+covariance-normalizes each grouped source/target block into its own canonical
+rotational gauge before fitting the shared grouped transport block.
+
+Held-out behavior under the same fair shared-chat / `enable_thinking=false`
+regime:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- bytes on the controlled slice: `681,668.4`
+
+That means:
+
+- this branch survives the controlled `gsm8k_eval_10` slice where the recent
+  local bridge-distillation upgrades all collapsed
+- but it only rises to the same `0.1000` level as the controlled
+  `target_alone` read, so it still does **not** create a positive method gain
+- the geometry lane is therefore still weakly alive, but not yet a paper win
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. add exact KVPress / Expected Attention when we want the next clean external comparator
+4. if we keep the method lane alive, the two live paths are:
+   - a **stronger teacher closer to prediction space**
+   - a **stronger geometry / canonicalization step** than the current grouped rotational fit

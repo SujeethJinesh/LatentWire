@@ -320,6 +320,10 @@ Files `236_` through `240_` extend the symmetry-and-routed-bridge backlog:
 - `239_`: Share Your Attention as a matrix-dictionary / shared-basis reference for stronger canonicalization before transport.
 - `240_`: Dynamic Multi-Expert Projectors as a modern routed-projector reference for small query-conditioned bridge mixtures.
 
+File `241_` extends the routed-bridge backlog:
+
+- `241_`: Libra as a decoupled routed-bridge reference for using a small expert/bridge module instead of one monolithic projector.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

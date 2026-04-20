@@ -62,6 +62,7 @@ class TranslatorConfig:
     #                 | 'grouped_transport' | 'grouped_permutation'
     #                 | 'grouped_signature_transport' | 'grouped_subspace_transport'
     #                 | 'grouped_canonical_transport' | 'grouped_covariance_transport'
+    #                 | 'grouped_rotational_transport'
     #                 | 'grouped_template_transport'
     #                 | 'grouped_qk_retrieval_transport'
     #                 | 'grouped_contrastive_template_transport'
@@ -954,6 +955,50 @@ class RotAlignKVTranslator(nn.Module):
         A = fit_alignment(Z_src, Z_tgt, method="procrustes", lam=lam)
         return U_src @ A @ U_tgt.T
 
+    @staticmethod
+    def _fix_basis_signs(basis: torch.Tensor) -> torch.Tensor:
+        basis = basis.clone()
+        if basis.numel() == 0:
+            return basis
+        max_idx = basis.abs().argmax(dim=0)
+        signs = basis[max_idx, torch.arange(basis.shape[1], device=basis.device)]
+        signs = torch.where(signs >= 0, torch.ones_like(signs), -torch.ones_like(signs))
+        return basis * signs.unsqueeze(0)
+
+    def _covariance_basis(
+        self,
+        X: torch.Tensor,
+        rank: int,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        Xc = X.float() - X.float().mean(dim=0, keepdim=True)
+        cov = (Xc.T @ Xc) / max(1, Xc.shape[0] - 1)
+        eps = 1e-4 * float(cov.trace().item() / max(1, cov.shape[0]) if cov.numel() > 0 else 1.0)
+        cov = cov + eps * torch.eye(cov.shape[0], dtype=cov.dtype, device=cov.device)
+        vals, vecs = torch.linalg.eigh(cov)
+        vals = vals.flip(0)[:rank].clamp_min(1e-6)
+        vecs = vecs.flip(1)[:, :rank]
+        vecs = self._fix_basis_signs(vecs)
+        return vecs.to(dtype=X.dtype), vals.to(dtype=X.dtype)
+
+    def _fit_rotational_block_alignment(
+        self,
+        X: torch.Tensor,
+        Y: torch.Tensor,
+        *,
+        lam: float,
+    ) -> torch.Tensor:
+        rank = self._canonical_subspace_rank(X, Y)
+        U_src, vals_src = self._covariance_basis(X, rank)
+        U_tgt, vals_tgt = self._covariance_basis(Y, rank)
+        scale_src = vals_src.rsqrt().to(dtype=X.dtype)
+        scale_tgt = vals_tgt.sqrt().to(dtype=X.dtype)
+        Z_src = (X @ U_src) * scale_src.unsqueeze(0)
+        Z_tgt = (Y @ U_tgt) * vals_tgt.rsqrt().to(dtype=Y.dtype).unsqueeze(0)
+        A = fit_alignment(Z_src, Z_tgt, method="procrustes", lam=lam)
+        middle = scale_src.unsqueeze(1) * A.to(dtype=X.dtype)
+        middle = middle * scale_tgt.unsqueeze(0)
+        return U_src @ middle @ U_tgt.T
+
     def _subspace_distance(self, Y_hat: torch.Tensor, Y: torch.Tensor) -> torch.Tensor:
         rank = max(1, int(self.config.transport_signature_rank))
         Yh = Y_hat.float() - Y_hat.float().mean(dim=0, keepdim=True)
@@ -1181,6 +1226,12 @@ class RotAlignKVTranslator(nn.Module):
                 Y_block = Y[:, tgt_slice]
                 if self.config.alignment_method == "grouped_canonical_transport":
                     W_block = self._fit_canonical_block_alignment(
+                        X_block,
+                        Y_block,
+                        lam=lam,
+                    )
+                elif self.config.alignment_method == "grouped_rotational_transport":
+                    W_block = self._fit_rotational_block_alignment(
                         X_block,
                         Y_block,
                         lam=lam,
@@ -2704,7 +2755,7 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_rotational_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -3362,7 +3413,7 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_rotational_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
             elif self.config.alignment_method in {
@@ -3384,6 +3435,7 @@ class RotAlignKVTranslator(nn.Module):
                 "signature_transport",
                 "subspace_transport",
                 "canonical_transport",
+                "rotational_transport",
                 "covariance_transport",
                 "template_transport",
                 "qk_retrieval_transport",
