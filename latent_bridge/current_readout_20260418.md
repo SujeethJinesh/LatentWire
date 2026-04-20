@@ -1232,3 +1232,26 @@ Interpretation:
 - this is evidence that the remaining query mismatch probably lives in the
   transport or fusion path itself, not only in how we spend the sparse budget
 - the evaluator-overlay lane now looks close to saturated
+
+And a thirty-second tokenwise QK-gating update:
+
+> I then moved the same query signal into the fusion path itself, without
+> changing the frozen translator checkpoint, by adding
+> `attention_qk_fidelity_tokenwise` as a runtime per-head, per-position gate
+> override on top of the best current checkpoint,
+> `grouped_subspace_transport + rank-4 residual`. This branch keeps the same
+> sparse `K-only` protocol, the same fixed head prior from
+> `.debug/head_prior_64.txt`, and the same `attention_prior` per-head position
+> budget. On the first matched sparse `gsm8k_5` smoke, it still scored
+> `0.000000` at `146,756.475` average bytes.
+
+Interpretation:
+
+- even a tokenwise query-conditioned fusion override is not enough, by itself,
+  to rescue the best frozen transport checkpoint
+- this is the strongest evidence so far that the remaining mismatch is not
+  just “where to spend the budget” or “how hard to gate,” but the transport map
+  itself
+- if the positive-method lane stays alive, the next real shot has to be a
+  query-conditioned transport or a tiny learned bridge, not another evaluator-
+  side overlay on a frozen map

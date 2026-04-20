@@ -262,6 +262,13 @@ Files `198_` and `199_` extend the same runtime-query backlog:
 - `198_`: Retrieval Heads are Dynamic as direct evidence that averaged calibration-time retrieval templates are too static, supporting live query-conditioned transport.
 - `199_`: Query-Focused and Memory-Aware Reranker for Long Context Processing as a recent query-relevance routing reference, useful for prompt- or query-conditioned template-bank transport ideas.
 
+Files `200_` through `203_` extend the query-conditioned and bridge backlog:
+
+- `200_`: Causal Head Gating as a direct query-conditioned head-control reference for lightweight runtime gate calibration on top of a frozen transport.
+- `201_`: CompressKV as a semantic retrieval-head reference for turning live query relevance into transport budgets.
+- `202_`: LangBridge as a multimodal bridge / projector reference for mapping foreign states into a target-native basis.
+- `203_`: Beyond Next-Token Alignment as a token-interaction distillation reference for richer bridge objectives than plain state matching.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

@@ -426,6 +426,29 @@ def test_evaluate_parse_args_accepts_attention_qk_bank_transport_metrics(monkeyp
     assert args.per_head_position_budget_mode == "attention_qk_bank_transport"
 
 
+def test_evaluate_parse_args_accepts_attention_qk_fidelity_tokenwise_gate(monkeypatch) -> None:
+    monkeypatch.setattr(
+        evaluate.sys,
+        "argv",
+        [
+            "evaluate.py",
+            "--translator",
+            "translator.pt",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--eval-file",
+            "eval.jsonl",
+            "--runtime-head-gate-metric",
+            "attention_qk_fidelity_tokenwise",
+        ],
+    )
+
+    args = evaluate.parse_args()
+    assert args.runtime_head_gate_metric == "attention_qk_fidelity_tokenwise"
+
+
 def test_source_kv_controls_are_negative_controls() -> None:
     K = torch.arange(12, dtype=torch.float32).view(1, 2, 3, 2)
     V = K + 100.0
@@ -1878,6 +1901,46 @@ def test_per_head_gate_override_from_scores_preserves_mean_gate() -> None:
 
     assert float(gate[1]) > float(gate[0])
     assert float(gate.mean()) == pytest.approx(0.2, abs=1e-6)
+
+
+def test_attention_qk_fidelity_token_scores_focus_on_shared_query_mass() -> None:
+    query_heads = torch.tensor(
+        [[1.0, 0.0]],
+        dtype=torch.float32,
+    )
+    target_keys = torch.tensor(
+        [[[2.0, 0.0], [0.0, 0.0]]],
+        dtype=torch.float32,
+    )
+    translated_keys = torch.tensor(
+        [[[1.8, 0.0], [0.1, 0.0]]],
+        dtype=torch.float32,
+    )
+
+    scores = evaluate._attention_qk_fidelity_token_scores(
+        query_heads,
+        target_keys,
+        translated_keys,
+    )
+
+    assert scores.shape == (1, 2)
+    assert float(scores[0, 0]) > float(scores[0, 1])
+
+
+def test_tokenwise_gate_override_from_scores_preserves_per_head_mean() -> None:
+    base_gate = torch.tensor([0.25, 0.5], dtype=torch.float32)
+    scores = torch.tensor(
+        [[2.0, 1.0], [1.0, 3.0]],
+        dtype=torch.float32,
+    )
+
+    gate = evaluate._tokenwise_gate_override_from_scores(base_gate, scores, strength=1.0)
+
+    assert gate.shape == (1, 2, 2, 1)
+    assert float(gate[0, 0, 0, 0]) > float(gate[0, 0, 1, 0])
+    assert float(gate[0, 1, 1, 0]) > float(gate[0, 1, 0, 0])
+    assert float(gate[0, 0, :, 0].mean()) == pytest.approx(0.25, abs=1e-6)
+    assert float(gate[0, 1, :, 0].mean()) == pytest.approx(0.5, abs=1e-6)
 
 
 def test_attention_template_transport_scores_prefers_matching_template() -> None:

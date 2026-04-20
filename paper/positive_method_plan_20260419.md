@@ -203,3 +203,25 @@ That means:
 - if we keep the positive-method lane alive, query-conditioning probably has to
   change the transport or fusion path itself, not only the per-head sparse
   budget metric
+
+I then pushed that same hypothesis one step deeper into the live fusion path,
+without changing the frozen translator checkpoint, by adding
+`attention_qk_fidelity_tokenwise` as a runtime per-head, per-position gate
+override on top of `grouped_subspace_transport + rank-4 residual`. This keeps
+the same sparse `K-only` protocol, the same fixed head prior from
+`.debug/head_prior_64.txt`, and the same `attention_prior` per-head position
+budget, but it stops averaging the live query down to one score per head.
+Instead it uses last-token QK agreement to modulate the fusion gate across
+positions within each active head. On the first matched sparse `gsm8k_5`
+smoke, it still scored `0.0000` at `146,756.475` average bytes.
+
+That means:
+
+- moving the query signal into the fusion path is directionally more sensible
+  than another static template, but this first tokenwise gate-only version is
+  still not enough
+- the remaining mismatch now looks more like a transport-map or lightweight
+  bridge problem than a budget-allocation problem
+- if the positive-method lane stays alive, the next real shot should be a
+  query-conditioned transport or tiny learned bridge, not another evaluator-side
+  overlay on a frozen map

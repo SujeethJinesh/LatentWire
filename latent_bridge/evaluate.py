@@ -518,6 +518,24 @@ def _attention_qk_fidelity_head_scores(
     target_keys: torch.Tensor,
     translated_keys: torch.Tensor,
 ) -> torch.Tensor:
+    tgt_probs, trans_probs = _attention_qk_fidelity_probabilities(
+        query_heads,
+        target_keys,
+        translated_keys,
+    )
+    mid = 0.5 * (tgt_probs + trans_probs)
+    js = 0.5 * (
+        (tgt_probs * (tgt_probs.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum(dim=-1)
+        + (trans_probs * (trans_probs.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum(dim=-1)
+    )
+    return (1.0 - js.clamp_min(0.0)).clamp_min(0.0)
+
+
+def _attention_qk_fidelity_probabilities(
+    query_heads: torch.Tensor,
+    target_keys: torch.Tensor,
+    translated_keys: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
     if query_heads.ndim == 3:
         if query_heads.shape[0] != 1:
             raise ValueError(f"query_heads batch dimension must be 1, got shape {tuple(query_heads.shape)}")
@@ -558,12 +576,20 @@ def _attention_qk_fidelity_head_scores(
     trans_logits = torch.einsum("hd,hpd->hp", q, trans) / scale
     tgt_probs = torch.softmax(tgt_logits, dim=-1)
     trans_probs = torch.softmax(trans_logits, dim=-1)
-    mid = 0.5 * (tgt_probs + trans_probs)
-    js = 0.5 * (
-        (tgt_probs * (tgt_probs.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum(dim=-1)
-        + (trans_probs * (trans_probs.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum(dim=-1)
+    return tgt_probs, trans_probs
+
+
+def _attention_qk_fidelity_token_scores(
+    query_heads: torch.Tensor,
+    target_keys: torch.Tensor,
+    translated_keys: torch.Tensor,
+) -> torch.Tensor:
+    tgt_probs, trans_probs = _attention_qk_fidelity_probabilities(
+        query_heads,
+        target_keys,
+        translated_keys,
     )
-    return (1.0 - js.clamp_min(0.0)).clamp_min(0.0)
+    return torch.minimum(tgt_probs, trans_probs).clamp_min(0.0)
 
 
 def _match_prior_scores_to_live_order(
@@ -615,6 +641,33 @@ def _per_head_gate_override_from_scores(
     scaled = values / mean_value
     blend = (1.0 - float(strength)) + float(strength) * scaled
     return (float(base_gate) * blend).clamp(0.0, 1.0)
+
+
+def _tokenwise_gate_override_from_scores(
+    base_gate: torch.Tensor,
+    scores: torch.Tensor,
+    *,
+    strength: float,
+) -> torch.Tensor:
+    if scores.ndim != 2:
+        raise ValueError(f"scores must be rank-2 [heads, positions], got shape {tuple(scores.shape)}")
+    base = base_gate.float().view(-1, 1)
+    if base.shape[0] != scores.shape[0]:
+        raise ValueError(
+            "base_gate and scores must agree on head count, "
+            f"got {base.shape[0]} and {scores.shape[0]}"
+        )
+    values = scores.float()
+    if values.numel() == 0:
+        return values.view(1, 0, 0, 1)
+    mean_value = values.mean(dim=-1, keepdim=True)
+    scaled = torch.where(
+        mean_value > 1e-8,
+        values / mean_value.clamp_min(1e-8),
+        torch.ones_like(values),
+    )
+    blend = (1.0 - float(strength)) + float(strength) * scaled
+    return (base * blend).clamp(0.0, 1.0).unsqueeze(0).unsqueeze(-1)
 
 
 def _deterministic_score_permutation(
@@ -2715,6 +2768,7 @@ def _build_rotalign_prefix_state(
     ) or runtime_head_gate_metric in {
         "attention_qk_fidelity",
         "attention_qk_fidelity_shuffled",
+        "attention_qk_fidelity_tokenwise",
         "attention_qk_template_transport",
         "attention_qk_template_transport_shuffled",
         "attention_qk_bank_transport",
@@ -2984,40 +3038,86 @@ def _build_rotalign_prefix_state(
             runtime_position_scores = layer_attention_maps[tgt_l][-K_t_aligned.shape[2] :].mean(dim=0)
         gate_k_now, gate_v_now = translator.gate_value(tgt_l)
         if runtime_head_gate_metric != "none" and translator.is_layer_selected(tgt_l):
-            gate_scores, _ = _runtime_head_scores_with_prior(
-                active_attention_map,
-                metric=runtime_head_gate_metric,
-                layer_idx=tgt_l,
-                prior_scores=prior_scores,
-                position_prior=position_prior_scores,
-                target_keys=active_target_keys,
-                translated_keys=active_translated_keys,
-                query_heads=active_query_heads,
-                head_templates=template_scores,
-                qk_templates=qk_template_scores,
-                qk_template_bank=qk_template_bank_scores,
-                prior_alpha=runtime_head_prior_alpha,
-            )
-            full_gate = torch.zeros(
-                translator.config.tgt_num_heads,
-                dtype=K_t_aligned.dtype,
-                device=K_t_aligned.device,
-            )
-            if kv_transport in {"both", "k_only"}:
-                full_gate[active_head_indices] = _per_head_gate_override_from_scores(
-                    gate_k_now,
-                    gate_scores,
-                    strength=runtime_head_gate_strength,
-                ).to(device=full_gate.device, dtype=full_gate.dtype)
-                head_gate_override_k = full_gate
-            if kv_transport in {"both", "v_only"}:
-                full_gate_v = torch.zeros_like(full_gate)
-                full_gate_v[active_head_indices] = _per_head_gate_override_from_scores(
-                    gate_v_now,
-                    gate_scores,
-                    strength=runtime_head_gate_strength,
-                ).to(device=full_gate_v.device, dtype=full_gate_v.dtype)
-                head_gate_override_v = full_gate_v
+            token_gate_scores: torch.Tensor | None = None
+            if runtime_head_gate_metric == "attention_qk_fidelity_tokenwise":
+                if active_query_heads is None:
+                    raise ValueError(
+                        "attention_qk_fidelity_tokenwise runtime head gating requires query_heads, target_keys, and translated_keys"
+                    )
+                gate_scores = _attention_qk_fidelity_head_scores(
+                    active_query_heads,
+                    active_target_keys,
+                    active_translated_keys,
+                )
+                token_gate_scores = _attention_qk_fidelity_token_scores(
+                    active_query_heads,
+                    active_target_keys,
+                    active_translated_keys,
+                )
+            else:
+                gate_scores, _ = _runtime_head_scores_with_prior(
+                    active_attention_map,
+                    metric=runtime_head_gate_metric,
+                    layer_idx=tgt_l,
+                    prior_scores=prior_scores,
+                    position_prior=position_prior_scores,
+                    target_keys=active_target_keys,
+                    translated_keys=active_translated_keys,
+                    query_heads=active_query_heads,
+                    head_templates=template_scores,
+                    qk_templates=qk_template_scores,
+                    qk_template_bank=qk_template_bank_scores,
+                    prior_alpha=runtime_head_prior_alpha,
+                )
+            active_gate_k = _per_head_gate_override_from_scores(
+                gate_k_now,
+                gate_scores,
+                strength=runtime_head_gate_strength,
+            ).to(device=K_t_aligned.device, dtype=K_t_aligned.dtype)
+            active_gate_v = _per_head_gate_override_from_scores(
+                gate_v_now,
+                gate_scores,
+                strength=runtime_head_gate_strength,
+            ).to(device=K_t_aligned.device, dtype=K_t_aligned.dtype)
+            if token_gate_scores is None:
+                full_gate = torch.zeros(
+                    translator.config.tgt_num_heads,
+                    dtype=K_t_aligned.dtype,
+                    device=K_t_aligned.device,
+                )
+                if kv_transport in {"both", "k_only"}:
+                    full_gate[active_head_indices] = active_gate_k
+                    head_gate_override_k = full_gate
+                if kv_transport in {"both", "v_only"}:
+                    full_gate_v = torch.zeros_like(full_gate)
+                    full_gate_v[active_head_indices] = active_gate_v
+                    head_gate_override_v = full_gate_v
+            else:
+                full_gate = torch.zeros(
+                    1,
+                    translator.config.tgt_num_heads,
+                    K_t_aligned.shape[2],
+                    1,
+                    dtype=K_t_aligned.dtype,
+                    device=K_t_aligned.device,
+                )
+                if kv_transport in {"both", "k_only"}:
+                    token_gate = _tokenwise_gate_override_from_scores(
+                        active_gate_k,
+                        token_gate_scores,
+                        strength=runtime_head_gate_strength,
+                    ).to(device=full_gate.device, dtype=full_gate.dtype)
+                    full_gate[:, active_head_indices, :, :] = token_gate
+                    head_gate_override_k = full_gate
+                if kv_transport in {"both", "v_only"}:
+                    full_gate_v = torch.zeros_like(full_gate)
+                    token_gate_v = _tokenwise_gate_override_from_scores(
+                        active_gate_v,
+                        token_gate_scores,
+                        strength=runtime_head_gate_strength,
+                    ).to(device=full_gate_v.device, dtype=full_gate_v.dtype)
+                    full_gate_v[:, active_head_indices, :, :] = token_gate_v
+                    head_gate_override_v = full_gate_v
             top_local = torch.topk(gate_scores, k=min(int(gate_scores.numel()), 3), largest=True).indices
             head_gate_layers.append(
                 {
@@ -3029,6 +3129,7 @@ def _build_rotalign_prefix_state(
                     "base_gate_v": float(gate_v_now),
                     "mean_score": float(gate_scores.mean().item()),
                     "score_gap": float((gate_scores.max() - gate_scores.min()).item()),
+                    "tokenwise": bool(token_gate_scores is not None),
                     "top_target_heads": [int(active_head_indices[idx].item()) for idx in top_local],
                 }
             )
@@ -4192,6 +4293,7 @@ def parse_args() -> argparse.Namespace:
             "attention_procrustes_shuffled",
             "attention_qk_fidelity",
             "attention_qk_fidelity_shuffled",
+            "attention_qk_fidelity_tokenwise",
             "attention_qk_template_transport",
             "attention_qk_template_transport_shuffled",
             "attention_qk_bank_transport",

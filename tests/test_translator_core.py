@@ -197,6 +197,36 @@ def test_fuse_layer_supports_per_head_gate_override(monkeypatch) -> None:
     assert torch.allclose(V_out[:, 1], V_target[:, 1])
 
 
+def test_fuse_layer_supports_tokenwise_gate_override(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    tr.set_fixed_gates(0.5)
+
+    K_target = torch.zeros(1, 2, 2, 2)
+    V_target = torch.zeros(1, 2, 2, 2)
+    K_translated = torch.ones(1, 2, 2, 2)
+    V_translated = 2.0 * torch.ones(1, 2, 2, 2)
+
+    token_gate = torch.tensor(
+        [[[[1.0], [0.0]], [[0.5], [0.5]]]],
+        dtype=torch.float32,
+    )
+    K_out, V_out = tr.fuse_layer(
+        K_target,
+        V_target,
+        K_translated,
+        V_translated,
+        0,
+        head_gate_override_K=token_gate,
+        head_gate_override_V=token_gate,
+    )
+
+    assert torch.allclose(K_out[:, 0, 0], K_translated[:, 0, 0])
+    assert torch.allclose(K_out[:, 0, 1], K_target[:, 0, 1])
+    assert torch.allclose(V_out[:, 0, 0], V_translated[:, 0, 0])
+    assert torch.allclose(V_out[:, 0, 1], V_target[:, 0, 1])
+    assert torch.allclose(K_out[:, 1], 0.5 * K_translated[:, 1])
+
+
 def test_js_and_kalman_fusion_rules_downweight_noisy_translation(monkeypatch) -> None:
     tr = _make_identity_translator(monkeypatch)
     tr.set_fixed_gates(0.8)

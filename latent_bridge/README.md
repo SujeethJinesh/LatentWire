@@ -262,6 +262,11 @@ permutes the transported prior mass.
 prompt-indexed calibration bank and lets the live example soft-select a prompt
 family before transporting the fixed head-prior mass. Its shuffled variant
 keeps the same prompt bank but permutes the prior mass afterward.
+`attention_qk_fidelity_tokenwise` moves that same QK-fidelity signal into the
+fusion path itself instead of using it only for ranking: it first builds the
+usual per-head QK-fidelity score, then uses the live per-position overlap of
+the target and translated QK distributions to modulate the gate across tokens
+within each active head.
 `attention_template_transport` upgrades the fixed-prior branch from a scalar
 head score to a full calibration-time per-head attention template and then
 soft-transports the prior mass onto the live heads. Its shuffled variant keeps
@@ -301,6 +306,10 @@ Use `--runtime-head-gate-metric <metric>` with
 modulate it per head at runtime from the same live scores. This is a soft
 query-conditioned fusion variant rather than a hard head-pruning rule, and it
 records per-layer `head_gate_trace` metadata in the sidecar.
+`attention_qk_fidelity_tokenwise` is the first tokenwise variant in that lane:
+it still keeps the checkpoint gate as the layer-level baseline, but then
+reshapes it inside each active head using the current example's live last-token
+QK agreement across positions.
 `attention_margin` scores heads by the last-token top-1 vs top-2 attention gap,
 which acts as a cheap attention-logit / confidence proxy.
 `retrieval_peak` scores heads by how sharply they focus on farther-back prefix
