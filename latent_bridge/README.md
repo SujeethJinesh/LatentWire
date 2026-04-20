@@ -155,7 +155,9 @@ python scripts/calibrate.py \
   before fitting the transport map, or
   `grouped_fitted_rotation_transport` to ZCA-whiten each grouped block and fit
   a calibration-dependent rectangular orthogonal gauge map in that whitened
-  space before fitting the transport map. Use `grouped_template_transport` to
+  space before fitting the transport map. `grouped_shared_basis_transport`
+  instead builds a shared low-rank cross-covariance basis per grouped block and
+  fits transport in that coefficient space. Use `grouped_template_transport` to
   match
   grouped source/target heads by calibration-time last-token attention
   templates before fitting the transport map,

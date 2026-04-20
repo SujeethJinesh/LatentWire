@@ -1773,3 +1773,28 @@ Interpretation:
   held-out slices
 - that is another useful blocker result: stronger grouped canonicalization
   alone still does **not** clear the controlled target floor
+
+And a fifty-third shared-basis transport update:
+
+> I then tried the first explicit shared-basis / dictionary-style geometry
+> follow-up: `grouped_shared_basis_transport`. This again keeps the same fair
+> shared-chat / `enable_thinking=False` control and the same grouped
+> soft-transport + rank-4 residual structure, but it replaces the grouped
+> rotational gauge fit with a **shared low-rank cross-covariance basis** per
+> grouped block. Each grouped block is ZCA-whitened, projected into a shared
+> source/target coefficient basis from the block cross-covariance SVD, and the
+> transport map is fit in that coefficient space. Offline fit again improved
+> slightly over the rotational baseline (`K` cosine `0.854`, relative
+> Frobenius error `0.491`; `V` cosine `0.354`, relative Frobenius error
+> `0.926`). Held-out behavior was still unchanged:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- this is the first geometry branch explicitly shaped by the shared-basis /
+  dictionary-learning references rather than only by a rotational gauge fit
+- but in this simple coefficient-space form it still exactly ties the two
+  earlier geometry probes on the held-out slices that matter
+- so even stronger shared-basis canonicalization is **not** enough by itself in
+  the current grouped transport family

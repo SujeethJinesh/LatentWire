@@ -656,6 +656,29 @@ def test_calibrate_parse_args_accepts_grouped_fitted_rotation_transport(monkeypa
     assert args.alignment == "grouped_fitted_rotation_transport"
 
 
+def test_calibrate_parse_args_accepts_grouped_shared_basis_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_shared_basis_transport",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_shared_basis_transport"
+
+
 def test_calibrate_parse_args_accepts_grouped_covariance_transport(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

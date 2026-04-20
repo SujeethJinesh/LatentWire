@@ -777,3 +777,34 @@ So the highest-value next stack is now:
 4. if we keep the method lane alive, the two live paths are:
    - a **stronger teacher closer to prediction space**
    - a **shared-basis / dictionary-style canonicalization** beyond the current rotational and fitted-gauge probes
+
+I then tried the first explicit shared-basis follow-up:
+`grouped_shared_basis_transport`. This keeps the same grouped soft-transport plus rank-4 residual structure and the same fair shared-chat / `enable_thinking=false` Qwen control, but it replaces the grouped rotational fit with a **shared low-rank cross-covariance basis** per grouped block. Each block is ZCA-whitened, projected into a shared source/target coefficient basis from the cross-covariance SVD, and the grouped transport is fit in that coefficient space.
+
+Offline fit again improved slightly over `grouped_rotational_transport`:
+
+- `K` cosine: `0.854`
+- `K` relative Frobenius error: `0.491`
+- `V` cosine: `0.354`
+- `V` relative Frobenius error: `0.926`
+
+Held-out behavior under the same fair controlled regime was:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- bytes on the controlled slice: `681,668.4`
+
+That means:
+
+- a shared-basis / coefficient-space canonicalization is more faithful to the
+  dictionary-style references than the earlier pure rotation probes
+- but in this simple form it still exactly ties the earlier geometry branches
+  on the held-out slices that matter
+- so the current grouped-canonicalization family now looks close to saturated
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
+4. if we keep the method lane alive, the best next move is now more likely a **stronger teacher closer to prediction space** than another small canonicalization variant
