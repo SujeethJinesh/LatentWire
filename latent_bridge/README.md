@@ -328,6 +328,11 @@ On the current Qwen2.5 -> Qwen3 setup, this should be described as an
 **Expected Attention-style approximation** unless you actually run the external
 KVPress implementation; the fair paper readout should include the matched
 `attention_expected_shuffled` null beside it.
+For the exact external comparator, use `scripts/run_kvpress_eval.py`; on the
+current controlled Qwen3-0.6B setup, exact `ExpectedAttentionPress` ties the
+pipeline's own no-press floor on both `gsm8k_5` and controlled
+`gsm8k_eval_10`, so it should be reported as a negative-boundary comparator
+rather than a live positive baseline.
 `attention_prior_shuffled` is the budget-matched null that keeps the prior's
 mass profile but permutes which heads receive it.
 Use `--runtime-head-prior-save <path>` to export the concrete fixed head-profile

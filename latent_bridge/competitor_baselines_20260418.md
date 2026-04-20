@@ -108,3 +108,36 @@ Current read:
   `-0.085714` with `0` KVComm-only wins and `6` internal-only wins
 - paired against `C2C`, lifted `KVComm` is `-0.128571` with `0` KVComm-only
   wins and `9` C2C-only wins
+
+### Exact KVPress / Expected Attention
+
+The vendored `KVPress` baseline is now runnable exactly on our local slices
+through `scripts/run_kvpress_eval.py`, which patches the clone's cache API
+compatibility at runtime rather than relying on manual edits inside
+`references/repos/kvpress`.
+
+Exact held-out reads on `Qwen/Qwen3-0.6B` with shared-chat prompts and
+`enable_thinking=False`:
+
+- `data/gsm8k_5.jsonl`, no press: `0.200000`
+- `data/gsm8k_5.jsonl`, `ExpectedAttentionPress`, `compression_ratio=0.5`:
+  `0.200000`
+- `/tmp/gsm8k_eval_10.jsonl`, no press: `0.100000`
+- `/tmp/gsm8k_eval_10.jsonl`, `ExpectedAttentionPress`,
+  `compression_ratio=0.5`: `0.100000`
+
+Saved artifacts:
+
+- `results/kvpress_expected_20260420/qwen_gsm5_no_press.jsonl.meta.json`
+- `results/kvpress_expected_20260420/qwen_gsm5_expected_attention.jsonl.meta.json`
+- `results/kvpress_expected_20260420/qwen_gsm10_no_press.jsonl.meta.json`
+- `results/kvpress_expected_20260420/qwen_gsm10_expected_attention.jsonl.meta.json`
+
+Interpretation:
+
+- exact external Expected Attention matches its own no-press floor on both
+  slices
+- this makes KVPress / Expected Attention an honest **negative-boundary
+  comparator** on our current pair, not a live positive baseline
+- `C2C` remains the main external bar; KVPress is useful as a compression-side
+  boundary and calibration sanity check

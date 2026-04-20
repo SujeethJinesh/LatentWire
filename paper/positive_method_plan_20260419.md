@@ -714,3 +714,32 @@ So the highest-value next stack is now:
 4. if we keep the method lane alive, the two live paths are:
    - a **stronger teacher closer to prediction space**
    - a **stronger geometry / canonicalization step** than the current grouped rotational fit
+
+I then closed that exact external comparator lane with the vendored KVPress
+pipeline itself through `scripts/run_kvpress_eval.py`.
+
+Exact held-out reads on `Qwen/Qwen3-0.6B` under the same fair shared-chat /
+`enable_thinking=false` control were:
+
+- `gsm8k_5`, no press: `0.2000`
+- `gsm8k_5`, `ExpectedAttentionPress`: `0.2000`
+- controlled `gsm8k_eval_10`, no press: `0.1000`
+- controlled `gsm8k_eval_10`, `ExpectedAttentionPress`: `0.1000`
+
+That means:
+
+- the exact external Expected Attention baseline reproduces the same
+  **negative-boundary comparator** read as our in-repo approximation
+- so Expected Attention is now closed as an honest external null / boundary
+  comparator on this pair, not a new live baseline
+- the next highest-value work should go back to method design, not more
+  Expected-Attention variants
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
+4. if we keep the method lane alive, the two live paths are:
+   - a **stronger teacher closer to prediction space**
+   - a **stronger geometry / canonicalization step** than the current grouped rotational fit

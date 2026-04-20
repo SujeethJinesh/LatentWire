@@ -1726,3 +1726,27 @@ Interpretation:
   gain over the controlled target baseline
 - the strongest read now is that richer geometry may matter, but not in a way
   that simple local bridge losses were able to capture
+
+And a fifty-first exact KVPress comparator update:
+
+> I then closed the exact external Expected Attention comparator with the
+> vendored KVPress pipeline itself instead of our in-repo approximation. I
+> added a reusable harness, `scripts/run_kvpress_eval.py`, which loads the
+> vendored `references/repos/kvpress` package, patches its cache API
+> compatibility for the current `transformers` stack at runtime, and replays it
+> on our JSONL generation slices under the same fair shared-chat /
+> `enable_thinking=False` Qwen control. The exact held-out reads were:
+> - `gsm8k_5`, no-press: `0.200000`
+> - `gsm8k_5`, `ExpectedAttentionPress`: `0.200000`
+> - controlled `gsm8k_eval_10`, no-press: `0.100000`
+> - controlled `gsm8k_eval_10`, `ExpectedAttentionPress`: `0.100000`
+
+Interpretation:
+
+- the exact external KVPress / Expected Attention baseline reproduces the same
+  **negative-boundary comparator** story we already saw in the in-repo
+  approximation
+- on this exact Qwen3-0.6B setup, Expected Attention survives the held-out
+  slices but it does **not** improve over its own no-press floor
+- so it should stay in the paper as an honest external null / boundary
+  comparator, not as a live positive baseline and not as the next method lane
