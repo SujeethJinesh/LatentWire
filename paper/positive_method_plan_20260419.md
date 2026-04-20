@@ -1283,3 +1283,29 @@ That means:
   - a more global **Attention Editing / LLM Modules** style replacement
   - or a richer **dynamic token/output remapping** teacher with explicit
     contextual alignment rather than another local top-k target
+
+I also built a first layer-localization artifact from the live
+`selector_trace` telemetry on the controlled `gsm8k_eval_10` slice:
+`paper/layer_localization_20260420.{jsonl,md}`.
+
+The main read is that the current weakly-alive modular family
+(`shared_plus_private_asym_adapter`, `shared_plus_private_dynmap_adapter`,
+`xattn_adapter`, `xattn_dynmap_adapter`, `module_adapter`,
+`module_replace`) all reuse the same top target-layer pattern:
+
+- `L27 <- S23`
+- `L5 <- S4`
+- `L23 <- S20`
+- `L22 <- S19`
+- `L8 <- S7`
+
+That means:
+
+- the weakly-alive branches are not moving the runtime layer-selection story
+  in a meaningful way under the fair control
+- so more local interface elaboration is even less likely to rescue the
+  method than before
+- this strengthens the case for a pivot that changes something **upstream** of
+  the current local bridge fit, such as:
+  - a more global **Attention Editing / LLM Modules** style replacement
+  - or a **token/span remapping** or richer token-output alignment teacher

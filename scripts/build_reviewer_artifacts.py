@@ -7,6 +7,7 @@ import math
 import pathlib
 import random
 import sys
+from collections import Counter, defaultdict
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -698,24 +699,179 @@ def _write_frontier_markdown(rows: list[dict[str, Any]], path: pathlib.Path) -> 
     path.write_text("\n".join(lines) + "\n")
 
 
+def _safe_mean(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    return float(sum(values) / len(values))
+
+
+def _build_layer_localization_rows() -> list[dict[str, Any]]:
+    specs = [
+        {
+            "method": "shared_plus_private_asym_adapter",
+            "family": "modular bridge",
+            "jsonl": "results/bridge_ridge_qk_asym_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_asym_adapter_cal64_chat.jsonl",
+            "notes": "shared-plus-private dense bridge on controlled gsm8k_eval_10",
+        },
+        {
+            "method": "shared_plus_private_dynmap_adapter",
+            "family": "modular bridge",
+            "jsonl": "results/bridge_ridge_qk_asym_dynmap_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_asym_dynmap_adapter_cal64_chat.jsonl",
+            "notes": "shared-plus-private bridge plus context-reweighted teacher on controlled gsm8k_eval_10",
+        },
+        {
+            "method": "xattn_adapter",
+            "family": "attention bridge",
+            "jsonl": "results/bridge_ridge_qk_xattn_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_xattn_adapter_cal64_chat.jsonl",
+            "notes": "tiny cross-attention bridge on controlled gsm8k_eval_10",
+        },
+        {
+            "method": "xattn_dynmap_adapter",
+            "family": "attention bridge",
+            "jsonl": "results/bridge_ridge_qk_xattn_dynmap_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_xattn_dynmap_adapter_cal64_chat.jsonl",
+            "notes": "cross-attention bridge plus context-reweighted teacher on controlled gsm8k_eval_10",
+        },
+        {
+            "method": "module_adapter",
+            "family": "attention bridge",
+            "jsonl": "results/bridge_ridge_qk_module_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_module_adapter_cal64_chat.jsonl",
+            "notes": "slotted attention-side module with nonlinear readout on controlled gsm8k_eval_10",
+        },
+        {
+            "method": "module_replace",
+            "family": "attention bridge",
+            "jsonl": "results/bridge_ridge_qk_module_replace_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_module_replace_cal64_chat.jsonl",
+            "notes": "direct-output slotted attention-side module on controlled gsm8k_eval_10",
+        },
+    ]
+
+    rows: list[dict[str, Any]] = []
+    for spec in specs:
+        records = _load_prediction_records(ROOT / spec["jsonl"])
+        by_layer: dict[int, dict[str, Any]] = defaultdict(
+            lambda: {
+                "source_layers": [],
+                "keep": [],
+                "keep_fraction": [],
+                "score_top": [],
+                "score_gap": [],
+                "score_entropy": [],
+                "selected_mean_pos": [],
+                "selected_span": [],
+            }
+        )
+        example_count = 0
+        correct_count = 0
+        for record in records:
+            if str(record.get("method")) != "rotalign_kv_gate_0.10":
+                continue
+            example_count += 1
+            correct_count += int(bool(record.get("correct", False)))
+            for trace in record.get("selector_trace", []):
+                layer = int(trace["target_layer"])
+                slot = by_layer[layer]
+                slot["source_layers"].append(int(trace["source_layer"]))
+                if "keep" in trace:
+                    slot["keep"].append(float(trace["keep"]))
+                if "keep_fraction" in trace:
+                    slot["keep_fraction"].append(float(trace["keep_fraction"]))
+                if "score_top" in trace:
+                    slot["score_top"].append(float(trace["score_top"]))
+                if "score_gap" in trace:
+                    slot["score_gap"].append(float(trace["score_gap"]))
+                if "score_entropy" in trace and trace["score_entropy"] is not None and not math.isnan(float(trace["score_entropy"])):
+                    slot["score_entropy"].append(float(trace["score_entropy"]))
+                if "selected_mean_pos" in trace:
+                    slot["selected_mean_pos"].append(float(trace["selected_mean_pos"]))
+                if "selected_min_pos" in trace and "selected_max_pos" in trace:
+                    slot["selected_span"].append(float(trace["selected_max_pos"]) - float(trace["selected_min_pos"]))
+
+        accuracy = float(correct_count / example_count) if example_count else 0.0
+        for target_layer in sorted(by_layer):
+            slot = by_layer[target_layer]
+            source_counts = Counter(slot["source_layers"])
+            source_layer_mode = int(source_counts.most_common(1)[0][0]) if source_counts else -1
+            rows.append(
+                {
+                    "method": spec["method"],
+                    "family": spec["family"],
+                    "notes": spec["notes"],
+                    "target_layer": int(target_layer),
+                    "source_layer_mode": source_layer_mode,
+                    "examples": int(example_count),
+                    "accuracy": accuracy,
+                    "mean_keep": _safe_mean(slot["keep"]),
+                    "mean_keep_fraction": _safe_mean(slot["keep_fraction"]),
+                    "mean_score_top": _safe_mean(slot["score_top"]),
+                    "mean_score_gap": _safe_mean(slot["score_gap"]),
+                    "mean_score_entropy": _safe_mean(slot["score_entropy"]),
+                    "mean_selected_mean_pos": _safe_mean(slot["selected_mean_pos"]),
+                    "mean_selected_span": _safe_mean(slot["selected_span"]),
+                    "layer_score": _safe_mean(slot["score_top"]) * _safe_mean(slot["keep_fraction"]),
+                }
+            )
+    return rows
+
+
+def _write_layer_localization_markdown(rows: list[dict[str, Any]], path: pathlib.Path) -> None:
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        grouped[str(row["method"])].append(row)
+
+    lines = [
+        "# Current Layer Localization (2026-04-20)",
+        "",
+        "Telemetry source: `selector_trace` from controlled `gsm8k_eval_10` runs under the fair shared-chat / `enable_thinking=false` Qwen control.",
+        "",
+        "| Method | Acc | Top target layers by layer_score | Mean keep frac (top layer) | Mean score top (top layer) | Mean score gap (top layer) |",
+        "|---|---:|---|---:|---:|---:|",
+    ]
+    for method, method_rows in sorted(grouped.items()):
+        ranked = sorted(method_rows, key=lambda row: (-float(row["layer_score"]), int(row["target_layer"])))
+        top = ranked[:5]
+        layer_summary = ", ".join(
+            f"L{int(row['target_layer'])}<-S{int(row['source_layer_mode'])}"
+            for row in top
+        )
+        lead = top[0] if top else None
+        lines.append(
+            "| {method} | {acc:.4f} | {layers} | {keep:.4f} | {score_top:.4f} | {score_gap:.4f} |".format(
+                method=method,
+                acc=float(method_rows[0]["accuracy"]) if method_rows else 0.0,
+                layers=layer_summary or "-",
+                keep=float(lead["mean_keep_fraction"]) if lead else 0.0,
+                score_top=float(lead["mean_score_top"]) if lead else 0.0,
+                score_gap=float(lead["mean_score_gap"]) if lead else 0.0,
+            )
+        )
+    path.write_text("\n".join(lines) + "\n")
+
+
 def main() -> None:
     frontier_rows = _build_frontier_rows()
     paired_rows = _build_paired_rows()
+    layer_rows = _build_layer_localization_rows()
 
     frontier_json = ROOT / "paper/bytes_accuracy_frontier_20260420.json"
     frontier_md = ROOT / "paper/bytes_accuracy_table_20260420.md"
     paired_jsonl = ROOT / "paper/paired_flip_table_20260420.jsonl"
     paired_md = ROOT / "paper/paired_flip_table_20260420.md"
+    layer_jsonl = ROOT / "paper/layer_localization_20260420.jsonl"
+    layer_md = ROOT / "paper/layer_localization_20260420.md"
 
     frontier_json.write_text(json.dumps(frontier_rows, indent=2, sort_keys=True) + "\n")
     _write_frontier_markdown(frontier_rows, frontier_md)
     _write_jsonl(paired_rows, paired_jsonl)
     _write_paired_markdown(paired_rows, paired_md)
+    _write_jsonl(layer_rows, layer_jsonl)
+    _write_layer_localization_markdown(layer_rows, layer_md)
 
     print(frontier_json)
     print(frontier_md)
     print(paired_jsonl)
     print(paired_md)
+    print(layer_jsonl)
+    print(layer_md)
 
 
 if __name__ == "__main__":

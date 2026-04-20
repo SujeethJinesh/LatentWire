@@ -2192,3 +2192,28 @@ Interpretation:
     replacement that changes the interface more globally, or
   - a richer **dynamic token/output remapping** teacher with explicit
     contextual alignment rather than another local top-k target
+
+And a first layer-localization artifact update:
+
+> I added a reviewer-facing layer localization artifact from the live
+> `selector_trace` telemetry on the controlled `gsm8k_eval_10` slice:
+> `paper/layer_localization_20260420.{jsonl,md}`.
+>
+> Across the current weakly-alive modular family
+> (`shared_plus_private_asym_adapter`, `shared_plus_private_dynmap_adapter`,
+> `xattn_adapter`, `xattn_dynmap_adapter`, `module_adapter`,
+> `module_replace`), the same top target-layer pattern repeats:
+> - `L27 <- S23`
+> - `L5 <- S4`
+> - `L23 <- S20`
+> - `L22 <- S19`
+> - `L8 <- S7`
+
+Interpretation:
+
+- the surviving modular variants are not changing the runtime layer-selection
+  story in any meaningful way under the fair control
+- that is new blocker evidence that the current saturation point sits earlier
+  than the exact local bridge parameterization
+- this makes upstream pivots like **token/span remapping** or a more global
+  **module replacement** even more plausible than further local bridge edits
