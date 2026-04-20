@@ -1191,3 +1191,27 @@ Interpretation:
 - if the positive-method lane gets another serious try, it should move
   query-conditioning into the transport cost or translator, not another
   evaluator-side budget rule
+
+And a thirtieth grouped QK-retrieval transport update:
+
+> I then moved the same idea into the transport path itself with
+> `grouped_qk_retrieval_transport + rank-4 residual`. This branch keeps the
+> grouped transport family but swaps the calibration-time template from mean
+> attention to a grouped last-token QK retrieval profile. On the exact
+> `Qwen2.5-0.5B-Instruct -> Qwen3-0.6B` pair with the standard `64`-prompt
+> calibration slice, offline fit again looked respectable (`K` cosine `0.881`,
+> relative Frobenius error `0.452`), but the first held-out matched sparse
+> `K-only` smoke on `gsm8k_5` still collapsed to `0.000000` at
+> `630,701.475` average bytes.
+
+Interpretation:
+
+- grouped retrieval-shaped QK templates are still too static when averaged over
+  the calibration slice
+- this is another case where better offline transport fit does not imply
+  held-out reasoning transfer
+- the branch is also too byte-heavy to be a plausible efficiency win even if it
+  later recovers slightly
+- if the positive-method lane stays alive, the next transport hypothesis has to
+  be genuinely query-conditioned at runtime, not another calibration-time
+  averaged descriptor

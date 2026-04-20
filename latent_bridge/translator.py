@@ -62,6 +62,7 @@ class TranslatorConfig:
     #                 | 'grouped_signature_transport' | 'grouped_subspace_transport'
     #                 | 'grouped_canonical_transport' | 'grouped_covariance_transport'
     #                 | 'grouped_template_transport'
+    #                 | 'grouped_qk_retrieval_transport'
     #                 | 'grouped_contrastive_template_transport'
     #                 | 'grouped_template_subspace_transport'
     #                 | 'broadcast_template_transport'
@@ -882,7 +883,11 @@ class RotAlignKVTranslator(nn.Module):
             tgt_signatures = [self._group_signature(Y[:, tgt_slice]) for tgt_slice in tgt_slices]
         src_template_banks = None
         tgt_template_banks = None
-        if self.config.alignment_method in {"grouped_template_transport", "grouped_template_subspace_transport"} and signature_weight > 0.0:
+        if self.config.alignment_method in {
+            "grouped_template_transport",
+            "grouped_qk_retrieval_transport",
+            "grouped_template_subspace_transport",
+        } and signature_weight > 0.0:
             if self._transport_src_group_templates is None or self._transport_tgt_group_templates is None:
                 raise ValueError("grouped_template_transport requires calibration-time group templates")
             src_templates = self._transport_src_group_templates[src_layer_idx].to(device=X.device, dtype=X.dtype)
@@ -940,6 +945,9 @@ class RotAlignKVTranslator(nn.Module):
                     cov_dist = self._covariance_distance(y_hat, Y[:, tgt_slice])
                     score = score - signature_weight * float(cov_dist)
                 elif self.config.alignment_method == "grouped_template_transport" and signature_weight > 0.0:
+                    template_dist = self._template_distance(src_templates[src_idx], tgt_templates[tgt_idx])
+                    score = score - signature_weight * float(template_dist)
+                elif self.config.alignment_method == "grouped_qk_retrieval_transport" and signature_weight > 0.0:
                     template_dist = self._template_distance(src_templates[src_idx], tgt_templates[tgt_idx])
                     score = score - signature_weight * float(template_dist)
                 elif self.config.alignment_method == "grouped_template_subspace_transport" and signature_weight > 0.0:
@@ -1559,7 +1567,7 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -1789,7 +1797,7 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
             elif self.config.alignment_method in {
@@ -1813,6 +1821,7 @@ class RotAlignKVTranslator(nn.Module):
                 "canonical_transport",
                 "covariance_transport",
                 "template_transport",
+                "qk_retrieval_transport",
                 "contrastive_template_transport",
                 "template_subspace_transport",
                 "broadcast_template_transport",

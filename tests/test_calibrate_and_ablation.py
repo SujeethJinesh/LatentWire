@@ -537,6 +537,35 @@ def test_calibrate_parse_args_accepts_grouped_template_transport(monkeypatch) ->
     assert args.transport_signature_weight == 0.0
 
 
+def test_calibrate_parse_args_accepts_grouped_qk_retrieval_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_qk_retrieval_transport",
+            "--transport-template-bins",
+            "28",
+            "--transport-signature-weight",
+            "0.15",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_qk_retrieval_transport"
+    assert args.transport_template_bins == 28
+    assert args.transport_signature_weight == 0.15
+
+
 def test_calibrate_parse_args_accepts_grouped_contrastive_template_transport(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

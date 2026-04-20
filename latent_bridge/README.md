@@ -153,6 +153,8 @@ python scripts/calibrate.py \
   canonical basis before transport, `grouped_template_transport` to match
   grouped source/target heads by calibration-time last-token attention
   templates before fitting the transport map,
+  `grouped_qk_retrieval_transport` to match grouped heads using calibration-time
+  last-token query-key retrieval profiles before fitting the transport map,
   `grouped_contrastive_template_transport` to score grouped source/target
   matches by prompt-indexed template agreement minus mismatched-prompt
   agreement, or
@@ -164,7 +166,8 @@ python scripts/calibrate.py \
 - `--canonical-subspace-rank R` — shared low-rank basis size for
   `grouped_canonical_transport`.
 - `--transport-template-bins B` — number of bins used when summarizing grouped
-  attention templates for `grouped_template_transport` and
+  attention templates for `grouped_template_transport`,
+  `grouped_qk_retrieval_transport`, and
   `grouped_contrastive_template_transport`.
 - `--transport-temperature T` / `--transport-sinkhorn-iters K` — control the
   softness of the grouped transport plan.

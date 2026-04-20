@@ -99,6 +99,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_canonical_transport",
             "grouped_covariance_transport",
             "grouped_template_transport",
+            "grouped_qk_retrieval_transport",
             "grouped_contrastive_template_transport",
             "grouped_template_subspace_transport",
             "broadcast_template_transport",
@@ -867,6 +868,90 @@ def collect_group_qk_templates(
     return [(templates / float(used_prompts)).cpu() for templates in layer_sums]
 
 
+@torch.no_grad()
+def collect_group_qk_retrieval_templates(
+    model: AutoModelForCausalLM,
+    tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    max_length: int,
+    batch_size: int,
+    device: str,
+    kv_heads: int,
+    group_count: int,
+    bins: int,
+    reasoning_mode: str = "plain",
+) -> list[torch.Tensor]:
+    if bins <= 0:
+        raise ValueError("bins must be positive")
+    if group_count <= 0:
+        raise ValueError("group_count must be positive")
+    if kv_heads % group_count != 0:
+        raise ValueError(f"kv_heads={kv_heads} must be divisible by group_count={group_count}")
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    layers = _model_layers(model)
+    group_heads = kv_heads // group_count
+    layer_sums: list[torch.Tensor] | None = None
+    used_prompts = 0
+    for batch in batched(prompts, batch_size):
+        batch_text = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        enc = tokenizer(
+            batch_text,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        ).to(device)
+        out = model(**enc, use_cache=True, output_hidden_states=True, return_dict=True)
+        hidden_states = getattr(out, "hidden_states", None)
+        if hidden_states is None:
+            raise ValueError("Model did not return hidden_states while building grouped QK retrieval templates")
+        pkv = _normalize_past_key_values(out.past_key_values)
+        if layer_sums is None:
+            layer_sums = [torch.zeros(group_count, bins, dtype=torch.float32) for _ in range(len(pkv))]
+        mask_cpu = enc["attention_mask"].to("cpu")
+        for batch_idx in range(mask_cpu.shape[0]):
+            valid_len = int(mask_cpu[batch_idx].sum().item())
+            if valid_len <= 1:
+                continue
+            for layer_idx, layer_cache in enumerate(pkv):
+                attn_mod = layers[layer_idx].self_attn
+                q_proj = getattr(attn_mod, "q_proj", None)
+                if q_proj is None:
+                    raise ValueError("self_attn.q_proj is required for grouped QK retrieval templates")
+                hidden = hidden_states[layer_idx][batch_idx, valid_len - 1 : valid_len].to(device)
+                q_flat = q_proj(hidden).squeeze(0).squeeze(0).detach().to("cpu", dtype=torch.float32)
+                keys = layer_cache[0][batch_idx, :, : valid_len - 1, :].detach().to("cpu", dtype=torch.float32)
+                num_q_heads = q_flat.numel() // keys.shape[-1]
+                if num_q_heads % kv_heads != 0:
+                    raise ValueError(
+                        f"num_q_heads={num_q_heads} must be divisible by kv_heads={kv_heads} for grouped QK retrieval templates"
+                    )
+                q = q_flat.view(num_q_heads, keys.shape[-1])
+                q_per_kv = num_q_heads // kv_heads
+                group_templates = []
+                for group_idx in range(group_count):
+                    start = group_idx * group_heads
+                    stop = start + group_heads
+                    head_profiles = []
+                    for kv_head in range(start, stop):
+                        q_start = kv_head * q_per_kv
+                        q_stop = q_start + q_per_kv
+                        logits = torch.einsum("hd,td->ht", q[q_start:q_stop], keys[kv_head]) / math.sqrt(keys.shape[-1])
+                        retrieval_logits = logits.max(dim=0).values
+                        weights = torch.softmax(retrieval_logits, dim=-1)
+                        head_profiles.append(_resample_position_profile(weights, bins))
+                    grouped = torch.stack(head_profiles, dim=0).mean(dim=0)
+                    group_templates.append(grouped / grouped.sum().clamp_min(1e-8))
+                layer_sums[layer_idx] += torch.stack(group_templates, dim=0)
+            used_prompts += 1
+    if layer_sums is None or used_prompts == 0:
+        raise ValueError("Could not build grouped QK retrieval templates from calibration prompts")
+    return [(templates / float(used_prompts)).cpu() for templates in layer_sums]
+
+
 def main() -> None:
     args = parse_args()
     dtype = torch_dtype(args.dtype)
@@ -957,6 +1042,7 @@ def main() -> None:
 
     if args.alignment in {
         "grouped_template_transport",
+        "grouped_qk_retrieval_transport",
         "grouped_contrastive_template_transport",
         "grouped_template_subspace_transport",
         "broadcast_template_transport",
@@ -1041,6 +1127,40 @@ def main() -> None:
             )
             print(
                 "Built grouped QK templates: "
+                f"source layers={len(translator._transport_src_group_templates)}, "
+                f"target layers={len(translator._transport_tgt_group_templates)}"
+            )
+        elif args.alignment == "grouped_qk_retrieval_transport":
+            print(
+                "\nBuilding grouped QK retrieval templates from calibration prompts "
+                f"(source groups={src_template_groups}, target groups={tgt_template_groups}, bins={args.transport_template_bins})..."
+            )
+            translator._transport_src_group_templates = collect_group_qk_retrieval_templates(
+                src,
+                tok_s,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.src_num_heads,
+                group_count=src_template_groups,
+                bins=args.transport_template_bins,
+                reasoning_mode=args.source_reasoning_mode,
+            )
+            translator._transport_tgt_group_templates = collect_group_qk_retrieval_templates(
+                tgt,
+                tok_t,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.tgt_num_heads,
+                group_count=tgt_template_groups,
+                bins=args.transport_template_bins,
+                reasoning_mode="plain",
+            )
+            print(
+                "Built grouped QK retrieval templates: "
                 f"source layers={len(translator._transport_src_group_templates)}, "
                 f"target layers={len(translator._transport_tgt_group_templates)}"
             )

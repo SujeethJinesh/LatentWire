@@ -170,3 +170,20 @@ That means:
 - if we keep the positive-method lane alive, the next real shot should be
   **transport-first and query-conditioned in the transport itself**, not
   another evaluator-side budget or gate variant
+
+The next follow-up tested exactly that inside the grouped transport family:
+`grouped_qk_retrieval_transport + rank-4 residual`. It replaced the old grouped
+attention template with a grouped last-token QK retrieval profile built from the
+same `64`-prompt calibration slice. Offline fit was again respectable (`K`
+cosine `0.881`, relative Frobenius error `0.452`), but the first matched sparse
+`K-only` held-out smoke on `gsm8k_5` still scored `0.0000` at `630,701.475`
+average bytes.
+
+That means:
+
+- a more retrieval-shaped grouped descriptor is still not enough when it is
+  averaged statically over the calibration prompts
+- better offline grouped transport fit still does not predict held-out reasoning
+  utility
+- the next transport-first shot has to be **genuinely query-conditioned at
+  runtime**, not another grouped calibration-time summary

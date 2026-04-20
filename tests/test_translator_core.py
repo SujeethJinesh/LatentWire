@@ -612,6 +612,41 @@ def test_grouped_template_transport_records_soft_plan(monkeypatch) -> None:
     assert plan[1, 0] > plan[1, 1]
 
 
+def test_grouped_qk_retrieval_transport_records_soft_plan(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    tr = RotAlignKVTranslator(
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            alignment_method="grouped_qk_retrieval_transport",
+            transport_signature_weight=0.25,
+            transport_temperature=0.1,
+            transport_sinkhorn_iters=16,
+            transport_template_bins=4,
+        )
+    )
+    tr._transport_src_group_templates = [torch.tensor([[1.0, 0.0, 0.0, 0.0], [0.0, 0.1, 0.2, 0.7]])]
+    tr._transport_tgt_group_templates = [torch.tensor([[0.0, 0.1, 0.2, 0.7], [1.0, 0.0, 0.0, 0.0]])]
+
+    torch.manual_seed(0)
+    src = torch.randn(6, 2, 3, 2)
+    tgt = src.flip(1).contiguous()
+
+    tr.fit_from_pairs([(src, src + 0.1)], [(tgt, tgt + 0.1)])
+    plan = tr.transport_plan_K[0].detach()
+
+    assert plan.shape == (2, 2)
+    assert torch.allclose(plan.sum(dim=1), torch.ones(2), atol=1e-5)
+    assert plan[0, 1] > plan[0, 0]
+    assert plan[1, 0] > plan[1, 1]
+
+
 def test_grouped_template_subspace_transport_records_soft_plan(monkeypatch) -> None:
     monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
     monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
