@@ -107,9 +107,11 @@ class TranslatorConfig:
     pre_quant_shrinkage: float = 0.0
 
     # Optional decoder-side correction after quantize/dequantize. `affine`
-    # learns a diagonal scale+bias, `ridge` learns a full linear map plus bias
-    # in rotated target space, and `low_rank` learns a reduced-rank linear map
-    # plus bias as a tiny bridge adapter.
+    # learns a diagonal scale+bias, `bridge_affine` learns a small coordinatewise
+    # bridge over both the dequantized tensor and the pre-quant prediction,
+    # `ridge` learns a full linear map plus bias in rotated target space, and
+    # `low_rank` learns a reduced-rank linear map plus bias as a tiny bridge
+    # adapter.
     quantization_correction: str = "none"
     quantization_correction_rank: int | None = None
 
@@ -256,6 +258,12 @@ class RotAlignKVTranslator(nn.Module):
         )
         self.quant_scale_V = nn.ParameterList(
             [nn.Parameter(torch.ones(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_aux_scale_K = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_aux_scale_V = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_proj_K = nn.ParameterList(
             [nn.Parameter(torch.eye(self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
@@ -1110,6 +1118,50 @@ class RotAlignKVTranslator(nn.Module):
         bias = y_mean - scale * q_mean
         return scale.to(dtype=target.dtype, device=target.device), bias.to(dtype=target.dtype, device=target.device)
 
+    def _fit_bridge_affine_correction(
+        self,
+        quantized: torch.Tensor,
+        predicted: torch.Tensor,
+        target: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        q = quantized.float()
+        p = predicted.float()
+        y = target.float()
+        lam = float(self.config.ridge_lambda)
+
+        a11 = (q * q).sum(dim=0) + lam
+        a22 = (p * p).sum(dim=0) + lam
+        a12 = (q * p).sum(dim=0)
+        a13 = q.sum(dim=0)
+        a23 = p.sum(dim=0)
+        a33 = torch.full_like(a11, float(q.shape[0]))
+        b1 = (q * y).sum(dim=0)
+        b2 = (p * y).sum(dim=0)
+        b3 = y.sum(dim=0)
+
+        mat = torch.stack(
+            [
+                torch.stack([a11, a12, a13], dim=-1),
+                torch.stack([a12, a22, a23], dim=-1),
+                torch.stack([a13, a23, a33], dim=-1),
+            ],
+            dim=-2,
+        )
+        rhs = torch.stack([b1, b2, b3], dim=-1).unsqueeze(-1)
+        try:
+            sol = torch.linalg.solve(mat, rhs).squeeze(-1)
+        except RuntimeError:
+            eye = torch.eye(3, dtype=mat.dtype, device=mat.device).unsqueeze(0)
+            sol = torch.linalg.solve(mat + 1e-4 * eye, rhs).squeeze(-1)
+        q_scale = sol[:, 0].unsqueeze(0)
+        aux_scale = sol[:, 1].unsqueeze(0)
+        bias = sol[:, 2].unsqueeze(0)
+        return (
+            q_scale.to(dtype=target.dtype, device=target.device),
+            aux_scale.to(dtype=target.dtype, device=target.device),
+            bias.to(dtype=target.dtype, device=target.device),
+        )
+
     def _fit_ridge_correction(
         self,
         quantized: torch.Tensor,
@@ -1272,21 +1324,38 @@ class RotAlignKVTranslator(nn.Module):
             torch.stack(biases, dim=0).to(dtype=target.dtype, device=target.device),
         )
 
-    def _apply_quantization_correction(self, x: torch.Tensor, tgt_layer_idx: int, kind: str) -> torch.Tensor:
+    def _apply_quantization_correction(
+        self,
+        x: torch.Tensor,
+        tgt_layer_idx: int,
+        kind: str,
+        *,
+        aux_input: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         if self.config.quantization_correction == "none":
             return x
         if kind == "K":
             scale = self.quant_scale_K[tgt_layer_idx]
+            aux_scale = self.quant_aux_scale_K[tgt_layer_idx]
             proj = self.quant_proj_K[tgt_layer_idx]
             bias = self.quant_bias_K[tgt_layer_idx]
         elif kind == "V":
             scale = self.quant_scale_V[tgt_layer_idx]
+            aux_scale = self.quant_aux_scale_V[tgt_layer_idx]
             proj = self.quant_proj_V[tgt_layer_idx]
             bias = self.quant_bias_V[tgt_layer_idx]
         else:
             raise ValueError(f"Unknown correction kind: {kind}")
         if self.config.quantization_correction == "affine":
             return x * scale.to(device=x.device, dtype=x.dtype) + bias.to(device=x.device, dtype=x.dtype)
+        if self.config.quantization_correction == "bridge_affine":
+            if aux_input is None:
+                raise ValueError("bridge_affine quantization correction requires aux_input")
+            return (
+                x * scale.to(device=x.device, dtype=x.dtype)
+                + aux_input * aux_scale.to(device=x.device, dtype=x.dtype)
+                + bias.to(device=x.device, dtype=x.dtype)
+            )
         if self.config.quantization_correction in {"ridge", "low_rank"}:
             return x @ proj.to(device=x.device, dtype=x.dtype) + bias.to(device=x.device, dtype=x.dtype)
         raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
@@ -1351,14 +1420,21 @@ class RotAlignKVTranslator(nn.Module):
         #    compressed channel, but with a differentiable straight-through
         #    estimator if we wrap in a detach trick (omitted for clarity).
         if quantize:
+            K_pred = K_t_rot
+            V_pred = V_t_rot
             K_q = self.quantizer.quantize_dequantize(K_t_rot)
             V_q = self.quantizer.quantize_dequantize(V_t_rot)
             if quantization_control == "real":
-                K_t_rot = self._apply_quantization_correction(K_q, tgt_layer_idx, "K")
-                V_t_rot = self._apply_quantization_correction(V_q, tgt_layer_idx, "V")
+                K_t_rot = self._apply_quantization_correction(K_q, tgt_layer_idx, "K", aux_input=K_pred)
+                V_t_rot = self._apply_quantization_correction(V_q, tgt_layer_idx, "V", aux_input=V_pred)
             elif quantization_control == "matched_noise":
                 def add_matched_noise(x: torch.Tensor, q: torch.Tensor, salt: int) -> torch.Tensor:
-                    q = self._apply_quantization_correction(q, tgt_layer_idx, "K" if salt == 0 else "V")
+                    q = self._apply_quantization_correction(
+                        q,
+                        tgt_layer_idx,
+                        "K" if salt == 0 else "V",
+                        aux_input=x,
+                    )
                     err = (q - x).detach().float()
                     mean = float(err.mean().detach().cpu())
                     std = float(err.std().clamp_min(1e-8).detach().cpu())
@@ -1716,6 +1792,8 @@ class RotAlignKVTranslator(nn.Module):
             # Optional decoder-side affine correction to counter quantization bias.
             self.quant_scale_K[tgt_l].data.fill_(1.0)
             self.quant_scale_V[tgt_l].data.fill_(1.0)
+            self.quant_aux_scale_K[tgt_l].data.zero_()
+            self.quant_aux_scale_V[tgt_l].data.zero_()
             self.quant_proj_K[tgt_l].data.copy_(torch.eye(self.d_t, dtype=self.quant_proj_K[tgt_l].dtype))
             self.quant_proj_V[tgt_l].data.copy_(torch.eye(self.d_t, dtype=self.quant_proj_V[tgt_l].dtype))
             self.quant_bias_K[tgt_l].data.zero_()
@@ -1729,6 +1807,15 @@ class RotAlignKVTranslator(nn.Module):
                 scale_v, bias_v = self._fit_affine_correction(V_quant, Yv_fit)
                 self.quant_scale_K[tgt_l].data.copy_(scale_k.to(self.quant_scale_K[tgt_l].dtype))
                 self.quant_scale_V[tgt_l].data.copy_(scale_v.to(self.quant_scale_V[tgt_l].dtype))
+                self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
+                self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
+            elif self.config.quantization_correction == "bridge_affine":
+                scale_k, aux_scale_k, bias_k = self._fit_bridge_affine_correction(K_quant, K_pred, Yk_fit)
+                scale_v, aux_scale_v, bias_v = self._fit_bridge_affine_correction(V_quant, V_pred, Yv_fit)
+                self.quant_scale_K[tgt_l].data.copy_(scale_k.to(self.quant_scale_K[tgt_l].dtype))
+                self.quant_scale_V[tgt_l].data.copy_(scale_v.to(self.quant_scale_V[tgt_l].dtype))
+                self.quant_aux_scale_K[tgt_l].data.copy_(aux_scale_k.to(self.quant_aux_scale_K[tgt_l].dtype))
+                self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
             elif self.config.quantization_correction == "ridge":
@@ -1762,11 +1849,13 @@ class RotAlignKVTranslator(nn.Module):
                 K_quant,
                 tgt_l,
                 "K",
+                aux_input=K_pred,
             )
             V_runtime = V_quant if self.config.quantization_correction == "none" else self._apply_quantization_correction(
                 V_quant,
                 tgt_l,
                 "V",
+                aux_input=V_pred,
             )
             if self.config.use_target_whitening:
                 K_runtime = undo_whitening(

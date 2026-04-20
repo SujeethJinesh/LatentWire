@@ -274,6 +274,12 @@ Files `204_` and `205_` extend the projector-and-anchor backlog:
 - `204_`: MASSV as a lightweight projector plus self-distillation reference for bridge-style adaptation without full end-to-end retraining.
 - `205_`: AttAnchor as an attention-anchor reference for injecting live query structure into a bridge or routing policy.
 
+Files `206_` through `208_` extend the bridge-and-geometry backlog:
+
+- `206_`: AdapterTune as a clean zero-init low-rank adapter reference for tiny bridge modules on top of a frozen transport path.
+- `207_`: Complete Characterization of Gauge Symmetries in Transformer Architectures as the strongest recent symmetry note for why head identities and bases are not canonical.
+- `208_`: ViSpec as a lightweight adaptor / speculative-bridge reference from multimodal decoding that supports the current query-conditioned bridge lane.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

@@ -1315,3 +1315,26 @@ Interpretation:
 - the next bridge-style attempt probably needs a better query-conditioned or
   interaction-level training target, not just another static linear layer on
   top of the existing map
+
+And a thirty-sixth bridge-affine correction update:
+
+> I then swapped the low-rank bridge for a simpler decoder-side
+> `bridge_affine` correction that sees both the dequantized translated tensor
+> and the pre-quant translated prediction, while keeping the same
+> grouped-subspace transport, the same rank-4 residual, and the same `64`-
+> prompt calibration slice. The fit again looked like the old grouped-subspace
+> family (`K` cosine `0.881`, relative Frobenius error `0.452`; `V` cosine
+> `0.399`, relative Frobenius error `0.915`). The held-out smokes reproduced
+> the same weak adapter pattern as the low-rank bridge:
+> - `gsm8k_5`: `0.200000` at `298,063.425` average bytes
+> - matched `gsm8k_eval_10`: `0.000000` at `297,233.538` average bytes
+
+Interpretation:
+
+- giving the bridge both the pre-quant and post-quant translated states is not
+  enough, by itself, to stabilize the weak adapter signal
+- the bridge-affine lane therefore ties the low-rank bridge clue rather than
+  improving it
+- the adapter lane is still weakly alive, but the next bridge-style step
+  probably has to be **query-conditioned or trained against a richer
+  interaction target**, not another static linear repair

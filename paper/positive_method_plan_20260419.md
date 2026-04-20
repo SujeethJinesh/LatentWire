@@ -279,3 +279,37 @@ That means:
 - the next bridge-style attempt should probably be query-conditioned or trained
   against a richer token-interaction target, not just another fixed linear
   correction layer
+
+I then tried the smallest bridge variant that could still use more signal than
+the low-rank repair: a decoder-side `bridge_affine` correction that sees both
+the dequantized translated state and the pre-quant translated prediction,
+while keeping the same grouped-subspace transport, the same rank-4 residual,
+and the same `64`-prompt calibration slice. It reproduced the same weak smoke
+pattern exactly:
+
+- matched sparse `gsm8k_5`: `0.2000`
+- matched sparse `gsm8k_eval_10`: `0.0000`
+- bytes on `gsm8k_eval_10`: `297,233.5`
+
+That means:
+
+- the bridge lane is still the first live internal adapter clue
+- but using both pre-quant and post-quant translated states is still not
+  enough, by itself, to stabilize the effect
+- the next adapter-style attempt should probably be **query-conditioned** or
+  fitted against a **richer interaction/distillation target**, not another
+  static linear correction
+
+The strongest sidecar consensus after this update is now:
+
+1. `C2C` remains the main external bar.
+2. Token/vocabulary mismatch is probably **not** the first-order blocker on the
+   exact Qwen2.5-0.5B -> Qwen3-0.6B pair because both configs share the same
+   `vocab_size = 151936`; serialization / thinking-mode mismatch is the
+   cheaper control to test.
+3. The most plausible positive stack is now:
+   - gauge-fix / canonicalize head space
+   - transport in that stabilized space
+   - add a tiny query-conditioned bridge / projector
+   - use a richer target such as token-interaction or target-refinement
+     distillation if the bridge is trained
