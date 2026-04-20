@@ -162,6 +162,14 @@
   {
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
+    "family": "token-remapped attention bridge",
+    "method": "dynamic-aligned interaction module replace",
+    "notes": "dynalign module replace plus prompt-local interaction distillation on a 16-prompt diagnostic slice",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
     "family": "token-native attention bridge",
     "method": "token-basis replace",
     "notes": "slotted attention-side module constrained to a basis distilled from target next-token output rows",
@@ -277,6 +285,14 @@
     "family": "token-remapped attention bridge",
     "method": "dynamic-aligned module replace",
     "notes": "direct-output slotted module fit from context-plus-output-overlap token mixtures",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "token-remapped attention bridge",
+    "method": "dynamic-aligned interaction module replace",
+    "notes": "dynalign module replace plus prompt-local interaction distillation on a 16-prompt diagnostic slice",
     "split": "gsm8k_5_controlled_smoke"
   },
   {

@@ -2396,3 +2396,33 @@ Interpretation:
   - span-level or likelihood-style targets,
   - token/span interaction supervision,
   - or a tokenizer-agnostic shared byte/span interface
+
+And a seventy-fourth dynalign interaction-teacher diagnostic:
+
+> I then implemented `bridge_ridge_qk_dynalign_interact_module_replace`,
+> which keeps the same `dynalign` source-to-target token mixtures and the
+> same direct-output slotted module shape as
+> `bridge_ridge_qk_module_replace`, but adds prompt-local interaction
+> distillation during module fitting.
+>
+> On a 16-prompt diagnostic calibration slice:
+> - dynamic calibration samples: `678`
+> - mean target tokens per source sample: `3.00`
+> - `K` cosine `0.948`, relative Frobenius error `0.305`
+> - `V` cosine `0.697`, relative Frobenius error `0.700`
+>
+> Held-out diagnostic reads:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- adding prompt-local interaction supervision on top of `dynalign` does
+  preserve a nonzero smoke signal, but it is weaker than both plain
+  `dynalign` and `dynalign_dwakd` on the same diagnostic setup
+- the controlled slice is still unchanged at the same `0.1000` floor
+- so a richer **local interaction** loss is still not enough to rescue the
+  live remapping lane by itself:
+  - the next step should change the supervision target more globally,
+  - toward span-level / likelihood-style targets,
+  - or a tokenizer-agnostic byte / shared interface

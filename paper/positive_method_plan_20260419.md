@@ -1500,3 +1500,35 @@ That means:
   - span-level / likelihood-style supervision,
   - token/span interaction losses,
   - or byte/token shared interfaces
+
+I then tested the first explicit prompt-local interaction follow-up as
+`bridge_ridge_qk_dynalign_interact_module_replace`.
+
+This keeps the same `dynalign` token mixtures and the same direct-output
+slotted module as `bridge_ridge_qk_module_replace`, but adds prompt-local
+interaction distillation during module fitting.
+
+On a 16-prompt diagnostic calibration slice:
+
+- dynamic remapping samples: `678`
+- mean target tokens per source sample: `3.00`
+- `K` cosine `0.948`, relative Frobenius error `0.305`
+- `V` cosine `0.697`, relative Frobenius error `0.700`
+
+Held-out diagnostic reads:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- adding a richer **local interaction** loss on top of `dynalign` is
+  directionally alive enough to preserve a nonzero smoke
+- but it is weaker than both plain `dynalign` and `dynalign_dwakd` on the
+  same diagnostic setup
+- and it still does not move the controlled slice above the same floor
+- so the next serious step should not be another local interaction term:
+  - move to span-level / likelihood-style supervision,
+  - or a tokenizer-agnostic byte/span interface,
+  - while keeping `dynalign` as the live remapping base
