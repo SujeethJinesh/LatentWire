@@ -262,6 +262,7 @@ def parse_args() -> argparse.Namespace:
             "bridge_ridge_qk_module_adapter",
             "bridge_ridge_qk_module_replace",
             "bridge_ridge_qk_spanalign_module_replace",
+            "bridge_ridge_qk_ctxalign_module_replace",
             "bridge_ridge_qk_tokenbasis_replace",
             "bridge_ridge_qk_sae_adapter",
             "bridge_ridge_qk_generated_adapter",
@@ -611,6 +612,175 @@ def _align_token_spans_monotone(
     return pairs
 
 
+def _span_char_ngrams(text: str, n: int = 2) -> set[str]:
+    normalized = text.lower()
+    if not normalized:
+        return set()
+    if len(normalized) <= n:
+        return {normalized}
+    return {normalized[idx : idx + n] for idx in range(len(normalized) - n + 1)}
+
+
+def _span_kind(text: str) -> str:
+    if not text:
+        return "empty"
+    if text.isspace():
+        return "space"
+    if text.isdigit():
+        return "digit"
+    if text.isalpha():
+        return "alpha"
+    if all(not ch.isalnum() and not ch.isspace() for ch in text):
+        return "punct"
+    return "mixed"
+
+
+def _contextual_alignment_score(
+    raw_prompt: str,
+    src_span: tuple[int, int, int],
+    tgt_span: tuple[int, int, int],
+    *,
+    context_window: int = 4,
+) -> float:
+    _, src_start, src_end = src_span
+    _, tgt_start, tgt_end = tgt_span
+    src_len = max(src_end - src_start, 1)
+    tgt_len = max(tgt_end - tgt_start, 1)
+    overlap = max(0, min(src_end, tgt_end) - max(src_start, tgt_start))
+    union = max(src_end, tgt_end) - min(src_start, tgt_start)
+    overlap_ratio = float(overlap) / float(max(union, 1))
+    src_mid = 0.5 * float(src_start + src_end)
+    tgt_mid = 0.5 * float(tgt_start + tgt_end)
+    prompt_scale = float(max(len(raw_prompt), 1))
+    center_penalty = abs(src_mid - tgt_mid) / prompt_scale
+    length_ratio = float(min(src_len, tgt_len)) / float(max(src_len, tgt_len))
+
+    src_text = raw_prompt[src_start:src_end]
+    tgt_text = raw_prompt[tgt_start:tgt_end]
+    src_ngrams = _span_char_ngrams(src_text)
+    tgt_ngrams = _span_char_ngrams(tgt_text)
+    if src_ngrams or tgt_ngrams:
+        token_jaccard = float(len(src_ngrams & tgt_ngrams)) / float(max(len(src_ngrams | tgt_ngrams), 1))
+    else:
+        token_jaccard = 0.0
+
+    src_ctx = raw_prompt[max(0, src_start - context_window) : min(len(raw_prompt), src_end + context_window)]
+    tgt_ctx = raw_prompt[max(0, tgt_start - context_window) : min(len(raw_prompt), tgt_end + context_window)]
+    src_ctx_ngrams = _span_char_ngrams(src_ctx)
+    tgt_ctx_ngrams = _span_char_ngrams(tgt_ctx)
+    if src_ctx_ngrams or tgt_ctx_ngrams:
+        context_jaccard = float(len(src_ctx_ngrams & tgt_ctx_ngrams)) / float(max(len(src_ctx_ngrams | tgt_ctx_ngrams), 1))
+    else:
+        context_jaccard = 0.0
+
+    kind_bonus = 1.0 if _span_kind(src_text) == _span_kind(tgt_text) else 0.0
+    return (
+        2.5 * overlap_ratio
+        + 1.25 * token_jaccard
+        + 0.75 * context_jaccard
+        + 0.5 * length_ratio
+        + 0.25 * kind_bonus
+        - 1.25 * center_penalty
+    )
+
+
+def collect_contextual_prompt_position_mixtures(
+    src_tokenizer: AutoTokenizer,
+    tgt_tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    max_length: int,
+    batch_size: int,
+    source_reasoning_mode: str = "plain",
+    source_use_chat_template: bool = False,
+    source_enable_thinking: bool | None = None,
+    target_use_chat_template: bool = False,
+    target_enable_thinking: bool | None = None,
+    max_targets_per_source: int = 3,
+    score_temperature: float = 0.35,
+) -> list[list[tuple[int, tuple[int, ...], tuple[float, ...]]]]:
+    del batch_size  # Alignment is prompt-local and cheap enough to build one prompt at a time.
+    mixtures: list[list[tuple[int, tuple[int, ...], tuple[float, ...]]]] = []
+    max_targets_per_source = max(1, int(max_targets_per_source))
+    temperature = max(float(score_temperature), 1e-4)
+    for prompt in prompts:
+        src_text = _prepare_prompt_text(
+            prompt,
+            reasoning_mode=source_reasoning_mode,
+            tokenizer=src_tokenizer,
+            use_chat_template=source_use_chat_template,
+            enable_thinking=source_enable_thinking,
+        )
+        tgt_text = _format_prompt_for_tokenizer(
+            tgt_tokenizer,
+            prompt,
+            use_chat_template=target_use_chat_template,
+            enable_thinking=target_enable_thinking,
+        )
+        src_spans = _collect_prompt_content_token_spans(
+            src_tokenizer,
+            src_text,
+            prompt,
+            max_length=max_length,
+        )
+        tgt_spans = _collect_prompt_content_token_spans(
+            tgt_tokenizer,
+            tgt_text,
+            prompt,
+            max_length=max_length,
+        )
+        prompt_mixtures: list[tuple[int, tuple[int, ...], tuple[float, ...]]] = []
+        if src_spans is not None and tgt_spans is not None and src_spans and tgt_spans:
+            anchor_pairs = _align_token_spans_monotone(src_spans, tgt_spans)
+            anchor_map: dict[int, list[int]] = {}
+            for src_pos, tgt_pos in anchor_pairs:
+                anchor_map.setdefault(int(src_pos), []).append(int(tgt_pos))
+            tgt_pos_to_idx = {int(token_pos): idx for idx, (token_pos, _, _) in enumerate(tgt_spans)}
+            for src_token_pos, src_start, src_end in src_spans:
+                anchor_positions = anchor_map.get(int(src_token_pos))
+                if anchor_positions:
+                    anchor_center = int(round(sum(anchor_positions) / float(len(anchor_positions))))
+                else:
+                    src_mid = 0.5 * float(src_start + src_end)
+                    anchor_center = min(
+                        tgt_spans,
+                        key=lambda span: abs(0.5 * float(span[1] + span[2]) - src_mid),
+                    )[0]
+                anchor_idx = tgt_pos_to_idx.get(int(anchor_center), 0)
+                candidate_indices: set[int] = {anchor_idx}
+                for tgt_idx, (_, tgt_start, tgt_end) in enumerate(tgt_spans):
+                    overlap = max(0, min(src_end, tgt_end) - max(src_start, tgt_start))
+                    if overlap > 0:
+                        candidate_indices.add(tgt_idx)
+                for delta in (-1, 1):
+                    candidate_idx = anchor_idx + delta
+                    if 0 <= candidate_idx < len(tgt_spans):
+                        candidate_indices.add(candidate_idx)
+                scored_candidates: list[tuple[float, int]] = []
+                for tgt_idx in sorted(candidate_indices):
+                    tgt_span = tgt_spans[tgt_idx]
+                    score = _contextual_alignment_score(prompt, (src_token_pos, src_start, src_end), tgt_span)
+                    scored_candidates.append((score, tgt_idx))
+                if not scored_candidates:
+                    continue
+                scored_candidates.sort(key=lambda item: item[0], reverse=True)
+                kept = scored_candidates[:max_targets_per_source]
+                score_tensor = torch.tensor([score for score, _ in kept], dtype=torch.float32)
+                probs = torch.softmax(score_tensor / temperature, dim=0)
+                tgt_positions = tuple(int(tgt_spans[tgt_idx][0]) for _, tgt_idx in kept)
+                tgt_weights = tuple(float(weight) for weight in probs.tolist())
+                prompt_mixtures.append((int(src_token_pos), tgt_positions, tgt_weights))
+        if not prompt_mixtures:
+            src_len = _prompt_valid_length_for_text(src_tokenizer, src_text, max_length=max_length)
+            tgt_len = _prompt_valid_length_for_text(tgt_tokenizer, tgt_text, max_length=max_length)
+            prompt_mixtures = [
+                (int(pos), (int(pos),), (1.0,))
+                for pos in range(min(src_len, tgt_len))
+            ]
+        mixtures.append(prompt_mixtures)
+    return mixtures
+
+
 def collect_aligned_prompt_position_pairs(
     src_tokenizer: AutoTokenizer,
     tgt_tokenizer: AutoTokenizer,
@@ -678,6 +848,7 @@ def collect_aligned_kv_pairs(
     source_enable_thinking: bool | None = None,
     target_enable_thinking: bool | None = None,
     aligned_position_pairs: Sequence[Sequence[tuple[int, int]]] | None = None,
+    aligned_position_mixtures: Sequence[Sequence[tuple[int, Sequence[int], Sequence[float]]]] | None = None,
 ) -> tuple[list[tuple[torch.Tensor, torch.Tensor]], list[tuple[torch.Tensor, torch.Tensor]]]:
     """Collect source/target KVs while masking pads and aligning prompt lengths.
 
@@ -689,6 +860,9 @@ def collect_aligned_kv_pairs(
         src_tokenizer.pad_token = src_tokenizer.eos_token
     if tgt_tokenizer.pad_token_id is None:
         tgt_tokenizer.pad_token = tgt_tokenizer.eos_token
+
+    if aligned_position_pairs is not None and aligned_position_mixtures is not None:
+        raise ValueError("Only one of aligned_position_pairs or aligned_position_mixtures may be provided")
 
     src_per_layer_K: list[list[torch.Tensor]] = []
     src_per_layer_V: list[list[torch.Tensor]] = []
@@ -764,7 +938,9 @@ def collect_aligned_kv_pairs(
 
         for batch_idx in range(src_mask.shape[0]):
             prompt_idx = prompt_offset + batch_idx
-            if aligned_position_pairs is None:
+            if aligned_position_mixtures is not None:
+                position_mixtures = list(aligned_position_mixtures[prompt_idx])
+            elif aligned_position_pairs is None:
                 valid_len = min(
                     int(src_mask[batch_idx].sum().item()),
                     int(tgt_mask[batch_idx].sum().item()),
@@ -772,27 +948,63 @@ def collect_aligned_kv_pairs(
                 position_pairs = [(pos, pos) for pos in range(valid_len)]
             else:
                 position_pairs = list(aligned_position_pairs[prompt_idx])
-            if not position_pairs:
+            if aligned_position_mixtures is not None and not position_mixtures:
+                continue
+            if aligned_position_mixtures is None and not position_pairs:
                 continue
             src_valid_len = int(src_mask[batch_idx].sum().item())
             tgt_valid_len = int(tgt_mask[batch_idx].sum().item())
-            for src_pos, tgt_pos in position_pairs:
-                if src_pos >= src_valid_len or tgt_pos >= tgt_valid_len:
-                    continue
-                for layer_idx, (K, V) in enumerate(src_pkv_cpu):
-                    src_per_layer_K[layer_idx].append(
-                        K[batch_idx : batch_idx + 1, :, src_pos : src_pos + 1, :]
-                    )
-                    src_per_layer_V[layer_idx].append(
-                        V[batch_idx : batch_idx + 1, :, src_pos : src_pos + 1, :]
-                    )
-                for layer_idx, (K, V) in enumerate(tgt_pkv_cpu):
-                    tgt_per_layer_K[layer_idx].append(
-                        K[batch_idx : batch_idx + 1, :, tgt_pos : tgt_pos + 1, :]
-                    )
-                    tgt_per_layer_V[layer_idx].append(
-                        V[batch_idx : batch_idx + 1, :, tgt_pos : tgt_pos + 1, :]
-                    )
+            if aligned_position_mixtures is not None:
+                for src_pos, tgt_positions, tgt_weights in position_mixtures:
+                    if src_pos >= src_valid_len:
+                        continue
+                    valid_targets = [
+                        (int(tgt_pos), float(weight))
+                        for tgt_pos, weight in zip(tgt_positions, tgt_weights)
+                        if int(tgt_pos) < tgt_valid_len and float(weight) > 0.0
+                    ]
+                    if not valid_targets:
+                        continue
+                    weight_sum = sum(weight for _, weight in valid_targets)
+                    if weight_sum <= 0.0:
+                        continue
+                    normalized_targets = [(pos, weight / weight_sum) for pos, weight in valid_targets]
+                    for layer_idx, (K, V) in enumerate(src_pkv_cpu):
+                        src_per_layer_K[layer_idx].append(
+                            K[batch_idx : batch_idx + 1, :, src_pos : src_pos + 1, :]
+                        )
+                        src_per_layer_V[layer_idx].append(
+                            V[batch_idx : batch_idx + 1, :, src_pos : src_pos + 1, :]
+                        )
+                    for layer_idx, (K, V) in enumerate(tgt_pkv_cpu):
+                        weighted_k = None
+                        weighted_v = None
+                        for tgt_pos, weight in normalized_targets:
+                            k_sample = K[batch_idx : batch_idx + 1, :, tgt_pos : tgt_pos + 1, :] * float(weight)
+                            v_sample = V[batch_idx : batch_idx + 1, :, tgt_pos : tgt_pos + 1, :] * float(weight)
+                            weighted_k = k_sample if weighted_k is None else weighted_k + k_sample
+                            weighted_v = v_sample if weighted_v is None else weighted_v + v_sample
+                        assert weighted_k is not None and weighted_v is not None
+                        tgt_per_layer_K[layer_idx].append(weighted_k)
+                        tgt_per_layer_V[layer_idx].append(weighted_v)
+            else:
+                for src_pos, tgt_pos in position_pairs:
+                    if src_pos >= src_valid_len or tgt_pos >= tgt_valid_len:
+                        continue
+                    for layer_idx, (K, V) in enumerate(src_pkv_cpu):
+                        src_per_layer_K[layer_idx].append(
+                            K[batch_idx : batch_idx + 1, :, src_pos : src_pos + 1, :]
+                        )
+                        src_per_layer_V[layer_idx].append(
+                            V[batch_idx : batch_idx + 1, :, src_pos : src_pos + 1, :]
+                        )
+                    for layer_idx, (K, V) in enumerate(tgt_pkv_cpu):
+                        tgt_per_layer_K[layer_idx].append(
+                            K[batch_idx : batch_idx + 1, :, tgt_pos : tgt_pos + 1, :]
+                        )
+                        tgt_per_layer_V[layer_idx].append(
+                            V[batch_idx : batch_idx + 1, :, tgt_pos : tgt_pos + 1, :]
+                        )
         prompt_offset += len(batch)
 
     src_kvs = [
@@ -1495,11 +1707,19 @@ def collect_aligned_query_features(
     use_chat_template: bool = False,
     enable_thinking: bool | None = None,
     aligned_position_pairs: Sequence[Sequence[tuple[int, int]]] | None = None,
+    aligned_position_mixtures: Sequence[Sequence[tuple[int, Sequence[int], Sequence[float]]]] | None = None,
 ) -> list[torch.Tensor]:
+    if aligned_position_pairs is not None and aligned_position_mixtures is not None:
+        raise ValueError("Only one of aligned_position_pairs or aligned_position_mixtures may be provided")
     if aligned_position_pairs is not None:
         if len(aligned_position_pairs) != len(prompts):
             raise ValueError(
                 f"aligned_position_pairs must match prompts, got {len(aligned_position_pairs)} prompt pair sets for {len(prompts)} prompts"
+            )
+    elif aligned_position_mixtures is not None:
+        if len(aligned_position_mixtures) != len(prompts):
+            raise ValueError(
+                f"aligned_position_mixtures must match prompts, got {len(aligned_position_mixtures)} prompt mixture sets for {len(prompts)} prompts"
             )
     elif len(aligned_lengths) != len(prompts):
         raise ValueError(
@@ -1538,7 +1758,9 @@ def collect_aligned_query_features(
         mask_cpu = enc["attention_mask"].to("cpu")
         for batch_idx in range(mask_cpu.shape[0]):
             prompt_idx = prompt_offset + batch_idx
-            if aligned_position_pairs is None:
+            if aligned_position_mixtures is not None:
+                position_mixtures = list(aligned_position_mixtures[prompt_idx])
+            elif aligned_position_pairs is None:
                 valid_len = min(int(mask_cpu[batch_idx].sum().item()), int(aligned_lengths[prompt_idx]))
                 positions_cpu = torch.arange(valid_len, dtype=torch.long)
             else:
@@ -1546,7 +1768,9 @@ def collect_aligned_query_features(
                     [tgt_pos for _, tgt_pos in aligned_position_pairs[prompt_idx]],
                     dtype=torch.long,
                 )
-            if positions_cpu.numel() <= 0:
+            if aligned_position_mixtures is not None and not position_mixtures:
+                continue
+            if aligned_position_mixtures is None and positions_cpu.numel() <= 0:
                 continue
             valid_len = int(mask_cpu[batch_idx].sum().item())
             for layer_idx in range(len(layer_features)):
@@ -1555,18 +1779,42 @@ def collect_aligned_query_features(
                 if q_proj is None:
                     raise ValueError("self_attn.q_proj is required for aligned query features")
                 hidden = hidden_states[layer_idx][batch_idx, :valid_len].to(device)
-                positions = positions_cpu.to(device=hidden.device)
-                q_flat = q_proj(hidden.index_select(0, positions)).detach().to("cpu", dtype=torch.float32)
-                sample_len = int(q_flat.shape[0])
-                num_query_heads = q_flat.shape[-1] // head_dim
-                if num_query_heads % kv_heads != 0:
-                    raise ValueError(
-                        f"num_query_heads={num_query_heads} must be divisible by kv_heads={kv_heads} for aligned query features"
-                    )
-                q = q_flat.view(sample_len, num_query_heads, head_dim)
-                q_per_kv = num_query_heads // kv_heads
-                q = q.view(sample_len, kv_heads, q_per_kv, head_dim).mean(dim=2)
-                layer_features[layer_idx].append(q.reshape(sample_len, kv_heads * head_dim))
+                if aligned_position_mixtures is not None:
+                    for _, tgt_positions, tgt_weights in position_mixtures:
+                        valid_targets = [
+                            (int(tgt_pos), float(weight))
+                            for tgt_pos, weight in zip(tgt_positions, tgt_weights)
+                            if int(tgt_pos) < valid_len and float(weight) > 0.0
+                        ]
+                        if not valid_targets:
+                            continue
+                        positions = torch.tensor([pos for pos, _ in valid_targets], dtype=torch.long, device=hidden.device)
+                        weights = torch.tensor([weight for _, weight in valid_targets], dtype=torch.float32, device=hidden.device)
+                        weights = weights / weights.sum().clamp_min(1e-8)
+                        q_flat = q_proj(hidden.index_select(0, positions)).detach().to("cpu", dtype=torch.float32)
+                        num_query_heads = q_flat.shape[-1] // head_dim
+                        if num_query_heads % kv_heads != 0:
+                            raise ValueError(
+                                f"num_query_heads={num_query_heads} must be divisible by kv_heads={kv_heads} for aligned query features"
+                            )
+                        q = q_flat.view(q_flat.shape[0], num_query_heads, head_dim)
+                        q_per_kv = num_query_heads // kv_heads
+                        q = q.view(q_flat.shape[0], kv_heads, q_per_kv, head_dim).mean(dim=2)
+                        q_weighted = (q * weights.to("cpu").view(-1, 1, 1)).sum(dim=0, keepdim=True)
+                        layer_features[layer_idx].append(q_weighted.reshape(1, kv_heads * head_dim))
+                else:
+                    positions = positions_cpu.to(device=hidden.device)
+                    q_flat = q_proj(hidden.index_select(0, positions)).detach().to("cpu", dtype=torch.float32)
+                    sample_len = int(q_flat.shape[0])
+                    num_query_heads = q_flat.shape[-1] // head_dim
+                    if num_query_heads % kv_heads != 0:
+                        raise ValueError(
+                            f"num_query_heads={num_query_heads} must be divisible by kv_heads={kv_heads} for aligned query features"
+                        )
+                    q = q_flat.view(sample_len, num_query_heads, head_dim)
+                    q_per_kv = num_query_heads // kv_heads
+                    q = q.view(sample_len, kv_heads, q_per_kv, head_dim).mean(dim=2)
+                    layer_features[layer_idx].append(q.reshape(sample_len, kv_heads * head_dim))
         prompt_offset += len(batch)
     if layer_features is None or not layer_features:
         raise ValueError("Could not build aligned query features from calibration prompts")
@@ -1588,11 +1836,19 @@ def collect_aligned_prediction_teacher(
     use_chat_template: bool = False,
     enable_thinking: bool | None = None,
     aligned_position_pairs: Sequence[Sequence[tuple[int, int]]] | None = None,
+    aligned_position_mixtures: Sequence[Sequence[tuple[int, Sequence[int], Sequence[float]]]] | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
+    if aligned_position_pairs is not None and aligned_position_mixtures is not None:
+        raise ValueError("Only one of aligned_position_pairs or aligned_position_mixtures may be provided")
     if aligned_position_pairs is not None:
         if len(aligned_position_pairs) != len(prompts):
             raise ValueError(
                 f"aligned_position_pairs must match prompts, got {len(aligned_position_pairs)} prompt pair sets for {len(prompts)} prompts"
+            )
+    elif aligned_position_mixtures is not None:
+        if len(aligned_position_mixtures) != len(prompts):
+            raise ValueError(
+                f"aligned_position_mixtures must match prompts, got {len(aligned_position_mixtures)} prompt mixture sets for {len(prompts)} prompts"
             )
     elif len(aligned_lengths) != len(prompts):
         raise ValueError(
@@ -1633,7 +1889,9 @@ def collect_aligned_prediction_teacher(
         mask_cpu = enc["attention_mask"].to("cpu")
         for batch_idx in range(mask_cpu.shape[0]):
             prompt_idx = prompt_offset + batch_idx
-            if aligned_position_pairs is None:
+            if aligned_position_mixtures is not None:
+                position_mixtures = list(aligned_position_mixtures[prompt_idx])
+            elif aligned_position_pairs is None:
                 valid_len = min(int(mask_cpu[batch_idx].sum().item()), int(aligned_lengths[prompt_idx]))
                 positions = torch.arange(valid_len, dtype=torch.long)
             else:
@@ -1641,14 +1899,38 @@ def collect_aligned_prediction_teacher(
                     [tgt_pos for _, tgt_pos in aligned_position_pairs[prompt_idx]],
                     dtype=torch.long,
                 )
-            if positions.numel() <= 0:
+            if aligned_position_mixtures is not None and not position_mixtures:
                 continue
-            prompt_logits = logits[batch_idx].index_select(0, positions)
-            prompt_log_z = torch.logsumexp(prompt_logits, dim=-1, keepdim=True)
-            k = min(int(topk), int(prompt_logits.shape[-1]))
-            top_logits, top_ids = torch.topk(prompt_logits, k=k, dim=-1)
-            sample_log_probs.append(top_logits - prompt_log_z)
-            sample_output_rows.append(output_weight[top_ids])
+            if aligned_position_mixtures is None and positions.numel() <= 0:
+                continue
+            prompt_logits = logits[batch_idx]
+            if aligned_position_mixtures is not None:
+                valid_len = int(mask_cpu[batch_idx].sum().item())
+                prompt_probs = torch.softmax(prompt_logits[:valid_len], dim=-1)
+                for _, tgt_positions, tgt_weights in position_mixtures:
+                    valid_targets = [
+                        (int(tgt_pos), float(weight))
+                        for tgt_pos, weight in zip(tgt_positions, tgt_weights)
+                        if int(tgt_pos) < valid_len and float(weight) > 0.0
+                    ]
+                    if not valid_targets:
+                        continue
+                    positions = torch.tensor([pos for pos, _ in valid_targets], dtype=torch.long)
+                    weights = torch.tensor([weight for _, weight in valid_targets], dtype=torch.float32)
+                    weights = weights / weights.sum().clamp_min(1e-8)
+                    mixture_probs = (prompt_probs.index_select(0, positions) * weights.view(-1, 1)).sum(dim=0)
+                    mixture_probs = mixture_probs / mixture_probs.sum().clamp_min(1e-8)
+                    k = min(int(topk), int(mixture_probs.shape[-1]))
+                    top_probs, top_ids = torch.topk(mixture_probs, k=k, dim=-1)
+                    sample_log_probs.append(torch.log(top_probs.clamp_min(1e-30)).unsqueeze(0))
+                    sample_output_rows.append(output_weight[top_ids].unsqueeze(0))
+            else:
+                prompt_logits = prompt_logits.index_select(0, positions)
+                prompt_log_z = torch.logsumexp(prompt_logits, dim=-1, keepdim=True)
+                k = min(int(topk), int(prompt_logits.shape[-1]))
+                top_logits, top_ids = torch.topk(prompt_logits, k=k, dim=-1)
+                sample_log_probs.append(top_logits - prompt_log_z)
+                sample_output_rows.append(output_weight[top_ids])
         prompt_offset += len(batch)
     if not sample_log_probs:
         raise ValueError("Could not build aligned prediction teachers from calibration prompts")
@@ -1772,6 +2054,7 @@ def main() -> None:
     ).to(args.device).eval()
 
     aligned_position_pairs: list[list[tuple[int, int]]] | None = None
+    aligned_position_mixtures: list[list[tuple[int, tuple[int, ...], tuple[float, ...]]]] | None = None
     if args.quantization_correction == "bridge_ridge_qk_spanalign_module_replace":
         print(
             "\nBuilding raw-prompt span-aligned source/target token pairs "
@@ -1795,6 +2078,34 @@ def main() -> None:
             f"prompts={len(aligned_position_pairs)}, total_pairs={total_pairs}, "
             f"mean_pairs_per_prompt={total_pairs / max(len(aligned_position_pairs), 1):.2f}"
         )
+    elif args.quantization_correction == "bridge_ridge_qk_ctxalign_module_replace":
+        print(
+            "\nBuilding contextual source->target token mixtures "
+            "(span-anchor plus local context-weighted remapping)..."
+        )
+        aligned_position_mixtures = collect_contextual_prompt_position_mixtures(
+            tok_s,
+            tok_t,
+            prompts,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            source_reasoning_mode=args.source_reasoning_mode,
+            source_use_chat_template=args.source_use_chat_template,
+            source_enable_thinking=source_enable_thinking,
+            target_use_chat_template=args.target_use_chat_template,
+            target_enable_thinking=target_enable_thinking,
+        )
+        total_samples = sum(len(mixture) for mixture in aligned_position_mixtures)
+        total_targets = sum(
+            len(tgt_positions)
+            for mixture in aligned_position_mixtures
+            for _, tgt_positions, _ in mixture
+        )
+        print(
+            "Built contextual token mixtures: "
+            f"prompts={len(aligned_position_mixtures)}, samples={total_samples}, "
+            f"mean_targets_per_sample={total_targets / max(total_samples, 1):.2f}"
+        )
 
     print("\nCollecting aligned source/target KVs...")
     src_kvs, tgt_kvs = collect_aligned_kv_pairs(
@@ -1812,6 +2123,7 @@ def main() -> None:
         source_enable_thinking=source_enable_thinking,
         target_enable_thinking=target_enable_thinking,
         aligned_position_pairs=aligned_position_pairs,
+        aligned_position_mixtures=aligned_position_mixtures,
     )
 
     # Inspect shapes to build the config.
@@ -2098,8 +2410,10 @@ def main() -> None:
             )
 
     aligned_lengths: list[int] | None = None
-    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
-        if aligned_position_pairs is not None:
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+        if aligned_position_mixtures is not None:
+            aligned_lengths = [len(mixture) for mixture in aligned_position_mixtures]
+        elif aligned_position_pairs is not None:
             aligned_lengths = [len(pairs) for pairs in aligned_position_pairs]
         else:
             aligned_lengths = collect_aligned_prompt_valid_lengths(
@@ -2210,7 +2524,7 @@ def main() -> None:
             f"layers={len(bridge_sample_weights)}, samples={int(bridge_sample_weights[0].numel())}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target query features for query-conditioned bridge projector/adapter "
@@ -2230,6 +2544,7 @@ def main() -> None:
             use_chat_template=args.target_use_chat_template,
             enable_thinking=target_enable_thinking,
             aligned_position_pairs=aligned_position_pairs,
+            aligned_position_mixtures=aligned_position_mixtures,
         )
         translator.set_bridge_sample_query_features(bridge_query_features)
         print(
@@ -2237,7 +2552,7 @@ def main() -> None:
             f"layers={len(bridge_query_features)}, samples={int(bridge_query_features[0].shape[0])}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target next-token teacher for prediction-level bridge distillation "
@@ -2256,6 +2571,7 @@ def main() -> None:
             use_chat_template=args.target_use_chat_template,
             enable_thinking=target_enable_thinking,
             aligned_position_pairs=aligned_position_pairs,
+            aligned_position_mixtures=aligned_position_mixtures,
         )
         translator.set_bridge_prediction_teacher(teacher_log_probs, teacher_output_rows)
         print(

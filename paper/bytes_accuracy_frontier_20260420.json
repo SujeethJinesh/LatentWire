@@ -256,6 +256,14 @@
     "split": "gsm8k_5_controlled_smoke"
   },
   {
+    "accuracy": 0.0,
+    "avg_bytes": 686026.6,
+    "family": "token-remapped attention bridge",
+    "method": "contextual-aligned module replace",
+    "notes": "direct-output slotted module fit from context-weighted source-to-target token mixtures",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
     "accuracy": 0.2,
     "avg_bytes": 686026.6,
     "family": "token-native attention bridge",

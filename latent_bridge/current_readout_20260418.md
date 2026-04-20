@@ -2279,3 +2279,33 @@ Interpretation:
   - **contextual** token/span alignment rather than raw-span overlap alone, or
   - a more global **Attention Editing / LLM Modules** style replacement on top
     of the better-aligned interface
+
+And a seventieth contextual-remapping update:
+
+> I then implemented `bridge_ridge_qk_ctxalign_module_replace`, which keeps
+> the same direct-output slotted attention-side module as
+> `bridge_ridge_qk_module_replace` but upgrades the upstream pairing again:
+> each source token is now matched to a small **context-weighted mixture of
+> target tokens** instead of a single hard target position.
+>
+> On the same 64-prompt calibration slice, that preserved the stronger
+> upstream fit geometry:
+> - contextual calibration samples: `2702`
+> - mean target tokens per source sample: `2.96`
+> - `K` cosine `0.937`, relative Frobenius error `0.334`
+>
+> The fair smoke read was a clean negative:
+> - `gsm8k_5`: `0.000000`
+> - average bytes: `686,026.600`
+
+Interpretation:
+
+- upstream remapping is still the right place to push, because the fit signal
+  remains materially stronger there than in the old hard-pairing setup
+- but a simple local **soft mixture over nearby target tokens** is still not
+  enough to create a held-out gain
+- so the next live remapping branch should be more explicitly
+  alignment-aware:
+  - dynamic token/span alignment or span-level likelihood matching,
+  - multi-view remapping losses,
+  - or a more global module replacement after the remapped interface

@@ -104,6 +104,48 @@ class _FakeOffsetTokenizer(_FakeTokenizer):
         )
 
 
+class _ScriptedOffsetTokenizer(_FakeTokenizer):
+    def __init__(self, offsets_by_text: dict[str, list[tuple[int, int]]]) -> None:
+        super().__init__({})
+        self.offsets_by_text = offsets_by_text
+
+    def __call__(
+        self,
+        batch,
+        return_tensors="pt",
+        padding=None,
+        truncation=None,
+        max_length=None,
+        return_offsets_mapping=False,
+    ):
+        if isinstance(batch, str):
+            texts = [batch]
+            single = True
+        else:
+            texts = list(batch)
+            single = False
+        if return_offsets_mapping:
+            encoded = {"input_ids": [], "offset_mapping": []}
+            for text in texts:
+                offsets = list(self.offsets_by_text[text])
+                encoded["input_ids"].append(list(range(len(offsets))))
+                encoded["offset_mapping"].append(offsets)
+            if single:
+                return {
+                    "input_ids": encoded["input_ids"][0],
+                    "offset_mapping": encoded["offset_mapping"][0],
+                }
+            return encoded
+        self.lengths_by_prompt = {text: len(self.offsets_by_text[text]) for text in texts}
+        return super().__call__(
+            texts if not single else texts[0],
+            return_tensors=return_tensors,
+            padding=padding,
+            truncation=truncation,
+            max_length=max_length,
+        )
+
+
 class _FakeCache:
     def __init__(self, layers):
         self.layers = layers
@@ -239,6 +281,30 @@ def test_collect_aligned_kv_pairs_uses_source_reasoning_prompt() -> None:
 
     assert src_kvs[0][0].shape == (2, 1, 1, 1)
     assert tgt_kvs[0][0].shape == (2, 1, 1, 1)
+
+
+def test_collect_aligned_kv_pairs_uses_weighted_target_mixtures() -> None:
+    src_model = _FakeModel()
+    tgt_model = _FakeModel()
+    src_tokenizer = _FakeTokenizer({"abc": 3})
+    tgt_tokenizer = _FakeTokenizer({"abc": 3})
+
+    src_kvs, tgt_kvs = calibrate.collect_aligned_kv_pairs(
+        src_model,
+        src_tokenizer,
+        tgt_model,
+        tgt_tokenizer,
+        ["abc"],
+        max_length=4,
+        batch_size=1,
+        device="cpu",
+        aligned_position_mixtures=[[(1, (0, 2), (0.25, 0.75))]],
+    )
+
+    assert src_kvs[0][0].shape == (1, 1, 1, 1)
+    assert tgt_kvs[0][0].shape == (1, 1, 1, 1)
+    assert src_kvs[0][0].flatten().tolist() == [2.0]
+    assert tgt_kvs[0][0].flatten().tolist() == [2.5]
 
 
 def test_collect_aligned_prompt_valid_lengths_matches_pair_truncation() -> None:
@@ -1480,6 +1546,64 @@ def test_collect_aligned_prompt_position_pairs_aligns_raw_prompt_content() -> No
     src_start = src_text.find(prompt)
 
     assert pairs == [[(src_start + 0, 0), (src_start + 1, 1), (src_start + 2, 2)]]
+
+
+def test_collect_contextual_prompt_position_mixtures_tracks_split_target_tokens() -> None:
+    prompt = "abcd"
+    src_tok = _ScriptedOffsetTokenizer({prompt: [(0, 2), (2, 4)]})
+    tgt_tok = _ScriptedOffsetTokenizer({prompt: [(0, 1), (1, 2), (2, 3), (3, 4)]})
+
+    mixtures = calibrate.collect_contextual_prompt_position_mixtures(
+        src_tok,
+        tgt_tok,
+        [prompt],
+        max_length=128,
+        batch_size=1,
+        source_reasoning_mode="plain",
+        source_use_chat_template=False,
+        source_enable_thinking=None,
+        target_use_chat_template=False,
+        target_enable_thinking=None,
+        max_targets_per_source=2,
+    )
+
+    assert len(mixtures) == 1
+    assert len(mixtures[0]) == 2
+    first_src_pos, first_targets, first_weights = mixtures[0][0]
+    second_src_pos, second_targets, second_weights = mixtures[0][1]
+    assert first_src_pos == 0
+    assert second_src_pos == 1
+    assert set(first_targets) == {0, 1}
+    assert set(second_targets) == {2, 3}
+    assert abs(sum(first_weights) - 1.0) < 1e-6
+    assert abs(sum(second_weights) - 1.0) < 1e-6
+
+
+def test_calibrate_parse_args_accepts_bridge_ridge_qk_ctxalign_module_replace(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "bridge_ridge_qk_ctxalign_module_replace",
+            "--quantization-correction-rank",
+            "8",
+        ],
+    )
+
+    args = calibrate.parse_args()
+
+    assert args.quantization_correction == "bridge_ridge_qk_ctxalign_module_replace"
+    assert args.quantization_correction_rank == 8
 
 
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_sae_adapter(monkeypatch) -> None:

@@ -1375,3 +1375,33 @@ That means:
     not just raw prompt overlap, or
   - a more global **Attention Editing / LLM Modules** style replacement on
     top of the better-aligned interface
+
+I then tested the first contextual-remapping follow-up as
+`bridge_ridge_qk_ctxalign_module_replace`.
+
+This keeps the same slotted direct-output module as
+`bridge_ridge_qk_module_replace`, but it upgrades the upstream pairing from a
+single hard target token to a small **context-weighted mixture of target
+tokens** for each source token during calibration.
+
+On the same 64-prompt calibration slice:
+
+- contextual remapping samples: `2702`
+- mean target tokens per source sample: `2.96`
+- `K` cosine `0.937`, relative Frobenius error `0.334`
+
+The fair smoke read was a clean negative:
+
+- `gsm8k_5`: `0.0000`
+- bytes: `686,026.6`
+
+That means:
+
+- upstream remapping is still the right live lane, because it keeps improving
+  the calibration geometry relative to the older hard-pairing setup
+- but a simple local **soft mixture over nearby target tokens** is still not a
+  positive method
+- so the next remapping step likely needs:
+  - dynamic token/span alignment,
+  - span-level or likelihood-style remapping teachers,
+  - or multi-view remapping losses rather than one fixed local score

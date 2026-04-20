@@ -526,6 +526,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_5_controlled_smoke",
+            method="contextual-aligned module replace",
+            family="token-remapped attention bridge",
+            meta_path="results/bridge_ridge_qk_ctxalign_module_replace_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_ctxalign_module_replace_cal64_chat.jsonl.meta.json",
+            notes="direct-output slotted module fit from context-weighted source-to-target token mixtures",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
             method="token-basis replace",
             family="token-native attention bridge",
             meta_path="results/bridge_ridge_qk_tokenbasis_replace_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_tokenbasis_replace_cal64_chat.jsonl.meta.json",

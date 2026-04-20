@@ -34,6 +34,7 @@
 | gsm8k_5_controlled_smoke | module adapter | attention bridge | 0.2000 | 686,026.6 | slotted attention-side transfer module with nonlinear readout and prediction distillation |
 | gsm8k_5_controlled_smoke | module replace | attention bridge | 0.2000 | 686,026.6 | slotted attention-side transfer module trained to predict full corrected K/V directly |
 | gsm8k_5_controlled_smoke | span-aligned module replace | token-remapped attention bridge | 0.2000 | 686,026.6 | direct-output slotted module fit from raw-prompt monotone span-aligned calibration pairs |
+| gsm8k_5_controlled_smoke | contextual-aligned module replace | token-remapped attention bridge | 0.0000 | 686,026.6 | direct-output slotted module fit from context-weighted source-to-target token mixtures |
 | gsm8k_5_controlled_smoke | token-basis replace | token-native attention bridge | 0.2000 | 686,026.6 | direct-output slotted module constrained to a target next-token output basis |
 | gsm8k_5_controlled_smoke | shared-plus-private asym projector | projector bridge | 0.0000 | 686,026.6 | shared-plus-private post-transport projector combining full-rank query projector with the paired K/V interface |
 | gsm8k_5_controlled_smoke | readout adapter | stronger-teacher bridge | 0.2000 | 686,026.6 | stronger prompt-local teacher survives smoke only |
