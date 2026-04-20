@@ -152,7 +152,10 @@ python scripts/calibrate.py \
   `grouped_canonical_transport` to fit each grouped block in a shared low-rank
   canonical basis before transport, `grouped_template_transport` to match
   grouped source/target heads by calibration-time last-token attention
-  templates before fitting the transport map, or
+  templates before fitting the transport map,
+  `grouped_contrastive_template_transport` to score grouped source/target
+  matches by prompt-indexed template agreement minus mismatched-prompt
+  agreement, or
   `grouped_template_subspace_transport` to combine the template penalty with
   the grouped subspace penalty in one transport score. For heterogeneous
   head-count probes, `broadcast_retrieval_spectrum_ot_transport` swaps the
@@ -161,7 +164,8 @@ python scripts/calibrate.py \
 - `--canonical-subspace-rank R` — shared low-rank basis size for
   `grouped_canonical_transport`.
 - `--transport-template-bins B` — number of bins used when summarizing grouped
-  attention templates for `grouped_template_transport`.
+  attention templates for `grouped_template_transport` and
+  `grouped_contrastive_template_transport`.
 - `--transport-temperature T` / `--transport-sinkhorn-iters K` — control the
   softness of the grouped transport plan.
 - `--layer-pairing {interp,cka,reverse,shifted,random}` — interpolation,

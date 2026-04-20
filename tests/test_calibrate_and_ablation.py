@@ -206,6 +206,32 @@ def test_collect_group_attention_templates_supports_peak_mode() -> None:
     assert torch.allclose(layer0[1], torch.tensor([0.0, 0.0, 1.0, 0.0]))
 
 
+def test_collect_group_attention_template_bank_preserves_prompt_axis() -> None:
+    model = _FakeAttentionModel()
+    tokenizer = _FakeTokenizer({"a": 4, "b": 3})
+
+    banks = calibrate.collect_group_attention_template_bank(
+        model,
+        tokenizer,
+        ["a", "b"],
+        max_length=4,
+        batch_size=2,
+        device="cpu",
+        kv_heads=2,
+        group_count=2,
+        bins=3,
+        template_mode="peak",
+    )
+
+    assert len(banks) == 1
+    layer0 = banks[0]
+    assert layer0.shape == (2, 2, 3)
+    assert torch.allclose(layer0[0, 0], torch.tensor([1.0, 0.0, 0.0]))
+    assert torch.allclose(layer0[0, 1], torch.tensor([0.0, 0.0, 1.0]))
+    assert torch.allclose(layer0[1, 0], torch.tensor([1.0, 0.0, 0.0]))
+    assert torch.allclose(layer0[1, 1], torch.tensor([0.0, 1.0, 0.0]))
+
+
 def test_collect_group_key_signatures_returns_normalized_spectra() -> None:
     model = _FakeAttentionModel()
     tokenizer = _FakeTokenizer({"a": 4, "b": 4})
@@ -509,6 +535,35 @@ def test_calibrate_parse_args_accepts_grouped_template_transport(monkeypatch) ->
     assert args.alignment == "grouped_template_transport"
     assert args.transport_template_bins == 32
     assert args.transport_signature_weight == 0.0
+
+
+def test_calibrate_parse_args_accepts_grouped_contrastive_template_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_contrastive_template_transport",
+            "--transport-template-bins",
+            "24",
+            "--transport-signature-weight",
+            "0.2",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_contrastive_template_transport"
+    assert args.transport_template_bins == 24
+    assert args.transport_signature_weight == 0.2
 
 
 def test_calibrate_parse_args_accepts_grouped_template_subspace_transport(monkeypatch) -> None:

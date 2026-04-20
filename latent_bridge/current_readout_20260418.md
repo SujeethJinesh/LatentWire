@@ -1149,3 +1149,25 @@ Interpretation:
 - that makes the next serious positive-method try narrower again:
   a richer query-conditioned transport cost is still more plausible than
   another gate-only variant on top of the same frozen transport map
+
+And a twenty-eighth grouped-contrastive-template update:
+
+> I then added a prompt-indexed grouped attention-template bank and a
+> contrastive transport bonus inside the grouped transport family, still
+> keeping the same `64`-prompt calibration slice and the same rank-4 residual.
+> Calibration fit stayed strong (`K` cosine `0.932`, relative Frobenius error
+> `0.351`; `V` cosine `0.608`, relative Frobenius error `0.791`). But the
+> first held-out smoke on `gsm8k_eval_10`, under the same sparse `K-only`
+> protocol used for the live grouped branches, collapsed to `0.000000` at
+> `150,097.85` average bytes.
+
+Interpretation:
+
+- grouped prompt-contrastive templates are not enough to rescue the grouped
+  transport lane
+- this is another case where better offline calibration fit still does not
+  translate into held-out reasoning gains
+- it narrows the remaining positive-method lane again:
+  if we keep pushing, the next transport cost has to be genuinely
+  query-conditioned in a richer retrieval/QK space, not another grouped
+  calibration-time template variant

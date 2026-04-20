@@ -647,6 +647,62 @@ def test_grouped_template_subspace_transport_records_soft_plan(monkeypatch) -> N
     assert plan[1, 0] > plan[1, 1]
 
 
+def test_grouped_contrastive_template_transport_prefers_contrastive_pairing(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    tr = RotAlignKVTranslator(
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            alignment_method="grouped_contrastive_template_transport",
+            transport_signature_weight=1.0,
+            transport_temperature=0.1,
+            transport_sinkhorn_iters=16,
+            transport_template_bins=4,
+        )
+    )
+    tr._transport_src_group_template_banks = [torch.tensor([
+        [[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]],
+        [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]],
+    ])]
+    tr._transport_tgt_group_template_banks = [torch.tensor([
+        [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0]],
+        [[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]],
+    ])]
+
+    monkeypatch.setattr(
+        translator_mod,
+        "fit_alignment",
+        lambda X, Y, **kwargs: torch.eye(X.shape[1], Y.shape[1], dtype=X.dtype, device=X.device),
+    )
+    monkeypatch.setattr(
+        translator_mod,
+        "alignment_quality",
+        lambda X, Y, W: {"mean_cosine_similarity": 0.0, "relative_frobenius_error": 1.0},
+    )
+
+    X = torch.randn(8, 4)
+    Y = torch.randn(8, 4)
+    _, plan = tr._fit_group_transport_alignment(
+        X,
+        Y,
+        lam=1e-3,
+        residual_rank=None,
+        src_layer_idx=0,
+        tgt_layer_idx=0,
+    )
+
+    assert plan.shape == (2, 2)
+    assert torch.allclose(plan.sum(dim=1), torch.ones(2), atol=1e-5)
+    assert plan[0, 1] > plan[0, 0]
+    assert plan[1, 0] > plan[1, 1]
+
+
 def test_broadcast_template_transport_records_rectangular_plan(monkeypatch) -> None:
     monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
     monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))

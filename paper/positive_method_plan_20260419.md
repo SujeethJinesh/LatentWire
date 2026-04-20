@@ -136,3 +136,18 @@ That means:
 - the first gate-only query-conditioned rescue path looks weak
 - if the positive-method lane gets one more serious try, it should stay
   **transport-first**, not shift to another gate-only or selector-only branch
+
+The next follow-up stayed transport-first but moved back into the grouped
+family with a prompt-indexed contrastive template bank:
+`grouped_contrastive_template_transport + rank-4 residual`. Calibration fit
+again looked strong (`K` cosine `0.932`, relative Frobenius error `0.351`),
+but the first held-out `gsm8k_eval_10` smoke still collapsed to `0.0000`.
+
+That means:
+
+- grouped prompt-contrastive templates are still not enough
+- “better grouped behavior matching at calibration time” is now looking
+  saturated
+- if the positive-method lane gets one more serious try, it should move to a
+  **genuinely query-conditioned retrieval/QK transport**, not another grouped
+  static-template variant

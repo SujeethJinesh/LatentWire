@@ -62,6 +62,7 @@ class TranslatorConfig:
     #                 | 'grouped_signature_transport' | 'grouped_subspace_transport'
     #                 | 'grouped_canonical_transport' | 'grouped_covariance_transport'
     #                 | 'grouped_template_transport'
+    #                 | 'grouped_contrastive_template_transport'
     #                 | 'grouped_template_subspace_transport'
     #                 | 'broadcast_template_transport'
     #                 | 'broadcast_template_ot_transport'
@@ -235,6 +236,8 @@ class RotAlignKVTranslator(nn.Module):
         # template/signature-based transport and are not checkpoint state.
         self._transport_src_group_templates: list[torch.Tensor] | None = None
         self._transport_tgt_group_templates: list[torch.Tensor] | None = None
+        self._transport_src_group_template_banks: list[torch.Tensor] | None = None
+        self._transport_tgt_group_template_banks: list[torch.Tensor] | None = None
         self._broadcast_transport_plan_K: list[torch.Tensor] | None = None
         self._broadcast_transport_plan_V: list[torch.Tensor] | None = None
 
@@ -746,6 +749,48 @@ class RotAlignKVTranslator(nn.Module):
         tgt = tgt / tgt.norm().clamp_min(1e-8)
         return 1.0 - torch.dot(src, tgt)
 
+    def _contrastive_template_bonus(
+        self,
+        src_bank: torch.Tensor,
+        tgt_bank: torch.Tensor,
+    ) -> torch.Tensor:
+        src = src_bank.float()
+        tgt = tgt_bank.float()
+        if src.ndim != 2 or tgt.ndim != 2:
+            raise ValueError(
+                "contrastive template banks must be 2D [num_prompts, bins], "
+                f"got {tuple(src.shape)} and {tuple(tgt.shape)}"
+            )
+        if src.shape != tgt.shape:
+            raise ValueError(
+                "source and target template banks must agree on shape, "
+                f"got {tuple(src.shape)} and {tuple(tgt.shape)}"
+            )
+        num_prompts = src.shape[0]
+        if num_prompts == 0:
+            raise ValueError("contrastive template banks must be non-empty")
+        pos = torch.stack(
+            [self._template_distance(src[prompt_idx], tgt[prompt_idx]) for prompt_idx in range(num_prompts)],
+            dim=0,
+        ).mean()
+        if num_prompts == 1:
+            return torch.zeros((), dtype=src.dtype, device=src.device)
+        shifts = [1]
+        half_shift = num_prompts // 2
+        if num_prompts > 2 and half_shift not in {0, 1}:
+            shifts.append(half_shift)
+        neg_terms = []
+        for shift in shifts:
+            shifted = torch.roll(tgt, shifts=shift, dims=0)
+            neg_terms.append(
+                torch.stack(
+                    [self._template_distance(src[prompt_idx], shifted[prompt_idx]) for prompt_idx in range(num_prompts)],
+                    dim=0,
+                ).mean()
+            )
+        neg = torch.stack(neg_terms, dim=0).mean()
+        return neg - pos
+
     def _sinkhorn_transport(self, scores: torch.Tensor) -> torch.Tensor:
         temp = max(float(self.config.transport_temperature), 1e-6)
         log_plan = scores / temp
@@ -835,6 +880,8 @@ class RotAlignKVTranslator(nn.Module):
         if self.config.alignment_method == "grouped_signature_transport" and signature_weight > 0.0:
             src_signatures = [self._group_signature(X[:, src_slice]) for src_slice in src_slices]
             tgt_signatures = [self._group_signature(Y[:, tgt_slice]) for tgt_slice in tgt_slices]
+        src_template_banks = None
+        tgt_template_banks = None
         if self.config.alignment_method in {"grouped_template_transport", "grouped_template_subspace_transport"} and signature_weight > 0.0:
             if self._transport_src_group_templates is None or self._transport_tgt_group_templates is None:
                 raise ValueError("grouped_template_transport requires calibration-time group templates")
@@ -844,6 +891,21 @@ class RotAlignKVTranslator(nn.Module):
                 raise ValueError(
                     "grouped template counts must match the transport group count, "
                     f"got {tuple(src_templates.shape)} and {tuple(tgt_templates.shape)} for {group_count} groups"
+                )
+        if self.config.alignment_method == "grouped_contrastive_template_transport" and signature_weight > 0.0:
+            if self._transport_src_group_template_banks is None or self._transport_tgt_group_template_banks is None:
+                raise ValueError("grouped_contrastive_template_transport requires calibration-time group template banks")
+            src_template_banks = self._transport_src_group_template_banks[src_layer_idx].to(device=X.device, dtype=X.dtype)
+            tgt_template_banks = self._transport_tgt_group_template_banks[tgt_layer_idx].to(device=X.device, dtype=X.dtype)
+            if src_template_banks.ndim != 3 or tgt_template_banks.ndim != 3:
+                raise ValueError(
+                    "group template banks must have shape [num_prompts, group_count, bins], "
+                    f"got {tuple(src_template_banks.shape)} and {tuple(tgt_template_banks.shape)}"
+                )
+            if src_template_banks.shape[1] != group_count or tgt_template_banks.shape[1] != group_count:
+                raise ValueError(
+                    "group template bank counts must match the transport group count, "
+                    f"got {tuple(src_template_banks.shape)} and {tuple(tgt_template_banks.shape)} for {group_count} groups"
                 )
         blocks: dict[tuple[int, int], torch.Tensor] = {}
         for src_idx, src_slice in enumerate(src_slices):
@@ -885,6 +947,12 @@ class RotAlignKVTranslator(nn.Module):
                     template_dist = self._template_distance(src_templates[src_idx], tgt_templates[tgt_idx])
                     subspace_dist = self._subspace_distance(y_hat, Y[:, tgt_slice])
                     score = score - signature_weight * float(template_dist + subspace_dist)
+                elif self.config.alignment_method == "grouped_contrastive_template_transport" and signature_weight > 0.0:
+                    contrast_bonus = self._contrastive_template_bonus(
+                        src_template_banks[:, src_idx, :],
+                        tgt_template_banks[:, tgt_idx, :],
+                    )
+                    score = score + signature_weight * float(contrast_bonus)
                 scores[src_idx, tgt_idx] = score
                 blocks[(src_idx, tgt_idx)] = W_block
         if self.config.alignment_method == "grouped_permutation":
@@ -1491,7 +1559,7 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_template_subspace_transport"}:
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -1721,7 +1789,7 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_template_subspace_transport"}:
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
             elif self.config.alignment_method in {
@@ -1745,6 +1813,7 @@ class RotAlignKVTranslator(nn.Module):
                 "canonical_transport",
                 "covariance_transport",
                 "template_transport",
+                "contrastive_template_transport",
                 "template_subspace_transport",
                 "broadcast_template_transport",
                 "broadcast_template_ot_transport",

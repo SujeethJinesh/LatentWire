@@ -99,6 +99,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_canonical_transport",
             "grouped_covariance_transport",
             "grouped_template_transport",
+            "grouped_contrastive_template_transport",
             "grouped_template_subspace_transport",
             "broadcast_template_transport",
             "broadcast_template_ot_transport",
@@ -599,6 +600,82 @@ def collect_group_attention_templates(
     return [(templates / float(used_prompts)).cpu() for templates in layer_sums]
 
 
+@torch.no_grad()
+def collect_group_attention_template_bank(
+    model: AutoModelForCausalLM,
+    tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    max_length: int,
+    batch_size: int,
+    device: str,
+    kv_heads: int,
+    group_count: int,
+    bins: int,
+    template_mode: str = "mean",
+    reasoning_mode: str = "plain",
+) -> list[torch.Tensor]:
+    if bins <= 0:
+        raise ValueError("bins must be positive")
+    if group_count <= 0:
+        raise ValueError("group_count must be positive")
+    if kv_heads % group_count != 0:
+        raise ValueError(f"kv_heads={kv_heads} must be divisible by group_count={group_count}")
+    if template_mode not in {"mean", "peak"}:
+        raise ValueError(f"Unknown template_mode: {template_mode}")
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    group_heads = kv_heads // group_count
+    layer_templates: list[list[torch.Tensor]] | None = None
+    used_prompts = 0
+    for batch in batched(prompts, batch_size):
+        batch_text = [_source_reasoning_prompt(prompt, reasoning_mode) for prompt in batch]
+        enc = tokenizer(
+            batch_text,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        ).to(device)
+        out = model(**enc, use_cache=False, output_attentions=True, return_dict=True)
+        attentions = getattr(out, "attentions", None)
+        if attentions is None:
+            raise ValueError("Model did not return attentions while building grouped template bank")
+        if layer_templates is None:
+            layer_templates = [[] for _ in range(len(attentions))]
+        mask_cpu = enc["attention_mask"].to("cpu")
+        for batch_idx in range(mask_cpu.shape[0]):
+            valid_len = int(mask_cpu[batch_idx].sum().item())
+            if valid_len <= 1:
+                continue
+            for layer_idx, attn in enumerate(attentions):
+                head_scores = attn[batch_idx, :, valid_len - 1, : valid_len - 1].detach().to("cpu", dtype=torch.float32)
+                head_scores = _reduce_attention_heads_to_kv_heads(head_scores, kv_heads=kv_heads)
+                head_scores = head_scores / head_scores.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+                grouped = head_scores.reshape(group_count, group_heads, valid_len - 1).mean(dim=1)
+                if template_mode == "mean":
+                    grouped = torch.stack(
+                        [_resample_position_profile(group_scores, bins) for group_scores in grouped],
+                        dim=0,
+                    )
+                else:
+                    peak_templates = []
+                    for group_scores in grouped:
+                        peak_idx = int(torch.argmax(group_scores).item())
+                        peak_bin = min(bins - 1, int(peak_idx * bins / max(group_scores.numel(), 1)))
+                        one_hot = torch.zeros(bins, dtype=torch.float32)
+                        one_hot[peak_bin] = 1.0
+                        peak_templates.append(one_hot)
+                    grouped = torch.stack(peak_templates, dim=0)
+                grouped = grouped / grouped.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+                layer_templates[layer_idx].append(grouped)
+            used_prompts += 1
+    if layer_templates is None or used_prompts == 0:
+        raise ValueError("Could not build grouped attention template bank from calibration prompts")
+    return [torch.stack(templates, dim=0).cpu() for templates in layer_templates]
+
+
 def _weighted_key_spectrum(
     head_keys: torch.Tensor,
     head_weights: torch.Tensor,
@@ -880,6 +957,7 @@ def main() -> None:
 
     if args.alignment in {
         "grouped_template_transport",
+        "grouped_contrastive_template_transport",
         "grouped_template_subspace_transport",
         "broadcast_template_transport",
         "broadcast_template_ot_transport",
@@ -965,6 +1043,50 @@ def main() -> None:
                 "Built grouped QK templates: "
                 f"source layers={len(translator._transport_src_group_templates)}, "
                 f"target layers={len(translator._transport_tgt_group_templates)}"
+            )
+        elif args.alignment == "grouped_contrastive_template_transport":
+            print(
+                "\nBuilding grouped attention-template banks from calibration prompts "
+                f"(source groups={src_template_groups}, target groups={tgt_template_groups}, bins={args.transport_template_bins})..."
+            )
+            translator._transport_src_group_template_banks = collect_group_attention_template_bank(
+                src,
+                tok_s,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.src_num_heads,
+                group_count=src_template_groups,
+                bins=args.transport_template_bins,
+                template_mode="mean",
+                reasoning_mode=args.source_reasoning_mode,
+            )
+            translator._transport_tgt_group_template_banks = collect_group_attention_template_bank(
+                tgt,
+                tok_t,
+                prompts,
+                max_length=args.max_length,
+                batch_size=args.batch_size,
+                device=args.device,
+                kv_heads=config.tgt_num_heads,
+                group_count=tgt_template_groups,
+                bins=args.transport_template_bins,
+                template_mode="mean",
+                reasoning_mode="plain",
+            )
+            translator._transport_src_group_templates = [
+                bank.mean(dim=0) / bank.mean(dim=0).sum(dim=-1, keepdim=True).clamp_min(1e-8)
+                for bank in translator._transport_src_group_template_banks
+            ]
+            translator._transport_tgt_group_templates = [
+                bank.mean(dim=0) / bank.mean(dim=0).sum(dim=-1, keepdim=True).clamp_min(1e-8)
+                for bank in translator._transport_tgt_group_template_banks
+            ]
+            print(
+                "Built grouped template banks: "
+                f"source layers={len(translator._transport_src_group_template_banks)}, "
+                f"target layers={len(translator._transport_tgt_group_template_banks)}"
             )
         else:
             print(
