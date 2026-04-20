@@ -1924,6 +1924,33 @@ Interpretation:
 - so the modular-interface lane remains plausible, but this first AsymLoRA-
   style bridge is not yet a positive method result
 
+And a fifty-ninth stacked-interface update:
+
+> I then stacked the strongest output-side teacher we currently have on top of
+> that same shared-plus-private interface: `bridge_ridge_qk_asym_predkl_adapter`.
+> This keeps the same one-shared-plus-two-private low-rank bridge structure as
+> `bridge_ridge_qk_asym_adapter`, but adds the same calibration-time top-k
+> next-token teacher used by `bridge_ridge_qk_predkl_adapter`.
+>
+> On the same 64-prompt calibration slice, offline fit was unchanged:
+> - `K` cosine `0.870`, relative Frobenius error `0.468`
+> - `V` cosine `0.397`, relative Frobenius error `0.907`
+>
+> Under the matched-bytes fair controlled regime, the held-out reads were also
+> unchanged:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- stacking the current prediction-level teacher on top of the first
+  shared-plus-private dense interface did **not** improve the method
+- the modular-interface lane is still weakly alive, but the first dense stack
+  of “better interface + better teacher” still only ties the controlled floor
+- that pushes the next live pivots toward either a **more materially different
+  interface module** or a **shared sparse dictionary / SAE bridge**, not
+  another dense tiny residual stack
+
 Interpretation:
 
 - the repo now has a machine-readable frontier and paired-flip layer that is

@@ -988,3 +988,34 @@ So the highest-value next stack is now:
    - a stronger output-side / likelihood-style teacher on top of a more
      materially different interface, or
    - a shared sparse dictionary / SAE bridge rather than another dense tiny residual
+
+I then stacked those two plausible fixes directly: the shared-plus-private
+interface plus the prediction-level teacher in
+`bridge_ridge_qk_asym_predkl_adapter`.
+
+This keeps the same one-shared-plus-two-private low-rank bridge structure as
+`bridge_ridge_qk_asym_adapter`, but adds the same calibration-time top-k
+next-token teacher used by `bridge_ridge_qk_predkl_adapter`.
+
+On the same 64-prompt calibration slice, offline fit was unchanged:
+
+- `K` cosine `0.870`, relative Frobenius error `0.468`
+- `V` cosine `0.397`, relative Frobenius error `0.907`
+
+Under the matched-bytes fair controlled regime, the held-out reads were also
+unchanged:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- stacking the current best output-side teacher on top of the first
+  shared-plus-private dense interface did **not** improve the method
+- the dense modular-interface lane is still weakly alive, but it is still tied
+  to the controlled target floor
+- the next live pivots are now narrower:
+  - a more materially different interface module in the Attention Editing /
+    LRAgent direction, or
+  - a shared sparse dictionary / SAE bridge in the USAE / SPARC direction

@@ -189,7 +189,7 @@ python scripts/calibrate.py \
 - `--pre-quant-rank N` / `--pre-quant-shrinkage A` — apply a target-space
   low-rank/shrinkage filter before quantization. This is a denoising step
   after alignment, not a replacement for the alignment solver.
-- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_cab_bank,bridge_ridge_qk_predkl_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,bridge_ridge_qk_adapter,bridge_ridge_qk_affinity_adapter,bridge_ridge_qk_attnkl_adapter,bridge_ridge_qk_cab_adapter,bridge_ridge_qk_emkd_adapter,bridge_ridge_qk_readout_adapter,bridge_ridge_qk_predkl_adapter,ridge,low_rank}` —
+- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_cab_bank,bridge_ridge_qk_predkl_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,bridge_ridge_qk_adapter,bridge_ridge_qk_affinity_adapter,bridge_ridge_qk_attnkl_adapter,bridge_ridge_qk_cab_adapter,bridge_ridge_qk_emkd_adapter,bridge_ridge_qk_readout_adapter,bridge_ridge_qk_predkl_adapter,bridge_ridge_qk_asym_adapter,bridge_ridge_qk_asym_predkl_adapter,ridge,low_rank}` —
   optional decoder-side correction after quantize/dequantize. `affine` is a
   diagonal scale+bias repair; `bridge_affine` is a coordinatewise bridge over
   both the dequantized tensor and the pre-quant translated prediction;
@@ -226,7 +226,9 @@ python scripts/calibrate.py \
   `bridge_ridge_qk_asym_adapter` replaces the fully separate K-side and V-side
   query adapters with one shared query-conditioned bottleneck plus private K
   and V residual heads, so the bridge can learn shared structure before
-  specializing its corrections;
+  specializing its corrections; `bridge_ridge_qk_asym_predkl_adapter` keeps
+  that same shared-plus-private interface but adds the same top-k next-token
+  teacher used by `bridge_ridge_qk_predkl_adapter`;
   all of the `bridge_ridge_qk_*adapter` variants now fit both K-side and
   V-side query-conditioned residuals during calibration rather than only a
   K-side residual;
@@ -241,7 +243,8 @@ python scripts/calibrate.py \
   `bridge_ridge_qk_adapter`, `bridge_ridge_qk_affinity_adapter`, or
   `bridge_ridge_qk_attnkl_adapter`, or `bridge_ridge_qk_cab_adapter`, or
   `bridge_ridge_qk_emkd_adapter`, or `bridge_ridge_qk_readout_adapter`, or
-  `bridge_ridge_qk_predkl_adapter`, or `bridge_ridge_qk_asym_adapter` with
+  `bridge_ridge_qk_predkl_adapter`, or `bridge_ridge_qk_asym_adapter`, or
+  `bridge_ridge_qk_asym_predkl_adapter` with
   `--quantization-correction-rank <r>`
   to control the adapter size, and use `--bridge-bank-size <k>` to set the
   number of bridge experts in the banked variants.

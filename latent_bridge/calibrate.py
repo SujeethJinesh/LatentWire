@@ -254,6 +254,7 @@ def parse_args() -> argparse.Namespace:
             "bridge_ridge_qk_readout_adapter",
             "bridge_ridge_qk_predkl_adapter",
             "bridge_ridge_qk_asym_adapter",
+            "bridge_ridge_qk_asym_predkl_adapter",
             "bridge_ridge_qk_predkl_bank",
             "ridge",
             "low_rank",
@@ -1865,7 +1866,7 @@ def main() -> None:
             )
 
     aligned_lengths: list[int] | None = None
-    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter"}:
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter"}:
         aligned_lengths = collect_aligned_prompt_valid_lengths(
             tok_s,
             tok_t,
@@ -1974,7 +1975,7 @@ def main() -> None:
             f"layers={len(bridge_sample_weights)}, samples={int(bridge_sample_weights[0].numel())}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target query features for query-conditioned bridge projector/adapter "
@@ -2000,7 +2001,7 @@ def main() -> None:
             f"layers={len(bridge_query_features)}, samples={int(bridge_query_features[0].shape[0])}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target next-token teacher for prediction-level bridge distillation "
