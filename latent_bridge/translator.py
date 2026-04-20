@@ -117,7 +117,10 @@ class TranslatorConfig:
     # target attention profile, `bridge_ridge_residual_bank` keeps the global
     # bridge_ridge map and adds an attention-routed low-rank residual bank on
     # top, `bridge_ridge_qk_residual_bank` swaps that routing signal for a live
-    # QK/retrieval profile, `bridge_ridge_qk_weighted` keeps the global bridge
+    # QK/retrieval profile, `bridge_ridge_qk_cab_bank` keeps the same QK-routed
+    # bank structure but makes each expert a learned query-conditioned residual
+    # adapter trained with prompt-local causal attention behavior, and
+    # `bridge_ridge_qk_weighted` keeps the global bridge
     # but fits it with calibration samples reweighted by target retrieval
     # importance, `bridge_ridge_qk_projector` feeds live query-conditioned
     # projector features directly into the bridge itself, `bridge_ridge_qk_adapter`
@@ -407,10 +410,82 @@ class RotAlignKVTranslator(nn.Module):
                 for _ in range(config.num_tgt_layers)
             ]
         )
+        self.bridge_bank_query_resid_K_left = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, self.d_t, bridge_rank),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_query_resid_K_right = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, bridge_rank, self.d_t),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_query_aux_resid_K_left = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, self.d_t, bridge_rank),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_query_aux_resid_K_right = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, bridge_rank, self.d_t),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
         self.bridge_bank_proj_V_left = nn.ParameterList(
             [
                 nn.Parameter(
                     torch.zeros(config.bridge_bank_size, self.d_t, bridge_rank),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_query_resid_V_left = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, self.d_t, bridge_rank),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_query_resid_V_right = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, bridge_rank, self.d_t),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_query_aux_resid_V_left = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, self.d_t, bridge_rank),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_query_aux_resid_V_right = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, bridge_rank, self.d_t),
                     requires_grad=False,
                 )
                 for _ in range(config.num_tgt_layers)
@@ -2042,6 +2117,10 @@ class RotAlignKVTranslator(nn.Module):
             bank_right = self.bridge_bank_proj_K_right[tgt_layer_idx]
             bank_aux_left = self.bridge_bank_aux_proj_K_left[tgt_layer_idx]
             bank_aux_right = self.bridge_bank_aux_proj_K_right[tgt_layer_idx]
+            bank_query_left = self.bridge_bank_query_resid_K_left[tgt_layer_idx]
+            bank_query_right = self.bridge_bank_query_resid_K_right[tgt_layer_idx]
+            bank_query_aux_left = self.bridge_bank_query_aux_resid_K_left[tgt_layer_idx]
+            bank_query_aux_right = self.bridge_bank_query_aux_resid_K_right[tgt_layer_idx]
             bank_bias = self.bridge_bank_bias_K[tgt_layer_idx]
         elif kind == "V":
             scale = self.quant_scale_V[tgt_layer_idx]
@@ -2059,6 +2138,10 @@ class RotAlignKVTranslator(nn.Module):
             bank_right = self.bridge_bank_proj_V_right[tgt_layer_idx]
             bank_aux_left = self.bridge_bank_aux_proj_V_left[tgt_layer_idx]
             bank_aux_right = self.bridge_bank_aux_proj_V_right[tgt_layer_idx]
+            bank_query_left = self.bridge_bank_query_resid_V_left[tgt_layer_idx]
+            bank_query_right = self.bridge_bank_query_resid_V_right[tgt_layer_idx]
+            bank_query_aux_left = self.bridge_bank_query_aux_resid_V_left[tgt_layer_idx]
+            bank_query_aux_right = self.bridge_bank_query_aux_resid_V_right[tgt_layer_idx]
             bank_bias = self.bridge_bank_bias_V[tgt_layer_idx]
         else:
             raise ValueError(f"Unknown correction kind: {kind}")
@@ -2184,11 +2267,13 @@ class RotAlignKVTranslator(nn.Module):
                 dtype=x.dtype,
             )
             return x + gate * (corrected - x)
-        if self.config.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank"}:
+        if self.config.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank"}:
             if aux_input is None:
                 raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
+            if self.config.quantization_correction == "bridge_ridge_qk_cab_bank" and runtime_query_features is None:
+                raise ValueError("bridge_ridge_qk_cab_bank quantization correction requires runtime_query_features")
             base = x
-            if self.config.quantization_correction in {"bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank"}:
+            if self.config.quantization_correction in {"bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank"}:
                 base = (
                     x @ proj.to(device=x.device, dtype=x.dtype)
                     + aux_input @ aux_proj.to(device=x.device, dtype=x.dtype)
@@ -2201,6 +2286,33 @@ class RotAlignKVTranslator(nn.Module):
                 dtype=x.dtype,
             )
             corrected = torch.zeros_like(base)
+            qfeat = None
+            if self.config.quantization_correction == "bridge_ridge_qk_cab_bank":
+                qfeat = runtime_query_features.to(device=x.device, dtype=x.dtype)
+                if x.ndim == 2:
+                    if qfeat.ndim == 3 and qfeat.shape[1] == 1:
+                        qfeat = qfeat.squeeze(1)
+                    if qfeat.ndim != 2 or qfeat.shape != x.shape:
+                        raise ValueError(
+                            "runtime_query_features must align with calibration bridge samples for bridge_ridge_qk_cab_bank, "
+                            f"got {tuple(qfeat.shape)} vs {tuple(x.shape)}"
+                        )
+                else:
+                    if qfeat.ndim == 2:
+                        qfeat = qfeat.unsqueeze(0)
+                    if qfeat.shape[-1] != self.d_t:
+                        raise ValueError(
+                            f"runtime_query_features width {qfeat.shape[-1]} does not match target width {self.d_t}"
+                        )
+                    if qfeat.shape[0] == 1 and x.shape[0] != 1:
+                        qfeat = qfeat.expand(x.shape[0], -1, -1)
+                    if qfeat.shape[1] == 1 and x.shape[1] != 1:
+                        qfeat = qfeat.expand(-1, x.shape[1], -1)
+                    if qfeat.shape[:2] != x.shape[:2]:
+                        raise ValueError(
+                            "runtime_query_features must align with translated samples for bridge_ridge_qk_cab_bank, "
+                            f"got {tuple(qfeat.shape[:2])} vs {tuple(x.shape[:2])}"
+                        )
             for expert_idx in range(self.config.bridge_bank_size):
                 if float(weights[expert_idx].detach().cpu()) <= 0.0:
                     continue
@@ -2211,6 +2323,13 @@ class RotAlignKVTranslator(nn.Module):
                     @ bank_aux_right[expert_idx].to(device=x.device, dtype=x.dtype)
                     + bank_bias[expert_idx].to(device=x.device, dtype=x.dtype)
                 )
+                if self.config.quantization_correction == "bridge_ridge_qk_cab_bank" and qfeat is not None:
+                    expert_out = expert_out + (
+                        ((x * qfeat) @ bank_query_left[expert_idx].to(device=x.device, dtype=x.dtype))
+                        @ bank_query_right[expert_idx].to(device=x.device, dtype=x.dtype)
+                        + ((aux_input * qfeat) @ bank_query_aux_left[expert_idx].to(device=x.device, dtype=x.dtype))
+                        @ bank_query_aux_right[expert_idx].to(device=x.device, dtype=x.dtype)
+                    )
                 corrected = corrected + weights[expert_idx] * expert_out
             return corrected if self.config.quantization_correction == "bridge_low_rank_bank" else base + corrected
         if self.config.quantization_correction in {"ridge", "low_rank"}:
@@ -2691,11 +2810,19 @@ class RotAlignKVTranslator(nn.Module):
             self.bridge_bank_proj_K_right[tgt_l].data.zero_()
             self.bridge_bank_aux_proj_K_left[tgt_l].data.zero_()
             self.bridge_bank_aux_proj_K_right[tgt_l].data.zero_()
+            self.bridge_bank_query_resid_K_left[tgt_l].data.zero_()
+            self.bridge_bank_query_resid_K_right[tgt_l].data.zero_()
+            self.bridge_bank_query_aux_resid_K_left[tgt_l].data.zero_()
+            self.bridge_bank_query_aux_resid_K_right[tgt_l].data.zero_()
             self.bridge_bank_bias_K[tgt_l].data.zero_()
             self.bridge_bank_proj_V_left[tgt_l].data.zero_()
             self.bridge_bank_proj_V_right[tgt_l].data.zero_()
             self.bridge_bank_aux_proj_V_left[tgt_l].data.zero_()
             self.bridge_bank_aux_proj_V_right[tgt_l].data.zero_()
+            self.bridge_bank_query_resid_V_left[tgt_l].data.zero_()
+            self.bridge_bank_query_resid_V_right[tgt_l].data.zero_()
+            self.bridge_bank_query_aux_resid_V_left[tgt_l].data.zero_()
+            self.bridge_bank_query_aux_resid_V_right[tgt_l].data.zero_()
             self.bridge_bank_bias_V[tgt_l].data.zero_()
             K_pred = (Xk @ W_K) @ pre_quant_filter_k
             V_pred = (Xv @ W_V) @ pre_quant_filter_v
@@ -2717,7 +2844,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter"}:
                 sample_weights = None
                 if self.config.quantization_correction == "bridge_ridge_qk_weighted":
                     if self._bridge_sample_weights is None:
@@ -2805,7 +2932,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_proj_V[tgt_l].data.copy_(aux_proj_v.to(self.quant_aux_proj_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-                if self.config.quantization_correction in {"bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank"}:
+                if self.config.quantization_correction in {"bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank"}:
                     if self._bridge_prompt_cluster_labels is None or self._bridge_sample_prompt_ids is None:
                         raise ValueError(
                             "bridge_ridge_residual_bank requires bridge template-bank metadata; "
@@ -2819,44 +2946,99 @@ class RotAlignKVTranslator(nn.Module):
                     base_v = V_quant @ proj_v + V_pred @ aux_proj_v + bias_v
                     residual_target_k = Yk_fit - base_k
                     residual_target_v = Yv_fit - base_v
-                    global_resid_proj_k, global_resid_aux_proj_k, global_resid_bias_k = self._fit_bridge_ridge_correction(
-                        K_quant,
-                        K_pred,
-                        residual_target_k,
-                        lam=self.config.ridge_lambda,
-                    )
-                    global_resid_proj_v, global_resid_aux_proj_v, global_resid_bias_v = self._fit_bridge_ridge_correction(
-                        V_quant,
-                        V_pred,
-                        residual_target_v,
-                        lam=self.config.ridge_lambda,
-                    )
-                    global_left_k, global_right_k = self._factorize_low_rank_matrix(global_resid_proj_k, rank=rank)
-                    global_aux_left_k, global_aux_right_k = self._factorize_low_rank_matrix(global_resid_aux_proj_k, rank=rank)
-                    global_left_v, global_right_v = self._factorize_low_rank_matrix(global_resid_proj_v, rank=rank)
-                    global_aux_left_v, global_aux_right_v = self._factorize_low_rank_matrix(global_resid_aux_proj_v, rank=rank)
+                    if self.config.quantization_correction == "bridge_ridge_qk_cab_bank":
+                        if self._bridge_sample_query_features is None:
+                            raise ValueError(
+                                "bridge_ridge_qk_cab_bank requires bridge sample query features; "
+                                "call set_bridge_sample_query_features() before fit_from_pairs"
+                            )
+                        query_features = self._bridge_sample_query_features[tgt_l].to(device=Xk.device)
+                        global_left_k, global_right_k, global_aux_left_k, global_aux_right_k = self._fit_bridge_query_residual_adapter(
+                            K_quant,
+                            K_pred,
+                            query_features,
+                            base_k,
+                            residual_target_k,
+                            rank=int(self.config.quantization_correction_rank or 8),
+                            local_attention_weight=0.25,
+                            sample_prompt_ids=prompt_ids,
+                        )
+                        global_left_v, global_right_v, global_aux_left_v, global_aux_right_v = self._fit_bridge_query_residual_adapter(
+                            V_quant,
+                            V_pred,
+                            query_features,
+                            base_v,
+                            residual_target_v,
+                            rank=int(self.config.quantization_correction_rank or 8),
+                            local_attention_weight=0.25,
+                            sample_prompt_ids=prompt_ids,
+                        )
+                        global_resid_bias_k = torch.zeros_like(self.bridge_bank_bias_K[tgt_l].data[0])
+                        global_resid_bias_v = torch.zeros_like(self.bridge_bank_bias_V[tgt_l].data[0])
+                    else:
+                        global_resid_proj_k, global_resid_aux_proj_k, global_resid_bias_k = self._fit_bridge_ridge_correction(
+                            K_quant,
+                            K_pred,
+                            residual_target_k,
+                            lam=self.config.ridge_lambda,
+                        )
+                        global_resid_proj_v, global_resid_aux_proj_v, global_resid_bias_v = self._fit_bridge_ridge_correction(
+                            V_quant,
+                            V_pred,
+                            residual_target_v,
+                            lam=self.config.ridge_lambda,
+                        )
+                        global_left_k, global_right_k = self._factorize_low_rank_matrix(global_resid_proj_k, rank=rank)
+                        global_aux_left_k, global_aux_right_k = self._factorize_low_rank_matrix(global_resid_aux_proj_k, rank=rank)
+                        global_left_v, global_right_v = self._factorize_low_rank_matrix(global_resid_proj_v, rank=rank)
+                        global_aux_left_v, global_aux_right_v = self._factorize_low_rank_matrix(global_resid_aux_proj_v, rank=rank)
                     min_samples = max(8, int(rank or 8))
                     for expert_idx in range(self.config.bridge_bank_size):
                         mask = sample_expert_ids == expert_idx
                         if int(mask.sum().item()) >= min_samples:
-                            resid_proj_k, resid_aux_proj_k, resid_bias_k = self._fit_bridge_ridge_correction(
-                                K_quant[mask],
-                                K_pred[mask],
-                                residual_target_k[mask],
-                                lam=self.config.ridge_lambda,
-                            )
-                            resid_proj_v, resid_aux_proj_v, resid_bias_v = self._fit_bridge_ridge_correction(
-                                V_quant[mask],
-                                V_pred[mask],
-                                residual_target_v[mask],
-                                lam=self.config.ridge_lambda,
-                            )
-                            left_k, right_k = self._factorize_low_rank_matrix(resid_proj_k, rank=rank)
-                            aux_left_k, aux_right_k = self._factorize_low_rank_matrix(resid_aux_proj_k, rank=rank)
-                            left_v, right_v = self._factorize_low_rank_matrix(resid_proj_v, rank=rank)
-                            aux_left_v, aux_right_v = self._factorize_low_rank_matrix(resid_aux_proj_v, rank=rank)
-                            bias_resid_k = resid_bias_k
-                            bias_resid_v = resid_bias_v
+                            if self.config.quantization_correction == "bridge_ridge_qk_cab_bank":
+                                prompt_ids_mask = prompt_ids[mask]
+                                left_k, right_k, aux_left_k, aux_right_k = self._fit_bridge_query_residual_adapter(
+                                    K_quant[mask],
+                                    K_pred[mask],
+                                    query_features[mask],
+                                    base_k[mask],
+                                    residual_target_k[mask],
+                                    rank=int(self.config.quantization_correction_rank or 8),
+                                    local_attention_weight=0.25,
+                                    sample_prompt_ids=prompt_ids_mask,
+                                )
+                                left_v, right_v, aux_left_v, aux_right_v = self._fit_bridge_query_residual_adapter(
+                                    V_quant[mask],
+                                    V_pred[mask],
+                                    query_features[mask],
+                                    base_v[mask],
+                                    residual_target_v[mask],
+                                    rank=int(self.config.quantization_correction_rank or 8),
+                                    local_attention_weight=0.25,
+                                    sample_prompt_ids=prompt_ids_mask,
+                                )
+                                bias_resid_k = global_resid_bias_k
+                                bias_resid_v = global_resid_bias_v
+                            else:
+                                resid_proj_k, resid_aux_proj_k, resid_bias_k = self._fit_bridge_ridge_correction(
+                                    K_quant[mask],
+                                    K_pred[mask],
+                                    residual_target_k[mask],
+                                    lam=self.config.ridge_lambda,
+                                )
+                                resid_proj_v, resid_aux_proj_v, resid_bias_v = self._fit_bridge_ridge_correction(
+                                    V_quant[mask],
+                                    V_pred[mask],
+                                    residual_target_v[mask],
+                                    lam=self.config.ridge_lambda,
+                                )
+                                left_k, right_k = self._factorize_low_rank_matrix(resid_proj_k, rank=rank)
+                                aux_left_k, aux_right_k = self._factorize_low_rank_matrix(resid_aux_proj_k, rank=rank)
+                                left_v, right_v = self._factorize_low_rank_matrix(resid_proj_v, rank=rank)
+                                aux_left_v, aux_right_v = self._factorize_low_rank_matrix(resid_aux_proj_v, rank=rank)
+                                bias_resid_k = resid_bias_k
+                                bias_resid_v = resid_bias_v
                         else:
                             left_k, right_k = global_left_k, global_right_k
                             aux_left_k, aux_right_k = global_aux_left_k, global_aux_right_k
@@ -2864,33 +3046,71 @@ class RotAlignKVTranslator(nn.Module):
                             left_v, right_v = global_left_v, global_right_v
                             aux_left_v, aux_right_v = global_aux_left_v, global_aux_right_v
                             bias_resid_v = global_resid_bias_v
-                        self.bridge_bank_proj_K_left[tgt_l].data[expert_idx].copy_(
-                            left_k.to(self.bridge_bank_proj_K_left[tgt_l].dtype)
-                        )
-                        self.bridge_bank_proj_K_right[tgt_l].data[expert_idx].copy_(
-                            right_k.to(self.bridge_bank_proj_K_right[tgt_l].dtype)
-                        )
-                        self.bridge_bank_aux_proj_K_left[tgt_l].data[expert_idx].copy_(
-                            aux_left_k.to(self.bridge_bank_aux_proj_K_left[tgt_l].dtype)
-                        )
-                        self.bridge_bank_aux_proj_K_right[tgt_l].data[expert_idx].copy_(
-                            aux_right_k.to(self.bridge_bank_aux_proj_K_right[tgt_l].dtype)
-                        )
+                        if self.config.quantization_correction == "bridge_ridge_qk_cab_bank":
+                            self.bridge_bank_proj_K_left[tgt_l].data[expert_idx].zero_()
+                            self.bridge_bank_proj_K_right[tgt_l].data[expert_idx].zero_()
+                            self.bridge_bank_aux_proj_K_left[tgt_l].data[expert_idx].zero_()
+                            self.bridge_bank_aux_proj_K_right[tgt_l].data[expert_idx].zero_()
+                        else:
+                            self.bridge_bank_proj_K_left[tgt_l].data[expert_idx].copy_(
+                                left_k.to(self.bridge_bank_proj_K_left[tgt_l].dtype)
+                            )
+                            self.bridge_bank_proj_K_right[tgt_l].data[expert_idx].copy_(
+                                right_k.to(self.bridge_bank_proj_K_right[tgt_l].dtype)
+                            )
+                            self.bridge_bank_aux_proj_K_left[tgt_l].data[expert_idx].copy_(
+                                aux_left_k.to(self.bridge_bank_aux_proj_K_left[tgt_l].dtype)
+                            )
+                            self.bridge_bank_aux_proj_K_right[tgt_l].data[expert_idx].copy_(
+                                aux_right_k.to(self.bridge_bank_aux_proj_K_right[tgt_l].dtype)
+                            )
+                        if self.config.quantization_correction == "bridge_ridge_qk_cab_bank":
+                            self.bridge_bank_query_resid_K_left[tgt_l].data[expert_idx].copy_(
+                                left_k.to(self.bridge_bank_query_resid_K_left[tgt_l].dtype)
+                            )
+                            self.bridge_bank_query_resid_K_right[tgt_l].data[expert_idx].copy_(
+                                right_k.to(self.bridge_bank_query_resid_K_right[tgt_l].dtype)
+                            )
+                            self.bridge_bank_query_aux_resid_K_left[tgt_l].data[expert_idx].copy_(
+                                aux_left_k.to(self.bridge_bank_query_aux_resid_K_left[tgt_l].dtype)
+                            )
+                            self.bridge_bank_query_aux_resid_K_right[tgt_l].data[expert_idx].copy_(
+                                aux_right_k.to(self.bridge_bank_query_aux_resid_K_right[tgt_l].dtype)
+                            )
                         self.bridge_bank_bias_K[tgt_l].data[expert_idx].copy_(
                             bias_resid_k.to(self.bridge_bank_bias_K[tgt_l].dtype)
                         )
-                        self.bridge_bank_proj_V_left[tgt_l].data[expert_idx].copy_(
-                            left_v.to(self.bridge_bank_proj_V_left[tgt_l].dtype)
-                        )
-                        self.bridge_bank_proj_V_right[tgt_l].data[expert_idx].copy_(
-                            right_v.to(self.bridge_bank_proj_V_right[tgt_l].dtype)
-                        )
-                        self.bridge_bank_aux_proj_V_left[tgt_l].data[expert_idx].copy_(
-                            aux_left_v.to(self.bridge_bank_aux_proj_V_left[tgt_l].dtype)
-                        )
-                        self.bridge_bank_aux_proj_V_right[tgt_l].data[expert_idx].copy_(
-                            aux_right_v.to(self.bridge_bank_aux_proj_V_right[tgt_l].dtype)
-                        )
+                        if self.config.quantization_correction == "bridge_ridge_qk_cab_bank":
+                            self.bridge_bank_proj_V_left[tgt_l].data[expert_idx].zero_()
+                            self.bridge_bank_proj_V_right[tgt_l].data[expert_idx].zero_()
+                            self.bridge_bank_aux_proj_V_left[tgt_l].data[expert_idx].zero_()
+                            self.bridge_bank_aux_proj_V_right[tgt_l].data[expert_idx].zero_()
+                        else:
+                            self.bridge_bank_proj_V_left[tgt_l].data[expert_idx].copy_(
+                                left_v.to(self.bridge_bank_proj_V_left[tgt_l].dtype)
+                            )
+                            self.bridge_bank_proj_V_right[tgt_l].data[expert_idx].copy_(
+                                right_v.to(self.bridge_bank_proj_V_right[tgt_l].dtype)
+                            )
+                            self.bridge_bank_aux_proj_V_left[tgt_l].data[expert_idx].copy_(
+                                aux_left_v.to(self.bridge_bank_aux_proj_V_left[tgt_l].dtype)
+                            )
+                            self.bridge_bank_aux_proj_V_right[tgt_l].data[expert_idx].copy_(
+                                aux_right_v.to(self.bridge_bank_aux_proj_V_right[tgt_l].dtype)
+                            )
+                        if self.config.quantization_correction == "bridge_ridge_qk_cab_bank":
+                            self.bridge_bank_query_resid_V_left[tgt_l].data[expert_idx].copy_(
+                                left_v.to(self.bridge_bank_query_resid_V_left[tgt_l].dtype)
+                            )
+                            self.bridge_bank_query_resid_V_right[tgt_l].data[expert_idx].copy_(
+                                right_v.to(self.bridge_bank_query_resid_V_right[tgt_l].dtype)
+                            )
+                            self.bridge_bank_query_aux_resid_V_left[tgt_l].data[expert_idx].copy_(
+                                aux_left_v.to(self.bridge_bank_query_aux_resid_V_left[tgt_l].dtype)
+                            )
+                            self.bridge_bank_query_aux_resid_V_right[tgt_l].data[expert_idx].copy_(
+                                aux_right_v.to(self.bridge_bank_query_aux_resid_V_right[tgt_l].dtype)
+                            )
                         self.bridge_bank_bias_V[tgt_l].data[expert_idx].copy_(
                             bias_resid_v.to(self.bridge_bank_bias_V[tgt_l].dtype)
                         )
@@ -3005,7 +3225,7 @@ class RotAlignKVTranslator(nn.Module):
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
             fit_runtime_query_features = None
-            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_cab_bank"}:
                 if self._bridge_sample_query_features is None:
                     raise ValueError(
                         f"{self.config.quantization_correction} requires bridge sample query features during fit; "

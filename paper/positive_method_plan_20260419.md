@@ -622,3 +622,33 @@ So the next highest-value stack is now:
 4. if we keep pushing the bridge lane, move beyond local attention behavior
    alone to **richer affinity or prediction-level distillation**, or make the
    bridge itself more expressive via a routed expert mixture
+
+I then tried the first real “make the bridge itself more expressive” variant:
+`bridge_ridge_qk_cab_bank`. This keeps the same grouped-subspace transport +
+rank-4 residual checkpoint and the same prompt-local causal attention teacher,
+but replaces the single learned residual bridge with a QK-routed bank of
+query-conditioned bridge experts.
+
+Held-out behavior under the same fair shared-chat / `enable_thinking=False`
+regime:
+
+- `gsm8k_5`: `0.2000`
+- bytes on the smoke: `686,026.6`
+
+That means:
+
+- a routed bridge mixture is **not** enough by itself to improve over the
+  single-expert CAB branch in this first form
+- the current bank lane looks saturated if the teacher target stays local
+  and the bridge remains this small
+- so the next branch should likely change the **teacher target** or the
+  **canonicalization step**, not just add more bridge experts
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep `attention_expected` plus its shuffled null as a negative-boundary
+   comparator
+4. if we keep the bridge lane alive, move to **richer affinity or prediction-level distillation**
+5. in parallel, test a **rotation-canonicalized grouped transport** shortcut

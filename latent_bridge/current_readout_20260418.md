@@ -1647,3 +1647,28 @@ Interpretation:
   framing, the teacher target probably has to move beyond local attention
   behavior alone toward richer affinity or prediction-level distillation, or we
   need a more expressive routed bridge on top of the same frozen transport
+
+And a forty-eighth routed CAB-bank update:
+
+> I then tried the next natural escalation of the same idea:
+> `bridge_ridge_qk_cab_bank`. This keeps the same fair shared-chat /
+> `enable_thinking=False` control and the same grouped-subspace transport +
+> rank-4 residual checkpoint, but replaces the single learned
+> query-conditioned residual bridge with a **QK-routed bank of query-conditioned
+> bridge experts**. The routing uses the same QK template-bank machinery as the
+> earlier residual-bank branches, while each expert is trained with the same
+> prompt-local causal attention teacher used in the single-expert CAB branch.
+> Calibration fit again matched the older bridge family (`K` cosine `0.864`,
+> relative Frobenius error `0.476`; `V` cosine `0.381`, relative Frobenius
+> error `0.915`). The first held-out fair smoke was:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+
+Interpretation:
+
+- more expressive bridge capacity alone is **not** enough here: the routed
+  mixture exactly ties the single-expert CAB branch on both the cheap smoke and
+  byte cost
+- that makes the current bridge-bank lane look saturated in its present form
+- if we keep the positive-method lane alive, the next move should probably be a
+  richer **teacher target** or a stronger canonicalization step, not just more
+  bridge experts
