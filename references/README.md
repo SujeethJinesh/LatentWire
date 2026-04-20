@@ -339,6 +339,12 @@ Files `246_` and `247_` extend the bridge-interpretability backlog:
 - `246_`: UniCrossAdapter as a modular-adapter reference if one monolithic bridge keeps saturating.
 - `247_`: AtP* as a paired-flip / component-localization reference for reviewer-facing interpretability artifacts.
 
+Files `248_` through `250_` extend the modular-bridge backlog:
+
+- `248_`: AsymLoRA as a shared-base plus asymmetric-residual adapter reference.
+- `249_`: CREMA as a modular-fusion reference for replacing one monolithic bridge with a few specialized modules.
+- `250_`: MOSA as a mixture-of-simple-adapters reference when one more complex bridge keeps saturating.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

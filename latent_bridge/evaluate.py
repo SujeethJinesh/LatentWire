@@ -2901,7 +2901,7 @@ def _build_rotalign_prefix_state(
         "attention_qk_template_transport_shuffled",
         "attention_qk_bank_transport",
         "attention_qk_bank_transport_shuffled",
-    } or translator.config.quantization_correction in {"bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter"}:
+    } or translator.config.quantization_correction in {"bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter"}:
         layer_query_heads = _last_token_query_heads(
             target_model,
             tgt_last_token,
@@ -3012,7 +3012,7 @@ def _build_rotalign_prefix_state(
         K_t, V_t = tgt_pkv[tgt_l]
         runtime_attention_profile = None
         runtime_query_features = None
-        if translator.config.quantization_correction in {"bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank"}:
+        if translator.config.quantization_correction in {"bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
             if layer_query_heads is None:
                 raise ValueError(f"{translator.config.quantization_correction} requires live query heads")
             runtime_attention_profile = _qk_position_distributions(
@@ -3020,7 +3020,7 @@ def _build_rotalign_prefix_state(
                 K_t.to(device=device, dtype=torch.float32),
                 bins=translator.config.transport_template_bins,
             ).mean(dim=0)
-            if translator.config.quantization_correction == "bridge_ridge_qk_cab_bank":
+            if translator.config.quantization_correction in {"bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
                 runtime_query_features = _query_feature_vector(
                     layer_query_heads[tgt_l],
                     target_heads=translator.config.tgt_num_heads,

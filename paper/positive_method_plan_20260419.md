@@ -882,3 +882,35 @@ So the highest-value next stack is now:
 3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
 4. if we keep the method lane alive, move to a **richer prediction-level bridge**
    rather than another local bridge-loss tweak or another small geometry variant
+
+I then tried the smallest richer-capacity follow-up in that same lane:
+`bridge_ridge_qk_predkl_bank`.
+
+This keeps the same `grouped_subspace_transport + rank-4 residual` base and
+the same fair shared-chat / `enable_thinking=false` Qwen control, but it
+replaces the single prediction-level residual bridge with a **QK-routed bank
+of query-conditioned bridge experts** trained under the same top-k next-token
+teacher.
+
+On the 16-prompt smoke calibration slice, the first fair held-out smoke was
+still negative:
+
+- `gsm8k_5`: `0.0000`
+- bytes on the smoke slice: `722,107.7`
+
+That means:
+
+- moving from one tiny prediction-level bridge to a small routed bridge bank
+  did not revive the method
+- the current small modular bridge-bank family now also looks close to
+  saturated
+- the next live bridge step likely needs a more materially different modular
+  interface, not another small residual bank variant
+
+So the highest-value next stack is now:
+
+1. keep the fair Qwen control on
+2. keep `C2C` as the main external bar
+3. keep exact KVPress / Expected Attention in the paper as a negative-boundary comparator
+4. if we keep the method lane alive, move to a **more materially different modular bridge**
+   rather than another tiny residual or banked variant

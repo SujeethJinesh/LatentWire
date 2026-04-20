@@ -1854,3 +1854,26 @@ Interpretation:
 - so the stronger-teacher lane is still conceptually the right lane, but the
   current **tiny local residual bridge** looks saturated even under a more
   ambitious teacher target
+
+And a fifty-sixth richer-bridge update:
+
+> I then tried the smallest higher-capacity follow-up to that prediction-level
+> bridge: `bridge_ridge_qk_predkl_bank`. This keeps the same
+> `grouped_subspace_transport + rank-4 residual` base and the same fair
+> shared-chat / `enable_thinking=False` Qwen control, but it replaces the
+> single prediction-level residual bridge with a **QK-routed bank of
+> query-conditioned bridge experts** trained under the same top-k next-token
+> teacher. On the 16-prompt smoke calibration slice, offline fit matched the
+> single prediction-level bridge branch:
+> - `K` cosine `0.887`, relative Frobenius error `0.437`
+> - `V` cosine `0.480`, relative Frobenius error `0.862`
+> The first fair held-out smoke was still negative:
+> - `gsm8k_5`: `0.000000` at `722,107.700` average bytes
+
+Interpretation:
+
+- adding a small routed bank on top of the prediction-level teacher did **not**
+  revive the bridge lane
+- that makes the current tiny modular bank family look close to saturated too
+- the next live bridge step should likely be a more materially different
+  modular interface, not another small residual-bank tweak
