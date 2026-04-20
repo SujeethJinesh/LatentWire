@@ -1668,6 +1668,7 @@ def test_bridge_ridge_qk_adapter_adds_query_conditioned_residual(monkeypatch) ->
         "bridge_ridge_qk_emkd_adapter",
         "bridge_ridge_qk_readout_adapter",
         "bridge_ridge_qk_predkl_adapter",
+        "bridge_ridge_qk_asym_projector",
         "bridge_ridge_qk_asym_predkl_adapter",
         "bridge_ridge_qk_asym_dynmap_adapter",
     ):
@@ -1935,6 +1936,91 @@ def test_fit_from_pairs_bridge_ridge_qk_asym_adapter_populates_shared_and_privat
 
     assert calls == [1]
     assert torch.allclose(tr.quant_query_shared_left[0], torch.full_like(tr.quant_query_shared_left[0], 3.0))
+
+
+def test_fit_from_pairs_bridge_ridge_qk_asym_projector_populates_projector_and_shared_residuals(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_asym_projector",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+
+    projector_calls: list[str] = []
+    shared_calls: list[int] = []
+
+    def fake_projector(self, quantized, predicted, query_features, target, *, lam):
+        projector_calls.append(str(query_features.shape))
+        fill = float(len(projector_calls))
+        return (
+            torch.full((self.d_t, self.d_t), fill, dtype=target.dtype),
+            torch.full((self.d_t, self.d_t), fill + 1.0, dtype=target.dtype),
+            torch.full((self.d_t, self.d_t), fill + 2.0, dtype=target.dtype),
+            torch.full((self.d_t, self.d_t), fill + 3.0, dtype=target.dtype),
+            torch.full((1, self.d_t), fill + 4.0, dtype=target.dtype),
+        )
+
+    def fake_shared(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        base_prediction_k,
+        base_prediction_v,
+        residual_target_k,
+        residual_target_v,
+        *,
+        rank,
+        **kwargs,
+    ):
+        shared_calls.append(rank)
+        return (
+            torch.full((self.d_t, rank), 3.0, dtype=residual_target_k.dtype),
+            torch.full((self.d_t, rank), 4.0, dtype=residual_target_k.dtype),
+            torch.full((rank, self.d_t), 5.0, dtype=residual_target_k.dtype),
+            torch.full((rank, self.d_t), 6.0, dtype=residual_target_v.dtype),
+            torch.full((self.d_t, rank), 1.0, dtype=residual_target_k.dtype),
+            torch.ones(rank, self.d_t, dtype=residual_target_k.dtype),
+            torch.full((self.d_t, rank), 1.5, dtype=residual_target_k.dtype),
+            torch.full((rank, self.d_t), 1.5, dtype=residual_target_k.dtype),
+            torch.full((self.d_t, rank), 2.0, dtype=residual_target_v.dtype),
+            torch.full((rank, self.d_t), 2.0, dtype=residual_target_v.dtype),
+            torch.full((self.d_t, rank), 2.5, dtype=residual_target_v.dtype),
+            torch.full((rank, self.d_t), 2.5, dtype=residual_target_v.dtype),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_ridge_query_projector_correction", fake_projector)
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_shared_residual_adapter", fake_shared)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert len(projector_calls) == 2
+    assert shared_calls == [1]
+    assert torch.allclose(tr.quant_query_proj_K[0], torch.full_like(tr.quant_query_proj_K[0], 3.0))
+    assert torch.allclose(tr.quant_query_aux_proj_K[0], torch.full_like(tr.quant_query_aux_proj_K[0], 4.0))
+    assert torch.allclose(tr.quant_query_proj_V[0], torch.full_like(tr.quant_query_proj_V[0], 4.0))
+    assert torch.allclose(tr.quant_query_aux_proj_V[0], torch.full_like(tr.quant_query_aux_proj_V[0], 5.0))
+    assert torch.allclose(tr.quant_query_shared_left[0], torch.full_like(tr.quant_query_shared_left[0], 3.0))
+    assert torch.allclose(tr.quant_query_shared_K_right[0], torch.full_like(tr.quant_query_shared_K_right[0], 5.0))
+    assert torch.allclose(tr.quant_query_shared_V_right[0], torch.full_like(tr.quant_query_shared_V_right[0], 6.0))
 
 
 def test_fit_from_pairs_bridge_ridge_qk_asym_predkl_adapter_passes_teacher(monkeypatch) -> None:

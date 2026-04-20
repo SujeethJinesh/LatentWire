@@ -426,6 +426,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_5_controlled_smoke",
+            method="shared-plus-private asym projector",
+            family="projector bridge",
+            meta_path="results/bridge_ridge_qk_asym_projector_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_asym_projector_cal64_chat.jsonl.meta.json",
+            notes="shared-plus-private post-transport projector combining full-rank query projector with the paired K/V interface",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
             method="readout adapter",
             family="stronger-teacher bridge",
             meta_path="results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl.meta.json",

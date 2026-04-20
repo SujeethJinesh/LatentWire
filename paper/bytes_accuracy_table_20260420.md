@@ -23,6 +23,7 @@
 | gsm8k_eval_10_controlled | KVPress ExpectedAttentionPress | external comparator | 0.1000 | - | exact external Expected Attention comparator |
 | gsm8k_5_controlled_smoke | shared-plus-private asym adapter | modular bridge | 0.2000 | 686,026.6 | AsymLoRA-style shared-plus-private bridge survives smoke and controlled slice |
 | gsm8k_5_controlled_smoke | shared-plus-private dynmap adapter | modular bridge | 0.2000 | 686,026.6 | shared-plus-private bridge with context-reweighted top-k teacher |
+| gsm8k_5_controlled_smoke | shared-plus-private asym projector | projector bridge | 0.0000 | 686,026.6 | shared-plus-private post-transport projector combining full-rank query projector with the paired K/V interface |
 | gsm8k_5_controlled_smoke | readout adapter | stronger-teacher bridge | 0.2000 | 686,026.6 | stronger prompt-local teacher survives smoke only |
 | gsm8k_5_controlled_smoke | prediction-KL adapter | stronger-teacher bridge | 0.0000 | 722,107.7 | first prediction-level bridge teacher |
 | gsm8k_5_controlled_smoke | prediction-KL bank | stronger-teacher bridge | 0.0000 | 722,107.7 | small modular bank follow-up to prediction-level teacher |

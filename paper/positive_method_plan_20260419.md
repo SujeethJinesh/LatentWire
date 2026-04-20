@@ -1125,3 +1125,31 @@ Comparator guidance also shifted again after the latest web-backed sidecars:
 4. `DapQ` is the strongest newer decoding-aligned control if a clean public
    repo appears
 5. `KVzip` and then `Quest` remain the next already-cloned fallback controls
+
+I then tested the smallest projector-side version of that module/interface idea
+directly as `bridge_ridge_qk_asym_projector`.
+
+This keeps the same shared-plus-private paired K/V interface as
+`bridge_ridge_qk_asym_adapter`, but it upgrades the base bridge into a full
+query-conditioned projector before the low-rank shared/private refinement.
+
+On the same 64-prompt calibration slice, offline fit remained:
+
+- `K` cosine `0.870`, relative Frobenius error `0.468`
+- `V` cosine `0.397`, relative Frobenius error `0.907`
+
+The first fair held-out smoke was:
+
+- `gsm8k_5`: `0.0000`
+- bytes: `686,026.6`
+
+That means:
+
+- the first projector-side interface branch is a **clean negative**
+- the current evidence is that a small post-transport projector is still too
+  close to the saturated bridge family to rescue the method
+- the next serious method pivots are now narrower again:
+  - an explicit attention/module-replacement interface in the Attention
+    Editing / LLM Modules direction
+  - or a richer contextual token/output mapping teacher on top of a genuinely
+    different interface

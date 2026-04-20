@@ -2043,3 +2043,28 @@ Interpretation:
 - so the current evidence says the dynamic-teacher lane is conceptually better
   motivated, but the present tiny bridge family is still too weak to convert
   that into a positive result
+
+And a sixty-third projector-interface update:
+
+> I then implemented `bridge_ridge_qk_asym_projector`, the first explicit
+> **post-transport projector** in the current shared-plus-private bridge
+> family. It keeps the paired K/V modular interface from
+> `bridge_ridge_qk_asym_adapter`, but it upgrades the base bridge into a full
+> query-conditioned projector before the low-rank shared/private refinement.
+>
+> On the same 64-prompt calibration slice, offline fit again stayed at:
+> - `K` cosine `0.870`, relative Frobenius error `0.468`
+> - `V` cosine `0.397`, relative Frobenius error `0.907`
+>
+> The first fair held-out smoke was:
+> - `gsm8k_5`: `0.000000` at `686,026.600` average bytes
+
+Interpretation:
+
+- the first shared-plus-private projector interface is a **clean negative**
+  on the first held-out smoke
+- simply turning the bridge base into a small query-conditioned projector is
+  not enough to rescue the current transport family
+- that strengthens the case that the next live branch has to be a **more
+  explicit attention/module replacement** or a richer dynamic output-alignment
+  mechanism, not another small projector or residual variation

@@ -168,6 +168,14 @@
     "split": "gsm8k_5_controlled_smoke"
   },
   {
+    "accuracy": 0.0,
+    "avg_bytes": 686026.6,
+    "family": "projector bridge",
+    "method": "shared-plus-private asym projector",
+    "notes": "shared-plus-private post-transport projector combining full-rank query projector with the paired K/V interface",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
     "accuracy": 0.2,
     "avg_bytes": 686026.6,
     "family": "stronger-teacher bridge",
