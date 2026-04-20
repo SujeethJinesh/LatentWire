@@ -1959,3 +1959,33 @@ Interpretation:
   still `fixed prior`, the best internal mechanism branch is still
   `grouped_subspace + rank-4 residual`, and the whole recent controlled family
   is best read as blocker evidence rather than as a hidden positive method
+
+And a sixtieth sparse-interface update:
+
+> I then implemented `bridge_ridge_qk_sae_adapter`, the first explicit
+> **shared sparse codebook bridge** in this repo. It keeps the same
+> `grouped_subspace_transport + rank-4 residual` base and the same fair
+> shared-chat / `enable_thinking=False` Qwen control, but replaces the dense
+> shared bottleneck with a small top-k sparse latent code that is decoded
+> separately for K and V. This is the cleanest SAE-style shared interface we
+> can test without rewriting the rest of the transport stack.
+>
+> On the same 64-prompt calibration slice, offline fit was:
+> - `K` cosine `0.870`, relative Frobenius error `0.468`
+> - `V` cosine `0.397`, relative Frobenius error `0.907`
+>
+> Under the matched-bytes fair controlled regime, the first held-out read was:
+> - `gsm8k_5`: `0.000000` at `686,026.600` average bytes
+
+Interpretation:
+
+- the first shared sparse / SAE-style bridge is a **clean negative** on the
+  first fair held-out smoke
+- that means the simple sparse-code interface did not rescue the dense bridge
+  family’s failure mode
+- the sparse-interface lane is still worth citing and possibly revisiting in a
+  richer form, but this first lightweight SAE-style bridge is not the positive
+  method we need
+- comparator priority also shifted again: after exact KVPress, the next
+  highest-value external control day is now **KVzip** first and **Quest**
+  second, with **KVComm** dropping below them in immediate value

@@ -1019,3 +1019,38 @@ That means:
   - a more materially different interface module in the Attention Editing /
     LRAgent direction, or
   - a shared sparse dictionary / SAE bridge in the USAE / SPARC direction
+
+I then implemented that shared sparse dictionary pivot directly as
+`bridge_ridge_qk_sae_adapter`.
+
+This keeps the same `grouped_subspace_transport + rank-4 residual` base and the
+same fair shared-chat / `enable_thinking=false` Qwen control, but it replaces
+the dense shared bottleneck with a small top-k sparse code that is decoded
+separately for K and V.
+
+On the same 64-prompt calibration slice, offline fit was still:
+
+- `K` cosine `0.870`, relative Frobenius error `0.468`
+- `V` cosine `0.397`, relative Frobenius error `0.907`
+
+Held-out read:
+
+- `gsm8k_5`: `0.0000`
+- bytes: `686,026.6`
+
+That means:
+
+- the first lightweight SAE-style interface is a **clean negative**
+- the dense-transport-plus-tiny-bridge family is still not rescued by simply
+  moving to a sparse shared code
+- the next real method pivots are now even narrower:
+  - a more materially different module in the Attention Editing / LRAgent /
+    MoRA direction, or
+  - a stronger dynamic output-side teacher closer to prediction space
+
+Comparator guidance also sharpened:
+
+1. keep `C2C` as the main external bar
+2. keep exact KVPress / Expected Attention as the negative-boundary comparator
+3. if we spend another comparator day, do **KVzip** next
+4. keep **Quest** as the next fallback comparator after KVzip
