@@ -181,16 +181,21 @@ python scripts/calibrate.py \
 - `--pre-quant-rank N` / `--pre-quant-shrinkage A` — apply a target-space
   low-rank/shrinkage filter before quantization. This is a denoising step
   after alignment, not a replacement for the alignment solver.
-- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,ridge,low_rank}` —
+- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,ridge,low_rank}` —
   optional decoder-side correction after quantize/dequantize. `affine` is a
   diagonal scale+bias repair; `bridge_affine` is a coordinatewise bridge over
   both the dequantized tensor and the pre-quant translated prediction;
   `bridge_ridge` is a full linear bridge over those same two signals;
   `bridge_ridge_query` applies that same bridge but gates it by live target
-  attention-template agreement; `ridge` is a small full linear correction
-  layer in rotated target space; `low_rank`
-  is a reduced-rank bridge adapter in the same rotated target space. Pair `low_rank` with
-  `--quantization-correction-rank <r>` to control the adapter size.
+  attention-template agreement; `bridge_low_rank_bank` replaces the bridge with
+  a small query-conditioned low-rank expert bank; `bridge_ridge_residual_bank`
+  keeps the full `bridge_ridge` map and adds a query-conditioned low-rank
+  residual bank; `ridge` is a small full linear correction layer in rotated
+  target space; `low_rank` is a reduced-rank bridge adapter in the same rotated
+  target space. Pair `low_rank`, `bridge_low_rank_bank`, or
+  `bridge_ridge_residual_bank` with `--quantization-correction-rank <r>` to
+  control the adapter size, and use `--bridge-bank-size <k>` to set the number
+  of bridge experts in the banked variants.
 - `--source-use-chat-template` / `--target-use-chat-template` and
   `--source-enable-thinking {auto,true,false}` /
   `--target-enable-thinking {auto,true,false}` — format prompts through the

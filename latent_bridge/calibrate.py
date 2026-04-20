@@ -231,7 +231,17 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--quantization-correction",
-        choices=["none", "affine", "bridge_affine", "bridge_ridge", "bridge_ridge_query", "ridge", "low_rank"],
+        choices=[
+            "none",
+            "affine",
+            "bridge_affine",
+            "bridge_ridge",
+            "bridge_ridge_query",
+            "bridge_low_rank_bank",
+            "bridge_ridge_residual_bank",
+            "ridge",
+            "low_rank",
+        ],
         default="none",
         help="Optional decoder-side correction applied after quantize/dequantize",
     )
@@ -240,6 +250,12 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=None,
         help="Optional rank for low-rank decoder-side correction after quantize/dequantize",
+    )
+    p.add_argument(
+        "--bridge-bank-size",
+        type=int,
+        default=4,
+        help="Number of bridge experts to fit for query-conditioned bridge-bank correction",
     )
     p.add_argument(
         "--learned-fusion-dropout",
@@ -594,6 +610,66 @@ def collect_aligned_kv_pairs(
         for l in range(len(tgt_per_layer_K))
     ]
     return src_kvs, tgt_kvs
+
+
+def collect_aligned_prompt_valid_lengths(
+    src_tokenizer: AutoTokenizer,
+    tgt_tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    max_length: int,
+    batch_size: int,
+    source_reasoning_mode: str = "plain",
+    source_use_chat_template: bool = False,
+    source_enable_thinking: bool | None = None,
+    target_use_chat_template: bool = False,
+    target_enable_thinking: bool | None = None,
+) -> list[int]:
+    lengths: list[int] = []
+    for batch in batched(prompts, batch_size):
+        src_batch = [
+            _prepare_prompt_text(
+                prompt,
+                reasoning_mode=source_reasoning_mode,
+                tokenizer=src_tokenizer,
+                use_chat_template=source_use_chat_template,
+                enable_thinking=source_enable_thinking,
+            )
+            for prompt in batch
+        ]
+        tgt_batch = [
+            _format_prompt_for_tokenizer(
+                tgt_tokenizer,
+                prompt,
+                use_chat_template=target_use_chat_template,
+                enable_thinking=target_enable_thinking,
+            )
+            for prompt in batch
+        ]
+        src_enc = src_tokenizer(
+            src_batch,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        )
+        tgt_enc = tgt_tokenizer(
+            tgt_batch,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+            max_length=max_length,
+        )
+        src_mask = src_enc["attention_mask"]
+        tgt_mask = tgt_enc["attention_mask"]
+        for batch_idx in range(src_mask.shape[0]):
+            lengths.append(
+                min(
+                    int(src_mask[batch_idx].sum().item()),
+                    int(tgt_mask[batch_idx].sum().item()),
+                )
+            )
+    return lengths
 
 
 def _resample_position_profile(profile: torch.Tensor, target_len: int) -> torch.Tensor:
@@ -1204,6 +1280,7 @@ def main() -> None:
         pre_quant_shrinkage=args.pre_quant_shrinkage,
         quantization_correction=args.quantization_correction,
         quantization_correction_rank=args.quantization_correction_rank,
+        bridge_bank_size=args.bridge_bank_size,
         learned_fusion_dropout=args.learned_fusion_dropout,
         seed=args.seed,
     )
@@ -1434,6 +1511,55 @@ def main() -> None:
                 f"source layers={len(translator._transport_src_group_templates)}, "
                 f"target layers={len(translator._transport_tgt_group_templates)}"
             )
+
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank"}:
+        print(
+            "\nBuilding target attention template bank for query-conditioned bridge experts "
+            f"(experts={args.bridge_bank_size}, bins={args.transport_template_bins})..."
+        )
+        bridge_template_bank = collect_group_attention_template_bank(
+            tgt,
+            tok_t,
+            prompts,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            device=args.device,
+            kv_heads=config.tgt_num_heads,
+            group_count=1,
+            bins=args.transport_template_bins,
+            template_mode="mean",
+            reasoning_mode="plain",
+            use_chat_template=args.target_use_chat_template,
+            enable_thinking=target_enable_thinking,
+        )
+        aligned_lengths = collect_aligned_prompt_valid_lengths(
+            tok_s,
+            tok_t,
+            prompts,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            source_reasoning_mode=args.source_reasoning_mode,
+            source_use_chat_template=args.source_use_chat_template,
+            source_enable_thinking=source_enable_thinking,
+            target_use_chat_template=args.target_use_chat_template,
+            target_enable_thinking=target_enable_thinking,
+        )
+        if any(length <= 0 for length in aligned_lengths):
+            print("Skipping zero-length calibration prompts while building bridge prompt ids")
+        sample_prompt_ids = torch.cat(
+            [
+                torch.full((int(length),), prompt_idx, dtype=torch.long)
+                for prompt_idx, length in enumerate(aligned_lengths)
+                if int(length) > 0
+            ],
+            dim=0,
+        )
+        translator.set_bridge_runtime_template_bank(bridge_template_bank, sample_prompt_ids)
+        print(
+            "Built bridge template bank: "
+            f"layers={len(bridge_template_bank)}, prompts={len(aligned_lengths)}, "
+            f"samples={int(sample_prompt_ids.numel())}"
+        )
 
     print("\nFitting closed-form alignments (Procrustes / ridge)...")
     diagnostics = translator.fit_from_pairs(src_kvs, tgt_kvs, verbose=args.verbose)

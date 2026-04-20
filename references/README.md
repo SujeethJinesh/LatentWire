@@ -291,6 +291,13 @@ Files `210_` through `213_` extend the query-conditioned bridge backlog:
 - `212_`: Expected Attention as a direct query-conditioned attention-estimation reference, useful for transport or bridge costs that preserve live retrieval behavior rather than mean templates.
 - `213_`: MoRA as an on-the-fly low-rank adaptation reference, useful for the next dynamic bridge/projector attempt beyond static `bridge_ridge`.
 
+Files `214_` through `217_` extend the routed-projector backlog:
+
+- `214_`: LORAUTER as a lightweight adapter-routing reference for bridge-bank variants that should switch correction subspaces by query or task regime.
+- `215_`: LRAgent as a runtime-activated low-rank adaptation reference for keeping the base translator fixed while activating only a small bridge when needed.
+- `216_`: QMoP as the cleanest current mixture-of-projectors reference for selecting among a few tiny bridge experts from live query structure.
+- `217_`: SEMI as a shared-projector / shared-interface reference, useful for transferring multimodal bridge ideas into a lightweight cross-model KV interface.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.

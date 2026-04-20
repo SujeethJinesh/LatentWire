@@ -239,6 +239,35 @@ Interpretation:
 Same grouped-CCA checkpoint, but replacing the live position selector with
 fixed query-blind position priors:
 
+## Query-Conditioned Bridge-Bank Follow-Ups
+
+After the fair Qwen3 prompt/thinking control was locked in with shared chat
+serialization and `enable_thinking=False` on both sides, I tested two
+query-conditioned bridge-bank variants on top of the live grouped-subspace
+transport family:
+
+- `bridge_low_rank_bank`
+- `bridge_ridge_residual_bank`
+
+Both used the same `64`-prompt calibration slice, the same sparse `K-only`
+protocol, and the same fixed head prior from `.debug/head_prior_64.txt`.
+Both were clean negatives on the first controlled `gsm8k_5` smoke:
+
+- `bridge_low_rank_bank`: `0.0000`, `722,107.7` bytes
+- `bridge_ridge_residual_bank`: `0.0000`, `722,107.7` bytes
+
+Interpretation:
+
+- replacing the stable bridge with an attention-template-routed expert bank is
+  too aggressive
+- even preserving the full `bridge_ridge` base and routing only a low-rank
+  residual bank is still not enough when the routing signal is just a mean
+  attention template
+- so the bridge lane is still alive, but the next serious version has to use a
+  **richer query-conditioned signal** such as QK/retrieval features or a
+  richer interaction-level / distillation target, not another attention-template
+  gate or bank
+
 - GSM8K-100, calibration expected-attention prior: `0.030000`
 - GSM8K-100, uniform prior null: `0.030000`
 - SVAMP-70, calibration expected-attention prior: `0.171429`

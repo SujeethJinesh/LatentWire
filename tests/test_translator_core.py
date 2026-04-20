@@ -1441,6 +1441,106 @@ def test_bridge_ridge_query_scales_bridge_by_runtime_template_agreement(monkeypa
     assert not torch.allclose(K_match, K_mismatch)
 
 
+def test_bridge_low_rank_bank_selects_runtime_matched_expert(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_low_rank_bank",
+        quantization_correction_rank=1,
+        bridge_bank_size=2,
+        bridge_bank_temperature=40.0,
+        transport_template_bins=4,
+    )
+    with torch.no_grad():
+        tr.bridge_bank_templates[0].copy_(
+            torch.tensor(
+                [
+                    [1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0],
+                ],
+                dtype=torch.float32,
+            )
+        )
+        tr.bridge_bank_priors[0].copy_(torch.tensor([0.5, 0.5], dtype=torch.float32))
+        tr.bridge_bank_bias_K[0].data[0].fill_(1.0)
+        tr.bridge_bank_bias_K[0].data[1].fill_(3.0)
+        tr.bridge_bank_bias_V[0].data[0].fill_(2.0)
+        tr.bridge_bank_bias_V[0].data[1].fill_(4.0)
+
+    zeros = torch.zeros(1, 2, 1, 2, dtype=torch.float32)
+    K_match, V_match = tr.translate_layer(
+        zeros,
+        zeros,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_attention_profile=torch.tensor([1.0, 0.0, 0.0, 0.0]),
+    )
+    K_other, V_other = tr.translate_layer(
+        zeros,
+        zeros,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_attention_profile=torch.tensor([0.0, 1.0, 0.0, 0.0]),
+    )
+
+    assert torch.allclose(K_match, torch.ones_like(K_match), atol=1e-2, rtol=1e-2)
+    assert torch.allclose(V_match, 2.0 * torch.ones_like(V_match), atol=1e-2, rtol=1e-2)
+    assert torch.allclose(K_other, 3.0 * torch.ones_like(K_other), atol=1e-2, rtol=1e-2)
+    assert torch.allclose(V_other, 4.0 * torch.ones_like(V_other), atol=1e-2, rtol=1e-2)
+
+
+def test_bridge_ridge_residual_bank_adds_runtime_selected_residual(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_residual_bank",
+        quantization_correction_rank=1,
+        bridge_bank_size=2,
+        bridge_bank_temperature=40.0,
+        transport_template_bins=4,
+    )
+    with torch.no_grad():
+        tr.quant_proj_K[0].copy_(torch.eye(tr.d_t))
+        tr.quant_proj_V[0].copy_(torch.eye(tr.d_t))
+        tr.quant_aux_proj_K[0].zero_()
+        tr.quant_aux_proj_V[0].zero_()
+        tr.quant_bias_K[0].fill_(5.0)
+        tr.quant_bias_V[0].fill_(7.0)
+        tr.bridge_bank_templates[0].copy_(
+            torch.tensor(
+                [
+                    [1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0],
+                ],
+                dtype=torch.float32,
+            )
+        )
+        tr.bridge_bank_priors[0].copy_(torch.tensor([0.5, 0.5], dtype=torch.float32))
+        tr.bridge_bank_bias_K[0].data[0].fill_(1.0)
+        tr.bridge_bank_bias_K[0].data[1].fill_(3.0)
+        tr.bridge_bank_bias_V[0].data[0].fill_(2.0)
+        tr.bridge_bank_bias_V[0].data[1].fill_(4.0)
+
+    zeros = torch.zeros(1, 2, 1, 2, dtype=torch.float32)
+    K_match, V_match = tr.translate_layer(
+        zeros,
+        zeros,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_attention_profile=torch.tensor([1.0, 0.0, 0.0, 0.0]),
+    )
+    K_other, V_other = tr.translate_layer(
+        zeros,
+        zeros,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_attention_profile=torch.tensor([0.0, 1.0, 0.0, 0.0]),
+    )
+
+    assert torch.allclose(K_match, 6.0 * torch.ones_like(K_match), atol=1e-2, rtol=1e-2)
+    assert torch.allclose(V_match, 9.0 * torch.ones_like(V_match), atol=1e-2, rtol=1e-2)
+    assert torch.allclose(K_other, 8.0 * torch.ones_like(K_other), atol=1e-2, rtol=1e-2)
+    assert torch.allclose(V_other, 11.0 * torch.ones_like(V_other), atol=1e-2, rtol=1e-2)
+
+
 def test_fit_from_pairs_low_rank_correction_reduces_quantized_error(monkeypatch) -> None:
     monkeypatch.setattr(translator_mod, "GaussianQuantizer", _OffsetQuantizer)
     monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))

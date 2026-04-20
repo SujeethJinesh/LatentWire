@@ -195,6 +195,25 @@ def test_collect_aligned_kv_pairs_uses_source_reasoning_prompt() -> None:
     assert tgt_kvs[0][0].shape == (2, 1, 1, 1)
 
 
+def test_collect_aligned_prompt_valid_lengths_matches_pair_truncation() -> None:
+    prompt = "a"
+    source_prompt = calibrate._source_reasoning_prompt(prompt, "cot")
+    source_prompt_b = calibrate._source_reasoning_prompt("b", "cot")
+    src_tokenizer = _FakeTokenizer({source_prompt: 4, source_prompt_b: 3})
+    tgt_tokenizer = _FakeTokenizer({prompt: 2, "b": 5})
+
+    lengths = calibrate.collect_aligned_prompt_valid_lengths(
+        src_tokenizer,
+        tgt_tokenizer,
+        [prompt, "b"],
+        max_length=5,
+        batch_size=2,
+        source_reasoning_mode="cot",
+    )
+
+    assert lengths == [2, 3]
+
+
 def test_prepare_prompt_text_supports_chat_template_and_enable_thinking() -> None:
     prompt = "a"
     source_prompt = calibrate._source_reasoning_prompt(prompt, "cot")

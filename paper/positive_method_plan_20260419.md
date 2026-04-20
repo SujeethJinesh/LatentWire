@@ -258,6 +258,34 @@ on top. Three variants all failed on the matched sparse `gsm8k_eval_10` slice:
 All three fell to `0.0000`, though they did cut the bridge bytes from roughly
 `297k` down to roughly `157k`.
 
+The next bridge-style follow-up tested a stronger version of the same idea:
+replace the scalar query gate with a **query-conditioned low-rank bridge bank**
+selected by live target attention-template agreement. The first version,
+`bridge_low_rank_bank`, replaced the global bridge with a 4-expert low-rank
+bank on top of the same grouped-subspace transport checkpoint. It was a clean
+negative on the fair `gsm8k_5` control: `0.0000` at `722,107.7` average bytes.
+
+That means:
+
+- query-conditioned routing is not enough if it discards the stable global
+  bridge map
+- the bridge lane is probably a **base-plus-residual** story rather than a
+  pure mixture-of-experts story
+
+I then tested exactly that stronger base-preserving variant:
+`bridge_ridge_residual_bank`, which keeps the full `bridge_ridge` map and adds
+a 4-expert low-rank residual bank selected by the same live target attention
+profile. That also stayed at `0.0000` on the fair `gsm8k_5` smoke, with the
+same heavy byte profile.
+
+That means:
+
+- mean attention-template routing is now looking saturated as the query signal
+  for bridge specialization
+- if the bridge lane stays alive, the next serious step should use a **richer
+  query-conditioned signal** such as QK/retrieval features or a richer
+  interaction/distillation target, not another attention-template gate or bank
+
 That means:
 
 - the weak low-rank bridge clue does not stabilize under the current selector

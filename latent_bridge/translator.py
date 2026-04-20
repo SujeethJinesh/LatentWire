@@ -111,11 +111,17 @@ class TranslatorConfig:
     # bridge over both the dequantized tensor and the pre-quant prediction,
     # `bridge_ridge` learns a full linear bridge over both signals,
     # `bridge_ridge_query` reuses that full bridge but gates it by live
-    # target attention-template agreement, `ridge` learns a full linear map plus
-    # bias in rotated target space, and `low_rank` learns a reduced-rank linear
-    # map plus bias as a tiny bridge adapter.
+    # target attention-template agreement, `bridge_low_rank_bank` fits a small
+    # bank of low-rank bridge experts and mixes them online from the live
+    # target attention profile, `bridge_ridge_residual_bank` keeps the global
+    # bridge_ridge map and adds a query-routed low-rank residual bank on top,
+    # `ridge` learns a full linear map plus bias in rotated target space, and
+    # `low_rank` learns a reduced-rank linear map plus bias as a tiny bridge
+    # adapter.
     quantization_correction: str = "none"
     quantization_correction_rank: int | None = None
+    bridge_bank_size: int = 4
+    bridge_bank_temperature: float = 8.0
 
     # Fusion rule for combining target and translated K/V. 'static' keeps the
     # checkpointed scalar gates as-is; cosine-based rules attenuate translated
@@ -247,12 +253,28 @@ class RotAlignKVTranslator(nn.Module):
         self._transport_tgt_group_template_banks: list[torch.Tensor] | None = None
         self._broadcast_transport_plan_K: list[torch.Tensor] | None = None
         self._broadcast_transport_plan_V: list[torch.Tensor] | None = None
+        self._bridge_prompt_cluster_labels: list[torch.Tensor] | None = None
+        self._bridge_sample_prompt_ids: torch.Tensor | None = None
         self.register_buffer(
             "bridge_runtime_templates",
             torch.zeros(config.num_tgt_layers, config.transport_template_bins, dtype=torch.float32),
         )
+        self.register_buffer(
+            "bridge_bank_templates",
+            torch.zeros(
+                config.num_tgt_layers,
+                config.bridge_bank_size,
+                config.transport_template_bins,
+                dtype=torch.float32,
+            ),
+        )
+        self.register_buffer(
+            "bridge_bank_priors",
+            torch.zeros(config.num_tgt_layers, config.bridge_bank_size, dtype=torch.float32),
+        )
 
         # --- Optional pre-quant denoising filters and quantization repair ---
+        bridge_rank = max(1, int(config.quantization_correction_rank or 8))
         self.pre_quant_filter_K = nn.ParameterList(
             [nn.Parameter(torch.eye(self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
@@ -288,6 +310,96 @@ class RotAlignKVTranslator(nn.Module):
         )
         self.quant_bias_V = nn.ParameterList(
             [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.bridge_bank_proj_K_left = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, self.d_t, bridge_rank),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_proj_K_right = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, bridge_rank, self.d_t),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_aux_proj_K_left = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, self.d_t, bridge_rank),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_aux_proj_K_right = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, bridge_rank, self.d_t),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_bias_K = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, 1, self.d_t),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_proj_V_left = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, self.d_t, bridge_rank),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_proj_V_right = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, bridge_rank, self.d_t),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_aux_proj_V_left = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, self.d_t, bridge_rank),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_aux_proj_V_right = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, bridge_rank, self.d_t),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
+        )
+        self.bridge_bank_bias_V = nn.ParameterList(
+            [
+                nn.Parameter(
+                    torch.zeros(config.bridge_bank_size, 1, self.d_t),
+                    requires_grad=False,
+                )
+                for _ in range(config.num_tgt_layers)
+            ]
         )
         self.fusion_src_scale_K = nn.ParameterList(
             [nn.Parameter(torch.zeros(1, self.d_t), requires_grad=False) for _ in range(config.num_tgt_layers)]
@@ -1204,6 +1316,30 @@ class RotAlignKVTranslator(nn.Module):
             bias.to(dtype=target.dtype, device=target.device),
         )
 
+    def _factorize_low_rank_matrix(
+        self,
+        weight: torch.Tensor,
+        *,
+        rank: int | None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        mat = weight.float()
+        max_rank = min(mat.shape[0], mat.shape[1])
+        if rank is None:
+            rank = min(8, max_rank)
+        rank = max(1, min(int(rank), max_rank))
+        try:
+            u, s, vh = torch.linalg.svd(mat, full_matrices=False)
+        except RuntimeError:
+            jitter = 1e-6 * torch.randn_like(mat)
+            u, s, vh = torch.linalg.svd(mat + jitter, full_matrices=False)
+        scale = s[:rank].sqrt()
+        left = u[:, :rank] * scale.unsqueeze(0)
+        right = scale.unsqueeze(1) * vh[:rank, :]
+        return (
+            left.to(dtype=weight.dtype, device=weight.device),
+            right.to(dtype=weight.dtype, device=weight.device),
+        )
+
     def _fit_ridge_correction(
         self,
         quantized: torch.Tensor,
@@ -1406,6 +1542,127 @@ class RotAlignKVTranslator(nn.Module):
             torch.stack(stacked, dim=0).to(self.bridge_runtime_templates.device)
         )
 
+    def _cluster_template_bank(
+        self,
+        template_bank: torch.Tensor,
+        *,
+        num_clusters: int,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        if template_bank.ndim != 2:
+            raise ValueError(f"Expected [num_prompts, bins] template bank, got {tuple(template_bank.shape)}")
+        if template_bank.shape[0] == 0:
+            raise ValueError("template bank must contain at least one prompt")
+        templates = template_bank.float()
+        templates = templates / templates.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+        num_prompts, bins = templates.shape
+        num_clusters = max(1, min(int(num_clusters), num_prompts))
+        gen = torch.Generator(device="cpu").manual_seed(
+            173_000 + int(self.config.seed) * 1_009 + int(num_prompts) * 17 + int(num_clusters)
+        )
+
+        def js_distance(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+            x = x / x.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+            y = y / y.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+            mid = 0.5 * (x + y)
+            kl_x = (x * (x.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum(dim=-1)
+            kl_y = (y * (y.clamp_min(1e-8).log() - mid.clamp_min(1e-8).log())).sum(dim=-1)
+            return 0.5 * (kl_x + kl_y)
+
+        perm = torch.randperm(num_prompts, generator=gen)
+        chosen = [int(perm[0].item())]
+        while len(chosen) < num_clusters:
+            next_idx = None
+            next_dist = None
+            for idx in range(num_prompts):
+                if idx in chosen:
+                    continue
+                dist = float(js_distance(templates[idx : idx + 1], templates[chosen]).min().item())
+                if next_dist is None or dist > next_dist:
+                    next_dist = dist
+                    next_idx = idx
+            assert next_idx is not None
+            chosen.append(int(next_idx))
+        centroids = templates[chosen].clone()
+        assignments = torch.zeros(num_prompts, dtype=torch.long)
+        for _ in range(8):
+            dist_mat = torch.stack(
+                [js_distance(templates, centroids[cluster_idx : cluster_idx + 1]) for cluster_idx in range(num_clusters)],
+                dim=1,
+            )
+            assignments = dist_mat.argmin(dim=1)
+            updated = centroids.clone()
+            for cluster_idx in range(num_clusters):
+                mask = assignments == cluster_idx
+                if mask.any():
+                    updated[cluster_idx] = templates[mask].mean(dim=0)
+                    updated[cluster_idx] = updated[cluster_idx] / updated[cluster_idx].sum().clamp_min(1e-8)
+                else:
+                    farthest = dist_mat.min(dim=1).values.argmax()
+                    updated[cluster_idx] = templates[int(farthest.item())]
+            centroids = updated
+        priors = torch.bincount(assignments, minlength=num_clusters).float()
+        priors = priors / priors.sum().clamp_min(1e-8)
+        full_centroids = torch.zeros(num_clusters, bins, dtype=torch.float32)
+        full_centroids[: centroids.shape[0]] = centroids
+        return full_centroids, priors, assignments
+
+    def set_bridge_runtime_template_bank(
+        self,
+        template_bank: Sequence[torch.Tensor],
+        sample_prompt_ids: torch.Tensor,
+    ) -> None:
+        if len(template_bank) != self.config.num_tgt_layers:
+            raise ValueError(
+                f"Expected {self.config.num_tgt_layers} bridge template banks, got {len(template_bank)}"
+            )
+        prompt_ids = sample_prompt_ids.detach().to("cpu", dtype=torch.long).view(-1)
+        if prompt_ids.numel() == 0:
+            raise ValueError("sample_prompt_ids must be non-empty")
+        if int(prompt_ids.min().item()) < 0:
+            raise ValueError("sample_prompt_ids must be non-negative")
+        num_prompts = int(template_bank[0].shape[0])
+        if int(prompt_ids.max().item()) >= num_prompts:
+            raise ValueError(
+                f"sample_prompt_ids reference prompt {int(prompt_ids.max().item())}, but template bank only has {num_prompts} prompts"
+            )
+        centroids_out: list[torch.Tensor] = []
+        priors_out: list[torch.Tensor] = []
+        labels_out: list[torch.Tensor] = []
+        mean_templates: list[torch.Tensor] = []
+        for layer_idx, bank in enumerate(template_bank):
+            bank_cpu = bank.detach().to("cpu", dtype=torch.float32)
+            if bank_cpu.ndim == 3 and bank_cpu.shape[1] == 1:
+                bank_cpu = bank_cpu.squeeze(1)
+            if bank_cpu.ndim != 2:
+                raise ValueError(
+                    f"Bridge template bank at layer {layer_idx} must be [num_prompts, bins], got {tuple(bank_cpu.shape)}"
+                )
+            if bank_cpu.shape[0] != num_prompts:
+                raise ValueError(
+                    f"Bridge template bank at layer {layer_idx} expected {num_prompts} prompts, got {bank_cpu.shape[0]}"
+                )
+            if bank_cpu.shape[1] != self.config.transport_template_bins:
+                raise ValueError(
+                    f"Bridge template bank at layer {layer_idx} expected {self.config.transport_template_bins} bins, got {bank_cpu.shape[1]}"
+                )
+            centroids, priors, assignments = self._cluster_template_bank(
+                bank_cpu,
+                num_clusters=self.config.bridge_bank_size,
+            )
+            centroids_out.append(centroids)
+            priors_out.append(priors)
+            labels_out.append(assignments)
+            mean_templates.append(bank_cpu.mean(dim=0))
+        self.bridge_bank_templates.copy_(
+            torch.stack(centroids_out, dim=0).to(self.bridge_bank_templates.device)
+        )
+        self.bridge_bank_priors.copy_(
+            torch.stack(priors_out, dim=0).to(self.bridge_bank_priors.device)
+        )
+        self.set_bridge_runtime_templates(mean_templates)
+        self._bridge_prompt_cluster_labels = labels_out
+        self._bridge_sample_prompt_ids = prompt_ids
+
     def _bridge_runtime_gate(
         self,
         tgt_layer_idx: int,
@@ -1425,6 +1682,41 @@ class RotAlignKVTranslator(nn.Module):
         gate = (1.0 - js / math.log(2.0)).clamp(0.0, 1.0)
         return gate.to(device=device, dtype=dtype)
 
+    def _bridge_bank_mixture_weights(
+        self,
+        tgt_layer_idx: int,
+        runtime_profile: torch.Tensor | None,
+        *,
+        device: torch.device,
+        dtype: torch.dtype,
+    ) -> torch.Tensor:
+        priors = self.bridge_bank_priors[tgt_layer_idx].to(device=device, dtype=dtype)
+        active = priors > 0
+        if not bool(active.any()):
+            out = torch.zeros_like(priors)
+            out[0] = 1.0
+            return out
+        if runtime_profile is None:
+            return priors / priors.sum().clamp_min(1e-8)
+        runtime = runtime_profile.to(device=device, dtype=dtype).view(-1)
+        runtime = runtime / runtime.sum().clamp_min(1e-8)
+        centroids = self.bridge_bank_templates[tgt_layer_idx].to(device=device, dtype=dtype)
+        logits = []
+        for expert_idx in range(self.config.bridge_bank_size):
+            if not bool(active[expert_idx]):
+                logits.append(torch.tensor(float("-inf"), device=device, dtype=dtype))
+                continue
+            centroid = centroids[expert_idx]
+            centroid = centroid / centroid.sum().clamp_min(1e-8)
+            js = self._js_template_distance(runtime, centroid)
+            score = 1.0 - js / math.log(2.0)
+            logits.append(score)
+        logits_tensor = torch.stack(logits, dim=0) * float(self.config.bridge_bank_temperature)
+        logits_tensor = logits_tensor + priors.clamp_min(1e-8).log()
+        weights = torch.softmax(logits_tensor, dim=0)
+        weights = torch.where(active, weights, torch.zeros_like(weights))
+        return weights / weights.sum().clamp_min(1e-8)
+
     def _apply_quantization_correction(
         self,
         x: torch.Tensor,
@@ -1442,12 +1734,22 @@ class RotAlignKVTranslator(nn.Module):
             proj = self.quant_proj_K[tgt_layer_idx]
             aux_proj = self.quant_aux_proj_K[tgt_layer_idx]
             bias = self.quant_bias_K[tgt_layer_idx]
+            bank_left = self.bridge_bank_proj_K_left[tgt_layer_idx]
+            bank_right = self.bridge_bank_proj_K_right[tgt_layer_idx]
+            bank_aux_left = self.bridge_bank_aux_proj_K_left[tgt_layer_idx]
+            bank_aux_right = self.bridge_bank_aux_proj_K_right[tgt_layer_idx]
+            bank_bias = self.bridge_bank_bias_K[tgt_layer_idx]
         elif kind == "V":
             scale = self.quant_scale_V[tgt_layer_idx]
             aux_scale = self.quant_aux_scale_V[tgt_layer_idx]
             proj = self.quant_proj_V[tgt_layer_idx]
             aux_proj = self.quant_aux_proj_V[tgt_layer_idx]
             bias = self.quant_bias_V[tgt_layer_idx]
+            bank_left = self.bridge_bank_proj_V_left[tgt_layer_idx]
+            bank_right = self.bridge_bank_proj_V_right[tgt_layer_idx]
+            bank_aux_left = self.bridge_bank_aux_proj_V_left[tgt_layer_idx]
+            bank_aux_right = self.bridge_bank_aux_proj_V_right[tgt_layer_idx]
+            bank_bias = self.bridge_bank_bias_V[tgt_layer_idx]
         else:
             raise ValueError(f"Unknown correction kind: {kind}")
         if self.config.quantization_correction == "affine":
@@ -1483,6 +1785,35 @@ class RotAlignKVTranslator(nn.Module):
                 dtype=x.dtype,
             )
             return x + gate * (corrected - x)
+        if self.config.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank"}:
+            if aux_input is None:
+                raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
+            base = x
+            if self.config.quantization_correction == "bridge_ridge_residual_bank":
+                base = (
+                    x @ proj.to(device=x.device, dtype=x.dtype)
+                    + aux_input @ aux_proj.to(device=x.device, dtype=x.dtype)
+                    + bias.to(device=x.device, dtype=x.dtype)
+                )
+            weights = self._bridge_bank_mixture_weights(
+                tgt_layer_idx,
+                runtime_profile,
+                device=x.device,
+                dtype=x.dtype,
+            )
+            corrected = torch.zeros_like(base)
+            for expert_idx in range(self.config.bridge_bank_size):
+                if float(weights[expert_idx].detach().cpu()) <= 0.0:
+                    continue
+                expert_out = (
+                    (x @ bank_left[expert_idx].to(device=x.device, dtype=x.dtype))
+                    @ bank_right[expert_idx].to(device=x.device, dtype=x.dtype)
+                    + (aux_input @ bank_aux_left[expert_idx].to(device=x.device, dtype=x.dtype))
+                    @ bank_aux_right[expert_idx].to(device=x.device, dtype=x.dtype)
+                    + bank_bias[expert_idx].to(device=x.device, dtype=x.dtype)
+                )
+                corrected = corrected + weights[expert_idx] * expert_out
+            return corrected if self.config.quantization_correction == "bridge_low_rank_bank" else base + corrected
         if self.config.quantization_correction in {"ridge", "low_rank"}:
             return x @ proj.to(device=x.device, dtype=x.dtype) + bias.to(device=x.device, dtype=x.dtype)
         raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
@@ -1941,6 +2272,16 @@ class RotAlignKVTranslator(nn.Module):
             self.quant_aux_proj_V[tgt_l].data.zero_()
             self.quant_bias_K[tgt_l].data.zero_()
             self.quant_bias_V[tgt_l].data.zero_()
+            self.bridge_bank_proj_K_left[tgt_l].data.zero_()
+            self.bridge_bank_proj_K_right[tgt_l].data.zero_()
+            self.bridge_bank_aux_proj_K_left[tgt_l].data.zero_()
+            self.bridge_bank_aux_proj_K_right[tgt_l].data.zero_()
+            self.bridge_bank_bias_K[tgt_l].data.zero_()
+            self.bridge_bank_proj_V_left[tgt_l].data.zero_()
+            self.bridge_bank_proj_V_right[tgt_l].data.zero_()
+            self.bridge_bank_aux_proj_V_left[tgt_l].data.zero_()
+            self.bridge_bank_aux_proj_V_right[tgt_l].data.zero_()
+            self.bridge_bank_bias_V[tgt_l].data.zero_()
             K_pred = (Xk @ W_K) @ pre_quant_filter_k
             V_pred = (Xv @ W_V) @ pre_quant_filter_v
             K_quant = self.quantizer.quantize_dequantize(K_pred)
@@ -1961,7 +2302,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank"}:
                 proj_k, aux_proj_k, bias_k = self._fit_bridge_ridge_correction(
                     K_quant,
                     K_pred,
@@ -1980,6 +2321,178 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_proj_V[tgt_l].data.copy_(aux_proj_v.to(self.quant_aux_proj_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
+                if self.config.quantization_correction == "bridge_ridge_residual_bank":
+                    if self._bridge_prompt_cluster_labels is None or self._bridge_sample_prompt_ids is None:
+                        raise ValueError(
+                            "bridge_ridge_residual_bank requires bridge template-bank metadata; "
+                            "call set_bridge_runtime_template_bank() before fit_from_pairs"
+                        )
+                    prompt_ids = self._bridge_sample_prompt_ids.to(device=Xk.device)
+                    cluster_labels = self._bridge_prompt_cluster_labels[tgt_l].to(device=Xk.device, dtype=torch.long)
+                    sample_expert_ids = cluster_labels[prompt_ids]
+                    rank = self.config.quantization_correction_rank
+                    base_k = K_quant @ proj_k + K_pred @ aux_proj_k + bias_k
+                    base_v = V_quant @ proj_v + V_pred @ aux_proj_v + bias_v
+                    residual_target_k = Yk_fit - base_k
+                    residual_target_v = Yv_fit - base_v
+                    global_resid_proj_k, global_resid_aux_proj_k, global_resid_bias_k = self._fit_bridge_ridge_correction(
+                        K_quant,
+                        K_pred,
+                        residual_target_k,
+                        lam=self.config.ridge_lambda,
+                    )
+                    global_resid_proj_v, global_resid_aux_proj_v, global_resid_bias_v = self._fit_bridge_ridge_correction(
+                        V_quant,
+                        V_pred,
+                        residual_target_v,
+                        lam=self.config.ridge_lambda,
+                    )
+                    global_left_k, global_right_k = self._factorize_low_rank_matrix(global_resid_proj_k, rank=rank)
+                    global_aux_left_k, global_aux_right_k = self._factorize_low_rank_matrix(global_resid_aux_proj_k, rank=rank)
+                    global_left_v, global_right_v = self._factorize_low_rank_matrix(global_resid_proj_v, rank=rank)
+                    global_aux_left_v, global_aux_right_v = self._factorize_low_rank_matrix(global_resid_aux_proj_v, rank=rank)
+                    min_samples = max(8, int(rank or 8))
+                    for expert_idx in range(self.config.bridge_bank_size):
+                        mask = sample_expert_ids == expert_idx
+                        if int(mask.sum().item()) >= min_samples:
+                            resid_proj_k, resid_aux_proj_k, resid_bias_k = self._fit_bridge_ridge_correction(
+                                K_quant[mask],
+                                K_pred[mask],
+                                residual_target_k[mask],
+                                lam=self.config.ridge_lambda,
+                            )
+                            resid_proj_v, resid_aux_proj_v, resid_bias_v = self._fit_bridge_ridge_correction(
+                                V_quant[mask],
+                                V_pred[mask],
+                                residual_target_v[mask],
+                                lam=self.config.ridge_lambda,
+                            )
+                            left_k, right_k = self._factorize_low_rank_matrix(resid_proj_k, rank=rank)
+                            aux_left_k, aux_right_k = self._factorize_low_rank_matrix(resid_aux_proj_k, rank=rank)
+                            left_v, right_v = self._factorize_low_rank_matrix(resid_proj_v, rank=rank)
+                            aux_left_v, aux_right_v = self._factorize_low_rank_matrix(resid_aux_proj_v, rank=rank)
+                            bias_resid_k = resid_bias_k
+                            bias_resid_v = resid_bias_v
+                        else:
+                            left_k, right_k = global_left_k, global_right_k
+                            aux_left_k, aux_right_k = global_aux_left_k, global_aux_right_k
+                            bias_resid_k = global_resid_bias_k
+                            left_v, right_v = global_left_v, global_right_v
+                            aux_left_v, aux_right_v = global_aux_left_v, global_aux_right_v
+                            bias_resid_v = global_resid_bias_v
+                        self.bridge_bank_proj_K_left[tgt_l].data[expert_idx].copy_(
+                            left_k.to(self.bridge_bank_proj_K_left[tgt_l].dtype)
+                        )
+                        self.bridge_bank_proj_K_right[tgt_l].data[expert_idx].copy_(
+                            right_k.to(self.bridge_bank_proj_K_right[tgt_l].dtype)
+                        )
+                        self.bridge_bank_aux_proj_K_left[tgt_l].data[expert_idx].copy_(
+                            aux_left_k.to(self.bridge_bank_aux_proj_K_left[tgt_l].dtype)
+                        )
+                        self.bridge_bank_aux_proj_K_right[tgt_l].data[expert_idx].copy_(
+                            aux_right_k.to(self.bridge_bank_aux_proj_K_right[tgt_l].dtype)
+                        )
+                        self.bridge_bank_bias_K[tgt_l].data[expert_idx].copy_(
+                            bias_resid_k.to(self.bridge_bank_bias_K[tgt_l].dtype)
+                        )
+                        self.bridge_bank_proj_V_left[tgt_l].data[expert_idx].copy_(
+                            left_v.to(self.bridge_bank_proj_V_left[tgt_l].dtype)
+                        )
+                        self.bridge_bank_proj_V_right[tgt_l].data[expert_idx].copy_(
+                            right_v.to(self.bridge_bank_proj_V_right[tgt_l].dtype)
+                        )
+                        self.bridge_bank_aux_proj_V_left[tgt_l].data[expert_idx].copy_(
+                            aux_left_v.to(self.bridge_bank_aux_proj_V_left[tgt_l].dtype)
+                        )
+                        self.bridge_bank_aux_proj_V_right[tgt_l].data[expert_idx].copy_(
+                            aux_right_v.to(self.bridge_bank_aux_proj_V_right[tgt_l].dtype)
+                        )
+                        self.bridge_bank_bias_V[tgt_l].data[expert_idx].copy_(
+                            bias_resid_v.to(self.bridge_bank_bias_V[tgt_l].dtype)
+                        )
+            elif self.config.quantization_correction == "bridge_low_rank_bank":
+                if self._bridge_prompt_cluster_labels is None or self._bridge_sample_prompt_ids is None:
+                    raise ValueError(
+                        "bridge_low_rank_bank requires bridge template-bank metadata; "
+                        "call set_bridge_runtime_template_bank() before fit_from_pairs"
+                    )
+                prompt_ids = self._bridge_sample_prompt_ids.to(device=Xk.device)
+                cluster_labels = self._bridge_prompt_cluster_labels[tgt_l].to(device=Xk.device, dtype=torch.long)
+                sample_expert_ids = cluster_labels[prompt_ids]
+                rank = self.config.quantization_correction_rank
+                global_proj_k, global_aux_proj_k, global_bias_k = self._fit_bridge_ridge_correction(
+                    K_quant,
+                    K_pred,
+                    Yk_fit,
+                    lam=self.config.ridge_lambda,
+                )
+                global_proj_v, global_aux_proj_v, global_bias_v = self._fit_bridge_ridge_correction(
+                    V_quant,
+                    V_pred,
+                    Yv_fit,
+                    lam=self.config.ridge_lambda,
+                )
+                global_left_k, global_right_k = self._factorize_low_rank_matrix(global_proj_k, rank=rank)
+                global_aux_left_k, global_aux_right_k = self._factorize_low_rank_matrix(global_aux_proj_k, rank=rank)
+                global_left_v, global_right_v = self._factorize_low_rank_matrix(global_proj_v, rank=rank)
+                global_aux_left_v, global_aux_right_v = self._factorize_low_rank_matrix(global_aux_proj_v, rank=rank)
+                min_samples = max(8, int(rank or 8))
+                for expert_idx in range(self.config.bridge_bank_size):
+                    mask = sample_expert_ids == expert_idx
+                    if int(mask.sum().item()) >= min_samples:
+                        proj_k, aux_proj_k, bias_k = self._fit_bridge_ridge_correction(
+                            K_quant[mask],
+                            K_pred[mask],
+                            Yk_fit[mask],
+                            lam=self.config.ridge_lambda,
+                        )
+                        proj_v, aux_proj_v, bias_v = self._fit_bridge_ridge_correction(
+                            V_quant[mask],
+                            V_pred[mask],
+                            Yv_fit[mask],
+                            lam=self.config.ridge_lambda,
+                        )
+                        left_k, right_k = self._factorize_low_rank_matrix(proj_k, rank=rank)
+                        aux_left_k, aux_right_k = self._factorize_low_rank_matrix(aux_proj_k, rank=rank)
+                        left_v, right_v = self._factorize_low_rank_matrix(proj_v, rank=rank)
+                        aux_left_v, aux_right_v = self._factorize_low_rank_matrix(aux_proj_v, rank=rank)
+                    else:
+                        left_k, right_k = global_left_k, global_right_k
+                        aux_left_k, aux_right_k = global_aux_left_k, global_aux_right_k
+                        bias_k = global_bias_k
+                        left_v, right_v = global_left_v, global_right_v
+                        aux_left_v, aux_right_v = global_aux_left_v, global_aux_right_v
+                        bias_v = global_bias_v
+                    self.bridge_bank_proj_K_left[tgt_l].data[expert_idx].copy_(
+                        left_k.to(self.bridge_bank_proj_K_left[tgt_l].dtype)
+                    )
+                    self.bridge_bank_proj_K_right[tgt_l].data[expert_idx].copy_(
+                        right_k.to(self.bridge_bank_proj_K_right[tgt_l].dtype)
+                    )
+                    self.bridge_bank_aux_proj_K_left[tgt_l].data[expert_idx].copy_(
+                        aux_left_k.to(self.bridge_bank_aux_proj_K_left[tgt_l].dtype)
+                    )
+                    self.bridge_bank_aux_proj_K_right[tgt_l].data[expert_idx].copy_(
+                        aux_right_k.to(self.bridge_bank_aux_proj_K_right[tgt_l].dtype)
+                    )
+                    self.bridge_bank_bias_K[tgt_l].data[expert_idx].copy_(
+                        bias_k.to(self.bridge_bank_bias_K[tgt_l].dtype)
+                    )
+                    self.bridge_bank_proj_V_left[tgt_l].data[expert_idx].copy_(
+                        left_v.to(self.bridge_bank_proj_V_left[tgt_l].dtype)
+                    )
+                    self.bridge_bank_proj_V_right[tgt_l].data[expert_idx].copy_(
+                        right_v.to(self.bridge_bank_proj_V_right[tgt_l].dtype)
+                    )
+                    self.bridge_bank_aux_proj_V_left[tgt_l].data[expert_idx].copy_(
+                        aux_left_v.to(self.bridge_bank_aux_proj_V_left[tgt_l].dtype)
+                    )
+                    self.bridge_bank_aux_proj_V_right[tgt_l].data[expert_idx].copy_(
+                        aux_right_v.to(self.bridge_bank_aux_proj_V_right[tgt_l].dtype)
+                    )
+                    self.bridge_bank_bias_V[tgt_l].data[expert_idx].copy_(
+                        bias_v.to(self.bridge_bank_bias_V[tgt_l].dtype)
+                    )
             elif self.config.quantization_correction == "ridge":
                 proj_k, bias_k = self._fit_ridge_correction(K_quant, Yk_fit, lam=self.config.ridge_lambda)
                 proj_v, bias_v = self._fit_ridge_correction(V_quant, Yv_fit, lam=self.config.ridge_lambda)
