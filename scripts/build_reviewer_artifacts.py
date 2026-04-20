@@ -353,6 +353,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_eval_10_controlled",
+            method="shared-plus-private dynmap adapter",
+            family="modular bridge",
+            meta_path="results/bridge_ridge_qk_asym_dynmap_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_asym_dynmap_adapter_cal64_chat.jsonl.meta.json",
+            notes="shared-plus-private bridge with context-reweighted top-k teacher",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_10_controlled",
             method="grouped rotational transport",
             family="geometry",
             meta_path="results/grouped_rotational_transport_20260420/qwen_gsm10_grouped_rotational_transport_w010_r4_cal64_chat.jsonl.meta.json",
@@ -403,6 +412,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
             family="modular bridge",
             meta_path="results/bridge_ridge_qk_asym_adapter_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_asym_adapter_cal64_chat.jsonl.meta.json",
             notes="AsymLoRA-style shared-plus-private bridge survives smoke and controlled slice",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
+            method="shared-plus-private dynmap adapter",
+            family="modular bridge",
+            meta_path="results/bridge_ridge_qk_asym_dynmap_adapter_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_asym_dynmap_adapter_cal64_chat.jsonl.meta.json",
+            notes="shared-plus-private bridge with context-reweighted top-k teacher",
         )
     )
     rows.append(
@@ -524,6 +542,14 @@ def _build_paired_rows() -> list[dict[str, Any]]:
             "candidate_method": "rotalign_kv_gate_0.10",
             "baseline_method": "target_alone",
             "candidate_label": "shared_plus_private_asym_adapter",
+            "baseline_label": "target_alone_control",
+        },
+        {
+            "candidate": "results/bridge_ridge_qk_asym_dynmap_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_asym_dynmap_adapter_cal64_chat.jsonl",
+            "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
+            "candidate_method": "rotalign_kv_gate_0.10",
+            "baseline_method": "target_alone",
+            "candidate_label": "shared_plus_private_dynmap_adapter",
             "baseline_label": "target_alone_control",
         },
     ]

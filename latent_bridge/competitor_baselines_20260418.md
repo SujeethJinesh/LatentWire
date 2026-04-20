@@ -3,6 +3,7 @@
 Cloned repos:
 
 - `references/repos/C2C`
+- `references/repos/DeltaKV_sparse_vllm`
 - `references/repos/KVComm`
 - `references/repos/KVzip`
 - `references/repos/Quest`
@@ -30,15 +31,35 @@ Primary blocker:
 
 ### Secondary baselines
 
-`KVzip` is now the next highest-value external control after `C2C`.
+`DeltaKV` is now the next highest-value external control after `C2C`.
+
+Why:
+
+- it is the strongest newer **residual-style compression control** we found
+  with public code and is now cloned locally at
+  `references/repos/DeltaKV_sparse_vllm`
+- it is the closest already-public control to our recent “frozen base plus
+  correction” family, even though it remains a compression/reconstruction
+  baseline rather than a heterogeneous transport method
+- if we spend another comparator day, it is the cleanest next test of whether
+  our transport-plus-correction story is really different from modern
+  residual-view KV compression
+
+Current blocker on `DeltaKV`:
+
+- it is not a direct heterogeneous communication baseline, so it belongs in
+  the paper as an external control rather than an apples-to-apples peer method
+- it still needs a thin replay harness on our GSM JSONL slices before it
+  becomes a fair table row
+
+`KVzip` is now the next already-cloned fallback control after `DeltaKV`.
 
 Why:
 
 - it is the strongest modern **compression-side control** for separating
   cross-model communication from generic cache compression / reconstruction
 - it has public code and is now cloned locally at `references/repos/KVzip`
-- it is a better next comparator day than `KVComm` because it sharpens the
-  “transport vs compression” question more directly
+- it remains a better next already-cloned comparator day than `KVComm`
 
 Current blocker on `KVzip`:
 
@@ -83,6 +104,16 @@ Current blocker on `KVComm`:
 the cleanest direct protocol match for our current pairwise sparse-K routing
 story.
 
+`DapQ` is the strongest newer decoding-aligned control we found, but it does
+not yet have a clean public repo path to clone and replay.
+
+Why it matters:
+
+- it is the cleanest recent *decoding-aligned* control for the same general
+  question of query-aware KV selection
+- if a stable repo appears, it could leapfrog `KVzip` as the best mechanistic
+  control after `DeltaKV`
+
 Latest read on `LatentMAS`:
 
 - the public examples center on `Qwen/Qwen3-14B` and sequential multi-agent
@@ -96,8 +127,9 @@ Latest read on `LatentMAS`:
 ### Immediate next steps
 
 1. keep `C2C` as the main external bar
-2. bootstrap `KVzip` next as the highest-value external control day
-3. keep `Quest` as the fallback control after `KVzip`
+2. bootstrap `DeltaKV` next as the highest-value external control day
+3. keep `KVzip` as the next already-cloned fallback control
+4. keep `Quest` as the next pruning-style fallback control
 4. compare against:
    - target-alone
    - text-to-text
@@ -179,6 +211,7 @@ Interpretation:
   boundary and calibration sanity check
 - immediate comparator priority is now:
   1. `C2C` as the main bar
-  2. `KVzip` as the next compression-side control
-  3. `Quest` as the next query-aware pruning control
-  4. `KVComm` as a lower-priority adjacent replay
+  2. `DeltaKV` as the next residual-style compression control
+  3. `KVzip` as the next already-cloned compression-side control
+  4. `Quest` as the next query-aware pruning control
+  5. `KVComm` as a lower-priority adjacent replay

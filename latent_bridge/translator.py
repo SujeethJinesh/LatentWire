@@ -148,7 +148,10 @@ class TranslatorConfig:
     # sit on top of that shared bridge, and
     # `bridge_ridge_qk_asym_predkl_adapter` keeps that same
     # shared-plus-private interface but adds a prediction-level top-k
-    # next-token teacher during calibration, and
+    # next-token teacher during calibration,
+    # `bridge_ridge_qk_asym_dynmap_adapter` keeps the same
+    # shared-plus-private interface but replaces static top-k KL with a
+    # context-reweighted teacher over the top-k candidates, and
     # `bridge_ridge_qk_sae_adapter` swaps the dense shared bottleneck for a
     # sparse shared codebook: paired K/V query-conditioned signals produce a
     # small top-k latent code that is decoded separately for K and V, and
@@ -1973,6 +1976,7 @@ class RotAlignKVTranslator(nn.Module):
         lr: float = 5e-2,
         logit_weight: float = 0.5,
         prediction_distill_weight: float = 0.0,
+        dynamic_prediction_weight: float = 0.0,
         teacher_topk_log_probs: torch.Tensor | None = None,
         teacher_topk_output_rows: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, ...]:
@@ -2054,23 +2058,31 @@ class RotAlignKVTranslator(nn.Module):
                     F.mse_loss(logit_pred_k, logit_tgt_k) + F.mse_loss(logit_pred_v, logit_tgt_v)
                 )
                 if (
-                    float(prediction_distill_weight) > 0.0
+                    (float(prediction_distill_weight) > 0.0 or float(dynamic_prediction_weight) > 0.0)
                     and teacher_topk_log_probs is not None
                     and teacher_topk_output_rows is not None
                 ):
-                    teacher_probs = torch.softmax(
-                        teacher_topk_log_probs.to(device=qk.device, dtype=torch.float32),
-                        dim=-1,
-                    )
+                    teacher_logits = teacher_topk_log_probs.to(device=qk.device, dtype=torch.float32)
+                    teacher_probs = torch.softmax(teacher_logits, dim=-1)
                     teacher_rows = teacher_topk_output_rows.to(device=qk.device, dtype=torch.float32)
                     hidden_pred = 0.5 * (((base_k + pred_k) * query) + ((base_v + pred_v) * query))
                     student_logits = torch.einsum("nd,nkd->nk", hidden_pred, teacher_rows) / math.sqrt(float(self.d_t))
                     student_log_probs = torch.log_softmax(student_logits, dim=-1)
-                    loss = loss + float(prediction_distill_weight) * F.kl_div(
-                        student_log_probs,
-                        teacher_probs,
-                        reduction="batchmean",
-                    )
+                    if float(prediction_distill_weight) > 0.0:
+                        loss = loss + float(prediction_distill_weight) * F.kl_div(
+                            student_log_probs,
+                            teacher_probs,
+                            reduction="batchmean",
+                        )
+                    if float(dynamic_prediction_weight) > 0.0:
+                        context_hidden = 0.5 * ((qk + qv) * query)
+                        context_logits = torch.einsum("nd,nkd->nk", context_hidden, teacher_rows) / math.sqrt(float(self.d_t))
+                        dynamic_teacher_probs = torch.softmax(teacher_logits + context_logits, dim=-1)
+                        loss = loss + float(dynamic_prediction_weight) * F.kl_div(
+                            student_log_probs,
+                            dynamic_teacher_probs,
+                            reduction="batchmean",
+                        )
                 loss.backward()
                 optimizer.step()
 
@@ -2918,7 +2930,7 @@ class RotAlignKVTranslator(nn.Module):
                 + (aux_input * qfeat) @ query_aux_proj.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
-        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
             if aux_input is None:
                 raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
             if runtime_query_features is None:
@@ -2959,7 +2971,7 @@ class RotAlignKVTranslator(nn.Module):
                 + ((aux_input * qfeat) @ query_aux_resid_left.to(device=x.device, dtype=x.dtype))
                 @ query_aux_resid_right.to(device=x.device, dtype=x.dtype)
             )
-            if self.config.quantization_correction in {"bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter"}:
                 if paired_input is None or paired_aux_input is None:
                     raise ValueError(
                         f"{self.config.quantization_correction} requires paired_input and paired_aux_input"
@@ -3639,7 +3651,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                 sample_weights = None
                 if self.config.quantization_correction == "bridge_ridge_qk_weighted":
                     if self._bridge_sample_weights is None:
@@ -3688,7 +3700,7 @@ class RotAlignKVTranslator(nn.Module):
                         lam=self.config.ridge_lambda,
                         sample_weights=sample_weights,
                     )
-                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                         if self._bridge_sample_query_features is None:
                             raise ValueError(
                                 f"{self.config.quantization_correction} requires bridge sample query features; "
@@ -3709,7 +3721,7 @@ class RotAlignKVTranslator(nn.Module):
                             sample_prompt_ids = self._bridge_sample_prompt_ids.to(device=Xk.device)
                         teacher_log_probs = None
                         teacher_output_rows = None
-                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter"}:
+                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter"}:
                             if self._bridge_prediction_teacher_log_probs is None or self._bridge_prediction_teacher_output_rows is None:
                                 raise ValueError(
                                     f"{self.config.quantization_correction} requires prediction-teacher tensors; "
@@ -3717,7 +3729,7 @@ class RotAlignKVTranslator(nn.Module):
                                 )
                             teacher_log_probs = self._bridge_prediction_teacher_log_probs.to(device=Xk.device)
                             teacher_output_rows = self._bridge_prediction_teacher_output_rows.to(device=Xk.device)
-                        if self.config.quantization_correction in {"bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter"}:
+                        if self.config.quantization_correction in {"bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter"}:
                             (
                                 shared_left,
                                 shared_aux_left,
@@ -3743,6 +3755,7 @@ class RotAlignKVTranslator(nn.Module):
                                 resid_target_v,
                                 rank=int(self.config.quantization_correction_rank or 8),
                                 prediction_distill_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_asym_predkl_adapter" else 0.0,
+                                dynamic_prediction_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_asym_dynmap_adapter" else 0.0,
                                 teacher_topk_log_probs=teacher_log_probs,
                                 teacher_topk_output_rows=teacher_output_rows,
                             )
@@ -4171,7 +4184,7 @@ class RotAlignKVTranslator(nn.Module):
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
             fit_runtime_query_features = None
-            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
                 if self._bridge_sample_query_features is None:
                     raise ValueError(
                         f"{self.config.quantization_correction} requires bridge sample query features during fit; "

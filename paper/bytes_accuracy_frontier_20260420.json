@@ -106,6 +106,14 @@
   {
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
+    "family": "modular bridge",
+    "method": "shared-plus-private dynmap adapter",
+    "notes": "shared-plus-private bridge with context-reweighted top-k teacher",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
     "family": "geometry",
     "method": "grouped rotational transport",
     "notes": "first geometry-side branch to survive the controlled slice",
@@ -149,6 +157,14 @@
     "family": "modular bridge",
     "method": "shared-plus-private asym adapter",
     "notes": "AsymLoRA-style shared-plus-private bridge survives smoke and controlled slice",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "modular bridge",
+    "method": "shared-plus-private dynmap adapter",
+    "notes": "shared-plus-private bridge with context-reweighted top-k teacher",
     "split": "gsm8k_5_controlled_smoke"
   },
   {

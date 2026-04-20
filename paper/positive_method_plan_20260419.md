@@ -1084,3 +1084,44 @@ That means:
     Attention Editing direction, or
   - a dynamic output-alignment teacher with contextual mapping / token
     interaction supervision
+
+I then tested that dynamic-teacher idea directly as
+`bridge_ridge_qk_asym_dynmap_adapter`.
+
+This keeps the same shared-plus-private interface as
+`bridge_ridge_qk_asym_adapter`, but it replaces the static top-k next-token KL
+teacher in `bridge_ridge_qk_asym_predkl_adapter` with a context-reweighted
+teacher over the same top-k candidate rows.
+
+On the same 64-prompt calibration slice, offline fit remained:
+
+- `K` cosine `0.870`, relative Frobenius error `0.468`
+- `V` cosine `0.397`, relative Frobenius error `0.907`
+
+Under the matched-bytes fair controlled regime, the held-out reads were:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- the first dynamic output-alignment teacher on top of the stronger modular
+  interface is **weakly alive**
+- but it still only ties the controlled `target-alone` floor and does not beat
+  the plain asym interface
+- so the next live method pivots are now even narrower:
+  - a materially different projector / module-replacement interface in the
+    Attention Editing / BRIDGES / Skywork direction
+  - or a richer dynamic output-alignment teacher with explicit contextual
+    token/output mapping rather than a top-k reweighting of the same rows
+
+Comparator guidance also shifted again after the latest web-backed sidecars:
+
+1. keep `C2C` as the main external bar
+2. keep exact KVPress / Expected Attention as the negative-boundary comparator
+3. if we spend another comparator day, **DeltaKV** is now the highest-value
+   external control
+4. `DapQ` is the strongest newer decoding-aligned control if a clean public
+   repo appears
+5. `KVzip` and then `Quest` remain the next already-cloned fallback controls
