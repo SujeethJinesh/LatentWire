@@ -1542,3 +1542,28 @@ Interpretation:
   stop spending cycles on more latent-regression routing tricks and move the
   bridge supervision target toward **attention / affinity / token-interaction
   distillation**
+
+And a forty-fourth affinity-distilled adapter update:
+
+> I then kept the same learned query-conditioned residual adapter but changed
+> the training objective from plain latent regression to a cheap
+> query-conditioned affinity loss over calibration samples:
+> `bridge_ridge_qk_affinity_adapter`. This branch still sits on top of the same
+> grouped-subspace transport + rank-4 residual checkpoint and the same fair
+> shared-chat / `enable_thinking=False` control. Calibration fit again matched
+> the older bridge family (`K` cosine `0.864`, relative Frobenius error
+> `0.476`; `V` cosine `0.381`, relative Frobenius error `0.915`). Held-out
+> behavior was:
+> - `gsm8k_5`: `0.200000` at `722,107.700` average bytes
+> - controlled `gsm8k_eval_10`: `0.000000` at `720,487.313` average bytes
+
+Interpretation:
+
+- a cheap affinity-matching term is **not** enough to stabilize the learned
+  bridge lane; it exactly ties the old learned adapter on the smallest smoke
+  and still collapses on the next controlled slice
+- this closes the cheapest “interaction-shaped but still local” target we
+  could add without changing the calibration data path
+- the next serious bridge branch now has to use a **stronger teacher target**:
+  explicit attention-behavior distillation, richer affinity supervision, or a
+  prediction-level distillation term, not just another local residual loss

@@ -511,3 +511,32 @@ So the next highest-value branch is now:
 2. keep the tiny learned bridge framing
 3. train it against **attention / affinity / interaction distillation**, not
    plain hidden-state regression
+
+I then tried the cheapest interaction-shaped version of that idea without
+changing the calibration data path:
+`bridge_ridge_qk_affinity_adapter`. This keeps the same learned
+query-conditioned residual adapter, but adds a query-conditioned affinity
+matching loss over calibration samples.
+
+Held-out behavior under the same fair shared-chat / `enable_thinking=False`
+regime:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.0000`
+- bytes on the controlled slice: `720,487.3`
+
+That means:
+
+- the cheap affinity target does **not** improve over the plain learned
+  adapter; it ties the smallest smoke and still fails the next held-out slice
+- so the next branch should not be another “local residual plus one more
+  scalar loss” variant
+- the next real move should be a **stronger teacher signal**:
+  explicit attention-behavior distillation, richer token-affinity
+  distillation, or a prediction-level teacher objective
+
+So the highest-value next branch is now:
+
+1. keep the fair Qwen control on
+2. keep the tiny learned bridge framing
+3. move to a **stronger distillation target**, not another local residual loss
