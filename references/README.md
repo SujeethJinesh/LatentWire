@@ -304,6 +304,14 @@ Files `218_` through `220_` extend the richer bridge-supervision backlog:
 - `219_`: Cross-Tokenizer Distillation via Approximate Likelihood Matching as a higher-level supervision reference when plain latent regression stops improving.
 - `220_`: Attention Editing as a direct reference for training a bridge to preserve attention behavior rather than only KV coordinates.
 
+Files `221_` through `225_` extend the next distillation-and-benchmark pivot:
+
+- `221_`: CAB as the cleanest attention-bridge distillation reference for replacing latent regression with attention-behavior supervision.
+- `222_`: EM-KD as a token-affinity distillation reference for richer interaction targets.
+- `223_`: SCBench as a KV-centric benchmark framing for bytes, latency, and lifecycle artifacts.
+- `224_`: Quest as a fast query-aware KV-selection comparator.
+- `225_`: DuoAttention as a retrieval-vs-streaming head baseline for head-routing diagnostics.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
