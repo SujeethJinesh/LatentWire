@@ -2195,3 +2195,59 @@ Paper decision:
 - Add quantization-inspired controls as ablations: bounded preconditioning,
   orthogonal/Hadamard gauge fixing, outlier-protected routing, and mixed-byte
   K/V allocation.
+
+## 2026-04-21 Execution Pass
+
+Implemented next concrete pieces:
+
+- Real evaluator asymmetric K/V support: `--kv-route-selection-ratio` and
+  `--kv-value-selection-ratio` now build separate K and V position masks,
+  preserve byte accounting, and log route/value overlap, Jaccard, entropy,
+  gap, and selected-count telemetry.
+- Control-suite coverage: added
+  `fused_quant_asym_kv_attention_sparse_brief` so this branch is available in
+  the standard sweep rather than only by ad hoc CLI.
+- Toy `codebook_remap`: a learned low-cardinality codebook/token-remap branch
+  with occupancy, collision, dead-code, reconstruction, support, and remap
+  stability telemetry.
+- Competitor bootstrap: added a C2C artifact resolution file and a benchmark
+  memo mapping direct peers (`C2C`, `KVComm`) separately from matched-byte KV
+  compression controls (`Quest`, `KVzip`, `kvpress`, `DeltaKV_sparse_vllm`).
+- Reference expansion: added a recent architecture memo emphasizing
+  tokenizer/vocab bridges, multimodal latent-bank interfaces, iterative
+  refinement, and explicit symmetry handling.
+
+Current toy evidence:
+
+| Scenario | Top-k | Best older control | Asym K/V 2+4 | Codebook remap |
+|---|---:|---:|---:|---:|
+| aligned | 0.2396 | 0.3958 | 0.4062 | 0.4948 |
+| rotated | 0.2760 | 0.3906 | 0.3906 | 0.5781 |
+| outlier | 0.2448 | 0.3594 | 0.4792 | 0.5312 |
+| slot-permuted | 0.2604 | 0.3542 | 0.4010 | 0.4688 |
+
+Updated paper stance:
+
+- Additively add **ablations and telemetry**, not another main method claim yet.
+- The two highest-value experimental lanes are now asymmetric K/V retention and
+  learned codebook/token interfaces.
+- Keep older ideas alive only where they become controls or diagnostics:
+  route atoms for collapse/occupancy, bounded preconditioning for gauge
+  stability, diffusion/refinement for one-shot-vs-iterative repair, and
+  tokenizer/vocab adaptation for interface mismatch.
+- A positive-method claim needs a real-model win over target-alone, uniform,
+  shuffled, and C2C/KVComm where runnable; toy-only wins are not enough.
+
+Immediate next run ladder:
+
+1. Run `fused_quant_asym_kv_attention_sparse_brief` on the exact Qwen GSM10
+   smoke with matched target-alone, uniform sparse, and shuffled selector
+   controls.
+2. If nonzero, expand to GSM30/GSM70 and log sidecar route/value overlap,
+   Jaccard, entropy, bytes, and per-example correctness deltas.
+3. Implement the real-model codebook/token bridge as a small learned interface:
+   start with a frozen learned codebook over translated K/V slots, then test a
+   tokenizer-aware remap only if occupancy stays healthy.
+4. Schedule competitor baselines in order: C2C Qwen pair first, KVPress
+   expected-attention matched-byte control second, KVComm only after isolating
+   or preserving the locally dirty compatibility patch.

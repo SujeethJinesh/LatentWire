@@ -3008,3 +3008,61 @@ Interpretation:
 - quantization work now points to asymmetric K/V budgeting, bounded rotations
   or preconditioning, outlier protection, and variable-byte frontiers as the
   next concrete ablation family
+
+## 2026-04-21 Execution Addendum
+
+I implemented the asymmetric K/V clue in the real evaluator/control-suite
+plumbing and added a second toy branch, `codebook_remap`, inspired by
+tokenizer/vocab-bridge and quantization codebook ideas.
+
+New code/results artifacts:
+
+- `latent_bridge/evaluate.py`: `--kv-route-selection-ratio` and
+  `--kv-value-selection-ratio`, with separate K/V position masks, exact
+  K/V-aware byte accounting, and route/value telemetry in prediction sidecars.
+- `latent_bridge/control_suite.py`: new default spec
+  `fused_quant_asym_kv_attention_sparse_brief`.
+- `scripts/run_toy_query_pool.py`: `codebook_remap` method with codebook
+  entropy, collision, dead-code, reconstruction, support, and remap-overlap
+  telemetry.
+- `results/query_pool_toy_20260421/query_pool_codebook_remap_vs_topk.{json,md}`
+- `results/competitor_bootstrap_20260421/c2c_qwen25_05b_to_qwen3_06b.json`
+
+New references:
+
+- `references/309_recent_llm_architecture_inspiration_refs.md`
+- `references/309_competitor_benchmark_bootstrap.md`
+
+Toy result summary from `query_pool_codebook_remap_vs_topk.md`:
+
+| Scenario | Top-k | Best older control | Asym K/V 2+4 | Codebook remap |
+|---|---:|---:|---:|---:|
+| aligned | 0.2396 | 0.3958 | 0.4062 | 0.4948 |
+| rotated | 0.2760 | 0.3906 | 0.3906 | 0.5781 |
+| outlier | 0.2448 | 0.3594 | 0.4792 | 0.5312 |
+| slot-permuted | 0.2604 | 0.3542 | 0.4010 | 0.4688 |
+
+Interpretation:
+
+- `codebook_remap` is now the strongest toy clue: it wins across all four
+  stress cases while using budget `4`, not the larger K/V split budget `6`.
+- The codebook result is interpretable rather than just higher accuracy:
+  codebook support stays near `4`, dead-code rate is `0`, and remap overlap is
+  near `1.0` while Jaccard stays near `0.25`, consistent with a compact
+  learned interface rather than plain top-k reuse.
+- The real evaluator now has the asymmetric K/V machinery needed to test the
+  previous toy clue on actual model pairs without corrupting byte accounting.
+- The C2C bootstrap resolved the exact published Qwen pair artifact
+  (`nics-efc/C2C_Fuser`, subdir
+  `qwen3_0.6b+qwen2.5_0.5b_Fuser`) but did not download or run the heavy
+  benchmark in this pass.
+
+Paper decision:
+
+- Do **not** add another main-method component to the paper yet.
+- Do add these as ablation families and interpretation hooks: asymmetric K/V
+  budgets, codebook/token remapping, route/value overlap, codebook occupancy,
+  remap stability, and matched-byte competitor controls.
+- The next positive-method attempt should stack the smallest real-model
+  asymmetric K/V branch with a learned codebook/token interface only after each
+  clears target-alone and shuffled/uniform controls independently.

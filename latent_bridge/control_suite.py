@@ -54,6 +54,8 @@ class EvalSpec:
     kv_transport: str = "both"
     position_selection_ratio: float = 1.0
     position_selection_metric: str = "energy"
+    kv_route_selection_ratio: float | None = None
+    kv_value_selection_ratio: float | None = None
     position_selection_prior_source: str | None = None
     runtime_head_selection_ratio: float = 1.0
     runtime_head_selection_metric: str = "attention_peak"
@@ -396,6 +398,20 @@ def default_eval_specs() -> list[EvalSpec]:
             position_selection_ratio=0.5,
             position_selection_metric="attention_disagreement",
         ),
+        EvalSpec(
+            name="fused_quant_asym_kv_attention_sparse_brief",
+            methods=("rotalign",),
+            gate_values=(0.10,),
+            quantize=True,
+            source_reasoning_mode="brief_analysis",
+            include_baselines=True,
+            fusion_rule="cosine",
+            kv_transport="both",
+            position_selection_ratio=0.5,
+            position_selection_metric="attention",
+            kv_route_selection_ratio=0.25,
+            kv_value_selection_ratio=0.75,
+        ),
     ]
 
 
@@ -609,6 +625,10 @@ def build_evaluate_cmd(
         cmd.extend(["--position-selection-ratio", str(spec.position_selection_ratio)])
     if uses_rotalign and spec.position_selection_metric != "energy":
         cmd.extend(["--position-selection-metric", spec.position_selection_metric])
+    if uses_rotalign and spec.kv_route_selection_ratio is not None:
+        cmd.extend(["--kv-route-selection-ratio", str(spec.kv_route_selection_ratio)])
+    if uses_rotalign and spec.kv_value_selection_ratio is not None:
+        cmd.extend(["--kv-value-selection-ratio", str(spec.kv_value_selection_ratio)])
     if uses_rotalign and spec.position_selection_prior_source is not None:
         cmd.extend(["--position-selection-prior-source", spec.position_selection_prior_source])
     if uses_rotalign and abs(float(spec.runtime_head_selection_ratio) - 1.0) > 1e-9:
@@ -656,6 +676,8 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "kv_transport",
         "position_selection_ratio",
         "position_selection_metric",
+        "kv_route_selection_ratio",
+        "kv_value_selection_ratio",
         "runtime_head_selection_ratio",
         "runtime_head_selection_metric",
         "runtime_head_gate_metric",
@@ -704,6 +726,8 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "kv_transport": record.get("kv_transport", "both"),
                     "position_selection_ratio": record.get("position_selection_ratio", 1.0),
                     "position_selection_metric": record.get("position_selection_metric", "energy"),
+                    "kv_route_selection_ratio": record.get("kv_route_selection_ratio"),
+                    "kv_value_selection_ratio": record.get("kv_value_selection_ratio"),
                     "runtime_head_selection_ratio": record.get("runtime_head_selection_ratio", 1.0),
                     "runtime_head_selection_metric": record.get("runtime_head_selection_metric", "attention_peak"),
                     "runtime_head_gate_metric": record.get("runtime_head_gate_metric", "none"),
@@ -1037,6 +1061,8 @@ def main() -> None:
                 "kv_transport": eval_spec.kv_transport,
                 "position_selection_ratio": eval_spec.position_selection_ratio,
                 "position_selection_metric": eval_spec.position_selection_metric,
+                "kv_route_selection_ratio": eval_spec.kv_route_selection_ratio,
+                "kv_value_selection_ratio": eval_spec.kv_value_selection_ratio,
                 "runtime_head_selection_ratio": eval_spec.runtime_head_selection_ratio,
                 "runtime_head_selection_metric": eval_spec.runtime_head_selection_metric,
                 "runtime_head_gate_metric": eval_spec.runtime_head_gate_metric,

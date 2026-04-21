@@ -446,6 +446,37 @@ def test_evaluate_parse_args_accepts_headwise_route_atom(monkeypatch) -> None:
     assert args.runtime_head_gate_metric == "headwise_route_atom"
 
 
+def test_evaluate_parse_args_accepts_asymmetric_kv_position_ratios(monkeypatch) -> None:
+    monkeypatch.setattr(
+        evaluate.sys,
+        "argv",
+        [
+            "evaluate.py",
+            "--translator",
+            "translator.pt",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--eval-file",
+            "eval.jsonl",
+            "--kv-transport",
+            "both",
+            "--position-selection-metric",
+            "attention",
+            "--kv-route-selection-ratio",
+            "0.25",
+            "--kv-value-selection-ratio",
+            "0.75",
+        ],
+    )
+
+    args = evaluate.parse_args()
+
+    assert args.kv_route_selection_ratio == 0.25
+    assert args.kv_value_selection_ratio == 0.75
+
+
 def test_evaluate_parse_args_accepts_chat_template_and_thinking_flags(monkeypatch) -> None:
     monkeypatch.setattr(
         evaluate.sys,
@@ -1263,6 +1294,73 @@ def test_position_selection_reduces_reported_real_kv_communication(monkeypatch) 
     )
 
     assert sparse_bits < full_bits
+
+
+def test_asymmetric_kv_position_selection_uses_separate_route_and_value_masks() -> None:
+    K_t = torch.zeros(1, 1, 4, 1)
+    V_t = torch.zeros(1, 1, 4, 1)
+    K_hat = torch.tensor([[[[9.0], [1.0], [0.5], [0.1]]]])
+    V_hat = torch.tensor([[[[0.1], [0.5], [1.0], [8.0]]]])
+
+    selected_k, selected_v, trace = evaluate._apply_asymmetric_kv_position_selection(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        protocol="fused",
+        route_selection_ratio=0.25,
+        value_selection_ratio=0.50,
+        position_selection_metric="energy",
+    )
+
+    assert selected_k[0, 0, 0, 0] == pytest.approx(9.0)
+    assert selected_k[0, 0, 3, 0] == pytest.approx(0.0)
+    assert selected_v[0, 0, 3, 0] == pytest.approx(8.0)
+    assert selected_v[0, 0, 2, 0] == pytest.approx(1.0)
+    assert trace["selection_policy"] == "asymmetric_kv_position"
+    assert trace["kv_route_keep"] == 1
+    assert trace["kv_value_keep"] == 2
+    assert trace["kv_route_value_jaccard"] == 0.0
+
+
+def test_equal_kv_position_ratio_override_keeps_shared_selector_bits(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.translate_layer = lambda K_s, V_s, tgt_layer_idx, quantize=True, quantization_control="real": (  # type: ignore[method-assign]
+        K_s.clone(),
+        V_s.clone(),
+    )
+
+    state, stats = evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+        position_selection_ratio=1.0,
+        kv_route_selection_ratio=0.5,
+        kv_value_selection_ratio=0.5,
+    )
+    expected_bits = evaluate._communication_bits(
+        translator,
+        seq_len=state.prefix_len - 1,
+        quantize=False,
+        translated_kv_control="real",
+        protocol="fused",
+        kv_transport="both",
+        position_selection_ratio=0.5,
+    )
+
+    assert stats["kv_asymmetric_position_selection"] is False
+    assert stats["bits"] == pytest.approx(expected_bits)
 
 
 def test_kv_transport_reduces_reported_real_kv_communication(monkeypatch) -> None:
@@ -2800,8 +2898,20 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
             "payload_bits": 12.0,
             "selector_bits": 4.0,
             "metadata_bits": 4.0,
+            "kv_route_selection_ratio": 0.25,
+            "kv_value_selection_ratio": 0.75,
             "selector_trace": [
-                {"keep_fraction": 0.5, "score_entropy": 0.7, "selected_positions": [1]}
+                {
+                    "keep_fraction": 0.5,
+                    "score_entropy": 0.7,
+                    "selected_positions": [1],
+                    "kv_route_keep_fraction": 0.25,
+                    "kv_value_keep_fraction": 0.75,
+                    "kv_route_value_overlap": 0.5,
+                    "kv_route_value_jaccard": 0.25,
+                    "kv_route_score_entropy": 0.2,
+                    "kv_value_score_entropy": 0.8,
+                }
             ],
             "head_trace": [
                 {
@@ -2843,7 +2953,11 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["avg_bits"] == 16.0
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["payload_bits_avg"] == 12.0
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["selector_bits_avg"] == 4.0
+    assert payload["method_summary"]["rotalign_kv_gate_0.10"]["kv_route_selection_ratio_avg"] == 0.25
+    assert payload["method_summary"]["rotalign_kv_gate_0.10"]["kv_value_selection_ratio_avg"] == 0.75
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["selector_keep_fraction_avg"] == 0.5
+    assert payload["method_summary"]["rotalign_kv_gate_0.10"]["kv_route_value_jaccard_avg"] == 0.25
+    assert payload["method_summary"]["rotalign_kv_gate_0.10"]["kv_value_score_entropy_avg"] == 0.8
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["head_keep_fraction_avg"] == 0.5
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["head_prior_overlap_jaccard_avg"] == 0.25
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["route_atom_score_entropy_avg"] == 0.4

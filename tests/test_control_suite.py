@@ -65,6 +65,7 @@ def test_default_specs_cover_the_control_axes() -> None:
         "target_attenuation_v_only_brief",
         "fused_quant_k_only_attention_sparse_brief",
         "fused_quant_k_only_attention_disagreement_sparse_brief",
+        "fused_quant_asym_kv_attention_sparse_brief",
     ]
     assert all(spec.include_baselines for spec in eval_specs)
     assert {spec.source_reasoning_mode for spec in eval_specs} == {
@@ -415,6 +416,39 @@ def test_build_evaluate_cmd_passes_position_selection_prior_source() -> None:
 
     assert cmd[cmd.index("--position-selection-metric") + 1] == "attention_prior"
     assert cmd[cmd.index("--position-selection-prior-source") + 1] == "uniform"
+
+
+def test_build_evaluate_cmd_passes_asymmetric_kv_position_ratios() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_asym_kv_attention_sparse",
+        methods=("rotalign",),
+        gate_values=(0.10,),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        kv_transport="both",
+        position_selection_ratio=0.5,
+        position_selection_metric="attention",
+        kv_route_selection_ratio=0.25,
+        kv_value_selection_ratio=0.75,
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file=None,
+        gate_search_limit=30,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--kv-route-selection-ratio") + 1] == "0.25"
+    assert cmd[cmd.index("--kv-value-selection-ratio") + 1] == "0.75"
 
 
 def test_build_evaluate_cmd_passes_runtime_head_routing_flags() -> None:

@@ -1,0 +1,14 @@
+{
+  "baseline": "c2c",
+  "checkpoint_dir": "qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+  "config_path": "qwen3_0.6b+qwen2.5_0.5b_Fuser/config.json",
+  "local_checkpoint_dir": null,
+  "local_config_path": null,
+  "local_repo_exists": true,
+  "local_repo_root": "/Users/sujeethjinesh/Desktop/LatentWire/references/repos/C2C",
+  "local_root": null,
+  "repo_id": "nics-efc/C2C_Fuser",
+  "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "subdir": "qwen3_0.6b+qwen2.5_0.5b_Fuser",
+  "target_model": "Qwen/Qwen3-0.6B"
+}

@@ -29,12 +29,14 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("aligned", "preconditioned_query_pool"),
         ("aligned", "constrained_preconditioned_query_pool"),
         ("aligned", "asymmetric_kv_budget"),
+        ("aligned", "codebook_remap"),
         ("aligned", "route_atom"),
         ("rotated", "topk"),
         ("rotated", "query_pool"),
         ("rotated", "preconditioned_query_pool"),
         ("rotated", "constrained_preconditioned_query_pool"),
         ("rotated", "asymmetric_kv_budget"),
+        ("rotated", "codebook_remap"),
         ("rotated", "route_atom"),
     }
     for row in rows:
@@ -63,6 +65,21 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         assert "kv_route_value_gap" in row
         assert "kv_gate_mean" in row
         assert "kv_gate_std" in row
+        assert "codebook_entropy" in row
+        assert "codebook_collision_rate" in row
+        assert "dead_code_rate" in row
+        assert "codebook_top_margin" in row
+        assert "slot_code_entropy" in row
+        assert "slot_code_collision_rate" in row
+        assert "dead_slot_code_rate" in row
+        assert "slot_code_top_margin" in row
+        assert "codebook_recon_mse" in row
+        assert "codebook_recon_cosine" in row
+        assert "slot_remap_recon_mse" in row
+        assert "slot_remap_recon_cosine" in row
+        assert "codebook_support_mean" in row
+        assert "codebook_remap_overlap" in row
+        assert "codebook_remap_jaccard" in row
         if row["method"] != "topk":
             assert row["atom_entropy"] >= 0.0
             assert 0.0 <= row["atom_collision_rate"] <= 1.0
@@ -86,6 +103,18 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
             assert row["kv_route_value_gap"] >= 0.0
             assert 0.0 <= row["kv_gate_mean"] <= 1.0
             assert row["kv_gate_std"] >= 0.0
+        if row["method"] == "codebook_remap":
+            assert row["codebook_size"] == 4
+            assert row["codebook_entropy"] >= 0.0
+            assert 0.0 <= row["codebook_collision_rate"] <= 1.0
+            assert 0.0 <= row["dead_code_rate"] <= 1.0
+            assert row["codebook_recon_mse"] >= 0.0
+            assert -1.0 <= row["codebook_recon_cosine"] <= 1.0
+            assert row["slot_remap_recon_mse"] >= 0.0
+            assert -1.0 <= row["slot_remap_recon_cosine"] <= 1.0
+            assert row["codebook_support_mean"] >= 1.0
+            assert 0.0 <= row["codebook_remap_overlap"] <= 1.0
+            assert 0.0 <= row["codebook_remap_jaccard"] <= 1.0
 
 
 def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
@@ -120,6 +149,7 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
         "preconditioned_query_pool",
         "constrained_preconditioned_query_pool",
         "asymmetric_kv_budget",
+        "codebook_remap",
         "route_atom",
     }
     summary = markdown.read_text()
@@ -129,8 +159,11 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
     assert "KV route entropy" in summary
     assert "KV value entropy" in summary
     assert "KV overlap" in summary
+    assert "Codebook entropy" in summary
+    assert "Remap overlap" in summary
     assert "| outlier | query_pool |" in summary
     assert "| outlier | preconditioned_query_pool |" in summary
     assert "| outlier | constrained_preconditioned_query_pool |" in summary
     assert "| outlier | asymmetric_kv_budget |" in summary
+    assert "| outlier | codebook_remap |" in summary
     assert "| outlier | route_atom |" in summary

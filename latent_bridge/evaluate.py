@@ -2123,6 +2123,10 @@ def prediction_record_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
         if metadata_bits:
             method_summary["metadata_bits_avg"] = sum(metadata_bits) / len(metadata_bits)
             method_summary["metadata_bytes_avg"] = method_summary["metadata_bits_avg"] / 8.0
+        for field in ("kv_route_selection_ratio", "kv_value_selection_ratio"):
+            values = [float(row[field]) for row in rows if row.get(field) is not None]
+            if values:
+                method_summary[f"{field}_avg"] = sum(values) / len(values)
         traces = [row.get("selector_trace") for row in rows if row.get("selector_trace")]
         if traces:
             flattened = [layer for trace in traces for layer in trace]
@@ -2134,6 +2138,23 @@ def prediction_record_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
                     method_summary["selector_keep_fraction_avg"] = sum(keep_fractions) / len(keep_fractions)
                 if entropies:
                     method_summary["selector_entropy_avg"] = sum(entropies) / len(entropies)
+                for field in (
+                    "kv_route_keep_fraction",
+                    "kv_value_keep_fraction",
+                    "kv_route_value_overlap",
+                    "kv_route_value_jaccard",
+                    "kv_route_score_entropy",
+                    "kv_value_score_entropy",
+                    "kv_route_score_gap",
+                    "kv_value_score_gap",
+                ):
+                    values = [
+                        float(layer[field])
+                        for layer in flattened
+                        if layer.get(field) is not None
+                    ]
+                    if values:
+                        method_summary[f"{field}_avg"] = sum(values) / len(values)
         head_traces = [row.get("head_trace") for row in rows if row.get("head_trace")]
         if head_traces:
             flattened_heads = [layer for trace in head_traces for layer in trace]
@@ -2385,6 +2406,17 @@ def _selected_total_token_budget(seq_len: int, head_count: int, position_selecti
     return max(1, min(total, int(round(total * ratio))))
 
 
+def _effective_kv_position_ratios(
+    position_selection_ratio: float,
+    kv_route_selection_ratio: float | None,
+    kv_value_selection_ratio: float | None,
+) -> tuple[float, float]:
+    base = float(position_selection_ratio)
+    route = base if kv_route_selection_ratio is None else float(kv_route_selection_ratio)
+    value = base if kv_value_selection_ratio is None else float(kv_value_selection_ratio)
+    return route, value
+
+
 def _position_selection_index_bits(seq_len: int, selected_tokens: int) -> float:
     if seq_len <= 1 or selected_tokens >= seq_len:
         return 0.0
@@ -2414,6 +2446,8 @@ def _translated_bit_breakdown(
     *,
     active_k_head_counts: list[int] | None = None,
     active_v_head_counts: list[int] | None = None,
+    active_k_layer_token_counts: list[int] | None = None,
+    active_v_layer_token_counts: list[int] | None = None,
     active_k_token_counts: list[list[int]] | None = None,
     active_v_token_counts: list[list[int]] | None = None,
     kv_transport: str = "both",
@@ -2460,6 +2494,34 @@ def _translated_bit_breakdown(
             )
         )
         return payload_bits, selector_bits
+    if active_k_layer_token_counts is not None or active_v_layer_token_counts is not None:
+        active_k_layer_token_counts = [] if not transport_k or active_k_layer_token_counts is None else active_k_layer_token_counts
+        active_v_layer_token_counts = [] if not transport_v or active_v_layer_token_counts is None else active_v_layer_token_counts
+        payload_bits = float(
+            sum(
+                _bits_per_kv_tensor(translator, int(token_count), quantize, selected_heads=int(head_count))
+                for head_count, token_count in zip(active_k_head_counts, active_k_layer_token_counts)
+                if int(token_count) > 0 and int(head_count) > 0
+            )
+            + sum(
+                _bits_per_kv_tensor(translator, int(token_count), quantize, selected_heads=int(head_count))
+                for head_count, token_count in zip(active_v_head_counts, active_v_layer_token_counts)
+                if int(token_count) > 0 and int(head_count) > 0
+            )
+        )
+        selector_bits = float(
+            sum(
+                _position_selection_index_bits(seq_len, int(token_count))
+                for token_count in active_k_layer_token_counts
+                if int(token_count) > 0
+            )
+            + sum(
+                _position_selection_index_bits(seq_len, int(token_count))
+                for token_count in active_v_layer_token_counts
+                if int(token_count) > 0
+            )
+        )
+        return payload_bits, selector_bits
     selected_tokens = _selected_token_count(seq_len, position_selection_ratio)
     payload_bits = float(
         sum(_bits_per_kv_tensor(translator, selected_tokens, quantize, selected_heads=count) for count in active_k_head_counts)
@@ -2477,6 +2539,8 @@ def _translated_bits(
     *,
     active_k_head_counts: list[int] | None = None,
     active_v_head_counts: list[int] | None = None,
+    active_k_layer_token_counts: list[int] | None = None,
+    active_v_layer_token_counts: list[int] | None = None,
     active_k_token_counts: list[list[int]] | None = None,
     active_v_token_counts: list[list[int]] | None = None,
     kv_transport: str = "both",
@@ -2488,6 +2552,8 @@ def _translated_bits(
         quantize,
         active_k_head_counts=active_k_head_counts,
         active_v_head_counts=active_v_head_counts,
+        active_k_layer_token_counts=active_k_layer_token_counts,
+        active_v_layer_token_counts=active_v_layer_token_counts,
         active_k_token_counts=active_k_token_counts,
         active_v_token_counts=active_v_token_counts,
         kv_transport=kv_transport,
@@ -2507,6 +2573,8 @@ def _communication_bits(
     *,
     active_k_head_counts: list[int] | None = None,
     active_v_head_counts: list[int] | None = None,
+    active_k_layer_token_counts: list[int] | None = None,
+    active_v_layer_token_counts: list[int] | None = None,
     active_k_token_counts: list[list[int]] | None = None,
     active_v_token_counts: list[list[int]] | None = None,
 ) -> float:
@@ -2519,6 +2587,8 @@ def _communication_bits(
             quantize,
             active_k_head_counts=active_k_head_counts,
             active_v_head_counts=active_v_head_counts,
+            active_k_layer_token_counts=active_k_layer_token_counts,
+            active_v_layer_token_counts=active_v_layer_token_counts,
             active_k_token_counts=active_k_token_counts,
             active_v_token_counts=active_v_token_counts,
             kv_transport=kv_transport,
@@ -2544,6 +2614,8 @@ def _communication_bits(
         quantize,
         active_k_head_counts=active_k_head_counts,
         active_v_head_counts=active_v_head_counts,
+        active_k_layer_token_counts=active_k_layer_token_counts,
+        active_v_layer_token_counts=active_v_layer_token_counts,
         active_k_token_counts=active_k_token_counts,
         active_v_token_counts=active_v_token_counts,
         kv_transport=kv_transport,
@@ -3026,6 +3098,91 @@ def _apply_position_selection(
     return (selected_k, selected_v, trace) if return_trace else (selected_k, selected_v)
 
 
+def _trace_positions(trace: dict[str, Any]) -> list[int]:
+    values = trace.get("selected_positions_full")
+    if values is None:
+        values = trace.get("selected_positions", [])
+    return [int(value) for value in values]
+
+
+def _apply_asymmetric_kv_position_selection(
+    K_t: torch.Tensor,
+    V_t: torch.Tensor,
+    K_hat: torch.Tensor,
+    V_hat: torch.Tensor,
+    *,
+    protocol: str,
+    route_selection_ratio: float,
+    value_selection_ratio: float,
+    position_selection_metric: str,
+    position_scores: torch.Tensor | None = None,
+) -> tuple[torch.Tensor, torch.Tensor, dict[str, Any]]:
+    selected_k, _, route_trace = _apply_position_selection(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        protocol=protocol,
+        kv_transport="k_only",
+        position_selection_ratio=route_selection_ratio,
+        position_selection_metric=position_selection_metric,
+        position_scores=position_scores,
+        return_trace=True,
+    )
+    _, selected_v, value_trace = _apply_position_selection(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        protocol=protocol,
+        kv_transport="v_only",
+        position_selection_ratio=value_selection_ratio,
+        position_selection_metric=position_selection_metric,
+        position_scores=position_scores,
+        return_trace=True,
+    )
+
+    route_positions = _trace_positions(route_trace)
+    value_positions = _trace_positions(value_trace)
+    route_set = set(route_positions)
+    value_set = set(value_positions)
+    intersection = len(route_set & value_set)
+    union = len(route_set | value_set)
+    route_keep = int(route_trace.get("keep", len(route_positions)))
+    value_keep = int(value_trace.get("keep", len(value_positions)))
+    seq_len = int(route_trace.get("seq_len", K_hat.shape[2]))
+    trace: dict[str, Any] = {
+        "seq_len": seq_len,
+        "keep": int(route_keep + value_keep),
+        "keep_fraction": float((route_keep + value_keep) / max(2 * seq_len, 1)),
+        "selection_policy": "asymmetric_kv_position",
+        "kv_route_selection_ratio": float(route_selection_ratio),
+        "kv_value_selection_ratio": float(value_selection_ratio),
+        "kv_route_keep": route_keep,
+        "kv_value_keep": value_keep,
+        "kv_route_keep_fraction": float(route_keep / max(seq_len, 1)),
+        "kv_value_keep_fraction": float(value_keep / max(seq_len, 1)),
+        "kv_route_selected_positions": route_positions[:16],
+        "kv_value_selected_positions": value_positions[:16],
+        "kv_route_selected_count_truncated": int(max(len(route_positions) - 16, 0)),
+        "kv_value_selected_count_truncated": int(max(len(value_positions) - 16, 0)),
+        "kv_route_value_overlap": float(intersection / max(min(len(route_set), len(value_set)), 1)),
+        "kv_route_value_jaccard": float(intersection / max(union, 1)),
+    }
+    for prefix, branch_trace in (("kv_route", route_trace), ("kv_value", value_trace)):
+        for source_key, target_suffix in (
+            ("score_entropy", "score_entropy"),
+            ("score_top", "score_top"),
+            ("score_gap", "score_gap"),
+            ("selected_prefix_fraction", "selected_prefix_fraction"),
+            ("selected_mid_fraction", "selected_mid_fraction"),
+            ("selected_suffix_fraction", "selected_suffix_fraction"),
+        ):
+            if branch_trace.get(source_key) is not None:
+                trace[f"{prefix}_{target_suffix}"] = float(branch_trace[source_key])
+    return selected_k, selected_v, trace
+
+
 @torch.no_grad()
 def _build_rotalign_prefix_state(
     source_model,
@@ -3045,6 +3202,8 @@ def _build_rotalign_prefix_state(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    kv_route_selection_ratio: float | None = None,
+    kv_value_selection_ratio: float | None = None,
     fixed_position_profiles: list[torch.Tensor] | None = None,
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
@@ -3063,6 +3222,28 @@ def _build_rotalign_prefix_state(
     drop_target_layers: set[int] | None = None,
     drop_target_layer_mode: str = "none",
 ) -> tuple[PrefixState, dict[str, float]]:
+    route_position_ratio, value_position_ratio = _effective_kv_position_ratios(
+        position_selection_ratio,
+        kv_route_selection_ratio,
+        kv_value_selection_ratio,
+    )
+    accounting_position_ratio = float(position_selection_ratio)
+    if kv_transport == "k_only":
+        accounting_position_ratio = route_position_ratio
+    elif kv_transport == "v_only":
+        accounting_position_ratio = value_position_ratio
+    elif kv_transport == "both" and abs(route_position_ratio - value_position_ratio) <= 1e-9:
+        accounting_position_ratio = route_position_ratio
+    min_position_ratio = min(route_position_ratio, value_position_ratio)
+    asymmetric_kv_positions = (
+        kv_transport == "both"
+        and per_head_position_budget_mode == "none"
+        and abs(route_position_ratio - value_position_ratio) > 1e-9
+    )
+    if per_head_position_budget_mode != "none" and (
+        kv_route_selection_ratio is not None or kv_value_selection_ratio is not None
+    ):
+        raise ValueError("asymmetric K/V position ratios are not supported with per-head position budgets")
     formatted_target_prompt = _format_prompt_for_tokenizer(
         target_tokenizer,
         target_prompt,
@@ -3134,7 +3315,7 @@ def _build_rotalign_prefix_state(
             "attention_disagreement_stratified",
             "attention_shuffled",
         }
-        and position_selection_ratio < 1.0
+        and min_position_ratio < 1.0
     ) or (
         runtime_head_selection_ratio < 1.0
         and runtime_head_selection_metric in runtime_head_attention_metrics
@@ -3184,7 +3365,7 @@ def _build_rotalign_prefix_state(
             translator=translator,
         )
     source_layer_position_scores: list[torch.Tensor] | None = None
-    if position_selection_metric == "source_attention" and position_selection_ratio < 1.0:
+    if position_selection_metric == "source_attention" and min_position_ratio < 1.0:
         if src_prefix_ids is None or src_last_token is None:
             raise ValueError("source_attention position selection requires a non-empty source prefix")
         source_layer_position_scores = _last_token_attention_scores(
@@ -3194,7 +3375,7 @@ def _build_rotalign_prefix_state(
             device,
             translator=None,
         )
-    if position_selection_metric == "attention_prior" and position_selection_ratio < 1.0 and fixed_position_profiles is None:
+    if position_selection_metric == "attention_prior" and min_position_ratio < 1.0 and fixed_position_profiles is None:
         raise ValueError("attention_prior position selection requires fixed_position_profiles")
     if (
         runtime_head_selection_ratio < 1.0
@@ -3279,6 +3460,8 @@ def _build_rotalign_prefix_state(
     ]
     active_k_token_counts: list[list[int]] = []
     active_v_token_counts: list[list[int]] = []
+    layer_k_position_counts: dict[int, int] = {}
+    layer_v_position_counts: dict[int, int] = {}
     dropped_layer_set = set(drop_target_layers or set())
     for tgt_l in range(translator.config.num_tgt_layers):
         src_l = translator.layer_map[tgt_l]
@@ -3660,33 +3843,70 @@ def _build_rotalign_prefix_state(
             ):
                 active_v_token_counts.append(keep_list)
         else:
-            K_hat, V_hat, selector_trace = _apply_position_selection(
-                K_t_aligned,
-                V_t_aligned,
-                K_hat,
-                V_hat,
-                protocol=protocol,
-                kv_transport=kv_transport,
-                position_selection_ratio=position_selection_ratio,
-                position_selection_metric=position_selection_metric,
-                position_scores=(
-                    runtime_position_scores
-                    if runtime_position_scores is not None
+            position_scores = (
+                runtime_position_scores
+                if runtime_position_scores is not None
+                else (
+                    source_layer_position_scores[src_l][-K_t_aligned.shape[2] :]
+                    if source_layer_position_scores is not None
                     else (
-                        source_layer_position_scores[src_l][-K_t_aligned.shape[2] :]
-                        if source_layer_position_scores is not None
-                        else (
-                            _resample_position_profile(
-                                fixed_position_profiles[tgt_l].to(device=K_t_aligned.device),
-                                K_t_aligned.shape[2],
-                            )
-                            if fixed_position_profiles is not None
-                            else None
+                        _resample_position_profile(
+                            fixed_position_profiles[tgt_l].to(device=K_t_aligned.device),
+                            K_t_aligned.shape[2],
                         )
+                        if fixed_position_profiles is not None
+                        else None
                     )
-                ),
-                return_trace=True,
+                )
             )
+            branch_position_ratio = position_selection_ratio
+            if kv_transport == "k_only":
+                branch_position_ratio = route_position_ratio
+            elif kv_transport == "v_only":
+                branch_position_ratio = value_position_ratio
+            elif kv_transport == "both" and abs(route_position_ratio - value_position_ratio) <= 1e-9:
+                branch_position_ratio = route_position_ratio
+
+            if asymmetric_kv_positions:
+                K_hat, V_hat, selector_trace = _apply_asymmetric_kv_position_selection(
+                    K_t_aligned,
+                    V_t_aligned,
+                    K_hat,
+                    V_hat,
+                    protocol=protocol,
+                    route_selection_ratio=route_position_ratio,
+                    value_selection_ratio=value_position_ratio,
+                    position_selection_metric=position_selection_metric,
+                    position_scores=position_scores,
+                )
+                if (
+                    not layer_dropped
+                    and translator.is_layer_selected(tgt_l)
+                    and (protocol == "translated_only" or abs(gate_k_now) > 1e-5)
+                ):
+                    layer_k_position_counts[tgt_l] = int(selector_trace["kv_route_keep"])
+                if (
+                    not layer_dropped
+                    and translator.is_layer_selected(tgt_l)
+                    and (protocol == "translated_only" or abs(gate_v_now) > 1e-5)
+                ):
+                    layer_v_position_counts[tgt_l] = int(selector_trace["kv_value_keep"])
+            else:
+                K_hat, V_hat, selector_trace = _apply_position_selection(
+                    K_t_aligned,
+                    V_t_aligned,
+                    K_hat,
+                    V_hat,
+                    protocol=protocol,
+                    kv_transport=kv_transport,
+                    position_selection_ratio=branch_position_ratio,
+                    position_selection_metric=position_selection_metric,
+                    position_scores=position_scores,
+                    return_trace=True,
+                )
+                if kv_route_selection_ratio is not None or kv_value_selection_ratio is not None:
+                    selector_trace["kv_route_selection_ratio"] = float(route_position_ratio)
+                    selector_trace["kv_value_selection_ratio"] = float(value_position_ratio)
             selector_trace["target_layer"] = int(tgt_l)
             selector_trace["source_layer"] = int(src_l)
             selector_trace["metric"] = position_selection_metric
@@ -3733,6 +3953,8 @@ def _build_rotalign_prefix_state(
     seq_len = fused_pkv[0][0].shape[2] if fused_pkv else 0
     active_k_head_counts: list[int] = []
     active_v_head_counts: list[int] = []
+    active_k_layer_token_counts: list[int] = []
+    active_v_layer_token_counts: list[int] = []
     for layer_idx in translator.selected_layer_indices():
         if layer_idx in dropped_layer_set and drop_target_layer_mode != "none":
             continue
@@ -3740,8 +3962,16 @@ def _build_rotalign_prefix_state(
         selected_heads = layer_runtime_head_counts[layer_idx]
         if kv_transport in {"both", "k_only"} and (protocol == "translated_only" or abs(gate_k) > 1e-5):
             active_k_head_counts.append(selected_heads)
+            if layer_k_position_counts:
+                active_k_layer_token_counts.append(
+                    int(layer_k_position_counts.get(layer_idx, _selected_token_count(seq_len, route_position_ratio)))
+                )
         if kv_transport in {"both", "v_only"} and (protocol == "translated_only" or abs(gate_v) > 1e-5):
             active_v_head_counts.append(selected_heads)
+            if layer_v_position_counts:
+                active_v_layer_token_counts.append(
+                    int(layer_v_position_counts.get(layer_idx, _selected_token_count(seq_len, value_position_ratio)))
+                )
     payload_bits, selector_bits = (0.0, 0.0)
     if translated_kv_control == "real":
         payload_bits, selector_bits = _translated_bit_breakdown(
@@ -3750,10 +3980,12 @@ def _build_rotalign_prefix_state(
             quantize,
             active_k_head_counts=active_k_head_counts,
             active_v_head_counts=active_v_head_counts,
+            active_k_layer_token_counts=active_k_layer_token_counts if layer_k_position_counts else None,
+            active_v_layer_token_counts=active_v_layer_token_counts if layer_v_position_counts else None,
             active_k_token_counts=active_k_token_counts if active_k_token_counts else None,
             active_v_token_counts=active_v_token_counts if active_v_token_counts else None,
             kv_transport=kv_transport,
-            position_selection_ratio=position_selection_ratio,
+            position_selection_ratio=accounting_position_ratio,
         )
     prefix_state = PrefixState(
         past_key_values=tuple(fused_pkv),
@@ -3771,6 +4003,9 @@ def _build_rotalign_prefix_state(
         "head_trace": head_layers,
         "head_gate_trace": head_gate_layers,
         "head_budget_trace": head_budget_layers,
+        "kv_route_selection_ratio": float(route_position_ratio),
+        "kv_value_selection_ratio": float(value_position_ratio),
+        "kv_asymmetric_position_selection": bool(asymmetric_kv_positions),
         "selected_target_layers": [int(layer) for layer in translator.selected_layer_indices()],
         "dropped_target_layers": sorted(int(layer) for layer in dropped_layer_set),
         "drop_target_layer_mode": drop_target_layer_mode,
@@ -3817,6 +4052,8 @@ def _search_per_layer_gates(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    kv_route_selection_ratio: float | None = None,
+    kv_value_selection_ratio: float | None = None,
     fixed_position_profiles: list[torch.Tensor] | None = None,
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
@@ -3882,6 +4119,8 @@ def _search_per_layer_gates(
                 kv_transport=kv_transport,
                 position_selection_ratio=position_selection_ratio,
                 position_selection_metric=position_selection_metric,
+                kv_route_selection_ratio=kv_route_selection_ratio,
+                kv_value_selection_ratio=kv_value_selection_ratio,
                 runtime_head_selection_ratio=runtime_head_selection_ratio,
                 runtime_head_selection_metric=runtime_head_selection_metric,
                 **eval_kwargs,
@@ -3904,6 +4143,8 @@ def _search_per_layer_gates(
             kv_transport=kv_transport,
             position_selection_ratio=position_selection_ratio,
             position_selection_metric=position_selection_metric,
+            kv_route_selection_ratio=kv_route_selection_ratio,
+            kv_value_selection_ratio=kv_value_selection_ratio,
             runtime_head_selection_ratio=runtime_head_selection_ratio,
             runtime_head_selection_metric=runtime_head_selection_metric,
             **eval_kwargs,
@@ -4149,6 +4390,8 @@ def eval_rotalign_kv(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    kv_route_selection_ratio: float | None = None,
+    kv_value_selection_ratio: float | None = None,
     fixed_position_profiles: list[torch.Tensor] | None = None,
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
@@ -4207,6 +4450,8 @@ def eval_rotalign_kv(
             kv_transport,
             position_selection_ratio,
             position_selection_metric,
+            kv_route_selection_ratio=kv_route_selection_ratio,
+            kv_value_selection_ratio=kv_value_selection_ratio,
             **build_kwargs,
         )
         scores = [
@@ -4232,6 +4477,9 @@ def eval_rotalign_kv(
                 "kv_transport": kv_transport,
                 "position_selection_ratio": position_selection_ratio,
                 "position_selection_metric": position_selection_metric,
+                "kv_route_selection_ratio": stats.get("kv_route_selection_ratio"),
+                "kv_value_selection_ratio": stats.get("kv_value_selection_ratio"),
+                "kv_asymmetric_position_selection": stats.get("kv_asymmetric_position_selection"),
                 "runtime_head_selection_ratio": runtime_head_selection_ratio,
                 "runtime_head_selection_metric": runtime_head_selection_metric,
                 "runtime_head_prior_alpha": runtime_head_prior_alpha,
@@ -4438,6 +4686,8 @@ def _eval_generation_rotalign(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    kv_route_selection_ratio: float | None = None,
+    kv_value_selection_ratio: float | None = None,
     fixed_position_profiles: list[torch.Tensor] | None = None,
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
@@ -4488,6 +4738,8 @@ def _eval_generation_rotalign(
         kv_transport=kv_transport,
         position_selection_ratio=position_selection_ratio,
         position_selection_metric=position_selection_metric,
+        kv_route_selection_ratio=kv_route_selection_ratio,
+        kv_value_selection_ratio=kv_value_selection_ratio,
         runtime_head_selection_ratio=runtime_head_selection_ratio,
         runtime_head_selection_metric=runtime_head_selection_metric,
         **eval_kwargs,
@@ -4514,6 +4766,8 @@ def _eval_generation_rotalign_with_stats(
     kv_transport: str = "both",
     position_selection_ratio: float = 1.0,
     position_selection_metric: str = "energy",
+    kv_route_selection_ratio: float | None = None,
+    kv_value_selection_ratio: float | None = None,
     fixed_position_profiles: list[torch.Tensor] | None = None,
     runtime_head_selection_ratio: float = 1.0,
     runtime_head_selection_metric: str = "attention_peak",
@@ -4597,6 +4851,8 @@ def _eval_generation_rotalign_with_stats(
             kv_transport,
             position_selection_ratio,
             position_selection_metric,
+            kv_route_selection_ratio=kv_route_selection_ratio,
+            kv_value_selection_ratio=kv_value_selection_ratio,
             **build_kwargs,
         )
         trace = _greedy_generate_with_stats(
@@ -4626,6 +4882,9 @@ def _eval_generation_rotalign_with_stats(
                     "kv_transport": kv_transport,
                     "position_selection_ratio": position_selection_ratio,
                     "position_selection_metric": position_selection_metric,
+                    "kv_route_selection_ratio": stats.get("kv_route_selection_ratio"),
+                    "kv_value_selection_ratio": stats.get("kv_value_selection_ratio"),
+                    "kv_asymmetric_position_selection": stats.get("kv_asymmetric_position_selection"),
                     "runtime_head_selection_ratio": runtime_head_selection_ratio,
                     "runtime_head_selection_metric": runtime_head_selection_metric,
                     "runtime_head_prior_alpha": runtime_head_prior_alpha,
@@ -4769,6 +5028,18 @@ def parse_args() -> argparse.Namespace:
         ],
         default="energy",
         help="How to rank translated positions when position_selection_ratio < 1.0.",
+    )
+    p.add_argument(
+        "--kv-route-selection-ratio",
+        type=float,
+        default=None,
+        help="Optional K/route-side position keep fraction; defaults to --position-selection-ratio.",
+    )
+    p.add_argument(
+        "--kv-value-selection-ratio",
+        type=float,
+        default=None,
+        help="Optional V/value-side position keep fraction; defaults to --position-selection-ratio.",
     )
     p.add_argument(
         "--position-selection-prior-file",
@@ -4998,6 +5269,10 @@ def main() -> None:
     kv_transport = getattr(args, "kv_transport", "both")
     position_selection_ratio = float(getattr(args, "position_selection_ratio", 1.0))
     position_selection_metric = getattr(args, "position_selection_metric", "energy")
+    kv_route_selection_ratio = getattr(args, "kv_route_selection_ratio", None)
+    kv_value_selection_ratio = getattr(args, "kv_value_selection_ratio", None)
+    kv_route_selection_ratio = None if kv_route_selection_ratio is None else float(kv_route_selection_ratio)
+    kv_value_selection_ratio = None if kv_value_selection_ratio is None else float(kv_value_selection_ratio)
     runtime_head_selection_ratio = float(getattr(args, "runtime_head_selection_ratio", 1.0))
     runtime_head_selection_metric = getattr(args, "runtime_head_selection_metric", "attention_peak")
     runtime_head_prior_alpha = float(getattr(args, "runtime_head_prior_alpha", 0.5))
@@ -5017,6 +5292,17 @@ def main() -> None:
     target_enable_thinking = _optional_bool_from_arg(getattr(args, "target_enable_thinking", "auto"))
     if not 0.0 <= runtime_head_prior_shrinkage <= 1.0:
         raise ValueError("--runtime-head-prior-shrinkage must be in [0, 1]")
+    for name, value in (
+        ("--position-selection-ratio", position_selection_ratio),
+        ("--kv-route-selection-ratio", kv_route_selection_ratio),
+        ("--kv-value-selection-ratio", kv_value_selection_ratio),
+    ):
+        if value is not None and not 0.0 <= float(value) <= 1.0:
+            raise ValueError(f"{name} must be in [0, 1]")
+    if per_head_position_budget_mode != "none" and (
+        kv_route_selection_ratio is not None or kv_value_selection_ratio is not None
+    ):
+        raise ValueError("asymmetric K/V position ratios cannot be combined with --per-head-position-budget-mode")
     if not 0.0 <= runtime_head_gate_strength <= 1.0:
         raise ValueError("--runtime-head-gate-strength must be in [0, 1]")
     if drop_target_layers and drop_target_layer_mode == "none":
@@ -5537,6 +5823,8 @@ def main() -> None:
                     kv_transport=kv_transport,
                     position_selection_ratio=position_selection_ratio,
                     position_selection_metric=position_selection_metric,
+                    kv_route_selection_ratio=kv_route_selection_ratio,
+                    kv_value_selection_ratio=kv_value_selection_ratio,
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
@@ -5573,6 +5861,8 @@ def main() -> None:
                     kv_transport=kv_transport,
                     position_selection_ratio=position_selection_ratio,
                     position_selection_metric=position_selection_metric,
+                    kv_route_selection_ratio=kv_route_selection_ratio,
+                    kv_value_selection_ratio=kv_value_selection_ratio,
                     fixed_position_profiles=fixed_position_profiles,
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
@@ -5714,6 +6004,8 @@ def main() -> None:
                     kv_transport=kv_transport,
                     position_selection_ratio=position_selection_ratio,
                     position_selection_metric=position_selection_metric,
+                    kv_route_selection_ratio=kv_route_selection_ratio,
+                    kv_value_selection_ratio=kv_value_selection_ratio,
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
                     runtime_head_prior_alpha=runtime_head_prior_alpha,
@@ -5750,6 +6042,8 @@ def main() -> None:
                     kv_transport=kv_transport,
                     position_selection_ratio=position_selection_ratio,
                     position_selection_metric=position_selection_metric,
+                    kv_route_selection_ratio=kv_route_selection_ratio,
+                    kv_value_selection_ratio=kv_value_selection_ratio,
                     fixed_position_profiles=fixed_position_profiles,
                     runtime_head_selection_ratio=runtime_head_selection_ratio,
                     runtime_head_selection_metric=runtime_head_selection_metric,
@@ -5813,6 +6107,8 @@ def main() -> None:
                 "kv_transport": kv_transport,
                 "position_selection_ratio": position_selection_ratio,
                 "position_selection_metric": position_selection_metric,
+                "kv_route_selection_ratio": kv_route_selection_ratio,
+                "kv_value_selection_ratio": kv_value_selection_ratio,
                 "position_selection_prior_file": args.position_selection_prior_file,
                 "position_selection_prior_source": args.position_selection_prior_source,
                 "position_selection_prior_bins": args.position_selection_prior_bins,

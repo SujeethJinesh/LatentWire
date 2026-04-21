@@ -26,6 +26,7 @@ class ToyConfig:
     route_atoms: int = 4
     kv_route_budget: int = 2
     kv_value_budget: int = 4
+    codebook_size: int = 4
     epochs: int = 120
     lr: float = 2e-2
     rec_weight: float = 0.2
@@ -214,6 +215,68 @@ def _kv_asymmetry_metrics(
     }
 
 
+def _codebook_metrics(
+    code_weights: torch.Tensor,
+    slot_code_weights: torch.Tensor,
+    codebook: torch.Tensor,
+    query_proj: torch.Tensor,
+    slot_keys: torch.Tensor,
+) -> dict[str, float]:
+    code_probs = code_weights / code_weights.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    slot_probs = slot_code_weights / slot_code_weights.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+
+    code_entropy = (-(code_probs * code_probs.clamp_min(1e-8).log()).sum(dim=-1)).mean()
+    slot_entropy = (-(slot_probs * slot_probs.clamp_min(1e-8).log()).sum(dim=-1)).mean()
+
+    code_winners = code_probs.argmax(dim=-1)
+    slot_winners = slot_probs.argmax(dim=-1)
+    code_counts = torch.bincount(code_winners, minlength=code_probs.shape[-1]).float()
+    slot_counts = torch.bincount(slot_winners.view(-1), minlength=slot_probs.shape[-1]).float()
+
+    code_collision_rate = code_counts.max() / max(int(code_winners.numel()), 1)
+    slot_collision_rate = slot_counts.max() / max(int(slot_winners.numel()), 1)
+    dead_code_rate = (code_counts == 0).float().mean()
+    dead_slot_code_rate = (slot_counts == 0).float().mean()
+    code_sorted = code_probs.sort(dim=-1, descending=True).values
+    slot_sorted = slot_probs.sort(dim=-1, descending=True).values
+    code_margin = (code_sorted[:, 0] - code_sorted[:, min(1, code_sorted.shape[-1] - 1)]).mean()
+    slot_margin = (slot_sorted[:, :, 0] - slot_sorted[:, :, min(1, slot_sorted.shape[-1] - 1)]).mean()
+
+    code_recon = code_probs @ codebook
+    slot_recon = torch.einsum("nsc,cd->nsd", slot_probs, codebook)
+    query_recon_mse = F.mse_loss(code_recon, query_proj)
+    slot_recon_mse = F.mse_loss(slot_recon, slot_keys)
+    query_recon_cosine = F.cosine_similarity(code_recon, query_proj, dim=-1).mean()
+    slot_recon_cosine = F.cosine_similarity(slot_recon, slot_keys, dim=-1).mean()
+
+    unique_codes = []
+    overlap_scores = []
+    jaccard_scores = []
+    for q_code, slot_code_row in zip(code_winners, slot_winners):
+        slot_set = set(slot_code_row.tolist())
+        unique_codes.append(len(slot_set))
+        overlap_scores.append(1.0 if int(q_code.item()) in slot_set else 0.0)
+        jaccard_scores.append(1.0 / max(len(slot_set), 1) if int(q_code.item()) in slot_set else 0.0)
+
+    return {
+        "codebook_entropy": float(code_entropy.item()),
+        "codebook_collision_rate": float(code_collision_rate.item()),
+        "dead_code_rate": float(dead_code_rate.item()),
+        "codebook_top_margin": float(code_margin.item()),
+        "slot_code_entropy": float(slot_entropy.item()),
+        "slot_code_collision_rate": float(slot_collision_rate.item()),
+        "dead_slot_code_rate": float(dead_slot_code_rate.item()),
+        "slot_code_top_margin": float(slot_margin.item()),
+        "codebook_recon_mse": float(query_recon_mse.item()),
+        "codebook_recon_cosine": float(query_recon_cosine.item()),
+        "slot_remap_recon_mse": float(slot_recon_mse.item()),
+        "slot_remap_recon_cosine": float(slot_recon_cosine.item()),
+        "codebook_support_mean": float(sum(unique_codes) / max(len(unique_codes), 1)),
+        "codebook_remap_overlap": float(sum(overlap_scores) / max(len(overlap_scores), 1)),
+        "codebook_remap_jaccard": float(sum(jaccard_scores) / max(len(jaccard_scores), 1)),
+    }
+
+
 class TopKReadout(nn.Module):
     def __init__(self, dim: int, classes: int, top_k: int) -> None:
         super().__init__()
@@ -386,6 +449,43 @@ class AsymmetricKVBudgetReadout(nn.Module):
         return self.classifier(summary), self.reconstructor(summary), weights
 
 
+class CodebookRemapReadout(nn.Module):
+    def __init__(self, dim: int, classes: int, codebook_size: int) -> None:
+        super().__init__()
+        self.codebook_size = int(codebook_size)
+        self.codebook = nn.Parameter(torch.randn(self.codebook_size, dim) / math.sqrt(dim))
+        self.query_proj = nn.Linear(dim, dim, bias=False)
+        self.classifier = nn.Linear(dim, classes)
+        self.reconstructor = nn.Linear(dim, dim)
+        self.last_atom_weights: torch.Tensor | None = None
+        self.last_code_weights: torch.Tensor | None = None
+        self.last_slot_code_weights: torch.Tensor | None = None
+        self.last_query_proj: torch.Tensor | None = None
+        self.last_slot_keys: torch.Tensor | None = None
+
+    def encode(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor]:
+        q_proj = self.query_proj(batch.q)
+        scale = math.sqrt(batch.q.shape[-1])
+        code_logits = torch.einsum("nd,cd->nc", q_proj, self.codebook) / scale
+        code_weights = torch.softmax(code_logits, dim=-1)
+        slot_code_logits = torch.einsum("nsd,cd->nsc", batch.K, self.codebook) / scale
+        slot_code_weights = torch.softmax(slot_code_logits, dim=-1)
+        slot_code_summaries = torch.einsum("nsc,nsd->ncd", slot_code_weights, batch.V)
+        summary = torch.einsum("nc,ncd->nd", code_weights, slot_code_summaries)
+        effective_weights = torch.einsum("nc,nsc->ns", code_weights, slot_code_weights)
+
+        self.last_atom_weights = code_weights.detach()
+        self.last_code_weights = code_weights.detach()
+        self.last_slot_code_weights = slot_code_weights.detach()
+        self.last_query_proj = q_proj.detach()
+        self.last_slot_keys = batch.K.detach()
+        return summary, effective_weights
+
+    def forward(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        summary, weights = self.encode(batch)
+        return self.classifier(summary), self.reconstructor(summary), weights
+
+
 class RouteAtomReadout(nn.Module):
     def __init__(self, dim: int, classes: int, route_atoms: int) -> None:
         super().__init__()
@@ -529,6 +629,41 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
                 gate,
             )
         )
+    code_weights = getattr(model, "last_code_weights", None)
+    slot_code_weights = getattr(model, "last_slot_code_weights", None)
+    query_proj = getattr(model, "last_query_proj", None)
+    slot_keys = getattr(model, "last_slot_keys", None)
+    codebook = getattr(model, "codebook", None)
+    if code_weights is None or slot_code_weights is None or query_proj is None or slot_keys is None or codebook is None:
+        metrics.update(
+            {
+                "codebook_entropy": None,
+                "codebook_collision_rate": None,
+                "dead_code_rate": None,
+                "codebook_top_margin": None,
+                "slot_code_entropy": None,
+                "slot_code_collision_rate": None,
+                "dead_slot_code_rate": None,
+                "slot_code_top_margin": None,
+                "codebook_recon_mse": None,
+                "codebook_recon_cosine": None,
+                "slot_remap_recon_mse": None,
+                "slot_remap_recon_cosine": None,
+                "codebook_support_mean": None,
+                "codebook_remap_overlap": None,
+                "codebook_remap_jaccard": None,
+            }
+        )
+    else:
+        metrics.update(
+            _codebook_metrics(
+                code_weights,
+                slot_code_weights,
+                codebook.detach(),
+                query_proj,
+                slot_keys,
+            )
+        )
     return metrics
 
 
@@ -542,6 +677,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
         "constrained_preconditioned_query_pool": 359,
         "route_atom": 401,
         "asymmetric_kv_budget": 463,
+        "codebook_remap": 509,
     }
     for scenario_idx, scenario in enumerate(scenarios):
         train = make_toy_batch(config, scenario=scenario, split="train", base=base)
@@ -567,6 +703,11 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 ),
                 config.kv_route_budget + config.kv_value_budget,
             ),
+            (
+                "codebook_remap",
+                lambda: CodebookRemapReadout(config.dim, config.classes, config.codebook_size),
+                config.codebook_size,
+            ),
         ]
         for method, factory, margin_k in methods:
             torch.manual_seed(config.seed + scenario_idx * 10_000 + method_seed_offsets[method])
@@ -579,6 +720,8 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 budget = config.pool_slots
             elif method == "route_atom":
                 budget = config.route_atoms
+            elif method == "codebook_remap":
+                budget = config.codebook_size
             else:
                 budget = config.kv_route_budget + config.kv_value_budget
             rows.append(
@@ -588,6 +731,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                     "budget": budget,
                     "kv_route_budget": config.kv_route_budget if method == "asymmetric_kv_budget" else None,
                     "kv_value_budget": config.kv_value_budget if method == "asymmetric_kv_budget" else None,
+                    "codebook_size": config.codebook_size if method == "codebook_remap" else None,
                     **metrics,
                 }
             )
@@ -603,24 +747,29 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
     lines = [
         "# Toy Query-Pool Benchmark",
         "",
-        "| Scenario | Method | Budget | KV route budget | KV value budget | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | KV route entropy | KV value entropy | KV route collision | KV value collision | KV route dead | KV value dead | KV route margin | KV value margin | KV overlap | KV Jaccard | KV KL | KV cosine | KV gap | KV gate mean | KV gate std | Constrained scale min | Constrained scale max | Constrained scale mean |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Scenario | Method | Budget | KV route budget | KV value budget | Codebook size | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | KV route entropy | KV value entropy | KV route collision | KV value collision | KV route dead | KV value dead | KV route margin | KV value margin | KV overlap | KV Jaccard | KV KL | KV cosine | KV gap | KV gate mean | KV gate std | Constrained scale min | Constrained scale max | Constrained scale mean | Codebook entropy | Codebook collision | Dead codes | Codebook margin | Slot code entropy | Slot code collision | Dead slot codes | Slot code margin | Codebook recon MSE | Codebook recon cosine | Slot remap recon MSE | Slot remap recon cosine | Codebook support | Remap overlap | Remap Jaccard |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         lines.append(
-            "| {scenario} | {method} | {budget} | {kv_route_budget} | {kv_value_budget} | {task_acc} | {rec_mse} | "
+            "| {scenario} | {method} | {budget} | {kv_route_budget} | {kv_value_budget} | {codebook_size} | {task_acc} | {rec_mse} | "
             "{route_entropy} | {slot_collision_rate} | {dead_slot_rate} | {top_margin} | "
             "{atom_entropy} | {atom_collision_rate} | {dead_atom_rate} | {atom_top_margin} | "
             "{precondition_condition_proxy} | {precondition_cosine_drift} | {precondition_norm_ratio} | {precondition_abs_scale_ratio} | "
             "{kv_route_entropy} | {kv_value_entropy} | {kv_route_collision_rate} | {kv_value_collision_rate} | "
             "{kv_route_dead_rate} | {kv_value_dead_rate} | {kv_route_top_margin} | {kv_value_top_margin} | "
             "{kv_route_value_overlap} | {kv_route_value_jaccard} | {kv_route_value_kl} | {kv_route_value_cosine} | "
-            "{kv_route_value_gap} | {kv_gate_mean} | {kv_gate_std} | {constrained_scale_min} | {constrained_scale_max} | {constrained_scale_mean} |".format(
+            "{kv_route_value_gap} | {kv_gate_mean} | {kv_gate_std} | {constrained_scale_min} | {constrained_scale_max} | {constrained_scale_mean} | "
+            "{codebook_entropy} | {codebook_collision_rate} | {dead_code_rate} | {codebook_top_margin} | "
+            "{slot_code_entropy} | {slot_code_collision_rate} | {dead_slot_code_rate} | {slot_code_top_margin} | "
+            "{codebook_recon_mse} | {codebook_recon_cosine} | {slot_remap_recon_mse} | {slot_remap_recon_cosine} | "
+            "{codebook_support_mean} | {codebook_remap_overlap} | {codebook_remap_jaccard} |".format(
                 scenario=row["scenario"],
                 method=row["method"],
                 budget=row["budget"],
                 kv_route_budget=fmt(row.get("kv_route_budget")),
                 kv_value_budget=fmt(row.get("kv_value_budget")),
+                codebook_size=fmt(row.get("codebook_size")),
                 task_acc=fmt(row.get("task_acc")),
                 rec_mse=fmt(row.get("rec_mse")),
                 route_entropy=fmt(row.get("route_entropy")),
@@ -653,6 +802,21 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
                 constrained_scale_min=fmt(row.get("constrained_scale_min")),
                 constrained_scale_max=fmt(row.get("constrained_scale_max")),
                 constrained_scale_mean=fmt(row.get("constrained_scale_mean")),
+                codebook_entropy=fmt(row.get("codebook_entropy")),
+                codebook_collision_rate=fmt(row.get("codebook_collision_rate")),
+                dead_code_rate=fmt(row.get("dead_code_rate")),
+                codebook_top_margin=fmt(row.get("codebook_top_margin")),
+                slot_code_entropy=fmt(row.get("slot_code_entropy")),
+                slot_code_collision_rate=fmt(row.get("slot_code_collision_rate")),
+                dead_slot_code_rate=fmt(row.get("dead_slot_code_rate")),
+                slot_code_top_margin=fmt(row.get("slot_code_top_margin")),
+                codebook_recon_mse=fmt(row.get("codebook_recon_mse")),
+                codebook_recon_cosine=fmt(row.get("codebook_recon_cosine")),
+                slot_remap_recon_mse=fmt(row.get("slot_remap_recon_mse")),
+                slot_remap_recon_cosine=fmt(row.get("slot_remap_recon_cosine")),
+                codebook_support_mean=fmt(row.get("codebook_support_mean")),
+                codebook_remap_overlap=fmt(row.get("codebook_remap_overlap")),
+                codebook_remap_jaccard=fmt(row.get("codebook_remap_jaccard")),
             )
         )
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -674,6 +838,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--route-atoms", type=int, default=4)
     parser.add_argument("--kv-route-budget", type=int, default=2)
     parser.add_argument("--kv-value-budget", type=int, default=4)
+    parser.add_argument("--codebook-size", type=int, default=4)
     parser.add_argument("--epochs", type=int, default=120)
     parser.add_argument("--lr", type=float, default=2e-2)
     parser.add_argument("--rec-weight", type=float, default=0.2)
@@ -701,6 +866,7 @@ def main() -> None:
         route_atoms=args.route_atoms,
         kv_route_budget=args.kv_route_budget,
         kv_value_budget=args.kv_value_budget,
+        codebook_size=args.codebook_size,
         epochs=args.epochs,
         lr=args.lr,
         rec_weight=args.rec_weight,
