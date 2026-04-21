@@ -17,15 +17,10 @@ Interpretation:
 
 Format-first reranking is the first non-oracle selector to test whether stochastic route candidates can be used without label leakage. Compare it to target-alone and to the oracle aggregate to separate candidate quality from selection quality.
 
-The stricter target fallback is the current best non-oracle selector:
-`rerank_target_on_strict_format` reaches `0.1667`, a `+0.1000` absolute gain
-over target-alone with zero baseline-only losses. This is still well below the
-target-or-seed oracle `0.3000`, so the next blocker is stronger verifier
-selection rather than candidate generation.
+Strict fallback ablation:
+
+The strict target fallback uses a `2.5` format-score margin above target-alone before selecting a seed. Treat this as an explicit ablation threshold; it needs held-out validation before becoming a paper claim.
 
 Numeric ablation:
 
 Numeric-consistency-first reranking is a disjoint ablation that uses only the candidate's own numeric text and completion cues. It checks whether the reranker can prefer self-consistent numeric answers even when format markers are weak or misleading.
-
-On this GSM30 pool, numeric consistency by itself is diagnostic but not yet a
-better selector: all three numeric policies land at `0.0667`.

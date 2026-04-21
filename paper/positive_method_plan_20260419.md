@@ -2463,6 +2463,12 @@ Executed next:
   verifier/reranker references.
 - Added quantization/KV-communication references for outlier protection,
   K/V-asymmetric bit allocation, and rotation-before-transport ablations.
+- Added tokenizer/vocab blocker references for byte/span canonical interfaces
+  and vocab remapping before transport.
+- Added symmetry/alignment references for permutation, gauge, CKA/SVCCA/GW,
+  stitching, SAE, and shortcut-structure ablations.
+- Added a quantization toy that separates outlier-channel protection from
+  rotation-before-quantization.
 
 New evidence:
 
@@ -2478,6 +2484,7 @@ New evidence:
 | Numeric-consistency rerankers | `0.0667` | Useful telemetry, not sufficient as standalone selection. |
 | KVPress GSM30 | none `0.0667`, expected-attention `0.0667` | Same-model compression control is neutral. |
 | Learned protected toy | wins outlier `0.6562`, near-recovers rotated `0.6302`, loses slot-permuted to signal-aware `0.5781` | Learned masks help, but need signal/orientation constraints. |
+| Quantization toy | uniform MSE `0.2646`; protected-outlier MSE `0.0077`; Hadamard uniform MSE `0.0575` | Outlier protection and basis rotation are separable mechanisms. |
 
 Updated blocker decomposition:
 
@@ -2489,10 +2496,17 @@ Updated blocker decomposition:
 2. **Orientation-aware interface blocker:** learned masks and signal-aware
    masks each help different toy regimes. The likely stack is learned soft mask
    plus supervised signal alignment plus orientation/permutation regularization.
-3. **Competitor baseline blocker:** KVPress GSM30 is now a neutral control;
+3. **Tokenizer/vocab interface blocker:** recent byte/span and cross-tokenizer
+   distillation work suggests that token IDs may be the wrong communication
+   substrate. Byte/span canonical bridges and vocab remapping should be tested
+   before adding more bridge capacity.
+4. **Compression math blocker:** quantization results suggest we must separate
+   basis rotation, outlier-channel protection, and mixed K/V precision. A win
+   from one should not be attributed to the others.
+5. **Competitor baseline blocker:** KVPress GSM30 is now a neutral control;
    C2C remains the direct competitor to scale beyond GSM5 when a CUDA-capable
    full replay is available.
-4. **Interpretability blocker:** every stochastic run must log candidate set
+6. **Interpretability blocker:** every stochastic run must log candidate set
    quality separately from selection quality: oracle correctness, vote entropy,
    vote margin, verifier score, selected seed, and paired flips.
 
@@ -2507,8 +2521,13 @@ Next execution ladder:
    channels.
 4. Promote the best learned/signal protected-channel diagnostic into a frozen
    K/V-slot reconstruction experiment before generation.
-5. Add quantization-inspired bridge controls: outlier-channel protection,
+5. Add tokenizer/interface controls: byte/span canonical bridge, vocab remap
+   before transport, and byte decoder head.
+6. Add symmetry controls: permutation-only, orthogonal-only,
+   permutation-plus-orthogonal, gauge-fixed head bases, and stitching loss vs
+   reconstruction loss.
+7. Add quantization-inspired bridge controls: outlier-channel protection,
    rotation-before-transport, and K/V-asymmetric mixed precision at matched
    bytes.
-6. Keep KVPress as a same-model compression control and scale C2C only after
+8. Keep KVPress as a same-model compression control and scale C2C only after
    the verifier lane has a positive GSM30 selection result.

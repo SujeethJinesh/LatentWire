@@ -33,6 +33,7 @@ _DANGLING_END_RE = re.compile(
     r"(?:[+\-*/=,:;]|\b(?:and|or|because|so|then|thus|therefore)\b)\s*$",
     re.IGNORECASE,
 )
+STRICT_FORMAT_DELTA = 2.5
 
 
 def _rows_by_index(records: list[dict[str, Any]], method: str) -> dict[int, dict[str, Any]]:
@@ -277,7 +278,7 @@ def _choose(candidates: list[dict[str, Any]], policy: str) -> dict[str, Any]:
                 int(row["candidate_answer_agreement"]),
             ),
         )
-        if float(best_seed["candidate_format_score"]) >= float(target["candidate_format_score"]) + 2.5:
+        if float(best_seed["candidate_format_score"]) >= float(target["candidate_format_score"]) + STRICT_FORMAT_DELTA:
             return best_seed
         return target
     if policy == "agreement_or_target":
@@ -341,6 +342,11 @@ def _reranked_record(
     record["selected_candidate_source"] = chosen.get("candidate_source")
     record["selected_candidate_format_score"] = float(chosen.get("candidate_format_score", 0.0))
     record["selected_candidate_answer_agreement"] = int(chosen.get("candidate_answer_agreement", 0))
+    target = next(row for row in candidates if row.get("candidate_source") == "target")
+    record["selected_candidate_format_delta_vs_target"] = float(chosen.get("candidate_format_score", 0.0)) - float(
+        target.get("candidate_format_score", 0.0)
+    )
+    record["strict_format_delta_threshold"] = STRICT_FORMAT_DELTA if policy == "target_on_strict_format" else None
     record["selected_candidate_numeric_consistency_score"] = float(
         chosen.get("candidate_numeric_consistency_score", 0.0)
     )
@@ -468,6 +474,17 @@ def write_markdown_summary(results: dict[str, float], output_md: str | pathlib.P
                 "Format-first reranking is the first non-oracle selector to test whether stochastic "
                 "route candidates can be used without label leakage. Compare it to target-alone and "
                 "to the oracle aggregate to separate candidate quality from selection quality.",
+            ]
+        )
+    if "rerank_target_on_strict_format" in results:
+        lines.extend(
+            [
+                "",
+                "Strict fallback ablation:",
+                "",
+                f"The strict target fallback uses a `{STRICT_FORMAT_DELTA:.1f}` format-score margin above "
+                "target-alone before selecting a seed. Treat this as an explicit ablation threshold; it "
+                "needs held-out validation before becoming a paper claim.",
             ]
         )
     if "rerank_numeric_consistency_then_completion" in results:

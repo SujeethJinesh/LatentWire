@@ -1,0 +1,96 @@
+{
+  "config": {
+    "bits": 4,
+    "dim": 32,
+    "outlier_channels": 4,
+    "outlier_scale": 8.0,
+    "protected_channels": 4,
+    "rotations": [
+      "none",
+      "random",
+      "hadamard"
+    ],
+    "samples": 256,
+    "seed": 0
+  },
+  "rows": [
+    {
+      "bits": 4,
+      "bytes_estimate": 20.0,
+      "cosine": 0.9868199229240417,
+      "dim": 32,
+      "method": "none_uniform",
+      "mse": 0.26462435722351074,
+      "outlier_energy_retained": 1.0068131685256958,
+      "protected_channels": 4,
+      "quantizer": "uniform",
+      "rotation": "none",
+      "samples": 256
+    },
+    {
+      "bits": 4,
+      "bytes_estimate": 30.0,
+      "cosine": 0.999353289604187,
+      "dim": 32,
+      "method": "none_protected_outlier",
+      "mse": 0.007689278107136488,
+      "outlier_energy_retained": 0.9999898672103882,
+      "protected_channels": 4,
+      "quantizer": "protected_outlier",
+      "rotation": "none",
+      "samples": 256
+    },
+    {
+      "bits": 4,
+      "bytes_estimate": 20.0,
+      "cosine": 0.9953973889350891,
+      "dim": 32,
+      "method": "random_uniform",
+      "mse": 0.08703619986772537,
+      "outlier_energy_retained": 1.0023218393325806,
+      "protected_channels": 4,
+      "quantizer": "uniform",
+      "rotation": "random",
+      "samples": 256
+    },
+    {
+      "bits": 4,
+      "bytes_estimate": 30.0,
+      "cosine": 0.9970206618309021,
+      "dim": 32,
+      "method": "random_protected_outlier",
+      "mse": 0.055003710091114044,
+      "outlier_energy_retained": 1.0018746852874756,
+      "protected_channels": 4,
+      "quantizer": "protected_outlier",
+      "rotation": "random",
+      "samples": 256
+    },
+    {
+      "bits": 4,
+      "bytes_estimate": 20.0,
+      "cosine": 0.9967653751373291,
+      "dim": 32,
+      "method": "hadamard_uniform",
+      "mse": 0.0574977844953537,
+      "outlier_energy_retained": 1.0009539127349854,
+      "protected_channels": 4,
+      "quantizer": "uniform",
+      "rotation": "hadamard",
+      "samples": 256
+    },
+    {
+      "bits": 4,
+      "bytes_estimate": 30.0,
+      "cosine": 0.9972535967826843,
+      "dim": 32,
+      "method": "hadamard_protected_outlier",
+      "mse": 0.04912964999675751,
+      "outlier_energy_retained": 0.9998547434806824,
+      "protected_channels": 4,
+      "quantizer": "protected_outlier",
+      "rotation": "hadamard",
+      "samples": 256
+    }
+  ]
+}
