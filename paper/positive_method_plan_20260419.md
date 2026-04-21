@@ -2945,3 +2945,49 @@ Next execution ladder:
    so target repair is only spent when the candidate fails an explicit check.
 5. Move the competitor readout into the final comparison harness once every row
    logs bytes, repair calls, generated tokens, and latency.
+
+## 2026-04-21 Test-Before-Repair And Recurrent Refinement Follow-Up
+
+Executed next:
+
+- Added test-time verification / process reward references in
+  `references/345_test_time_verification_process_reward_refs.md`.
+- Added shared feature dictionary / interface references in
+  `references/346_shared_feature_dictionary_interface_refs.md`.
+- Added `scripts/analyze_test_before_repair_policy.py` to replay non-oracle
+  test-before-repair gates over the held-out process-repair telemetry.
+- Added toy `recurrent_latent_refinement_bridge`, comparing one-shot transport,
+  two-step residual refinement, gated refinement, blockwise diffusion-style
+  denoising, and an oracle upper bound.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| GSM70 format-gated test-before-repair | accuracy `0.2000`, repair rate `0.7286`, saved repair `0.2714` | A cheap format gate preserves full repair accuracy while saving about a quarter of repair calls. |
+| SVAMP70 format-delta test-before-repair | accuracy `0.5429`, repair rate `0.8429`, saved repair `0.1571` | Non-oracle gates can preserve full accuracy but save less compute on SVAMP. |
+| SVAMP70 oracle precheck upper bound | accuracy `0.5429`, repair rate `0.6429`, saved repair `0.3571` | Better pre-repair tests could save substantial repair compute without losing accuracy. |
+| Recurrent refinement toy | one-shot `0.6458`; gated `0.6562`; blockwise diffusion `0.7083`; naive two-step `0.5000` | Iterative refinement helps only when gated or blockwise; naive residual recurrence can improve MSE while hurting task accuracy. |
+| Shared dictionary references | SAE, crosscoder, transcoder, stitching, ReFT, symmetry-aware merge | Shared feature bases are a plausible next interface, but need causal/task-level telemetry rather than reconstruction-only claims. |
+
+Updated read:
+
+Test-before-repair now looks like a paper-useful efficiency control, not yet a
+route-quality amplifier. The current non-oracle gates can reduce repair calls
+while preserving the repair-all result, but they do not increase accuracy over
+repair-all. The recurrent-refinement toy gives a separate design clue: if we add
+iteration, it should be gated or blockwise/refinement-style, not an ungated
+residual loop optimized only for reconstruction.
+
+Next execution ladder:
+
+1. Promote the best test-before-repair gates into the main held-out summary and
+   log repair-call savings next to accuracy.
+2. Add a stronger pre-repair test: numeric consistency plus process-step
+   verifier or generated test, then compare against the cheap format gate.
+3. Promote recurrent refinement to a small bridge smoke: one-shot vs gated
+   two-step vs blockwise refinement at matched bytes/latency.
+4. Add a shared-feature diagnostic before training a full SAE bridge: CKA/SVCCA
+   plus feature sparsity and matched-feature stability on existing route pools.
+5. Keep any recurrent/shared-feature win tied to task-level accuracy; do not
+   claim success from MSE or representation similarity alone.

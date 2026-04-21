@@ -124,6 +124,11 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   `paper/competitor_benchmark_readout_20260421.md`. Direct peers and same-model
   compression controls must stay separated: `C2C` is the direct semantic bar,
   while `KVPress`/`KVzip`/`Quest`/`H2O`/`SnapKV` are cache controls.
+- Test-before-repair replay over the held-out repair telemetry shows an
+  efficiency path: GSM70 `format_gate` preserves `0.2000` accuracy while saving
+  `27.1%` of selected-route repair calls; SVAMP70 `format_delta_gate` preserves
+  `0.5429` while saving `15.7%`. This reduces target-side repair budget but
+  does not yet increase accuracy.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.

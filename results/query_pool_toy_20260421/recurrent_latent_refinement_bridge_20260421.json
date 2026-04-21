@@ -1,0 +1,192 @@
+{
+  "config": {
+    "block_size": 4,
+    "bridge_noise": 0.18,
+    "classes": 5,
+    "diffusion_shrink": 0.65,
+    "diffusion_steps": 4,
+    "dim": 24,
+    "examples": 96,
+    "gate_fraction": 0.25,
+    "quant_bits": 4,
+    "residual_noise": 0.09,
+    "seed": 7
+  },
+  "rows": [
+    {
+      "accuracy": 0.6458333134651184,
+      "accuracy_delta_vs_one_shot": 0.0,
+      "bytes_estimate": 16.0,
+      "compute_proxy": 31.200000000000003,
+      "confidence": 0.44557929039001465,
+      "cosine": 0.750214159488678,
+      "cosine_delta_vs_one_shot": 0.0,
+      "harm_rate": 0.0,
+      "help_rate": 0.0,
+      "method": "one_shot_bridge",
+      "mse": 0.05079101398587227,
+      "mse_delta_vs_one_shot": 0.0,
+      "net_help_rate": 0.0,
+      "reg_mse": 0.8750627040863037,
+      "steps": 1.0,
+      "trajectory_best_mse": 0.05079101398587227,
+      "trajectory_best_step": 0.0,
+      "trajectory_convergence_ratio": 1.0,
+      "trajectory_cosine": [
+        0.750214159488678
+      ],
+      "trajectory_final_mse": 0.05079101398587227,
+      "trajectory_initial_mse": 0.05079101398587227,
+      "trajectory_mse": [
+        0.05079101398587227
+      ],
+      "trajectory_residual_norm": [
+        1.0954933166503906
+      ]
+    },
+    {
+      "accuracy": 0.5,
+      "accuracy_delta_vs_one_shot": -0.1458333134651184,
+      "bytes_estimate": 27.0,
+      "compute_proxy": 39.6,
+      "confidence": 0.35315871238708496,
+      "cosine": 0.760456383228302,
+      "cosine_delta_vs_one_shot": 0.010242223739624023,
+      "harm_rate": 0.1041666641831398,
+      "help_rate": 0.8958333134651184,
+      "method": "two_step_residual_refinement",
+      "mse": 0.03146560117602348,
+      "mse_delta_vs_one_shot": -0.019325412809848785,
+      "net_help_rate": 0.7916666492819786,
+      "reg_mse": 0.6761684417724609,
+      "steps": 2.0,
+      "trajectory_best_mse": 0.03146560117602348,
+      "trajectory_best_step": 1.0,
+      "trajectory_convergence_ratio": 0.888684108330774,
+      "trajectory_cosine": [
+        0.8147726655006409,
+        0.760456383228302
+      ],
+      "trajectory_final_mse": 0.03146560117602348,
+      "trajectory_initial_mse": 0.03540695831179619,
+      "trajectory_mse": [
+        0.03540695831179619,
+        0.03146560117602348
+      ],
+      "trajectory_residual_norm": [
+        0.9109446406364441,
+        0.8610990643501282
+      ]
+    },
+    {
+      "accuracy": 0.65625,
+      "accuracy_delta_vs_one_shot": 0.010416686534881592,
+      "bytes_estimate": 19.0,
+      "compute_proxy": 39.6,
+      "confidence": 0.3844258785247803,
+      "cosine": 0.8568973541259766,
+      "cosine_delta_vs_one_shot": 0.10668319463729858,
+      "gate_entropy": 1.3862943649291992,
+      "gate_fraction_effective": 0.25,
+      "harm_rate": 0.0,
+      "help_rate": 1.0,
+      "method": "gated_refinement",
+      "mse": 0.020347826182842255,
+      "mse_delta_vs_one_shot": -0.030443187803030014,
+      "net_help_rate": 1.0,
+      "reg_mse": 0.28445813059806824,
+      "steps": 2.0,
+      "trajectory_best_mse": 0.019941728562116623,
+      "trajectory_best_step": 0.0,
+      "trajectory_convergence_ratio": 1.0203642136367805,
+      "trajectory_cosine": [
+        0.8877978920936584,
+        0.8568973541259766
+      ],
+      "trajectory_final_mse": 0.020347826182842255,
+      "trajectory_initial_mse": 0.019941728562116623,
+      "trajectory_mse": [
+        0.019941728562116623,
+        0.020347826182842255
+      ],
+      "trajectory_residual_norm": [
+        0.6813381314277649,
+        0.6902129054069519
+      ]
+    },
+    {
+      "accuracy": 0.7083333134651184,
+      "accuracy_delta_vs_one_shot": 0.0625,
+      "bytes_estimate": 20.0,
+      "compute_proxy": 64.80000000000001,
+      "confidence": 0.3581254780292511,
+      "cosine": 0.8741498589515686,
+      "cosine_delta_vs_one_shot": 0.12393569946289062,
+      "harm_rate": 0.0,
+      "help_rate": 1.0,
+      "method": "blockwise_diffusion_denoise",
+      "mse": 0.01697571761906147,
+      "mse_delta_vs_one_shot": -0.0338152963668108,
+      "net_help_rate": 1.0,
+      "reg_mse": 0.25883913040161133,
+      "steps": 5.0,
+      "trajectory_best_mse": 0.016806915402412415,
+      "trajectory_best_step": 2.0,
+      "trajectory_convergence_ratio": 0.36183063308626007,
+      "trajectory_cosine": [
+        0.7692667841911316,
+        0.866208016872406,
+        0.8746009469032288,
+        0.8747389912605286,
+        0.8741498589515686
+      ],
+      "trajectory_final_mse": 0.01697571761906147,
+      "trajectory_initial_mse": 0.04691619798541069,
+      "trajectory_mse": [
+        0.04691619798541069,
+        0.017958667129278183,
+        0.016806915402412415,
+        0.01686217077076435,
+        0.01697571761906147
+      ],
+      "trajectory_residual_norm": [
+        1.0517102479934692,
+        0.6512287259101868,
+        0.6296313405036926,
+        0.6304851174354553,
+        0.6325213313102722
+      ]
+    },
+    {
+      "accuracy": 1.0,
+      "accuracy_delta_vs_one_shot": 0.3541666865348816,
+      "bytes_estimate": 0.0,
+      "compute_proxy": 0.0,
+      "confidence": 0.40442004799842834,
+      "cosine": 1.0,
+      "cosine_delta_vs_one_shot": 0.24978584051132202,
+      "harm_rate": 0.0,
+      "help_rate": 1.0,
+      "method": "oracle_upper_bound",
+      "mse": 0.0,
+      "mse_delta_vs_one_shot": -0.05079101398587227,
+      "net_help_rate": 1.0,
+      "reg_mse": 0.0,
+      "steps": 0.0,
+      "trajectory_best_mse": 0.0,
+      "trajectory_best_step": 0.0,
+      "trajectory_convergence_ratio": 0.0,
+      "trajectory_cosine": [
+        1.0
+      ],
+      "trajectory_final_mse": 0.0,
+      "trajectory_initial_mse": 0.0,
+      "trajectory_mse": [
+        0.0
+      ],
+      "trajectory_residual_norm": [
+        0.0
+      ]
+    }
+  ]
+}
