@@ -400,6 +400,30 @@ def _summarize(args: argparse.Namespace, records: Sequence[dict[str, Any]], conf
     }
 
 
+def _write_blocker_artifact(
+    *,
+    args: argparse.Namespace,
+    config: LatentMASRunConfig,
+    error: BaseException,
+    records_written: int,
+) -> pathlib.Path:
+    blocker_path = args.prediction_output.with_suffix(".blocker.json")
+    payload = {
+        "status": "blocked",
+        "method": args.method,
+        "task": args.task,
+        "prompt": args.prompt,
+        "model_name": args.model_name,
+        "records_written": records_written,
+        "prediction_output": str(args.prediction_output),
+        "config": asdict(config),
+        "error_type": type(error).__name__,
+        "error_message": str(error),
+    }
+    blocker_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return blocker_path
+
+
 def run_eval(
     args: argparse.Namespace,
     *,
@@ -439,16 +463,41 @@ def run_eval(
     )
 
     items = load_latentwire_generation_items(args.eval_file, limit=args.limit)
-    model = model_factory(runtime_args)
-    method = method_factory(args.method, model, runtime_args)
     records: list[dict[str, Any]] = []
-    for batch in _chunks(items, int(args.generate_bs)):
-        start = clock()
-        results = _call_method(method, runtime_args, batch)
-        elapsed = max(float(clock() - start), 0.0)
-        per_item_latency = elapsed / max(len(results), 1)
-        for item, result in zip(batch, results):
-            records.append(_record_from_result(item=item, result=result, args=args, latency_sec=per_item_latency))
+    try:
+        model = model_factory(runtime_args)
+        method = method_factory(args.method, model, runtime_args)
+        for batch in _chunks(items, int(args.generate_bs)):
+            start = clock()
+            results = _call_method(method, runtime_args, batch)
+            elapsed = max(float(clock() - start), 0.0)
+            per_item_latency = elapsed / max(len(results), 1)
+            for item, result in zip(batch, results):
+                records.append(_record_from_result(item=item, result=result, args=args, latency_sec=per_item_latency))
+    except Exception as exc:
+        blocker_path = _write_blocker_artifact(
+            args=args,
+            config=config,
+            error=exc,
+            records_written=len(records),
+        )
+        summary = {
+            "status": "blocked",
+            "method": args.method,
+            "task": args.task,
+            "prompt": args.prompt,
+            "model_name": args.model_name,
+            "num_examples": len(items),
+            "records_written": len(records),
+            "prediction_output": str(args.prediction_output),
+            "blocker_output": str(blocker_path),
+            "config": asdict(config),
+            "error_type": type(exc).__name__,
+            "error_message": str(exc),
+        }
+        meta_path = args.prediction_output.with_suffix(".jsonl.meta.json")
+        meta_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        return summary
 
     _write_jsonl(args.prediction_output, records)
     summary = _summarize(args, records, config)

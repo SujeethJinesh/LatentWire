@@ -219,6 +219,74 @@ def test_vllm_sampling_params_stub_is_sufficient_for_non_vllm_latent_import(
     assert params.max_tokens == 8
 
 
+def test_run_eval_writes_blocker_artifact_when_method_raises(
+    tmp_path: Path, monkeypatch, latentmas_eval_module
+) -> None:
+    latentmas_eval = latentmas_eval_module
+    eval_file = tmp_path / "eval.jsonl"
+    eval_file.write_text(json.dumps({"prompt": "Q?", "answer_text": "1"}) + "\n", encoding="utf-8")
+    prediction_output = tmp_path / "predictions.jsonl"
+
+    class BoomMethod:
+        def run_batch(self, items: list[dict]) -> list[dict]:
+            raise RuntimeError("cache_position[-1] out of bounds")
+
+    def fake_model_factory(args):
+        return object()
+
+    def fake_method_factory(method_name: str, model: object, args):
+        return BoomMethod()
+
+    args = argparse.Namespace(
+        latentmas_root=Path("references/repos/LatentMAS"),
+        model_name="Qwen/Qwen2.5-0.5B-Instruct",
+        method="latent_mas",
+        task="gsm8k",
+        latentmas_task=None,
+        prompt="sequential",
+        eval_file=eval_file,
+        limit=1,
+        prediction_output=prediction_output,
+        device="cpu",
+        device2="cpu",
+        max_new_tokens=32,
+        latent_steps=1,
+        temperature=0.6,
+        top_p=0.95,
+        generate_bs=1,
+        seed=42,
+        use_vllm=False,
+        enable_prefix_caching=False,
+        use_second_HF_model=False,
+        latent_space_realign=False,
+        tensor_parallel_size=1,
+        gpu_memory_utilization=0.9,
+        text_mas_context_length=-1,
+        think=False,
+    )
+
+    summary = latentmas_eval.run_eval(
+        args,
+        model_factory=fake_model_factory,
+        method_factory=fake_method_factory,
+        clock=lambda: 0.0,
+    )
+
+    blocker_path = prediction_output.with_suffix(".blocker.json")
+    meta_path = prediction_output.with_suffix(".jsonl.meta.json")
+    assert summary["status"] == "blocked"
+    assert summary["error_type"] == "RuntimeError"
+    assert blocker_path.exists()
+    assert meta_path.exists()
+    blocker = json.loads(blocker_path.read_text(encoding="utf-8"))
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    assert blocker["status"] == "blocked"
+    assert blocker["error_message"] == "cache_position[-1] out of bounds"
+    assert blocker["records_written"] == 0
+    assert meta["status"] == "blocked"
+    assert meta["blocker_output"] == str(blocker_path)
+
+
 def test_runtime_args_map_svamp_to_native_math_prompt_without_losing_public_task(
     latentmas_eval_module,
 ) -> None:
