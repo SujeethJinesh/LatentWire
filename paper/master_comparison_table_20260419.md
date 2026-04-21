@@ -345,6 +345,11 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   current protected frontier falls to `0.8125` and frontier+stop falls again
   to `0.8073`. The present frontier and stop heuristics are therefore
   mis-specified, not merely downstream victims of route noise.
+- The route-class patch frontier follow-up narrows it again: calibration-aware
+  patch-protect only ties the current quant-error frontier (`0.6354` under the
+  prior router and `0.8125` under oracle), while route-class frontiering
+  itself stays negative. Local protection-score tuning is not enough; the next
+  fix has to change the shared hub/interface or pruning rule.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided

@@ -75,5 +75,26 @@
     "path": "references/367_multiway_dictionary_router_stop_refs.md",
     "status": "local_memo",
     "reason": "Multi-way alignment, shared sparse dictionary / crosscoder, stable router, and calibrated stop-policy references with a concrete shared-hub experiment for the active positive-method paper loop."
+  },
+  {
+    "num": 368,
+    "slug": "tokenizer_connector_quantization_diffusion_refs",
+    "path": "references/368_tokenizer_connector_quantization_diffusion_refs.md",
+    "status": "local_memo",
+    "reason": "Tokenizer/vocab transfer, narrow connector families, diffusion-style iterative refinement, and AWQ/EXL2/KV-compression communication rules with exact links and three concrete ablations."
+  },
+  {
+    "num": 369,
+    "slug": "gauge_fixed_gpa_canonical_hub_refs",
+    "path": "references/369_gauge_fixed_gpa_canonical_hub_refs.md",
+    "status": "local_memo",
+    "reason": "Gauge fixing, generalized Procrustes / GPA, multi-way representation alignment, shared sparse dictionaries, and canonical hub references with three concrete LatentWire ablations."
+  },
+  {
+    "num": 370,
+    "slug": "competitor_benchmark_and_harness_directions",
+    "path": "references/370_competitor_benchmark_and_harness_directions.md",
+    "status": "local_memo",
+    "reason": "Runnable evaluation harnesses, benchmark orchestration, direct-communication competitor repos, and fair matched-table rules for the LatentWire benchmark track."
   }
 ]

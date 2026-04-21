@@ -3825,3 +3825,31 @@ That means:
 - this narrows the paper story further: shared hubs are plausible, but the
   positive method depends on solving both route assignment and later
   compression/repair control, not only the router
+
+## 2026-04-21 Route-Class Patch Frontier Follow-Up
+
+I then tested the most direct redesign of that frontier: use calibration-time
+route/class-specific exact patch effects to choose the high-precision subset,
+and use the modal best stop step per route/class as a lightweight calibrated
+stop policy.
+
+Result:
+
+- conditional-prior base: `0.6250`
+- conditional-prior quant-error frontier: `0.6354`
+- conditional-prior route-class patch-protect: `0.6354`
+- conditional-prior route-class frontier: `0.6146`
+- oracle base: `0.8229`
+- oracle quant-error frontier: `0.8125`
+- oracle route-class patch-protect: `0.8125`
+- oracle route-class frontier: `0.7969`
+
+That means:
+
+- calibration-aware protection can match the current quant-error frontier, but
+  it does not beat it
+- route-class frontier pruning is still actively harmful
+- route-/class-calibrated stop selection is not the missing fix either
+- the next positive-method shot should move up a level to multi-way canonical
+  hubs, tokenizer/interface simplification, or a genuinely different pruning
+  rule rather than more local score shaping

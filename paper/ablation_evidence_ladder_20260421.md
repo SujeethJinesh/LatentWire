@@ -21,5 +21,6 @@ This table summarizes local telemetry for stack decisions. It separates toy-posi
 
 - Promote hub dictionaries, sticky/feature routing, mixed-bit frontiers, and verifier stop rules only as an interaction stack with matched controls.
 - The route-conditioned hub sweep shows that the current frontier and stop heuristics are not drop-in additive components: the best frontier gain is only `+0.0104`, oracle frontier is negative, and the stop rule never adds positive accuracy.
+- The route-class patch follow-up shows that calibration-aware local protection only ties the current quant-error frontier and route-class frontier pruning is still negative, so the next fix should move up to the hub/interface or pruning-rule level.
 - Treat confidence-only routing and fixed-depth repair as blockers, not baselines to keep rerunning.
 - Any real-route-pool promotion should carry the same telemetry columns: atom recovery, route stability, bit histogram, stop reason, help/harm, bytes, and latency.

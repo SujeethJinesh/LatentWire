@@ -13,3 +13,6 @@
   is the route-conditioned hub interface sweep. It shows that oracle routing
   helps the hub base, but the current frontier and stop heuristics do not
   transfer additively.
+- `../results/query_pool_toy_20260421/route_class_frontier_sweep_20260421.md`
+  is the follow-up showing that route-/class-calibrated local protection still
+  does not rescue the current frontier family.

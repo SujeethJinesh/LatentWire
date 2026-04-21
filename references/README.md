@@ -382,6 +382,18 @@ File `367_` extends the multi-way shared-basis and calibrated-control lane:
 
 - `367_`: Multi-way alignment, shared sparse dictionary / crosscoder, stable router, and calibrated stop-policy references with a concrete GPA-initialized shared-hub experiment for the current positive-method loop.
 
+File `368_` extends the tokenizer/connector/diffusion/quantization lane:
+
+- `368_`: Tokenizer/vocab transfer, narrow Q-Former/Perceiver-style connectors, diffusion-style iterative refinement, and AWQ/EXL2/KV-compression communication rules with exact links and three concrete ablations.
+
+File `369_` extends the gauge-fixed GPA and canonical hub lane:
+
+- `369_`: Gauge fixing, generalized Procrustes / GPA, multi-way representation alignment, shared sparse dictionaries, and canonical hub references with three concrete LatentWire ablations.
+
+File `370_` extends the benchmark and harness direction lane:
+
+- `370_`: Runnable evaluation harnesses, benchmark orchestration, direct-communication competitor repos to clone, fair matched-table rules, and a concrete bootstrap plan that keeps benchmark work separate from the method story.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.
