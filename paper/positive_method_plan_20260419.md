@@ -1988,3 +1988,60 @@ Conclusion:
   shows it preserves the `0.4000` smoke while reducing bytes
 - keep it in the paper plan as a diagnostic/control because it now provides
   route-atom collapse and orientation telemetry in the result sidecar
+
+Follow-up ratio sweep:
+
+- `headwise_route_atom` ratio `0.25`: `0.4000` at `176,381.8` average bytes
+- `headwise_route_atom` ratio `0.50`: `0.2000` at `346,263.4` average bytes
+- `headwise_route_atom` ratio `0.75`: `0.2000` at `516,145.0` average bytes
+- dense-head reference: `0.4000` at `686,026.6` average bytes
+- controlled GSM10 ratio `0.25`: `0.1000` at `175,249.2` average bytes
+- controlled GSM10 paired delta vs dense-head `dynalign_prefdist`: `+0.0000`
+
+Conclusion:
+
+- the `0.25` setting is now the best route-atom lead: it preserves the GSM5
+  smoke and cuts bytes by roughly `3.9x`
+- the effect is non-monotonic, so the paper hypothesis should be "selective
+  sharp-head transport avoids interference", not "more heads are better"
+- controlled GSM10 ties dense-head `dynalign_prefdist`, so this is a
+  compression-frontier result rather than a positive accuracy result
+- the next positive-method attempt should stack this selective sharp-head
+  transport with a learned query-conditioned interface rather than scaling the
+  selector alone
+
+## 2026-04-21 Quantization-Preconditioned Toy Branch
+
+I added `preconditioned_query_pool`, a toy query-pool variant that applies a
+learned diagonal preconditioner before routing. This is the smallest
+SmoothQuant/AWQ-style experiment we can run without changing the real
+translator. It logs condition proxy, cosine drift, norm ratio, and absolute
+scale ratio.
+
+Task accuracy at budget `4`:
+
+- aligned: `query_pool 0.3177`, `preconditioned_query_pool 0.3958`
+- rotated: `query_pool 0.2969`, `preconditioned_query_pool 0.2656`
+- outlier: `query_pool 0.3594`, `preconditioned_query_pool 0.2240`
+- slot-permuted: `query_pool 0.3281`, `preconditioned_query_pool 0.2760`
+
+Interpretation:
+
+- diagonal preconditioning is not robust enough as-is
+- it sharpens routing and helps aligned data, but it degrades rotated,
+  outlier, and slot-permuted stresses
+- if we add this family to the real method, prefer constrained orthogonal
+  rotations, Hadamard/gauge fixing, or asymmetric K/V budgets over a free
+  diagonal scale
+
+## 2026-04-21 Control-Suite Runtime Head Routing
+
+I added runtime head-routing fields to `EvalSpec` and `build_evaluate_cmd`:
+
+- `runtime_head_selection_ratio`
+- `runtime_head_selection_metric`
+- `runtime_head_gate_metric`
+- `runtime_head_gate_strength`
+
+This turns route-atom/head-budget sweeps into reproducible control-suite runs
+instead of one-off evaluator commands. Use this before scaling to GSM30/GSM70.

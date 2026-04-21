@@ -133,6 +133,19 @@ def _atom_metrics(atom_weights: torch.Tensor) -> dict[str, float]:
     }
 
 
+def _precondition_metrics(preconditioned: torch.Tensor, original: torch.Tensor) -> dict[str, float]:
+    cosine = F.cosine_similarity(preconditioned, original, dim=-1)
+    norm_ratio = preconditioned.norm(dim=-1) / original.norm(dim=-1).clamp_min(1e-8)
+    abs_scale_ratio = preconditioned.abs().mean(dim=-1) / original.abs().mean(dim=-1).clamp_min(1e-8)
+    condition_proxy = preconditioned.abs().amax(dim=-1) / preconditioned.abs().amin(dim=-1).clamp_min(1e-8)
+    return {
+        "precondition_condition_proxy": float(condition_proxy.mean().item()),
+        "precondition_cosine_drift": float(cosine.mean().item()),
+        "precondition_norm_ratio": float(norm_ratio.mean().item()),
+        "precondition_abs_scale_ratio": float(abs_scale_ratio.mean().item()),
+    }
+
+
 class TopKReadout(nn.Module):
     def __init__(self, dim: int, classes: int, top_k: int) -> None:
         super().__init__()
@@ -174,6 +187,39 @@ class QueryPoolReadout(nn.Module):
         summary = torch.einsum("np,npd->nd", beta, pool_values)
         effective_weights = torch.einsum("np,nps->ns", beta, omega)
         self.last_atom_weights = beta.detach()
+        return summary, effective_weights
+
+    def forward(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        summary, weights = self.encode(batch)
+        return self.classifier(summary), self.reconstructor(summary), weights
+
+
+class PreconditionedQueryPoolReadout(nn.Module):
+    def __init__(self, dim: int, classes: int, pool_slots: int) -> None:
+        super().__init__()
+        self.pool_queries = nn.Parameter(torch.randn(pool_slots, dim) / math.sqrt(dim))
+        self.query_proj = nn.Linear(dim, dim, bias=False)
+        self.precondition_log_scale = nn.Parameter(torch.zeros(dim))
+        self.classifier = nn.Linear(dim, classes)
+        self.reconstructor = nn.Linear(dim, dim)
+        self.last_atom_weights: torch.Tensor | None = None
+        self.last_preconditioned_q: torch.Tensor | None = None
+        self.last_original_q: torch.Tensor | None = None
+
+    def encode(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor]:
+        q_proj = self.query_proj(batch.q)
+        scale = torch.exp(self.precondition_log_scale).clamp(1e-3, 1e3)
+        q_pre = q_proj * scale
+        beta = torch.softmax(q_pre @ self.pool_queries.T / math.sqrt(batch.q.shape[-1]), dim=-1)
+        pool_q = q_pre[:, None, :] + self.pool_queries[None, :, :]
+        slot_logits = torch.einsum("npd,nsd->nps", pool_q, batch.K) / math.sqrt(batch.q.shape[-1])
+        omega = torch.softmax(slot_logits, dim=-1)
+        pool_values = torch.einsum("nps,nsd->npd", omega, batch.V)
+        summary = torch.einsum("np,npd->nd", beta, pool_values)
+        effective_weights = torch.einsum("np,nps->ns", beta, omega)
+        self.last_atom_weights = beta.detach()
+        self.last_preconditioned_q = q_pre.detach()
+        self.last_original_q = q_proj.detach()
         return summary, effective_weights
 
     def forward(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -242,21 +288,47 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
         )
     else:
         metrics.update(_atom_metrics(atom_weights))
+    preconditioned_q = getattr(model, "last_preconditioned_q", None)
+    original_q = getattr(model, "last_original_q", None)
+    if preconditioned_q is None or original_q is None:
+        metrics.update(
+            {
+                "precondition_condition_proxy": None,
+                "precondition_cosine_drift": None,
+                "precondition_norm_ratio": None,
+                "precondition_abs_scale_ratio": None,
+            }
+        )
+    else:
+        metrics.update(_precondition_metrics(preconditioned_q, original_q))
     return metrics
 
 
 def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     base = _make_base_tensors(config)
-    for scenario in scenarios:
+    method_seed_offsets = {
+        "topk": 101,
+        "query_pool": 211,
+        "preconditioned_query_pool": 307,
+        "route_atom": 401,
+    }
+    for scenario_idx, scenario in enumerate(scenarios):
         train = make_toy_batch(config, scenario=scenario, split="train", base=base)
         test = make_toy_batch(config, scenario=scenario, split="test", base=base)
-        methods: list[tuple[str, nn.Module, int]] = [
-            ("topk", TopKReadout(config.dim, config.classes, config.top_k), config.top_k),
-            ("query_pool", QueryPoolReadout(config.dim, config.classes, config.pool_slots), 1),
-            ("route_atom", RouteAtomReadout(config.dim, config.classes, config.route_atoms), 1),
+        methods: list[tuple[str, Any, int]] = [
+            ("topk", lambda: TopKReadout(config.dim, config.classes, config.top_k), config.top_k),
+            ("query_pool", lambda: QueryPoolReadout(config.dim, config.classes, config.pool_slots), 1),
+            (
+                "preconditioned_query_pool",
+                lambda: PreconditionedQueryPoolReadout(config.dim, config.classes, config.pool_slots),
+                1,
+            ),
+            ("route_atom", lambda: RouteAtomReadout(config.dim, config.classes, config.route_atoms), 1),
         ]
-        for method, model, margin_k in methods:
+        for method, factory, margin_k in methods:
+            torch.manual_seed(config.seed + scenario_idx * 10_000 + method_seed_offsets[method])
+            model = factory()
             _train_model(model, train, config)
             metrics = _evaluate_model(model, test, margin_k=margin_k)
             rows.append(
@@ -267,7 +339,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                         config.top_k
                         if method == "topk"
                         else config.pool_slots
-                        if method == "query_pool"
+                        if method in {"query_pool", "preconditioned_query_pool"}
                         else config.route_atoms
                     ),
                     **metrics,
@@ -285,8 +357,8 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
     lines = [
         "# Toy Query-Pool Benchmark",
         "",
-        "| Scenario | Method | Budget | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Scenario | Method | Budget | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         lines.append(
@@ -306,6 +378,10 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
                 atom_collision_rate=fmt(row["atom_collision_rate"]),
                 dead_atom_rate=fmt(row["dead_atom_rate"]),
                 atom_top_margin=fmt(row["atom_top_margin"]),
+                precondition_condition_proxy=fmt(row["precondition_condition_proxy"]),
+                precondition_cosine_drift=fmt(row["precondition_cosine_drift"]),
+                precondition_norm_ratio=fmt(row["precondition_norm_ratio"]),
+                precondition_abs_scale_ratio=fmt(row["precondition_abs_scale_ratio"]),
             )
         )
     path.parent.mkdir(parents=True, exist_ok=True)

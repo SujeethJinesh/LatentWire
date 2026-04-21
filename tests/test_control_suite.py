@@ -417,6 +417,43 @@ def test_build_evaluate_cmd_passes_position_selection_prior_source() -> None:
     assert cmd[cmd.index("--position-selection-prior-source") + 1] == "uniform"
 
 
+def test_build_evaluate_cmd_passes_runtime_head_routing_flags() -> None:
+    spec = control_suite.EvalSpec(
+        name="fused_quant_headwise_route_atom",
+        methods=("rotalign",),
+        gate_values=(0.10,),
+        quantize=True,
+        source_reasoning_mode="brief_analysis",
+        kv_transport="k_only",
+        position_selection_ratio=0.5,
+        position_selection_metric="attention",
+        runtime_head_selection_ratio=0.75,
+        runtime_head_selection_metric="headwise_route_atom",
+        runtime_head_gate_metric="headwise_route_atom",
+        runtime_head_gate_strength=0.5,
+    )
+    cmd = control_suite.build_evaluate_cmd(
+        python_exe="python",
+        repo_root=Path("/repo"),
+        source_model="src",
+        target_model="tgt",
+        eval_file="eval.jsonl",
+        checkpoint_path=Path("/tmp/checkpoint.pt"),
+        task_type="generation",
+        device="mps",
+        dtype="float32",
+        max_new_tokens=64,
+        gate_search_file=None,
+        gate_search_limit=30,
+        spec=spec,
+    )
+
+    assert cmd[cmd.index("--runtime-head-selection-ratio") + 1] == "0.75"
+    assert cmd[cmd.index("--runtime-head-selection-metric") + 1] == "headwise_route_atom"
+    assert cmd[cmd.index("--runtime-head-gate-metric") + 1] == "headwise_route_atom"
+    assert cmd[cmd.index("--runtime-head-gate-strength") + 1] == "0.5"
+
+
 def test_build_evaluate_cmd_skips_noop_gate_search_for_translated_only() -> None:
     spec = control_suite.EvalSpec(
         name="translated_noquant_brief",

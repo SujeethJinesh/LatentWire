@@ -2819,3 +2819,58 @@ Interpretation:
 - the next real test should stack route-atom tracing with the stronger learned
   query-pool interface, or sweep route-atom ratios before spending on larger
   GSM/SVAMP runs
+
+And a route-atom ratio sweep:
+
+> I added runtime head-routing pass-throughs to `latent_bridge/control_suite.py`
+> so `EvalSpec` can reproduce `runtime_head_selection_ratio`,
+> `runtime_head_selection_metric`, `runtime_head_gate_metric`, and
+> `runtime_head_gate_strength`. I then swept the new `headwise_route_atom`
+> metric on GSM5 at `25%`, `50%`, and `75%` head budgets.
+>
+> Results:
+> - dense-head reference: `0.400000` at `686,026.6` average bytes
+> - ratio `0.25`: `0.400000` at `176,381.8` average bytes
+> - ratio `0.50`: `0.200000` at `346,263.4` average bytes
+> - ratio `0.75`: `0.200000` at `516,145.0` average bytes
+> - controlled GSM10, ratio `0.25`: `0.100000` at `175,249.2` average bytes
+> - controlled GSM10 paired delta versus dense-head `dynalign_prefdist`:
+>   `+0.000000`, method-only `0`, baseline-only `0`
+> - ratio-sweep artifact:
+>   `results/headwise_route_atom_20260421/route_atom_ratio_sweep.md`
+
+Interpretation:
+
+- the best route-atom setting is non-monotonic; keeping only the sharpest 25%
+  heads preserves the smoke result, while reintroducing more heads hurts it
+- this is the first route-atom result that is worth scaling: it preserves the
+  `dynalign_prefdist` GSM5 smoke while reducing bytes by roughly `3.9x`
+- on controlled GSM10 it ties the dense-head branch exactly, so this is a
+  bytes-frontier/control result, not an accuracy-positive method result
+- the likely mechanism is interference from less selective heads, not a simple
+  lack of capacity
+- next blocker test: either pair this 25% route-atom pruning with a stronger
+  learned query-conditioned interface, or scale it to GSM30 only as a
+  compression-frontier control
+
+And a quantization-inspired toy preconditioning diagnostic:
+
+> I added `preconditioned_query_pool` to the toy benchmark. It applies a
+> learned diagonal preconditioner before query-pool routing and logs condition
+> proxy, cosine drift, norm ratio, and absolute scale ratio.
+>
+> At budget `4`, task accuracy was:
+> - aligned: `query_pool 0.3177`, `preconditioned_query_pool 0.3958`
+> - rotated: `query_pool 0.2969`, `preconditioned_query_pool 0.2656`
+> - outlier: `query_pool 0.3594`, `preconditioned_query_pool 0.2240`
+> - slot-permuted: `query_pool 0.3281`, `preconditioned_query_pool 0.2760`
+
+Interpretation:
+
+- diagonal preconditioning helps the easy aligned setting but makes the hard
+  stress cases worse
+- this supports adding quantization-inspired controls to the paper, but not
+  making diagonal preconditioning the next headline branch
+- the next quantization-style attempt should be constrained/orthogonal
+  preconditioning or asymmetric K/V budgeting, not an unconstrained diagonal
+  scale that collapses route entropy

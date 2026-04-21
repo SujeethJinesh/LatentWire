@@ -55,6 +55,10 @@ class EvalSpec:
     position_selection_ratio: float = 1.0
     position_selection_metric: str = "energy"
     position_selection_prior_source: str | None = None
+    runtime_head_selection_ratio: float = 1.0
+    runtime_head_selection_metric: str = "attention_peak"
+    runtime_head_gate_metric: str = "none"
+    runtime_head_gate_strength: float = 1.0
 
 
 def default_device() -> str:
@@ -607,6 +611,14 @@ def build_evaluate_cmd(
         cmd.extend(["--position-selection-metric", spec.position_selection_metric])
     if uses_rotalign and spec.position_selection_prior_source is not None:
         cmd.extend(["--position-selection-prior-source", spec.position_selection_prior_source])
+    if uses_rotalign and abs(float(spec.runtime_head_selection_ratio) - 1.0) > 1e-9:
+        cmd.extend(["--runtime-head-selection-ratio", str(spec.runtime_head_selection_ratio)])
+    if uses_rotalign and spec.runtime_head_selection_metric != "attention_peak":
+        cmd.extend(["--runtime-head-selection-metric", spec.runtime_head_selection_metric])
+    if uses_rotalign and spec.runtime_head_gate_metric != "none":
+        cmd.extend(["--runtime-head-gate-metric", spec.runtime_head_gate_metric])
+    if uses_rotalign and abs(float(spec.runtime_head_gate_strength) - 1.0) > 1e-9:
+        cmd.extend(["--runtime-head-gate-strength", str(spec.runtime_head_gate_strength)])
     if not spec.quantize:
         cmd.append("--no-quantize")
     if prediction_output is not None:
@@ -644,6 +656,10 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "kv_transport",
         "position_selection_ratio",
         "position_selection_metric",
+        "runtime_head_selection_ratio",
+        "runtime_head_selection_metric",
+        "runtime_head_gate_metric",
+        "runtime_head_gate_strength",
         "quantize",
         "target_alone",
         "text_to_text",
@@ -688,6 +704,10 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "kv_transport": record.get("kv_transport", "both"),
                     "position_selection_ratio": record.get("position_selection_ratio", 1.0),
                     "position_selection_metric": record.get("position_selection_metric", "energy"),
+                    "runtime_head_selection_ratio": record.get("runtime_head_selection_ratio", 1.0),
+                    "runtime_head_selection_metric": record.get("runtime_head_selection_metric", "attention_peak"),
+                    "runtime_head_gate_metric": record.get("runtime_head_gate_metric", "none"),
+                    "runtime_head_gate_strength": record.get("runtime_head_gate_strength", 1.0),
                     "quantize": record["quantize"],
                     "target_alone": record.get("target_alone"),
                     "text_to_text": record.get("text_to_text"),
@@ -1017,6 +1037,10 @@ def main() -> None:
                 "kv_transport": eval_spec.kv_transport,
                 "position_selection_ratio": eval_spec.position_selection_ratio,
                 "position_selection_metric": eval_spec.position_selection_metric,
+                "runtime_head_selection_ratio": eval_spec.runtime_head_selection_ratio,
+                "runtime_head_selection_metric": eval_spec.runtime_head_selection_metric,
+                "runtime_head_gate_metric": eval_spec.runtime_head_gate_metric,
+                "runtime_head_gate_strength": eval_spec.runtime_head_gate_strength,
                 "quantize": eval_spec.quantize,
                 "methods": list(eval_spec.methods),
                 "gate_values": list(eval_spec.gate_values),

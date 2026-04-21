@@ -26,9 +26,11 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
     assert {(row["scenario"], row["method"]) for row in rows} == {
         ("aligned", "topk"),
         ("aligned", "query_pool"),
+        ("aligned", "preconditioned_query_pool"),
         ("aligned", "route_atom"),
         ("rotated", "topk"),
         ("rotated", "query_pool"),
+        ("rotated", "preconditioned_query_pool"),
         ("rotated", "route_atom"),
     }
     for row in rows:
@@ -41,10 +43,18 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         assert "atom_collision_rate" in row
         assert "dead_atom_rate" in row
         assert "atom_top_margin" in row
+        assert "precondition_condition_proxy" in row
+        assert "precondition_cosine_drift" in row
+        assert "precondition_norm_ratio" in row
+        assert "precondition_abs_scale_ratio" in row
         if row["method"] != "topk":
             assert row["atom_entropy"] >= 0.0
             assert 0.0 <= row["atom_collision_rate"] <= 1.0
             assert 0.0 <= row["dead_atom_rate"] <= 1.0
+        if row["method"] == "preconditioned_query_pool":
+            assert row["precondition_condition_proxy"] >= 1.0
+            assert 0.0 < row["precondition_cosine_drift"] <= 1.0
+            assert row["precondition_norm_ratio"] > 0.0
 
 
 def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
@@ -73,8 +83,15 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
     loaded = json.loads(output.read_text())
 
     assert loaded["config"]["pool_slots"] == 2
-    assert {row["method"] for row in loaded["rows"]} == {"topk", "query_pool", "route_atom"}
+    assert {row["method"] for row in loaded["rows"]} == {
+        "topk",
+        "query_pool",
+        "preconditioned_query_pool",
+        "route_atom",
+    }
     summary = markdown.read_text()
     assert "Atom entropy" in summary
+    assert "Precond cond." in summary
     assert "| outlier | query_pool |" in summary
+    assert "| outlier | preconditioned_query_pool |" in summary
     assert "| outlier | route_atom |" in summary
