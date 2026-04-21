@@ -3201,3 +3201,66 @@ Paper decision:
   `gauge-aware alignment -> residual codebook/token bridge -> separable K/V
   routing -> head-adaptive byte allocation`, with C2C/KVComm as direct
   competitors and kvpress/KVzip/Quest as matched-byte controls.
+
+## 2026-04-21 Fourth Execution Addendum
+
+New references/results:
+
+- `references/314_recent_architecture_breakthroughs_for_cross_model_reasoning.md`
+- `references/314_competitor_bootstrap_status.md`
+- `results/asym_kv_qwen_20260421/qwen_gsm30_dynalign_prefdist_asym_kv_random_r025_v075_cal16_chat_telemetry.jsonl`
+- `results/asym_kv_qwen_20260421/qwen_gsm30_dynalign_prefdist_asym_kv_routeattn_valueattn_r025_v075_cal16_chat_telemetry.jsonl`
+- `results/query_pool_toy_20260421/query_pool_gauge_aware_protected_channel_vs_topk.{json,md}`
+- `results/query_pool_toy_20260421/gauge_aware_protected_channel_summary.md`
+- `results/competitor_bootstrap_20260421/c2c_qwen_gsm5_native_20260421.jsonl`
+- `results/competitor_bootstrap_20260421/kvpress_qwen3_gsm5_none_20260421.jsonl`
+- `results/competitor_bootstrap_20260421/kvpress_qwen3_gsm5_expected_attention_c050_20260421.jsonl`
+- `results/competitor_bootstrap_20260421/smoke_summary_20260421.md`
+
+GSM30 selector-control result:
+
+| Route metric | Value metric | Target | RotAlign | Delta | Method-only | Baseline-only |
+|---|---|---:|---:|---:|---:|---:|
+| attention | energy | 0.0667 | 0.0667 | 0.0000 | 1 | 1 |
+| attention | attention | 0.0667 | 0.1000 | +0.0333 | 2 | 1 |
+| random | random | 0.0667 | 0.1333 | +0.0667 | 4 | 2 |
+
+Toy gauge-aware protected-channel result:
+
+| Scenario | Residual | Fixed protected | Gauge-aware protected |
+|---|---:|---:|---:|
+| aligned | 0.5417 | 0.5938 | 0.5469 |
+| rotated | 0.6406 | 0.5729 | 0.5677 |
+| outlier | 0.5677 | 0.6198 | 0.5677 |
+| slot-permuted | 0.5417 | 0.4948 | 0.5260 |
+
+Competitor smoke result:
+
+| Method | Slice | Accuracy | Interpretation |
+|---|---|---:|---|
+| C2C native | first 5 from GSM30 | 0.0000 | Direct competitor is runnable but negative on this smoke. |
+| KVPress none | `gsm8k_5.jsonl` | 0.2000 | Same-model compression wrapper works. |
+| KVPress expected_attention `0.5` | `gsm8k_5.jsonl` | 0.2000 | Compression preserves GSM5 accuracy but is slower locally. |
+
+Interpretation:
+
+- The best GSM30 selector-control result is random/random, not
+  attention/energy. This is a major blocker for the current selector story:
+  the positive effect may be perturbation/exploration rather than meaningful
+  cross-model routing.
+- Gauge-aware protected channels based on PCA/covariance do not solve the
+  rotated toy case. The next alignment variant needs task/signal-aware
+  calibration, such as supervised Procrustes or a learned orthogonal basis.
+- C2C and KVPress are now runnable enough to keep as real baselines in the
+  paper pipeline, but the current results are smoke-level only.
+
+Paper decision:
+
+- Do add the stochastic/random selector control to the main ablation matrix.
+- Do not claim route-attention/value-energy as the positive mechanism.
+- Keep residual codebook as the strongest toy mechanism and pair it next with
+  signal-aware alignment, not covariance-only gauge alignment.
+- The next real-model experiment should test whether random/random survives
+  repeated seeds and whether its method-only flips overlap with
+  attention/attention flips. If yes, this becomes a stochastic ensemble/cache
+  perturbation method candidate; if no, it is likely noise.

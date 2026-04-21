@@ -1,0 +1,42 @@
+# Competitor Smoke Summary
+
+Date: 2026-04-21
+
+## Direct Competitor
+
+| Method | Model pair | Eval slice | Accuracy | Avg latency sec | Notes |
+|---|---|---|---:|---:|---|
+| C2C | `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3-0.6B` | first 5 from `gsm8k_gate_search_30.jsonl` | 0.0000 | 7.3765 | Native published artifact resolved and ran on MPS. |
+
+Artifact:
+
+- `c2c_qwen_gsm5_native_20260421.jsonl`
+- `c2c_qwen_gsm5_native_20260421.jsonl.meta.json`
+
+Interpretation:
+
+C2C is runnable on the exact Qwen pair, but the first 5-example GSM smoke is
+below LatentWire’s current GSM5 method smoke and below target-alone on
+`gsm8k_5`. This is not a full competitor result; it is a successful bootstrap
+plus a negative smoke.
+
+## Same-Model Compression Control
+
+| Method | Model | Eval slice | Accuracy | Avg latency sec | Tokens/sec |
+|---|---|---|---:|---:|---:|
+| KVPress none | `Qwen/Qwen3-0.6B` | `gsm8k_5.jsonl` | 0.2000 | 5.6321 | 6.7826 |
+| KVPress expected_attention, compression `0.5` | `Qwen/Qwen3-0.6B` | `gsm8k_5.jsonl` | 0.2000 | 6.2749 | 6.1834 |
+
+Artifacts:
+
+- `kvpress_qwen3_gsm5_none_20260421.jsonl`
+- `kvpress_qwen3_gsm5_none_20260421.jsonl.meta.json`
+- `kvpress_qwen3_gsm5_expected_attention_c050_20260421.jsonl`
+- `kvpress_qwen3_gsm5_expected_attention_c050_20260421.jsonl.meta.json`
+
+Interpretation:
+
+KVPress is runnable as a same-model compression control. On this small GSM5
+slice, expected-attention compression preserves accuracy but is slower than no
+press under the local MPS wrapper. The next meaningful comparison is GSM30
+with exact matched decoding and sidecar-normalized latency.

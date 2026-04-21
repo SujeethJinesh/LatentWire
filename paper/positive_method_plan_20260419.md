@@ -2357,3 +2357,50 @@ Revised next ladder:
 5. Run direct competitor smoke in the order from
    `references/311_competitor_smoke_matrix.md`: C2C, kvpress, KVzip, KVComm,
    then Quest where task-compatible.
+
+## 2026-04-21 Control And Competitor Follow-Up
+
+Executed from the revised ladder:
+
+- GSM30 `random/random` and `attention/attention` matched controls.
+- Gauge-aware protected-channel toy ablation.
+- C2C native GSM5 smoke on the exact Qwen pair.
+- KVPress none and expected-attention GSM5 smokes.
+- New 314 references covering recent architecture inspirations and competitor
+  bootstrap status.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| GSM30 attention/energy | target `0.0667`, method `0.0667` | Neutral selector. |
+| GSM30 attention/attention | target `0.0667`, method `0.1000` | Deterministic same-metric routing helps slightly. |
+| GSM30 random/random | target `0.0667`, method `0.1333` | Strongest current real-model smoke; not selector-semantic. |
+| Gauge-aware protected toy | improves slot-permuted vs fixed, fails rotated vs residual | Covariance gauge alignment is insufficient. |
+| C2C GSM5 native | `0.0000` | Direct competitor runnable, negative smoke. |
+| KVPress GSM5 | none `0.2000`, expected-attention `0.2000` | Same-model compression control runnable. |
+
+Updated blocker decomposition:
+
+1. **Selector semantics vs perturbation:** random/random beating
+   attention/energy means we must isolate whether the improvement is useful
+   stochastic perturbation, implicit ensemble behavior, or noise.
+2. **Alignment basis:** PCA/gauge canonicalization is not enough. The protected
+   subspace has to be selected by answer-relevant signal, not variance alone.
+3. **Residual interface:** residual codebook remains the strongest toy method;
+   it should be promoted before further deterministic selector tuning.
+4. **Competitor readiness:** C2C and KVPress are runnable, so future paper
+   tables can include real baselines rather than only planned comparisons.
+
+Next execution ladder:
+
+1. Repeat GSM30 random/random over at least `3` seeds and log flip overlap.
+2. Add a signal-aware protected-channel toy: supervised Procrustes or learned
+   orthogonal basis with an orthogonality penalty.
+3. Promote residual codebook to a frozen K/V-slot diagnostic and measure
+   reconstruction before generation.
+4. Run KVPress GSM30 `none` and `expected_attention` as matched same-model
+   controls.
+5. If random/random seed repeats are stable, test a controlled stochastic
+   ensemble variant: multiple random route/value masks with vote or confidence
+   selection under a fixed byte/runtime budget.

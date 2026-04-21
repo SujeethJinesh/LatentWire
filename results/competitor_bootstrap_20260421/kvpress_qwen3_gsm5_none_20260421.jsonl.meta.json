@@ -1,0 +1,13 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "eval_file": "data/gsm8k_5.jsonl",
+  "press": "none",
+  "compression_ratio": null,
+  "enable_thinking": false,
+  "accuracy": 0.2,
+  "ttft_sec": 0.0,
+  "tokens_per_sec": 6.782598276695277,
+  "examples_per_sec": 0.17755492870930042,
+  "latency_sec": 5.632059933617711,
+  "generated_tokens_avg": 38.2
+}

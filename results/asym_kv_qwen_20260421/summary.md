@@ -70,6 +70,34 @@ and associate them with byte cost, token-count ratio, and route/value selector
 structure. The current method should stay in the ablation lane until matched
 GSM30 controls show a reliable method-only excess over baseline-only.
 
+## GSM30 Matched Selector Controls
+
+All rows use the same Qwen pair, checkpoint, gate `0.10`, route budget `0.25`,
+value budget `0.75`, and average bytes `1,406,292.3`.
+
+| Route metric | Value metric | Target | RotAlign | Delta | Method-only | Baseline-only | Both correct | Both wrong |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| attention | energy | 0.0667 | 0.0667 | 0.0000 | 1 | 1 | 1 | 27 |
+| attention | attention | 0.0667 | 0.1000 | +0.0333 | 2 | 1 | 1 | 26 |
+| random | random | 0.0667 | 0.1333 | +0.0667 | 4 | 2 | 0 | 24 |
+
+Interpretation:
+
+The best GSM30 smoke in this family is currently `random/random`, not the
+semantic route-attention/value-energy selector. That means the current positive
+signal cannot be claimed as a selector-quality result. It is more consistent
+with one of these hypotheses:
+
+- cache/message perturbation sometimes helps generation escape target-alone
+  failures;
+- attention/energy selection is overconstrained at this small model scale;
+- the gate/fusion path matters more than the current selector metric;
+- stochastic or ensemble-style routing may be a better lead than deterministic
+  attention-only routing.
+
+Next selector-specific claim needs random-seed repeats and controls that hold
+the perturbation distribution constant while changing only selector semantics.
+
 ## Protected-Channel Toy Result
 
 Artifact:

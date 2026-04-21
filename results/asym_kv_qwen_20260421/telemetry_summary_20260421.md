@@ -45,6 +45,23 @@ failure, but it can also introduce a new failure. The method is still useful as
 an ablation lane because the paired sidecar now exposes example-level flips and
 mechanism telemetry.
 
+## Matched Selector Matrix
+
+All rows use the same byte budget and fixed gate.
+
+| Selector | Target | Method | Delta | Method-only | Baseline-only | McNemar p | Bootstrap low | Bootstrap high |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| route attention / value energy | 0.0667 | 0.0667 | 0.0000 | 1 | 1 | 1.0000 | -0.1000 | 0.1000 |
+| route attention / value attention | 0.0667 | 0.1000 | +0.0333 | 2 | 1 | 1.0000 | -0.0667 | 0.1667 |
+| route random / value random | 0.0667 | 0.1333 | +0.0667 | 4 | 2 | 0.6831 | -0.1000 | 0.2333 |
+
+Interpretation:
+
+The current GSM30 evidence is not selector-semantic. Random routing currently
+has the largest method-only excess, while attention/energy is neutral. The next
+real-model blocker is therefore not just better attention metrics; it is
+separating beneficial cache perturbation from true cross-model communication.
+
 ## Protected-Channel Residual Codebook Toy
 
 Run:
@@ -64,3 +81,23 @@ Fixed protected channels help when the protected coordinates are aligned or
 carry true outlier energy, but they hurt under gauge rotation and slot
 permutation. This supports a more constrained next step: protect channels only
 after gauge alignment, or learn the protected mask jointly with the bridge.
+
+## Gauge-Aware Protected-Channel Toy
+
+Run:
+
+`../query_pool_toy_20260421/query_pool_gauge_aware_protected_channel_vs_topk.md`
+
+| Scenario | Residual | Fixed protected | Gauge-aware protected | Gauge-aware delta vs fixed | Gauge-aware delta vs residual |
+|---|---:|---:|---:|---:|---:|
+| aligned | 0.5417 | 0.5938 | 0.5469 | -0.0469 | +0.0052 |
+| rotated | 0.6406 | 0.5729 | 0.5677 | -0.0052 | -0.0729 |
+| outlier | 0.5677 | 0.6198 | 0.5677 | -0.0521 | 0.0000 |
+| slot_permuted | 0.5417 | 0.4948 | 0.5260 | +0.0313 | -0.0156 |
+
+Interpretation:
+
+PCA-style gauge canonicalization improves reconstruction and partially repairs
+slot permutation, but it does not recover the rotated case and does not beat
+residual codebook. The protected basis needs task/signal-aware alignment, not
+only covariance alignment.
