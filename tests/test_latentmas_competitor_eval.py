@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -165,6 +166,57 @@ def test_make_latentmas_method_passes_expected_constructor_arguments(
             "args": args,
         },
     )
+
+
+def test_make_baseline_method_does_not_require_latent_mas_import(
+    monkeypatch, latentmas_eval_module
+) -> None:
+    latentmas_eval = latentmas_eval_module
+    calls: list[tuple[str | None, bool]] = []
+
+    class Baseline:
+        def __init__(self, model, **kwargs) -> None:
+            self.kwargs = kwargs
+
+    def fake_ensure(root, *, required_method=None, include_model=True) -> None:
+        calls.append((required_method, include_model))
+        if required_method == "baseline":
+            latentmas_eval.BaselineMethod = Baseline
+            return
+        raise AssertionError(f"unexpected import request: {required_method}")
+
+    monkeypatch.setattr(latentmas_eval, "BaselineMethod", None)
+    monkeypatch.setattr(latentmas_eval, "TextMASMethod", None)
+    monkeypatch.setattr(latentmas_eval, "LatentMASMethod", None)
+    monkeypatch.setattr(latentmas_eval, "_ensure_latentmas_imports", fake_ensure)
+    args = argparse.Namespace(
+        max_new_tokens=64,
+        temperature=0.01,
+        top_p=1.0,
+        generate_bs=2,
+        use_vllm=False,
+        latent_steps=12,
+    )
+
+    method = latentmas_eval.make_latentmas_method("baseline", object(), args)
+
+    assert isinstance(method, Baseline)
+    assert calls == [("baseline", False)]
+
+
+def test_vllm_sampling_params_stub_is_sufficient_for_non_vllm_latent_import(
+    monkeypatch, latentmas_eval_module
+) -> None:
+    latentmas_eval = latentmas_eval_module
+    monkeypatch.delitem(sys.modules, "vllm", raising=False)
+
+    latentmas_eval._install_vllm_sampling_params_stub()
+
+    import vllm
+
+    params = vllm.SamplingParams(temperature=0.1, max_tokens=8)
+    assert params.temperature == 0.1
+    assert params.max_tokens == 8
 
 
 def test_runtime_args_map_svamp_to_native_math_prompt_without_losing_public_task(

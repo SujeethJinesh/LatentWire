@@ -313,6 +313,27 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   LatentMAS item schema, keeps vendor imports lazy, writes JSONL predictions,
   and writes `.jsonl.meta.json` summaries with accuracy, latency, token
   proxies, and compact agent trace hashes.
+- The LatentMAS wrapper has now produced cached Qwen2.5-0.5B `N=1` harness
+  probes for `baseline` and `text_mas`, both at `0.0000` accuracy with
+  latencies `10.72s` and `15.37s`. These are plumbing rows only; fair
+  Qwen3/Qwen2.5 matched rows remain missing until runtime issues are fixed.
+- The latent-MAS direct mode is not yet runnable locally: lazy imports and a
+  non-vLLM `SamplingParams` shim unblocked method construction, MPS fallback
+  got past `torch.linalg.solve`, and generation then failed in HF cache-position
+  handling. Treat this as a benchmark execution blocker, not method evidence.
+- The matched competitor matrix is now materialized at
+  `paper/matched_competitor_matrix_20260421.md`. On GSM70 it keeps selected
+  route + repair (`0.2000`), target self-repair (`0.1714`), selected route
+  without repair (`0.1286`), C2C (`0.1286`), KVComm (`0.0000`), KVPress
+  controls, and missing LatentMAS fair rows in one audit table.
+- The hub dictionary toy adds the strongest new scalability clue: a shared hub
+  reaches `1.0000` accuracy and atom recovery with `12` adapters, while
+  pairwise adapters use `20` adapters and reach `0.6792`; random hub collapses
+  to `0.1875`.
+- The router-stability toy makes confidence-only routing a clear negative
+  control: feature routing reaches `0.9438` accuracy with perturb stability
+  `0.9500`, sticky routing keeps the accuracy and raises stability to
+  `1.0000`, while confidence routing drops to `0.3688`.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided

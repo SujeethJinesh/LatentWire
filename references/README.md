@@ -366,6 +366,10 @@ File `363_` extends the active routed-refinement reasoning lane:
 
 - `363_`: Recent routed projector, adaptive compute, latent refinement, latent reasoning, and cross-model/inter-agent latent communication memo with 2025-2026 source links, 12 concrete ablations, and an interpretability contract for route banks, stop rules, latent codebooks, and competitor controls.
 
+File `364_` extends the active hub-router-tokenizer-verifier lane:
+
+- `364_`: Recent hub dictionary, shared latent space, dynamic router regularization, verifier/stop-policy, and tokenizer/vocabulary adaptation memo with 2025-2026 source links, concrete ablations, required telemetry, and decision rules to avoid rerunning stale experiments.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.

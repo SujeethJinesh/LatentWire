@@ -20,7 +20,19 @@ prompt, token, byte, latency, and repair budgets are all matched in one harness.
 
 | Method | Local state | Native support | Next artifact | Interpretation |
 |---|---|---|---|---|
-| `LatentMAS` | clean local clone at `references/repos/LatentMAS`, commit `b9b2095`; repo remains ignored; LatentWire wrapper now exists at `scripts/run_latentmas_competitor_eval.py` | native GSM8K via `baseline`, `text_mas`, `latent_mas`; SVAMP supported through wrapper row conversion | GSM/SVAMP limit smokes emitted as JSONL plus `.jsonl.meta.json` | Closest latent-communication competitor; execution is now a model-runtime task, not a wrapper/design blocker. |
+| `LatentMAS` | clean local clone at `references/repos/LatentMAS`, commit `b9b2095`; repo remains ignored; LatentWire wrapper now exists at `scripts/run_latentmas_competitor_eval.py` with lazy imports and a non-vLLM `SamplingParams` shim | native GSM8K via `baseline`, `text_mas`, `latent_mas`; SVAMP supported through wrapper row conversion | matched GSM/SVAMP limit smokes emitted as JSONL plus `.jsonl.meta.json` | Closest latent-communication competitor; baseline/text-MAS plumbing works on cached Qwen2.5, while latent-MAS direct mode remains runtime-blocked locally. |
+
+## LatentMAS Harness Probes
+
+These rows are not fair competitor results. They use cached
+`Qwen/Qwen2.5-0.5B-Instruct` on `N=1` only to prove the wrapper can load vendor
+methods, emit JSONL/meta telemetry, and survive local device constraints.
+
+| Split | Method | Accuracy | N | Latency sec | Source artifact | Interpretation |
+|---|---|---:|---:|---:|---|---|
+| `gsm8k_eval_70` limit-1 | `LatentMAS` baseline probe | 0.0000 | 1 | 10.7217 | `results/latentmas_competitor_20260421/qwen25_05b_gsm1_baseline_probe.jsonl` | Wrapper, row conversion, baseline import, parsing, and meta emission work on cached Qwen2.5. |
+| `gsm8k_eval_70` limit-1 | `LatentMAS` text-MAS probe | 0.0000 | 1 | 15.3653 | `results/latentmas_competitor_20260421/qwen25_05b_gsm1_text_mas_probe.jsonl` | Multi-agent text prompt path works; this remains a plumbing row only. |
+| `gsm8k_eval_70` limit-1 | `LatentMAS` latent-MAS probe | missing | - | - | - | Lazy imports and the non-vLLM shim unblocked construction; MPS fallback got past `torch.linalg.solve`, then HF generation failed in cache-position handling. |
 
 ## Current Same-Model Compression Controls
 
@@ -71,11 +83,13 @@ prompt, token, byte, latency, and repair budgets are all matched in one harness.
 5. Repeat limit-20 or run a bounded limit-50 KVPress batch before using
    same-model compression controls as stability evidence; limit-5/10/20 remain
    harness-health rows only.
-6. Run `LatentMAS` limit smokes next as a direct latent-communication
-   competitor with matched accuracy, output-token, latency, and traceability
-   reporting.
+6. Fix `LatentMAS` latent-mode runtime, then run matched limit smokes as a
+   direct latent-communication competitor with accuracy, output-token, latency,
+   and traceability reporting.
 7. Do not stage `references/repos/LatentMAS`; keep vendor code ignored and
    implement wrappers on the LatentWire side.
+8. Keep `paper/matched_competitor_matrix_20260421.md` updated; missing fair
+   rows should remain visible until real artifacts exist.
 
 ## LatentMAS Wrapper Command Matrix
 

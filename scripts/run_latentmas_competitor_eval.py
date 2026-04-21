@@ -15,6 +15,7 @@ import pathlib
 import re
 import sys
 import time
+import types
 from dataclasses import asdict, dataclass
 from typing import Any, Callable, Iterable, Sequence
 
@@ -134,10 +135,22 @@ def load_latentwire_generation_items(path: pathlib.Path, limit: int | None = Non
     return items
 
 
-def _ensure_latentmas_imports(latentmas_root: pathlib.Path) -> None:
+def _ensure_latentmas_imports(
+    latentmas_root: pathlib.Path,
+    *,
+    required_method: str | None = None,
+    include_model: bool = True,
+) -> None:
     global BaselineMethod, TextMASMethod, LatentMASMethod, ModelWrapper
 
-    if BaselineMethod is not None and TextMASMethod is not None and LatentMASMethod is not None and ModelWrapper is not None:
+    method_loaded = (
+        (required_method == "baseline" and BaselineMethod is not None)
+        or (required_method == "text_mas" and TextMASMethod is not None)
+        or (required_method == "latent_mas" and LatentMASMethod is not None)
+        or (required_method is None)
+    )
+    model_loaded = (not include_model) or ModelWrapper is not None
+    if method_loaded and model_loaded:
         return
 
     root = pathlib.Path(latentmas_root).resolve()
@@ -146,26 +159,48 @@ def _ensure_latentmas_imports(latentmas_root: pathlib.Path) -> None:
     if str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
-    if BaselineMethod is None:
+    if required_method == "baseline" and BaselineMethod is None:
         from methods.baseline import BaselineMethod as _BaselineMethod
 
         BaselineMethod = _BaselineMethod
-    if TextMASMethod is None:
+    if required_method == "text_mas" and TextMASMethod is None:
         from methods.text_mas import TextMASMethod as _TextMASMethod
 
         TextMASMethod = _TextMASMethod
-    if LatentMASMethod is None:
-        from methods.latent_mas import LatentMASMethod as _LatentMASMethod
+    if required_method == "latent_mas" and LatentMASMethod is None:
+        try:
+            from methods.latent_mas import LatentMASMethod as _LatentMASMethod
+        except ModuleNotFoundError as exc:
+            if exc.name != "vllm":
+                raise
+            _install_vllm_sampling_params_stub()
+            from methods.latent_mas import LatentMASMethod as _LatentMASMethod
 
         LatentMASMethod = _LatentMASMethod
-    if ModelWrapper is None:
+    if include_model and ModelWrapper is None:
         from models import ModelWrapper as _ModelWrapper
 
         ModelWrapper = _ModelWrapper
 
 
+def _install_vllm_sampling_params_stub() -> None:
+    if "vllm" in sys.modules:
+        return
+
+    module = types.ModuleType("vllm")
+
+    class SamplingParams:
+        def __init__(self, **kwargs: Any) -> None:
+            self.kwargs = dict(kwargs)
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+
+    module.SamplingParams = SamplingParams
+    sys.modules["vllm"] = module
+
+
 def make_latentmas_model(args: argparse.Namespace) -> Any:
-    _ensure_latentmas_imports(pathlib.Path(args.latentmas_root))
+    _ensure_latentmas_imports(pathlib.Path(args.latentmas_root), required_method=None, include_model=True)
     import torch
     from utils import auto_device, set_seed
 
@@ -175,9 +210,6 @@ def make_latentmas_model(args: argparse.Namespace) -> Any:
 
 
 def make_latentmas_method(method_name: str, model: object, args: argparse.Namespace) -> object:
-    if BaselineMethod is None or TextMASMethod is None or LatentMASMethod is None:
-        _ensure_latentmas_imports(pathlib.Path(getattr(args, "latentmas_root", "references/repos/LatentMAS")))
-
     common_kwargs = {
         "temperature": args.temperature,
         "top_p": args.top_p,
@@ -185,6 +217,12 @@ def make_latentmas_method(method_name: str, model: object, args: argparse.Namesp
         "args": args,
     }
     if method_name == "baseline":
+        if BaselineMethod is None:
+            _ensure_latentmas_imports(
+                pathlib.Path(getattr(args, "latentmas_root", "references/repos/LatentMAS")),
+                required_method="baseline",
+                include_model=False,
+            )
         return BaselineMethod(
             model,
             max_new_tokens=args.max_new_tokens,
@@ -192,12 +230,24 @@ def make_latentmas_method(method_name: str, model: object, args: argparse.Namesp
             **common_kwargs,
         )
     if method_name == "text_mas":
+        if TextMASMethod is None:
+            _ensure_latentmas_imports(
+                pathlib.Path(getattr(args, "latentmas_root", "references/repos/LatentMAS")),
+                required_method="text_mas",
+                include_model=False,
+            )
         return TextMASMethod(
             model,
             max_new_tokens_each=args.max_new_tokens,
             **common_kwargs,
         )
     if method_name == "latent_mas":
+        if LatentMASMethod is None:
+            _ensure_latentmas_imports(
+                pathlib.Path(getattr(args, "latentmas_root", "references/repos/LatentMAS")),
+                required_method="latent_mas",
+                include_model=False,
+            )
         return LatentMASMethod(
             model,
             latent_steps=args.latent_steps,

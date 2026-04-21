@@ -3709,3 +3709,61 @@ Next execution ladder:
 5. Paper gate remains positive-method only: promote a stack only if it beats
    target self-repair and direct competitors on matched examples with paired
    intervals and compute/token/byte ledgers.
+
+## 2026-04-21 Hub Dictionaries, Stable Routers, And Matched Competitors
+
+Executed next:
+
+- Added `references/364_hub_router_tokenizer_verifier_refs.md`, covering hub
+  latent interfaces, route stability, tokenizer adaptation, and verifier/search
+  repair papers from the recent sweep.
+- Added a hub-dictionary bridge toy: pairwise adapters versus a shared hub
+  interface, random hub, oracle hub, and held-out-family transfer controls.
+- Added a router-stability toy: hard feature routing, confidence routing, dense
+  routing, load-balanced routing, sticky routing, and oracle/random controls.
+- Added `scripts/build_matched_competitor_table.py`, which renders an explicit
+  matched GSM70 comparison matrix while keeping missing competitor rows visible.
+- Ran cached LatentMAS wrapper harness probes for `baseline` and `text_mas` on
+  Qwen2.5-0.5B `N=1`; latent-MAS itself remains runtime-blocked locally.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| Hub dictionary bridge | accuracy `1.0000`, atom recovery `1.0000`, MSE `0.0199`, using `12` adapters | A shared hub can beat pairwise scaling when source/target families share route atoms. |
+| Pairwise adapters | accuracy `0.6792`, MSE `0.3445`, using `20` adapters | Pairwise bridges scale badly and miss shared atom structure. |
+| Random hub | accuracy `0.1875` | The hub result is not just extra capacity; atom semantics matter. |
+| Held-out-family hub transfer | accuracy `1.0000` | The shared-interface hypothesis has generalization headroom in toy form. |
+| Stable feature router | accuracy `0.9438`, MSE `0.0243`, perturb stability `0.9500` | Route assignment can be accurate and stable when it uses geometry instead of target confidence. |
+| Confidence router | accuracy `0.3688`, MSE `1.5497` | Confidence-only routing is a saturated failure mode and should not be repeated as the sole selector. |
+| Sticky router | accuracy `0.9438`, perturb stability `1.0000` | Stability regularization can remove small perturbation flips without losing task accuracy. |
+| Matched GSM70 matrix | selected route + repair `0.2000`, target self-repair `0.1714`, C2C `0.1286`, KVComm `0.0000` | Current route-specific margin is positive but small; fair LatentMAS rows are still missing. |
+| LatentMAS baseline/text-MAS probes | both `0.0000` on `N=1`, latencies `10.72s` and `15.37s` | Wrapper plumbing works with cached small models, but these are not competitor rows. |
+| LatentMAS latent-MAS probe | import blocker fixed; MPS `linalg.solve` needed fallback; generation then failed in HF cache-position prep | The remaining direct competitor blocker is runtime compatibility, not missing wrapper telemetry. |
+
+Updated read:
+
+The strongest additive architecture clue is now **hub dictionary + stable
+feature/sticky routing**, not another pairwise adapter or confidence selector.
+This is still toy evidence, but it matches the paper's symmetry problem: many
+model pairs appear to need a shared gauge/feature basis plus route-specific
+experts, not `O(n^2)` pairwise maps. The real-model stack should therefore
+promote hub/shared feature IDs, route stability, atom recovery, and matched
+route-specific repair deltas together.
+
+Immediate execution ladder:
+
+1. Move hub dictionaries into real route-pool diagnostics: shared feature IDs,
+   atom recovery, route-family transfer, dead-feature rate, and pairwise-versus
+   hub parameter/byte scaling.
+2. Move sticky/feature routing into the route-pool harness with random,
+   confidence, dense, load-balanced, oracle, and perturbation-stability
+   controls.
+3. Patch or isolate LatentMAS latent-mode runtime on a bounded fair slice:
+   cached Qwen2.5 smokes first, then Qwen3 only when the model is cached or the
+   machine can sustain the fetch.
+4. Keep the matched competitor matrix as a required paper artifact; missing
+   rows must stay visible until real metrics exist.
+5. Only stack hub dictionary, sticky routing, tokenizer remap, mixed-bit
+   frontier, and verifier stop rules after interaction ablations confirm the
+   components do not reverse each other.
