@@ -298,6 +298,21 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   schema for selector/allocator runs: selector method, patch/quant
   correlations, feature persistence, protected ids, bit allocation, help/harm,
   missed-help, false-prune, bytes, compute, and stability.
+- The routed projector bank toy makes route-specific interface capacity
+  concrete: oracle routing reaches `0.9688` accuracy and MSE `0.0031`, feature
+  routing reaches `0.9187`, and the monolithic projector reaches `0.8687`.
+  Confidence routing collapses to `0.3000`, so routing quality, load balance,
+  and route stability are the next blockers.
+- The refinement stop-rule toy upgrades the prior over-refinement warning into
+  a concrete telemetry lane: fixed 2-step repair improves MSE to `0.0449`, but
+  fixed 4-step drops accuracy to `0.9125` with over-refinement `0.9625`.
+  Verifier-harm and oracle stops show that the remaining headroom is stop-policy
+  quality, not blind recurrence depth.
+- The LatentMAS competitor wrapper now exists at
+  `scripts/run_latentmas_competitor_eval.py`: it maps GSM/SVAMP JSONL rows into
+  LatentMAS item schema, keeps vendor imports lazy, writes JSONL predictions,
+  and writes `.jsonl.meta.json` summaries with accuracy, latency, token
+  proxies, and compact agent trace hashes.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided

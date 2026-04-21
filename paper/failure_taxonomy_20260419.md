@@ -104,7 +104,9 @@
 | Tokenizer stress exposes brittle token-ID transfer | Synthetic stress prompts create boundary mismatch without heavy model calls, and token-ID reconstruction fails despite high boundary F1 | boundary F1 `0.9463`, fragmentation delta `0.0448`, byte-span coverage `0.9354`, byte-span reconstruction `1.0000` | token-ID exact reconstruction proxy `0.0833`; unicode category has lowest boundary F1 `0.9384` | Boundary F1 alone is not enough; exact reconstruction and remap coverage are required tokenizer telemetry | Promote stress diagnostics to real tokenizer pairs and run byte/span remap before bridge training | Concrete tokenizer-stress harness |
 | Mixed-bit route-atom allocation beats flat low-bit compression | EXL2/AWQ-style nonuniform precision can recover task behavior at a lower achieved bpw than uniform 4-bit | quant-error target-bpw allocator `1.0000` accuracy, MSE `0.0314`, achieved bpw `3.9375`, patch corr `0.8886`; uniform 4-bit `1.0000`, MSE `0.0303`, bpw `4.0000` | uniform 3-bit `0.2250`, MSE `0.1269`; random allocator `0.2250`; universal-feature allocator `0.7438` despite low MSE | Precision allocation must be task/patch-aware, not only reconstruction-aware | Stack quant-error mixed-bit allocation with protected-frontier pruning and log bit histograms, outlier protection, help/harm | Positive compression component |
 | Selector telemetry needs a unified schema before real-pool scaling | Existing toy selector outputs now normalize into a route-pool-ready schema | schema includes selector method, patch/quant correlations, feature persistence, protected ids, bit allocation, help/harm, missed-help, false-prune, bytes, compute, stability | Prior artifacts used incompatible field names and could not be compared directly | Without schema normalization, future route-pool experiments will be hard to audit or merge | Require this sidecar for every selector/allocator run | Interpretability infrastructure |
-| LatentMAS is a direct competitor but not yet a LatentWire result | The repository is cloned locally and native GSM commands are identified, but no LatentWire-side JSONL wrapper or metrics have been run yet | clean local clone at `references/repos/LatentMAS`, commit `b9b2095`; native GSM task and methods `baseline`, `text_mas`, `latent_mas` | SVAMP is not native; native logs are not paper-grade JSONL telemetry | Competitor readiness is now an implementation blocker, not a literature gap | Add `scripts/run_latentmas_competitor_eval.py` and run GSM/SVAMP smokes before any head-to-head claim | Direct competitor bootstrap pending |
+| LatentMAS is now wrapper-ready but not yet benchmarked | The repository is cloned locally and native GSM commands are identified; a LatentWire-side wrapper now converts GSM/SVAMP rows and emits JSONL/meta telemetry | clean local clone at `references/repos/LatentMAS`, commit `b9b2095`; wrapper test suite passes for conversion, constructor kwargs, fake-method JSONL/meta output | No real model GSM/SVAMP LatentMAS smoke metrics have been run yet; SVAMP remains wrapper-mapped rather than native | Competitor readiness has moved from implementation blocker to execution blocker | Run bounded GSM/SVAMP `baseline`, `text_mas`, and `latent_mas` smokes before any head-to-head claim | Direct competitor harness ready |
+| Routed projector banks have clear toy headroom but router quality is the blocker | Route-specific gauges strongly favor expert/projector banks when routing is correct | oracle routed bank `0.9688`, feature-routed bank `0.9187`, monolithic projector `0.8687` | confidence-routed bank collapses to `0.3000` with route accuracy `0.1437`; random bank `0.4375` | More bridge capacity is not enough; the route assignment signal determines whether the bank helps or harms | Promote feature/layer/task routers into real route pools with oracle, random, confidence, entropy, and load-balance controls | Positive toy clue, router blocker |
+| Refinement stop policy matters as much as repair depth | Bounded latent repair has MSE headroom, but blind extra steps over-refine | fixed 2-step MSE `0.0449`; verifier-harm stop accuracy `0.9625`; oracle stop `0.9688` with over-refinement `0.0000` | fixed 4-step accuracy `0.9125` with over-refinement `0.9625`; confidence stop halts early but still loses accuracy | Do not add fixed-depth latent repair as a headline method | Promote confidence, score-drift, process/verifier, and oracle stop rules with help/harm and over-refinement counters | Positive headroom, unsafe without stop rules |
 | Multimodal and diffusion connector ideas are plausible but untested here | Recent connector/refinement papers suggest bottlenecks and iterative latent updates, but no LatentWire result exists yet | Q-Former/perceiver bottleneck, routed projector, soft belief-state refinement, trajectory-guided repair, latent-flow bridge reference memo | Current positive evidence is still route/repair/atom/quant toy evidence, not multimodal connector evidence | Do not add connector claims until a matched toy or route-pool diagnostic exists | Keep as next ablation queue, not current claim |
 | Paper claims now need stronger evaluation discipline | Route-specific repair deltas are positive but underpowered, and repair compute is not yet fully budget-matched | GSM70 route-specific delta `+0.0286 [-0.0429, 0.1143]`; SVAMP70 `+0.0429 [0.0000, 0.1000]` | Aggregate accuracy alone makes target-side repair look stronger than the route-specific method component | Point estimates and raw accuracy tables are insufficient for an ICLR-ready claim | Add paired significance, bootstrap CIs, compute ledgers, frozen manifests, and contamination controls to every headline table | Evaluation blocker |
 
@@ -161,12 +163,12 @@
 - Strongest feature-basis selector clue: **universal dictionary persistence**,
   which reaches `1.0000` toy accuracy with patch correlation `0.6078` and
   stability `1.0000`, but still trails exact patch-effect on MSE.
-- Strongest refinement clue: **two-step or noisy target-side latent repair can
-  improve MSE**, but fixed four-step repair over-refines and harms task
-  accuracy. Refinement needs stop rules before it belongs in the method stack.
-- Strongest direct competitor gap to fill next: **LatentMAS**, now identified
-  as the closest latent-communication competitor to bootstrap with matched
-  accuracy/token/latency/traceability reporting.
+- Strongest refinement clue: **stop-rule-governed target-side latent repair**.
+  Two-step repair improves MSE, fixed four-step repair over-refines badly, and
+  verifier-harm/oracle stops show that halt quality is the next lever.
+- Strongest direct competitor gap to fill next: **LatentMAS runtime smokes**.
+  The wrapper now exists; the remaining task is matched baseline/text-MAS/
+  latent-MAS GSM/SVAMP execution with accuracy/token/latency/trace telemetry.
 - Strongest tokenizer-stress clue: **byte-span remap coverage stays high while
   token-ID reconstruction fails**. The synthetic stress split has boundary F1
   `0.9463`, byte-span reconstruction `1.0000`, and token-ID exact proxy only
@@ -177,9 +179,10 @@
 - Strongest interpretability infrastructure added: **frontier selector
   telemetry schema**, which should become the mandatory sidecar for selector
   and bit-allocation experiments.
-- Strongest lateral architecture queue: **Q-Former/perceiver bottlenecks,
-  routed projector bridges, and iterative belief/flow refinement**, currently
-  reference-backed but not yet result-backed.
+- Strongest lateral architecture queue: **routed projector banks and
+  stop-rule repair first**, then Q-Former/perceiver bottlenecks and iterative
+  belief/flow refinement. Routed projectors and stop rules now have toy
+  evidence; the rest remains reference-backed.
 - Evaluation standard for the next paper table is now fixed: paired CIs,
   sample-level correctness, repair-call savings, tokens/bytes/latency, and
   exact comparator budgets must ship with the result.

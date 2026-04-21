@@ -1,0 +1,195 @@
+{
+  "config": {
+    "calibration_examples": 192,
+    "classes": 5,
+    "confidence_temperature": 0.85,
+    "dim": 20,
+    "experts": 4,
+    "perturb_noise": 0.025,
+    "route_noise": 0.1,
+    "seed": 0,
+    "source_noise": 0.035,
+    "styles": 6,
+    "target_noise": 0.025,
+    "test_examples": 160
+  },
+  "interpretation": "A routed projector bank is useful when source latents occupy route-specific gauges. Oracle routing upper-bounds the bank; feature routing tests cheap centroid routing; confidence routing tests target-head self-selection; random routing isolates bank capacity from route quality.",
+  "methods": [
+    "no_route_baseline",
+    "monolithic_projector",
+    "oracle_routed_bank",
+    "confidence_routed_bank",
+    "feature_routed_bank",
+    "random_routed_bank"
+  ],
+  "rows": [
+    {
+      "bytes_proxy": 80.0,
+      "compute_proxy": 20.0,
+      "expert_utilization": {
+        "0": 1.0,
+        "1": 0.0,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "failure_tags": {
+        "lost_baseline_correct": 0,
+        "ok_correct": 43,
+        "other": 0,
+        "projection_error": 27,
+        "route_mismatch": 82,
+        "wrong_low_mse": 8
+      },
+      "harm_vs_no_route": 0.0,
+      "help_vs_no_route": 0.0,
+      "method": "no_route_baseline",
+      "mse": 1.9278271198272705,
+      "mse_harm_vs_no_route": 0.0,
+      "mse_help_vs_no_route": 0.0,
+      "route_accuracy": 0.21875,
+      "route_entropy": 0.0,
+      "route_stability": 1.0,
+      "task_accuracy": 0.26875001192092896
+    },
+    {
+      "bytes_proxy": 1680.0,
+      "compute_proxy": 400.0,
+      "expert_utilization": {
+        "0": 1.0,
+        "1": 0.0,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "failure_tags": {
+        "lost_baseline_correct": 0,
+        "ok_correct": 139,
+        "other": 0,
+        "projection_error": 0,
+        "route_mismatch": 21,
+        "wrong_low_mse": 0
+      },
+      "harm_vs_no_route": 0.08124999701976776,
+      "help_vs_no_route": 0.6812499761581421,
+      "method": "monolithic_projector",
+      "mse": 0.10016758739948273,
+      "mse_harm_vs_no_route": 0.0,
+      "mse_help_vs_no_route": 1.0,
+      "route_accuracy": 0.21875,
+      "route_entropy": 0.0,
+      "route_stability": 1.0,
+      "task_accuracy": 0.8687499761581421
+    },
+    {
+      "bytes_proxy": 6720.0,
+      "compute_proxy": 404.0,
+      "expert_utilization": {
+        "0": 0.21875,
+        "1": 0.3125,
+        "2": 0.24375000596046448,
+        "3": 0.22499999403953552
+      },
+      "failure_tags": {
+        "lost_baseline_correct": 3,
+        "ok_correct": 155,
+        "other": 0,
+        "projection_error": 1,
+        "route_mismatch": 0,
+        "wrong_low_mse": 1
+      },
+      "harm_vs_no_route": 0.01875000074505806,
+      "help_vs_no_route": 0.71875,
+      "method": "oracle_routed_bank",
+      "mse": 0.0030753579922020435,
+      "mse_harm_vs_no_route": 0.0,
+      "mse_help_vs_no_route": 1.0,
+      "route_accuracy": 1.0,
+      "route_entropy": 1.984642505645752,
+      "route_stability": 1.0,
+      "task_accuracy": 0.96875
+    },
+    {
+      "bytes_proxy": 6760.0,
+      "compute_proxy": 1600.0,
+      "expert_utilization": {
+        "0": 0.22499999403953552,
+        "1": 0.29374998807907104,
+        "2": 0.21875,
+        "3": 0.26249998807907104
+      },
+      "failure_tags": {
+        "lost_baseline_correct": 0,
+        "ok_correct": 48,
+        "other": 0,
+        "projection_error": 0,
+        "route_mismatch": 112,
+        "wrong_low_mse": 0
+      },
+      "harm_vs_no_route": 0.20000000298023224,
+      "help_vs_no_route": 0.23125000298023224,
+      "method": "confidence_routed_bank",
+      "mse": 2.097395181655884,
+      "mse_harm_vs_no_route": 0.612500011920929,
+      "mse_help_vs_no_route": 0.38749998807907104,
+      "route_accuracy": 0.14374999701976776,
+      "route_entropy": 1.9895204305648804,
+      "route_stability": 0.956250011920929,
+      "task_accuracy": 0.30000001192092896
+    },
+    {
+      "bytes_proxy": 7040.0,
+      "compute_proxy": 480.0,
+      "expert_utilization": {
+        "0": 0.24375000596046448,
+        "1": 0.23125000298023224,
+        "2": 0.24375000596046448,
+        "3": 0.28125
+      },
+      "failure_tags": {
+        "lost_baseline_correct": 3,
+        "ok_correct": 147,
+        "other": 0,
+        "projection_error": 0,
+        "route_mismatch": 9,
+        "wrong_low_mse": 1
+      },
+      "harm_vs_no_route": 0.05000000074505806,
+      "help_vs_no_route": 0.699999988079071,
+      "method": "feature_routed_bank",
+      "mse": 0.13866956532001495,
+      "mse_harm_vs_no_route": 0.08124999701976776,
+      "mse_help_vs_no_route": 0.918749988079071,
+      "route_accuracy": 0.918749988079071,
+      "route_entropy": 1.9960246086120605,
+      "route_stability": 1.0,
+      "task_accuracy": 0.918749988079071
+    },
+    {
+      "bytes_proxy": 6720.0,
+      "compute_proxy": 400.0,
+      "expert_utilization": {
+        "0": 0.23125000298023224,
+        "1": 0.26875001192092896,
+        "2": 0.26875001192092896,
+        "3": 0.23125000298023224
+      },
+      "failure_tags": {
+        "lost_baseline_correct": 0,
+        "ok_correct": 70,
+        "other": 0,
+        "projection_error": 0,
+        "route_mismatch": 90,
+        "wrong_low_mse": 0
+      },
+      "harm_vs_no_route": 0.16875000298023224,
+      "help_vs_no_route": 0.3375000059604645,
+      "method": "random_routed_bank",
+      "mse": 1.7458231449127197,
+      "mse_harm_vs_no_route": 0.518750011920929,
+      "mse_help_vs_no_route": 0.48124998807907104,
+      "route_accuracy": 0.25,
+      "route_entropy": 1.9959385395050049,
+      "route_stability": 1.0,
+      "task_accuracy": 0.4375
+    }
+  ]
+}

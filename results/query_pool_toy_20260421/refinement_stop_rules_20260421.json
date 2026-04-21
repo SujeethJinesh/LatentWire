@@ -1,0 +1,208 @@
+{
+  "config": {
+    "bridge_noise": 0.2,
+    "classes": 5,
+    "confidence_threshold": 0.88,
+    "dim": 24,
+    "examples": 160,
+    "max_steps": 4,
+    "quant_bits": 4,
+    "refinement_rate": 0.46,
+    "score_drift_threshold": 0.18,
+    "seed": 0,
+    "source_noise": 0.08,
+    "styles": 7,
+    "verifier_harm_margin": 0.018
+  },
+  "interpretation": "Stop rules isolate whether target-side repair should halt on confidence, score drift, verifier-predicted harm, or an oracle best-prefix criterion. Over-refinement rate is the main blocker metric: useful repair is not enough if later steps erase task-relevant signal.",
+  "methods": [
+    "fixed_1_step",
+    "fixed_2_step",
+    "fixed_4_step",
+    "confidence_stop",
+    "score_drift_stop",
+    "verifier_harm_stop",
+    "oracle_stop"
+  ],
+  "rows": [
+    {
+      "average_steps": 1.0,
+      "bytes_proxy": 16.0,
+      "compute_proxy": 24.0,
+      "confidence_ece": 0.04672133922576904,
+      "harm_rate": 0.0,
+      "help_rate": 0.0,
+      "mean_confidence": 0.9157785177230835,
+      "method": "fixed_1_step",
+      "mse": 0.05586887151002884,
+      "mse_harm_rate": 0.0,
+      "mse_help_rate": 0.0,
+      "over_refinement_rate": 0.0,
+      "regression_mse": 0.9820642471313477,
+      "stop_histogram": {
+        "1": 160,
+        "2": 0,
+        "3": 0,
+        "4": 0
+      },
+      "stop_reasons": {
+        "fixed_1_step": 160
+      },
+      "task_accuracy": 0.9624999761581421
+    },
+    {
+      "average_steps": 2.0,
+      "bytes_proxy": 25.0,
+      "compute_proxy": 33.120000000000005,
+      "confidence_ece": 0.04465524107217789,
+      "harm_rate": 0.03125,
+      "help_rate": 0.02500000037252903,
+      "mean_confidence": 0.9147171974182129,
+      "method": "fixed_2_step",
+      "mse": 0.04487668350338936,
+      "mse_harm_rate": 0.17499999701976776,
+      "mse_help_rate": 0.824999988079071,
+      "over_refinement_rate": 0.17499999701976776,
+      "regression_mse": 0.58222496509552,
+      "stop_histogram": {
+        "1": 0,
+        "2": 160,
+        "3": 0,
+        "4": 0
+      },
+      "stop_reasons": {
+        "fixed_2_step": 160
+      },
+      "task_accuracy": 0.956250011920929
+    },
+    {
+      "average_steps": 4.0,
+      "bytes_proxy": 43.0,
+      "compute_proxy": 51.36,
+      "confidence_ece": 0.03356644883751869,
+      "harm_rate": 0.08124999701976776,
+      "help_rate": 0.03125,
+      "mean_confidence": 0.9300586581230164,
+      "method": "fixed_4_step",
+      "mse": 0.06732060760259628,
+      "mse_harm_rate": 0.34375,
+      "mse_help_rate": 0.65625,
+      "over_refinement_rate": 0.9624999761581421,
+      "regression_mse": 0.522819459438324,
+      "stop_histogram": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 160
+      },
+      "stop_reasons": {
+        "fixed_4_step": 160
+      },
+      "task_accuracy": 0.9125000238418579
+    },
+    {
+      "average_steps": 1.4812500476837158,
+      "bytes_proxy": 20.331250429153442,
+      "compute_proxy": 28.389000434875488,
+      "confidence_ece": 0.032723210752010345,
+      "harm_rate": 0.08124999701976776,
+      "help_rate": 0.03125,
+      "mean_confidence": 0.9309018850326538,
+      "method": "confidence_stop",
+      "mse": 0.06929470598697662,
+      "mse_harm_rate": 0.18125000596046448,
+      "mse_help_rate": 0.0,
+      "over_refinement_rate": 0.18125000596046448,
+      "regression_mse": 0.8761000633239746,
+      "stop_histogram": {
+        "1": 131,
+        "2": 4,
+        "3": 2,
+        "4": 23
+      },
+      "stop_reasons": {
+        "confidence_reached": 137,
+        "max_steps": 23
+      },
+      "task_accuracy": 0.9125000238418579
+    },
+    {
+      "average_steps": 3.5562500953674316,
+      "bytes_proxy": 39.006250858306885,
+      "compute_proxy": 47.31300086975098,
+      "confidence_ece": 0.013593577779829502,
+      "harm_rate": 0.07500000298023224,
+      "help_rate": 0.03125,
+      "mean_confidence": 0.9299383163452148,
+      "method": "score_drift_stop",
+      "mse": 0.0652063637971878,
+      "mse_harm_rate": 0.3125,
+      "mse_help_rate": 0.6875,
+      "over_refinement_rate": 0.793749988079071,
+      "regression_mse": 0.5187064409255981,
+      "stop_histogram": {
+        "1": 0,
+        "2": 3,
+        "3": 65,
+        "4": 92
+      },
+      "stop_reasons": {
+        "max_steps": 92,
+        "score_drift_small": 68
+      },
+      "task_accuracy": 0.918749988079071
+    },
+    {
+      "average_steps": 3.71875,
+      "bytes_proxy": 40.46875,
+      "compute_proxy": 48.795,
+      "confidence_ece": 0.021666772663593292,
+      "harm_rate": 0.01875000074505806,
+      "help_rate": 0.01875000074505806,
+      "mean_confidence": 0.9408332705497742,
+      "method": "verifier_harm_stop",
+      "mse": 0.06138132885098457,
+      "mse_harm_rate": 0.25,
+      "mse_help_rate": 0.65625,
+      "over_refinement_rate": 0.8687499761581421,
+      "regression_mse": 0.571505069732666,
+      "stop_histogram": {
+        "1": 15,
+        "2": 0,
+        "3": 0,
+        "4": 145
+      },
+      "stop_reasons": {
+        "max_steps": 145,
+        "verifier_predicted_harm": 15
+      },
+      "task_accuracy": 0.9624999761581421
+    },
+    {
+      "average_steps": 2.125,
+      "bytes_proxy": 26.125,
+      "compute_proxy": 34.26,
+      "confidence_ece": 0.05688773840665817,
+      "harm_rate": 0.0,
+      "help_rate": 0.0062500000931322575,
+      "mean_confidence": 0.9118621945381165,
+      "method": "oracle_stop",
+      "mse": 0.04057144746184349,
+      "mse_harm_rate": 0.0,
+      "mse_help_rate": 0.824999988079071,
+      "over_refinement_rate": 0.0,
+      "regression_mse": 0.6420359015464783,
+      "stop_histogram": {
+        "1": 28,
+        "2": 90,
+        "3": 36,
+        "4": 6
+      },
+      "stop_reasons": {
+        "oracle_best_prefix": 154,
+        "oracle_max_steps": 6
+      },
+      "task_accuracy": 0.96875
+    }
+  ]
+}

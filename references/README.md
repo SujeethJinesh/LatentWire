@@ -362,6 +362,10 @@ File `362_` bootstraps the LatentMAS competitor lane:
 
 - `362_`: LatentMAS competitor bootstrap memo with local clone status, source links, native GSM commands, SVAMP-compatible wrapper plan, required telemetry, and fair-comparison ladder against LatentWire.
 
+File `363_` extends the active routed-refinement reasoning lane:
+
+- `363_`: Recent routed projector, adaptive compute, latent refinement, latent reasoning, and cross-model/inter-agent latent communication memo with 2025-2026 source links, 12 concrete ablations, and an interpretability contract for route banks, stop rules, latent codebooks, and competitor controls.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.

@@ -3648,3 +3648,64 @@ Next execution ladder:
    selectors under matched bpw.
 5. Make `frontier_selector_telemetry` the required sidecar schema for all
    future route-pool selector experiments.
+
+## 2026-04-21 Routed Projector Banks, Stop Rules, And LatentMAS Wrapper
+
+Executed next:
+
+- Added `references/363_recent_routed_refinement_reasoning_refs.md`, covering
+  routed multimodal connectors, adaptive latent-depth reasoning, confidence
+  refinement, latent diffusion residual denoising, LatentMAS/Interlat-style
+  communication, and hub-versus-pairwise latent interfaces.
+- Added `routed_projector_bank`, a deterministic toy for one monolithic
+  bridge versus oracle, feature-routed, confidence-routed, and random
+  projector banks under route-specific gauges.
+- Added `refinement_stop_rules`, a deterministic toy for fixed-depth latent
+  repair versus confidence, score-drift, verifier-harm, and oracle stop rules.
+- Added `scripts/run_latentmas_competitor_eval.py`, a LatentWire-side wrapper
+  for cloned LatentMAS methods that converts GSM/SVAMP JSONL rows and emits
+  prediction JSONL plus `.jsonl.meta.json` telemetry without editing the
+  ignored vendor repo.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| Oracle routed projector bank | accuracy `0.9688`, MSE `0.0031`, route acc `1.0000` | Route-specific gauges have large headroom if routing is correct. |
+| Feature-routed projector bank | accuracy `0.9187`, MSE `0.1387`, route acc `0.9187` | Cheap feature/centroid routing is a plausible next bridge selector. |
+| Confidence-routed projector bank | accuracy `0.3000`, route acc `0.1437`, route-mismatch failures `112/160` | Target-head confidence alone is not a safe router. |
+| Monolithic projector | accuracy `0.8687`, MSE `0.1002` | A single bridge is viable but leaves clear route-specific capacity unused. |
+| Fixed 2-step refinement stop toy | MSE `0.0449` vs one-step `0.0559`, but harm `0.0312` | Latent repair improves reconstruction while already introducing task harm. |
+| Fixed 4-step refinement stop toy | accuracy `0.9125`, over-refinement `0.9625` | Blind iterative repair is unsafe and should not be a headline component. |
+| Verifier-harm stop | accuracy `0.9625`, harm `0.0188`, nonzero repair | Verifier-style stop rules can cap damage while preserving repair opportunities. |
+| Oracle stop | accuracy `0.9688`, MSE `0.0406`, over-refinement `0.0000` | There is substantial stop-policy headroom. |
+| LatentMAS wrapper | testable converter, lazy imports, JSONL/meta telemetry, compact trace hashes | Direct latent-communication competitor execution is now a runnable harness task, not a missing implementation. |
+
+Updated read:
+
+The paper should add two components to the ablation plan, not yet to the
+headline method: routed projector/interface banks and stop-rule-governed
+target-side latent repair. The toy evidence says both are structurally
+important, but the route selector and repair halt policy are the actual
+blockers. Confidence-only routing failed badly; fixed-depth repair over-refines
+badly. The most credible positive-method stack is therefore not "more latent
+steps" or "bigger bridge"; it is **byte/span-normalized route atoms + routed
+projector bank + protected mixed-bit frontier + verifier/process stop rule +
+matched LatentMAS/C2C/target-repair controls**.
+
+Next execution ladder:
+
+1. Run `scripts/run_latentmas_competitor_eval.py` on GSM/SVAMP limit smokes for
+   `baseline`, `text_mas`, and `latent_mas`, capturing accuracy, latency,
+   tokens, agent trace counts, and parse failures.
+2. Promote feature-routed projector banks into the real route-pool harness:
+   compare monolithic, source-layer routed, target-layer routed, feature
+   routed, confidence routed, and random routed variants with matched bytes.
+3. Promote stop-rule telemetry to the real repair lane: fixed 0/1/2/4 repair,
+   confidence halt, score-drift halt, process-verifier halt, and oracle
+   best-prefix, all with help/harm and over-refinement counters.
+4. Stack only after interaction tests: tokenizer stress remap, quant-error
+   mixed-bit allocation, feature route bank, and verifier-harm stop.
+5. Paper gate remains positive-method only: promote a stack only if it beats
+   target self-repair and direct competitors on matched examples with paired
+   intervals and compute/token/byte ledgers.

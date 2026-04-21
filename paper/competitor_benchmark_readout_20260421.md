@@ -20,7 +20,7 @@ prompt, token, byte, latency, and repair budgets are all matched in one harness.
 
 | Method | Local state | Native support | Next artifact | Interpretation |
 |---|---|---|---|---|
-| `LatentMAS` | clean local clone at `references/repos/LatentMAS`, commit `b9b2095`; repo remains ignored | native GSM8K via `baseline`, `text_mas`, `latent_mas`; no native SVAMP | `scripts/run_latentmas_competitor_eval.py` wrapper plus GSM/SVAMP JSONL smokes | Closest latent-communication competitor, but no LatentWire-grade metrics yet. |
+| `LatentMAS` | clean local clone at `references/repos/LatentMAS`, commit `b9b2095`; repo remains ignored; LatentWire wrapper now exists at `scripts/run_latentmas_competitor_eval.py` | native GSM8K via `baseline`, `text_mas`, `latent_mas`; SVAMP supported through wrapper row conversion | GSM/SVAMP limit smokes emitted as JSONL plus `.jsonl.meta.json` | Closest latent-communication competitor; execution is now a model-runtime task, not a wrapper/design blocker. |
 
 ## Current Same-Model Compression Controls
 
@@ -71,7 +71,29 @@ prompt, token, byte, latency, and repair budgets are all matched in one harness.
 5. Repeat limit-20 or run a bounded limit-50 KVPress batch before using
    same-model compression controls as stability evidence; limit-5/10/20 remain
    harness-health rows only.
-6. Bootstrap `LatentMAS` next as a direct latent-communication competitor with
-   matched accuracy, output-token, latency, and traceability reporting.
+6. Run `LatentMAS` limit smokes next as a direct latent-communication
+   competitor with matched accuracy, output-token, latency, and traceability
+   reporting.
 7. Do not stage `references/repos/LatentMAS`; keep vendor code ignored and
    implement wrappers on the LatentWire side.
+
+## LatentMAS Wrapper Command Matrix
+
+The wrapper is intentionally outside `references/repos/LatentMAS` and emits
+paper-grade telemetry rather than relying on vendor stdout logs.
+
+```bash
+./venv_arm64/bin/python scripts/run_latentmas_competitor_eval.py \
+  --method baseline \
+  --model-name Qwen/Qwen3-4B \
+  --task gsm8k \
+  --eval-file data/gsm8k_eval_70.jsonl \
+  --limit 10 \
+  --prediction-output results/latentmas_competitor_20260421/gsm10_baseline.jsonl
+```
+
+Repeat the same command with `--method text_mas` and `--method latent_mas
+--latent-steps 10`, then mirror on `data/svamp_eval_70.jsonl` with
+`--task svamp --latentmas-task gsm8k`. The required comparison table should
+join each `.meta.json` with target-alone, target self-repair, selected-route
+no-repair, selected-route repair, and C2C on the same example IDs.

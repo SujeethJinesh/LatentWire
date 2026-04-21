@@ -40,5 +40,12 @@
     "path": "references/362_latentmas_competitor_bootstrap_refs.md",
     "status": "local_memo",
     "reason": "LatentMAS competitor bootstrap memo with local clone status, source links, native GSM commands, SVAMP-compatible wrapper plan, required telemetry, and fair-comparison ladder against LatentWire."
+  },
+  {
+    "num": 363,
+    "slug": "recent_routed_refinement_reasoning_refs",
+    "path": "references/363_recent_routed_refinement_reasoning_refs.md",
+    "status": "local_memo",
+    "reason": "Recent routed projector, adaptive compute, latent refinement, latent reasoning, and cross-model/inter-agent latent communication memo with concrete ablations and telemetry for the active positive-method paper loop."
   }
 ]
