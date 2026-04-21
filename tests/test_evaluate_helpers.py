@@ -389,6 +389,8 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "global",
             "--per-head-position-budget-mode",
             "attention_peak",
+            "--random-salt",
+            "11",
         ],
     )
 
@@ -415,6 +417,7 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.runtime_head_prior_shrinkage == 0.3
     assert args.runtime_head_prior_shrink_target == "global"
     assert args.per_head_position_budget_mode == "attention_peak"
+    assert args.random_salt == 11
 
 
 def test_evaluate_parse_args_accepts_headwise_route_atom(monkeypatch) -> None:
@@ -1745,9 +1748,19 @@ def test_position_selection_random_metric_is_deterministic() -> None:
         kv_transport="k_only",
         position_selection_metric="random",
     )
+    salted = evaluate._position_selection_scores(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        kv_transport="k_only",
+        position_selection_metric="random",
+        random_salt=1,
+    )
 
     assert first.shape == (2,)
     assert torch.allclose(first, second)
+    assert not torch.allclose(first, salted)
 
 
 def test_position_selection_recency_metric_prefers_latest_positions() -> None:
@@ -1796,11 +1809,18 @@ def test_runtime_head_scores_support_attention_peak_margin_retrieval_and_random(
         metric="random",
         layer_idx=2,
     )
+    salted = evaluate._runtime_head_scores(
+        attention_map,
+        metric="random",
+        layer_idx=2,
+        random_salt=1,
+    )
 
     assert torch.allclose(peak, torch.tensor([0.9, 0.9]))
     assert torch.allclose(margin, torch.full_like(margin, math.log(9.0)))
     assert float(retrieval[1]) > float(retrieval[0])
     assert torch.allclose(first, second)
+    assert not torch.allclose(first, salted)
 
 
 def test_runtime_head_scores_support_headwise_route_atom() -> None:
@@ -2923,6 +2943,7 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
             "metadata_bits": 4.0,
             "kv_route_selection_ratio": 0.25,
             "kv_value_selection_ratio": 0.75,
+            "random_salt": 7,
             "selector_trace": [
                 {
                     "keep_fraction": 0.5,
@@ -2968,11 +2989,12 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
         str(pred_path),
         records,
         results,
-        {"source_model": "src", "target_model": "tgt"},
+        {"source_model": "src", "target_model": "tgt", "random_salt": 7},
     )
 
     payload = json.loads((tmp_path / "predictions.jsonl.meta.json").read_text())
     assert payload["run_config"]["source_model"] == "src"
+    assert payload["run_config"]["random_salt"] == 7
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["avg_bits"] == 16.0
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["payload_bits_avg"] == 12.0
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["selector_bits_avg"] == 4.0
@@ -2994,6 +3016,7 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
     assert pair["examples"][0]["tokenizer_overlap"] == 0.5
     assert pair["examples"][0]["method_normalized_prediction"] == "42"
     assert pair["examples"][0]["baseline_normalized_prediction"] == "41"
+    assert pair["examples"][0]["random_salt"] == 7
 
 
 def test_append_prediction_record_preserves_stable_example_id() -> None:

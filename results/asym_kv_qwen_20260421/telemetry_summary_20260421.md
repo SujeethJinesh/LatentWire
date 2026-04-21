@@ -62,6 +62,26 @@ has the largest method-only excess, while attention/energy is neutral. The next
 real-model blocker is therefore not just better attention metrics; it is
 separating beneficial cache perturbation from true cross-model communication.
 
+## Random Selector Seed Variance
+
+Run summary:
+
+`random_salt_repeat_summary_20260421.md`
+
+| Salt | Target | Method | Delta | Method-only | Baseline-only | Method-only indices | Baseline-only indices |
+|---:|---:|---:|---:|---:|---:|---|---|
+| 0 | 0.0667 | 0.1333 | +0.0667 | 4 | 2 | `5, 9, 28, 29` | `13, 17` |
+| 1 | 0.0667 | 0.1333 | +0.0667 | 3 | 1 | `7, 8, 24` | `17` |
+| 2 | 0.0667 | 0.0000 | -0.0667 | 0 | 2 | none | `13, 17` |
+
+Interpretation:
+
+The stochastic result is real enough to study but not stable enough to claim.
+Two masks are positive and one is negative. The flip indices move across seeds,
+which suggests the branch is sampling useful and harmful route perturbations.
+This points to multi-route aggregation, uncertainty-triggered routing, or a
+target verifier as the next positive-method lane.
+
 ## Protected-Channel Residual Codebook Toy
 
 Run:
@@ -101,3 +121,23 @@ PCA-style gauge canonicalization improves reconstruction and partially repairs
 slot permutation, but it does not recover the rotated case and does not beat
 residual codebook. The protected basis needs task/signal-aware alignment, not
 only covariance alignment.
+
+## Signal-Aware Protected-Channel Toy
+
+Run:
+
+`../query_pool_toy_20260421/query_pool_signal_aware_protected_channel_vs_topk.md`
+
+| Scenario | Residual | Fixed protected | Gauge-aware protected | Signal-aware protected |
+|---|---:|---:|---:|---:|
+| aligned | 0.5417 | 0.5938 | 0.5469 | 0.5469 |
+| rotated | 0.6406 | 0.5729 | 0.5677 | 0.5573 |
+| outlier | 0.5677 | 0.6198 | 0.5677 | 0.5104 |
+| slot_permuted | 0.5417 | 0.4948 | 0.5260 | 0.5781 |
+
+Interpretation:
+
+Supervised signal bases expose useful telemetry and repair the slot-permuted
+toy case, but they are not a universal fix. The protected-channel lane needs a
+stacked solution: task-aware basis selection plus orientation alignment plus
+slot/permutation robustness.

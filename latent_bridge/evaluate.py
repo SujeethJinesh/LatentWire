@@ -500,11 +500,17 @@ def _headwise_route_atom_trace_fields(
     }
 
 
+def _salted_random_seed(base_seed: int, random_salt: int = 0) -> int:
+    # Keep selector perturbations deterministic while allowing explicit seed sweeps.
+    return int(base_seed) + int(random_salt) * 1_000_003
+
+
 def _runtime_head_scores(
     attention_map: torch.Tensor,
     *,
     metric: str,
     layer_idx: int,
+    random_salt: int = 0,
 ) -> torch.Tensor:
     scores = attention_map.float()
     probs = scores / scores.sum(dim=-1, keepdim=True).clamp_min(1e-8)
@@ -527,7 +533,7 @@ def _runtime_head_scores(
     if metric == "headwise_route_atom":
         return _headwise_route_atom_scores(attention_map)
     if metric == "random":
-        gen = torch.Generator(device="cpu").manual_seed(91_001 + int(layer_idx))
+        gen = torch.Generator(device="cpu").manual_seed(_salted_random_seed(91_001 + int(layer_idx), random_salt))
         return torch.rand(scores.shape[0], generator=gen, dtype=torch.float32).to(device=scores.device)
     raise ValueError(f"Unknown runtime_head_selection_metric: {metric}")
 
@@ -799,11 +805,14 @@ def _deterministic_score_permutation(
     *,
     layer_idx: int,
     seed_offset: int = 0,
+    random_salt: int = 0,
 ) -> torch.Tensor:
     values = scores.float().view(-1)
     if values.numel() <= 1:
         return values
-    gen = torch.Generator(device="cpu").manual_seed(101_113 + seed_offset + int(layer_idx))
+    gen = torch.Generator(device="cpu").manual_seed(
+        _salted_random_seed(101_113 + seed_offset + int(layer_idx), random_salt)
+    )
     perm = torch.randperm(values.numel(), generator=gen)
     identity = torch.arange(values.numel())
     if torch.equal(perm, identity):
@@ -1511,12 +1520,13 @@ def _runtime_head_scores_with_prior(
     qk_templates: torch.Tensor | None = None,
     qk_template_bank: torch.Tensor | None = None,
     prior_alpha: float = 0.5,
+    random_salt: int = 0,
 ) -> tuple[torch.Tensor, torch.Tensor | None]:
     prior_topk: torch.Tensor | None = None
     if metric in {"attention_peak", "attention_entropy", "attention_margin", "retrieval_peak", "headwise_route_atom", "random"}:
         if attention_map is None:
             raise ValueError(f"{metric} runtime head selection requires target attention maps")
-        return _runtime_head_scores(attention_map, metric=metric, layer_idx=layer_idx), None
+        return _runtime_head_scores(attention_map, metric=metric, layer_idx=layer_idx, random_salt=random_salt), None
     if metric == "attention_expected":
         if attention_map is None:
             raise ValueError("attention_expected runtime head selection requires target attention maps")
@@ -1532,6 +1542,7 @@ def _runtime_head_scores_with_prior(
             _resample_position_profile(position_prior, attention_map.shape[-1]),
             layer_idx=layer_idx,
             seed_offset=8_117,
+            random_salt=random_salt,
         )
         return _expected_attention_head_scores(attention_map, shuffled_prior), None
     if metric == "attention_fidelity":
@@ -1546,7 +1557,7 @@ def _runtime_head_scores_with_prior(
         if target_keys is None or translated_keys is None:
             raise ValueError("attention_fidelity_shuffled runtime head selection requires target_keys and translated_keys")
         scores = _attention_fidelity_head_scores(attention_map, target_keys, translated_keys)
-        return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_019), None
+        return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_019, random_salt=random_salt), None
     if metric == "attention_procrustes":
         if attention_map is None:
             raise ValueError("attention_procrustes runtime head selection requires target attention maps")
@@ -1559,7 +1570,7 @@ def _runtime_head_scores_with_prior(
         if target_keys is None or translated_keys is None:
             raise ValueError("attention_procrustes_shuffled runtime head selection requires target_keys and translated_keys")
         scores = _attention_procrustes_head_scores(attention_map, target_keys, translated_keys)
-        return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_427), None
+        return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_427, random_salt=random_salt), None
     if metric == "attention_qk_fidelity":
         if query_heads is None or target_keys is None or translated_keys is None:
             raise ValueError(
@@ -1572,7 +1583,7 @@ def _runtime_head_scores_with_prior(
                 "attention_qk_fidelity_shuffled runtime head selection requires query_heads, target_keys, and translated_keys"
             )
         scores = _attention_qk_fidelity_head_scores(query_heads, target_keys, translated_keys)
-        return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_881), None
+        return _deterministic_score_permutation(scores, layer_idx=layer_idx, seed_offset=12_881, random_salt=random_salt), None
     if metric == "attention_qk_template_transport":
         if query_heads is None or target_keys is None:
             raise ValueError(
@@ -1646,7 +1657,12 @@ def _runtime_head_scores_with_prior(
     if metric == "attention_prior_shuffled":
         if prior_scores is None:
             raise ValueError("attention_prior_shuffled runtime head selection requires fixed_head_profiles")
-        shuffled_scores = _deterministic_score_permutation(prior_scores, layer_idx=layer_idx, seed_offset=7_009)
+        shuffled_scores = _deterministic_score_permutation(
+            prior_scores,
+            layer_idx=layer_idx,
+            seed_offset=7_009,
+            random_salt=random_salt,
+        )
         return _normalize_selection_scores(shuffled_scores), None
     if metric == "attention_template_transport":
         if attention_map is None:
@@ -1699,14 +1715,14 @@ def _runtime_head_scores_with_prior(
             raise ValueError("attention_match runtime head selection requires target attention maps")
         if prior_scores is None:
             raise ValueError("attention_match runtime head selection requires fixed_head_profiles")
-        live_scores = _runtime_head_scores(attention_map, metric="attention_peak", layer_idx=layer_idx)
+        live_scores = _runtime_head_scores(attention_map, metric="attention_peak", layer_idx=layer_idx, random_salt=random_salt)
         return _match_prior_scores_to_live_order(live_scores, prior_scores, layer_idx=layer_idx), None
     if metric == "attention_match_shuffled":
         if attention_map is None:
             raise ValueError("attention_match_shuffled runtime head selection requires target attention maps")
         if prior_scores is None:
             raise ValueError("attention_match_shuffled runtime head selection requires fixed_head_profiles")
-        live_scores = _runtime_head_scores(attention_map, metric="attention_peak", layer_idx=layer_idx)
+        live_scores = _runtime_head_scores(attention_map, metric="attention_peak", layer_idx=layer_idx, random_salt=random_salt)
         return _match_prior_scores_to_live_order(
             live_scores,
             prior_scores,
@@ -1719,7 +1735,7 @@ def _runtime_head_scores_with_prior(
         if prior_scores is None:
             raise ValueError("attention_blend runtime head selection requires fixed_head_profiles")
         live_scores = _normalize_selection_scores(
-            _runtime_head_scores(attention_map, metric="attention_peak", layer_idx=layer_idx)
+            _runtime_head_scores(attention_map, metric="attention_peak", layer_idx=layer_idx, random_salt=random_salt)
         )
         fixed_scores = _normalize_selection_scores(prior_scores)
         blend = (1.0 - float(prior_alpha)) * live_scores + float(prior_alpha) * fixed_scores
@@ -2376,6 +2392,7 @@ PAIR_TELEMETRY_FIELDS = (
     "head_keep_fraction_avg",
     "head_score_entropy_avg",
     "head_budget_keep_fraction_avg",
+    "random_salt",
 )
 
 
@@ -2925,6 +2942,7 @@ def _position_selection_scores(
     kv_transport: str,
     position_selection_metric: str,
     position_scores: torch.Tensor | None = None,
+    random_salt: int = 0,
 ) -> torch.Tensor:
     if position_selection_metric == "energy":
         if kv_transport == "k_only":
@@ -2950,7 +2968,7 @@ def _position_selection_scores(
             salt = float(V_hat.float().sum().detach().cpu())
         else:
             salt = float((K_hat.float().sum() + V_hat.float().sum()).detach().cpu())
-        seed = 13_579 + (int(abs(salt) * 1_000) % 1_000_003)
+        seed = _salted_random_seed(13_579 + (int(abs(salt) * 1_000) % 1_000_003), random_salt)
         gen = torch.Generator(device="cpu").manual_seed(seed)
         return torch.rand(K_hat.shape[2], generator=gen, dtype=torch.float32).to(device=K_hat.device)
     if position_selection_metric == "recency":
@@ -2979,6 +2997,7 @@ def _position_selection_scores(
             V_hat,
             kv_transport=kv_transport,
             position_selection_metric="disagreement",
+            random_salt=random_salt,
         ).float()
         disagreement_scores = disagreement_scores / disagreement_scores.sum().clamp_min(1e-8)
         combined = attention_scores * disagreement_scores
@@ -2995,6 +3014,7 @@ def _position_selection_scores(
             V_hat,
             kv_transport=kv_transport,
             position_selection_metric="disagreement",
+            random_salt=random_salt,
         ).float()
         disagreement_scores = disagreement_scores / disagreement_scores.sum().clamp_min(1e-8)
         combined = attention_scores * disagreement_scores
@@ -3003,7 +3023,7 @@ def _position_selection_scores(
         if position_scores is None:
             raise ValueError("attention_shuffled position selection requires explicit position scores")
         salt = float(K_hat.float().sum().detach().cpu())
-        seed = 24_681 + (int(abs(salt) * 1_000) % 1_000_003)
+        seed = _salted_random_seed(24_681 + (int(abs(salt) * 1_000) % 1_000_003), random_salt)
         gen = torch.Generator(device="cpu").manual_seed(seed)
         perm = torch.randperm(position_scores.numel(), generator=gen)
         if position_scores.numel() > 1 and torch.equal(perm, torch.arange(position_scores.numel())):
@@ -3319,6 +3339,7 @@ def _apply_position_selection(
     position_selection_ratio: float,
     position_selection_metric: str,
     position_scores: torch.Tensor | None = None,
+    random_salt: int = 0,
     return_trace: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, dict[str, Any]]:
     seq_len = K_hat.shape[2]
@@ -3335,6 +3356,7 @@ def _apply_position_selection(
         kv_transport=kv_transport,
         position_selection_metric=position_selection_metric,
         position_scores=position_scores,
+        random_salt=random_salt,
     )
     if position_selection_metric == "query_pool_transport":
         return _apply_query_pool_transport_selection(
@@ -3364,6 +3386,8 @@ def _apply_position_selection(
     selected_k = torch.where(mask, K_hat, fill_k)
     selected_v = torch.where(mask, V_hat, fill_v)
     trace = _selector_trace(scores, keep_indices, seq_len, keep)
+    if position_selection_metric in {"random", "attention_shuffled"}:
+        trace["random_salt"] = int(random_salt)
     if position_selection_metric in {"attention_stratified", "attention_disagreement_stratified"}:
         trace["selection_policy"] = "stratified_topk_4bins"
     return (selected_k, selected_v, trace) if return_trace else (selected_k, selected_v)
@@ -3389,6 +3413,7 @@ def _apply_asymmetric_kv_position_selection(
     value_selection_metric: str,
     route_position_scores: torch.Tensor | None = None,
     value_position_scores: torch.Tensor | None = None,
+    random_salt: int = 0,
 ) -> tuple[torch.Tensor, torch.Tensor, dict[str, Any]]:
     selected_k, _, route_trace = _apply_position_selection(
         K_t,
@@ -3400,6 +3425,7 @@ def _apply_asymmetric_kv_position_selection(
         position_selection_ratio=route_selection_ratio,
         position_selection_metric=route_selection_metric,
         position_scores=route_position_scores,
+        random_salt=random_salt,
         return_trace=True,
     )
     _, selected_v, value_trace = _apply_position_selection(
@@ -3412,6 +3438,7 @@ def _apply_asymmetric_kv_position_selection(
         position_selection_ratio=value_selection_ratio,
         position_selection_metric=value_selection_metric,
         position_scores=value_position_scores,
+        random_salt=random_salt,
         return_trace=True,
     )
 
@@ -3444,6 +3471,11 @@ def _apply_asymmetric_kv_position_selection(
         "kv_route_value_overlap": float(intersection / max(min(len(route_set), len(value_set)), 1)),
         "kv_route_value_jaccard": float(intersection / max(union, 1)),
     }
+    if route_selection_metric in {"random", "attention_shuffled"} or value_selection_metric in {
+        "random",
+        "attention_shuffled",
+    }:
+        trace["random_salt"] = int(random_salt)
     for prefix, branch_trace in (("kv_route", route_trace), ("kv_value", value_trace)):
         for source_key, target_suffix in (
             ("score_entropy", "score_entropy"),
@@ -3492,6 +3524,7 @@ def _build_rotalign_prefix_state(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    random_salt: int = 0,
     source_use_chat_template: bool = False,
     target_use_chat_template: bool = False,
     source_enable_thinking: bool | None = None,
@@ -3897,6 +3930,7 @@ def _build_rotalign_prefix_state(
                 qk_templates=qk_template_scores,
                 qk_template_bank=qk_template_bank_scores,
                 prior_alpha=runtime_head_prior_alpha,
+                random_salt=random_salt,
             )
             keep_heads = min(keep_heads, int(head_scores.numel()))
             keep_local = torch.topk(head_scores, k=keep_heads, largest=True).indices
@@ -3992,6 +4026,7 @@ def _build_rotalign_prefix_state(
                     qk_templates=qk_template_scores,
                     qk_template_bank=qk_template_bank_scores,
                     prior_alpha=runtime_head_prior_alpha,
+                    random_salt=random_salt,
                 )
             active_gate_k = _per_head_gate_override_from_scores(
                 gate_k_now,
@@ -4073,6 +4108,7 @@ def _build_rotalign_prefix_state(
                 qk_templates=qk_template_scores,
                 qk_template_bank=qk_template_bank_scores,
                 prior_alpha=runtime_head_prior_alpha,
+                random_salt=random_salt,
             )
             K_hat, V_hat, head_budget_trace, keep_counts = _apply_per_head_position_selection(
                 K_t_aligned,
@@ -4192,6 +4228,7 @@ def _build_rotalign_prefix_state(
                     value_selection_metric=value_position_metric,
                     route_position_scores=position_scores_for_metric(route_position_metric),
                     value_position_scores=position_scores_for_metric(value_position_metric),
+                    random_salt=random_salt,
                 )
                 if (
                     not layer_dropped
@@ -4216,6 +4253,7 @@ def _build_rotalign_prefix_state(
                     position_selection_ratio=branch_position_ratio,
                     position_selection_metric=branch_position_metric,
                     position_scores=position_scores,
+                    random_salt=random_salt,
                     return_trace=True,
                 )
                 if kv_route_selection_ratio is not None or kv_value_selection_ratio is not None:
@@ -4331,6 +4369,7 @@ def _build_rotalign_prefix_state(
         "selected_target_layers": [int(layer) for layer in translator.selected_layer_indices()],
         "dropped_target_layers": sorted(int(layer) for layer in dropped_layer_set),
         "drop_target_layer_mode": drop_target_layer_mode,
+        "random_salt": int(random_salt),
     }
 
 
@@ -4389,6 +4428,7 @@ def _search_per_layer_gates(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    random_salt: int = 0,
 ) -> dict[str, list[float]]:
     """Coordinate-descent line search over per-layer K/V fusion gates.
 
@@ -4423,6 +4463,7 @@ def _search_per_layer_gates(
         eval_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
         eval_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
         eval_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
+        eval_kwargs["random_salt"] = random_salt
         if is_generation:
             return _eval_generation_rotalign(
                 source_model,
@@ -4733,6 +4774,7 @@ def eval_rotalign_kv(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    random_salt: int = 0,
     drop_target_layers: set[int] | None = None,
     drop_target_layer_mode: str = "none",
     records: list[dict[str, Any]] | None = None,
@@ -4760,6 +4802,7 @@ def eval_rotalign_kv(
         build_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
         build_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
         build_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
+        build_kwargs["random_salt"] = random_salt
         build_kwargs["drop_target_layers"] = drop_target_layers
         build_kwargs["drop_target_layer_mode"] = drop_target_layer_mode
         prefix_state, stats = _build_rotalign_prefix_state(
@@ -4820,6 +4863,7 @@ def eval_rotalign_kv(
                 "runtime_head_gate_metric": runtime_head_gate_metric,
                 "runtime_head_gate_strength": runtime_head_gate_strength,
                 "per_head_position_budget_mode": per_head_position_budget_mode,
+                "random_salt": stats.get("random_salt"),
                 "drop_target_layers": stats.get("dropped_target_layers"),
                 "drop_target_layer_mode": stats.get("drop_target_layer_mode"),
                 "bits": stats.get("bits"),
@@ -5060,6 +5104,7 @@ def _eval_generation_rotalign(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    random_salt: int = 0,
     drop_target_layers: set[int] | None = None,
     drop_target_layer_mode: str = "none",
 ) -> tuple[float, float, float]:
@@ -5078,6 +5123,7 @@ def _eval_generation_rotalign(
     eval_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
     eval_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
     eval_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
+    eval_kwargs["random_salt"] = random_salt
     eval_kwargs["drop_target_layers"] = drop_target_layers
     eval_kwargs["drop_target_layer_mode"] = drop_target_layer_mode
     stats = _eval_generation_rotalign_with_stats(
@@ -5144,6 +5190,7 @@ def _eval_generation_rotalign_with_stats(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    random_salt: int = 0,
     drop_target_layers: set[int] | None = None,
     drop_target_layer_mode: str = "none",
     source_use_chat_template: bool = False,
@@ -5192,6 +5239,7 @@ def _eval_generation_rotalign_with_stats(
         build_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
         build_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
         build_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
+        build_kwargs["random_salt"] = random_salt
         build_kwargs["drop_target_layers"] = drop_target_layers
         build_kwargs["drop_target_layer_mode"] = drop_target_layer_mode
         build_kwargs["source_use_chat_template"] = source_use_chat_template
@@ -5260,6 +5308,7 @@ def _eval_generation_rotalign_with_stats(
                 "runtime_head_gate_metric": runtime_head_gate_metric,
                 "runtime_head_gate_strength": runtime_head_gate_strength,
                 "per_head_position_budget_mode": per_head_position_budget_mode,
+                "random_salt": stats.get("random_salt"),
                 "drop_target_layers": stats.get("dropped_target_layers"),
                 "drop_target_layer_mode": stats.get("drop_target_layer_mode"),
                 "bits": stats["bits"],
@@ -5477,6 +5526,12 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=128,
         help="Number of normalized position bins used for fixed attention priors.",
+    )
+    p.add_argument(
+        "--random-salt",
+        type=int,
+        default=0,
+        help="Deterministic salt for random or shuffled selector metrics; use for seed-repeat controls.",
     )
     p.add_argument(
         "--runtime-head-selection-ratio",
@@ -5705,6 +5760,7 @@ def main() -> None:
     runtime_head_prior_alpha = float(getattr(args, "runtime_head_prior_alpha", 0.5))
     runtime_head_gate_metric = getattr(args, "runtime_head_gate_metric", "none")
     runtime_head_gate_strength = float(getattr(args, "runtime_head_gate_strength", 1.0))
+    random_salt = int(getattr(args, "random_salt", 0))
     runtime_head_prior_file = getattr(args, "runtime_head_prior_file", None)
     runtime_head_prior_load = getattr(args, "runtime_head_prior_load", None)
     runtime_head_prior_save = getattr(args, "runtime_head_prior_save", None)
@@ -6262,6 +6318,7 @@ def main() -> None:
                     runtime_head_gate_metric=runtime_head_gate_metric,
                     runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
+                    random_salt=random_salt,
                     **search_kwargs,
                 )
                 print(
@@ -6307,6 +6364,7 @@ def main() -> None:
                     runtime_head_gate_metric=runtime_head_gate_metric,
                     runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
+                    random_salt=random_salt,
                     drop_target_layers=drop_target_layers,
                     drop_target_layer_mode=drop_target_layer_mode,
                     records=prediction_records,
@@ -6447,6 +6505,7 @@ def main() -> None:
                     runtime_head_gate_metric=runtime_head_gate_metric,
                     runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
+                    random_salt=random_salt,
                     **search_kwargs,
                 )
                 print(
@@ -6492,6 +6551,7 @@ def main() -> None:
                     runtime_head_gate_metric=runtime_head_gate_metric,
                     runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
+                    random_salt=random_salt,
                     drop_target_layers=drop_target_layers,
                     drop_target_layer_mode=drop_target_layer_mode,
                     source_use_chat_template=source_use_chat_template,
@@ -6548,6 +6608,7 @@ def main() -> None:
                 "kv_value_selection_ratio": kv_value_selection_ratio,
                 "kv_route_selection_metric": route_position_metric,
                 "kv_value_selection_metric": value_position_metric,
+                "random_salt": random_salt,
                 "position_selection_prior_file": args.position_selection_prior_file,
                 "position_selection_prior_source": args.position_selection_prior_source,
                 "position_selection_prior_bins": args.position_selection_prior_bins,

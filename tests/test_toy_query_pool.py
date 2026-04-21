@@ -34,6 +34,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("aligned", "residual_codebook_remap"),
         ("aligned", "protected_channel_residual_codebook_remap"),
         ("aligned", "gauge_aware_protected_channel_residual_codebook_remap"),
+        ("aligned", "signal_aware_protected_channel_residual_codebook_remap"),
         ("aligned", "route_atom"),
         ("rotated", "topk"),
         ("rotated", "query_pool"),
@@ -44,6 +45,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("rotated", "residual_codebook_remap"),
         ("rotated", "protected_channel_residual_codebook_remap"),
         ("rotated", "gauge_aware_protected_channel_residual_codebook_remap"),
+        ("rotated", "signal_aware_protected_channel_residual_codebook_remap"),
         ("rotated", "route_atom"),
     }
     for row in rows:
@@ -199,6 +201,19 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
             assert 0.0 <= row["gauge_protected_energy_fraction"] <= 1.0
             assert row["gauge_eigenvalue_top_margin"] >= 0.0
             assert row["gauge_selected_channels"] == 2.0
+        if row["method"] == "signal_aware_protected_channel_residual_codebook_remap":
+            assert row["codebook_size"] == 4
+            assert row["residual_codebook_size"] == 4
+            assert row["protected_channels"] == 2
+            assert 0.0 < row["protected_channel_fraction"] <= 1.0
+            assert row["signal_basis_orthogonality_error"] >= 0.0
+            assert 0.0 <= row["signal_task_energy_fraction"] <= 1.0
+            assert row["signal_eigenvalue_top_margin"] >= 0.0
+            assert row["signal_selected_channels"] == 2.0
+            assert 0.0 <= row["signal_variance_alignment"] <= 1.0
+            assert row["signal_query_energy_ratio"] >= 0.0
+            assert row["signal_slot_energy_ratio"] >= 0.0
+            assert 0.0 <= row["signal_gate"] <= 1.0
 
 
 def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
@@ -237,6 +252,7 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
         "residual_codebook_remap",
         "protected_channel_residual_codebook_remap",
         "gauge_aware_protected_channel_residual_codebook_remap",
+        "signal_aware_protected_channel_residual_codebook_remap",
         "route_atom",
     }
     summary = markdown.read_text()
@@ -257,6 +273,14 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
     assert "Gauge energy frac." in summary
     assert "Gauge top margin" in summary
     assert "Gauge selected" in summary
+    assert "Signal orth." in summary
+    assert "Signal task energy" in summary
+    assert "Signal top margin" in summary
+    assert "Signal selected" in summary
+    assert "Signal var. align" in summary
+    assert "Signal query energy" in summary
+    assert "Signal slot energy" in summary
+    assert "Signal gate" in summary
     assert "| outlier | query_pool |" in summary
     assert "| outlier | preconditioned_query_pool |" in summary
     assert "| outlier | constrained_preconditioned_query_pool |" in summary
@@ -264,4 +288,5 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
     assert "| outlier | codebook_remap |" in summary
     assert "| outlier | residual_codebook_remap |" in summary
     assert "| outlier | gauge_aware_protected_channel_residual_codebook_remap |" in summary
+    assert "| outlier | signal_aware_protected_channel_residual_codebook_remap |" in summary
     assert "| outlier | route_atom |" in summary

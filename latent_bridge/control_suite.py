@@ -63,6 +63,7 @@ class EvalSpec:
     runtime_head_selection_metric: str = "attention_peak"
     runtime_head_gate_metric: str = "none"
     runtime_head_gate_strength: float = 1.0
+    random_salt: int | None = None
 
 
 def default_device() -> str:
@@ -647,6 +648,8 @@ def build_evaluate_cmd(
         cmd.extend(["--runtime-head-gate-metric", spec.runtime_head_gate_metric])
     if uses_rotalign and abs(float(spec.runtime_head_gate_strength) - 1.0) > 1e-9:
         cmd.extend(["--runtime-head-gate-strength", str(spec.runtime_head_gate_strength)])
+    if uses_rotalign and spec.random_salt is not None:
+        cmd.extend(["--random-salt", str(spec.random_salt)])
     if not spec.quantize:
         cmd.append("--no-quantize")
     if prediction_output is not None:
@@ -692,6 +695,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
         "runtime_head_selection_metric",
         "runtime_head_gate_metric",
         "runtime_head_gate_strength",
+        "random_salt",
         "quantize",
         "target_alone",
         "text_to_text",
@@ -744,6 +748,7 @@ def write_summary(records: list[dict[str, Any]], out_dir: Path) -> None:
                     "runtime_head_selection_metric": record.get("runtime_head_selection_metric", "attention_peak"),
                     "runtime_head_gate_metric": record.get("runtime_head_gate_metric", "none"),
                     "runtime_head_gate_strength": record.get("runtime_head_gate_strength", 1.0),
+                    "random_salt": record.get("random_salt"),
                     "quantize": record["quantize"],
                     "target_alone": record.get("target_alone"),
                     "text_to_text": record.get("text_to_text"),
@@ -1081,6 +1086,7 @@ def main() -> None:
                 "runtime_head_selection_metric": eval_spec.runtime_head_selection_metric,
                 "runtime_head_gate_metric": eval_spec.runtime_head_gate_metric,
                 "runtime_head_gate_strength": eval_spec.runtime_head_gate_strength,
+                "random_salt": eval_spec.random_salt,
                 "quantize": eval_spec.quantize,
                 "methods": list(eval_spec.methods),
                 "gate_values": list(eval_spec.gate_values),

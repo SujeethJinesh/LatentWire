@@ -98,6 +98,27 @@ with one of these hypotheses:
 Next selector-specific claim needs random-seed repeats and controls that hold
 the perturbation distribution constant while changing only selector semantics.
 
+## Random Selector Salt Repeat
+
+Artifact:
+
+`random_salt_repeat_summary_20260421.md`
+
+| Salt | Target | RotAlign | Delta | Method-only | Baseline-only | Both correct | Both wrong |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 0.0667 | 0.1333 | +0.0667 | 4 | 2 | 0 | 24 |
+| 1 | 0.0667 | 0.1333 | +0.0667 | 3 | 1 | 1 | 25 |
+| 2 | 0.0667 | 0.0000 | -0.0667 | 0 | 2 | 0 | 28 |
+
+Interpretation:
+
+The `random/random` single-mask result is high variance. Salt 1 reproduces the
+aggregate gain, but salt 2 collapses below target-alone. This makes the
+stochastic branch useful but not claimable as a standalone method. The next
+positive-method test should use stochastic routes as candidate generation for
+an ensemble/verifier/reranker, with seed variance and paired flips logged as
+first-class telemetry.
+
 ## Protected-Channel Toy Result
 
 Artifact:

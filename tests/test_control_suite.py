@@ -469,6 +469,7 @@ def test_build_evaluate_cmd_passes_runtime_head_routing_flags() -> None:
         runtime_head_selection_metric="headwise_route_atom",
         runtime_head_gate_metric="headwise_route_atom",
         runtime_head_gate_strength=0.5,
+        random_salt=3,
     )
     cmd = control_suite.build_evaluate_cmd(
         python_exe="python",
@@ -490,6 +491,7 @@ def test_build_evaluate_cmd_passes_runtime_head_routing_flags() -> None:
     assert cmd[cmd.index("--runtime-head-selection-metric") + 1] == "headwise_route_atom"
     assert cmd[cmd.index("--runtime-head-gate-metric") + 1] == "headwise_route_atom"
     assert cmd[cmd.index("--runtime-head-gate-strength") + 1] == "0.5"
+    assert cmd[cmd.index("--random-salt") + 1] == "3"
 
 
 def test_build_evaluate_cmd_skips_noop_gate_search_for_translated_only() -> None:

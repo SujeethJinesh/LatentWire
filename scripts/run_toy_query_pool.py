@@ -311,6 +311,39 @@ def _calibrate_orthogonal_basis(activations: torch.Tensor) -> tuple[torch.Tensor
     return basis, eigenvalues, orthogonality_error
 
 
+def _calibrate_signal_basis(activations: torch.Tensor, labels: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    labels = labels.view(-1)
+    overall_mean = activations.mean(dim=0, keepdim=True)
+    signal_cov = torch.zeros(
+        activations.shape[-1], activations.shape[-1], device=activations.device, dtype=activations.dtype
+    )
+    total = max(int(labels.numel()), 1)
+    for label in torch.unique(labels, sorted=True):
+        mask = labels == label
+        if not bool(mask.any()):
+            continue
+        class_acts = activations[mask]
+        class_mean = class_acts.mean(dim=0, keepdim=True)
+        delta = (class_mean - overall_mean).squeeze(0)
+        signal_cov = signal_cov + float(mask.sum().item()) * torch.outer(delta, delta)
+    signal_cov = signal_cov / float(total)
+    eigenvalues, eigenvectors = torch.linalg.eigh(signal_cov)
+    order = torch.argsort(eigenvalues, descending=True)
+    eigenvalues = eigenvalues[order]
+    basis = eigenvectors[:, order]
+    eye = torch.eye(basis.shape[0], device=basis.device, dtype=basis.dtype)
+    orthogonality_error = torch.linalg.norm(basis.T @ basis - eye) / float(max(basis.shape[0], 1))
+    return basis, eigenvalues, orthogonality_error
+
+
+def _subspace_alignment(left: torch.Tensor, right: torch.Tensor) -> float:
+    k = min(left.shape[-1], right.shape[-1], left.shape[0], right.shape[0])
+    if k <= 0:
+        return 0.0
+    overlap = torch.linalg.norm(left[:, :k].T @ right[:, :k], ord="fro").pow(2) / float(k)
+    return float(overlap.item())
+
+
 class TopKReadout(nn.Module):
     def __init__(self, dim: int, classes: int, top_k: int) -> None:
         super().__init__()
@@ -709,7 +742,7 @@ class GaugeAwareProtectedChannelResidualCodebookReadout(ProtectedChannelResidual
         self.gauge_basis.copy_(basis)
         self.gauge_eigenvalues.copy_(eigenvalues)
         protected = max(1, min(self.protected_channels, dim))
-        protected_energy = eigenvalues[:protected].sum() / eigenvalues.sum().clamp_min(1e-8)
+        protected_energy = (eigenvalues[:protected].sum() / eigenvalues.sum().clamp_min(1e-8)).clamp(0.0, 1.0)
         top_margin = eigenvalues[0] - eigenvalues[min(protected, eigenvalues.numel() - 1)]
         self.last_gauge_basis_orthogonality_error = orthogonality_error.detach()
         self.last_gauge_protected_energy_fraction = protected_energy.detach()
@@ -724,6 +757,118 @@ class GaugeAwareProtectedChannelResidualCodebookReadout(ProtectedChannelResidual
         q_proj = self.query_proj(batch.q) @ self.gauge_basis
         k_cal = torch.einsum("nsd,df->nsf", batch.K, self.gauge_basis)
         v_cal = torch.einsum("nsd,df->nsf", batch.V, self.gauge_basis)
+        scale = math.sqrt(batch.q.shape[-1])
+
+        code_logits = torch.einsum("nd,cd->nc", q_proj, self.codebook) / scale
+        code_weights = torch.softmax(code_logits, dim=-1)
+        slot_code_logits = torch.einsum("nsd,cd->nsc", k_cal, self.codebook) / scale
+        slot_code_weights = torch.softmax(slot_code_logits, dim=-1)
+        slot_code_summaries = torch.einsum("nsc,nsd->ncd", slot_code_weights, v_cal)
+        base_summary = torch.einsum("nc,ncd->nd", code_weights, slot_code_summaries)
+        base_weights = torch.einsum("nc,nsc->ns", code_weights, slot_code_weights)
+
+        query_base = code_weights @ self.codebook
+        slot_base = torch.einsum("nsc,cd->nsd", slot_code_weights, self.codebook)
+        query_residual = q_proj - query_base
+        slot_residual = k_cal - slot_base
+        protected_query_residual = (query_residual * self.protected_mask)[:, : self.protected_channels]
+        protected_slot_residual = (slot_residual * self.protected_mask)[..., : self.protected_channels]
+
+        protected_residual_code_logits = (
+            torch.einsum("nd,rd->nr", protected_query_residual, self.protected_residual_codebook) / scale
+        )
+        protected_residual_code_weights = torch.softmax(protected_residual_code_logits, dim=-1)
+        protected_residual_slot_logits = torch.einsum(
+            "nsd,rd->nsr", protected_slot_residual, self.protected_residual_codebook
+        ) / scale
+        protected_residual_slot_code_weights = torch.softmax(protected_residual_slot_logits, dim=-1)
+        protected_slot_summaries = torch.einsum("nsr,nsd->nrd", protected_residual_slot_code_weights, v_cal)
+        protected_residual_summary = torch.einsum(
+            "nr,nrd->nd", protected_residual_code_weights, protected_slot_summaries
+        )
+        protected_residual_weights = torch.einsum(
+            "nr,nsr->ns", protected_residual_code_weights, protected_residual_slot_code_weights
+        )
+
+        protected_gate = torch.sigmoid(self.protected_residual_logit)
+        summary = base_summary + protected_gate * protected_residual_summary
+        effective_weights = (base_weights + protected_gate * protected_residual_weights) / (1.0 + protected_gate)
+
+        self.last_atom_weights = torch.cat([code_weights, protected_residual_code_weights], dim=-1).detach()
+        self.last_code_weights = code_weights.detach()
+        self.last_slot_code_weights = slot_code_weights.detach()
+        self.last_query_proj = q_proj.detach()
+        self.last_slot_keys = k_cal.detach()
+        self.last_protected_residual_code_weights = protected_residual_code_weights.detach()
+        self.last_protected_residual_slot_code_weights = protected_residual_slot_code_weights.detach()
+        self.last_query_residual = query_residual.detach()
+        self.last_slot_residual = slot_residual.detach()
+        self.last_protected_query_residual = protected_query_residual.detach()
+        self.last_protected_slot_residual = protected_slot_residual.detach()
+        self.last_protected_gate = protected_gate.detach()
+        return summary, effective_weights
+
+
+class SignalAwareProtectedChannelResidualCodebookReadout(ProtectedChannelResidualCodebookReadout):
+    def __init__(
+        self,
+        dim: int,
+        classes: int,
+        codebook_size: int,
+        residual_codebook_size: int,
+        protected_channels: int,
+    ) -> None:
+        super().__init__(dim, classes, codebook_size, residual_codebook_size, protected_channels)
+        self.register_buffer("signal_basis", torch.eye(dim))
+        self.register_buffer("signal_eigenvalues", torch.ones(dim))
+        self.register_buffer("variance_basis", torch.eye(dim))
+        self.register_buffer("variance_eigenvalues", torch.ones(dim))
+        self.last_gauge_basis_orthogonality_error: torch.Tensor | None = None
+        self.last_gauge_protected_energy_fraction: torch.Tensor | None = None
+        self.last_gauge_eigenvalue_top_margin: torch.Tensor | None = None
+        self.last_gauge_selected_channels: torch.Tensor | None = None
+        self.last_signal_basis_orthogonality_error: torch.Tensor | None = None
+        self.last_signal_task_energy_fraction: torch.Tensor | None = None
+        self.last_signal_eigenvalue_top_margin: torch.Tensor | None = None
+        self.last_signal_selected_channels: torch.Tensor | None = None
+        self.last_signal_variance_alignment: torch.Tensor | None = None
+        self._signal_calibrated = False
+
+    @torch.no_grad()
+    def finalize_calibration(self, batch: ToyBatch) -> None:
+        dim = batch.q.shape[-1]
+        signal_basis, signal_eigenvalues, signal_orthogonality_error = _calibrate_signal_basis(batch.q, batch.y)
+        variance_basis, variance_eigenvalues, variance_orthogonality_error = _calibrate_orthogonal_basis(batch.q)
+        self.signal_basis.copy_(signal_basis)
+        self.signal_eigenvalues.copy_(signal_eigenvalues)
+        self.variance_basis.copy_(variance_basis)
+        self.variance_eigenvalues.copy_(variance_eigenvalues)
+        protected = max(1, min(self.protected_channels, dim))
+        variance_energy = (
+            variance_eigenvalues[:protected].sum() / variance_eigenvalues.sum().clamp_min(1e-8)
+        ).clamp(0.0, 1.0)
+        variance_top_margin = variance_eigenvalues[0] - variance_eigenvalues[min(protected, variance_eigenvalues.numel() - 1)]
+        signal_energy = (signal_eigenvalues[:protected].sum() / signal_eigenvalues.sum().clamp_min(1e-8)).clamp(0.0, 1.0)
+        top_margin = signal_eigenvalues[0] - signal_eigenvalues[min(protected, signal_eigenvalues.numel() - 1)]
+        alignment = _subspace_alignment(signal_basis[:, :protected], variance_basis[:, :protected])
+        self.last_gauge_basis_orthogonality_error = variance_orthogonality_error.detach()
+        self.last_gauge_protected_energy_fraction = variance_energy.detach()
+        self.last_gauge_eigenvalue_top_margin = variance_top_margin.detach()
+        self.last_gauge_selected_channels = torch.arange(protected, device=batch.q.device)
+        self.last_signal_basis_orthogonality_error = signal_orthogonality_error.detach()
+        self.last_signal_task_energy_fraction = signal_energy.detach()
+        self.last_signal_eigenvalue_top_margin = top_margin.detach()
+        self.last_signal_selected_channels = torch.arange(protected, device=batch.q.device)
+        self.last_signal_variance_alignment = torch.tensor(alignment, device=batch.q.device, dtype=batch.q.dtype)
+        self._signal_calibrated = True
+
+    def encode(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor]:
+        if not self._signal_calibrated:
+            self.finalize_calibration(batch)
+
+        q_proj = self.query_proj(batch.q) @ self.signal_basis
+        k_cal = torch.einsum("nsd,df->nsf", batch.K, self.signal_basis)
+        v_cal = torch.einsum("nsd,df->nsf", batch.V, self.signal_basis)
         scale = math.sqrt(batch.q.shape[-1])
 
         code_logits = torch.einsum("nd,cd->nc", q_proj, self.codebook) / scale
@@ -1004,79 +1149,141 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
             )
         )
         metrics.update(_residual_energy_metrics(query_residual, query_proj, slot_residual, slot_keys, residual_gate))
-    protected_residual_code_weights = getattr(model, "last_protected_residual_code_weights", None)
-    protected_residual_slot_code_weights = getattr(model, "last_protected_residual_slot_code_weights", None)
-    protected_residual_codebook = getattr(model, "protected_residual_codebook", None)
-    protected_query_residual = getattr(model, "last_protected_query_residual", None)
-    protected_slot_residual = getattr(model, "last_protected_slot_residual", None)
-    protected_query_full = getattr(model, "last_query_residual", None)
-    protected_slot_full = getattr(model, "last_slot_residual", None)
-    protected_gate = getattr(model, "last_protected_gate", None)
-    protected_channels = getattr(model, "protected_channels", None)
-    gauge_basis_orthogonality_error = getattr(model, "last_gauge_basis_orthogonality_error", None)
-    gauge_protected_energy_fraction = getattr(model, "last_gauge_protected_energy_fraction", None)
-    gauge_eigenvalue_top_margin = getattr(model, "last_gauge_eigenvalue_top_margin", None)
-    gauge_selected_channels = getattr(model, "last_gauge_selected_channels", None)
+    signal_basis_orthogonality_error = getattr(model, "last_signal_basis_orthogonality_error", None)
+    signal_task_energy_fraction = getattr(model, "last_signal_task_energy_fraction", None)
+    signal_eigenvalue_top_margin = getattr(model, "last_signal_eigenvalue_top_margin", None)
+    signal_selected_channels = getattr(model, "last_signal_selected_channels", None)
+    signal_variance_alignment = getattr(model, "last_signal_variance_alignment", None)
+    signal_residual_code_weights = getattr(model, "last_protected_residual_code_weights", None)
+    signal_residual_slot_code_weights = getattr(model, "last_protected_residual_slot_code_weights", None)
+    signal_residual_codebook = getattr(model, "protected_residual_codebook", None)
+    signal_query_residual = getattr(model, "last_protected_query_residual", None)
+    signal_slot_residual = getattr(model, "last_protected_slot_residual", None)
+    signal_query_full = getattr(model, "last_query_residual", None)
+    signal_slot_full = getattr(model, "last_slot_residual", None)
+    signal_gate = getattr(model, "last_protected_gate", None)
+    signal_channels = getattr(model, "protected_channels", None)
     if (
-        protected_residual_code_weights is None
-        or protected_residual_slot_code_weights is None
-        or protected_residual_codebook is None
-        or protected_query_residual is None
-        or protected_slot_residual is None
-        or protected_query_full is None
-        or protected_slot_full is None
-        or protected_gate is None
-        or protected_channels is None
+        signal_basis_orthogonality_error is not None
+        and signal_task_energy_fraction is not None
+        and signal_eigenvalue_top_margin is not None
+        and signal_selected_channels is not None
+        and signal_variance_alignment is not None
+        and signal_residual_code_weights is not None
+        and signal_residual_slot_code_weights is not None
+        and signal_residual_codebook is not None
+        and signal_query_residual is not None
+        and signal_slot_residual is not None
+        and signal_query_full is not None
+        and signal_slot_full is not None
+        and signal_gate is not None
+        and signal_channels is not None
     ):
         metrics.update(
+            _codebook_metrics(
+                signal_residual_code_weights,
+                signal_residual_slot_code_weights,
+                signal_residual_codebook.detach(),
+                signal_query_residual,
+                signal_slot_residual,
+                prefix="signal_",
+            )
+        )
+        signal_query_ratio = signal_query_residual.norm(dim=-1) / signal_query_full.norm(dim=-1).clamp_min(1e-8)
+        signal_slot_ratio = signal_slot_residual.norm(dim=-1) / signal_slot_full.norm(dim=-1).clamp_min(1e-8)
+        metrics.update(
             {
-                "protected_residual_codebook_entropy": None,
-                "protected_residual_codebook_collision_rate": None,
-                "protected_dead_code_rate": None,
-                "protected_residual_codebook_top_margin": None,
-                "protected_residual_slot_code_entropy": None,
-                "protected_residual_slot_code_collision_rate": None,
-                "protected_dead_slot_code_rate": None,
-                "protected_residual_slot_code_top_margin": None,
-                "protected_residual_codebook_recon_mse": None,
-                "protected_residual_codebook_recon_cosine": None,
-                "protected_residual_slot_remap_recon_mse": None,
-                "protected_residual_slot_remap_recon_cosine": None,
-                "protected_residual_codebook_support_mean": None,
-                "protected_residual_codebook_remap_overlap": None,
-                "protected_residual_codebook_remap_jaccard": None,
-                "protected_query_energy_ratio": None,
-                "protected_slot_energy_ratio": None,
-                "protected_gate": None,
-                "gauge_basis_orthogonality_error": None,
-                "gauge_protected_energy_fraction": None,
-                "gauge_eigenvalue_top_margin": None,
-                "gauge_selected_channels": None,
+                "protected_residual_codebook_entropy": float(metrics["signal_codebook_entropy"]),
+                "protected_residual_codebook_collision_rate": float(metrics["signal_codebook_collision_rate"]),
+                "protected_dead_code_rate": float(metrics["signal_dead_code_rate"]),
+                "protected_residual_codebook_top_margin": float(metrics["signal_codebook_top_margin"]),
+                "protected_residual_slot_code_entropy": float(metrics["signal_slot_code_entropy"]),
+                "protected_residual_slot_code_collision_rate": float(metrics["signal_slot_code_collision_rate"]),
+                "protected_dead_slot_code_rate": float(metrics["signal_dead_slot_code_rate"]),
+                "protected_residual_slot_code_top_margin": float(metrics["signal_slot_code_top_margin"]),
+                "protected_residual_codebook_recon_mse": float(metrics["signal_codebook_recon_mse"]),
+                "protected_residual_codebook_recon_cosine": float(metrics["signal_codebook_recon_cosine"]),
+                "protected_residual_slot_remap_recon_mse": float(metrics["signal_slot_remap_recon_mse"]),
+                "protected_residual_slot_remap_recon_cosine": float(metrics["signal_slot_remap_recon_cosine"]),
+                "protected_residual_codebook_support_mean": float(metrics["signal_codebook_support_mean"]),
+                "protected_residual_codebook_remap_overlap": float(metrics["signal_codebook_remap_overlap"]),
+                "protected_residual_codebook_remap_jaccard": float(metrics["signal_codebook_remap_jaccard"]),
+                "protected_query_energy_ratio": float(signal_query_ratio.mean().item()),
+                "protected_slot_energy_ratio": float(signal_slot_ratio.mean().item()),
+                "protected_gate": float(signal_gate.item()),
+                "signal_query_energy_ratio": float(signal_query_ratio.mean().item()),
+                "signal_slot_energy_ratio": float(signal_slot_ratio.mean().item()),
+                "signal_gate": float(signal_gate.item()),
+                "signal_basis_orthogonality_error": float(signal_basis_orthogonality_error.item()),
+                "signal_task_energy_fraction": float(signal_task_energy_fraction.item()),
+                "signal_eigenvalue_top_margin": float(signal_eigenvalue_top_margin.item()),
+                "signal_selected_channels": float(signal_selected_channels.numel())
+                if isinstance(signal_selected_channels, torch.Tensor)
+                else None,
+                "signal_variance_alignment": float(signal_variance_alignment.item()),
+                "gauge_basis_orthogonality_error": float(
+                    getattr(model, "last_gauge_basis_orthogonality_error").item()
+                )
+                if getattr(model, "last_gauge_basis_orthogonality_error", None) is not None
+                else None,
+                "gauge_protected_energy_fraction": float(
+                    getattr(model, "last_gauge_protected_energy_fraction").item()
+                )
+                if getattr(model, "last_gauge_protected_energy_fraction", None) is not None
+                else None,
+                "gauge_eigenvalue_top_margin": float(getattr(model, "last_gauge_eigenvalue_top_margin").item())
+                if getattr(model, "last_gauge_eigenvalue_top_margin", None) is not None
+                else None,
+                "gauge_selected_channels": float(getattr(model, "last_gauge_selected_channels").numel())
+                if isinstance(getattr(model, "last_gauge_selected_channels", None), torch.Tensor)
+                else None,
             }
         )
     else:
-        metrics.update(
-            _codebook_metrics(
-                protected_residual_code_weights,
-                protected_residual_slot_code_weights,
-                protected_residual_codebook.detach(),
-                protected_query_residual,
-                protected_slot_residual,
-                prefix="protected_residual_",
-            )
-        )
-        protected_query_ratio = protected_query_residual.norm(dim=-1) / protected_query_full.norm(dim=-1).clamp_min(1e-8)
-        protected_slot_ratio = protected_slot_residual.norm(dim=-1) / protected_slot_full.norm(dim=-1).clamp_min(1e-8)
-        metrics.update(
-            {
-                "protected_query_energy_ratio": float(protected_query_ratio.mean().item()),
-                "protected_slot_energy_ratio": float(protected_slot_ratio.mean().item()),
-                "protected_gate": float(protected_gate.item()),
-            }
-        )
-        if gauge_basis_orthogonality_error is None or gauge_protected_energy_fraction is None or gauge_eigenvalue_top_margin is None:
+        protected_residual_code_weights = getattr(model, "last_protected_residual_code_weights", None)
+        protected_residual_slot_code_weights = getattr(model, "last_protected_residual_slot_code_weights", None)
+        protected_residual_codebook = getattr(model, "protected_residual_codebook", None)
+        protected_query_residual = getattr(model, "last_protected_query_residual", None)
+        protected_slot_residual = getattr(model, "last_protected_slot_residual", None)
+        protected_query_full = getattr(model, "last_query_residual", None)
+        protected_slot_full = getattr(model, "last_slot_residual", None)
+        protected_gate = getattr(model, "last_protected_gate", None)
+        protected_channels = getattr(model, "protected_channels", None)
+        gauge_basis_orthogonality_error = getattr(model, "last_gauge_basis_orthogonality_error", None)
+        gauge_protected_energy_fraction = getattr(model, "last_gauge_protected_energy_fraction", None)
+        gauge_eigenvalue_top_margin = getattr(model, "last_gauge_eigenvalue_top_margin", None)
+        gauge_selected_channels = getattr(model, "last_gauge_selected_channels", None)
+        if (
+            protected_residual_code_weights is None
+            or protected_residual_slot_code_weights is None
+            or protected_residual_codebook is None
+            or protected_query_residual is None
+            or protected_slot_residual is None
+            or protected_query_full is None
+            or protected_slot_full is None
+            or protected_gate is None
+            or protected_channels is None
+        ):
             metrics.update(
                 {
+                    "protected_residual_codebook_entropy": None,
+                    "protected_residual_codebook_collision_rate": None,
+                    "protected_dead_code_rate": None,
+                    "protected_residual_codebook_top_margin": None,
+                    "protected_residual_slot_code_entropy": None,
+                    "protected_residual_slot_code_collision_rate": None,
+                    "protected_dead_slot_code_rate": None,
+                    "protected_residual_slot_code_top_margin": None,
+                    "protected_residual_codebook_recon_mse": None,
+                    "protected_residual_codebook_recon_cosine": None,
+                    "protected_residual_slot_remap_recon_mse": None,
+                    "protected_residual_slot_remap_recon_cosine": None,
+                    "protected_residual_codebook_support_mean": None,
+                    "protected_residual_codebook_remap_overlap": None,
+                    "protected_residual_codebook_remap_jaccard": None,
+                    "protected_query_energy_ratio": None,
+                    "protected_slot_energy_ratio": None,
+                    "protected_gate": None,
                     "gauge_basis_orthogonality_error": None,
                     "gauge_protected_energy_fraction": None,
                     "gauge_eigenvalue_top_margin": None,
@@ -1085,15 +1292,44 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
             )
         else:
             metrics.update(
+                _codebook_metrics(
+                    protected_residual_code_weights,
+                    protected_residual_slot_code_weights,
+                    protected_residual_codebook.detach(),
+                    protected_query_residual,
+                    protected_slot_residual,
+                    prefix="protected_residual_",
+                )
+            )
+            protected_query_ratio = protected_query_residual.norm(dim=-1) / protected_query_full.norm(dim=-1).clamp_min(1e-8)
+            protected_slot_ratio = protected_slot_residual.norm(dim=-1) / protected_slot_full.norm(dim=-1).clamp_min(1e-8)
+            metrics.update(
                 {
-                    "gauge_basis_orthogonality_error": float(gauge_basis_orthogonality_error.item()),
-                    "gauge_protected_energy_fraction": float(gauge_protected_energy_fraction.item()),
-                    "gauge_eigenvalue_top_margin": float(gauge_eigenvalue_top_margin.item()),
-                    "gauge_selected_channels": float(gauge_selected_channels.numel())
-                    if isinstance(gauge_selected_channels, torch.Tensor)
-                    else None,
+                    "protected_query_energy_ratio": float(protected_query_ratio.mean().item()),
+                    "protected_slot_energy_ratio": float(protected_slot_ratio.mean().item()),
+                    "protected_gate": float(protected_gate.item()),
                 }
             )
+            if gauge_basis_orthogonality_error is None or gauge_protected_energy_fraction is None or gauge_eigenvalue_top_margin is None:
+                metrics.update(
+                    {
+                        "gauge_basis_orthogonality_error": None,
+                        "gauge_protected_energy_fraction": None,
+                        "gauge_eigenvalue_top_margin": None,
+                        "gauge_selected_channels": None,
+                    }
+                )
+            else:
+                metrics.update(
+                    {
+                        "gauge_basis_orthogonality_error": float(gauge_basis_orthogonality_error.item()),
+                        "gauge_protected_energy_fraction": float(gauge_protected_energy_fraction.item()),
+                        "gauge_eigenvalue_top_margin": float(gauge_eigenvalue_top_margin.item()),
+                        "gauge_selected_channels": float(gauge_selected_channels.numel())
+                        if isinstance(gauge_selected_channels, torch.Tensor)
+                        else None,
+                    }
+                )
     return metrics
 
 
@@ -1112,6 +1348,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
         "residual_codebook_remap": 557,
         "protected_channel_residual_codebook_remap": 619,
         "gauge_aware_protected_channel_residual_codebook_remap": 683,
+        "signal_aware_protected_channel_residual_codebook_remap": 739,
     }
     for scenario_idx, scenario in enumerate(scenarios):
         train = make_toy_batch(config, scenario=scenario, split="train", base=base)
@@ -1171,6 +1408,17 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 ),
                 config.codebook_size + config.residual_codebook_size,
             ),
+            (
+                "signal_aware_protected_channel_residual_codebook_remap",
+                lambda: SignalAwareProtectedChannelResidualCodebookReadout(
+                    config.dim,
+                    config.classes,
+                    config.codebook_size,
+                    config.residual_codebook_size,
+                    protected_channels,
+                ),
+                config.codebook_size + config.residual_codebook_size,
+            ),
         ]
         for method, factory, margin_k in methods:
             torch.manual_seed(config.seed + scenario_idx * 10_000 + method_seed_offsets[method])
@@ -1193,6 +1441,8 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 budget = config.codebook_size + config.residual_codebook_size
             elif method == "gauge_aware_protected_channel_residual_codebook_remap":
                 budget = config.codebook_size + config.residual_codebook_size
+            elif method == "signal_aware_protected_channel_residual_codebook_remap":
+                budget = config.codebook_size + config.residual_codebook_size
             else:
                 budget = config.kv_route_budget + config.kv_value_budget
             rows.append(
@@ -1209,6 +1459,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                         "residual_codebook_remap",
                         "protected_channel_residual_codebook_remap",
                         "gauge_aware_protected_channel_residual_codebook_remap",
+                        "signal_aware_protected_channel_residual_codebook_remap",
                     }
                     else None,
                     "residual_codebook_size": config.residual_codebook_size
@@ -1217,6 +1468,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                         "residual_codebook_remap",
                         "protected_channel_residual_codebook_remap",
                         "gauge_aware_protected_channel_residual_codebook_remap",
+                        "signal_aware_protected_channel_residual_codebook_remap",
                     }
                     else None,
                     "protected_channels": protected_channels
@@ -1224,12 +1476,14 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                     in {
                         "protected_channel_residual_codebook_remap",
                         "gauge_aware_protected_channel_residual_codebook_remap",
+                        "signal_aware_protected_channel_residual_codebook_remap",
                     }
                     else None,
                     "protected_channel_fraction": protected_channels / config.dim
                     if method in {
                         "protected_channel_residual_codebook_remap",
                         "gauge_aware_protected_channel_residual_codebook_remap",
+                        "signal_aware_protected_channel_residual_codebook_remap",
                     }
                     else None,
                     **metrics,
@@ -1247,7 +1501,7 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
     lines = [
         "# Toy Query-Pool Benchmark",
         "",
-        "| Scenario | Method | Budget | KV route budget | KV value budget | Codebook size | Residual codebook size | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | KV route entropy | KV value entropy | KV route collision | KV value collision | KV route dead | KV value dead | KV route margin | KV value margin | KV overlap | KV Jaccard | KV KL | KV cosine | KV gap | KV gate mean | KV gate std | Constrained scale min | Constrained scale max | Constrained scale mean | Codebook entropy | Codebook collision | Dead codes | Codebook margin | Slot code entropy | Slot code collision | Dead slot codes | Slot code margin | Codebook recon MSE | Codebook recon cosine | Slot remap recon MSE | Slot remap recon cosine | Codebook support | Remap overlap | Remap Jaccard | Residual codebook entropy | Residual codebook collision | Residual dead codes | Residual codebook margin | Residual slot code entropy | Residual slot code collision | Residual dead slot codes | Residual slot code margin | Residual recon MSE | Residual recon cosine | Residual slot recon MSE | Residual slot recon cosine | Residual support | Residual overlap | Residual Jaccard | Residual query energy | Residual slot energy | Residual gate | Protected channels | Protected fraction | Protected residual entropy | Protected residual collision | Protected query energy | Protected slot energy | Protected gate | Gauge orth. err. | Gauge energy frac. | Gauge top margin | Gauge selected |",
+        "| Scenario | Method | Budget | KV route budget | KV value budget | Codebook size | Residual codebook size | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | KV route entropy | KV value entropy | KV route collision | KV value collision | KV route dead | KV value dead | KV route margin | KV value margin | KV overlap | KV Jaccard | KV KL | KV cosine | KV gap | KV gate mean | KV gate std | Constrained scale min | Constrained scale max | Constrained scale mean | Codebook entropy | Codebook collision | Dead codes | Codebook margin | Slot code entropy | Slot code collision | Dead slot codes | Slot code margin | Codebook recon MSE | Codebook recon cosine | Slot remap recon MSE | Slot remap recon cosine | Codebook support | Remap overlap | Remap Jaccard | Residual codebook entropy | Residual codebook collision | Residual dead codes | Residual codebook margin | Residual slot code entropy | Residual slot code collision | Residual dead slot codes | Residual slot code margin | Residual recon MSE | Residual recon cosine | Residual slot recon MSE | Residual slot recon cosine | Residual support | Residual overlap | Residual Jaccard | Residual query energy | Residual slot energy | Residual gate | Protected channels | Protected fraction | Protected residual entropy | Protected residual collision | Protected query energy | Protected slot energy | Protected gate | Gauge orth. err. | Gauge energy frac. | Gauge top margin | Gauge selected | Signal orth. err. | Signal task energy | Signal top margin | Signal selected | Signal var. align | Signal query energy | Signal slot energy | Signal gate |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
@@ -1274,7 +1528,10 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
                 "{protected_channels} | {protected_channel_fraction} | {protected_residual_codebook_entropy} | "
                 "{protected_residual_codebook_collision_rate} | {protected_query_energy_ratio} | "
                 "{protected_slot_energy_ratio} | {protected_gate} | {gauge_basis_orthogonality_error} | "
-                "{gauge_protected_energy_fraction} | {gauge_eigenvalue_top_margin} | {gauge_selected_channels} |"
+                "{gauge_protected_energy_fraction} | {gauge_eigenvalue_top_margin} | {gauge_selected_channels} | "
+                "{signal_basis_orthogonality_error} | {signal_task_energy_fraction} | {signal_eigenvalue_top_margin} | "
+                "{signal_selected_channels} | {signal_variance_alignment} | {signal_query_energy_ratio} | "
+                "{signal_slot_energy_ratio} | {signal_gate} |"
             ).format(
                 scenario=row["scenario"],
                 method=row["method"],
@@ -1361,6 +1618,14 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
                 gauge_protected_energy_fraction=fmt(row.get("gauge_protected_energy_fraction")),
                 gauge_eigenvalue_top_margin=fmt(row.get("gauge_eigenvalue_top_margin")),
                 gauge_selected_channels=fmt(row.get("gauge_selected_channels")),
+                signal_basis_orthogonality_error=fmt(row.get("signal_basis_orthogonality_error")),
+                signal_task_energy_fraction=fmt(row.get("signal_task_energy_fraction")),
+                signal_eigenvalue_top_margin=fmt(row.get("signal_eigenvalue_top_margin")),
+                signal_selected_channels=fmt(row.get("signal_selected_channels")),
+                signal_variance_alignment=fmt(row.get("signal_variance_alignment")),
+                signal_query_energy_ratio=fmt(row.get("signal_query_energy_ratio")),
+                signal_slot_energy_ratio=fmt(row.get("signal_slot_energy_ratio")),
+                signal_gate=fmt(row.get("signal_gate")),
             )
         )
     path.parent.mkdir(parents=True, exist_ok=True)

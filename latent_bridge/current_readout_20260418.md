@@ -21,6 +21,38 @@ rescue the method:
 So simple retrieval-head scoring is currently another **negative boundary**,
 not a stable new branch.
 
+## 2026-04-21 Update: Stochastic Routing And Protected Subspaces
+
+The latest asymmetric K/V GSM30 matched-control result made the random branch
+look strongest, but the new salt repeat shows it is not stable enough as a
+single-route method:
+
+- `random/random`, salt `0`: target `0.0667`, method `0.1333`, delta `+0.0667`
+- `random/random`, salt `1`: target `0.0667`, method `0.1333`, delta `+0.0667`
+- `random/random`, salt `2`: target `0.0667`, method `0.0000`, delta `-0.0667`
+
+Interpretation:
+
+- The useful signal is likely stochastic route diversity or perturbation
+  regularization, not one lucky deterministic selector semantic.
+- We should not claim `random/random` as a standalone positive method.
+- The right next branch is multi-route candidate generation plus a verifier,
+  reranker, or uncertainty gate under matched byte/latency accounting.
+
+The protected-channel toy also moved forward. Fixed protected residual channels
+help aligned/outlier scenarios, PCA gauge alignment improves reconstruction but
+does not recover the rotated blocker, and the new supervised signal-aware basis
+repairs the slot-permuted toy case:
+
+- slot-permuted residual codebook: `0.5417`
+- slot-permuted fixed protected: `0.4948`
+- slot-permuted gauge-aware protected: `0.5260`
+- slot-permuted signal-aware protected: `0.5781`
+
+This supports a stacked method hypothesis: task-aware subspace selection plus
+orientation alignment plus seed/route aggregation, rather than another isolated
+selector tweak.
+
 ## Strongest Positive Regime
 
 Qwen2.5-0.5B -> Qwen3-0.6B, sparse `k_only`, `gate=0.10`,

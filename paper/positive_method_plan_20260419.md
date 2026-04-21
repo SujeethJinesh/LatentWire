@@ -258,6 +258,46 @@ on top. Three variants all failed on the matched sparse `gsm8k_eval_10` slice:
 All three fell to `0.0000`, though they did cut the bridge bytes from roughly
 `297k` down to roughly `157k`.
 
+## 2026-04-21 Plan Update
+
+The newest GSM30 asymmetric K/V controls shift the plan away from claiming a
+single deterministic selector. `random/random` was the best matched selector
+row at salt `0`, and salt `1` replicated the aggregate `+0.0667` delta, but
+salt `2` collapsed to `-0.0667`. The stochastic branch is therefore a generator
+of candidate routes, not a standalone method.
+
+Revised positive-method lane:
+
+1. **Multi-route stochastic candidate generation**
+   - Run 3 to 5 deterministic salts for the same budget.
+   - Aggregate by majority vote, answer-normalized vote, or target verifier.
+   - Report seed variance, answer entropy, paired flips, latency, and bytes.
+
+2. **Uncertainty-gated routing**
+   - Use target-alone confidence, route disagreement, and answer entropy to
+     decide when to invoke stochastic routes.
+   - Keep high-confidence examples deterministic to avoid salt-2-style harm.
+
+3. **Task-aware protected subspace**
+   - Extend the toy signal-aware protected-channel result into the real bridge:
+     activation/QK/supervised-signal channel masks, then orientation alignment.
+   - Compare fixed, PCA, signal-aware, and AWQ-style activation-aware masks.
+
+4. **Mixed-budget / quantization-inspired transport**
+   - Borrow AWQ/EXL2-style allocation: spend more bytes on layers/channels with
+     high flip saliency or QK error.
+   - Report accuracy per transmitted byte and per-layer allocation telemetry.
+
+Immediate success bar:
+
+- Beat target-alone on GSM30 across at least 3 stochastic salts or an aggregated
+  3-route verifier.
+- Show non-negative paired delta on every salt or route aggregate.
+- Preserve the matched-control ladder: attention/energy, attention/attention,
+  random/random, shuffled/null, and target-alone.
+- Keep the method positive on at least one second slice before drafting a main
+  claim.
+
 The next bridge-style follow-up tested a stronger version of the same idea:
 replace the scalar query gate with a **query-conditioned low-rank bridge bank**
 selected by live target attention-template agreement. The first version,
