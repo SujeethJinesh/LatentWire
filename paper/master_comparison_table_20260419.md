@@ -334,6 +334,12 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   control: feature routing reaches `0.9438` accuracy with perturb stability
   `0.9500`, sticky routing keeps the accuracy and raises stability to
   `1.0000`, while confidence routing drops to `0.3688`.
+- The leak-free stack interaction toy prevents premature method stacking:
+  raw pairwise reaches `0.7344`, hub-only `0.6250`, hub+sticky+frontier
+  `0.5990`, and hub+sticky+frontier+verifier-stop `0.5938` with
+  over-refinement `0.4583`. The oracle-router control reaches `0.8229`, so the
+  useful next blocker is route assignment and stop policy, not adding all
+  components at once.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided

@@ -32,7 +32,7 @@ methods, emit JSONL/meta telemetry, and survive local device constraints.
 |---|---|---:|---:|---:|---|---|
 | `gsm8k_eval_70` limit-1 | `LatentMAS` baseline probe | 0.0000 | 1 | 10.7217 | `results/latentmas_competitor_20260421/qwen25_05b_gsm1_baseline_probe.jsonl` | Wrapper, row conversion, baseline import, parsing, and meta emission work on cached Qwen2.5. |
 | `gsm8k_eval_70` limit-1 | `LatentMAS` text-MAS probe | 0.0000 | 1 | 15.3653 | `results/latentmas_competitor_20260421/qwen25_05b_gsm1_text_mas_probe.jsonl` | Multi-agent text prompt path works; this remains a plumbing row only. |
-| `gsm8k_eval_70` limit-1 | `LatentMAS` latent-MAS probe | missing | - | - | - | Lazy imports and the non-vLLM shim unblocked construction; MPS fallback got past `torch.linalg.solve`, then HF generation failed in cache-position handling. |
+| `gsm8k_eval_70` limit-1 | `LatentMAS` latent-MAS CPU blocker probe | blocked | 1 | - | `results/latentmas_competitor_20260421/qwen25_05b_gsm1_latent_mas_cpu_probe.jsonl.meta.json` | Wrapper exits cleanly and emits a blocker artifact; CPU and MPS fallback both reach HF cache-position failure inside vendor latent generation. |
 
 ## Current Same-Model Compression Controls
 

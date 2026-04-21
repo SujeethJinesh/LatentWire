@@ -105,6 +105,13 @@ DEFAULT_ROWS: tuple[RowSpec, ...] = (
         required=False,
     ),
     RowSpec(
+        "latentmas_latent_mas_blocker_probe",
+        "LatentMAS latent-MAS CPU blocker probe",
+        "Latent competitor probe",
+        "results/latentmas_competitor_20260421/qwen25_05b_gsm1_latent_mas_cpu_probe.jsonl",
+        required=False,
+    ),
+    RowSpec(
         "latentmas_baseline",
         "LatentMAS baseline",
         "Latent competitor",
@@ -246,7 +253,8 @@ def _stats_from_run_meta(spec: RowSpec, meta: dict[str, Any]) -> RowStats | None
     correct = _first_number(meta, ("correct", "num_correct"))
     if accuracy is None and correct is not None and n:
         accuracy = correct / n
-    if accuracy is None and n is None:
+    status = str(meta.get("status", "present"))
+    if accuracy is None and n is None and status == "present":
         return None
     token_proxy = _first_number(
         meta,
@@ -254,7 +262,7 @@ def _stats_from_run_meta(spec: RowSpec, meta: dict[str, Any]) -> RowStats | None
     )
     return RowStats(
         spec=spec,
-        status="present",
+        status=status,
         n=int(n) if n is not None else None,
         accuracy=accuracy,
         latency_sec=_first_number(meta, ("latency_sec", "total_latency_sec")),
@@ -389,6 +397,7 @@ def render_markdown(rows: Sequence[RowStats]) -> str:
             "- `Token/byte proxy` is intentionally a proxy because historical artifacts log different counters: generated tokens, trace token counts, or transported byte/bit averages.",
             "- `KVPress` rows are same-model compression controls, not semantic cross-model communication baselines.",
             "- `LatentMAS` harness probe rows use the cached Qwen2.5-0.5B model on `N=1`; they are plumbing checks, not fair competitor rows.",
+            "- `blocked` means the wrapper emitted a `.meta.json` and blocker artifact but no prediction JSONL, preserving the benchmark failure mode.",
             "- Full `LatentMAS` rows are expected to remain `missing` until bounded matched wrapper runs are executed; this is preferable to silently omitting them.",
             "- Promote a positive-method claim only when selected-route repair beats target self-repair on matched IDs with comparable repair, token, byte, and latency budgets.",
         ]

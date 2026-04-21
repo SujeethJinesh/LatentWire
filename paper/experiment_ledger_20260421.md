@@ -14,6 +14,7 @@ active positive clues, and combinations worth testing next.
 | Confidence-only routing | routed projector toy confidence bank; router-stability confidence router | Target-head confidence routes to the wrong expert frequently (`0.3000` and `0.3688` toy accuracy). Confidence can be a halt or uncertainty signal, not the sole router. |
 | Fixed-depth refinement | iterative/refinement-stop toys | Two steps can lower MSE; four steps over-refine and harm accuracy. Never promote fixed latent repair without stop reasons and help/harm counters. |
 | Harness probes as competitor claims | LatentMAS Qwen2.5-0.5B `N=1` baseline/text-MAS probes | These verify wrapper plumbing only. Do not compare them against GSM70 method rows or cite them as fair LatentMAS results. |
+| Naive full-stack composition | hub + sticky router + protected mixed-bit frontier + verifier stop toy | Individually plausible pieces can interfere. The leak-free stack scores `0.5938` versus raw pairwise `0.7344`; only oracle routing beats raw at `0.8229`. Validate interfaces before stacking. |
 
 ## Keep But Gate
 
@@ -29,6 +30,7 @@ active positive clues, and combinations worth testing next.
 | Sticky/feature router | Feature router reaches `0.9438`; sticky router keeps accuracy and raises perturb stability to `1.0000` | Promote only with route entropy, perturb stability, load-balance, random/confidence/oracle controls, and matched compute. |
 | Verifier/process stop rules | Verifier-harm stop preserves high toy accuracy and reduces harm relative to blind refinement | Promote with real repair trajectories, stop reason, halt precision, missed-help, and over-refinement telemetry. |
 | LatentMAS comparator | Wrapper exists; cached baseline/text-MAS `N=1` probes run; latent-MAS direct mode is runtime-blocked after MPS fallback | Fix latent-mode runtime and run bounded matched GSM/SVAMP baseline/text-MAS/latent-MAS before head-to-head claims. |
+| Stack oracle route ceiling | In the composition toy, oracle routing reaches `0.8229` versus raw pairwise `0.7344` | Use this to debug route assignment and stop policy; do not cite as a method row. |
 
 ## Next Stack To Test
 
@@ -52,3 +54,10 @@ Every promoted run should emit `example_id`, `method`, `source_model`,
 `projector_id`, `gate_entropy`, `route_stability`, `route_atom_ids`,
 `atom_recovery`, `bit_allocation`, `stop_reason`, `halt_confidence`,
 `over_refinement_flag`, `parse_failure`, and compact trace hashes.
+
+## Current Evidence Ladder
+
+`paper/ablation_evidence_ladder_20260421.md` is the current anti-loop summary
+for stack decisions. It keeps toy-positive components, controls, and blockers
+in one table so the next real route-pool run must justify each included
+component against its logged promotion gate.

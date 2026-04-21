@@ -97,6 +97,29 @@ def test_summarize_row_uses_limit_as_count_when_num_examples_is_absent(tmp_path:
     assert stats.accuracy == 0.1
 
 
+def test_summarize_row_preserves_blocked_run_meta_status(tmp_path: Path) -> None:
+    artifact = tmp_path / "results/latent.jsonl"
+    artifact.parent.mkdir(parents=True)
+    artifact.with_suffix(".jsonl.meta.json").write_text(
+        json.dumps(
+            {
+                "status": "blocked",
+                "num_examples": 1,
+                "error_type": "IndexError",
+                "error_message": "cache-position failure",
+            }
+        ),
+        encoding="utf-8",
+    )
+    spec = table.RowSpec("latent", "LatentMAS latent", "probe", "results/latent.jsonl")
+
+    stats = table.summarize_row(spec, tmp_path)
+
+    assert stats.status == "blocked"
+    assert stats.n == 1
+    assert stats.accuracy is None
+
+
 def test_summarize_row_falls_back_to_jsonl_records_and_filters_method(tmp_path: Path) -> None:
     artifact = tmp_path / "results/routes.jsonl"
     _write_jsonl(
@@ -166,3 +189,4 @@ def test_default_rows_include_latentmas_harness_probes() -> None:
 
     assert "latentmas_baseline_probe" in row_ids
     assert "latentmas_text_mas_probe" in row_ids
+    assert "latentmas_latent_mas_blocker_probe" in row_ids

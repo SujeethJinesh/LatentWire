@@ -370,6 +370,10 @@ File `364_` extends the active hub-router-tokenizer-verifier lane:
 
 - `364_`: Recent hub dictionary, shared latent space, dynamic router regularization, verifier/stop-policy, and tokenizer/vocabulary adaptation memo with 2025-2026 source links, concrete ablations, required telemetry, and decision rules to avoid rerunning stale experiments.
 
+File `365_` extends the symmetry-aware and verifier-gated lane:
+
+- `365_`: Recent symmetry-aware alignment, shared sparse codebooks, routed connector banks, tokenizer/vocabulary adaptation, quantization geometry, and verifier stop-policy references with concrete ablations, telemetry fields, and anti-loop rules.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.

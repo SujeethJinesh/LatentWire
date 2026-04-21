@@ -493,6 +493,11 @@ def _fit_problem_components(
     atom_quant_error = (
         problem["shared_atoms"] - _symmetric_quantize(problem["shared_atoms"], config.low_bits)
     ).pow(2).mean(dim=-1).sqrt()
+    labels = (target @ problem["target_projection"].T).argmax(dim=-1)
+    class_anchors = []
+    for class_id in range(config.classes):
+        mask = labels.eq(class_id)
+        class_anchors.append(target[mask].mean(dim=0) if bool(mask.any()) else target.mean(dim=0))
 
     return {
         "monolithic_bridge": monolithic_bridge,
@@ -503,6 +508,7 @@ def _fit_problem_components(
         "route_centroids": route_centroids,
         "atom_scores": atom_scores,
         "atom_quant_error": atom_quant_error,
+        "class_anchors": torch.stack(class_anchors, dim=0),
     }
 
 
@@ -648,19 +654,20 @@ def _step_trajectory(
     fitted: dict[str, Any],
     problem: dict[str, torch.Tensor],
     config: ToyHubStickyFrontierStackConfig,
-    target: torch.Tensor,
 ) -> list[torch.Tensor]:
     step0 = _reconstruct_from_hub(hub_hat, route, atom_scores, None, None, fitted, problem, config)
     step1 = _reconstruct_from_hub(hub_hat, route, atom_scores, frontier_keep, frontier_protected, fitted, problem, config)
-    residual = target - step1
-    step2 = step1 + 0.55 * residual
-    step3 = step1 + 1.06 * residual + 0.05 * torch.roll(step1, shifts=1, dims=-1)
+    predicted_class = (step1 @ problem["target_projection"].T).argmax(dim=-1)
+    anchor = fitted["class_anchors"][predicted_class]
+    residual = anchor - step1
+    step2 = step1 + 0.48 * residual
+    step3 = step1 + 0.92 * residual + 0.05 * torch.roll(step1, shifts=1, dims=-1)
     return [step0, step1, step2, step3]
 
 
 def _verifier_scores(
     trajectory: list[torch.Tensor],
-    target: torch.Tensor,
+    fitted: dict[str, Any],
     problem: dict[str, torch.Tensor],
     config: ToyHubStickyFrontierStackConfig,
 ) -> torch.Tensor:
@@ -670,9 +677,17 @@ def _verifier_scores(
         confidence = torch.softmax(logits / float(config.confidence_temperature), dim=-1).amax(dim=-1)
         top2 = torch.topk(torch.softmax(logits, dim=-1), k=2, dim=-1).values
         margin = top2[:, 0] - top2[:, 1]
-        residual = (step - target).pow(2).mean(dim=-1).sqrt()
+        predicted_class = logits.argmax(dim=-1)
+        anchor = fitted["class_anchors"][predicted_class]
+        residual = (step - anchor).pow(2).mean(dim=-1).sqrt()
         scores.append(confidence + 0.30 * margin - 0.20 * residual)
     return torch.stack(scores, dim=1)
+
+
+def _select_by_index(trajectory: list[torch.Tensor], selected_step: torch.Tensor) -> torch.Tensor:
+    stacked = torch.stack(trajectory, dim=0)
+    gather_index = selected_step.view(1, -1, 1).expand(1, -1, stacked.shape[-1])
+    return stacked.gather(dim=0, index=gather_index).squeeze(0)
 
 
 def _stop_indices(score_steps: torch.Tensor, config: ToyHubStickyFrontierStackConfig) -> tuple[torch.Tensor, dict[str, int]]:
@@ -724,11 +739,12 @@ def _metrics_for_method(
     compute_proxy: float,
     bit_histogram: dict[str, int],
 ) -> dict[str, Any]:
-    pred = trajectory[-1] @ problem["target_projection"].T
+    final = _select_by_index(trajectory, selected_step)
+    pred = final @ problem["target_projection"].T
     pred_label = pred.argmax(dim=-1)
     target_label = test["target_label"]
     correct = pred_label.eq(target_label)
-    mse = (trajectory[-1] - test["target"]).pow(2).mean(dim=-1)
+    mse = (final - test["target"]).pow(2).mean(dim=-1)
 
     if keep_mask is None:
         keep_count = torch.full((route.shape[0],), config.atoms, dtype=torch.long)
@@ -751,7 +767,11 @@ def _metrics_for_method(
     route_load = _route_load(route, config.families)
     perturbation_stability = float(route_stability)
     average_stop_steps = float((selected_step.float() + 1.0).mean().item())
-    over_refinement_rate = float(((selected_step < (len(trajectory) - 1)) & ((trajectory[-1] - test["target"]).pow(2).mean(dim=-1) > torch.stack([(step - test["target"]).pow(2).mean(dim=-1) for step in trajectory], dim=1).min(dim=1).values + 1e-8)).float().mean().item())
+    step_mse = torch.stack([(step - test["target"]).pow(2).mean(dim=-1) for step in trajectory], dim=1)
+    best_step = step_mse.argmin(dim=1)
+    over_refinement_rate = float(
+        ((selected_step > best_step) & (mse > step_mse.min(dim=1).values + 1e-8)).float().mean().item()
+    )
     accuracy_value = float(correct.float().mean().item())
     mse_value = float(mse.mean().item())
 
@@ -929,9 +949,8 @@ def run_experiment(config: ToyHubStickyFrontierStackConfig) -> dict[str, Any]:
                 fitted,
                 problem,
                 config,
-                target,
             )
-            score_steps = _verifier_scores(trajectory, target, problem, config)
+            score_steps = _verifier_scores(trajectory, fitted, problem, config)
             stop_index, stop_reasons = _stop_indices(score_steps, config)
             stop_reasons_by_method[method] = stop_reasons
             selected_steps[method] = stop_index

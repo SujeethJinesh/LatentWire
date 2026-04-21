@@ -16,6 +16,7 @@ This lightweight matrix reads existing JSONL and `.meta.json` artifacts only. Mi
 | KVPress expected-attn 0.5 | Compression control | present | 0.0500 | 20 | 8.9745 | 40.7000 | meta:run | `results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit20.jsonl` | - |
 | LatentMAS baseline harness probe | Latent competitor probe | present | 0.0000 | 1 | 10.7217 | 167.0000 | meta:run | `results/latentmas_competitor_20260421/qwen25_05b_gsm1_baseline_probe.jsonl` | - |
 | LatentMAS text-MAS harness probe | Latent competitor probe | present | 0.0000 | 1 | 15.3653 | 1102.0 | meta:run | `results/latentmas_competitor_20260421/qwen25_05b_gsm1_text_mas_probe.jsonl` | - |
+| LatentMAS latent-MAS CPU blocker probe | Latent competitor probe | blocked | - | 1 | - | - | meta:run | `results/latentmas_competitor_20260421/qwen25_05b_gsm1_latent_mas_cpu_probe.jsonl` | - |
 | LatentMAS baseline | Latent competitor | missing | - | - | - | - | - | `results/latentmas_competitor_20260421/gsm10_baseline.jsonl` | artifact missing |
 | LatentMAS text-MAS | Latent competitor | missing | - | - | - | - | - | `results/latentmas_competitor_20260421/gsm10_text_mas.jsonl` | artifact missing |
 | LatentMAS latent-MAS | Latent competitor | missing | - | - | - | - | - | `results/latentmas_competitor_20260421/gsm10_latent_mas.jsonl` | artifact missing |
@@ -25,5 +26,6 @@ This lightweight matrix reads existing JSONL and `.meta.json` artifacts only. Mi
 - `Token/byte proxy` is intentionally a proxy because historical artifacts log different counters: generated tokens, trace token counts, or transported byte/bit averages.
 - `KVPress` rows are same-model compression controls, not semantic cross-model communication baselines.
 - `LatentMAS` harness probe rows use the cached Qwen2.5-0.5B model on `N=1`; they are plumbing checks, not fair competitor rows.
+- `blocked` means the wrapper emitted a `.meta.json` and blocker artifact but no prediction JSONL, preserving the benchmark failure mode.
 - Full `LatentMAS` rows are expected to remain `missing` until bounded matched wrapper runs are executed; this is preferable to silently omitting them.
 - Promote a positive-method claim only when selected-route repair beats target self-repair on matched IDs with comparable repair, token, byte, and latency budgets.

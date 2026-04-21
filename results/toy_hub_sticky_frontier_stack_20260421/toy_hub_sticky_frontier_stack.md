@@ -4,55 +4,55 @@ Deterministic composition test for shared hubs, routing stability, mixed-bit fro
 
 | Method | Accuracy | MSE | Route acc | Route entropy | Route load | Perturb stability | Atom recovery | Avg stop steps | Over-refine | Bytes proxy | Compute proxy | Help vs raw pairwise | Harm vs raw pairwise |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| raw_pairwise_bridge | 0.4722 | 2.6867 | 0.6944 | 2.2638 | 0.8403 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 27360.0000 | 415.8000 | 0.0000 | 0.0000 |
-| monolithic_bridge | 0.4722 | 2.6867 | 0.6944 | 2.2638 | 0.8403 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 1368.0000 | 351.0000 | 0.0000 | 0.0000 |
-| hub_dictionary_only | 0.3056 | 3.1765 | 0.6944 | 2.2638 | 0.8403 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 16013.0000 | 376.9200 | 0.0000 | 0.1667 |
-| hub_feature_router | 0.3056 | 3.1765 | 0.5278 | 2.2558 | 0.8403 | 0.8333 | 0.0000 | 1.0000 | 0.0000 | 16013.0000 | 376.9200 | 0.0000 | 0.1667 |
-| hub_sticky_router | 0.3056 | 3.1765 | 0.4444 | 2.3140 | 0.9444 | 0.8333 | 0.0000 | 1.0000 | 0.0000 | 16013.0000 | 376.9200 | 0.0000 | 0.1667 |
-| hub_sticky_protected_mixed_bit_frontier | 0.3056 | 3.1494 | 0.4444 | 2.3140 | 0.9444 | 0.8333 | 0.5417 | 1.0000 | 0.0000 | 16058.0000 | 462.7800 | 0.0000 | 0.1667 |
-| hub_sticky_frontier_verifier_stop | 0.9444 | 0.0134 | 0.4444 | 2.3140 | 0.9444 | 0.8333 | 0.5417 | 1.8056 | 0.0000 | 16058.0000 | 510.4500 | 0.4722 | 0.0000 |
-| random_router_control | 0.3056 | 3.1765 | 0.2222 | 2.2473 | 0.8403 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 16013.0000 | 376.9200 | 0.0000 | 0.1667 |
-| confidence_router_control | 0.3056 | 3.1765 | 0.6944 | 2.2638 | 0.8403 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 16013.0000 | 376.9200 | 0.0000 | 0.1667 |
-| oracle_router_control | 0.3056 | 3.1765 | 1.0000 | 2.2298 | 0.8056 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 16013.0000 | 376.9200 | 0.0000 | 0.1667 |
+| raw_pairwise_bridge | 0.7344 | 0.5842 | 0.6979 | 2.5695 | 0.9250 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 50400.0000 | 510.0000 | 0.0000 | 0.0000 |
+| monolithic_bridge | 0.3698 | 1.1515 | 0.6979 | 2.5695 | 0.9250 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 1680.0000 | 430.0000 | 0.0000 | 0.3646 |
+| hub_dictionary_only | 0.6250 | 0.8243 | 0.6979 | 2.5695 | 0.9250 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 22914.0000 | 462.0000 | 0.0000 | 0.1094 |
+| hub_feature_router | 0.6094 | 0.9477 | 0.6302 | 2.5718 | 0.9312 | 0.9010 | 0.0000 | 1.0000 | 0.0000 | 22914.0000 | 462.0000 | 0.0000 | 0.1250 |
+| hub_sticky_router | 0.6042 | 0.9626 | 0.6250 | 2.5670 | 0.9312 | 0.9219 | 0.0000 | 1.0000 | 0.0000 | 22914.0000 | 462.0000 | 0.0000 | 0.1302 |
+| hub_sticky_protected_mixed_bit_frontier | 0.5990 | 0.9283 | 0.6250 | 2.5670 | 0.9312 | 0.9219 | 0.5286 | 1.0000 | 0.0000 | 22964.0000 | 563.0000 | 0.0000 | 0.1354 |
+| hub_sticky_frontier_verifier_stop | 0.5938 | 1.1173 | 0.6250 | 2.5670 | 0.9312 | 0.9219 | 0.5286 | 2.9688 | 0.4583 | 22964.0000 | 654.0625 | 0.0000 | 0.1406 |
+| random_router_control | 0.3177 | 1.8793 | 0.1875 | 2.5744 | 0.9375 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 22914.0000 | 462.0000 | 0.0000 | 0.4167 |
+| confidence_router_control | 0.6250 | 0.8243 | 0.6979 | 2.5695 | 0.9250 | 0.9896 | 0.0000 | 1.0000 | 0.0000 | 22914.0000 | 462.0000 | 0.0000 | 0.1094 |
+| oracle_router_control | 0.8229 | 0.2609 | 1.0000 | 2.5552 | 0.8938 | 1.0000 | 0.0000 | 1.0000 | 0.0000 | 22914.0000 | 462.0000 | 0.0885 | 0.0000 |
 
 ## Bit Histograms
 
-- `raw_pairwise_bridge`: {"16": 432}
-- `monolithic_bridge`: {"16": 432}
-- `hub_dictionary_only`: {"3": 432}
-- `hub_feature_router`: {"3": 432}
-- `hub_sticky_router`: {"3": 432}
-- `hub_sticky_protected_mixed_bit_frontier`: {"3": 180, "8": 144}
-- `hub_sticky_frontier_verifier_stop`: {"3": 180, "8": 144}
-- `random_router_control`: {"3": 432}
-- `confidence_router_control`: {"3": 432}
-- `oracle_router_control`: {"3": 432}
+- `raw_pairwise_bridge`: {"16": 2304}
+- `monolithic_bridge`: {"16": 2304}
+- `hub_dictionary_only`: {"3": 2304}
+- `hub_feature_router`: {"3": 2304}
+- `hub_sticky_router`: {"3": 2304}
+- `hub_sticky_protected_mixed_bit_frontier`: {"3": 960, "8": 768}
+- `hub_sticky_frontier_verifier_stop`: {"3": 960, "8": 768}
+- `random_router_control`: {"3": 2304}
+- `confidence_router_control`: {"3": 2304}
+- `oracle_router_control`: {"3": 2304}
 
 ## Route Histograms
 
-- `raw_pairwise_bridge`: {"0": 5, "1": 5, "2": 10, "3": 9, "4": 7}
-- `monolithic_bridge`: {"0": 5, "1": 5, "2": 10, "3": 9, "4": 7}
-- `hub_dictionary_only`: {"0": 5, "1": 5, "2": 10, "3": 9, "4": 7}
-- `hub_feature_router`: {"0": 6, "1": 7, "2": 10, "3": 4, "4": 9}
-- `hub_sticky_router`: {"0": 7, "1": 7, "2": 8, "3": 6, "4": 8}
-- `hub_sticky_protected_mixed_bit_frontier`: {"0": 7, "1": 7, "2": 8, "3": 6, "4": 8}
-- `hub_sticky_frontier_verifier_stop`: {"0": 7, "1": 7, "2": 8, "3": 6, "4": 8}
-- `random_router_control`: {"0": 7, "1": 8, "2": 11, "3": 6, "4": 4}
-- `confidence_router_control`: {"0": 5, "1": 5, "2": 10, "3": 9, "4": 7}
-- `oracle_router_control`: {"0": 4, "1": 7, "2": 9, "3": 11, "4": 5}
+- `raw_pairwise_bridge`: {"0": 27, "1": 30, "2": 31, "3": 35, "4": 41, "5": 28}
+- `monolithic_bridge`: {"0": 27, "1": 30, "2": 31, "3": 35, "4": 41, "5": 28}
+- `hub_dictionary_only`: {"0": 27, "1": 30, "2": 31, "3": 35, "4": 41, "5": 28}
+- `hub_feature_router`: {"0": 28, "1": 41, "2": 29, "3": 30, "4": 34, "5": 30}
+- `hub_sticky_router`: {"0": 25, "1": 42, "2": 30, "3": 30, "4": 33, "5": 32}
+- `hub_sticky_protected_mixed_bit_frontier`: {"0": 25, "1": 42, "2": 30, "3": 30, "4": 33, "5": 32}
+- `hub_sticky_frontier_verifier_stop`: {"0": 25, "1": 42, "2": 30, "3": 30, "4": 33, "5": 32}
+- `random_router_control`: {"0": 32, "1": 29, "2": 35, "3": 29, "4": 39, "5": 28}
+- `confidence_router_control`: {"0": 27, "1": 30, "2": 31, "3": 35, "4": 41, "5": 28}
+- `oracle_router_control`: {"0": 30, "1": 25, "2": 35, "3": 43, "4": 35, "5": 24}
 
 ## Stop Reasons
 
-- `raw_pairwise_bridge`: {"direct_bridge": 36}
-- `monolithic_bridge`: {"direct_bridge": 36}
-- `hub_dictionary_only`: {"low_bit_only": 36}
-- `hub_feature_router`: {"low_bit_only": 36}
-- `hub_sticky_router`: {"low_bit_only": 36}
-- `hub_sticky_protected_mixed_bit_frontier`: {"frontier_fixed": 36}
-- `hub_sticky_frontier_verifier_stop`: {"confidence_reached": 12, "max_steps": 3, "verifier_harm": 21}
-- `random_router_control`: {"low_bit_only": 36}
-- `confidence_router_control`: {"low_bit_only": 36}
-- `oracle_router_control`: {"low_bit_only": 36}
+- `raw_pairwise_bridge`: {"direct_bridge": 192}
+- `monolithic_bridge`: {"direct_bridge": 192}
+- `hub_dictionary_only`: {"low_bit_only": 192}
+- `hub_feature_router`: {"low_bit_only": 192}
+- `hub_sticky_router`: {"low_bit_only": 192}
+- `hub_sticky_protected_mixed_bit_frontier`: {"frontier_fixed": 192}
+- `hub_sticky_frontier_verifier_stop`: {"confidence_reached": 8, "max_steps": 126, "verifier_harm": 58}
+- `random_router_control`: {"low_bit_only": 192}
+- `confidence_router_control`: {"low_bit_only": 192}
+- `oracle_router_control`: {"low_bit_only": 192}
 
 ## Sources Consulted
 

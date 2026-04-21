@@ -54,5 +54,12 @@
     "path": "references/364_hub_router_tokenizer_verifier_refs.md",
     "status": "local_memo",
     "reason": "Recent hub dictionary, shared latent space, dynamic router regularization, verifier/stop-policy, and tokenizer/vocabulary adaptation memo with concrete ablations, required telemetry, and decision rules for the active positive-method paper loop."
+  },
+  {
+    "num": 365,
+    "slug": "recent_symmetry_hub_connector_refs",
+    "path": "references/365_recent_symmetry_hub_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Recent symmetry-aware alignment, shared sparse codebooks, routed connector banks, tokenizer/vocabulary adaptation, quantization geometry, and verifier stop-policy memo with concrete ablations, telemetry fields, and anti-loop rules for the active positive-method paper loop."
   }
 ]

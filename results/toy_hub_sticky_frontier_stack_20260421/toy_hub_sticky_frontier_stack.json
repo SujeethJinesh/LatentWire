@@ -1,32 +1,32 @@
 {
   "config": {
     "atoms": 12,
-    "calibration_examples": 48,
-    "classes": 4,
-    "confidence_temperature": 0.72,
-    "dim": 18,
-    "families": 5,
-    "family_bias_scale": 0.5,
-    "family_scale_jitter": 0.14,
+    "calibration_examples": 192,
+    "classes": 5,
+    "confidence_temperature": 0.7,
+    "dim": 20,
+    "families": 6,
+    "family_bias_scale": 0.55,
+    "family_scale_jitter": 0.16,
     "high_bits": 8,
     "hub_snap_strength": 0.35,
     "keep_fraction": 0.7,
     "low_bits": 3,
     "max_steps": 4,
-    "perturb_noise": 0.5,
+    "perturb_noise": 0.55,
     "protected_atoms": 4,
-    "route_code_strength": 0.7,
-    "route_noise": 0.3,
-    "route_temperature": 0.82,
-    "seed": 29,
-    "source_noise": 0.025,
-    "source_style_strength": 0.24,
-    "sticky_margin": 0.03,
-    "target_noise": 0.02,
-    "target_style_strength": 0.2,
-    "test_examples": 36,
-    "verifier_harm_margin": 0.01,
-    "verifier_noise": 0.06,
+    "route_code_strength": 0.72,
+    "route_noise": 0.28,
+    "route_temperature": 0.8,
+    "seed": 0,
+    "source_noise": 0.03,
+    "source_style_strength": 0.26,
+    "sticky_margin": 0.035,
+    "target_noise": 0.026,
+    "target_style_strength": 0.22,
+    "test_examples": 192,
+    "verifier_harm_margin": 0.012,
+    "verifier_noise": 0.07,
     "verifier_stop_threshold": 0.85
   },
   "interpretation": "This toy composes a shared hub dictionary, route selection, sticky routing, protected mixed-bit frontiering, and verifier stopping on the same synthetic family-transfer problem. The key question is whether the stack adds gains or whether later stages interfere by erasing route stability, frontier coverage, or stop fidelity.",
@@ -44,390 +44,400 @@
   ],
   "rows": [
     {
-      "accuracy": 0.4722222089767456,
+      "accuracy": 0.734375,
       "accuracy_delta_vs_raw_pairwise": 0.0,
       "atom_recovery": 0.0,
       "average_stop_steps": 1.0,
       "bit_histogram": {
-        "16": 432
+        "16": 2304
       },
-      "bytes_proxy": 27360.0,
-      "compute_proxy": 415.8,
+      "bytes_proxy": 50400.0,
+      "compute_proxy": 510.0,
       "harm_vs_raw_pairwise": 0.0,
       "help_vs_raw_pairwise": 0.0,
       "method": "raw_pairwise_bridge",
-      "mse": 2.686652183532715,
+      "mse": 0.5841723680496216,
       "mse_delta_vs_raw_pairwise": 0.0,
       "over_refinement_rate": 0.0,
       "perturbation_stability": 1.0,
       "protected_atom_count": 0.0,
-      "route_accuracy": 0.6944444179534912,
-      "route_entropy": 2.263831377029419,
+      "route_accuracy": 0.6979166865348816,
+      "route_entropy": 2.569549798965454,
       "route_histogram": {
-        "0": 5,
-        "1": 5,
-        "2": 10,
-        "3": 9,
-        "4": 7
+        "0": 27,
+        "1": 30,
+        "2": 31,
+        "3": 35,
+        "4": 41,
+        "5": 28
       },
-      "route_load": 0.8402777910232544,
+      "route_load": 0.9249999523162842,
       "route_policy": "conditional_prior",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 12.0,
       "stop_histogram": {
-        "1": 36
+        "1": 192
       },
       "stop_reasons": {
-        "direct_bridge": 36
+        "direct_bridge": 192
       }
     },
     {
-      "accuracy": 0.4722222089767456,
-      "accuracy_delta_vs_raw_pairwise": 0.0,
+      "accuracy": 0.3697916567325592,
+      "accuracy_delta_vs_raw_pairwise": -0.3645833432674408,
       "atom_recovery": 0.0,
       "average_stop_steps": 1.0,
       "bit_histogram": {
-        "16": 432
+        "16": 2304
       },
-      "bytes_proxy": 1368.0,
-      "compute_proxy": 351.0,
-      "harm_vs_raw_pairwise": 0.0,
+      "bytes_proxy": 1680.0,
+      "compute_proxy": 430.0,
+      "harm_vs_raw_pairwise": 0.3645833432674408,
       "help_vs_raw_pairwise": 0.0,
       "method": "monolithic_bridge",
-      "mse": 2.686652183532715,
-      "mse_delta_vs_raw_pairwise": 0.0,
+      "mse": 1.1515096426010132,
+      "mse_delta_vs_raw_pairwise": 0.5673372745513916,
       "over_refinement_rate": 0.0,
       "perturbation_stability": 1.0,
       "protected_atom_count": 0.0,
-      "route_accuracy": 0.6944444179534912,
-      "route_entropy": 2.263831377029419,
+      "route_accuracy": 0.6979166865348816,
+      "route_entropy": 2.569549798965454,
       "route_histogram": {
-        "0": 5,
-        "1": 5,
-        "2": 10,
-        "3": 9,
-        "4": 7
+        "0": 27,
+        "1": 30,
+        "2": 31,
+        "3": 35,
+        "4": 41,
+        "5": 28
       },
-      "route_load": 0.8402777910232544,
+      "route_load": 0.9249999523162842,
       "route_policy": "conditional_prior",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 12.0,
       "stop_histogram": {
-        "1": 36
+        "1": 192
       },
       "stop_reasons": {
-        "direct_bridge": 36
+        "direct_bridge": 192
       }
     },
     {
-      "accuracy": 0.3055555522441864,
-      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "accuracy": 0.625,
+      "accuracy_delta_vs_raw_pairwise": -0.109375,
       "atom_recovery": 0.0,
       "average_stop_steps": 1.0,
       "bit_histogram": {
-        "3": 432
+        "3": 2304
       },
-      "bytes_proxy": 16013.0,
-      "compute_proxy": 376.92,
-      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "bytes_proxy": 22914.0,
+      "compute_proxy": 462.0,
+      "harm_vs_raw_pairwise": 0.109375,
       "help_vs_raw_pairwise": 0.0,
       "method": "hub_dictionary_only",
-      "mse": 3.1764941215515137,
-      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "mse": 0.8242589831352234,
+      "mse_delta_vs_raw_pairwise": 0.2400866150856018,
       "over_refinement_rate": 0.0,
       "perturbation_stability": 1.0,
       "protected_atom_count": 0.0,
-      "route_accuracy": 0.6944444179534912,
-      "route_entropy": 2.263831377029419,
+      "route_accuracy": 0.6979166865348816,
+      "route_entropy": 2.569549798965454,
       "route_histogram": {
-        "0": 5,
-        "1": 5,
-        "2": 10,
-        "3": 9,
-        "4": 7
+        "0": 27,
+        "1": 30,
+        "2": 31,
+        "3": 35,
+        "4": 41,
+        "5": 28
       },
-      "route_load": 0.8402777910232544,
+      "route_load": 0.9249999523162842,
       "route_policy": "conditional_prior",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 12.0,
       "stop_histogram": {
-        "1": 36
+        "1": 192
       },
       "stop_reasons": {
-        "low_bit_only": 36
+        "low_bit_only": 192
       }
     },
     {
-      "accuracy": 0.3055555522441864,
-      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "accuracy": 0.609375,
+      "accuracy_delta_vs_raw_pairwise": -0.125,
       "atom_recovery": 0.0,
       "average_stop_steps": 1.0,
       "bit_histogram": {
-        "3": 432
+        "3": 2304
       },
-      "bytes_proxy": 16013.0,
-      "compute_proxy": 376.92,
-      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "bytes_proxy": 22914.0,
+      "compute_proxy": 462.0,
+      "harm_vs_raw_pairwise": 0.125,
       "help_vs_raw_pairwise": 0.0,
       "method": "hub_feature_router",
-      "mse": 3.1764941215515137,
-      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "mse": 0.9476978182792664,
+      "mse_delta_vs_raw_pairwise": 0.3635254502296448,
       "over_refinement_rate": 0.0,
-      "perturbation_stability": 0.8333333134651184,
+      "perturbation_stability": 0.9010416865348816,
       "protected_atom_count": 0.0,
-      "route_accuracy": 0.5277777910232544,
-      "route_entropy": 2.2557621002197266,
+      "route_accuracy": 0.6302083134651184,
+      "route_entropy": 2.571763515472412,
       "route_histogram": {
-        "0": 6,
-        "1": 7,
-        "2": 10,
-        "3": 4,
-        "4": 9
+        "0": 28,
+        "1": 41,
+        "2": 29,
+        "3": 30,
+        "4": 34,
+        "5": 30
       },
-      "route_load": 0.8402777910232544,
+      "route_load": 0.9312499761581421,
       "route_policy": "feature_router",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 12.0,
       "stop_histogram": {
-        "1": 36
+        "1": 192
       },
       "stop_reasons": {
-        "low_bit_only": 36
+        "low_bit_only": 192
       }
     },
     {
-      "accuracy": 0.3055555522441864,
-      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "accuracy": 0.6041666865348816,
+      "accuracy_delta_vs_raw_pairwise": -0.1302083134651184,
       "atom_recovery": 0.0,
       "average_stop_steps": 1.0,
       "bit_histogram": {
-        "3": 432
+        "3": 2304
       },
-      "bytes_proxy": 16013.0,
-      "compute_proxy": 376.92,
-      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "bytes_proxy": 22914.0,
+      "compute_proxy": 462.0,
+      "harm_vs_raw_pairwise": 0.1302083134651184,
       "help_vs_raw_pairwise": 0.0,
       "method": "hub_sticky_router",
-      "mse": 3.1764941215515137,
-      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "mse": 0.9626110196113586,
+      "mse_delta_vs_raw_pairwise": 0.37843865156173706,
       "over_refinement_rate": 0.0,
-      "perturbation_stability": 0.8333333134651184,
+      "perturbation_stability": 0.921875,
       "protected_atom_count": 0.0,
-      "route_accuracy": 0.4444444477558136,
-      "route_entropy": 2.3140153884887695,
+      "route_accuracy": 0.625,
+      "route_entropy": 2.5669822692871094,
       "route_histogram": {
-        "0": 7,
-        "1": 7,
-        "2": 8,
-        "3": 6,
-        "4": 8
+        "0": 25,
+        "1": 42,
+        "2": 30,
+        "3": 30,
+        "4": 33,
+        "5": 32
       },
-      "route_load": 0.9444444179534912,
+      "route_load": 0.9312499761581421,
       "route_policy": "sticky_router",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 12.0,
       "stop_histogram": {
-        "1": 36
+        "1": 192
       },
       "stop_reasons": {
-        "low_bit_only": 36
+        "low_bit_only": 192
       }
     },
     {
-      "accuracy": 0.3055555522441864,
-      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
-      "atom_recovery": 0.5416666666666666,
+      "accuracy": 0.5989583134651184,
+      "accuracy_delta_vs_raw_pairwise": -0.1354166865348816,
+      "atom_recovery": 0.5286458333333334,
       "average_stop_steps": 1.0,
       "bit_histogram": {
-        "3": 180,
-        "8": 144
+        "3": 960,
+        "8": 768
       },
-      "bytes_proxy": 16058.0,
-      "compute_proxy": 462.78,
-      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "bytes_proxy": 22964.0,
+      "compute_proxy": 563.0,
+      "harm_vs_raw_pairwise": 0.1354166865348816,
       "help_vs_raw_pairwise": 0.0,
       "method": "hub_sticky_protected_mixed_bit_frontier",
-      "mse": 3.1494340896606445,
-      "mse_delta_vs_raw_pairwise": 0.4627819061279297,
+      "mse": 0.9283068776130676,
+      "mse_delta_vs_raw_pairwise": 0.34413450956344604,
       "over_refinement_rate": 0.0,
-      "perturbation_stability": 0.8333333134651184,
+      "perturbation_stability": 0.921875,
       "protected_atom_count": 4.0,
-      "route_accuracy": 0.4444444477558136,
-      "route_entropy": 2.3140153884887695,
+      "route_accuracy": 0.625,
+      "route_entropy": 2.5669822692871094,
       "route_histogram": {
-        "0": 7,
-        "1": 7,
-        "2": 8,
-        "3": 6,
-        "4": 8
+        "0": 25,
+        "1": 42,
+        "2": 30,
+        "3": 30,
+        "4": 33,
+        "5": 32
       },
-      "route_load": 0.9444444179534912,
+      "route_load": 0.9312499761581421,
       "route_policy": "sticky_router",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 9.0,
       "stop_histogram": {
-        "1": 36
+        "1": 192
       },
       "stop_reasons": {
-        "frontier_fixed": 36
+        "frontier_fixed": 192
       }
     },
     {
-      "accuracy": 0.9444444179534912,
-      "accuracy_delta_vs_raw_pairwise": 0.4722222089767456,
-      "atom_recovery": 0.5416666666666666,
-      "average_stop_steps": 1.8055555820465088,
+      "accuracy": 0.59375,
+      "accuracy_delta_vs_raw_pairwise": -0.140625,
+      "atom_recovery": 0.5286458333333334,
+      "average_stop_steps": 2.96875,
       "bit_histogram": {
-        "3": 180,
-        "8": 144
+        "3": 960,
+        "8": 768
       },
-      "bytes_proxy": 16058.0,
-      "compute_proxy": 510.4500007152557,
-      "harm_vs_raw_pairwise": 0.0,
-      "help_vs_raw_pairwise": 0.4722222089767456,
+      "bytes_proxy": 22964.0,
+      "compute_proxy": 654.0625,
+      "harm_vs_raw_pairwise": 0.140625,
+      "help_vs_raw_pairwise": 0.0,
       "method": "hub_sticky_frontier_verifier_stop",
-      "mse": 0.013407118618488312,
-      "mse_delta_vs_raw_pairwise": -2.6732450649142265,
-      "over_refinement_rate": 0.0,
-      "perturbation_stability": 0.8333333134651184,
+      "mse": 1.1173392534255981,
+      "mse_delta_vs_raw_pairwise": 0.5331668853759766,
+      "over_refinement_rate": 0.4583333432674408,
+      "perturbation_stability": 0.921875,
       "protected_atom_count": 4.0,
-      "route_accuracy": 0.4444444477558136,
-      "route_entropy": 2.3140153884887695,
+      "route_accuracy": 0.625,
+      "route_entropy": 2.5669822692871094,
       "route_histogram": {
-        "0": 7,
-        "1": 7,
-        "2": 8,
-        "3": 6,
-        "4": 8
+        "0": 25,
+        "1": 42,
+        "2": 30,
+        "3": 30,
+        "4": 33,
+        "5": 32
       },
-      "route_load": 0.9444444179534912,
+      "route_load": 0.9312499761581421,
       "route_policy": "sticky_router",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 9.0,
       "stop_histogram": {
-        "1": 14,
-        "2": 18,
-        "3": 1,
-        "4": 3
+        "1": 66,
+        "2": 0,
+        "3": 0,
+        "4": 126
       },
       "stop_reasons": {
-        "confidence_reached": 12,
-        "max_steps": 3,
-        "verifier_harm": 21
+        "confidence_reached": 8,
+        "max_steps": 126,
+        "verifier_harm": 58
       }
     },
     {
-      "accuracy": 0.3055555522441864,
-      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "accuracy": 0.3177083432674408,
+      "accuracy_delta_vs_raw_pairwise": -0.4166666567325592,
       "atom_recovery": 0.0,
       "average_stop_steps": 1.0,
       "bit_histogram": {
-        "3": 432
+        "3": 2304
       },
-      "bytes_proxy": 16013.0,
-      "compute_proxy": 376.92,
-      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "bytes_proxy": 22914.0,
+      "compute_proxy": 462.0,
+      "harm_vs_raw_pairwise": 0.4166666567325592,
       "help_vs_raw_pairwise": 0.0,
       "method": "random_router_control",
-      "mse": 3.1764941215515137,
-      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "mse": 1.8792930841445923,
+      "mse_delta_vs_raw_pairwise": 1.2951207160949707,
       "over_refinement_rate": 0.0,
       "perturbation_stability": 1.0,
       "protected_atom_count": 0.0,
-      "route_accuracy": 0.2222222238779068,
-      "route_entropy": 2.247285842895508,
+      "route_accuracy": 0.1875,
+      "route_entropy": 2.574418783187866,
       "route_histogram": {
-        "0": 7,
-        "1": 8,
-        "2": 11,
-        "3": 6,
-        "4": 4
+        "0": 32,
+        "1": 29,
+        "2": 35,
+        "3": 29,
+        "4": 39,
+        "5": 28
       },
-      "route_load": 0.8402777910232544,
+      "route_load": 0.9375,
       "route_policy": "random_router",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 12.0,
       "stop_histogram": {
-        "1": 36
+        "1": 192
       },
       "stop_reasons": {
-        "low_bit_only": 36
+        "low_bit_only": 192
       }
     },
     {
-      "accuracy": 0.3055555522441864,
-      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "accuracy": 0.625,
+      "accuracy_delta_vs_raw_pairwise": -0.109375,
       "atom_recovery": 0.0,
       "average_stop_steps": 1.0,
       "bit_histogram": {
-        "3": 432
+        "3": 2304
       },
-      "bytes_proxy": 16013.0,
-      "compute_proxy": 376.92,
-      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "bytes_proxy": 22914.0,
+      "compute_proxy": 462.0,
+      "harm_vs_raw_pairwise": 0.109375,
       "help_vs_raw_pairwise": 0.0,
       "method": "confidence_router_control",
-      "mse": 3.1764941215515137,
-      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "mse": 0.8242589831352234,
+      "mse_delta_vs_raw_pairwise": 0.2400866150856018,
       "over_refinement_rate": 0.0,
-      "perturbation_stability": 1.0,
+      "perturbation_stability": 0.9895833134651184,
       "protected_atom_count": 0.0,
-      "route_accuracy": 0.6944444179534912,
-      "route_entropy": 2.263831377029419,
+      "route_accuracy": 0.6979166865348816,
+      "route_entropy": 2.569549798965454,
       "route_histogram": {
-        "0": 5,
-        "1": 5,
-        "2": 10,
-        "3": 9,
-        "4": 7
+        "0": 27,
+        "1": 30,
+        "2": 31,
+        "3": 35,
+        "4": 41,
+        "5": 28
       },
-      "route_load": 0.8402777910232544,
+      "route_load": 0.9249999523162842,
       "route_policy": "confidence_router",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 12.0,
       "stop_histogram": {
-        "1": 36
+        "1": 192
       },
       "stop_reasons": {
-        "low_bit_only": 36
+        "low_bit_only": 192
       }
     },
     {
-      "accuracy": 0.3055555522441864,
-      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "accuracy": 0.8229166865348816,
+      "accuracy_delta_vs_raw_pairwise": 0.08854168653488159,
       "atom_recovery": 0.0,
       "average_stop_steps": 1.0,
       "bit_histogram": {
-        "3": 432
+        "3": 2304
       },
-      "bytes_proxy": 16013.0,
-      "compute_proxy": 376.92,
-      "harm_vs_raw_pairwise": 0.1666666567325592,
-      "help_vs_raw_pairwise": 0.0,
+      "bytes_proxy": 22914.0,
+      "compute_proxy": 462.0,
+      "harm_vs_raw_pairwise": 0.0,
+      "help_vs_raw_pairwise": 0.08854168653488159,
       "method": "oracle_router_control",
-      "mse": 3.1764941215515137,
-      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "mse": 0.2608950436115265,
+      "mse_delta_vs_raw_pairwise": -0.3232773244380951,
       "over_refinement_rate": 0.0,
       "perturbation_stability": 1.0,
       "protected_atom_count": 0.0,
       "route_accuracy": 1.0,
-      "route_entropy": 2.2298083305358887,
+      "route_entropy": 2.5551633834838867,
       "route_histogram": {
-        "0": 4,
-        "1": 7,
-        "2": 9,
-        "3": 11,
-        "4": 5
+        "0": 30,
+        "1": 25,
+        "2": 35,
+        "3": 43,
+        "4": 35,
+        "5": 24
       },
-      "route_load": 0.8055555820465088,
+      "route_load": 0.893750011920929,
       "route_policy": "oracle_router",
-      "seed": 29,
+      "seed": 0,
       "selected_atom_count": 12.0,
       "stop_histogram": {
-        "1": 36
+        "1": 192
       },
       "stop_reasons": {
-        "low_bit_only": 36
+        "low_bit_only": 192
       }
     }
   ],

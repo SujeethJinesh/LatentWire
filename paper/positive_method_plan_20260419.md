@@ -3767,3 +3767,31 @@ Immediate execution ladder:
 5. Only stack hub dictionary, sticky routing, tokenizer remap, mixed-bit
    frontier, and verifier stop rules after interaction ablations confirm the
    components do not reverse each other.
+
+## 2026-04-21 Leak-Free Stack Interaction Check
+
+I added a deterministic composition toy for the exact stack we were tempted to
+promote: hub dictionary, sticky routing, protected mixed-bit frontier, and
+verifier stop. I first corrected the verifier stage to avoid using the held-out
+target vector as the repair residual; the leak-free version uses calibration
+class anchors and selects the logged stop step.
+
+Result:
+
+- raw pairwise bridge: accuracy `0.7344`, MSE `0.5842`, bytes `50,400`
+- hub dictionary only: `0.6250`, below raw pairwise
+- hub + sticky router + protected mixed-bit frontier: `0.5990`
+- full hub + sticky + frontier + verifier stop: `0.5938`, over-refinement
+  `0.4583`
+- oracle router control: `0.8229`, MSE `0.2609`
+
+That means:
+
+- the components are not monotonically additive
+- the route-quality ceiling is real, because oracle routing beats raw pairwise
+- the naive stack should not be promoted to a paper method yet
+- the next stack should isolate route assignment and stop-policy quality before
+  adding mixed-bit frontier compression
+- this result strengthens the paper's interpretability requirement: atom
+  recovery, route accuracy, perturbation stability, bit histograms, stop
+  reasons, help/harm, and over-refinement must travel together in the table
