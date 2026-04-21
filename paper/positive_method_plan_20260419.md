@@ -2890,3 +2890,58 @@ Next execution ladder:
 5. Treat tokenizer/vocab work as a robustness axis for mismatched-tokenizer
    model pairs; for the current Qwen2.5/Qwen3 pair, focus on selection,
    repair attribution, orientation, and K/V budget structure.
+
+## 2026-04-21 Attribution CI And K/V Mixed-Precision Follow-Up
+
+Executed next:
+
+- Added `scripts/analyze_process_repair_attribution.py` so process-repair
+  telemetry can be regenerated as JSON and Markdown with deterministic
+  bootstrap intervals.
+- Added `paper/competitor_benchmark_readout_20260421.md` to consolidate direct
+  competitor and same-model compression artifacts into one auditable readout.
+- Added recent latent/multimodal/refinement references in
+  `references/343_recent_latent_multimodal_refinement_refs.md`.
+- Added quantization/KV-compression math references in
+  `references/344_quant_kv_compression_math_refs.md`.
+- Added toy `kv_slot_mixed_precision_bridge`, which separates key-side route
+  recovery from value-side answer reconstruction under low-bit transport.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| GSM70 selected-route repair vs target self-repair | `+0.0286`, bootstrap CI `[-0.0429, 0.1143]` | Positive point estimate, but not yet a statistically robust route-specific margin. |
+| SVAMP70 selected-route repair vs target self-repair | `+0.0429`, bootstrap CI `[0.0000, 0.1000]` | Stronger than GSM, still narrow; route-specific gains need amplification. |
+| Competitor readout | C2C GSM70 `0.1286`, SVAMP70 `0.4429`; KVPress GSM30 none/expected-attention both `0.0667` | LatentWire repair beats C2C only with target-side repair compute; selected-route no-repair ties C2C on GSM70 and trails it on SVAMP70. |
+| K/V slot mixed-precision toy | uniform answer `0.8672`; key-protected `0.9219`; value-protected `0.8672`; mixed `0.9219`; rotation `0.8906` | In this synthetic regime, K-side route preservation is the active lever; V-only protection is neutral. |
+| Recent latent/refinement references | Coconut, SoftCoT, diffusion/refinement, multimodal projectors, activation/KV handoff | The next design stack should test recurrent latent refinement and soft-token/projector interfaces, not only one-shot adapters. |
+
+Updated blocker decomposition:
+
+1. **Route-specific attribution is positive but underpowered.** The method
+   survives target self-repair controls, but the confidence intervals show that
+   the current margin is too small for a final ICLR-ready method claim.
+2. **K-side preservation is the live compression/math clue.** The K/V toy says
+   protecting keys can improve route and answer accuracy, while protecting
+   values alone does not help under the current synthetic setup.
+3. **Competitor framing is clearer.** Direct cross-model peers (`C2C`,
+   `KVComm`) must stay separate from same-model cache-compression controls
+   (`KVPress`, `KVzip`, `Quest`, `H2O`, `SnapKV`).
+4. **The next architecture bet should be iterative.** Recent latent-reasoning
+   and diffusion/refinement work points toward recurrent latent updates,
+   soft-token mixtures, blockwise denoising, and projector-style interfaces.
+
+Next execution ladder:
+
+1. Run a real K/V diagnostic that mirrors the toy: key-protected, value-
+   protected, mixed K/V precision, and rotation-before-transport on frozen
+   route pools before generation.
+2. Add target-self comparison columns to every future process-repair summary,
+   not just target-alone deltas.
+3. Add a small recurrent latent-refinement bridge smoke: one-shot transport vs
+   two-step residual refinement vs gated refinement at matched decode budget.
+4. Add a test-before-repair selector on the held-out process-repair route pools
+   so target repair is only spent when the candidate fails an explicit check.
+5. Move the competitor readout into the final comparison harness once every row
+   logs bytes, repair calls, generated tokens, and latency.

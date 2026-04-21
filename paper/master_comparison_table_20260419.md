@@ -116,7 +116,14 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   Selected-route repair still beats target self-repair on both splits, but by
   modest margins: GSM70 `0.2000` vs `0.1714`, SVAMP70 `0.5429` vs `0.5000`.
   This supports a route-specific gain while keeping target-side self-correction
-  as the main fairness control.
+  as the main fairness control. Bootstrap attribution intervals are now logged
+  in `results/process_repair_holdout_20260421/process_repair_attribution_20260421.md`;
+  they show GSM70 route-specific delta `+0.0286 [-0.0429, 0.1143]` and SVAMP70
+  delta `+0.0429 [0.0000, 0.1000]`.
+- The current competitor readout is consolidated in
+  `paper/competitor_benchmark_readout_20260421.md`. Direct peers and same-model
+  compression controls must stay separated: `C2C` is the direct semantic bar,
+  while `KVPress`/`KVzip`/`Quest`/`H2O`/`SnapKV` are cache controls.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.
