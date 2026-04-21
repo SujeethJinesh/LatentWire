@@ -1,0 +1,266 @@
+{
+  "config": {
+    "calibration_examples": 224,
+    "classes": 5,
+    "confidence_temperature": 0.74,
+    "dense_temperature": 0.72,
+    "dim": 20,
+    "experts": 4,
+    "load_balance_strength": 0.8,
+    "perturb_noise": 0.6,
+    "route_noise": 0.115,
+    "seed": 0,
+    "source_noise": 0.035,
+    "sticky_margin": 0.035,
+    "styles": 7,
+    "target_noise": 0.026,
+    "test_examples": 160
+  },
+  "experiment": "toy_router_stability_regularization",
+  "interpretation": {
+    "literature_hooks": [
+      "load balancing losses",
+      "similarity-preserving routers",
+      "router logit/entropy stabilization",
+      "dense or routing-free expert activation",
+      "perturbation-stable route assignment"
+    ],
+    "positive_method_implication": "A cross-model bridge should report route accuracy, load balance, collapse, and paraphrase stability next to task accuracy/MSE before claiming a routing win.",
+    "router_stability_blocker": "Unregularized routing can look competitive on task accuracy while hiding collapse, low perturbation stability, or poor load balance."
+  },
+  "methods": [
+    "hard_feature_routing",
+    "confidence_routing",
+    "smoothed_dense_routing",
+    "load_balanced_routing",
+    "sticky_paraphrase_stable_routing",
+    "random_routing",
+    "oracle_routing"
+  ],
+  "rows": [
+    {
+      "bytes_proxy": 16.0,
+      "collapse_rate": 0.09166665871938069,
+      "compute_proxy": 80.0,
+      "expert_utilization": {
+        "0": 0.3187499940395355,
+        "1": 0.3125,
+        "2": 0.20000000298023224,
+        "3": 0.16875000298023224
+      },
+      "failure_tags": {
+        "lost_hard_correct": 0,
+        "ok_correct": 144,
+        "other_error": 4,
+        "projection_error": 3,
+        "route_mismatch": 1,
+        "router_collapse": 0,
+        "unstable_under_perturbation": 8
+      },
+      "gate_entropy": 0.0,
+      "harm_rate": 0.0,
+      "help_rate": 0.0,
+      "load_balance": 0.824999988079071,
+      "method": "hard_feature_routing",
+      "mse": 0.024323347955942154,
+      "mse_harm_rate": 0.0,
+      "mse_help_rate": 0.0,
+      "perturbation_stability": 0.949999988079071,
+      "route_accuracy": 0.987500011920929,
+      "route_entropy": 1.9477500915527344,
+      "task_accuracy": 0.9437500238418579
+    },
+    {
+      "bytes_proxy": 16.0,
+      "collapse_rate": 0.20000000794728598,
+      "compute_proxy": 80.0,
+      "expert_utilization": {
+        "0": 0.4000000059604645,
+        "1": 0.16875000298023224,
+        "2": 0.24375000596046448,
+        "3": 0.1875
+      },
+      "failure_tags": {
+        "lost_hard_correct": 0,
+        "ok_correct": 20,
+        "other_error": 0,
+        "projection_error": 0,
+        "route_mismatch": 0,
+        "router_collapse": 101,
+        "unstable_under_perturbation": 39
+      },
+      "gate_entropy": 0.0,
+      "harm_rate": 0.581250011920929,
+      "help_rate": 0.0062500000931322575,
+      "load_balance": 0.800000011920929,
+      "method": "confidence_routing",
+      "mse": 1.5496940612792969,
+      "mse_harm_rate": 0.706250011920929,
+      "mse_help_rate": 0.0,
+      "perturbation_stability": 0.543749988079071,
+      "route_accuracy": 0.28125,
+      "route_entropy": 1.911182165145874,
+      "task_accuracy": 0.3687500059604645
+    },
+    {
+      "bytes_proxy": 19.0,
+      "collapse_rate": 0.09166665871938069,
+      "compute_proxy": 320.0,
+      "expert_utilization": {
+        "0": 0.3187499940395355,
+        "1": 0.3125,
+        "2": 0.20000000298023224,
+        "3": 0.16875000298023224
+      },
+      "failure_tags": {
+        "lost_hard_correct": 1,
+        "ok_correct": 120,
+        "other_error": 0,
+        "projection_error": 30,
+        "route_mismatch": 1,
+        "router_collapse": 0,
+        "unstable_under_perturbation": 8
+      },
+      "gate_entropy": 1.092383623123169,
+      "harm_rate": 0.19374999403953552,
+      "help_rate": 0.012500000186264515,
+      "load_balance": 0.824999988079071,
+      "method": "smoothed_dense_routing",
+      "mse": 0.10076904296875,
+      "mse_harm_rate": 0.987500011920929,
+      "mse_help_rate": 0.012500000186264515,
+      "perturbation_stability": 0.949999988079071,
+      "route_accuracy": 0.987500011920929,
+      "route_entropy": 1.9477500915527344,
+      "task_accuracy": 0.762499988079071
+    },
+    {
+      "bytes_proxy": 16.0,
+      "collapse_rate": 0.09166665871938069,
+      "compute_proxy": 80.0,
+      "expert_utilization": {
+        "0": 0.3187499940395355,
+        "1": 0.28125,
+        "2": 0.20000000298023224,
+        "3": 0.20000000298023224
+      },
+      "failure_tags": {
+        "lost_hard_correct": 0,
+        "ok_correct": 139,
+        "other_error": 3,
+        "projection_error": 3,
+        "route_mismatch": 1,
+        "router_collapse": 0,
+        "unstable_under_perturbation": 14
+      },
+      "gate_entropy": 0.0,
+      "harm_rate": 0.02500000037252903,
+      "help_rate": 0.0,
+      "load_balance": 0.8666666746139526,
+      "method": "load_balanced_routing",
+      "mse": 0.09047956764698029,
+      "mse_harm_rate": 0.03125,
+      "mse_help_rate": 0.0,
+      "perturbation_stability": 0.9125000238418579,
+      "route_accuracy": 0.956250011920929,
+      "route_entropy": 1.9692587852478027,
+      "task_accuracy": 0.918749988079071
+    },
+    {
+      "bytes_proxy": 16.0,
+      "collapse_rate": 0.09166665871938069,
+      "compute_proxy": 160.0,
+      "expert_utilization": {
+        "0": 0.3187499940395355,
+        "1": 0.3125,
+        "2": 0.20000000298023224,
+        "3": 0.16875000298023224
+      },
+      "failure_tags": {
+        "lost_hard_correct": 0,
+        "ok_correct": 151,
+        "other_error": 4,
+        "projection_error": 3,
+        "route_mismatch": 2,
+        "router_collapse": 0,
+        "unstable_under_perturbation": 0
+      },
+      "gate_entropy": 0.0,
+      "harm_rate": 0.0,
+      "help_rate": 0.0,
+      "load_balance": 0.824999988079071,
+      "method": "sticky_paraphrase_stable_routing",
+      "mse": 0.024323347955942154,
+      "mse_harm_rate": 0.0,
+      "mse_help_rate": 0.0,
+      "perturbation_stability": 1.0,
+      "route_accuracy": 0.987500011920929,
+      "route_entropy": 1.9477500915527344,
+      "task_accuracy": 0.9437500238418579
+    },
+    {
+      "bytes_proxy": 16.0,
+      "collapse_rate": 0.02500001589457194,
+      "compute_proxy": 80.0,
+      "expert_utilization": {
+        "0": 0.23125000298023224,
+        "1": 0.26875001192092896,
+        "2": 0.26875001192092896,
+        "3": 0.23125000298023224
+      },
+      "failure_tags": {
+        "lost_hard_correct": 0,
+        "ok_correct": 19,
+        "other_error": 0,
+        "projection_error": 0,
+        "route_mismatch": 24,
+        "router_collapse": 0,
+        "unstable_under_perturbation": 117
+      },
+      "gate_entropy": 0.0,
+      "harm_rate": 0.6000000238418579,
+      "help_rate": 0.0,
+      "load_balance": 0.949999988079071,
+      "method": "random_routing",
+      "mse": 1.4314213991165161,
+      "mse_harm_rate": 0.706250011920929,
+      "mse_help_rate": 0.0062500000931322575,
+      "perturbation_stability": 0.26875001192092896,
+      "route_accuracy": 0.28125,
+      "route_entropy": 1.9959385395050049,
+      "task_accuracy": 0.34375
+    },
+    {
+      "bytes_proxy": 16.0,
+      "collapse_rate": 0.09166665871938069,
+      "compute_proxy": 80.0,
+      "expert_utilization": {
+        "0": 0.3187499940395355,
+        "1": 0.3125,
+        "2": 0.1875,
+        "3": 0.18125000596046448
+      },
+      "failure_tags": {
+        "lost_hard_correct": 0,
+        "ok_correct": 153,
+        "other_error": 4,
+        "projection_error": 3,
+        "route_mismatch": 0,
+        "router_collapse": 0,
+        "unstable_under_perturbation": 0
+      },
+      "gate_entropy": 0.0,
+      "harm_rate": 0.0,
+      "help_rate": 0.012500000186264515,
+      "load_balance": 0.824999988079071,
+      "method": "oracle_routing",
+      "mse": 0.003120600013062358,
+      "mse_harm_rate": 0.0,
+      "mse_help_rate": 0.012500000186264515,
+      "perturbation_stability": 1.0,
+      "route_accuracy": 1.0,
+      "route_entropy": 1.9495863914489746,
+      "task_accuracy": 0.956250011920929
+    }
+  ]
+}
