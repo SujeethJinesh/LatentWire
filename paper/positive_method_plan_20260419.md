@@ -1533,6 +1533,37 @@ That means:
   - or a tokenizer-agnostic byte/span interface,
   - while keeping `dynalign` as the live remapping base
 
+I then tested the first target-likelihood teacher follow-up as
+`bridge_ridge_qk_dynalign_likelihood_module_replace`.
+
+This keeps the same `dynalign` token mixtures and DWA-style confidence weights,
+but injects empirical target next-token likelihood mass into the aligned
+top-k prediction teacher before fitting the same direct-output module.
+
+On a 16-prompt diagnostic calibration slice:
+
+- dynamic remapping samples: `678`
+- mean target tokens per source sample: `3.00`
+- likelihood/DWA-style weight range: `0.706` to `1.303`
+- `K` cosine `0.948`, relative Frobenius error `0.305`
+- `V` cosine `0.697`, relative Frobenius error `0.700`
+
+Held-out diagnostic reads:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- naively injecting the observed target next token into the teacher
+  over-anchors the dynamic teacher and loses the plain `dynalign` / DWA
+  `gsm8k_5 = 0.4000` smoke signal
+- the positive part of the live lane is not generic target-side likelihood
+  sharpening; it is specifically the softer output-overlap remapping signal
+- next likelihood-style attempts should be span-level approximate likelihood
+  matching or tokenization-aware remapping, not a simple gold-token boost
+
 I then tested the first byte/shared-interface control as
 `bridge_ridge_qk_bytespan_module_replace`.
 

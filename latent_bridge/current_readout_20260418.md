@@ -2525,3 +2525,31 @@ Interpretation:
 - next layer work should use larger controlled slices or single-layer
   leave-one-out / add-one-back curves before claiming a layer-localized
   mechanism
+
+And a seventy-eighth dynalign likelihood-teacher diagnostic:
+
+> I then implemented `bridge_ridge_qk_dynalign_likelihood_module_replace`,
+> which keeps the same dynalign source-to-target token mixtures and DWA-style
+> confidence weights, but injects empirical target next-token likelihood mass
+> into the aligned top-k prediction teacher before direct-output module
+> fitting.
+>
+> On a 16-prompt diagnostic calibration slice:
+> - dynamic remapping samples: `678`
+> - mean target tokens per source sample: `3.00`
+> - likelihood/DWA-style sample weights: min `0.706`, max `1.303`
+> - `K` cosine `0.948`, relative Frobenius error `0.305`
+> - `V` cosine `0.697`, relative Frobenius error `0.700`
+>
+> Held-out diagnostic reads:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- adding gold target-token likelihood mass does not rescue the controlled
+  slice and loses the best `dynalign` / DWA `gsm8k_5 = 0.4000` smoke
+- the useful output-aware signal is probably a soft remapping / overlap signal,
+  not a naive observed-next-token boost
+- next likelihood-style work should use approximate likelihood matching over
+  aligned spans or tokenizer-aware remapping, not direct gold-token injection

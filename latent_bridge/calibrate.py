@@ -267,6 +267,7 @@ def parse_args() -> argparse.Namespace:
             "bridge_ridge_qk_dynalign_ctxonly_module_replace",
             "bridge_ridge_qk_dynalign_module_replace",
             "bridge_ridge_qk_dynalign_dwakd_module_replace",
+            "bridge_ridge_qk_dynalign_likelihood_module_replace",
             "bridge_ridge_qk_dynalign_interact_module_replace",
             "bridge_ridge_qk_dpalign_module_replace",
             "bridge_ridge_qk_tokenbasis_replace",
@@ -2431,6 +2432,8 @@ def collect_aligned_prediction_teacher(
     enable_thinking: bool | None = None,
     aligned_position_pairs: Sequence[Sequence[tuple[int, int]]] | None = None,
     aligned_position_mixtures: Sequence[Sequence[tuple[int, Sequence[int], Sequence[float]]]] | None = None,
+    include_next_token_targets: bool = False,
+    next_token_target_weight: float = 0.5,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     if aligned_position_pairs is not None and aligned_position_mixtures is not None:
         raise ValueError("Only one of aligned_position_pairs or aligned_position_mixtures may be provided")
@@ -2450,6 +2453,8 @@ def collect_aligned_prediction_teacher(
         )
     if topk <= 0:
         raise ValueError("topk must be positive")
+    if next_token_target_weight < 0.0:
+        raise ValueError("next_token_target_weight must be non-negative")
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
     output_embeddings = model.get_output_embeddings()
@@ -2481,6 +2486,7 @@ def collect_aligned_prediction_teacher(
         out = model(**enc, use_cache=True, return_dict=True)
         logits = out.logits.detach().to("cpu", dtype=torch.float32)
         mask_cpu = enc["attention_mask"].to("cpu")
+        input_ids_cpu = enc["input_ids"].to("cpu")
         for batch_idx in range(mask_cpu.shape[0]):
             prompt_idx = prompt_offset + batch_idx
             if aligned_position_mixtures is not None:
@@ -2516,15 +2522,76 @@ def collect_aligned_prediction_teacher(
                     mixture_probs = mixture_probs / mixture_probs.sum().clamp_min(1e-8)
                     k = min(int(topk), int(mixture_probs.shape[-1]))
                     top_probs, top_ids = torch.topk(mixture_probs, k=k, dim=-1)
-                    sample_log_probs.append(torch.log(top_probs.clamp_min(1e-30)).unsqueeze(0))
-                    sample_output_rows.append(output_weight[top_ids].unsqueeze(0))
+                    candidate_ids = top_ids.clone()
+                    candidate_probs = top_probs.clone()
+                    if include_next_token_targets and float(next_token_target_weight) > 0.0:
+                        gold_mass: dict[int, float] = {}
+                        for tgt_pos, weight in valid_targets:
+                            next_pos = int(tgt_pos) + 1
+                            if next_pos >= valid_len:
+                                continue
+                            token_id = int(input_ids_cpu[batch_idx, next_pos].item())
+                            gold_mass[token_id] = gold_mass.get(token_id, 0.0) + float(weight)
+                        for token_id, mass in gold_mass.items():
+                            token_tensor = torch.tensor([token_id], dtype=torch.long)
+                            match = candidate_ids == int(token_id)
+                            if bool(match.any()):
+                                candidate_probs[match] += float(next_token_target_weight) * float(mass)
+                            else:
+                                candidate_ids = torch.cat([candidate_ids, token_tensor], dim=0)
+                                base_prob = mixture_probs[int(token_id)].view(1)
+                                candidate_probs = torch.cat(
+                                    [candidate_probs, base_prob + float(next_token_target_weight) * float(mass)],
+                                    dim=0,
+                                )
+                    top_candidate_probs, order = torch.topk(
+                        candidate_probs,
+                        k=min(int(topk), int(candidate_probs.numel())),
+                        dim=-1,
+                    )
+                    top_candidate_ids = candidate_ids.index_select(0, order)
+                    sample_log_probs.append(torch.log(top_candidate_probs.clamp_min(1e-30)).unsqueeze(0))
+                    sample_output_rows.append(output_weight[top_candidate_ids].unsqueeze(0))
             else:
-                prompt_logits = prompt_logits.index_select(0, positions)
-                prompt_log_z = torch.logsumexp(prompt_logits, dim=-1, keepdim=True)
-                k = min(int(topk), int(prompt_logits.shape[-1]))
-                top_logits, top_ids = torch.topk(prompt_logits, k=k, dim=-1)
-                sample_log_probs.append(top_logits - prompt_log_z)
-                sample_output_rows.append(output_weight[top_ids])
+                if include_next_token_targets and float(next_token_target_weight) > 0.0:
+                    valid_len = int(mask_cpu[batch_idx].sum().item())
+                    for pos in positions.tolist():
+                        pos = int(pos)
+                        row_logits = prompt_logits[pos]
+                        row_log_z = torch.logsumexp(row_logits, dim=-1)
+                        k = min(int(topk), int(row_logits.shape[-1]))
+                        top_logits, top_ids = torch.topk(row_logits, k=k, dim=-1)
+                        candidate_ids = top_ids.clone()
+                        candidate_probs = torch.exp(top_logits - row_log_z)
+                        next_pos = pos + 1
+                        if next_pos < valid_len:
+                            token_id = int(input_ids_cpu[batch_idx, next_pos].item())
+                            match = candidate_ids == int(token_id)
+                            if bool(match.any()):
+                                candidate_probs[match] += float(next_token_target_weight)
+                            else:
+                                token_tensor = torch.tensor([token_id], dtype=torch.long)
+                                candidate_ids = torch.cat([candidate_ids, token_tensor], dim=0)
+                                base_prob = torch.exp(row_logits[int(token_id)] - row_log_z).view(1)
+                                candidate_probs = torch.cat(
+                                    [candidate_probs, base_prob + float(next_token_target_weight)],
+                                    dim=0,
+                                )
+                        top_candidate_probs, order = torch.topk(
+                            candidate_probs,
+                            k=min(int(topk), int(candidate_probs.numel())),
+                            dim=-1,
+                        )
+                        top_candidate_ids = candidate_ids.index_select(0, order)
+                        sample_log_probs.append(torch.log(top_candidate_probs.clamp_min(1e-30)).unsqueeze(0))
+                        sample_output_rows.append(output_weight[top_candidate_ids].unsqueeze(0))
+                else:
+                    prompt_logits = prompt_logits.index_select(0, positions)
+                    prompt_log_z = torch.logsumexp(prompt_logits, dim=-1, keepdim=True)
+                    k = min(int(topk), int(prompt_logits.shape[-1]))
+                    top_logits, top_ids = torch.topk(prompt_logits, k=k, dim=-1)
+                    sample_log_probs.append(top_logits - prompt_log_z)
+                    sample_output_rows.append(output_weight[top_ids])
         prompt_offset += len(batch)
     if not sample_log_probs:
         raise ValueError("Could not build aligned prediction teachers from calibration prompts")
@@ -2740,7 +2807,13 @@ def main() -> None:
             f"prompts={len(aligned_position_mixtures)}, samples={total_samples}, "
             f"mean_targets_per_sample={total_targets / max(total_samples, 1):.2f}"
         )
-    elif args.quantization_correction in {"bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace"}:
+    elif args.quantization_correction in {
+        "bridge_ridge_qk_dynalign_ctxonly_module_replace",
+        "bridge_ridge_qk_dynalign_module_replace",
+        "bridge_ridge_qk_dynalign_dwakd_module_replace",
+        "bridge_ridge_qk_dynalign_likelihood_module_replace",
+        "bridge_ridge_qk_dynalign_interact_module_replace",
+    }:
         ctxonly = args.quantization_correction == "bridge_ridge_qk_dynalign_ctxonly_module_replace"
         print(
             "\nBuilding dynamic source->target token mixtures "
@@ -3112,7 +3185,7 @@ def main() -> None:
             )
 
     aligned_lengths: list[int] | None = None
-    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
         if aligned_position_mixtures is not None:
             aligned_lengths = [len(mixture) for mixture in aligned_position_mixtures]
         elif aligned_position_pairs is not None:
@@ -3226,7 +3299,7 @@ def main() -> None:
             f"layers={len(bridge_sample_weights)}, samples={int(bridge_sample_weights[0].numel())}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target query features for query-conditioned bridge projector/adapter "
@@ -3254,7 +3327,7 @@ def main() -> None:
             f"layers={len(bridge_query_features)}, samples={int(bridge_query_features[0].shape[0])}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target next-token teacher for prediction-level bridge distillation "
@@ -3274,15 +3347,20 @@ def main() -> None:
             enable_thinking=target_enable_thinking,
             aligned_position_pairs=aligned_position_pairs,
             aligned_position_mixtures=aligned_position_mixtures,
+            include_next_token_targets=args.quantization_correction == "bridge_ridge_qk_dynalign_likelihood_module_replace",
+            next_token_target_weight=0.5,
         )
         translator.set_bridge_prediction_teacher(teacher_log_probs, teacher_output_rows)
         print(
             "Built aligned prediction teacher: "
             f"samples={int(teacher_log_probs.shape[0])}, topk={int(teacher_log_probs.shape[1])}"
         )
-        if args.quantization_correction == "bridge_ridge_qk_dynalign_dwakd_module_replace":
+        if args.quantization_correction in {
+            "bridge_ridge_qk_dynalign_dwakd_module_replace",
+            "bridge_ridge_qk_dynalign_likelihood_module_replace",
+        }:
             if aligned_position_mixtures is None:
-                raise ValueError("bridge_ridge_qk_dynalign_dwakd_module_replace requires aligned_position_mixtures")
+                raise ValueError(f"{args.quantization_correction} requires aligned_position_mixtures")
             alignment_weights = collect_alignment_confidence_weights(aligned_position_mixtures)
             prediction_weights = collect_prediction_confidence_weights(teacher_log_probs)
             if alignment_weights.shape[0] != prediction_weights.shape[0]:
@@ -3295,7 +3373,7 @@ def main() -> None:
             combined = combined.clamp(0.25, 4.0)
             translator.set_bridge_sample_weights([combined.clone() for _ in range(config.num_tgt_layers)])
             print(
-                "Built DWA-KD-style bridge sample weights: "
+                "Built dynamic bridge sample weights: "
                 f"samples={int(combined.numel())}, mean={float(combined.mean().item()):.3f}, "
                 f"min={float(combined.min().item()):.3f}, max={float(combined.max().item()):.3f}"
             )
