@@ -2477,6 +2477,14 @@ Executed next:
 - Added a symmetry/orientation toy that separates permutation, orthogonal
   rotation, permutation-plus-rotation, and nonlinear/stitching failure modes.
 - Ran C2C on the full GSM30 gate-search slice for the exact Qwen pair.
+- Added verifier/test-time selection references and a target-model listwise
+  verifier over the existing GSM30 stochastic candidate set.
+- Added architecture inspiration references for MoD/MoR, recurrent memory,
+  Mamba/hybrid schedules, and gated delta updates.
+- Added a latent-refinement toy comparing one-shot bridge, iterative residual
+  refinement, gated refinement, soft-token mixture, and coarse-to-fine query
+  bank.
+- Added a real tokenizer audit for the Qwen2.5/Qwen3 GSM30 slice.
 
 New evidence:
 
@@ -2489,28 +2497,34 @@ New evidence:
 | Format-first reranker | `0.1333` vs target-alone `0.0667` | First positive non-oracle selection result. |
 | Target-on-low-format reranker | `0.1333` | Conservative target fallback matches format-first. |
 | Target-on-strict-format reranker | `0.1667` | Best current non-oracle selector; zero baseline-only losses. |
+| Target-model listwise verifier | `0.0667`, fallback `0.0000`; selected target `30/30` | Naive self-verification collapses to target-alone; needs calibration/process rewards. |
 | Numeric-consistency rerankers | `0.0667` | Useful telemetry, not sufficient as standalone selection. |
 | KVPress GSM30 | none `0.0667`, expected-attention `0.0667` | Same-model compression control is neutral. |
 | C2C GSM30 | `0.0667` on `gsm8k_gate_search_30.jsonl` | Direct peer is runnable on the exact pair, but this smoke ties target-alone and trails strict stochastic reranking. |
 | Learned protected toy | wins outlier `0.6562`, near-recovers rotated `0.6302`, loses slot-permuted to signal-aware `0.5781` | Learned masks help, but need signal/orientation constraints. |
 | Quantization toy | uniform MSE `0.2646`; protected-outlier MSE `0.0077`; Hadamard uniform MSE `0.0575` | Outlier protection and basis rotation are separable mechanisms. |
 | Tokenizer toy | token-ID exact `0.0000`, vocab-remap `0.0677`, byte/span canonical `1.0000`, noisy byte/span `0.9010` | Canonical byte/span relay is the cleanest interface control before adding bridge capacity. |
+| Real Qwen tokenizer audit | shared decoded-token rate `1.0000`, source/target fragmentation `0.2313/0.2313` | Tokenizer mismatch is not the active blocker for this exact Qwen pair/slice. |
 | Symmetry toy | permutation-only wins pure permutation MSE `0.0014`; Procrustes wins rotations MSE `0.0018-0.0019`; ridge/stitch wins nonlinear MSE `0.0760` | Symmetry fixing and stitching should be evaluated as separate factors, not hidden inside one dense bridge. |
+| Latent-refinement toy | one-shot acc `0.7604`; iterative residual `0.9792`; gated `0.9271`; coarse-to-fine `0.9062` | Recursive/gated refinement is a stronger next design than widening one-shot transport. |
 
 Updated blocker decomposition:
 
 1. **Candidate-selection blocker:** stochastic cross-model routes expose useful
    answers, and strict format-based fallback is now a stronger positive
    selector (`0.1667`), but it still recovers less than half of the oracle gap.
-   The next real method should be a stronger verifier/reranker, not more
-   unselected random sampling.
+   The naive target-model listwise verifier selected target-alone on every
+   example, so the next selector should be calibrated listwise/process scoring
+   or confidence-gated sampling, not an uncalibrated "ask the target" prompt.
 2. **Orientation-aware interface blocker:** learned masks and signal-aware
    masks each help different toy regimes. The likely stack is learned soft mask
    plus supervised signal alignment plus orientation/permutation regularization.
 3. **Tokenizer/vocab interface blocker:** the toy now makes the failure mode
    explicit: token-ID relay collapses under mismatched segmentation, vocab
    remap barely helps, and byte/span canonical relay is lossless before noise.
-   The next real ablation should measure this on real source/target tokenizers.
+   The real Qwen pair does not show this mismatch on GSM30, so tokenizer work
+   should become a robustness/generalization control rather than the main
+   explanation for the current Qwen failure.
 4. **Symmetry/interface blocker:** the symmetry toy confirms that permutation,
    rotation, and nonlinear stitching are distinguishable regimes. Real model
    experiments should log which regime a bridge is solving before claiming a
@@ -2525,32 +2539,36 @@ Updated blocker decomposition:
 7. **Latent reasoning architecture blocker:** continuous-thought, soft-token,
    diffusion-refinement, and multimodal projector papers all point to iterative
    latent refinement plus gated injection as a better next design than one-shot
-   hard replacement.
+   hard replacement. The latent toy supports this: iterative residual
+   refinement is much stronger than one-shot transport under the same synthetic
+   task.
 8. **Interpretability blocker:** every stochastic run must log candidate set
    quality separately from selection quality: oracle correctness, vote entropy,
    vote margin, verifier score, selected seed, and paired flips.
 
 Next execution ladder:
 
-1. Add a target-model verifier prompt and a pairwise/listwise reranker over the
-   existing GSM30 salt012 candidate set; compare against strict format fallback
-   before adding more samples.
+1. Replace the naive target-model verifier with calibrated selection:
+   listwise-with-position-randomization, process-condition checks, confidence
+   weighted voting, and a held-out threshold sweep against strict format
+   fallback.
 2. Add confidence-gated route expansion: target-alone or strict-reranker
    confidence decides whether to spend 1, 3, or 5 stochastic routes.
 3. Add signal-regularized learned masks to the toy suite and sweep protected
    channels.
 4. Promote the best learned/signal protected-channel diagnostic into a frozen
    K/V-slot reconstruction experiment before generation.
-5. Promote tokenizer/interface controls from the toy to real tokenizers:
-   token-ID relay, vocab remap, byte/span canonical bridge, noisy byte/span
-   stress, and byte decoder head.
+5. Promote tokenizer/interface controls to a robustness suite across genuinely
+   mismatched tokenizers; keep Qwen2.5/Qwen3 tokenizer audit as the matched
+   control.
 6. Promote symmetry controls from the toy to real activations:
    identity, permutation-only, orthogonal-only,
    permutation-plus-orthogonal, gauge-fixed head bases, and stitching loss vs
    reconstruction loss.
-7. Add iterative latent-refinement controls: soft-token bridge, recurrent
-   continuous-thought loop, gated latent injection, and TokenPacker-style query
-   bank at matched byte budget.
+7. Promote latent-refinement controls from toy to bridge experiments:
+   iterative residual correction, gated latent injection, recurrent
+   continuous-thought loop, and TokenPacker-style query bank at matched byte
+   budget.
 8. Add quantization-inspired bridge controls: outlier-channel protection,
    rotation-before-transport, and K/V-asymmetric mixed precision at matched
    bytes.

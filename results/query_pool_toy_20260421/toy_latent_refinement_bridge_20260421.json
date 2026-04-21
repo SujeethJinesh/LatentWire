@@ -1,0 +1,64 @@
+{
+  "config": {
+    "bridge_noise": 0.12,
+    "classes": 5,
+    "codebook_size": 6,
+    "dim": 24,
+    "examples": 96,
+    "gate_fraction": 0.25,
+    "query_bank_size": 4,
+    "refinement_steps": 3,
+    "residual_noise": 0.06,
+    "seed": 7,
+    "soft_temperature": 0.75
+  },
+  "rows": [
+    {
+      "accuracy": 0.7604166865348816,
+      "bytes_estimate": 16.0,
+      "confidence": 0.446056991815567,
+      "entropy": 1.3423638343811035,
+      "method": "one_shot_noisy_bridge",
+      "mse": 0.32744771242141724,
+      "steps": 1.0
+    },
+    {
+      "accuracy": 0.9791666865348816,
+      "bytes_estimate": 39.0,
+      "confidence": 0.4580618441104889,
+      "entropy": 1.3291529417037964,
+      "method": "iterative_residual_refinement",
+      "mse": 0.012634646147489548,
+      "steps": 3.0
+    },
+    {
+      "accuracy": 0.9270833134651184,
+      "bytes_estimate": 17.0,
+      "confidence": 0.45594191551208496,
+      "entropy": 1.328229546546936,
+      "gate_entropy": 1.3862943649291992,
+      "method": "gated_refinement",
+      "mse": 0.05528879538178444,
+      "steps": 2.0
+    },
+    {
+      "accuracy": 0.5416666865348816,
+      "bytes_estimate": 9.0,
+      "confidence": 0.2754863202571869,
+      "entropy": 1.5752124786376953,
+      "method": "soft_token_mixture_projection",
+      "mse": 0.8733406066894531,
+      "steps": 1.0
+    },
+    {
+      "accuracy": 0.90625,
+      "bytes_estimate": 7.0,
+      "confidence": 0.46118006110191345,
+      "entropy": 1.3315448760986328,
+      "fine_bits": 16.0,
+      "method": "coarse_to_fine_query_bank",
+      "mse": 0.11293353885412216,
+      "steps": 2.0
+    }
+  ]
+}
