@@ -7,18 +7,22 @@ Date: 2026-04-21
 | Method | Model pair | Eval slice | Accuracy | Avg latency sec | Notes |
 |---|---|---|---:|---:|---|
 | C2C | `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3-0.6B` | first 5 from `gsm8k_gate_search_30.jsonl` | 0.0000 | 7.3765 | Native published artifact resolved and ran on MPS. |
+| C2C | `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3-0.6B` | `gsm8k_gate_search_30.jsonl` | 0.0667 | 8.1573 | Full GSM30 smoke on the same slice as the stochastic reranker. |
 
 Artifact:
 
 - `c2c_qwen_gsm5_native_20260421.jsonl`
 - `c2c_qwen_gsm5_native_20260421.jsonl.meta.json`
+- `c2c_qwen_gsm30_native_20260421.jsonl`
+- `c2c_qwen_gsm30_native_20260421.jsonl.meta.json`
 
 Interpretation:
 
-C2C is runnable on the exact Qwen pair, but the first 5-example GSM smoke is
-below LatentWire’s current GSM5 method smoke and below target-alone on
-`gsm8k_5`. This is not a full competitor result; it is a successful bootstrap
-plus a negative smoke.
+C2C is runnable on the exact Qwen pair. The first 5-example GSM smoke is below
+LatentWire’s current GSM5 method smoke, while the full GSM30 smoke ties
+target-alone at `0.0667` and trails the strict stochastic selector at `0.1667`.
+This is still a smoke result, not a final paper table row; C2C remains stronger
+on the older GSM70/SVAMP held-out tables and needs parser-matched scaling.
 
 ## Same-Model Compression Control
 

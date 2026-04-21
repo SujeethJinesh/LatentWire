@@ -1,0 +1,69 @@
+{
+  "config": {
+    "byte_noise_rate": 0.1,
+    "examples": 192,
+    "max_terms": 6,
+    "min_terms": 3,
+    "seed": 0,
+    "span_noise_rate": 0.1
+  },
+  "rows": [
+    {
+      "avg_chars": 15.796875,
+      "avg_source_tokens": 12.875,
+      "avg_target_tokens": 13.0625,
+      "bytes_per_example": 26.75,
+      "digit_accuracy": 0.12847451517028713,
+      "exact_reconstruction": 0.0,
+      "fragmentation_rate": 0.8271421893103441,
+      "method": "token_id",
+      "operator_accuracy": 0.0077380952380952375
+    },
+    {
+      "avg_chars": 15.796875,
+      "avg_source_tokens": 12.875,
+      "avg_target_tokens": 19.869791666666668,
+      "bytes_per_example": 20.026041666666668,
+      "digit_accuracy": 0.25754045195681236,
+      "exact_reconstruction": 0.06770833333333333,
+      "fragmentation_rate": 1.2717085739764127,
+      "method": "vocab_remap",
+      "operator_accuracy": 0.2987723214285715
+    },
+    {
+      "avg_chars": 15.796875,
+      "avg_source_tokens": 12.875,
+      "avg_target_tokens": 13.880208333333334,
+      "bytes_per_example": 68.296875,
+      "digit_accuracy": 1.0,
+      "exact_reconstruction": 1.0,
+      "fragmentation_rate": 0.8779178333552503,
+      "method": "byte_span_canonical",
+      "operator_accuracy": 1.0
+    },
+    {
+      "avg_chars": 15.796875,
+      "avg_source_tokens": 12.875,
+      "avg_target_tokens": 13.895833333333334,
+      "bytes_per_example": 69.296875,
+      "digit_accuracy": 0.9916040990259739,
+      "exact_reconstruction": 0.9010416666666666,
+      "fragmentation_rate": 0.8790343910894549,
+      "method": "byte_span_noisy_bytes",
+      "operator_accuracy": 0.9953497023809524
+    },
+    {
+      "avg_chars": 15.796875,
+      "avg_source_tokens": 12.875,
+      "avg_target_tokens": 13.880208333333334,
+      "bytes_per_example": 69.296875,
+      "digit_accuracy": 0.9946116868221648,
+      "exact_reconstruction": 0.9010416666666666,
+      "fragmentation_rate": 0.8779178333552503,
+      "method": "byte_span_noisy_spans",
+      "operator_accuracy": 0.9897073412698414
+    }
+  ],
+  "source_tokenizer": "source_a",
+  "target_tokenizer": "target_b"
+}

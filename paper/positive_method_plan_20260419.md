@@ -2469,6 +2469,14 @@ Executed next:
   stitching, SAE, and shortcut-structure ablations.
 - Added a quantization toy that separates outlier-channel protection from
   rotation-before-quantization.
+- Added recent latent/multimodal reasoning references for continuous-thought
+  loops, soft-token bridges, diffusion-style refinement, TokenPacker-style
+  projectors, and latent cache communication.
+- Added a tokenizer/vocab toy that compares token-ID relay, vocab remap, and
+  byte/span canonical relay under matched synthetic arithmetic strings.
+- Added a symmetry/orientation toy that separates permutation, orthogonal
+  rotation, permutation-plus-rotation, and nonlinear/stitching failure modes.
+- Ran C2C on the full GSM30 gate-search slice for the exact Qwen pair.
 
 New evidence:
 
@@ -2483,8 +2491,11 @@ New evidence:
 | Target-on-strict-format reranker | `0.1667` | Best current non-oracle selector; zero baseline-only losses. |
 | Numeric-consistency rerankers | `0.0667` | Useful telemetry, not sufficient as standalone selection. |
 | KVPress GSM30 | none `0.0667`, expected-attention `0.0667` | Same-model compression control is neutral. |
+| C2C GSM30 | `0.0667` on `gsm8k_gate_search_30.jsonl` | Direct peer is runnable on the exact pair, but this smoke ties target-alone and trails strict stochastic reranking. |
 | Learned protected toy | wins outlier `0.6562`, near-recovers rotated `0.6302`, loses slot-permuted to signal-aware `0.5781` | Learned masks help, but need signal/orientation constraints. |
 | Quantization toy | uniform MSE `0.2646`; protected-outlier MSE `0.0077`; Hadamard uniform MSE `0.0575` | Outlier protection and basis rotation are separable mechanisms. |
+| Tokenizer toy | token-ID exact `0.0000`, vocab-remap `0.0677`, byte/span canonical `1.0000`, noisy byte/span `0.9010` | Canonical byte/span relay is the cleanest interface control before adding bridge capacity. |
+| Symmetry toy | permutation-only wins pure permutation MSE `0.0014`; Procrustes wins rotations MSE `0.0018-0.0019`; ridge/stitch wins nonlinear MSE `0.0760` | Symmetry fixing and stitching should be evaluated as separate factors, not hidden inside one dense bridge. |
 
 Updated blocker decomposition:
 
@@ -2496,17 +2507,26 @@ Updated blocker decomposition:
 2. **Orientation-aware interface blocker:** learned masks and signal-aware
    masks each help different toy regimes. The likely stack is learned soft mask
    plus supervised signal alignment plus orientation/permutation regularization.
-3. **Tokenizer/vocab interface blocker:** recent byte/span and cross-tokenizer
-   distillation work suggests that token IDs may be the wrong communication
-   substrate. Byte/span canonical bridges and vocab remapping should be tested
-   before adding more bridge capacity.
-4. **Compression math blocker:** quantization results suggest we must separate
+3. **Tokenizer/vocab interface blocker:** the toy now makes the failure mode
+   explicit: token-ID relay collapses under mismatched segmentation, vocab
+   remap barely helps, and byte/span canonical relay is lossless before noise.
+   The next real ablation should measure this on real source/target tokenizers.
+4. **Symmetry/interface blocker:** the symmetry toy confirms that permutation,
+   rotation, and nonlinear stitching are distinguishable regimes. Real model
+   experiments should log which regime a bridge is solving before claiming a
+   generic latent-transport gain.
+5. **Compression math blocker:** quantization results suggest we must separate
    basis rotation, outlier-channel protection, and mixed K/V precision. A win
    from one should not be attributed to the others.
-5. **Competitor baseline blocker:** KVPress GSM30 is now a neutral control;
-   C2C remains the direct competitor to scale beyond GSM5 when a CUDA-capable
-   full replay is available.
-6. **Interpretability blocker:** every stochastic run must log candidate set
+6. **Competitor baseline blocker:** KVPress GSM30 and C2C GSM30 are both
+   neutral on the current small slice. C2C remains the main direct peer for
+   GSM70/SVAMP paper tables, where it is still stronger than our older held-out
+   branches.
+7. **Latent reasoning architecture blocker:** continuous-thought, soft-token,
+   diffusion-refinement, and multimodal projector papers all point to iterative
+   latent refinement plus gated injection as a better next design than one-shot
+   hard replacement.
+8. **Interpretability blocker:** every stochastic run must log candidate set
    quality separately from selection quality: oracle correctness, vote entropy,
    vote margin, verifier score, selected seed, and paired flips.
 
@@ -2521,13 +2541,18 @@ Next execution ladder:
    channels.
 4. Promote the best learned/signal protected-channel diagnostic into a frozen
    K/V-slot reconstruction experiment before generation.
-5. Add tokenizer/interface controls: byte/span canonical bridge, vocab remap
-   before transport, and byte decoder head.
-6. Add symmetry controls: permutation-only, orthogonal-only,
+5. Promote tokenizer/interface controls from the toy to real tokenizers:
+   token-ID relay, vocab remap, byte/span canonical bridge, noisy byte/span
+   stress, and byte decoder head.
+6. Promote symmetry controls from the toy to real activations:
+   identity, permutation-only, orthogonal-only,
    permutation-plus-orthogonal, gauge-fixed head bases, and stitching loss vs
    reconstruction loss.
-7. Add quantization-inspired bridge controls: outlier-channel protection,
+7. Add iterative latent-refinement controls: soft-token bridge, recurrent
+   continuous-thought loop, gated latent injection, and TokenPacker-style query
+   bank at matched byte budget.
+8. Add quantization-inspired bridge controls: outlier-channel protection,
    rotation-before-transport, and K/V-asymmetric mixed precision at matched
    bytes.
-8. Keep KVPress as a same-model compression control and scale C2C only after
-   the verifier lane has a positive GSM30 selection result.
+9. Keep KVPress as a same-model compression control and scale C2C/KVComm only
+   when the run is exact-split, exact-pair, and parser-matched.

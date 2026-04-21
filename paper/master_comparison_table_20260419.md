@@ -6,6 +6,17 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 
 ## Qwen2.5-0.5B -> Qwen3-0.6B, GSM8K
 
+### GSM30 Stochastic-Route Smoke
+
+| Split | Method | Accuracy | Avg bytes | Notes |
+| --- | --- | ---: | ---: | --- |
+| `gsm8k_gate_search_30` | target-alone | `0.0667` | `0` | current stochastic-reranker baseline |
+| `gsm8k_gate_search_30` | strict stochastic selector | `0.1667` | `-` | best current non-oracle selector over three random route/value candidates |
+| `gsm8k_gate_search_30` | target-or-seed oracle | `0.3000` | `-` | candidate-quality ceiling, label-leaking |
+| `gsm8k_gate_search_30` | C2C native smoke | `0.0667` | `-` | exact Qwen pair through published C2C artifact |
+| `gsm8k_gate_search_30` | KVPress none | `0.0667` | `-` | same-model compression control |
+| `gsm8k_gate_search_30` | KVPress expected-attention `0.5` | `0.0667` | `-` | same-model compression control |
+
 | Split | Method | Accuracy | Avg bytes | Notes |
 | --- | --- | ---: | ---: | --- |
 | `gsm8k_eval_70` | `target-alone` | `0.0429` | `0` | no source communication |
@@ -51,6 +62,9 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 
 - Best internal same-pair GSM branch is still the fixed head-prior branch, not transport-first.
 - Best external baseline is still `C2C`, and it beats us on both GSM and SVAMP.
+- On the newer GSM30 stochastic-route smoke, the strict selector is the first
+  non-oracle internal method to beat target-alone and same-slice C2C/KVPress
+  controls (`0.1667` vs `0.0667`), but it is not yet a held-out paper result.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.
