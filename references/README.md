@@ -126,6 +126,10 @@ retrieval-head transport, QK geometry, and heterogeneous cache behavior:
 - `192_`: QK-geometry filtering as the strongest direct compression/transport inspiration.
 - `193_`: query-key alignment as a meaningful structural objective rather than a cosmetic score.
 - `194_`: heterogeneous KV compression via dynamic retrieval as the closest recent systems-style reminder that head mismatch is dynamic, not just static.
+- `390_` through `392_`: local memos for the current paper-tightening loop:
+  unsaturated canonicalization and quantized residual ideas, adaptive
+  canonicalization plus gauge-invariant matching, and quantized/codebook
+  residual communication after the frozen GSM8K32 sweep.
 - `129_`: layer-wise dissimilar KV sharing as a close systems analogue for pair-conditioned transfer.
 - `130_`: length-aware attention priors as a direct reference for cached-prior test-time reasoning.
 

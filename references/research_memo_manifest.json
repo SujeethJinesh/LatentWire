@@ -236,5 +236,19 @@
     "path": "references/390_unsaturated_canonicalization_quantized_residual_refs.md",
     "status": "local_memo",
     "reason": "Fresh unsaturated 2025-2026 ideas for per-example canonicalization, gauge-invariant matching, symmetry-compatible codebook compression, and quantized low-rank correction after the current sequence-aligned sidecar lane."
+  },
+  {
+    "num": 391,
+    "slug": "adaptive_canonicalization_gauge_invariant_refs",
+    "path": "references/391_adaptive_canonicalization_gauge_invariant_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo on per-example canonicalization, adaptive symmetry breaking, and gauge-invariant matching as the next symmetry-side upgrade after the frozen benchmark sweep."
+  },
+  {
+    "num": 392,
+    "slug": "quantized_codebook_residual_refs",
+    "path": "references/392_quantized_codebook_residual_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo on low-rank residual correction, learned byte-level alignment, and codebook communication as the next compression-side upgrade after the frozen benchmark sweep."
   }
 ]

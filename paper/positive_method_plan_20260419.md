@@ -281,6 +281,43 @@ Only after that lane beats `target_alone` on this frozen contract and passes
 the extraction/coverage checks should we widen to larger slices or build any
 paper tables.
 
+## Status After Frozen GSM8K32 Checkpoint Sweep
+
+The next immediate question was whether any existing real-model proxy already
+captures the new toy story. The answer is: partly, but not enough.
+
+On the exact same frozen 32-example contract:
+
+- `dynalign_module_replace = 0.09375`
+- `spanalign_module_replace = 0.09375`
+- `bytespan_module_replace = 0.03125`
+- `sae_adapter = 0.00000`
+- `target_alone = 0.06250`
+- `c2c_generate = 0.12500`
+
+The read is sharp:
+
+1. stronger **output-aware alignment** is the only existing real proxy that
+   clearly beats target on this exact same-pair contract
+2. plain byte-only alignment does not help on this pair
+3. the first real SAE-style sparse codebook proxy is still a clean negative
+4. even the best current proxy still trails `C2C`
+
+That means the next real method row should not be “run the SAE checkpoint
+again” or “push byte-only harder.” The next real row should be one of:
+
+1. output-aware alignment + low-rank residual correction
+2. output-aware alignment + adaptive canonicalization / gauge-invariant match
+3. only after those, a more mature shared sparse/codebook interface
+
+So the paper-critical order is now:
+
+1. keep the low-shot toy story centered on quotient-aware symmetry + shared
+   sparse basis
+2. keep the real same-pair benchmark story centered on output-aware alignment
+3. connect those two with a residual/canonicalization upgrade, not with a
+   first-pass byte-only or SAE-only pivot
+
 ## Best Next Method Lane
 
 Subagent consensus was tight: the only credible internal positive-method lane
