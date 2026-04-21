@@ -1,0 +1,444 @@
+{
+  "config": {
+    "atoms": 12,
+    "calibration_examples": 48,
+    "classes": 4,
+    "confidence_temperature": 0.72,
+    "dim": 18,
+    "families": 5,
+    "family_bias_scale": 0.5,
+    "family_scale_jitter": 0.14,
+    "high_bits": 8,
+    "hub_snap_strength": 0.35,
+    "keep_fraction": 0.7,
+    "low_bits": 3,
+    "max_steps": 4,
+    "perturb_noise": 0.5,
+    "protected_atoms": 4,
+    "route_code_strength": 0.7,
+    "route_noise": 0.3,
+    "route_temperature": 0.82,
+    "seed": 29,
+    "source_noise": 0.025,
+    "source_style_strength": 0.24,
+    "sticky_margin": 0.03,
+    "target_noise": 0.02,
+    "target_style_strength": 0.2,
+    "test_examples": 36,
+    "verifier_harm_margin": 0.01,
+    "verifier_noise": 0.06,
+    "verifier_stop_threshold": 0.85
+  },
+  "interpretation": "This toy composes a shared hub dictionary, route selection, sticky routing, protected mixed-bit frontiering, and verifier stopping on the same synthetic family-transfer problem. The key question is whether the stack adds gains or whether later stages interfere by erasing route stability, frontier coverage, or stop fidelity.",
+  "methods": [
+    "raw_pairwise_bridge",
+    "monolithic_bridge",
+    "hub_dictionary_only",
+    "hub_feature_router",
+    "hub_sticky_router",
+    "hub_sticky_protected_mixed_bit_frontier",
+    "hub_sticky_frontier_verifier_stop",
+    "random_router_control",
+    "confidence_router_control",
+    "oracle_router_control"
+  ],
+  "rows": [
+    {
+      "accuracy": 0.4722222089767456,
+      "accuracy_delta_vs_raw_pairwise": 0.0,
+      "atom_recovery": 0.0,
+      "average_stop_steps": 1.0,
+      "bit_histogram": {
+        "16": 432
+      },
+      "bytes_proxy": 27360.0,
+      "compute_proxy": 415.8,
+      "harm_vs_raw_pairwise": 0.0,
+      "help_vs_raw_pairwise": 0.0,
+      "method": "raw_pairwise_bridge",
+      "mse": 2.686652183532715,
+      "mse_delta_vs_raw_pairwise": 0.0,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 1.0,
+      "protected_atom_count": 0.0,
+      "route_accuracy": 0.6944444179534912,
+      "route_entropy": 2.263831377029419,
+      "route_histogram": {
+        "0": 5,
+        "1": 5,
+        "2": 10,
+        "3": 9,
+        "4": 7
+      },
+      "route_load": 0.8402777910232544,
+      "route_policy": "conditional_prior",
+      "seed": 29,
+      "selected_atom_count": 12.0,
+      "stop_histogram": {
+        "1": 36
+      },
+      "stop_reasons": {
+        "direct_bridge": 36
+      }
+    },
+    {
+      "accuracy": 0.4722222089767456,
+      "accuracy_delta_vs_raw_pairwise": 0.0,
+      "atom_recovery": 0.0,
+      "average_stop_steps": 1.0,
+      "bit_histogram": {
+        "16": 432
+      },
+      "bytes_proxy": 1368.0,
+      "compute_proxy": 351.0,
+      "harm_vs_raw_pairwise": 0.0,
+      "help_vs_raw_pairwise": 0.0,
+      "method": "monolithic_bridge",
+      "mse": 2.686652183532715,
+      "mse_delta_vs_raw_pairwise": 0.0,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 1.0,
+      "protected_atom_count": 0.0,
+      "route_accuracy": 0.6944444179534912,
+      "route_entropy": 2.263831377029419,
+      "route_histogram": {
+        "0": 5,
+        "1": 5,
+        "2": 10,
+        "3": 9,
+        "4": 7
+      },
+      "route_load": 0.8402777910232544,
+      "route_policy": "conditional_prior",
+      "seed": 29,
+      "selected_atom_count": 12.0,
+      "stop_histogram": {
+        "1": 36
+      },
+      "stop_reasons": {
+        "direct_bridge": 36
+      }
+    },
+    {
+      "accuracy": 0.3055555522441864,
+      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "atom_recovery": 0.0,
+      "average_stop_steps": 1.0,
+      "bit_histogram": {
+        "3": 432
+      },
+      "bytes_proxy": 16013.0,
+      "compute_proxy": 376.92,
+      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "help_vs_raw_pairwise": 0.0,
+      "method": "hub_dictionary_only",
+      "mse": 3.1764941215515137,
+      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 1.0,
+      "protected_atom_count": 0.0,
+      "route_accuracy": 0.6944444179534912,
+      "route_entropy": 2.263831377029419,
+      "route_histogram": {
+        "0": 5,
+        "1": 5,
+        "2": 10,
+        "3": 9,
+        "4": 7
+      },
+      "route_load": 0.8402777910232544,
+      "route_policy": "conditional_prior",
+      "seed": 29,
+      "selected_atom_count": 12.0,
+      "stop_histogram": {
+        "1": 36
+      },
+      "stop_reasons": {
+        "low_bit_only": 36
+      }
+    },
+    {
+      "accuracy": 0.3055555522441864,
+      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "atom_recovery": 0.0,
+      "average_stop_steps": 1.0,
+      "bit_histogram": {
+        "3": 432
+      },
+      "bytes_proxy": 16013.0,
+      "compute_proxy": 376.92,
+      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "help_vs_raw_pairwise": 0.0,
+      "method": "hub_feature_router",
+      "mse": 3.1764941215515137,
+      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 0.8333333134651184,
+      "protected_atom_count": 0.0,
+      "route_accuracy": 0.5277777910232544,
+      "route_entropy": 2.2557621002197266,
+      "route_histogram": {
+        "0": 6,
+        "1": 7,
+        "2": 10,
+        "3": 4,
+        "4": 9
+      },
+      "route_load": 0.8402777910232544,
+      "route_policy": "feature_router",
+      "seed": 29,
+      "selected_atom_count": 12.0,
+      "stop_histogram": {
+        "1": 36
+      },
+      "stop_reasons": {
+        "low_bit_only": 36
+      }
+    },
+    {
+      "accuracy": 0.3055555522441864,
+      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "atom_recovery": 0.0,
+      "average_stop_steps": 1.0,
+      "bit_histogram": {
+        "3": 432
+      },
+      "bytes_proxy": 16013.0,
+      "compute_proxy": 376.92,
+      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "help_vs_raw_pairwise": 0.0,
+      "method": "hub_sticky_router",
+      "mse": 3.1764941215515137,
+      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 0.8333333134651184,
+      "protected_atom_count": 0.0,
+      "route_accuracy": 0.4444444477558136,
+      "route_entropy": 2.3140153884887695,
+      "route_histogram": {
+        "0": 7,
+        "1": 7,
+        "2": 8,
+        "3": 6,
+        "4": 8
+      },
+      "route_load": 0.9444444179534912,
+      "route_policy": "sticky_router",
+      "seed": 29,
+      "selected_atom_count": 12.0,
+      "stop_histogram": {
+        "1": 36
+      },
+      "stop_reasons": {
+        "low_bit_only": 36
+      }
+    },
+    {
+      "accuracy": 0.3055555522441864,
+      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "atom_recovery": 0.5416666666666666,
+      "average_stop_steps": 1.0,
+      "bit_histogram": {
+        "3": 180,
+        "8": 144
+      },
+      "bytes_proxy": 16058.0,
+      "compute_proxy": 462.78,
+      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "help_vs_raw_pairwise": 0.0,
+      "method": "hub_sticky_protected_mixed_bit_frontier",
+      "mse": 3.1494340896606445,
+      "mse_delta_vs_raw_pairwise": 0.4627819061279297,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 0.8333333134651184,
+      "protected_atom_count": 4.0,
+      "route_accuracy": 0.4444444477558136,
+      "route_entropy": 2.3140153884887695,
+      "route_histogram": {
+        "0": 7,
+        "1": 7,
+        "2": 8,
+        "3": 6,
+        "4": 8
+      },
+      "route_load": 0.9444444179534912,
+      "route_policy": "sticky_router",
+      "seed": 29,
+      "selected_atom_count": 9.0,
+      "stop_histogram": {
+        "1": 36
+      },
+      "stop_reasons": {
+        "frontier_fixed": 36
+      }
+    },
+    {
+      "accuracy": 0.9444444179534912,
+      "accuracy_delta_vs_raw_pairwise": 0.4722222089767456,
+      "atom_recovery": 0.5416666666666666,
+      "average_stop_steps": 1.8055555820465088,
+      "bit_histogram": {
+        "3": 180,
+        "8": 144
+      },
+      "bytes_proxy": 16058.0,
+      "compute_proxy": 510.4500007152557,
+      "harm_vs_raw_pairwise": 0.0,
+      "help_vs_raw_pairwise": 0.4722222089767456,
+      "method": "hub_sticky_frontier_verifier_stop",
+      "mse": 0.013407118618488312,
+      "mse_delta_vs_raw_pairwise": -2.6732450649142265,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 0.8333333134651184,
+      "protected_atom_count": 4.0,
+      "route_accuracy": 0.4444444477558136,
+      "route_entropy": 2.3140153884887695,
+      "route_histogram": {
+        "0": 7,
+        "1": 7,
+        "2": 8,
+        "3": 6,
+        "4": 8
+      },
+      "route_load": 0.9444444179534912,
+      "route_policy": "sticky_router",
+      "seed": 29,
+      "selected_atom_count": 9.0,
+      "stop_histogram": {
+        "1": 14,
+        "2": 18,
+        "3": 1,
+        "4": 3
+      },
+      "stop_reasons": {
+        "confidence_reached": 12,
+        "max_steps": 3,
+        "verifier_harm": 21
+      }
+    },
+    {
+      "accuracy": 0.3055555522441864,
+      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "atom_recovery": 0.0,
+      "average_stop_steps": 1.0,
+      "bit_histogram": {
+        "3": 432
+      },
+      "bytes_proxy": 16013.0,
+      "compute_proxy": 376.92,
+      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "help_vs_raw_pairwise": 0.0,
+      "method": "random_router_control",
+      "mse": 3.1764941215515137,
+      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 1.0,
+      "protected_atom_count": 0.0,
+      "route_accuracy": 0.2222222238779068,
+      "route_entropy": 2.247285842895508,
+      "route_histogram": {
+        "0": 7,
+        "1": 8,
+        "2": 11,
+        "3": 6,
+        "4": 4
+      },
+      "route_load": 0.8402777910232544,
+      "route_policy": "random_router",
+      "seed": 29,
+      "selected_atom_count": 12.0,
+      "stop_histogram": {
+        "1": 36
+      },
+      "stop_reasons": {
+        "low_bit_only": 36
+      }
+    },
+    {
+      "accuracy": 0.3055555522441864,
+      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "atom_recovery": 0.0,
+      "average_stop_steps": 1.0,
+      "bit_histogram": {
+        "3": 432
+      },
+      "bytes_proxy": 16013.0,
+      "compute_proxy": 376.92,
+      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "help_vs_raw_pairwise": 0.0,
+      "method": "confidence_router_control",
+      "mse": 3.1764941215515137,
+      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 1.0,
+      "protected_atom_count": 0.0,
+      "route_accuracy": 0.6944444179534912,
+      "route_entropy": 2.263831377029419,
+      "route_histogram": {
+        "0": 5,
+        "1": 5,
+        "2": 10,
+        "3": 9,
+        "4": 7
+      },
+      "route_load": 0.8402777910232544,
+      "route_policy": "confidence_router",
+      "seed": 29,
+      "selected_atom_count": 12.0,
+      "stop_histogram": {
+        "1": 36
+      },
+      "stop_reasons": {
+        "low_bit_only": 36
+      }
+    },
+    {
+      "accuracy": 0.3055555522441864,
+      "accuracy_delta_vs_raw_pairwise": -0.1666666567325592,
+      "atom_recovery": 0.0,
+      "average_stop_steps": 1.0,
+      "bit_histogram": {
+        "3": 432
+      },
+      "bytes_proxy": 16013.0,
+      "compute_proxy": 376.92,
+      "harm_vs_raw_pairwise": 0.1666666567325592,
+      "help_vs_raw_pairwise": 0.0,
+      "method": "oracle_router_control",
+      "mse": 3.1764941215515137,
+      "mse_delta_vs_raw_pairwise": 0.48984193801879883,
+      "over_refinement_rate": 0.0,
+      "perturbation_stability": 1.0,
+      "protected_atom_count": 0.0,
+      "route_accuracy": 1.0,
+      "route_entropy": 2.2298083305358887,
+      "route_histogram": {
+        "0": 4,
+        "1": 7,
+        "2": 9,
+        "3": 11,
+        "4": 5
+      },
+      "route_load": 0.8055555820465088,
+      "route_policy": "oracle_router",
+      "seed": 29,
+      "selected_atom_count": 12.0,
+      "stop_histogram": {
+        "1": 36
+      },
+      "stop_reasons": {
+        "low_bit_only": 36
+      }
+    }
+  ],
+  "sources_consulted": [
+    "https://arxiv.org/abs/2502.03714",
+    "https://arxiv.org/abs/2410.06981",
+    "https://arxiv.org/abs/2506.14038",
+    "https://arxiv.org/abs/2204.08396",
+    "https://arxiv.org/abs/2001.00281",
+    "https://arxiv.org/abs/2310.05175",
+    "https://arxiv.org/abs/2311.14125",
+    "https://arxiv.org/abs/2501.13122"
+  ]
+}
