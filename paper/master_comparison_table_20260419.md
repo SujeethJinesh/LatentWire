@@ -224,6 +224,11 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   SVAMP70 improves from `0.2000` to `0.5000` with expected-attention and lower
   latency. This widens the runnable control harness, but is still not a
   paper-scale benchmark row.
+- KVPress limit-20 controls now complete on CPU fallback: GSM70 no-press
+  reaches `0.1000` while expected-attention drops to `0.0500` but runs faster;
+  SVAMP70 no-press reaches `0.1500` while expected-attention improves to
+  `0.3000` but is slightly slower. This confirms same-model compression is a
+  task-dependent control, not a direct semantic communication baseline.
 - Tokenizer-interface references add a new upstream ablation lane: byte/patch
   bridge, explicit vocabulary remap, time-warped span alignment, adaptive
   hypertokens, and length-optimal retokenization controls.
@@ -261,6 +266,22 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   expands the ablation queue toward SAE/universal dictionary selectors,
   model-stitch warm starts, TokAlign/adaptive vocab controls, activated repair
   paths, and short decode-time refinement loops.
+- The new `references/361_recent_refinement_quant_connector_refs.md` memo
+  adds LatentMAS as the next direct competitor bootstrap and expands the method
+  queue toward routed projector banks, stitch-plus-residual repair,
+  iterative latent refinement, outlier-aware protected frontiers, mixed-bit
+  route atoms, and asymmetric K/V vector-quantized bridges.
+- The universal-dictionary frontier toy supports feature-basis selector
+  telemetry: prune-uniform reaches `0.7083`, while raw activation, quant-error,
+  exact patch-effect, and universal-dictionary selectors all reach `1.0000`
+  accuracy. Exact patch-effect has the best MSE (`0.0318`), quant-error is
+  close (`0.0324`), and universal dictionary persistence is interpretable and
+  stable but weaker on MSE (`0.0393`).
+- The iterative-refinement toy adds a stop-rule warning: two-step refinement
+  improves MSE (`0.0449` vs one-pass `0.0559`) but slightly lowers accuracy,
+  four-step refinement over-refines to `0.9125`, and the oracle reaches
+  `0.9750`. Refinement belongs in the next stack only with help/harm and
+  stop-reason telemetry.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided

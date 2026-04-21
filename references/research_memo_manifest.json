@@ -26,5 +26,12 @@
     "path": "references/360_recent_cross_model_interface_refs.md",
     "status": "local_memo",
     "reason": "Recent cross-model interface memo for feature dictionaries, model stitching, tokenizer adaptation, activated adapters, test-time refinement, and multimodal connector transfer."
+  },
+  {
+    "num": 361,
+    "slug": "recent_refinement_quant_connector_refs",
+    "path": "references/361_recent_refinement_quant_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Recent refinement, quantization, connector, tokenizer, and competitor memo for routed projectors, iterative latent repair, mixed-bit protected frontiers, asymmetric K/V transport, and LatentMAS-style benchmarks."
   }
 ]

@@ -1,5 +1,49 @@
 # Competitor Batch Status: 2026-04-21
 
+## Limit-20 Widening Update
+
+The KVPress same-model smoke has now been widened to `limit=20` for GSM8K70 and SVAMP70 using the existing
+`scripts/run_kvpress_eval.py` harness. All four rows completed on CPU fallback. This remains a smoke-scale
+competitor control, not a paper claim.
+
+## Completed Limit-20 Rows
+
+| Dataset | Press | Compression | Limit | Accuracy | Tokens/sec | Examples/sec | Latency sec | Generated tokens avg |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| GSM8K70 | none | - | 20 | 0.1000 | 3.9984 | 0.0978 | 10.2290 | 40.9000 |
+| GSM8K70 | expected_attention | 0.5000 | 20 | 0.0500 | 4.5351 | 0.1114 | 8.9745 | 40.7000 |
+| SVAMP70 | none | - | 20 | 0.1500 | 4.8681 | 0.1160 | 8.6173 | 41.9500 |
+| SVAMP70 | expected_attention | 0.5000 | 20 | 0.3000 | 4.4432 | 0.1142 | 8.7550 | 38.9000 |
+
+## Limit-20 Interpretation
+
+- GSM8K limit-20 is negative on accuracy for expected-attention compression: `0.1000` uncompressed versus `0.0500` compressed, while compressed decoding is faster.
+- SVAMP limit-20 remains positive on accuracy: `0.1500` uncompressed versus `0.3000` compressed, but compressed decoding is slightly slower than the uncompressed row in this run.
+- The split dataset behavior means KVPress is a useful competitor control, but the smoke still should not be treated as stable evidence until widened beyond `limit=20`.
+
+## Limit-20 Commands Run
+
+1. `timeout 2400s arch -arm64 ./venv_arm64/bin/python scripts/run_kvpress_eval.py --model Qwen/Qwen3-0.6B --eval-file data/gsm8k_eval_70.jsonl --device cpu --dtype float32 --max-new-tokens 64 --press none --limit 20 --prediction-output results/competitor_next_runnable_20260421/kvpress_gsm70_none_limit20.jsonl`
+2. `timeout 2400s arch -arm64 ./venv_arm64/bin/python scripts/run_kvpress_eval.py --model Qwen/Qwen3-0.6B --eval-file data/gsm8k_eval_70.jsonl --device cpu --dtype float32 --max-new-tokens 64 --press expected_attention --compression-ratio 0.5 --limit 20 --prediction-output results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit20.jsonl`
+3. `timeout 2400s arch -arm64 ./venv_arm64/bin/python scripts/run_kvpress_eval.py --model Qwen/Qwen3-0.6B --eval-file data/svamp_eval_70.jsonl --device cpu --dtype float32 --max-new-tokens 64 --press none --limit 20 --prediction-output results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit20.jsonl`
+4. `timeout 2400s arch -arm64 ./venv_arm64/bin/python scripts/run_kvpress_eval.py --model Qwen/Qwen3-0.6B --eval-file data/svamp_eval_70.jsonl --device cpu --dtype float32 --max-new-tokens 64 --press expected_attention --compression-ratio 0.5 --limit 20 --prediction-output results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit20.jsonl`
+
+## Limit-20 Outputs Produced
+
+- `results/competitor_next_runnable_20260421/kvpress_gsm70_none_limit20.jsonl`
+- `results/competitor_next_runnable_20260421/kvpress_gsm70_none_limit20.jsonl.meta.json`
+- `results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit20.jsonl`
+- `results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit20.jsonl.meta.json`
+- `results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit20.jsonl`
+- `results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit20.jsonl.meta.json`
+- `results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit20.jsonl`
+- `results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit20.jsonl.meta.json`
+
+## Limit-20 Blockers
+
+- The run stayed on CPU fallback because MPS was already unstable in earlier checkpointing.
+- These are still smoke-scale rows. The next useful competitor checkpoint is either a repeated `limit=20` seed/order control or a `limit=50` bounded run before using these results in paper comparisons.
+
 ## Limit-10 Widening Update
 
 The KVPress smoke has been widened to `limit=10` for the required GSM70 rows and, since time remained, for the SVAMP70 pair as well.

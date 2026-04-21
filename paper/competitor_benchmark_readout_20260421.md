@@ -26,12 +26,16 @@ prompt, token, byte, latency, and repair budgets are all matched in one harness.
 | `gsm8k_eval_70` limit-5 | `KVPress` expected attention `0.5` | 0.2000 | 5 | `results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit5.jsonl` | Neutral against no-press on the tiny GSM limit-5 smoke. |
 | `gsm8k_eval_70` limit-10 | `KVPress` none | 0.1000 | 10 | `results/competitor_next_runnable_20260421/kvpress_gsm70_none_limit10.jsonl` | Widened bounded control row; CPU fallback. |
 | `gsm8k_eval_70` limit-10 | `KVPress` expected attention `0.5` | 0.1000 | 10 | `results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit10.jsonl` | Neutral against no-press on GSM, but faster in this smoke. |
+| `gsm8k_eval_70` limit-20 | `KVPress` none | 0.1000 | 20 | `results/competitor_next_runnable_20260421/kvpress_gsm70_none_limit20.jsonl` | Widened bounded control row; CPU fallback. |
+| `gsm8k_eval_70` limit-20 | `KVPress` expected attention `0.5` | 0.0500 | 20 | `results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit20.jsonl` | Accuracy regresses versus no-press while latency improves. |
 | `gsm8k_gate_search_30` | `KVPress` none | 0.0667 | 30 | `results/competitor_bootstrap_20260421/kvpress_qwen3_gsm30_none_20260421.jsonl` | Same-model GSM30 control ties target-alone. |
 | `gsm8k_gate_search_30` | `KVPress` expected attention `0.5` | 0.0667 | 30 | `results/competitor_bootstrap_20260421/kvpress_qwen3_gsm30_expected_attention_c050_20260421.jsonl` | Expected-attention compression is neutral on this slice. |
 | `svamp_eval_70` limit-5 | `KVPress` none | 0.4000 | 5 | `results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit5.jsonl` | Bounded SVAMP control row. |
 | `svamp_eval_70` limit-5 | `KVPress` expected attention `0.5` | 0.6000 | 5 | `results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit5.jsonl` | Positive tiny smoke against no-press, but underpowered and not paper-ready. |
 | `svamp_eval_70` limit-10 | `KVPress` none | 0.2000 | 10 | `results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit10.jsonl` | Widened bounded SVAMP control row; CPU fallback. |
 | `svamp_eval_70` limit-10 | `KVPress` expected attention `0.5` | 0.5000 | 10 | `results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit10.jsonl` | Positive smoke against no-press with lower latency, still underpowered. |
+| `svamp_eval_70` limit-20 | `KVPress` none | 0.1500 | 20 | `results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit20.jsonl` | Widened bounded SVAMP control row; CPU fallback. |
+| `svamp_eval_70` limit-20 | `KVPress` expected attention `0.5` | 0.3000 | 20 | `results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit20.jsonl` | Accuracy improves versus no-press but latency is slightly worse in this run. |
 
 ## LatentWire Comparison State
 
@@ -58,5 +62,8 @@ prompt, token, byte, latency, and repair budgets are all matched in one harness.
 4. Treat target self-repair as the strongest immediate control; a final
    positive-method claim needs route-specific gains over that control at
    matched repair budget.
-5. Widen KVPress to limit-20 before using same-model compression controls as
-   stability evidence; limit-5 and limit-10 remain harness-health rows only.
+5. Repeat limit-20 or run a bounded limit-50 KVPress batch before using
+   same-model compression controls as stability evidence; limit-5/10/20 remain
+   harness-health rows only.
+6. Bootstrap `LatentMAS` next as a direct latent-communication competitor with
+   matched accuracy, output-token, latency, and traceability reporting.

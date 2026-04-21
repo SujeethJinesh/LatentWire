@@ -1,0 +1,214 @@
+{
+  "config": {
+    "bridge_noise": 0.2,
+    "classes": 5,
+    "diffusion_noise": 0.07,
+    "diffusion_steps": 4,
+    "dim": 24,
+    "examples": 160,
+    "gate_threshold": 0.66,
+    "oracle_fraction": 0.35,
+    "quant_bits": 4,
+    "refinement_rate": 0.46,
+    "seed": 0,
+    "source_noise": 0.08,
+    "styles": 7
+  },
+  "interpretation": "Fixed target-side refinement tests whether repeated manifold repair helps after transfer; confidence gating measures selective compute; noisy diffusion adds stochastic-denoising pressure; oracle refinement upper-bounds sparse residual repair.",
+  "methods": [
+    "one_pass_bridge",
+    "fixed_2_step_refinement",
+    "fixed_4_step_refinement",
+    "confidence_gated_refinement",
+    "noisy_diffusion_refinement",
+    "oracle_refinement"
+  ],
+  "rows": [
+    {
+      "bytes_proxy": 16.0,
+      "compute_proxy": 24.0,
+      "confidence_ece": 0.04672133922576904,
+      "failure_reasons": {
+        "low_confidence_unrepaired": 6,
+        "mse_improved_but_task_wrong": 0,
+        "ok_correct_improved": 0,
+        "other": 0,
+        "over_refined_harm": 0,
+        "unchanged_correct": 154,
+        "wrong_high_confidence": 0
+      },
+      "harm_rate": 0.0,
+      "help_rate": 0.0,
+      "mean_confidence": 0.9157785177230835,
+      "method": "one_pass_bridge",
+      "mse": 0.05586887151002884,
+      "mse_harm_rate": 0.0,
+      "mse_help_rate": 0.0,
+      "refinement_steps": 1.0,
+      "regression_mse": 0.9820642471313477,
+      "task_accuracy": 0.9624999761581421,
+      "trajectory_best_mse": 0.05586886778473854,
+      "trajectory_convergence_ratio": 1.0,
+      "trajectory_mse": [
+        0.05586886778473854
+      ]
+    },
+    {
+      "bytes_proxy": 25.0,
+      "compute_proxy": 33.120000000000005,
+      "confidence_ece": 0.04465524107217789,
+      "failure_reasons": {
+        "low_confidence_unrepaired": 1,
+        "mse_improved_but_task_wrong": 0,
+        "ok_correct_improved": 132,
+        "other": 18,
+        "over_refined_harm": 8,
+        "unchanged_correct": 0,
+        "wrong_high_confidence": 1
+      },
+      "harm_rate": 0.03125,
+      "help_rate": 0.02500000037252903,
+      "mean_confidence": 0.9147171974182129,
+      "method": "fixed_2_step_refinement",
+      "mse": 0.04487668350338936,
+      "mse_harm_rate": 0.17499999701976776,
+      "mse_help_rate": 0.824999988079071,
+      "refinement_steps": 2.0,
+      "regression_mse": 0.58222496509552,
+      "task_accuracy": 0.956250011920929,
+      "trajectory_best_mse": 0.04487668722867966,
+      "trajectory_convergence_ratio": 0.8032503433144287,
+      "trajectory_mse": [
+        0.05586886778473854,
+        0.04487668722867966
+      ]
+    },
+    {
+      "bytes_proxy": 43.0,
+      "compute_proxy": 51.36,
+      "confidence_ece": 0.03356644883751869,
+      "failure_reasons": {
+        "low_confidence_unrepaired": 0,
+        "mse_improved_but_task_wrong": 0,
+        "ok_correct_improved": 105,
+        "other": 36,
+        "over_refined_harm": 18,
+        "unchanged_correct": 0,
+        "wrong_high_confidence": 1
+      },
+      "harm_rate": 0.08124999701976776,
+      "help_rate": 0.03125,
+      "mean_confidence": 0.9300586581230164,
+      "method": "fixed_4_step_refinement",
+      "mse": 0.06732060760259628,
+      "mse_harm_rate": 0.34375,
+      "mse_help_rate": 0.65625,
+      "refinement_steps": 4.0,
+      "regression_mse": 0.522819459438324,
+      "task_accuracy": 0.9125000238418579,
+      "trajectory_best_mse": 0.04487668722867966,
+      "trajectory_convergence_ratio": 1.204975467062652,
+      "trajectory_mse": [
+        0.05586886778473854,
+        0.04487668722867966,
+        0.05517616122961044,
+        0.06732061505317688
+      ]
+    },
+    {
+      "bytes_proxy": 18.25,
+      "compute_proxy": 25.14,
+      "confidence_ece": 0.029487842693924904,
+      "failure_reasons": {
+        "low_confidence_unrepaired": 0,
+        "mse_improved_but_task_wrong": 0,
+        "ok_correct_improved": 0,
+        "other": 5,
+        "over_refined_harm": 14,
+        "unchanged_correct": 140,
+        "wrong_high_confidence": 1
+      },
+      "gate_fraction": 0.125,
+      "gated_examples": 20,
+      "harm_rate": 0.05624999850988388,
+      "help_rate": 0.03125,
+      "mean_confidence": 0.9252767562866211,
+      "method": "confidence_gated_refinement",
+      "mse": 0.06190667301416397,
+      "mse_harm_rate": 0.125,
+      "mse_help_rate": 0.0,
+      "refinement_steps": 2.0,
+      "regression_mse": 0.9192758798599243,
+      "task_accuracy": 0.9375,
+      "trajectory_best_mse": 0.05586886778473854,
+      "trajectory_convergence_ratio": 1.108071081339598,
+      "trajectory_mse": [
+        0.05586886778473854,
+        0.06190667673945427
+      ]
+    },
+    {
+      "bytes_proxy": 40.0,
+      "compute_proxy": 60.480000000000004,
+      "confidence_ece": 0.03812127560377121,
+      "failure_reasons": {
+        "low_confidence_unrepaired": 3,
+        "mse_improved_but_task_wrong": 3,
+        "ok_correct_improved": 133,
+        "other": 19,
+        "over_refined_harm": 2,
+        "unchanged_correct": 0,
+        "wrong_high_confidence": 0
+      },
+      "harm_rate": 0.02500000037252903,
+      "help_rate": 0.012500000186264515,
+      "mean_confidence": 0.9137327075004578,
+      "method": "noisy_diffusion_refinement",
+      "mse": 0.0467817597091198,
+      "mse_harm_rate": 0.15000000596046448,
+      "mse_help_rate": 0.8500000238418579,
+      "refinement_steps": 5.0,
+      "regression_mse": 0.759091854095459,
+      "task_accuracy": 0.949999988079071,
+      "trajectory_best_mse": 0.0467817597091198,
+      "trajectory_convergence_ratio": 0.8373493425599537,
+      "trajectory_mse": [
+        0.05586886778473854,
+        0.05309939756989479,
+        0.049638811498880386,
+        0.04779771715402603,
+        0.0467817597091198
+      ]
+    },
+    {
+      "bytes_proxy": 24.0,
+      "compute_proxy": 27.04,
+      "confidence_ece": 0.056458696722984314,
+      "failure_reasons": {
+        "low_confidence_unrepaired": 0,
+        "mse_improved_but_task_wrong": 4,
+        "ok_correct_improved": 156,
+        "other": 0,
+        "over_refined_harm": 0,
+        "unchanged_correct": 0,
+        "wrong_high_confidence": 0
+      },
+      "harm_rate": 0.012500000186264515,
+      "help_rate": 0.02500000037252903,
+      "mean_confidence": 0.9185413122177124,
+      "method": "oracle_refinement",
+      "mse": 0.004750268068164587,
+      "mse_harm_rate": 0.0,
+      "mse_help_rate": 1.0,
+      "refinement_steps": 2.0,
+      "regression_mse": 0.06478831171989441,
+      "task_accuracy": 0.9750000238418579,
+      "trajectory_best_mse": 0.0047502676025033,
+      "trajectory_convergence_ratio": 0.08502530641583737,
+      "trajectory_mse": [
+        0.05586886778473854,
+        0.0047502676025033
+      ]
+    }
+  ]
+}

@@ -353,6 +353,11 @@ Files `357_` through `359_` are local synthesis memos for the current paper loop
 - `358_`: Recent lateral method references for routed projectors, diffusion-style latent refinement, KV/cache controls, quantization geometry, tokenizer adaptation, and transport initialization.
 - `359_`: Competitor benchmark references for direct cross-model communication peers, same-model cache controls, prompt/context compression, KV quantization, adapters, and feature-dictionary baselines.
 
+Files `360_` and `361_` extend the current positive-method planning loop:
+
+- `360_`: Recent cross-model interface references for feature dictionaries, model stitching, tokenizer adaptation, activated adapters, test-time refinement, and multimodal connector transfer.
+- `361_`: Recent refinement, quantization, connector, tokenizer, and LatentMAS competitor references for routed projectors, iterative latent repair, mixed-bit protected frontiers, asymmetric K/V transport, and interpretable telemetry.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.

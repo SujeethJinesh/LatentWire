@@ -3522,3 +3522,73 @@ Next execution ladder:
    activation magnitude.
 5. Stack only after interaction tests pass: shared feature/atom interface,
    byte-span remap, verifier pruning, quant-error protection, and repair gate.
+
+## 2026-04-21 Universal Dictionaries, Iterative Refinement, And Limit-20 Controls
+
+Executed next:
+
+- Added `references/361_recent_refinement_quant_connector_refs.md`, covering
+  LatentMAS, routed projector banks, universal dictionaries, model stitching,
+  iterative latent refinement, tokenizer-aware bridges, outlier-aware
+  protected frontiers, mixed-bit allocation, linear correction, and asymmetric
+  K/V vector quantization.
+- Added `universal_dictionary_frontier`, a deterministic toy that compares
+  universal-dictionary feature persistence against raw activation, quant-error,
+  exact patch-effect, random, and utility-oracle protected-frontier selectors.
+- Added `iterative_latent_refinement`, a deterministic toy for one-pass bridge
+  transfer versus two-step, four-step, confidence-gated, noisy diffusion-style,
+  and oracle target-side latent refinement.
+- Widened KVPress same-model controls to limit-20 on GSM70 and SVAMP70 using
+  CPU fallback.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| Universal dictionary selector | accuracy `1.0000`, MSE `0.0393`, feature persistence `0.3303`, patch correlation `0.6078`, stability `1.0000` | Shared feature persistence is a viable selector proxy, but it still trails exact patch-effect on MSE. |
+| Exact patch-effect selector | accuracy `1.0000`, MSE `0.0318`, patch correlation `1.0000` | Exact patch-effect remains the oracle target for selector calibration. |
+| Quant-error selector | accuracy `1.0000`, MSE `0.0324`, patch correlation `0.8675` | Quant-error remains the strongest cheap compression-native proxy in this toy. |
+| Utility oracle selector | accuracy `0.7188`, MSE `0.0809`, patch correlation `-0.5753` | Utility-positive features can be actively misaligned with compression-critical frontier atoms. |
+| Two-step refinement | accuracy `0.9563`, MSE `0.0449`, MSE-help `0.8250`, harm `0.0312` | Refinement improves latent quality but needs a task-aware stop rule. |
+| Four-step refinement | accuracy `0.9125`, MSE `0.0673`, harm `0.0812` | Over-refinement is real; iterative methods cannot be added blindly. |
+| Noisy diffusion refinement | accuracy `0.9500`, MSE `0.0468`, MSE-help `0.8500` | Denoising-style refinement is plausible, but not better than controlled two-step repair here. |
+| Oracle refinement | accuracy `0.9750`, MSE `0.0048`, MSE-help `1.0000` | There is target-side repair headroom if the stop/selector policy improves. |
+| KVPress GSM70 limit-20 | no-press `0.1000`; expected-attention `0.0500`, faster latency `8.9745s` vs `10.2290s` | Same-model compression can trade accuracy for speed; it is not a stable positive comparator on GSM. |
+| KVPress SVAMP70 limit-20 | no-press `0.1500`; expected-attention `0.3000`, latency `8.7550s` vs `8.6173s` | Same-model compression can improve SVAMP accuracy, but not speed in this row; still smoke-scale. |
+
+Updated read:
+
+Do add the new ideas to the paper, but only as interpretable ablation axes:
+feature-basis selectors, tokenizer remapping, protected mixed-bit frontier
+allocation, and target-side refinement. Do not add them as a second headline
+method yet. The route/repair result is still the only real-model positive
+candidate; these toys explain how to make the next bridge attempt less blind.
+
+Blockers to solve individually:
+
+1. **Selector blocker:** choose compression-critical atoms, not merely
+   semantically useful atoms. Exact patch effect is the audit target;
+   quant-error and universal-dictionary persistence are the current proxies.
+2. **Tokenizer blocker:** current Qwen slices do not stress boundaries enough.
+   Build a byte/token stress split before spending real-model budget.
+3. **Refinement blocker:** refinement has headroom but can over-correct. Add
+   stop reasons, confidence calibration, and harm counters before scaling.
+4. **Competitor blocker:** KVPress is runnable through chunking; LatentMAS is
+   now the highest-priority direct latent-communication competitor to
+   bootstrap next.
+5. **Paper-readiness blocker:** every headline row still needs paired CIs,
+   token/byte/latency ledgers, target self-repair, C2C, and same-model
+   compression controls.
+
+Near-term timeline:
+
+1. **Next 1-2 runs:** route-pool telemetry for quant-error, exact-patch proxy,
+   universal-dictionary persistence, protected byte share, and atom recovery.
+2. **Next 2-4 runs:** tokenizer stress set plus byte/span remap and TokAlign /
+   aligned-logit controls.
+3. **Next 4-6 runs:** stop-rule refinement experiments using verifier/process
+   features, with help/harm and compute matched against repair-all.
+4. **Next benchmark batch:** LatentMAS bootstrap plus repeated KVPress
+   limit-20 or bounded limit-50 controls.
+5. **Submission gate:** promote only components that survive interaction tests
+   on held-out GSM70/SVAMP70 with matched budgets and paired intervals.

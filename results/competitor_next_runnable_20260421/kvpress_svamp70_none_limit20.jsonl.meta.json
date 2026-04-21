@@ -1,0 +1,14 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "eval_file": "data/svamp_eval_70.jsonl",
+  "press": "none",
+  "compression_ratio": null,
+  "enable_thinking": false,
+  "limit": 20,
+  "accuracy": 0.15,
+  "ttft_sec": 0.0,
+  "tokens_per_sec": 4.8681354661171365,
+  "examples_per_sec": 0.11604613745213674,
+  "latency_sec": 8.617262254096568,
+  "generated_tokens_avg": 41.95
+}
