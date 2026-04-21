@@ -3346,3 +3346,54 @@ Next execution ladder:
    timeouts before attempting full GSM70/SVAMP70 rows on MPS.
 5. Keep the benchmark table honest: incomplete competitor rows are blockers,
    not hidden missing data.
+
+## 2026-04-21 Limited Competitor Smokes And Verified Mixed-Precision Stack
+
+Executed next:
+
+- Added `--limit` support to `scripts/run_kvpress_eval.py` and
+  `--calibration-limit` / `--eval-limit` support to `latent_bridge/kvcomm_eval.py`
+  so competitor rows can be smoked before full GSM70/SVAMP70 runs.
+- Completed paired KVPress GSM70 limit-1 smokes for `none` and
+  `expected_attention` and recorded them in
+  `results/competitor_next_runnable_20260421/competitor_batch_status_20260421.md`.
+- Added `references/356_multimodal_diffusion_latent_interface_refs.md`, covering
+  Q-Former/perceiver bottlenecks, simple projectors, routed connectors, soft
+  belief-state refinement, trajectory-guided repair, latent-flow bridges, and
+  expert fusion.
+- Added toy `verified_mixed_precision_stack`, stacking verifier-guided pruning
+  with low-bit and activation-aware quantization controls.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| KVPress GSM70 `none` limit-1 | completes in local smoke; accuracy `0.0000`, latency `2.1374s`, tokens/sec `1.8715` | Same-model competitor controls are runnable once split into bounded chunks. |
+| KVPress GSM70 expected-attention limit-1 | completes in local smoke; accuracy `0.0000`, latency `2.1806s`, tokens/sec `2.7516` | The next fair step is limit-5 paired controls, not another full-row attempt. |
+| Verified mixed-precision full precision | accuracy `0.9219`, bytes `772.0`, compute `768.0` | Baseline is strong but byte-heavy. |
+| Prune then uniform quant | accuracy `0.9323`, bytes `118.0`, compute `730.3` | A verifier-prune plus simple low-bit compression stack can improve toy task behavior while cutting bytes sharply. |
+| Prune then activation-aware quant | accuracy `0.8958`, bytes `184.0`, compute `730.3` | Activation-aware protection is not automatically additive after pruning; protected frontier selection can conflict with useful quantization noise. |
+| Oracle stack | accuracy `0.9375`, bytes `184.0`, compute `726.5` | There is remaining headroom if protected atoms are selected correctly inside the pruned frontier. |
+| Multimodal/diffusion refs | Q-Former, Perceiver Resampler, LLaVA projector, routed experts, diffusion refinement, flow matching | These suggest bottlenecked query connectors and iterative latent refinement as the next lateral architecture controls. |
+
+Updated read:
+
+The additive story is now sharper: some components stack, but not by default.
+Verifier-guided pruning plus uniform quantization is a positive toy component;
+activation-aware high-precision protection is positive alone but negative when
+naively inserted after pruning. That is exactly the kind of interaction the
+paper needs to report rather than hide. The next method stack should therefore
+include interaction ablations, not just one-component deltas.
+
+Next execution ladder:
+
+1. Run KVPress GSM70 `none` and `expected_attention` at `--limit 5` with the
+   same max-token budget, then scale only if both complete.
+2. Add a protected-frontier selection ablation: global activation saliency,
+   verifier saliency, quantization-error saliency, and oracle protected atoms.
+3. Promote the positive compressed stack telemetry to real route pools:
+   prune rate, missed-help, false-prune, bytes, compute, and task delta.
+4. Add a Q-Former/perceiver-style bottleneck toy only after the route/atom
+   stack has a real-pool diagnostic.
+5. Keep all additive claims conditional on interaction tests: a component that
+   helps alone can harm when inserted into the full stack.

@@ -272,11 +272,17 @@ def run_kvcomm_generation_eval(
     max_new_tokens: int,
     source_reasoning_mode: str,
     top_layers_grid: list[float],
+    calibration_limit: int | None = None,
+    eval_limit: int | None = None,
     prediction_output: str | None = None,
 ) -> dict[str, Any]:
     _ensure_kvcomm_repo_on_path()
     calibration_examples = load_generation(calibration_file)
     eval_examples = load_generation(eval_file)
+    if calibration_limit is not None:
+        calibration_examples = calibration_examples[: max(int(calibration_limit), 0)]
+    if eval_limit is not None:
+        eval_examples = eval_examples[: max(int(eval_limit), 0)]
     model_A, model_B, tokenizer = load_kvcomm_models(
         source_model=source_model,
         target_model=target_model,
@@ -342,6 +348,8 @@ def run_kvcomm_generation_eval(
         "max_new_tokens": int(max_new_tokens),
         "source_reasoning_mode": source_reasoning_mode,
         "top_layers_grid": [float(x) for x in top_layers_grid],
+        "calibration_limit": calibration_limit,
+        "eval_limit": eval_limit,
         "best_top_layers_fraction": float(best_fraction),
         "selected_layers": selected_layers,
         "layer_ranking": layer_ranking,
@@ -374,6 +382,8 @@ def main() -> None:
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--source-reasoning-mode", default="brief_analysis")
     parser.add_argument("--top-layers-grid", default="0.25,0.5,0.75,1.0")
+    parser.add_argument("--calibration-limit", type=int, default=None)
+    parser.add_argument("--eval-limit", type=int, default=None)
     parser.add_argument("--prediction-output", required=True)
     args = parser.parse_args()
 
@@ -387,6 +397,8 @@ def main() -> None:
         max_new_tokens=args.max_new_tokens,
         source_reasoning_mode=args.source_reasoning_mode,
         top_layers_grid=_parse_grid(args.top_layers_grid),
+        calibration_limit=args.calibration_limit,
+        eval_limit=args.eval_limit,
         prediction_output=args.prediction_output,
     )
     print(json.dumps(payload["metrics"], indent=2, sort_keys=True))

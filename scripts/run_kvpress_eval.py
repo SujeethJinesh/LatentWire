@@ -105,6 +105,7 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--press", default="expected_attention", choices=["none", "expected_attention"])
     p.add_argument("--compression-ratio", type=float, default=0.5)
     p.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
+    p.add_argument("--limit", type=int, default=None)
     p.add_argument("--prediction-output")
     return p.parse_args()
 
@@ -119,6 +120,8 @@ def main() -> None:
     args = _parse_args()
     _patch_kvpress_compat()
     examples = load_generation(args.eval_file)
+    if args.limit is not None:
+        examples = examples[: max(int(args.limit), 0)]
     pipe = pipeline(
         "kv-press-text-generation",
         model=args.model,
@@ -174,6 +177,7 @@ def main() -> None:
         "press": args.press,
         "compression_ratio": None if press is None else float(args.compression_ratio),
         "enable_thinking": bool(args.enable_thinking),
+        "limit": args.limit,
         **metrics,
     }
     print(json.dumps(summary, indent=2))

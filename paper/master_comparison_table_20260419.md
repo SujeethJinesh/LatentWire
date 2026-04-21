@@ -179,6 +179,12 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   `68.0`. The telemetry also tracks top-atom preservation and outlier
   protection, so this is interpretable enough to promote to route-pool
   diagnostics.
+- The verified mixed-precision stack toy adds the first interaction warning:
+  full precision reaches `0.9219` at bytes `772.0`, while
+  `prune_then_uniform_quant` reaches `0.9323` at bytes `118.0`; however
+  `prune_then_activation_aware_quant` falls to `0.8958` at bytes `184.0`.
+  The oracle stack reaches `0.9375`, so the missing piece is protected-frontier
+  selection, not the stack concept itself.
 - A deterministic LLMLingua-style prompt-compression control is now available:
   it preserves all numeric spans on GSM70/SVAMP70 and saves an estimated
   `123.5` / `71.5` bytes on average, but it is a budget/preservation diagnostic
@@ -203,6 +209,10 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   KVPress GSM70 reached MPS device setup but also stalled. The next benchmark
   attempt should use explicit `--limit` smokes and wall-clock timeouts before
   full rows.
+- After adding `--limit` support, paired KVPress GSM70 limit-1 smokes now
+  complete locally: `none` latency `2.1374s`, expected-attention latency
+  `2.1806s`. These are not paper rows, but they reopen the same-model
+  competitor path by chunking the evaluation.
 - Tokenizer-interface references add a new upstream ablation lane: byte/patch
   bridge, explicit vocabulary remap, time-warped span alignment, adaptive
   hypertokens, and length-optimal retokenization controls.
@@ -210,6 +220,10 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   activation-aware bit allocation, outlier-protected exception paths,
   rotation-before-compression, asymmetric KV-style bridge memory, and additive
   codebook bridges.
+- Multimodal/diffusion references add a lateral architecture lane:
+  Q-Former/perceiver bottlenecks, simple versus routed projectors,
+  soft belief-state refinement, trajectory-guided repair controls, and
+  latent-flow bridges.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided
