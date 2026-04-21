@@ -41,6 +41,12 @@ def _fixture_rows() -> list[dict[str, object]]:
                 candidate_completion_score=completion_scores[idx],
                 selected_candidate_format_delta_vs_target=0.0 if idx != 1 else -1.0,
                 candidate_vote_margin=vote_margins[idx],
+                prediction=(
+                    "1 + 1 = 2. Final answer: 2"
+                    if selected_correct[idx]
+                    else "Incomplete equation 1 +"
+                ),
+                normalized_prediction="2" if selected_correct[idx] else "1",
             )
         )
         rows.append(_row(idx, "target_self_repair", target_self_correct[idx]))
@@ -68,6 +74,10 @@ def test_summarize_source_includes_budget_and_missed_help(tmp_path: Path) -> Non
     best_format = max(format_rows, key=lambda row: row["accuracy"])
     assert best_format["missed_help_count"] == 0
     assert best_format["repaired_help_count"] == 1
+
+    process_rows = [row for row in summary.rows if row["policy"] == "process_gate"]
+    assert process_rows
+    assert any(row["missed_help_count"] == 0 for row in process_rows)
 
 
 def test_main_writes_json_and_markdown(tmp_path: Path) -> None:

@@ -7,14 +7,31 @@ import argparse
 import json
 import math
 import pathlib
+import sys
 from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.analyze_process_gate_features import extract_process_features
 
 
 TARGET_METHOD = "target_alone"
 SELECTED_METHOD = "selected_route_no_repair"
 TARGET_SELF_METHOD = "target_self_repair"
 REPAIR_METHOD = "process_repair_selected_route"
+
+GATE_FIELDS = {
+    "format_gate": "candidate_format_score",
+    "completion_gate": "candidate_completion_score",
+    "format_delta_gate": "selected_candidate_format_delta_vs_target",
+    "vote_margin_gate": "candidate_vote_margin",
+    "process_gate": "process_completeness_score",
+    "format_plus_process_gate": "format_plus_process_score",
+    "valid_equation_gate": "valid_equation_count",
+}
 
 
 @dataclass(frozen=True)
@@ -65,6 +82,8 @@ def _candidate_passes(selected: dict[str, Any], policy: str, threshold: float) -
             _as_float(selected, "candidate_format_score") >= threshold
             and _as_float(selected, "candidate_completion_score") >= threshold
         )
+    if policy in GATE_FIELDS:
+        return _as_float(selected, GATE_FIELDS[policy]) >= threshold
     raise ValueError(f"Unknown policy: {policy}")
 
 
@@ -93,6 +112,18 @@ def _eligible_examples(records: list[dict[str, Any]]) -> list[dict[str, dict[str
         if SELECTED_METHOD in methods and REPAIR_METHOD in methods and TARGET_METHOD in methods:
             examples.append(methods)
     return examples
+
+
+def _with_process_features(
+    examples: list[dict[str, dict[str, Any]]],
+) -> list[dict[str, dict[str, Any]]]:
+    enriched: list[dict[str, dict[str, Any]]] = []
+    for methods in examples:
+        methods_copy = {method: row.copy() for method, row in methods.items()}
+        selected = methods_copy[SELECTED_METHOD]
+        selected.update(extract_process_features(selected))
+        enriched.append(methods_copy)
+    return enriched
 
 
 def _summarize_policy(
@@ -184,7 +215,7 @@ def _summarize_policy(
 
 def summarize_source(path: pathlib.Path) -> SourcePolicySummary:
     records = load_jsonl(path)
-    examples = _eligible_examples(records)
+    examples = _with_process_features(_eligible_examples(records))
     selected_rows = [methods[SELECTED_METHOD] for methods in examples]
 
     rows = [
@@ -192,13 +223,8 @@ def summarize_source(path: pathlib.Path) -> SourcePolicySummary:
         _summarize_policy(examples, policy="repair_all_selected", threshold=None),
         _summarize_policy(examples, policy="oracle_precheck_analysis_only", threshold=None),
     ]
-    gate_fields = {
-        "format_gate": "candidate_format_score",
-        "completion_gate": "candidate_completion_score",
-        "format_delta_gate": "selected_candidate_format_delta_vs_target",
-        "vote_margin_gate": "candidate_vote_margin",
-        "format_and_completion_gate": "candidate_format_score",
-    }
+    gate_fields = dict(GATE_FIELDS)
+    gate_fields["format_and_completion_gate"] = "candidate_format_score"
     for policy, field in gate_fields.items():
         for threshold in _thresholds(selected_rows, field):
             rows.append(_summarize_policy(examples, policy=policy, threshold=threshold))

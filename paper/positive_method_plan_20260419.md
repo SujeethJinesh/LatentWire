@@ -3081,3 +3081,101 @@ Next execution ladder:
 5. Keep the paper claim positive-method but budget honest: show route-specific
    lift, repair-call savings, and exact cost against `C2C`, text-to-text,
    target self-repair, and no-repair selected routes.
+
+## 2026-04-21 Process-Gate Text Audit
+
+Executed next:
+
+- Added `scripts/analyze_process_gate_features.py` to derive non-oracle
+  process features directly from selected-route solution text: valid equation
+  count, equation validity fraction, answer-marker presence, tail completeness,
+  prediction/tail agreement, reasoning-step count, and a combined
+  `format_plus_process_score`.
+- Generated
+  `results/process_repair_holdout_20260421/process_gate_feature_audit_20260421.md`
+  and JSON sidecar on GSM70/SVAMP70 held-out repair telemetry.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| GSM70 `format_plus_process_score` | selected-correct AUROC `0.8707`; preserves `0.2000` repair-all accuracy while saving `0.3286` repair calls | Text-derived process features improve the cheap GSM efficiency gate over format alone. |
+| GSM70 equation features | valid-equation help AUROC `0.6231`; equation-valid-fraction help AUROC `0.6462` | Equations help identify repair-help opportunities, but not enough as standalone safe-skip gates. |
+| SVAMP70 `process_completeness_score` | selected-correct AUROC `0.8307`; preserves `0.5429` while saving `0.2286` repair calls | Process-text features are more budget-efficient than the prior SVAMP format-delta gate. |
+| SVAMP70 `format_plus_process_score` | selected-correct AUROC `0.9187`; saves `0.2143` repair calls | Combining surface format and process completeness is the best selected-correct predictor, but not the best saver on SVAMP. |
+
+Updated read:
+
+The next real gate should not be another pure metadata threshold. We now have
+evidence that process-text structure improves safe repair skipping, while
+equation-validity features are closer to identifying repair-help cases. This
+still does not increase accuracy over repair-all, but it gives an interpretable
+path to lower the target-side repair budget and a measurable target for a
+learned/generated-test verifier.
+
+Next execution ladder:
+
+1. Add a stacked `format_or_process_gate` policy to the held-out
+   test-before-repair replay and compare against format-only at identical
+   missed-help constraints.
+2. Turn equation-help features into a generated-test/process-verifier score:
+   do not skip repair when equations are inconsistent, incomplete, or absent.
+3. Log process-gate features in future telemetry at generation time so every
+   row has selected correctness, repair help, missed help, and repair-call
+   savings.
+4. Treat any process-gate claim as an efficiency result until it raises
+   accuracy over repair-all or increases the route-specific delta against
+   target self-repair.
+
+## 2026-04-21 Route-Atom Codebook And Competitor-Gap Follow-Up
+
+Executed next:
+
+- Added `references/349_recent_projector_refinement_alignment_refs.md` with
+  recent latent communication, multimodal projector, refinement, crosscoder,
+  and representation-alignment ablation ideas.
+- Added `references/350_competitor_benchmark_gap_plan.md` and bootstrapped a
+  local `LLMLingua` clone under `references/repos/LLMLingua` as the prompt
+  compression control lane.
+- Added toy `route_atom_codebook_bridge`, inspired by quantization codebooks,
+  route atoms, protected outliers, and route-conditioned atom banks.
+- Updated `test_before_repair_policy_20260421` so format-only, process-only,
+  and combined process gates are replayed in one held-out table.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| Route-atom raw ridge | accuracy `0.7812`, MSE `0.0437` | Raw regression reconstructs well in this toy, but leaves task accuracy below codebook methods. |
+| Learned shared codebook | accuracy `0.8438`, atom recovery `0.9231`, MSE `0.7225` | Task-relevant atom recovery can matter more than low MSE; reconstruction alone is not the right objective. |
+| Protected outlier atoms | accuracy `0.8438`, MSE `0.2069` | Outlier protection preserves the codebook accuracy gain while reducing reconstruction damage. |
+| Route-conditioned codebook | accuracy `0.7656`, compute proxy `12288.0` | Route conditioning cuts compute but needs a better router; lower compute alone is not enough. |
+| Oracle route atoms | accuracy `1.0000` | The synthetic task has a large atom-recovery headroom if route identity can be preserved. |
+| Competitor gap plan | adds `LatentMAS` and `LLMLingua` controls | The final benchmark suite should separate direct cross-model communication, same-model KV compression, latent multi-agent collaboration, and prompt compression. |
+
+Updated read:
+
+The two toy results now agree on a central paper constraint: a bridge can win
+task accuracy while losing naive reconstruction metrics. The method search
+should therefore optimize and report interpretable task-causal features:
+shared-feature recovery, route-atom recovery, codebook entropy/perplexity,
+repair-help/missed-help, and paired task deltas. The next real-system blocker is
+not another static regression objective; it is preserving the right shared
+features or route atoms under a strict byte/compute budget.
+
+Next execution ladder:
+
+1. Add codebook/atom telemetry to the real bridge diagnostics: atom entropy,
+   assignment stability, protected-outlier rate, route-family entropy, and
+   task delta vs reconstruction delta.
+2. Promote a small real codebook smoke only if assignment stability is
+   non-random on existing route pools; compare raw ridge, shared codebook,
+   route-conditioned codebook, protected atoms, and target self-repair.
+3. Add `LLMLingua` as a prompt-compression control for target-only runs before
+   making communication-efficiency claims.
+4. Build two separate competitor tables: direct heterogeneous communication
+   (`C2C`, `KVComm`, `LatentMAS`, LatentWire) and same-model cache compression
+   (`KVPress`, `KVzip`, `Quest`, `H2O`, `SnapKV`).
+5. Keep the current positive-method paper path focused: route selection +
+   process repair + test-before-repair savings + interpretable shared
+   feature/atom diagnostics.
