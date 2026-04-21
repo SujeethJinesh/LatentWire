@@ -1,0 +1,70 @@
+{
+  "config": {
+    "chain_length": 4,
+    "examples": 192,
+    "near_miss_bias": 0.16,
+    "pool_size": 5,
+    "repair_noise": 0.11,
+    "repair_threshold": 0.55,
+    "rerank_noise": 0.06,
+    "seed": 0,
+    "severity_bins": 3
+  },
+  "rows": [
+    {
+      "accuracy": 0.546875,
+      "false_repair_rate": 0.0,
+      "mean_selected_severity": 1.1822916666666667,
+      "method": "rerank_only",
+      "oracle_accuracy": 1.0,
+      "repair_application_rate": 0.0
+    },
+    {
+      "accuracy": 1.0,
+      "false_repair_rate": 0.08854166666666667,
+      "mean_selected_severity": 1.1822916666666667,
+      "method": "process_aware_repair",
+      "oracle_accuracy": 1.0,
+      "repair_application_rate": 0.5416666666666666
+    },
+    {
+      "accuracy": 1.0,
+      "false_repair_rate": 0.0,
+      "mean_selected_severity": 0.0,
+      "method": "oracle",
+      "oracle_accuracy": 1.0,
+      "repair_application_rate": 1.0
+    }
+  ],
+  "subgroups": {
+    "severity": [
+      {
+        "count": 64,
+        "false_repair_rate": 0.15625,
+        "oracle_accuracy": 1.0,
+        "repair_accuracy": 1.0,
+        "repair_application_rate": 0.21875,
+        "rerank_only_accuracy": 0.9375,
+        "severity_level": 0
+      },
+      {
+        "count": 64,
+        "false_repair_rate": 0.078125,
+        "oracle_accuracy": 1.0,
+        "repair_accuracy": 1.0,
+        "repair_application_rate": 0.578125,
+        "rerank_only_accuracy": 0.5,
+        "severity_level": 1
+      },
+      {
+        "count": 64,
+        "false_repair_rate": 0.03125,
+        "oracle_accuracy": 1.0,
+        "repair_accuracy": 1.0,
+        "repair_application_rate": 0.828125,
+        "rerank_only_accuracy": 0.203125,
+        "severity_level": 2
+      }
+    ]
+  }
+}

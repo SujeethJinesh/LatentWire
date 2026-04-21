@@ -16,6 +16,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `gsm8k_gate_search_30` | shuffled-label target-model verifier | `0.1000` | `-` | target selection drops to `0.2000`, but `Choice A` rate is `0.9667`; position-bias diagnostic, not a solved selector |
 | `gsm8k_gate_search_30` | pairwise verifier tournament | `0.0667` | `-` | target selection drops to `0.2000` and seed selection rises to `0.8000`, but selected seeds are not reliably correct |
 | `gsm8k_gate_search_30` eval-half | confidence-gated route expansion | `0.2000` | `-` | calibrated on first 15, evaluated on last 15; beats eval-half target-alone `0.0667` and random matched `0.1333`, but ties fixed route budgets |
+| `gsm8k_gate_search_30` eval-half | calibrated feature selector | `0.0000` | `-` | calibration-split feature weights overfit and always select seeds; negative selector control |
 | `gsm8k_gate_search_30` | target-or-seed oracle | `0.3000` | `-` | candidate-quality ceiling, label-leaking |
 | `gsm8k_gate_search_30` | C2C native smoke | `0.0667` | `-` | exact Qwen pair through published C2C artifact |
 | `gsm8k_gate_search_30` | KVPress none | `0.0667` | `-` | same-model compression control |
@@ -84,6 +85,10 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   eval-half (`0.2000` vs target `0.0667` and random matched `0.1333`), but it
   does not beat fixed route-budget controls yet. Treat it as a compute policy
   primitive, not a paper method.
+- A transparent calibrated feature selector over format/numeric/completion/
+  agreement features collapses on the eval-half (`0.0000`), so simple candidate
+  metadata is not enough; the next selector needs process verification or
+  repair.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.

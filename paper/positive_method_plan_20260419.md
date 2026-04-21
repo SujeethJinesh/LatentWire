@@ -294,6 +294,48 @@ That means:
   repair, or confidence-calibrated pointwise scoring before tournament
   aggregation
 
+## Status After Calibrated Feature Selector
+
+I added a transparent feature selector that calibrates candidate-feature weights
+on the first half of GSM30 and evaluates on the second half. Features include
+format score, numeric consistency, completion, answer agreement, target/seed
+identity, and seed index. Every candidate score and feature vector is logged.
+
+Result: the selector fits the calibration half to `0.2000` accuracy but scores
+`0.0000` on the eval half, below eval-half target-alone `0.0667`. It selects
+seeds on every eval example.
+
+That means:
+
+- simple candidate metadata is not enough to solve selection
+- calibration on tiny route pools can overfit badly even when every feature is
+  interpretable
+- this strengthens the case for process-aware verification, repair, or
+  externally grounded checking rather than another scalar metadata score
+
+## Status After Process-Aware Repair Toy
+
+I added a toy arithmetic-trace repair ablation for the exact failure mode seen
+in GSM30: rerankers often choose near-miss candidates whose final answer is
+wrong because an intermediate step is inconsistent. The toy gives the selector
+a process verifier that detects the first inconsistent arithmetic step and
+repairs downstream state.
+
+Result: `rerank_only` accuracy is `0.5469`, `process_aware_repair` reaches
+`1.0000`, and oracle is `1.0000`. Repair is applied on `0.5417` of examples,
+with false repair rate `0.0885`; repair application rises monotonically with
+inconsistency severity.
+
+That means:
+
+- repair is the strongest next hypothesis, not another listwise or pairwise
+  chooser
+- the real-model next step should ask for structured arithmetic/process traces
+  from the selected route, localize the first inconsistent step, and repair the
+  answer before final scoring
+- the paper can frame this as moving from selection over finished answers to
+  communication plus process-level correction
+
 I then pushed that same hypothesis one step deeper into the live fusion path,
 without changing the frozen translator checkpoint, by adding
 `attention_qk_fidelity_tokenwise` as a runtime per-head, per-position gate
