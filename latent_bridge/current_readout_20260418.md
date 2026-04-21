@@ -2553,3 +2553,36 @@ Interpretation:
   not a naive observed-next-token boost
 - next likelihood-style work should use approximate likelihood matching over
   aligned spans or tokenizer-aware remapping, not direct gold-token injection
+
+And a seventy-ninth dynalign span-ALM teacher diagnostic:
+
+> I then implemented `bridge_ridge_qk_dynalign_spanalm_module_replace`, which
+> keeps the same dynalign source-to-target token mixtures and confidence
+> weighting, but replaces hard observed-next-token boosting with a small
+> span-window approximate-likelihood blend. For each aligned target position,
+> it adds sparse mass to observed future span tokens in proportion to the
+> target model's own probability on those tokens, decayed by span offset.
+>
+> On a 16-prompt diagnostic calibration slice:
+> - dynamic remapping samples: `678`
+> - mean target tokens per source sample: `3.00`
+> - span-ALM/DWA-style sample weights: min `0.588`, max `1.470`
+> - `K` cosine `0.948`, relative Frobenius error `0.305`
+> - `V` cosine `0.697`, relative Frobenius error `0.700`
+>
+> Held-out diagnostic reads:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- softening the likelihood teacher from exact next-token mass to a span-window
+  approximate-likelihood blend still does not rescue the controlled slice
+- it also loses the best `dynalign` / DWA `gsm8k_5 = 0.4000` smoke, so the
+  failure is not only that the previous likelihood teacher was too hard
+- direct target-token likelihood mass, even when span-smoothed, is probably the
+  wrong teacher for the current bridge interface
+- the next serious positive-method branch should move away from direct
+  likelihood mass and toward attention/interaction refinement, explicit
+  query-conditioned routing, or a stronger module interface that changes how
+  the target consumes the communicated cache

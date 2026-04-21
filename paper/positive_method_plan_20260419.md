@@ -1659,3 +1659,36 @@ That means:
 - layer telemetry remains useful for interpretability, but the next decisive
   layer ablation should be a larger-slice leave-one-out or add-one-back curve,
   not a top-five knockout alone
+
+I then tested the span-level approximate-likelihood follow-up as
+`bridge_ridge_qk_dynalign_spanalm_module_replace`.
+
+This keeps the same `dynalign` token mixtures and confidence-weighted module
+fit, but replaces the hard observed-next-token likelihood boost with a
+span-window teacher: observed future target tokens receive sparse teacher mass
+according to the target model's own probability on those tokens, with a
+decay by span offset.
+
+On a 16-prompt diagnostic calibration slice:
+
+- dynamic remapping samples: `678`
+- mean target tokens per source sample: `3.00`
+- span-ALM/DWA-style weight range: `0.588` to `1.470`
+- `K` cosine `0.948`, relative Frobenius error `0.305`
+- `V` cosine `0.697`, relative Frobenius error `0.700`
+
+Held-out diagnostic reads:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- a softer span-window approximate-likelihood teacher still regresses the
+  best `dynalign` / DWA `gsm8k_5 = 0.4000` smoke to `0.2000`
+- it does not move the controlled slice above the `0.1000` target floor
+- the next positive-method attempt should not be another direct likelihood-mass
+  variant unless the interface changes; stronger candidates are attention or
+  refinement distillation, query-conditioned routing inside the bridge, or a
+  more global target-side module interface
