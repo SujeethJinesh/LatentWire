@@ -1821,3 +1821,30 @@ Paper-readiness criterion:
   paired controlled GSM slices, improves or matches the bytes/accuracy frontier
   against C2C/KVComm where applicable, and has interpretable route/interface
   telemetry that explains where the gain comes from.
+
+## 2026-04-20 Attention-Stratified Selector Result
+
+I implemented the first route-collapse ablation as `attention_stratified`.
+This is deliberately small: it keeps the same checkpoint and attention scores
+as `dynalign_prefdist`, but selects communicated positions through four
+prompt-region bins instead of a global top-k. The purpose is to test whether
+the observed prefix-heavy selector collapse is fixable by coverage alone.
+
+Results:
+
+- `gsm8k_5`: `0.2000` at `686,026.6` average bytes
+- controlled `gsm8k_eval_10`: `0.1000` at `681,668.4` average bytes
+- paired controlled delta versus target-alone: `+0.0000`
+- corrected controlled selector coverage: prefix `0.3612`, suffix `0.3292`,
+  full trace fraction `1.0000`
+
+Interpretation:
+
+- coverage balancing works as an instrumentation/control change, but not as a
+  positive method
+- it loses the `dynalign_prefdist` smoke (`0.4000 -> 0.2000`) and still ties
+  controlled target-alone
+- this supports the subagent recommendation: implement deterministic
+  query-pool transport next, with byte-probe diagnostics alongside it, and
+  defer full `headwise_route_atom` until after we have a safer query-slot
+  interface

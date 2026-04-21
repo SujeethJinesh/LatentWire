@@ -2679,3 +2679,28 @@ Interpretation:
   any larger run.
 - Do not spend more cycles on direct likelihood, span-ALM, or local-interaction
   variants without changing the interface; those are now saturated blockers.
+
+And an attention-stratified selector diagnostic:
+
+> I added `attention_stratified` as a runtime position-selection metric. It
+> keeps the same attention score source, but selects through four prompt-region
+> bins instead of pure global top-k. The trace now records full selected
+> positions for small runs plus prefix/mid/suffix coverage fractions, so later
+> collapse telemetry is not limited to the first 16 selected positions.
+>
+> On the same `dynalign_prefdist` checkpoint:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+> - controlled paired delta versus target-alone: `+0.000000`
+> - corrected selector coverage on controlled GSM10: prefix `0.3612`, suffix
+>   `0.3292`, full trace fraction `1.0000`
+
+Interpretation:
+
+- broader prompt-region coverage is mechanically achieved, but it loses the
+  `dynalign_prefdist` GSM5 smoke (`0.4000 -> 0.2000`)
+- controlled GSM10 still ties the target-alone floor
+- this rules out naive coverage balancing as the missing selector fix
+- the next interface ablation should use target-query-conditioned query-pool
+  slots or head-wise route atoms, because simple top-k reshaping does not add
+  semantic selectivity

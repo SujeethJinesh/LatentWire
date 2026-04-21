@@ -216,6 +216,14 @@
     "split": "gsm8k_eval_10_controlled"
   },
   {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
+    "family": "selector ablation",
+    "method": "dynamic-aligned preference-distilled attention-stratified selector",
+    "notes": "same dynalign preference-distilled checkpoint with four-bin attention-stratified position selection to test route-collapse coverage",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
     "accuracy": 0.0,
     "avg_bytes": 681668.4,
     "family": "stronger-teacher bridge",
@@ -405,6 +413,14 @@
     "family": "token-remapped attention bridge",
     "method": "dynamic-aligned preference-distilled module replace",
     "notes": "dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on a 16-prompt diagnostic slice",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "selector ablation",
+    "method": "dynamic-aligned preference-distilled attention-stratified selector",
+    "notes": "four-bin attention-stratified selector over the same preference-distilled checkpoint; tests whether broader prompt coverage fixes selector collapse",
     "split": "gsm8k_5_controlled_smoke"
   },
   {

@@ -11,6 +11,7 @@ Telemetry source: `selector_trace` from controlled `gsm8k_eval_10` runs under th
 | dynalign_interact_module_replace | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | dynalign_likelihood_module_replace | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | dynalign_module_replace | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
+| dynalign_prefdist_attention_stratified | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | dynalign_prefdist_module_replace | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | dynalign_spanalm_module_replace | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |
 | module_adapter | 0.1000 | L27<-S23, L5<-S4, L23<-S20, L22<-S19, L8<-S7 | 0.4992 | 0.9140 | 0.8785 |

@@ -2526,9 +2526,29 @@ def _position_selection_scores(
         if position_scores is None:
             raise ValueError("attention-based position selection requires explicit position scores")
         return position_scores.float()
+    if position_selection_metric == "attention_stratified":
+        if position_scores is None:
+            raise ValueError("attention_stratified position selection requires explicit position scores")
+        return position_scores.float()
     if position_selection_metric == "attention_disagreement":
         if position_scores is None:
             raise ValueError("attention_disagreement position selection requires explicit position scores")
+        attention_scores = position_scores.float()
+        attention_scores = attention_scores / attention_scores.sum().clamp_min(1e-8)
+        disagreement_scores = _position_selection_scores(
+            K_t,
+            V_t,
+            K_hat,
+            V_hat,
+            kv_transport=kv_transport,
+            position_selection_metric="disagreement",
+        ).float()
+        disagreement_scores = disagreement_scores / disagreement_scores.sum().clamp_min(1e-8)
+        combined = attention_scores * disagreement_scores
+        return combined / combined.sum().clamp_min(1e-8)
+    if position_selection_metric == "attention_disagreement_stratified":
+        if position_scores is None:
+            raise ValueError("attention_disagreement_stratified position selection requires explicit position scores")
         attention_scores = position_scores.float()
         attention_scores = attention_scores / attention_scores.sum().clamp_min(1e-8)
         disagreement_scores = _position_selection_scores(
@@ -2563,6 +2583,50 @@ def _position_selection_scores(
     raise ValueError(f"Unknown position_selection_metric: {position_selection_metric}")
 
 
+def _stratified_topk_indices(scores: torch.Tensor, keep: int, *, bins: int = 4) -> torch.Tensor:
+    if scores.ndim != 1:
+        raise ValueError(f"scores must be rank-1, got shape {tuple(scores.shape)}")
+    seq_len = int(scores.numel())
+    keep = max(0, min(int(keep), seq_len))
+    if keep == 0:
+        return torch.empty(0, dtype=torch.long, device=scores.device)
+    bins = max(1, min(int(bins), seq_len, keep))
+    boundaries = torch.linspace(0, seq_len, bins + 1, device="cpu").round().to(torch.long).tolist()
+    selected: list[torch.Tensor] = []
+    selected_mask = torch.zeros(seq_len, dtype=torch.bool, device=scores.device)
+    remaining = keep
+    remaining_bins = bins
+
+    for bin_idx in range(bins):
+        start = int(boundaries[bin_idx])
+        stop = int(boundaries[bin_idx + 1])
+        if stop <= start:
+            remaining_bins -= 1
+            continue
+        quota = min(stop - start, max(1, math.ceil(remaining / max(remaining_bins, 1))))
+        local_scores = scores[start:stop]
+        local_keep = min(quota, int(local_scores.numel()), remaining)
+        if local_keep > 0:
+            local_indices = torch.topk(local_scores, k=local_keep, largest=True).indices + start
+            selected.append(local_indices)
+            selected_mask[local_indices] = True
+            remaining -= local_keep
+        remaining_bins -= 1
+        if remaining <= 0:
+            break
+
+    if remaining > 0:
+        fill_scores = scores.masked_fill(selected_mask, float("-inf"))
+        fill = torch.topk(fill_scores, k=remaining, largest=True).indices
+        selected.append(fill)
+
+    if not selected:
+        return torch.empty(0, dtype=torch.long, device=scores.device)
+    indices = torch.cat(selected)
+    order = scores[indices].sort(descending=True).indices
+    return indices[order]
+
+
 def _selector_trace(
     scores: torch.Tensor | None,
     keep_indices: torch.Tensor,
@@ -2570,13 +2634,26 @@ def _selector_trace(
     keep: int,
 ) -> dict[str, Any]:
     positions = sorted(int(idx) for idx in keep_indices.detach().cpu().tolist())
+    prefix_cut = seq_len / 3.0
+    suffix_cut = 2.0 * seq_len / 3.0
+    prefix_count = sum(1 for pos in positions if float(pos) < prefix_cut)
+    suffix_count = sum(1 for pos in positions if float(pos) >= suffix_cut)
+    mid_count = max(0, len(positions) - prefix_count - suffix_count)
     trace: dict[str, Any] = {
         "seq_len": int(seq_len),
         "keep": int(keep),
         "keep_fraction": float(keep / max(seq_len, 1)),
         "selected_positions": positions[:16],
         "selected_count_truncated": int(max(len(positions) - 16, 0)),
+        "selected_prefix_count": int(prefix_count),
+        "selected_mid_count": int(mid_count),
+        "selected_suffix_count": int(suffix_count),
+        "selected_prefix_fraction": float(prefix_count / max(len(positions), 1)),
+        "selected_mid_fraction": float(mid_count / max(len(positions), 1)),
+        "selected_suffix_fraction": float(suffix_count / max(len(positions), 1)),
     }
+    if len(positions) <= 128:
+        trace["selected_positions_full"] = positions
     if positions:
         trace["selected_min_pos"] = int(positions[0])
         trace["selected_max_pos"] = int(positions[-1])
@@ -2746,7 +2823,10 @@ def _apply_position_selection(
         position_selection_metric=position_selection_metric,
         position_scores=position_scores,
     )
-    keep_indices = torch.topk(scores, k=keep, largest=True).indices
+    if position_selection_metric in {"attention_stratified", "attention_disagreement_stratified"}:
+        keep_indices = _stratified_topk_indices(scores, keep, bins=4)
+    else:
+        keep_indices = torch.topk(scores, k=keep, largest=True).indices
     mask = torch.zeros(seq_len, dtype=torch.bool, device=K_hat.device)
     mask[keep_indices] = True
     mask = mask.view(1, 1, seq_len, 1)
@@ -2760,6 +2840,8 @@ def _apply_position_selection(
     selected_k = torch.where(mask, K_hat, fill_k)
     selected_v = torch.where(mask, V_hat, fill_v)
     trace = _selector_trace(scores, keep_indices, seq_len, keep)
+    if position_selection_metric in {"attention_stratified", "attention_disagreement_stratified"}:
+        trace["selection_policy"] = "stratified_topk_4bins"
     return (selected_k, selected_v, trace) if return_trace else (selected_k, selected_v)
 
 
@@ -2861,7 +2943,14 @@ def _build_rotalign_prefix_state(
         "attention_blend",
     }
     if (
-        position_selection_metric in {"attention", "attention_disagreement", "attention_shuffled"}
+        position_selection_metric
+        in {
+            "attention",
+            "attention_stratified",
+            "attention_disagreement",
+            "attention_disagreement_stratified",
+            "attention_shuffled",
+        }
         and position_selection_ratio < 1.0
     ) or (
         runtime_head_selection_ratio < 1.0
@@ -4484,7 +4573,9 @@ def parse_args() -> argparse.Namespace:
             "random",
             "recency",
             "attention",
+            "attention_stratified",
             "attention_disagreement",
+            "attention_disagreement_stratified",
             "attention_shuffled",
             "source_attention",
             "attention_prior",
@@ -4757,7 +4848,9 @@ def main() -> None:
 
     attention_selector_metrics = {
         "attention",
+        "attention_stratified",
         "attention_disagreement",
+        "attention_disagreement_stratified",
         "attention_shuffled",
         "source_attention",
         "attention_prior",

@@ -447,6 +447,30 @@ def test_evaluate_parse_args_accepts_chat_template_and_thinking_flags(monkeypatc
     assert args.target_enable_thinking == "false"
 
 
+def test_evaluate_parse_args_accepts_stratified_position_metric(monkeypatch) -> None:
+    monkeypatch.setattr(
+        evaluate.sys,
+        "argv",
+        [
+            "evaluate.py",
+            "--translator",
+            "translator.pt",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--eval-file",
+            "eval.jsonl",
+            "--position-selection-metric",
+            "attention_stratified",
+        ],
+    )
+
+    args = evaluate.parse_args()
+
+    assert args.position_selection_metric == "attention_stratified"
+
+
 def test_evaluate_parse_args_accepts_attention_qk_bank_transport_metrics(monkeypatch) -> None:
     monkeypatch.setattr(
         evaluate.sys,
@@ -2447,6 +2471,40 @@ def test_position_selection_attention_disagreement_combines_query_and_delta() ->
     expected = torch.tensor([0.2, 0.8], dtype=torch.float32)
     assert combined.shape == (2,)
     assert torch.allclose(combined, expected, atol=1e-6)
+
+
+def test_stratified_topk_spreads_positions_across_regions() -> None:
+    scores = torch.tensor([9.0, 8.0, 7.0, 6.0, 0.0, 0.0, 0.0, 5.0])
+
+    selected = evaluate._stratified_topk_indices(scores, keep=4, bins=4)
+
+    assert set(selected.tolist()) == {0, 2, 4, 7}
+
+
+def test_apply_position_selection_attention_stratified_changes_selected_region_coverage() -> None:
+    K_t = torch.zeros(1, 1, 8, 1)
+    V_t = torch.zeros_like(K_t)
+    K_hat = torch.arange(1, 9, dtype=torch.float32).view(1, 1, 8, 1)
+    V_hat = K_hat + 100.0
+    scores = torch.tensor([9.0, 8.0, 7.0, 6.0, 0.0, 0.0, 0.0, 5.0])
+
+    selected_k, _, trace = evaluate._apply_position_selection(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        protocol="fused",
+        kv_transport="k_only",
+        position_selection_ratio=0.5,
+        position_selection_metric="attention_stratified",
+        position_scores=scores,
+        return_trace=True,
+    )
+
+    kept = torch.nonzero(selected_k.view(-1), as_tuple=False).flatten().tolist()
+    assert kept == [0, 2, 4, 7]
+    assert trace["selected_positions"] == [0, 2, 4, 7]
+    assert trace["selection_policy"] == "stratified_topk_4bins"
 
 
 def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:

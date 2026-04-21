@@ -480,6 +480,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_eval_10_controlled",
+            method="dynamic-aligned preference-distilled attention-stratified selector",
+            family="selector ablation",
+            meta_path="results/attention_stratified_selector_20260420/qwen_gsm10_dynalign_prefdist_attention_stratified_cal16_chat.jsonl.meta.json",
+            notes="same dynalign preference-distilled checkpoint with four-bin attention-stratified position selection to test route-collapse coverage",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_10_controlled",
             method="readout adapter",
             family="stronger-teacher bridge",
             meta_path="results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl.meta.json",
@@ -692,6 +701,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
             family="token-remapped attention bridge",
             meta_path="results/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen_gsm5_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.jsonl.meta.json",
             notes="dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on a 16-prompt diagnostic slice",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
+            method="dynamic-aligned preference-distilled attention-stratified selector",
+            family="selector ablation",
+            meta_path="results/attention_stratified_selector_20260420/qwen_gsm5_dynalign_prefdist_attention_stratified_cal16_chat.jsonl.meta.json",
+            notes="four-bin attention-stratified selector over the same preference-distilled checkpoint; tests whether broader prompt coverage fixes selector collapse",
         )
     )
     rows.append(
@@ -973,6 +991,14 @@ def _build_paired_rows() -> list[dict[str, Any]]:
             "baseline_label": "target_alone_control",
         },
         {
+            "candidate": "results/attention_stratified_selector_20260420/qwen_gsm10_dynalign_prefdist_attention_stratified_cal16_chat.jsonl",
+            "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
+            "candidate_method": "rotalign_kv_gate_0.10",
+            "baseline_method": "target_alone",
+            "candidate_label": "dynalign_prefdist_attention_stratified",
+            "baseline_label": "target_alone_control",
+        },
+        {
             "candidate": "results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl",
             "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
             "candidate_method": "rotalign_kv_gate_0.10",
@@ -1128,6 +1154,12 @@ def _build_layer_localization_rows() -> list[dict[str, Any]]:
             "notes": "dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on controlled gsm8k_eval_10 (16-prompt diagnostic calibration)",
         },
         {
+            "method": "dynalign_prefdist_attention_stratified",
+            "family": "selector ablation",
+            "jsonl": "results/attention_stratified_selector_20260420/qwen_gsm10_dynalign_prefdist_attention_stratified_cal16_chat.jsonl",
+            "notes": "four-bin attention-stratified selector over the same preference-distilled checkpoint on controlled gsm8k_eval_10",
+        },
+        {
             "method": "readout_adapter",
             "family": "stronger-teacher bridge",
             "jsonl": "results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl",
@@ -1278,6 +1310,12 @@ def _build_selector_collapse_rows() -> list[dict[str, Any]]:
             "notes": "least-destructive stronger teacher on controlled gsm8k_eval_10",
         },
         {
+            "method": "dynalign_prefdist_attention_stratified",
+            "family": "selector ablation",
+            "jsonl": "results/attention_stratified_selector_20260420/qwen_gsm10_dynalign_prefdist_attention_stratified_cal16_chat.jsonl",
+            "notes": "four-bin attention-stratified selector coverage ablation",
+        },
+        {
             "method": "dynalign_ctxonly_module_replace",
             "family": "token-remapped attention bridge",
             "jsonl": "results/bridge_ridge_qk_dynalign_ctxonly_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_ctxonly_module_replace_cal16_chat.jsonl",
@@ -1315,6 +1353,8 @@ def _build_selector_collapse_rows() -> list[dict[str, Any]]:
         score_gaps: list[float] = []
         score_tops: list[float] = []
         selector_layers: list[float] = []
+        full_position_traces = 0
+        total_position_traces = 0
 
         for record in records:
             if str(record.get("method")) != "rotalign_kv_gate_0.10":
@@ -1338,9 +1378,15 @@ def _build_selector_collapse_rows() -> list[dict[str, Any]]:
                 if "score_top" in trace:
                     score_tops.append(float(trace["score_top"]))
 
+                total_position_traces += 1
+                selected_values = trace.get("selected_positions_full")
+                if selected_values is not None:
+                    full_position_traces += 1
+                else:
+                    selected_values = trace.get("selected_positions", [])
                 selected = {
                     int(pos)
-                    for pos in trace.get("selected_positions", [])
+                    for pos in selected_values
                     if isinstance(pos, (int, float))
                 }
                 if not selected:
@@ -1349,11 +1395,15 @@ def _build_selector_collapse_rows() -> list[dict[str, Any]]:
                 unique_positions.update(selected)
                 total_positions += len(selected)
 
-                seq_len = max(1, int(trace.get("seq_len", 1)))
-                prefix_cut = seq_len / 3.0
-                suffix_cut = 2.0 * seq_len / 3.0
-                prefix_hits += sum(1 for pos in selected if float(pos) < prefix_cut)
-                suffix_hits += sum(1 for pos in selected if float(pos) >= suffix_cut)
+                if "selected_prefix_count" in trace and "selected_suffix_count" in trace:
+                    prefix_hits += int(trace["selected_prefix_count"])
+                    suffix_hits += int(trace["selected_suffix_count"])
+                else:
+                    seq_len = max(1, int(trace.get("seq_len", 1)))
+                    prefix_cut = seq_len / 3.0
+                    suffix_cut = 2.0 * seq_len / 3.0
+                    prefix_hits += sum(1 for pos in selected if float(pos) < prefix_cut)
+                    suffix_hits += sum(1 for pos in selected if float(pos) >= suffix_cut)
 
             if position_sets:
                 layer_jaccards.append(_mean_pairwise_jaccard(position_sets))
@@ -1380,6 +1430,7 @@ def _build_selector_collapse_rows() -> list[dict[str, Any]]:
                 "mean_score_gap": _safe_mean(score_gaps),
                 "mean_score_top": _safe_mean(score_tops),
                 "route_collapse_score": mean_jaccard + max(0.0, 1.0 - mean_unique),
+                "full_position_trace_fraction": float(full_position_traces / max(total_position_traces, 1)),
             }
         )
     return rows
@@ -1391,12 +1442,12 @@ def _write_selector_collapse_markdown(rows: list[dict[str, Any]], path: pathlib.
         "",
         "Telemetry source: `selector_trace` selected-position overlap from controlled `gsm8k_eval_10` runs. Higher collapse means layers repeatedly transmit the same prompt positions, which is a route-interface warning signal.",
         "",
-        "| Method | Acc | Route collapse | Layer Jaccard | Unique position frac | Prefix frac | Suffix frac | Mean score entropy | Notes |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---|",
+        "| Method | Acc | Route collapse | Layer Jaccard | Unique position frac | Prefix frac | Suffix frac | Full trace frac | Mean score entropy | Notes |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for row in sorted(rows, key=lambda item: (-float(item["route_collapse_score"]), str(item["method"]))):
         lines.append(
-            "| {method} | {acc:.4f} | {collapse:.4f} | {jaccard:.4f} | {unique:.4f} | {prefix:.4f} | {suffix:.4f} | {entropy:.4f} | {notes} |".format(
+            "| {method} | {acc:.4f} | {collapse:.4f} | {jaccard:.4f} | {unique:.4f} | {prefix:.4f} | {suffix:.4f} | {full_trace:.4f} | {entropy:.4f} | {notes} |".format(
                 method=row["method"],
                 acc=float(row["accuracy"]),
                 collapse=float(row["route_collapse_score"]),
@@ -1404,6 +1455,7 @@ def _write_selector_collapse_markdown(rows: list[dict[str, Any]], path: pathlib.
                 unique=float(row["mean_unique_position_fraction"]),
                 prefix=float(row["mean_prefix_position_fraction"]),
                 suffix=float(row["mean_suffix_position_fraction"]),
+                full_trace=float(row["full_position_trace_fraction"]),
                 entropy=float(row["mean_score_entropy"]),
                 notes=row["notes"],
             )
@@ -1411,7 +1463,7 @@ def _write_selector_collapse_markdown(rows: list[dict[str, Any]], path: pathlib.
     lines.extend(
         [
             "",
-            "Current interpretation: identical collapse values across these variants mean the active selector/interface is shared across otherwise different bridge teachers. A route-atom or query-pool ablation must change this selector geometry, not only the post-selected repair objective.",
+            "Current interpretation: the older bridge teachers share the same truncated selector pattern, while the attention-stratified ablation broadens prompt-region coverage but still ties target-alone on controlled GSM10 and loses the GSM5 smoke. Naive coverage balancing is not enough; the next route ablation needs target-query-conditioned slots or head-wise atoms, not only broader top-k position selection.",
         ]
     )
     path.write_text("\n".join(lines) + "\n")
