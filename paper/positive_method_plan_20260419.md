@@ -219,8 +219,8 @@ So the current best additive order is now:
 
 ## Benchmark Contract Status
 
-The benchmark track is now frozen conceptually even though the full rows are
-not run yet:
+The benchmark track is now frozen conceptually and the first exact same-pair
+smoke has been executed.
 
 - Main Table A should be cross-model reasoning only: `gsm8k`,
   `gpqa_diamond`, `arc_challenge`, with `C2C` as the main external
@@ -243,6 +243,43 @@ The smallest next execution step is now fixed too:
   `c2c_generate` fails to beat `target_alone` by at least two examples,
   because that indicates a prompt/scorer mismatch rather than useful benchmark
   evidence
+
+## Status After Frozen GSM8K32 Smoke
+
+The frozen same-pair smoke now gives a real benchmark boundary:
+
+- exact pair: `Qwen/Qwen2.5-0.5B-Instruct -> Qwen/Qwen3-0.6B`
+- exact slice: first `32` rows of `data/gsm8k_eval_70.jsonl`
+- matched non-thinking greedy decode, `max_new_tokens = 64`
+- rows:
+  - `target_alone = 0.0625`
+  - `text_to_text = 0.0312`
+  - `rotalign_kv = 0.0625`
+  - `c2c_generate = 0.1250`
+- the contract itself looks valid:
+  - identical ordered example IDs across all rows
+  - target rerun is byte-identical
+  - offline rescoring matches the sidecar summary
+  - `c2c_generate` beats target by exactly `2/32`, so the smoke clears its
+    minimum external-bar gate
+- but the current sparse KV row is still not promotable:
+  - `rotalign_kv` only ties target
+  - `rotalign_kv` fails numeric extraction coverage (`28/32` vs the required
+    `>= 31/32`)
+
+This means the benchmark track is no longer hypothetical. The exact smoke
+contract works, and it says our current same-pair sparse transport row is
+still below paper standard. The next benchmark-worthy method row should be the
+current best toy-backed lane:
+
+1. quotient-aware matching
+2. GPA canonicalization
+3. sparse shared dictionary
+4. byte sidecar plus sequence-aligned interface features
+
+Only after that lane beats `target_alone` on this frozen contract and passes
+the extraction/coverage checks should we widen to larger slices or build any
+paper tables.
 
 ## Best Next Method Lane
 

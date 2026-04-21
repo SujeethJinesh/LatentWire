@@ -458,6 +458,7 @@ File `388_` narrows the immediate benchmark execution lane:
 
 - `388_`: Exact 32-example GSM8K smoke contract for the Qwen sender/receiver pair, including the only four rows we should run next, the scorer contract, and hard pass/fail checks before widening.
 - `389_`: Sequence-aware sidecar memo narrowing the next interface-additive branch after the byte-sidecar toy, with the recent cross-tokenizer alignment papers that most directly motivate it.
+- `390_`: Unsaturated next-branch memo for per-example canonicalization, gauge-invariant matching, symmetry-compatible codebook compression, and quantized low-rank correction.
 
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 

@@ -1,0 +1,297 @@
+{
+  "artifacts": {
+    "c2c_prediction_output": "/Users/sujeethjinesh/Desktop/LatentWire/results/gsm8k_smoke_contract_20260421/gsm8k32_c2c.jsonl",
+    "c2c_sidecar": "/Users/sujeethjinesh/Desktop/LatentWire/results/gsm8k_smoke_contract_20260421/gsm8k32_c2c.jsonl.meta.json",
+    "latentwire_prediction_output": "/Users/sujeethjinesh/Desktop/LatentWire/results/gsm8k_smoke_contract_20260421/gsm8k32_latentwire.jsonl",
+    "latentwire_sidecar": "/Users/sujeethjinesh/Desktop/LatentWire/results/gsm8k_smoke_contract_20260421/gsm8k32_latentwire.jsonl.meta.json",
+    "materialized_eval_file": "/tmp/gsm8k_eval_32.jsonl",
+    "target_rerun_prediction_output": "/Users/sujeethjinesh/Desktop/LatentWire/results/gsm8k_smoke_contract_20260421/gsm8k32_target_rerun.jsonl"
+  },
+  "checks": {
+    "c2c_beats_target_by_two": {
+      "detail": "c2c=0.1250 target=0.0625",
+      "passed": true
+    },
+    "example_ids_identical": {
+      "detail": "all four rows share the same ordered example IDs",
+      "passed": true
+    },
+    "greedy_config": {
+      "detail": "max_new_tokens=64; evaluate and c2c both run greedy generation",
+      "passed": true
+    },
+    "no_empty_predictions": {
+      "detail": "empty_predictions=[0, 0, 0, 0]",
+      "passed": true
+    },
+    "numeric_extraction_coverage": {
+      "detail": "coverage=[32, 32, 28, 32] threshold=31",
+      "passed": false
+    },
+    "rotalign_ties_or_beats_target": {
+      "detail": "rotalign=0.0625 target=0.0625",
+      "passed": true
+    },
+    "row_counts_match_slice": {
+      "detail": "counts=[32, 32, 32, 32] expected=32",
+      "passed": true
+    },
+    "target_offline_rescore_matches": {
+      "detail": "offline=0.0625 sidecar=0.0625",
+      "passed": true
+    },
+    "target_rerun_byte_identical": {
+      "detail": "rerun target predictions exactly match the main target row",
+      "passed": true
+    }
+  },
+  "config": {
+    "checkpoint_path": "checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt",
+    "device": "mps",
+    "enable_thinking": false,
+    "eval_file": "data/gsm8k_eval_70.jsonl",
+    "gate": 0.1,
+    "kv_transport": "k_only",
+    "materialized_eval_file": "/tmp/gsm8k_eval_32.jsonl",
+    "max_new_tokens": 64,
+    "position_selection_metric": "attention",
+    "position_selection_ratio": 0.5,
+    "results_dir": "results/gsm8k_smoke_contract_20260421",
+    "slice_size": 32,
+    "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "source_reasoning_mode": "brief_analysis",
+    "target_model": "Qwen/Qwen3-0.6B",
+    "use_chat_template": true
+  },
+  "date": "2026-04-21",
+  "metric_summary": {
+    "c2c": {
+      "c2c_accuracy": 0.125,
+      "c2c_examples_per_sec": 0.3921221253639376,
+      "c2c_generated_tokens_avg": 62.3125,
+      "c2c_latency_sec": 2.5502258998312755,
+      "c2c_tokens_per_sec": 24.434109936740363,
+      "c2c_ttft_sec": 2.5502258998312755
+    },
+    "latentwire": {
+      "rotalign_kv_gate_0.10": 0.0625,
+      "rotalign_kv_gate_0.10_bits": 1373291.5,
+      "rotalign_kv_gate_0.10_bytes": 171661.4375,
+      "rotalign_kv_gate_0.10_examples_per_sec": 0.3424526213198883,
+      "rotalign_kv_gate_0.10_latency_sec": 2.920111973871826,
+      "rotalign_kv_gate_0.10_tokens_per_sec": 19.53050105964988,
+      "rotalign_kv_gate_0.10_ttft_sec": 0.7135403774882434,
+      "target_alone": 0.0625,
+      "target_alone_examples_per_sec": 0.3900802645633087,
+      "target_alone_latency_sec": 2.5635749635257525,
+      "target_alone_tokens_per_sec": 24.745716783234897,
+      "target_alone_ttft_sec": 0.11630862760648597,
+      "text_to_text": 0.03125,
+      "text_to_text_examples_per_sec": 0.252761498270403,
+      "text_to_text_latency_sec": 3.956298751363647,
+      "text_to_text_tokens_per_sec": 16.176735889305792,
+      "text_to_text_ttft_sec": 1.4365176121063996
+    },
+    "target_rerun": {
+      "target_alone": 0.0625,
+      "target_alone_examples_per_sec": 0.3690417348849184,
+      "target_alone_latency_sec": 2.7097206236358033,
+      "target_alone_tokens_per_sec": 23.411085056762012,
+      "target_alone_ttft_sec": 0.10923787624051329
+    }
+  },
+  "rows": {
+    "c2c_generate": {
+      "accuracy": 0.125,
+      "empty_predictions": 0,
+      "example_ids": [
+        "091bbe1f7ca7b21b",
+        "bfbfb8b5c288e19f",
+        "c1a71ce89fb4a78c",
+        "8778dde63aea331c",
+        "cfc10aa4137d410a",
+        "d61c52f16762a317",
+        "67dbed6fd4b3e25d",
+        "c367d98b3f25ed45",
+        "48e6f28627abd1a7",
+        "6670a1239451eb14",
+        "5f26057fc39bcbab",
+        "27a625409a363449",
+        "cc90bec57e693936",
+        "56821ab920af6075",
+        "645a38303f97c7b7",
+        "0e42f7dfa556534c",
+        "83c30ca17156668c",
+        "891a8f9de535dba2",
+        "ccab75cd635bafd3",
+        "c8cf4c0adc1da06e",
+        "eaee70922c4fa43a",
+        "8ba3de0e6b347614",
+        "969a8f236b4e1ebe",
+        "ef0151f07779da95",
+        "5731a4ad3129a17c",
+        "999fcb6c14a3a8c0",
+        "1f39713e0b61ff17",
+        "3bf72a7011111ded",
+        "6ec73a49cd7c5c27",
+        "1deed634dcd7d229",
+        "fc4846b7f85cc4ac",
+        "6c101c19c28732d1"
+      ],
+      "examples_per_sec": 0.3921221253639376,
+      "generated_tokens_avg": 62.3125,
+      "latency_sec_avg": 2.5502258998312755,
+      "n": 32,
+      "numeric_extraction_coverage": 32,
+      "paired_vs_target": {
+        "loss": 1,
+        "tie": 28,
+        "win": 3
+      }
+    },
+    "rotalign_kv": {
+      "accuracy": 0.0625,
+      "empty_predictions": 0,
+      "example_ids": [
+        "091bbe1f7ca7b21b",
+        "bfbfb8b5c288e19f",
+        "c1a71ce89fb4a78c",
+        "8778dde63aea331c",
+        "cfc10aa4137d410a",
+        "d61c52f16762a317",
+        "67dbed6fd4b3e25d",
+        "c367d98b3f25ed45",
+        "48e6f28627abd1a7",
+        "6670a1239451eb14",
+        "5f26057fc39bcbab",
+        "27a625409a363449",
+        "cc90bec57e693936",
+        "56821ab920af6075",
+        "645a38303f97c7b7",
+        "0e42f7dfa556534c",
+        "83c30ca17156668c",
+        "891a8f9de535dba2",
+        "ccab75cd635bafd3",
+        "c8cf4c0adc1da06e",
+        "eaee70922c4fa43a",
+        "8ba3de0e6b347614",
+        "969a8f236b4e1ebe",
+        "ef0151f07779da95",
+        "5731a4ad3129a17c",
+        "999fcb6c14a3a8c0",
+        "1f39713e0b61ff17",
+        "3bf72a7011111ded",
+        "6ec73a49cd7c5c27",
+        "1deed634dcd7d229",
+        "fc4846b7f85cc4ac",
+        "6c101c19c28732d1"
+      ],
+      "examples_per_sec": 3200000000.0,
+      "generated_tokens_avg": 57.03125,
+      "latency_sec_avg": 0.0,
+      "n": 32,
+      "numeric_extraction_coverage": 28,
+      "paired_vs_target": {
+        "loss": 1,
+        "tie": 30,
+        "win": 1
+      }
+    },
+    "target_alone": {
+      "accuracy": 0.0625,
+      "empty_predictions": 0,
+      "example_ids": [
+        "091bbe1f7ca7b21b",
+        "bfbfb8b5c288e19f",
+        "c1a71ce89fb4a78c",
+        "8778dde63aea331c",
+        "cfc10aa4137d410a",
+        "d61c52f16762a317",
+        "67dbed6fd4b3e25d",
+        "c367d98b3f25ed45",
+        "48e6f28627abd1a7",
+        "6670a1239451eb14",
+        "5f26057fc39bcbab",
+        "27a625409a363449",
+        "cc90bec57e693936",
+        "56821ab920af6075",
+        "645a38303f97c7b7",
+        "0e42f7dfa556534c",
+        "83c30ca17156668c",
+        "891a8f9de535dba2",
+        "ccab75cd635bafd3",
+        "c8cf4c0adc1da06e",
+        "eaee70922c4fa43a",
+        "8ba3de0e6b347614",
+        "969a8f236b4e1ebe",
+        "ef0151f07779da95",
+        "5731a4ad3129a17c",
+        "999fcb6c14a3a8c0",
+        "1f39713e0b61ff17",
+        "3bf72a7011111ded",
+        "6ec73a49cd7c5c27",
+        "1deed634dcd7d229",
+        "fc4846b7f85cc4ac",
+        "6c101c19c28732d1"
+      ],
+      "examples_per_sec": 3200000000.0,
+      "generated_tokens_avg": 63.4375,
+      "latency_sec_avg": 0.0,
+      "n": 32,
+      "numeric_extraction_coverage": 32,
+      "paired_vs_target": {
+        "loss": 0,
+        "tie": 32,
+        "win": 0
+      }
+    },
+    "text_to_text": {
+      "accuracy": 0.03125,
+      "empty_predictions": 0,
+      "example_ids": [
+        "091bbe1f7ca7b21b",
+        "bfbfb8b5c288e19f",
+        "c1a71ce89fb4a78c",
+        "8778dde63aea331c",
+        "cfc10aa4137d410a",
+        "d61c52f16762a317",
+        "67dbed6fd4b3e25d",
+        "c367d98b3f25ed45",
+        "48e6f28627abd1a7",
+        "6670a1239451eb14",
+        "5f26057fc39bcbab",
+        "27a625409a363449",
+        "cc90bec57e693936",
+        "56821ab920af6075",
+        "645a38303f97c7b7",
+        "0e42f7dfa556534c",
+        "83c30ca17156668c",
+        "891a8f9de535dba2",
+        "ccab75cd635bafd3",
+        "c8cf4c0adc1da06e",
+        "eaee70922c4fa43a",
+        "8ba3de0e6b347614",
+        "969a8f236b4e1ebe",
+        "ef0151f07779da95",
+        "5731a4ad3129a17c",
+        "999fcb6c14a3a8c0",
+        "1f39713e0b61ff17",
+        "3bf72a7011111ded",
+        "6ec73a49cd7c5c27",
+        "1deed634dcd7d229",
+        "fc4846b7f85cc4ac",
+        "6c101c19c28732d1"
+      ],
+      "examples_per_sec": 3200000000.0,
+      "generated_tokens_avg": 64.0,
+      "latency_sec_avg": 0.0,
+      "n": 32,
+      "numeric_extraction_coverage": 32,
+      "paired_vs_target": {
+        "loss": 2,
+        "tie": 29,
+        "win": 1
+      }
+    }
+  }
+}

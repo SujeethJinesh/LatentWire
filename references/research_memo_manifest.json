@@ -229,5 +229,12 @@
     "path": "references/389_sequence_aligned_sidecar_recent_refs.md",
     "status": "local_memo",
     "reason": "Sequence-aware interface memo narrowing the next additive branch after the byte-sidecar toy, with recent cross-tokenizer alignment references and the local read for the current low-shot lane."
+  },
+  {
+    "num": 390,
+    "slug": "unsaturated_canonicalization_quantized_residual_refs",
+    "path": "references/390_unsaturated_canonicalization_quantized_residual_refs.md",
+    "status": "local_memo",
+    "reason": "Fresh unsaturated 2025-2026 ideas for per-example canonicalization, gauge-invariant matching, symmetry-compatible codebook compression, and quantized low-rank correction after the current sequence-aligned sidecar lane."
   }
 ]
