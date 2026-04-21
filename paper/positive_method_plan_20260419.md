@@ -3127,6 +3127,15 @@ Next execution ladder:
    accuracy over repair-all or increases the route-specific delta against
    target self-repair.
 
+Follow-up replay with paired uncertainty and cost ledger:
+
+| Policy | Accuracy CI | Repair saved | Avg extra repair chars | Avg extra repair tokens | Implication |
+|---|---:|---:|---:|---:|---|
+| GSM70 `format_plus_process_gate` | `[0.1143, 0.3000]` | `0.3286` | `676.9` | `42.2` | Best current non-oracle GSM repair-budget saver at unchanged accuracy. |
+| GSM70 `format_gate` | `[0.1143, 0.3000]` | `0.2714` | `738.0` | `46.3` | Prior cheap gate is now dominated by the combined process gate on cost. |
+| SVAMP70 `process_gate` | `[0.4286, 0.6571]` | `0.2286` | `661.1` | `49.3` | Best current non-oracle SVAMP repair-budget saver at unchanged accuracy. |
+| SVAMP70 `format_delta_gate` | `[0.4143, 0.6571]` | `0.1571` | `713.9` | `53.5` | Prior SVAMP gate is now dominated on repair budget. |
+
 ## 2026-04-21 Route-Atom Codebook And Competitor-Gap Follow-Up
 
 Executed next:
@@ -3179,3 +3188,57 @@ Next execution ladder:
 5. Keep the current positive-method paper path focused: route selection +
    process repair + test-before-repair savings + interpretable shared
    feature/atom diagnostics.
+
+## 2026-04-21 Paired Gate CIs, Prompt Compression Control, And Feature-Atom Stack
+
+Executed next:
+
+- Upgraded `scripts/analyze_test_before_repair_policy.py` with paired bootstrap
+  accuracy intervals and repair-cost proxies: repair call count, extra repair
+  prompt chars, and extra repair generated tokens.
+- Added `references/351_recent_verifier_agent_training_refs.md` for
+  step-localized verification, verifier-guided frontier expansion, structured
+  agent protocols, RL self-correction, debate, and causal evaluation.
+- Added `references/352_llmlingua_prompt_compression_control.md` plus
+  `scripts/analyze_prompt_compression_control.py`, a no-download
+  LLMLingua-style lexical compression control for GSM70/SVAMP70 prompt budgets.
+- Added toy `feature_atom_stack_bridge`, which stacks shared-feature
+  dictionaries with route-atom codebooks and protected stacked variants.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| GSM70 process gate with paired CI | accuracy `0.2000`, CI `[0.1143, 0.3000]`, repair saved `0.3286`, extra repair chars `676.9` | Best current GSM budget saver; still same accuracy as repair-all. |
+| SVAMP70 process gate with paired CI | accuracy `0.5429`, CI `[0.4286, 0.6571]`, repair saved `0.2286`, extra repair chars `661.1` | Best current SVAMP budget saver; still same accuracy as repair-all. |
+| LLMLingua-style lexical control | GSM70 number preservation `1.00`, bytes saved `123.5`; SVAMP70 number preservation `1.00`, bytes saved `71.5` | Prompt compression can be logged as a budget control without learned compressor downloads, but does not make accuracy claims. |
+| Feature-atom stacked toy | raw `0.6458`; shared-only `0.4167`; atom-only `0.5833`; stacked `0.8542`; oracle `1.0000` | Single fixes can hurt, but stacked complementary interfaces can unlock a large task gain. |
+| Protected stacked toy | protected stacked `0.8542` with slightly larger byte/compute proxy | Protection preserves the stack's task gain; not yet an efficiency win. |
+| Verifier/agent references | ProcessBench, xVerify, A*-Decoding, protocol/debate/self-correction papers | The next route-quality amplifier should be step-localized verification or frontier pruning, not another scalar reranker. |
+
+Updated read:
+
+This is the strongest lateral evidence so far for the user's "multiple fixes
+stacked together" hypothesis. In the stacked toy, either shared features or
+route atoms alone underperform raw ridge, but the combined interface strongly
+beats raw. That is a concrete warning against prematurely rejecting components
+based on isolated ablations. For the real paper, the next method stack should
+combine: strict route generation, process-aware test-before-repair, shared
+feature/atom diagnostics, and a step-localized verifier.
+
+Next execution ladder:
+
+1. Add a held-out `format_plus_process_gate` method row to the main comparison
+   table with CI, repair-call savings, extra prompt chars/tokens, and missed
+   help.
+2. Build a small step-localized verifier replay over existing selected-route
+   text: scalar score vs first-error localization vs critique-plus-repair, all
+   on the same candidate pool.
+3. Promote feature+atom diagnostics to real route pools before training:
+   shared-feature stability, atom assignment stability, entropy/perplexity,
+   protected-outlier rate, and task delta vs MSE delta.
+4. Add the LLMLingua lexical control as the cheap prompt-budget baseline; only
+   run learned LLMLingua after we need a paper table row.
+5. Keep the target ICLR narrative as a positive method stack, not a single
+   adapter trick: route generation + process gate + target repair + shared
+   feature/atom interface + matched-budget competitor table.

@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import pathlib
+import random
 import sys
 from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
@@ -104,6 +105,38 @@ def _thresholds(records: list[dict[str, Any]], field: str) -> list[float]:
     return sorted(thresholds)
 
 
+def _mean(values: Sequence[float]) -> float:
+    return sum(values) / len(values) if values else 0.0
+
+
+def _bootstrap_mean_ci(
+    values: Sequence[float],
+    *,
+    samples: int,
+    seed: int,
+) -> tuple[float | None, float | None]:
+    if not values or samples <= 0:
+        return None, None
+    rng = random.Random(seed)
+    n = len(values)
+    means: list[float] = []
+    for _ in range(samples):
+        total = 0.0
+        for _ in range(n):
+            total += float(values[rng.randrange(n)])
+        means.append(total / n)
+    means.sort()
+    low_idx = max(0, min(len(means) - 1, int(0.025 * (len(means) - 1))))
+    high_idx = max(0, min(len(means) - 1, int(0.975 * (len(means) - 1))))
+    return means[low_idx], means[high_idx]
+
+
+def _policy_seed(policy: str, threshold: float | None, seed: int) -> int:
+    threshold_part = 0 if threshold is None else int(round(float(threshold) * 10_000))
+    policy_part = sum((idx + 1) * ord(char) for idx, char in enumerate(policy))
+    return int(seed + policy_part + threshold_part)
+
+
 def _eligible_examples(records: list[dict[str, Any]]) -> list[dict[str, dict[str, Any]]]:
     grouped = _group_by_index_method(records)
     examples: list[dict[str, dict[str, Any]]] = []
@@ -131,6 +164,8 @@ def _summarize_policy(
     *,
     policy: str,
     threshold: float | None,
+    bootstrap_samples: int,
+    bootstrap_seed: int,
 ) -> dict[str, Any]:
     if not examples:
         raise ValueError("No complete examples found")
@@ -186,26 +221,102 @@ def _summarize_policy(
     selected_accuracy = sum(selected_correct) / n
     target_accuracy = sum(target_correct) / n
     repair_rate = sum(use_repair) / n
+    final_values = [float(value) for value in final_correct]
+    repair_values = [float(value) for value in repair_correct]
+    selected_values = [float(value) for value in selected_correct]
+    target_values = [float(value) for value in target_correct]
+    target_self_values = (
+        [
+            float(methods[TARGET_SELF_METHOD].get("correct"))
+            for methods in examples
+            if TARGET_SELF_METHOD in methods
+        ]
+        if target_self_accuracy is not None
+        else []
+    )
+    accuracy_ci_low, accuracy_ci_high = _bootstrap_mean_ci(
+        final_values,
+        samples=bootstrap_samples,
+        seed=bootstrap_seed,
+    )
+    delta_repair_ci_low, delta_repair_ci_high = _bootstrap_mean_ci(
+        [final - repair for final, repair in zip(final_values, repair_values, strict=True)],
+        samples=bootstrap_samples,
+        seed=bootstrap_seed + 1,
+    )
+    delta_selected_ci_low, delta_selected_ci_high = _bootstrap_mean_ci(
+        [final - selected for final, selected in zip(final_values, selected_values, strict=True)],
+        samples=bootstrap_samples,
+        seed=bootstrap_seed + 2,
+    )
+    delta_target_ci_low, delta_target_ci_high = _bootstrap_mean_ci(
+        [final - target for final, target in zip(final_values, target_values, strict=True)],
+        samples=bootstrap_samples,
+        seed=bootstrap_seed + 3,
+    )
+    if target_self_values and len(target_self_values) == len(final_values):
+        delta_self_ci_low, delta_self_ci_high = _bootstrap_mean_ci(
+            [
+                final - target_self
+                for final, target_self in zip(final_values, target_self_values, strict=True)
+            ],
+            samples=bootstrap_samples,
+            seed=bootstrap_seed + 4,
+        )
+    else:
+        delta_self_ci_low, delta_self_ci_high = None, None
+
+    extra_repair_prompt_chars = [
+        float(methods[REPAIR_METHOD].get("repair_prompt_chars") or 0.0) if repair_flag else 0.0
+        for repair_flag, methods in zip(use_repair, examples, strict=True)
+    ]
+    extra_repair_generated_tokens = [
+        float(methods[REPAIR_METHOD].get("generated_tokens") or 0.0) if repair_flag else 0.0
+        for repair_flag, methods in zip(use_repair, examples, strict=True)
+    ]
+    selected_generated_tokens = [
+        float(methods[SELECTED_METHOD].get("generated_tokens") or 0.0)
+        for methods in examples
+    ]
+    selected_prompt_chars = [
+        float(methods[SELECTED_METHOD].get("prompt_char_count") or 0.0)
+        for methods in examples
+    ]
 
     return {
         "policy": policy,
         "threshold": threshold,
         "n": n,
         "accuracy": sum(final_correct) / n,
+        "accuracy_ci_low": accuracy_ci_low,
+        "accuracy_ci_high": accuracy_ci_high,
         "target_accuracy": target_accuracy,
         "selected_no_repair_accuracy": selected_accuracy,
         "repair_all_accuracy": repair_all_accuracy,
         "target_self_repair_accuracy": target_self_accuracy,
         "delta_vs_target": (sum(final_correct) / n) - target_accuracy,
+        "delta_vs_target_ci_low": delta_target_ci_low,
+        "delta_vs_target_ci_high": delta_target_ci_high,
         "delta_vs_selected_no_repair": (sum(final_correct) / n) - selected_accuracy,
+        "delta_vs_selected_no_repair_ci_low": delta_selected_ci_low,
+        "delta_vs_selected_no_repair_ci_high": delta_selected_ci_high,
         "delta_vs_repair_all": (sum(final_correct) / n) - repair_all_accuracy,
+        "delta_vs_repair_all_ci_low": delta_repair_ci_low,
+        "delta_vs_repair_all_ci_high": delta_repair_ci_high,
         "delta_vs_target_self_repair": (
             (sum(final_correct) / n) - target_self_accuracy
             if target_self_accuracy is not None
             else None
         ),
+        "delta_vs_target_self_repair_ci_low": delta_self_ci_low,
+        "delta_vs_target_self_repair_ci_high": delta_self_ci_high,
         "repair_application_rate": repair_rate,
         "repair_saved_rate_vs_repair_all": 1.0 - repair_rate,
+        "repair_call_count": int(sum(use_repair)),
+        "avg_selected_prompt_chars": _mean(selected_prompt_chars),
+        "avg_selected_generated_tokens": _mean(selected_generated_tokens),
+        "avg_extra_repair_prompt_chars": _mean(extra_repair_prompt_chars),
+        "avg_extra_repair_generated_tokens": _mean(extra_repair_generated_tokens),
         "repaired_help_count": int(repaired_help),
         "repaired_harm_count": int(repaired_harm),
         "missed_help_count": int(missed_help),
@@ -213,21 +324,52 @@ def _summarize_policy(
     }
 
 
-def summarize_source(path: pathlib.Path) -> SourcePolicySummary:
+def summarize_source(
+    path: pathlib.Path,
+    *,
+    bootstrap_samples: int = 1000,
+    bootstrap_seed: int = 0,
+) -> SourcePolicySummary:
     records = load_jsonl(path)
     examples = _with_process_features(_eligible_examples(records))
     selected_rows = [methods[SELECTED_METHOD] for methods in examples]
 
     rows = [
-        _summarize_policy(examples, policy="never_repair_selected", threshold=None),
-        _summarize_policy(examples, policy="repair_all_selected", threshold=None),
-        _summarize_policy(examples, policy="oracle_precheck_analysis_only", threshold=None),
+        _summarize_policy(
+            examples,
+            policy="never_repair_selected",
+            threshold=None,
+            bootstrap_samples=bootstrap_samples,
+            bootstrap_seed=_policy_seed("never_repair_selected", None, bootstrap_seed),
+        ),
+        _summarize_policy(
+            examples,
+            policy="repair_all_selected",
+            threshold=None,
+            bootstrap_samples=bootstrap_samples,
+            bootstrap_seed=_policy_seed("repair_all_selected", None, bootstrap_seed),
+        ),
+        _summarize_policy(
+            examples,
+            policy="oracle_precheck_analysis_only",
+            threshold=None,
+            bootstrap_samples=bootstrap_samples,
+            bootstrap_seed=_policy_seed("oracle_precheck_analysis_only", None, bootstrap_seed),
+        ),
     ]
     gate_fields = dict(GATE_FIELDS)
     gate_fields["format_and_completion_gate"] = "candidate_format_score"
     for policy, field in gate_fields.items():
         for threshold in _thresholds(selected_rows, field):
-            rows.append(_summarize_policy(examples, policy=policy, threshold=threshold))
+            rows.append(
+                _summarize_policy(
+                    examples,
+                    policy=policy,
+                    threshold=threshold,
+                    bootstrap_samples=bootstrap_samples,
+                    bootstrap_seed=_policy_seed(policy, threshold, bootstrap_seed),
+                )
+            )
     rows.sort(
         key=lambda row: (
             -float(row["accuracy"]),
@@ -243,6 +385,12 @@ def _format_float(value: Any) -> str:
     if value is None:
         return "-"
     return f"{float(value):.4f}"
+
+
+def _format_ci(low: Any, high: Any) -> str:
+    if low is None or high is None:
+        return "-"
+    return f"[{float(low):.4f}, {float(high):.4f}]"
 
 
 def format_markdown(summaries: Sequence[SourcePolicySummary], *, top_k: int = 12) -> str:
@@ -262,18 +410,21 @@ def format_markdown(summaries: Sequence[SourcePolicySummary], *, top_k: int = 12
                 "",
                 f"## {summary.source}",
                 "",
-                "| Policy | Threshold | Accuracy | Repair rate | Saved repair | Delta vs repair-all | Delta vs target self | Repaired help | Missed help | Saved correct |",
-                "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+                "| Policy | Threshold | Accuracy | Acc CI | Repair rate | Saved repair | Extra repair chars | Extra repair toks | Delta vs repair-all | Delta vs target self | Repaired help | Missed help | Saved correct |",
+                "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
             ]
         )
         for row in summary.rows[:top_k]:
             lines.append(
-                "| {policy} | {threshold} | {accuracy} | {repair_rate} | {saved_rate} | {delta_repair} | {delta_self} | {help_count} | {missed_help} | {saved_correct} |".format(
+                "| {policy} | {threshold} | {accuracy} | {accuracy_ci} | {repair_rate} | {saved_rate} | {extra_chars} | {extra_tokens} | {delta_repair} | {delta_self} | {help_count} | {missed_help} | {saved_correct} |".format(
                     policy=row["policy"],
                     threshold=_format_float(row["threshold"]),
                     accuracy=_format_float(row["accuracy"]),
+                    accuracy_ci=_format_ci(row["accuracy_ci_low"], row["accuracy_ci_high"]),
                     repair_rate=_format_float(row["repair_application_rate"]),
                     saved_rate=_format_float(row["repair_saved_rate_vs_repair_all"]),
+                    extra_chars=_format_float(row["avg_extra_repair_prompt_chars"]),
+                    extra_tokens=_format_float(row["avg_extra_repair_generated_tokens"]),
                     delta_repair=_format_float(row["delta_vs_repair_all"]),
                     delta_self=_format_float(row["delta_vs_target_self_repair"]),
                     help_count=int(row["repaired_help_count"]),
@@ -302,12 +453,21 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
     parser.add_argument("--top-k", type=int, default=12)
+    parser.add_argument("--bootstrap-samples", type=int, default=1000)
+    parser.add_argument("--bootstrap-seed", type=int, default=0)
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
     args = parse_args(argv)
-    summaries = [summarize_source(pathlib.Path(path)) for path in args.inputs]
+    summaries = [
+        summarize_source(
+            pathlib.Path(path),
+            bootstrap_samples=args.bootstrap_samples,
+            bootstrap_seed=args.bootstrap_seed + idx * 10_000,
+        )
+        for idx, path in enumerate(args.inputs)
+    ]
     payload = build_json(summaries)
     markdown = format_markdown(summaries, top_k=args.top_k)
 

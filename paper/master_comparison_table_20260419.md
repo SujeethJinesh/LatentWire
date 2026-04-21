@@ -139,6 +139,12 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   calls, and SVAMP70 `process_completeness_score` preserves `0.5429` while
   saving `22.9%`. This is stronger than the cheap format-only replay, but still
   not an accuracy gain over repair-all.
+- The updated test-before-repair replay now includes paired bootstrap accuracy
+  CIs and extra repair-cost proxies. GSM70 `format_plus_process_gate` has
+  accuracy CI `[0.1143, 0.3000]` and mean extra repair prompt chars `676.9`
+  versus `738.0` for format-only; SVAMP70 `process_gate` has CI
+  `[0.4286, 0.6571]` and mean extra repair prompt chars `661.1` versus `713.9`
+  for format-delta.
 - The shared-feature dictionary toy gives the strongest new additive design
   clue: raw residual transport reaches `0.3646`, separate dictionaries reach
   `0.4167`, a shared dictionary/crosscoder reaches `0.5417`, and the oracle is
@@ -148,6 +154,14 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   worse MSE, and protected outlier atoms keep the accuracy gain while reducing
   reconstruction damage. Future bridge tables must report atom/feature recovery
   alongside MSE.
+- The feature+atom stack toy is stronger: raw ridge reaches `0.6458`, shared
+  feature only drops to `0.4167`, route atom only reaches `0.5833`, but the
+  stacked feature+atom interface reaches `0.8542`. This supports testing
+  interaction stacks rather than rejecting components from isolated ablations.
+- A deterministic LLMLingua-style prompt-compression control is now available:
+  it preserves all numeric spans on GSM70/SVAMP70 and saves an estimated
+  `123.5` / `71.5` bytes on average, but it is a budget/preservation diagnostic
+  only and has no downstream accuracy claim.
 - The modern architecture sweep adds four controlled ablation lanes to the
   roadmap: selective-SSM vs attention transport, writable/test-time memory vs
   sliding cache, adaptive compute vs fixed bridge depth, and MQA/GQA-style KV
@@ -160,6 +174,10 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   direct communication baselines should be normalized against `C2C`, `KVComm`,
   and `LatentMAS`, while prompt-compression claims need a separate LLMLingua
   control with fixed prompt and answer budgets.
+- The verifier/agent-training sweep points to the next route-quality amplifier:
+  scalar route scoring should be compared against step-localization,
+  critique-plus-repair, pairwise/tournament verification, and verifier-guided
+  frontier pruning under matched token budgets.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.

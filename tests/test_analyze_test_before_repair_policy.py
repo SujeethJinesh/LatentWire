@@ -63,11 +63,15 @@ def test_summarize_source_includes_budget_and_missed_help(tmp_path: Path) -> Non
 
     assert rows["never_repair_selected"]["accuracy"] == 0.5
     assert rows["never_repair_selected"]["repair_application_rate"] == 0.0
+    assert rows["never_repair_selected"]["accuracy_ci_low"] is not None
+    assert rows["never_repair_selected"]["accuracy_ci_high"] is not None
     assert rows["repair_all_selected"]["accuracy"] == 0.75
     assert rows["repair_all_selected"]["repair_application_rate"] == 1.0
+    assert rows["repair_all_selected"]["repair_call_count"] == 4
     assert rows["oracle_precheck_analysis_only"]["accuracy"] == 0.75
     assert rows["oracle_precheck_analysis_only"]["repair_application_rate"] == 0.5
     assert rows["oracle_precheck_analysis_only"]["repair_saved_rate_vs_repair_all"] == 0.5
+    assert rows["oracle_precheck_analysis_only"]["repair_call_count"] == 2
 
     format_rows = [row for row in summary.rows if row["policy"] == "format_gate"]
     assert format_rows
@@ -104,4 +108,5 @@ def test_main_writes_json_and_markdown(tmp_path: Path) -> None:
     assert loaded["sources"][0]["source"] == source.name
     markdown = output_md.read_text()
     assert "# Test-Before-Repair Policy Analysis" in markdown
-    assert "Delta vs target self" in markdown
+    assert "Acc CI" in markdown
+    assert "Extra repair chars" in markdown
