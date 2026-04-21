@@ -219,6 +219,8 @@ Files `168_` through `170_` extend the correction-and-transfer lane:
 - `169_`: KV-CAR as a learned KV autoencoding / reuse reference, useful for the idea that compact learned correction can matter more than another static map.
 - `170_`: Cross-model Transferability among Large Language Models on the Platonic Representations of Concepts as a direct theory-and-evidence citation for why lightweight cross-model correction should be possible at all.
 
+File `360_` is a focused memo for recent cross-model interface methods, covering feature dictionaries, model stitching, tokenizer adaptation, activated adapters, test-time refinement, and multimodal connector transfer.
+
 Files `171_` through `175_` extend the transport-and-canonicalization lane:
 
 - `171_`: KVCOMM Online Cross-context KV-cache Communication as a recent runtime KV-communication reference, useful for contrasting selective sharing against heterogeneous transport mismatch.

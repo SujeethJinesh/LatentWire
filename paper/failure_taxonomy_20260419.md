@@ -95,9 +95,10 @@
 | Activation-aware precision allocation is a positive toy component | Protecting high-energy/outlier atoms at high precision preserves task behavior while compressing the rest | activation-aware mixed precision `1.0000` accuracy, bytes `29.0`, top-atom preservation `1.0000`; protected-outlier mixed precision also `1.0000` | uniform low-bit `0.9531` at bytes `16.0`; random mixed precision `0.9792` at bytes `29.0` | Compression is not only a budget variable; wrong bit allocation destroys salient atom tracking | Promote saliency, protected-byte share, outlier protection, and task delta to real route-pool diagnostics | Positive toy clue |
 | Competitor execution is currently a systems blocker | The next direct competitor rows are identified, but full local runs stalled on MPS/model setup | C2C GSM70 reached model fetch completion; KVPress GSM70 reached `Device set to use mps` | No full metrics JSONL was produced in the latest competitor batch | Missing benchmark rows must be treated as execution blockers, not ignored comparisons | Add `--limit` smokes, explicit timeouts, and possibly CPU/GPU scheduling before full GSM70/SVAMP70 rows | Benchmark blocker |
 | Component interactions can reverse isolated gains | Activation-aware precision helps alone, but after verifier pruning it hurts the mixed-precision stack | activation-aware quant-only toy from prior artifact reaches full precision at bytes `29.0`; verified stack `prune_then_uniform_quant` reaches `0.9323` at bytes `118.0` | `prune_then_activation_aware_quant` drops to `0.8958` at bytes `184.0`; oracle stack reaches `0.9375` | Additive method design cannot assume monotonic gains from individually positive components | Run interaction ablations for every proposed stack and log protected-frontier selection quality | Important interaction blocker |
-| Protected-frontier selection can rescue a compressed stack in toy form | Once the verifier-pruned frontier is fixed, the choice of high-precision protected atoms changes task accuracy and MSE substantially | quant-error protection `0.8073` accuracy, MSE `0.1861`, bytes `176.6`, help `0.1458`, harm `0.0000`; oracle protection `0.8073`, MSE `0.1698` | prune-uniform baseline `0.6615`, MSE `0.2543`; random protection `0.7135`, MSE `0.2352` | The previous activation-aware stack failure was not a reason to drop compression; it was a selector-quality problem | Promote quant-error, activation, attribution, SAE/crosscoder, and oracle selectors to real route-pool frontier telemetry | Positive toy clue, needs real-pool validation |
+| Protected-frontier selection can rescue a compressed stack in toy form | Once the verifier-pruned frontier is fixed, the choice of high-precision protected atoms changes task accuracy and MSE substantially | quant-error protection `0.8073` accuracy, MSE `0.1861`, bytes `176.6`, help `0.1458`, harm `0.0000`; exact patch-effect protection `0.8073`, MSE `0.1698`, patch-rank correlation `1.0000` | prune-uniform baseline `0.6615`, MSE `0.2543`; random protection `0.7135`, MSE `0.2352`; utility-positive oracle `0.7812`, MSE `0.2321` | The previous activation-aware stack failure was not a reason to drop compression; it was a selector-quality problem, and semantic utility-positive atoms are not necessarily compression-critical atoms | Promote quant-error, activation, attribution, SAE/crosscoder, and exact-patch proxy selectors to real route-pool frontier telemetry | Positive toy clue, needs real-pool validation |
 | Tokenizer remapping can remove a boundary mismatch in toy form | Source/target token boundaries differ even when the byte string is identical, and naive token-id transfer fails reconstruction | learned remap exact reconstruction `1.0000`, decoded-boundary F1 `1.0000`, bytes/example `11.74`; source-target boundary F1 `0.7952` | naive token-id exact reconstruction `0.0000`, decoded-boundary F1 `0.3777`, bytes/example `19.23`; frontier regroup bytes/example `14.26` | Tokenizer mismatch can be an upstream interface blocker, not just a formatting nuisance | Promote source-target boundary F1, remap coverage, and byte budget to real tokenizer stress diagnostics before bridge training | Positive toy clue, needs real-pool stress set |
-| Limited competitor smokes unblock same-model controls | Bounded KVPress rows now complete locally after adding `--limit` support | GSM70 limit-5 KVPress `none` accuracy `0.2000`, expected-attention `0.5` accuracy `0.2000`; SVAMP70 `none` accuracy `0.4000`, expected-attention `0.5` accuracy `0.6000` | Full GSM70 rows previously stalled when launched monolithically; SVAMP expected-attention needed CPU fallback after MPS failure | Benchmark execution needs chunking, explicit smoke gates, and CPU fallback, not only more patience | Scale to limit-10/20 before full rows, and keep direct-communication baselines separate from same-model cache controls | Benchmark path reopened |
+| Shared byte/span route-atom remapping improves toy recovery | A learned byte/span remap before route-atom selection improves task accuracy and atom recovery over token-id and regroup baselines | shared byte/span remap `0.9583` accuracy, MSE `0.0028`, remap coverage `0.9167`, atom recovery `0.6111`, bytes `33.33` | token-id and regroup baselines both `0.9167` accuracy, MSE about `0.0081`, bytes `34.92`; oracle atom recovery `1.0000` but no task gain | Token-boundary compatibility is not enough; the interface needs route-atom recovery telemetry and explicit remap coverage | Promote byte/span remap to tokenizer stress sets and route-pool diagnostics before bridge training | Positive toy clue, needs real-pool stress set |
+| Limited competitor smokes unblock same-model controls | Bounded KVPress rows now complete locally after adding `--limit` support | GSM70 limit-10 KVPress `none` and expected-attention both accuracy `0.1000`; SVAMP70 limit-10 improves from `0.2000` to `0.5000` with expected-attention and lower latency | Full rows previously stalled when launched monolithically; MPS remained unstable, so limit-10 used CPU fallback | Benchmark execution needs chunking, explicit smoke gates, and CPU fallback, not only more patience | Scale to limit-20 before full rows, and keep direct-communication baselines separate from same-model cache controls | Benchmark path reopened |
 | Multimodal and diffusion connector ideas are plausible but untested here | Recent connector/refinement papers suggest bottlenecks and iterative latent updates, but no LatentWire result exists yet | Q-Former/perceiver bottleneck, routed projector, soft belief-state refinement, trajectory-guided repair, latent-flow bridge reference memo | Current positive evidence is still route/repair/atom/quant toy evidence, not multimodal connector evidence | Do not add connector claims until a matched toy or route-pool diagnostic exists | Keep as next ablation queue, not current claim |
 | Paper claims now need stronger evaluation discipline | Route-specific repair deltas are positive but underpowered, and repair compute is not yet fully budget-matched | GSM70 route-specific delta `+0.0286 [-0.0429, 0.1143]`; SVAMP70 `+0.0429 [0.0000, 0.1000]` | Aggregate accuracy alone makes target-side repair look stronger than the route-specific method component | Point estimates and raw accuracy tables are insufficient for an ICLR-ready claim | Add paired significance, bootstrap CIs, compute ledgers, frozen manifests, and contamination controls to every headline table | Evaluation blocker |
 
@@ -125,15 +126,16 @@
   controls**, especially byte-level bridge, explicit vocab remap, and
   time-warped span alignment, but only after byte-stress examples show real
   tokenizer mismatch.
-- Strongest tokenizer toy clue: **learned remap over target-frontier pieces**,
-  which preserves exact reconstruction at fewer bytes than target regrouping
-  while exposing a nontrivial source-target boundary F1 gap.
+- Strongest tokenizer toy clues: **learned remap over target-frontier pieces**
+  for exact reconstruction, and **shared byte/span route-atom remap** for
+  task accuracy and atom recovery. The latter reaches `0.9583` toy accuracy
+  with `0.6111` atom recovery and `0.9167` remap coverage.
 - Strongest competitor next batch: **C2C GSM70/SVAMP70, KVComm GSM70, and
   KVPress GSM70/SVAMP70 controls**, with direct communication separated from
   same-model compression.
 - Strongest same-model competitor smoke: **KVPress expected-attention on
-  SVAMP70 limit-5**, which improves `0.4000 -> 0.6000` against no-press but is
-  too small to claim beyond harness health.
+  SVAMP70**, which improves `0.4000 -> 0.6000` at limit-5 and
+  `0.2000 -> 0.5000` at limit-10 against no-press, but is still smoke-scale.
 - Strongest quantization-inspired component: **activation-aware mixed precision
   and outlier protection**, which preserve toy task behavior at less than half
   the full-precision byte proxy.
@@ -143,7 +145,12 @@
   protected-frontier selection must be tested directly.
 - Strongest protected-frontier clue: **quant-error protected atoms**, which
   recover the pruned low-bit toy from `0.6615` to `0.8073` accuracy with zero
-  harm relative to prune-uniform and a large MSE reduction.
+  harm relative to prune-uniform, matching exact patch-effect protection on
+  accuracy while trailing it only on MSE.
+- Strongest selector caution: **utility-positive atoms are not sufficient**.
+  The utility oracle has protected-oracle overlap `1.0000` but reaches only
+  `0.7812` accuracy and MSE `0.2321`, below quant-error and exact patch-effect
+  protection.
 - Strongest lateral architecture queue: **Q-Former/perceiver bottlenecks,
   routed projector bridges, and iterative belief/flow refinement**, currently
   reference-backed but not yet result-backed.

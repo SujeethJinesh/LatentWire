@@ -219,6 +219,11 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   and `9.0091s` latency, while SVAMP70 expected-attention `0.5` completes at
   `0.6000` accuracy and `7.9233s` latency after CPU fallback. These remain
   smoke controls rather than paper rows.
+- KVPress limit-10 controls now complete on CPU fallback: GSM70 remains
+  neutral at `0.1000` for both `none` and expected-attention `0.5`, while
+  SVAMP70 improves from `0.2000` to `0.5000` with expected-attention and lower
+  latency. This widens the runnable control harness, but is still not a
+  paper-scale benchmark row.
 - Tokenizer-interface references add a new upstream ablation lane: byte/patch
   bridge, explicit vocabulary remap, time-warped span alignment, adaptive
   hypertokens, and length-optimal retokenization controls.
@@ -237,15 +242,25 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 - The protected-frontier selection toy turns the prior stack warning into a
   concrete ablation: prune-uniform low-bit reaches `0.6615`, global activation
   protection reaches `0.7917`, quant-error protection reaches `0.8073`, and
-  oracle protection also reaches `0.8073` with lower MSE. This is still
-  synthetic evidence, but it is interpretable enough to promote to route-pool
-  telemetry.
+  exact patch-effect protection also reaches `0.8073` with lower MSE. The
+  utility-positive oracle only reaches `0.7812`, so semantic usefulness and
+  compression-criticality must be logged separately. This is still synthetic
+  evidence, but it is interpretable enough to promote to route-pool telemetry.
 - The tokenizer-frontier toy makes the vocabulary blocker concrete:
   source-target boundary F1 is `0.7952`, naive token-id transfer has exact
   reconstruction `0.0000`, target-frontier regrouping reaches exact
   reconstruction `1.0000` at `14.26` bytes/example, and a small learned remap
   keeps exact reconstruction `1.0000` at `11.74` bytes/example. This is a toy
   interface control, not a downstream result yet.
+- The shared byte/span route-atom toy adds the task-side tokenizer clue:
+  token-id and regroup baselines both reach `0.9167` accuracy, while the
+  learned shared byte/span remap reaches `0.9583` accuracy, MSE `0.0028`,
+  remap coverage `0.9167`, and atom recovery `0.6111`. This should move next
+  to tokenizer stress diagnostics, not the headline table.
+- The latest reference memo (`references/360_recent_cross_model_interface_refs.md`)
+  expands the ablation queue toward SAE/universal dictionary selectors,
+  model-stitch warm starts, TokAlign/adaptive vocab controls, activated repair
+  paths, and short decode-time refinement loops.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided

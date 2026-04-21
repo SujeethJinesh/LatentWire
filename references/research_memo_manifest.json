@@ -19,5 +19,12 @@
     "path": "references/359_competitor_benchmark_refs.md",
     "status": "local_memo",
     "reason": "Competitor benchmark source memo for direct communication, same-model cache controls, prompt compression, KV quantization, adapters, and feature-dictionary baselines."
+  },
+  {
+    "num": 360,
+    "slug": "recent_cross_model_interface_refs",
+    "path": "references/360_recent_cross_model_interface_refs.md",
+    "status": "local_memo",
+    "reason": "Recent cross-model interface memo for feature dictionaries, model stitching, tokenizer adaptation, activated adapters, test-time refinement, and multimodal connector transfer."
   }
 ]

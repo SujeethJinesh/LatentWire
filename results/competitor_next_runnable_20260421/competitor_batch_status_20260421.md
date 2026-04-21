@@ -1,5 +1,49 @@
 # Competitor Batch Status: 2026-04-21
 
+## Limit-10 Widening Update
+
+The KVPress smoke has been widened to `limit=10` for the required GSM70 rows and, since time remained, for the SVAMP70 pair as well.
+This still remains a runnable-control checkpoint, not a paper claim, but it gives us a better matched-budget read than the earlier
+limit-5 pass.
+
+## Completed Limit-10 Rows
+
+| Dataset | Press | Compression | Limit | Accuracy | Tokens/sec | Examples/sec | Latency sec | Generated tokens avg |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| GSM8K70 | none | - | 10 | 0.1000 | 3.6120 | 0.0879 | 11.3788 | 41.1000 |
+| GSM8K70 | expected_attention | 0.5000 | 10 | 0.1000 | 4.4913 | 0.1085 | 9.2177 | 41.4000 |
+| SVAMP70 | none | - | 10 | 0.2000 | 4.8366 | 0.1157 | 8.6424 | 41.8000 |
+| SVAMP70 | expected_attention | 0.5000 | 10 | 0.5000 | 5.4349 | 0.1419 | 7.0471 | 38.3000 |
+
+## Interpretation
+
+- GSM8K limit-10 remains neutral on accuracy: expected-attention matches the uncompressed row at `0.1`, but it is faster.
+- SVAMP limit-10 remains positive: expected-attention improves from `0.2` to `0.5` and also lowers latency.
+- The widened rows are still too small for a claim about LatentWire versus KVPress. They are only the control harness we needed to reopen.
+
+## Commands Run
+
+1. `timeout 1800s arch -arm64 ./venv_arm64/bin/python scripts/run_kvpress_eval.py --model Qwen/Qwen3-0.6B --eval-file data/gsm8k_eval_70.jsonl --device cpu --dtype float32 --max-new-tokens 64 --press none --limit 10 --prediction-output results/competitor_next_runnable_20260421/kvpress_gsm70_none_limit10.jsonl`
+2. `timeout 1800s arch -arm64 ./venv_arm64/bin/python scripts/run_kvpress_eval.py --model Qwen/Qwen3-0.6B --eval-file data/gsm8k_eval_70.jsonl --device cpu --dtype float32 --max-new-tokens 64 --press expected_attention --compression-ratio 0.5 --limit 10 --prediction-output results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit10.jsonl`
+3. `timeout 1800s arch -arm64 ./venv_arm64/bin/python scripts/run_kvpress_eval.py --model Qwen/Qwen3-0.6B --eval-file data/svamp_eval_70.jsonl --device cpu --dtype float32 --max-new-tokens 64 --press none --limit 10 --prediction-output results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit10.jsonl`
+4. `timeout 1800s arch -arm64 ./venv_arm64/bin/python scripts/run_kvpress_eval.py --model Qwen/Qwen3-0.6B --eval-file data/svamp_eval_70.jsonl --device cpu --dtype float32 --max-new-tokens 64 --press expected_attention --compression-ratio 0.5 --limit 10 --prediction-output results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit10.jsonl`
+
+## Outputs Produced
+
+- `results/competitor_next_runnable_20260421/kvpress_gsm70_none_limit10.jsonl`
+- `results/competitor_next_runnable_20260421/kvpress_gsm70_none_limit10.jsonl.meta.json`
+- `results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit10.jsonl`
+- `results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit10.jsonl.meta.json`
+- `results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit10.jsonl`
+- `results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit10.jsonl.meta.json`
+- `results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit10.jsonl`
+- `results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit10.jsonl.meta.json`
+
+## Blockers
+
+- The widening stayed on CPU fallback because the earlier MPS run was unstable for this local checkpoint.
+- These rows still remain smoke-scale; the next useful step is limit-20 before any benchmark comparison is made against LatentWire.
+
 ## Checkpoint Update
 
 The KVPress limit-5 paired smoke is complete for GSM8K70 and SVAMP70 with `Qwen/Qwen3-0.6B`.

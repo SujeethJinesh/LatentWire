@@ -17,9 +17,10 @@ METHODS: tuple[str, ...] = (
     "global_activation_protect",
     "verifier_saliency_protect",
     "quant_error_protect",
+    "exact_patch_effect_protect",
     "activation_x_verifier_protect",
     "random_protect",
-    "oracle_protect",
+    "utility_oracle_protect",
 )
 
 
@@ -257,6 +258,40 @@ def _mask_overlap(selected: torch.Tensor, oracle: torch.Tensor) -> float:
     return len(selected_set & oracle_set) / float(len(oracle_set))
 
 
+def _rankdata(values: torch.Tensor) -> torch.Tensor:
+    if values.numel() == 0:
+        return values.clone()
+    order = torch.argsort(values, descending=False, stable=True)
+    ranks = torch.empty_like(values, dtype=torch.float32)
+    sorted_values = values[order]
+    start = 0
+    while start < sorted_values.numel():
+        end = start + 1
+        while end < sorted_values.numel() and float(sorted_values[end].item()) == float(sorted_values[start].item()):
+            end += 1
+        rank = 0.5 * (start + end - 1) + 1.0
+        ranks[order[start:end]] = float(rank)
+        start = end
+    return ranks
+
+
+def _spearman_correlation(left: torch.Tensor, right: torch.Tensor, *, mask: torch.Tensor | None = None) -> float:
+    if mask is not None:
+        left = left[mask]
+        right = right[mask]
+    if left.numel() < 2 or right.numel() < 2:
+        return 0.0
+    left_ranks = _rankdata(left.float())
+    right_ranks = _rankdata(right.float())
+    left_centered = left_ranks - left_ranks.mean()
+    right_centered = right_ranks - right_ranks.mean()
+    denom = left_centered.norm() * right_centered.norm()
+    if float(denom.item()) <= 1e-8:
+        return 0.0
+    corr = float((left_centered * right_centered).sum().item() / denom.item())
+    return max(-1.0, min(1.0, corr))
+
+
 def _row_metrics(
     *,
     method: str,
@@ -269,6 +304,7 @@ def _row_metrics(
     protected_mask: torch.Tensor,
     oracle_keep: torch.Tensor,
     oracle_protected: torch.Tensor,
+    patch_rank_correlation: float,
     bytes_proxy: int,
     compute_proxy: float,
 ) -> dict[str, Any]:
@@ -298,6 +334,7 @@ def _row_metrics(
         "false_prune_rate": pruned_helpful / max(pruned_total, 1.0),
         "top_atom_preservation_rate": float(_mask_overlap(keep_mask, oracle_keep)),
         "protected_oracle_preservation_rate": float(_mask_overlap(protected_mask, oracle_protected)),
+        "patch_rank_correlation": float(patch_rank_correlation),
         "protection_precision_rate": protected_helpful / max(protected_total, 1.0),
         "help_vs_prune_uniform_quant": float((method_correct & ~baseline_correct).float().item()),
         "harm_vs_prune_uniform_quant": float((~method_correct & baseline_correct).float().item()),
@@ -322,6 +359,7 @@ def _mean_rows(rows: Sequence[dict[str, Any]], *, baseline_accuracy: float, base
         "false_prune_rate",
         "top_atom_preservation_rate",
         "protected_oracle_preservation_rate",
+        "patch_rank_correlation",
         "protection_precision_rate",
         "help_vs_prune_uniform_quant",
         "harm_vs_prune_uniform_quant",
@@ -373,7 +411,7 @@ def run_experiment(config: ToyProtectedFrontierSelectionConfig) -> dict[str, Any
         baseline_mse = float(F.mse_loss(baseline_recon, example["target_summary"]).item())
         baseline_records.append((baseline_correct, baseline_mse))
 
-        oracle_protect_scores = torch.full((config.atoms,), float("-inf"), dtype=torch.float32)
+        exact_patch_scores = torch.full((config.atoms,), float("-inf"), dtype=torch.float32)
         for atom in torch.where(keep_mask)[0].tolist():
             single_protected = baseline_protected.clone()
             single_protected[atom] = True
@@ -386,8 +424,10 @@ def run_experiment(config: ToyProtectedFrontierSelectionConfig) -> dict[str, Any
                 high_bits=config.high_bits,
             )
             single_mse = float(F.mse_loss(single_recon, example["target_summary"]).item())
-            oracle_protect_scores[atom] = baseline_mse - single_mse
-        oracle_protected = _select_protected_mask(oracle_protect_scores, keep_mask, config.protected_atoms)
+            exact_patch_scores[atom] = baseline_mse - single_mse
+        oracle_scores = example["activations"] * problem["utility"].clamp_min(0.0)
+        oracle_scores[~keep_mask] = float("-inf")
+        utility_oracle_protected = _select_protected_mask(oracle_scores, keep_mask, config.protected_atoms)
 
         random_scores = torch.rand(config.atoms, generator=_make_generator(config.seed + 47_000 + index))
         method_scores: dict[str, torch.Tensor] = {
@@ -395,11 +435,12 @@ def run_experiment(config: ToyProtectedFrontierSelectionConfig) -> dict[str, Any
             "global_activation_protect": calibration_energy,
             "verifier_saliency_protect": verifier_scores.clamp_min(0.0),
             "quant_error_protect": low_quant_error * example["activations"],
+            "exact_patch_effect_protect": exact_patch_scores,
             "activation_x_verifier_protect": low_quant_error
             * (0.35 + calibration_energy.sqrt())
             * verifier_scores.clamp_min(0.0),
             "random_protect": random_scores,
-            "oracle_protect": oracle_protect_scores,
+            "utility_oracle_protect": oracle_scores,
         }
 
         for method in METHODS:
@@ -407,6 +448,7 @@ def run_experiment(config: ToyProtectedFrontierSelectionConfig) -> dict[str, Any
                 protected_mask = baseline_protected
             else:
                 protected_mask = _select_protected_mask(method_scores[method], keep_mask, config.protected_atoms)
+            patch_rank_correlation = _spearman_correlation(method_scores[method], exact_patch_scores, mask=keep_mask)
             recon = _predict_summary(
                 example,
                 atom_values=atom_values,
@@ -437,7 +479,8 @@ def run_experiment(config: ToyProtectedFrontierSelectionConfig) -> dict[str, Any
                     keep_mask=keep_mask,
                     protected_mask=protected_mask,
                     oracle_keep=oracle_keep,
-                    oracle_protected=oracle_protected,
+                    oracle_protected=utility_oracle_protected,
+                    patch_rank_correlation=patch_rank_correlation,
                     bytes_proxy=bytes_proxy,
                     compute_proxy=float(config.dim * 2.0 * keep_mask.float().sum().item()),
                 )
@@ -464,14 +507,15 @@ def write_markdown_summary(payload: dict[str, Any], path: pathlib.Path) -> None:
         "# Toy Protected Frontier Selection",
         "",
         "- All methods share the same verifier-pruned frontier; only the high-precision protected subset changes.",
-        "- Protected-oracle preservation measures overlap with atoms whose low-bit quantization error most damages positive utility.",
+        "- Patch-rank correlation measures agreement with the exact single-atom patch effect on the held-out frontier.",
+        "- Protected-oracle preservation measures overlap with utility-positive atoms; exact patch effect is the compression oracle.",
         "",
-        "| Method | Accuracy | Acc delta | MSE | MSE delta | Prune rate | Protected rate | Missed help | False prune | Top-atom preservation | Protected-oracle preservation | Protection precision | Bytes proxy | Compute proxy | Help vs prune-uniform | Harm vs prune-uniform |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Method | Accuracy | Acc delta | MSE | MSE delta | Prune rate | Protected rate | Missed help | False prune | Top-atom preservation | Protected-oracle preservation | Patch-rank corr | Protection precision | Bytes proxy | Compute proxy | Help vs prune-uniform | Harm vs prune-uniform |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         lines.append(
-            "| {method} | {accuracy} | {accuracy_delta_vs_prune_uniform_quant} | {mse} | {mse_delta_vs_prune_uniform_quant} | {prune_rate} | {protected_rate} | {missed_help_rate} | {false_prune_rate} | {top_atom_preservation_rate} | {protected_oracle_preservation_rate} | {protection_precision_rate} | {bytes_proxy} | {compute_proxy} | {help_vs_prune_uniform_quant} | {harm_vs_prune_uniform_quant} |".format(
+            "| {method} | {accuracy} | {accuracy_delta_vs_prune_uniform_quant} | {mse} | {mse_delta_vs_prune_uniform_quant} | {prune_rate} | {protected_rate} | {missed_help_rate} | {false_prune_rate} | {top_atom_preservation_rate} | {protected_oracle_preservation_rate} | {patch_rank_correlation} | {protection_precision_rate} | {bytes_proxy} | {compute_proxy} | {help_vs_prune_uniform_quant} | {harm_vs_prune_uniform_quant} |".format(
                 method=row["method"],
                 accuracy=fmt(row["accuracy"]),
                 accuracy_delta_vs_prune_uniform_quant=fmt(row["accuracy_delta_vs_prune_uniform_quant"]),
@@ -483,6 +527,7 @@ def write_markdown_summary(payload: dict[str, Any], path: pathlib.Path) -> None:
                 false_prune_rate=fmt(row["false_prune_rate"]),
                 top_atom_preservation_rate=fmt(row["top_atom_preservation_rate"]),
                 protected_oracle_preservation_rate=fmt(row["protected_oracle_preservation_rate"]),
+                patch_rank_correlation=fmt(row["patch_rank_correlation"]),
                 protection_precision_rate=fmt(row["protection_precision_rate"]),
                 bytes_proxy=fmt(row["bytes_proxy"]),
                 compute_proxy=fmt(row["compute_proxy"]),

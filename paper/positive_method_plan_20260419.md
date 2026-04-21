@@ -3423,9 +3423,10 @@ New evidence:
 | Result | Outcome | Implication |
 |---|---|---|
 | Protected-frontier prune-uniform baseline | accuracy `0.6615`, MSE `0.2543`, bytes `89.6`, prune rate `0.3244` | The fixed pruned frontier is intentionally lossy under very low-bit quantization. |
-| Global activation protection | accuracy `0.7917`, MSE `0.1905`, bytes `176.6`, protected-oracle overlap `0.5382` | Activation magnitude is a useful cheap selector once the frontier is fixed. |
-| Quant-error protection | accuracy `0.8073`, MSE `0.1861`, bytes `176.6`, protected-oracle overlap `0.6476`, help `0.1458`, harm `0.0000` | Quantization-error saliency is the strongest non-oracle selector in this toy and ties the oracle on task accuracy. |
-| Oracle protection | accuracy `0.8073`, MSE `0.1698`, bytes `176.6`, protected-oracle overlap `1.0000` | The remaining gap is mostly quality-of-reconstruction / confidence, not task accuracy on this synthetic slice. |
+| Global activation protection | accuracy `0.7917`, MSE `0.1905`, bytes `176.6`, protected-oracle overlap `0.4314` | Activation magnitude is a useful cheap selector once the frontier is fixed. |
+| Quant-error protection | accuracy `0.8073`, MSE `0.1861`, bytes `176.6`, protected-oracle overlap `0.5434`, help `0.1458`, harm `0.0000` | Quantization-error saliency is the strongest cheap selector in this toy and ties the exact patch selector on task accuracy. |
+| Exact patch-effect protection | accuracy `0.8073`, MSE `0.1698`, bytes `176.6`, patch-rank correlation `1.0000`, help `0.1458`, harm `0.0000` | Exact single-atom patch effect is the bounded compression oracle for this toy. |
+| Utility-positive oracle protection | accuracy `0.7812`, MSE `0.2321`, bytes `176.6`, protected-oracle overlap `1.0000` | Utility-positive atom selection is not the same as compression-critical protection. |
 | KVPress GSM70 `none` limit-5 | accuracy `0.2000`, latency `8.6682s`, tokens/sec `4.3839` | Same-model cache controls are runnable in small chunks and now have a nontrivial paired smoke. |
 | KVPress GSM70 expected-attention `0.5` limit-5 | accuracy `0.2000`, latency `8.9888s`, tokens/sec `4.3832` | Expected-attention compression is not better than no compression on this tiny GSM smoke. |
 | KVPress SVAMP70 `none` limit-5 | accuracy `0.4000`, latency `9.0091s`, tokens/sec `4.8396` | SVAMP bounded controls are runnable and now have a paired expected-attention row. |
@@ -3467,3 +3468,57 @@ Next execution ladder:
 6. Keep lateral architecture work as controlled ablations: routed projectors,
    diffusion/refinement steps, tokenizer remap, and OT initialization should
    enter only when they have matched-budget toy or route-pool diagnostics.
+
+## 2026-04-21 Exact Patch Frontier, Byte-Span Route Atoms, And Limit-10 Controls
+
+Executed next:
+
+- Added `references/360_recent_cross_model_interface_refs.md`, covering SAE /
+  universal dictionaries, model stitching, tokenizer adaptation, activated
+  adapters, decode-time refinement, and multimodal connector transfer.
+- Tightened the protected-frontier toy with an `exact_patch_effect_protect`
+  selector and an explicit `utility_oracle_protect` contrast, so the
+  compression oracle is separated from semantic utility-positive atoms.
+- Added the deterministic `shared_byte_span_route_atom_remap` toy, which tests
+  whether a learned byte/span remap helps route-atom recovery across tokenizer
+  boundaries before atom selection.
+- Widened KVPress same-model controls from limit-5 to limit-10 on GSM70 and
+  SVAMP70 using CPU fallback.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| Exact patch-effect protection | accuracy `0.8073`, MSE `0.1698`, patch-rank correlation `1.0000` | The protected-frontier oracle is about marginal patch effect under compression, not generic task utility. |
+| Quant-error protection | accuracy `0.8073`, MSE `0.1861`, patch-rank correlation `0.2712`, harm `0.0000` | Quantization-error saliency remains the best cheap proxy and is worth promoting to real route pools first. |
+| Utility-positive oracle protection | accuracy `0.7812`, MSE `0.2321`, protected-oracle overlap `1.0000` | Selecting atoms that look semantically helpful can still miss compression-critical atoms. |
+| Shared byte/span remap route atoms | accuracy `0.9583`, MSE `0.0028`, remap coverage `0.9167`, atom recovery `0.6111`, bytes `33.33` | A tokenizer-aware shared interface can improve task behavior and atom recovery over token-id and regroup baselines in toy form. |
+| Token-id / regroup baselines | both accuracy `0.9167`, MSE about `0.0081`, bytes `34.92` | Boundary-compatible decoding alone does not recover the route atoms the bridge needs. |
+| KVPress GSM70 limit-10 | `none` and expected-attention both accuracy `0.1000`; expected-attention latency `9.2177s` vs `11.3788s` | Same-model compression remains neutral on tiny GSM, but the harness now widens cleanly. |
+| KVPress SVAMP70 limit-10 | `none` accuracy `0.2000`; expected-attention accuracy `0.5000`, latency `7.0471s` vs `8.6424s` | SVAMP remains the only positive KVPress smoke, still too small for a paper claim. |
+
+Updated read:
+
+The paper should add these results additively only as disciplined ablations,
+not as headline claims yet. The positive-method lane remains strict route
+selection plus target-side process repair, with the new toy stack supporting a
+more interpretable bridge design: shared feature/atom interfaces, tokenizer
+remapping, exact or proxy protected-frontier selection, and budget-aware
+repair. The blocker is no longer "does any component help"; it is whether we
+can promote the interacting components to route-pool evidence without hiding
+negative interaction terms.
+
+Next execution ladder:
+
+1. Promote quant-error and exact-patch-style frontier labels to real route-pool
+   telemetry before training another bridge.
+2. Build a byte/token stress split where source-target boundary F1 is
+   meaningfully below `1.0`, then rerun tokenizer remap, byte-span remap, and
+   dynalign variants there.
+3. Widen KVPress to limit-20 before comparing speed/accuracy against any
+   LatentWire row; keep it in the same-model compression-control table.
+4. Add SAE/universal-dictionary selectors as protected-frontier alternatives,
+   but compare them against exact patch effect and quant-error, not only
+   activation magnitude.
+5. Stack only after interaction tests pass: shared feature/atom interface,
+   byte-span remap, verifier pruning, quant-error protection, and repair gate.
