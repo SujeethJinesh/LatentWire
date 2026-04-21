@@ -38,3 +38,29 @@ Interpretation:
 - Controlled GSM10 ties the dense-head branch exactly, so this is still not an
   accuracy-positive result. It is a strong bytes/control lead: same score and
   same paired correctness at roughly 3.9x fewer bytes.
+
+GSM30 scale check:
+
+| Setting | Accuracy | Avg bytes | Paired delta vs target-alone | Method-only | Baseline-only | Both correct | Both wrong |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| target-alone | 0.0667 | - | - | - | - | - | - |
+| route-atom ratio 0.25 | 0.0333 | 172643.3 | -0.0333 | 0 | 1 | 1 | 28 |
+
+Route telemetry on GSM30:
+
+- `head_keep_fraction_avg`: `0.2500`
+- `route_atom_score_entropy_avg`: `1.9455`
+- `route_atom_score_gap_avg`: `0.0460`
+- `route_atom_sharpness_mean_avg`: `0.8588`
+- `route_atom_js_divergence_mean_avg`: `0.0954`
+- `route_atom_orientation_span_avg`: `0.2442`
+
+Scale interpretation:
+
+- The 25% route-atom selector does **not** preserve the GSM5/GSM10 behavior on
+  the larger GSM30 check.
+- It remains byte-efficient and interpretable, but the paired GSM30 read has no
+  method-only wins and one target-only win.
+- Treat route atoms as a compression/control and collapse-diagnostic tool until
+  they are stacked with a learned query-conditioned interface or a stronger
+  teacher.

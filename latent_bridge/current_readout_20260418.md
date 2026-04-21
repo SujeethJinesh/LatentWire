@@ -2874,3 +2874,82 @@ Interpretation:
 - the next quantization-style attempt should be constrained/orthogonal
   preconditioning or asymmetric K/V budgeting, not an unconstrained diagonal
   scale that collapses route entropy
+
+And a constrained preconditioning toy follow-up:
+
+> I added `constrained_preconditioned_query_pool`, a bounded diagonal
+> preconditioner for the toy benchmark. It uses
+> `scale = 1 + 0.25 * tanh(raw_scale)`, so the learned scale stays in
+> `[0.75, 1.25]` and cannot become the same free diagonal collapse mechanism
+> as `preconditioned_query_pool`.
+>
+> New artifact:
+> `results/query_pool_toy_20260421/query_pool_constrained_preconditioned_vs_topk.{json,md}`
+>
+> At budget `4`, task accuracy was:
+> - aligned: `query_pool 0.3177`, free preconditioned `0.3958`,
+>   constrained preconditioned `0.3594`
+> - rotated: `query_pool 0.2969`, free preconditioned `0.2656`,
+>   constrained preconditioned `0.3906`
+> - outlier: `query_pool 0.3594`, free preconditioned `0.2240`,
+>   constrained preconditioned `0.2812`
+> - slot-permuted: `query_pool 0.3281`, free preconditioned `0.2760`,
+>   constrained preconditioned `0.3177`
+
+Interpretation:
+
+- bounding the scale fixes one important failure mode: the constrained variant
+  beats the free diagonal preconditioner on rotated, outlier, and slot-
+  permuted stress settings, and it is the best rotated result in the toy suite
+- the constrained variant still does not dominate learned query-pool or route
+  atoms on all stresses, so it is a control/ablation, not a headline
+- the paper should keep this as quantization-inspired evidence for bounded
+  gauge/preconditioning, while real-model work should prefer constrained
+  rotations or asymmetric K/V allocation over free diagonal scaling
+
+And a GSM30 route-atom scale check:
+
+> I scaled the best route-atom ratio (`0.25`) from GSM5/GSM10 to a paired
+> GSM30 check with `target_alone` in the same run.
+>
+> Results:
+> - `target_alone`: `0.066667`
+> - `headwise_route_atom=0.25`: `0.033333` at `172,643.3` average bytes
+> - paired delta versus target-alone: `-0.033333`
+> - method-only wins: `0`
+> - target-only wins: `1`
+> - both correct: `1`
+> - both wrong: `28`
+> - route telemetry: keep fraction `0.2500`, score entropy `1.9455`, score
+>   gap `0.0460`, sharpness `0.8588`, JS divergence `0.0954`, orientation
+>   span `0.2442`
+
+Interpretation:
+
+- the GSM30 check does **not** support route atoms as a positive method by
+  themselves
+- the selector is still byte-efficient and interpretable, but it loses to the
+  target-only controlled baseline on this larger slice
+- route atoms should stay in the paper as a compression-frontier diagnostic
+  and as collapse telemetry for later learned query-conditioned interfaces
+- the next positive-method branch should not be "scale route atoms"; it should
+  be "use route-atom telemetry and bounded preconditioning to debug a learned
+  query-conditioned transport/interface"
+
+And a new reference sweep:
+
+> I added two literature memos:
+> - `references/307_multimodal_resampler_interface_refs.md`
+> - `references/307_diffusion_iterative_refinement_refs.md`
+
+Interpretation:
+
+- multimodal resamplers reinforce the fixed latent-bank / query-conditioned
+  interface framing: separate selection from projection, log latent occupancy,
+  and regularize against atom collapse
+- diffusion and refinement papers reinforce a different point: do not spend
+  extra compute uniformly; make refinement uncertainty- or confidence-
+  conditioned and log step-wise drift/entropy/calibration
+- these references are worth citing in the related-work and ablation-planning
+  sections, but the current empirical results do not justify adding another
+  main-method component until it beats the target-controlled slice

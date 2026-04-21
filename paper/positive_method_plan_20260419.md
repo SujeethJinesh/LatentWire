@@ -2045,3 +2045,84 @@ I added runtime head-routing fields to `EvalSpec` and `build_evaluate_cmd`:
 
 This turns route-atom/head-budget sweeps into reproducible control-suite runs
 instead of one-off evaluator commands. Use this before scaling to GSM30/GSM70.
+
+## 2026-04-21 Constrained Preconditioning And GSM30 Route-Atom Check
+
+I added `constrained_preconditioned_query_pool` to the toy suite as the
+bounded quantization-inspired control requested by the latest research sweep.
+It uses a near-identity diagonal scale,
+`scale = 1 + 0.25 * tanh(raw_scale)`, so it tests preconditioning without
+allowing the free diagonal scale to become the whole solution.
+
+Run artifact:
+
+- `results/query_pool_toy_20260421/query_pool_constrained_preconditioned_vs_topk.json`
+- `results/query_pool_toy_20260421/query_pool_constrained_preconditioned_vs_topk.md`
+
+Task accuracy at budget `4`:
+
+- aligned: `query_pool 0.3177`, free preconditioned `0.3958`,
+  constrained preconditioned `0.3594`
+- rotated: `query_pool 0.2969`, free preconditioned `0.2656`,
+  constrained preconditioned `0.3906`
+- outlier: `query_pool 0.3594`, free preconditioned `0.2240`,
+  constrained preconditioned `0.2812`
+- slot-permuted: `query_pool 0.3281`, free preconditioned `0.2760`,
+  constrained preconditioned `0.3177`
+
+Interpretation:
+
+- bounded preconditioning is better behaved than the free diagonal branch and
+  is especially strong under rotation stress
+- it still does not dominate query-pool or route atoms across all stresses, so
+  it should be an ablation/control, not a main method
+- if this family moves into the real evaluator, prioritize constrained
+  rotations, Hadamard/gauge-style transforms, or asymmetric K/V budgeting
+  instead of free diagonal scaling
+
+I also scaled the best route-atom ratio (`0.25`) to a paired GSM30 check:
+
+- `target_alone`: `0.0667`
+- `headwise_route_atom=0.25`: `0.0333` at `172,643.3` average bytes
+- paired delta versus target-alone: `-0.0333`
+- method-only wins: `0`
+- target-only wins: `1`
+- both correct: `1`
+- both wrong: `28`
+
+Interpretation:
+
+- route atoms alone should **not** be scaled as the next positive-method lane
+- the useful result is still compression/telemetry: `0.25` heads give a clear
+  budgeted control surface with route entropy, score gap, sharpness, JS
+  divergence, and orientation-span diagnostics
+- the next method branch should stack route-atom diagnostics with a learned
+  query-conditioned interface, not report route atoms as a standalone win
+
+## 2026-04-21 Reference Expansion
+
+I added two reference memos for the next ablation cycle:
+
+- `references/307_multimodal_resampler_interface_refs.md`
+- `references/307_diffusion_iterative_refinement_refs.md`
+
+How they change the plan:
+
+- Multimodal resamplers support a fixed latent-bank interface: Q-Former /
+  Perceiver-style queries, explicit latent occupancy, entropy regularization,
+  and selection-versus-projection separation.
+- Diffusion/refinement work supports confidence-adaptive updates: only refine
+  high-uncertainty heads/slots, log step-wise KL or drift, and keep a no-op
+  refinement control so "extra compute" is not confused with better transport.
+- Quantization work continues to support bounded gauge/preconditioning and
+  asymmetric K/V budgets, but the toy results say free diagonal scaling is too
+  brittle.
+
+Paper decision:
+
+- Do not add a new main-method component yet.
+- Add the new references and toy results as ablations / motivation only.
+- The next real positive-method attempt should be a learned query-conditioned
+  transport/interface with explicit route-atom and preconditioning telemetry,
+  evaluated first against target-alone on controlled GSM10/GSM30 before any
+  larger benchmark spend.

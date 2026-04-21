@@ -227,6 +227,41 @@ class PreconditionedQueryPoolReadout(nn.Module):
         return self.classifier(summary), self.reconstructor(summary), weights
 
 
+class ConstrainedPreconditionedQueryPoolReadout(nn.Module):
+    def __init__(self, dim: int, classes: int, pool_slots: int) -> None:
+        super().__init__()
+        self.pool_queries = nn.Parameter(torch.randn(pool_slots, dim) / math.sqrt(dim))
+        self.query_proj = nn.Linear(dim, dim, bias=False)
+        self.precondition_raw_scale = nn.Parameter(torch.zeros(dim))
+        self.classifier = nn.Linear(dim, classes)
+        self.reconstructor = nn.Linear(dim, dim)
+        self.last_atom_weights: torch.Tensor | None = None
+        self.last_preconditioned_q: torch.Tensor | None = None
+        self.last_original_q: torch.Tensor | None = None
+        self.last_precondition_scale: torch.Tensor | None = None
+
+    def encode(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor]:
+        q_proj = self.query_proj(batch.q)
+        scale = 1.0 + 0.25 * torch.tanh(self.precondition_raw_scale)
+        q_pre = q_proj * scale
+        beta = torch.softmax(q_pre @ self.pool_queries.T / math.sqrt(batch.q.shape[-1]), dim=-1)
+        pool_q = q_pre[:, None, :] + self.pool_queries[None, :, :]
+        slot_logits = torch.einsum("npd,nsd->nps", pool_q, batch.K) / math.sqrt(batch.q.shape[-1])
+        omega = torch.softmax(slot_logits, dim=-1)
+        pool_values = torch.einsum("nps,nsd->npd", omega, batch.V)
+        summary = torch.einsum("np,npd->nd", beta, pool_values)
+        effective_weights = torch.einsum("np,nps->ns", beta, omega)
+        self.last_atom_weights = beta.detach()
+        self.last_preconditioned_q = q_pre.detach()
+        self.last_original_q = q_proj.detach()
+        self.last_precondition_scale = scale.detach()
+        return summary, effective_weights
+
+    def forward(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        summary, weights = self.encode(batch)
+        return self.classifier(summary), self.reconstructor(summary), weights
+
+
 class RouteAtomReadout(nn.Module):
     def __init__(self, dim: int, classes: int, route_atoms: int) -> None:
         super().__init__()
@@ -290,6 +325,7 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
         metrics.update(_atom_metrics(atom_weights))
     preconditioned_q = getattr(model, "last_preconditioned_q", None)
     original_q = getattr(model, "last_original_q", None)
+    constrained_scale = getattr(model, "last_precondition_scale", None)
     if preconditioned_q is None or original_q is None:
         metrics.update(
             {
@@ -297,10 +333,29 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
                 "precondition_cosine_drift": None,
                 "precondition_norm_ratio": None,
                 "precondition_abs_scale_ratio": None,
+                "constrained_scale_min": None,
+                "constrained_scale_max": None,
+                "constrained_scale_mean": None,
             }
         )
     else:
         metrics.update(_precondition_metrics(preconditioned_q, original_q))
+        if constrained_scale is None:
+            metrics.update(
+                {
+                    "constrained_scale_min": None,
+                    "constrained_scale_max": None,
+                    "constrained_scale_mean": None,
+                }
+            )
+        else:
+            metrics.update(
+                {
+                    "constrained_scale_min": float(constrained_scale.min().item()),
+                    "constrained_scale_max": float(constrained_scale.max().item()),
+                    "constrained_scale_mean": float(constrained_scale.mean().item()),
+                }
+            )
     return metrics
 
 
@@ -311,6 +366,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
         "topk": 101,
         "query_pool": 211,
         "preconditioned_query_pool": 307,
+        "constrained_preconditioned_query_pool": 359,
         "route_atom": 401,
     }
     for scenario_idx, scenario in enumerate(scenarios):
@@ -322,6 +378,11 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
             (
                 "preconditioned_query_pool",
                 lambda: PreconditionedQueryPoolReadout(config.dim, config.classes, config.pool_slots),
+                1,
+            ),
+            (
+                "constrained_preconditioned_query_pool",
+                lambda: ConstrainedPreconditionedQueryPoolReadout(config.dim, config.classes, config.pool_slots),
                 1,
             ),
             ("route_atom", lambda: RouteAtomReadout(config.dim, config.classes, config.route_atoms), 1),
@@ -340,6 +401,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                         if method == "topk"
                         else config.pool_slots
                         if method in {"query_pool", "preconditioned_query_pool"}
+                        or method == "constrained_preconditioned_query_pool"
                         else config.route_atoms
                     ),
                     **metrics,
@@ -357,14 +419,16 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
     lines = [
         "# Toy Query-Pool Benchmark",
         "",
-        "| Scenario | Method | Budget | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Scenario | Method | Budget | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | Constrained scale min | Constrained scale max | Constrained scale mean |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         lines.append(
             "| {scenario} | {method} | {budget} | {task_acc} | {rec_mse} | "
             "{route_entropy} | {slot_collision_rate} | {dead_slot_rate} | {top_margin} | "
-            "{atom_entropy} | {atom_collision_rate} | {dead_atom_rate} | {atom_top_margin} |".format(
+            "{atom_entropy} | {atom_collision_rate} | {dead_atom_rate} | {atom_top_margin} | "
+            "{precondition_condition_proxy} | {precondition_cosine_drift} | {precondition_norm_ratio} | {precondition_abs_scale_ratio} | "
+            "{constrained_scale_min} | {constrained_scale_max} | {constrained_scale_mean} |".format(
                 scenario=row["scenario"],
                 method=row["method"],
                 budget=row["budget"],
@@ -382,6 +446,9 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
                 precondition_cosine_drift=fmt(row["precondition_cosine_drift"]),
                 precondition_norm_ratio=fmt(row["precondition_norm_ratio"]),
                 precondition_abs_scale_ratio=fmt(row["precondition_abs_scale_ratio"]),
+                constrained_scale_min=fmt(row["constrained_scale_min"]),
+                constrained_scale_max=fmt(row["constrained_scale_max"]),
+                constrained_scale_mean=fmt(row["constrained_scale_mean"]),
             )
         )
     path.parent.mkdir(parents=True, exist_ok=True)
