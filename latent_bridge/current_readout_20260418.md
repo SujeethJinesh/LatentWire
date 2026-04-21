@@ -2586,3 +2586,35 @@ Interpretation:
   likelihood mass and toward attention/interaction refinement, explicit
   query-conditioned routing, or a stronger module interface that changes how
   the target consumes the communicated cache
+
+And an eightieth dynalign DWA-interaction stack diagnostic:
+
+> I then implemented
+> `bridge_ridge_qk_dynalign_dwainteract_module_replace`, which keeps the same
+> dynalign source-to-target mixtures, DWA-style confidence weights, and
+> dynamic prediction teacher as `dynalign_dwakd`, then adds the prompt-local
+> interaction distillation term from `dynalign_interact`. This isolates whether
+> the interaction teacher only failed because it was previously unweighted.
+>
+> On a 16-prompt diagnostic calibration slice:
+> - dynamic remapping samples: `678`
+> - mean target tokens per source sample: `3.00`
+> - DWA-interaction sample weights: min `0.588`, max `1.400`
+> - `K` cosine `0.948`, relative Frobenius error `0.305`
+> - `V` cosine `0.697`, relative Frobenius error `0.700`
+>
+> Held-out diagnostic reads:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- confidence weighting and the dynamic prediction teacher do not rescue the
+  prompt-local interaction term
+- the stack regresses to the same `gsm8k_5 = 0.2000` smoke as interaction-only,
+  likelihood, span-ALM, bytespan, and context-only variants
+- the controlled slice again ties the `0.1000` target-alone floor
+- this closes the current local teacher-stacking branch; the next positive
+  attempt should change the correspondence/interface class, with priority on
+  CTPD-style aligned-span preferences, query-conditioned route geometry, or a
+  more global target-side module replacement rather than another local KL term

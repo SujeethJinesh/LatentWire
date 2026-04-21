@@ -1692,3 +1692,35 @@ That means:
   variant unless the interface changes; stronger candidates are attention or
   refinement distillation, query-conditioned routing inside the bridge, or a
   more global target-side module interface
+
+I then tested the minimal local-teacher stack:
+`bridge_ridge_qk_dynalign_dwainteract_module_replace`.
+
+This keeps the same dynamic remapping and DWA confidence weighting as
+`dynalign_dwakd`, keeps the dynamic prediction teacher, and adds the
+prompt-local interaction distillation term from `dynalign_interact`.
+
+On the same 16-prompt diagnostic calibration slice:
+
+- dynamic remapping samples: `678`
+- mean target tokens per source sample: `3.00`
+- DWA-interaction weight range: `0.588` to `1.400`
+- `K` cosine `0.948`, relative Frobenius error `0.305`
+- `V` cosine `0.697`, relative Frobenius error `0.700`
+
+Held-out diagnostic reads:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- the interaction teacher is not just missing confidence weighting; even when
+  stacked with DWA and dynamic prediction supervision, it regresses the DWA
+  `0.4000` smoke to `0.2000`
+- local teacher stacking is now saturated for the current module-replace
+  interface
+- the next additive paper method should change the interface or objective
+  class: CTPD-style aligned-span preferences, query-conditioned transport/route
+  atoms, or a more global target-side module replacement
