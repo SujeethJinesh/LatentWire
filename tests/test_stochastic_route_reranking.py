@@ -17,23 +17,39 @@ def _record(index: int, method: str, prediction: str, normalized: str, correct: 
     }
 
 
-def test_reranker_selects_agreement_and_format_policies() -> None:
-    baseline = [_record(0, "target_alone", "target says 3", "3", False)]
-    seed0 = [_record(0, "bridge", "messy answer 4", "4", False)]
-    seed1 = [_record(0, "bridge", "Therefore, the answer is \\boxed{5}", "5", True)]
-    seed2 = [_record(0, "bridge", "final answer is 5", "5", True)]
+def test_reranker_selects_format_and_numeric_policies() -> None:
+    baseline = [_record(0, "target_alone", "target says seven", "7", False)]
+    seed0 = [_record(0, "bridge", "Therefore, the answer is 5 because 2+2=4.", "5", False)]
+    seed1 = [_record(0, "bridge", "4 + 4 = 8.", "8", True)]
 
     records = rerank_stochastic_routes.rerank_records(
-        [baseline + seed0, baseline + seed1, baseline + seed2],
+        [baseline + seed0, baseline + seed1],
         method="bridge",
     )
     by_method = {str(row["method"]): row for row in records}
 
-    assert by_method["rerank_agreement_then_format"]["normalized_prediction"] == "5"
-    assert by_method["rerank_format_then_agreement"]["normalized_prediction"] == "5"
-    assert by_method["rerank_target_on_low_format"]["selected_candidate_source"] == "seed_1"
-    assert by_method["rerank_agreement_then_format"]["candidate_vote_count"] == 2
-    assert by_method["rerank_agreement_then_format"]["candidate_oracle_correct"] is True
+    assert by_method["rerank_format_then_agreement"]["selected_candidate_source"] == "seed_0"
+    assert by_method["rerank_target_on_strict_format"]["selected_candidate_source"] == "seed_0"
+    assert by_method["rerank_numeric_consistency_then_completion"]["selected_candidate_source"] == "seed_1"
+    assert by_method["rerank_completion_then_numeric_consistency"]["selected_candidate_source"] == "seed_1"
+    assert by_method["rerank_numeric_consistency_or_target"]["selected_candidate_source"] == "seed_1"
+    assert by_method["rerank_numeric_consistency_then_completion"]["selected_candidate_tail_numeric_mention"] == "8"
+    assert by_method["rerank_numeric_consistency_then_completion"]["selected_candidate_numeric_consistency_score"] > by_method[
+        "rerank_format_then_agreement"
+    ]["selected_candidate_numeric_consistency_score"]
+    assert by_method["rerank_numeric_consistency_then_completion"]["candidate_scores"][2]["numeric_consistency_score"] > by_method[
+        "rerank_numeric_consistency_then_completion"
+    ]["candidate_scores"][1]["numeric_consistency_score"]
+
+
+def test_strict_format_policy_keeps_target_when_seed_gain_is_small() -> None:
+    baseline = [_record(0, "target_alone", "Therefore, the answer is 7.", "7", True)]
+    seed = [_record(0, "bridge", "Therefore, the answer is 5.", "5", False)]
+
+    records = rerank_stochastic_routes.rerank_records([baseline + seed], method="bridge")
+    by_method = {str(row["method"]): row for row in records}
+
+    assert by_method["rerank_target_on_strict_format"]["selected_candidate_source"] == "target"
 
 
 def test_cli_writes_jsonl_markdown_and_sidecar(tmp_path) -> None:
@@ -59,6 +75,12 @@ def test_cli_writes_jsonl_markdown_and_sidecar(tmp_path) -> None:
     rerank_stochastic_routes.write_markdown_summary(results, markdown)
 
     loaded = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
-    assert {row["method"] for row in loaded} >= {"target_alone", "rerank_agreement_then_format"}
+    assert {row["method"] for row in loaded} >= {
+        "target_alone",
+        "rerank_agreement_then_format",
+        "rerank_target_on_strict_format",
+        "rerank_numeric_consistency_then_completion",
+    }
     assert (tmp_path / "reranked.jsonl.meta.json").exists()
     assert "rerank_agreement_then_format" in markdown.read_text(encoding="utf-8")
+    assert "Numeric ablation" in markdown.read_text(encoding="utf-8")

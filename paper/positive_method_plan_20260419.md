@@ -2457,8 +2457,12 @@ Executed next:
   compared it to fixed, gauge-aware, and signal-aware protected channels.
 - Implemented a first non-oracle stochastic reranker over the existing GSM30
   salt012 candidate set.
+- Added numeric-consistency/completion reranker diagnostics and a stricter
+  target-fallback policy.
 - Added multimodal/diffusion latent-connector references and stochastic
   verifier/reranker references.
+- Added quantization/KV-communication references for outlier protection,
+  K/V-asymmetric bit allocation, and rotation-before-transport ablations.
 
 New evidence:
 
@@ -2470,15 +2474,18 @@ New evidence:
 | Target-or-seed oracle | `0.3000` | Selection, not candidate generation, is now the core blocker. |
 | Format-first reranker | `0.1333` vs target-alone `0.0667` | First positive non-oracle selection result. |
 | Target-on-low-format reranker | `0.1333` | Conservative target fallback matches format-first. |
+| Target-on-strict-format reranker | `0.1667` | Best current non-oracle selector; zero baseline-only losses. |
+| Numeric-consistency rerankers | `0.0667` | Useful telemetry, not sufficient as standalone selection. |
 | KVPress GSM30 | none `0.0667`, expected-attention `0.0667` | Same-model compression control is neutral. |
 | Learned protected toy | wins outlier `0.6562`, near-recovers rotated `0.6302`, loses slot-permuted to signal-aware `0.5781` | Learned masks help, but need signal/orientation constraints. |
 
 Updated blocker decomposition:
 
 1. **Candidate-selection blocker:** stochastic cross-model routes expose useful
-   answers, and the first format-based reranker is positive, but it still
-   recovers less than half of the oracle gap. The next real method should be a
-   stronger verifier/reranker, not more unselected random sampling.
+   answers, and strict format-based fallback is now a stronger positive
+   selector (`0.1667`), but it still recovers less than half of the oracle gap.
+   The next real method should be a stronger verifier/reranker, not more
+   unselected random sampling.
 2. **Orientation-aware interface blocker:** learned masks and signal-aware
    masks each help different toy regimes. The likely stack is learned soft mask
    plus supervised signal alignment plus orientation/permutation regularization.
@@ -2491,14 +2498,17 @@ Updated blocker decomposition:
 
 Next execution ladder:
 
-1. Extend the positive format-based reranker with numeric consistency and a
-   target-model verifier prompt, keeping all verifier scores in telemetry.
-2. Run selection on the existing GSM30 salt012 candidate set before adding
-   more seeds. More sampling is only justified if selection keeps exceeding
-   target-alone on the existing oracle-positive pool.
+1. Add a target-model verifier prompt and a pairwise/listwise reranker over the
+   existing GSM30 salt012 candidate set; compare against strict format fallback
+   before adding more samples.
+2. Add confidence-gated route expansion: target-alone or strict-reranker
+   confidence decides whether to spend 1, 3, or 5 stochastic routes.
 3. Add signal-regularized learned masks to the toy suite and sweep protected
    channels.
 4. Promote the best learned/signal protected-channel diagnostic into a frozen
    K/V-slot reconstruction experiment before generation.
-5. Keep KVPress as a same-model compression control and scale C2C only after
+5. Add quantization-inspired bridge controls: outlier-channel protection,
+   rotation-before-transport, and K/V-asymmetric mixed precision at matched
+   bytes.
+6. Keep KVPress as a same-model compression control and scale C2C only after
    the verifier lane has a positive GSM30 selection result.

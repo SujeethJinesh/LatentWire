@@ -9,6 +9,7 @@ import math
 import pathlib
 import re
 import sys
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -27,6 +28,11 @@ _EXPLICIT_ANSWER_RE = re.compile(
     r"(?:answer is|final answer|therefore,? the answer|so the answer|the result is)",
     re.IGNORECASE,
 )
+_NUMERIC_MENTION_RE = re.compile(r"(?<![A-Za-z0-9])[-+]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)(?:/\d+)?(?![A-Za-z0-9])")
+_DANGLING_END_RE = re.compile(
+    r"(?:[+\-*/=,:;]|\b(?:and|or|because|so|then|thus|therefore)\b)\s*$",
+    re.IGNORECASE,
+)
 
 
 def _rows_by_index(records: list[dict[str, Any]], method: str) -> dict[int, dict[str, Any]]:
@@ -42,6 +48,35 @@ def _prediction_key(record: dict[str, Any]) -> str:
     if value is None or value == "":
         value = record.get("prediction", "")
     return str(value)
+
+
+def _normalize_numeric_text(value: str) -> str:
+    cleaned = value.strip().replace(",", "")
+    if cleaned.startswith("$"):
+        cleaned = cleaned[1:]
+    if cleaned.startswith("."):
+        cleaned = f"0{cleaned}"
+    if cleaned.endswith("."):
+        cleaned = cleaned[:-1]
+    if not cleaned:
+        return ""
+    if "/" in cleaned:
+        return cleaned
+    try:
+        normalized = format(Decimal(cleaned), "f")
+    except (InvalidOperation, ValueError):
+        return cleaned
+    normalized = normalized.rstrip("0").rstrip(".")
+    return normalized or "0"
+
+
+def _numeric_mentions(text: str) -> list[str]:
+    return [_normalize_numeric_text(match.group(0)) for match in _NUMERIC_MENTION_RE.finditer(text)]
+
+
+def _tail_numeric_mention(text: str) -> str:
+    mentions = _numeric_mentions(text)
+    return mentions[-1] if mentions else ""
 
 
 def _vote_entropy(counts: collections.Counter[str]) -> float:
@@ -92,11 +127,62 @@ def answer_format_score(record: dict[str, Any]) -> float:
     return float(score)
 
 
+def numeric_consistency_score(record: dict[str, Any]) -> float:
+    """Score whether the candidate's numeric content is self-consistent."""
+
+    prediction = str(record.get("prediction", "")).strip()
+    normalized = _normalize_numeric_text(str(record.get("normalized_prediction") or ""))
+    mentions = _numeric_mentions(prediction)
+    unique_mentions = set(mentions)
+    score = 0.0
+
+    if mentions:
+        score += 1.0
+    if normalized and normalized in unique_mentions:
+        score += 3.0
+    if normalized and mentions and mentions[-1] == normalized:
+        score += 4.0
+    if len(unique_mentions) == 1 and mentions:
+        score += 1.0
+    if normalized and len(mentions) >= 2 and mentions[-1] != normalized:
+        score -= 3.0
+    if normalized and mentions and mentions[0] == normalized and mentions[-1] == normalized:
+        score += 1.0
+    return float(score)
+
+
+def completion_score(record: dict[str, Any]) -> float:
+    """Score whether the candidate looks like a complete finished answer."""
+
+    prediction = str(record.get("prediction", "")).strip()
+    normalized = _normalize_numeric_text(str(record.get("normalized_prediction") or ""))
+    if not prediction:
+        return 0.0
+
+    score = 0.0
+    if prediction.endswith((".", "!", "?", ")", "]", "}")):
+        score += 1.0
+    if not _DANGLING_END_RE.search(prediction):
+        score += 1.0
+    tail_numeric = _tail_numeric_mention(prediction)
+    if tail_numeric:
+        score += 0.5
+    if normalized and tail_numeric == normalized and prediction.rstrip().endswith(tail_numeric):
+        score += 2.0
+    if prediction.endswith(("...", "…")):
+        score -= 0.5
+    if prediction.endswith((",", ":", ";")):
+        score -= 1.0
+    return float(score)
+
+
 def _candidate_metadata(candidates: list[dict[str, Any]]) -> dict[str, Any]:
     counts: collections.Counter[str] = collections.Counter(_prediction_key(row) for row in candidates)
     ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
     top_count = ranked[0][1] if ranked else 0
     next_count = ranked[1][1] if len(ranked) > 1 else 0
+    numeric_scores = [float(row.get("candidate_numeric_consistency_score", 0.0)) for row in candidates]
+    completion_scores = [float(row.get("candidate_completion_score", 0.0)) for row in candidates]
     return {
         "candidate_count": len(candidates),
         "candidate_unique_predictions": len(counts),
@@ -104,6 +190,10 @@ def _candidate_metadata(candidates: list[dict[str, Any]]) -> dict[str, Any]:
         "candidate_vote_count": int(top_count),
         "candidate_vote_margin": int(top_count - next_count),
         "candidate_vote_entropy": _vote_entropy(counts),
+        "candidate_numeric_consistency_mean": sum(numeric_scores) / max(len(numeric_scores), 1),
+        "candidate_completion_mean": sum(completion_scores) / max(len(completion_scores), 1),
+        "candidate_numeric_consistency_max": max(numeric_scores) if numeric_scores else 0.0,
+        "candidate_completion_max": max(completion_scores) if completion_scores else 0.0,
         "candidate_oracle_correct": bool(any(bool(row.get("correct")) for row in candidates)),
         "seed_correct_count": int(
             sum(bool(row.get("correct")) for row in candidates if row.get("candidate_source") != "target")
@@ -126,6 +216,15 @@ def _annotate_candidates(baseline: dict[str, Any], seed_rows: list[dict[str, Any
     for candidate in candidates:
         candidate["candidate_answer_agreement"] = int(counts[_prediction_key(candidate)])
         candidate["candidate_format_score"] = answer_format_score(candidate)
+        candidate["candidate_numeric_mentions"] = _numeric_mentions(str(candidate.get("prediction", "")))
+        candidate["candidate_numeric_mention_count"] = len(candidate["candidate_numeric_mentions"])
+        candidate["candidate_unique_numeric_mention_count"] = len(set(candidate["candidate_numeric_mentions"]))
+        candidate["candidate_tail_numeric_mention"] = _tail_numeric_mention(str(candidate.get("prediction", "")))
+        candidate["candidate_numeric_consistency_score"] = numeric_consistency_score(candidate)
+        candidate["candidate_completion_score"] = completion_score(candidate)
+        candidate["candidate_has_terminal_punctuation"] = int(
+            str(candidate.get("prediction", "")).strip().endswith((".", "!", "?", ")", "]", "}"))
+        )
     return candidates
 
 
@@ -170,6 +269,17 @@ def _choose(candidates: list[dict[str, Any]], policy: str) -> dict[str, Any]:
         if float(best_seed["candidate_format_score"]) >= float(target["candidate_format_score"]) + 1.0:
             return best_seed
         return target
+    if policy == "target_on_strict_format":
+        best_seed = max(
+            seeds,
+            key=lambda row: (
+                float(row["candidate_format_score"]),
+                int(row["candidate_answer_agreement"]),
+            ),
+        )
+        if float(best_seed["candidate_format_score"]) >= float(target["candidate_format_score"]) + 2.5:
+            return best_seed
+        return target
     if policy == "agreement_or_target":
         best = max(
             candidates,
@@ -180,6 +290,34 @@ def _choose(candidates: list[dict[str, Any]], policy: str) -> dict[str, Any]:
             ),
         )
         return best if int(best["candidate_answer_agreement"]) > 1 else target
+    if policy == "numeric_consistency_then_completion":
+        return max(
+            candidates,
+            key=lambda row: (
+                float(row["candidate_numeric_consistency_score"]),
+                float(row["candidate_completion_score"]),
+                row["candidate_source"] == "target",
+            ),
+        )
+    if policy == "completion_then_numeric_consistency":
+        return max(
+            candidates,
+            key=lambda row: (
+                float(row["candidate_completion_score"]),
+                float(row["candidate_numeric_consistency_score"]),
+                row["candidate_source"] == "target",
+            ),
+        )
+    if policy == "numeric_consistency_or_target":
+        best = max(
+            candidates,
+            key=lambda row: (
+                float(row["candidate_numeric_consistency_score"]),
+                float(row["candidate_completion_score"]),
+                row["candidate_source"] == "target",
+            ),
+        )
+        return best if float(best["candidate_numeric_consistency_score"]) > 0.0 else target
     raise ValueError(f"Unknown reranking policy: {policy}")
 
 
@@ -203,12 +341,24 @@ def _reranked_record(
     record["selected_candidate_source"] = chosen.get("candidate_source")
     record["selected_candidate_format_score"] = float(chosen.get("candidate_format_score", 0.0))
     record["selected_candidate_answer_agreement"] = int(chosen.get("candidate_answer_agreement", 0))
+    record["selected_candidate_numeric_consistency_score"] = float(
+        chosen.get("candidate_numeric_consistency_score", 0.0)
+    )
+    record["selected_candidate_completion_score"] = float(chosen.get("candidate_completion_score", 0.0))
+    record["selected_candidate_numeric_mention_count"] = int(chosen.get("candidate_numeric_mention_count", 0))
+    record["selected_candidate_tail_numeric_mention"] = str(chosen.get("candidate_tail_numeric_mention", ""))
     record["candidate_scores"] = [
         {
             "source": row.get("candidate_source"),
             "normalized_prediction": row.get("normalized_prediction"),
             "answer_agreement": int(row.get("candidate_answer_agreement", 0)),
             "format_score": float(row.get("candidate_format_score", 0.0)),
+            "numeric_consistency_score": float(row.get("candidate_numeric_consistency_score", 0.0)),
+            "completion_score": float(row.get("candidate_completion_score", 0.0)),
+            "numeric_mention_count": int(row.get("candidate_numeric_mention_count", 0)),
+            "unique_numeric_mention_count": int(row.get("candidate_unique_numeric_mention_count", 0)),
+            "tail_numeric_mention": row.get("candidate_tail_numeric_mention", ""),
+            "has_terminal_punctuation": int(row.get("candidate_has_terminal_punctuation", 0)),
             "correct": bool(row.get("correct")),
         }
         for row in candidates
@@ -244,7 +394,11 @@ def rerank_records(
             "format_then_agreement",
             "seed_format_confidence",
             "target_on_low_format",
+            "target_on_strict_format",
             "agreement_or_target",
+            "numeric_consistency_then_completion",
+            "completion_then_numeric_consistency",
+            "numeric_consistency_or_target",
         ]:
             chosen = _choose(candidates, policy)
             output.append(
@@ -275,7 +429,11 @@ def write_markdown_summary(results: dict[str, float], output_md: str | pathlib.P
         "rerank_format_then_agreement",
         "rerank_seed_format_confidence",
         "rerank_target_on_low_format",
+        "rerank_target_on_strict_format",
         "rerank_agreement_or_target",
+        "rerank_numeric_consistency_then_completion",
+        "rerank_completion_then_numeric_consistency",
+        "rerank_numeric_consistency_or_target",
     ]
     lines = [
         "# Stochastic Route Reranker Summary",
@@ -310,6 +468,17 @@ def write_markdown_summary(results: dict[str, float], output_md: str | pathlib.P
                 "Format-first reranking is the first non-oracle selector to test whether stochastic "
                 "route candidates can be used without label leakage. Compare it to target-alone and "
                 "to the oracle aggregate to separate candidate quality from selection quality.",
+            ]
+        )
+    if "rerank_numeric_consistency_then_completion" in results:
+        lines.extend(
+            [
+                "",
+                "Numeric ablation:",
+                "",
+                "Numeric-consistency-first reranking is a disjoint ablation that uses only the candidate's "
+                "own numeric text and completion cues. It checks whether the reranker can prefer self-"
+                "consistent numeric answers even when format markers are weak or misleading.",
             ]
         )
     pathlib.Path(output_md).parent.mkdir(parents=True, exist_ok=True)
