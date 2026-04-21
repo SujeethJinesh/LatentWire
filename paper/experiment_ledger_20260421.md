@@ -133,6 +133,17 @@ fitting plus remap still wins by `4` shots/class (`0.0238`). Treat this as
 the strongest current interface-side additive clue, not as proof that the
 paper is benchmark-ready.
 
+`results/query_pool_toy_20260421/quotient_gpa_sparse_dictionary_sequence_aligned_sidecar_20260421.md`
+is the current sequence-aware follow-up for that same lane. Under the same
+strong interface corruption, the sequence-aligned sidecar branch lowers MSE
+again at `1` and `2` shots/class (`0.0360`, `0.0362`), beating the plain byte
+sidecar and remap-only shared-basis variants while preserving exact head
+matching. It also remains the best shared-basis variant at `4` and `8`
+shots/class, even though direct held-out-family fitting plus remap still wins
+overall once paired data is abundant. Treat this as the current best
+interface-side extension of the low-shot lane, still toy-only and not yet
+benchmark evidence.
+
 `results/query_pool_toy_20260421/gpa_sparse_dictionary_hub_20260421.md` is the
 current low-shot shared-basis follow-up. The read is sharper: the sparse
 dictionary beats both direct few-shot fitting and canonical-only GPA at the

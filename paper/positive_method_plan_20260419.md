@@ -183,6 +183,40 @@ So the next method order is now:
 5. route/repair only after the first four pieces survive a real benchmark
    smoke
 
+## Status After Sequence-Aligned Sidecar Follow-Up
+
+The new sequence-aligned sidecar follow-up sharpens the interface read one step
+further:
+
+- under the same strong tokenizer-like corruption, the
+  `quotient_gpa_sparse_dictionary_sequence_aligned_sidecar` branch is now the
+  best shared-basis method at both `1` and `2` shots/class
+- with the default held-out-family toy it reaches `0.0360` MSE at `1`
+  shot/class and `0.0362` at `2` shots/class, beating the plain byte-sidecar
+  branch (`0.0384`, `0.0384`) and the remap-only shared-basis branch
+  (`0.0584`, `0.0599`)
+- the boundary is still real: by `4+` shots/class, direct held-out-family
+  fitting plus byte/span remap remains much better (`0.0169` at `4` shots,
+  `0.0035` at `8` shots)
+- importantly, the alignment-aware sidecar stays the best **shared-basis**
+  branch even after the direct few-shot fit retakes the overall lead
+
+That changes the live interface story again:
+
+1. quotient-aware matching fixes the low-shot symmetry issue
+2. GPA plus a sparse shared dictionary gives the shared latent basis
+3. a byte sidecar is already directionally strong
+4. adding sequence-aligned interface features improves that sidecar further
+5. but the whole lane is still toy-backed and low-shot-bounded, not benchmark-ready
+
+So the current best additive order is now:
+
+1. quotient-aware matching
+2. GPA canonicalization
+3. sparse shared dictionary
+4. byte sidecar plus sequence-aligned interface features
+5. route/repair only after the first four pieces survive the frozen GSM8K smoke
+
 ## Benchmark Contract Status
 
 The benchmark track is now frozen conceptually even though the full rows are

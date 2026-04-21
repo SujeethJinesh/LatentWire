@@ -222,5 +222,12 @@
     "path": "references/388_gsm8k_smoke_contract_32_recent_refs.md",
     "status": "local_memo",
     "reason": "Exact 32-example GSM8K smoke contract for the current Qwen sender/receiver pair, including rows, scorer, and hard pass/fail checks before any wider benchmark execution."
+  },
+  {
+    "num": 389,
+    "slug": "sequence_aligned_sidecar_recent_refs",
+    "path": "references/389_sequence_aligned_sidecar_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Sequence-aware interface memo narrowing the next additive branch after the byte-sidecar toy, with recent cross-tokenizer alignment references and the local read for the current low-shot lane."
   }
 ]
