@@ -379,6 +379,28 @@ That means:
   should add either live query-conditioning or a better interaction-level
   training target, not just a static low-rank correction
 
+## Status After GSM30 Process Repair
+
+I promoted process-aware repair from toy data into the existing GSM30
+stochastic-route pool. The script first selects a route with
+`target_on_strict_format`, then asks the target model to audit and repair the
+selected reasoning while logging raw repair text, pre/post normalized answers,
+changed-answer flags, help/harm, and candidate oracle availability.
+
+Result: `process_repair_selected_route` reaches `0.2333` on full GSM30,
+compared with pre-repair strict selector `0.1667` and target-alone `0.0667`.
+It changes answers on `0.4333` of examples, helps on `0.0667`, and has
+observed repair harm `0.0000`; candidate oracle remains `0.3000`.
+
+That means:
+
+- this is now the strongest real-model GSM30 method lane
+- the method is still dev-slice evidence and must be tested on held-out
+  GSM70/SVAMP before becoming a method claim
+- repair quality, not selection alone, is now the best blocker to attack
+- next variants should reduce partial repair outputs with stricter final-answer
+  contracts, longer decode budget, and structured step extraction
+
 I then tried the obvious stacked follow-up on that weak bridge clue: keep the
 same low-rank bridge checkpoint and add the best current runtime routing knobs
 on top. Three variants all failed on the matched sparse `gsm8k_eval_10` slice:
