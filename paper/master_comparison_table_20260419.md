@@ -129,6 +129,23 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   `27.1%` of selected-route repair calls; SVAMP70 `format_delta_gate` preserves
   `0.5429` while saving `15.7%`. This reduces target-side repair budget but
   does not yet increase accuracy.
+- Repair-gate feature audit explains why the cheap gate works: format score is
+  the strongest safe-skip predictor on GSM70 (selected-correct AUROC `0.8570`)
+  and SVAMP70 (`0.7880`), while numeric consistency/count features are too weak
+  to trust as standalone process checks. The next selector should add
+  process-step or generated-test telemetry, not more numeric metadata.
+- The shared-feature dictionary toy gives the strongest new additive design
+  clue: raw residual transport reaches `0.3646`, separate dictionaries reach
+  `0.4167`, a shared dictionary/crosscoder reaches `0.5417`, and the oracle is
+  `0.5938`. Treat this as a diagnostic-to-promote, not yet a real-model claim.
+- The modern architecture sweep adds four controlled ablation lanes to the
+  roadmap: selective-SSM vs attention transport, writable/test-time memory vs
+  sliding cache, adaptive compute vs fixed bridge depth, and MQA/GQA-style KV
+  sharing. These should be budget-matched before they appear in the main table.
+- The ICLR evaluation contract is now explicit: every headline LatentWire row
+  needs paired bootstrap CIs, sample-level correctness, token/byte/latency
+  ledgers, repair/verifier call counts, frozen prompt manifests, and exact
+  comparator budgets.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.

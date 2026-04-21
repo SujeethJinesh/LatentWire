@@ -2991,3 +2991,93 @@ Next execution ladder:
    plus feature sparsity and matched-feature stability on existing route pools.
 5. Keep any recurrent/shared-feature win tied to task-level accuracy; do not
    claim success from MSE or representation similarity alone.
+
+## 2026-04-21 Repair-Gate Feature Audit
+
+Executed next:
+
+- Added `scripts/analyze_repair_gate_features.py` to audit which selected-route
+  telemetry features predict safe repair skipping or missed repair-help cases.
+- Generated `results/process_repair_holdout_20260421/repair_gate_feature_audit_20260421.md`
+  and JSON sidecar.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| GSM70 format score | selected-correct AUROC `0.8570`; best threshold `3.5000` preserves `0.2000` accuracy while saving `0.2714` repair calls | Format is the strongest cheap safe-skip signal on GSM70. |
+| SVAMP70 format score | selected-correct AUROC `0.7880`; best threshold `4.5000` preserves `0.5429` accuracy while saving `0.1429` repair calls | Format also works on SVAMP, but with less budget savings. |
+| SVAMP70 format delta | selected-correct AUROC `0.6649`; best threshold `3.0000` preserves `0.5429` accuracy while saving `0.1571` repair calls | Format delta is slightly more budget-efficient than raw format on SVAMP. |
+| Numeric consistency fields | weak or inconsistent AUROC as safe gates | Numeric-count telemetry is not enough; the next precheck must be process/step-aware. |
+
+Updated read:
+
+The current cheap gate is interpretable: high format quality predicts selected
+route correctness and lets us skip repair safely. It does not identify new
+correct answers or amplify the route-specific margin. The next gate should be a
+process-level verifier that targets the examples where selected route is wrong
+but repair can help, rather than another numeric-count heuristic.
+
+Next execution ladder:
+
+1. Add a process-step verifier score or generated-test score to the selected
+   route telemetry.
+2. Compare `format_gate`, `process_gate`, and `format+process_gate` on the
+   same held-out route pools.
+3. Keep reporting missed-help count and repair-call savings, not just final
+   accuracy.
+4. Use feature AUROC and best-threshold repair savings as required telemetry
+   for all future test-before-repair variants.
+
+## 2026-04-21 Shared-Dictionary And Evaluation-Contract Follow-Up
+
+Executed next:
+
+- Added `references/347_modern_attention_memory_architecture_refs.md` to turn
+  recent attention, memory, recurrence, and KV-sharing work into concrete
+  LatentWire ablation axes.
+- Added `references/348_iclr_method_framing_and_evaluation_refs.md` as the
+  paper evaluation contract: paired tests, bootstrap CIs, compute ledgers,
+  frozen prompt manifests, contamination controls, and model-card-style
+  reporting.
+- Added toy `shared_feature_dictionary_bridge`, separating raw residual
+  transport, separate per-model dictionaries, a shared dictionary/crosscoder,
+  symmetry-aware shared dictionaries, and an oracle upper bound.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| Raw residual bridge toy | accuracy `0.3646`, MSE `1.1263` | Direct latent regression leaves large task and reconstruction gaps under private/shared feature mismatch. |
+| Separate dictionaries | accuracy `0.4167`, MSE `0.2763` | Sparse feature coding helps reconstruction, but separate gauges underuse shared task features. |
+| Shared dictionary crosscoder | accuracy `0.5417`, MSE `0.2642`, oracle `0.5938` | A learned shared feature interface is the strongest toy route and comes within `0.0521` accuracy of oracle. |
+| Symmetry-aware shared dictionary | accuracy `0.4688`, MSE `0.3026` | Orthogonal gauge alignment is useful but not sufficient; it should be treated as a component, not the whole method. |
+| Architecture reference sweep | SSM transport, test-time memory, retrieval memory, adaptive compute, KV sharing | The next positive-method search should vary communication architecture and compute policy, not only bridge loss. |
+| Evaluation contract | paired CIs, compute ledger, frozen manifests, contamination checks | Any headline gain now needs paired significance and matched compute/repair accounting before it can become a paper claim. |
+
+Updated read:
+
+The most promising new additive idea is a shared sparse feature interface,
+not another local latent-regression adapter. The toy says dictionary/crosscoder
+structure can recover task signal that raw regression misses, but it also says
+geometry alignment alone is not enough. For the real system, this should be
+promoted as an interpretable diagnostic first: shared feature recovery,
+dictionary alignment residual, sparsity, task accuracy, bytes, and compute all
+need to be logged together.
+
+Next execution ladder:
+
+1. Promote shared-dictionary telemetry to existing route pools: CKA/SVCCA,
+   Procrustes residual, matched-feature stability, sparsity, and task-level
+   deltas.
+2. Add a real shared-feature bridge smoke only after the diagnostic shows
+   stable matched features; compare raw bridge, separate adapters, shared
+   dictionary, symmetry-aware shared dictionary, and target self-repair.
+3. Add architecture ablations in small controlled form: attention vs
+   selective-SSM transport, writable memory vs sliding cache, adaptive compute
+   vs fixed-depth bridge, and MQA/GQA-style KV sharing.
+4. Upgrade every main held-out table with paired bootstrap CIs and compute
+   ledgers before scaling more competitor comparisons.
+5. Keep the paper claim positive-method but budget honest: show route-specific
+   lift, repair-call savings, and exact cost against `C2C`, text-to-text,
+   target self-repair, and no-repair selected routes.
