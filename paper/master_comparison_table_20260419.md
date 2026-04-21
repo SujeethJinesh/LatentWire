@@ -44,6 +44,8 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `gsm8k_eval_70` | broadcast retrieval-spectrum OT transport + rank-4 residual | `0.0143` | `625,463.7` | rectangular Sinkhorn-style `2 -> 8` transport using retrieval-weighted key spectra under matched sparse `K-only` evaluation (`64`-prompt calibration slice) |
 | `gsm8k_eval_70` | broadcast QK-template OT transport + rank-4 residual | `0.0143` | `625,463.7` | rectangular Sinkhorn-style `2 -> 8` transport using last-token QK logit templates under matched sparse `K-only` evaluation (`64`-prompt calibration slice) |
 | `gsm8k_eval_70` | grouped canonical transport | `0.0286` | `149,496.2` | low-rank canonical basis shortcut |
+| `gsm8k_eval_70` | selected route, no repair | `0.1286` | `-` | held-out strict selector control on the same route pool; no target-side repair |
+| `gsm8k_eval_70` | target self-repair | `0.1714` | `-` | same repair prompt and target decode budget applied to target-alone candidate |
 | `gsm8k_eval_70` | strict selector + process repair | `0.2000` | `-` | held-out repair over stochastic route-pool salts `0/1/2`; pre-repair `0.1286`, help `0.0714`, harm `0.0000`, oracle `0.1571`; adds target-side repair compute |
 | `gsm8k_eval_70` | `C2C` | `0.1286` | `-` | strongest external baseline so far |
 | `gsm8k_eval_70` | lifted `KVComm` replay | `0.0000` | `-` | compatibility-lifted heterogeneous replay |
@@ -65,6 +67,8 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `svamp_eval_70` | `text-to-text` | `0.4143` | `-` | text communication baseline |
 | `svamp_eval_70` | grouped CCA fixed prior | `0.1714` | `-` | best current internal SVAMP branch |
 | `svamp_eval_70` | grouped CCA shuffled null | `0.1286` | `-` | matched query-blind null |
+| `svamp_eval_70` | selected route, no repair | `0.3571` | `-` | held-out strict selector control on the same route pool; no target-side repair |
+| `svamp_eval_70` | target self-repair | `0.5000` | `-` | same repair prompt and target decode budget applied to target-alone candidate |
 | `svamp_eval_70` | strict selector + process repair | `0.5429` | `-` | held-out repair over stochastic route-pool salts `0/1/2`; pre-repair `0.3571`, help `0.1857`, harm `0.0000`, oracle `0.5286`; adds target-side repair compute |
 | `svamp_eval_70` | `C2C` | `0.4429` | `-` | strongest external baseline so far |
 
@@ -108,10 +112,11 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   land at `0.0857`, `0.0286`, and `0.0571`; SVAMP70 salts land at `0.3000`,
   `0.3000`, and `0.2571`. The positive result comes from target-side process
   repair on top of candidate generation.
-- The repair harness now supports same-prompt control arms for selected-route
-  no-repair and target self-repair. These controls must be run on the full
-  frozen route pools before attributing the held-out gain specifically to
-  cross-model communication rather than target-side self-correction.
+- Same-prompt control arms are now logged on the full frozen route pools.
+  Selected-route repair still beats target self-repair on both splits, but by
+  modest margins: GSM70 `0.2000` vs `0.1714`, SVAMP70 `0.5429` vs `0.5000`.
+  This supports a route-specific gain while keeping target-side self-correction
+  as the main fairness control.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.
@@ -125,5 +130,6 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 - Replacing the retrieval-spectrum descriptor with simple last-token QK logit templates does not move that frontier at all: it ties the retrieval-spectrum OT branch at `0.0143` while staying far less byte-efficient than the live sparse branches.
 - The paper can now be framed around a positive repair-and-routing method
   candidate, with blocker/mechanism evidence explaining why frozen transport
-  alone saturates. The remaining bar is proving the gain under matched compute
-  against text-to-text, `C2C`, and target self-repair controls.
+  alone saturates. The remaining bar is strengthening the route-specific margin
+  under matched compute against text-to-text, `C2C`, target self-repair, and
+  test-before-repair controls.

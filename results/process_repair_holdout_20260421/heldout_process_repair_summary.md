@@ -21,14 +21,21 @@ Frozen manifest:
 Interpretation: raw stochastic route pools are candidate generators, not a
 standalone method claim. The held-out gain comes from process repair.
 
-## Process Repair
+## Process Repair and Attribution Controls
 
 | Split | Method | Accuracy | Delta vs target | Pre-repair acc. | Method-only | Baseline-only | Both correct | Both wrong | Changed answer | Repair help | Repair harm | Target selected | Full oracle |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| GSM70 | selected_route_no_repair | 0.1286 | +0.0714 | 0.1286 | 5 | 0 | 4 | 61 | 0.0000 | 0.0000 | 0.0000 | 0.6714 | 0.1571 |
+| GSM70 | target_self_repair | 0.1714 | +0.1143 | 0.0571 | 8 | 0 | 4 | 58 | 0.5714 | 0.1143 | 0.0000 | 1.0000 | 0.1571 |
 | GSM70 | process_repair_selected_route | 0.2000 | +0.1429 | 0.1286 | 10 | 0 | 4 | 56 | 0.4000 | 0.0714 | 0.0000 | 0.6714 | 0.1571 |
+| SVAMP70 | selected_route_no_repair | 0.3571 | +0.0571 | 0.3571 | 4 | 0 | 21 | 45 | 0.0000 | 0.0000 | 0.0000 | 0.8429 | 0.5286 |
+| SVAMP70 | target_self_repair | 0.5000 | +0.2000 | 0.3000 | 14 | 0 | 21 | 35 | 0.4571 | 0.2000 | 0.0000 | 1.0000 | 0.5286 |
 | SVAMP70 | process_repair_selected_route | 0.5429 | +0.2429 | 0.3571 | 17 | 0 | 21 | 32 | 0.4000 | 0.1857 | 0.0000 | 0.8429 | 0.5286 |
 
 Interpretation: strict selector plus process repair is now a held-out positive
-method candidate across GSM70 and SVAMP70. It should be reported with explicit
-target-side repair compute, token, byte, and latency accounting before making an
-efficiency claim against text-to-text or direct competitors such as `C2C`.
+method candidate across GSM70 and SVAMP70, and it survives the strongest
+immediate target-side self-repair control. The route-specific attribution margin
+is modest: selected-route repair beats target self-repair by `+0.0286` on GSM70
+and `+0.0429` on SVAMP70. It should be reported with explicit target-side repair
+compute, token, byte, and latency accounting before making an efficiency claim
+against text-to-text or direct competitors such as `C2C`.

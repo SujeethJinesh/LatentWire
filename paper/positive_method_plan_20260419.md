@@ -469,13 +469,25 @@ the gain may be target self-repair rather than cross-model communication.
 
 Next full-result requirement:
 
-- rerun GSM70/SVAMP70 repair on the frozen route pools with both control arms
-- report selected-route no-repair, target self-repair, and selected-route repair
-  in the same table
-- include `repair_prompt_chars`, changed-answer rate, help/harm, target-selection
-  rate, and full candidate oracle
-- only claim cross-model communication improvement if selected-route repair
-  beats target self-repair under matched budget
+Completed full-control result:
+
+- GSM70: `selected_route_no_repair = 0.1286`,
+  `target_self_repair = 0.1714`, and
+  `process_repair_selected_route = 0.2000`
+- SVAMP70: `selected_route_no_repair = 0.3571`,
+  `target_self_repair = 0.5000`, and
+  `process_repair_selected_route = 0.5429`
+- both splits still show zero observed repair harm
+- selected-route repair beats same-prompt target self-repair on both splits,
+  but the attribution margins are modest: `+0.0286` on GSM70 and `+0.0429` on
+  SVAMP70
+
+This keeps the positive-method lane alive after the strongest immediate
+fairness control. It also clarifies the next blocker: most of the repair gain is
+target-side self-correction, while the cross-model route contributes a smaller
+but consistent increment. The next real-model variants should therefore
+increase the route-specific margin rather than merely making target repair
+stronger.
 
 ## 2026-04-21 Toy Test-Before-Repair Ablation
 
@@ -2824,3 +2836,57 @@ Next execution ladder:
    bytes.
 9. Keep KVPress as a same-model compression control and scale C2C/KVComm only
    when the run is exact-split, exact-pair, and parser-matched.
+
+## 2026-04-21 Held-Out Attribution And Protected-Basis Quant Follow-Up
+
+Executed next:
+
+- Ran the full GSM70 and SVAMP70 held-out process-repair route pools with
+  same-prompt attribution controls: selected-route no-repair and target
+  self-repair.
+- Added geometry/symmetry alignment references in
+  `references/341_geometry_symmetry_alignment_refs.md`.
+- Added competitor benchmark bootstrap references and local clone snapshots in
+  `references/342_competitor_benchmark_bootstrap_refs.md`.
+- Added toy `protected_basis_quant_bridge`, separating uniform low-bit
+  transport, protected salient channels, incoherent basis preprocessing, and
+  mixed-bit allocation under a near-matched byte band.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| GSM70 selected-route no-repair | `0.1286` | Candidate route quality is better than target-alone but not enough by itself. |
+| GSM70 target self-repair | `0.1714` | Target-side self-correction explains most of the raw repair gain. |
+| GSM70 selected-route repair | `0.2000`, harm `0.0000` | Survives target self-repair control with a modest `+0.0286` route-specific margin. |
+| SVAMP70 selected-route no-repair | `0.3571` | Candidate route quality is useful but below repair controls. |
+| SVAMP70 target self-repair | `0.5000` | Self-repair is again the strongest attribution control. |
+| SVAMP70 selected-route repair | `0.5429`, harm `0.0000` | Survives target self-repair control with a modest `+0.0429` route-specific margin. |
+| Protected-basis quant toy | uniform `0.9740`, protected channels `0.9792`, incoherent preprocessing `0.9948`, mixed-bit `1.0000` | Quantization-inspired wins come from basis choice and bit allocation, not just channel protection. |
+
+Updated paper read:
+
+The positive-method candidate is alive after the strongest immediate
+target-side fairness control, but it is not yet an efficiency claim. The current
+paper story should be: stochastic cross-model routes expose useful candidates;
+strict route selection plus target-side process repair turns those candidates
+into held-out gains; same-prompt target self-repair explains most of the gain;
+the remaining route-specific increment is consistent but too small to be the
+final headline without stronger matched-budget evidence.
+
+Next execution ladder:
+
+1. Add test-before-repair and step-level verifier controls on GSM70/SVAMP70 to
+   increase the route-specific margin, not just target self-correction.
+2. Convert the protected-basis quant toy into a frozen K/V-slot diagnostic:
+   uniform low-bit, protected channels, incoherent rotation, mixed K/V bits,
+   and protected-after-alignment.
+3. Add geometry telemetry to every bridge/repair run: CKA/SVCCA-style
+   similarity, Procrustes residual, singular spectrum, route trajectory
+   curvature, and selection entropy.
+4. Run exact-split competitor comparisons against `C2C`, `KVComm`, `KVPress`,
+   `KVzip`, `Quest`, `H2O`, and `SnapKV` only when prompt, token, repair,
+   byte, and latency budgets are logged.
+5. Treat tokenizer/vocab work as a robustness axis for mismatched-tokenizer
+   model pairs; for the current Qwen2.5/Qwen3 pair, focus on selection,
+   repair attribution, orientation, and K/V budget structure.
