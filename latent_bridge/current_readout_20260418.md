@@ -3066,3 +3066,67 @@ Paper decision:
 - The next positive-method attempt should stack the smallest real-model
   asymmetric K/V branch with a learned codebook/token interface only after each
   clears target-alone and shuffled/uniform controls independently.
+
+## 2026-04-21 Second Execution Addendum
+
+New references/results:
+
+- `references/310_recent_breakthrough_ablation_refs.md`
+- `references/310_competitor_execution_plan.md`
+- `results/query_pool_toy_20260421/query_pool_residual_codebook_remap_vs_topk.{json,md}`
+- `results/asym_kv_qwen_20260421/qwen_gsm5_dynalign_prefdist_asym_kv_routeattn_valueenergy_r025_v075_cal16_chat.jsonl`
+- `results/asym_kv_qwen_20260421/qwen_gsm5_dynalign_prefdist_asym_kv_random_r025_v075_cal16_chat.jsonl`
+- `results/asym_kv_qwen_20260421/qwen_gsm10_dynalign_prefdist_asym_kv_routeattn_valueenergy_r025_v075_cal16_chat.jsonl`
+
+Evaluator update:
+
+- Added `--kv-route-selection-metric` and `--kv-value-selection-metric`.
+- This fixes the first real-run blocker where route and value masks were nested
+  because both used the same attention score. The route/value sidecar now logs
+  the effective metric names, overlap, Jaccard, and score entropy.
+- The standard control-suite asym K/V spec now uses route-by-attention and
+  value-by-energy, so it exercises separable selection instead of merely
+  changing ratios.
+
+Real-model smoke results:
+
+| Split | Selector | Target | RotAlign | Delta | Route/value overlap | Jaccard |
+|---|---|---:|---:|---:|---:|---:|
+| GSM5 | route attention, value energy | 0.20 | 0.40 | +0.20 | 0.674 | 0.206 |
+| GSM5 | random route, random value | 0.20 | 0.20 | 0.00 | 0.837 | 0.270 |
+| GSM10 | route attention, value energy | 0.10 | 0.10 | 0.00 | 0.666 | 0.202 |
+
+Toy result update:
+
+| Scenario | Asym K/V 2+4 | Codebook remap | Residual codebook remap |
+|---|---:|---:|---:|
+| aligned | 0.4062 | 0.4948 | 0.5417 |
+| rotated | 0.3906 | 0.5781 | 0.6406 |
+| outlier | 0.4792 | 0.5312 | 0.5677 |
+| slot-permuted | 0.4010 | 0.4688 | 0.5417 |
+
+Interpretation:
+
+- Separable K/V selection is a live real-model lead, but not yet paper-safe:
+  it beats target and random on GSM5 but saturates to target-alone on GSM10.
+- The sidecar confirms the implementation is doing the intended thing: route
+  and value masks are no longer identical/nested, and value-energy scores are
+  higher-entropy than route-attention scores.
+- Residual codebook remap is now the strongest toy signal. It improves over
+  single codebook remap in all four stress cases and logs residual gate plus
+  query/slot residual energy ratios, which makes the mechanism diagnosable.
+- The next high-leverage stack is not another adapter: it is
+  `gauge-aware alignment + separable K/V routing + residual codebook/token
+  bridge`, with random/shuffled/uniform controls at each step.
+
+Paper decision:
+
+- Add the separable K/V selector and residual-codebook toy as ablations and
+  method candidates, not as settled claims.
+- Keep the main paper positive-method bar unchanged: a claim requires GSM30/70
+  replication and matched controls against target-alone, random/shuffled
+  selectors, C2C where runnable, and same-model compression controls.
+- The immediate blocker is scale stability: the GSM5 method-only win on Wendi's
+  chicken-feed example does not persist on the first GSM10 slice, so the next
+  debugging pass should stratify method-only vs unchanged failures by prompt
+  length, tokenizer overlap, selector entropy, and route/value overlap.

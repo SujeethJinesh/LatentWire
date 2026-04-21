@@ -430,6 +430,8 @@ def test_build_evaluate_cmd_passes_asymmetric_kv_position_ratios() -> None:
         position_selection_metric="attention",
         kv_route_selection_ratio=0.25,
         kv_value_selection_ratio=0.75,
+        kv_route_selection_metric="attention",
+        kv_value_selection_metric="energy",
     )
     cmd = control_suite.build_evaluate_cmd(
         python_exe="python",
@@ -449,6 +451,8 @@ def test_build_evaluate_cmd_passes_asymmetric_kv_position_ratios() -> None:
 
     assert cmd[cmd.index("--kv-route-selection-ratio") + 1] == "0.25"
     assert cmd[cmd.index("--kv-value-selection-ratio") + 1] == "0.75"
+    assert cmd[cmd.index("--kv-route-selection-metric") + 1] == "attention"
+    assert cmd[cmd.index("--kv-value-selection-metric") + 1] == "energy"
 
 
 def test_build_evaluate_cmd_passes_runtime_head_routing_flags() -> None:

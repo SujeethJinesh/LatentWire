@@ -1,0 +1,78 @@
+{
+  "created_at": "2026-04-21",
+  "purpose": "Paper-safe bootstrap manifest for competitor baseline execution planning without heavy downloads.",
+  "gsm_slices": {
+    "gsm5": "data/gsm8k_5.jsonl",
+    "gsm10": "/tmp/gsm8k_eval_10.jsonl",
+    "gsm10_create_command": "head -n 10 data/gsm8k_eval_70.jsonl > /tmp/gsm8k_eval_10.jsonl"
+  },
+  "competitors": [
+    {
+      "name": "C2C",
+      "comparison_group": "direct_cross_model",
+      "repo_path": "references/repos/C2C",
+      "local_status": "clean",
+      "primary_sources": [
+        "https://github.com/thu-nics/C2C",
+        "https://arxiv.org/abs/2510.03215"
+      ],
+      "gsm_status": "native_gsm8k_available_in_repo_evaluator_but_not_local_jsonl_matched",
+      "bootstrap_manifest": "results/competitor_bootstrap_20260421/c2c_qwen25_05b_to_qwen3_06b.json",
+      "heavy_download_required": true,
+      "paper_safe_next_step": "Download published Qwen2.5-0.5B-Instruct to Qwen3-0.6B fuser on CUDA box, then run native GSM5/GSM10 smoke; do not claim byte parity."
+    },
+    {
+      "name": "KVComm",
+      "comparison_group": "direct_cross_model_supported_tasks",
+      "repo_path": "references/repos/KVComm",
+      "local_status": "dirty: model_attn.py, models.py",
+      "primary_sources": [
+        "https://github.com/Zephyroam/KVComm",
+        "https://arxiv.org/abs/2510.12872"
+      ],
+      "gsm_status": "not_native",
+      "heavy_download_required": true,
+      "paper_safe_next_step": "Use clean isolated repo/env and run HotpotQA limit-5/10 baseline plus KVComm; GSM requires a new validated adapter."
+    },
+    {
+      "name": "kvpress",
+      "comparison_group": "same_model_compression",
+      "repo_path": "references/repos/kvpress",
+      "local_status": "dirty: kvpress/pipeline.py, kvpress/presses/base_press.py, kvpress/utils.py",
+      "primary_sources": [
+        "https://github.com/NVIDIA/kvpress",
+        "https://arxiv.org/abs/2510.00636"
+      ],
+      "gsm_status": "available_via_local_wrapper",
+      "wrapper": "scripts/run_kvpress_eval.py",
+      "heavy_download_required": false,
+      "paper_safe_next_step": "Run wrapper none and expected_attention on GSM5/GSM10 in results/competitor_bootstrap_20260421."
+    },
+    {
+      "name": "Quest",
+      "comparison_group": "long_context_query_aware_sparsity",
+      "repo_path": "references/repos/Quest",
+      "local_status": "clean",
+      "primary_sources": [
+        "https://github.com/mit-han-lab/Quest",
+        "https://arxiv.org/abs/2406.10774"
+      ],
+      "gsm_status": "not_native",
+      "heavy_download_required": true,
+      "paper_safe_next_step": "Run passkey or LongBench qasper query-aware control on CUDA; do not include in GSM table."
+    },
+    {
+      "name": "KVzip",
+      "comparison_group": "same_model_query_agnostic_compression",
+      "repo_path": "references/repos/KVzip",
+      "local_status": "clean",
+      "primary_sources": [
+        "https://github.com/snu-mllab/KVzip",
+        "https://arxiv.org/abs/2505.23416"
+      ],
+      "gsm_status": "native_gsm_loader",
+      "heavy_download_required": true,
+      "paper_safe_next_step": "Run qwen2.5-7b gsm num=5/10 retain ratio 0.6 on CUDA; compare as compression control only."
+    }
+  ]
+}

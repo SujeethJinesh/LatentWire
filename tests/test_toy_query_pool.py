@@ -30,6 +30,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("aligned", "constrained_preconditioned_query_pool"),
         ("aligned", "asymmetric_kv_budget"),
         ("aligned", "codebook_remap"),
+        ("aligned", "residual_codebook_remap"),
         ("aligned", "route_atom"),
         ("rotated", "topk"),
         ("rotated", "query_pool"),
@@ -37,6 +38,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("rotated", "constrained_preconditioned_query_pool"),
         ("rotated", "asymmetric_kv_budget"),
         ("rotated", "codebook_remap"),
+        ("rotated", "residual_codebook_remap"),
         ("rotated", "route_atom"),
     }
     for row in rows:
@@ -80,6 +82,24 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         assert "codebook_support_mean" in row
         assert "codebook_remap_overlap" in row
         assert "codebook_remap_jaccard" in row
+        assert "residual_codebook_entropy" in row
+        assert "residual_codebook_collision_rate" in row
+        assert "residual_dead_code_rate" in row
+        assert "residual_codebook_top_margin" in row
+        assert "residual_slot_code_entropy" in row
+        assert "residual_slot_code_collision_rate" in row
+        assert "residual_dead_slot_code_rate" in row
+        assert "residual_slot_code_top_margin" in row
+        assert "residual_codebook_recon_mse" in row
+        assert "residual_codebook_recon_cosine" in row
+        assert "residual_slot_remap_recon_mse" in row
+        assert "residual_slot_remap_recon_cosine" in row
+        assert "residual_codebook_support_mean" in row
+        assert "residual_codebook_remap_overlap" in row
+        assert "residual_codebook_remap_jaccard" in row
+        assert "residual_query_energy_ratio" in row
+        assert "residual_slot_energy_ratio" in row
+        assert "residual_gate" in row
         if row["method"] != "topk":
             assert row["atom_entropy"] >= 0.0
             assert 0.0 <= row["atom_collision_rate"] <= 1.0
@@ -115,6 +135,23 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
             assert row["codebook_support_mean"] >= 1.0
             assert 0.0 <= row["codebook_remap_overlap"] <= 1.0
             assert 0.0 <= row["codebook_remap_jaccard"] <= 1.0
+        if row["method"] == "residual_codebook_remap":
+            assert row["codebook_size"] == 4
+            assert row["residual_codebook_size"] == 4
+            assert row["codebook_entropy"] >= 0.0
+            assert row["residual_codebook_entropy"] >= 0.0
+            assert 0.0 <= row["residual_codebook_collision_rate"] <= 1.0
+            assert 0.0 <= row["residual_dead_code_rate"] <= 1.0
+            assert row["residual_codebook_recon_mse"] >= 0.0
+            assert -1.0 <= row["residual_codebook_recon_cosine"] <= 1.0
+            assert row["residual_slot_remap_recon_mse"] >= 0.0
+            assert -1.0 <= row["residual_slot_remap_recon_cosine"] <= 1.0
+            assert row["residual_codebook_support_mean"] >= 1.0
+            assert 0.0 <= row["residual_codebook_remap_overlap"] <= 1.0
+            assert 0.0 <= row["residual_codebook_remap_jaccard"] <= 1.0
+            assert row["residual_query_energy_ratio"] >= 0.0
+            assert row["residual_slot_energy_ratio"] >= 0.0
+            assert 0.0 <= row["residual_gate"] <= 1.0
 
 
 def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
@@ -150,6 +187,7 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
         "constrained_preconditioned_query_pool",
         "asymmetric_kv_budget",
         "codebook_remap",
+        "residual_codebook_remap",
         "route_atom",
     }
     summary = markdown.read_text()
@@ -161,9 +199,12 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
     assert "KV overlap" in summary
     assert "Codebook entropy" in summary
     assert "Remap overlap" in summary
+    assert "Residual codebook entropy" in summary
+    assert "Residual query energy" in summary
     assert "| outlier | query_pool |" in summary
     assert "| outlier | preconditioned_query_pool |" in summary
     assert "| outlier | constrained_preconditioned_query_pool |" in summary
     assert "| outlier | asymmetric_kv_budget |" in summary
     assert "| outlier | codebook_remap |" in summary
+    assert "| outlier | residual_codebook_remap |" in summary
     assert "| outlier | route_atom |" in summary

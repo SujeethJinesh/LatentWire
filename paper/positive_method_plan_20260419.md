@@ -2251,3 +2251,53 @@ Immediate next run ladder:
 4. Schedule competitor baselines in order: C2C Qwen pair first, KVPress
    expected-attention matched-byte control second, KVComm only after isolating
    or preserving the locally dirty compatibility patch.
+
+## 2026-04-21 Separable K/V And Residual-Codebook Update
+
+What changed:
+
+- Added metric-separated asymmetric K/V selection:
+  `--kv-route-selection-metric` and `--kv-value-selection-metric`.
+- The current control-suite asym K/V branch now tests route-by-attention and
+  value-by-energy instead of using a single score for both masks.
+- Added toy `residual_codebook_remap`: a base codebook remap plus a second
+  residual codebook and learned residual gate.
+- Added 310-series reference and competitor execution memos, including recent
+  2025/2026 architecture, token/vocab, diffusion/refinement, symmetry, and
+  quantization inspirations.
+
+Evidence:
+
+| Result | Interpretation |
+|---|---|
+| GSM5 route-attention/value-energy: target 0.20, method 0.40 | Candidate real-model positive signal. |
+| GSM5 random/random: target 0.20, method 0.20 | Gain is not explained by bytes alone on this slice. |
+| GSM10 route-attention/value-energy: target 0.10, method 0.10 | Signal does not yet scale to the first 10-example slice. |
+| Toy residual codebook wins all four stress cases | Strongest current toy lead for tokenizer/codebook bridging. |
+
+Current hypothesis:
+
+The separable K/V branch sometimes fixes local routing failures, but it is not
+yet robust enough to be the paper method. The toy residual-codebook result
+suggests the missing component is a discrete/shared interface that absorbs
+tokenizer and gauge mismatch before K/V routing is applied. The likely positive
+method stack is therefore:
+
+1. Gauge-aware bridge initialization or calibration.
+2. Residual codebook/token bridge to reduce tokenizer/interface mismatch.
+3. Separable K/V budgets and metrics for route vs value retention.
+4. Optional route-atom/head gating only after the first three components pass
+   random/shuffled/equal-budget controls.
+
+Next execution targets:
+
+1. Run GSM30 for route-attention/value-energy, plus random/random and
+   equal-metric attention/attention controls.
+2. Add per-example stratification to the sidecar: tokenizer overlap,
+   source/target token counts, selector entropy, route/value overlap, and
+   method-only/baseline-only tags.
+3. Promote residual-codebook remap from toy to a small frozen-prefix or K/V-slot
+   bridge. First target is a non-generative reconstruction/fidelity diagnostic;
+   only then run GSM.
+4. Keep C2C as the first direct competitor and kvpress/KVzip/Quest as
+   matched-byte compression controls, using `references/310_competitor_execution_plan.md`.

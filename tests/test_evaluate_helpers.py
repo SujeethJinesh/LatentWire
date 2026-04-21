@@ -468,6 +468,10 @@ def test_evaluate_parse_args_accepts_asymmetric_kv_position_ratios(monkeypatch) 
             "0.25",
             "--kv-value-selection-ratio",
             "0.75",
+            "--kv-route-selection-metric",
+            "attention",
+            "--kv-value-selection-metric",
+            "energy",
         ],
     )
 
@@ -475,6 +479,8 @@ def test_evaluate_parse_args_accepts_asymmetric_kv_position_ratios(monkeypatch) 
 
     assert args.kv_route_selection_ratio == 0.25
     assert args.kv_value_selection_ratio == 0.75
+    assert args.kv_route_selection_metric == "attention"
+    assert args.kv_value_selection_metric == "energy"
 
 
 def test_evaluate_parse_args_accepts_chat_template_and_thinking_flags(monkeypatch) -> None:
@@ -1310,7 +1316,8 @@ def test_asymmetric_kv_position_selection_uses_separate_route_and_value_masks() 
         protocol="fused",
         route_selection_ratio=0.25,
         value_selection_ratio=0.50,
-        position_selection_metric="energy",
+        route_selection_metric="energy",
+        value_selection_metric="energy",
     )
 
     assert selected_k[0, 0, 0, 0] == pytest.approx(9.0)
@@ -1320,6 +1327,8 @@ def test_asymmetric_kv_position_selection_uses_separate_route_and_value_masks() 
     assert trace["selection_policy"] == "asymmetric_kv_position"
     assert trace["kv_route_keep"] == 1
     assert trace["kv_value_keep"] == 2
+    assert trace["kv_route_selection_metric"] == "energy"
+    assert trace["kv_value_selection_metric"] == "energy"
     assert trace["kv_route_value_jaccard"] == 0.0
 
 
