@@ -4189,3 +4189,25 @@ That means:
 - the next positive-method shot should move up a level to multi-way canonical
   hubs, tokenizer/interface simplification, or a genuinely different pruning
   rule rather than more local score shaping
+
+## 2026-04-21 Frozen Residual Harness Baseline
+
+I added a dedicated residual-rank sweep runner for the frozen GSM8K32 contract:
+`scripts/run_gsm8k_contract_residual_sweep.py`.
+
+The first completed baseline pass reuses the existing `rank8` checkpoints only
+and confirms that the harness itself is valid:
+
+- `dynalign_module_replace_residrank8 = 0.0938`
+- `tokenbasis_replace_residrank8 = 0.0938`
+- both rows keep full numeric extraction coverage (`32/32`) and exact ID parity
+
+That means:
+
+- the residual benchmark path is now ready
+- the next real benchmark action is not another contract check; it is the
+  expensive `rank16` recalibration on top of `dynalign_module_replace` and
+  `tokenbasis_replace`
+- if neither `rank16` row beats `0.0938`, the same-pair live branch is likely
+  saturated and the next benchmark move should be a gauge-fix /
+  adaptive-canonicalization wrapper on top of the same real lane

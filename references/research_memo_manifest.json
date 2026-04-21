@@ -250,5 +250,19 @@
     "path": "references/392_quantized_codebook_residual_refs.md",
     "status": "local_memo",
     "reason": "Focused memo on low-rank residual correction, learned byte-level alignment, and codebook communication as the next compression-side upgrade after the frozen benchmark sweep."
+  },
+  {
+    "num": 393,
+    "slug": "residual_rank_sweep_next_refs",
+    "path": "references/393_residual_rank_sweep_next_refs.md",
+    "status": "local_memo",
+    "reason": "Exact residual-correction follow-up memo after the frozen same-pair baseline harness reproduced the current `0.0938` ceiling for dynalign and tokenbasis."
+  },
+  {
+    "num": 394,
+    "slug": "gauge_wrapper_real_lane_refs",
+    "path": "references/394_gauge_wrapper_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Exact gauge-fix / adaptive-canonicalization follow-up memo for wrapping the current real same-pair dynalign/tokenbasis lane once residual correction is tested."
   }
 ]

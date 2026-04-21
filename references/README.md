@@ -130,6 +130,9 @@ retrieval-head transport, QK geometry, and heterogeneous cache behavior:
   unsaturated canonicalization and quantized residual ideas, adaptive
   canonicalization plus gauge-invariant matching, and quantized/codebook
   residual communication after the frozen GSM8K32 sweep.
+- `393_` and `394_`: local memos for the next exact same-pair benchmark moves:
+  residual-rank sweeps on the validated frozen harness, and gauge-fix /
+  adaptive-canonicalization wrappers for the live dynalign/tokenbasis lane.
 - `129_`: layer-wise dissimilar KV sharing as a close systems analogue for pair-conditioned transfer.
 - `130_`: length-aware attention priors as a direct reference for cached-prior test-time reasoning.
 
