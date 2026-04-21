@@ -115,6 +115,7 @@
 | Paper claims now need stronger evaluation discipline | Route-specific repair deltas are positive but underpowered, and repair compute is not yet fully budget-matched | GSM70 route-specific delta `+0.0286 [-0.0429, 0.1143]`; SVAMP70 `+0.0429 [0.0000, 0.1000]` | Aggregate accuracy alone makes target-side repair look stronger than the route-specific method component | Point estimates and raw accuracy tables are insufficient for an ICLR-ready claim | Add paired significance, bootstrap CIs, compute ledgers, frozen manifests, and contamination controls to every headline table | Evaluation blocker |
 | Current frontier and stop heuristics are mis-specified even with good routes | In the route-conditioned hub sweep, oracle routing lifts the hub base to `0.8229`, above raw pairwise `0.7344`, but frontier drops it to `0.8125` and frontier+stop drops it again to `0.8073` | `oracle_router_base = 0.8229` | `oracle_router_frontier = 0.8125`, `oracle_router_frontier_stop = 0.8073` | Better routing alone will not rescue the present frontier/stop heuristics | Redesign frontier protection and stop features jointly with route/class signals before stacking them into the positive lane | Open |
 | Calibration-aware local protection is still not enough | In the route-class patch sweep, route-class patch-protect only ties quant-error protection, and route-class frontiering stays below the all-low-bit hub base | `conditional_prior_route_class_patch_protect = 0.6354`, `oracle_route_class_patch_protect = 0.8125` | `conditional_prior_base = 0.6250`, `oracle_base = 0.8229`, `oracle_quant_error_frontier = 0.8125` | Smarter local protection scores alone do not fix the stack | Move the next fix up to shared-basis canonicalization, tokenizer/interface simplification, or a different pruning rule rather than more score shaping | Open |
+| Multi-way canonicalization helps only in the ultra-low-shot regime | In the held-out-family toy, the GPA-style canonical hub wins lowest non-oracle MSE at `1` shot/class, but direct held-out-family fitting retakes the lead by `2+` shots/class | `1-shot multiway_gpa_canonical = 0.1327` | `1-shot heldout_fewshot_ridge = 0.1463`; `2-shot heldout_fewshot_ridge = 0.0753` vs `multiway_gpa_canonical = 0.1050` | Canonicalization is not a universal substitute for direct family-specific paired fitting | Use GPA/canonical hubs as a low-shot initializer or regularizer, then hand off to direct family fitting once moderate paired data exists | Partial |
 
 ## Current Read
 
@@ -130,6 +131,10 @@
 - Strongest new additive design clue: **shared sparse feature dictionary /
   crosscoder interface**, currently toy-only but clearly stronger than raw
   residual transport in the shared/private feature setup.
+- Strongest new low-shot interface clue: **multi-way canonical hubs**. The new
+  held-out-family toy shows a real `1`-shot MSE win for `multiway_gpa_canonical`
+  over direct few-shot fitting, but that advantage disappears once `2+`
+  paired shots/class are available.
 - Strongest new efficiency clue: **format-gated test-before-repair**, which
   preserves held-out repair accuracy while saving repair calls, but does not
   yet increase task accuracy.

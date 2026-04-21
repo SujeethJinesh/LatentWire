@@ -14,6 +14,27 @@ clear most of these on the exact Qwen same-pair setting:
 4. Survive one second held-out slice or one second reasoning task.
 5. Keep bytes competitive with the current sparse branches.
 
+## Status After Multi-Way Canonical Hub Toy
+
+The new held-out-family toy changes the positive-method read in one specific
+way:
+
+- a **multi-way GPA-style canonical hub** is now the best non-oracle method at
+  the hardest low-shot point, `1` shot/class, reaching `0.1327` MSE versus
+  `0.1463` for direct held-out-family few-shot fitting and far outperforming
+  both the global seen-family ridge and anchor-family transfer baselines
+- but the same canonical-hub lane loses back to direct held-out-family fitting
+  as soon as `2+` paired shots/class are available
+
+That means the next positive-method lane should treat canonicalization as a
+**low-shot interface initializer / regularizer**, not as a full replacement
+for family-specific fitting. The cleanest next branch is:
+
+1. GPA-initialized shared hub
+2. sparse shared dictionary / crosscoder on top of that hub
+3. tokenizer or byte-level interface control when token mismatch is likely
+4. route/repair added only after the shared basis is fixed
+
 ## Best Next Method Lane
 
 Subagent consensus was tight: the only credible internal positive-method lane

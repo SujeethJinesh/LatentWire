@@ -34,6 +34,7 @@ active positive clues, and combinations worth testing next.
 | LatentMAS comparator | Wrapper exists; cached baseline/text-MAS `N=1` probes run; latent-MAS direct mode is runtime-blocked after MPS fallback | Fix latent-mode runtime and run bounded matched GSM/SVAMP baseline/text-MAS/latent-MAS before head-to-head claims. |
 | Stack oracle route ceiling | In the composition toy, oracle routing reaches `0.8229` versus raw pairwise `0.7344` | Use this to debug route assignment and stop policy; do not cite as a method row. |
 | Route-/class-calibrated frontier | On the held-out hub sweep, route-class patch-protect ties quant-error (`0.6354` prior, `0.8125` oracle) while route-class frontier remains negative | Promote only if a redesigned pruning rule beats both quant-error and all-low-bit hub baselines; otherwise move to multi-way canonical hubs or tokenizer/interface simplification. |
+| Multi-way canonical hub | On the held-out-family toy, `multiway_gpa_canonical` is the best non-oracle/shared-basis method at `1` shot/class (`0.1327` MSE vs few-shot `0.1463`) and crushes global seen-family ridge, but direct held-out family fitting regains the MSE lead by `2+` shots/class | Promote only as a low-shot initializer or regularizer unless it also wins once moderate paired data exists; the next real test should be GPA-initialized shared hub plus sparse dictionary on a held-out-family route split. |
 
 ## Next Stack To Test
 
@@ -75,3 +76,12 @@ the current follow-up on that redesign attempt. The read is negative: smarter
 local protection scores are not enough by themselves, so the next step should
 change the shared hub/interface or pruning rule rather than keep tuning the
 same frontier family.
+
+`results/query_pool_toy_20260421/multiway_canonical_hub_20260421.md` is the
+current interface-first follow-up. The read is mixed but useful: multi-way
+canonicalization helps at the true `1`-shot held-out-family point, where
+`multiway_gpa_canonical` reaches the lowest non-oracle MSE (`0.1327` vs
+`0.1463` for direct few-shot fitting), but it loses back to direct family
+fitting as soon as `2+` paired shots/class are available. Treat this as
+evidence for low-shot hub initialization, not as a universal replacement for
+family-specific fitting.

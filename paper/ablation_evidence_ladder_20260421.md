@@ -8,6 +8,7 @@ This table summarizes local telemetry for stack decisions. It separates toy-posi
 |---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---|
 | Hub/shared dictionary | `hub_shared_dictionary` | toy positive | present | 1.0000 | 0.3208 | 0.0199 | 20980.0000 | 1.0000 | - | - | - | - | 0.7458 | 0.0000 | Beat pairwise on held-out route pools with fewer adapters or bytes. |
 | Pairwise bridge control | `pairwise_bridges` | toy control | present | 0.6792 | 0.4250 | 0.4595 | 33600.0000 | 0.6542 | - | - | - | - | 0.4250 | 0.0000 | Keep only as O(n^2) scaling baseline. |
+| Multi-way canonical hub | `multiway_gpa_canonical (1-shot held-out family)` | toy positive / boundary | present | 1.0000 | 0.0000 | 0.1327 | - | - | - | - | - | - | - | - | Promote only if the low-shot gain survives on a real held-out-family split and still holds after adding a sparse shared dictionary. |
 | Sticky feature routing | `sticky_paraphrase_stable_routing` | toy positive | present | 0.9438 | 0.0000 | 0.0243 | 16.0000 | - | 0.9875 | 1.0000 | - | - | 0.0000 | 0.0000 | Improve perturbation stability without lowering route-pool accuracy. |
 | Confidence-only routing | `confidence_routing` | toy blocker | present | 0.3688 | -0.5750 | 1.5497 | 16.0000 | - | 0.2812 | 0.5437 | - | - | 0.0063 | 0.5813 | Do not rerun as sole router; only use as uncertainty feature. |
 | Feature+atom stack | `stacked_feature_atom` | toy positive interaction | present | 0.8542 | 0.2083 | 1.7413 | 5920.0000 | 0.3948 | - | - | - | - | 0.2083 | 0.0000 | Test interaction terms, not isolated feature-only or atom-only branches. |
@@ -22,5 +23,6 @@ This table summarizes local telemetry for stack decisions. It separates toy-posi
 - Promote hub dictionaries, sticky/feature routing, mixed-bit frontiers, and verifier stop rules only as an interaction stack with matched controls.
 - The route-conditioned hub sweep shows that the current frontier and stop heuristics are not drop-in additive components: the best frontier gain is only `+0.0104`, oracle frontier is negative, and the stop rule never adds positive accuracy.
 - The route-class patch follow-up shows that calibration-aware local protection only ties the current quant-error frontier and route-class frontier pruning is still negative, so the next fix should move up to the hub/interface or pruning-rule level.
+- The multi-way canonical-hub follow-up adds a boundary clue rather than a full fix: at `1` shot/class the GPA-style shared basis is the best non-oracle method on MSE (`0.1327` vs `0.1463` for direct few-shot fitting), but direct family fitting retakes the lead once `2+` paired shots/class are available.
 - Treat confidence-only routing and fixed-depth repair as blockers, not baselines to keep rerunning.
 - Any real-route-pool promotion should carry the same telemetry columns: atom recovery, route stability, bit histogram, stop reason, help/harm, bytes, and latency.

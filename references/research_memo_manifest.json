@@ -96,5 +96,26 @@
     "path": "references/370_competitor_benchmark_and_harness_directions.md",
     "status": "local_memo",
     "reason": "Runnable evaluation harnesses, benchmark orchestration, direct-communication competitor repos, and fair matched-table rules for the LatentWire benchmark track."
+  },
+  {
+    "num": 371,
+    "slug": "multiway_canonical_hub_recent_refs",
+    "path": "references/371_multiway_canonical_hub_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent multi-way alignment, gauge fixing, sparse crosscoder, and symmetry-aware routing references for a held-out-family canonical hub experiment."
+  },
+  {
+    "num": 372,
+    "slug": "tokenizer_interface_multimodal_recent_refs",
+    "path": "references/372_tokenizer_interface_multimodal_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Tokenizer/vocab transfer, byte-level interfaces, multimodal connector transfer, diffusion-style refinement, and quantization-inspired communication rules for the active paper loop."
+  },
+  {
+    "num": 373,
+    "slug": "competitor_benchmark_bootstrap_recent_refs",
+    "path": "references/373_competitor_benchmark_bootstrap_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Competitor benchmark bootstrap memo for harness parity, contamination control, parser consistency, and matched LatentMAS/C2C/OpenCompass/lm-eval comparisons."
   }
 ]

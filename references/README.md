@@ -394,6 +394,12 @@ File `370_` extends the benchmark and harness direction lane:
 
 - `370_`: Runnable evaluation harnesses, benchmark orchestration, direct-communication competitor repos to clone, fair matched-table rules, and a concrete bootstrap plan that keeps benchmark work separate from the method story.
 
+Files `371_` through `373_` extend the current canonical-hub, tokenizer-interface, and benchmark-bootstrap lanes:
+
+- `371_`: Multi-way canonical hub references for GPA, gauge fixing, sparse crosscoders, uncertainty-aware routing, and a held-out-family canonical-hub experiment.
+- `372_`: Tokenizer/vocab transfer, byte-level fallback, narrow connector bottlenecks, diffusion-style interface refinement, and quantization-inspired communication rules.
+- `373_`: Competitor benchmark bootstrap memo for `lm-evaluation-harness`, `OpenCompass`, `LatentMAS`, `C2C`, matched parser rules, and smoke-first comparison discipline.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.
