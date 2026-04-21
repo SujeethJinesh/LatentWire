@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
+import random
 import re
 import sys
 from typing import Any, Callable, Sequence
@@ -71,6 +72,28 @@ def build_verifier_prompt(
         )
     lines.extend(["", "Best candidate letter:"])
     return "\n".join(lines)
+
+
+def order_verifier_candidates(
+    candidates: list[dict[str, Any]],
+    *,
+    example_index: int,
+    shuffle_labels: bool,
+    label_seed: int = 0,
+) -> list[dict[str, Any]]:
+    ordered = [dict(row) for row in candidates]
+    if not shuffle_labels:
+        return ordered
+    rng = random.Random(f"{label_seed}:{example_index}")
+    rng.shuffle(ordered)
+    return ordered
+
+
+def _target_label(prompt_candidates: list[dict[str, Any]]) -> str | None:
+    for label, candidate in zip(_LABELS, prompt_candidates):
+        if candidate.get("candidate_source") == "target":
+            return label
+    return None
 
 
 def parse_verifier_choice(text: str, *, candidate_count: int) -> int | None:
@@ -149,6 +172,8 @@ def verifier_rerank_records(
     response_fn: Callable[[int, str, list[dict[str, Any]]], str],
     fallback_policy: str = "target_on_strict_format",
     max_candidate_chars: int = 700,
+    shuffle_labels: bool = False,
+    label_seed: int = 0,
 ) -> list[dict[str, Any]]:
     indices, baseline_rows, seed_method_rows = _indices_for_record_sets(
         record_sets,
@@ -165,22 +190,28 @@ def verifier_rerank_records(
         candidates = _annotate_candidates(baseline, seed_rows)
         if idx >= len(examples):
             raise IndexError(f"Example index {idx} is outside eval set of length {len(examples)}")
+        prompt_candidates = order_verifier_candidates(
+            candidates,
+            example_index=idx,
+            shuffle_labels=shuffle_labels,
+            label_seed=label_seed,
+        )
         prompt = build_verifier_prompt(
             problem=examples[idx].prompt,
-            candidates=candidates,
+            candidates=prompt_candidates,
             max_candidate_chars=max_candidate_chars,
         )
-        raw_response = response_fn(idx, prompt, candidates)
-        choice_idx = parse_verifier_choice(raw_response, candidate_count=len(candidates))
+        raw_response = response_fn(idx, prompt, prompt_candidates)
+        choice_idx = parse_verifier_choice(raw_response, candidate_count=len(prompt_candidates))
         fallback_used = choice_idx is None
         if choice_idx is None:
             chosen = _choose(candidates, fallback_policy)
         else:
-            chosen = candidates[choice_idx]
+            chosen = prompt_candidates[choice_idx]
 
         record = _reranked_record(
             method_name="rerank_target_model_verifier",
-            policy="target_model_listwise_verifier",
+            policy="target_model_listwise_verifier_randomized" if shuffle_labels else "target_model_listwise_verifier",
             chosen=chosen,
             baseline=baseline,
             candidates=candidates,
@@ -188,9 +219,25 @@ def verifier_rerank_records(
         record["verifier_raw_response"] = raw_response
         record["verifier_choice_index"] = choice_idx
         record["verifier_choice_label"] = None if choice_idx is None else _LABELS[choice_idx]
+        record["verifier_choice_candidate_source"] = None if choice_idx is None else chosen.get("candidate_source")
         record["verifier_fallback_used"] = bool(fallback_used)
         record["verifier_fallback_policy"] = fallback_policy if fallback_used else None
         record["verifier_prompt_chars"] = len(prompt)
+        record["verifier_labels_shuffled"] = bool(shuffle_labels)
+        record["verifier_label_seed"] = int(label_seed)
+        record["verifier_target_label"] = _target_label(prompt_candidates)
+        record["verifier_label_sources"] = [
+            {"label": label, "source": candidate.get("candidate_source")}
+            for label, candidate in zip(_LABELS, prompt_candidates)
+        ]
+        record["verifier_label_predictions"] = [
+            {
+                "label": label,
+                "source": candidate.get("candidate_source"),
+                "normalized_prediction": candidate.get("normalized_prediction"),
+            }
+            for label, candidate in zip(_LABELS, prompt_candidates)
+        ]
         output.append(record)
     return output
 
@@ -204,6 +251,18 @@ def summarize_results(records: list[dict[str, Any]]) -> dict[str, float]:
             results["rerank_target_model_verifier_fallback_rate"] = sum(
                 bool(row.get("verifier_fallback_used")) for row in rows
             ) / max(len(rows), 1)
+            results["rerank_target_model_verifier_target_selection_rate"] = sum(
+                row.get("selected_candidate_source") == "target" for row in rows
+            ) / max(len(rows), 1)
+            results["rerank_target_model_verifier_choice_a_rate"] = sum(
+                row.get("verifier_choice_label") == "A" for row in rows
+            ) / max(len(rows), 1)
+            results["rerank_target_model_verifier_target_was_a_rate"] = sum(
+                row.get("verifier_target_label") == "A" for row in rows
+            ) / max(len(rows), 1)
+            results["rerank_target_model_verifier_label_shuffle_rate"] = sum(
+                bool(row.get("verifier_labels_shuffled")) for row in rows
+            ) / max(len(rows), 1)
     add_paired_prediction_summary(results, records)
     return results
 
@@ -215,9 +274,9 @@ def write_markdown_summary(results: dict[str, float], output_md: str | pathlib.P
     lines = [
         "# Target-Model Verifier Reranker Summary",
         "",
-        "| Method | Accuracy | Delta vs target | Method-only | Baseline-only | Both correct | Both wrong | Fallback rate |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|",
-        "| {method} | {acc:.4f} | {delta:+.4f} | {method_only:.0f} | {baseline_only:.0f} | {both_correct:.0f} | {both_wrong:.0f} | {fallback:.4f} |".format(
+        "| Method | Accuracy | Delta vs target | Method-only | Baseline-only | Both correct | Both wrong | Fallback rate | Target selected | Choice A | Target was A |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| {method} | {acc:.4f} | {delta:+.4f} | {method_only:.0f} | {baseline_only:.0f} | {both_correct:.0f} | {both_wrong:.0f} | {fallback:.4f} | {target_selected:.4f} | {choice_a:.4f} | {target_a:.4f} |".format(
             method=method,
             acc=float(results.get(method, 0.0)),
             delta=float(results.get(f"{prefix}_delta_accuracy", float(results.get(method, 0.0)) - target)),
@@ -226,12 +285,16 @@ def write_markdown_summary(results: dict[str, float], output_md: str | pathlib.P
             both_correct=float(results.get(f"{prefix}_both_correct", 0.0)),
             both_wrong=float(results.get(f"{prefix}_both_wrong", 0.0)),
             fallback=float(results.get("rerank_target_model_verifier_fallback_rate", 0.0)),
+            target_selected=float(results.get("rerank_target_model_verifier_target_selection_rate", 0.0)),
+            choice_a=float(results.get("rerank_target_model_verifier_choice_a_rate", 0.0)),
+            target_a=float(results.get("rerank_target_model_verifier_target_was_a_rate", 0.0)),
         ),
         "",
         "Interpretation:",
         "",
         "This is a non-oracle target-model listwise selector over the same stochastic candidate set. "
-        "The raw verifier response and fallback flag are logged per example so selection failures can be audited.",
+        "The raw verifier response, label order, fallback flag, and position-bias rates are logged per example "
+        "so selection failures can be audited.",
     ]
     pathlib.Path(output_md).parent.mkdir(parents=True, exist_ok=True)
     pathlib.Path(output_md).write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -251,6 +314,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--fallback-policy", default="target_on_strict_format")
     parser.add_argument("--max-candidate-chars", type=int, default=700)
+    parser.add_argument("--shuffle-labels", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument("--label-seed", type=int, default=0)
     parser.add_argument("--output-jsonl", required=True)
     parser.add_argument("--output-md")
     return parser.parse_args()
@@ -286,6 +351,8 @@ def main() -> None:
         response_fn=response_fn,
         fallback_policy=args.fallback_policy,
         max_candidate_chars=args.max_candidate_chars,
+        shuffle_labels=bool(args.shuffle_labels),
+        label_seed=int(args.label_seed),
     )
     results = summarize_results(records)
     write_prediction_records(args.output_jsonl, records)
@@ -300,6 +367,8 @@ def main() -> None:
             "baseline_method": args.baseline_method,
             "model": args.model,
             "fallback_policy": args.fallback_policy,
+            "shuffle_labels": bool(args.shuffle_labels),
+            "label_seed": int(args.label_seed),
         },
     )
     if args.output_md:

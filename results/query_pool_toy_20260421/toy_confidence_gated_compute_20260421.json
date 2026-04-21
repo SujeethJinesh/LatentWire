@@ -1,0 +1,208 @@
+{
+  "calibration": {
+    "high_threshold": 0.5379319787025452,
+    "low_threshold": 0.3047499656677246,
+    "train_accuracy": 0.6692708333333334,
+    "train_avg_budget": 2.0208333333333335,
+    "train_budget_histogram": {
+      "1": 0.3072916666666667,
+      "2": 0.5286458333333334,
+      "4": 0.1640625
+    },
+    "train_compute_fraction": 0.5052083333333334,
+    "train_examples": 384,
+    "train_score": 0.6678125
+  },
+  "config": {
+    "budget_penalty": 0.14,
+    "classes": 6,
+    "dim": 24,
+    "gate_temperature": 0.85,
+    "max_budget": 4,
+    "pool_noise_floor": 0.14,
+    "pool_noise_span": 1.15,
+    "pool_size": 6,
+    "probe_noise_floor": 0.22,
+    "probe_noise_span": 1.05,
+    "seed": 0,
+    "subgroup_bins": 3,
+    "tail_shape": 1.35,
+    "target_avg_budget": 2.0,
+    "test_examples": 192,
+    "train_examples": 384
+  },
+  "rows": [
+    {
+      "accuracy": 0.6145833333333334,
+      "avg_budget": 1.0,
+      "budget_histogram": {
+        "1": 1.0,
+        "2": 0.0,
+        "4": 0.0
+      },
+      "compute_fraction": 0.25,
+      "method": "fixed_budget_1",
+      "oracle_accuracy": 0.9791666666666666,
+      "oracle_gap": 0.36458333333333326,
+      "probe_accuracy": 0.6145833333333334,
+      "probe_auroc": 0.7212551534585433,
+      "probe_brier": 0.22564785182476044,
+      "probe_confidence_gap": 0.11370465159416199,
+      "probe_ece": 0.1391911043666922,
+      "selected_auroc": 0.7212551534585433,
+      "selected_brier": 0.22564785182476044,
+      "selected_confidence_gap": 0.11370465159416199,
+      "selected_ece": 0.1391911043666922
+    },
+    {
+      "accuracy": 0.640625,
+      "avg_budget": 2.0,
+      "budget_histogram": {
+        "1": 0.0,
+        "2": 1.0,
+        "4": 0.0
+      },
+      "compute_fraction": 0.5,
+      "method": "fixed_budget_2",
+      "oracle_accuracy": 0.9791666666666666,
+      "oracle_gap": 0.33854166666666663,
+      "probe_accuracy": 0.6145833333333334,
+      "probe_auroc": 0.7212551534585433,
+      "probe_brier": 0.22564785182476044,
+      "probe_confidence_gap": 0.11370465159416199,
+      "probe_ece": 0.1391911043666922,
+      "selected_auroc": 0.6757393660893131,
+      "selected_brier": 0.2200695425271988,
+      "selected_confidence_gap": 0.09045654535293579,
+      "selected_ece": 0.09698315347832676
+    },
+    {
+      "accuracy": 0.6458333333333334,
+      "avg_budget": 4.0,
+      "budget_histogram": {
+        "1": 0.0,
+        "2": 0.0,
+        "4": 1.0
+      },
+      "compute_fraction": 1.0,
+      "method": "fixed_budget_4",
+      "oracle_accuracy": 0.9791666666666666,
+      "oracle_gap": 0.33333333333333326,
+      "probe_accuracy": 0.6145833333333334,
+      "probe_auroc": 0.7212551534585433,
+      "probe_brier": 0.22564785182476044,
+      "probe_confidence_gap": 0.11370465159416199,
+      "probe_ece": 0.1391911043666922,
+      "selected_auroc": 0.6395872865275142,
+      "selected_brier": 0.2144821137189865,
+      "selected_confidence_gap": 0.079703688621521,
+      "selected_ece": 0.09635900495825123
+    },
+    {
+      "accuracy": 0.625,
+      "avg_budget": 1.9739583333333333,
+      "budget_histogram": {
+        "1": 0.3385416666666667,
+        "2": 0.5052083333333334,
+        "4": 0.15625
+      },
+      "compute_fraction": 0.4934895833333333,
+      "method": "random_budget_matched",
+      "oracle_accuracy": 0.9791666666666666,
+      "oracle_gap": 0.35416666666666663,
+      "probe_accuracy": 0.6145833333333334,
+      "probe_auroc": 0.7212551534585433,
+      "probe_brier": 0.22564785182476044,
+      "probe_confidence_gap": 0.11370465159416199,
+      "probe_ece": 0.1391911043666922,
+      "selected_auroc": 0.6872685185185186,
+      "selected_brier": 0.21881873905658722,
+      "selected_confidence_gap": 0.10640907287597656,
+      "selected_ece": 0.10414839436151468
+    },
+    {
+      "accuracy": 0.6510416666666666,
+      "avg_budget": 2.03125,
+      "budget_histogram": {
+        "1": 0.28125,
+        "2": 0.5625,
+        "4": 0.15625
+      },
+      "compute_fraction": 0.5078125,
+      "method": "confidence_gated",
+      "oracle_accuracy": 0.9791666666666666,
+      "oracle_gap": 0.328125,
+      "probe_accuracy": 0.6145833333333334,
+      "probe_auroc": 0.7212551534585433,
+      "probe_brier": 0.22564785182476044,
+      "probe_confidence_gap": 0.11370465159416199,
+      "probe_ece": 0.1391911043666922,
+      "selected_auroc": 0.6746268656716418,
+      "selected_brier": 0.21604585647583008,
+      "selected_confidence_gap": 0.08547329902648926,
+      "selected_ece": 0.10274323396872198
+    }
+  ],
+  "subgroups": {
+    "confidence_gated": {
+      "difficulty": [
+        {
+          "accuracy": 0.734375,
+          "avg_budget": 2.03125,
+          "count": 64,
+          "group": "difficulty_0",
+          "oracle_gap": 0.21875,
+          "probe_ece": 0.26461447682231665,
+          "selected_ece": 0.16460047522559762
+        },
+        {
+          "accuracy": 0.640625,
+          "avg_budget": 2.1875,
+          "count": 64,
+          "group": "difficulty_1",
+          "oracle_gap": 0.34375,
+          "probe_ece": 0.15305458987131715,
+          "selected_ece": 0.10653547896072268
+        },
+        {
+          "accuracy": 0.578125,
+          "avg_budget": 1.875,
+          "count": 64,
+          "group": "difficulty_2",
+          "oracle_gap": 0.421875,
+          "probe_ece": 0.1262094248086214,
+          "selected_ece": 0.1191385816782713
+        }
+      ],
+      "probe_confidence": [
+        {
+          "accuracy": 0.484375,
+          "avg_budget": 2.9375,
+          "count": 64,
+          "group": "probe_confidence_0",
+          "oracle_gap": 0.453125,
+          "probe_ece": 0.08955308608710766,
+          "selected_ece": 0.13525141822174191
+        },
+        {
+          "accuracy": 0.640625,
+          "avg_budget": 2.0,
+          "count": 64,
+          "group": "probe_confidence_1",
+          "oracle_gap": 0.359375,
+          "probe_ece": 0.20610910141840577,
+          "selected_ece": 0.12552521470934153
+        },
+        {
+          "accuracy": 0.828125,
+          "avg_budget": 1.15625,
+          "count": 64,
+          "group": "probe_confidence_2",
+          "oracle_gap": 0.171875,
+          "probe_ece": 0.1602864246815443,
+          "selected_ece": 0.1654982976615429
+        }
+      ]
+    }
+  }
+}

@@ -204,6 +204,50 @@ That means:
   change the transport or fusion path itself, not only the per-head sparse
   budget metric
 
+## Status After Randomized Verifier Labels
+
+The first target-model listwise verifier failed by selecting target-alone on
+all `30/30` GSM30 examples. I then reran the same verifier after shuffling the
+candidate labels while logging the label order, target label, selected source,
+and raw verifier response for every example.
+
+Result: accuracy improved from `0.0667` to `0.1000`, but the verifier chose
+letter `A` on `29/30` examples while target-alone was label `A` only `7/30`
+times. Target selection dropped to `6/30`, so the old failure was not pure
+target preference; it was mostly option-position collapse.
+
+That means:
+
+- raw listwise verifier prompts are not a reliable selector yet
+- label randomization is mandatory for any future verifier ablation
+- the next selector path should use pairwise/pointwise candidate checks,
+  confidence calibration, or candidate repair rather than asking for one
+  multiple-choice letter
+- the telemetry fields now make this interpretable enough to audit when we
+  scale beyond GSM30
+
+## Status After Confidence-Gated Compute Toy
+
+I added a toy ablation for adaptive candidate-budget allocation, motivated by
+the current gap between stochastic-route oracle quality and selector quality.
+The toy simulates heavy-tailed candidate pools and calibrates thresholds on a
+train split before evaluating on a held-out test split.
+
+Result: `confidence_gated` reaches `0.6510` accuracy at average budget
+`2.0312`, compared with `fixed_budget_2` at `0.6406` and
+`random_budget_matched` at `0.6250`. The oracle gap also improves from
+`0.3385` for `fixed_budget_2` to `0.3281` for `confidence_gated`.
+
+That means:
+
+- adaptive compute allocation is a plausible selector-side primitive
+- the effect is modest but positive under matched-ish average budget
+- the next real-model version should expand from one to three to five route
+  candidates only when confidence or agreement telemetry says the example is
+  hard
+- paper-facing claims still require the same idea to move from toy data into
+  GSM30/GSM70 stochastic route pools
+
 I then pushed that same hypothesis one step deeper into the live fusion path,
 without changing the frozen translator checkpoint, by adding
 `attention_qk_fidelity_tokenwise` as a runtime per-head, per-position gate

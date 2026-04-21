@@ -13,6 +13,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `gsm8k_gate_search_30` | target-alone | `0.0667` | `0` | current stochastic-reranker baseline |
 | `gsm8k_gate_search_30` | strict stochastic selector | `0.1667` | `-` | best current non-oracle selector over three random route/value candidates |
 | `gsm8k_gate_search_30` | target-model listwise verifier | `0.0667` | `-` | selected target-alone on all 30 examples; useful negative selector control |
+| `gsm8k_gate_search_30` | shuffled-label target-model verifier | `0.1000` | `-` | target selection drops to `0.2000`, but `Choice A` rate is `0.9667`; position-bias diagnostic, not a solved selector |
 | `gsm8k_gate_search_30` | target-or-seed oracle | `0.3000` | `-` | candidate-quality ceiling, label-leaking |
 | `gsm8k_gate_search_30` | C2C native smoke | `0.0667` | `-` | exact Qwen pair through published C2C artifact |
 | `gsm8k_gate_search_30` | KVPress none | `0.0667` | `-` | same-model compression control |
@@ -69,6 +70,11 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 - The naive target-model listwise verifier is a negative control: it chose the
   target candidate on every GSM30 example, so future verifier work needs
   calibration, position randomization, or process-level checks.
+- Position randomization confirms the verifier failure is not simply target
+  preference: shuffled labels improve only to `0.1000`, while the model chooses
+  option `A` on `29/30` examples. Future selector work should avoid raw
+  listwise letters and use calibrated pairwise/pointwise checks, answer repair,
+  or confidence-gated expansion.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.
