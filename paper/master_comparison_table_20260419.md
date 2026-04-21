@@ -26,6 +26,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | Split | Method | Accuracy | Avg bytes | Notes |
 | --- | --- | ---: | ---: | --- |
 | `gsm8k_eval_70` | `target-alone` | `0.0429` | `0` | no source communication |
+| `gsm8k_eval_70` | target candidate, shared-chat repair manifest | `0.0571` | `0` | target-side baseline inside the held-out process-repair route pool |
 | `gsm8k_eval_70` | `text-to-text` | `0.1000` | `-` | text communication baseline |
 | `gsm8k_eval_70` | fixed head prior | `0.0857` | `151,163.7` | best current internal same-pair branch |
 | `gsm8k_eval_70` | shuffled fixed prior | `0.0429` | `151,163.7` | query-blind null |
@@ -43,6 +44,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `gsm8k_eval_70` | broadcast retrieval-spectrum OT transport + rank-4 residual | `0.0143` | `625,463.7` | rectangular Sinkhorn-style `2 -> 8` transport using retrieval-weighted key spectra under matched sparse `K-only` evaluation (`64`-prompt calibration slice) |
 | `gsm8k_eval_70` | broadcast QK-template OT transport + rank-4 residual | `0.0143` | `625,463.7` | rectangular Sinkhorn-style `2 -> 8` transport using last-token QK logit templates under matched sparse `K-only` evaluation (`64`-prompt calibration slice) |
 | `gsm8k_eval_70` | grouped canonical transport | `0.0286` | `149,496.2` | low-rank canonical basis shortcut |
+| `gsm8k_eval_70` | strict selector + process repair | `0.2000` | `-` | held-out repair over stochastic route-pool salts `0/1/2`; pre-repair `0.1286`, help `0.0714`, harm `0.0000`, oracle `0.1571`; adds target-side repair compute |
 | `gsm8k_eval_70` | `C2C` | `0.1286` | `-` | strongest external baseline so far |
 | `gsm8k_eval_70` | lifted `KVComm` replay | `0.0000` | `-` | compatibility-lifted heterogeneous replay |
 
@@ -59,15 +61,22 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | Split | Method | Accuracy | Avg bytes | Notes |
 | --- | --- | ---: | ---: | --- |
 | `svamp_eval_70` | `target-alone` | `0.0714` | `0` | no source communication |
+| `svamp_eval_70` | target candidate, shared-chat repair manifest | `0.3000` | `0` | target-side baseline inside the held-out process-repair route pool |
 | `svamp_eval_70` | `text-to-text` | `0.4143` | `-` | text communication baseline |
 | `svamp_eval_70` | grouped CCA fixed prior | `0.1714` | `-` | best current internal SVAMP branch |
 | `svamp_eval_70` | grouped CCA shuffled null | `0.1286` | `-` | matched query-blind null |
+| `svamp_eval_70` | strict selector + process repair | `0.5429` | `-` | held-out repair over stochastic route-pool salts `0/1/2`; pre-repair `0.3571`, help `0.1857`, harm `0.0000`, oracle `0.5286`; adds target-side repair compute |
 | `svamp_eval_70` | `C2C` | `0.4429` | `-` | strongest external baseline so far |
 
 ## Current Read
 
-- Best internal same-pair GSM branch is still the fixed head-prior branch, not transport-first.
-- Best external baseline is still `C2C`, and it beats us on both GSM and SVAMP.
+- Best frozen latent-transport-only GSM branch is still the fixed head-prior
+  branch, not transport-first.
+- `C2C` remains the strongest no-extra-repair direct external comparator, but
+  held-out strict selector + process repair now beats its raw accuracy on
+  GSM70 and SVAMP70. This is a method candidate, not yet a fair efficiency
+  claim, because it adds target-side repair generation and needs matched
+  compute/token/byte accounting.
 - On the newer GSM30 stochastic-route smoke, the strict selector is the first
   non-oracle internal method to beat target-alone and same-slice C2C/KVPress
   controls (`0.1667` vs `0.0667`), but it is not yet a held-out paper result.
@@ -90,10 +99,15 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   agreement features collapses on the eval-half (`0.0000`), so simple candidate
   metadata is not enough; the next selector needs process verification or
   repair.
-- Strict selector plus process repair is now the strongest GSM30 real-model
-  smoke (`0.2333`), beating strict selection alone (`0.1667`) without observed
-  repair harm on this slice. It is still a dev-slice result and must move to
-  held-out GSM70/SVAMP before becoming a method claim.
+- Strict selector plus process repair is now the strongest real-model method
+  lane: GSM30 `0.2333`, held-out GSM70 `0.2000`, and held-out SVAMP70
+  `0.5429`, with observed repair harm `0.0000` on all three current slices.
+  The next paper risk is fair budget matching, not whether the repair lane has
+  any held-out signal.
+- Raw stochastic route pools are not stable enough to claim alone: GSM70 salts
+  land at `0.0857`, `0.0286`, and `0.0571`; SVAMP70 salts land at `0.3000`,
+  `0.3000`, and `0.2571`. The positive result comes from target-side process
+  repair on top of candidate generation.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.
@@ -105,6 +119,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 - A richer rectangular Sinkhorn-style OT plan in that same attention-template space still lands at `0.0000`, so the remaining issue is not just transport granularity or many-to-many mass assignment.
 - Replacing mean attention templates with simple peak-location templates lifts that OT branch to `0.0143`, so representation matters a bit, but the gain is still far below the fixed prior and `C2C`.
 - Replacing the retrieval-spectrum descriptor with simple last-token QK logit templates does not move that frontier at all: it ties the retrieval-spectrum OT branch at `0.0143` while staying far less byte-efficient than the live sparse branches.
-- The paper is currently strongest as a **blocker / mechanism** story:
-  head-space mismatch and transport quality matter, but the current transport
-  family does not yet produce a competitive positive method on the main split.
+- The paper can now be framed around a positive repair-and-routing method
+  candidate, with blocker/mechanism evidence explaining why frozen transport
+  alone saturates. The remaining bar is proving the gain under matched compute
+  against text-to-text, `C2C`, and target self-repair controls.
