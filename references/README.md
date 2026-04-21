@@ -440,6 +440,20 @@ Files `377_` through `379_` extend the multimodal-connector, benchmark-contract,
 - `378_`: Recent benchmark-contract references for `C2C`, `KVComm`, `LatentMAS`, `Q-KVComm`, `lm-eval`, and `OpenCompass`, organized around matched benchmarking rules instead of mixed leaderboards.
 - `379_`: Recent gauge/symmetry, canonicalization, quantization geometry, and tokenizer-mismatch interface references with concrete gauge-fix, quotient-match, and protected-channel experiments.
 
+Files `380_` through `385_` extend the gauge/quotient, benchmark-bootstrap, multimodal-repair, compression, benchmark-contract, and latent-repair lanes:
+
+- `380_`: Gauge symmetry, quotient geometry, multiway alignment, and latent transport memo with concrete quotient-aware bridge ablations.
+- `381_`: Competitor and benchmark-harness bootstrap memo covering fair comparison contracts, matched row types, and practical execution guidance.
+- `382_`: Multimodal connector, latent repair, iterative communication, token-free reasoning, and diffusion-language memo with concrete bridge and repair ablations.
+- `383_`: Rate-distortion, mixed-bit, KV-compression, and communication/compression memo with canonicalize-then-compress and vector-quantized bridge ablations.
+- `384_`: Latest competitor and benchmark-contract memo covering matched rows, metrics, and evaluation caveats for the benchmark track.
+- `385_`: Latest multimodal connector, latent-token, diffusion-language, and iterative latent-repair memo with concrete bridge and repair ablations.
+
+Files `386_` and `387_` extend the current interface-alignment and frozen benchmark-contract lanes:
+
+- `386_`: Cross-tokenizer interface alignment memo covering byte-sidecar interfaces, sequence alignment, model-aware tokenizer transfer, and stronger interface ablations than remap tables alone.
+- `387_`: Matched benchmark contract memo derived from the local `C2C`, `KVComm`, `LatentMAS`, `lm-eval`, and `OpenCompass` repos, freezing the two-main-table-plus-appendix comparison plan and the required smoke tests.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.

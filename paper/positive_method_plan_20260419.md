@@ -118,6 +118,58 @@ bases help individually. It should ask whether the composed lane survives:
 - matched competitor contracts
 - and one real held-out benchmark slice
 
+## Status After Strong Interface Stress
+
+The strong interface-stress follow-up makes the next interface claim more
+precise:
+
+- under explicit tokenizer-like corruption, the byte/span-remap version of the
+  composed lane becomes the best shared-basis variant at the true low-shot
+  points, reaching `0.0566` MSE at `1` shot/class and `0.0570` at `2`
+  shots/class
+- that beats the same composed lane with the raw token-id interface
+  (`0.0582`, `0.0579`) and stays very close to the oracle-interface ceiling
+  (`0.0568`, `0.0576`)
+- but it still does **not** overturn the broader boundary: by `4`
+  shots/class, direct held-out-family fitting with the same remap becomes the
+  best method again (`0.0238` vs shared-basis oracle-interface `0.0555`)
+
+That means the interface result is now useful, but narrow:
+
+1. byte/span or vocab control is a **robustness amplifier**
+2. it can protect the low-shot shared-basis lane when interface mismatch is
+   real
+3. it is **not** the main explanation for the current same-pair Qwen gap
+4. it should stay behind the main method story, which is still quotient-aware
+   symmetry plus a shared sparse basis
+
+So the next additive order is still:
+
+1. quotient-aware matching
+2. GPA canonicalization
+3. sparse shared dictionary
+4. byte/span or vocab interface control when mismatch is present
+5. route/repair only after the first four pieces remain stable on a real
+   held-out slice
+
+## Benchmark Contract Status
+
+The benchmark track is now frozen conceptually even though the full rows are
+not run yet:
+
+- Main Table A should be cross-model reasoning only: `gsm8k`,
+  `gpqa_diamond`, `arc_challenge`, with `C2C` as the main external
+  comparator.
+- Main Table B should be cross-model long-context QA only: `hotpotqa`,
+  `qasper`, `multifieldqa_en`, `2wikimqa`, `musique`, with `KVComm` as the
+  main external comparator.
+- Same-backbone `LatentMAS` rows belong in an appendix table, not the main
+  cross-model comparison.
+
+That means we should stop thinking about “the competitor table” as one mixed
+artifact. The next execution step is a smoke-tested, frozen contract for the
+relevant suite once the method itself is stronger.
+
 ## Best Next Method Lane
 
 Subagent consensus was tight: the only credible internal positive-method lane

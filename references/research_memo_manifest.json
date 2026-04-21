@@ -201,5 +201,19 @@
     "path": "references/385_multimodal_latent_repair_recent_refs.md",
     "status": "local_memo",
     "reason": "Recent multimodal connector, latent-token, diffusion-language, and iterative latent-repair memo with concrete LatentWire bridge and repair ablations."
+  },
+  {
+    "num": 386,
+    "slug": "cross_tokenizer_interface_alignment_recent_refs",
+    "path": "references/386_cross_tokenizer_interface_alignment_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent cross-tokenizer interface alignment memo covering byte-sidecar interfaces, sequence alignment, model-aware tokenizer transfer, and stronger interface ablations than remap tables alone."
+  },
+  {
+    "num": 387,
+    "slug": "matched_benchmark_contract_execution_refs",
+    "path": "references/387_matched_benchmark_contract_execution_refs.md",
+    "status": "local_memo",
+    "reason": "Frozen benchmark contract memo derived from the local competitor repos, covering the two-main-table-plus-appendix comparison plan and the minimum smoke tests before any headline benchmark row."
   }
 ]
