@@ -3299,3 +3299,50 @@ Next execution ladder:
    test-before-repair + verifier-guided frontier control + feature/atom
    interface, all reported against `C2C`, `KVComm`, `KVPress`, text-to-text,
    target self-repair, and prompt-compression controls.
+
+## 2026-04-21 Activation-Aware Quantization And Competitor Execution Check
+
+Executed next:
+
+- Added `references/355_quantization_compression_inspiration_refs.md`, covering
+  AWQ, GPTQ, EXL2, SmoothQuant, QuaRot/SpinQuant, KIVI/KVQuant, BAQ, SpQR, and
+  AQLM as concrete bridge-compression and atom-allocation inspirations.
+- Added toy `activation_aware_atom_quant`, comparing full precision, uniform
+  low-bit, random mixed precision, activation-aware mixed precision,
+  protected-outlier mixed precision, and oracle mixed precision.
+- Attempted the first full competitor batch rows from
+  `references/354_competitor_next_runnable_matrix.md`; the status artifact is
+  `results/competitor_next_runnable_20260421/competitor_batch_status_20260421.md`.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| Uniform low-bit atom quantization | accuracy `0.9531`, bytes `16.0`, top-atom preservation `0.0000` | Low-bit compression is cheap but loses task accuracy and destroys salient atom tracking. |
+| Random mixed precision | accuracy `0.9792`, bytes `29.0`, top-atom preservation `0.5000`, outlier protection `0.2500` | Mixed precision helps, but random allocation leaves avoidable harm. |
+| Activation-aware mixed precision | accuracy `1.0000`, bytes `29.0`, top-atom preservation `1.0000`, outlier protection `1.0000` | AWQ/EXL2-style saliency allocation can preserve full-precision task behavior at less than half the full bytes in toy form. |
+| Protected-outlier mixed precision | accuracy `1.0000`, bytes `29.0`, top-atom preservation `1.0000`, outlier protection `1.0000` | Outlier protection is not just a compression trick; it is a plausible route-atom preservation primitive. |
+| Competitor full-row attempt | C2C reached model fetch completion but stalled in generation; KVPress reached MPS device setup but stalled | Competitor rows need explicit timeouts, `--limit` smokes, or CPU/GPU scheduling before we can fill the full benchmark table locally. |
+
+Updated read:
+
+The quantization analogy is now actionable: activation-aware bit allocation and
+outlier protection should be stacked with the shared-feature/route-atom
+interface rather than treated as a separate compression appendix. The method
+hypothesis becomes: identify task-causal atoms/features, protect them at high
+precision, compress the rest aggressively, then use process repair only when
+the verifier says the transmitted frontier is unsafe.
+
+Next execution ladder:
+
+1. Add a real route-pool diagnostic for saliency and outlier atoms: activation
+   energy, task-gradient or verifier saliency proxy, top-atom preservation,
+   protected-byte share, and task delta.
+2. Combine verifier-guided frontier pruning with activation-aware mixed-bit
+   allocation in one toy stack before promoting either to real route pools.
+3. Add rotation-before-compression controls: identity, Hadamard/random
+   orthogonal, and learned rotation before mixed-bit atom quantization.
+4. Rerun competitor rows with explicit `--limit` smokes and wall-clock
+   timeouts before attempting full GSM70/SVAMP70 rows on MPS.
+5. Keep the benchmark table honest: incomplete competitor rows are blockers,
+   not hidden missing data.

@@ -172,6 +172,13 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   pruning reaches `0.9609` at roughly half the byte/compute proxy. This is
   still toy-only, but it is a concrete candidate for route/atom frontier
   control.
+- The activation-aware atom quantization toy adds a compression-side component:
+  uniform low-bit quantization reaches `0.9531`, random mixed precision reaches
+  `0.9792`, and activation-aware / protected-outlier mixed precision reach
+  full-precision accuracy `1.0000` at bytes `29.0` versus full precision bytes
+  `68.0`. The telemetry also tracks top-atom preservation and outlier
+  protection, so this is interpretable enough to promote to route-pool
+  diagnostics.
 - A deterministic LLMLingua-style prompt-compression control is now available:
   it preserves all numeric spans on GSM70/SVAMP70 and saves an estimated
   `123.5` / `71.5` bytes on average, but it is a budget/preservation diagnostic
@@ -191,9 +198,18 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 - The next runnable competitor batch is now fixed: run `C2C` on
   GSM70/SVAMP70, `KVComm` on GSM70, and `KVPress` none versus
   expected-attention on GSM70/SVAMP70 before adding broader watchlist methods.
+- The first full-row competitor execution attempt is blocked by local runtime:
+  C2C GSM70 reached model-fetch completion but stalled in generation, and
+  KVPress GSM70 reached MPS device setup but also stalled. The next benchmark
+  attempt should use explicit `--limit` smokes and wall-clock timeouts before
+  full rows.
 - Tokenizer-interface references add a new upstream ablation lane: byte/patch
   bridge, explicit vocabulary remap, time-warped span alignment, adaptive
   hypertokens, and length-optimal retokenization controls.
+- Quantization/compression references add another ablation lane:
+  activation-aware bit allocation, outlier-protected exception paths,
+  rotation-before-compression, asymmetric KV-style bridge memory, and additive
+  codebook bridges.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided
