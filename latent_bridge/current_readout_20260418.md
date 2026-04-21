@@ -2953,3 +2953,58 @@ Interpretation:
 - these references are worth citing in the related-work and ablation-planning
   sections, but the current empirical results do not justify adding another
   main-method component until it beats the target-controlled slice
+
+And an asymmetric K/V budget toy follow-up:
+
+> I added `asymmetric_kv_budget` to the toy query-pool benchmark. It separates
+> the K-like route budget from the V-like value budget, then logs route/value
+> entropy, overlap, Jaccard, KL, cosine, gap, and gate statistics.
+>
+> New artifacts:
+> - `results/query_pool_toy_20260421/query_pool_asymmetric_kv_budget_route1_value3.{json,md}`
+> - `results/query_pool_toy_20260421/query_pool_asymmetric_kv_budget_route2_value2.{json,md}`
+> - `results/query_pool_toy_20260421/query_pool_asymmetric_kv_budget_vs_topk.{json,md}`
+> - `results/query_pool_toy_20260421/asymmetric_kv_budget_summary.md`
+>
+> At matched total budget `4`, task accuracy was:
+> - aligned: best prior control `0.3594`, asym K/V `1+3` `0.4844`,
+>   asym K/V `2+2` `0.4167`
+> - rotated: best prior control `0.3906`, asym K/V `1+3` `0.4219`,
+>   asym K/V `2+2` `0.4688`
+> - outlier: best prior control `0.3594`, asym K/V `1+3` `0.4219`,
+>   asym K/V `2+2` `0.4167`
+> - slot-permuted: best prior control `0.3542`, asym K/V `1+3` `0.4427`,
+>   asym K/V `2+2` `0.3906`
+
+Interpretation:
+
+- this is the strongest new toy lead in the current cycle: both matched-budget
+  asymmetric K/V splits beat the previous controls across all four stress cases
+- the telemetry says the mechanism is real budget asymmetry rather than just a
+  larger selector: route/value overlap is low, Jaccard is low, KL is high, and
+  cosine is low
+- this still is **not** a paper-positive real-model result; it is a high-value
+  clue for the next real evaluator branch
+- the next real-model ablation should separate K-route and V-value retention
+  ratios, log separate K/V distortion or attention-fidelity metrics, and test
+  equal-byte uniform/shuffled controls before stacking with route atoms
+
+And a second reference expansion:
+
+> I added:
+> - `references/308_kv_compression_competitor_refs.md`
+> - `references/308_symmetry_geometry_alignment_refs.md`
+> - `references/308_quantization_asymmetry_refs.md`
+
+Interpretation:
+
+- `C2C` and `KVComm` remain the direct cross-model communication comparators
+- KV-cache compression papers are mostly not apples-to-apples baselines, but
+  they are essential controls for matched bytes, routing, retention, and
+  latency
+- symmetry/geometry work reinforces that any positive method needs to report
+  gauge stability, orientation/span metrics, and interference/collapse
+  telemetry
+- quantization work now points to asymmetric K/V budgeting, bounded rotations
+  or preconditioning, outlier protection, and variable-byte frontiers as the
+  next concrete ablation family

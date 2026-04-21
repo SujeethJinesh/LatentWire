@@ -232,6 +232,14 @@
     "split": "gsm8k_eval_10_controlled"
   },
   {
+    "accuracy": 0.1,
+    "avg_bytes": 175249.2,
+    "family": "head-route compression ablation",
+    "method": "dynamic-aligned preference-distilled route-atom 25%",
+    "notes": "same preference-distilled checkpoint with headwise route-atom selection at 25% head budget; ties dense-head branch at roughly 3.9x fewer bytes",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
     "accuracy": 0.0,
     "avg_bytes": 681668.4,
     "family": "stronger-teacher bridge",
@@ -294,6 +302,22 @@
     "method": "KVPress ExpectedAttentionPress",
     "notes": "exact external Expected Attention comparator",
     "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.06666666666666667,
+    "avg_bytes": 0.0,
+    "family": "control",
+    "method": "target-alone",
+    "notes": "paired target-only floor from the GSM30 route-atom scale check",
+    "split": "gsm8k_eval_30_controlled"
+  },
+  {
+    "accuracy": 0.03333333333333333,
+    "avg_bytes": 172643.33333333334,
+    "family": "head-route compression ablation",
+    "method": "dynamic-aligned preference-distilled route-atom 25%",
+    "notes": "GSM30 scale check; remains byte-efficient but loses to target-alone",
+    "split": "gsm8k_eval_30_controlled"
   },
   {
     "accuracy": 0.2,

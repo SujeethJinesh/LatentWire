@@ -24,6 +24,8 @@ class ToyConfig:
     top_k: int = 4
     pool_slots: int = 4
     route_atoms: int = 4
+    kv_route_budget: int = 2
+    kv_value_budget: int = 4
     epochs: int = 120
     lr: float = 2e-2
     rec_weight: float = 0.2
@@ -146,6 +148,72 @@ def _precondition_metrics(preconditioned: torch.Tensor, original: torch.Tensor) 
     }
 
 
+def _kv_asymmetry_metrics(
+    route_weights: torch.Tensor,
+    value_weights: torch.Tensor,
+    route_indices: torch.Tensor,
+    value_indices: torch.Tensor,
+    route_summary: torch.Tensor,
+    value_summary: torch.Tensor,
+    gate: torch.Tensor,
+) -> dict[str, float]:
+    route_probs = route_weights / route_weights.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    value_probs = value_weights / value_weights.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+
+    route_entropy = (-(route_probs * route_probs.clamp_min(1e-8).log()).sum(dim=-1)).mean()
+    value_entropy = (-(value_probs * value_probs.clamp_min(1e-8).log()).sum(dim=-1)).mean()
+
+    route_sorted = route_probs.sort(dim=-1, descending=True).values
+    value_sorted = value_probs.sort(dim=-1, descending=True).values
+    route_margin = (route_sorted[:, 0] - route_sorted[:, min(1, route_sorted.shape[-1] - 1)]).mean()
+    value_margin = (value_sorted[:, 0] - value_sorted[:, min(1, value_sorted.shape[-1] - 1)]).mean()
+
+    route_winners = route_probs.argmax(dim=-1)
+    value_winners = value_probs.argmax(dim=-1)
+    route_counts = torch.bincount(route_winners, minlength=route_probs.shape[-1]).float()
+    value_counts = torch.bincount(value_winners, minlength=value_probs.shape[-1]).float()
+    route_collision_rate = route_counts.max() / max(int(route_winners.numel()), 1)
+    value_collision_rate = value_counts.max() / max(int(value_winners.numel()), 1)
+    route_dead_rate = (route_counts == 0).float().mean()
+    value_dead_rate = (value_counts == 0).float().mean()
+
+    route_keep = route_indices.shape[-1]
+    value_keep = value_indices.shape[-1]
+    overlaps = []
+    jaccards = []
+    for route_idx, value_idx in zip(route_indices, value_indices):
+        route_set = set(route_idx.tolist())
+        value_set = set(value_idx.tolist())
+        intersection = len(route_set & value_set)
+        union = len(route_set | value_set)
+        overlaps.append(intersection / max(min(len(route_set), len(value_set)), 1))
+        jaccards.append(intersection / max(union, 1))
+
+    kl = F.kl_div(route_probs.clamp_min(1e-8).log(), value_probs.clamp_min(1e-8), reduction="none").sum(dim=-1).mean()
+    cosine = F.cosine_similarity(route_summary, value_summary, dim=-1).mean()
+    gap = F.mse_loss(route_summary, value_summary)
+
+    return {
+        "kv_route_entropy": float(route_entropy.item()),
+        "kv_value_entropy": float(value_entropy.item()),
+        "kv_route_collision_rate": float(route_collision_rate.item()),
+        "kv_value_collision_rate": float(value_collision_rate.item()),
+        "kv_route_dead_rate": float(route_dead_rate.item()),
+        "kv_value_dead_rate": float(value_dead_rate.item()),
+        "kv_route_top_margin": float(route_margin.item()),
+        "kv_value_top_margin": float(value_margin.item()),
+        "kv_route_keep_fraction": float(route_keep / route_probs.shape[-1]),
+        "kv_value_keep_fraction": float(value_keep / value_probs.shape[-1]),
+        "kv_route_value_overlap": float(sum(overlaps) / max(len(overlaps), 1)),
+        "kv_route_value_jaccard": float(sum(jaccards) / max(len(jaccards), 1)),
+        "kv_route_value_kl": float(kl.item()),
+        "kv_route_value_cosine": float(cosine.item()),
+        "kv_route_value_gap": float(gap.item()),
+        "kv_gate_mean": float(gate.mean().item()),
+        "kv_gate_std": float(gate.std(unbiased=False).item()),
+    }
+
+
 class TopKReadout(nn.Module):
     def __init__(self, dim: int, classes: int, top_k: int) -> None:
         super().__init__()
@@ -262,6 +330,62 @@ class ConstrainedPreconditionedQueryPoolReadout(nn.Module):
         return self.classifier(summary), self.reconstructor(summary), weights
 
 
+class AsymmetricKVBudgetReadout(nn.Module):
+    def __init__(self, dim: int, classes: int, route_budget: int, value_budget: int) -> None:
+        super().__init__()
+        self.route_budget = int(route_budget)
+        self.value_budget = int(value_budget)
+        self.query_proj = nn.Linear(dim, dim, bias=False)
+        self.classifier = nn.Linear(dim, classes)
+        self.reconstructor = nn.Linear(dim, dim)
+        self.last_atom_weights: torch.Tensor | None = None
+        self.last_route_weights: torch.Tensor | None = None
+        self.last_value_weights: torch.Tensor | None = None
+        self.last_route_indices: torch.Tensor | None = None
+        self.last_value_indices: torch.Tensor | None = None
+        self.last_route_summary: torch.Tensor | None = None
+        self.last_value_summary: torch.Tensor | None = None
+        self.last_gate: torch.Tensor | None = None
+
+    @staticmethod
+    def _topk_weights(logits: torch.Tensor, keep: int) -> tuple[torch.Tensor, torch.Tensor]:
+        keep = min(max(int(keep), 1), logits.shape[-1])
+        top = torch.topk(logits, k=keep, dim=-1)
+        masked = torch.full_like(logits, float("-inf"))
+        masked.scatter_(dim=-1, index=top.indices, src=top.values)
+        weights = torch.softmax(masked, dim=-1)
+        return weights, top.indices
+
+    def encode(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor]:
+        q_proj = self.query_proj(batch.q)
+        scale = math.sqrt(batch.q.shape[-1])
+        route_logits = torch.einsum("nd,nsd->ns", q_proj, batch.K) / scale
+        value_logits = torch.einsum("nd,nsd->ns", q_proj, batch.V) / scale
+
+        route_weights, route_indices = self._topk_weights(route_logits, self.route_budget)
+        value_weights, value_indices = self._topk_weights(value_logits, self.value_budget)
+
+        route_summary = torch.einsum("ns,nsd->nd", route_weights, batch.V)
+        value_summary = torch.einsum("ns,nsd->nd", value_weights, batch.V)
+        gate = torch.sigmoid(((route_summary - value_summary) * q_proj).sum(dim=-1, keepdim=True) / scale)
+        summary = gate * route_summary + (1.0 - gate) * value_summary
+        combined_weights = 0.5 * (route_weights + value_weights)
+
+        self.last_atom_weights = combined_weights.detach()
+        self.last_route_weights = route_weights.detach()
+        self.last_value_weights = value_weights.detach()
+        self.last_route_indices = route_indices.detach()
+        self.last_value_indices = value_indices.detach()
+        self.last_route_summary = route_summary.detach()
+        self.last_value_summary = value_summary.detach()
+        self.last_gate = gate.detach()
+        return summary, combined_weights
+
+    def forward(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        summary, weights = self.encode(batch)
+        return self.classifier(summary), self.reconstructor(summary), weights
+
+
 class RouteAtomReadout(nn.Module):
     def __init__(self, dim: int, classes: int, route_atoms: int) -> None:
         super().__init__()
@@ -356,6 +480,55 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
                     "constrained_scale_mean": float(constrained_scale.mean().item()),
                 }
             )
+    route_weights = getattr(model, "last_route_weights", None)
+    value_weights = getattr(model, "last_value_weights", None)
+    route_indices = getattr(model, "last_route_indices", None)
+    value_indices = getattr(model, "last_value_indices", None)
+    route_summary = getattr(model, "last_route_summary", None)
+    value_summary = getattr(model, "last_value_summary", None)
+    gate = getattr(model, "last_gate", None)
+    if (
+        route_weights is None
+        or value_weights is None
+        or route_indices is None
+        or value_indices is None
+        or route_summary is None
+        or value_summary is None
+        or gate is None
+    ):
+        metrics.update(
+            {
+                "kv_route_entropy": None,
+                "kv_value_entropy": None,
+                "kv_route_collision_rate": None,
+                "kv_value_collision_rate": None,
+                "kv_route_dead_rate": None,
+                "kv_value_dead_rate": None,
+                "kv_route_top_margin": None,
+                "kv_value_top_margin": None,
+                "kv_route_keep_fraction": None,
+                "kv_value_keep_fraction": None,
+                "kv_route_value_overlap": None,
+                "kv_route_value_jaccard": None,
+                "kv_route_value_kl": None,
+                "kv_route_value_cosine": None,
+                "kv_route_value_gap": None,
+                "kv_gate_mean": None,
+                "kv_gate_std": None,
+            }
+        )
+    else:
+        metrics.update(
+            _kv_asymmetry_metrics(
+                route_weights,
+                value_weights,
+                route_indices,
+                value_indices,
+                route_summary,
+                value_summary,
+                gate,
+            )
+        )
     return metrics
 
 
@@ -368,6 +541,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
         "preconditioned_query_pool": 307,
         "constrained_preconditioned_query_pool": 359,
         "route_atom": 401,
+        "asymmetric_kv_budget": 463,
     }
     for scenario_idx, scenario in enumerate(scenarios):
         train = make_toy_batch(config, scenario=scenario, split="train", base=base)
@@ -386,24 +560,34 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 1,
             ),
             ("route_atom", lambda: RouteAtomReadout(config.dim, config.classes, config.route_atoms), 1),
+            (
+                "asymmetric_kv_budget",
+                lambda: AsymmetricKVBudgetReadout(
+                    config.dim, config.classes, config.kv_route_budget, config.kv_value_budget
+                ),
+                config.kv_route_budget + config.kv_value_budget,
+            ),
         ]
         for method, factory, margin_k in methods:
             torch.manual_seed(config.seed + scenario_idx * 10_000 + method_seed_offsets[method])
             model = factory()
             _train_model(model, train, config)
             metrics = _evaluate_model(model, test, margin_k=margin_k)
+            if method == "topk":
+                budget = config.top_k
+            elif method in {"query_pool", "preconditioned_query_pool", "constrained_preconditioned_query_pool"}:
+                budget = config.pool_slots
+            elif method == "route_atom":
+                budget = config.route_atoms
+            else:
+                budget = config.kv_route_budget + config.kv_value_budget
             rows.append(
                 {
                     "scenario": scenario,
                     "method": method,
-                    "budget": (
-                        config.top_k
-                        if method == "topk"
-                        else config.pool_slots
-                        if method in {"query_pool", "preconditioned_query_pool"}
-                        or method == "constrained_preconditioned_query_pool"
-                        else config.route_atoms
-                    ),
+                    "budget": budget,
+                    "kv_route_budget": config.kv_route_budget if method == "asymmetric_kv_budget" else None,
+                    "kv_value_budget": config.kv_value_budget if method == "asymmetric_kv_budget" else None,
                     **metrics,
                 }
             )
@@ -419,36 +603,56 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
     lines = [
         "# Toy Query-Pool Benchmark",
         "",
-        "| Scenario | Method | Budget | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | Constrained scale min | Constrained scale max | Constrained scale mean |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Scenario | Method | Budget | KV route budget | KV value budget | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | KV route entropy | KV value entropy | KV route collision | KV value collision | KV route dead | KV value dead | KV route margin | KV value margin | KV overlap | KV Jaccard | KV KL | KV cosine | KV gap | KV gate mean | KV gate std | Constrained scale min | Constrained scale max | Constrained scale mean |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         lines.append(
-            "| {scenario} | {method} | {budget} | {task_acc} | {rec_mse} | "
+            "| {scenario} | {method} | {budget} | {kv_route_budget} | {kv_value_budget} | {task_acc} | {rec_mse} | "
             "{route_entropy} | {slot_collision_rate} | {dead_slot_rate} | {top_margin} | "
             "{atom_entropy} | {atom_collision_rate} | {dead_atom_rate} | {atom_top_margin} | "
             "{precondition_condition_proxy} | {precondition_cosine_drift} | {precondition_norm_ratio} | {precondition_abs_scale_ratio} | "
-            "{constrained_scale_min} | {constrained_scale_max} | {constrained_scale_mean} |".format(
+            "{kv_route_entropy} | {kv_value_entropy} | {kv_route_collision_rate} | {kv_value_collision_rate} | "
+            "{kv_route_dead_rate} | {kv_value_dead_rate} | {kv_route_top_margin} | {kv_value_top_margin} | "
+            "{kv_route_value_overlap} | {kv_route_value_jaccard} | {kv_route_value_kl} | {kv_route_value_cosine} | "
+            "{kv_route_value_gap} | {kv_gate_mean} | {kv_gate_std} | {constrained_scale_min} | {constrained_scale_max} | {constrained_scale_mean} |".format(
                 scenario=row["scenario"],
                 method=row["method"],
                 budget=row["budget"],
-                task_acc=fmt(row["task_acc"]),
-                rec_mse=fmt(row["rec_mse"]),
-                route_entropy=fmt(row["route_entropy"]),
-                slot_collision_rate=fmt(row["slot_collision_rate"]),
-                dead_slot_rate=fmt(row["dead_slot_rate"]),
-                top_margin=fmt(row["top_margin"]),
-                atom_entropy=fmt(row["atom_entropy"]),
-                atom_collision_rate=fmt(row["atom_collision_rate"]),
-                dead_atom_rate=fmt(row["dead_atom_rate"]),
-                atom_top_margin=fmt(row["atom_top_margin"]),
-                precondition_condition_proxy=fmt(row["precondition_condition_proxy"]),
-                precondition_cosine_drift=fmt(row["precondition_cosine_drift"]),
-                precondition_norm_ratio=fmt(row["precondition_norm_ratio"]),
-                precondition_abs_scale_ratio=fmt(row["precondition_abs_scale_ratio"]),
-                constrained_scale_min=fmt(row["constrained_scale_min"]),
-                constrained_scale_max=fmt(row["constrained_scale_max"]),
-                constrained_scale_mean=fmt(row["constrained_scale_mean"]),
+                kv_route_budget=fmt(row.get("kv_route_budget")),
+                kv_value_budget=fmt(row.get("kv_value_budget")),
+                task_acc=fmt(row.get("task_acc")),
+                rec_mse=fmt(row.get("rec_mse")),
+                route_entropy=fmt(row.get("route_entropy")),
+                slot_collision_rate=fmt(row.get("slot_collision_rate")),
+                dead_slot_rate=fmt(row.get("dead_slot_rate")),
+                top_margin=fmt(row.get("top_margin")),
+                atom_entropy=fmt(row.get("atom_entropy")),
+                atom_collision_rate=fmt(row.get("atom_collision_rate")),
+                dead_atom_rate=fmt(row.get("dead_atom_rate")),
+                atom_top_margin=fmt(row.get("atom_top_margin")),
+                precondition_condition_proxy=fmt(row.get("precondition_condition_proxy")),
+                precondition_cosine_drift=fmt(row.get("precondition_cosine_drift")),
+                precondition_norm_ratio=fmt(row.get("precondition_norm_ratio")),
+                precondition_abs_scale_ratio=fmt(row.get("precondition_abs_scale_ratio")),
+                kv_route_entropy=fmt(row.get("kv_route_entropy")),
+                kv_value_entropy=fmt(row.get("kv_value_entropy")),
+                kv_route_collision_rate=fmt(row.get("kv_route_collision_rate")),
+                kv_value_collision_rate=fmt(row.get("kv_value_collision_rate")),
+                kv_route_dead_rate=fmt(row.get("kv_route_dead_rate")),
+                kv_value_dead_rate=fmt(row.get("kv_value_dead_rate")),
+                kv_route_top_margin=fmt(row.get("kv_route_top_margin")),
+                kv_value_top_margin=fmt(row.get("kv_value_top_margin")),
+                kv_route_value_overlap=fmt(row.get("kv_route_value_overlap")),
+                kv_route_value_jaccard=fmt(row.get("kv_route_value_jaccard")),
+                kv_route_value_kl=fmt(row.get("kv_route_value_kl")),
+                kv_route_value_cosine=fmt(row.get("kv_route_value_cosine")),
+                kv_route_value_gap=fmt(row.get("kv_route_value_gap")),
+                kv_gate_mean=fmt(row.get("kv_gate_mean")),
+                kv_gate_std=fmt(row.get("kv_gate_std")),
+                constrained_scale_min=fmt(row.get("constrained_scale_min")),
+                constrained_scale_max=fmt(row.get("constrained_scale_max")),
+                constrained_scale_mean=fmt(row.get("constrained_scale_mean")),
             )
         )
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -468,6 +672,8 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--top-k", type=int, default=4)
     parser.add_argument("--pool-slots", type=int, default=4)
     parser.add_argument("--route-atoms", type=int, default=4)
+    parser.add_argument("--kv-route-budget", type=int, default=2)
+    parser.add_argument("--kv-value-budget", type=int, default=4)
     parser.add_argument("--epochs", type=int, default=120)
     parser.add_argument("--lr", type=float, default=2e-2)
     parser.add_argument("--rec-weight", type=float, default=0.2)
@@ -493,6 +699,8 @@ def main() -> None:
         top_k=args.top_k,
         pool_slots=args.pool_slots,
         route_atoms=args.route_atoms,
+        kv_route_budget=args.kv_route_budget,
+        kv_value_budget=args.kv_value_budget,
         epochs=args.epochs,
         lr=args.lr,
         rec_weight=args.rec_weight,

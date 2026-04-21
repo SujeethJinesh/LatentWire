@@ -498,6 +498,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_eval_10_controlled",
+            method="dynamic-aligned preference-distilled route-atom 25%",
+            family="head-route compression ablation",
+            meta_path="results/headwise_route_atom_20260421/qwen_gsm10_dynalign_prefdist_headwise_route_atom_ratio025_cal16_chat.jsonl.meta.json",
+            notes="same preference-distilled checkpoint with headwise route-atom selection at 25% head budget; ties dense-head branch at roughly 3.9x fewer bytes",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_10_controlled",
             method="readout adapter",
             family="stronger-teacher bridge",
             meta_path="results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl.meta.json",
@@ -565,6 +574,26 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
             family="external comparator",
             jsonl_path="results/kvpress_expected_20260420/qwen_gsm10_expected_attention.jsonl",
             notes="exact external Expected Attention comparator",
+        )
+    )
+
+    rows.append(
+        _row(
+            split="gsm8k_eval_30_controlled",
+            method="target-alone",
+            family="control",
+            accuracy=0.06666666666666667,
+            avg_bytes=0.0,
+            notes="paired target-only floor from the GSM30 route-atom scale check",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_30_controlled",
+            method="dynamic-aligned preference-distilled route-atom 25%",
+            family="head-route compression ablation",
+            meta_path="results/headwise_route_atom_20260421/qwen_gsm30_target_dynalign_prefdist_headwise_route_atom_ratio025_cal16_chat.jsonl.meta.json",
+            notes="GSM30 scale check; remains byte-efficient but loses to target-alone",
         )
     )
 
@@ -1023,6 +1052,14 @@ def _build_paired_rows() -> list[dict[str, Any]]:
             "baseline_method": "target_alone",
             "candidate_label": "dynalign_prefdist_query_pool_transport",
             "baseline_label": "target_alone_control",
+        },
+        {
+            "candidate": "results/headwise_route_atom_20260421/qwen_gsm30_target_dynalign_prefdist_headwise_route_atom_ratio025_cal16_chat.jsonl",
+            "baseline": "results/headwise_route_atom_20260421/qwen_gsm30_target_dynalign_prefdist_headwise_route_atom_ratio025_cal16_chat.jsonl",
+            "candidate_method": "rotalign_kv_gate_0.10",
+            "baseline_method": "target_alone",
+            "candidate_label": "dynalign_prefdist_route_atom_25_gsm30",
+            "baseline_label": "target_alone_gsm30",
         },
         {
             "candidate": "results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl",

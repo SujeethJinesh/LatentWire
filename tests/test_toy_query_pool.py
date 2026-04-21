@@ -28,11 +28,13 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("aligned", "query_pool"),
         ("aligned", "preconditioned_query_pool"),
         ("aligned", "constrained_preconditioned_query_pool"),
+        ("aligned", "asymmetric_kv_budget"),
         ("aligned", "route_atom"),
         ("rotated", "topk"),
         ("rotated", "query_pool"),
         ("rotated", "preconditioned_query_pool"),
         ("rotated", "constrained_preconditioned_query_pool"),
+        ("rotated", "asymmetric_kv_budget"),
         ("rotated", "route_atom"),
     }
     for row in rows:
@@ -52,6 +54,15 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         assert "constrained_scale_min" in row
         assert "constrained_scale_max" in row
         assert "constrained_scale_mean" in row
+        assert "kv_route_entropy" in row
+        assert "kv_value_entropy" in row
+        assert "kv_route_value_overlap" in row
+        assert "kv_route_value_jaccard" in row
+        assert "kv_route_value_kl" in row
+        assert "kv_route_value_cosine" in row
+        assert "kv_route_value_gap" in row
+        assert "kv_gate_mean" in row
+        assert "kv_gate_std" in row
         if row["method"] != "topk":
             assert row["atom_entropy"] >= 0.0
             assert 0.0 <= row["atom_collision_rate"] <= 1.0
@@ -63,6 +74,18 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         if row["method"] == "constrained_preconditioned_query_pool":
             assert 0.75 <= row["constrained_scale_min"] <= row["constrained_scale_max"] <= 1.25
             assert 0.75 <= row["constrained_scale_mean"] <= 1.25
+        if row["method"] == "asymmetric_kv_budget":
+            assert row["kv_route_budget"] == 2
+            assert row["kv_value_budget"] == 4
+            assert row["kv_route_entropy"] >= 0.0
+            assert row["kv_value_entropy"] >= 0.0
+            assert 0.0 <= row["kv_route_value_overlap"] <= 1.0
+            assert 0.0 <= row["kv_route_value_jaccard"] <= 1.0
+            assert row["kv_route_value_kl"] >= 0.0
+            assert -1.0 <= row["kv_route_value_cosine"] <= 1.0
+            assert row["kv_route_value_gap"] >= 0.0
+            assert 0.0 <= row["kv_gate_mean"] <= 1.0
+            assert row["kv_gate_std"] >= 0.0
 
 
 def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
@@ -96,13 +119,18 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
         "query_pool",
         "preconditioned_query_pool",
         "constrained_preconditioned_query_pool",
+        "asymmetric_kv_budget",
         "route_atom",
     }
     summary = markdown.read_text()
     assert "Atom entropy" in summary
     assert "Precond cond." in summary
     assert "Constrained scale min" in summary
+    assert "KV route entropy" in summary
+    assert "KV value entropy" in summary
+    assert "KV overlap" in summary
     assert "| outlier | query_pool |" in summary
     assert "| outlier | preconditioned_query_pool |" in summary
     assert "| outlier | constrained_preconditioned_query_pool |" in summary
+    assert "| outlier | asymmetric_kv_budget |" in summary
     assert "| outlier | route_atom |" in summary

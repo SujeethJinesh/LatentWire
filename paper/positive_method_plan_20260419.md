@@ -2126,3 +2126,72 @@ Paper decision:
   transport/interface with explicit route-atom and preconditioning telemetry,
   evaluated first against target-alone on controlled GSM10/GSM30 before any
   larger benchmark spend.
+
+## 2026-04-21 Asymmetric K/V Budget Toy Branch
+
+I added `asymmetric_kv_budget`, a quantization-inspired toy branch that
+separates route selection from value retention. This is motivated by K/V-cache
+quantization and compression work where keys and values have different error
+profiles and should not always share the same budget.
+
+Matched total budget `4`:
+
+| Scenario | Top-k | Query-pool | Route atom | Constrained precond. | Asym K/V 1+3 | Asym K/V 2+2 |
+|---|---:|---:|---:|---:|---:|---:|
+| aligned | 0.2396 | 0.3177 | 0.3281 | 0.3594 | 0.4844 | 0.4167 |
+| rotated | 0.2760 | 0.2969 | 0.3073 | 0.3906 | 0.4219 | 0.4688 |
+| outlier | 0.2448 | 0.3594 | 0.3125 | 0.2812 | 0.4219 | 0.4167 |
+| slot-permuted | 0.2604 | 0.3281 | 0.3542 | 0.3177 | 0.4427 | 0.3906 |
+
+Run artifacts:
+
+- `results/query_pool_toy_20260421/query_pool_asymmetric_kv_budget_route1_value3.json`
+- `results/query_pool_toy_20260421/query_pool_asymmetric_kv_budget_route1_value3.md`
+- `results/query_pool_toy_20260421/query_pool_asymmetric_kv_budget_route2_value2.json`
+- `results/query_pool_toy_20260421/query_pool_asymmetric_kv_budget_route2_value2.md`
+- `results/query_pool_toy_20260421/query_pool_asymmetric_kv_budget_vs_topk.json`
+- `results/query_pool_toy_20260421/query_pool_asymmetric_kv_budget_vs_topk.md`
+- `results/query_pool_toy_20260421/asymmetric_kv_budget_summary.md`
+
+Interpretation:
+
+- this is the cleanest new positive toy signal: both matched-budget K/V splits
+  beat the prior controls across all four stress cases
+- `1+3` is strongest for aligned, outlier, and slot-permuted settings; `2+2`
+  is strongest for rotated settings
+- low route/value overlap and Jaccard, high KL, and low cosine indicate that
+  route selection and value preservation are genuinely selecting different
+  slots
+- this should not be added as a paper method yet because it is toy-only, but it
+  should become the next real-model ablation
+
+Updated next branch:
+
+1. Add a real evaluator/control-suite asymmetric K/V budget mode with separate
+   K-route and V-value retention ratios.
+2. Log separate K/V distortion or attention-fidelity metrics, route/value
+   overlap, Jaccard, KL, cosine, and bytes.
+3. Compare against equal-byte uniform, shuffled, and target-alone controls.
+4. Only then stack the best asymmetric K/V split with `headwise_route_atom=0.25`
+   and the learned query-conditioned interface lane.
+
+## 2026-04-21 Reference Expansion
+
+New memos:
+
+- `references/308_kv_compression_competitor_refs.md`
+- `references/308_symmetry_geometry_alignment_refs.md`
+- `references/308_quantization_asymmetry_refs.md`
+
+Paper decision:
+
+- Keep `C2C` and `KVComm` as direct cross-model communication competitors.
+- Use Quest, KVzip, H2O, StreamingLLM, SnapKV, PyramidKV, AdaKV, rKV, and
+  DeltaKV as matched-byte compression/retention controls, not semantic-transfer
+  competitors.
+- Add symmetry/gauge telemetry to every serious branch: orientation span,
+  singular-value entropy, CKA/SVCCA-style layer similarity where feasible,
+  residual norm ratio, and expert/head collapse metrics.
+- Add quantization-inspired controls as ablations: bounded preconditioning,
+  orthogonal/Hadamard gauge fixing, outlier-protected routing, and mixed-byte
+  K/V allocation.

@@ -31,6 +31,7 @@
 | gsm8k_eval_10_controlled | dynamic-aligned preference-distilled module replace | token-remapped attention bridge | 0.1000 | 681,668.4 | dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on a 16-prompt diagnostic slice |
 | gsm8k_eval_10_controlled | dynamic-aligned preference-distilled attention-stratified selector | selector ablation | 0.1000 | 681,668.4 | same dynalign preference-distilled checkpoint with four-bin attention-stratified position selection to test route-collapse coverage |
 | gsm8k_eval_10_controlled | dynamic-aligned preference-distilled query-pool transport | pooled-interface ablation | 0.1000 | 681,668.4 | same dynalign preference-distilled checkpoint with attention-pooled representative slots; cache shape preserved for traceability |
+| gsm8k_eval_10_controlled | dynamic-aligned preference-distilled route-atom 25% | head-route compression ablation | 0.1000 | 175,249.2 | same preference-distilled checkpoint with headwise route-atom selection at 25% head budget; ties dense-head branch at roughly 3.9x fewer bytes |
 | gsm8k_eval_10_controlled | readout adapter | stronger-teacher bridge | 0.0000 | 681,668.4 | prompt-local attention-readout teacher; survives GSM5 smoke but drops below the controlled target-alone floor |
 | gsm8k_eval_10_controlled | dynamic-aligned interaction module replace | token-remapped attention bridge | 0.1000 | 681,668.4 | dynalign module replace plus prompt-local interaction distillation on a 16-prompt diagnostic slice |
 | gsm8k_eval_10_controlled | token-basis replace | token-native attention bridge | 0.1000 | 681,668.4 | slotted attention-side module constrained to a basis distilled from target next-token output rows |
@@ -39,6 +40,8 @@
 | gsm8k_eval_10_controlled | grouped shared-basis transport | geometry | 0.1000 | 681,668.4 | shared-basis coefficient-space transport |
 | gsm8k_eval_10_controlled | KVPress no-press | external comparator | 0.1000 | - | exact external KVPress harness floor |
 | gsm8k_eval_10_controlled | KVPress ExpectedAttentionPress | external comparator | 0.1000 | - | exact external Expected Attention comparator |
+| gsm8k_eval_30_controlled | target-alone | control | 0.0667 | 0 | paired target-only floor from the GSM30 route-atom scale check |
+| gsm8k_eval_30_controlled | dynamic-aligned preference-distilled route-atom 25% | head-route compression ablation | 0.0333 | 172,643.3 | GSM30 scale check; remains byte-efficient but loses to target-alone |
 | gsm8k_5_controlled_smoke | shared-plus-private asym adapter | modular bridge | 0.2000 | 686,026.6 | AsymLoRA-style shared-plus-private bridge survives smoke and controlled slice |
 | gsm8k_5_controlled_smoke | shared-plus-private dynmap adapter | modular bridge | 0.2000 | 686,026.6 | shared-plus-private bridge with context-reweighted top-k teacher |
 | gsm8k_5_controlled_smoke | xattn adapter | attention bridge | 0.2000 | 686,026.6 | tiny query-conditioned cross-attention bridge over live K/V-side memory signals |
