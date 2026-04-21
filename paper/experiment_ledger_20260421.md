@@ -26,6 +26,7 @@ active positive clues, and combinations worth testing next.
 | Shared feature dictionary / crosscoder | Toy shared dictionary beats raw residual transport; feature+atom stack beats isolated components | Promote only with real route-pool feature IDs, atom recovery, and patch/quant-error calibration. |
 | Route atoms / codebooks | Learned shared codebook beats raw ridge despite worse MSE | Require atom recovery, codebook usage/perplexity, dead-code rate, and task delta. |
 | Byte/span tokenizer interface | Token-ID reconstruction fails while byte-span reconstruction succeeds on stress split, and under strong held-out-family interface corruption the byte/span remap is now the best composed shared-basis variant at `1-2` shots/class (`0.0566`, `0.0570` MSE) | Run on real tokenizer pairs and held-out route pools with remap coverage and interface-noise telemetry before any downstream bridge claim. |
+| Byte sidecar interface | Under the same strong held-out-family interface corruption, a tokenizer-agnostic byte sidecar on top of quotient+GPA+sparse-dictionary becomes the best shared-basis variant at `1-2` shots/class (`0.0392`, `0.0394` MSE), beating both the remap-only variant and the oracle-interface latent-only variant, but direct few-shot + remap still wins by `4` shots/class (`0.0238`) | Promote only as the next interface component on top of the current low-shot lane; require survival on real cross-family pairs and a frozen benchmark smoke before promoting it into the main paper story. |
 | Quant-error mixed-bit allocation | Recovers uniform-4-bit toy accuracy at lower achieved bpw in isolated toys, but the current hub sweep shows at most `+0.0104` frontier gain and a negative oracle frontier delta | Promote only after the protected set is made route- and class-aware; log bit histogram, outlier protection, help/harm, and false-prune. |
 | Feature-routed projector bank | Toy feature routing reaches `0.9187` vs monolithic `0.8687`, close to oracle `0.9688` | Move into route-pool harness with random/confidence/oracle controls and matched bytes. |
 | Hub dictionary bridge | Shared hub toy reaches `1.0000` accuracy and atom recovery with fewer adapters than pairwise; random hub fails | Promote only with real route-pool feature IDs, atom recovery, dead-feature rate, and hub-versus-pairwise scaling. |
@@ -121,6 +122,16 @@ direct held-out-family fitting plus the same remap retakes the lead once `4`
 paired shots/class are available. Treat this as evidence that the composed
 low-shot lane survives interface stress and can benefit from explicit
 byte/span controls, not as evidence that remap alone rescues the method.
+
+`results/query_pool_toy_20260421/quotient_gpa_sparse_dictionary_byte_sidecar_20260421.md`
+is the current side-channel follow-up for that same lane. Under the same
+strong interface corruption, adding a tokenizer-agnostic byte sidecar to the
+quotient+GPA+sparse-dictionary bridge lowers MSE sharply at `1` and `2`
+shots/class (`0.0392`, `0.0394`), beating both the remap-only branch and the
+oracle-interface latent-only branch, but direct held-out-family few-shot
+fitting plus remap still wins by `4` shots/class (`0.0238`). Treat this as
+the strongest current interface-side additive clue, not as proof that the
+paper is benchmark-ready.
 
 `results/query_pool_toy_20260421/gpa_sparse_dictionary_hub_20260421.md` is the
 current low-shot shared-basis follow-up. The read is sharper: the sparse

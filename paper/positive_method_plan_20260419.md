@@ -152,6 +152,37 @@ So the next additive order is still:
 5. route/repair only after the first four pieces remain stable on a real
    held-out slice
 
+## Status After Byte Sidecar Follow-Up
+
+The new byte-sidecar toy changes the interface story again in a useful way:
+
+- under the same strong tokenizer-like corruption used in the remap follow-up,
+  the tokenizer-agnostic byte-sidecar branch becomes the best shared-basis
+  method at both `1` and `2` shots/class
+- `quotient_gpa_sparse_dictionary_byte_sidecar_remap` reaches `0.0392` and
+  `0.0394` MSE, beating the remap-only branch (`0.0566`, `0.0570`) and even
+  the oracle-interface latent-only branch (`0.0568`, `0.0576`)
+- the boundary is still there: by `4` shots/class, direct held-out-family
+  fitting plus remap remains better (`0.0238` vs best shared-basis `0.0390`)
+
+This is the first interface-side result that looks materially additive rather
+than cosmetic. The story is now:
+
+1. quotient-aware matching fixes the low-shot symmetry issue
+2. GPA plus a sparse shared dictionary gives a shared latent basis
+3. a tokenizer-agnostic byte sidecar is the strongest current interface add-on
+4. direct family-specific fitting still dominates once enough paired data is
+   available
+
+So the next method order is now:
+
+1. quotient-aware matching
+2. GPA canonicalization
+3. sparse shared dictionary
+4. byte sidecar or sequence-aligned interface loss
+5. route/repair only after the first four pieces survive a real benchmark
+   smoke
+
 ## Benchmark Contract Status
 
 The benchmark track is now frozen conceptually even though the full rows are
@@ -169,6 +200,15 @@ not run yet:
 That means we should stop thinking about “the competitor table” as one mixed
 artifact. The next execution step is a smoke-tested, frozen contract for the
 relevant suite once the method itself is stronger.
+
+The smallest next execution step is now fixed too:
+
+- a `32`-example held-out GSM8K smoke on the exact Qwen sender/receiver pair
+- rows: `target_alone`, `text_to_text`, `rotalign_kv`, `c2c_generate`
+- stop immediately if `rotalign_kv` loses to `target_alone` or if
+  `c2c_generate` fails to beat `target_alone` by at least two examples,
+  because that indicates a prompt/scorer mismatch rather than useful benchmark
+  evidence
 
 ## Best Next Method Lane
 

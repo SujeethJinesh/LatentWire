@@ -76,6 +76,22 @@ alignment, and model-aware selective transfer.
      is relevant because a small learned planning side channel may be less
      brittle than forcing explicit tokenizer alignment across models.
 
+10. The Vision Wormhole: Latent-Space Communication in Heterogeneous Multi-Agent Systems
+   - Link: https://arxiv.org/abs/2602.15382
+   - Date: February 2026
+   - Read: A shared latent port can serve as an explicit communication side
+     channel between heterogeneous agents. This supports the idea that the next
+     LatentWire interface component should be a sidecar, not only a better
+     token remap.
+
+11. Latent-DARM: Bridging Discrete Diffusion And Autoregressive Models For Reasoning
+   - Link: https://arxiv.org/abs/2603.09184
+   - Date: March 2026
+   - Read: Exchanging latent plans between heterogeneous models can improve
+     reasoning under tight token budgets. For LatentWire this is a reminder
+     that a tiny sidecar can be semantically richer than another text-level
+     interface tweak.
+
 ## Concrete ablations for LatentWire
 
 1. Latent plus byte sidecar
@@ -101,6 +117,9 @@ alignment, and model-aware selective transfer.
 
 - The current interface-stress toy says byte/span remap can help the composed
   low-shot lane under strong corruption, but the gain is modest.
+- The new byte-sidecar toy strengthens that read: a tokenizer-agnostic sidecar
+  on top of the same quotient+GPA+sparse-dictionary lane now beats the remap
+  variant at `1-2` shots/class under the same strong corruption setting.
 - That means remap-only work should now be treated as a robustness control,
   not the center of the method story.
 - The stronger next interface moves are sequence-aligned, side-channel, or

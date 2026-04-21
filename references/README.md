@@ -454,6 +454,10 @@ Files `386_` and `387_` extend the current interface-alignment and frozen benchm
 - `386_`: Cross-tokenizer interface alignment memo covering byte-sidecar interfaces, sequence alignment, model-aware tokenizer transfer, and stronger interface ablations than remap tables alone.
 - `387_`: Matched benchmark contract memo derived from the local `C2C`, `KVComm`, `LatentMAS`, `lm-eval`, and `OpenCompass` repos, freezing the two-main-table-plus-appendix comparison plan and the required smoke tests.
 
+File `388_` narrows the immediate benchmark execution lane:
+
+- `388_`: Exact 32-example GSM8K smoke contract for the Qwen sender/receiver pair, including the only four rows we should run next, the scorer contract, and hard pass/fail checks before widening.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.
