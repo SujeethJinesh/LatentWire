@@ -1760,3 +1760,64 @@ That means:
   aligned spans, a more global target-side module replacement, or a
   tokenizer-agnostic byte/span interface after byte-stress confirms useful
   tokenizer divergence
+
+## 2026-04-20 301 Reference Synthesis And Next Ablation Stack
+
+The new literature sweep points to an interface change, not another additive
+local-teacher term. Recent MoE routing work specifically warns that routing
+after multi-head concatenation can collapse separable head factors, while
+cross-tokenizer distillation work treats tokenizer mismatch as a primary
+supervision problem rather than a preprocessing nuisance. Multimodal projector
+systems point to the same design pattern from another direction: a small
+query/latent interface, staged target-space alignment, and gated target-native
+injection are safer than unconditional K/V replacement.
+
+Current status:
+
+- Keep `dynalign_prefdist` as the least-destructive stronger teacher because
+  it preserves the best `gsm8k_5 = 0.4000` smoke.
+- Do not keep stacking direct likelihood, span-ALM, or local interaction KL on
+  the current module-replace interface; those variants all regress smoke or tie
+  the controlled target floor.
+- Treat `readout_adapter` as a negative boundary: it survives GSM5 smoke
+  (`0.2000`) but falls to `0.0000` on controlled GSM10, below the target-alone
+  `0.1000` floor.
+- Treat KVPress ExpectedAttention as a runnable external compression baseline,
+  not a harder local bar yet: on GSM5/GSM10 and a one-row Needle smoke it ties
+  no-press and is slower on GSM.
+
+Additive paper direction:
+
+- Add a positive method only if it changes the communication interface:
+  head-wise route atoms, fixed query-pool transport, gated FiLM/adaLN
+  modulation, or a byte/tokenizer-independent target-space probe.
+- Keep the old negative ideas in the paper as blocker evidence, not as the
+  final contribution: prediction-KL, readout, direct likelihood, span-ALM,
+  local interaction, and module replacement all define the saturated baseline.
+- Make results interpretable by logging route entropy, atom usage, dead atoms,
+  per-layer/head collision counts, byte-family/token-family errors, paired
+  flips, and target logit entropy shift before claiming a positive method.
+
+Two-week execution schedule:
+
+- Day 1: implement an offline `headwise_route_atom` diagnostic around the
+  existing generated-adapter branch. Success means non-degenerate atom usage,
+  lower mean-collapse/collision scores, and at least one positive paired flip
+  versus target-alone on controlled GSM10.
+- Day 2: implement a deterministic query-pool prefix diagnostic with 4/8/16
+  slots and a fixed small gate. Success means slots attend to reasoning-bearing
+  spans rather than boilerplate and do not degrade the target floor.
+- Day 3: add a byte-probe or token-family readout diagnostic so tokenizer
+  mismatch is measurable independently of exact GSM answer extraction.
+- Days 4-5: run the best two diagnostics on GSM30 and compare against C2C,
+  KVComm replay, target-alone, text-to-text, and KVPress no-press /
+  ExpectedAttention.
+- Week 2: stack only the diagnostics that pass an interpretable gate with
+  `dynalign_prefdist`, then run larger controlled GSM/SVAMP slices.
+
+Paper-readiness criterion:
+
+- A method becomes the positive paper branch only if it beats target-alone on
+  paired controlled GSM slices, improves or matches the bytes/accuracy frontier
+  against C2C/KVComm where applicable, and has interpretable route/interface
+  telemetry that explains where the gain comes from.

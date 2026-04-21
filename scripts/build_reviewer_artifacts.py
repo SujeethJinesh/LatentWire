@@ -480,6 +480,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_eval_10_controlled",
+            method="readout adapter",
+            family="stronger-teacher bridge",
+            meta_path="results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl.meta.json",
+            notes="prompt-local attention-readout teacher; survives GSM5 smoke but drops below the controlled target-alone floor",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_10_controlled",
             method="dynamic-aligned interaction module replace",
             family="token-remapped attention bridge",
             meta_path="results/bridge_ridge_qk_dynalign_interact_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_interact_module_replace_cal16_chat.jsonl.meta.json",
@@ -964,6 +973,14 @@ def _build_paired_rows() -> list[dict[str, Any]]:
             "baseline_label": "target_alone_control",
         },
         {
+            "candidate": "results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl",
+            "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
+            "candidate_method": "rotalign_kv_gate_0.10",
+            "baseline_method": "target_alone",
+            "candidate_label": "readout_adapter",
+            "baseline_label": "target_alone_control",
+        },
+        {
             "candidate": "results/bridge_ridge_qk_dynalign_interact_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_interact_module_replace_cal16_chat.jsonl",
             "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
             "candidate_method": "rotalign_kv_gate_0.10",
@@ -1111,6 +1128,12 @@ def _build_layer_localization_rows() -> list[dict[str, Any]]:
             "notes": "dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on controlled gsm8k_eval_10 (16-prompt diagnostic calibration)",
         },
         {
+            "method": "readout_adapter",
+            "family": "stronger-teacher bridge",
+            "jsonl": "results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl",
+            "notes": "prompt-local attention-readout teacher on controlled gsm8k_eval_10",
+        },
+        {
             "method": "dynalign_interact_module_replace",
             "family": "token-remapped attention bridge",
             "jsonl": "results/bridge_ridge_qk_dynalign_interact_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_interact_module_replace_cal16_chat.jsonl",
@@ -1226,10 +1249,179 @@ def _write_layer_localization_markdown(rows: list[dict[str, Any]], path: pathlib
     path.write_text("\n".join(lines) + "\n")
 
 
+def _mean_pairwise_jaccard(position_sets: list[set[int]]) -> float:
+    if len(position_sets) < 2:
+        return 0.0
+    total = 0.0
+    count = 0
+    for idx, left in enumerate(position_sets):
+        for right in position_sets[idx + 1 :]:
+            union = left | right
+            if union:
+                total += len(left & right) / len(union)
+                count += 1
+    return total / count if count else 0.0
+
+
+def _build_selector_collapse_rows() -> list[dict[str, Any]]:
+    specs = [
+        {
+            "method": "dynalign_module_replace",
+            "family": "token-remapped attention bridge",
+            "jsonl": "results/bridge_ridge_qk_dynalign_module_replace_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_module_replace_cal64_chat.jsonl",
+            "notes": "best base dynalign interface on controlled gsm8k_eval_10",
+        },
+        {
+            "method": "dynalign_prefdist_module_replace",
+            "family": "token-remapped attention bridge",
+            "jsonl": "results/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.jsonl",
+            "notes": "least-destructive stronger teacher on controlled gsm8k_eval_10",
+        },
+        {
+            "method": "dynalign_ctxonly_module_replace",
+            "family": "token-remapped attention bridge",
+            "jsonl": "results/bridge_ridge_qk_dynalign_ctxonly_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_ctxonly_module_replace_cal16_chat.jsonl",
+            "notes": "prediction-overlap null for dynalign route selection",
+        },
+        {
+            "method": "module_replace",
+            "family": "attention bridge",
+            "jsonl": "results/bridge_ridge_qk_module_replace_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_module_replace_cal64_chat.jsonl",
+            "notes": "direct-output slotted module without token remapping",
+        },
+        {
+            "method": "readout_adapter",
+            "family": "stronger-teacher bridge",
+            "jsonl": "results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl",
+            "notes": "prompt-local attention-readout teacher negative boundary",
+        },
+        {
+            "method": "grouped_rotational_transport",
+            "family": "geometry",
+            "jsonl": "results/grouped_rotational_transport_20260420/qwen_gsm10_grouped_rotational_transport_w010_r4_cal64_chat.jsonl",
+            "notes": "geometry-side branch that survives the controlled slice",
+        },
+    ]
+
+    rows: list[dict[str, Any]] = []
+    for spec in specs:
+        records = _load_prediction_records(ROOT / spec["jsonl"])
+        correct_flags: list[float] = []
+        layer_jaccards: list[float] = []
+        unique_position_fracs: list[float] = []
+        prefix_fracs: list[float] = []
+        suffix_fracs: list[float] = []
+        score_entropies: list[float] = []
+        score_gaps: list[float] = []
+        score_tops: list[float] = []
+        selector_layers: list[float] = []
+
+        for record in records:
+            if str(record.get("method")) != "rotalign_kv_gate_0.10":
+                continue
+            traces = record.get("selector_trace", [])
+            if not traces:
+                continue
+            correct_flags.append(1.0 if bool(record.get("correct", False)) else 0.0)
+            position_sets: list[set[int]] = []
+            unique_positions: set[int] = set()
+            total_positions = 0
+            prefix_hits = 0
+            suffix_hits = 0
+            selector_layers.append(float(len(traces)))
+
+            for trace in traces:
+                if "score_entropy" in trace and trace["score_entropy"] is not None and not math.isnan(float(trace["score_entropy"])):
+                    score_entropies.append(float(trace["score_entropy"]))
+                if "score_gap" in trace:
+                    score_gaps.append(float(trace["score_gap"]))
+                if "score_top" in trace:
+                    score_tops.append(float(trace["score_top"]))
+
+                selected = {
+                    int(pos)
+                    for pos in trace.get("selected_positions", [])
+                    if isinstance(pos, (int, float))
+                }
+                if not selected:
+                    continue
+                position_sets.append(selected)
+                unique_positions.update(selected)
+                total_positions += len(selected)
+
+                seq_len = max(1, int(trace.get("seq_len", 1)))
+                prefix_cut = seq_len / 3.0
+                suffix_cut = 2.0 * seq_len / 3.0
+                prefix_hits += sum(1 for pos in selected if float(pos) < prefix_cut)
+                suffix_hits += sum(1 for pos in selected if float(pos) >= suffix_cut)
+
+            if position_sets:
+                layer_jaccards.append(_mean_pairwise_jaccard(position_sets))
+            if total_positions:
+                unique_position_fracs.append(len(unique_positions) / float(total_positions))
+                prefix_fracs.append(prefix_hits / float(total_positions))
+                suffix_fracs.append(suffix_hits / float(total_positions))
+
+        mean_jaccard = _safe_mean(layer_jaccards)
+        mean_unique = _safe_mean(unique_position_fracs)
+        rows.append(
+            {
+                "method": spec["method"],
+                "family": spec["family"],
+                "notes": spec["notes"],
+                "examples": int(len(correct_flags)),
+                "accuracy": _safe_mean(correct_flags),
+                "mean_selector_layers": _safe_mean(selector_layers),
+                "mean_pairwise_layer_jaccard": mean_jaccard,
+                "mean_unique_position_fraction": mean_unique,
+                "mean_prefix_position_fraction": _safe_mean(prefix_fracs),
+                "mean_suffix_position_fraction": _safe_mean(suffix_fracs),
+                "mean_score_entropy": _safe_mean(score_entropies),
+                "mean_score_gap": _safe_mean(score_gaps),
+                "mean_score_top": _safe_mean(score_tops),
+                "route_collapse_score": mean_jaccard + max(0.0, 1.0 - mean_unique),
+            }
+        )
+    return rows
+
+
+def _write_selector_collapse_markdown(rows: list[dict[str, Any]], path: pathlib.Path) -> None:
+    lines = [
+        "# Selector Collapse Telemetry (2026-04-20)",
+        "",
+        "Telemetry source: `selector_trace` selected-position overlap from controlled `gsm8k_eval_10` runs. Higher collapse means layers repeatedly transmit the same prompt positions, which is a route-interface warning signal.",
+        "",
+        "| Method | Acc | Route collapse | Layer Jaccard | Unique position frac | Prefix frac | Suffix frac | Mean score entropy | Notes |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---|",
+    ]
+    for row in sorted(rows, key=lambda item: (-float(item["route_collapse_score"]), str(item["method"]))):
+        lines.append(
+            "| {method} | {acc:.4f} | {collapse:.4f} | {jaccard:.4f} | {unique:.4f} | {prefix:.4f} | {suffix:.4f} | {entropy:.4f} | {notes} |".format(
+                method=row["method"],
+                acc=float(row["accuracy"]),
+                collapse=float(row["route_collapse_score"]),
+                jaccard=float(row["mean_pairwise_layer_jaccard"]),
+                unique=float(row["mean_unique_position_fraction"]),
+                prefix=float(row["mean_prefix_position_fraction"]),
+                suffix=float(row["mean_suffix_position_fraction"]),
+                entropy=float(row["mean_score_entropy"]),
+                notes=row["notes"],
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "Current interpretation: identical collapse values across these variants mean the active selector/interface is shared across otherwise different bridge teachers. A route-atom or query-pool ablation must change this selector geometry, not only the post-selected repair objective.",
+        ]
+    )
+    path.write_text("\n".join(lines) + "\n")
+
+
 def main() -> None:
     frontier_rows = _build_frontier_rows()
     paired_rows = _build_paired_rows()
     layer_rows = _build_layer_localization_rows()
+    selector_rows = _build_selector_collapse_rows()
 
     frontier_json = ROOT / "paper/bytes_accuracy_frontier_20260420.json"
     frontier_md = ROOT / "paper/bytes_accuracy_table_20260420.md"
@@ -1237,6 +1429,8 @@ def main() -> None:
     paired_md = ROOT / "paper/paired_flip_table_20260420.md"
     layer_jsonl = ROOT / "paper/layer_localization_20260420.jsonl"
     layer_md = ROOT / "paper/layer_localization_20260420.md"
+    selector_jsonl = ROOT / "paper/selector_collapse_20260420.jsonl"
+    selector_md = ROOT / "paper/selector_collapse_20260420.md"
 
     frontier_json.write_text(json.dumps(frontier_rows, indent=2, sort_keys=True) + "\n")
     _write_frontier_markdown(frontier_rows, frontier_md)
@@ -1244,6 +1438,8 @@ def main() -> None:
     _write_paired_markdown(paired_rows, paired_md)
     _write_jsonl(layer_rows, layer_jsonl)
     _write_layer_localization_markdown(layer_rows, layer_md)
+    _write_jsonl(selector_rows, selector_jsonl)
+    _write_selector_collapse_markdown(selector_rows, selector_md)
 
     print(frontier_json)
     print(frontier_md)
@@ -1251,6 +1447,8 @@ def main() -> None:
     print(paired_md)
     print(layer_jsonl)
     print(layer_md)
+    print(selector_jsonl)
+    print(selector_md)
 
 
 if __name__ == "__main__":

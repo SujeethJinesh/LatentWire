@@ -216,6 +216,14 @@
     "split": "gsm8k_eval_10_controlled"
   },
   {
+    "accuracy": 0.0,
+    "avg_bytes": 681668.4,
+    "family": "stronger-teacher bridge",
+    "method": "readout adapter",
+    "notes": "prompt-local attention-readout teacher; survives GSM5 smoke but drops below the controlled target-alone floor",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
     "family": "token-remapped attention bridge",

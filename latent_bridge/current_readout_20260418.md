@@ -2655,3 +2655,27 @@ Interpretation:
   different interface or geometry step: query-conditioned route atoms,
   global target-side module replacement, or tokenizer-agnostic byte/span
   interfaces only after stress data shows real tokenizer divergence
+
+And a competitor/reference integration update:
+
+> I then consolidated the 301 reference sweep and the KVPress sanity checks.
+> The strongest new direction is not a larger residual bridge; it is an
+> explicit communication interface: head-wise route atoms, query-pool latent
+> slots, gated target-native modulation, or a tokenizer-independent byte/readout
+> probe. The local KVPress wrapper and upstream Needle smoke both ran, but
+> ExpectedAttention tied no-press on GSM5, controlled GSM10, and a one-row
+> Needle smoke, while being slower on GSM.
+
+Interpretation:
+
+- `readout_adapter` is now an explicit negative boundary: GSM5 smoke `0.2000`,
+  controlled GSM10 `0.0000`, so prompt-local readout supervision does not
+  generalize.
+- KVPress ExpectedAttention is runnable as an external same-model compression
+  comparator, but it is not a stronger local bar on the tiny sanity checks.
+- The next implementable method branch should be `headwise_route_atom` or
+  `query_pool_transport`, with route entropy, dead-atom count, per-layer/head
+  collision counts, paired flips, and byte/token-family metrics logged before
+  any larger run.
+- Do not spend more cycles on direct likelihood, span-ALM, or local-interaction
+  variants without changing the interface; those are now saturated blockers.
