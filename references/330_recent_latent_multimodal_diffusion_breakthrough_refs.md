@@ -1,0 +1,31 @@
+# Recent Latent / Multimodal / Diffusion Breakthroughs for LatentWire
+
+Web check: 2026-04-21. This memo focuses on 2025-2026 work that is not a direct cross-model communication baseline, but does expose the same design axes LatentWire keeps colliding with: tokenizer-free interfaces, latent token resampling, iterative refinement, recurrent memory, and trace-aware compute selection.
+
+| Source | Primary link | Why it matters for LatentWire | Concrete LatentWire ablation |
+|---|---|---|---|
+| **Byte Latent Transformer: Patches Scale Better Than Tokens** | [ACL Anthology](https://aclanthology.org/2025.acl-long.453/) | Strong evidence that patching raw bytes into latent units can outperform static tokenization, which is directly relevant to our tokenizer-mismatch and byte-budget concerns. | Replace current token bridge with byte-patch transport; sweep patch size, entropy boundary thresholds, and shared vs separate byte encoders at fixed transfer bytes. |
+| **FLEXITOKENS: Flexible Tokenization for Evolving Language Models** | [arXiv](https://arxiv.org/abs/2507.12720) | Learnable boundaries are a clean test for whether the bridge should adapt segmentation instead of assuming a fixed tokenizer. | Compare fixed tokenizer, learnable boundary predictor, and hybrid boundary+canonicalization on the same held-out GSM slices; log fragmentation, boundary entropy, and error types. |
+| **Length-MAX Tokenizer for Language Models** | [arXiv](https://arxiv.org/abs/2511.20849) | Token-length optimization is a useful proxy for minimizing bridge bandwidth without changing semantic content. | Optimize bridge symbol budget for tokens-per-character rather than token frequency; compare against BPE and byte-level transport while holding answer accuracy fixed. |
+| **V2Flow: Unifying Visual Tokenization and Large Language Model Vocabularies for Autoregressive Image Generation** | [arXiv](https://arxiv.org/abs/2503.07493) | The visual-vocabulary resampler is a close analogue to what we need when mapping one model’s latent space into another model’s token space. | Replace hard latent export with a soft categorical resampler; compare hard codebook, soft codebook, and residual flow-repair heads on matched byte budgets. |
+| **Generative Multimodal Pretraining with Discrete Diffusion Timestep Tokens** | [arXiv](https://arxiv.org/abs/2504.14666) | Diffusion timestep tokens give a structured way to make discrete latents recursive and revisitable instead of one-shot. | Add timestep-conditioned bridge states; sweep latent update depth, timestep count, and whether the target sees the same latent schedule as the source. |
+| **LaDiR: Latent Diffusion Enhances LLMs for Text Reasoning** | [arXiv](https://arxiv.org/abs/2510.04573) | This is one of the cleanest recent examples of iterative latent refinement for reasoning, which is exactly the missing capability in the current bridge. | Compare one-shot transport to latent denoising on a block of thought tokens; ablate bidirectional masks, latent block length, and stochastic vs deterministic refinement. |
+| **SpiralThinker: Latent Reasoning through an Iterative Process with Text-Latent Interleaving** | [arXiv](https://arxiv.org/abs/2511.08983) | Shows that alternating explicit text and latent updates can stabilize latent reasoning, which suggests a better schedule than pure hidden-state transport. | Sweep text-latent interleaving schedules, latent iteration count, and alignment losses; test whether a small explicit-text anchor improves bridge stability. |
+| **Reasoning with Latent Tokens in Diffusion Language Models** | [arXiv](https://arxiv.org/abs/2602.03769) | Gives a direct bridge from diffusion-style latent tokens into autoregressive reasoning, which is highly relevant to cross-model communication. | Vary latent token count, auxiliary multi-token prediction, and the compute-quality tradeoff; compare latent-token transport against the current fixed bridge atoms. |
+| **Recurrent Memory-Augmented Transformers with Chunked Attention for Long-Context Language Modeling** | [arXiv](https://arxiv.org/abs/2507.00453) | Clean gated persistent memory is a strong alternative to exporting full K/V state. | Add a tiny persistent memory sidecar; compare reset-per-example, reset-per-chunk, and carry-forward policies, plus memory-only vs memory+current transport. |
+| **ReSSFormer: A Recursive Sparse Structured Transformer for Scalable and Long-Context Reasoning** | [arXiv](https://arxiv.org/abs/2510.01585) | Combines recursive inference, sparse selection, and position-free latent structure induction, which maps well onto repeated bridge refinement. | Compare one-pass bridge vs recursive bridge reuse; ablate sparse selector types, recursion depth, and cache reuse across active tokens only. |
+| **Tracing the Traces: Latent Temporal Signals for Efficient and Accurate Reasoning** | [arXiv](https://arxiv.org/abs/2510.10494) | Latent trajectory features are directly useful for route selection, confidence gating, and interpretability logging. | Use latent-trajectory signals to choose route count and verifier style; compare early-confidence gating, late gating, and confidence-weighted candidate aggregation. |
+
+## Five LatentWire Ablations To Run First
+
+1. Byte-patch transport versus fixed-token transport at matched byte budget, using BLT-style entropy boundaries as the selector.
+2. Soft categorical resampler versus hard codebook transport, with a residual flow-repair head on top of the bridge output.
+3. One-shot bridge versus iterative latent refinement, using LaDiR/SpiralThinker-style denoising or text-latent interleaving.
+4. Persistent memory sidecar versus stateless transport, with reset/carry policies and a tiny gated memory module.
+5. Trace-aware route selection, where latent trajectory confidence decides whether we spend 1, 3, or 5 candidate routes before verifier aggregation.
+
+## Interpretation Notes
+
+- Treat these as architectural primitives, not direct benchmark claims.
+- Keep the same source-target pair, prompt template, decoding budget, and answer extractor when comparing ablations.
+- Log bytes transferred, route count, latent trajectory statistics, and verifier confidence so the results stay reusable for later telemetry analysis.

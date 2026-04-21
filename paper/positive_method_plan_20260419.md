@@ -248,6 +248,52 @@ That means:
 - paper-facing claims still require the same idea to move from toy data into
   GSM30/GSM70 stochastic route pools
 
+## Status After GSM30 Confidence-Gated Route Expansion
+
+I promoted the confidence-gated compute idea from toy data into the existing
+GSM30 stochastic-route pool. The script calibrates low/high thresholds on the
+first `15` examples, evaluates on the remaining `15`, and logs selected source,
+seed budget, target confidence proxy, full-candidate oracle correctness, and
+subgroup breakdowns.
+
+Result: `confidence_gated_route_expansion` reaches `0.2000` on the eval half,
+versus eval-half target-alone `0.0667` and random matched budget `0.1333`.
+However, it ties both `fixed_route_budget_1` and `fixed_route_budget_3`, while
+spending average seed budget `2.3333`.
+
+That means:
+
+- adaptive route expansion is useful enough to keep, because it beats target
+  and random matched compute
+- it is not yet a selector method, because fixed route budgets tie it with less
+  tuning risk
+- the next real selector should gate on richer telemetry than target-only
+  format/numeric/completion proxies, especially route disagreement and
+  process-verification signals
+- these logs are now interpretable enough to decide whether failures come from
+  under-spending, wrong candidate choice, or candidate pool ceiling
+
+## Status After Pairwise Verifier Tournament
+
+I also added a pairwise verifier tournament to remove the listwise option-A
+failure mode. Candidate order is shuffled by seed, each match randomizes
+left/right orientation, and every comparison logs sources, raw response, parsed
+winner, fallback, win counts, and target-side rates.
+
+Result: full GSM30 accuracy stays at `0.0667`, matching target-alone. The
+tournament selects target only `0.2000` of the time and seeds `0.8000` of the
+time, so it successfully breaks the target/default collapse, but it does not
+identify correct seeds.
+
+That means:
+
+- pairwise aggregation alone is not sufficient
+- the current target model can be made less position-biased, but not yet a good
+  verifier for route candidates
+- the next verifier should require process-level arithmetic checks, answer
+  repair, or confidence-calibrated pointwise scoring before tournament
+  aggregation
+
 I then pushed that same hypothesis one step deeper into the live fusion path,
 without changing the frozen translator checkpoint, by adding
 `attention_qk_fidelity_tokenwise` as a runtime per-head, per-position gate
