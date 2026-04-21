@@ -2467,3 +2467,61 @@ I added the first audit harness as `scripts/analyze_byte_alignment.py` and ran
 it on the default Qwen2.5 -> Qwen3 byte-stress prompts. It found `1 / 8`
 changed prompts, which confirms the harness can expose tokenizer-boundary
 cases even though the GSM calibration slice did not.
+
+And a seventy-sixth matched dynalign context-only null:
+
+> I then implemented `bridge_ridge_qk_dynalign_ctxonly_module_replace`, which
+> keeps the same downstream direct-output slotted module and the same dynalign
+> candidate window, but disables prediction-overlap scoring during dynamic
+> source-to-target mixture construction.
+>
+> On a 16-prompt diagnostic calibration slice:
+> - dynamic context-only samples: `678`
+> - mean target tokens per source sample: `3.00`
+> - `K` cosine `0.948`, relative Frobenius error `0.305`
+> - `V` cosine `0.697`, relative Frobenius error `0.700`
+>
+> Held-out diagnostic reads:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- the matched null isolates the recent dynalign smoke: using the same candidate
+  window without prediction-overlap scoring falls back to the byte/span floor
+- the output-overlap term is therefore genuinely carrying the dynalign
+  `gsm8k_5 = 0.4000` smoke signal
+- the controlled slice still does not move above `0.1000`, so the live lane is
+  not “span/context alignment plus module replacement”; it is specifically a
+  stronger **output-aware alignment teacher** lane
+- next useful work should strengthen that teacher with span-level likelihood,
+  multi-view remapping, or target-side refinement supervision rather than
+  spending more cycles on context-only or byte-only variants on the same GSM
+  calibration distribution
+
+And a seventy-seventh layer-localization knockout diagnostic:
+
+> I added an evaluator-side layer knockout hook:
+> `--drop-target-layers` replaces translated K/V with target K/V for selected
+> target layers under fused runs, so it removes source communication for those
+> layers without corrupting the target prompt cache.
+>
+> On the 64-prompt `bridge_ridge_qk_dynalign_module_replace` checkpoint and
+> the `gsm8k_5` smoke slice:
+> - no knockout baseline: `0.400000` at `686,026.600` average bytes
+> - recurrent top-layer signature knockout `L27,L5,L23,L22,L8`: `0.200000`
+>   at `563,521.850` average bytes
+> - matched offset-layer knockout `L26,L4,L21,L20,L7`: `0.200000` at
+>   `563,521.850` average bytes
+
+Interpretation:
+
+- removing five communicated target layers is enough to cut the dynalign smoke
+  in half
+- but the effect is not unique to the recurrent top layer-localization
+  signature because the offset control drops by the same amount
+- so the shared layer signature is useful telemetry, but not yet evidence for
+  one uniquely causal layer circuit
+- next layer work should use larger controlled slices or single-layer
+  leave-one-out / add-one-back curves before claiming a layer-localized
+  mechanism

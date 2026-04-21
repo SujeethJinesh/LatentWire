@@ -499,6 +499,33 @@ def test_evaluate_parse_args_accepts_attention_qk_fidelity_tokenwise_gate(monkey
     assert args.runtime_head_gate_metric == "attention_qk_fidelity_tokenwise"
 
 
+def test_evaluate_parse_args_accepts_layer_knockout(monkeypatch) -> None:
+    monkeypatch.setattr(
+        evaluate.sys,
+        "argv",
+        [
+            "evaluate.py",
+            "--translator",
+            "translator.pt",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--eval-file",
+            "eval.jsonl",
+            "--drop-target-layers",
+            "27,5,23",
+            "--drop-target-layer-mode",
+            "target",
+        ],
+    )
+
+    args = evaluate.parse_args()
+    assert args.drop_target_layers == "27,5,23"
+    assert args.drop_target_layer_mode == "target"
+    assert evaluate._parse_target_layer_set(args.drop_target_layers) == {5, 23, 27}
+
+
 def test_source_kv_controls_are_negative_controls() -> None:
     K = torch.arange(12, dtype=torch.float32).view(1, 2, 3, 2)
     V = K + 100.0
@@ -981,6 +1008,50 @@ def test_build_rotalign_prefix_state_uses_matching_source_and_target_prefix_leng
     assert tgt.last_call["input_shape"] == (1, 2)
     assert state.prefix_len == 3
     assert stats["bits"] > 0.0
+
+
+def test_build_rotalign_prefix_state_layer_knockout_removes_communication_bits(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.translate_layer = lambda K_s, V_s, tgt_layer_idx, quantize=True, quantization_control="real": (  # type: ignore[method-assign]
+        K_s.clone(),
+        V_s.clone(),
+    )
+
+    _, full_stats = evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+    )
+    _, dropped_stats = evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+        drop_target_layers={1},
+        drop_target_layer_mode="target",
+    )
+
+    assert dropped_stats["bits"] < full_stats["bits"]
+    assert dropped_stats["dropped_target_layers"] == [1]
+    assert dropped_stats["drop_target_layer_mode"] == "target"
+    assert dropped_stats["selector_trace"][1]["target_layer_drop_mode"] == "target"
 
 
 def test_target_space_translated_controls_report_zero_communication(monkeypatch) -> None:

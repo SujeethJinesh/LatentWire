@@ -417,6 +417,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_eval_10_controlled",
+            method="dynamic-aligned context-only module replace",
+            family="token-remapped attention bridge",
+            meta_path="results/bridge_ridge_qk_dynalign_ctxonly_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_ctxonly_module_replace_cal16_chat.jsonl.meta.json",
+            notes="matched dynalign null with the same candidate window but prediction-overlap scoring disabled on a 16-prompt diagnostic slice",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_10_controlled",
             method="dynamic-aligned module replace",
             family="token-remapped attention bridge",
             meta_path="results/bridge_ridge_qk_dynalign_module_replace_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_module_replace_cal64_chat.jsonl.meta.json",
@@ -562,6 +571,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_5_controlled_smoke",
+            method="dynamic-aligned context-only module replace",
+            family="token-remapped attention bridge",
+            meta_path="results/bridge_ridge_qk_dynalign_ctxonly_module_replace_20260420_diag/qwen_gsm5_grouped_subspace_transport_w010_r4_dynalign_ctxonly_module_replace_cal16_chat.jsonl.meta.json",
+            notes="matched dynalign null with the same candidate window but prediction-overlap scoring disabled on a 16-prompt diagnostic slice",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
             method="contextual-aligned module replace",
             family="token-remapped attention bridge",
             meta_path="results/bridge_ridge_qk_ctxalign_module_replace_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_ctxalign_module_replace_cal64_chat.jsonl.meta.json",
@@ -575,6 +593,24 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
             family="token-remapped attention bridge",
             meta_path="results/bridge_ridge_qk_dynalign_module_replace_20260420/qwen_gsm5_grouped_subspace_transport_w010_r4_dynalign_module_replace_cal64_chat.jsonl.meta.json",
             notes="direct-output slotted module fit from context-plus-output-overlap token mixtures",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
+            method="dynamic-aligned top-5 layer knockout",
+            family="layer-localization ablation",
+            meta_path="results/layer_knockout_20260420/qwen_gsm5_dynalign_top5_layerdrop.jsonl.meta.json",
+            notes="dynalign module replace with translated signal removed from recurrent top layer-localization signature L27,L5,L23,L22,L8",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
+            method="dynamic-aligned offset-5 layer knockout",
+            family="layer-localization ablation",
+            meta_path="results/layer_knockout_20260420/qwen_gsm5_dynalign_offset5_layerdrop.jsonl.meta.json",
+            notes="matched offset-layer knockout L26,L4,L21,L20,L7 for broad layer-budget sensitivity control",
         )
     )
     rows.append(
@@ -782,6 +818,14 @@ def _build_paired_rows() -> list[dict[str, Any]]:
             "baseline_label": "target_alone_control",
         },
         {
+            "candidate": "results/bridge_ridge_qk_dynalign_ctxonly_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_ctxonly_module_replace_cal16_chat.jsonl",
+            "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
+            "candidate_method": "rotalign_kv_gate_0.10",
+            "baseline_method": "target_alone",
+            "candidate_label": "dynalign_ctxonly_module_replace",
+            "baseline_label": "target_alone_control",
+        },
+        {
             "candidate": "results/bridge_ridge_qk_dynalign_module_replace_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_module_replace_cal64_chat.jsonl",
             "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
             "candidate_method": "rotalign_kv_gate_0.10",
@@ -893,6 +937,12 @@ def _build_layer_localization_rows() -> list[dict[str, Any]]:
             "family": "token-remapped attention bridge",
             "jsonl": "results/bridge_ridge_qk_bytespan_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_bytespan_module_replace_cal16_chat.jsonl",
             "notes": "direct-output slotted module fit from dominant UTF-8 byte-overlap calibration pairs on controlled gsm8k_eval_10 (16-prompt diagnostic calibration)",
+        },
+        {
+            "method": "dynalign_ctxonly_module_replace",
+            "family": "token-remapped attention bridge",
+            "jsonl": "results/bridge_ridge_qk_dynalign_ctxonly_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_ctxonly_module_replace_cal16_chat.jsonl",
+            "notes": "matched dynalign context-only null on controlled gsm8k_eval_10 (16-prompt diagnostic calibration)",
         },
         {
             "method": "dynalign_module_replace",

@@ -2797,6 +2797,8 @@ def _build_rotalign_prefix_state(
     target_use_chat_template: bool = False,
     source_enable_thinking: bool | None = None,
     target_enable_thinking: bool | None = None,
+    drop_target_layers: set[int] | None = None,
+    drop_target_layer_mode: str = "none",
 ) -> tuple[PrefixState, dict[str, float]]:
     formatted_target_prompt = _format_prompt_for_tokenizer(
         target_tokenizer,
@@ -2901,7 +2903,7 @@ def _build_rotalign_prefix_state(
         "attention_qk_template_transport_shuffled",
         "attention_qk_bank_transport",
         "attention_qk_bank_transport_shuffled",
-    } or translator.config.quantization_correction in {"bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+    } or translator.config.quantization_correction in {"bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
         layer_query_heads = _last_token_query_heads(
             target_model,
             tgt_last_token,
@@ -3005,6 +3007,7 @@ def _build_rotalign_prefix_state(
     ]
     active_k_token_counts: list[list[int]] = []
     active_v_token_counts: list[list[int]] = []
+    dropped_layer_set = set(drop_target_layers or set())
     for tgt_l in range(translator.config.num_tgt_layers):
         src_l = translator.layer_map[tgt_l]
         K_s, V_s = src_pkv[src_l]
@@ -3026,7 +3029,7 @@ def _build_rotalign_prefix_state(
                     target_heads=translator.config.tgt_num_heads,
                     head_dim=translator.config.tgt_head_dim,
                 )
-        elif translator.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+        elif translator.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
             if layer_query_heads is None:
                 raise ValueError(f"{translator.config.quantization_correction} requires live query heads")
             runtime_query_features = _query_feature_vector(
@@ -3057,6 +3060,17 @@ def _build_rotalign_prefix_state(
         )
         K_t_aligned, K_hat = _tail_align_pair(K_t, K_hat.to(dtype=K_t.dtype))
         V_t_aligned, V_hat = _tail_align_pair(V_t, V_hat.to(dtype=V_t.dtype))
+        layer_dropped = drop_target_layer_mode != "none" and tgt_l in dropped_layer_set
+        if layer_dropped:
+            if drop_target_layer_mode == "target":
+                K_hat = K_t_aligned.clone()
+                V_hat = V_t_aligned.clone()
+            elif drop_target_layer_mode == "zero":
+                K_hat = torch.zeros_like(K_hat)
+                V_hat = torch.zeros_like(V_hat)
+            else:
+                raise ValueError(f"Unknown drop_target_layer_mode: {drop_target_layer_mode}")
+            layer_runtime_head_counts[tgt_l] = 0
         runtime_position_scores: torch.Tensor | None = None
         active_head_indices = _translator_selected_head_indices(
             translator,
@@ -3352,17 +3366,20 @@ def _build_rotalign_prefix_state(
                         keep_counts.sum().item()
                         / max(K_t_aligned.shape[2] * max(active_head_indices.numel(), 1), 1)
                     ),
+                    "target_layer_drop_mode": drop_target_layer_mode if layer_dropped else "none",
                 }
             )
             keep_list = [int(value) for value in keep_counts.detach().cpu().tolist()]
             if (
-                translator.is_layer_selected(tgt_l)
+                not layer_dropped
+                and translator.is_layer_selected(tgt_l)
                 and kv_transport in {"both", "k_only"}
                 and (protocol == "translated_only" or abs(gate_k_now) > 1e-5)
             ):
                 active_k_token_counts.append(keep_list)
             if (
-                translator.is_layer_selected(tgt_l)
+                not layer_dropped
+                and translator.is_layer_selected(tgt_l)
                 and kv_transport in {"both", "v_only"}
                 and (protocol == "translated_only" or abs(gate_v_now) > 1e-5)
             ):
@@ -3398,6 +3415,7 @@ def _build_rotalign_prefix_state(
             selector_trace["target_layer"] = int(tgt_l)
             selector_trace["source_layer"] = int(src_l)
             selector_trace["metric"] = position_selection_metric
+            selector_trace["target_layer_drop_mode"] = drop_target_layer_mode if layer_dropped else "none"
             selector_layers.append(selector_trace)
         K_hat, V_hat = _apply_kv_transport(
             K_t_aligned,
@@ -3441,6 +3459,8 @@ def _build_rotalign_prefix_state(
     active_k_head_counts: list[int] = []
     active_v_head_counts: list[int] = []
     for layer_idx in translator.selected_layer_indices():
+        if layer_idx in dropped_layer_set and drop_target_layer_mode != "none":
+            continue
         gate_k, gate_v = translator.gate_value(layer_idx)
         selected_heads = layer_runtime_head_counts[layer_idx]
         if kv_transport in {"both", "k_only"} and (protocol == "translated_only" or abs(gate_k) > 1e-5):
@@ -3477,6 +3497,8 @@ def _build_rotalign_prefix_state(
         "head_gate_trace": head_gate_layers,
         "head_budget_trace": head_budget_layers,
         "selected_target_layers": [int(layer) for layer in translator.selected_layer_indices()],
+        "dropped_target_layers": sorted(int(layer) for layer in dropped_layer_set),
+        "drop_target_layer_mode": drop_target_layer_mode,
     }
 
 
@@ -3484,6 +3506,21 @@ def _limit_examples(examples, limit: int | None):
     if limit is None or limit <= 0 or limit >= len(examples):
         return list(examples)
     return list(examples[:limit])
+
+
+def _parse_target_layer_set(value: str | None) -> set[int]:
+    if value is None or not value.strip():
+        return set()
+    layers: set[int] = set()
+    for item in value.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        layer = int(item)
+        if layer < 0:
+            raise ValueError("--drop-target-layers must contain non-negative integers")
+        layers.add(layer)
+    return layers
 
 
 def _search_per_layer_gates(
@@ -3848,6 +3885,8 @@ def eval_rotalign_kv(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    drop_target_layers: set[int] | None = None,
+    drop_target_layer_mode: str = "none",
     records: list[dict[str, Any]] | None = None,
     method_name: str = "rotalign_kv",
 ) -> float:
@@ -3873,6 +3912,8 @@ def eval_rotalign_kv(
         build_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
         build_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
         build_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
+        build_kwargs["drop_target_layers"] = drop_target_layers
+        build_kwargs["drop_target_layer_mode"] = drop_target_layer_mode
         prefix_state, stats = _build_rotalign_prefix_state(
             source_model,
             source_tokenizer,
@@ -3922,6 +3963,8 @@ def eval_rotalign_kv(
                 "runtime_head_gate_metric": runtime_head_gate_metric,
                 "runtime_head_gate_strength": runtime_head_gate_strength,
                 "per_head_position_budget_mode": per_head_position_budget_mode,
+                "drop_target_layers": stats.get("dropped_target_layers"),
+                "drop_target_layer_mode": stats.get("drop_target_layer_mode"),
                 "bits": stats.get("bits"),
                 "bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
                 "communication_bits": stats.get("bits"),
@@ -4131,6 +4174,8 @@ def _eval_generation_rotalign(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    drop_target_layers: set[int] | None = None,
+    drop_target_layer_mode: str = "none",
 ) -> tuple[float, float, float]:
     eval_kwargs: dict[str, Any] = {}
     if fixed_position_profiles is not None:
@@ -4147,6 +4192,8 @@ def _eval_generation_rotalign(
     eval_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
     eval_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
     eval_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
+    eval_kwargs["drop_target_layers"] = drop_target_layers
+    eval_kwargs["drop_target_layer_mode"] = drop_target_layer_mode
     stats = _eval_generation_rotalign_with_stats(
         source_model,
         source_tokenizer,
@@ -4203,6 +4250,8 @@ def _eval_generation_rotalign_with_stats(
     runtime_head_gate_metric: str = "none",
     runtime_head_gate_strength: float = 1.0,
     per_head_position_budget_mode: str = "none",
+    drop_target_layers: set[int] | None = None,
+    drop_target_layer_mode: str = "none",
     source_use_chat_template: bool = False,
     target_use_chat_template: bool = False,
     source_enable_thinking: bool | None = None,
@@ -4249,6 +4298,8 @@ def _eval_generation_rotalign_with_stats(
         build_kwargs["runtime_head_gate_metric"] = runtime_head_gate_metric
         build_kwargs["runtime_head_gate_strength"] = runtime_head_gate_strength
         build_kwargs["per_head_position_budget_mode"] = per_head_position_budget_mode
+        build_kwargs["drop_target_layers"] = drop_target_layers
+        build_kwargs["drop_target_layer_mode"] = drop_target_layer_mode
         build_kwargs["source_use_chat_template"] = source_use_chat_template
         build_kwargs["target_use_chat_template"] = target_use_chat_template
         build_kwargs["source_enable_thinking"] = source_enable_thinking
@@ -4306,6 +4357,8 @@ def _eval_generation_rotalign_with_stats(
                     "runtime_head_gate_metric": runtime_head_gate_metric,
                     "runtime_head_gate_strength": runtime_head_gate_strength,
                     "per_head_position_budget_mode": per_head_position_budget_mode,
+                    "drop_target_layers": stats.get("dropped_target_layers"),
+                    "drop_target_layer_mode": stats.get("drop_target_layer_mode"),
                     "bits": stats["bits"],
                     "bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
                     "payload_bits": stats.get("payload_bits"),
@@ -4608,6 +4661,17 @@ def parse_args() -> argparse.Namespace:
         help="Allocate the position budget unevenly across active heads instead of using one flat per-layer position ratio.",
     )
     p.add_argument(
+        "--drop-target-layers",
+        default=None,
+        help="Comma-separated target layer indices whose translated KV should be ablated for layer-knockout diagnostics.",
+    )
+    p.add_argument(
+        "--drop-target-layer-mode",
+        choices=["none", "target", "zero"],
+        default="none",
+        help="Layer knockout mode: target replaces translated KV with target KV; zero replaces translated KV with zeros.",
+    )
+    p.add_argument(
         "--methods",
         nargs="+",
         default=["target", "t2t", "rotalign"],
@@ -4665,6 +4729,8 @@ def main() -> None:
     runtime_head_prior_shrinkage = float(getattr(args, "runtime_head_prior_shrinkage", 0.0))
     runtime_head_prior_shrink_target = getattr(args, "runtime_head_prior_shrink_target", "uniform")
     per_head_position_budget_mode = getattr(args, "per_head_position_budget_mode", "none")
+    drop_target_layers = _parse_target_layer_set(getattr(args, "drop_target_layers", None))
+    drop_target_layer_mode = getattr(args, "drop_target_layer_mode", "none")
     source_use_chat_template = bool(getattr(args, "source_use_chat_template", False))
     target_use_chat_template = bool(getattr(args, "target_use_chat_template", False))
     source_enable_thinking = _optional_bool_from_arg(getattr(args, "source_enable_thinking", "auto"))
@@ -4673,6 +4739,8 @@ def main() -> None:
         raise ValueError("--runtime-head-prior-shrinkage must be in [0, 1]")
     if not 0.0 <= runtime_head_gate_strength <= 1.0:
         raise ValueError("--runtime-head-gate-strength must be in [0, 1]")
+    if drop_target_layers and drop_target_layer_mode == "none":
+        drop_target_layer_mode = "target"
 
     dtype = {
         "float32": torch.float32,
@@ -5232,6 +5300,8 @@ def main() -> None:
                     runtime_head_gate_metric=runtime_head_gate_metric,
                     runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
+                    drop_target_layers=drop_target_layers,
+                    drop_target_layer_mode=drop_target_layer_mode,
                     records=prediction_records,
                     method_name=metric_key,
                 )
@@ -5407,6 +5477,8 @@ def main() -> None:
                     runtime_head_gate_metric=runtime_head_gate_metric,
                     runtime_head_gate_strength=runtime_head_gate_strength,
                     per_head_position_budget_mode=per_head_position_budget_mode,
+                    drop_target_layers=drop_target_layers,
+                    drop_target_layer_mode=drop_target_layer_mode,
                     source_use_chat_template=source_use_chat_template,
                     target_use_chat_template=target_use_chat_template,
                     source_enable_thinking=source_enable_thinking,
@@ -5473,6 +5545,8 @@ def main() -> None:
                 "runtime_head_prior_shrink_target": runtime_head_prior_shrink_target,
                 "runtime_head_prior_bundle_metadata": loaded_head_prior_metadata,
                 "per_head_position_budget_mode": per_head_position_budget_mode,
+                "drop_target_layers": sorted(int(layer) for layer in drop_target_layers),
+                "drop_target_layer_mode": drop_target_layer_mode,
             },
         )
 

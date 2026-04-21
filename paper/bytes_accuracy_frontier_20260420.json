@@ -163,6 +163,14 @@
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
     "family": "token-remapped attention bridge",
+    "method": "dynamic-aligned context-only module replace",
+    "notes": "matched dynalign null with the same candidate window but prediction-overlap scoring disabled on a 16-prompt diagnostic slice",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
+    "family": "token-remapped attention bridge",
     "method": "dynamic-aligned module replace",
     "notes": "direct-output slotted module fit from context-plus-output-overlap token mixtures",
     "split": "gsm8k_eval_10_controlled"
@@ -288,6 +296,14 @@
     "split": "gsm8k_5_controlled_smoke"
   },
   {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "token-remapped attention bridge",
+    "method": "dynamic-aligned context-only module replace",
+    "notes": "matched dynalign null with the same candidate window but prediction-overlap scoring disabled on a 16-prompt diagnostic slice",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
     "accuracy": 0.0,
     "avg_bytes": 686026.6,
     "family": "token-remapped attention bridge",
@@ -301,6 +317,22 @@
     "family": "token-remapped attention bridge",
     "method": "dynamic-aligned module replace",
     "notes": "direct-output slotted module fit from context-plus-output-overlap token mixtures",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 563521.85,
+    "family": "layer-localization ablation",
+    "method": "dynamic-aligned top-5 layer knockout",
+    "notes": "dynalign module replace with translated signal removed from recurrent top layer-localization signature L27,L5,L23,L22,L8",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 563521.85,
+    "family": "layer-localization ablation",
+    "method": "dynamic-aligned offset-5 layer knockout",
+    "notes": "matched offset-layer knockout L26,L4,L21,L20,L7 for broad layer-budget sensitivity control",
     "split": "gsm8k_5_controlled_smoke"
   },
   {

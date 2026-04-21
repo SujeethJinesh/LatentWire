@@ -1572,3 +1572,59 @@ default Qwen2.5 -> Qwen3 stress prompts it reports `1 / 8` prompts with changed
 byte-dominant pairings versus char-span alignment, so the next tokenizer-side
 model run should use a deliberately byte-stressed calibration slice rather than
 the current GSM-only calibration prompts.
+
+I then added a matched context-only null for the dynamic-alignment branch as
+`bridge_ridge_qk_dynalign_ctxonly_module_replace`.
+
+This keeps the later dynalign candidate window and the same direct-output
+module-replacement fit, but sets the prediction-overlap score weight to zero
+during source-to-target mixture construction.
+
+On a 16-prompt diagnostic calibration slice:
+
+- dynamic context-only samples: `678`
+- mean target tokens per source sample: `3.00`
+- `K` cosine `0.948`, relative Frobenius error `0.305`
+- `V` cosine `0.697`, relative Frobenius error `0.700`
+
+Held-out diagnostic reads:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- the plain span/context part of dynalign is not what produced the earlier
+  `0.4000` smoke
+- the prediction-overlap score is carrying the useful signal, because removing
+  it drops the smoke back to the byte/span floor
+- the controlled slice still ties the target floor, so this is not yet a
+  positive method result
+- the next serious method step should strengthen the output-aware alignment
+  teacher itself, using span-level likelihood, multi-view token remapping, or
+  target-side refinement supervision; context-only or byte-only variants on the
+  same GSM calibration data are now lower priority
+
+I also added a first layer-localization knockout hook and ran it on the live
+`bridge_ridge_qk_dynalign_module_replace` smoke branch.
+
+The hook replaces translated K/V with target K/V for selected target layers,
+removing source communication for those layers while preserving the target
+prompt cache.
+
+On `gsm8k_5`:
+
+- baseline dynalign module replace: `0.4000`
+- recurrent top-layer signature knockout `L27,L5,L23,L22,L8`: `0.2000`
+- matched offset-layer knockout `L26,L4,L21,L20,L7`: `0.2000`
+- bytes for both knockouts: `563,521.9`
+
+That means:
+
+- the dynalign smoke is sensitive to removing five communicated layers
+- the current repeated layer signature is not uniquely causal yet, because the
+  offset control drops by the same amount
+- layer telemetry remains useful for interpretability, but the next decisive
+  layer ablation should be a larger-slice leave-one-out or add-one-back curve,
+  not a top-five knockout alone
