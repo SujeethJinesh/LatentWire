@@ -1,0 +1,13 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "eval_file": "data/gsm8k_gate_search_30.jsonl",
+  "press": "none",
+  "compression_ratio": null,
+  "enable_thinking": false,
+  "accuracy": 0.06666666666666667,
+  "ttft_sec": 0.0,
+  "tokens_per_sec": 6.802195590838831,
+  "examples_per_sec": 0.1685102128201197,
+  "latency_sec": 5.93435841818961,
+  "generated_tokens_avg": 40.36666666666667
+}

@@ -40,3 +40,24 @@ KVPress is runnable as a same-model compression control. On this small GSM5
 slice, expected-attention compression preserves accuracy but is slower than no
 press under the local MPS wrapper. The next meaningful comparison is GSM30
 with exact matched decoding and sidecar-normalized latency.
+
+## GSM30 Same-Model Compression Control
+
+| Method | Model | Eval slice | Accuracy | Avg latency sec | Tokens/sec | Avg generated tokens |
+|---|---|---|---:|---:|---:|---:|
+| KVPress none | `Qwen/Qwen3-0.6B` | `gsm8k_gate_search_30.jsonl` | 0.0667 | 5.9344 | 6.8022 | 40.3667 |
+| KVPress expected_attention, compression `0.5` | `Qwen/Qwen3-0.6B` | `gsm8k_gate_search_30.jsonl` | 0.0667 | 6.2869 | 6.1768 | 38.8333 |
+
+Artifacts:
+
+- `kvpress_qwen3_gsm30_none_20260421.jsonl`
+- `kvpress_qwen3_gsm30_none_20260421.jsonl.meta.json`
+- `kvpress_qwen3_gsm30_expected_attention_c050_20260421.jsonl`
+- `kvpress_qwen3_gsm30_expected_attention_c050_20260421.jsonl.meta.json`
+
+Interpretation:
+
+On GSM30, KVPress expected-attention compression is neutral relative to no
+press and matches the target-alone `0.0667` baseline. It does not explain the
+stochastic-route oracle gap, so it should remain a same-model compression
+control rather than the central positive-method lane.

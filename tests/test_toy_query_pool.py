@@ -35,6 +35,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("aligned", "protected_channel_residual_codebook_remap"),
         ("aligned", "gauge_aware_protected_channel_residual_codebook_remap"),
         ("aligned", "signal_aware_protected_channel_residual_codebook_remap"),
+        ("aligned", "learned_protected_channel_residual_codebook_remap"),
         ("aligned", "route_atom"),
         ("rotated", "topk"),
         ("rotated", "query_pool"),
@@ -46,6 +47,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("rotated", "protected_channel_residual_codebook_remap"),
         ("rotated", "gauge_aware_protected_channel_residual_codebook_remap"),
         ("rotated", "signal_aware_protected_channel_residual_codebook_remap"),
+        ("rotated", "learned_protected_channel_residual_codebook_remap"),
         ("rotated", "route_atom"),
     }
     for row in rows:
@@ -121,6 +123,10 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         assert "gauge_protected_energy_fraction" in row
         assert "gauge_eigenvalue_top_margin" in row
         assert "gauge_selected_channels" in row
+        assert "learned_mask_entropy" in row
+        assert "learned_mask_effective_channels" in row
+        assert "learned_mask_top_mass" in row
+        assert "learned_mask_alignment" in row
         if row["method"] != "topk":
             assert row["atom_entropy"] >= 0.0
             assert 0.0 <= row["atom_collision_rate"] <= 1.0
@@ -214,6 +220,15 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
             assert row["signal_query_energy_ratio"] >= 0.0
             assert row["signal_slot_energy_ratio"] >= 0.0
             assert 0.0 <= row["signal_gate"] <= 1.0
+        if row["method"] == "learned_protected_channel_residual_codebook_remap":
+            assert row["codebook_size"] == 4
+            assert row["residual_codebook_size"] == 4
+            assert row["protected_channels"] == 2
+            assert 0.0 < row["protected_channel_fraction"] <= 1.0
+            assert row["learned_mask_entropy"] >= 0.0
+            assert row["learned_mask_effective_channels"] >= 1.0
+            assert 0.0 <= row["learned_mask_top_mass"] <= 1.0
+            assert 0.0 <= row["learned_mask_alignment"] <= 1.0
 
 
 def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
@@ -253,6 +268,7 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
         "protected_channel_residual_codebook_remap",
         "gauge_aware_protected_channel_residual_codebook_remap",
         "signal_aware_protected_channel_residual_codebook_remap",
+        "learned_protected_channel_residual_codebook_remap",
         "route_atom",
     }
     summary = markdown.read_text()
@@ -281,6 +297,10 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
     assert "Signal query energy" in summary
     assert "Signal slot energy" in summary
     assert "Signal gate" in summary
+    assert "Learned mask entropy" in summary
+    assert "Learned eff. ch." in summary
+    assert "Learned top mass" in summary
+    assert "Learned align" in summary
     assert "| outlier | query_pool |" in summary
     assert "| outlier | preconditioned_query_pool |" in summary
     assert "| outlier | constrained_preconditioned_query_pool |" in summary
@@ -289,4 +309,5 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
     assert "| outlier | residual_codebook_remap |" in summary
     assert "| outlier | gauge_aware_protected_channel_residual_codebook_remap |" in summary
     assert "| outlier | signal_aware_protected_channel_residual_codebook_remap |" in summary
+    assert "| outlier | learned_protected_channel_residual_codebook_remap |" in summary
     assert "| outlier | route_atom |" in summary

@@ -344,6 +344,27 @@ def _subspace_alignment(left: torch.Tensor, right: torch.Tensor) -> float:
     return float(overlap.item())
 
 
+def _mask_metrics(mask_probs: torch.Tensor, reference_importance: torch.Tensor | None = None) -> dict[str, float]:
+    mask_probs = mask_probs / mask_probs.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    row_entropy = (-(mask_probs * mask_probs.clamp_min(1e-8).log()).sum(dim=-1)).mean()
+    effective_channels = torch.exp(
+        (-(mask_probs * mask_probs.clamp_min(1e-8).log()).sum(dim=-1))
+    ).mean()
+    top_mass = mask_probs.max(dim=-1).values.mean()
+    metrics = {
+        "learned_mask_entropy": float(row_entropy.item()),
+        "learned_mask_effective_channels": float(effective_channels.item()),
+        "learned_mask_top_mass": float(top_mass.item()),
+    }
+    if reference_importance is None:
+        metrics["learned_mask_alignment"] = None
+    else:
+        ref = reference_importance / reference_importance.sum().clamp_min(1e-8)
+        learned = mask_probs.mean(dim=0)
+        metrics["learned_mask_alignment"] = float(F.cosine_similarity(learned, ref, dim=0).item())
+    return metrics
+
+
 class TopKReadout(nn.Module):
     def __init__(self, dim: int, classes: int, top_k: int) -> None:
         super().__init__()
@@ -921,6 +942,114 @@ class SignalAwareProtectedChannelResidualCodebookReadout(ProtectedChannelResidua
         return summary, effective_weights
 
 
+class LearnedProtectedChannelResidualCodebookReadout(ProtectedChannelResidualCodebookReadout):
+    def __init__(
+        self,
+        dim: int,
+        classes: int,
+        codebook_size: int,
+        residual_codebook_size: int,
+        protected_channels: int,
+    ) -> None:
+        super().__init__(dim, classes, codebook_size, residual_codebook_size, protected_channels)
+        self.learned_mask_logits = nn.Parameter(torch.randn(self.protected_channels, dim) * 0.01)
+        self.register_buffer("signal_basis", torch.eye(dim))
+        self.register_buffer("signal_eigenvalues", torch.ones(dim))
+        self.last_learned_mask_entropy: torch.Tensor | None = None
+        self.last_learned_mask_effective_channels: torch.Tensor | None = None
+        self.last_learned_mask_top_mass: torch.Tensor | None = None
+        self.last_learned_mask_alignment: torch.Tensor | None = None
+        self.last_signal_basis_orthogonality_error: torch.Tensor | None = None
+        self.last_signal_task_energy_fraction: torch.Tensor | None = None
+        self.last_signal_eigenvalue_top_margin: torch.Tensor | None = None
+        self.last_signal_selected_channels: torch.Tensor | None = None
+        self._learned_mask_calibrated = False
+
+    @torch.no_grad()
+    def finalize_calibration(self, batch: ToyBatch) -> None:
+        dim = batch.q.shape[-1]
+        signal_basis, signal_eigenvalues, signal_orthogonality_error = _calibrate_signal_basis(batch.q, batch.y)
+        self.signal_basis.copy_(signal_basis)
+        self.signal_eigenvalues.copy_(signal_eigenvalues)
+        protected = max(1, min(self.protected_channels, dim))
+        signal_energy = (signal_eigenvalues[:protected].sum() / signal_eigenvalues.sum().clamp_min(1e-8)).clamp(0.0, 1.0)
+        top_margin = signal_eigenvalues[0] - signal_eigenvalues[min(protected, signal_eigenvalues.numel() - 1)]
+        self.last_signal_basis_orthogonality_error = signal_orthogonality_error.detach()
+        self.last_signal_task_energy_fraction = signal_energy.detach()
+        self.last_signal_eigenvalue_top_margin = top_margin.detach()
+        self.last_signal_selected_channels = torch.arange(protected, device=batch.q.device)
+        self._learned_mask_calibrated = True
+
+    def encode(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor]:
+        if not self._learned_mask_calibrated:
+            self.finalize_calibration(batch)
+
+        q_proj = self.query_proj(batch.q)
+        mask_probs = torch.softmax(self.learned_mask_logits, dim=-1)
+        mask = mask_probs * float(self.protected_channels)
+        scale = math.sqrt(batch.q.shape[-1])
+
+        code_logits = torch.einsum("nd,cd->nc", q_proj, self.codebook) / scale
+        code_weights = torch.softmax(code_logits, dim=-1)
+        slot_code_logits = torch.einsum("nsd,cd->nsc", batch.K, self.codebook) / scale
+        slot_code_weights = torch.softmax(slot_code_logits, dim=-1)
+        slot_code_summaries = torch.einsum("nsc,nsd->ncd", slot_code_weights, batch.V)
+        base_summary = torch.einsum("nc,ncd->nd", code_weights, slot_code_summaries)
+        base_weights = torch.einsum("nc,nsc->ns", code_weights, slot_code_weights)
+
+        query_base = code_weights @ self.codebook
+        slot_base = torch.einsum("nsc,cd->nsd", slot_code_weights, self.codebook)
+        query_residual = q_proj - query_base
+        slot_residual = batch.K - slot_base
+        protected_query_residual = torch.einsum("nd,cd->nc", query_residual, mask)
+        protected_slot_residual = torch.einsum("nsd,cd->nsc", slot_residual, mask)
+
+        protected_residual_code_logits = (
+            torch.einsum("nc,rc->nr", protected_query_residual, self.protected_residual_codebook) / scale
+        )
+        protected_residual_code_weights = torch.softmax(protected_residual_code_logits, dim=-1)
+        protected_residual_slot_logits = torch.einsum(
+            "nsc,rc->nsr", protected_slot_residual, self.protected_residual_codebook
+        ) / scale
+        protected_residual_slot_code_weights = torch.softmax(protected_residual_slot_logits, dim=-1)
+        protected_slot_summaries = torch.einsum("nsr,nsc->nrc", protected_residual_slot_code_weights, protected_slot_residual)
+        protected_residual_summary = torch.einsum("nr,nrc->nc", protected_residual_code_weights, protected_slot_summaries)
+        protected_residual_weights = torch.einsum(
+            "nr,nsr->ns", protected_residual_code_weights, protected_residual_slot_code_weights
+        )
+
+        protected_gate = torch.sigmoid(self.protected_residual_logit)
+        summary = base_summary + protected_gate * torch.einsum("nc,cd->nd", protected_residual_summary, mask)
+        effective_weights = (base_weights + protected_gate * protected_residual_weights) / (1.0 + protected_gate)
+
+        signal_importance = (self.signal_basis[:, : self.protected_channels] ** 2).sum(dim=-1)
+        mask_stats = _mask_metrics(mask_probs, signal_importance)
+        self.last_learned_mask_entropy = torch.tensor(mask_stats["learned_mask_entropy"], device=batch.q.device)
+        self.last_learned_mask_effective_channels = torch.tensor(
+            mask_stats["learned_mask_effective_channels"], device=batch.q.device
+        )
+        self.last_learned_mask_top_mass = torch.tensor(mask_stats["learned_mask_top_mass"], device=batch.q.device)
+        self.last_learned_mask_alignment = torch.tensor(
+            mask_stats["learned_mask_alignment"],
+            device=batch.q.device,
+            dtype=batch.q.dtype,
+        )
+
+        self.last_atom_weights = torch.cat([code_weights, protected_residual_code_weights], dim=-1).detach()
+        self.last_code_weights = code_weights.detach()
+        self.last_slot_code_weights = slot_code_weights.detach()
+        self.last_query_proj = q_proj.detach()
+        self.last_slot_keys = batch.K.detach()
+        self.last_protected_residual_code_weights = protected_residual_code_weights.detach()
+        self.last_protected_residual_slot_code_weights = protected_residual_slot_code_weights.detach()
+        self.last_query_residual = query_residual.detach()
+        self.last_slot_residual = slot_residual.detach()
+        self.last_protected_query_residual = protected_query_residual.detach()
+        self.last_protected_slot_residual = protected_slot_residual.detach()
+        self.last_protected_gate = protected_gate.detach()
+        return summary, effective_weights
+
+
 class RouteAtomReadout(nn.Module):
     def __init__(self, dim: int, classes: int, route_atoms: int) -> None:
         super().__init__()
@@ -1328,8 +1457,35 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
                         "gauge_selected_channels": float(gauge_selected_channels.numel())
                         if isinstance(gauge_selected_channels, torch.Tensor)
                         else None,
-                    }
-                )
+                }
+            )
+    learned_mask_entropy = getattr(model, "last_learned_mask_entropy", None)
+    learned_mask_effective_channels = getattr(model, "last_learned_mask_effective_channels", None)
+    learned_mask_top_mass = getattr(model, "last_learned_mask_top_mass", None)
+    learned_mask_alignment = getattr(model, "last_learned_mask_alignment", None)
+    if (
+        learned_mask_entropy is None
+        or learned_mask_effective_channels is None
+        or learned_mask_top_mass is None
+        or learned_mask_alignment is None
+    ):
+        metrics.update(
+            {
+                "learned_mask_entropy": None,
+                "learned_mask_effective_channels": None,
+                "learned_mask_top_mass": None,
+                "learned_mask_alignment": None,
+            }
+        )
+    else:
+        metrics.update(
+            {
+                "learned_mask_entropy": float(learned_mask_entropy.item()),
+                "learned_mask_effective_channels": float(learned_mask_effective_channels.item()),
+                "learned_mask_top_mass": float(learned_mask_top_mass.item()),
+                "learned_mask_alignment": float(learned_mask_alignment.item()),
+            }
+        )
     return metrics
 
 
@@ -1349,6 +1505,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
         "protected_channel_residual_codebook_remap": 619,
         "gauge_aware_protected_channel_residual_codebook_remap": 683,
         "signal_aware_protected_channel_residual_codebook_remap": 739,
+        "learned_protected_channel_residual_codebook_remap": 797,
     }
     for scenario_idx, scenario in enumerate(scenarios):
         train = make_toy_batch(config, scenario=scenario, split="train", base=base)
@@ -1419,6 +1576,17 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 ),
                 config.codebook_size + config.residual_codebook_size,
             ),
+            (
+                "learned_protected_channel_residual_codebook_remap",
+                lambda: LearnedProtectedChannelResidualCodebookReadout(
+                    config.dim,
+                    config.classes,
+                    config.codebook_size,
+                    config.residual_codebook_size,
+                    protected_channels,
+                ),
+                config.codebook_size + config.residual_codebook_size,
+            ),
         ]
         for method, factory, margin_k in methods:
             torch.manual_seed(config.seed + scenario_idx * 10_000 + method_seed_offsets[method])
@@ -1443,6 +1611,8 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 budget = config.codebook_size + config.residual_codebook_size
             elif method == "signal_aware_protected_channel_residual_codebook_remap":
                 budget = config.codebook_size + config.residual_codebook_size
+            elif method == "learned_protected_channel_residual_codebook_remap":
+                budget = config.codebook_size + config.residual_codebook_size
             else:
                 budget = config.kv_route_budget + config.kv_value_budget
             rows.append(
@@ -1460,6 +1630,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                         "protected_channel_residual_codebook_remap",
                         "gauge_aware_protected_channel_residual_codebook_remap",
                         "signal_aware_protected_channel_residual_codebook_remap",
+                        "learned_protected_channel_residual_codebook_remap",
                     }
                     else None,
                     "residual_codebook_size": config.residual_codebook_size
@@ -1469,6 +1640,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                         "protected_channel_residual_codebook_remap",
                         "gauge_aware_protected_channel_residual_codebook_remap",
                         "signal_aware_protected_channel_residual_codebook_remap",
+                        "learned_protected_channel_residual_codebook_remap",
                     }
                     else None,
                     "protected_channels": protected_channels
@@ -1477,6 +1649,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                         "protected_channel_residual_codebook_remap",
                         "gauge_aware_protected_channel_residual_codebook_remap",
                         "signal_aware_protected_channel_residual_codebook_remap",
+                        "learned_protected_channel_residual_codebook_remap",
                     }
                     else None,
                     "protected_channel_fraction": protected_channels / config.dim
@@ -1484,6 +1657,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                         "protected_channel_residual_codebook_remap",
                         "gauge_aware_protected_channel_residual_codebook_remap",
                         "signal_aware_protected_channel_residual_codebook_remap",
+                        "learned_protected_channel_residual_codebook_remap",
                     }
                     else None,
                     **metrics,
@@ -1501,9 +1675,12 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
     lines = [
         "# Toy Query-Pool Benchmark",
         "",
-        "| Scenario | Method | Budget | KV route budget | KV value budget | Codebook size | Residual codebook size | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | KV route entropy | KV value entropy | KV route collision | KV value collision | KV route dead | KV value dead | KV route margin | KV value margin | KV overlap | KV Jaccard | KV KL | KV cosine | KV gap | KV gate mean | KV gate std | Constrained scale min | Constrained scale max | Constrained scale mean | Codebook entropy | Codebook collision | Dead codes | Codebook margin | Slot code entropy | Slot code collision | Dead slot codes | Slot code margin | Codebook recon MSE | Codebook recon cosine | Slot remap recon MSE | Slot remap recon cosine | Codebook support | Remap overlap | Remap Jaccard | Residual codebook entropy | Residual codebook collision | Residual dead codes | Residual codebook margin | Residual slot code entropy | Residual slot code collision | Residual dead slot codes | Residual slot code margin | Residual recon MSE | Residual recon cosine | Residual slot recon MSE | Residual slot recon cosine | Residual support | Residual overlap | Residual Jaccard | Residual query energy | Residual slot energy | Residual gate | Protected channels | Protected fraction | Protected residual entropy | Protected residual collision | Protected query energy | Protected slot energy | Protected gate | Gauge orth. err. | Gauge energy frac. | Gauge top margin | Gauge selected | Signal orth. err. | Signal task energy | Signal top margin | Signal selected | Signal var. align | Signal query energy | Signal slot energy | Signal gate |",
+        "| Scenario | Method | Budget | KV route budget | KV value budget | Codebook size | Residual codebook size | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | KV route entropy | KV value entropy | KV route collision | KV value collision | KV route dead | KV value dead | KV route margin | KV value margin | KV overlap | KV Jaccard | KV KL | KV cosine | KV gap | KV gate mean | KV gate std | Constrained scale min | Constrained scale max | Constrained scale mean | Codebook entropy | Codebook collision | Dead codes | Codebook margin | Slot code entropy | Slot code collision | Dead slot codes | Slot code margin | Codebook recon MSE | Codebook recon cosine | Slot remap recon MSE | Slot remap recon cosine | Codebook support | Remap overlap | Remap Jaccard | Residual codebook entropy | Residual codebook collision | Residual dead codes | Residual codebook margin | Residual slot code entropy | Residual slot code collision | Residual dead slot codes | Residual slot code margin | Residual recon MSE | Residual recon cosine | Residual slot recon MSE | Residual slot recon cosine | Residual support | Residual overlap | Residual Jaccard | Residual query energy | Residual slot energy | Residual gate | Protected channels | Protected fraction | Protected residual entropy | Protected residual collision | Protected query energy | Protected slot energy | Protected gate | Gauge orth. err. | Gauge energy frac. | Gauge top margin | Gauge selected | Signal orth. err. | Signal task energy | Signal top margin | Signal selected | Signal var. align | Signal query energy | Signal slot energy | Signal gate | Learned mask entropy | Learned eff. ch. | Learned top mass | Learned align |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
+    lines.pop()
+    header_columns = len(lines[-1].strip("|").split("|"))
+    lines.append("|" + "|".join(["---", "---"] + ["---:"] * (header_columns - 2)) + "|")
     for row in rows:
         lines.append(
             (
@@ -1531,7 +1708,8 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
                 "{gauge_protected_energy_fraction} | {gauge_eigenvalue_top_margin} | {gauge_selected_channels} | "
                 "{signal_basis_orthogonality_error} | {signal_task_energy_fraction} | {signal_eigenvalue_top_margin} | "
                 "{signal_selected_channels} | {signal_variance_alignment} | {signal_query_energy_ratio} | "
-                "{signal_slot_energy_ratio} | {signal_gate} |"
+                "{signal_slot_energy_ratio} | {signal_gate} | {learned_mask_entropy} | {learned_mask_effective_channels} | "
+                "{learned_mask_top_mass} | {learned_mask_alignment} |"
             ).format(
                 scenario=row["scenario"],
                 method=row["method"],
@@ -1626,6 +1804,10 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
                 signal_query_energy_ratio=fmt(row.get("signal_query_energy_ratio")),
                 signal_slot_energy_ratio=fmt(row.get("signal_slot_energy_ratio")),
                 signal_gate=fmt(row.get("signal_gate")),
+                learned_mask_entropy=fmt(row.get("learned_mask_entropy")),
+                learned_mask_effective_channels=fmt(row.get("learned_mask_effective_channels")),
+                learned_mask_top_mass=fmt(row.get("learned_mask_top_mass")),
+                learned_mask_alignment=fmt(row.get("learned_mask_alignment")),
             )
         )
     path.parent.mkdir(parents=True, exist_ok=True)
