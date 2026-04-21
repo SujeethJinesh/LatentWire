@@ -2893,16 +2893,30 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
         {
             "index": 0,
             "method": "target_alone",
-            "prediction": "42",
+            "prediction": "41",
+            "normalized_prediction": "41",
             "answer": ["42"],
-            "correct": True,
+            "correct": False,
+            "prompt_char_count": 12,
+            "prompt_byte_count": 12,
+            "target_prompt_token_count": 3,
         },
         {
             "index": 0,
             "method": "rotalign_kv_gate_0.10",
             "prediction": "42",
+            "normalized_prediction": "42",
             "answer": ["42"],
             "correct": True,
+            "prompt_char_count": 12,
+            "prompt_byte_count": 12,
+            "source_prompt_token_count": 5,
+            "target_prompt_token_count": 3,
+            "raw_source_token_count": 2,
+            "raw_target_token_count": 2,
+            "source_target_token_count_ratio": 5 / 3,
+            "raw_source_target_token_count_ratio": 1.0,
+            "tokenizer_overlap": 0.5,
             "bits": 16.0,
             "payload_bits": 12.0,
             "selector_bits": 4.0,
@@ -2945,9 +2959,9 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
         },
     ]
     results = {
-        "target_alone": 1.0,
+        "target_alone": 0.0,
         "rotalign_kv_gate_0.10": 1.0,
-        "paired_rotalign_kv_gate_0_10_vs_target_alone_delta_accuracy": 0.0,
+        "paired_rotalign_kv_gate_0_10_vs_target_alone_delta_accuracy": 1.0,
     }
 
     evaluate.write_prediction_sidecar(
@@ -2973,6 +2987,13 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["route_atom_orientation_span_avg"] == 0.6
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["head_budget_keep_fraction_avg"] == 0.5
     assert "paired_rotalign_kv_gate_0_10_vs_target_alone_delta_accuracy" in payload["paired_summary"]
+    pair = payload["paired_examples"]["rotalign_kv_gate_0.10_vs_target_alone"]
+    assert pair["flip_counts"]["method_only"] == 1
+    assert pair["example_id_mismatch_count"] == 0
+    assert pair["examples"][0]["flip"] == "method_only"
+    assert pair["examples"][0]["tokenizer_overlap"] == 0.5
+    assert pair["examples"][0]["method_normalized_prediction"] == "42"
+    assert pair["examples"][0]["baseline_normalized_prediction"] == "41"
 
 
 def test_append_prediction_record_preserves_stable_example_id() -> None:

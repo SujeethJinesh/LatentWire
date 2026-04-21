@@ -27,7 +27,7 @@ import sys
 import time
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
-from typing import Any
+from typing import Any, Iterable
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
@@ -2060,6 +2060,136 @@ def _generation_metrics(
     }
 
 
+def _safe_token_count(tokenizer, text: str) -> int:
+    try:
+        tokenized = tokenizer(text, return_tensors="pt")
+        input_ids = getattr(tokenized, "input_ids", None)
+        if input_ids is None:
+            return 0
+        return int(input_ids.shape[-1])
+    except Exception:
+        return 0
+
+
+def _safe_token_strings(tokenizer, text: str) -> list[str]:
+    try:
+        if hasattr(tokenizer, "tokenize"):
+            tokens = tokenizer.tokenize(text)
+            return [str(token) for token in tokens]
+        tokenized = tokenizer(text, return_tensors="pt")
+        input_ids = getattr(tokenized, "input_ids", None)
+        if input_ids is None:
+            return []
+        ids = input_ids[0].detach().cpu().tolist()
+        if hasattr(tokenizer, "convert_ids_to_tokens"):
+            return [str(token) for token in tokenizer.convert_ids_to_tokens(ids)]
+        return [str(int(token_id)) for token_id in ids]
+    except Exception:
+        return []
+
+
+def _jaccard(lhs: Iterable[Any], rhs: Iterable[Any]) -> float:
+    lhs_set = {str(item) for item in lhs}
+    rhs_set = {str(item) for item in rhs}
+    union = lhs_set | rhs_set
+    if not union:
+        return 1.0
+    return len(lhs_set & rhs_set) / len(union)
+
+
+def _prompt_token_telemetry(
+    prompt: str,
+    *,
+    source_tokenizer=None,
+    target_tokenizer=None,
+    source_prompt: str | None = None,
+    target_prompt: str | None = None,
+    source_use_chat_template: bool = False,
+    target_use_chat_template: bool = False,
+    source_enable_thinking: bool | None = None,
+    target_enable_thinking: bool | None = None,
+) -> dict[str, Any]:
+    telemetry: dict[str, Any] = {
+        "prompt_char_count": len(prompt),
+        "prompt_byte_count": len(prompt.encode("utf-8")),
+    }
+    source_effective = source_prompt if source_prompt is not None else prompt
+    target_effective = target_prompt if target_prompt is not None else prompt
+
+    if source_tokenizer is not None:
+        formatted_source = _format_prompt_for_tokenizer(
+            source_tokenizer,
+            source_effective,
+            use_chat_template=source_use_chat_template,
+            enable_thinking=source_enable_thinking,
+        )
+        telemetry["source_prompt_token_count"] = _safe_token_count(source_tokenizer, formatted_source)
+        telemetry["raw_source_token_count"] = _safe_token_count(source_tokenizer, prompt)
+    if target_tokenizer is not None:
+        formatted_target = _format_prompt_for_tokenizer(
+            target_tokenizer,
+            target_effective,
+            use_chat_template=target_use_chat_template,
+            enable_thinking=target_enable_thinking,
+        )
+        telemetry["target_prompt_token_count"] = _safe_token_count(target_tokenizer, formatted_target)
+        telemetry["raw_target_token_count"] = _safe_token_count(target_tokenizer, prompt)
+    if source_tokenizer is not None and target_tokenizer is not None:
+        source_prompt_tokens = int(telemetry.get("source_prompt_token_count") or 0)
+        target_prompt_tokens = int(telemetry.get("target_prompt_token_count") or 0)
+        raw_source_tokens = int(telemetry.get("raw_source_token_count") or 0)
+        raw_target_tokens = int(telemetry.get("raw_target_token_count") or 0)
+        telemetry["source_target_token_count_ratio"] = source_prompt_tokens / max(target_prompt_tokens, 1)
+        telemetry["raw_source_target_token_count_ratio"] = raw_source_tokens / max(raw_target_tokens, 1)
+        telemetry["tokenizer_overlap"] = _jaccard(
+            _safe_token_strings(source_tokenizer, prompt),
+            _safe_token_strings(target_tokenizer, prompt),
+        )
+    return telemetry
+
+
+def _trace_average(trace: Any, field: str) -> float | None:
+    if not trace:
+        return None
+    values = [
+        float(layer[field])
+        for layer in trace
+        if isinstance(layer, dict) and layer.get(field) is not None
+    ]
+    if not values:
+        return None
+    return sum(values) / len(values)
+
+
+def _trace_count(trace: Any) -> int | None:
+    if not trace:
+        return None
+    return len(trace) if isinstance(trace, list) else None
+
+
+def _record_trace_summary(stats: dict[str, Any]) -> dict[str, Any]:
+    selector_trace = stats.get("selector_trace")
+    head_trace = stats.get("head_trace")
+    head_budget_trace = stats.get("head_budget_trace")
+    fields: dict[str, Any] = {
+        "selector_layers_logged": _trace_count(selector_trace),
+        "selector_keep_fraction_avg": _trace_average(selector_trace, "keep_fraction"),
+        "selector_entropy_avg": _trace_average(selector_trace, "score_entropy"),
+        "kv_route_keep_fraction_avg": _trace_average(selector_trace, "kv_route_keep_fraction"),
+        "kv_value_keep_fraction_avg": _trace_average(selector_trace, "kv_value_keep_fraction"),
+        "kv_route_value_overlap_avg": _trace_average(selector_trace, "kv_route_value_overlap"),
+        "kv_route_value_jaccard_avg": _trace_average(selector_trace, "kv_route_value_jaccard"),
+        "kv_route_score_entropy_avg": _trace_average(selector_trace, "kv_route_score_entropy"),
+        "kv_value_score_entropy_avg": _trace_average(selector_trace, "kv_value_score_entropy"),
+        "head_layers_logged": _trace_count(head_trace),
+        "head_keep_fraction_avg": _trace_average(head_trace, "head_keep_fraction"),
+        "head_score_entropy_avg": _trace_average(head_trace, "head_score_entropy"),
+        "head_budget_layers_logged": _trace_count(head_budget_trace),
+        "head_budget_keep_fraction_avg": _trace_average(head_budget_trace, "head_budget_keep_fraction"),
+    }
+    return {key: value for key, value in fields.items() if value is not None}
+
+
 def _append_prediction_record(
     records: list[dict[str, Any]] | None,
     *,
@@ -2219,6 +2349,136 @@ def prediction_record_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
     return summary
 
 
+PAIR_TELEMETRY_FIELDS = (
+    "prompt_char_count",
+    "prompt_byte_count",
+    "source_prompt_token_count",
+    "target_prompt_token_count",
+    "raw_source_token_count",
+    "raw_target_token_count",
+    "source_target_token_count_ratio",
+    "raw_source_target_token_count_ratio",
+    "tokenizer_overlap",
+    "generated_tokens",
+    "bits",
+    "bytes",
+    "payload_bits",
+    "selector_bits",
+    "metadata_bits",
+    "selector_keep_fraction_avg",
+    "selector_entropy_avg",
+    "kv_route_keep_fraction_avg",
+    "kv_value_keep_fraction_avg",
+    "kv_route_value_overlap_avg",
+    "kv_route_value_jaccard_avg",
+    "kv_route_score_entropy_avg",
+    "kv_value_score_entropy_avg",
+    "head_keep_fraction_avg",
+    "head_score_entropy_avg",
+    "head_budget_keep_fraction_avg",
+)
+
+
+def _paired_flip_label(method_correct: bool, baseline_correct: bool) -> str:
+    if method_correct and baseline_correct:
+        return "both_correct"
+    if method_correct and not baseline_correct:
+        return "method_only"
+    if baseline_correct and not method_correct:
+        return "baseline_only"
+    return "both_wrong"
+
+
+def _numeric_means(rows: list[dict[str, Any]], fields: Iterable[str]) -> dict[str, float]:
+    means: dict[str, float] = {}
+    for field in fields:
+        values = [float(row[field]) for row in rows if row.get(field) is not None]
+        if values:
+            means[f"{field}_avg"] = sum(values) / len(values)
+    return means
+
+
+def _paired_telemetry_value(
+    method_row: dict[str, Any],
+    baseline_row: dict[str, Any],
+    field: str,
+) -> Any:
+    value = method_row.get(field)
+    if value is None:
+        value = baseline_row.get(field)
+    return value
+
+
+def paired_prediction_breakdown(records: list[dict[str, Any]], baseline: str = "target_alone") -> dict[str, Any]:
+    by_method: dict[str, dict[int, dict[str, Any]]] = {}
+    for record in records:
+        by_method.setdefault(str(record["method"]), {})[int(record["index"])] = record
+    baseline_rows = by_method.get(baseline, {})
+    if not baseline_rows:
+        return {}
+
+    breakdown: dict[str, Any] = {}
+    for method, method_rows in sorted(by_method.items()):
+        if method == baseline:
+            continue
+        indices = sorted(set(method_rows) & set(baseline_rows))
+        if not indices:
+            continue
+        examples: list[dict[str, Any]] = []
+        example_id_mismatch_count = 0
+        by_flip: dict[str, list[dict[str, Any]]] = {
+            "method_only": [],
+            "baseline_only": [],
+            "both_correct": [],
+            "both_wrong": [],
+        }
+        for idx in indices:
+            method_row = method_rows[idx]
+            baseline_row = baseline_rows[idx]
+            method_example_id = method_row.get("example_id")
+            baseline_example_id = baseline_row.get("example_id")
+            example_id_mismatch = (
+                method_example_id is not None
+                and baseline_example_id is not None
+                and method_example_id != baseline_example_id
+            )
+            example_id_mismatch_count += int(example_id_mismatch)
+            flip = _paired_flip_label(bool(method_row.get("correct")), bool(baseline_row.get("correct")))
+            telemetry = {}
+            for field in PAIR_TELEMETRY_FIELDS:
+                value = _paired_telemetry_value(method_row, baseline_row, field)
+                if value is not None:
+                    telemetry[field] = value
+            pair_row = {
+                "index": idx,
+                "example_id": method_example_id or baseline_example_id,
+                "example_id_mismatch": example_id_mismatch,
+                "flip": flip,
+                "method_correct": bool(method_row.get("correct")),
+                "baseline_correct": bool(baseline_row.get("correct")),
+                "method_prediction": method_row.get("prediction"),
+                "baseline_prediction": baseline_row.get("prediction"),
+                "method_normalized_prediction": method_row.get("normalized_prediction"),
+                "baseline_normalized_prediction": baseline_row.get("normalized_prediction"),
+                **telemetry,
+            }
+            examples.append(pair_row)
+            by_flip[flip].append(pair_row)
+
+        breakdown[f"{method}_vs_{baseline}"] = {
+            "paired_n": len(indices),
+            "example_id_mismatch_count": example_id_mismatch_count,
+            "flip_counts": {flip: len(rows) for flip, rows in by_flip.items()},
+            "flip_means": {
+                flip: _numeric_means(rows, PAIR_TELEMETRY_FIELDS)
+                for flip, rows in by_flip.items()
+                if rows
+            },
+            "examples": examples,
+        }
+    return breakdown
+
+
 def write_prediction_sidecar(
     path: str,
     records: list[dict[str, Any]],
@@ -2235,6 +2495,7 @@ def write_prediction_sidecar(
             for key, value in results.items()
             if key.startswith("paired_")
         },
+        "paired_examples": paired_prediction_breakdown(records),
         "metric_summary": {
             key: value
             for key, value in results.items()
@@ -4633,7 +4894,16 @@ def _eval_generation_target_alone_with_stats(
             prediction=trace.text,
             answer=ex.answers,
             correct=is_correct,
-            extra={"generated_tokens": trace.num_generated_tokens},
+            extra={
+                "generated_tokens": trace.num_generated_tokens,
+                "normalized_prediction": _extract_prediction_numeric_answer(trace.text),
+                **_prompt_token_telemetry(
+                    ex.prompt,
+                    target_tokenizer=tokenizer,
+                    target_use_chat_template=use_chat_template,
+                    target_enable_thinking=enable_thinking,
+                ),
+            },
         )
         total_tokens += trace.num_generated_tokens
         total_ttft += prep_elapsed + trace.ttft_sec
@@ -4690,6 +4960,7 @@ def _eval_generation_text_to_text_with_stats(
     total_elapsed = 0.0
     for idx, ex in enumerate(examples):
         example_started = time.perf_counter()
+        source_prompt = _source_reasoning_prompt(ex.prompt, source_reasoning_mode)
         hint = _generate_source_hint(
             source_model,
             source_tokenizer,
@@ -4726,7 +4997,22 @@ def _eval_generation_text_to_text_with_stats(
             prediction=trace.text,
             answer=ex.answers,
             correct=is_correct,
-            extra={"hint": hint, "generated_tokens": trace.num_generated_tokens},
+            extra={
+                "hint": hint,
+                "generated_tokens": trace.num_generated_tokens,
+                "normalized_prediction": _extract_prediction_numeric_answer(trace.text),
+                **_prompt_token_telemetry(
+                    ex.prompt,
+                    source_tokenizer=source_tokenizer,
+                    target_tokenizer=target_tokenizer,
+                    source_prompt=source_prompt,
+                    target_prompt=augmented,
+                    source_use_chat_template=source_use_chat_template,
+                    target_use_chat_template=target_use_chat_template,
+                    source_enable_thinking=source_enable_thinking,
+                    target_enable_thinking=target_enable_thinking,
+                ),
+            },
         )
         total_tokens += trace.num_generated_tokens
         total_ttft += example_elapsed - trace.elapsed_sec + trace.ttft_sec
@@ -4959,35 +5245,48 @@ def _eval_generation_rotalign_with_stats(
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
                 "translated_kv_control": translated_kv_control,
-                    "fusion_rule": fusion_rule,
-                    "kv_transport": kv_transport,
-                    "position_selection_ratio": position_selection_ratio,
-                    "position_selection_metric": position_selection_metric,
-                    "kv_route_selection_ratio": stats.get("kv_route_selection_ratio"),
-                    "kv_value_selection_ratio": stats.get("kv_value_selection_ratio"),
-                    "kv_route_selection_metric": stats.get("kv_route_selection_metric"),
-                    "kv_value_selection_metric": stats.get("kv_value_selection_metric"),
-                    "kv_asymmetric_position_selection": stats.get("kv_asymmetric_position_selection"),
-                    "runtime_head_selection_ratio": runtime_head_selection_ratio,
-                    "runtime_head_selection_metric": runtime_head_selection_metric,
-                    "runtime_head_prior_alpha": runtime_head_prior_alpha,
-                    "runtime_head_gate_metric": runtime_head_gate_metric,
-                    "runtime_head_gate_strength": runtime_head_gate_strength,
-                    "per_head_position_budget_mode": per_head_position_budget_mode,
-                    "drop_target_layers": stats.get("dropped_target_layers"),
-                    "drop_target_layer_mode": stats.get("drop_target_layer_mode"),
-                    "bits": stats["bits"],
-                    "bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
-                    "payload_bits": stats.get("payload_bits"),
-                    "selector_bits": stats.get("selector_bits"),
-                    "metadata_bits": stats.get("metadata_bits"),
-                    "generated_tokens": trace.num_generated_tokens,
-                    "selected_target_layers": stats.get("selected_target_layers"),
-                    "selector_trace": stats.get("selector_trace"),
-                    "head_trace": stats.get("head_trace"),
-                    "head_gate_trace": stats.get("head_gate_trace"),
-                    "head_budget_trace": stats.get("head_budget_trace"),
-                },
+                "fusion_rule": fusion_rule,
+                "kv_transport": kv_transport,
+                "position_selection_ratio": position_selection_ratio,
+                "position_selection_metric": position_selection_metric,
+                "kv_route_selection_ratio": stats.get("kv_route_selection_ratio"),
+                "kv_value_selection_ratio": stats.get("kv_value_selection_ratio"),
+                "kv_route_selection_metric": stats.get("kv_route_selection_metric"),
+                "kv_value_selection_metric": stats.get("kv_value_selection_metric"),
+                "kv_asymmetric_position_selection": stats.get("kv_asymmetric_position_selection"),
+                "runtime_head_selection_ratio": runtime_head_selection_ratio,
+                "runtime_head_selection_metric": runtime_head_selection_metric,
+                "runtime_head_prior_alpha": runtime_head_prior_alpha,
+                "runtime_head_gate_metric": runtime_head_gate_metric,
+                "runtime_head_gate_strength": runtime_head_gate_strength,
+                "per_head_position_budget_mode": per_head_position_budget_mode,
+                "drop_target_layers": stats.get("dropped_target_layers"),
+                "drop_target_layer_mode": stats.get("drop_target_layer_mode"),
+                "bits": stats["bits"],
+                "bytes": stats.get("bytes", float(stats.get("bits", 0.0)) / 8.0),
+                "payload_bits": stats.get("payload_bits"),
+                "selector_bits": stats.get("selector_bits"),
+                "metadata_bits": stats.get("metadata_bits"),
+                "generated_tokens": trace.num_generated_tokens,
+                "normalized_prediction": _extract_prediction_numeric_answer(trace.text),
+                "selected_target_layers": stats.get("selected_target_layers"),
+                "selector_trace": stats.get("selector_trace"),
+                "head_trace": stats.get("head_trace"),
+                "head_gate_trace": stats.get("head_gate_trace"),
+                "head_budget_trace": stats.get("head_budget_trace"),
+                **_record_trace_summary(stats),
+                **_prompt_token_telemetry(
+                    ex.prompt,
+                    source_tokenizer=source_tokenizer,
+                    target_tokenizer=target_tokenizer,
+                    source_prompt=source_prompt,
+                    target_prompt=target_prompt,
+                    source_use_chat_template=source_use_chat_template,
+                    target_use_chat_template=target_use_chat_template,
+                    source_enable_thinking=source_enable_thinking,
+                    target_enable_thinking=target_enable_thinking,
+                ),
+            },
         )
         total_bits += stats["bits"]
         total_tokens += trace.num_generated_tokens

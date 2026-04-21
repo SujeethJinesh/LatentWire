@@ -16,6 +16,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         top_k=2,
         pool_slots=2,
         route_atoms=2,
+        protected_channels=2,
         epochs=3,
         lr=1e-2,
         rec_weight=0.1,
@@ -31,6 +32,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("aligned", "asymmetric_kv_budget"),
         ("aligned", "codebook_remap"),
         ("aligned", "residual_codebook_remap"),
+        ("aligned", "protected_channel_residual_codebook_remap"),
         ("aligned", "route_atom"),
         ("rotated", "topk"),
         ("rotated", "query_pool"),
@@ -39,6 +41,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         ("rotated", "asymmetric_kv_budget"),
         ("rotated", "codebook_remap"),
         ("rotated", "residual_codebook_remap"),
+        ("rotated", "protected_channel_residual_codebook_remap"),
         ("rotated", "route_atom"),
     }
     for row in rows:
@@ -100,6 +103,16 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         assert "residual_query_energy_ratio" in row
         assert "residual_slot_energy_ratio" in row
         assert "residual_gate" in row
+        assert "protected_channels" in row
+        assert "protected_channel_fraction" in row
+        assert "protected_residual_codebook_entropy" in row
+        assert "protected_residual_codebook_collision_rate" in row
+        assert "protected_residual_codebook_top_margin" in row
+        assert "protected_residual_codebook_recon_mse" in row
+        assert "protected_residual_codebook_recon_cosine" in row
+        assert "protected_query_energy_ratio" in row
+        assert "protected_slot_energy_ratio" in row
+        assert "protected_gate" in row
         if row["method"] != "topk":
             assert row["atom_entropy"] >= 0.0
             assert 0.0 <= row["atom_collision_rate"] <= 1.0
@@ -152,6 +165,18 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
             assert row["residual_query_energy_ratio"] >= 0.0
             assert row["residual_slot_energy_ratio"] >= 0.0
             assert 0.0 <= row["residual_gate"] <= 1.0
+        if row["method"] == "protected_channel_residual_codebook_remap":
+            assert row["codebook_size"] == 4
+            assert row["residual_codebook_size"] == 4
+            assert row["protected_channels"] == 2
+            assert 0.0 < row["protected_channel_fraction"] <= 1.0
+            assert row["protected_residual_codebook_entropy"] >= 0.0
+            assert 0.0 <= row["protected_residual_codebook_collision_rate"] <= 1.0
+            assert row["protected_residual_codebook_recon_mse"] >= 0.0
+            assert -1.0 <= row["protected_residual_codebook_recon_cosine"] <= 1.0
+            assert row["protected_query_energy_ratio"] >= 0.0
+            assert row["protected_slot_energy_ratio"] >= 0.0
+            assert 0.0 <= row["protected_gate"] <= 1.0
 
 
 def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
@@ -188,6 +213,7 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
         "asymmetric_kv_budget",
         "codebook_remap",
         "residual_codebook_remap",
+        "protected_channel_residual_codebook_remap",
         "route_atom",
     }
     summary = markdown.read_text()
@@ -201,6 +227,9 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
     assert "Remap overlap" in summary
     assert "Residual codebook entropy" in summary
     assert "Residual query energy" in summary
+    assert "Protected channels" in summary
+    assert "Protected residual entropy" in summary
+    assert "Protected query energy" in summary
     assert "| outlier | query_pool |" in summary
     assert "| outlier | preconditioned_query_pool |" in summary
     assert "| outlier | constrained_preconditioned_query_pool |" in summary

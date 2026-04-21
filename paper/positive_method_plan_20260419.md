@@ -2301,3 +2301,59 @@ Next execution targets:
    only then run GSM.
 4. Keep C2C as the first direct competitor and kvpress/KVzip/Quest as
    matched-byte compression controls, using `references/310_competitor_execution_plan.md`.
+
+## 2026-04-21 Paired-Telemetry And Protected-Channel Update
+
+Executed next targets:
+
+- Added per-example paired sidecar telemetry for every non-target method
+  against `target_alone`.
+- Ran GSM30 route-attention/value-energy at gate `0.10`.
+- Added toy `protected_channel_residual_codebook_remap`.
+- Added 311/312/313 reference memos covering lateral cross-model
+  communication, competitor smoke execution, quantization-inspired ablations,
+  and tokenizer/latent-interface ablations.
+
+New evidence:
+
+| Evidence | Outcome | Paper implication |
+|---|---|---|
+| GSM30 route-attention/value-energy | target `0.0667`, method `0.0667`, delta `0.0000` | Separable K/V is not yet a positive method at GSM30. |
+| Paired flips | `1` method-only, `1` baseline-only, `1` both-correct, `27` both-wrong | Neutral aggregate is now interpretable instead of opaque. |
+| Protected-channel toy | improves aligned/outlier, hurts rotated/slot-permuted | Outlier protection needs gauge/permutation awareness. |
+| Quantization references | AWQ/EXL2/TurboQuant/InnerQ suggest asymmetric budgets, outlier channels, angle/polar bases, residual correction | These are ablation mechanisms, not claims. |
+| Tokenizer/latent-interface references | byte bridge, token remap, latent relay, iterative refinement, zero-init adapters | These become the next stacked bridge candidates. |
+
+Updated blocker decomposition:
+
+1. **Gauge/orientation mismatch:** protected identity channels fail under
+   rotation and slot permutation, so any protected path must be learned after
+   alignment or made invariant/equivariant.
+2. **Interface discreteness:** residual codebooks remain the strongest toy
+   path, suggesting the real bridge needs a compact shared interface rather
+   than pure continuous K/V projection.
+3. **Routing/value asymmetry:** route-attention/value-energy can move examples
+   but does not scale alone; keep it as a stack component and measure
+   route/value overlap and Jaccard on every run.
+4. **Byte/runtime economics:** current GSM30 method costs about `1.41 MB` per
+   example and slightly slower decoding than target-alone, so matched-byte and
+   matched-latency controls are mandatory.
+5. **Evaluation interpretability:** sidecars now have enough per-example
+   evidence to stratify wins/losses by prompt length, selector entropy,
+   token-count ratio, and route/value overlap.
+
+Revised next ladder:
+
+1. Run GSM30 matched controls: random/random and attention/attention at the
+   same K/V ratios, using the new paired telemetry.
+2. Promote residual codebook from toy to a frozen K/V-slot diagnostic with
+   reconstruction, route/value overlap, and no-generation fidelity metrics.
+3. Add gauge-aware protected-channel variants: protected after Procrustes,
+   protected after learned orthogonal, and protected with learned/permuted
+   channel masks.
+4. Add tokenizer-interface variants: byte-level bridge, token remap, shared
+   tokenizer bridge, and zero-init gated adapter, all first on reconstruction
+   before GSM.
+5. Run direct competitor smoke in the order from
+   `references/311_competitor_smoke_matrix.md`: C2C, kvpress, KVzip, KVComm,
+   then Quest where task-compatible.

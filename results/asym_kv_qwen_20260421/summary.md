@@ -41,3 +41,52 @@ Next run should scale to GSM30 with three matched controls:
 - route attention / value energy
 - route attention / value attention
 - route random / value random
+
+## GSM30 Paired-Telemetry Result
+
+Command output:
+
+| Split | Route metric | Value metric | Target | RotAlign | Delta | Avg bytes | Method-only | Baseline-only | Both correct | Both wrong |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| GSM30 | attention | energy | 0.0667 | 0.0667 | 0.0000 | 1,406,292.3 | 1 | 1 | 1 | 27 |
+
+Sidecar:
+
+`qwen_gsm30_dynalign_prefdist_asym_kv_routeattn_valueenergy_r025_v075_cal16_chat_telemetry.jsonl.meta.json`
+
+Non-neutral paired examples:
+
+| Index | Example id | Flip | Method answer | Baseline answer | Bytes | Route/value overlap | Jaccard | Source/target token ratio |
+|---:|---|---|---:|---:|---:|---:|---:|---:|
+| 0 | `c11b1f65a91b1796` | method-only | 20 | 25 | 2,127,972.0 | 0.697 | 0.213 | 1.189 |
+| 13 | `c1d4c219268d7f10` | baseline-only | 2 | 20 | 1,635,392.5 | 0.659 | 0.196 | 1.246 |
+| 17 | `d750c66e733a2837` | both-correct | 3 | 3 | 1,172,272.5 | 0.664 | 0.198 | 1.341 |
+
+Interpretation:
+
+The GSM30 result does not replicate the GSM5 positive signal. The value of
+this run is the telemetry: the evaluator can now identify example-level flips
+and associate them with byte cost, token-count ratio, and route/value selector
+structure. The current method should stay in the ablation lane until matched
+GSM30 controls show a reliable method-only excess over baseline-only.
+
+## Protected-Channel Toy Result
+
+Artifact:
+
+`../query_pool_toy_20260421/query_pool_protected_channel_residual_codebook_vs_topk.md`
+
+| Scenario | Codebook | Residual codebook | Protected residual codebook | Protected delta vs residual |
+|---|---:|---:|---:|---:|
+| aligned | 0.4948 | 0.5417 | 0.5938 | +0.0521 |
+| rotated | 0.5781 | 0.6406 | 0.5729 | -0.0677 |
+| outlier | 0.5312 | 0.5677 | 0.6198 | +0.0521 |
+| slot-permuted | 0.4688 | 0.5417 | 0.4948 | -0.0469 |
+
+Interpretation:
+
+Protected channels are useful when the protected subspace is aligned or carries
+true outlier energy, but brittle under rotation and slot permutation. This is a
+clean blocker: the paper method cannot rely on fixed protected coordinates
+unless the bridge first solves gauge/permutation alignment or learns the
+protected mask.

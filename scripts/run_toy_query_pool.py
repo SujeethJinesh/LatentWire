@@ -28,6 +28,7 @@ class ToyConfig:
     kv_value_budget: int = 4
     codebook_size: int = 4
     residual_codebook_size: int = 4
+    protected_channels: int = 2
     epochs: int = 120
     lr: float = 2e-2
     rec_weight: float = 0.2
@@ -574,6 +575,101 @@ class ResidualCodebookRemapReadout(nn.Module):
         return self.classifier(summary), self.reconstructor(summary), weights
 
 
+class ProtectedChannelResidualCodebookReadout(nn.Module):
+    def __init__(
+        self,
+        dim: int,
+        classes: int,
+        codebook_size: int,
+        residual_codebook_size: int,
+        protected_channels: int,
+    ) -> None:
+        super().__init__()
+        self.codebook_size = int(codebook_size)
+        self.residual_codebook_size = int(residual_codebook_size)
+        self.protected_channels = max(1, min(int(protected_channels), dim))
+        self.codebook = nn.Parameter(torch.randn(self.codebook_size, dim) / math.sqrt(dim))
+        self.protected_residual_codebook = nn.Parameter(
+            torch.randn(self.residual_codebook_size, self.protected_channels) / math.sqrt(self.protected_channels)
+        )
+        self.query_proj = nn.Linear(dim, dim, bias=False)
+        self.protected_residual_logit = nn.Parameter(torch.tensor(0.0))
+        protected_mask = torch.zeros(dim)
+        protected_mask[: self.protected_channels] = 1.0
+        self.register_buffer("protected_mask", protected_mask)
+        self.classifier = nn.Linear(dim, classes)
+        self.reconstructor = nn.Linear(dim, dim)
+        self.last_atom_weights: torch.Tensor | None = None
+        self.last_code_weights: torch.Tensor | None = None
+        self.last_slot_code_weights: torch.Tensor | None = None
+        self.last_query_proj: torch.Tensor | None = None
+        self.last_slot_keys: torch.Tensor | None = None
+        self.last_protected_residual_code_weights: torch.Tensor | None = None
+        self.last_protected_residual_slot_code_weights: torch.Tensor | None = None
+        self.last_query_residual: torch.Tensor | None = None
+        self.last_slot_residual: torch.Tensor | None = None
+        self.last_protected_query_residual: torch.Tensor | None = None
+        self.last_protected_slot_residual: torch.Tensor | None = None
+        self.last_protected_gate: torch.Tensor | None = None
+
+    def encode(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor]:
+        q_proj = self.query_proj(batch.q)
+        scale = math.sqrt(batch.q.shape[-1])
+
+        code_logits = torch.einsum("nd,cd->nc", q_proj, self.codebook) / scale
+        code_weights = torch.softmax(code_logits, dim=-1)
+        slot_code_logits = torch.einsum("nsd,cd->nsc", batch.K, self.codebook) / scale
+        slot_code_weights = torch.softmax(slot_code_logits, dim=-1)
+        slot_code_summaries = torch.einsum("nsc,nsd->ncd", slot_code_weights, batch.V)
+        base_summary = torch.einsum("nc,ncd->nd", code_weights, slot_code_summaries)
+        base_weights = torch.einsum("nc,nsc->ns", code_weights, slot_code_weights)
+
+        query_base = code_weights @ self.codebook
+        slot_base = torch.einsum("nsc,cd->nsd", slot_code_weights, self.codebook)
+        query_residual = q_proj - query_base
+        slot_residual = batch.K - slot_base
+        protected_query_residual = (query_residual * self.protected_mask)[:, : self.protected_channels]
+        protected_slot_residual = (slot_residual * self.protected_mask)[..., : self.protected_channels]
+
+        protected_residual_code_logits = (
+            torch.einsum("nd,rd->nr", protected_query_residual, self.protected_residual_codebook) / scale
+        )
+        protected_residual_code_weights = torch.softmax(protected_residual_code_logits, dim=-1)
+        protected_residual_slot_logits = torch.einsum(
+            "nsd,rd->nsr", protected_slot_residual, self.protected_residual_codebook
+        ) / scale
+        protected_residual_slot_code_weights = torch.softmax(protected_residual_slot_logits, dim=-1)
+        protected_slot_summaries = torch.einsum("nsr,nsd->nrd", protected_residual_slot_code_weights, batch.V)
+        protected_residual_summary = torch.einsum(
+            "nr,nrd->nd", protected_residual_code_weights, protected_slot_summaries
+        )
+        protected_residual_weights = torch.einsum(
+            "nr,nsr->ns", protected_residual_code_weights, protected_residual_slot_code_weights
+        )
+
+        protected_gate = torch.sigmoid(self.protected_residual_logit)
+        summary = base_summary + protected_gate * protected_residual_summary
+        effective_weights = (base_weights + protected_gate * protected_residual_weights) / (1.0 + protected_gate)
+
+        self.last_atom_weights = torch.cat([code_weights, protected_residual_code_weights], dim=-1).detach()
+        self.last_code_weights = code_weights.detach()
+        self.last_slot_code_weights = slot_code_weights.detach()
+        self.last_query_proj = q_proj.detach()
+        self.last_slot_keys = batch.K.detach()
+        self.last_protected_residual_code_weights = protected_residual_code_weights.detach()
+        self.last_protected_residual_slot_code_weights = protected_residual_slot_code_weights.detach()
+        self.last_query_residual = query_residual.detach()
+        self.last_slot_residual = slot_residual.detach()
+        self.last_protected_query_residual = protected_query_residual.detach()
+        self.last_protected_slot_residual = protected_slot_residual.detach()
+        self.last_protected_gate = protected_gate.detach()
+        return summary, effective_weights
+
+    def forward(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        summary, weights = self.encode(batch)
+        return self.classifier(summary), self.reconstructor(summary), weights
+
+
 class RouteAtomReadout(nn.Module):
     def __init__(self, dim: int, classes: int, route_atoms: int) -> None:
         super().__init__()
@@ -802,12 +898,75 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
             )
         )
         metrics.update(_residual_energy_metrics(query_residual, query_proj, slot_residual, slot_keys, residual_gate))
+    protected_residual_code_weights = getattr(model, "last_protected_residual_code_weights", None)
+    protected_residual_slot_code_weights = getattr(model, "last_protected_residual_slot_code_weights", None)
+    protected_residual_codebook = getattr(model, "protected_residual_codebook", None)
+    protected_query_residual = getattr(model, "last_protected_query_residual", None)
+    protected_slot_residual = getattr(model, "last_protected_slot_residual", None)
+    protected_query_full = getattr(model, "last_query_residual", None)
+    protected_slot_full = getattr(model, "last_slot_residual", None)
+    protected_gate = getattr(model, "last_protected_gate", None)
+    protected_channels = getattr(model, "protected_channels", None)
+    if (
+        protected_residual_code_weights is None
+        or protected_residual_slot_code_weights is None
+        or protected_residual_codebook is None
+        or protected_query_residual is None
+        or protected_slot_residual is None
+        or protected_query_full is None
+        or protected_slot_full is None
+        or protected_gate is None
+        or protected_channels is None
+    ):
+        metrics.update(
+            {
+                "protected_residual_codebook_entropy": None,
+                "protected_residual_codebook_collision_rate": None,
+                "protected_dead_code_rate": None,
+                "protected_residual_codebook_top_margin": None,
+                "protected_residual_slot_code_entropy": None,
+                "protected_residual_slot_code_collision_rate": None,
+                "protected_dead_slot_code_rate": None,
+                "protected_residual_slot_code_top_margin": None,
+                "protected_residual_codebook_recon_mse": None,
+                "protected_residual_codebook_recon_cosine": None,
+                "protected_residual_slot_remap_recon_mse": None,
+                "protected_residual_slot_remap_recon_cosine": None,
+                "protected_residual_codebook_support_mean": None,
+                "protected_residual_codebook_remap_overlap": None,
+                "protected_residual_codebook_remap_jaccard": None,
+                "protected_query_energy_ratio": None,
+                "protected_slot_energy_ratio": None,
+                "protected_gate": None,
+            }
+        )
+    else:
+        metrics.update(
+            _codebook_metrics(
+                protected_residual_code_weights,
+                protected_residual_slot_code_weights,
+                protected_residual_codebook.detach(),
+                protected_query_residual,
+                protected_slot_residual,
+                prefix="protected_residual_",
+            )
+        )
+        protected_query_ratio = protected_query_residual.norm(dim=-1) / protected_query_full.norm(dim=-1).clamp_min(1e-8)
+        protected_slot_ratio = protected_slot_residual.norm(dim=-1) / protected_slot_full.norm(dim=-1).clamp_min(1e-8)
+        metrics.update(
+            {
+                "protected_query_energy_ratio": float(protected_query_ratio.mean().item()),
+                "protected_slot_energy_ratio": float(protected_slot_ratio.mean().item()),
+                "protected_gate": float(protected_gate.item()),
+            }
+        )
     return metrics
 
 
 def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     base = _make_base_tensors(config)
+    protected_channels = max(1, min(config.protected_channels, config.dim))
     method_seed_offsets = {
         "topk": 101,
         "query_pool": 211,
@@ -817,6 +976,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
         "asymmetric_kv_budget": 463,
         "codebook_remap": 509,
         "residual_codebook_remap": 557,
+        "protected_channel_residual_codebook_remap": 619,
     }
     for scenario_idx, scenario in enumerate(scenarios):
         train = make_toy_batch(config, scenario=scenario, split="train", base=base)
@@ -854,6 +1014,17 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 ),
                 config.codebook_size + config.residual_codebook_size,
             ),
+            (
+                "protected_channel_residual_codebook_remap",
+                lambda: ProtectedChannelResidualCodebookReadout(
+                    config.dim,
+                    config.classes,
+                    config.codebook_size,
+                    config.residual_codebook_size,
+                    protected_channels,
+                ),
+                config.codebook_size + config.residual_codebook_size,
+            ),
         ]
         for method, factory, margin_k in methods:
             torch.manual_seed(config.seed + scenario_idx * 10_000 + method_seed_offsets[method])
@@ -870,6 +1041,8 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 budget = config.codebook_size
             elif method == "residual_codebook_remap":
                 budget = config.codebook_size + config.residual_codebook_size
+            elif method == "protected_channel_residual_codebook_remap":
+                budget = config.codebook_size + config.residual_codebook_size
             else:
                 budget = config.kv_route_budget + config.kv_value_budget
             rows.append(
@@ -880,10 +1053,14 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                     "kv_route_budget": config.kv_route_budget if method == "asymmetric_kv_budget" else None,
                     "kv_value_budget": config.kv_value_budget if method == "asymmetric_kv_budget" else None,
                     "codebook_size": config.codebook_size
-                    if method in {"codebook_remap", "residual_codebook_remap"}
+                    if method in {"codebook_remap", "residual_codebook_remap", "protected_channel_residual_codebook_remap"}
                     else None,
                     "residual_codebook_size": config.residual_codebook_size
-                    if method == "residual_codebook_remap"
+                    if method in {"residual_codebook_remap", "protected_channel_residual_codebook_remap"}
+                    else None,
+                    "protected_channels": protected_channels if method == "protected_channel_residual_codebook_remap" else None,
+                    "protected_channel_fraction": protected_channels / config.dim
+                    if method == "protected_channel_residual_codebook_remap"
                     else None,
                     **metrics,
                 }
@@ -900,8 +1077,8 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
     lines = [
         "# Toy Query-Pool Benchmark",
         "",
-        "| Scenario | Method | Budget | KV route budget | KV value budget | Codebook size | Residual codebook size | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | KV route entropy | KV value entropy | KV route collision | KV value collision | KV route dead | KV value dead | KV route margin | KV value margin | KV overlap | KV Jaccard | KV KL | KV cosine | KV gap | KV gate mean | KV gate std | Constrained scale min | Constrained scale max | Constrained scale mean | Codebook entropy | Codebook collision | Dead codes | Codebook margin | Slot code entropy | Slot code collision | Dead slot codes | Slot code margin | Codebook recon MSE | Codebook recon cosine | Slot remap recon MSE | Slot remap recon cosine | Codebook support | Remap overlap | Remap Jaccard | Residual codebook entropy | Residual codebook collision | Residual dead codes | Residual codebook margin | Residual slot code entropy | Residual slot code collision | Residual dead slot codes | Residual slot code margin | Residual recon MSE | Residual recon cosine | Residual slot recon MSE | Residual slot recon cosine | Residual support | Residual overlap | Residual Jaccard | Residual query energy | Residual slot energy | Residual gate |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Scenario | Method | Budget | KV route budget | KV value budget | Codebook size | Residual codebook size | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin | Precond cond. | Cosine drift | Norm ratio | Abs scale ratio | KV route entropy | KV value entropy | KV route collision | KV value collision | KV route dead | KV value dead | KV route margin | KV value margin | KV overlap | KV Jaccard | KV KL | KV cosine | KV gap | KV gate mean | KV gate std | Constrained scale min | Constrained scale max | Constrained scale mean | Codebook entropy | Codebook collision | Dead codes | Codebook margin | Slot code entropy | Slot code collision | Dead slot codes | Slot code margin | Codebook recon MSE | Codebook recon cosine | Slot remap recon MSE | Slot remap recon cosine | Codebook support | Remap overlap | Remap Jaccard | Residual codebook entropy | Residual codebook collision | Residual dead codes | Residual codebook margin | Residual slot code entropy | Residual slot code collision | Residual dead slot codes | Residual slot code margin | Residual recon MSE | Residual recon cosine | Residual slot recon MSE | Residual slot recon cosine | Residual support | Residual overlap | Residual Jaccard | Residual query energy | Residual slot energy | Residual gate | Protected channels | Protected fraction | Protected residual entropy | Protected residual collision | Protected query energy | Protected slot energy | Protected gate |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         lines.append(
@@ -922,7 +1099,10 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
             "{residual_dead_slot_code_rate} | {residual_slot_code_top_margin} | {residual_codebook_recon_mse} | "
             "{residual_codebook_recon_cosine} | {residual_slot_remap_recon_mse} | {residual_slot_remap_recon_cosine} | "
             "{residual_codebook_support_mean} | {residual_codebook_remap_overlap} | {residual_codebook_remap_jaccard} | "
-            "{residual_query_energy_ratio} | {residual_slot_energy_ratio} | {residual_gate} |".format(
+            "{residual_query_energy_ratio} | {residual_slot_energy_ratio} | {residual_gate} | "
+            "{protected_channels} | {protected_channel_fraction} | {protected_residual_codebook_entropy} | "
+            "{protected_residual_codebook_collision_rate} | {protected_query_energy_ratio} | "
+            "{protected_slot_energy_ratio} | {protected_gate} |".format(
                 scenario=row["scenario"],
                 method=row["method"],
                 budget=row["budget"],
@@ -995,6 +1175,15 @@ def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> No
                 residual_query_energy_ratio=fmt(row.get("residual_query_energy_ratio")),
                 residual_slot_energy_ratio=fmt(row.get("residual_slot_energy_ratio")),
                 residual_gate=fmt(row.get("residual_gate")),
+                protected_channels=fmt(row.get("protected_channels")),
+                protected_channel_fraction=fmt(row.get("protected_channel_fraction")),
+                protected_residual_codebook_entropy=fmt(row.get("protected_residual_codebook_entropy")),
+                protected_residual_codebook_collision_rate=fmt(
+                    row.get("protected_residual_codebook_collision_rate")
+                ),
+                protected_query_energy_ratio=fmt(row.get("protected_query_energy_ratio")),
+                protected_slot_energy_ratio=fmt(row.get("protected_slot_energy_ratio")),
+                protected_gate=fmt(row.get("protected_gate")),
             )
         )
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -1018,6 +1207,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--kv-value-budget", type=int, default=4)
     parser.add_argument("--codebook-size", type=int, default=4)
     parser.add_argument("--residual-codebook-size", type=int, default=4)
+    parser.add_argument("--protected-channels", type=int, default=2)
     parser.add_argument("--epochs", type=int, default=120)
     parser.add_argument("--lr", type=float, default=2e-2)
     parser.add_argument("--rec-weight", type=float, default=0.2)
@@ -1047,6 +1237,7 @@ def main() -> None:
         kv_value_budget=args.kv_value_budget,
         codebook_size=args.codebook_size,
         residual_codebook_size=args.residual_codebook_size,
+        protected_channels=args.protected_channels,
         epochs=args.epochs,
         lr=args.lr,
         rec_weight=args.rec_weight,

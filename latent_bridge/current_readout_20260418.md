@@ -3130,3 +3130,74 @@ Paper decision:
   chicken-feed example does not persist on the first GSM10 slice, so the next
   debugging pass should stratify method-only vs unchanged failures by prompt
   length, tokenizer overlap, selector entropy, and route/value overlap.
+
+## 2026-04-21 Third Execution Addendum
+
+New references/results:
+
+- `references/311_lateral_breakthrough_refs.md`
+- `references/311_competitor_smoke_matrix.md`
+- `references/312_quantization_inspired_ablation_hypotheses.md`
+- `references/313_tokenizer_latent_interface_ablation_hypotheses.md`
+- `results/query_pool_toy_20260421/query_pool_protected_channel_residual_codebook_vs_topk.{json,md}`
+- `results/asym_kv_qwen_20260421/qwen_gsm30_dynalign_prefdist_asym_kv_routeattn_valueenergy_r025_v075_cal16_chat_telemetry.jsonl`
+
+Evaluator update:
+
+- Prediction sidecars now include `paired_examples`, keyed by
+  `method_vs_target_alone`, with per-example `method_only`,
+  `baseline_only`, `both_correct`, and `both_wrong` labels.
+- The paired block includes `example_id_mismatch_count`, normalized
+  predictions, prompt/tokenizer telemetry, compact selector trace summaries,
+  and flip-conditioned telemetry means.
+- This makes neutral runs useful: they now tell us which examples moved in
+  each direction and whether the movement correlates with prompt length,
+  selector entropy, route/value overlap, or byte budget.
+
+Real-model GSM30 telemetry result:
+
+| Split | Selector | Target | RotAlign | Delta | Method-only | Baseline-only | Both correct | Both wrong | Avg bytes |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| GSM30 | route attention, value energy | 0.0667 | 0.0667 | 0.0000 | 1 | 1 | 1 | 27 | 1,406,292 |
+
+Non-neutral examples:
+
+| Index | Example id | Flip | Method answer | Baseline answer | Bytes | Route/value overlap | Jaccard |
+|---:|---|---|---:|---:|---:|---:|---:|
+| 0 | `c11b1f65a91b1796` | method-only | 20 | 25 | 2,127,972 | 0.697 | 0.213 |
+| 13 | `c1d4c219268d7f10` | baseline-only | 2 | 20 | 1,635,392 | 0.659 | 0.196 |
+| 17 | `d750c66e733a2837` | both-correct | 3 | 3 | 1,172,272 | 0.664 | 0.198 |
+
+Toy protected-channel result:
+
+| Scenario | Residual codebook | Protected residual codebook | Delta | Protected query energy | Protected slot energy |
+|---|---:|---:|---:|---:|---:|
+| aligned | 0.5417 | 0.5938 | +0.0521 | 0.323 | 0.287 |
+| rotated | 0.6406 | 0.5729 | -0.0677 | 0.435 | 0.256 |
+| outlier | 0.5677 | 0.6198 | +0.0521 | 0.283 | 0.724 |
+| slot-permuted | 0.5417 | 0.4948 | -0.0469 | 0.402 | 0.264 |
+
+Interpretation:
+
+- The GSM30 run is neutral, not positive. The paired telemetry shows the
+  separable K/V branch can both rescue and break examples, so we should not
+  promote it as a main claim yet.
+- The protected-channel toy branch is useful because it isolates a blocker:
+  identity-preserved outlier/protected dimensions help when channels are
+  aligned or outlier-dominated, but hurt under rotation or slot permutation.
+  That is evidence against naive protected dimensions as a standalone fix and
+  evidence for gauge-aware protection or learned/permuted protection masks.
+- The new lateral references converge on a stack rather than a single trick:
+  geometry/gauge calibration, residual codebook or token bridge, asymmetric
+  K/V budgets, and head-adaptive compression under matched bytes.
+
+Paper decision:
+
+- Additively add the paired-flip telemetry and protected-channel ablation as
+  interpretability infrastructure.
+- Do not add protected-channel routing as a default method until it survives
+  rotated and slot-permuted controls.
+- Keep the near-term positive-method search on stacked fixes:
+  `gauge-aware alignment -> residual codebook/token bridge -> separable K/V
+  routing -> head-adaptive byte allocation`, with C2C/KVComm as direct
+  competitors and kvpress/KVzip/Quest as matched-byte controls.
