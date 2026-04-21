@@ -36,6 +36,7 @@ active positive clues, and combinations worth testing next.
 | Route-/class-calibrated frontier | On the held-out hub sweep, route-class patch-protect ties quant-error (`0.6354` prior, `0.8125` oracle) while route-class frontier remains negative | Promote only if a redesigned pruning rule beats both quant-error and all-low-bit hub baselines; otherwise move to multi-way canonical hubs or tokenizer/interface simplification. |
 | Multi-way canonical hub | On the held-out-family toy, `multiway_gpa_canonical` is the best non-oracle/shared-basis method at `1` shot/class (`0.1327` MSE vs few-shot `0.1463`) and crushes global seen-family ridge, but direct held-out family fitting regains the MSE lead by `2+` shots/class | Promote only as a low-shot initializer or regularizer unless it also wins once moderate paired data exists; the next real test should be GPA-initialized shared hub plus sparse dictionary on a held-out-family route split. |
 | GPA sparse dictionary hub | On the held-out-family toy, `multiway_gpa_sparse_dictionary` is now the strongest low-shot shared-basis method at `1` shot/class (`0.1171` MSE vs few-shot `0.1825` and canonical `0.2355`), but direct held-out family fitting regains the MSE lead by `2+` shots/class and the verifier-gated repair step stays at `0.0000` accept/help | Promote only as a low-shot shared-basis backbone if the gain survives tokenizer/interface shifts and the dictionary becomes interpretable enough to justify the story; keep repair as a blocker until it actually fires and helps. |
+| Real tokenizer pair sweep | On GSM30 prompts, the exact Qwen2.5->Qwen3 pair is effectively tokenizer-identical (`shared decoded = 1.0000`, `boundary F1 = 1.0000`), while Qwen->Mistral and Qwen->Phi3 show real surface and boundary mismatch (`shared decoded ~0.80`, `boundary F1 0.93-0.95`) | Do not treat tokenizer mismatch as the likely blocker for the current same-pair method; use byte/span/vocab controls as a robustness and cross-family lane instead. |
 
 ## Next Stack To Test
 
@@ -89,3 +90,15 @@ canonicalization helps at the true `1`-shot held-out-family point, where
 fitting as soon as `2+` paired shots/class are available. Treat this as
 evidence for low-shot hub initialization, not as a universal replacement for
 family-specific fitting.
+
+`results/query_pool_toy_20260421/gpa_sparse_dictionary_hub_20260421.md` is the
+current low-shot shared-basis follow-up. The read is sharper: the sparse
+dictionary beats both direct few-shot fitting and canonical-only GPA at the
+true `1`-shot point, but the gain disappears once moderate paired data exists
+and the verifier-gated repair branch still accepts nothing.
+
+`results/query_pool_toy_20260421/real_tokenizer_interface_pair_sweep_20260421.md`
+is the current real-tokenizer interface readout. It shows that tokenizer
+mismatch is not the blocker for the exact Qwen2.5->Qwen3 pair used in the main
+same-pair runs, but it becomes real immediately on broader cross-family pairs
+such as Qwen->Mistral and Qwen->Phi3.

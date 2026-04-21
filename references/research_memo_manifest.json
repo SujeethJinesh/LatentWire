@@ -138,5 +138,26 @@
     "path": "references/376_matched_competitor_bootstrap_recent_refs.md",
     "status": "local_memo",
     "reason": "Matched competitor benchmark bootstrap memo for recent communication papers, harness parity, contamination control, parser discipline, and frozen comparison contracts."
+  },
+  {
+    "num": 377,
+    "slug": "multimodal_connector_diffusion_latest_refs",
+    "path": "references/377_multimodal_connector_diffusion_latest_refs.md",
+    "status": "local_memo",
+    "reason": "Recent multimodal connector, resampler, latent diffusion/refinement, and cross-model communication memo with concrete connector and iterative-interface ablations."
+  },
+  {
+    "num": 378,
+    "slug": "latest_competitor_benchmark_contract_refs",
+    "path": "references/378_latest_competitor_benchmark_contract_refs.md",
+    "status": "local_memo",
+    "reason": "Recent competitor benchmark contract memo covering direct communication peers, harness discipline, parser parity, and lane-specific matched benchmarking rules."
+  },
+  {
+    "num": 379,
+    "slug": "symmetry_quantization_interface_latest_refs",
+    "path": "references/379_symmetry_quantization_interface_latest_refs.md",
+    "status": "local_memo",
+    "reason": "Recent symmetry, gauge-fixing, quantization-geometry, and tokenizer-mismatch interface memo with mathematically motivated next experiments for LatentWire."
   }
 ]

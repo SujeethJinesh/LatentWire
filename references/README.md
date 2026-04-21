@@ -406,6 +406,12 @@ Files `374_` through `376_` extend the next low-shot shared-dictionary, tokenize
 - `375_`: Byte-level fallback, tokenizer/vocab transfer, cross-tokenizer distillation, and interface-mismatch diagnostics for separating vocabulary issues from latent-communication issues.
 - `376_`: Matched competitor bootstrap memo for recent communication papers, frozen harness/prompt/parser contracts, contamination control, and smoke-first comparison discipline.
 
+Files `377_` through `379_` extend the multimodal-connector, benchmark-contract, and symmetry/quantization lanes:
+
+- `377_`: Recent multimodal connector bottlenecks, query-conditioned resamplers, latent diffusion/refinement interfaces, and hub-style communication references with concrete connector ablations and controls.
+- `378_`: Recent benchmark-contract references for `C2C`, `KVComm`, `LatentMAS`, `Q-KVComm`, `lm-eval`, and `OpenCompass`, organized around matched benchmarking rules instead of mixed leaderboards.
+- `379_`: Recent gauge/symmetry, canonicalization, quantization geometry, and tokenizer-mismatch interface references with concrete gauge-fix, quotient-match, and protected-channel experiments.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.

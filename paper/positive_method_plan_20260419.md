@@ -35,9 +35,28 @@ branch is:
 
 1. GPA-initialized shared hub
 2. sparse shared dictionary / crosscoder on top of that hub
-3. tokenizer or byte-level interface control when token mismatch is likely
+3. tokenizer or byte-level interface control when token mismatch is actually
+   present on the evaluated pair
 4. route/repair added only after the shared basis is fixed and the repair rule
    shows nonzero accepted help
+
+## Status After Real Tokenizer Pair Sweep
+
+The real-tokenizer follow-up narrows the story further:
+
+- on the exact Qwen2.5->Qwen3 pair used in the main same-pair runs, tokenizer
+  mismatch is effectively absent on the GSM30 slice: shared decoded-token rate
+  `1.0000`, boundary F1 `1.0000`, fragmentation delta `0.0000`
+- on genuinely cross-family pairs, tokenizer mismatch appears immediately:
+  Qwen->Mistral reaches shared decoded-token rate `0.8174` and boundary F1
+  `0.9496`, while Qwen->Phi3 reaches shared decoded-token rate `0.7972` and
+  boundary F1 `0.9347`
+
+That means tokenizer fixes are still a real robustness and future
+cross-family-generalization lane, but they are **not** the most likely rescue
+for the current same-pair Qwen positive-method attempt. For the exact active
+pair, the live blockers remain route quality, shared-basis transfer, and
+repair/control design.
 
 ## Best Next Method Lane
 

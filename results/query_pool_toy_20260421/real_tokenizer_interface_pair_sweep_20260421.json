@@ -1,0 +1,81 @@
+{
+  "config": {
+    "calibration_examples": 15,
+    "input_path": "data/gsm8k_gate_search_30.jsonl",
+    "limit": null,
+    "pairs": [
+      {
+        "label": "qwen25_to_qwen3",
+        "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "target_model": "Qwen/Qwen3-0.6B"
+      },
+      {
+        "label": "qwen25_to_mistral",
+        "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "target_model": "mistralai/Mistral-7B-Instruct-v0.3"
+      },
+      {
+        "label": "qwen25_to_phi3",
+        "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "target_model": "microsoft/Phi-3-mini-4k-instruct"
+      }
+    ],
+    "remap_capacity": 24
+  },
+  "rows": [
+    {
+      "calibration_examples": 15,
+      "examples": 15,
+      "label": "qwen25_to_qwen3",
+      "mean_boundary_f1": 1.0,
+      "mean_boundary_jaccard": 1.0,
+      "mean_byte_span_remap_coverage": 0.05500646862096438,
+      "mean_bytes_per_example": 355.8666666666667,
+      "mean_fragmentation_delta": 0.0,
+      "mean_shared_decoded_token_rate": 1.0,
+      "mean_source_fragmentation": 0.24140983428909618,
+      "mean_source_token_count": 85.86666666666666,
+      "mean_target_fragmentation": 0.24140983428909618,
+      "mean_target_token_count": 85.86666666666666,
+      "remap_table_size": 0,
+      "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "target_model": "Qwen/Qwen3-0.6B"
+    },
+    {
+      "calibration_examples": 15,
+      "examples": 15,
+      "label": "qwen25_to_mistral",
+      "mean_boundary_f1": 0.9496332128042829,
+      "mean_boundary_jaccard": 0.9048821880290413,
+      "mean_byte_span_remap_coverage": 0.09465457163878493,
+      "mean_bytes_per_example": 355.8666666666667,
+      "mean_fragmentation_delta": 0.02289976428491336,
+      "mean_shared_decoded_token_rate": 0.8173925422362717,
+      "mean_source_fragmentation": 0.24140983428909618,
+      "mean_source_token_count": 85.86666666666666,
+      "mean_target_fragmentation": 0.26430959857400954,
+      "mean_target_token_count": 93.73333333333333,
+      "remap_table_size": 24,
+      "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "target_model": "mistralai/Mistral-7B-Instruct-v0.3"
+    },
+    {
+      "calibration_examples": 15,
+      "examples": 15,
+      "label": "qwen25_to_phi3",
+      "mean_boundary_f1": 0.9347033325886324,
+      "mean_boundary_jaccard": 0.8785321491935479,
+      "mean_byte_span_remap_coverage": 0.07060628857308754,
+      "mean_bytes_per_example": 355.8666666666667,
+      "mean_fragmentation_delta": 0.02252381055102881,
+      "mean_shared_decoded_token_rate": 0.7972044133867532,
+      "mean_source_fragmentation": 0.24140983428909618,
+      "mean_source_token_count": 85.86666666666666,
+      "mean_target_fragmentation": 0.263933644840125,
+      "mean_target_token_count": 93.6,
+      "remap_table_size": 24,
+      "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "target_model": "microsoft/Phi-3-mini-4k-instruct"
+    }
+  ]
+}
