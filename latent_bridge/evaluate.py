@@ -427,6 +427,79 @@ def _selected_head_count(head_count: int, ratio: float) -> int:
     return max(1, min(head_count, int(round(head_count * ratio))))
 
 
+def _headwise_route_atom_components(attention_map: torch.Tensor) -> dict[str, torch.Tensor]:
+    scores = attention_map.float()
+    if scores.ndim != 2:
+        raise ValueError(f"attention_map must be rank-2 [heads, positions], got shape {tuple(scores.shape)}")
+    probs = scores / scores.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    positions = probs.shape[-1]
+    entropy = -(probs * probs.clamp_min(1e-8).log()).sum(dim=-1)
+    max_entropy = math.log(max(int(positions), 2))
+    sharpness = (1.0 - entropy / max_entropy).clamp_min(0.0)
+
+    mean_probs = probs.mean(dim=0, keepdim=True)
+    mean_expand = mean_probs.expand_as(probs)
+    mixture = (0.5 * (probs + mean_expand)).clamp_min(1e-8)
+    js_divergence = 0.5 * (
+        (probs * (probs.clamp_min(1e-8).log() - mixture.log())).sum(dim=-1)
+        + (mean_expand * (mean_expand.clamp_min(1e-8).log() - mixture.log())).sum(dim=-1)
+    )
+
+    position_axis = torch.linspace(
+        -1.0,
+        1.0,
+        steps=positions,
+        device=probs.device,
+        dtype=probs.dtype,
+    )
+    centroid = (probs * position_axis).sum(dim=-1)
+    orientation = (centroid - centroid.mean()).abs()
+    peak = probs.max(dim=-1).values
+    return {
+        "sharpness": sharpness,
+        "js_divergence": js_divergence,
+        "orientation": orientation,
+        "centroid": centroid,
+        "peak": peak,
+    }
+
+
+def _headwise_route_atom_scores(attention_map: torch.Tensor) -> torch.Tensor:
+    components = _headwise_route_atom_components(attention_map)
+    return (
+        0.40 * _normalize_selection_scores(components["sharpness"])
+        + 0.35 * _normalize_selection_scores(components["js_divergence"])
+        + 0.15 * _normalize_selection_scores(components["orientation"])
+        + 0.10 * _normalize_selection_scores(components["peak"])
+    )
+
+
+def _headwise_route_atom_trace_fields(
+    attention_map: torch.Tensor,
+    scores: torch.Tensor,
+    keep_local_indices: torch.Tensor,
+) -> dict[str, Any]:
+    components = _headwise_route_atom_components(attention_map)
+    score_probs = scores.float()
+    score_probs = score_probs / score_probs.sum().clamp_min(1e-8)
+    sorted_scores = score_probs.sort(descending=True).values
+    selected = keep_local_indices.detach().to(device=attention_map.device)
+    if selected.numel() == 0:
+        selected = torch.arange(0, 0, device=attention_map.device)
+    return {
+        "route_atom_keep_fraction": float(selected.numel() / max(int(scores.numel()), 1)),
+        "route_atom_score_entropy": float((-(score_probs * score_probs.clamp_min(1e-8).log()).sum()).item()),
+        "route_atom_score_gap": float((sorted_scores[0] - sorted_scores[1]).item()) if sorted_scores.numel() > 1 else float(sorted_scores[0].item()),
+        "route_atom_sharpness_mean": float(components["sharpness"][selected].mean().item()) if selected.numel() > 0 else 0.0,
+        "route_atom_js_divergence_mean": float(components["js_divergence"][selected].mean().item()) if selected.numel() > 0 else 0.0,
+        "route_atom_orientation_span": float(
+            (components["centroid"][selected].max() - components["centroid"][selected].min()).abs().item()
+        )
+        if selected.numel() > 1
+        else 0.0,
+    }
+
+
 def _runtime_head_scores(
     attention_map: torch.Tensor,
     *,
@@ -451,6 +524,8 @@ def _runtime_head_scores(
         centroid = (probs * positions).sum(dim=-1)
         peak = probs.max(dim=-1).values
         return centroid * peak
+    if metric == "headwise_route_atom":
+        return _headwise_route_atom_scores(attention_map)
     if metric == "random":
         gen = torch.Generator(device="cpu").manual_seed(91_001 + int(layer_idx))
         return torch.rand(scores.shape[0], generator=gen, dtype=torch.float32).to(device=scores.device)
@@ -1438,7 +1513,7 @@ def _runtime_head_scores_with_prior(
     prior_alpha: float = 0.5,
 ) -> tuple[torch.Tensor, torch.Tensor | None]:
     prior_topk: torch.Tensor | None = None
-    if metric in {"attention_peak", "attention_entropy", "attention_margin", "retrieval_peak", "random"}:
+    if metric in {"attention_peak", "attention_entropy", "attention_margin", "retrieval_peak", "headwise_route_atom", "random"}:
         if attention_map is None:
             raise ValueError(f"{metric} runtime head selection requires target attention maps")
         return _runtime_head_scores(attention_map, metric=metric, layer_idx=layer_idx), None
@@ -2085,6 +2160,21 @@ def prediction_record_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
                     method_summary["head_score_entropy_avg"] = sum(entropies) / len(entropies)
                 if prior_overlaps:
                     method_summary["head_prior_overlap_jaccard_avg"] = sum(prior_overlaps) / len(prior_overlaps)
+                for field in (
+                    "route_atom_keep_fraction",
+                    "route_atom_score_entropy",
+                    "route_atom_score_gap",
+                    "route_atom_sharpness_mean",
+                    "route_atom_js_divergence_mean",
+                    "route_atom_orientation_span",
+                ):
+                    values = [
+                        float(layer[field])
+                        for layer in flattened_heads
+                        if layer.get(field) is not None
+                    ]
+                    if values:
+                        method_summary[f"{field}_avg"] = sum(values) / len(values)
         head_budget_traces = [row.get("head_budget_trace") for row in rows if row.get("head_budget_trace")]
         if head_budget_traces:
             flattened_budgets = [layer for trace in head_budget_traces for layer in trace]
@@ -3015,6 +3105,7 @@ def _build_rotalign_prefix_state(
         "attention_entropy",
         "attention_margin",
         "retrieval_peak",
+        "headwise_route_atom",
         "attention_fidelity",
         "attention_fidelity_shuffled",
         "attention_procrustes",
@@ -3361,6 +3452,9 @@ def _build_rotalign_prefix_state(
             head_trace["target_layer"] = int(tgt_l)
             head_trace["source_layer"] = int(src_l)
             head_trace["metric"] = runtime_head_selection_metric
+            if runtime_head_selection_metric == "headwise_route_atom" and attention_map is not None:
+                head_trace.update(_headwise_route_atom_trace_fields(attention_map, head_scores, keep_local))
+                head_trace["route_atom_selected_head_ids"] = head_trace["selected_head_ids"]
             if prior_keep_local is not None:
                 head_trace["prior_metric"] = "attention_peak"
             if prior_scores is not None:
@@ -4706,6 +4800,7 @@ def parse_args() -> argparse.Namespace:
             "attention_entropy",
             "attention_margin",
             "retrieval_peak",
+            "headwise_route_atom",
             "random",
             "attention_fidelity",
             "attention_fidelity_shuffled",
@@ -4739,6 +4834,7 @@ def parse_args() -> argparse.Namespace:
             "attention_entropy",
             "attention_margin",
             "retrieval_peak",
+            "headwise_route_atom",
             "random",
             "attention_fidelity",
             "attention_fidelity_shuffled",
@@ -4954,6 +5050,7 @@ def main() -> None:
         "attention_entropy",
         "attention_margin",
         "retrieval_peak",
+        "headwise_route_atom",
         "attention_fidelity",
         "attention_fidelity_shuffled",
         "attention_procrustes",

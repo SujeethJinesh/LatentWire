@@ -2757,3 +2757,65 @@ Interpretation:
   collision rate, and paired flips; accuracy alone could reward shortcuts
 - this is still synthetic evidence only; the paper needs a paired controlled
   Qwen improvement before calling query-pool a positive method
+
+And a synthetic route-atom follow-up plus real evaluator hook:
+
+> I extended `scripts/run_toy_query_pool.py` with a matched-budget
+> `route_atom` readout and atom-level telemetry. The route atoms use
+> query-conditioned multiplicative routing, then log atom entropy, atom
+> collision, dead-atom rate, and atom top-margin alongside the existing route
+> entropy/collision metrics. I also added a real-model evaluator surface:
+> `--runtime-head-selection-metric headwise_route_atom` and
+> `--runtime-head-gate-metric headwise_route_atom`. This treats target heads
+> as route atoms by ranking heads that are sharp, distinct from the layer mean,
+> and differently oriented over prefix positions, without changing
+> `PrefixState`, cache shape, or generation masks.
+>
+> New toy artifact:
+> - `results/query_pool_toy_20260421/query_pool_route_atom_vs_topk.json`
+> - `results/query_pool_toy_20260421/query_pool_route_atom_vs_topk.md`
+>
+> Task accuracy at budget `4`:
+> - aligned: `topk 0.2396`, `query_pool 0.3385`, `route_atom 0.2969`
+> - rotated: `topk 0.2760`, `query_pool 0.3750`, `route_atom 0.3698`
+> - outlier: `topk 0.2448`, `query_pool 0.2552`, `route_atom 0.2448`
+> - slot-permuted: `topk 0.2604`, `query_pool 0.2969`, `route_atom 0.2917`
+
+Interpretation:
+
+- route atoms are not the new headline method by themselves; learned
+  query-pool remains the stronger toy task readout
+- route atoms are still useful because they expose the exact failure mode we
+  need for paper-quality analysis: atom entropy, dead atoms, route collision,
+  and orientation diversity
+- the real evaluator hook is intentionally thin and safe; the next controlled
+  run should test whether headwise route atoms improve bytes/accuracy or only
+  improve interpretability
+- if the real run is negative, the constructive branch is a hybrid: query-pool
+  task readout plus route-atom/collapse telemetry, not a pure atom router
+
+And the first real `headwise_route_atom` smoke:
+
+> I ran the new evaluator-side metric on the same `dynalign_prefdist`
+> checkpoint and GSM5 setup, adding `--runtime-head-selection-ratio 0.5` and
+> `--runtime-head-selection-metric headwise_route_atom` to the prior
+> attention-selected sparse `K-only` protocol.
+>
+> Result:
+> - `gsm8k_5`: `0.200000` at `346,263.4` average bytes
+> - prior dense-head `dynalign_prefdist` GSM5 reference: `0.400000` at
+>   `686,026.6` average bytes
+> - metadata now aggregates `route_atom_keep_fraction`,
+>   `route_atom_score_entropy`, `route_atom_score_gap`,
+>   `route_atom_sharpness_mean`, `route_atom_js_divergence_mean`, and
+>   `route_atom_orientation_span`
+
+Interpretation:
+
+- `headwise_route_atom` is a useful compression/control branch because it
+  roughly halves bytes, but it is not a positive-method result yet
+- the accuracy drop says head diversity alone is insufficient; useful heads
+  are being removed, or position selection and head routing are not aligned
+- the next real test should stack route-atom tracing with the stronger learned
+  query-pool interface, or sweep route-atom ratios before spending on larger
+  GSM/SVAMP runs

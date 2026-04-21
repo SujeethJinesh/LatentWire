@@ -23,6 +23,7 @@ class ToyConfig:
     classes: int = 5
     top_k: int = 4
     pool_slots: int = 4
+    route_atoms: int = 4
     epochs: int = 120
     lr: float = 2e-2
     rec_weight: float = 0.2
@@ -115,6 +116,23 @@ def _route_metrics(weights: torch.Tensor, *, margin_k: int = 1) -> dict[str, flo
     }
 
 
+def _atom_metrics(atom_weights: torch.Tensor) -> dict[str, float]:
+    probs = atom_weights / atom_weights.sum(dim=-1, keepdim=True).clamp_min(1e-8)
+    entropy = (-(probs * probs.clamp_min(1e-8).log()).sum(dim=-1)).mean()
+    winners = probs.argmax(dim=-1)
+    counts = torch.bincount(winners, minlength=probs.shape[-1]).float()
+    collision_rate = counts.max() / max(int(winners.numel()), 1)
+    dead_atom_rate = (counts == 0).float().mean()
+    sorted_probs = probs.sort(dim=-1, descending=True).values
+    margin = (sorted_probs[:, 0] - sorted_probs[:, min(1, sorted_probs.shape[-1] - 1)]).mean()
+    return {
+        "atom_entropy": float(entropy.item()),
+        "atom_collision_rate": float(collision_rate.item()),
+        "dead_atom_rate": float(dead_atom_rate.item()),
+        "atom_top_margin": float(margin.item()),
+    }
+
+
 class TopKReadout(nn.Module):
     def __init__(self, dim: int, classes: int, top_k: int) -> None:
         super().__init__()
@@ -144,6 +162,7 @@ class QueryPoolReadout(nn.Module):
         self.query_proj = nn.Linear(dim, dim, bias=False)
         self.classifier = nn.Linear(dim, classes)
         self.reconstructor = nn.Linear(dim, dim)
+        self.last_atom_weights: torch.Tensor | None = None
 
     def encode(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor]:
         q_proj = self.query_proj(batch.q)
@@ -154,6 +173,35 @@ class QueryPoolReadout(nn.Module):
         pool_values = torch.einsum("nps,nsd->npd", omega, batch.V)
         summary = torch.einsum("np,npd->nd", beta, pool_values)
         effective_weights = torch.einsum("np,nps->ns", beta, omega)
+        self.last_atom_weights = beta.detach()
+        return summary, effective_weights
+
+    def forward(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        summary, weights = self.encode(batch)
+        return self.classifier(summary), self.reconstructor(summary), weights
+
+
+class RouteAtomReadout(nn.Module):
+    def __init__(self, dim: int, classes: int, route_atoms: int) -> None:
+        super().__init__()
+        self.route_atoms = int(route_atoms)
+        self.route_bank = nn.Parameter(torch.randn(self.route_atoms, dim) / math.sqrt(dim))
+        self.query_proj = nn.Linear(dim, dim, bias=False)
+        self.classifier = nn.Linear(dim, classes)
+        self.reconstructor = nn.Linear(dim, dim)
+        self.last_atom_weights: torch.Tensor | None = None
+
+    def encode(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor]:
+        q_proj = self.query_proj(batch.q)
+        atom_logits = q_proj @ self.route_bank.T / math.sqrt(batch.q.shape[-1])
+        atom_weights = torch.softmax(atom_logits, dim=-1)
+        atom_q = q_proj[:, None, :] * torch.tanh(self.route_bank)[None, :, :]
+        slot_logits = torch.einsum("nad,nsd->nas", atom_q, batch.K) / math.sqrt(batch.q.shape[-1])
+        slot_weights = torch.softmax(slot_logits, dim=-1)
+        atom_values = torch.einsum("nas,nsd->nad", slot_weights, batch.V)
+        summary = torch.einsum("na,nad->nd", atom_weights, atom_values)
+        effective_weights = torch.einsum("na,nas->ns", atom_weights, slot_weights)
+        self.last_atom_weights = atom_weights.detach()
         return summary, effective_weights
 
     def forward(self, batch: ToyBatch) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -182,6 +230,18 @@ def _evaluate_model(model: nn.Module, batch: ToyBatch, *, margin_k: int) -> dict
         "rec_mse": float(F.mse_loss(recon, batch.z).item()),
     }
     metrics.update(_route_metrics(weights, margin_k=margin_k))
+    atom_weights = getattr(model, "last_atom_weights", None)
+    if atom_weights is None:
+        metrics.update(
+            {
+                "atom_entropy": None,
+                "atom_collision_rate": None,
+                "dead_atom_rate": None,
+                "atom_top_margin": None,
+            }
+        )
+    else:
+        metrics.update(_atom_metrics(atom_weights))
     return metrics
 
 
@@ -194,6 +254,7 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
         methods: list[tuple[str, nn.Module, int]] = [
             ("topk", TopKReadout(config.dim, config.classes, config.top_k), config.top_k),
             ("query_pool", QueryPoolReadout(config.dim, config.classes, config.pool_slots), 1),
+            ("route_atom", RouteAtomReadout(config.dim, config.classes, config.route_atoms), 1),
         ]
         for method, model, margin_k in methods:
             _train_model(model, train, config)
@@ -202,7 +263,13 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
                 {
                     "scenario": scenario,
                     "method": method,
-                    "budget": config.top_k if method == "topk" else config.pool_slots,
+                    "budget": (
+                        config.top_k
+                        if method == "topk"
+                        else config.pool_slots
+                        if method == "query_pool"
+                        else config.route_atoms
+                    ),
                     **metrics,
                 }
             )
@@ -210,17 +277,35 @@ def run_experiment(config: ToyConfig, scenarios: list[str]) -> list[dict[str, An
 
 
 def write_markdown_summary(rows: list[dict[str, Any]], path: pathlib.Path) -> None:
+    def fmt(value: Any) -> str:
+        if value is None:
+            return "-"
+        return f"{float(value):.4f}"
+
     lines = [
         "# Toy Query-Pool Benchmark",
         "",
-        "| Scenario | Method | Budget | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|",
+        "| Scenario | Method | Budget | Task acc | Rec MSE | Route entropy | Collision | Dead slots | Top margin | Atom entropy | Atom collision | Dead atoms | Atom margin |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
         lines.append(
-            "| {scenario} | {method} | {budget} | {task_acc:.4f} | {rec_mse:.4f} | "
-            "{route_entropy:.4f} | {slot_collision_rate:.4f} | {dead_slot_rate:.4f} | {top_margin:.4f} |".format(
-                **row,
+            "| {scenario} | {method} | {budget} | {task_acc} | {rec_mse} | "
+            "{route_entropy} | {slot_collision_rate} | {dead_slot_rate} | {top_margin} | "
+            "{atom_entropy} | {atom_collision_rate} | {dead_atom_rate} | {atom_top_margin} |".format(
+                scenario=row["scenario"],
+                method=row["method"],
+                budget=row["budget"],
+                task_acc=fmt(row["task_acc"]),
+                rec_mse=fmt(row["rec_mse"]),
+                route_entropy=fmt(row["route_entropy"]),
+                slot_collision_rate=fmt(row["slot_collision_rate"]),
+                dead_slot_rate=fmt(row["dead_slot_rate"]),
+                top_margin=fmt(row["top_margin"]),
+                atom_entropy=fmt(row["atom_entropy"]),
+                atom_collision_rate=fmt(row["atom_collision_rate"]),
+                dead_atom_rate=fmt(row["dead_atom_rate"]),
+                atom_top_margin=fmt(row["atom_top_margin"]),
             )
         )
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -239,6 +324,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--classes", type=int, default=5)
     parser.add_argument("--top-k", type=int, default=4)
     parser.add_argument("--pool-slots", type=int, default=4)
+    parser.add_argument("--route-atoms", type=int, default=4)
     parser.add_argument("--epochs", type=int, default=120)
     parser.add_argument("--lr", type=float, default=2e-2)
     parser.add_argument("--rec-weight", type=float, default=0.2)
@@ -263,6 +349,7 @@ def main() -> None:
         classes=args.classes,
         top_k=args.top_k,
         pool_slots=args.pool_slots,
+        route_atoms=args.route_atoms,
         epochs=args.epochs,
         lr=args.lr,
         rec_weight=args.rec_weight,

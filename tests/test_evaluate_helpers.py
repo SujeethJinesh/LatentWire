@@ -417,6 +417,35 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.per_head_position_budget_mode == "attention_peak"
 
 
+def test_evaluate_parse_args_accepts_headwise_route_atom(monkeypatch) -> None:
+    monkeypatch.setattr(
+        evaluate.sys,
+        "argv",
+        [
+            "evaluate.py",
+            "--translator",
+            "translator.pt",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--eval-file",
+            "eval.jsonl",
+            "--runtime-head-selection-ratio",
+            "0.5",
+            "--runtime-head-selection-metric",
+            "headwise_route_atom",
+            "--runtime-head-gate-metric",
+            "headwise_route_atom",
+        ],
+    )
+
+    args = evaluate.parse_args()
+
+    assert args.runtime_head_selection_metric == "headwise_route_atom"
+    assert args.runtime_head_gate_metric == "headwise_route_atom"
+
+
 def test_evaluate_parse_args_accepts_chat_template_and_thinking_flags(monkeypatch) -> None:
     monkeypatch.setattr(
         evaluate.sys,
@@ -1667,6 +1696,34 @@ def test_runtime_head_scores_support_attention_peak_margin_retrieval_and_random(
     assert torch.allclose(first, second)
 
 
+def test_runtime_head_scores_support_headwise_route_atom() -> None:
+    attention_map = torch.tensor(
+        [
+            [0.34, 0.33, 0.33],
+            [0.95, 0.04, 0.01],
+            [0.05, 0.90, 0.05],
+        ],
+        dtype=torch.float32,
+    )
+
+    scores = evaluate._runtime_head_scores(
+        attention_map,
+        metric="headwise_route_atom",
+        layer_idx=0,
+    )
+    trace = evaluate._headwise_route_atom_trace_fields(
+        attention_map,
+        scores,
+        torch.tensor([1], dtype=torch.long),
+    )
+
+    assert scores.shape == torch.Size([3])
+    assert float(scores[1]) > float(scores[0])
+    assert trace["route_atom_keep_fraction"] == pytest.approx(1 / 3)
+    assert trace["route_atom_score_entropy"] >= 0.0
+    assert trace["route_atom_js_divergence_mean"] >= 0.0
+
+
 def test_runtime_head_scores_attention_margin_prefers_sharper_head() -> None:
     attention_map = torch.tensor([[0.95, 0.05], [0.60, 0.40]], dtype=torch.float32)
 
@@ -2751,6 +2808,12 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
                     "head_keep_fraction": 0.5,
                     "head_score_entropy": 0.2,
                     "head_prior_overlap_jaccard": 0.25,
+                    "route_atom_keep_fraction": 0.5,
+                    "route_atom_score_entropy": 0.4,
+                    "route_atom_score_gap": 0.1,
+                    "route_atom_sharpness_mean": 0.8,
+                    "route_atom_js_divergence_mean": 0.3,
+                    "route_atom_orientation_span": 0.6,
                     "selected_head_ids": [0],
                 }
             ],
@@ -2783,6 +2846,8 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["selector_keep_fraction_avg"] == 0.5
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["head_keep_fraction_avg"] == 0.5
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["head_prior_overlap_jaccard_avg"] == 0.25
+    assert payload["method_summary"]["rotalign_kv_gate_0.10"]["route_atom_score_entropy_avg"] == 0.4
+    assert payload["method_summary"]["rotalign_kv_gate_0.10"]["route_atom_orientation_span_avg"] == 0.6
     assert payload["method_summary"]["rotalign_kv_gate_0.10"]["head_budget_keep_fraction_avg"] == 0.5
     assert "paired_rotalign_kv_gate_0_10_vs_target_alone_delta_accuracy" in payload["paired_summary"]
 

@@ -15,6 +15,7 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         classes=3,
         top_k=2,
         pool_slots=2,
+        route_atoms=2,
         epochs=3,
         lr=1e-2,
         rec_weight=0.1,
@@ -25,8 +26,10 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
     assert {(row["scenario"], row["method"]) for row in rows} == {
         ("aligned", "topk"),
         ("aligned", "query_pool"),
+        ("aligned", "route_atom"),
         ("rotated", "topk"),
         ("rotated", "query_pool"),
+        ("rotated", "route_atom"),
     }
     for row in rows:
         assert 0.0 <= row["task_acc"] <= 1.0
@@ -34,6 +37,14 @@ def test_toy_query_pool_experiment_returns_interpretable_rows() -> None:
         assert row["route_entropy"] >= 0.0
         assert 0.0 <= row["slot_collision_rate"] <= 1.0
         assert 0.0 <= row["dead_slot_rate"] <= 1.0
+        assert "atom_entropy" in row
+        assert "atom_collision_rate" in row
+        assert "dead_atom_rate" in row
+        assert "atom_top_margin" in row
+        if row["method"] != "topk":
+            assert row["atom_entropy"] >= 0.0
+            assert 0.0 <= row["atom_collision_rate"] <= 1.0
+            assert 0.0 <= row["dead_atom_rate"] <= 1.0
 
 
 def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
@@ -50,6 +61,7 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
         classes=3,
         top_k=2,
         pool_slots=2,
+        route_atoms=2,
         epochs=2,
     )
     payload = {
@@ -61,5 +73,8 @@ def test_toy_query_pool_cli_writes_json(tmp_path) -> None:
     loaded = json.loads(output.read_text())
 
     assert loaded["config"]["pool_slots"] == 2
-    assert {row["method"] for row in loaded["rows"]} == {"topk", "query_pool"}
-    assert "| outlier | query_pool |" in markdown.read_text()
+    assert {row["method"] for row in loaded["rows"]} == {"topk", "query_pool", "route_atom"}
+    summary = markdown.read_text()
+    assert "Atom entropy" in summary
+    assert "| outlier | query_pool |" in summary
+    assert "| outlier | route_atom |" in summary

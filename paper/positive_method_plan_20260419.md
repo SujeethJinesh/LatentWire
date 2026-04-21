@@ -1926,7 +1926,65 @@ Interpretation:
 
 Next implementation target:
 
-- `headwise_route_atom` first, because the evaluator already has head-budget
-  machinery and the translator already has bridge-atom style components
-- then a learned query-pool transport branch with explicit dead-slot,
-  entropy, reconstruction, and paired-flip telemetry
+- run the new evaluator-side `headwise_route_atom` metric on the controlled
+  Qwen `dynalign_prefdist` branch, because it is now implemented without
+  changing cache format or translator checkpoints
+- keep learned query-pool as the higher-priority positive-method candidate if
+  the real route-atom smoke only improves telemetry; the toy benchmark now
+  shows query-pool is stronger on task accuracy while route atoms provide
+  better collapse diagnostics
+- then stack only the useful part: learned/query-conditioned pooled transport
+  with route-atom entropy, dead-atom, collision, reconstruction, paired-flip,
+  and bytes telemetry
+
+## 2026-04-21 Route-Atom Toy And Evaluator Hook
+
+I added a matched-budget `route_atom` baseline to the synthetic query-pool
+benchmark and added `headwise_route_atom` as a real evaluator head-selection
+and head-gate metric. The evaluator path is intentionally conservative: heads
+are treated as atoms, scored by sharpness, layer-mean divergence, and
+orientation over prefix positions, then routed through the existing runtime
+head-selection machinery. It does not introduce a new cache representation.
+
+Run artifact:
+
+- `results/query_pool_toy_20260421/query_pool_route_atom_vs_topk.json`
+- `results/query_pool_toy_20260421/query_pool_route_atom_vs_topk.md`
+
+Task accuracy at budget `4`:
+
+- aligned: `topk 0.2396`, `query_pool 0.3385`, `route_atom 0.2969`
+- rotated: `topk 0.2760`, `query_pool 0.3750`, `route_atom 0.3698`
+- outlier: `topk 0.2448`, `query_pool 0.2552`, `route_atom 0.2448`
+- slot-permuted: `topk 0.2604`, `query_pool 0.2969`, `route_atom 0.2917`
+
+Interpretation:
+
+- route atoms are competitive on rotated and slot-permuted geometry but do not
+  beat learned query-pool on this toy suite
+- the atom telemetry is valuable even when the method is not a headline win:
+  atom entropy, atom collision, dead atoms, route entropy, and route top-margin
+  are now in the artifact
+- the next real-model smoke should test `headwise_route_atom` as an
+  evaluator-side control, not as the main positive claim
+- the stronger paper branch remains a learned query-conditioned interface that
+  uses route-atom telemetry to avoid collapse
+
+First real-model smoke:
+
+- checkpoint:
+  `checkpoints/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen25_to_qwen3_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.pt`
+- protocol: GSM5, sparse `K-only`, `position_selection_metric=attention`,
+  `position_selection_ratio=0.5`, `runtime_head_selection_ratio=0.5`,
+  `runtime_head_selection_metric=headwise_route_atom`, fixed gate `0.10`
+- result: `0.2000` at `346,263.4` average bytes
+- reference: same checkpoint without runtime head pruning was `0.4000` at
+  `686,026.6` average bytes
+
+Conclusion:
+
+- this is a bytes/interpretability branch, not a positive accuracy branch
+- do not scale it directly until a ratio sweep or learned query-pool hybrid
+  shows it preserves the `0.4000` smoke while reducing bytes
+- keep it in the paper plan as a diagnostic/control because it now provides
+  route-atom collapse and orientation telemetry in the result sidecar
