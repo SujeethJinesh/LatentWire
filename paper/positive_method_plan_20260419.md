@@ -1892,3 +1892,41 @@ The paper should add these as planned ablations only if they come with the
 interpretability columns now supported by the artifacts: per-layer error,
 route/slot entropy, dead atom rate, paired flips, bytes, and tokenizer-family
 failure modes.
+
+## 2026-04-21 Toy Query-Pool Benchmark
+
+I added a standalone synthetic benchmark for the top-k versus query-pool
+interface question. It is intentionally separate from the real-model evaluator:
+it samples latent states, source K/V slots, and target queries; trains matched
+readouts for `topk` and `query_pool`; then evaluates aligned, rotated,
+outlier-scaled, and slot-permuted stress settings at the same budget.
+
+Run artifact:
+
+- `results/query_pool_toy_20260421/query_pool_vs_topk.json`
+- `results/query_pool_toy_20260421/query_pool_vs_topk.md`
+
+Task accuracy at budget `4`:
+
+- aligned: `topk 0.2396`, `query_pool 0.3125`
+- rotated: `topk 0.2760`, `query_pool 0.3125`
+- outlier: `topk 0.2448`, `query_pool 0.2917`
+- slot-permuted: `topk 0.2604`, `query_pool 0.3594`
+
+Interpretation:
+
+- the toy supports trying a learned query-pool or route-atom interface because
+  pooled queries beat direct top-k under every synthetic stress condition
+- the query-pool branch usually has worse reconstruction MSE, so a real-model
+  version must include reconstruction/consistency telemetry and not optimize
+  only answer accuracy
+- this upgrades query-pool from a fixed-selector diagnostic to a plausible
+  learned-interface branch, but it is not paper evidence until it beats
+  target-alone on paired controlled model runs
+
+Next implementation target:
+
+- `headwise_route_atom` first, because the evaluator already has head-budget
+  machinery and the translator already has bridge-atom style components
+- then a learned query-pool transport branch with explicit dead-slot,
+  entropy, reconstruction, and paired-flip telemetry

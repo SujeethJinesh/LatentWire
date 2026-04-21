@@ -1,0 +1,106 @@
+{
+  "config": {
+    "classes": 5,
+    "dim": 24,
+    "epochs": 120,
+    "lr": 0.02,
+    "noise": 0.08,
+    "pool_slots": 4,
+    "rec_weight": 0.2,
+    "seed": 0,
+    "slots": 32,
+    "test_examples": 192,
+    "top_k": 4,
+    "train_examples": 384
+  },
+  "rows": [
+    {
+      "budget": 4,
+      "dead_slot_rate": 0.0,
+      "method": "topk",
+      "rec_mse": 0.9594897031784058,
+      "route_entropy": 1.3042937517166138,
+      "scenario": "aligned",
+      "slot_collision_rate": 0.078125,
+      "task_acc": 0.2395833283662796,
+      "top_margin": 0.38658013939857483
+    },
+    {
+      "budget": 4,
+      "dead_slot_rate": 0.09375,
+      "method": "query_pool",
+      "rec_mse": 1.0468823909759521,
+      "route_entropy": 1.0386444330215454,
+      "scenario": "aligned",
+      "slot_collision_rate": 0.0989583358168602,
+      "task_acc": 0.3125,
+      "top_margin": 0.5257267951965332
+    },
+    {
+      "budget": 4,
+      "dead_slot_rate": 0.03125,
+      "method": "topk",
+      "rec_mse": 0.9134641289710999,
+      "route_entropy": 1.2908644676208496,
+      "scenario": "rotated",
+      "slot_collision_rate": 0.0677083358168602,
+      "task_acc": 0.2760416567325592,
+      "top_margin": 0.39677345752716064
+    },
+    {
+      "budget": 4,
+      "dead_slot_rate": 0.03125,
+      "method": "query_pool",
+      "rec_mse": 0.970691442489624,
+      "route_entropy": 1.0754220485687256,
+      "scenario": "rotated",
+      "slot_collision_rate": 0.1197916641831398,
+      "task_acc": 0.3125,
+      "top_margin": 0.4866832196712494
+    },
+    {
+      "budget": 4,
+      "dead_slot_rate": 0.0,
+      "method": "topk",
+      "rec_mse": 0.9422051906585693,
+      "route_entropy": 1.0643383264541626,
+      "scenario": "outlier",
+      "slot_collision_rate": 0.125,
+      "task_acc": 0.2447916716337204,
+      "top_margin": 0.5368236899375916
+    },
+    {
+      "budget": 4,
+      "dead_slot_rate": 0.0,
+      "method": "query_pool",
+      "rec_mse": 0.9817676544189453,
+      "route_entropy": 1.2435349225997925,
+      "scenario": "outlier",
+      "slot_collision_rate": 0.1041666641831398,
+      "task_acc": 0.2916666567325592,
+      "top_margin": 0.44665732979774475
+    },
+    {
+      "budget": 4,
+      "dead_slot_rate": 0.0,
+      "method": "topk",
+      "rec_mse": 0.94240403175354,
+      "route_entropy": 1.2935603857040405,
+      "scenario": "slot_permuted",
+      "slot_collision_rate": 0.0833333358168602,
+      "task_acc": 0.2604166567325592,
+      "top_margin": 0.3914777338504791
+    },
+    {
+      "budget": 4,
+      "dead_slot_rate": 0.0625,
+      "method": "query_pool",
+      "rec_mse": 1.0183472633361816,
+      "route_entropy": 1.0697085857391357,
+      "scenario": "slot_permuted",
+      "slot_collision_rate": 0.1145833358168602,
+      "task_acc": 0.359375,
+      "top_margin": 0.4790685474872589
+    }
+  ]
+}

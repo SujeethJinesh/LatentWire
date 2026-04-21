@@ -2733,3 +2733,27 @@ Interpretation:
 - the new quantization reference sweep suggests diagonal scaling, orthogonal
   preconditioning, asymmetric K/V allocation, product-quantized route atoms,
   and low-rank sketch bridges as the highest-value additive ablations
+
+And a synthetic query-pool benchmark:
+
+> I added `scripts/run_toy_query_pool.py`, which generates latent states,
+> source K/V slots, and target queries, then compares matched-budget `topk`
+> routing against a learned `query_pool` readout under aligned, rotated,
+> outlier-scaled, and slot-permuted stress settings.
+>
+> At budget `4`, task accuracy was:
+> - aligned: `topk 0.2396`, `query_pool 0.3125`
+> - rotated: `topk 0.2760`, `query_pool 0.3125`
+> - outlier: `topk 0.2448`, `query_pool 0.2917`
+> - slot-permuted: `topk 0.2604`, `query_pool 0.3594`
+
+Interpretation:
+
+- the toy gives a real reason to try learned query-pool slots or head-wise
+  route atoms next, because the learned pool is more task-useful than direct
+  top-k under controlled stress
+- the query-pool branch usually has worse reconstruction MSE, so the real
+  method must log reconstruction/consistency, dead-slot rate, route entropy,
+  collision rate, and paired flips; accuracy alone could reward shortcuts
+- this is still synthetic evidence only; the paper needs a paired controlled
+  Qwen improvement before calling query-pool a positive method
