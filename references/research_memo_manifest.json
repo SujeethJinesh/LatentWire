@@ -61,5 +61,19 @@
     "path": "references/365_recent_symmetry_hub_connector_refs.md",
     "status": "local_memo",
     "reason": "Recent symmetry-aware alignment, shared sparse codebooks, routed connector banks, tokenizer/vocabulary adaptation, quantization geometry, and verifier stop-policy memo with concrete ablations, telemetry fields, and anti-loop rules for the active positive-method paper loop."
+  },
+  {
+    "num": 366,
+    "slug": "tokenizer_connector_quantization_harness_refs",
+    "path": "references/366_tokenizer_connector_quantization_harness_refs.md",
+    "status": "local_memo",
+    "reason": "Tokenizer/vocab alignment, multimodal connector bottlenecks, quantization-inspired communication, and runnable benchmark harness references with concrete ablations, telemetry fields, and clone targets for the active paper loop."
+  },
+  {
+    "num": 367,
+    "slug": "multiway_dictionary_router_stop_refs",
+    "path": "references/367_multiway_dictionary_router_stop_refs.md",
+    "status": "local_memo",
+    "reason": "Multi-way alignment, shared sparse dictionary / crosscoder, stable router, and calibrated stop-policy references with a concrete shared-hub experiment for the active positive-method paper loop."
   }
 ]

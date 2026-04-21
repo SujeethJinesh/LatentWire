@@ -374,6 +374,14 @@ File `365_` extends the symmetry-aware and verifier-gated lane:
 
 - `365_`: Recent symmetry-aware alignment, shared sparse codebooks, routed connector banks, tokenizer/vocabulary adaptation, quantization geometry, and verifier stop-policy references with concrete ablations, telemetry fields, and anti-loop rules.
 
+File `366_` extends the tokenizer/connector/quantization/harness lane:
+
+- `366_`: Recent tokenizer/vocab alignment, multimodal connector bottlenecks, quantization-inspired communication, and runnable benchmark harness references with concrete ablations, telemetry fields, and clone targets.
+
+File `367_` extends the multi-way shared-basis and calibrated-control lane:
+
+- `367_`: Multi-way alignment, shared sparse dictionary / crosscoder, stable router, and calibrated stop-policy references with a concrete GPA-initialized shared-hub experiment for the current positive-method loop.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.

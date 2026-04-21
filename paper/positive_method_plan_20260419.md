@@ -3795,3 +3795,33 @@ That means:
 - this result strengthens the paper's interpretability requirement: atom
   recovery, route accuracy, perturbation stability, bit histograms, stop
   reasons, help/harm, and over-refinement must travel together in the table
+
+## 2026-04-21 Route-Conditioned Hub Frontier Sweep
+
+I then decomposed the hub stack by router, frontier, and stop rule instead of
+keeping only one composite row. The sweep evaluates the same hub decoder under
+conditional-prior, feature, sticky, confidence, random, and oracle routing,
+with and without the current protected frontier and verifier stop heuristic.
+
+Result:
+
+- raw pairwise bridge: `0.7344`
+- oracle-routed hub base: `0.8229`
+- oracle-routed hub + current frontier: `0.8125`
+- oracle-routed hub + current frontier + current stop rule: `0.8073`
+- best non-oracle hub base: conditional prior / confidence at `0.6250`
+- best frontier gain anywhere in the sweep: only `+0.0104`
+- best stop gain anywhere in the sweep: `0.0000`
+
+That means:
+
+- route assignment is still a real headroom source, because oracle routing
+  lifts the hub base above raw pairwise
+- but the current frontier and stop heuristics are also mis-specified, because
+  they stay negative even under oracle routing
+- the next stack should not simply “add frontier + verifier” after improving
+  routing; it needs a route-aware protected set and a route-/class-calibrated
+  stop policy
+- this narrows the paper story further: shared hubs are plausible, but the
+  positive method depends on solving both route assignment and later
+  compression/repair control, not only the router

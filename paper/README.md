@@ -9,3 +9,7 @@
   matrix with missing competitor rows preserved.
 - `ablation_evidence_ladder_20260421.md` is the telemetry-driven stack
   decision table for toy positives, controls, and blockers.
+- `../results/query_pool_toy_20260421/hub_router_frontier_sweep_20260421.md`
+  is the route-conditioned hub interface sweep. It shows that oracle routing
+  helps the hub base, but the current frontier and stop heuristics do not
+  transfer additively.

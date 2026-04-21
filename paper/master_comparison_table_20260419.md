@@ -340,6 +340,11 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   over-refinement `0.4583`. The oracle-router control reaches `0.8229`, so the
   useful next blocker is route assignment and stop policy, not adding all
   components at once.
+- The route-conditioned hub sweep sharpens that diagnosis: oracle routing lifts
+  the hub base itself to `0.8229`, above raw pairwise `0.7344`, but the
+  current protected frontier falls to `0.8125` and frontier+stop falls again
+  to `0.8073`. The present frontier and stop heuristics are therefore
+  mis-specified, not merely downstream victims of route noise.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided

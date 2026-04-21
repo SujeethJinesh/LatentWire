@@ -13,6 +13,7 @@ active positive clues, and combinations worth testing next.
 | Raw listwise verifier | original and shuffled-label GSM30 selector | Position/default bias and weak verifier competence make raw multiple-choice selection unreliable. Keep pairwise/pointwise/process verification only. |
 | Confidence-only routing | routed projector toy confidence bank; router-stability confidence router | Target-head confidence routes to the wrong expert frequently (`0.3000` and `0.3688` toy accuracy). Confidence can be a halt or uncertainty signal, not the sole router. |
 | Fixed-depth refinement | iterative/refinement-stop toys | Two steps can lower MSE; four steps over-refine and harm accuracy. Never promote fixed latent repair without stop reasons and help/harm counters. |
+| Current frontier + stop heuristics | route-conditioned hub sweep over prior/feature/sticky/confidence/random/oracle routers | The present quant-error frontier and verifier stop heuristics are not reusable defaults. Oracle routing lifts the hub base, but frontier/stop still lower accuracy. Change the heuristic or training target before rerunning. |
 | Harness probes as competitor claims | LatentMAS Qwen2.5-0.5B `N=1` baseline/text-MAS probes | These verify wrapper plumbing only. Do not compare them against GSM70 method rows or cite them as fair LatentMAS results. |
 | Naive full-stack composition | hub + sticky router + protected mixed-bit frontier + verifier stop toy | Individually plausible pieces can interfere. The leak-free stack scores `0.5938` versus raw pairwise `0.7344`; only oracle routing beats raw at `0.8229`. Validate interfaces before stacking. |
 
@@ -24,11 +25,11 @@ active positive clues, and combinations worth testing next.
 | Shared feature dictionary / crosscoder | Toy shared dictionary beats raw residual transport; feature+atom stack beats isolated components | Promote only with real route-pool feature IDs, atom recovery, and patch/quant-error calibration. |
 | Route atoms / codebooks | Learned shared codebook beats raw ridge despite worse MSE | Require atom recovery, codebook usage/perplexity, dead-code rate, and task delta. |
 | Byte/span tokenizer interface | Token-ID reconstruction fails while byte-span reconstruction succeeds on stress split | Run on real tokenizer pairs and include remap coverage before any downstream bridge claim. |
-| Quant-error mixed-bit allocation | Recovers uniform-4-bit toy accuracy at lower achieved bpw | Stack with protected frontier selection; log bit histogram, outlier protection, help/harm, and false-prune. |
+| Quant-error mixed-bit allocation | Recovers uniform-4-bit toy accuracy at lower achieved bpw in isolated toys, but the current hub sweep shows at most `+0.0104` frontier gain and a negative oracle frontier delta | Promote only after the protected set is made route- and class-aware; log bit histogram, outlier protection, help/harm, and false-prune. |
 | Feature-routed projector bank | Toy feature routing reaches `0.9187` vs monolithic `0.8687`, close to oracle `0.9688` | Move into route-pool harness with random/confidence/oracle controls and matched bytes. |
 | Hub dictionary bridge | Shared hub toy reaches `1.0000` accuracy and atom recovery with fewer adapters than pairwise; random hub fails | Promote only with real route-pool feature IDs, atom recovery, dead-feature rate, and hub-versus-pairwise scaling. |
 | Sticky/feature router | Feature router reaches `0.9438`; sticky router keeps accuracy and raises perturb stability to `1.0000` | Promote only with route entropy, perturb stability, load-balance, random/confidence/oracle controls, and matched compute. |
-| Verifier/process stop rules | Verifier-harm stop preserves high toy accuracy and reduces harm relative to blind refinement | Promote with real repair trajectories, stop reason, halt precision, missed-help, and over-refinement telemetry. |
+| Verifier/process stop rules | Verifier-harm stop preserves high toy accuracy in isolated repair toys, but the current hub sweep shows stop gain `<= 0.0000` and over-refinement `0.45-0.59` | Promote only with route-/class-calibrated stop features, real repair trajectories, stop reason, halt precision, missed-help, and over-refinement telemetry. |
 | LatentMAS comparator | Wrapper exists; cached baseline/text-MAS `N=1` probes run; latent-MAS direct mode is runtime-blocked after MPS fallback | Fix latent-mode runtime and run bounded matched GSM/SVAMP baseline/text-MAS/latent-MAS before head-to-head claims. |
 | Stack oracle route ceiling | In the composition toy, oracle routing reaches `0.8229` versus raw pairwise `0.7344` | Use this to debug route assignment and stop policy; do not cite as a method row. |
 
@@ -41,8 +42,8 @@ an interaction control:
 2. Hub dictionary/shared feature basis instead of `O(n^2)` pairwise bridges.
 3. Sticky feature-routed projector bank instead of one monolithic bridge or
    confidence-only routing.
-4. Quant-error protected mixed-bit frontier instead of flat precision.
-5. Process/verifier stop rule instead of fixed-depth repair.
+4. Route- and class-conditioned protected frontier instead of the current quant-error heuristic.
+5. Route-calibrated process/verifier stop rule instead of the current generic stop heuristic.
 6. Matched comparison against target-alone, target self-repair, text-to-text,
    C2C, LatentMAS, and same-model compression controls.
 
@@ -61,3 +62,8 @@ Every promoted run should emit `example_id`, `method`, `source_model`,
 for stack decisions. It keeps toy-positive components, controls, and blockers
 in one table so the next real route-pool run must justify each included
 component against its logged promotion gate.
+
+`results/query_pool_toy_20260421/hub_router_frontier_sweep_20260421.md` is the
+current interface sweep for that stack. Oracle routing lifts the hub base
+above raw pairwise, but the current frontier and stop heuristics still hurt,
+so both route assignment and later heuristics need redesign.
