@@ -3242,3 +3242,60 @@ Next execution ladder:
 5. Keep the target ICLR narrative as a positive method stack, not a single
    adapter trick: route generation + process gate + target repair + shared
    feature/atom interface + matched-budget competitor table.
+
+## 2026-04-21 Step-Localized Verifier, Tokenizer Interface, And Competitor Matrix
+
+Executed next:
+
+- Added `scripts/analyze_step_localized_verifier.py` to replay scalar metadata,
+  critique-plus-repair, and step-localized repair gates over the held-out
+  process-repair telemetry without new model calls.
+- Added `references/353_tokenizer_byte_interface_refs.md` for byte-level
+  bridges, cross-tokenizer distillation, vocabulary remapping, time-warped
+  alignment, adaptive hypertokens, and retokenization controls.
+- Added `references/354_competitor_next_runnable_matrix.md` to rank the next
+  direct competitor rows: `C2C` GSM70/SVAMP70 first, `KVComm` GSM70 second,
+  and `KVPress` same-model compression controls alongside them.
+- Added toy `verifier_guided_atom_pruning`, comparing no pruning, scalar
+  pruning, step-error-localized pruning, verifier-guided frontier pruning, and
+  atom-oracle pruning with missed-help, false-prune, atom-recovery, byte, and
+  compute proxies.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| GSM70 scalar metadata repair gate | accuracy `0.2000`, CI `[0.1143, 0.3000]`, repair saved `0.3714`, extra repair chars `641.2`, missed help `0` | Best current GSM repair-budget saver; step localization is not yet stronger on GSM. |
+| SVAMP70 step-localized repair gate | accuracy `0.5429`, CI `[0.4286, 0.6571]`, repair saved `0.2286`, extra repair chars `661.1`, missed help `0` | Step localization is safe on SVAMP and matches the process-gate saving. |
+| SVAMP70 aggressive scalar metadata gate | accuracy `0.5286`, repair saved `0.2714`, missed help `1` | Scalar gates need per-task calibration; more saved repair calls can silently lose accuracy. |
+| Verifier-guided atom pruning toy | no-pruning `0.8047`; scalar pruning `0.5234`; step-localized pruning `0.9063`; verifier-guided frontier pruning `0.9609` at about half bytes/compute | Localized verifier signals can become a positive method component when used to prune harmful atoms rather than only rerank routes. |
+| Tokenizer/byte reference sweep | BLT, byte-interface distillation, DWA-KD, CTPD, TokAlign, zip2zip, Length-MAX, FOCUS | The next tokenizer lane should be tested as an interface control: byte/patch bridge, explicit vocab remap, time-warped span alignment, adaptive compression, and length-optimal retokenization. |
+| Competitor runnable matrix | C2C GSM70/SVAMP70, KVComm GSM70, KVPress none/expected-attention controls | The next benchmark batch should separate direct cross-model communication from same-model cache/prompt compression. |
+
+Updated read:
+
+The paper should add these things additively, but only as controlled method
+components. The current strongest real-model method remains strict route
+selection plus process repair, now with cheaper test-before-repair gates. The
+new positive toy says verifier localization can be more than a budget gate if
+it controls the communication frontier itself. The tokenizer references point
+to an upstream alignment lane that is different from adapter and rotational
+alignment work, but it needs a byte/token stress audit before it becomes a
+large real-model run.
+
+Next execution ladder:
+
+1. Run the competitor batch from `references/354_competitor_next_runnable_matrix.md`:
+   `C2C` on GSM70/SVAMP70, `KVComm` on GSM70, and `KVPress` none versus
+   expected-attention on GSM70/SVAMP70.
+2. Promote verifier-guided frontier pruning from toy to route/atom telemetry:
+   atom recovery, missed-help, false-prune, bytes, compute, and task delta.
+3. Add a generated-test or learned step verifier so GSM can use more than the
+   scalar metadata gate while keeping SVAMP missed-help at zero.
+4. Add tokenizer-interface controls before training a new bridge: byte/patch
+   bridge, TokAlign-style remap, Soft-DTW/span alignment, adaptive hypertokens,
+   and length-optimal retokenization.
+5. Keep the ICLR claim stack narrow: route generation + process repair +
+   test-before-repair + verifier-guided frontier control + feature/atom
+   interface, all reported against `C2C`, `KVComm`, `KVPress`, text-to-text,
+   target self-repair, and prompt-compression controls.

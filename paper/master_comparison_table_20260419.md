@@ -47,6 +47,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `gsm8k_eval_70` | selected route, no repair | `0.1286` | `-` | held-out strict selector control on the same route pool; no target-side repair |
 | `gsm8k_eval_70` | target self-repair | `0.1714` | `-` | same repair prompt and target decode budget applied to target-alone candidate |
 | `gsm8k_eval_70` | strict selector + process repair | `0.2000` | `-` | held-out repair over stochastic route-pool salts `0/1/2`; pre-repair `0.1286`, help `0.0714`, harm `0.0000`, oracle `0.1571`; adds target-side repair compute |
+| `gsm8k_eval_70` | strict selector + scalar-metadata repair gate | `0.2000` | `-` | replay-only efficiency row; CI `[0.1143, 0.3000]`, saves `37.1%` repair calls, avg extra repair chars `641.2`, missed help `0` |
 | `gsm8k_eval_70` | `C2C` | `0.1286` | `-` | strongest external baseline so far |
 | `gsm8k_eval_70` | lifted `KVComm` replay | `0.0000` | `-` | compatibility-lifted heterogeneous replay |
 
@@ -70,6 +71,7 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
 | `svamp_eval_70` | selected route, no repair | `0.3571` | `-` | held-out strict selector control on the same route pool; no target-side repair |
 | `svamp_eval_70` | target self-repair | `0.5000` | `-` | same repair prompt and target decode budget applied to target-alone candidate |
 | `svamp_eval_70` | strict selector + process repair | `0.5429` | `-` | held-out repair over stochastic route-pool salts `0/1/2`; pre-repair `0.3571`, help `0.1857`, harm `0.0000`, oracle `0.5286`; adds target-side repair compute |
+| `svamp_eval_70` | strict selector + step-localized repair gate | `0.5429` | `-` | replay-only efficiency row; CI `[0.4286, 0.6571]`, saves `22.9%` repair calls, avg extra repair chars `661.1`, missed help `0` |
 | `svamp_eval_70` | `C2C` | `0.4429` | `-` | strongest external baseline so far |
 
 ## Current Read
@@ -145,6 +147,12 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   versus `738.0` for format-only; SVAMP70 `process_gate` has CI
   `[0.4286, 0.6571]` and mean extra repair prompt chars `661.1` versus `713.9`
   for format-delta.
+- Step-localized verifier replay adds a stricter budget read: GSM70 is best
+  served by scalar metadata today (`0.2000`, CI `[0.1143, 0.3000]`, saves
+  `37.1%` repair calls), while SVAMP70 is safely served by a localized step
+  gate (`0.5429`, CI `[0.4286, 0.6571]`, saves `22.9%`). Aggressive scalar
+  gating on SVAMP saves more calls but drops accuracy to `0.5286`, so gates
+  need per-task calibration.
 - The shared-feature dictionary toy gives the strongest new additive design
   clue: raw residual transport reaches `0.3646`, separate dictionaries reach
   `0.4167`, a shared dictionary/crosscoder reaches `0.5417`, and the oracle is
@@ -158,6 +166,12 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   feature only drops to `0.4167`, route atom only reaches `0.5833`, but the
   stacked feature+atom interface reaches `0.8542`. This supports testing
   interaction stacks rather than rejecting components from isolated ablations.
+- The verifier-guided atom pruning toy gives a second stack component:
+  no-pruning reaches `0.8047`, scalar pruning collapses to `0.5234`,
+  step-localized pruning reaches `0.9063`, and verifier-guided frontier
+  pruning reaches `0.9609` at roughly half the byte/compute proxy. This is
+  still toy-only, but it is a concrete candidate for route/atom frontier
+  control.
 - A deterministic LLMLingua-style prompt-compression control is now available:
   it preserves all numeric spans on GSM70/SVAMP70 and saves an estimated
   `123.5` / `71.5` bytes on average, but it is a budget/preservation diagnostic
@@ -174,6 +188,12 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   direct communication baselines should be normalized against `C2C`, `KVComm`,
   and `LatentMAS`, while prompt-compression claims need a separate LLMLingua
   control with fixed prompt and answer budgets.
+- The next runnable competitor batch is now fixed: run `C2C` on
+  GSM70/SVAMP70, `KVComm` on GSM70, and `KVPress` none versus
+  expected-attention on GSM70/SVAMP70 before adding broader watchlist methods.
+- Tokenizer-interface references add a new upstream ablation lane: byte/patch
+  bridge, explicit vocabulary remap, time-warped span alignment, adaptive
+  hypertokens, and length-optimal retokenization controls.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided
