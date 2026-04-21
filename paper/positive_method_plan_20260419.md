@@ -84,6 +84,40 @@ cleanest additive order is now:
 5. route/repair only after the shared basis is stable and repair shows nonzero
    accepted help
 
+## Status After Quotient + GPA Sparse Dictionary Toy
+
+The composed low-shot follow-up is the strongest shared-basis result so far:
+
+- `quotient_gpa_sparse_dictionary` is now the best non-oracle method at both
+  `1` and `2` shots/class on the held-out-family toy, reaching `0.0568` and
+  `0.0576` MSE
+- that beats direct held-out-family few-shot fitting at the same points
+  (`0.1003`, `0.0638`), and also beats the isolated `quotient_match_after_fix`
+  and `quotient_gpa_canonical` branches
+- the method preserves exact head recovery in the same toy
+  (`head_match_accuracy = 1.0000`)
+- but the boundary is still real: by `4` shots/class, direct held-out-family
+  fitting retakes the lead (`0.0179` vs `0.0555`)
+- the repair gate is still inactive, with accept/help/harm all `0.0000`
+
+This is the first clean sign that the symmetry fix and the shared sparse basis
+are **actually additive**. That does not make the paper ready, but it does
+change the method-discovery priority. The new order should be:
+
+1. quotient-aware matching
+2. GPA canonicalization
+3. sparse shared dictionary
+4. tokenizer or byte-level interface control when mismatch is present
+5. route/repair only after the first four pieces remain stable under stress
+
+So the next serious branch should no longer ask whether symmetry or sparse
+bases help individually. It should ask whether the composed lane survives:
+
+- tokenizer/interface mismatch
+- route-pool feature ids
+- matched competitor contracts
+- and one real held-out benchmark slice
+
 ## Best Next Method Lane
 
 Subagent consensus was tight: the only credible internal positive-method lane

@@ -213,6 +213,20 @@ connector ideas:
   diffusion-language, and bridge-architecture references for lateral ablation
   ideas.
 
+Files `383_` through `385_` extend the same loop around communication-aware
+compression, frozen benchmark contracts, and multimodal latent-repair
+architectures:
+
+- `383_`: rate-distortion, mixed-bit allocation, KV compression, and
+  communication/compression math references for canonicalize-then-compress and
+  vector-quantized bridge ablations.
+- `384_`: latest competitor and harness-contract references, including exact
+  matched rows, metrics, and caveats for C2C, KVComm, LatentMAS, Q-KVComm,
+  `lm-evaluation-harness`, and OpenCompass.
+- `385_`: multimodal connector, latent-token, diffusion-language, and
+  iterative latent-repair references for query-conditioned bridge and
+  inspectable repair-loop ablations.
+
 File `163_` adds a newer cross-model KV reuse system angle:
 
 - `163_`: activated-LoRA cross-model KV reuse as a recent systems reference for combining reusable transport paths with lightweight adaptation rather than treating transport as a fully fixed map.

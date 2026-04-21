@@ -180,5 +180,26 @@
     "path": "references/382_multimodal_repair_connector_recent_refs.md",
     "status": "local_memo",
     "reason": "Recent multimodal connector, latent repair, iterative communication, token-free reasoning, diffusion-language, and bridge-architecture memo with concrete LatentWire ablations."
+  },
+  {
+    "num": 383,
+    "slug": "quantization_compression_connector_recent_refs",
+    "path": "references/383_quantization_compression_connector_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent rate-distortion, mixed-bit, KV-compression, and communication/compression memo with concrete canonicalize-then-compress and vector-quantized bridge ablations."
+  },
+  {
+    "num": 384,
+    "slug": "competitor_contract_latest_refs",
+    "path": "references/384_competitor_contract_latest_refs.md",
+    "status": "local_memo",
+    "reason": "Latest competitor and benchmark-contract memo covering matched rows, metrics, and evaluation caveats for the benchmark track."
+  },
+  {
+    "num": 385,
+    "slug": "multimodal_latent_repair_recent_refs",
+    "path": "references/385_multimodal_latent_repair_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent multimodal connector, latent-token, diffusion-language, and iterative latent-repair memo with concrete LatentWire bridge and repair ablations."
   }
 ]
