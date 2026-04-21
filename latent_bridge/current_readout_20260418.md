@@ -2704,3 +2704,32 @@ Interpretation:
 - the next interface ablation should use target-query-conditioned query-pool
   slots or head-wise route atoms, because simple top-k reshaping does not add
   semantic selectivity
+
+And a deterministic query-pool transport diagnostic:
+
+> I added `query_pool_transport` as a runtime position-selection metric. It
+> keeps the cache shape fixed, partitions the prefix into attention-scored
+> bins, pools translated K/V inside each bin, and writes one pooled
+> representative slot per bin. This gives us query-pool-style telemetry without
+> changing `PrefixState`, prefix length, or generation masks.
+>
+> On the same `dynalign_prefdist` checkpoint:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+> - controlled paired delta versus target-alone: `+0.000000`
+> - telemetry now includes pool slot count, pooled-bin entropy, pooled-bin
+>   top weight, bin span, and full representative positions for small runs
+
+Interpretation:
+
+- fixed pooled representative slots are safer to test than true cache
+  compression, but they are not enough for a positive method
+- the result matches attention-stratified coverage balancing: interpretable
+  route coverage improves, but exact answer performance still ties the target
+  floor and loses the best GSM5 smoke
+- the next real query-pool attempt should be learned and target-query
+  conditioned inside transport/fusion, or replaced by head-wise route atoms or
+  byte/tokenizer-independent probes
+- the new quantization reference sweep suggests diagonal scaling, orthogonal
+  preconditioning, asymmetric K/V allocation, product-quantized route atoms,
+  and low-rank sketch bridges as the highest-value additive ablations

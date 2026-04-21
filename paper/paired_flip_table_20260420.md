@@ -26,6 +26,7 @@
 | dynalign_dwainteract_module_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | dynalign_prefdist_module_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | dynalign_prefdist_attention_stratified vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
+| dynalign_prefdist_query_pool_transport vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | readout_adapter vs target_alone_control | 0.0000 | 0.1000 | -0.1000 | 0 | 1 | [-0.3000, +0.0000] | 1.0000 |
 | dynalign_interact_module_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | tokenbasis_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |

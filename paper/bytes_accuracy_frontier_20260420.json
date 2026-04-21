@@ -224,6 +224,14 @@
     "split": "gsm8k_eval_10_controlled"
   },
   {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
+    "family": "pooled-interface ablation",
+    "method": "dynamic-aligned preference-distilled query-pool transport",
+    "notes": "same dynalign preference-distilled checkpoint with attention-pooled representative slots; cache shape preserved for traceability",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
     "accuracy": 0.0,
     "avg_bytes": 681668.4,
     "family": "stronger-teacher bridge",
@@ -421,6 +429,14 @@
     "family": "selector ablation",
     "method": "dynamic-aligned preference-distilled attention-stratified selector",
     "notes": "four-bin attention-stratified selector over the same preference-distilled checkpoint; tests whether broader prompt coverage fixes selector collapse",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "pooled-interface ablation",
+    "method": "dynamic-aligned preference-distilled query-pool transport",
+    "notes": "attention-pooled representative slots over the same preference-distilled checkpoint; tests a fixed query-pool-like interface without cache compression",
     "split": "gsm8k_5_controlled_smoke"
   },
   {

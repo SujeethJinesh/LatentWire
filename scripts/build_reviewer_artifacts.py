@@ -489,6 +489,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_eval_10_controlled",
+            method="dynamic-aligned preference-distilled query-pool transport",
+            family="pooled-interface ablation",
+            meta_path="results/query_pool_transport_20260420/qwen_gsm10_dynalign_prefdist_query_pool_transport_cal16_chat.jsonl.meta.json",
+            notes="same dynalign preference-distilled checkpoint with attention-pooled representative slots; cache shape preserved for traceability",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_10_controlled",
             method="readout adapter",
             family="stronger-teacher bridge",
             meta_path="results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl.meta.json",
@@ -710,6 +719,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
             family="selector ablation",
             meta_path="results/attention_stratified_selector_20260420/qwen_gsm5_dynalign_prefdist_attention_stratified_cal16_chat.jsonl.meta.json",
             notes="four-bin attention-stratified selector over the same preference-distilled checkpoint; tests whether broader prompt coverage fixes selector collapse",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
+            method="dynamic-aligned preference-distilled query-pool transport",
+            family="pooled-interface ablation",
+            meta_path="results/query_pool_transport_20260420/qwen_gsm5_dynalign_prefdist_query_pool_transport_cal16_chat.jsonl.meta.json",
+            notes="attention-pooled representative slots over the same preference-distilled checkpoint; tests a fixed query-pool-like interface without cache compression",
         )
     )
     rows.append(
@@ -999,6 +1017,14 @@ def _build_paired_rows() -> list[dict[str, Any]]:
             "baseline_label": "target_alone_control",
         },
         {
+            "candidate": "results/query_pool_transport_20260420/qwen_gsm10_dynalign_prefdist_query_pool_transport_cal16_chat.jsonl",
+            "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
+            "candidate_method": "rotalign_kv_gate_0.10",
+            "baseline_method": "target_alone",
+            "candidate_label": "dynalign_prefdist_query_pool_transport",
+            "baseline_label": "target_alone_control",
+        },
+        {
             "candidate": "results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl",
             "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
             "candidate_method": "rotalign_kv_gate_0.10",
@@ -1160,6 +1186,12 @@ def _build_layer_localization_rows() -> list[dict[str, Any]]:
             "notes": "four-bin attention-stratified selector over the same preference-distilled checkpoint on controlled gsm8k_eval_10",
         },
         {
+            "method": "dynalign_prefdist_query_pool_transport",
+            "family": "pooled-interface ablation",
+            "jsonl": "results/query_pool_transport_20260420/qwen_gsm10_dynalign_prefdist_query_pool_transport_cal16_chat.jsonl",
+            "notes": "attention-pooled representative slots over the same preference-distilled checkpoint on controlled gsm8k_eval_10",
+        },
+        {
             "method": "readout_adapter",
             "family": "stronger-teacher bridge",
             "jsonl": "results/bridge_ridge_qk_readout_adapter_20260420/qwen_gsm10_grouped_subspace_transport_w010_r4_readout_adapter_cal64_chat.jsonl",
@@ -1316,6 +1348,12 @@ def _build_selector_collapse_rows() -> list[dict[str, Any]]:
             "notes": "four-bin attention-stratified selector coverage ablation",
         },
         {
+            "method": "dynalign_prefdist_query_pool_transport",
+            "family": "pooled-interface ablation",
+            "jsonl": "results/query_pool_transport_20260420/qwen_gsm10_dynalign_prefdist_query_pool_transport_cal16_chat.jsonl",
+            "notes": "attention-pooled representative-slot interface with fixed cache length",
+        },
+        {
             "method": "dynalign_ctxonly_module_replace",
             "family": "token-remapped attention bridge",
             "jsonl": "results/bridge_ridge_qk_dynalign_ctxonly_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_ctxonly_module_replace_cal16_chat.jsonl",
@@ -1352,6 +1390,9 @@ def _build_selector_collapse_rows() -> list[dict[str, Any]]:
         score_entropies: list[float] = []
         score_gaps: list[float] = []
         score_tops: list[float] = []
+        query_pool_entropies: list[float] = []
+        query_pool_top_weights: list[float] = []
+        query_pool_bin_spans: list[float] = []
         selector_layers: list[float] = []
         full_position_traces = 0
         total_position_traces = 0
@@ -1377,6 +1418,12 @@ def _build_selector_collapse_rows() -> list[dict[str, Any]]:
                     score_gaps.append(float(trace["score_gap"]))
                 if "score_top" in trace:
                     score_tops.append(float(trace["score_top"]))
+                if "query_pool_weight_entropy_mean" in trace:
+                    query_pool_entropies.append(float(trace["query_pool_weight_entropy_mean"]))
+                if "query_pool_top_weight_mean" in trace:
+                    query_pool_top_weights.append(float(trace["query_pool_top_weight_mean"]))
+                if "query_pool_mean_bin_span" in trace:
+                    query_pool_bin_spans.append(float(trace["query_pool_mean_bin_span"]))
 
                 total_position_traces += 1
                 selected_values = trace.get("selected_positions_full")
@@ -1429,6 +1476,9 @@ def _build_selector_collapse_rows() -> list[dict[str, Any]]:
                 "mean_score_entropy": _safe_mean(score_entropies),
                 "mean_score_gap": _safe_mean(score_gaps),
                 "mean_score_top": _safe_mean(score_tops),
+                "mean_query_pool_weight_entropy": _safe_mean(query_pool_entropies),
+                "mean_query_pool_top_weight": _safe_mean(query_pool_top_weights),
+                "mean_query_pool_bin_span": _safe_mean(query_pool_bin_spans),
                 "route_collapse_score": mean_jaccard + max(0.0, 1.0 - mean_unique),
                 "full_position_trace_fraction": float(full_position_traces / max(total_position_traces, 1)),
             }
@@ -1442,12 +1492,12 @@ def _write_selector_collapse_markdown(rows: list[dict[str, Any]], path: pathlib.
         "",
         "Telemetry source: `selector_trace` selected-position overlap from controlled `gsm8k_eval_10` runs. Higher collapse means layers repeatedly transmit the same prompt positions, which is a route-interface warning signal.",
         "",
-        "| Method | Acc | Route collapse | Layer Jaccard | Unique position frac | Prefix frac | Suffix frac | Full trace frac | Mean score entropy | Notes |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---|",
+        "| Method | Acc | Route collapse | Layer Jaccard | Unique position frac | Prefix frac | Suffix frac | Full trace frac | Mean score entropy | Pool entropy | Pool top weight | Notes |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for row in sorted(rows, key=lambda item: (-float(item["route_collapse_score"]), str(item["method"]))):
         lines.append(
-            "| {method} | {acc:.4f} | {collapse:.4f} | {jaccard:.4f} | {unique:.4f} | {prefix:.4f} | {suffix:.4f} | {full_trace:.4f} | {entropy:.4f} | {notes} |".format(
+            "| {method} | {acc:.4f} | {collapse:.4f} | {jaccard:.4f} | {unique:.4f} | {prefix:.4f} | {suffix:.4f} | {full_trace:.4f} | {entropy:.4f} | {pool_entropy:.4f} | {pool_top:.4f} | {notes} |".format(
                 method=row["method"],
                 acc=float(row["accuracy"]),
                 collapse=float(row["route_collapse_score"]),
@@ -1457,13 +1507,15 @@ def _write_selector_collapse_markdown(rows: list[dict[str, Any]], path: pathlib.
                 suffix=float(row["mean_suffix_position_fraction"]),
                 full_trace=float(row["full_position_trace_fraction"]),
                 entropy=float(row["mean_score_entropy"]),
+                pool_entropy=float(row["mean_query_pool_weight_entropy"]),
+                pool_top=float(row["mean_query_pool_top_weight"]),
                 notes=row["notes"],
             )
         )
     lines.extend(
         [
             "",
-            "Current interpretation: the older bridge teachers share the same truncated selector pattern, while the attention-stratified ablation broadens prompt-region coverage but still ties target-alone on controlled GSM10 and loses the GSM5 smoke. Naive coverage balancing is not enough; the next route ablation needs target-query-conditioned slots or head-wise atoms, not only broader top-k position selection.",
+            "Current interpretation: the older bridge teachers share the same truncated selector pattern, while the attention-stratified and fixed query-pool-style ablations broaden prompt-region coverage but still tie target-alone on controlled GSM10 and lose the GSM5 smoke. Naive coverage balancing and deterministic pooled representative slots are not enough; the next route ablation needs learned target-query-conditioned slots, head-wise atoms, or tokenizer-independent byte probes.",
         ]
     )
     path.write_text("\n".join(lines) + "\n")

@@ -2530,6 +2530,10 @@ def _position_selection_scores(
         if position_scores is None:
             raise ValueError("attention_stratified position selection requires explicit position scores")
         return position_scores.float()
+    if position_selection_metric == "query_pool_transport":
+        if position_scores is None:
+            raise ValueError("query_pool_transport position selection requires explicit position scores")
+        return position_scores.float()
     if position_selection_metric == "attention_disagreement":
         if position_scores is None:
             raise ValueError("attention_disagreement position selection requires explicit position scores")
@@ -2625,6 +2629,82 @@ def _stratified_topk_indices(scores: torch.Tensor, keep: int, *, bins: int = 4) 
     indices = torch.cat(selected)
     order = scores[indices].sort(descending=True).indices
     return indices[order]
+
+
+def _apply_query_pool_transport_selection(
+    K_t: torch.Tensor,
+    V_t: torch.Tensor,
+    K_hat: torch.Tensor,
+    V_hat: torch.Tensor,
+    *,
+    protocol: str,
+    scores: torch.Tensor,
+    pool_count: int,
+    return_trace: bool = False,
+) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, dict[str, Any]]:
+    seq_len = K_hat.shape[2]
+    pool_count = max(1, min(int(pool_count), seq_len))
+    scores = scores.float().to(device=K_hat.device).view(-1)
+    if scores.numel() != seq_len:
+        raise ValueError(
+            f"query_pool_transport scores must have {seq_len} positions, got {scores.numel()}"
+        )
+    score_weights = scores.clamp_min(0.0)
+    if float(score_weights.sum().abs().item()) < 1e-8:
+        score_weights = torch.ones_like(score_weights)
+
+    if protocol == "translated_only":
+        selected_k = torch.zeros_like(K_hat)
+        selected_v = torch.zeros_like(V_hat)
+    else:
+        selected_k = K_t.clone()
+        selected_v = V_t.clone()
+
+    boundaries = torch.linspace(0, seq_len, pool_count + 1, device="cpu").round().to(torch.long).tolist()
+    representatives: list[int] = []
+    entropies: list[float] = []
+    top_weights: list[float] = []
+    spans: list[int] = []
+    for bin_idx in range(pool_count):
+        start = int(boundaries[bin_idx])
+        stop = int(boundaries[bin_idx + 1])
+        if stop <= start:
+            continue
+        local_scores = score_weights[start:stop]
+        if float(local_scores.sum().abs().item()) < 1e-8:
+            local_weights = torch.ones_like(local_scores) / float(local_scores.numel())
+        else:
+            local_weights = local_scores / local_scores.sum().clamp_min(1e-8)
+        pooled_k = (K_hat[:, :, start:stop, :].float() * local_weights.view(1, 1, -1, 1)).sum(
+            dim=2,
+            keepdim=True,
+        )
+        pooled_v = (V_hat[:, :, start:stop, :].float() * local_weights.view(1, 1, -1, 1)).sum(
+            dim=2,
+            keepdim=True,
+        )
+        representative = start + int(torch.argmax(local_scores).item())
+        representatives.append(representative)
+        selected_k[:, :, representative : representative + 1, :] = pooled_k.to(dtype=selected_k.dtype)
+        selected_v[:, :, representative : representative + 1, :] = pooled_v.to(dtype=selected_v.dtype)
+        entropies.append(float((-(local_weights * local_weights.clamp_min(1e-8).log()).sum()).item()))
+        top_weights.append(float(local_weights.max().item()))
+        spans.append(stop - start)
+
+    keep_indices = torch.tensor(representatives, dtype=torch.long, device=K_hat.device)
+    trace = _selector_trace(scores, keep_indices, seq_len, pool_count)
+    trace.update(
+        {
+            "selection_policy": "query_pool_transport_bins",
+            "query_pool_slots": int(len(representatives)),
+            "query_pool_requested_slots": int(pool_count),
+            "query_pool_slot_fraction": float(len(representatives) / max(seq_len, 1)),
+            "query_pool_weight_entropy_mean": float(sum(entropies) / len(entropies)) if entropies else 0.0,
+            "query_pool_top_weight_mean": float(sum(top_weights) / len(top_weights)) if top_weights else 0.0,
+            "query_pool_mean_bin_span": float(sum(spans) / len(spans)) if spans else 0.0,
+        }
+    )
+    return (selected_k, selected_v, trace) if return_trace else (selected_k, selected_v)
 
 
 def _selector_trace(
@@ -2823,6 +2903,17 @@ def _apply_position_selection(
         position_selection_metric=position_selection_metric,
         position_scores=position_scores,
     )
+    if position_selection_metric == "query_pool_transport":
+        return _apply_query_pool_transport_selection(
+            K_t,
+            V_t,
+            K_hat,
+            V_hat,
+            protocol=protocol,
+            scores=scores,
+            pool_count=keep,
+            return_trace=return_trace,
+        )
     if position_selection_metric in {"attention_stratified", "attention_disagreement_stratified"}:
         keep_indices = _stratified_topk_indices(scores, keep, bins=4)
     else:
@@ -2947,6 +3038,7 @@ def _build_rotalign_prefix_state(
         in {
             "attention",
             "attention_stratified",
+            "query_pool_transport",
             "attention_disagreement",
             "attention_disagreement_stratified",
             "attention_shuffled",
@@ -4574,6 +4666,7 @@ def parse_args() -> argparse.Namespace:
             "recency",
             "attention",
             "attention_stratified",
+            "query_pool_transport",
             "attention_disagreement",
             "attention_disagreement_stratified",
             "attention_shuffled",
@@ -4849,6 +4942,7 @@ def main() -> None:
     attention_selector_metrics = {
         "attention",
         "attention_stratified",
+        "query_pool_transport",
         "attention_disagreement",
         "attention_disagreement_stratified",
         "attention_shuffled",

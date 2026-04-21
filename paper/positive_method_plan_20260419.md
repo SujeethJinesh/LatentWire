@@ -1848,3 +1848,47 @@ Interpretation:
   query-pool transport next, with byte-probe diagnostics alongside it, and
   defer full `headwise_route_atom` until after we have a safer query-slot
   interface
+
+## 2026-04-20 Query-Pool Transport And Quantization Inspiration
+
+I implemented `query_pool_transport` as the lowest-risk version of the
+query-pool idea: it keeps the Hugging Face cache length and `PrefixState`
+contract unchanged, bins prefix positions, attention-pools translated K/V
+inside each bin, and writes one pooled representative slot per bin. This is not
+full cache compression or a learned Q-Former; it is a deterministic interface
+diagnostic that tests whether pooled slots are less brittle than direct top-k
+position replacement.
+
+Results on the same `dynalign_prefdist` checkpoint:
+
+- `gsm8k_5`: `0.2000` at `686,026.6` average bytes
+- controlled `gsm8k_eval_10`: `0.1000` at `681,668.4` average bytes
+- paired controlled delta versus target-alone: `+0.0000`
+- trace now logs `query_pool_slots`, `query_pool_weight_entropy_mean`,
+  `query_pool_top_weight_mean`, `query_pool_mean_bin_span`, and full
+  representative positions for small runs
+
+Interpretation:
+
+- deterministic pooling is interpretable and preserves cache invariants, but
+  it is not a positive method
+- it ties the controlled target floor and loses the `dynalign_prefdist` smoke,
+  matching the attention-stratified diagnostic pattern
+- the next query-pool branch must be learned or query-conditioned in the
+  transport/fusion path, not only a fixed pooling wrapper around the same
+  selector
+
+The new quantization/compression reference sweep points to three concrete
+method branches worth testing next:
+
+- SmoothQuant/AWQ-style bridge preconditioning: migrate outlier mass with
+  diagonal scaling and allocate capacity to task-critical channels
+- QuaRot/SpinQuant-style gauge fixing: use orthogonal or Hadamard rotations to
+  reduce coordinate outliers before bridge fitting
+- EXL2/KV-cache-style heterogeneous budgeting: allocate bits or route atoms by
+  layer/head sensitivity, not uniformly across the bridge
+
+The paper should add these as planned ablations only if they come with the
+interpretability columns now supported by the artifacts: per-layer error,
+route/slot entropy, dead atom rate, paired flips, bytes, and tokenizer-family
+failure modes.

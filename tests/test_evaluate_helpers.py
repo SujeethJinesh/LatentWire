@@ -471,6 +471,30 @@ def test_evaluate_parse_args_accepts_stratified_position_metric(monkeypatch) -> 
     assert args.position_selection_metric == "attention_stratified"
 
 
+def test_evaluate_parse_args_accepts_query_pool_transport_metric(monkeypatch) -> None:
+    monkeypatch.setattr(
+        evaluate.sys,
+        "argv",
+        [
+            "evaluate.py",
+            "--translator",
+            "translator.pt",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--eval-file",
+            "eval.jsonl",
+            "--position-selection-metric",
+            "query_pool_transport",
+        ],
+    )
+
+    args = evaluate.parse_args()
+
+    assert args.position_selection_metric == "query_pool_transport"
+
+
 def test_evaluate_parse_args_accepts_attention_qk_bank_transport_metrics(monkeypatch) -> None:
     monkeypatch.setattr(
         evaluate.sys,
@@ -521,6 +545,36 @@ def test_evaluate_parse_args_accepts_attention_qk_fidelity_tokenwise_gate(monkey
 
     args = evaluate.parse_args()
     assert args.runtime_head_gate_metric == "attention_qk_fidelity_tokenwise"
+
+
+def test_query_pool_transport_pools_bins_without_changing_cache_shape() -> None:
+    K_t = torch.zeros(1, 1, 4, 1)
+    V_t = torch.zeros(1, 1, 4, 1)
+    K_hat = torch.tensor([[[[1.0], [3.0], [10.0], [14.0]]]])
+    V_hat = torch.tensor([[[[101.0], [103.0], [110.0], [114.0]]]])
+    scores = torch.tensor([1.0, 3.0, 2.0, 6.0])
+
+    selected_k, selected_v, trace = evaluate._apply_position_selection(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        protocol="translated_only",
+        kv_transport="both",
+        position_selection_ratio=0.5,
+        position_selection_metric="query_pool_transport",
+        position_scores=scores,
+        return_trace=True,
+    )
+
+    assert selected_k.shape == K_hat.shape
+    assert selected_v.shape == V_hat.shape
+    assert selected_k[0, 0, :, 0].tolist() == pytest.approx([0.0, 2.5, 0.0, 13.0])
+    assert selected_v[0, 0, :, 0].tolist() == pytest.approx([0.0, 102.5, 0.0, 113.0])
+    assert trace["selection_policy"] == "query_pool_transport_bins"
+    assert trace["selected_positions_full"] == [1, 3]
+    assert trace["query_pool_slots"] == 2
+    assert trace["query_pool_mean_bin_span"] == pytest.approx(2.0)
 
 
 def test_evaluate_parse_args_accepts_layer_knockout(monkeypatch) -> None:
