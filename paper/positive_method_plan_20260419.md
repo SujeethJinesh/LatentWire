@@ -318,6 +318,38 @@ So the paper-critical order is now:
 3. connect those two with a residual/canonicalization upgrade, not with a
    first-pass byte-only or SAE-only pivot
 
+## Status After Expanded Dynalign Sweep
+
+The narrowed follow-up over the strongest existing teacher-side variants closes
+that branch enough to change the next action:
+
+- `dynalign_module_replace = 0.09375`
+- `tokenbasis_replace = 0.09375`
+- `dynalign_dwakd_module_replace = 0.06250`
+- `dynalign_prefdist_module_replace = 0.03125`
+- `dynalign_spanalm_module_replace = 0.03125`
+
+That means:
+
+1. the current real same-pair ceiling for this family is still `0.09375`
+2. token-grounded outputs are as good as the plain dynalign teacher on this
+   contract, but not better
+3. richer dynalign-teacher supervision does **not** improve the exact frozen
+   contract and often regresses
+
+So the next real benchmark branch should no longer be “try another dynalign
+teacher.” It should be:
+
+1. `dynalign_module_replace + low-rank residual correction`
+2. or `tokenbasis_replace + low-rank residual correction`
+3. in parallel on the toy side, `adaptive canonicalization +
+   gauge-invariant matching`
+
+If neither residual-correction branch beats `0.09375` on the frozen contract,
+then the paper direction should treat the current same-pair alignment family as
+saturated and move the positive-method burden back to the shared-basis /
+low-shot lane.
+
 ## Best Next Method Lane
 
 Subagent consensus was tight: the only credible internal positive-method lane
