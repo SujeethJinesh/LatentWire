@@ -345,6 +345,12 @@ Files `248_` through `250_` extend the modular-bridge backlog:
 - `249_`: CREMA as a modular-fusion reference for replacing one monolithic bridge with a few specialized modules.
 - `250_`: MOSA as a mixture-of-simple-adapters reference when one more complex bridge keeps saturating.
 
+Files `357_` through `359_` are local synthesis memos for the current paper loop:
+
+- `357_`: Frontier attribution and routing references for protected-frontier selection, including SAE/crosscoder selectors, attribution patching, causal tracing, sparse routing, uncertainty-aware fallback, and saliency robustness checks.
+- `358_`: Recent lateral method references for routed projectors, diffusion-style latent refinement, KV/cache controls, quantization geometry, tokenizer adaptation, and transport initialization.
+- `359_`: Competitor benchmark references for direct cross-model communication peers, same-model cache controls, prompt/context compression, KV quantization, adapters, and feature-dictionary baselines.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
-See `math_grounding_manifest.json` for source URLs and the reason each paper was added.
+See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.

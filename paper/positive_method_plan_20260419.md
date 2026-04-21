@@ -3397,3 +3397,73 @@ Next execution ladder:
    stack has a real-pool diagnostic.
 5. Keep all additive claims conditional on interaction tests: a component that
    helps alone can harm when inserted into the full stack.
+
+## 2026-04-21 Protected Frontier Selection And Limit-5 Controls
+
+Executed next:
+
+- Added `references/357_frontier_attribution_routing_refs.md`, covering SAE /
+  crosscoder selectors, attribution patching, causal tracing, sparse routing,
+  uncertainty-aware frontier fallback, and saliency robustness checks.
+- Added `references/358_recent_lateral_method_refs.md`, covering recent
+  projector/adapters, diffusion-style refinement, cache controls,
+  quantization geometry, tokenizer adaptation, and transport initialization.
+- Added the deterministic `protected_frontier_selection` toy, which isolates
+  the post-pruning question: after a verifier-pruned frontier is fixed, which
+  atoms should receive high-precision protection?
+- Added the deterministic `tokenizer_frontier_bridge` toy, which isolates
+  tokenizer-boundary mismatch and compares naive token-id transfer, exact
+  target-frontier regrouping, and a small learned remap table.
+- Completed bounded KVPress limit-5 controls for GSM70 `none`,
+  GSM70 `expected_attention`, SVAMP70 `none`, and SVAMP70
+  `expected_attention` under the arm64 wrapper / CPU fallback.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| Protected-frontier prune-uniform baseline | accuracy `0.6615`, MSE `0.2543`, bytes `89.6`, prune rate `0.3244` | The fixed pruned frontier is intentionally lossy under very low-bit quantization. |
+| Global activation protection | accuracy `0.7917`, MSE `0.1905`, bytes `176.6`, protected-oracle overlap `0.5382` | Activation magnitude is a useful cheap selector once the frontier is fixed. |
+| Quant-error protection | accuracy `0.8073`, MSE `0.1861`, bytes `176.6`, protected-oracle overlap `0.6476`, help `0.1458`, harm `0.0000` | Quantization-error saliency is the strongest non-oracle selector in this toy and ties the oracle on task accuracy. |
+| Oracle protection | accuracy `0.8073`, MSE `0.1698`, bytes `176.6`, protected-oracle overlap `1.0000` | The remaining gap is mostly quality-of-reconstruction / confidence, not task accuracy on this synthetic slice. |
+| KVPress GSM70 `none` limit-5 | accuracy `0.2000`, latency `8.6682s`, tokens/sec `4.3839` | Same-model cache controls are runnable in small chunks and now have a nontrivial paired smoke. |
+| KVPress GSM70 expected-attention `0.5` limit-5 | accuracy `0.2000`, latency `8.9888s`, tokens/sec `4.3832` | Expected-attention compression is not better than no compression on this tiny GSM smoke. |
+| KVPress SVAMP70 `none` limit-5 | accuracy `0.4000`, latency `9.0091s`, tokens/sec `4.8396` | SVAMP bounded controls are runnable and now have a paired expected-attention row. |
+| KVPress SVAMP70 expected-attention `0.5` limit-5 | accuracy `0.6000`, latency `7.9233s`, tokens/sec `5.0484` | Tiny positive smoke versus no-press on SVAMP, but far too small for a paper claim. |
+| Tokenizer frontier naive token-id transfer | exact reconstruction `0.0000`, decoded-boundary F1 `0.3777`, source-target boundary F1 `0.7952`, bytes/example `19.23` | Token id compatibility is a false assumption when token boundaries differ. |
+| Tokenizer learned remap | exact reconstruction `1.0000`, decoded-boundary F1 `1.0000`, bytes/example `11.74` | A small learned remap can beat target-frontier regrouping on bytes while preserving reconstruction in toy form. |
+
+Updated read:
+
+The protected-frontier result is now a real positive toy component: the
+selector matters, and a compression-native score (`quant_error_protect`) beats
+or matches the more semantic-looking selectors without adding harm relative to
+the prune-uniform baseline. This supports the additive paper hypothesis:
+route/atom interfaces should log protected-frontier selection quality directly
+instead of treating quantization as a post-hoc byte setting.
+
+The competitor path is also clearer. KVPress can be run locally if rows are
+chunked; full monolithic rows remain an execution risk. Direct communication
+baselines (`C2C`, `KVComm`, `LatentMAS`) should stay separate from same-model
+cache controls (`KVPress`, `KVzip`, `Quest`, prompt compression), but both need
+the same timing and byte ledgers.
+
+Next execution ladder:
+
+1. Scale KVPress GSM/SVAMP to `--limit 10` and `--limit 20` before full rows,
+   keeping CPU fallback available when MPS setup fails.
+2. Promote protected-frontier telemetry to real route pools: protected ids,
+   quant-error score, activation score, attribution score, missed-help,
+   false-prune, protected-oracle proxy, bytes, latency, and task delta.
+3. Promote tokenizer-frontier telemetry to a real byte/token stress set:
+   source-target boundary F1, remap coverage, exact reconstruction, byte budget,
+   and downstream route delta.
+4. Add an exact-ablation calibration slice for protected atoms so attribution /
+   SAE / crosscoder selectors can be compared to real patch effect, not only
+   saliency proxies.
+5. Stack the best synthetic pieces cautiously: shared feature/atom interface,
+   verifier pruning, quant-error protection, and test-before-repair, with full
+   interaction ablations.
+6. Keep lateral architecture work as controlled ablations: routed projectors,
+   diffusion/refinement steps, tokenizer remap, and OT initialization should
+   enter only when they have matched-budget toy or route-pool diagnostics.

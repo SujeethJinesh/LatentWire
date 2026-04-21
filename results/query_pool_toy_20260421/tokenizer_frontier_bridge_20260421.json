@@ -1,0 +1,64 @@
+{
+  "config": {
+    "max_segments": 5,
+    "min_segments": 3,
+    "remap_capacity": 10,
+    "seed": 0,
+    "test_examples": 96,
+    "train_examples": 96
+  },
+  "methods": [
+    "token_id",
+    "frontier_regroup",
+    "learned_remap"
+  ],
+  "rows": [
+    {
+      "avg_source_tokens": 9.114583333333334,
+      "avg_target_tokens": 13.260416666666666,
+      "bytes_per_example": 19.229166666666668,
+      "decoded_boundary_f1": 0.37765332964645987,
+      "exact_reconstruction": 0.0,
+      "learned_remap_coverage": 0.0,
+      "method": "token_id",
+      "remap_covered_train_instances": 0,
+      "remap_instances": 0,
+      "remap_table_bytes": 0,
+      "remap_table_size": 0,
+      "source_target_boundary_f1": 0.7952074822812238,
+      "token_accuracy": 0.0
+    },
+    {
+      "avg_source_tokens": 9.114583333333334,
+      "avg_target_tokens": 13.260416666666666,
+      "bytes_per_example": 14.260416666666666,
+      "decoded_boundary_f1": 1.0,
+      "exact_reconstruction": 1.0,
+      "learned_remap_coverage": 0.0,
+      "method": "frontier_regroup",
+      "remap_covered_train_instances": 0,
+      "remap_instances": 0,
+      "remap_table_bytes": 0,
+      "remap_table_size": 0,
+      "source_target_boundary_f1": 0.7952074822812238,
+      "token_accuracy": 1.0
+    },
+    {
+      "avg_source_tokens": 9.114583333333334,
+      "avg_target_tokens": 13.260416666666666,
+      "bytes_per_example": 11.739583333333334,
+      "decoded_boundary_f1": 1.0,
+      "exact_reconstruction": 1.0,
+      "learned_remap_coverage": 0.3211428571428571,
+      "method": "learned_remap",
+      "remap_covered_train_instances": 290,
+      "remap_instances": 281,
+      "remap_table_bytes": 156,
+      "remap_table_size": 10,
+      "source_target_boundary_f1": 0.7952074822812238,
+      "token_accuracy": 1.0
+    }
+  ],
+  "source_tokenizer": "source_frontier",
+  "target_tokenizer": "target_frontier"
+}

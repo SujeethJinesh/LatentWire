@@ -213,6 +213,12 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   complete locally: `none` latency `2.1374s`, expected-attention latency
   `2.1806s`. These are not paper rows, but they reopen the same-model
   competitor path by chunking the evaluation.
+- KVPress limit-5 controls now complete for GSM70 `none` and
+  expected-attention `0.5`, both at `0.2000` accuracy with latencies
+  `8.6682s` and `8.9888s`; SVAMP70 `none` completes at `0.4000` accuracy
+  and `9.0091s` latency, while SVAMP70 expected-attention `0.5` completes at
+  `0.6000` accuracy and `7.9233s` latency after CPU fallback. These remain
+  smoke controls rather than paper rows.
 - Tokenizer-interface references add a new upstream ablation lane: byte/patch
   bridge, explicit vocabulary remap, time-warped span alignment, adaptive
   hypertokens, and length-optimal retokenization controls.
@@ -224,6 +230,22 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   Q-Former/perceiver bottlenecks, simple versus routed projectors,
   soft belief-state refinement, trajectory-guided repair controls, and
   latent-flow bridges.
+- Frontier-attribution references add a selector lane that is more specific
+  than generic interpretability: SAE/crosscoder feature persistence,
+  attribution-patched frontier ranking, sparse routed frontier selection,
+  prompt-shift robustness, and graph-path protection.
+- The protected-frontier selection toy turns the prior stack warning into a
+  concrete ablation: prune-uniform low-bit reaches `0.6615`, global activation
+  protection reaches `0.7917`, quant-error protection reaches `0.8073`, and
+  oracle protection also reaches `0.8073` with lower MSE. This is still
+  synthetic evidence, but it is interpretable enough to promote to route-pool
+  telemetry.
+- The tokenizer-frontier toy makes the vocabulary blocker concrete:
+  source-target boundary F1 is `0.7952`, naive token-id transfer has exact
+  reconstruction `0.0000`, target-frontier regrouping reaches exact
+  reconstruction `1.0000` at `14.26` bytes/example, and a small learned remap
+  keeps exact reconstruction `1.0000` at `11.74` bytes/example. This is a toy
+  interface control, not a downstream result yet.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided

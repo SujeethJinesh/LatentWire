@@ -1,0 +1,23 @@
+[
+  {
+    "num": 357,
+    "slug": "frontier_attribution_routing_refs",
+    "path": "references/357_frontier_attribution_routing_refs.md",
+    "status": "local_memo",
+    "reason": "Frontier-selection source memo for SAE/crosscoder, attribution-patching, causal tracing, sparse routing, uncertainty, and saliency-stability ablations."
+  },
+  {
+    "num": 358,
+    "slug": "recent_lateral_method_refs",
+    "path": "references/358_recent_lateral_method_refs.md",
+    "status": "local_memo",
+    "reason": "Recent lateral-method source memo for projector/adapters, diffusion refinement, KV compression, quantization geometry, tokenizer adaptation, and transport initialization."
+  },
+  {
+    "num": 359,
+    "slug": "competitor_benchmark_refs",
+    "path": "references/359_competitor_benchmark_refs.md",
+    "status": "local_memo",
+    "reason": "Competitor benchmark source memo for direct communication, same-model cache controls, prompt compression, KV quantization, adapters, and feature-dictionary baselines."
+  }
+]

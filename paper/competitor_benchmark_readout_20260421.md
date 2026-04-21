@@ -22,8 +22,12 @@ prompt, token, byte, latency, and repair budgets are all matched in one harness.
 |---|---|---:|---:|---|---|
 | `gsm8k_5` | `KVPress` none | 0.2000 | 5 | `results/competitor_bootstrap_20260421/kvpress_qwen3_gsm5_none_20260421.jsonl` | Same-model baseline control, not a cross-model communication peer. |
 | `gsm8k_5` | `KVPress` expected attention `0.5` | 0.2000 | 5 | `results/competitor_bootstrap_20260421/kvpress_qwen3_gsm5_expected_attention_c050_20260421.jsonl` | Compression does not improve the tiny GSM5 smoke. |
+| `gsm8k_eval_70` limit-5 | `KVPress` none | 0.2000 | 5 | `results/competitor_next_runnable_20260421/kvpress_gsm70_none_limit5.jsonl` | Bounded control row for the exact next-runnable matrix. |
+| `gsm8k_eval_70` limit-5 | `KVPress` expected attention `0.5` | 0.2000 | 5 | `results/competitor_next_runnable_20260421/kvpress_gsm70_expected_attention_c050_limit5.jsonl` | Neutral against no-press on the tiny GSM limit-5 smoke. |
 | `gsm8k_gate_search_30` | `KVPress` none | 0.0667 | 30 | `results/competitor_bootstrap_20260421/kvpress_qwen3_gsm30_none_20260421.jsonl` | Same-model GSM30 control ties target-alone. |
 | `gsm8k_gate_search_30` | `KVPress` expected attention `0.5` | 0.0667 | 30 | `results/competitor_bootstrap_20260421/kvpress_qwen3_gsm30_expected_attention_c050_20260421.jsonl` | Expected-attention compression is neutral on this slice. |
+| `svamp_eval_70` limit-5 | `KVPress` none | 0.4000 | 5 | `results/competitor_next_runnable_20260421/kvpress_svamp70_none_limit5.jsonl` | Bounded SVAMP control row. |
+| `svamp_eval_70` limit-5 | `KVPress` expected attention `0.5` | 0.6000 | 5 | `results/competitor_next_runnable_20260421/kvpress_svamp70_expected_attention_c050_limit5.jsonl` | Positive tiny smoke against no-press, but underpowered and not paper-ready. |
 
 ## LatentWire Comparison State
 
