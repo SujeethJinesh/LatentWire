@@ -471,6 +471,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
     rows.append(
         _meta_row(
             split="gsm8k_eval_10_controlled",
+            method="dynamic-aligned preference-distilled module replace",
+            family="token-remapped attention bridge",
+            meta_path="results/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.jsonl.meta.json",
+            notes="dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on a 16-prompt diagnostic slice",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_eval_10_controlled",
             method="dynamic-aligned interaction module replace",
             family="token-remapped attention bridge",
             meta_path="results/bridge_ridge_qk_dynalign_interact_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_interact_module_replace_cal16_chat.jsonl.meta.json",
@@ -665,6 +674,15 @@ def _build_frontier_rows() -> list[dict[str, Any]]:
             family="token-remapped attention bridge",
             meta_path="results/bridge_ridge_qk_dynalign_dwainteract_module_replace_20260420_diag/qwen_gsm5_grouped_subspace_transport_w010_r4_dynalign_dwainteract_module_replace_cal16_chat.jsonl.meta.json",
             notes="dynalign plus confidence-weighted dynamic prediction teacher and prompt-local interaction distillation on a 16-prompt diagnostic slice",
+        )
+    )
+    rows.append(
+        _meta_row(
+            split="gsm8k_5_controlled_smoke",
+            method="dynamic-aligned preference-distilled module replace",
+            family="token-remapped attention bridge",
+            meta_path="results/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen_gsm5_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.jsonl.meta.json",
+            notes="dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on a 16-prompt diagnostic slice",
         )
     )
     rows.append(
@@ -938,6 +956,14 @@ def _build_paired_rows() -> list[dict[str, Any]]:
             "baseline_label": "target_alone_control",
         },
         {
+            "candidate": "results/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.jsonl",
+            "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
+            "candidate_method": "rotalign_kv_gate_0.10",
+            "baseline_method": "target_alone",
+            "candidate_label": "dynalign_prefdist_module_replace",
+            "baseline_label": "target_alone_control",
+        },
+        {
             "candidate": "results/bridge_ridge_qk_dynalign_interact_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_interact_module_replace_cal16_chat.jsonl",
             "baseline": "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl",
             "candidate_method": "rotalign_kv_gate_0.10",
@@ -1077,6 +1103,12 @@ def _build_layer_localization_rows() -> list[dict[str, Any]]:
             "family": "token-remapped attention bridge",
             "jsonl": "results/bridge_ridge_qk_dynalign_dwainteract_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_dwainteract_module_replace_cal16_chat.jsonl",
             "notes": "dynalign plus confidence-weighted dynamic prediction teacher and prompt-local interaction distillation on controlled gsm8k_eval_10 (16-prompt diagnostic calibration)",
+        },
+        {
+            "method": "dynalign_prefdist_module_replace",
+            "family": "token-remapped attention bridge",
+            "jsonl": "results/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen_gsm10_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.jsonl",
+            "notes": "dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on controlled gsm8k_eval_10 (16-prompt diagnostic calibration)",
         },
         {
             "method": "dynalign_interact_module_replace",

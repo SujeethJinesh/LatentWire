@@ -211,6 +211,14 @@
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
     "family": "token-remapped attention bridge",
+    "method": "dynamic-aligned preference-distilled module replace",
+    "notes": "dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on a 16-prompt diagnostic slice",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
+    "family": "token-remapped attention bridge",
     "method": "dynamic-aligned interaction module replace",
     "notes": "dynalign module replace plus prompt-local interaction distillation on a 16-prompt diagnostic slice",
     "split": "gsm8k_eval_10_controlled"
@@ -381,6 +389,14 @@
     "family": "token-remapped attention bridge",
     "method": "dynamic-aligned DWA-interaction module replace",
     "notes": "dynalign plus confidence-weighted dynamic prediction teacher and prompt-local interaction distillation on a 16-prompt diagnostic slice",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.4,
+    "avg_bytes": 686026.6,
+    "family": "token-remapped attention bridge",
+    "method": "dynamic-aligned preference-distilled module replace",
+    "notes": "dynalign plus confidence-weighted dynamic prediction teacher and pairwise preference distillation over aligned target output rows on a 16-prompt diagnostic slice",
     "split": "gsm8k_5_controlled_smoke"
   },
   {

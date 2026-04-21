@@ -24,5 +24,6 @@
 | dynalign_likelihood_module_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | dynalign_spanalm_module_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | dynalign_dwainteract_module_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
+| dynalign_prefdist_module_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | dynalign_interact_module_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |
 | tokenbasis_replace vs target_alone_control | 0.1000 | 0.1000 | +0.0000 | 0 | 0 | [+0.0000, +0.0000] | 1.0000 |

@@ -2618,3 +2618,40 @@ Interpretation:
   attempt should change the correspondence/interface class, with priority on
   CTPD-style aligned-span preferences, query-conditioned route geometry, or a
   more global target-side module replacement rather than another local KL term
+
+And an eighty-first aligned preference-distillation diagnostic:
+
+> I then implemented
+> `bridge_ridge_qk_dynalign_prefdist_module_replace`, which keeps the same
+> dynalign source-to-target mixtures, DWA-style confidence weights, and dynamic
+> prediction teacher, but replaces direct likelihood mass and prompt-local
+> interaction KL with a pairwise preference objective over the teacher's
+> aligned target output rows. This tests whether preserving the teacher's
+> relative output ranking is less brittle across tokenizers than exact
+> next-token or local-interaction supervision.
+>
+> On a 16-prompt diagnostic calibration slice:
+> - dynamic remapping samples: `678`
+> - mean target tokens per source sample: `3.00`
+> - preference-distillation sample weights: min `0.588`, max `1.400`
+> - `K` cosine `0.948`, relative Frobenius error `0.305`
+> - `V` cosine `0.697`, relative Frobenius error `0.700`
+>
+> Held-out diagnostic reads:
+> - `gsm8k_5`: `0.400000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- pairwise aligned-output preferences preserve the best dynalign / DWA smoke
+  behavior, unlike likelihood, span-ALM, interaction, or DWA-interaction
+  teachers
+- the controlled slice still ties the `0.1000` target-alone floor, so this is
+  not a positive-method result yet
+- the best current read is that output-ranking supervision is directionally
+  less destructive than exact token likelihood or local interaction KL, but it
+  does not solve the generalization bottleneck on its own
+- next useful work should stack this preference objective with a materially
+  different interface or geometry step: query-conditioned route atoms,
+  global target-side module replacement, or tokenizer-agnostic byte/span
+  interfaces only after stress data shows real tokenizer divergence

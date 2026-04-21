@@ -1724,3 +1724,39 @@ That means:
 - the next additive paper method should change the interface or objective
   class: CTPD-style aligned-span preferences, query-conditioned transport/route
   atoms, or a more global target-side module replacement
+
+I then tested the first CTPD-style objective-class change as
+`bridge_ridge_qk_dynalign_prefdist_module_replace`.
+
+This keeps dynalign, confidence weighting, and the dynamic top-k prediction
+teacher, but adds a pairwise preference loss over the aligned target output
+rows instead of injecting exact token likelihood mass or prompt-local
+interaction KL.
+
+On the same 16-prompt diagnostic calibration slice:
+
+- dynamic remapping samples: `678`
+- mean target tokens per source sample: `3.00`
+- preference-distillation weight range: `0.588` to `1.400`
+- `K` cosine `0.948`, relative Frobenius error `0.305`
+- `V` cosine `0.697`, relative Frobenius error `0.700`
+
+Held-out diagnostic reads:
+
+- `gsm8k_5`: `0.4000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- aligned output-ranking preferences preserve the best recent dynalign smoke,
+  unlike direct likelihood mass, span-ALM, local interaction, or their DWA stack
+- the controlled slice still does not move above the `0.1000` target-alone
+  floor, so this is not yet a positive method
+- the preference objective is worth keeping as the least destructive stronger
+  teacher, but the next paper-grade attempt has to pair it with a stronger
+  correspondence/interface change rather than treating it as a standalone fix
+- the next implementation should be one of: query-conditioned route atoms over
+  aligned spans, a more global target-side module replacement, or a
+  tokenizer-agnostic byte/span interface after byte-stress confirms useful
+  tokenizer divergence
