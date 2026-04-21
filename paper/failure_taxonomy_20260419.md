@@ -116,6 +116,7 @@
 | Current frontier and stop heuristics are mis-specified even with good routes | In the route-conditioned hub sweep, oracle routing lifts the hub base to `0.8229`, above raw pairwise `0.7344`, but frontier drops it to `0.8125` and frontier+stop drops it again to `0.8073` | `oracle_router_base = 0.8229` | `oracle_router_frontier = 0.8125`, `oracle_router_frontier_stop = 0.8073` | Better routing alone will not rescue the present frontier/stop heuristics | Redesign frontier protection and stop features jointly with route/class signals before stacking them into the positive lane | Open |
 | Calibration-aware local protection is still not enough | In the route-class patch sweep, route-class patch-protect only ties quant-error protection, and route-class frontiering stays below the all-low-bit hub base | `conditional_prior_route_class_patch_protect = 0.6354`, `oracle_route_class_patch_protect = 0.8125` | `conditional_prior_base = 0.6250`, `oracle_base = 0.8229`, `oracle_quant_error_frontier = 0.8125` | Smarter local protection scores alone do not fix the stack | Move the next fix up to shared-basis canonicalization, tokenizer/interface simplification, or a different pruning rule rather than more score shaping | Open |
 | Multi-way canonicalization helps only in the ultra-low-shot regime | In the held-out-family toy, the GPA-style canonical hub wins lowest non-oracle MSE at `1` shot/class, but direct held-out-family fitting retakes the lead by `2+` shots/class | `1-shot multiway_gpa_canonical = 0.1327` | `1-shot heldout_fewshot_ridge = 0.1463`; `2-shot heldout_fewshot_ridge = 0.0753` vs `multiway_gpa_canonical = 0.1050` | Canonicalization is not a universal substitute for direct family-specific paired fitting | Use GPA/canonical hubs as a low-shot initializer or regularizer, then hand off to direct family fitting once moderate paired data exists | Partial |
+| Shared sparse dictionaries strengthen the low-shot clue, but the current repair gate is inert | In the GPA sparse-dictionary held-out-family toy, the shared dictionary is now the best non-oracle method at `1` shot/class, but direct held-out-family fitting retakes the MSE lead by `2+` shots/class and the verifier-gated repair step never fires | `1-shot multiway_gpa_sparse_dictionary = 0.1171` | `1-shot heldout_fewshot_ridge = 0.1825`, `1-shot multiway_gpa_canonical = 0.2355`; repair accept/help/harm all `0.0000` | Shared dictionaries look like a real low-shot backbone, but the current repair rule adds nothing and the method still does not beat direct family fitting once paired data grows | Keep the shared sparse dictionary lane alive as the main low-shot interface branch, add tokenizer/interface controls next, and treat repair as blocked until it produces nonzero accepted helps | Partial |
 
 ## Current Read
 
@@ -131,10 +132,13 @@
 - Strongest new additive design clue: **shared sparse feature dictionary /
   crosscoder interface**, currently toy-only but clearly stronger than raw
   residual transport in the shared/private feature setup.
-- Strongest new low-shot interface clue: **multi-way canonical hubs**. The new
-  held-out-family toy shows a real `1`-shot MSE win for `multiway_gpa_canonical`
-  over direct few-shot fitting, but that advantage disappears once `2+`
-  paired shots/class are available.
+- Strongest new low-shot interface clue: **GPA-initialized shared sparse
+  dictionaries**. The new held-out-family toy shows a stronger `1`-shot MSE
+  win for `multiway_gpa_sparse_dictionary` than canonicalization alone, but
+  that advantage still disappears once `2+` paired shots/class are available.
+- Strongest repair-side blocker: **the shared-dictionary verifier gate is still
+  inert**. The current repair branch accepts nothing on the held-out-family
+  toy, so it should remain a blocker rather than part of the positive lane.
 - Strongest new efficiency clue: **format-gated test-before-repair**, which
   preserves held-out repair accuracy while saving repair calls, but does not
   yet increase task accuracy.

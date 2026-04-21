@@ -35,18 +35,22 @@ active positive clues, and combinations worth testing next.
 | Stack oracle route ceiling | In the composition toy, oracle routing reaches `0.8229` versus raw pairwise `0.7344` | Use this to debug route assignment and stop policy; do not cite as a method row. |
 | Route-/class-calibrated frontier | On the held-out hub sweep, route-class patch-protect ties quant-error (`0.6354` prior, `0.8125` oracle) while route-class frontier remains negative | Promote only if a redesigned pruning rule beats both quant-error and all-low-bit hub baselines; otherwise move to multi-way canonical hubs or tokenizer/interface simplification. |
 | Multi-way canonical hub | On the held-out-family toy, `multiway_gpa_canonical` is the best non-oracle/shared-basis method at `1` shot/class (`0.1327` MSE vs few-shot `0.1463`) and crushes global seen-family ridge, but direct held-out family fitting regains the MSE lead by `2+` shots/class | Promote only as a low-shot initializer or regularizer unless it also wins once moderate paired data exists; the next real test should be GPA-initialized shared hub plus sparse dictionary on a held-out-family route split. |
+| GPA sparse dictionary hub | On the held-out-family toy, `multiway_gpa_sparse_dictionary` is now the strongest low-shot shared-basis method at `1` shot/class (`0.1171` MSE vs few-shot `0.1825` and canonical `0.2355`), but direct held-out family fitting regains the MSE lead by `2+` shots/class and the verifier-gated repair step stays at `0.0000` accept/help | Promote only as a low-shot shared-basis backbone if the gain survives tokenizer/interface shifts and the dictionary becomes interpretable enough to justify the story; keep repair as a blocker until it actually fires and helps. |
 
 ## Next Stack To Test
 
 The next positive-method stack should be additive only after each component has
 an interaction control:
 
-1. Byte/span-normalized route atoms instead of token-ID transfer.
-2. Hub dictionary/shared feature basis instead of `O(n^2)` pairwise bridges.
+1. GPA-initialized shared hub plus sparse shared dictionary instead of plain
+   pairwise bridges.
+2. Byte/span/vocabulary interface controls instead of assuming tokenizer
+   compatibility.
 3. Sticky feature-routed projector bank instead of one monolithic bridge or
    confidence-only routing.
-4. Route- and class-conditioned protected frontier instead of the current quant-error heuristic.
-5. Route-calibrated process/verifier stop rule instead of the current generic stop heuristic.
+4. A genuinely different protected-pruning rule instead of the current quant-error
+   or route-class frontier heuristics.
+5. A repair step only after it shows nonzero accept/help on held-out toys.
 6. Matched comparison against target-alone, target self-repair, text-to-text,
    C2C, LatentMAS, and same-model compression controls.
 

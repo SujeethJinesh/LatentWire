@@ -117,5 +117,26 @@
     "path": "references/373_competitor_benchmark_bootstrap_recent_refs.md",
     "status": "local_memo",
     "reason": "Competitor benchmark bootstrap memo for harness parity, contamination control, parser consistency, and matched LatentMAS/C2C/OpenCompass/lm-eval comparisons."
+  },
+  {
+    "num": 374,
+    "slug": "lowshot_shared_dictionary_recent_refs",
+    "path": "references/374_lowshot_shared_dictionary_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Low-shot shared dictionary, universal SAE, crosscoder, and multi-way alignment memo with concrete shared-vs-private atom, regularizer, and held-out-family ablations for the active paper loop."
+  },
+  {
+    "num": 375,
+    "slug": "byte_tokenizer_interface_recent_refs",
+    "path": "references/375_byte_tokenizer_interface_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Byte-level fallback, tokenizer/vocab transfer, cross-tokenizer distillation, and interface-mismatch diagnostics memo for the active paper loop."
+  },
+  {
+    "num": 376,
+    "slug": "matched_competitor_bootstrap_recent_refs",
+    "path": "references/376_matched_competitor_bootstrap_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Matched competitor benchmark bootstrap memo for recent communication papers, harness parity, contamination control, parser discipline, and frozen comparison contracts."
   }
 ]

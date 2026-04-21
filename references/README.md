@@ -400,6 +400,12 @@ Files `371_` through `373_` extend the current canonical-hub, tokenizer-interfac
 - `372_`: Tokenizer/vocab transfer, byte-level fallback, narrow connector bottlenecks, diffusion-style interface refinement, and quantization-inspired communication rules.
 - `373_`: Competitor benchmark bootstrap memo for `lm-evaluation-harness`, `OpenCompass`, `LatentMAS`, `C2C`, matched parser rules, and smoke-first comparison discipline.
 
+Files `374_` through `376_` extend the next low-shot shared-dictionary, tokenizer-interface, and matched-benchmark lanes:
+
+- `374_`: Low-shot shared dictionary references for universal SAEs, sparse crosscoders, route-aware sparse autoencoders, multi-way alignment, and concrete shared-vs-private atom ablations.
+- `375_`: Byte-level fallback, tokenizer/vocab transfer, cross-tokenizer distillation, and interface-mismatch diagnostics for separating vocabulary issues from latent-communication issues.
+- `376_`: Matched competitor bootstrap memo for recent communication papers, frozen harness/prompt/parser contracts, contamination control, and smoke-first comparison discipline.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.
