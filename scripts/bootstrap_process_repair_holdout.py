@@ -167,8 +167,9 @@ def build_repair_command(
     max_new_tokens: int,
     output_jsonl: str,
     output_md: str,
+    control_arms: Sequence[str] = (),
 ) -> list[str]:
-    return [
+    command = [
         python,
         "scripts/process_repair_routes.py",
         "--inputs",
@@ -196,6 +197,9 @@ def build_repair_command(
         "--output-md",
         output_md,
     ]
+    if control_arms:
+        command.extend(["--control-arms", *control_arms])
+    return command
 
 
 def build_split_plan(
@@ -214,6 +218,7 @@ def build_split_plan(
     repair_dtype: str,
     repair_max_new_tokens: int,
     fixed_gate: float,
+    control_arms: Sequence[str] = (),
     method: str = DEFAULT_METHOD,
 ) -> SplitPlan:
     eval_file, tag = _eval_file_for_split(split=split, output_dir=output_dir, limit=limit)
@@ -254,6 +259,7 @@ def build_split_plan(
             max_new_tokens=repair_max_new_tokens,
             output_jsonl=repair_output_jsonl,
             output_md=repair_output_md,
+            control_arms=control_arms,
         ),
     )
     return SplitPlan(
@@ -318,6 +324,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--repair-max-new-tokens", type=int, default=128)
     parser.add_argument("--fixed-gate", type=float, default=0.10)
+    parser.add_argument(
+        "--control-arms",
+        nargs="*",
+        choices=("selected_no_repair", "target_self_repair"),
+        default=[],
+        help="Optional repair-control arms to include in generated process-repair commands.",
+    )
     parser.add_argument("--limit", type=int, default=None, help="Optional first-N subset for quick smoke manifests.")
     parser.add_argument("--manifest", default=None)
     parser.add_argument("--shell-script", default=None)
@@ -345,6 +358,7 @@ def main(argv: list[str] | None = None) -> None:
             repair_dtype=args.repair_dtype,
             repair_max_new_tokens=args.repair_max_new_tokens,
             fixed_gate=args.fixed_gate,
+            control_arms=tuple(args.control_arms),
         )
         for split in args.splits
     ]
@@ -358,6 +372,7 @@ def main(argv: list[str] | None = None) -> None:
         "source_model": args.source_model,
         "target_model": args.target_model,
         "method": DEFAULT_METHOD,
+        "control_arms": list(args.control_arms),
         "claim_policy": "dev-smoke if --limit is set; held-out only when limit is unset and protocol is frozen",
     }
     write_manifest(manifest, plans=plans, settings=settings)

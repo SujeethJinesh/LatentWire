@@ -118,6 +118,7 @@ def process_repair_records(
     baseline_method: str = "target_alone",
     selection_policy: str = "target_on_strict_format",
     max_candidate_chars: int = 1200,
+    control_arms: Sequence[str] = (),
 ) -> list[dict[str, Any]]:
     indices, baseline_rows, seed_method_rows = _indices_for_record_sets(
         record_sets,
@@ -135,41 +136,113 @@ def process_repair_records(
         selected = _choose(candidates, selection_policy)
         if idx >= len(examples):
             raise IndexError(f"Example index {idx} is outside eval set of length {len(examples)}")
+        if "selected_no_repair" in control_arms:
+            output.append(
+                _make_repair_record(
+                    idx=idx,
+                    example=examples[idx],
+                    method_name="selected_route_no_repair",
+                    policy=f"selected_no_repair_after_{selection_policy}",
+                    chosen=selected,
+                    baseline=baseline,
+                    candidates=candidates,
+                    raw_response=str(selected.get("prediction", "")),
+                    prompt_chars=0,
+                    selection_policy=selection_policy,
+                )
+            )
+        if "target_self_repair" in control_arms:
+            target = next(row for row in candidates if row.get("candidate_source") == "target")
+            target_prompt = build_repair_prompt(
+                problem=examples[idx].prompt,
+                candidate=target,
+                max_candidate_chars=max_candidate_chars,
+            )
+            target_response = response_fn(idx, target_prompt, target, candidates)
+            output.append(
+                _make_repair_record(
+                    idx=idx,
+                    example=examples[idx],
+                    method_name="target_self_repair",
+                    policy="target_self_repair",
+                    chosen=target,
+                    baseline=baseline,
+                    candidates=candidates,
+                    raw_response=target_response,
+                    prompt_chars=len(target_prompt),
+                    selection_policy="target_only",
+                )
+            )
+
         prompt = build_repair_prompt(
             problem=examples[idx].prompt,
             candidate=selected,
             max_candidate_chars=max_candidate_chars,
         )
         raw_response = response_fn(idx, prompt, selected, candidates)
-        repaired_normalized = _extract_prediction_numeric_answer(raw_response)
-        repaired_correct = _generation_match(raw_response, examples[idx].answers)
-        selected_normalized = selected.get("normalized_prediction") or ""
-
-        record = _reranked_record(
-            method_name="process_repair_selected_route",
-            policy=f"process_repair_after_{selection_policy}",
-            chosen=selected,
-            baseline=baseline,
-            candidates=candidates,
+        output.append(
+            _make_repair_record(
+                idx=idx,
+                example=examples[idx],
+                method_name="process_repair_selected_route",
+                policy=f"process_repair_after_{selection_policy}",
+                chosen=selected,
+                baseline=baseline,
+                candidates=candidates,
+                raw_response=raw_response,
+                prompt_chars=len(prompt),
+                selection_policy=selection_policy,
+            )
         )
-        full_meta = _candidate_metadata(candidates)
-        record["prediction"] = raw_response
-        record["normalized_prediction"] = repaired_normalized
-        record["correct"] = bool(repaired_correct)
-        record["repair_raw_response"] = raw_response
-        record["repair_prompt_chars"] = len(prompt)
-        record["repair_selection_policy"] = selection_policy
-        record["repair_selected_candidate_source"] = selected.get("candidate_source")
-        record["repair_pre_prediction"] = selected.get("prediction")
-        record["repair_pre_normalized_prediction"] = selected_normalized
-        record["repair_pre_correct"] = bool(selected.get("correct"))
-        record["repair_post_normalized_prediction"] = repaired_normalized
-        record["repair_changed_answer"] = bool(str(repaired_normalized or "") != str(selected_normalized or ""))
-        record["repair_full_oracle_correct"] = bool(full_meta["candidate_oracle_correct"])
-        record["repair_full_seed_correct_count"] = int(full_meta["seed_correct_count"])
-        record["repair_full_vote_entropy"] = float(full_meta["candidate_vote_entropy"])
-        output.append(record)
     return output
+
+
+def _make_repair_record(
+    *,
+    idx: int,
+    example: Any,
+    method_name: str,
+    policy: str,
+    chosen: dict[str, Any],
+    baseline: dict[str, Any],
+    candidates: list[dict[str, Any]],
+    raw_response: str,
+    prompt_chars: int,
+    selection_policy: str,
+) -> dict[str, Any]:
+    selected_normalized = chosen.get("normalized_prediction") or ""
+    if method_name == "selected_route_no_repair":
+        repaired_normalized = selected_normalized
+        repaired_correct = bool(chosen.get("correct"))
+    else:
+        repaired_normalized = _extract_prediction_numeric_answer(raw_response)
+        repaired_correct = _generation_match(raw_response, example.answers)
+    full_meta = _candidate_metadata(candidates)
+
+    record = _reranked_record(
+        method_name=method_name,
+        policy=policy,
+        chosen=chosen,
+        baseline=baseline,
+        candidates=candidates,
+    )
+    record["index"] = int(idx)
+    record["prediction"] = raw_response
+    record["normalized_prediction"] = repaired_normalized
+    record["correct"] = bool(repaired_correct)
+    record["repair_raw_response"] = raw_response
+    record["repair_prompt_chars"] = int(prompt_chars)
+    record["repair_selection_policy"] = selection_policy
+    record["repair_selected_candidate_source"] = chosen.get("candidate_source")
+    record["repair_pre_prediction"] = chosen.get("prediction")
+    record["repair_pre_normalized_prediction"] = selected_normalized
+    record["repair_pre_correct"] = bool(chosen.get("correct"))
+    record["repair_post_normalized_prediction"] = repaired_normalized
+    record["repair_changed_answer"] = bool(str(repaired_normalized or "") != str(selected_normalized or ""))
+    record["repair_full_oracle_correct"] = bool(full_meta["candidate_oracle_correct"])
+    record["repair_full_seed_correct_count"] = int(full_meta["seed_correct_count"])
+    record["repair_full_vote_entropy"] = float(full_meta["candidate_vote_entropy"])
+    return record
 
 
 def summarize_results(records: list[dict[str, Any]]) -> dict[str, float]:
@@ -177,23 +250,23 @@ def summarize_results(records: list[dict[str, Any]]) -> dict[str, float]:
     for method in sorted({str(record["method"]) for record in records}):
         rows = [record for record in records if str(record["method"]) == method]
         results[method] = sum(bool(row.get("correct")) for row in rows) / max(len(rows), 1)
-        if method == "process_repair_selected_route":
-            results["process_repair_selected_route_pre_repair_accuracy"] = sum(
+        if any(any(str(key).startswith("repair_") for key in row) for row in rows):
+            results[f"{method}_pre_repair_accuracy"] = sum(
                 bool(row.get("repair_pre_correct")) for row in rows
             ) / max(len(rows), 1)
-            results["process_repair_selected_route_changed_answer_rate"] = sum(
+            results[f"{method}_changed_answer_rate"] = sum(
                 bool(row.get("repair_changed_answer")) for row in rows
             ) / max(len(rows), 1)
-            results["process_repair_selected_route_target_selection_rate"] = sum(
+            results[f"{method}_target_selection_rate"] = sum(
                 row.get("repair_selected_candidate_source") == "target" for row in rows
             ) / max(len(rows), 1)
-            results["process_repair_selected_route_full_oracle_accuracy"] = sum(
+            results[f"{method}_full_oracle_accuracy"] = sum(
                 bool(row.get("repair_full_oracle_correct")) for row in rows
             ) / max(len(rows), 1)
-            results["process_repair_selected_route_repair_help_rate"] = sum(
+            results[f"{method}_repair_help_rate"] = sum(
                 (not bool(row.get("repair_pre_correct"))) and bool(row.get("correct")) for row in rows
             ) / max(len(rows), 1)
-            results["process_repair_selected_route_repair_harm_rate"] = sum(
+            results[f"{method}_repair_harm_rate"] = sum(
                 bool(row.get("repair_pre_correct")) and not bool(row.get("correct")) for row in rows
             ) / max(len(rows), 1)
     add_paired_prediction_summary(results, records)
@@ -201,34 +274,38 @@ def summarize_results(records: list[dict[str, Any]]) -> dict[str, float]:
 
 
 def write_markdown_summary(results: dict[str, float], output_md: str | pathlib.Path) -> None:
-    method = "process_repair_selected_route"
     target = float(results.get("target_alone", 0.0))
-    prefix = f"paired_{method}_vs_target_alone"
     lines = [
         "# Process Repair Route Summary",
         "",
         "| Method | Accuracy | Delta vs target | Pre-repair accuracy | Method-only | Baseline-only | Both correct | Both wrong | Changed answer | Repair help | Repair harm | Target selected | Full oracle |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
-        "| {method} | {acc:.4f} | {delta:+.4f} | {pre:.4f} | {method_only:.0f} | {baseline_only:.0f} | {both_correct:.0f} | {both_wrong:.0f} | {changed:.4f} | {help_rate:.4f} | {harm_rate:.4f} | {target_selected:.4f} | {oracle:.4f} |".format(
+    ]
+    for method in ("selected_route_no_repair", "target_self_repair", "process_repair_selected_route"):
+        if method not in results:
+            continue
+        prefix = f"paired_{method}_vs_target_alone"
+        lines.append("| {method} | {acc:.4f} | {delta:+.4f} | {pre:.4f} | {method_only:.0f} | {baseline_only:.0f} | {both_correct:.0f} | {both_wrong:.0f} | {changed:.4f} | {help_rate:.4f} | {harm_rate:.4f} | {target_selected:.4f} | {oracle:.4f} |".format(
             method=method,
             acc=float(results.get(method, 0.0)),
             delta=float(results.get(f"{prefix}_delta_accuracy", float(results.get(method, 0.0)) - target)),
-            pre=float(results.get("process_repair_selected_route_pre_repair_accuracy", 0.0)),
+            pre=float(results.get(f"{method}_pre_repair_accuracy", results.get(method, 0.0))),
             method_only=float(results.get(f"{prefix}_method_only", 0.0)),
             baseline_only=float(results.get(f"{prefix}_baseline_only", 0.0)),
             both_correct=float(results.get(f"{prefix}_both_correct", 0.0)),
             both_wrong=float(results.get(f"{prefix}_both_wrong", 0.0)),
-            changed=float(results.get("process_repair_selected_route_changed_answer_rate", 0.0)),
-            help_rate=float(results.get("process_repair_selected_route_repair_help_rate", 0.0)),
-            harm_rate=float(results.get("process_repair_selected_route_repair_harm_rate", 0.0)),
-            target_selected=float(results.get("process_repair_selected_route_target_selection_rate", 0.0)),
-            oracle=float(results.get("process_repair_selected_route_full_oracle_accuracy", 0.0)),
-        ),
+            changed=float(results.get(f"{method}_changed_answer_rate", 0.0)),
+            help_rate=float(results.get(f"{method}_repair_help_rate", 0.0)),
+            harm_rate=float(results.get(f"{method}_repair_harm_rate", 0.0)),
+            target_selected=float(results.get(f"{method}_target_selection_rate", 0.0)),
+            oracle=float(results.get(f"{method}_full_oracle_accuracy", 0.0)),
+        ))
+    lines.extend([
         "",
         "Interpretation:",
         "",
-        "This ablation selects a route with an existing non-oracle selector, then asks the target model to audit and repair the selected reasoning. Raw repair text, pre/post answers, changed-answer flags, and oracle availability are logged per example.",
-    ]
+        "This ablation selects a route with an existing non-oracle selector, then asks the target model to audit and repair the selected reasoning. Optional controls log selected-route no-repair and target self-repair under the same repair prompt, so gains can be attributed to candidate generation, target-side repair, or their combination.",
+    ])
     pathlib.Path(output_md).parent.mkdir(parents=True, exist_ok=True)
     pathlib.Path(output_md).write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -240,6 +317,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--method", default="rotalign_kv_gate_0.10")
     parser.add_argument("--baseline-method", default="target_alone")
     parser.add_argument("--selection-policy", default="target_on_strict_format")
+    parser.add_argument(
+        "--control-arms",
+        nargs="*",
+        choices=("selected_no_repair", "target_self_repair"),
+        default=[],
+        help="Optional same-prompt control arms to log alongside selected-route repair.",
+    )
     parser.add_argument("--model", default="Qwen/Qwen3-0.6B")
     parser.add_argument("--device", default=default_device())
     parser.add_argument("--dtype", default="float32", choices=["float32", "float16", "bfloat16", "auto"])
@@ -279,6 +363,7 @@ def main(argv: list[str] | None = None) -> None:
         response_fn=response_fn,
         selection_policy=args.selection_policy,
         max_candidate_chars=args.max_candidate_chars,
+        control_arms=tuple(args.control_arms),
     )
     results = summarize_results(records)
     write_prediction_records(args.output_jsonl, records)
@@ -292,6 +377,7 @@ def main(argv: list[str] | None = None) -> None:
             "method": args.method,
             "baseline_method": args.baseline_method,
             "selection_policy": args.selection_policy,
+            "control_arms": list(args.control_arms),
             "model": args.model,
         },
     )

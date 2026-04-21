@@ -108,6 +108,10 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   land at `0.0857`, `0.0286`, and `0.0571`; SVAMP70 salts land at `0.3000`,
   `0.3000`, and `0.2571`. The positive result comes from target-side process
   repair on top of candidate generation.
+- The repair harness now supports same-prompt control arms for selected-route
+  no-repair and target self-repair. These controls must be run on the full
+  frozen route pools before attributing the held-out gain specifically to
+  cross-model communication rather than target-side self-correction.
 - Transport-only branches improved from `grouped_transport` to `grouped_signature_transport`, but they plateaued below the fixed-prior branch and well below `C2C`.
 - The first transport-plus-correction branch improves over the pure transport family, but it still does not catch the fixed-prior branch or `C2C`.
 - The first bridge-style correction branch that actually survives beyond tiny smokes is `bridge_ridge`, but it still trails the grouped-subspace-plus-rank4 checkpoint and the fixed-prior branch.

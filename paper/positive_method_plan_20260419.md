@@ -443,6 +443,60 @@ That means:
 - next variants should add step-level verifier/test-before-repair,
   sensitivity-aware route budgeting, and explicit token/byte accounting
 
+## 2026-04-21 Fair Repair-Control Harness
+
+I added same-prompt repair-control arms to `process_repair_routes.py` and the
+held-out bootstrap. A repair run can now emit:
+
+- `selected_route_no_repair`: the selector output without target-side repair
+- `target_self_repair`: the target candidate repaired with the same prompt and
+  decode budget
+- `process_repair_selected_route`: the selected route repaired with the same
+  prompt and decode budget
+
+This directly attacks the current claim risk: held-out process repair beats the
+raw `C2C` row, but it adds target-side generation. The next fair comparison is
+not only "repair vs target-alone"; it is "selected-route repair vs target
+self-repair and selected-route no-repair under identical prompts, token budget,
+temperature, and serialization."
+
+I validated the control harness on the existing GSM70 `n=2` smoke route pool.
+The smoke is intentionally not paper evidence: `target_self_repair` and
+`process_repair_selected_route` both reached `1.0000` from a `0.5000`
+pre-repair baseline, while `selected_route_no_repair` stayed at `0.5000`. That
+is useful because it proves the control can falsify attribution: on tiny slices,
+the gain may be target self-repair rather than cross-model communication.
+
+Next full-result requirement:
+
+- rerun GSM70/SVAMP70 repair on the frozen route pools with both control arms
+- report selected-route no-repair, target self-repair, and selected-route repair
+  in the same table
+- include `repair_prompt_chars`, changed-answer rate, help/harm, target-selection
+  rate, and full candidate oracle
+- only claim cross-model communication improvement if selected-route repair
+  beats target self-repair under matched budget
+
+## 2026-04-21 Toy Test-Before-Repair Ablation
+
+I added a toy `test-before-repair` bridge that models the failure mode from the
+real route pools: the highest-surface candidate can be internally consistent but
+semantically drifted, so output-only repair has no local arithmetic error to
+fix. The toy compares:
+
+- `repair_only`: immediately spend the repair pass on the highest-surface route
+- `test_before_repair`: run discriminative checks over the pool before spending
+  repair budget
+- `oracle`: label-leaking upper bound
+
+Result on the generated `192`-example toy: `repair_only = 0.0312`,
+`test_before_repair = 0.9531`, `oracle = 1.0000`; help vs repair-only is
+`0.9219`, harm is `0.0000`. The cost caveat is explicit: test-before-repair
+uses about `368.6` bytes of synthetic test evidence versus `61.5` bytes for
+repair-only. This does not create a paper claim, but it gives a concrete next
+real-model ablation: before target repair, ask for discriminative checks that
+can reject semantically drifted but locally consistent routes.
+
 I then tried the obvious stacked follow-up on that weak bridge clue: keep the
 same low-rank bridge checkpoint and add the best current runtime routing knobs
 on top. Three variants all failed on the matched sparse `gsm8k_eval_10` slice:

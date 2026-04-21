@@ -46,6 +46,9 @@ def test_bootstrap_writes_manifest_shell_and_limited_eval_file(tmp_path) -> None
             "cpu",
             "--limit",
             "2",
+            "--control-arms",
+            "selected_no_repair",
+            "target_self_repair",
         ]
     )
 
@@ -61,12 +64,15 @@ def test_bootstrap_writes_manifest_shell_and_limited_eval_file(tmp_path) -> None
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert manifest["settings"]["claim_policy"].startswith("dev-smoke")
     assert manifest["settings"]["limit"] == 2
+    assert manifest["settings"]["control_arms"] == ["selected_no_repair", "target_self_repair"]
     plan = manifest["plans"][0]
     assert plan["split"] == "gsm70"
     assert plan["eval_file"] == str(limited_eval)
     assert len(plan["route_commands"]) == 2
     assert plan["repair_command"]["command"][1] == "scripts/process_repair_routes.py"
     assert plan["repair_command"]["command"].count("--inputs") == 1
+    assert "--control-arms" in plan["repair_command"]["command"]
+    assert "target_self_repair" in plan["repair_command"]["command"]
 
     shell = shell_path.read_text(encoding="utf-8")
     assert "scripts/evaluate.py" in shell

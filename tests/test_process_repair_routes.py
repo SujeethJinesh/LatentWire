@@ -90,3 +90,49 @@ def test_process_repair_summary_and_jsonl(tmp_path) -> None:
     loaded = [json.loads(line) for line in output.read_text().splitlines()]
     assert len(loaded) == 2
     assert "Process Repair Route Summary" in markdown.read_text()
+
+
+def test_process_repair_records_can_log_fair_control_arms() -> None:
+    baseline = [_record(0, "target_alone", "target says 5", "5", False)]
+    seed = [_record(0, "bridge", "Candidate reasoning. Therefore, the answer is 4.", "4", True)]
+    examples = [_Example(prompt="What is 2+2?", answers=["4"])]
+    seen_sources: list[str] = []
+
+    def response_fn(
+        _idx: int,
+        _prompt: str,
+        selected: dict[str, object],
+        _candidates: list[dict[str, object]],
+    ) -> str:
+        seen_sources.append(str(selected["candidate_source"]))
+        if selected["candidate_source"] == "target":
+            return "The target answer is still wrong. Final answer: 5"
+        return "The candidate is correct. Final answer: 4"
+
+    records = repair.process_repair_records(
+        [baseline + seed],
+        examples=examples,
+        method="bridge",
+        response_fn=response_fn,
+        selection_policy="target_on_strict_format",
+        control_arms=("selected_no_repair", "target_self_repair"),
+    )
+    by_method = {str(row["method"]): row for row in records}
+
+    assert seen_sources == ["target", "seed_0"]
+    assert by_method["target_alone"]["correct"] is False
+    assert by_method["selected_route_no_repair"]["correct"] is True
+    assert by_method["selected_route_no_repair"]["repair_prompt_chars"] == 0
+    assert by_method["selected_route_no_repair"]["repair_changed_answer"] is False
+    assert by_method["target_self_repair"]["correct"] is False
+    assert by_method["target_self_repair"]["repair_selected_candidate_source"] == "target"
+    assert by_method["process_repair_selected_route"]["correct"] is True
+    assert by_method["process_repair_selected_route"]["repair_selected_candidate_source"] == "seed_0"
+
+    results = repair.summarize_results(records)
+    assert results["selected_route_no_repair"] == 1.0
+    assert results["target_self_repair"] == 0.0
+    assert results["process_repair_selected_route"] == 1.0
+    assert results["selected_route_no_repair_repair_help_rate"] == 0.0
+    assert results["target_self_repair_repair_harm_rate"] == 0.0
+    assert results["process_repair_selected_route_repair_help_rate"] == 0.0
