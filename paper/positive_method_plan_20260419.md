@@ -1532,3 +1532,43 @@ That means:
   - move to span-level / likelihood-style supervision,
   - or a tokenizer-agnostic byte/span interface,
   - while keeping `dynalign` as the live remapping base
+
+I then tested the first byte/shared-interface control as
+`bridge_ridge_qk_bytespan_module_replace`.
+
+This keeps the same direct-output slotted module as
+`bridge_ridge_qk_module_replace`, but replaces the upstream calibration pairing
+with dominant UTF-8 byte-overlap matching: each source token is mapped to the
+target token that overlaps it by the most raw-prompt byte mass.
+
+On a 16-prompt diagnostic calibration slice:
+
+- byte-span pairs: `678`
+- mean pairs per prompt: `42.38`
+- prompts changed versus char-span `spanalign`: `0`
+- `K` cosine `0.948`, relative Frobenius error `0.305`
+- `V` cosine `0.697`, relative Frobenius error `0.700`
+
+Held-out diagnostic reads:
+
+- `gsm8k_5`: `0.2000`
+- controlled `gsm8k_eval_10`: `0.1000`
+- controlled bytes on `gsm8k_eval_10`: `681,668.4`
+
+That means:
+
+- byte-span fitting is now wired and measurable, but the current GSM
+  calibration prompts do not stress tokenizer/byte-boundary differences at all
+- byte/shared-interface ideas should not be counted as a real method lane until
+  we add calibration data where byte and char/token segmentation actually
+  disagree
+- the next tokenizer-side step should be a **byte-stress calibration and
+  evaluation harness**, then stack the useful byte signal with `dynalign` or
+  `dynalign_dwakd`; more byte-span runs on the same GSM calibration data are
+  unlikely to move the paper
+
+I added that first harness as `scripts/analyze_byte_alignment.py`. On the
+default Qwen2.5 -> Qwen3 stress prompts it reports `1 / 8` prompts with changed
+byte-dominant pairings versus char-span alignment, so the next tokenizer-side
+model run should use a deliberately byte-stressed calibration slice rather than
+the current GSM-only calibration prompts.

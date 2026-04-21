@@ -21,6 +21,7 @@
 | gsm8k_eval_10_controlled | module adapter | attention bridge | 0.1000 | 681,668.4 | slotted attention-side transfer module with nonlinear readout and prediction distillation |
 | gsm8k_eval_10_controlled | module replace | attention bridge | 0.1000 | 681,668.4 | slotted attention-side transfer module trained to predict full corrected K/V directly |
 | gsm8k_eval_10_controlled | span-aligned module replace | token-remapped attention bridge | 0.1000 | 681,668.4 | direct-output slotted module fit from raw-prompt monotone span-aligned calibration pairs |
+| gsm8k_eval_10_controlled | byte-span module replace | token-remapped attention bridge | 0.1000 | 681,668.4 | direct-output slotted module fit from dominant UTF-8 byte-overlap calibration pairs on a 16-prompt diagnostic slice |
 | gsm8k_eval_10_controlled | dynamic-aligned module replace | token-remapped attention bridge | 0.1000 | 681,668.4 | direct-output slotted module fit from context-plus-output-overlap token mixtures |
 | gsm8k_eval_10_controlled | dynamic-aligned interaction module replace | token-remapped attention bridge | 0.1000 | 681,668.4 | dynalign module replace plus prompt-local interaction distillation on a 16-prompt diagnostic slice |
 | gsm8k_eval_10_controlled | token-basis replace | token-native attention bridge | 0.1000 | 681,668.4 | slotted attention-side module constrained to a basis distilled from target next-token output rows |
@@ -36,6 +37,7 @@
 | gsm8k_5_controlled_smoke | module adapter | attention bridge | 0.2000 | 686,026.6 | slotted attention-side transfer module with nonlinear readout and prediction distillation |
 | gsm8k_5_controlled_smoke | module replace | attention bridge | 0.2000 | 686,026.6 | slotted attention-side transfer module trained to predict full corrected K/V directly |
 | gsm8k_5_controlled_smoke | span-aligned module replace | token-remapped attention bridge | 0.2000 | 686,026.6 | direct-output slotted module fit from raw-prompt monotone span-aligned calibration pairs |
+| gsm8k_5_controlled_smoke | byte-span module replace | token-remapped attention bridge | 0.2000 | 686,026.6 | direct-output slotted module fit from dominant UTF-8 byte-overlap calibration pairs on a 16-prompt diagnostic slice |
 | gsm8k_5_controlled_smoke | contextual-aligned module replace | token-remapped attention bridge | 0.0000 | 686,026.6 | direct-output slotted module fit from context-weighted source-to-target token mixtures |
 | gsm8k_5_controlled_smoke | dynamic-aligned module replace | token-remapped attention bridge | 0.4000 | 686,026.6 | direct-output slotted module fit from context-plus-output-overlap token mixtures |
 | gsm8k_5_controlled_smoke | dynamic-aligned interaction module replace | token-remapped attention bridge | 0.2000 | 686,026.6 | dynalign module replace plus prompt-local interaction distillation on a 16-prompt diagnostic slice |

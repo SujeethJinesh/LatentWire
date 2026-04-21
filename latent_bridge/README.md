@@ -189,7 +189,7 @@ python scripts/calibrate.py \
 - `--pre-quant-rank N` / `--pre-quant-shrinkage A` — apply a target-space
   low-rank/shrinkage filter before quantization. This is a denoising step
   after alignment, not a replacement for the alignment solver.
-- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_cab_bank,bridge_ridge_qk_predkl_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,bridge_ridge_qk_adapter,bridge_ridge_qk_affinity_adapter,bridge_ridge_qk_attnkl_adapter,bridge_ridge_qk_cab_adapter,bridge_ridge_qk_emkd_adapter,bridge_ridge_qk_readout_adapter,bridge_ridge_qk_predkl_adapter,bridge_ridge_qk_asym_adapter,bridge_ridge_qk_asym_projector,bridge_ridge_qk_asym_predkl_adapter,bridge_ridge_qk_asym_dynmap_adapter,bridge_ridge_qk_xattn_adapter,bridge_ridge_qk_xattn_dynmap_adapter,bridge_ridge_qk_module_adapter,bridge_ridge_qk_module_replace,bridge_ridge_qk_spanalign_module_replace,bridge_ridge_qk_ctxalign_module_replace,bridge_ridge_qk_dynalign_module_replace,bridge_ridge_qk_dynalign_dwakd_module_replace,bridge_ridge_qk_dynalign_interact_module_replace,bridge_ridge_qk_dpalign_module_replace,bridge_ridge_qk_tokenbasis_replace,bridge_ridge_qk_sae_adapter,bridge_ridge_qk_generated_adapter,ridge,low_rank}` —
+- `--quantization-correction {none,affine,bridge_affine,bridge_ridge,bridge_ridge_query,bridge_low_rank_bank,bridge_ridge_residual_bank,bridge_ridge_qk_residual_bank,bridge_ridge_qk_cab_bank,bridge_ridge_qk_predkl_bank,bridge_ridge_qk_weighted,bridge_ridge_qk_projector,bridge_ridge_qk_adapter,bridge_ridge_qk_affinity_adapter,bridge_ridge_qk_attnkl_adapter,bridge_ridge_qk_cab_adapter,bridge_ridge_qk_emkd_adapter,bridge_ridge_qk_readout_adapter,bridge_ridge_qk_predkl_adapter,bridge_ridge_qk_asym_adapter,bridge_ridge_qk_asym_projector,bridge_ridge_qk_asym_predkl_adapter,bridge_ridge_qk_asym_dynmap_adapter,bridge_ridge_qk_xattn_adapter,bridge_ridge_qk_xattn_dynmap_adapter,bridge_ridge_qk_module_adapter,bridge_ridge_qk_module_replace,bridge_ridge_qk_bytespan_module_replace,bridge_ridge_qk_spanalign_module_replace,bridge_ridge_qk_ctxalign_module_replace,bridge_ridge_qk_dynalign_module_replace,bridge_ridge_qk_dynalign_dwakd_module_replace,bridge_ridge_qk_dynalign_interact_module_replace,bridge_ridge_qk_dpalign_module_replace,bridge_ridge_qk_tokenbasis_replace,bridge_ridge_qk_sae_adapter,bridge_ridge_qk_generated_adapter,ridge,low_rank}` —
   optional decoder-side correction after quantize/dequantize. `affine` is a
   diagonal scale+bias repair; `bridge_affine` is a coordinatewise bridge over
   both the dequantized tensor and the pre-quant translated prediction;
@@ -251,6 +251,10 @@ python scripts/calibrate.py \
   `bridge_ridge_qk_module_replace` keeps that same slotted attention-side
   module shape but trains it to predict the full corrected K/V directly
   instead of only a residual on top of the fixed bridge;
+  `bridge_ridge_qk_bytespan_module_replace` keeps that same direct-output
+  module shape but fits it from raw-prompt UTF-8 byte-span aligned token pairs,
+  choosing the dominant byte-overlap target for each source token so the
+  calibration interface is less tied to tokenizer character segmentation;
   `bridge_ridge_qk_spanalign_module_replace` keeps that same direct-output
   module shape but fits it from raw-prompt monotone span-aligned
   source/target token pairs instead of plain same-position token pairing;
@@ -306,6 +310,8 @@ python scripts/calibrate.py \
   `bridge_ridge_qk_xattn_dynmap_adapter`, or
   `bridge_ridge_qk_module_adapter`, or
   `bridge_ridge_qk_module_replace`, or
+  `bridge_ridge_qk_bytespan_module_replace`, or
+  `bridge_ridge_qk_spanalign_module_replace`, or
   `bridge_ridge_qk_ctxalign_module_replace`, or
   `bridge_ridge_qk_dynalign_module_replace`, or
   `bridge_ridge_qk_dynalign_dwakd_module_replace`, or

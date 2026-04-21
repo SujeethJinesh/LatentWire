@@ -1493,6 +1493,33 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_spanalign_module_replace(m
     assert args.quantization_correction_rank == 8
 
 
+def test_calibrate_parse_args_accepts_bridge_ridge_qk_bytespan_module_replace(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "bridge_ridge_qk_bytespan_module_replace",
+            "--quantization-correction-rank",
+            "8",
+        ],
+    )
+
+    args = calibrate.parse_args()
+
+    assert args.quantization_correction == "bridge_ridge_qk_bytespan_module_replace"
+    assert args.quantization_correction_rank == 8
+
+
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_tokenbasis_replace(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,
@@ -1546,6 +1573,27 @@ def test_collect_aligned_prompt_position_pairs_aligns_raw_prompt_content() -> No
     src_start = src_text.find(prompt)
 
     assert pairs == [[(src_start + 0, 0), (src_start + 1, 1), (src_start + 2, 2)]]
+
+
+def test_collect_byte_aligned_prompt_position_pairs_prefers_utf8_byte_mass() -> None:
+    prompt = "aé"
+    src_tok = _ScriptedOffsetTokenizer({prompt: [(0, 2)]})
+    tgt_tok = _ScriptedOffsetTokenizer({prompt: [(0, 1), (1, 2)]})
+
+    pairs = calibrate.collect_byte_aligned_prompt_position_pairs(
+        src_tok,
+        tgt_tok,
+        [prompt],
+        max_length=128,
+        batch_size=1,
+        source_reasoning_mode="plain",
+        source_use_chat_template=False,
+        source_enable_thinking=None,
+        target_use_chat_template=False,
+        target_enable_thinking=None,
+    )
+
+    assert pairs == [[(0, 1)]]
 
 
 def test_collect_contextual_prompt_position_mixtures_tracks_split_target_tokens() -> None:

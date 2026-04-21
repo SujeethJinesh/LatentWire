@@ -261,6 +261,7 @@ def parse_args() -> argparse.Namespace:
             "bridge_ridge_qk_xattn_dynmap_adapter",
             "bridge_ridge_qk_module_adapter",
             "bridge_ridge_qk_module_replace",
+            "bridge_ridge_qk_bytespan_module_replace",
             "bridge_ridge_qk_spanalign_module_replace",
             "bridge_ridge_qk_ctxalign_module_replace",
             "bridge_ridge_qk_dynalign_module_replace",
@@ -584,6 +585,47 @@ def _collect_prompt_content_token_spans(
     return spans
 
 
+def _byte_prefix_lengths(text: str) -> list[int]:
+    prefix = [0]
+    total = 0
+    for ch in text:
+        total += len(ch.encode("utf-8"))
+        prefix.append(total)
+    return prefix
+
+
+def _collect_prompt_content_token_byte_spans(
+    tokenizer: AutoTokenizer,
+    prompt_text: str,
+    raw_prompt: str,
+    *,
+    max_length: int,
+) -> list[tuple[int, int, int]] | None:
+    raw_prompt = raw_prompt.strip()
+    if not raw_prompt:
+        return []
+    prompt_start = prompt_text.find(raw_prompt)
+    if prompt_start < 0:
+        return None
+    offsets = _token_offsets_for_prompt_text(tokenizer, prompt_text, max_length=max_length)
+    if offsets is None:
+        return None
+    prompt_end = prompt_start + len(raw_prompt)
+    byte_prefix = _byte_prefix_lengths(raw_prompt)
+    spans: list[tuple[int, int, int]] = []
+    for token_pos, (start, end) in enumerate(offsets):
+        if end <= start:
+            continue
+        span_start = max(start, prompt_start)
+        span_end = min(end, prompt_end)
+        if span_end <= span_start:
+            continue
+        rel_start = span_start - prompt_start
+        rel_end = span_end - prompt_start
+        spans.append((token_pos, byte_prefix[rel_start], byte_prefix[rel_end]))
+    return spans
+
+
 def _align_token_spans_monotone(
     src_spans: Sequence[tuple[int, int, int]],
     tgt_spans: Sequence[tuple[int, int, int]],
@@ -613,6 +655,40 @@ def _align_token_spans_monotone(
             src_idx += 1
         else:
             tgt_idx += 1
+    return pairs
+
+
+def _align_token_spans_byte_dominant(
+    src_spans: Sequence[tuple[int, int, int]],
+    tgt_spans: Sequence[tuple[int, int, int]],
+) -> list[tuple[int, int]]:
+    pairs: list[tuple[int, int]] = []
+    tgt_scan_start = 0
+    for src_pos, src_start, src_end in src_spans:
+        best: tuple[int, float, int, int] | None = None
+        best_tgt_pos: int | None = None
+        tgt_idx = tgt_scan_start
+        while tgt_idx < len(tgt_spans):
+            tgt_pos, tgt_start, tgt_end = tgt_spans[tgt_idx]
+            if tgt_end <= src_start:
+                tgt_scan_start = tgt_idx + 1
+                tgt_idx += 1
+                continue
+            if tgt_start >= src_end:
+                break
+            overlap = max(0, min(src_end, tgt_end) - max(src_start, tgt_start))
+            if overlap > 0:
+                src_len = max(src_end - src_start, 1)
+                tgt_len = max(tgt_end - tgt_start, 1)
+                union = max(src_end, tgt_end) - min(src_start, tgt_start)
+                center_gap = abs((src_start + src_end) - (tgt_start + tgt_end))
+                score = (overlap, overlap / float(max(union, 1)), -center_gap, -max(src_len, tgt_len))
+                if best is None or score > best:
+                    best = score
+                    best_tgt_pos = int(tgt_pos)
+            tgt_idx += 1
+        if best_tgt_pos is not None:
+            pairs.append((int(src_pos), best_tgt_pos))
     return pairs
 
 
@@ -1284,6 +1360,58 @@ def collect_aligned_prompt_position_pairs(
         pairs: list[tuple[int, int]] = []
         if src_spans is not None and tgt_spans is not None:
             pairs = _align_token_spans_monotone(src_spans, tgt_spans)
+        if not pairs:
+            src_len = _prompt_valid_length_for_text(src_tokenizer, src_text, max_length=max_length)
+            tgt_len = _prompt_valid_length_for_text(tgt_tokenizer, tgt_text, max_length=max_length)
+            pairs = [(pos, pos) for pos in range(min(src_len, tgt_len))]
+        position_pairs.append(pairs)
+    return position_pairs
+
+
+def collect_byte_aligned_prompt_position_pairs(
+    src_tokenizer: AutoTokenizer,
+    tgt_tokenizer: AutoTokenizer,
+    prompts: list[str],
+    *,
+    max_length: int,
+    batch_size: int,
+    source_reasoning_mode: str = "plain",
+    source_use_chat_template: bool = False,
+    source_enable_thinking: bool | None = None,
+    target_use_chat_template: bool = False,
+    target_enable_thinking: bool | None = None,
+) -> list[list[tuple[int, int]]]:
+    del batch_size  # Alignment is prompt-local and cheap enough to build one prompt at a time.
+    position_pairs: list[list[tuple[int, int]]] = []
+    for prompt in prompts:
+        src_text = _prepare_prompt_text(
+            prompt,
+            reasoning_mode=source_reasoning_mode,
+            tokenizer=src_tokenizer,
+            use_chat_template=source_use_chat_template,
+            enable_thinking=source_enable_thinking,
+        )
+        tgt_text = _format_prompt_for_tokenizer(
+            tgt_tokenizer,
+            prompt,
+            use_chat_template=target_use_chat_template,
+            enable_thinking=target_enable_thinking,
+        )
+        src_spans = _collect_prompt_content_token_byte_spans(
+            src_tokenizer,
+            src_text,
+            prompt,
+            max_length=max_length,
+        )
+        tgt_spans = _collect_prompt_content_token_byte_spans(
+            tgt_tokenizer,
+            tgt_text,
+            prompt,
+            max_length=max_length,
+        )
+        pairs: list[tuple[int, int]] = []
+        if src_spans is not None and tgt_spans is not None:
+            pairs = _align_token_spans_byte_dominant(src_spans, tgt_spans)
         if not pairs:
             src_len = _prompt_valid_length_for_text(src_tokenizer, src_text, max_length=max_length)
             tgt_len = _prompt_valid_length_for_text(tgt_tokenizer, tgt_text, max_length=max_length)
@@ -2537,6 +2665,46 @@ def main() -> None:
             f"prompts={len(aligned_position_pairs)}, total_pairs={total_pairs}, "
             f"mean_pairs_per_prompt={total_pairs / max(len(aligned_position_pairs), 1):.2f}"
         )
+    elif args.quantization_correction == "bridge_ridge_qk_bytespan_module_replace":
+        print(
+            "\nBuilding raw-prompt byte-span-aligned source/target token pairs "
+            "(content-only monotone byte-overlap alignment)..."
+        )
+        aligned_position_pairs = collect_byte_aligned_prompt_position_pairs(
+            tok_s,
+            tok_t,
+            prompts,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            source_reasoning_mode=args.source_reasoning_mode,
+            source_use_chat_template=args.source_use_chat_template,
+            source_enable_thinking=source_enable_thinking,
+            target_use_chat_template=args.target_use_chat_template,
+            target_enable_thinking=target_enable_thinking,
+        )
+        total_pairs = sum(len(pairs) for pairs in aligned_position_pairs)
+        span_position_pairs = collect_aligned_prompt_position_pairs(
+            tok_s,
+            tok_t,
+            prompts,
+            max_length=args.max_length,
+            batch_size=args.batch_size,
+            source_reasoning_mode=args.source_reasoning_mode,
+            source_use_chat_template=args.source_use_chat_template,
+            source_enable_thinking=source_enable_thinking,
+            target_use_chat_template=args.target_use_chat_template,
+            target_enable_thinking=target_enable_thinking,
+        )
+        changed_prompts = sum(
+            int(byte_pairs != span_pairs)
+            for byte_pairs, span_pairs in zip(aligned_position_pairs, span_position_pairs)
+        )
+        print(
+            "Built byte-aligned token pairs: "
+            f"prompts={len(aligned_position_pairs)}, total_pairs={total_pairs}, "
+            f"mean_pairs_per_prompt={total_pairs / max(len(aligned_position_pairs), 1):.2f}, "
+            f"changed_vs_spanalign_prompts={changed_prompts}"
+        )
     elif args.quantization_correction == "bridge_ridge_qk_ctxalign_module_replace":
         print(
             "\nBuilding contextual source->target token mixtures "
@@ -2926,7 +3094,7 @@ def main() -> None:
             )
 
     aligned_lengths: list[int] | None = None
-    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+    if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
         if aligned_position_mixtures is not None:
             aligned_lengths = [len(mixture) for mixture in aligned_position_mixtures]
         elif aligned_position_pairs is not None:
@@ -3040,7 +3208,7 @@ def main() -> None:
             f"layers={len(bridge_sample_weights)}, samples={int(bridge_sample_weights[0].numel())}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target query features for query-conditioned bridge projector/adapter "
@@ -3068,7 +3236,7 @@ def main() -> None:
             f"layers={len(bridge_query_features)}, samples={int(bridge_query_features[0].shape[0])}"
         )
 
-    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_predkl_bank"}:
+    if args.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_predkl_bank"}:
         assert aligned_lengths is not None
         print(
             "\nBuilding aligned target next-token teacher for prediction-level bridge distillation "

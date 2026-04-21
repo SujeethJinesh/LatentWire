@@ -2426,3 +2426,44 @@ Interpretation:
   - the next step should change the supervision target more globally,
   - toward span-level / likelihood-style targets,
   - or a tokenizer-agnostic byte / shared interface
+
+And a seventy-fifth byte-span shared-interface diagnostic:
+
+> I then implemented `bridge_ridge_qk_bytespan_module_replace`, which keeps
+> the same direct-output slotted module as `bridge_ridge_qk_module_replace`,
+> but changes the upstream calibration pairing to a tokenizer-agnostic
+> UTF-8 byte-span interface. For each source token, the fitter chooses the
+> dominant overlapping target token by raw byte mass before fitting the same
+> module-replacement bridge.
+>
+> On a 16-prompt diagnostic calibration slice:
+> - byte-span pairs: `678`
+> - mean pairs per prompt: `42.38`
+> - prompts changed versus char-span `spanalign`: `0`
+> - `K` cosine `0.948`, relative Frobenius error `0.305`
+> - `V` cosine `0.697`, relative Frobenius error `0.700`
+>
+> Held-out diagnostic reads:
+> - `gsm8k_5`: `0.200000` at `686,026.600` average bytes
+> - controlled `gsm8k_eval_10`: `0.100000` at `681,668.400` average bytes
+
+Interpretation:
+
+- the implementation is now useful as a byte/shared-interface control, but on
+  the current GSM-style calibration set it did **not** change any token-pair
+  lists relative to char-span alignment
+- this means the existing telemetry is not actually stressing tokenizer
+  boundary differences; byte-level ideas need byte-stress or tokenizer-mismatch
+  calibration data before we can treat them as a live method lane
+- the next useful tokenizer-side work should be:
+  - add a byte/tokenizer-stress calibration slice with units, symbols,
+    Unicode, and adversarial BPE splits,
+  - compare spanalign versus bytespan pair changes directly,
+  - and only then stack byte/shared-interface supervision with the stronger
+    `dynalign` / `dynalign_dwakd` teacher rather than testing more same-data
+    byte variants
+
+I added the first audit harness as `scripts/analyze_byte_alignment.py` and ran
+it on the default Qwen2.5 -> Qwen3 byte-stress prompts. It found `1 / 8`
+changed prompts, which confirms the harness can expose tokenizer-boundary
+cases even though the GSM calibration slice did not.

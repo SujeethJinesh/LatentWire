@@ -155,6 +155,14 @@
     "accuracy": 0.1,
     "avg_bytes": 681668.4,
     "family": "token-remapped attention bridge",
+    "method": "byte-span module replace",
+    "notes": "direct-output slotted module fit from dominant UTF-8 byte-overlap calibration pairs on a 16-prompt diagnostic slice",
+    "split": "gsm8k_eval_10_controlled"
+  },
+  {
+    "accuracy": 0.1,
+    "avg_bytes": 681668.4,
+    "family": "token-remapped attention bridge",
     "method": "dynamic-aligned module replace",
     "notes": "direct-output slotted module fit from context-plus-output-overlap token mixtures",
     "split": "gsm8k_eval_10_controlled"
@@ -269,6 +277,14 @@
     "family": "token-remapped attention bridge",
     "method": "span-aligned module replace",
     "notes": "direct-output slotted module fit from raw-prompt monotone span-aligned calibration pairs",
+    "split": "gsm8k_5_controlled_smoke"
+  },
+  {
+    "accuracy": 0.2,
+    "avg_bytes": 686026.6,
+    "family": "token-remapped attention bridge",
+    "method": "byte-span module replace",
+    "notes": "direct-output slotted module fit from dominant UTF-8 byte-overlap calibration pairs on a 16-prompt diagnostic slice",
     "split": "gsm8k_5_controlled_smoke"
   },
   {
