@@ -35,6 +35,7 @@ active positive clues, and combinations worth testing next.
 | Stack oracle route ceiling | In the composition toy, oracle routing reaches `0.8229` versus raw pairwise `0.7344` | Use this to debug route assignment and stop policy; do not cite as a method row. |
 | Route-/class-calibrated frontier | On the held-out hub sweep, route-class patch-protect ties quant-error (`0.6354` prior, `0.8125` oracle) while route-class frontier remains negative | Promote only if a redesigned pruning rule beats both quant-error and all-low-bit hub baselines; otherwise move to multi-way canonical hubs or tokenizer/interface simplification. |
 | Multi-way canonical hub | On the held-out-family toy, `multiway_gpa_canonical` is the best non-oracle/shared-basis method at `1` shot/class (`0.1327` MSE vs few-shot `0.1463`) and crushes global seen-family ridge, but direct held-out family fitting regains the MSE lead by `2+` shots/class | Promote only as a low-shot initializer or regularizer unless it also wins once moderate paired data exists; the next real test should be GPA-initialized shared hub plus sparse dictionary on a held-out-family route split. |
+| Gauge-fix / quotient bridge | On the held-out-family symmetry toy, `quotient_match_after_fix` is now the best non-oracle method at `1` shot/class (`0.0796` MSE vs few-shot `0.0985`, no-match gauge-fix `0.1665`, global seen-family ridge `1.7099`) and recovers the true head correspondence (`head_match_accuracy = 1.0000`), but direct held-out-family fitting regains the MSE lead by `2+` shots/class | Promote only as a low-shot gauge/canonical initializer before the shared dictionary lane; require the gain to survive composition with sparse dictionaries and real held-out route pools before elevating it into the main method story. |
 | GPA sparse dictionary hub | On the held-out-family toy, `multiway_gpa_sparse_dictionary` is now the strongest low-shot shared-basis method at `1` shot/class (`0.1171` MSE vs few-shot `0.1825` and canonical `0.2355`), but direct held-out family fitting regains the MSE lead by `2+` shots/class and the verifier-gated repair step stays at `0.0000` accept/help | Promote only as a low-shot shared-basis backbone if the gain survives tokenizer/interface shifts and the dictionary becomes interpretable enough to justify the story; keep repair as a blocker until it actually fires and helps. |
 | Real tokenizer pair sweep | On GSM30 prompts, the exact Qwen2.5->Qwen3 pair is effectively tokenizer-identical (`shared decoded = 1.0000`, `boundary F1 = 1.0000`), while Qwen->Mistral and Qwen->Phi3 show real surface and boundary mismatch (`shared decoded ~0.80`, `boundary F1 0.93-0.95`) | Do not treat tokenizer mismatch as the likely blocker for the current same-pair method; use byte/span/vocab controls as a robustness and cross-family lane instead. |
 
@@ -43,16 +44,18 @@ active positive clues, and combinations worth testing next.
 The next positive-method stack should be additive only after each component has
 an interaction control:
 
-1. GPA-initialized shared hub plus sparse shared dictionary instead of plain
+1. Gauge-fix / quotient-aware canonicalization before fitting any shared hub
+   on genuinely heterogeneous head spaces.
+2. GPA-initialized shared hub plus sparse shared dictionary instead of plain
    pairwise bridges.
-2. Byte/span/vocabulary interface controls instead of assuming tokenizer
+3. Byte/span/vocabulary interface controls instead of assuming tokenizer
    compatibility.
-3. Sticky feature-routed projector bank instead of one monolithic bridge or
+4. Sticky feature-routed projector bank instead of one monolithic bridge or
    confidence-only routing.
-4. A genuinely different protected-pruning rule instead of the current quant-error
+5. A genuinely different protected-pruning rule instead of the current quant-error
    or route-class frontier heuristics.
-5. A repair step only after it shows nonzero accept/help on held-out toys.
-6. Matched comparison against target-alone, target self-repair, text-to-text,
+6. A repair step only after it shows nonzero accept/help on held-out toys.
+7. Matched comparison against target-alone, target self-repair, text-to-text,
    C2C, LatentMAS, and same-model compression controls.
 
 ## Required Telemetry
@@ -90,6 +93,16 @@ canonicalization helps at the true `1`-shot held-out-family point, where
 fitting as soon as `2+` paired shots/class are available. Treat this as
 evidence for low-shot hub initialization, not as a universal replacement for
 family-specific fitting.
+
+`results/query_pool_toy_20260421/gauge_fix_quotient_bridge_20260421.md` is the
+current symmetry-aware follow-up. The read is narrower but stronger: once the
+head-matching score is made gauge-invariant, quotient-aware matching becomes
+the best non-oracle method at the true `1`-shot point (`0.0796` MSE vs
+`0.0985` for direct few-shot and `0.1665` for no-match gauge-fix) and
+recovers the true head assignment (`head_match_accuracy = 1.0000`), but direct
+held-out-family fitting still retakes the MSE lead by `2+` shots/class. Treat
+this as evidence for a low-shot gauge/canonical initializer, not as a full
+method by itself.
 
 `results/query_pool_toy_20260421/gpa_sparse_dictionary_hub_20260421.md` is the
 current low-shot shared-basis follow-up. The read is sharper: the sparse

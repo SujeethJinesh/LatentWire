@@ -58,6 +58,32 @@ for the current same-pair Qwen positive-method attempt. For the exact active
 pair, the live blockers remain route quality, shared-basis transfer, and
 repair/control design.
 
+## Status After Gauge-Fix Quotient Bridge Toy
+
+The new symmetry-focused toy sharpens the low-shot read again:
+
+- once the head-matching score is made gauge-invariant, `quotient_match_after_fix`
+  becomes the best non-oracle method at the true `1`-shot held-out-family point,
+  reaching `0.0796` MSE versus `0.0985` for direct held-out-family few-shot
+  fitting, `0.1665` for no-match gauge-fix, and `1.7099` for the global
+  seen-family ridge control
+- the quotient-aware matcher also recovers the true head correspondence exactly
+  in that toy (`head_match_accuracy = 1.0000`)
+- but, again, direct held-out-family fitting retakes the MSE lead by `2+`
+  paired shots/class (`0.0410` vs `0.0693` at `2` shots; `0.0141` vs `0.0505`
+  at `4` shots)
+
+That means quotient-aware gauge fixing is now a stronger **low-shot
+initializer** than canonicalization alone, but still not a full method. The
+cleanest additive order is now:
+
+1. gauge-fix / quotient-aware matching
+2. GPA-style shared hub
+3. sparse shared dictionary / crosscoder
+4. tokenizer or byte-level interface control when mismatch is actually present
+5. route/repair only after the shared basis is stable and repair shows nonzero
+   accepted help
+
 ## Best Next Method Lane
 
 Subagent consensus was tight: the only credible internal positive-method lane

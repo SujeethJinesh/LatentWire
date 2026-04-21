@@ -159,5 +159,26 @@
     "path": "references/379_symmetry_quantization_interface_latest_refs.md",
     "status": "local_memo",
     "reason": "Recent symmetry, gauge-fixing, quantization-geometry, and tokenizer-mismatch interface memo with mathematically motivated next experiments for LatentWire."
+  },
+  {
+    "num": 380,
+    "slug": "gauge_quotient_recent_refs",
+    "path": "references/380_gauge_quotient_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent gauge symmetry, quotient geometry, multiway alignment, and latent transport memo with concrete quotient-aware bridge ablations for the active paper loop."
+  },
+  {
+    "num": 381,
+    "slug": "competitor_benchmark_bootstrap_recent_refs",
+    "path": "references/381_competitor_benchmark_bootstrap_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent competitor and benchmark-harness memo covering fair comparison contracts, matched row types, and practical bootstrap guidance for the benchmark track."
+  },
+  {
+    "num": 382,
+    "slug": "multimodal_repair_connector_recent_refs",
+    "path": "references/382_multimodal_repair_connector_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent multimodal connector, latent repair, iterative communication, token-free reasoning, diffusion-language, and bridge-architecture memo with concrete LatentWire ablations."
   }
 ]

@@ -199,6 +199,20 @@ orthogonal alignment, and OT-based transport:
 - `161_`: transformers-as-OT as a principled geometric framing for soft transport rather than heuristic head matching.
 - `162_`: OT alignment for contextual embeddings as a practical reference for alignment objectives under contextual, not static, representations.
 
+Files `380_` through `382_` extend the current paper-tightening loop around
+low-shot gauge fixing, competitor benchmark contracts, and multimodal / latent
+connector ideas:
+
+- `380_`: gauge symmetry, quotient-aware matching, multiway alignment, and
+  latent transport references for low-shot gauge-fix / quotient-bridge
+  ablations.
+- `381_`: recent competitor and benchmark-harness references for matched
+  evaluation contracts, frozen comparison rows, and practical harness
+  discipline.
+- `382_`: recent multimodal connector, latent repair, iterative communication,
+  diffusion-language, and bridge-architecture references for lateral ablation
+  ideas.
+
 File `163_` adds a newer cross-model KV reuse system angle:
 
 - `163_`: activated-LoRA cross-model KV reuse as a recent systems reference for combining reusable transport paths with lightweight adaptation rather than treating transport as a fully fixed map.
