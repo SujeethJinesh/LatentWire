@@ -33,5 +33,12 @@
     "path": "references/361_recent_refinement_quant_connector_refs.md",
     "status": "local_memo",
     "reason": "Recent refinement, quantization, connector, tokenizer, and competitor memo for routed projectors, iterative latent repair, mixed-bit protected frontiers, asymmetric K/V transport, and LatentMAS-style benchmarks."
+  },
+  {
+    "num": 362,
+    "slug": "latentmas_competitor_bootstrap_refs",
+    "path": "references/362_latentmas_competitor_bootstrap_refs.md",
+    "status": "local_memo",
+    "reason": "LatentMAS competitor bootstrap memo with local clone status, source links, native GSM commands, SVAMP-compatible wrapper plan, required telemetry, and fair-comparison ladder against LatentWire."
   }
 ]

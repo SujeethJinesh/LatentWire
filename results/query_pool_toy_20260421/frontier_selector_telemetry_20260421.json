@@ -1,0 +1,98 @@
+{
+  "generated_by": "scripts/analyze_frontier_selector_telemetry.py",
+  "inputs": [
+    "embedded_fixture"
+  ],
+  "rows": [
+    {
+      "bit_allocation": {
+        "high_bits": 8,
+        "low_bits": 2,
+        "protected_count": 3,
+        "source": "count_only"
+      },
+      "bytes": 91.0,
+      "compute": 681.0,
+      "false_prune": 0.019,
+      "feature_persistence": 0.214,
+      "harm": 0.0,
+      "help": 0.1458,
+      "missed_help": 0.086,
+      "patch_corr": 0.2712,
+      "protected_ids": [
+        1,
+        4,
+        7
+      ],
+      "quant_error_corr": 0.8831,
+      "selector_method": "quant_error_protect",
+      "source": "embedded_fixture",
+      "stability": 0.72
+    },
+    {
+      "bit_allocation": {
+        "high_bits": 8,
+        "low_bits": 2,
+        "protected_count": 3,
+        "source": "count_only"
+      },
+      "bytes": 166.0,
+      "compute": 446.4,
+      "false_prune": 0.111,
+      "feature_persistence": 0.3303,
+      "harm": 0.0,
+      "help": 0.2917,
+      "missed_help": 0.0,
+      "patch_corr": 0.6078,
+      "protected_ids": [
+        0,
+        2,
+        5
+      ],
+      "quant_error_corr": 0.441,
+      "selector_method": "universal_dictionary_persistence_protect",
+      "source": "embedded_fixture",
+      "stability": 1.0
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "best_help_selector": "universal_dictionary_persistence_protect",
+    "best_patch_corr_selector": "universal_dictionary_persistence_protect",
+    "missing_by_field": {
+      "bit_allocation": 0,
+      "bytes": 0,
+      "compute": 0,
+      "false_prune": 0,
+      "feature_persistence": 0,
+      "harm": 0,
+      "help": 0,
+      "missed_help": 0,
+      "patch_corr": 0,
+      "protected_ids": 0,
+      "quant_error_corr": 0,
+      "selector_method": 0,
+      "stability": 0
+    },
+    "row_count": 2,
+    "schema_fields": [
+      "selector_method",
+      "patch_corr",
+      "quant_error_corr",
+      "feature_persistence",
+      "protected_ids",
+      "bit_allocation",
+      "help",
+      "harm",
+      "missed_help",
+      "false_prune",
+      "bytes",
+      "compute",
+      "stability"
+    ],
+    "selector_methods": [
+      "quant_error_protect",
+      "universal_dictionary_persistence_protect"
+    ]
+  }
+}

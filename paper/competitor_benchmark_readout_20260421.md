@@ -16,6 +16,12 @@ prompt, token, byte, latency, and repair budgets are all matched in one harness.
 | `gsm8k_100` | `C2C` replay | 0.1100 | 100 | `results/c2c_gsm100_20260418/qwen_gsm100_c2c.jsonl` | Larger GSM anchor for the C2C baseline. |
 | `svamp_eval_70` | `C2C` replay | 0.4429 | 70 | `results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl` | Strongest no-extra-repair direct SVAMP70 external bar. |
 
+## Pending Direct Comparator Bootstrap
+
+| Method | Local state | Native support | Next artifact | Interpretation |
+|---|---|---|---|---|
+| `LatentMAS` | clean local clone at `references/repos/LatentMAS`, commit `b9b2095`; repo remains ignored | native GSM8K via `baseline`, `text_mas`, `latent_mas`; no native SVAMP | `scripts/run_latentmas_competitor_eval.py` wrapper plus GSM/SVAMP JSONL smokes | Closest latent-communication competitor, but no LatentWire-grade metrics yet. |
+
 ## Current Same-Model Compression Controls
 
 | Split | Method | Accuracy | N | Source artifact | Interpretation |
@@ -67,3 +73,5 @@ prompt, token, byte, latency, and repair budgets are all matched in one harness.
    harness-health rows only.
 6. Bootstrap `LatentMAS` next as a direct latent-communication competitor with
    matched accuracy, output-token, latency, and traceability reporting.
+7. Do not stage `references/repos/LatentMAS`; keep vendor code ignored and
+   implement wrappers on the LatentWire side.

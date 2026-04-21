@@ -282,6 +282,22 @@ comparisons and a tracked readout in `latent_bridge/current_readout_20260418.md`
   four-step refinement over-refines to `0.9125`, and the oracle reaches
   `0.9750`. Refinement belongs in the next stack only with help/harm and
   stop-reason telemetry.
+- The LatentMAS competitor lane is now bootstrapped as a reference/harness
+  task: the local clone exists under ignored `references/repos/LatentMAS` at
+  commit `b9b2095`, native GSM commands are documented, and the missing piece
+  is a LatentWire-side JSONL wrapper for paper-grade telemetry and SVAMP.
+- The tokenizer stress split turns the tokenizer blocker into a repeatable
+  diagnostic: boundary F1 `0.9463`, byte-span remap coverage `0.9354`,
+  token-ID exact reconstruction proxy `0.0833`, and byte-span reconstruction
+  proxy `1.0000`.
+- The mixed-bit route-atom allocator adds a stronger compression component:
+  uniform 3-bit collapses to `0.2250`, uniform 4-bit reaches `1.0000`, and
+  quant-error target-bpw allocation also reaches `1.0000` at achieved bpw
+  `3.9375` with patch correlation `0.8886`.
+- The frontier selector telemetry scaffold establishes a required sidecar
+  schema for selector/allocator runs: selector method, patch/quant
+  correlations, feature persistence, protected ids, bit allocation, help/harm,
+  missed-help, false-prune, bytes, compute, and stability.
 - The verifier/agent-training sweep points to the next route-quality amplifier:
   scalar route scoring should be compared against step-localization,
   critique-plus-repair, pairwise/tournament verification, and verifier-guided

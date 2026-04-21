@@ -358,6 +358,10 @@ Files `360_` and `361_` extend the current positive-method planning loop:
 - `360_`: Recent cross-model interface references for feature dictionaries, model stitching, tokenizer adaptation, activated adapters, test-time refinement, and multimodal connector transfer.
 - `361_`: Recent refinement, quantization, connector, tokenizer, and LatentMAS competitor references for routed projectors, iterative latent repair, mixed-bit protected frontiers, asymmetric K/V transport, and interpretable telemetry.
 
+File `362_` bootstraps the LatentMAS competitor lane:
+
+- `362_`: LatentMAS competitor bootstrap memo with local clone status, source links, native GSM commands, SVAMP-compatible wrapper plan, required telemetry, and fair-comparison ladder against LatentWire.
+
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.

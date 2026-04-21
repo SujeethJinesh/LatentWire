@@ -1,0 +1,591 @@
+{
+  "config": {
+    "remap_capacity": 12,
+    "seed": 0
+  },
+  "examples": [
+    {
+      "boundary_jaccard": 0.7916666666666666,
+      "byte_count": 46,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 1.0,
+      "categories": [
+        "unicode",
+        "multi_byte_span",
+        "punctuation",
+        "variables"
+      ],
+      "char_count": 32,
+      "example_id": "unicode_0",
+      "fragmentation_delta": 0.10869565217391303,
+      "multi_byte_source_span_rate": 0.15,
+      "remapped_source_token_rate": 1.0,
+      "source_fragmentation": 0.43478260869565216,
+      "source_target_boundary_f1": 0.8837209302325582,
+      "source_token_count": 20,
+      "stress_flags": {
+        "has_decimal": false,
+        "has_math_unit": false,
+        "has_multibyte": true,
+        "has_punctuation": true,
+        "has_unicode": true,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.5434782608695652,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 25,
+      "text": "\u6771\u4eac cache_key maps \u6f22\u5b57 -> value\ud83d\ude42\ud83d\ude80.",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.9772727272727273,
+      "byte_count": 53,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 1.0,
+      "categories": [
+        "unicode",
+        "multi_byte_span",
+        "punctuation"
+      ],
+      "char_count": 45,
+      "example_id": "unicode_1",
+      "fragmentation_delta": 0.018867924528301883,
+      "multi_byte_source_span_rate": 0.11363636363636363,
+      "remapped_source_token_rate": 1.0,
+      "source_fragmentation": 0.8301886792452831,
+      "source_target_boundary_f1": 0.9885057471264368,
+      "source_token_count": 44,
+      "stress_flags": {
+        "has_decimal": false,
+        "has_math_unit": false,
+        "has_multibyte": true,
+        "has_punctuation": true,
+        "has_unicode": true,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.8490566037735849,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 45,
+      "text": "Normalize caf\u00e9 na\u00efve r\u00e9sum\u00e9; \u6771\u4eac stays intact.",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.9090909090909091,
+      "byte_count": 38,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.9473684210526315,
+      "categories": [
+        "math_units",
+        "decimals",
+        "punctuation"
+      ],
+      "char_count": 37,
+      "example_id": "units_0",
+      "fragmentation_delta": 0.07894736842105265,
+      "multi_byte_source_span_rate": 0.03225806451612903,
+      "remapped_source_token_rate": 0.967741935483871,
+      "source_fragmentation": 0.8157894736842105,
+      "source_target_boundary_f1": 0.9523809523809523,
+      "source_token_count": 31,
+      "stress_flags": {
+        "has_decimal": true,
+        "has_math_unit": true,
+        "has_multibyte": true,
+        "has_punctuation": true,
+        "has_unicode": true,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.8947368421052632,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 34,
+      "text": "Latency is 7 \u00b5s + 20 ms, not 0.001 s.",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.8780487804878049,
+      "byte_count": 44,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 1.0,
+      "categories": [
+        "math_units",
+        "decimals",
+        "variables",
+        "punctuation"
+      ],
+      "char_count": 42,
+      "example_id": "units_1",
+      "fragmentation_delta": 0.022727272727272707,
+      "multi_byte_source_span_rate": 0.05128205128205128,
+      "remapped_source_token_rate": 1.0,
+      "source_fragmentation": 0.8863636363636364,
+      "source_target_boundary_f1": 0.935064935064935,
+      "source_token_count": 39,
+      "stress_flags": {
+        "has_decimal": true,
+        "has_math_unit": true,
+        "has_multibyte": true,
+        "has_punctuation": true,
+        "has_unicode": true,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.9090909090909091,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 40,
+      "text": "Speed v=3.50 m/s at 22\u00b0C with \u00b10.25 error.",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.9047619047619048,
+      "byte_count": 29,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.8275862068965517,
+      "categories": [
+        "decimals",
+        "punctuation"
+      ],
+      "char_count": 29,
+      "example_id": "decimal_0",
+      "fragmentation_delta": 0.06896551724137923,
+      "multi_byte_source_span_rate": 0.0,
+      "remapped_source_token_rate": 0.95,
+      "source_fragmentation": 0.6896551724137931,
+      "source_target_boundary_f1": 0.95,
+      "source_token_count": 20,
+      "stress_flags": {
+        "has_decimal": true,
+        "has_math_unit": false,
+        "has_multibyte": false,
+        "has_punctuation": true,
+        "has_unicode": false,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.7586206896551724,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 22,
+      "text": "Compute 10.50 / 2.5 + 3.1415.",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.8928571428571429,
+      "byte_count": 32,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 1.0,
+      "categories": [
+        "decimals",
+        "variables",
+        "punctuation"
+      ],
+      "char_count": 32,
+      "example_id": "decimal_1",
+      "fragmentation_delta": -0.03125,
+      "multi_byte_source_span_rate": 0.0,
+      "remapped_source_token_rate": 1.0,
+      "source_fragmentation": 0.875,
+      "source_target_boundary_f1": 0.9433962264150944,
+      "source_token_count": 28,
+      "stress_flags": {
+        "has_decimal": true,
+        "has_math_unit": false,
+        "has_multibyte": false,
+        "has_punctuation": true,
+        "has_unicode": false,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.84375,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 27,
+      "text": "Threshold p<=0.001 and q>=0.990?",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.8333333333333334,
+      "byte_count": 41,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.5121951219512195,
+      "categories": [
+        "variables",
+        "unicode",
+        "punctuation"
+      ],
+      "char_count": 39,
+      "example_id": "variable_0",
+      "fragmentation_delta": 0.09756097560975607,
+      "multi_byte_source_span_rate": 0.09523809523809523,
+      "remapped_source_token_rate": 0.8571428571428571,
+      "source_fragmentation": 0.5121951219512195,
+      "source_target_boundary_f1": 0.9090909090909091,
+      "source_token_count": 21,
+      "stress_flags": {
+        "has_decimal": false,
+        "has_math_unit": false,
+        "has_multibyte": true,
+        "has_punctuation": true,
+        "has_unicode": true,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.6097560975609756,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 25,
+      "text": "Update \u0394x = \u03bb_i * foo_bar + alpha_beta.",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.8571428571428571,
+      "byte_count": 48,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.9375,
+      "categories": [
+        "variables",
+        "punctuation"
+      ],
+      "char_count": 48,
+      "example_id": "variable_1",
+      "fragmentation_delta": 0.08333333333333326,
+      "multi_byte_source_span_rate": 0.0,
+      "remapped_source_token_rate": 0.96,
+      "source_fragmentation": 0.5208333333333334,
+      "source_target_boundary_f1": 0.9230769230769231,
+      "source_token_count": 25,
+      "stress_flags": {
+        "has_decimal": false,
+        "has_math_unit": false,
+        "has_multibyte": false,
+        "has_punctuation": true,
+        "has_unicode": false,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.6041666666666666,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 29,
+      "text": "Set cache_key=KV[token-boundary] before reroute.",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.9743589743589743,
+      "byte_count": 40,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 1.0,
+      "categories": [
+        "punctuation",
+        "variables"
+      ],
+      "char_count": 40,
+      "example_id": "punct_0",
+      "fragmentation_delta": 0.025000000000000022,
+      "multi_byte_source_span_rate": 0.0,
+      "remapped_source_token_rate": 1.0,
+      "source_fragmentation": 0.975,
+      "source_target_boundary_f1": 0.987012987012987,
+      "source_token_count": 39,
+      "stress_flags": {
+        "has_decimal": false,
+        "has_math_unit": false,
+        "has_multibyte": false,
+        "has_punctuation": true,
+        "has_unicode": false,
+        "has_variable": true
+      },
+      "target_fragmentation": 1.0,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 40,
+      "text": "Why: (a+b), [c-d], {e/f}; answer -> yes!",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.9473684210526315,
+      "byte_count": 39,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 1.0,
+      "categories": [
+        "punctuation",
+        "variables"
+      ],
+      "char_count": 39,
+      "example_id": "punct_1",
+      "fragmentation_delta": -0.05128205128205132,
+      "multi_byte_source_span_rate": 0.0,
+      "remapped_source_token_rate": 1.0,
+      "source_fragmentation": 1.0,
+      "source_target_boundary_f1": 0.972972972972973,
+      "source_token_count": 39,
+      "stress_flags": {
+        "has_decimal": false,
+        "has_math_unit": false,
+        "has_multibyte": false,
+        "has_punctuation": true,
+        "has_unicode": false,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.9487179487179487,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 37,
+      "text": "Quote 'x_y' then compare A>=B and C<=D.",
+      "token_id_exact_reconstruction": 1.0
+    },
+    {
+      "boundary_jaccard": 0.9555555555555556,
+      "byte_count": 54,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 1.0,
+      "categories": [
+        "multi_byte_span",
+        "unicode",
+        "variables"
+      ],
+      "char_count": 47,
+      "example_id": "multi_0",
+      "fragmentation_delta": 0.03703703703703709,
+      "multi_byte_source_span_rate": 0.045454545454545456,
+      "remapped_source_token_rate": 1.0,
+      "source_fragmentation": 0.8148148148148148,
+      "source_target_boundary_f1": 0.9772727272727273,
+      "source_token_count": 44,
+      "stress_flags": {
+        "has_decimal": false,
+        "has_math_unit": false,
+        "has_multibyte": true,
+        "has_punctuation": true,
+        "has_unicode": true,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.8518518518518519,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 46,
+      "text": "Emoji span \ud83d\ude42\ud83d\ude80 crosses byte boundaries near \u03bb_i.",
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.875,
+      "byte_count": 51,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 1.0,
+      "categories": [
+        "multi_byte_span",
+        "unicode",
+        "math_units",
+        "decimals"
+      ],
+      "char_count": 37,
+      "example_id": "multi_1",
+      "fragmentation_delta": 0.07843137254901966,
+      "multi_byte_source_span_rate": 0.2413793103448276,
+      "remapped_source_token_rate": 1.0,
+      "source_fragmentation": 0.5686274509803921,
+      "source_target_boundary_f1": 0.9333333333333333,
+      "source_token_count": 29,
+      "stress_flags": {
+        "has_decimal": true,
+        "has_math_unit": true,
+        "has_multibyte": true,
+        "has_punctuation": true,
+        "has_unicode": true,
+        "has_variable": true
+      },
+      "target_fragmentation": 0.6470588235294118,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 33,
+      "text": "\u6f22\u5b57\u6771\u4eac mix with \u00b5s, \u03a9, \u03c3, and \u03c0\u22483.1415.",
+      "token_id_exact_reconstruction": 0.0
+    }
+  ],
+  "remap_table": {
+    "->": [
+      "-",
+      ">"
+    ],
+    "0.001": [
+      "0",
+      ".001"
+    ],
+    "3.1415": [
+      "3",
+      ".1415"
+    ],
+    "cache_key": [
+      "cache",
+      "_key"
+    ],
+    "m/s": [
+      "m",
+      "/",
+      "s"
+    ],
+    "token-boundary": [
+      "token",
+      "-",
+      "boundary"
+    ],
+    "\u00b0C": [
+      "\u00b0",
+      "C"
+    ],
+    "\u00b5s": [
+      "\u00b5",
+      "s"
+    ],
+    "\u03bb_i": [
+      "\u03bb",
+      "_i"
+    ],
+    "\u6771\u4eac": [
+      "\u6771",
+      "\u4eac"
+    ],
+    "\u6f22\u5b57": [
+      "\u6f22",
+      "\u5b57"
+    ],
+    "\ud83d\ude42\ud83d\ude80": [
+      "\ud83d\ude42",
+      "\ud83d\ude80"
+    ]
+  },
+  "rows": [
+    {
+      "boundary_jaccard": 0.8997047727150422,
+      "byte_count": 42.916666666666664,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.935387479158367,
+      "category": "overall",
+      "example_count": 12,
+      "fragmentation_delta": 0.04475286686158452,
+      "multi_byte_source_span_rate": 0.06077070253933435,
+      "remapped_source_token_rate": 0.9779070660522273,
+      "source_fragmentation": 0.7436041909568613,
+      "source_target_boundary_f1": 0.9463190536649858,
+      "source_token_count": 31.583333333333332,
+      "target_fragmentation": 0.7883570578184458,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 33.583333333333336,
+      "token_id_exact_reconstruction": 0.08333333333333333
+    },
+    {
+      "boundary_jaccard": 0.8919517474395523,
+      "byte_count": 38.8,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.9549909255898367,
+      "category": "decimals",
+      "example_count": 5,
+      "fragmentation_delta": 0.04356430618774485,
+      "multi_byte_source_span_rate": 0.06498388522860159,
+      "remapped_source_token_rate": 0.9835483870967742,
+      "source_fragmentation": 0.7670871466884064,
+      "source_target_boundary_f1": 0.942835089438863,
+      "source_token_count": 29.4,
+      "target_fragmentation": 0.8106514528761513,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 31.2,
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.8873798965262379,
+      "byte_count": 44.333333333333336,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.9824561403508771,
+      "category": "math_units",
+      "example_count": 3,
+      "fragmentation_delta": 0.060035337899115006,
+      "multi_byte_source_span_rate": 0.10830647538100263,
+      "remapped_source_token_rate": 0.989247311827957,
+      "source_fragmentation": 0.7569268536760797,
+      "source_target_boundary_f1": 0.9402597402597402,
+      "source_token_count": 33.0,
+      "target_fragmentation": 0.8169621915751947,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 35.666666666666664,
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.8998737373737373,
+      "byte_count": 51.0,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 1.0,
+      "category": "multi_byte_span",
+      "example_count": 4,
+      "fragmentation_delta": 0.060757996572067915,
+      "multi_byte_source_span_rate": 0.13761755485893418,
+      "remapped_source_token_rate": 1.0,
+      "source_fragmentation": 0.6621033884340355,
+      "source_target_boundary_f1": 0.9457081844912639,
+      "source_token_count": 34.25,
+      "target_fragmentation": 0.7228613850061034,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 37.25,
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.8965901717024952,
+      "byte_count": 41.0,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.9224649749900403,
+      "category": "punctuation",
+      "example_count": 10,
+      "fragmentation_delta": 0.042156599275295754,
+      "multi_byte_source_span_rate": 0.04424145746726392,
+      "remapped_source_token_rate": 0.9734884792626728,
+      "source_fragmentation": 0.7539808025687128,
+      "source_target_boundary_f1": 0.9445222583373769,
+      "source_token_count": 30.6,
+      "target_fragmentation": 0.7961374018440086,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 32.4,
+      "token_id_exact_reconstruction": 0.1
+    },
+    {
+      "boundary_jaccard": 0.8865656565656566,
+      "byte_count": 49.0,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.9024390243902439,
+      "category": "unicode",
+      "example_count": 5,
+      "fragmentation_delta": 0.06811859237960555,
+      "multi_byte_source_span_rate": 0.1291416629347664,
+      "remapped_source_token_rate": 0.9714285714285714,
+      "source_fragmentation": 0.6321217351374724,
+      "source_target_boundary_f1": 0.9383847294111929,
+      "source_token_count": 31.6,
+      "target_fragmentation": 0.7002403275170779,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 34.8,
+      "token_id_exact_reconstruction": 0.0
+    },
+    {
+      "boundary_jaccard": 0.8912914664318707,
+      "byte_count": 43.0,
+      "byte_span_exact_reconstruction": 1.0,
+      "byte_span_remap_coverage": 0.9312118902439024,
+      "category": "variables",
+      "example_count": 8,
+      "fragmentation_delta": 0.03647777744990761,
+      "multi_byte_source_span_rate": 0.0427468364968365,
+      "remapped_source_token_rate": 0.9771428571428571,
+      "source_fragmentation": 0.7523736893948321,
+      "source_target_boundary_f1": 0.9414510763923883,
+      "source_token_count": 31.875,
+      "target_fragmentation": 0.7888514668447396,
+      "target_regroup_exact_reconstruction": 1.0,
+      "target_token_count": 33.625,
+      "token_id_exact_reconstruction": 0.125
+    }
+  ],
+  "source_tokenizer": "source_stress",
+  "summary": {
+    "boundary_jaccard": 0.8997047727150422,
+    "byte_count": 42.916666666666664,
+    "byte_span_exact_reconstruction": 1.0,
+    "byte_span_remap_coverage": 0.935387479158367,
+    "category": "overall",
+    "example_count": 12,
+    "fragmentation_delta": 0.04475286686158452,
+    "multi_byte_source_span_rate": 0.06077070253933435,
+    "remapped_source_token_rate": 0.9779070660522273,
+    "source_fragmentation": 0.7436041909568613,
+    "source_target_boundary_f1": 0.9463190536649858,
+    "source_token_count": 31.583333333333332,
+    "target_fragmentation": 0.7883570578184458,
+    "target_regroup_exact_reconstruction": 1.0,
+    "target_token_count": 33.583333333333336,
+    "token_id_exact_reconstruction": 0.08333333333333333
+  },
+  "target_tokenizer": "target_stress"
+}

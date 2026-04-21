@@ -3592,3 +3592,59 @@ Near-term timeline:
    limit-20 or bounded limit-50 controls.
 5. **Submission gate:** promote only components that survive interaction tests
    on held-out GSM70/SVAMP70 with matched budgets and paired intervals.
+
+## 2026-04-21 LatentMAS Bootstrap, Tokenizer Stress, Mixed-Bit Allocation, And Selector Telemetry
+
+Executed next:
+
+- Added `references/362_latentmas_competitor_bootstrap_refs.md`. The
+  LatentMAS repo already exists at `references/repos/LatentMAS`, is clean, and
+  points to `https://github.com/Gen-Verse/LatentMAS.git` at commit `b9b2095`.
+  `references/repos/` is ignored, so the vendor repo remains unstaged.
+- Added `tokenizer_stress_split`, a deterministic byte/token stress diagnostic
+  with Unicode, math units, decimals, variables, punctuation, and multibyte
+  spans.
+- Added `mixed_bit_route_atom_allocator`, an EXL2/AWQ-style toy that keeps
+  route atoms active while changing per-atom precision under a target average
+  bits-per-weight budget.
+- Added `frontier_selector_telemetry`, a lightweight schema normalizer for toy
+  and future real route-pool selector rows.
+
+New evidence:
+
+| Result | Outcome | Implication |
+|---|---|---|
+| LatentMAS bootstrap | local clean clone at `references/repos/LatentMAS`, native GSM task, no native SVAMP | LatentMAS is the next direct latent-communication competitor, but needs a LatentWire-side wrapper for paper-grade telemetry and SVAMP. |
+| Tokenizer stress split | boundary F1 `0.9463`, fragmentation delta `0.0448`, byte-span remap coverage `0.9354` | The stress set creates real tokenizer mismatch while retaining interpretable byte-span coverage. |
+| Token-ID reconstruction proxy | exact reconstruction `0.0833` | Token-ID transfer remains brittle under stress, even when boundary F1 is fairly high. |
+| Byte-span reconstruction proxy | exact reconstruction `1.0000` | Byte-span remapping is the right diagnostic baseline for tokenizer-aware bridge work. |
+| Mixed-bit uniform 3-bit | accuracy `0.2250`, MSE `0.1269`, bpw `3.0000` | Flat low-bit compression destroys route-atom behavior. |
+| Mixed-bit uniform 4-bit | accuracy `1.0000`, MSE `0.0303`, bpw `4.0000` | Full recovery is possible, but spends more bits uniformly. |
+| Quant-error target-bpw allocator | accuracy `1.0000`, MSE `0.0314`, achieved bpw `3.9375`, patch corr `0.8886`, outlier protection `0.6000` | Quant-error allocation recovers uniform-4-bit task accuracy with fewer bits and strong interpretability. |
+| Universal-feature allocator | accuracy `0.7438`, MSE `0.0334`, patch corr `0.8402` | Feature persistence can preserve reconstruction-like quality while missing task-critical atoms. |
+| Frontier telemetry schema | normalized selector method, correlations, protected ids, bit allocation, help/harm, missed-help, false-prune, bytes, compute, stability | This is the schema to require before promoting selector evidence from toys to real route pools. |
+
+Updated read:
+
+The additive stack is now more precise: tokenizer stress should come before
+real tokenizer-bridge claims; quant-error bit allocation is the best current
+compression-native allocator; universal features are useful but need
+task-critical calibration; and LatentMAS should be bootstrapped as a direct
+competitor rather than treated as only related work. The paper should add these
+as ablation and evaluation infrastructure, not as separate headline methods.
+
+Next execution ladder:
+
+1. Implement `scripts/run_latentmas_competitor_eval.py` outside the vendor repo
+   to emit JSONL + `.meta.json` telemetry for native GSM and mapped SVAMP.
+2. Run a small LatentMAS GSM10 baseline/text-MAS/latent-MAS smoke and compare
+   against LatentWire target-alone and strict route/repair rows on matched
+   limits.
+3. Promote tokenizer stress to real tokenizers and real prompt slices:
+   boundary F1, fragmentation delta, remap coverage, reconstruction proxy, and
+   downstream route delta.
+4. Promote mixed-bit allocation to the protected-frontier stack, with
+   quant-error, exact-patch proxy, universal-feature, random, and oracle
+   selectors under matched bpw.
+5. Make `frontier_selector_telemetry` the required sidecar schema for all
+   future route-pool selector experiments.
