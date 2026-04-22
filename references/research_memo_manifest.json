@@ -348,5 +348,33 @@
     "path": "references/406_staged_sidecar_repair_refs.md",
     "status": "local_memo",
     "reason": "Connector-side memo capturing staged repair, wormhole, and sidecar ideas as lateral additives on top of the live same-pair branch."
+  },
+  {
+    "num": 407,
+    "slug": "eigenspace_residual_followup_refs",
+    "path": "references/407_eigenspace_residual_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused follow-up memo for the live eigenspace-aware residual branch, grounding the next exact repair-side experiments in EoRA/ResQ/PiSSA-style references."
+  },
+  {
+    "num": 408,
+    "slug": "benchmark_expansion_contract_followup_refs",
+    "path": "references/408_benchmark_expansion_contract_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Follow-up benchmark-contract memo fixing the next fair expansion order after GSM8K32 and keeping the table blocks medium-split and interpretable."
+  },
+  {
+    "num": 409,
+    "slug": "multimodal_connector_additive_refs",
+    "path": "references/409_multimodal_connector_additive_refs.md",
+    "status": "local_memo",
+    "reason": "Multimodal and routed-connector follow-up memo banking staged repair, prompt-aware bridge, and selective revisit ideas as additive branches."
+  },
+  {
+    "num": 410,
+    "slug": "selective_preservation_quantization_followup_refs",
+    "path": "references/410_selective_preservation_quantization_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Selective-preservation and quantization-inspired follow-up memo connecting AWQ/AQLM/LQER/EoRA/ResQ-style ideas to concrete latent-bridge ablations."
   }
 ]

@@ -4394,3 +4394,34 @@ That means:
 - if neither `rank16` row beats `0.0938`, the same-pair live branch is likely
   saturated and the next benchmark move should be a gauge-fix /
   adaptive-canonicalization wrapper on top of the same real lane
+
+## Status After Eigenspace Residual Sweep
+
+The next residual-side geometry test is now complete on the exact frozen
+GSM8K32 contract:
+
+- `dynalign_eigenspace_module_replace_residrank16 = 0.0312`
+- numeric extraction coverage remains `32/32`
+- wins over target: `0/32`
+- losses vs target: `1/32`
+
+That means:
+
+1. the live `dynalign_module_replace_residrank16 = 0.1250` row does **not**
+   survive a naive dominant-eigenspace projection
+2. adaptive canonicalization remains a stabilizer, not a lift
+3. raw-basis preserve-core and simple eigenspace projection are now both
+   negative on the same exact contract
+4. the next serious branch should be saliency-aware or learned-importance
+   residual repair, not another simple geometry constraint
+
+Current read:
+
+- keep `dynalign_module_replace_residrank16 = 0.1250` as the only live real
+  same-pair row
+- treat `tokenbasis_replace_residrank16 = 0.0625`,
+  `dynalign_preserve_module_replace_residrank16 = 0.0625`, and
+  `dynalign_eigenspace_module_replace_residrank16 = 0.0312` as the matched
+  negative geometry / basis controls around that row
+- only widen benchmark scope after a new residual-side branch survives the same
+  frozen contract
