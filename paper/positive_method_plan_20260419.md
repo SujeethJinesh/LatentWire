@@ -4583,3 +4583,29 @@ That means:
 4. do not widen benchmark scope again until one of those branches beats the
    same frozen contract or achieves a clear bytes/latency win at the same
    accuracy
+
+## Status After Value-Query-Bank Residual Sweep
+
+The query-feature-routed bank follow-up is now also complete on the exact
+frozen GSM8K32 contract:
+
+- `dynalign_value_query_bank_module_replace_residrank16 = 0.0938`
+- numeric extraction coverage remains `32/32`
+- wins over target: `1/32`
+- losses vs target: `0/32`
+
+That means:
+
+1. the live `dynalign_module_replace_residrank16 = 0.1250` row still does
+   **not** survive a bank-router redesign from prompt-template clusters to
+   query-feature centroids
+2. simple bank-router tweaks are now saturated on this exact contract: prompt
+   template routing, sparse top-2 routing, verifier-gated single sidecars, and
+   query-feature bank routing all fall back to the old `0.0938` dynalign
+   ceiling
+3. the next serious branch should move to anchor-preserving codebook tails,
+   materially stronger multi-expert value repair, or a better verifier-gated
+   repair signal, not another simple routed-bank tweak
+4. do not widen benchmark scope again until one of those branches beats the
+   same frozen contract or achieves a clear bytes/latency win at the same
+   accuracy

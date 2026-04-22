@@ -544,5 +544,33 @@
     "path": "references/434_same_pair_expansion_blocker_gates_refs.md",
     "status": "local_memo",
     "reason": "Frozen widening-order memo so same-pair, long-context, and competitor blocks stay separated until the live lane survives."
+  },
+  {
+    "num": 435,
+    "slug": "competitor_benchmark_stack_refs",
+    "path": "references/435_competitor_benchmark_stack_refs.md",
+    "status": "local_memo",
+    "reason": "Latest competitor and benchmark expansion memo covering C2C, KVComm, RULER, SCBench, and LongBench v2 with a fair-comparison contract."
+  },
+  {
+    "num": 436,
+    "slug": "query_bottleneck_anchor_refs",
+    "path": "references/436_query_bottleneck_anchor_refs.md",
+    "status": "local_memo",
+    "reason": "Cross-domain memo combining query-bottleneck connector ideas with anchor-preserving tail repair for the next live same-pair branches."
+  },
+  {
+    "num": 437,
+    "slug": "symmetry_gauge_fula_refs",
+    "path": "references/437_symmetry_gauge_fula_refs.md",
+    "status": "local_memo",
+    "reason": "Math-side memo covering quotient/gauge-aware canonicalization and multi-layer functional alignment as distinct next pivots."
+  },
+  {
+    "num": 438,
+    "slug": "tokenizer_interface_denoise_refs",
+    "path": "references/438_tokenizer_interface_denoise_refs.md",
+    "status": "local_memo",
+    "reason": "Interface-side memo covering byte-level distillation, learned tokenizer alignment, query bottlenecks, and denoising bridges."
   }
 ]

@@ -3443,6 +3443,232 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_value_bank_module_replace_popul
     assert torch.allclose(tr.bridge_bank_bias_V[0], torch.zeros_like(tr.bridge_bank_bias_V[0]))
 
 
+def test_bridge_ridge_qk_dynalign_value_query_bank_module_replace_routes_from_query_centroids(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_value_query_bank_module_replace",
+        quantization_correction_rank=1,
+        bridge_bank_size=2,
+        bridge_bank_temperature=40.0,
+    )
+    with torch.no_grad():
+        tr.quant_proj_K[0].copy_(torch.eye(tr.d_t))
+        tr.quant_proj_V[0].copy_(torch.eye(tr.d_t))
+        tr.quant_aux_proj_K[0].zero_()
+        tr.quant_aux_proj_V[0].zero_()
+        tr.quant_bias_K[0].zero_()
+        tr.quant_bias_V[0].zero_()
+        tr.quant_query_module_slots[0].copy_(torch.tensor([[1.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.quant_query_module_q[0].copy_(torch.tensor([[1.0], [0.0], [1.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_module_k[0].copy_(torch.tensor([[1.0], [0.0], [1.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_module_v[0].copy_(torch.tensor([[1.0], [0.0], [0.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_module_hidden[0].copy_(torch.tensor([[1.0]], dtype=torch.float32))
+        tr.quant_query_module_K_out[0].copy_(torch.tensor([[3.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.quant_query_module_V_out[0].copy_(torch.tensor([[4.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.bridge_bank_query_centroids[0].copy_(
+            torch.tensor(
+                [
+                    [1.0, 0.0, 1.0, 0.0],
+                    [0.0, 1.0, 0.0, 1.0],
+                ],
+                dtype=torch.float32,
+            )
+        )
+        tr.bridge_bank_priors[0].copy_(torch.tensor([0.5, 0.5], dtype=torch.float32))
+        tr.bridge_bank_query_resid_V_left[0].data[0].copy_(torch.tensor([[1.0], [0.0], [1.0], [0.0]], dtype=torch.float32))
+        tr.bridge_bank_query_resid_V_right[0].data[0].copy_(torch.tensor([[1.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.bridge_bank_query_resid_V_left[0].data[1].copy_(torch.tensor([[2.0], [0.0], [2.0], [0.0]], dtype=torch.float32))
+        tr.bridge_bank_query_resid_V_right[0].data[1].copy_(torch.tensor([[1.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.bridge_bank_query_aux_resid_V_left[0].zero_()
+        tr.bridge_bank_query_aux_resid_V_right[0].zero_()
+        tr.bridge_bank_query_resid_K_left[0].zero_()
+        tr.bridge_bank_query_resid_K_right[0].zero_()
+        tr.bridge_bank_query_aux_resid_K_left[0].zero_()
+        tr.bridge_bank_query_aux_resid_K_right[0].zero_()
+        tr.bridge_bank_proj_K_left[0].zero_()
+        tr.bridge_bank_proj_K_right[0].zero_()
+        tr.bridge_bank_aux_proj_K_left[0].zero_()
+        tr.bridge_bank_aux_proj_K_right[0].zero_()
+        tr.bridge_bank_proj_V_left[0].zero_()
+        tr.bridge_bank_proj_V_right[0].zero_()
+        tr.bridge_bank_aux_proj_V_left[0].zero_()
+        tr.bridge_bank_aux_proj_V_right[0].zero_()
+        tr.bridge_bank_bias_K[0].zero_()
+        tr.bridge_bank_bias_V[0].zero_()
+
+    K_base = torch.tensor([[[[1.0, 0.0]], [[1.0, 0.0]]]], dtype=torch.float32)
+    V_base = torch.tensor([[[[2.0, 0.0]], [[2.0, 0.0]]]], dtype=torch.float32)
+    qfeat_match = torch.tensor([[[1.0, 0.0, 1.0, 0.0]]], dtype=torch.float32)
+
+    K_match, V_match = tr.translate_layer(
+        K_base,
+        V_base,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_query_features=qfeat_match,
+    )
+    with torch.no_grad():
+        tr.bridge_bank_query_centroids[0].copy_(
+            torch.tensor(
+                [
+                    [0.0, 1.0, 0.0, 1.0],
+                    [1.0, 0.0, 1.0, 0.0],
+                ],
+                dtype=torch.float32,
+            )
+        )
+    K_other, V_other = tr.translate_layer(
+        K_base,
+        V_base,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_query_features=qfeat_match,
+    )
+
+    assert torch.allclose(K_match, K_other, atol=1e-2, rtol=1e-2)
+    assert not torch.allclose(V_match, V_other)
+    assert V_other.abs().max().item() > V_match.abs().max().item()
+
+
+def test_fit_from_pairs_bridge_ridge_qk_dynalign_value_query_bank_module_replace_populates_query_centroid_v_bank(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_value_query_bank_module_replace",
+        quantization_correction_rank=1,
+        bridge_bank_size=2,
+    )
+    tr.set_bridge_sample_query_features(
+        [
+            torch.cat(
+                [
+                    torch.tensor([[1.0, 0.0, 1.0, 0.0]], dtype=torch.float32).repeat(8, 1),
+                    torch.tensor([[0.0, 1.0, 0.0, 1.0]], dtype=torch.float32).repeat(8, 1),
+                ],
+                dim=0,
+            )
+        ]
+    )
+    tr.set_bridge_prediction_teacher(
+        torch.full((16, 3), -1.0, dtype=torch.float32),
+        torch.ones(16, 3, tr.d_t, dtype=torch.float32),
+    )
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        **kwargs,
+    ):
+        del self, quantized_k, predicted_k, quantized_v, predicted_v, query_features, target_k, target_v, rank, kwargs
+        return (
+            torch.ones((tr.config.bridge_bank_size, tr.d_t), dtype=torch.float32),
+            torch.ones((tr.d_t, 1), dtype=torch.float32),
+            torch.full((tr.d_t, 1), 2.0, dtype=torch.float32),
+            torch.full((tr.d_t, 1), 3.0, dtype=torch.float32),
+            torch.full((1, 1), 4.0, dtype=torch.float32),
+            torch.full((1, tr.d_t), 5.0, dtype=torch.float32),
+            torch.full((1, tr.d_t), 6.0, dtype=torch.float32),
+        )
+
+    def fake_predict(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        slot_tokens,
+        q_proj,
+        k_proj,
+        v_proj,
+        hidden_proj,
+        out_k,
+        out_v,
+    ):
+        del self, quantized_k, predicted_k, quantized_v, predicted_v, query_features, slot_tokens, q_proj, k_proj, v_proj, hidden_proj, out_k, out_v
+        return (
+            torch.full((16, tr.d_t), 2.0, dtype=torch.float32),
+            torch.full((16, tr.d_t), 3.0, dtype=torch.float32),
+        )
+
+    calls = []
+
+    def fake_cluster(
+        self,
+        query_bank,
+        *,
+        num_clusters,
+    ):
+        del self, query_bank, num_clusters
+        return (
+            torch.tensor(
+                [
+                    [1.0, 0.0, 1.0, 0.0],
+                    [0.0, 1.0, 0.0, 1.0],
+                ],
+                dtype=torch.float32,
+            ),
+            torch.tensor([0.5, 0.5], dtype=torch.float32),
+            torch.tensor([0] * 8 + [1] * 8, dtype=torch.long),
+        )
+
+    def fake_resid(
+        self,
+        quantized,
+        predicted,
+        query_features,
+        base_prediction,
+        residual_target,
+        *,
+        rank,
+        **kwargs,
+    ):
+        del self, quantized, predicted, query_features, base_prediction, residual_target, rank, kwargs
+        fill = float(len(calls) + 1)
+        calls.append(fill)
+        left = torch.full((tr.d_t, 1), fill, dtype=torch.float32)
+        right = torch.full((1, tr.d_t), fill, dtype=torch.float32)
+        aux_left = torch.full((tr.d_t, 1), fill + 10.0, dtype=torch.float32)
+        aux_right = torch.full((1, tr.d_t), fill + 10.0, dtype=torch.float32)
+        return left, right, aux_left, aux_right
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+    monkeypatch.setattr(RotAlignKVTranslator, "_predict_bridge_query_module_replace", fake_predict)
+    monkeypatch.setattr(RotAlignKVTranslator, "_cluster_query_feature_bank", fake_cluster)
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_residual_adapter", fake_resid)
+
+    base = torch.arange(64, dtype=torch.float32).view(8, 2, 2, 2)
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert len(calls) == 3
+    assert torch.allclose(
+        tr.bridge_bank_query_centroids[0],
+        torch.tensor(
+            [
+                [1.0, 0.0, 1.0, 0.0],
+                [0.0, 1.0, 0.0, 1.0],
+            ],
+            dtype=tr.bridge_bank_query_centroids[0].dtype,
+        ),
+    )
+    assert torch.allclose(tr.bridge_bank_templates[0], torch.zeros_like(tr.bridge_bank_templates[0]))
+    assert torch.allclose(tr.bridge_bank_query_resid_K_left[0], torch.zeros_like(tr.bridge_bank_query_resid_K_left[0]))
+    assert torch.allclose(tr.bridge_bank_query_resid_V_left[0][0], torch.full_like(tr.bridge_bank_query_resid_V_left[0][0], 2.0))
+    assert torch.allclose(tr.bridge_bank_query_resid_V_left[0][1], torch.full_like(tr.bridge_bank_query_resid_V_left[0][1], 3.0))
+    assert torch.allclose(tr.bridge_bank_proj_V_left[0], torch.zeros_like(tr.bridge_bank_proj_V_left[0]))
+    assert torch.allclose(tr.bridge_bank_bias_V[0], torch.zeros_like(tr.bridge_bank_bias_V[0]))
+
+
 def test_bridge_ridge_qk_dynalign_value_routed_bank_module_replace_routes_value_gate_and_sparse_bank(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

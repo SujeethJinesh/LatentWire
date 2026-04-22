@@ -299,6 +299,12 @@
   coverage and still beats target, but it also falls back to the old dynalign
   ceiling, so single-sidecar selective repair is now another non-additive
   control on this lane.
+- Strongest new query-bank read: **query-feature bank routing still does not
+  keep the live lift**. On the same frozen contract,
+  `dynalign_value_query_bank_module_replace_residrank16 = 0.0938` keeps
+  coverage and still beats target, but it also falls back to the old dynalign
+  ceiling, so simple bank-router redesign is now another non-additive control
+  on this lane.
 - Evaluation standard for the next paper table is now fixed: paired CIs,
   sample-level correctness, repair-call savings, tokens/bytes/latency, and
   exact comparator budgets must ship with the result.
