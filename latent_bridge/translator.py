@@ -207,7 +207,14 @@ class TranslatorConfig:
     # query-conditioned gate,
     # `bridge_ridge_qk_dynalign_value_bank_module_replace` keeps that same
     # live `K` path but adds a tiny routed residual-expert bank only on the
-    # `V` side, and
+    # `V` side,
+    # `bridge_ridge_qk_dynalign_value_routed_bank_module_replace` keeps the
+    # surviving value-routed blend and only adds a sparse top-2 bank correction
+    # on top of that `V` path,
+    # `bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace` keeps
+    # that same live value-routed path, but adds a learned value-only residual
+    # sidecar that is accepted only when a second query-conditioned verifier
+    # gate predicts the sidecar beats the routed baseline, and
     # `bridge_ridge_qk_dynalign_dwakd_module_replace` keeps that same dynalign
     # upstream remapping but adds DWA-KD-style confidence weighting and a
     # stronger dynamic prediction teacher during module fitting, and
@@ -545,6 +552,18 @@ class RotAlignKVTranslator(nn.Module):
             [nn.Parameter(torch.zeros(1), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_query_route_V_bias = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_sidecar_route_K = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, 1), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_sidecar_route_V = nn.ParameterList(
+            [nn.Parameter(torch.zeros(self.d_t, 1), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_sidecar_route_K_bias = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1), requires_grad=False) for _ in range(config.num_tgt_layers)]
+        )
+        self.quant_query_sidecar_route_V_bias = nn.ParameterList(
             [nn.Parameter(torch.zeros(1), requires_grad=False) for _ in range(config.num_tgt_layers)]
         )
         self.quant_query_token_basis = nn.ParameterList(
@@ -3728,6 +3747,8 @@ class RotAlignKVTranslator(nn.Module):
             module_out = self.quant_query_module_K_out[tgt_layer_idx]
             route_proj = self.quant_query_route_K[tgt_layer_idx]
             route_bias = self.quant_query_route_K_bias[tgt_layer_idx]
+            sidecar_route_proj = self.quant_query_sidecar_route_K[tgt_layer_idx]
+            sidecar_route_bias = self.quant_query_sidecar_route_K_bias[tgt_layer_idx]
             token_basis = self.quant_query_token_basis[tgt_layer_idx]
             token_coeff = self.quant_query_token_K_coeff[tgt_layer_idx]
             preserve_proj = self.quant_preserve_proj_K[tgt_layer_idx]
@@ -3772,6 +3793,8 @@ class RotAlignKVTranslator(nn.Module):
             module_out = self.quant_query_module_V_out[tgt_layer_idx]
             route_proj = self.quant_query_route_V[tgt_layer_idx]
             route_bias = self.quant_query_route_V_bias[tgt_layer_idx]
+            sidecar_route_proj = self.quant_query_sidecar_route_V[tgt_layer_idx]
+            sidecar_route_bias = self.quant_query_sidecar_route_V_bias[tgt_layer_idx]
             token_basis = self.quant_query_token_basis[tgt_layer_idx]
             token_coeff = self.quant_query_token_V_coeff[tgt_layer_idx]
             preserve_proj = self.quant_preserve_proj_V[tgt_layer_idx]
@@ -3852,7 +3875,7 @@ class RotAlignKVTranslator(nn.Module):
                 + (aux_input * qfeat) @ query_aux_proj.to(device=x.device, dtype=x.dtype)
                 + bias.to(device=x.device, dtype=x.dtype)
             )
-        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+        if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
             if aux_input is None:
                 raise ValueError(f"{self.config.quantization_correction} quantization correction requires aux_input")
             if runtime_query_features is None:
@@ -3988,7 +4011,7 @@ class RotAlignKVTranslator(nn.Module):
                 attn = torch.softmax(attn_logits, dim=-1)
                 context = torch.einsum("...m,...mr->...r", attn, value_hidden)
                 resid = resid + context @ xattn_out.to(device=x.device, dtype=x.dtype)
-            if self.config.quantization_correction in {"bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
                 if paired_input is None or paired_aux_input is None:
                     raise ValueError(f"{self.config.quantization_correction} requires paired_input and paired_aux_input")
                 live_memory = torch.stack(
@@ -4014,7 +4037,7 @@ class RotAlignKVTranslator(nn.Module):
                 context = torch.einsum("...m,...mr->...r", attn, value_hidden)
                 hidden = F.gelu(context @ module_hidden.to(device=x.device, dtype=x.dtype))
                 module_pred = hidden @ module_out.to(device=x.device, dtype=x.dtype)
-                if self.config.quantization_correction in {"bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace"}:
+                if self.config.quantization_correction in {"bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace"}:
                     if self.config.quantization_correction == "bridge_ridge_qk_dynalign_preserve_module_replace":
                         preserve = preserve_proj.to(device=x.device, dtype=x.dtype)
                         complement = torch.eye(self.d_t, device=x.device, dtype=x.dtype) - preserve
@@ -4065,6 +4088,63 @@ class RotAlignKVTranslator(nn.Module):
                             )
                             corrected = corrected + weights[expert_idx] * expert_out
                         return module_pred + corrected
+                    if self.config.quantization_correction == "bridge_ridge_qk_dynalign_value_routed_bank_module_replace":
+                        if kind == "K":
+                            return module_pred
+                        gate = torch.sigmoid(
+                            qfeat @ route_proj.to(device=x.device, dtype=x.dtype)
+                            + route_bias.to(device=x.device, dtype=x.dtype)
+                        )
+                        weights = self._bridge_bank_mixture_weights(
+                            tgt_layer_idx,
+                            runtime_profile,
+                            device=x.device,
+                            dtype=x.dtype,
+                        )
+                        topk = min(2, int(weights.numel()))
+                        if topk > 0 and topk < int(weights.numel()):
+                            top_vals, top_idx = torch.topk(weights, k=topk)
+                            sparse_weights = torch.zeros_like(weights)
+                            sparse_weights[top_idx] = top_vals
+                            weights = sparse_weights / sparse_weights.sum().clamp_min(1e-8)
+                        corrected = torch.zeros_like(module_pred)
+                        for expert_idx in range(self.config.bridge_bank_size):
+                            if float(weights[expert_idx].detach().cpu()) <= 0.0:
+                                continue
+                            expert_out = (
+                                (x @ bank_left[expert_idx].to(device=x.device, dtype=x.dtype))
+                                @ bank_right[expert_idx].to(device=x.device, dtype=x.dtype)
+                                + (aux_input @ bank_aux_left[expert_idx].to(device=x.device, dtype=x.dtype))
+                                @ bank_aux_right[expert_idx].to(device=x.device, dtype=x.dtype)
+                                + bank_bias[expert_idx].to(device=x.device, dtype=x.dtype)
+                            )
+                            expert_out = expert_out + (
+                                ((x * qfeat) @ bank_query_left[expert_idx].to(device=x.device, dtype=x.dtype))
+                                @ bank_query_right[expert_idx].to(device=x.device, dtype=x.dtype)
+                                + ((aux_input * qfeat) @ bank_query_aux_left[expert_idx].to(device=x.device, dtype=x.dtype))
+                                @ bank_query_aux_right[expert_idx].to(device=x.device, dtype=x.dtype)
+                            )
+                            corrected = corrected + weights[expert_idx] * expert_out
+                        return base + gate * (module_pred + corrected - base)
+                    if self.config.quantization_correction == "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace":
+                        if kind == "K":
+                            return module_pred
+                        gate = torch.sigmoid(
+                            qfeat @ route_proj.to(device=x.device, dtype=x.dtype)
+                            + route_bias.to(device=x.device, dtype=x.dtype)
+                        )
+                        routed = base + gate * (module_pred - base)
+                        sidecar = (
+                            ((x * qfeat) @ query_resid_left.to(device=x.device, dtype=x.dtype))
+                            @ query_resid_right.to(device=x.device, dtype=x.dtype)
+                            + ((aux_input * qfeat) @ query_aux_resid_left.to(device=x.device, dtype=x.dtype))
+                            @ query_aux_resid_right.to(device=x.device, dtype=x.dtype)
+                        )
+                        sidecar_gate = torch.sigmoid(
+                            qfeat @ sidecar_route_proj.to(device=x.device, dtype=x.dtype)
+                            + sidecar_route_bias.to(device=x.device, dtype=x.dtype)
+                        )
+                        return routed + sidecar_gate * sidecar
                     if self.config.quantization_correction == "bridge_ridge_qk_dynalign_eigenspace_module_replace":
                         eigenspace = preserve_proj.to(device=x.device, dtype=x.dtype)
                         return module_pred @ eigenspace
@@ -4678,6 +4758,10 @@ class RotAlignKVTranslator(nn.Module):
             self.quant_query_route_V[tgt_l].data.zero_()
             self.quant_query_route_K_bias[tgt_l].data.zero_()
             self.quant_query_route_V_bias[tgt_l].data.zero_()
+            self.quant_query_sidecar_route_K[tgt_l].data.zero_()
+            self.quant_query_sidecar_route_V[tgt_l].data.zero_()
+            self.quant_query_sidecar_route_K_bias[tgt_l].data.zero_()
+            self.quant_query_sidecar_route_V_bias[tgt_l].data.zero_()
             self.quant_query_token_basis[tgt_l].data.zero_()
             self.quant_query_token_K_coeff[tgt_l].data.zero_()
             self.quant_query_token_V_coeff[tgt_l].data.zero_()
@@ -4703,7 +4787,7 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_aux_scale_V[tgt_l].data.copy_(aux_scale_v.to(self.quant_aux_scale_V[tgt_l].dtype))
                 self.quant_bias_K[tgt_l].data.copy_(bias_k.to(self.quant_bias_K[tgt_l].dtype))
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
-            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+            elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                 sample_weights = None
                 if self.config.quantization_correction in {"bridge_ridge_qk_weighted", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace"}:
                     if self._bridge_sample_weights is None:
@@ -4752,7 +4836,7 @@ class RotAlignKVTranslator(nn.Module):
                         lam=self.config.ridge_lambda,
                         sample_weights=sample_weights,
                     )
-                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+                    if self.config.quantization_correction in {"bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                         if self._bridge_sample_query_features is None:
                             raise ValueError(
                                 f"{self.config.quantization_correction} requires bridge sample query features; "
@@ -4779,7 +4863,7 @@ class RotAlignKVTranslator(nn.Module):
                             sample_prompt_ids = self._bridge_sample_prompt_ids.to(device=Xk.device)
                         teacher_log_probs = None
                         teacher_output_rows = None
-                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
+                        if self.config.quantization_correction in {"bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
                             if self._bridge_prediction_teacher_log_probs is None or self._bridge_prediction_teacher_output_rows is None:
                                 raise ValueError(
                                     f"{self.config.quantization_correction} requires prediction-teacher tensors; "
@@ -4880,7 +4964,7 @@ class RotAlignKVTranslator(nn.Module):
                             self.quant_query_module_hidden[tgt_l].data.copy_(module_hidden.to(self.quant_query_module_hidden[tgt_l].dtype))
                             self.quant_query_module_K_out[tgt_l].data.copy_(module_k_out.to(self.quant_query_module_K_out[tgt_l].dtype))
                             self.quant_query_module_V_out[tgt_l].data.copy_(module_v_out.to(self.quant_query_module_V_out[tgt_l].dtype))
-                        if self.config.quantization_correction in {"bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace"}:
+                        if self.config.quantization_correction in {"bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace"}:
                             target_k_fit = Yk_fit
                             target_v_fit = Yv_fit
                             if self.config.quantization_correction in {"bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace"}:
@@ -4989,6 +5073,151 @@ class RotAlignKVTranslator(nn.Module):
                                 )
                                 self.quant_query_route_V[tgt_l].data.copy_(route_v.to(self.quant_query_route_V[tgt_l].dtype))
                                 self.quant_query_route_V_bias[tgt_l].data.copy_(route_v_bias.to(self.quant_query_route_V_bias[tgt_l].dtype))
+                            if self.config.quantization_correction == "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace":
+                                _, pred_fit_v = self._predict_bridge_query_module_replace(
+                                    K_quant,
+                                    K_pred,
+                                    V_quant,
+                                    V_pred,
+                                    query_features,
+                                    module_slots,
+                                    module_q,
+                                    module_k,
+                                    module_v,
+                                    module_hidden,
+                                    module_k_out,
+                                    module_v_out,
+                                )
+                                route_v, route_v_bias = self._fit_bridge_query_route_gate(
+                                    query_features,
+                                    base_v,
+                                    pred_fit_v,
+                                    Yv_fit,
+                                )
+                                self.quant_query_route_K[tgt_l].data.zero_()
+                                self.quant_query_route_K_bias[tgt_l].data.zero_()
+                                self.quant_query_route_V[tgt_l].data.copy_(route_v.to(self.quant_query_route_V[tgt_l].dtype))
+                                self.quant_query_route_V_bias[tgt_l].data.copy_(route_v_bias.to(self.quant_query_route_V_bias[tgt_l].dtype))
+                                gate_v = torch.sigmoid(
+                                    query_features @ route_v.to(device=Xk.device, dtype=Xk.dtype)
+                                    + route_v_bias.to(device=Xk.device, dtype=Xk.dtype)
+                                )
+                                routed_pred_v = base_v + gate_v * (pred_fit_v - base_v)
+                                left_v, right_v, aux_left_v, aux_right_v = self._fit_bridge_query_residual_adapter(
+                                    V_quant,
+                                    V_pred,
+                                    query_features,
+                                    routed_pred_v,
+                                    Yv_fit - routed_pred_v,
+                                    rank=int(self.config.quantization_correction_rank or 8),
+                                )
+                                self.quant_query_resid_K_left[tgt_l].data.zero_()
+                                self.quant_query_resid_K_right[tgt_l].data.zero_()
+                                self.quant_query_aux_resid_K_left[tgt_l].data.zero_()
+                                self.quant_query_aux_resid_K_right[tgt_l].data.zero_()
+                                self.quant_query_resid_V_left[tgt_l].data.copy_(left_v.to(self.quant_query_resid_V_left[tgt_l].dtype))
+                                self.quant_query_resid_V_right[tgt_l].data.copy_(right_v.to(self.quant_query_resid_V_right[tgt_l].dtype))
+                                self.quant_query_aux_resid_V_left[tgt_l].data.copy_(aux_left_v.to(self.quant_query_aux_resid_V_left[tgt_l].dtype))
+                                self.quant_query_aux_resid_V_right[tgt_l].data.copy_(aux_right_v.to(self.quant_query_aux_resid_V_right[tgt_l].dtype))
+                                sidecar_pred_v = routed_pred_v + (
+                                    ((V_quant * query_features) @ left_v.to(device=Xk.device, dtype=Xk.dtype))
+                                    @ right_v.to(device=Xk.device, dtype=Xk.dtype)
+                                    + ((V_pred * query_features) @ aux_left_v.to(device=Xk.device, dtype=Xk.dtype))
+                                    @ aux_right_v.to(device=Xk.device, dtype=Xk.dtype)
+                                )
+                                sidecar_route_v, sidecar_route_v_bias = self._fit_bridge_query_route_gate(
+                                    query_features,
+                                    routed_pred_v,
+                                    sidecar_pred_v,
+                                    Yv_fit,
+                                )
+                                self.quant_query_sidecar_route_K[tgt_l].data.zero_()
+                                self.quant_query_sidecar_route_K_bias[tgt_l].data.zero_()
+                                self.quant_query_sidecar_route_V[tgt_l].data.copy_(
+                                    sidecar_route_v.to(self.quant_query_sidecar_route_V[tgt_l].dtype)
+                                )
+                                self.quant_query_sidecar_route_V_bias[tgt_l].data.copy_(
+                                    sidecar_route_v_bias.to(self.quant_query_sidecar_route_V_bias[tgt_l].dtype)
+                                )
+                            if self.config.quantization_correction == "bridge_ridge_qk_dynalign_value_routed_bank_module_replace":
+                                if self._bridge_prompt_cluster_labels is None or self._bridge_sample_prompt_ids is None:
+                                    raise ValueError(
+                                        "bridge_ridge_qk_dynalign_value_routed_bank_module_replace requires bridge template-bank metadata; "
+                                        "call set_bridge_runtime_template_bank() before fit_from_pairs"
+                                    )
+                                _, pred_fit_v = self._predict_bridge_query_module_replace(
+                                    K_quant,
+                                    K_pred,
+                                    V_quant,
+                                    V_pred,
+                                    query_features,
+                                    module_slots,
+                                    module_q,
+                                    module_k,
+                                    module_v,
+                                    module_hidden,
+                                    module_k_out,
+                                    module_v_out,
+                                )
+                                route_v, route_v_bias = self._fit_bridge_query_route_gate(
+                                    query_features,
+                                    base_v,
+                                    pred_fit_v,
+                                    Yv_fit,
+                                )
+                                self.quant_query_route_K[tgt_l].data.zero_()
+                                self.quant_query_route_K_bias[tgt_l].data.zero_()
+                                self.quant_query_route_V[tgt_l].data.copy_(route_v.to(self.quant_query_route_V[tgt_l].dtype))
+                                self.quant_query_route_V_bias[tgt_l].data.copy_(route_v_bias.to(self.quant_query_route_V_bias[tgt_l].dtype))
+                                prompt_ids = self._bridge_sample_prompt_ids.to(device=Xk.device)
+                                cluster_labels = self._bridge_prompt_cluster_labels[tgt_l].to(device=Xk.device, dtype=torch.long)
+                                sample_expert_ids = cluster_labels[prompt_ids]
+                                gate_v = torch.sigmoid(query_features @ route_v.to(device=Xk.device, dtype=Xk.dtype) + route_v_bias.to(device=Xk.device, dtype=Xk.dtype))
+                                routed_pred_v = base_v + gate_v * (pred_fit_v - base_v)
+                                min_samples = max(8, int(self.config.quantization_correction_rank or 8))
+                                residual_target_v = Yv_fit - routed_pred_v
+                                global_left_v, global_right_v, global_aux_left_v, global_aux_right_v = self._fit_bridge_query_residual_adapter(
+                                    V_quant,
+                                    V_pred,
+                                    query_features,
+                                    routed_pred_v,
+                                    residual_target_v,
+                                    rank=int(self.config.quantization_correction_rank or 8),
+                                )
+                                zero_bias_k = torch.zeros_like(self.bridge_bank_bias_K[tgt_l].data[0])
+                                zero_bias_v = torch.zeros_like(self.bridge_bank_bias_V[tgt_l].data[0])
+                                for expert_idx in range(self.config.bridge_bank_size):
+                                    mask = sample_expert_ids == expert_idx
+                                    if int(mask.sum().item()) >= min_samples:
+                                        left_v, right_v, aux_left_v, aux_right_v = self._fit_bridge_query_residual_adapter(
+                                            V_quant[mask],
+                                            V_pred[mask],
+                                            query_features[mask],
+                                            routed_pred_v[mask],
+                                            residual_target_v[mask],
+                                            rank=int(self.config.quantization_correction_rank or 8),
+                                        )
+                                    else:
+                                        left_v, right_v = global_left_v, global_right_v
+                                        aux_left_v, aux_right_v = global_aux_left_v, global_aux_right_v
+                                    self.bridge_bank_proj_K_left[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_proj_K_right[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_aux_proj_K_left[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_aux_proj_K_right[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_query_resid_K_left[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_query_resid_K_right[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_query_aux_resid_K_left[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_query_aux_resid_K_right[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_bias_K[tgt_l].data[expert_idx].copy_(zero_bias_k.to(self.bridge_bank_bias_K[tgt_l].dtype))
+                                    self.bridge_bank_proj_V_left[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_proj_V_right[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_aux_proj_V_left[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_aux_proj_V_right[tgt_l].data[expert_idx].zero_()
+                                    self.bridge_bank_query_resid_V_left[tgt_l].data[expert_idx].copy_(left_v.to(self.bridge_bank_query_resid_V_left[tgt_l].dtype))
+                                    self.bridge_bank_query_resid_V_right[tgt_l].data[expert_idx].copy_(right_v.to(self.bridge_bank_query_resid_V_right[tgt_l].dtype))
+                                    self.bridge_bank_query_aux_resid_V_left[tgt_l].data[expert_idx].copy_(aux_left_v.to(self.bridge_bank_query_aux_resid_V_left[tgt_l].dtype))
+                                    self.bridge_bank_query_aux_resid_V_right[tgt_l].data[expert_idx].copy_(aux_right_v.to(self.bridge_bank_query_aux_resid_V_right[tgt_l].dtype))
+                                    self.bridge_bank_bias_V[tgt_l].data[expert_idx].copy_(zero_bias_v.to(self.bridge_bank_bias_V[tgt_l].dtype))
                             if self.config.quantization_correction == "bridge_ridge_qk_dynalign_value_bank_module_replace":
                                 if self._bridge_prompt_cluster_labels is None or self._bridge_sample_prompt_ids is None:
                                     raise ValueError(
@@ -5185,7 +5414,7 @@ class RotAlignKVTranslator(nn.Module):
                             self.bridge_bank_query_resid_V_right[tgt_l].data.copy_(right_v.to(self.bridge_bank_query_resid_V_right[tgt_l].dtype))
                             self.bridge_bank_query_aux_resid_V_left[tgt_l].data.copy_(aux_left_v.to(self.bridge_bank_query_aux_resid_V_left[tgt_l].dtype))
                             self.bridge_bank_query_aux_resid_V_right[tgt_l].data.copy_(aux_right_v.to(self.bridge_bank_query_aux_resid_V_right[tgt_l].dtype))
-                        elif self.config.quantization_correction == "bridge_ridge_qk_dynalign_value_bank_module_replace":
+                        elif self.config.quantization_correction in {"bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace"}:
                             left_k = torch.zeros_like(self.quant_query_resid_K_left[tgt_l].data)
                             right_k = torch.zeros_like(self.quant_query_resid_K_right[tgt_l].data)
                             aux_left_k = torch.zeros_like(self.quant_query_aux_resid_K_left[tgt_l].data)
@@ -5233,7 +5462,7 @@ class RotAlignKVTranslator(nn.Module):
                                 readout_partner_kind="K" if self.config.quantization_correction == "bridge_ridge_qk_readout_adapter" else None,
                                 sample_prompt_ids=sample_prompt_ids,
                             )
-                        if self.config.quantization_correction not in {"bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
+                        if self.config.quantization_correction not in {"bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace"}:
                             self.quant_query_resid_K_left[tgt_l].data.copy_(left_k.to(self.quant_query_resid_K_left[tgt_l].dtype))
                             self.quant_query_resid_K_right[tgt_l].data.copy_(right_k.to(self.quant_query_resid_K_right[tgt_l].dtype))
                             self.quant_query_aux_resid_K_left[tgt_l].data.copy_(aux_left_k.to(self.quant_query_aux_resid_K_left[tgt_l].dtype))
@@ -5563,7 +5792,7 @@ class RotAlignKVTranslator(nn.Module):
                 raise ValueError(f"Unknown quantization_correction: {self.config.quantization_correction}")
 
             fit_runtime_query_features = None
-            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
+            if self.config.quantization_correction in {"bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank"}:
                 if self._bridge_sample_query_features is None:
                     raise ValueError(
                         f"{self.config.quantization_correction} requires bridge sample query features during fit; "

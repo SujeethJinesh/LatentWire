@@ -4537,3 +4537,49 @@ That means:
 4. do not widen benchmark scope again until one of those branches beats the
    same frozen contract or achieves a clear bytes/latency win at the same
    accuracy
+
+## Status After Value-Routed-Bank Residual Sweep
+
+The sparse top-2 value-routed bank follow-up is now also complete on the exact
+frozen GSM8K32 contract:
+
+- `dynalign_value_routed_bank_module_replace_residrank16 = 0.0938`
+- numeric extraction coverage remains `32/32`
+- wins over target: `1/32`
+- losses vs target: `0/32`
+
+That means:
+
+1. the live `dynalign_module_replace_residrank16 = 0.1250` row still does
+   **not** survive a sharper routed-bank correction
+2. the routed-bank family is now saturated on this exact contract: bank-only
+   and sparse top-2 bank both fall back to the old `0.0938` dynalign ceiling
+3. the next serious branch should leave bank-routing tweaks and move to a
+   verifier-gated V-side sidecar or an anchor-preserving codebook tail
+4. do not widen benchmark scope again until one of those branches beats the
+   same frozen contract or achieves a clear bytes/latency win at the same
+   accuracy
+
+## Status After Value-Verifier-Sidecar Residual Sweep
+
+The first verifier-gated value-side sidecar follow-up is now also complete on
+the exact frozen GSM8K32 contract:
+
+- `dynalign_value_verifier_sidecar_module_replace_residrank16 = 0.0938`
+- numeric extraction coverage remains `32/32`
+- wins over target: `1/32`
+- losses vs target: `0/32`
+
+That means:
+
+1. the live `dynalign_module_replace_residrank16 = 0.1250` row still does
+   **not** survive a simple single-sidecar selective repair
+2. bank-routing tweaks and one-gate verifier sidecars are now both saturated
+   on this exact contract: they remain valid and above target, but they fall
+   back to the old `0.0938` dynalign ceiling
+3. the next serious branch should move to anchor-preserving codebook tails or
+   a materially stronger multi-expert / verifier design, not another simple
+   sidecar or bank tweak
+4. do not widen benchmark scope again until one of those branches beats the
+   same frozen contract or achieves a clear bytes/latency win at the same
+   accuracy

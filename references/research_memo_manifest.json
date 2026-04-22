@@ -488,5 +488,61 @@
     "path": "references/426_benchmark_competitor_block_contract_refs.md",
     "status": "local_memo",
     "reason": "Benchmark split and widening memo freezing the next same-pair, long-context, and appendix-only comparison blocks after GSM8K32."
+  },
+  {
+    "num": 427,
+    "slug": "top2_value_routing_repair_refs",
+    "path": "references/427_top2_value_routing_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for sparse top-2 expertized V-side repair after the value-bank branch fell back to the old dynalign ceiling."
+  },
+  {
+    "num": 428,
+    "slug": "anchor_tail_followup_refs",
+    "path": "references/428_anchor_tail_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused preserve-anchor and codebook-tail backup memo for the live same-pair lane if stronger expertized repair fails."
+  },
+  {
+    "num": 429,
+    "slug": "verifier_gated_v_sidecar_refs",
+    "path": "references/429_verifier_gated_v_sidecar_refs.md",
+    "status": "local_memo",
+    "reason": "Focused verifier-gated and disagreement-triggered V-side sidecar memo for the live dynalign residual lane."
+  },
+  {
+    "num": 430,
+    "slug": "same_pair_block_contract_refs",
+    "path": "references/430_same_pair_block_contract_refs.md",
+    "status": "local_memo",
+    "reason": "Tightened same-pair and long-context table-block memo fixing widening gates after the frozen GSM8K32 contract."
+  },
+  {
+    "num": 431,
+    "slug": "value_verifier_sidecar_real_lane_refs",
+    "path": "references/431_value_verifier_sidecar_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for a verifier-gated value-side sidecar on top of the live dynalign residual lane."
+  },
+  {
+    "num": 432,
+    "slug": "anchor_codebook_tail_real_lane_refs",
+    "path": "references/432_anchor_codebook_tail_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Backup preserve-anchor and codebook-tail memo for the live same-pair lane if verifier-gated sidecars fail."
+  },
+  {
+    "num": 433,
+    "slug": "verifier_multimodal_small_graft_refs",
+    "path": "references/433_verifier_multimodal_small_graft_refs.md",
+    "status": "local_memo",
+    "reason": "Compact multimodal and verifier-graft memo that keeps modality-inspired ideas additive to the main same-pair story."
+  },
+  {
+    "num": 434,
+    "slug": "same_pair_expansion_blocker_gates_refs",
+    "path": "references/434_same_pair_expansion_blocker_gates_refs.md",
+    "status": "local_memo",
+    "reason": "Frozen widening-order memo so same-pair, long-context, and competitor blocks stay separated until the live lane survives."
   }
 ]
