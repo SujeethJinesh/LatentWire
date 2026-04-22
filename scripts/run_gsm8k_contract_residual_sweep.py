@@ -48,6 +48,11 @@ DEFAULT_BASES: dict[str, dict[str, str | int]] = {
         "checkpoint_path": "",
         "existing_rank": -1,
     },
+    "dynalign_anchor_tail_module_replace": {
+        "quantization_correction": "bridge_ridge_qk_dynalign_anchor_tail_module_replace",
+        "checkpoint_path": "",
+        "existing_rank": -1,
+    },
     "dynalign_routed_module_replace": {
         "quantization_correction": "bridge_ridge_qk_dynalign_routed_module_replace",
         "checkpoint_path": "",

@@ -4685,3 +4685,21 @@ two-branch:
 
 - codec-side: preserve anchors, compress or code only the tail
 - interface-side: replace direct latent mapping with a learned connector
+
+## Status After Anchor-Tail Scaffold
+
+The next codec-side branch is now wired in-repo as:
+
+- `bridge_ridge_qk_dynalign_anchor_tail_module_replace`
+
+Working hypothesis:
+
+1. keep the live `dynalign_module_replace_residrank16` lane as the real anchor
+2. preserve a small saliency-selected anchor set exactly
+3. quantize only the tail
+4. judge the branch on a larger frozen slice, not GSM8K32 alone
+5. keep the branch only if it either preserves the live row outside the tiny
+   smoke slice or wins on bytes / latency at matched accuracy
+
+This is now the preferred codec-side next branch over additional simple
+routed-bank, verifier-sidecar, or fixed-geometry variants.

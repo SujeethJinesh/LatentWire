@@ -273,3 +273,11 @@ value-side sidecar still falls back to the old dynalign ceiling and does not
 preserve the live `0.1250` residual row. The next real branch should leave the
 single-sidecar family and move to anchor-preserving codebook tails or a
 materially stronger multi-expert / verifier design.
+
+The next codec-side branch is now scaffolded directly in the repo as
+`bridge_ridge_qk_dynalign_anchor_tail_module_replace`. It keeps the live
+dynalign residual lane as the real anchor, stores a saliency-based preserve
+mask, and is designed to quantize only the residual tail while keeping the
+protected anchor exact. Treat this as the next same-pair falsification branch,
+but judge it primarily on the larger frozen campaign and bytes-aware reporting,
+not on GSM8K32 alone.

@@ -614,5 +614,33 @@
     "path": "references/444_anchor_tail_codec_refs.md",
     "status": "local_memo",
     "reason": "Focused codec memo covering anchor-preserving selective precision, codebook tails, and reviewer-driven telemetry for the live dynalign residual lane."
+  },
+  {
+    "num": 445,
+    "slug": "seeded_pairwise_eval_contract_refs",
+    "path": "references/445_seeded_pairwise_eval_contract_refs.md",
+    "status": "local_memo",
+    "reason": "Reviewer-driven memo freezing larger-slice, multi-seed, paired-uncertainty evaluation requirements for the next decision surface."
+  },
+  {
+    "num": 446,
+    "slug": "anchor_selective_precision_followup_refs",
+    "path": "references/446_anchor_selective_precision_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for the still-live preserve-anchor and quantize-tail codec branch after the routed and sidecar branches stalled."
+  },
+  {
+    "num": 447,
+    "slug": "qformer_connector_followup_refs",
+    "path": "references/447_qformer_connector_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for the learned connector and query-bottleneck branch if codec-side selective precision stalls."
+  },
+  {
+    "num": 448,
+    "slug": "quotient_locality_transport_followup_refs",
+    "path": "references/448_quotient_locality_transport_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Math-side memo narrowing any remaining symmetry/locality pivot to quotient-aware and interpretable transport rather than naive geometry tweaks."
   }
 ]

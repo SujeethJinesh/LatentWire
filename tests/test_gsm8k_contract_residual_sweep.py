@@ -68,6 +68,15 @@ def test_checkpoint_path_builds_new_saliency_preserve_rank_path() -> None:
     )
 
 
+def test_checkpoint_path_builds_new_anchor_tail_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_anchor_tail_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_anchor_tail_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_anchor_tail_module_replace_cal64_chat.pt"
+    )
+
+
 def test_checkpoint_path_builds_new_routed_rank_path() -> None:
     config = sweep.ResidualSweepConfig()
     path = sweep._checkpoint_path("dynalign_routed_module_replace", 16, config)

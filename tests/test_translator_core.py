@@ -3049,6 +3049,99 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_saliency_preserve_module_replac
     assert torch.allclose(preserve_v, torch.diag(torch.diagonal(preserve_v)), atol=1e-5)
 
 
+def test_fit_from_pairs_bridge_ridge_qk_dynalign_anchor_tail_module_replace_stores_salient_anchor_mask(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_anchor_tail_module_replace",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+
+    target_norms: list[tuple[float, float]] = []
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        **kwargs,
+    ):
+        del quantized_k, predicted_k, quantized_v, predicted_v, query_features, kwargs
+        target_norms.append((float(target_k.norm().item()), float(target_v.norm().item())))
+        return (
+            torch.full((self.config.bridge_bank_size, self.d_t), 1.0, dtype=target_k.dtype),
+            torch.full((self.d_t, rank), 2.0, dtype=target_k.dtype),
+            torch.full((self.d_t, rank), 3.0, dtype=target_k.dtype),
+            torch.full((self.d_t, rank), 4.0, dtype=target_k.dtype),
+            torch.full((rank, rank), 5.0, dtype=target_k.dtype),
+            torch.full((rank, self.d_t), 6.0, dtype=target_k.dtype),
+            torch.full((rank, self.d_t), 7.0, dtype=target_v.dtype),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    raw_k = tr._rotate_and_flatten(tgt_kvs[0][0], tr.R_t).reshape(-1, tr.d_t)
+    raw_v = tr._rotate_and_flatten(tgt_kvs[0][1], tr.R_t).reshape(-1, tr.d_t)
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert len(target_norms) == 1
+    fit_k_norm, fit_v_norm = target_norms[0]
+    assert abs(fit_k_norm - float(raw_k.norm().item())) < 1e-5
+    assert abs(fit_v_norm - float(raw_v.norm().item())) < 1e-5
+    preserve_k = tr.quant_preserve_proj_K[0]
+    preserve_v = tr.quant_preserve_proj_V[0]
+    assert preserve_k.abs().sum() > 0
+    assert preserve_v.abs().sum() > 0
+    assert torch.allclose(preserve_k, torch.diag(torch.diagonal(preserve_k)), atol=1e-5)
+    assert torch.allclose(preserve_v, torch.diag(torch.diagonal(preserve_v)), atol=1e-5)
+
+
+def test_quantize_tail_with_preserve_keeps_anchor_and_quantizes_tail(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_anchor_tail_module_replace",
+        quantization_correction_rank=1,
+    )
+    tr.quantizer = SimpleNamespace(
+        quantize_dequantize=lambda x: x + 0.25 * (x != 0).to(dtype=x.dtype),
+    )
+    values = torch.tensor([[2.0, 0.7, 1.5, 0.0]], dtype=torch.float32)
+    preserve = torch.diag(torch.tensor([1.0, 0.0, 1.0, 0.0], dtype=torch.float32))
+    out = tr._quantize_tail_with_preserve(values, preserve)
+    tail_only = values @ (torch.eye(tr.d_t, dtype=values.dtype) - preserve)
+    expected = values @ preserve + tr.quantizer.quantize_dequantize(tail_only)
+    assert torch.allclose(out, expected, atol=1e-6)
+    assert torch.allclose(out[..., 0], values[..., 0], atol=1e-6)
+    assert torch.allclose(out[..., 2], values[..., 2], atol=1e-6)
+
+
 def test_fit_from_pairs_bridge_ridge_qk_dynalign_routed_module_replace_stores_route_gates(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,
