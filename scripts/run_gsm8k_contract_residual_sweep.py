@@ -115,6 +115,7 @@ class ResidualSweepConfig:
     transport_sinkhorn_iters: int = 8
     transport_signature_rank: int = 8
     transport_signature_weight: float = 0.0
+    seed: int = 0
     ranks: tuple[int, ...] = (2, 4, 8, 16)
     bases: tuple[str, ...] = ("dynalign_module_replace", "tokenbasis_replace")
 
@@ -129,11 +130,12 @@ def _candidate_label(base_label: str, rank: int) -> str:
 
 def _checkpoint_path(base_label: str, rank: int, config: ResidualSweepConfig) -> pathlib.Path:
     base_meta = DEFAULT_BASES[base_label]
-    if rank == int(base_meta["existing_rank"]):
+    if rank == int(base_meta["existing_rank"]) and int(config.seed) == 0:
         return ROOT / str(base_meta["checkpoint_path"])
+    seed_suffix = "" if int(config.seed) == 0 else f"_seed{int(config.seed)}"
     filename = (
         f"qwen25_to_qwen3_grouped_subspace_transport_w010_r{rank}_"
-        f"{base_label}_cal64_chat.pt"
+        f"{base_label}_cal64_chat{seed_suffix}.pt"
     )
     return ROOT / config.checkpoints_dir / base_label / filename
 
@@ -187,7 +189,7 @@ def _calibrate_checkpoint(
         "--dtype",
         config.dtype,
         "--seed",
-        "0",
+        str(config.seed),
     ]
     if config.use_chat_template:
         cmd.extend(
@@ -260,6 +262,8 @@ def _run_candidate(
             "rotalign",
             "--prediction-output",
             str(prediction_output),
+            "--random-salt",
+            str(config.seed),
         ]
         if config.use_chat_template:
             cmd.extend(
@@ -284,7 +288,8 @@ def _run_candidate(
     )
     row["base_label"] = base_label
     row["residual_rank"] = rank
-    row["reused_existing_checkpoint"] = rank == int(DEFAULT_BASES[base_label]["existing_rank"])
+    row["seed"] = int(config.seed)
+    row["reused_existing_checkpoint"] = rank == int(DEFAULT_BASES[base_label]["existing_rank"]) and int(config.seed) == 0
     checks = _row_checks(row, baseline_target_records, config.slice_size)
     return row, checks
 
@@ -297,6 +302,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- baseline contract: `{payload['baseline_contract']}`",
         f"- source -> target: `{payload['config']['source_model']} -> {payload['config']['target_model']}`",
         f"- calibration file: `{payload['config']['calibration_file']}`",
+        f"- seed: `{payload['config']['seed']}`",
         f"- slice: `{payload['config']['slice_size']}` examples from `{payload['config']['eval_file']}`",
         "",
         "| Base | Residual rank | Accuracy | Win vs target | Loss vs target | Tie vs target | Numeric coverage | Empty preds | Reused ckpt | Promote? |",
@@ -402,6 +408,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--transport-sinkhorn-iters", type=int, default=8)
     parser.add_argument("--transport-signature-rank", type=int, default=8)
     parser.add_argument("--transport-signature-weight", type=float, default=0.0)
+    parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--rank", type=int, action="append", dest="ranks")
     parser.add_argument("--base", action="append", choices=sorted(DEFAULT_BASES), dest="bases")
     return parser.parse_args(argv)
@@ -437,6 +444,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         transport_sinkhorn_iters=args.transport_sinkhorn_iters,
         transport_signature_rank=args.transport_signature_rank,
         transport_signature_weight=args.transport_signature_weight,
+        seed=args.seed,
         ranks=tuple(args.ranks) if args.ranks else ResidualSweepConfig.ranks,
         bases=tuple(args.bases) if args.bases else ResidualSweepConfig.bases,
     )

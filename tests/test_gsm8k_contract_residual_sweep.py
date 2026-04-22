@@ -23,6 +23,15 @@ def test_checkpoint_path_builds_new_rank_path() -> None:
     )
 
 
+def test_checkpoint_path_builds_seeded_rank_path() -> None:
+    config = sweep.ResidualSweepConfig(seed=7)
+    path = sweep._checkpoint_path("tokenbasis_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/tokenbasis_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_tokenbasis_replace_cal64_chat_seed7.pt"
+    )
+
+
 def test_checkpoint_path_builds_new_preserve_rank_path() -> None:
     config = sweep.ResidualSweepConfig()
     path = sweep._checkpoint_path("dynalign_preserve_module_replace", 16, config)
@@ -133,6 +142,19 @@ def test_parse_args_accepts_multiple_ranks_and_bases(monkeypatch) -> None:
     assert args.bases == ["dynalign_module_replace", "tokenbasis_replace"]
 
 
+def test_parse_args_accepts_seed(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--seed",
+            "13",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.seed == 13
+
+
 def test_write_markdown_renders_rows(tmp_path) -> None:
     payload = {
         "date": "2026-04-21",
@@ -141,6 +163,7 @@ def test_write_markdown_renders_rows(tmp_path) -> None:
             "source_model": "src",
             "target_model": "tgt",
             "calibration_file": ".debug/calibration_64.txt",
+            "seed": 7,
             "slice_size": 32,
             "eval_file": "data/gsm8k_eval_70.jsonl",
         },
@@ -154,6 +177,7 @@ def test_write_markdown_renders_rows(tmp_path) -> None:
                 "numeric_extraction_coverage": 32,
                 "empty_predictions": 0,
                 "reused_existing_checkpoint": False,
+                "seed": 7,
             }
         ],
         "checks": {
@@ -169,6 +193,7 @@ def test_write_markdown_renders_rows(tmp_path) -> None:
     path = tmp_path / "out.md"
     sweep._write_markdown(path, payload)
     text = path.read_text()
+    assert "- seed: `7`" in text
     assert "| dynalign_module_replace | 16 | 0.1250 | 3 | 1 | 28 | 32 | 0 | no | yes |" in text
     assert "`dynalign_module_replace_residrank16` — row_count_matches_slice=PASS" in text
 
