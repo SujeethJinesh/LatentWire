@@ -4739,6 +4739,14 @@ negative:
 That means the live lane is currently **seed-fragile**, not just
 under-replicated.
 
+We also now know the failure mode is numerical:
+
+- the seed `1` checkpoint contains `2,381,056` non-finite values
+- the visible generation collapse is repeated punctuation, not an ordinary weak
+  decode
+- the harness now validates checkpoints for non-finite values before running
+  evaluation
+
 So the immediate decision order tightens again:
 
 1. finish the seed-stability gate

@@ -315,3 +315,9 @@ collapse reflects:
 1. a real calibration instability
 2. a fragile learned correction family
 3. or a checkpoint-generation / evaluation bug
+
+The local diagnosis is now sharper: the seed `1` checkpoint contains
+`2,381,056` non-finite values, so this is not just a small benchmark swing.
+The residual-sweep harness now validates checkpoints for non-finite tensors
+before evaluation so this class of failure becomes a loud calibration error
+instead of a misleading punctuation-collapse benchmark row.

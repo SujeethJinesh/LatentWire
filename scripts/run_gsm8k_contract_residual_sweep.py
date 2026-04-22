@@ -8,6 +8,8 @@ import sys
 from dataclasses import asdict, dataclass
 from typing import Any
 
+import torch
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -145,6 +147,50 @@ def _checkpoint_path(base_label: str, rank: int, config: ResidualSweepConfig) ->
     return ROOT / config.checkpoints_dir / base_label / filename
 
 
+def _checkpoint_finite_summary(checkpoint_path: pathlib.Path) -> dict[str, Any]:
+    payload = torch.load(checkpoint_path, map_location="cpu")
+    state = payload.get("state_dict", payload)
+    tensor_keys = 0
+    floating_tensor_keys = 0
+    total_numel = 0
+    nonfinite_numel = 0
+    max_abs = 0.0
+    first_bad_key: str | None = None
+    for key, value in state.items():
+        if not torch.is_tensor(value):
+            continue
+        tensor_keys += 1
+        total_numel += int(value.numel())
+        if not value.is_floating_point():
+            continue
+        floating_tensor_keys += 1
+        if value.numel():
+            max_abs = max(max_abs, float(value.abs().max().item()))
+        bad = ~torch.isfinite(value)
+        bad_count = int(bad.sum().item())
+        nonfinite_numel += bad_count
+        if bad_count > 0 and first_bad_key is None:
+            first_bad_key = str(key)
+    return {
+        "tensor_keys": tensor_keys,
+        "floating_tensor_keys": floating_tensor_keys,
+        "total_numel": total_numel,
+        "nonfinite_numel": nonfinite_numel,
+        "max_abs": max_abs,
+        "first_bad_key": first_bad_key,
+    }
+
+
+def _validate_checkpoint_finite(checkpoint_path: pathlib.Path) -> None:
+    summary = _checkpoint_finite_summary(checkpoint_path)
+    if int(summary["nonfinite_numel"]) > 0:
+        raise ValueError(
+            "Checkpoint contains non-finite values: "
+            f"path={checkpoint_path} nonfinite_numel={summary['nonfinite_numel']} "
+            f"first_bad_key={summary['first_bad_key']} max_abs={summary['max_abs']:.4f}"
+        )
+
+
 def _calibrate_checkpoint(
     *,
     base_label: str,
@@ -152,62 +198,62 @@ def _calibrate_checkpoint(
     checkpoint_path: pathlib.Path,
     config: ResidualSweepConfig,
 ) -> None:
-    if checkpoint_path.exists():
-        return
-    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-    base_meta = DEFAULT_BASES[base_label]
-    cmd = [
-        str(ROOT / ".venv" / "bin" / "python"),
-        str(ROOT / "scripts" / "calibrate.py"),
-        "--calibration-file",
-        str(ROOT / config.calibration_file),
-        "--source-model",
-        config.source_model,
-        "--target-model",
-        config.target_model,
-        "--output",
-        str(checkpoint_path),
-        "--bits",
-        str(config.bits),
-        "--alignment",
-        config.alignment,
-        "--ridge-lambda",
-        str(config.ridge_lambda),
-        "--transport-residual-rank",
-        str(config.transport_residual_rank),
-        "--transport-temperature",
-        str(config.transport_temperature),
-        "--transport-sinkhorn-iters",
-        str(config.transport_sinkhorn_iters),
-        "--transport-signature-rank",
-        str(config.transport_signature_rank),
-        "--transport-signature-weight",
-        str(config.transport_signature_weight),
-        "--quantization-correction",
-        str(base_meta["quantization_correction"]),
-        "--quantization-correction-rank",
-        str(rank),
-        "--source-reasoning-mode",
-        config.source_reasoning_mode,
-        "--device",
-        config.device,
-        "--dtype",
-        config.dtype,
-        "--seed",
-        str(config.seed),
-    ]
-    if config.use_chat_template:
-        cmd.extend(
-            [
-                "--source-use-chat-template",
-                "--target-use-chat-template",
-                "--source-enable-thinking",
-                "false" if not config.enable_thinking else "true",
-                "--target-enable-thinking",
-                "false" if not config.enable_thinking else "true",
-            ]
-        )
-    _run(cmd)
+    if not checkpoint_path.exists():
+        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        base_meta = DEFAULT_BASES[base_label]
+        cmd = [
+            str(ROOT / ".venv" / "bin" / "python"),
+            str(ROOT / "scripts" / "calibrate.py"),
+            "--calibration-file",
+            str(ROOT / config.calibration_file),
+            "--source-model",
+            config.source_model,
+            "--target-model",
+            config.target_model,
+            "--output",
+            str(checkpoint_path),
+            "--bits",
+            str(config.bits),
+            "--alignment",
+            config.alignment,
+            "--ridge-lambda",
+            str(config.ridge_lambda),
+            "--transport-residual-rank",
+            str(config.transport_residual_rank),
+            "--transport-temperature",
+            str(config.transport_temperature),
+            "--transport-sinkhorn-iters",
+            str(config.transport_sinkhorn_iters),
+            "--transport-signature-rank",
+            str(config.transport_signature_rank),
+            "--transport-signature-weight",
+            str(config.transport_signature_weight),
+            "--quantization-correction",
+            str(base_meta["quantization_correction"]),
+            "--quantization-correction-rank",
+            str(rank),
+            "--source-reasoning-mode",
+            config.source_reasoning_mode,
+            "--device",
+            config.device,
+            "--dtype",
+            config.dtype,
+            "--seed",
+            str(config.seed),
+        ]
+        if config.use_chat_template:
+            cmd.extend(
+                [
+                    "--source-use-chat-template",
+                    "--target-use-chat-template",
+                    "--source-enable-thinking",
+                    "false" if not config.enable_thinking else "true",
+                    "--target-enable-thinking",
+                    "false" if not config.enable_thinking else "true",
+                ]
+            )
+        _run(cmd)
+    _validate_checkpoint_finite(checkpoint_path)
 
 
 def _row_checks(row: dict[str, Any], baseline_target_records: list[dict[str, Any]], slice_size: int) -> dict[str, bool]:

@@ -29,6 +29,17 @@ Seed `1` is not an ordinary regression. The generated outputs are repeated
 3. The current main gap is therefore no longer only “replicate the gain.”
    - It is now “understand and eliminate calibration / seed fragility.”
 
+## Current Diagnosis
+
+The seed `1` checkpoint is numerically corrupted rather than merely weak:
+
+- seed `0` checkpoint: `0` non-finite values
+- seed `1` checkpoint: `2,381,056` non-finite values
+- the largest observed divergence is in `quant_proj_K.1`
+
+So the current failure mode should be treated as a calibration robustness bug
+or instability, not just benchmark variance.
+
 ## What This Does To The Story
 
 Before this partial read, the larger-slice story was:

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+import pathlib
 
+import pytest
+import torch
 from scripts import run_gsm8k_contract_residual_sweep as sweep
 
 
@@ -211,3 +214,24 @@ def test_payload_round_trip_json() -> None:
     payload = {"rows": [{"label": "foo"}], "checks": {"foo": {"beats_target": False}}}
     dumped = json.dumps(payload, sort_keys=True)
     assert json.loads(dumped)["rows"][0]["label"] == "foo"
+
+
+def test_checkpoint_finite_summary_detects_nonfinite(tmp_path: pathlib.Path) -> None:
+    ckpt = tmp_path / "bad.pt"
+    torch.save({"state_dict": {"weight": torch.tensor([1.0, float("nan")], dtype=torch.float32)}}, ckpt)
+    summary = sweep._checkpoint_finite_summary(ckpt)
+    assert summary["nonfinite_numel"] == 1
+    assert summary["first_bad_key"] == "weight"
+
+
+def test_calibrate_checkpoint_rejects_existing_nonfinite_checkpoint(tmp_path: pathlib.Path, monkeypatch) -> None:
+    ckpt = tmp_path / "bad.pt"
+    torch.save({"state_dict": {"weight": torch.tensor([float("inf")], dtype=torch.float32)}}, ckpt)
+    monkeypatch.setattr(sweep, "_run", lambda cmd: (_ for _ in ()).throw(AssertionError("should not recalibrate")))
+    with pytest.raises(ValueError, match="non-finite"):
+        sweep._calibrate_checkpoint(
+            base_label="dynalign_module_replace",
+            rank=16,
+            checkpoint_path=ckpt,
+            config=sweep.ResidualSweepConfig(),
+        )
