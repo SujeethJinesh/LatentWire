@@ -376,5 +376,12 @@
     "path": "references/410_selective_preservation_quantization_followup_refs.md",
     "status": "local_memo",
     "reason": "Selective-preservation and quantization-inspired follow-up memo connecting AWQ/AQLM/LQER/EoRA/ResQ-style ideas to concrete latent-bridge ablations."
+  },
+  {
+    "num": 411,
+    "slug": "saliency_residual_followup_refs",
+    "path": "references/411_saliency_residual_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused follow-up memo for the saliency-aware residual branch, grounding the next exact learned-importance repair experiments in SERQ/AWQ/LQER/QERA-style references."
   }
 ]

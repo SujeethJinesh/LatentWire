@@ -2904,6 +2904,77 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_eigenspace_module_replace_proje
     assert torch.allclose(eig_v, eig_v.T, atol=1e-5)
 
 
+def test_fit_from_pairs_bridge_ridge_qk_dynalign_saliency_module_replace_passes_feature_weights(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_saliency_module_replace",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+
+    seen: list[tuple[torch.Tensor | None, torch.Tensor | None]] = []
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        feature_weights_k=None,
+        feature_weights_v=None,
+        **kwargs,
+    ):
+        del self, quantized_k, predicted_k, quantized_v, predicted_v, query_features, target_k, target_v, rank, kwargs
+        seen.append((feature_weights_k, feature_weights_v))
+        return (
+            torch.ones((tr.config.bridge_bank_size, tr.d_t), dtype=torch.float32),
+            torch.ones((tr.d_t, 1), dtype=torch.float32),
+            torch.ones((tr.d_t, 1), dtype=torch.float32),
+            torch.ones((tr.d_t, 1), dtype=torch.float32),
+            torch.ones((1, 1), dtype=torch.float32),
+            torch.ones((1, tr.d_t), dtype=torch.float32),
+            torch.ones((1, tr.d_t), dtype=torch.float32),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert len(seen) == 1
+    fwk, fwv = seen[0]
+    assert fwk is not None
+    assert fwv is not None
+    assert fwk.shape == (tr.d_t,)
+    assert fwv.shape == (tr.d_t,)
+    assert abs(float(fwk.mean().item()) - 1.0) < 1e-5
+    assert abs(float(fwv.mean().item()) - 1.0) < 1e-5
+
+
 def test_fit_from_pairs_bridge_ridge_qk_dynalign_ctxonly_module_replace_reuses_module_replace_fit(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

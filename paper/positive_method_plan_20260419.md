@@ -4425,3 +4425,24 @@ Current read:
   negative geometry / basis controls around that row
 - only widen benchmark scope after a new residual-side branch survives the same
   frozen contract
+
+## Status After Saliency Residual Sweep
+
+The next learned-importance follow-up is now also complete on the exact frozen
+GSM8K32 contract:
+
+- `dynalign_saliency_module_replace_residrank16 = 0.0312`
+- numeric extraction coverage remains `32/32`
+- wins over target: `0/32`
+- losses vs target: `1/32`
+
+That means:
+
+1. the live `dynalign_module_replace_residrank16 = 0.1250` row does **not**
+   survive a simple saliency-weighted residual objective either
+2. raw-basis preserve-core, naive eigenspace projection, and one-shot saliency
+   weighting are now all negative on the same exact contract
+3. the next serious branch should move to learned-importance preserve-plus-tail
+   repair, routed residual repair, or codebook-style repair
+4. do not widen benchmark scope again until one of those stronger residual-side
+   branches survives the same frozen contract
