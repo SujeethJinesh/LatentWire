@@ -460,5 +460,33 @@
     "path": "references/422_benchmark_competitor_pass_gates_refs.md",
     "status": "local_memo",
     "reason": "Benchmark and competitor memo freezing exact widening gates and table structure after the frozen GSM8K32 contract."
+  },
+  {
+    "num": 423,
+    "slug": "value_bank_multiexpert_repair_refs",
+    "path": "references/423_value_bank_multiexpert_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for multi-expert and value-bank repair on top of the live dynalign residual lane after the single-path value route tied but did not improve the frozen contract."
+  },
+  {
+    "num": 424,
+    "slug": "tail_quantization_real_lane_refs",
+    "path": "references/424_tail_quantization_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused preserve-anchor and codebook-tail memo grounding the live backup branch in preserve-core and additive-tail quantization papers."
+  },
+  {
+    "num": 425,
+    "slug": "multimodal_verifier_sidecar_refs",
+    "path": "references/425_multimodal_verifier_sidecar_refs.md",
+    "status": "local_memo",
+    "reason": "Compact multimodal sidecar memo for verifier-gated refinement, selective preservation, and disagreement-triggered repair ideas that can graft onto the live same-pair lane."
+  },
+  {
+    "num": 426,
+    "slug": "benchmark_competitor_block_contract_refs",
+    "path": "references/426_benchmark_competitor_block_contract_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark split and widening memo freezing the next same-pair, long-context, and appendix-only comparison blocks after GSM8K32."
   }
 ]

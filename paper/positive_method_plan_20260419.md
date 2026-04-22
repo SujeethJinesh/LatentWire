@@ -4514,3 +4514,26 @@ That means:
 4. do not widen benchmark scope again until one of those stronger branches
    either beats the same frozen contract or achieves a clear bytes/latency win
    at the same accuracy
+
+## Status After Value-Bank Residual Sweep
+
+The first value-bank routed follow-up is now also complete on the exact frozen
+GSM8K32 contract:
+
+- `dynalign_value_bank_module_replace_residrank16 = 0.0938`
+- numeric extraction coverage remains `32/32`
+- wins over target: `1/32`
+- losses vs target: `0/32`
+
+That means:
+
+1. the live `dynalign_module_replace_residrank16 = 0.1250` row does **not**
+   survive the first value-bank expertization
+2. routed repair is still alive only in the simpler value-routed branch; richer
+   experts are not automatically additive on this exact contract
+3. the next serious branch should be a materially stronger expertized repair
+   design, an anchor-preserving codebook tail, or a verifier-gated sidecar, not
+   another simple routed-bank variant with the same capacity pattern
+4. do not widen benchmark scope again until one of those branches beats the
+   same frozen contract or achieves a clear bytes/latency win at the same
+   accuracy
