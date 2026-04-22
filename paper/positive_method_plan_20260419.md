@@ -377,7 +377,7 @@ So the next real benchmark order is now:
 1. finish the matched `tokenbasis_replace + rank16` control
 2. if it agrees or improves, widen to the next held-out slice on the same
    contract family
-3. if it fails or ties back to the old ceiling, try a fixed gauge-fix /
+3. if it fails or ties back to the target floor, try a fixed gauge-fix /
    canonicalization wrapper on top of the live `dynalign + rank16 residual`
    lane
 
@@ -390,6 +390,60 @@ saturated, move on.” It is now:
    does not confirm the lift
 4. the paper is still not ready until the lift survives a matched control and a
    broader slice
+
+## Status After Tokenbasis Rank16 Residual Control
+
+The matched control resolves the residual story in one important direction:
+
+- on the same exact frozen GSM8K32 contract,
+  `tokenbasis_replace_residrank16 = 0.0625`
+- that exactly ties `target_alone`, with full numeric extraction coverage
+  (`32/32`) and `0/32` wins over target
+- so the new `dynalign_module_replace_residrank16 = 0.1250` row is **not** a
+  generic consequence of simply increasing residual rank across the whole
+  alignment family
+
+That changes the next method order again:
+
+1. keep `dynalign + rank16 residual` as the live same-pair row
+2. stop treating `tokenbasis + rank16 residual` as a promising backup
+3. move next to a fixed gauge-fix / canonicalization wrapper on top of the
+   live dynalign residual lane
+4. only after that, widen to a broader held-out slice if the wrapped lane
+   still beats target with full coverage
+
+So the same-pair benchmark story is now:
+
+1. teacher variants alone saturate around `0.09375`
+2. residual correction can help, but not uniformly across bases
+3. the next additive hypothesis is that the remaining gain depends on
+   unresolved symmetry / canonicalization mismatch in the live dynalign lane
+4. we still are not paper-ready until that lane survives a broader slice or a
+   stronger benchmark suite
+
+## Status After Preserve-TopK Codec Tail Toy
+
+The first codec-side follow-up after the `rank16` residual lift gives a useful
+boundary:
+
+- `preserve_topk_uniform_tail` reaches `0.9896` toy accuracy with `0.0284` MSE,
+  clearly beating the naive `uniform_low_bit` baseline (`0.9583`, `0.7463`)
+- the preserved top-k set exactly matches the toy oracle atoms in this seed,
+  so the dominant-subspace part of the story is not noise
+- but the first `preserve_topk_codebook_tail` and
+  `preserve_topk_codebook_tail_residual_fix` variants both land at `0.9844`
+  accuracy with about `0.2470` MSE, which is still worse than simply keeping
+  the dominant subspace and quantizing the rest
+
+That changes the codec read in a useful way:
+
+1. preserving dominant shared directions is a real ingredient
+2. the current naive tail codebook is not yet a positive add-on
+3. the next codec branch should keep preserved anchors but redesign the tail
+   model with adaptive precision, better codebooks, or a stronger post-decode
+   repair
+4. this should stay behind the real benchmark lane until the matched
+   `tokenbasis + rank16` control resolves
 
 ## Best Next Method Lane
 

@@ -82,13 +82,12 @@ the first real same-pair lift on the frozen GSM8K32 contract
 
 ## Exact Next Ablations
 
-1. `tokenbasis_replace + residual rank16`
-   Why now: matched control for deciding whether the new lift is genuinely
-   residual-driven or dynalign-specific.
+1. `dynalign_module_replace_residrank16 + fixed gauge-fix wrapper`
+   Why now: the matched `tokenbasis + rank16` control failed to reproduce the
+   lift, so the next live branch should wrap the surviving dynalign row.
 
-2. `dynalign_module_replace_residrank16 + fixed gauge-fix wrapper`
-   Why now: strongest next wrapper if the matched rank16 control fails to
-   confirm the new `0.1250` row.
+2. `dynalign_module_replace_residrank16 + adaptive canonicalization`
+   Why now: strongest follow-up if one fixed gauge wrapper is too brittle.
 
 3. Preserve-then-quantize residual split on the better rank16 lane
    Why now: best compression-inspired follow-up if plain low-rank repair ties
@@ -99,7 +98,9 @@ the first real same-pair lift on the frozen GSM8K32 contract
 - We still are not ICLR-ready.
 - The first real same-pair lift now comes from explicit residual correction,
   not from more teacher-side variants.
-- The next proof step is confirmation: matched rank16 control first, then a
-  broader held-out slice.
-- If the control fails, the next live wrapper should be gauge-fix /
-  canonicalization, not another teacher sweep.
+- The matched `tokenbasis + rank16` control failed to reproduce the lift, so
+  the next proof step is a gauge/canonicalization wrapper on top of the live
+  `dynalign + rank16 residual` lane.
+- If that wrapper also fails, the same-pair benchmark story remains too brittle
+  for paper mode and the positive burden shifts back toward the low-shot
+  shared-basis lane.

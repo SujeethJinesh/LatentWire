@@ -271,5 +271,12 @@
     "path": "references/395_rank16_residual_gauge_benchmark_refs.md",
     "status": "local_memo",
     "reason": "Consolidated follow-up memo after the first rank16 residual lift, covering residual-repair references, gauge/canonicalization wrappers, and fair same-pair benchmark contract guidance."
+  },
+  {
+    "num": 396,
+    "slug": "multimodal_residual_contract_followup_refs",
+    "path": "references/396_multimodal_residual_contract_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Cross-cutting follow-up memo after the rank16 residual lift, covering heterogeneous connector inspirations, quantization-style residual repair, and the next fair benchmark-table structure."
   }
 ]
