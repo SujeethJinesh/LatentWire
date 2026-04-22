@@ -4468,3 +4468,26 @@ That means:
    anchor-preserving codebook tail
 4. do not widen benchmark scope again until one of those stronger branches
    survives the same frozen contract
+
+## Status After Routed Residual Sweep
+
+The first routed-repair follow-up is now also complete on the exact frozen
+GSM8K32 contract:
+
+- `dynalign_routed_module_replace_residrank16 = 0.0625`
+- numeric extraction coverage remains `32/32`
+- wins over target: `1/32`
+- losses vs target: `1/32`
+
+That means:
+
+1. the live `dynalign_module_replace_residrank16 = 0.1250` row still does
+   **not** survive a simple single-gate routed repair
+2. raw-basis preserve-core, naive eigenspace projection, one-shot saliency
+   weighting, simple saliency-preserve tail repair, and single-gate routed
+   repair are now all negative or non-additive controls on the same exact
+   contract
+3. the next serious branch should move to multi-expert / value-side routed
+   repair or an anchor-preserving codebook tail
+4. do not widen benchmark scope again until one of those stronger branches
+   survives the same frozen contract

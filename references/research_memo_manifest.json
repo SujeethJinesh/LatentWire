@@ -411,5 +411,33 @@
     "path": "references/415_benchmark_block_structure_followup_refs.md",
     "status": "local_memo",
     "reason": "Benchmark block structure memo fixing the post-GSM8K32 expansion order, control ladder, and medium-split table plan."
+  },
+  {
+    "num": 416,
+    "slug": "routed_residual_real_lane_refs",
+    "path": "references/416_routed_residual_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused routed-repair memo for the live dynalign residual lane, narrowing the next real same-pair branch to compact conditional repair instead of more dense weighting tweaks."
+  },
+  {
+    "num": 417,
+    "slug": "benchmark_expansion_pass_gates_refs",
+    "path": "references/417_benchmark_expansion_pass_gates_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark expansion memo that freezes exact pass gates and block structure before widening beyond the frozen GSM8K32 contract."
+  },
+  {
+    "num": 418,
+    "slug": "multimodal_small_graft_refs",
+    "path": "references/418_multimodal_small_graft_refs.md",
+    "status": "local_memo",
+    "reason": "Small-graft multimodal and connector memo for lateral additive ideas that are still compact enough to graft onto the current same-pair text lane."
+  },
+  {
+    "num": 419,
+    "slug": "importance_preserve_tail_followup_refs",
+    "path": "references/419_importance_preserve_tail_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused preserve-plus-tail memo that narrows the next importance-proxy and tail-family comparisons after the negative saliency-preserve same-pair row."
   }
 ]
