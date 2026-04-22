@@ -1980,6 +1980,30 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_routed_module_rep
     args = calibrate.parse_args()
 
     assert args.quantization_correction == "bridge_ridge_qk_dynalign_routed_module_replace"
+
+
+def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_value_routed_module_replace(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "bridge_ridge_qk_dynalign_value_routed_module_replace",
+            "--quantization-correction-rank",
+            "8",
+        ],
+    )
+    args = calibrate.parse_args()
+    assert args.quantization_correction == "bridge_ridge_qk_dynalign_value_routed_module_replace"
     assert args.quantization_correction_rank == 8
 
 

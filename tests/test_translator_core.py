@@ -3154,6 +3154,111 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_routed_module_replace_stores_ro
     assert torch.allclose(tr.quant_query_route_V_bias[0], torch.full_like(tr.quant_query_route_V_bias[0], -0.25))
 
 
+def test_fit_from_pairs_bridge_ridge_qk_dynalign_value_routed_module_replace_stores_only_v_route_gates(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_value_routed_module_replace",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        **kwargs,
+    ):
+        del self, quantized_k, predicted_k, quantized_v, predicted_v, query_features, target_k, target_v, rank, kwargs
+        return (
+            torch.ones((tr.config.bridge_bank_size, tr.d_t), dtype=torch.float32),
+            torch.ones((tr.d_t, 1), dtype=torch.float32),
+            torch.full((tr.d_t, 1), 2.0, dtype=torch.float32),
+            torch.full((tr.d_t, 1), 3.0, dtype=torch.float32),
+            torch.full((1, 1), 4.0, dtype=torch.float32),
+            torch.full((1, tr.d_t), 5.0, dtype=torch.float32),
+            torch.full((1, tr.d_t), 6.0, dtype=torch.float32),
+        )
+
+    def fake_predict(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        slot_tokens,
+        q_proj,
+        k_proj,
+        v_proj,
+        hidden_proj,
+        out_k,
+        out_v,
+    ):
+        del self, quantized_k, predicted_k, quantized_v, predicted_v, query_features, slot_tokens, q_proj, k_proj, v_proj, hidden_proj, out_k, out_v
+        return (
+            torch.full((4, tr.d_t), 2.0, dtype=torch.float32),
+            torch.full((4, tr.d_t), 3.0, dtype=torch.float32),
+        )
+
+    seen = []
+
+    def fake_route_gate(
+        self,
+        query_features,
+        base_prediction,
+        module_prediction,
+        target,
+        *,
+        steps=100,
+        lr=5e-2,
+    ):
+        del self, steps, lr
+        seen.append((query_features.shape, base_prediction.shape, module_prediction.shape, target.shape))
+        return (
+            torch.full((tr.d_t, 1), 7.0, dtype=torch.float32),
+            torch.full((1,), -0.25, dtype=torch.float32),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+    monkeypatch.setattr(RotAlignKVTranslator, "_predict_bridge_query_module_replace", fake_predict)
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_route_gate", fake_route_gate)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert len(seen) == 1
+    assert torch.allclose(tr.quant_query_route_K[0], torch.zeros_like(tr.quant_query_route_K[0]))
+    assert torch.allclose(tr.quant_query_route_K_bias[0], torch.zeros_like(tr.quant_query_route_K_bias[0]))
+    assert torch.allclose(tr.quant_query_route_V[0], torch.full_like(tr.quant_query_route_V[0], 7.0))
+    assert torch.allclose(tr.quant_query_route_V_bias[0], torch.full_like(tr.quant_query_route_V_bias[0], -0.25))
+
+
 def test_fit_from_pairs_bridge_ridge_qk_dynalign_ctxonly_module_replace_reuses_module_replace_fit(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

@@ -439,5 +439,26 @@
     "path": "references/419_importance_preserve_tail_followup_refs.md",
     "status": "local_memo",
     "reason": "Focused preserve-plus-tail memo that narrows the next importance-proxy and tail-family comparisons after the negative saliency-preserve same-pair row."
+  },
+  {
+    "num": 420,
+    "slug": "value_routed_repair_refs",
+    "path": "references/420_value_routed_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for the value-side routed repair branch on top of the live dynalign residual lane."
+  },
+  {
+    "num": 421,
+    "slug": "preserve_anchor_tail_real_lane_refs",
+    "path": "references/421_preserve_anchor_tail_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for preserve-anchor and tail-family comparisons after the negative saliency-preserve same-pair row."
+  },
+  {
+    "num": 422,
+    "slug": "benchmark_competitor_pass_gates_refs",
+    "path": "references/422_benchmark_competitor_pass_gates_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark and competitor memo freezing exact widening gates and table structure after the frozen GSM8K32 contract."
   }
 ]

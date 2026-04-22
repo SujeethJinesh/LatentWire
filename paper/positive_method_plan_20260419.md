@@ -4491,3 +4491,26 @@ That means:
    repair or an anchor-preserving codebook tail
 4. do not widen benchmark scope again until one of those stronger branches
    survives the same frozen contract
+
+## Status After Value-Routed Residual Sweep
+
+The first value-side selective repair follow-up is now also complete on the
+exact frozen GSM8K32 contract:
+
+- `dynalign_value_routed_module_replace_residrank16 = 0.1250`
+- numeric extraction coverage remains `32/32`
+- wins over target: `2/32`
+- losses vs target: `0/32`
+
+That means:
+
+1. the live `dynalign_module_replace_residrank16 = 0.1250` row is **not**
+   unique anymore; value-side selective repair can preserve it
+2. simple one-gate dense routed repair is still negative, but routed repair as
+   a family is no longer dead on this exact contract
+3. the next serious branch should move to multi-expert / value-bank routed
+   repair or an anchor-preserving codebook tail, not another simple geometry
+   tweak
+4. do not widen benchmark scope again until one of those stronger branches
+   either beats the same frozen contract or achieves a clear bytes/latency win
+   at the same accuracy

@@ -53,6 +53,11 @@ DEFAULT_BASES: dict[str, dict[str, str | int]] = {
         "checkpoint_path": "",
         "existing_rank": -1,
     },
+    "dynalign_value_routed_module_replace": {
+        "quantization_correction": "bridge_ridge_qk_dynalign_value_routed_module_replace",
+        "checkpoint_path": "",
+        "existing_rank": -1,
+    },
     "tokenbasis_replace": {
         "quantization_correction": "bridge_ridge_qk_tokenbasis_replace",
         "checkpoint_path": "checkpoints/bridge_ridge_qk_tokenbasis_replace_20260420/qwen25_to_qwen3_grouped_subspace_transport_w010_r4_tokenbasis_replace_cal64_chat.pt",
