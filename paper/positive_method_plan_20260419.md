@@ -4446,3 +4446,25 @@ That means:
    repair, routed residual repair, or codebook-style repair
 4. do not widen benchmark scope again until one of those stronger residual-side
    branches survives the same frozen contract
+
+## Status After Saliency-Preserve Residual Sweep
+
+The first saliency-preserve plus tail follow-up is now also complete on the
+exact frozen GSM8K32 contract:
+
+- `dynalign_saliency_preserve_module_replace_residrank16 = 0.0625`
+- numeric extraction coverage remains `32/32`
+- wins over target: `1/32`
+- losses vs target: `1/32`
+
+That means:
+
+1. the live `dynalign_module_replace_residrank16 = 0.1250` row still does
+   **not** survive a simple saliency-preserve split
+2. raw-basis preserve-core, naive eigenspace projection, one-shot saliency
+   weighting, and simple saliency-preserve tail repair are now all negative or
+   non-additive controls on the same exact contract
+3. the next serious branch should move to routed residual repair or an
+   anchor-preserving codebook tail
+4. do not widen benchmark scope again until one of those stronger branches
+   survives the same frozen contract

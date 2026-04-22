@@ -383,5 +383,33 @@
     "path": "references/411_saliency_residual_followup_refs.md",
     "status": "local_memo",
     "reason": "Focused follow-up memo for the saliency-aware residual branch, grounding the next exact learned-importance repair experiments in SERQ/AWQ/LQER/QERA-style references."
+  },
+  {
+    "num": 412,
+    "slug": "preserve_tail_quantization_followup_refs",
+    "path": "references/412_preserve_tail_quantization_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Preserve-dominant-subspace plus low-rank-tail follow-up memo for the live dynalign residual lane, with saliency-aware preservation, tail-repair allocation, and interpretable telemetry."
+  },
+  {
+    "num": 413,
+    "slug": "routed_residual_repair_followup_refs",
+    "path": "references/413_routed_residual_repair_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Routed residual repair memo for the next same-pair branch, covering conditional experts, router collapse risks, and selective repair telemetry."
+  },
+  {
+    "num": 414,
+    "slug": "anchor_preserving_codebook_tail_refs",
+    "path": "references/414_anchor_preserving_codebook_tail_refs.md",
+    "status": "local_memo",
+    "reason": "Anchor-preserving codebook tail memo for stagewise residual codebooks, commutative VQ, and preserve-anchor codec telemetry."
+  },
+  {
+    "num": 415,
+    "slug": "benchmark_block_structure_followup_refs",
+    "path": "references/415_benchmark_block_structure_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark block structure memo fixing the post-GSM8K32 expansion order, control ladder, and medium-split table plan."
   }
 ]
