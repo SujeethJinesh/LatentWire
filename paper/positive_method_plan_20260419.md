@@ -4538,6 +4538,40 @@ That means:
    same frozen contract or achieves a clear bytes/latency win at the same
    accuracy
 
+## Status After Reviewer Diagnostics on the Live Dynalign Residual Row
+
+The reviewer-driven diagnostics are now complete on the exact frozen GSM8K32
+contract for `dynalign_module_replace_residrank16`.
+
+Key read:
+
+- `source_alone = 0.0312`
+- `target_alone = 0.0625`
+- `text_to_text = 0.0312`
+- `dynalign_module_replace_residrank16 = 0.1250`
+- oracle verification bound `max(target_alone, dynalign_module_replace_residrank16) = 0.1250`
+
+And the per-example interpretation is now sharper:
+
+1. the source model is wrong on both latent-only win examples
+2. the source model is also wrong on both target-only `text_to_text` poison
+   examples
+3. that means the current live row is **not** explained by simply copying a
+   correct source answer on this slice
+4. but it also means this exact 32-example contract is already
+   **oracle-saturated** for the live row, so there is no remaining verifier-side
+   headroom to unlock on this slice
+
+Operational consequence:
+
+- keep the GSM8K32 contract as a reproducible falsification and regression
+  check
+- stop expecting further verifier or selector gains to appear on this exact
+  slice
+- make the next testing investment a larger frozen slice plus a cross-family
+  falsification pair before spending more benchmark cycles on the same 32
+  examples
+
 ## Status After Value-Routed-Bank Residual Sweep
 
 The sparse top-2 value-routed bank follow-up is now also complete on the exact
