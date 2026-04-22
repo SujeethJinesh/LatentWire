@@ -174,6 +174,11 @@
   whereas fixed fitted-rotation and shared-basis wrappers collapse to
   `0.0000`; so adaptive symmetry handling looks like a component or control,
   not the missing positive-method jump by itself.
+- Strongest new residual-side negative read: **naive preserve-core splitting is
+  not enough on the live same-pair lane**. On the same frozen GSM8K32
+  contract, `dynalign_preserve_module_replace_residrank16 = 0.0625` ties the
+  target floor with full coverage, so a simple dominant-subspace preserve plus
+  tail-repair split is not the missing lift either.
 - Strongest new compositional clue: **quotient-aware matching + GPA +
   sparse shared dictionary**. The new held-out-family toy is the first clean
   evidence that symmetry-aware alignment and a shared sparse basis help more

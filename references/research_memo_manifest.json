@@ -327,5 +327,26 @@
     "path": "references/403_benchmark_contract_block_structure_refs.md",
     "status": "local_memo",
     "reason": "Benchmark-structure memo from the latest contract pass, freezing the block-split comparison plan across same-pair, cross-family, reasoning-transfer, and multimodal rows."
+  },
+  {
+    "num": 404,
+    "slug": "preserve_core_residual_refs",
+    "path": "references/404_preserve_core_residual_refs.md",
+    "status": "local_memo",
+    "reason": "Selective-preservation and preserve-core / repair-tail memo from the latest compression-inspired research pass, scoped to the live dynalign residual lane."
+  },
+  {
+    "num": 405,
+    "slug": "benchmark_expansion_order_refs",
+    "path": "references/405_benchmark_expansion_order_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark-expansion memo from the latest contract research pass, narrowing the next fair order after GSM8K32 to RULER, then SCBench, then LongBench v2, with multimodal rows kept separate."
+  },
+  {
+    "num": 406,
+    "slug": "staged_sidecar_repair_refs",
+    "path": "references/406_staged_sidecar_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Connector-side memo capturing staged repair, wormhole, and sidecar ideas as lateral additives on top of the live same-pair branch."
   }
 ]

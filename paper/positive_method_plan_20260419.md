@@ -479,6 +479,36 @@ So the real same-pair story is now:
 5. adaptive canonicalization is a safe wrapper, but not the missing lift
 6. the next serious additive move is residual-side, not wrapper-side
 
+## Status After Preserve-Core Residual Split
+
+The first preserve-core / repair-tail follow-up answers the next residual-side
+hypothesis directly, and negatively:
+
+- `dynalign_preserve_module_replace_residrank16 = 0.0625`
+- numeric extraction coverage stays perfect (`32/32`)
+- but the row falls back to the target floor with `0/32` wins over target
+
+That changes the order again:
+
+1. keep `dynalign_module_replace_residrank16 = 0.1250` as the only live
+   same-pair row
+2. treat adaptive canonicalization as a stabilizing control only
+3. stop spending more cycles on naive preserve-core / repair-tail splits in
+   the raw target basis
+4. move next to an eigenspace-aware or saliency-aware residual branch
+5. only widen to a broader held-out slice after one of those additive
+   residual branches still survives the same frozen contract
+
+So the real same-pair benchmark story is now:
+
+1. output-aware alignment alone saturates around `0.09375`
+2. rank16 residual repair can lift the live dynalign lane to `0.1250`
+3. that lift is dynalign-specific, not generic across bases
+4. fixed canonicalization wrappers are harmful
+5. adaptive canonicalization is safe but not additive
+6. naive preserve-core splitting in the raw basis also fails
+7. the next serious branch should be eigenspace-aware residual repair
+
 ## Status After Preserve-TopK Codec Tail Toy
 
 The first codec-side follow-up after the `rank16` residual lift gives a useful
