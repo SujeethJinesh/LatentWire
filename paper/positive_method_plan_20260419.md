@@ -4572,6 +4572,12 @@ Operational consequence:
   falsification pair before spending more benchmark cycles on the same 32
   examples
 
+Implementation note:
+
+- the repo now has a dedicated runner,
+  `scripts/run_gsm8k_contract_campaign.py`, so the next testing phase can be
+  executed as one campaign rather than a sequence of ad hoc manual sweeps
+
 ## Status After Value-Routed-Bank Residual Sweep
 
 The sparse top-2 value-routed bank follow-up is now also complete on the exact

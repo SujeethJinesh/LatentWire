@@ -572,5 +572,26 @@
     "path": "references/438_tokenizer_interface_denoise_refs.md",
     "status": "local_memo",
     "reason": "Interface-side memo covering byte-level distillation, learned tokenizer alignment, query bottlenecks, and denoising bridges."
+  },
+  {
+    "num": 439,
+    "slug": "reviewer_driven_eval_expansion_refs",
+    "path": "references/439_reviewer_driven_eval_expansion_refs.md",
+    "status": "local_memo",
+    "reason": "Evaluation memo covering larger-slice testing, uncertainty-aware benchmark reporting, and the benchmark order after reviewer feedback."
+  },
+  {
+    "num": 440,
+    "slug": "interface_redesign_connector_refs",
+    "path": "references/440_interface_redesign_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Connector-side memo covering learned query bottlenecks, tokenizer-agnostic transport, and bridge-style interface redesign."
+  },
+  {
+    "num": 441,
+    "slug": "selective_precision_transport_refs",
+    "path": "references/441_selective_precision_transport_refs.md",
+    "status": "local_memo",
+    "reason": "Codec-side memo covering anchor-preserving tails, selective precision, codebook transports, and quantization-inspired bridge ablations."
   }
 ]
