@@ -421,6 +421,35 @@ So the same-pair benchmark story is now:
 4. we still are not paper-ready until that lane survives a broader slice or a
    stronger benchmark suite
 
+## Status After Fixed Gauge Wrapper Sweep
+
+The first fixed wrappers answer that next hypothesis directly, and negatively:
+
+- `dynalign_resid16_fitted_rotation = 0.0000`
+- `dynalign_resid16_shared_basis = 0.0000`
+- both fail numeric extraction coverage completely (`0/32`)
+- both are therefore much worse than the live
+  `dynalign_module_replace_residrank16 = 0.1250` row
+
+That changes the next order again:
+
+1. keep `dynalign + rank16 residual` as the only live same-pair row
+2. stop spending more same-pair cycles on **fixed** gauge or canonicalization
+   wrappers
+3. move next to either:
+   - adaptive canonicalization
+   - or an eigenspace-aware residual branch such as EoRA/LQER-style repair
+4. only widen to a broader slice after one of those survives the same frozen
+   contract
+
+So the benchmark-side story is now:
+
+1. output-aware alignment alone saturates around `0.09375`
+2. residual correction can lift the live dynalign lane to `0.1250`
+3. that lift is not generic across bases
+4. naive fixed canonicalization wrappers are actively harmful
+5. the next serious branch must be adaptive, not fixed
+
 ## Status After Preserve-TopK Codec Tail Toy
 
 The first codec-side follow-up after the `rank16` residual lift gives a useful

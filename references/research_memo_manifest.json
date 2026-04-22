@@ -278,5 +278,12 @@
     "path": "references/396_multimodal_residual_contract_followup_refs.md",
     "status": "local_memo",
     "reason": "Cross-cutting follow-up memo after the rank16 residual lift, covering heterogeneous connector inspirations, quantization-style residual repair, and the next fair benchmark-table structure."
+  },
+  {
+    "num": 397,
+    "slug": "live_branch_followup_refs",
+    "path": "references/397_live_branch_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Latest follow-up memo after the negative tokenbasis rank16 control, narrowing the real same-pair branch to dynalign+residual plus gauge/canonicalization and banking the next lateral connector and benchmark-contract ideas."
   }
 ]
