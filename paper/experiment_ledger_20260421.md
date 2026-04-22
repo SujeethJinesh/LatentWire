@@ -281,3 +281,21 @@ mask, and is designed to quantize only the residual tail while keeping the
 protected anchor exact. Treat this as the next same-pair falsification branch,
 but judge it primarily on the larger frozen campaign and bytes-aware reporting,
 not on GSM8K32 alone.
+
+`paper/gsm8k70_campaign_20260422.md` is the first larger frozen same-pair read
+after the reviewer pivot. It shows that the live
+`dynalign_module_replace_residrank16` lane survives beyond GSM8K32:
+
+- `target_alone = 0.0571` (`4/70`)
+- `dynalign_module_replace_residrank16 = 0.1143` (`8/70`)
+- `c2c_generate = 0.1286` (`9/70`)
+- oracle(target, candidate) = `0.1429` (`10/70`)
+
+Treat this as the first useful evidence that the live residual lane is not a
+pure GSM8K32 artifact, but still not as a promotable paper result:
+
+1. the run is still only one seed
+2. the paired bootstrap interval against target still crosses zero
+3. the external bar is still slightly ahead
+4. the next critical steps are multi-seed repetition on the same larger slice
+   and one matched cross-family falsification pair

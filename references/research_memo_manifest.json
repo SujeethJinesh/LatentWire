@@ -642,5 +642,19 @@
     "path": "references/448_quotient_locality_transport_followup_refs.md",
     "status": "local_memo",
     "reason": "Math-side memo narrowing any remaining symmetry/locality pivot to quotient-aware and interpretable transport rather than naive geometry tweaks."
+  },
+  {
+    "num": 449,
+    "slug": "competitor_benchmark_order_followup_refs",
+    "path": "references/449_competitor_benchmark_order_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo freezing the next fair public-comparator stack and the first strict cross-family comparison pair after the larger same-pair slice."
+  },
+  {
+    "num": 450,
+    "slug": "lateral_connector_repair_refs",
+    "path": "references/450_lateral_connector_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo covering the strongest remaining lateral inspirations: learned connectors, conditional repair, routed patch experts, and tiny bridge-style iterations."
   }
 ]

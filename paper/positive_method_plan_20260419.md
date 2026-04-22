@@ -4703,3 +4703,25 @@ Working hypothesis:
 
 This is now the preferred codec-side next branch over additional simple
 routed-bank, verifier-sidecar, or fixed-geometry variants.
+
+## Status After GSM8K70 Same-Pair Campaign
+
+The first larger frozen same-pair campaign now says:
+
+- `target_alone = 0.0571` (`4/70`)
+- `dynalign_module_replace_residrank16 = 0.1143` (`8/70`)
+- `c2c_generate = 0.1286` (`9/70`)
+- oracle(target, candidate) = `0.1429` (`10/70`)
+
+That means the live dynalign residual row survives beyond GSM8K32, but it is
+still not paper-ready:
+
+1. only one seed is complete
+2. the paired interval still crosses zero
+3. the external smoke bar is still slightly ahead
+
+So the next order remains:
+
+1. multi-seed repetition on the same larger frozen slice
+2. one matched cross-family falsification pair
+3. only then broader benchmark widening

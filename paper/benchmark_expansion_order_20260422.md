@@ -82,5 +82,11 @@ The current live same-pair row is still:
 
 - `dynalign_module_replace_residrank16 = 0.1250`
 
-But GSM8K32 is already oracle-saturated for that row, so it should remain a
-smoke gate, not the main local leaderboard for nearby variants.
+The first larger frozen same-pair read now says:
+
+- `target_alone = 0.0571` (`4/70`)
+- `dynalign_module_replace_residrank16 = 0.1143` (`8/70`)
+- `C2C = 0.1286` (`9/70`)
+
+So GSM8K32 should remain only a smoke gate, while the larger frozen slice
+becomes the real decision surface for nearby variants.
