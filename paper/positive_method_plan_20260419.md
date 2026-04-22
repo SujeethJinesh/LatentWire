@@ -4652,3 +4652,36 @@ That means:
 4. do not widen benchmark scope again until one of those branches beats the
    same frozen contract or achieves a clear bytes/latency win at the same
    accuracy
+
+## Status After Reviewer-Driven Expansion Order Lock
+
+The latest reviewer feedback plus the newest reference pass changed the next
+phase in one important way:
+
+- the main evaluation order is now frozen as:
+  1. larger frozen same-pair campaign
+  2. one matched cross-family pair
+  3. `RULER`
+  4. `SCBench`
+  5. `LongBench v2`
+- the practical first larger in-repo slice is `gsm8k_eval_70`, not another
+  micro-variant on GSM8K32
+- the live same-pair row still matters, but GSM8K32 is now only a smoke gate
+  and falsification harness, not the main leaderboard for nearby variants
+
+That pushes the method order again:
+
+1. keep the live `dynalign_module_replace_residrank16` lane as the real anchor
+2. test an anchor-preserving selective-precision or codebook-tail branch on
+   that lane, because it can win either on accuracy preservation under byte
+   pressure or on additive gains
+3. in parallel, test a learned connector / query-bottleneck branch instead of
+   more direct latent geometry surgery
+4. leave simple bank, sidecar, and one-gate routed variants behind unless a
+   larger-slice campaign says they are still distinguishable
+
+This is the first phase where the positive-method plan is explicitly
+two-branch:
+
+- codec-side: preserve anchors, compress or code only the tail
+- interface-side: replace direct latent mapping with a learned connector

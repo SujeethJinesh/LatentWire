@@ -112,6 +112,19 @@ def test_write_markdown_renders_aggregate_rows(tmp_path) -> None:
                 "positive_seed_count": 2,
             }
         },
+        "diagnostic_rows": {
+            "dynalign_module_replace_residrank16": {
+                "oracle_accuracy_mean": 0.125,
+                "oracle_accuracy_min": 0.125,
+                "oracle_accuracy_max": 0.125,
+                "oracle_headroom_mean": 0.0,
+                "candidate_only_win_n": 2,
+                "candidate_only_win_source_correct": 0,
+                "candidate_only_win_text_correct": 0,
+                "text_only_loss_n": 1,
+                "text_only_loss_source_correct": 0,
+            }
+        },
         "seed_artifacts": {
             0: {"residual_payload": "results/campaign/seed0/gsm8k_contract_residual_sweep_20260421.json", "diagnostics": []}
         },
@@ -121,6 +134,34 @@ def test_write_markdown_renders_aggregate_rows(tmp_path) -> None:
     text = path.read_text()
     assert "# GSM8K Contract Campaign" in text
     assert "| dynalign_module_replace_residrank16 | 2 | 0.1094 | 0.0938 | 0.1250 | 0.0469 | [0.0000, 0.0938] | 1.50 | 0.00 | 2 |" in text
+    assert "| dynalign_module_replace_residrank16 | 0.1250 | 0.1250 | 0.1250 | 0.0000 | 2 | 0 | 0 | 1 | 0 |" in text
+
+
+def test_aggregate_diagnostics_summarizes_oracle_and_support() -> None:
+    summary = campaign._aggregate_diagnostics(
+        {
+            "dynalign_module_replace_residrank16": [
+                {
+                    "summary_metrics": {"oracle_accuracy": 0.125, "candidate_accuracy": 0.125},
+                    "candidate_only_win_support": {"n": 2, "source_correct": 0, "text_correct": 0},
+                    "text_to_text_loss_support": {"n": 1, "source_correct": 0},
+                },
+                {
+                    "summary_metrics": {"oracle_accuracy": 0.15625, "candidate_accuracy": 0.09375},
+                    "candidate_only_win_support": {"n": 1, "source_correct": 1, "text_correct": 0},
+                    "text_to_text_loss_support": {"n": 2, "source_correct": 1},
+                },
+            ]
+        }
+    )
+    row = summary["dynalign_module_replace_residrank16"]
+    assert row["n_seeds"] == 2
+    assert row["oracle_accuracy_mean"] == (0.125 + 0.15625) / 2.0
+    assert row["oracle_headroom_mean"] == (0.0 + (0.15625 - 0.09375)) / 2.0
+    assert row["candidate_only_win_n"] == 3
+    assert row["candidate_only_win_source_correct"] == 1
+    assert row["text_only_loss_n"] == 3
+    assert row["text_only_loss_source_correct"] == 1
 
 
 def test_payload_round_trip_json() -> None:

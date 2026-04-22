@@ -88,6 +88,30 @@ Every promoted run should emit `example_id`, `method`, `source_model`,
 `atom_recovery`, `bit_allocation`, `stop_reason`, `halt_confidence`,
 `over_refinement_flag`, `parse_failure`, and compact trace hashes.
 
+## Reviewer-Driven Next Phase
+
+Freeze the next phase so nearby variants are not ranked on oracle-saturated
+GSM8K32 alone:
+
+1. larger frozen same-pair campaign first
+   - in practice: `gsm8k_eval_70` with explicit seeds and paired uncertainty
+2. one matched cross-family pair second
+   - preferred: `Qwen2.5-3B ↔ Llama-3.2-3B`
+   - cheaper fallback: `Qwen2.5-1.5B ↔ Llama-3.2-1B`
+3. then `RULER`
+4. then `SCBench`
+5. then `LongBench v2`
+
+Method priority inside that phase is now:
+
+1. anchor-preserving selective precision or codebook-tail repair on top of the
+   live `dynalign_module_replace_residrank16` lane
+2. learned connector / query-bottleneck transport
+3. only then richer routed or verifier-gated repair
+
+Do not return to another simple routed-bank or one-sidecar tweak unless the
+larger-slice campaign shows a real uncertainty-aware reason to reopen it.
+
 ## Current Evidence Ladder
 
 `paper/ablation_evidence_ladder_20260421.md` is the current anti-loop summary

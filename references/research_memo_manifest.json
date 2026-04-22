@@ -593,5 +593,26 @@
     "path": "references/441_selective_precision_transport_refs.md",
     "status": "local_memo",
     "reason": "Codec-side memo covering anchor-preserving tails, selective precision, codebook transports, and quantization-inspired bridge ablations."
+  },
+  {
+    "num": 442,
+    "slug": "benchmark_pairing_uncertainty_refs",
+    "path": "references/442_benchmark_pairing_uncertainty_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark-order and uncertainty memo freezing the next same-pair, cross-family, and long-context evaluation blocks after reviewer feedback."
+  },
+  {
+    "num": 443,
+    "slug": "query_resampler_connector_refs",
+    "path": "references/443_query_resampler_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Focused connector memo covering Q-former, resampler, tokenizer-agnostic, and bridge-model interface redesign for the next live branch."
+  },
+  {
+    "num": 444,
+    "slug": "anchor_tail_codec_refs",
+    "path": "references/444_anchor_tail_codec_refs.md",
+    "status": "local_memo",
+    "reason": "Focused codec memo covering anchor-preserving selective precision, codebook tails, and reviewer-driven telemetry for the live dynalign residual lane."
   }
 ]

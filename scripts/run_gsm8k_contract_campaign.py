@@ -270,6 +270,32 @@ def _aggregate_rows(seed_payloads: dict[int, dict[str, Any]]) -> dict[str, dict[
     return summary
 
 
+def _aggregate_diagnostics(diagnostics_by_label: dict[str, list[dict[str, Any]]]) -> dict[str, dict[str, Any]]:
+    summary: dict[str, dict[str, Any]] = {}
+    for label, entries in sorted(diagnostics_by_label.items()):
+        oracle_accs = [float(entry["summary_metrics"]["oracle_accuracy"]) for entry in entries]
+        candidate_accs = [float(entry["summary_metrics"]["candidate_accuracy"]) for entry in entries]
+        oracle_headroom = [float(oracle - cand) for oracle, cand in zip(oracle_accs, candidate_accs)]
+        win_support_n = sum(int(entry["candidate_only_win_support"]["n"]) for entry in entries)
+        win_support_source = sum(int(entry["candidate_only_win_support"]["source_correct"]) for entry in entries)
+        win_support_text = sum(int(entry["candidate_only_win_support"]["text_correct"]) for entry in entries)
+        text_loss_n = sum(int(entry["text_to_text_loss_support"]["n"]) for entry in entries)
+        text_loss_source = sum(int(entry["text_to_text_loss_support"]["source_correct"]) for entry in entries)
+        summary[label] = {
+            "n_seeds": len(entries),
+            "oracle_accuracy_mean": float(sum(oracle_accs) / max(len(oracle_accs), 1)),
+            "oracle_accuracy_min": float(min(oracle_accs)),
+            "oracle_accuracy_max": float(max(oracle_accs)),
+            "oracle_headroom_mean": float(sum(oracle_headroom) / max(len(oracle_headroom), 1)),
+            "candidate_only_win_n": int(win_support_n),
+            "candidate_only_win_source_correct": int(win_support_source),
+            "candidate_only_win_text_correct": int(win_support_text),
+            "text_only_loss_n": int(text_loss_n),
+            "text_only_loss_source_correct": int(text_loss_source),
+        }
+    return summary
+
+
 def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     lines = [
         "# GSM8K Contract Campaign",
@@ -307,6 +333,24 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
                 else ""
             )
         )
+    if payload.get("diagnostic_rows"):
+        lines.extend(
+            [
+                "",
+                "## Diagnostic Summary",
+                "",
+                "| Label | Oracle mean | Oracle min | Oracle max | Headroom mean | Candidate-only wins | Source correct on wins | Text correct on wins | Text-only losses | Source correct on text losses |",
+                "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+            ]
+        )
+        for label, row in payload["diagnostic_rows"].items():
+            lines.append(
+                f"| {label} | {row['oracle_accuracy_mean']:.4f} | {row['oracle_accuracy_min']:.4f} | "
+                f"{row['oracle_accuracy_max']:.4f} | {row['oracle_headroom_mean']:.4f} | "
+                f"{row['candidate_only_win_n']} | {row['candidate_only_win_source_correct']} | "
+                f"{row['candidate_only_win_text_correct']} | {row['text_only_loss_n']} | "
+                f"{row['text_only_loss_source_correct']} |"
+            )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n")
 
@@ -321,6 +365,7 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
     seed_payloads: dict[int, dict[str, Any]] = {}
     seed_artifacts: dict[int, dict[str, Any]] = {}
     paired_stats_by_label: dict[str, list[dict[str, Any]]] = {}
+    diagnostics_by_label: dict[str, list[dict[str, Any]]] = {}
     for seed in config.seeds:
         seed_results_dir = _run_residual_sweep(config, baseline_dir, seed)
         residual_payload = _load_json(seed_results_dir / RESIDUAL_PAYLOAD_NAME)
@@ -344,6 +389,7 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
                     seed_results_dir=seed_results_dir,
                     candidate_label=candidate_label,
                 )
+                diagnostics_by_label.setdefault(candidate_label, []).append(_load_json(diagnostics_json))
                 diagnostics_paths.append(str(diagnostics_json))
         seed_artifacts[int(seed)] = {
             "residual_payload": str(seed_results_dir / RESIDUAL_PAYLOAD_NAME),
@@ -363,6 +409,7 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
         row["delta_ci_high_mean"] = float(sum(highs) / max(len(highs), 1)) if highs else None
         row["positive_seed_count"] = int(sum(int(delta > 0.0) for delta in deltas))
         row["paired_n"] = int(entries[0]["paired_n"])
+    diagnostic_rows = _aggregate_diagnostics(diagnostics_by_label)
 
     payload = {
         "date": str(date.today()),
@@ -373,6 +420,7 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
         },
         "baseline_summary": baseline_payload["rows"],
         "aggregate_rows": aggregate_rows,
+        "diagnostic_rows": diagnostic_rows,
         "paired_stats_by_label": paired_stats_by_label,
         "seed_artifacts": seed_artifacts,
     }
