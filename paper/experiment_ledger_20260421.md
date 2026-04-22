@@ -299,3 +299,19 @@ pure GSM8K32 artifact, but still not as a promotable paper result:
 3. the external bar is still slightly ahead
 4. the next critical steps are multi-seed repetition on the same larger slice
    and one matched cross-family falsification pair
+
+`paper/gsm8k70_seed_stability_partial_20260422.md` is the first repeat-seed
+follow-up on that larger slice. It changes the read materially:
+
+- seed `0`: `0.1143` (`8/70`)
+- seed `1`: `0.0000` (`0/70`)
+- seed `1` fails numeric extraction coverage completely and collapses into
+  repeated punctuation outputs
+
+Treat this as evidence that the live lane is currently seed-fragile, not yet a
+stable positive method. The next highest-priority question is now whether that
+collapse reflects:
+
+1. a real calibration instability
+2. a fragile learned correction family
+3. or a checkpoint-generation / evaluation bug

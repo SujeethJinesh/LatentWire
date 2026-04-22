@@ -4725,3 +4725,22 @@ So the next order remains:
 1. multi-seed repetition on the same larger frozen slice
 2. one matched cross-family falsification pair
 3. only then broader benchmark widening
+
+## Status After Partial Seed-Stability Read
+
+The first repeat seed on the larger frozen same-pair slice is now a hard
+negative:
+
+- seed `0`: `dynalign_module_replace_residrank16 = 0.1143` (`8/70`)
+- seed `1`: `dynalign_module_replace_residrank16 = 0.0000` (`0/70`)
+- seed `1` also fails numeric extraction coverage completely and emits
+  degenerate repeated punctuation outputs
+
+That means the live lane is currently **seed-fragile**, not just
+under-replicated.
+
+So the immediate decision order tightens again:
+
+1. finish the seed-stability gate
+2. isolate whether the collapse is a real calibration instability or a bug
+3. only then decide whether to spend more on cross-family generalization
