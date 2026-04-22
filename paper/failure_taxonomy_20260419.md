@@ -167,6 +167,13 @@
   symmetry toy shows a real `1`-shot win for `quotient_match_after_fix`
   (`0.0796` MSE) and exact head recovery, but the gain still behaves like a
   low-shot initializer rather than a full replacement for paired fitting.
+- Strongest new real-lane symmetry read: **adaptive canonicalization
+  stabilizes but does not lift**. On the frozen GSM8K32 same-pair contract,
+  `dynalign_resid16_adaptive = 0.1250` matches the plain
+  `dynalign_module_replace_residrank16 = 0.1250` row with full coverage,
+  whereas fixed fitted-rotation and shared-basis wrappers collapse to
+  `0.0000`; so adaptive symmetry handling looks like a component or control,
+  not the missing positive-method jump by itself.
 - Strongest new compositional clue: **quotient-aware matching + GPA +
   sparse shared dictionary**. The new held-out-family toy is the first clean
   evidence that symmetry-aware alignment and a shared sparse basis help more

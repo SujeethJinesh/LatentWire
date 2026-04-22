@@ -285,5 +285,47 @@
     "path": "references/397_live_branch_followup_refs.md",
     "status": "local_memo",
     "reason": "Latest follow-up memo after the negative tokenbasis rank16 control, narrowing the real same-pair branch to dynalign+residual plus gauge/canonicalization and banking the next lateral connector and benchmark-contract ideas."
+  },
+  {
+    "num": 398,
+    "slug": "adaptive_canonicalization_real_lane_refs",
+    "path": "references/398_adaptive_canonicalization_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo from the latest adaptive-canonicalization research tranche, narrowing the exact next gauge-side experiments around the surviving dynalign+rank16 residual lane."
+  },
+  {
+    "num": 399,
+    "slug": "eigenspace_residual_real_lane_refs",
+    "path": "references/399_eigenspace_residual_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused residual-repair memo from the latest low-rank/eigenspace literature pass, covering EoRA/LQER/ResQ-style next experiments for the live real lane."
+  },
+  {
+    "num": 400,
+    "slug": "multimodal_output_aware_connector_refs",
+    "path": "references/400_multimodal_output_aware_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Heterogeneous connector memo banking the latest multimodal wormhole, dense-connector, and staged repair ideas that could plug into the live lane without changing the paper story."
+  },
+  {
+    "num": 401,
+    "slug": "unsaturated_branch_revival_refs",
+    "path": "references/401_unsaturated_branch_revival_refs.md",
+    "status": "local_memo",
+    "reason": "Branch-triage memo separating saturated and still-open ideas so the next experiments stay additive instead of circling over dead same-pair lanes."
+  },
+  {
+    "num": 402,
+    "slug": "selective_preservation_quantization_connector_refs",
+    "path": "references/402_selective_preservation_quantization_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Quantization-inspired connector memo focused on selective preservation, residual codebooks, and token-aware mixed-precision ideas as additives on a stable alignment lane."
+  },
+  {
+    "num": 403,
+    "slug": "benchmark_contract_block_structure_refs",
+    "path": "references/403_benchmark_contract_block_structure_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark-structure memo from the latest contract pass, freezing the block-split comparison plan across same-pair, cross-family, reasoning-transfer, and multimodal rows."
   }
 ]

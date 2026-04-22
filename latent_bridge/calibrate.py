@@ -97,6 +97,7 @@ def parse_args() -> argparse.Namespace:
             "grouped_signature_transport",
             "grouped_subspace_transport",
             "grouped_canonical_transport",
+            "grouped_adaptive_canonical_transport",
             "grouped_rotational_transport",
             "grouped_fitted_rotation_transport",
             "grouped_shared_basis_transport",

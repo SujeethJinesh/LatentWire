@@ -745,6 +745,32 @@ def test_calibrate_parse_args_accepts_grouped_canonical_transport(monkeypatch) -
     assert args.canonical_subspace_rank == 6
 
 
+def test_calibrate_parse_args_accepts_grouped_adaptive_canonical_transport(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--alignment",
+            "grouped_adaptive_canonical_transport",
+            "--canonical-subspace-rank",
+            "6",
+        ],
+    )
+
+    args = calibrate.parse_args()
+    assert args.alignment == "grouped_adaptive_canonical_transport"
+    assert args.canonical_subspace_rank == 6
+
+
 def test_calibrate_parse_args_accepts_grouped_fitted_rotation_transport(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,

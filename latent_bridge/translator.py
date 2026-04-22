@@ -61,7 +61,8 @@ class TranslatorConfig:
     #                 | 'grouped_' + any of the above
     #                 | 'grouped_transport' | 'grouped_permutation'
     #                 | 'grouped_signature_transport' | 'grouped_subspace_transport'
-    #                 | 'grouped_canonical_transport' | 'grouped_covariance_transport'
+    #                 | 'grouped_canonical_transport' | 'grouped_adaptive_canonical_transport'
+    #                 | 'grouped_covariance_transport'
     #                 | 'grouped_rotational_transport'
     #                 | 'grouped_fitted_rotation_transport'
     #                 | 'grouped_shared_basis_transport'
@@ -1199,6 +1200,42 @@ class RotAlignKVTranslator(nn.Module):
         W_tgt_inv = torch.linalg.pinv(W_tgt.float()).to(dtype=Y.dtype)
         return W_src @ U_r @ A.to(dtype=X.dtype) @ V_r.T @ W_tgt_inv
 
+    def _fit_adaptive_canonical_block_alignment(
+        self,
+        X: torch.Tensor,
+        Y: torch.Tensor,
+        *,
+        lam: float,
+        score_weight: float,
+    ) -> torch.Tensor:
+        candidates: list[torch.Tensor] = []
+        method = "procrustes" if X.shape[1] == Y.shape[1] else "ridge"
+        candidates.append(
+            fit_alignment(
+                X,
+                Y,
+                method=method,
+                lam=lam,
+            )
+        )
+        candidates.append(self._fit_canonical_block_alignment(X, Y, lam=lam))
+        candidates.append(self._fit_rotational_block_alignment(X, Y, lam=lam))
+        candidates.append(self._fit_fitted_rotation_block_alignment(X, Y, lam=lam))
+        candidates.append(self._fit_shared_basis_block_alignment(X, Y, lam=lam))
+
+        best_score = -float("inf")
+        best_block = candidates[0]
+        for W_block in candidates:
+            q = alignment_quality(X, Y, W_block)
+            score = self._transport_score(q)
+            if score_weight > 0.0:
+                y_hat = X @ W_block
+                score = score - score_weight * float(self._subspace_distance(y_hat, Y))
+            if score > best_score:
+                best_score = score
+                best_block = W_block
+        return best_block
+
     def _subspace_distance(self, Y_hat: torch.Tensor, Y: torch.Tensor) -> torch.Tensor:
         rank = max(1, int(self.config.transport_signature_rank))
         Yh = Y_hat.float() - Y_hat.float().mean(dim=0, keepdim=True)
@@ -1429,6 +1466,13 @@ class RotAlignKVTranslator(nn.Module):
                         X_block,
                         Y_block,
                         lam=lam,
+                    )
+                elif self.config.alignment_method == "grouped_adaptive_canonical_transport":
+                    W_block = self._fit_adaptive_canonical_block_alignment(
+                        X_block,
+                        Y_block,
+                        lam=lam,
+                        score_weight=signature_weight,
                     )
                 elif self.config.alignment_method == "grouped_rotational_transport":
                     W_block = self._fit_rotational_block_alignment(
@@ -4201,7 +4245,7 @@ class RotAlignKVTranslator(nn.Module):
                 Yv_fit = Yv
 
             if grouped_alignment:
-                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_rotational_transport", "grouped_fitted_rotation_transport", "grouped_shared_basis_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
+                if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_adaptive_canonical_transport", "grouped_rotational_transport", "grouped_fitted_rotation_transport", "grouped_shared_basis_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
@@ -5203,7 +5247,7 @@ class RotAlignKVTranslator(nn.Module):
                     / (Yv.norm() + 1e-12)
                 )
             diagnostics[tgt_l] = {"K": q_k, "V": q_v, "src_layer": src_l}
-            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_rotational_transport", "grouped_fitted_rotation_transport", "grouped_shared_basis_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
+            if grouped_alignment and self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_adaptive_canonical_transport", "grouped_rotational_transport", "grouped_fitted_rotation_transport", "grouped_shared_basis_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
                 diagnostics[tgt_l]["K_transport_plan"] = self.transport_plan_K[tgt_l].detach().cpu().tolist()
                 diagnostics[tgt_l]["V_transport_plan"] = self.transport_plan_V[tgt_l].detach().cpu().tolist()
             elif self.config.alignment_method in {
@@ -5225,6 +5269,7 @@ class RotAlignKVTranslator(nn.Module):
                 "signature_transport",
                 "subspace_transport",
                 "canonical_transport",
+                "adaptive_canonical_transport",
                 "rotational_transport",
                 "fitted_rotation_transport",
                 "shared_basis_transport",
