@@ -264,5 +264,12 @@
     "path": "references/394_gauge_wrapper_real_lane_refs.md",
     "status": "local_memo",
     "reason": "Exact gauge-fix / adaptive-canonicalization follow-up memo for wrapping the current real same-pair dynalign/tokenbasis lane once residual correction is tested."
+  },
+  {
+    "num": 395,
+    "slug": "rank16_residual_gauge_benchmark_refs",
+    "path": "references/395_rank16_residual_gauge_benchmark_refs.md",
+    "status": "local_memo",
+    "reason": "Consolidated follow-up memo after the first rank16 residual lift, covering residual-repair references, gauge/canonicalization wrappers, and fair same-pair benchmark contract guidance."
   }
 ]

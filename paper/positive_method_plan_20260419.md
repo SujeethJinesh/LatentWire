@@ -350,6 +350,47 @@ then the paper direction should treat the current same-pair alignment family as
 saturated and move the positive-method burden back to the shared-basis /
 low-shot lane.
 
+## Status After Dynalign Rank16 Residual Benchmark
+
+The first recalibrated residual run changes the real same-pair story again:
+
+- on the exact frozen GSM8K32 contract, `dynalign_module_replace_residrank16`
+  now reaches `0.1250`
+- that is up from the old same-pair ceiling of `0.09375` for plain `dynalign`,
+  `tokenbasis`, and the reused `rank8` residual baselines
+- the row keeps full numeric extraction coverage (`32/32`) and exact example-ID
+  parity
+- on this slice it now matches the current `C2C` smoke accuracy rather than
+  trailing it
+
+This is the first real sign that explicit residual correction can matter on the
+benchmark side, not just in toy telemetries. But it is still not enough to
+move into paper-writing mode:
+
+1. it is a single same-pair `32`-example smoke result
+2. the matched `tokenbasis_replace + rank16` control has to agree
+3. we still need at least one broader held-out slice before claiming the lane
+   is stable
+
+So the next real benchmark order is now:
+
+1. finish the matched `tokenbasis_replace + rank16` control
+2. if it agrees or improves, widen to the next held-out slice on the same
+   contract family
+3. if it fails or ties back to the old ceiling, try a fixed gauge-fix /
+   canonicalization wrapper on top of the live `dynalign + rank16 residual`
+   lane
+
+That means the same-pair benchmark story is no longer “teacher family
+saturated, move on.” It is now:
+
+1. output-aware alignment alone saturates around `0.09375`
+2. residual correction is the first real additive lift
+3. gauge/adaptive canonicalization is the next wrapper if the matched control
+   does not confirm the lift
+4. the paper is still not ready until the lift survives a matched control and a
+   broader slice
+
 ## Best Next Method Lane
 
 Subagent consensus was tight: the only credible internal positive-method lane
