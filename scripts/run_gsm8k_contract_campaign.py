@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
+import random
 import sys
 from dataclasses import asdict, dataclass
 from datetime import date
@@ -13,6 +14,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts import analyze_gsm8k_contract_diagnostics as diagnostics
 from scripts import run_gsm8k_smoke_contract as smoke
 
 
@@ -43,6 +45,8 @@ class CampaignConfig:
     candidate_labels: tuple[str, ...] = ("dynalign_module_replace_residrank16",)
     baseline_results_dir: str | None = None
     skip_smoke: bool = False
+    bootstrap_samples: int = 1000
+    bootstrap_seed: int = 0
 
 
 def _run(cmd: list[str]) -> None:
@@ -186,6 +190,62 @@ def _load_json(path: pathlib.Path) -> dict[str, Any]:
     return json.loads(path.read_text())
 
 
+def _bootstrap_mean_ci(
+    values: list[float],
+    *,
+    samples: int,
+    seed: int,
+) -> tuple[float | None, float | None]:
+    if not values or samples <= 0:
+        return None, None
+    rng = random.Random(int(seed))
+    n = len(values)
+    means: list[float] = []
+    for _ in range(samples):
+        total = 0.0
+        for _ in range(n):
+            total += float(values[rng.randrange(n)])
+        means.append(total / n)
+    means.sort()
+    low_idx = max(0, min(len(means) - 1, int(0.025 * (len(means) - 1))))
+    high_idx = max(0, min(len(means) - 1, int(0.975 * (len(means) - 1))))
+    return means[low_idx], means[high_idx]
+
+
+def _candidate_paired_stats(
+    *,
+    baseline_dir: pathlib.Path,
+    materialized_eval_file: pathlib.Path,
+    candidate_output: pathlib.Path,
+    candidate_method: str,
+    bootstrap_samples: int,
+    bootstrap_seed: int,
+) -> dict[str, Any]:
+    baseline_output = baseline_dir / "gsm8k32_latentwire.jsonl"
+    baseline_records = smoke._attach_prompts(smoke._read_jsonl(baseline_output), materialized_eval_file)
+    target_records = smoke._group_by_method(baseline_records)["target_alone"]
+
+    candidate_records = smoke._attach_prompts(smoke._read_jsonl(candidate_output), materialized_eval_file)
+    method_records = diagnostics._resolve_candidate_records(candidate_records, method_name=candidate_method)
+    target_by_id = {str(row["example_id"]): row for row in target_records}
+    deltas = [float(bool(row["correct"])) - float(bool(target_by_id[str(row["example_id"])]["correct"])) for row in method_records]
+    ci_low, ci_high = _bootstrap_mean_ci(
+        deltas,
+        samples=bootstrap_samples,
+        seed=bootstrap_seed,
+    )
+    paired = smoke._paired_vs_baseline(method_records, target_records)
+    return {
+        "paired_n": len(deltas),
+        "delta_vs_target": float(sum(deltas) / max(len(deltas), 1)),
+        "delta_ci_low": ci_low,
+        "delta_ci_high": ci_high,
+        "win": int(paired["win"]),
+        "loss": int(paired["loss"]),
+        "tie": int(paired["tie"]),
+    }
+
+
 def _aggregate_rows(seed_payloads: dict[int, dict[str, Any]]) -> dict[str, dict[str, Any]]:
     by_label: dict[str, list[dict[str, Any]]] = {}
     for seed, payload in seed_payloads.items():
@@ -224,13 +284,18 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         "",
         "## Aggregated Rows",
         "",
-        "| Label | Seeds | Accuracy mean | Accuracy min | Accuracy max | Win mean | Loss mean |",
-        "|---|---:|---:|---:|---:|---:|---:|",
+        "| Label | Seeds | Accuracy mean | Accuracy min | Accuracy max | Delta mean | Delta CI | Win mean | Loss mean | Positive seeds |",
+        "|---|---:|---:|---:|---:|---:|---|---:|---:|---:|",
     ]
     for label, row in payload["aggregate_rows"].items():
+        ci = (
+            f"[{row['delta_ci_low_mean']:.4f}, {row['delta_ci_high_mean']:.4f}]"
+            if row["delta_ci_low_mean"] is not None and row["delta_ci_high_mean"] is not None
+            else "-"
+        )
         lines.append(
             f"| {label} | {row['n_seeds']} | {row['accuracy_mean']:.4f} | {row['accuracy_min']:.4f} | "
-            f"{row['accuracy_max']:.4f} | {row['wins_mean']:.2f} | {row['losses_mean']:.2f} |"
+            f"{row['accuracy_max']:.4f} | {row['delta_mean']:.4f} | {ci} | {row['wins_mean']:.2f} | {row['losses_mean']:.2f} | {row['positive_seed_count']} |"
         )
     lines.extend(["", "## Seed Artifacts", ""])
     for seed, info in sorted(payload["seed_artifacts"].items()):
@@ -250,9 +315,12 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
     baseline_dir = _campaign_baseline_dir(config)
     _run_smoke_contract(config, baseline_dir)
     baseline_payload = _load_json(baseline_dir / SMOKE_PAYLOAD_NAME)
+    materialized_eval_file = pathlib.Path(_materialized_eval_path(config))
+    smoke._materialize_slice(ROOT / config.eval_file, materialized_eval_file, config.slice_size)
 
     seed_payloads: dict[int, dict[str, Any]] = {}
     seed_artifacts: dict[int, dict[str, Any]] = {}
+    paired_stats_by_label: dict[str, list[dict[str, Any]]] = {}
     for seed in config.seeds:
         seed_results_dir = _run_residual_sweep(config, baseline_dir, seed)
         residual_payload = _load_json(seed_results_dir / RESIDUAL_PAYLOAD_NAME)
@@ -261,6 +329,15 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
         for candidate_label in config.candidate_labels:
             available_labels = {str(row["label"]) for row in residual_payload["rows"]}
             if candidate_label in available_labels:
+                paired_stats = _candidate_paired_stats(
+                    baseline_dir=baseline_dir,
+                    materialized_eval_file=materialized_eval_file,
+                    candidate_output=seed_results_dir / f"{candidate_label}.jsonl",
+                    candidate_method="rotalign_kv",
+                    bootstrap_samples=config.bootstrap_samples,
+                    bootstrap_seed=config.bootstrap_seed + int(seed) * 10_000 + sum(ord(ch) for ch in candidate_label),
+                )
+                paired_stats_by_label.setdefault(candidate_label, []).append({"seed": int(seed), **paired_stats})
                 diagnostics_json = _run_diagnostics(
                     config=config,
                     baseline_dir=baseline_dir,
@@ -273,6 +350,20 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
             "diagnostics": diagnostics_paths,
         }
 
+    aggregate_rows = _aggregate_rows(seed_payloads)
+    for label, entries in paired_stats_by_label.items():
+        deltas = [float(entry["delta_vs_target"]) for entry in entries]
+        lows = [entry["delta_ci_low"] for entry in entries if entry["delta_ci_low"] is not None]
+        highs = [entry["delta_ci_high"] for entry in entries if entry["delta_ci_high"] is not None]
+        row = aggregate_rows.setdefault(label, {})
+        row["delta_mean"] = float(sum(deltas) / max(len(deltas), 1))
+        row["delta_min"] = float(min(deltas))
+        row["delta_max"] = float(max(deltas))
+        row["delta_ci_low_mean"] = float(sum(lows) / max(len(lows), 1)) if lows else None
+        row["delta_ci_high_mean"] = float(sum(highs) / max(len(highs), 1)) if highs else None
+        row["positive_seed_count"] = int(sum(int(delta > 0.0) for delta in deltas))
+        row["paired_n"] = int(entries[0]["paired_n"])
+
     payload = {
         "date": str(date.today()),
         "config": asdict(config),
@@ -281,7 +372,8 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
             "baseline_payload": str(baseline_dir / SMOKE_PAYLOAD_NAME),
         },
         "baseline_summary": baseline_payload["rows"],
-        "aggregate_rows": _aggregate_rows(seed_payloads),
+        "aggregate_rows": aggregate_rows,
+        "paired_stats_by_label": paired_stats_by_label,
         "seed_artifacts": seed_artifacts,
     }
     results_root = ROOT / config.results_root
@@ -315,6 +407,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--candidate-label", action="append", dest="candidate_labels")
     parser.add_argument("--baseline-results-dir", default=None)
     parser.add_argument("--skip-smoke", action="store_true")
+    parser.add_argument("--bootstrap-samples", type=int, default=1000)
+    parser.add_argument("--bootstrap-seed", type=int, default=0)
     return parser.parse_args(argv)
 
 
@@ -342,6 +436,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         candidate_labels=tuple(args.candidate_labels) if args.candidate_labels else CampaignConfig.candidate_labels,
         baseline_results_dir=args.baseline_results_dir,
         skip_smoke=bool(args.skip_smoke),
+        bootstrap_samples=args.bootstrap_samples,
+        bootstrap_seed=args.bootstrap_seed,
     )
     return run_campaign(config)
 

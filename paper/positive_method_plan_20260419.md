@@ -4577,6 +4577,9 @@ Implementation note:
 - the repo now has a dedicated runner,
   `scripts/run_gsm8k_contract_campaign.py`, so the next testing phase can be
   executed as one campaign rather than a sequence of ad hoc manual sweeps
+- that runner now also reports paired bootstrap deltas versus `target_alone`,
+  so larger-slice and multi-seed runs can be interpreted as evidence instead of
+  raw accuracy snapshots
 
 ## Status After Value-Routed-Bank Residual Sweep
 

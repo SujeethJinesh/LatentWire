@@ -47,6 +47,12 @@ def test_aggregate_rows_computes_seed_stats() -> None:
     assert row["losses_mean"] == 0.0
 
 
+def test_bootstrap_mean_ci_is_bounded() -> None:
+    low, high = campaign._bootstrap_mean_ci([0.0, 1.0, 0.0, 1.0], samples=200, seed=7)
+    assert low is not None and high is not None
+    assert 0.0 <= low <= high <= 1.0
+
+
 def test_parse_args_accepts_repeated_seed_base_rank_and_candidate(monkeypatch) -> None:
     monkeypatch.setattr(
         "sys.argv",
@@ -64,6 +70,10 @@ def test_parse_args_accepts_repeated_seed_base_rank_and_candidate(monkeypatch) -
             "16",
             "--candidate-label",
             "dynalign_module_replace_residrank16",
+            "--bootstrap-samples",
+            "250",
+            "--bootstrap-seed",
+            "17",
         ],
     )
     args = campaign._parse_args()
@@ -72,6 +82,8 @@ def test_parse_args_accepts_repeated_seed_base_rank_and_candidate(monkeypatch) -
     assert args.bases == ["dynalign_module_replace"]
     assert args.ranks == [16]
     assert args.candidate_labels == ["dynalign_module_replace_residrank16"]
+    assert args.bootstrap_samples == 250
+    assert args.bootstrap_seed == 17
 
 
 def test_write_markdown_renders_aggregate_rows(tmp_path) -> None:
@@ -92,8 +104,12 @@ def test_write_markdown_renders_aggregate_rows(tmp_path) -> None:
                 "accuracy_mean": 0.109375,
                 "accuracy_min": 0.09375,
                 "accuracy_max": 0.125,
+                "delta_mean": 0.046875,
+                "delta_ci_low_mean": 0.0,
+                "delta_ci_high_mean": 0.09375,
                 "wins_mean": 1.5,
                 "losses_mean": 0.0,
+                "positive_seed_count": 2,
             }
         },
         "seed_artifacts": {
@@ -104,7 +120,7 @@ def test_write_markdown_renders_aggregate_rows(tmp_path) -> None:
     campaign._write_markdown(path, payload)
     text = path.read_text()
     assert "# GSM8K Contract Campaign" in text
-    assert "| dynalign_module_replace_residrank16 | 2 | 0.1094 | 0.0938 | 0.1250 | 1.50 | 0.00 |" in text
+    assert "| dynalign_module_replace_residrank16 | 2 | 0.1094 | 0.0938 | 0.1250 | 0.0469 | [0.0000, 0.0938] | 1.50 | 0.00 | 2 |" in text
 
 
 def test_payload_round_trip_json() -> None:
