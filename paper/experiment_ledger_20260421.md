@@ -321,6 +321,20 @@ next conditioning screen should broaden one axis before any GSM70 rerun:
 `V`-only source+target conditioning across all layers, or layer-8
 source+target conditioning across both `K/V`.
 
+`paper/gsm8k32_selective_conditioning_v_all_layers_20260423.md` broadens the
+failed intersection along the layer axis while keeping the value-stream
+restriction. The read is finite but also negative:
+
+- seed `1`: `0.0625`, full coverage, no non-finite checkpoint values
+- seed `0`: `0.0312`, full coverage, no non-finite checkpoint values
+
+Treat this as further evidence that conditioning/preconditioning reaches the
+right numerical surface, but simple `V`-only source+target whitening is too
+blunt and erases the live seed-0 signal. The last worthwhile whitening screen
+is layer-8 source+target conditioning across both `K/V`; if that also kills
+seed `0`, stop whitening sweeps and move to a protected/outlier-escrow
+calibration fit for the layer-8 `V` family.
+
 `paper/gsm8k70_campaign_20260422.md` is the first larger frozen same-pair read
 after the reviewer pivot. It shows that the live
 `dynalign_module_replace_residrank16` lane survives beyond GSM8K32:
