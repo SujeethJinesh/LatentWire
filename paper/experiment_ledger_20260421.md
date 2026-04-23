@@ -1110,3 +1110,43 @@ transfer from source-alone on this surface. C2C is a strong teacher/competitor
 surface (`10` C2C-only wins), so the next exact gate is a C2C-teacher innovation
 probe on the same SVAMP32 IDs with matched-source, zero-source, shuffled-source,
 and target-only rows. Kill the branch if controls retain the C2C-overlap wins.
+
+`paper/svamp32_c2c_teacher_innovation_probe_20260423.md` adds a frozen-ID
+C2C-teacher innovation provenance probe. The probe compares fresh SVAMP32
+target/source/text/C2C rows against exact-prefix-compatible SVAMP70 process
+repair and dynalign artifacts. C2C remains the strongest teacher surface:
+target `8/32`, C2C `16/32`, and `10` C2C-only target-complementary wins.
+Process repair recovers `3/10` C2C-only IDs, but target self-repair also
+recovers all `3/10`, so that overlap is target-side repair rather than
+communication. Dynalign salts recover `0/10`, `1/10`, and `2/10` C2C-only IDs;
+salt 1 has one non-target-control-overlapped hit and salt 2 has two hits with
+one control overlap. This is only a weak hint because the old dynalign rows do
+not include zero-source or shuffled-source controls on the same SVAMP32 gate.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_c2c_teacher_innovation.py \
+  --target target=path=results/svamp_exactid_baselines32_20260423/target_alone.jsonl,method=target_alone \
+  --teacher c2c=path=results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl,method=c2c_generate \
+  --source source=path=results/svamp_exactid_baselines32_20260423/source_alone.jsonl,method=source_alone \
+  --source t2t=path=results/svamp_exactid_baselines32_20260423/text_to_text.jsonl,method=text_to_text \
+  --control target_self_repair=path=results/process_repair_holdout_20260421/qwen_svamp70_process_repair_controls_strict_selector_telemetry.jsonl,method=target_self_repair \
+  --control selected_route_no_repair=path=results/process_repair_holdout_20260421/qwen_svamp70_process_repair_controls_strict_selector_telemetry.jsonl,method=selected_route_no_repair \
+  --candidate process_repair=path=results/process_repair_holdout_20260421/qwen_svamp70_process_repair_controls_strict_selector_telemetry.jsonl,method=process_repair_selected_route \
+  --candidate dynalign_salt0=path=results/process_repair_holdout_20260421/qwen_svamp70_dynalign_prefdist_asym_kv_random_r025_v075_cal16_chat_salt0_telemetry.jsonl,method=rotalign_kv \
+  --candidate dynalign_salt1=path=results/process_repair_holdout_20260421/qwen_svamp70_dynalign_prefdist_asym_kv_random_r025_v075_cal16_chat_salt1_telemetry.jsonl,method=rotalign_kv \
+  --candidate dynalign_salt2=path=results/process_repair_holdout_20260421/qwen_svamp70_dynalign_prefdist_asym_kv_random_r025_v075_cal16_chat_salt2_telemetry.jsonl,method=rotalign_kv \
+  --min-teacher-only 5 \
+  --require-controls \
+  --output-json results/svamp_exactid_baselines32_20260423/c2c_teacher_innovation_probe.json \
+  --output-md results/svamp_exactid_baselines32_20260423/c2c_teacher_innovation_probe.md
+```
+
+Decision: do not promote process repair or existing dynalign to a positive
+method. The next exact gate is a controlled C2C-teacher innovation connector on
+the same frozen SVAMP32 IDs with matched-source, zero-source, deterministic
+shuffled-source, and target-only controls. Promote only if matched source
+recovers at least `4/10` C2C-only wins, reaches at least `11/32`, loses no more
+than one target-correct ID, and controls recover at most one of the same
+C2C-only wins.
