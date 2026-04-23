@@ -6,6 +6,7 @@ import json
 import pathlib
 import sys
 from dataclasses import asdict, dataclass
+from datetime import date
 from typing import Any
 
 import torch
@@ -138,6 +139,9 @@ class ResidualSweepConfig:
     fit_ridge_override_streams: str = "kv"
     fit_ridge_override_layers: tuple[int, ...] | None = None
     fit_ridge_protected_rank: int | None = None
+    run_source_controls: bool = False
+    source_control_random_salt: int | None = None
+    fallback_nonnumeric_controls_to_target: bool = True
     transport_residual_rank: int = 4
     transport_temperature: float = 0.1
     transport_sinkhorn_iters: int = 8
@@ -557,6 +561,171 @@ def _row_checks(row: dict[str, Any], baseline_target_records: list[dict[str, Any
     }
 
 
+def _evaluate_command(
+    *,
+    checkpoint_path: pathlib.Path,
+    config: ResidualSweepConfig,
+    materialized_eval_file: pathlib.Path,
+    prediction_output: pathlib.Path,
+    random_salt: int | None = None,
+) -> list[str]:
+    cmd = [
+        harness.python_executable(ROOT),
+        str(ROOT / "latent_bridge" / "evaluate.py"),
+        "--translator",
+        str(checkpoint_path),
+        "--source-model",
+        config.source_model,
+        "--target-model",
+        config.target_model,
+        "--eval-file",
+        str(materialized_eval_file),
+        "--task-type",
+        "generation",
+        "--device",
+        config.device,
+        "--max-new-tokens",
+        str(config.max_new_tokens),
+        "--source-reasoning-mode",
+        config.source_reasoning_mode,
+        "--kv-transport",
+        config.kv_transport,
+        "--position-selection-ratio",
+        str(config.position_selection_ratio),
+        "--position-selection-metric",
+        config.position_selection_metric,
+        "--gate-mode",
+        "fixed",
+        "--fixed-gate",
+        f"{config.gate:.2f}",
+        "--methods",
+        "rotalign",
+        "--prediction-output",
+        str(prediction_output),
+        "--random-salt",
+        str(config.seed if random_salt is None else random_salt),
+    ]
+    cmd.extend(
+        harness.chat_template_cli_args(
+            enabled=config.use_chat_template,
+            thinking=config.enable_thinking,
+        )
+    )
+    return cmd
+
+
+def _baseline_predictions_path(config: ResidualSweepConfig) -> pathlib.Path:
+    return ROOT / config.baseline_results_dir / "gsm8k32_latentwire.jsonl"
+
+
+def _source_control_random_salt(config: ResidualSweepConfig) -> int:
+    if config.source_control_random_salt is not None:
+        return int(config.source_control_random_salt)
+    return int(config.seed)
+
+
+def _live_row_passes_gate(checks: dict[str, bool]) -> bool:
+    return (
+        checks["numeric_extraction_coverage"]
+        and checks["beats_target"]
+        and checks["row_count_matches_slice"]
+        and checks["example_ids_match_target"]
+        and checks["no_empty_predictions"]
+    )
+
+
+def _source_controls_pass(row: dict[str, Any]) -> bool:
+    return row.get("source_control_status") == "source_controls_support_matched_source_signal"
+
+
+def _run_source_controls_for_row(
+    *,
+    row: dict[str, Any],
+    checkpoint_path: pathlib.Path,
+    config: ResidualSweepConfig,
+    materialized_eval_file: pathlib.Path,
+    results_dir: pathlib.Path,
+) -> dict[str, Any]:
+    label = row["label"]
+    salt = _source_control_random_salt(config)
+    control_dir = results_dir / label / "source_controls"
+    control_dir.mkdir(parents=True, exist_ok=True)
+    zero_output = control_dir / "zero_source.jsonl"
+    shuffled_output = control_dir / f"shuffled_source_salt{salt}.jsonl"
+
+    if not zero_output.exists():
+        cmd = _evaluate_command(
+            checkpoint_path=checkpoint_path,
+            config=config,
+            materialized_eval_file=materialized_eval_file,
+            prediction_output=zero_output,
+            random_salt=salt,
+        )
+        cmd.extend(["--source-kv-control", "zero"])
+        _run(cmd)
+
+    if not shuffled_output.exists():
+        cmd = _evaluate_command(
+            checkpoint_path=checkpoint_path,
+            config=config,
+            materialized_eval_file=materialized_eval_file,
+            prediction_output=shuffled_output,
+            random_salt=salt,
+        )
+        cmd.extend(["--source-prompt-control", "shuffle_examples"])
+        _run(cmd)
+
+    output_json = control_dir / "source_control_readout.json"
+    output_md = control_dir / "source_control_readout.md"
+    cmd = [
+        harness.python_executable(ROOT),
+        str(ROOT / "scripts" / "analyze_gsm8k_source_controls.py"),
+        "--baseline-predictions",
+        str(_baseline_predictions_path(config)),
+        "--target-method",
+        "target_alone",
+        "--live-predictions",
+        str(row["prediction_output"]),
+        "--live-method",
+        "rotalign_kv",
+        "--live-label",
+        label,
+        "--control",
+        f"zero_source={zero_output}",
+        "--control",
+        f"shuffled_source_salt{salt}={shuffled_output}",
+        "--control-method",
+        "rotalign_kv",
+        "--output-json",
+        str(output_json),
+        "--output-md",
+        str(output_md),
+    ]
+    if config.fallback_nonnumeric_controls_to_target:
+        cmd.append("--fallback-nonnumeric-controls-to-target")
+    _run(cmd)
+
+    payload = json.loads(output_json.read_text())
+    row["source_control_status"] = payload["gate"]["status"]
+    row["source_control_passed"] = bool(_source_controls_pass(row))
+    row["source_controls"] = {
+        "status": row["source_control_status"],
+        "passed": row["source_control_passed"],
+        "control_dir": str(control_dir),
+        "readout_json": str(output_json),
+        "readout_md": str(output_md),
+        "prediction_outputs": {
+            "zero_source": str(zero_output),
+            f"shuffled_source_salt{salt}": str(shuffled_output),
+        },
+        "gate": payload["gate"],
+        "live_summary": payload.get("live_summary"),
+        "target_summary": payload.get("target_summary"),
+        "control_summaries": payload.get("control_summaries", []),
+    }
+    return payload
+
+
 def _run_candidate(
     *,
     base_label: str,
@@ -571,47 +740,11 @@ def _run_candidate(
     label = _candidate_label(base_label, rank, config.bridge_bank_size)
     prediction_output = results_dir / f"{label}.jsonl"
     if not prediction_output.exists():
-        cmd = [
-            harness.python_executable(ROOT),
-            str(ROOT / "latent_bridge" / "evaluate.py"),
-            "--translator",
-            str(checkpoint_path),
-            "--source-model",
-            config.source_model,
-            "--target-model",
-            config.target_model,
-            "--eval-file",
-            str(materialized_eval_file),
-            "--task-type",
-            "generation",
-            "--device",
-            config.device,
-            "--max-new-tokens",
-            str(config.max_new_tokens),
-            "--source-reasoning-mode",
-            config.source_reasoning_mode,
-            "--kv-transport",
-            config.kv_transport,
-            "--position-selection-ratio",
-            str(config.position_selection_ratio),
-            "--position-selection-metric",
-            config.position_selection_metric,
-            "--gate-mode",
-            "fixed",
-            "--fixed-gate",
-            f"{config.gate:.2f}",
-            "--methods",
-            "rotalign",
-            "--prediction-output",
-            str(prediction_output),
-            "--random-salt",
-            str(config.seed),
-        ]
-        cmd.extend(
-            harness.chat_template_cli_args(
-                enabled=config.use_chat_template,
-                thinking=config.enable_thinking,
-            )
+        cmd = _evaluate_command(
+            checkpoint_path=checkpoint_path,
+            config=config,
+            materialized_eval_file=materialized_eval_file,
+            prediction_output=prediction_output,
         )
         _run(cmd)
 
@@ -651,22 +784,21 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- calibration file: `{payload['config']['calibration_file']}`",
         f"- seed: `{payload['config']['seed']}`",
         f"- bridge bank size: `{payload['config'].get('bridge_bank_size', 4)}`",
+        f"- source controls: `{'enabled' if payload['config'].get('run_source_controls') else 'disabled'}`",
         f"- slice: `{payload['config']['slice_size']}` examples from `{payload['config']['eval_file']}`",
         "",
         "| Base | Residual rank | Bridge bank | Accuracy | Win vs target | Loss vs target | Tie vs target | Numeric coverage | Empty preds | Status | Nonfinite | First bad key | Reused ckpt | Promote? |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---|---:|---:|",
     ]
+    controls_enabled = bool(payload["config"].get("run_source_controls", False))
     for row in payload["rows"]:
         paired = row["paired_vs_target"]
         checks = payload["checks"][row["label"]]
-        promote = (
+        live_promote = (
             row.get("status", "ok") == "ok"
-            and checks["numeric_extraction_coverage"]
-            and checks["beats_target"]
-            and checks["row_count_matches_slice"]
-            and checks["example_ids_match_target"]
-            and checks["no_empty_predictions"]
+            and _live_row_passes_gate(checks)
         )
+        promote = live_promote and (not controls_enabled or _source_controls_pass(row))
         first_bad_key = row.get("checkpoint_first_bad_key") or "-"
         lines.append(
             f"| {row['base_label']} | {row['residual_rank']} | {row.get('bridge_bank_size', 4)} | {row['accuracy']:.4f} | "
@@ -678,6 +810,24 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     for label, checks in payload["checks"].items():
         status = ", ".join(f"{name}={'PASS' if passed else 'FAIL'}" for name, passed in checks.items())
         lines.append(f"- `{label}` — {status}")
+    rows_with_controls = [row for row in payload["rows"] if row.get("source_controls")]
+    if rows_with_controls:
+        lines.extend(["", "## Source Controls", ""])
+        lines.extend(
+            [
+                "| Row | Status | Passed | Readout | Controls |",
+                "|---|---|---:|---|---|",
+            ]
+        )
+        for row in rows_with_controls:
+            source_controls = row["source_controls"]
+            outputs = source_controls.get("prediction_outputs", {})
+            output_text = ", ".join(f"{label}: `{path}`" for label, path in outputs.items()) or "-"
+            lines.append(
+                f"| `{row['label']}` | {source_controls.get('status', '-')} | "
+                f"{'yes' if source_controls.get('passed') else 'no'} | "
+                f"`{source_controls.get('readout_json', '-')}` | {output_text} |"
+            )
     lines.extend(["", "## Checkpoint Health", ""])
     for row in payload["rows"]:
         checkpoint_summary = row.get("checkpoint_summary", {})
@@ -733,6 +883,32 @@ def run_sweep(config: ResidualSweepConfig) -> dict[str, Any]:
                     baseline_target_records=baseline_target_records,
                     results_dir=results_dir,
                 )
+                if config.run_source_controls:
+                    if _live_row_passes_gate(row_checks):
+                        try:
+                            _run_source_controls_for_row(
+                                row=row,
+                                checkpoint_path=checkpoint_path,
+                                config=config,
+                                materialized_eval_file=materialized,
+                                results_dir=results_dir,
+                            )
+                        except Exception as control_exc:
+                            row["source_control_status"] = "source_control_error"
+                            row["source_control_passed"] = False
+                            row["source_controls"] = {
+                                "status": "source_control_error",
+                                "passed": False,
+                                "failure_reason": str(control_exc),
+                            }
+                    else:
+                        row["source_control_status"] = "not_run_live_gate_failed"
+                        row["source_control_passed"] = False
+                        row["source_controls"] = {
+                            "status": "not_run_live_gate_failed",
+                            "passed": False,
+                            "reason": "normal live row contract did not pass",
+                        }
             except Exception as exc:
                 checkpoint_summary = _safe_checkpoint_summary(checkpoint_path)
                 row, row_checks = _failure_row(
@@ -743,16 +919,25 @@ def run_sweep(config: ResidualSweepConfig) -> dict[str, Any]:
                     config=config,
                     error=exc,
                 )
+                if config.run_source_controls:
+                    row["source_control_status"] = "not_run_candidate_failed"
+                    row["source_control_passed"] = False
+                    row["source_controls"] = {
+                        "status": "not_run_candidate_failed",
+                        "passed": False,
+                        "reason": "candidate row failed before source controls",
+                    }
             rows.append(row)
             checks[row["label"]] = row_checks
 
     rows.sort(key=lambda row: (-row["accuracy"], row["base_label"], row["residual_rank"]))
     payload = {
-        "date": "2026-04-21",
+        "date": str(date.today()),
         "baseline_contract": str(ROOT / config.baseline_results_dir / "gsm8k_smoke_contract_20260421.md"),
         "config": asdict(config),
         "artifacts": {
             "materialized_eval_file": str(materialized),
+            "baseline_predictions": str(_baseline_predictions_path(config)),
         },
         "rows": rows,
         "checks": checks,
@@ -806,6 +991,22 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--fit-ridge-override-streams", choices=["kv", "k", "v"], default="kv")
     parser.add_argument("--fit-ridge-override-layer", type=int, action="append", dest="fit_ridge_override_layers")
     parser.add_argument("--fit-ridge-protected-rank", type=int, default=None)
+    parser.add_argument(
+        "--run-source-controls",
+        action="store_true",
+        help="Run zero-source and shuffled-source controls for live rows that pass the normal sweep gate.",
+    )
+    parser.add_argument(
+        "--source-control-random-salt",
+        type=int,
+        default=None,
+        help="Random salt for shuffled-source controls. Defaults to --seed.",
+    )
+    parser.add_argument(
+        "--no-source-control-target-fallback",
+        action="store_true",
+        help="Disable conservative target fallback for empty or nonnumeric control outputs.",
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--rank", type=int, action="append", dest="ranks")
     parser.add_argument("--base", action="append", choices=sorted(DEFAULT_BASES), dest="bases")
@@ -860,6 +1061,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
             else None
         ),
         fit_ridge_protected_rank=args.fit_ridge_protected_rank,
+        run_source_controls=args.run_source_controls,
+        source_control_random_salt=args.source_control_random_salt,
+        fallback_nonnumeric_controls_to_target=not args.no_source_control_target_fallback,
         seed=args.seed,
         ranks=tuple(args.ranks) if args.ranks else ResidualSweepConfig.ranks,
         bases=tuple(args.bases) if args.bases else ResidualSweepConfig.bases,

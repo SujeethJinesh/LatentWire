@@ -789,3 +789,36 @@ this row to GSM70 or cross-family. The next exact gate is either the strongest
 existing real lane with seed/source-control repeats, or a source-control-aware
 verifier/gate that can suppress wins retained under zero/shuffled source before
 retesting this same GSM8K32 seed-1 surface.
+
+`paper/gsm8k_residual_sweep_source_controls_20260423.md` records the residual
+sweep source-control wrapper update. This is a gate/reproducibility change, not
+a new method result. The sweep runner now exposes `--run-source-controls` and,
+for each live row that clears the normal contract, runs matched zero-source and
+shuffled-source controls, calls `scripts/analyze_gsm8k_source_controls.py`,
+stores row-local artifacts under `{results_dir}/{label}/source_controls/`, and
+blocks markdown promotion unless the analyzer returns
+`source_controls_support_matched_source_signal`.
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_gsm8k_contract_residual_sweep.py \
+  tests/test_analyze_gsm8k_source_controls.py
+```
+
+Readout:
+
+- tests: `39 passed in 0.13s`
+- source-control wrapper status: implemented and regression-tested
+- affected promotion policy: rows can no longer be promoted by the sweep
+  markdown when `--run-source-controls` is enabled and source controls fail
+- subagent audit follow-up: `scripts/build_gsm8k_contract_manifest.py` still
+  resolves rows positionally and should be hardened by explicit label before
+  the next artifact-manifest refresh
+
+This does not revive the demoted query-innovation resampler row; it makes the
+failure mode first-class so future rows cannot bypass the falsification check.
+The next exact gate is to run the integrated wrapper on GSM70
+`dynalign_module_replace_residrank16` seed 0 plus one finite repeat, then decide
+whether a source-control-aware accept/fallback gate is worth implementing.

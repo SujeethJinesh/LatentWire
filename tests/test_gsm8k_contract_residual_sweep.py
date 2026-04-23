@@ -246,6 +246,23 @@ def test_parse_args_accepts_bridge_bank_size(monkeypatch) -> None:
     assert args.bridge_bank_size == 0
 
 
+def test_parse_args_accepts_source_controls(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--run-source-controls",
+            "--source-control-random-salt",
+            "9",
+            "--no-source-control-target-fallback",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.run_source_controls is True
+    assert args.source_control_random_salt == 9
+    assert args.no_source_control_target_fallback is True
+
+
 def test_write_markdown_renders_rows(tmp_path) -> None:
     payload = {
         "date": "2026-04-21",
@@ -288,6 +305,63 @@ def test_write_markdown_renders_rows(tmp_path) -> None:
     assert "- seed: `7`" in text
     assert "| dynalign_module_replace | 16 | 8 | 0.1250 | 3 | 1 | 28 | 32 | 0 | ok | 0 | - | no | yes |" in text
     assert "`dynalign_module_replace_residrank16` — row_count_matches_slice=PASS" in text
+
+
+def test_write_markdown_blocks_promotion_when_source_controls_fail(tmp_path) -> None:
+    payload = {
+        "date": "2026-04-23",
+        "baseline_contract": "/tmp/gsm8k_smoke_contract_20260421.md",
+        "config": {
+            "source_model": "src",
+            "target_model": "tgt",
+            "calibration_file": ".debug/calibration_64.txt",
+            "seed": 1,
+            "slice_size": 32,
+            "eval_file": "data/gsm8k_eval_70.jsonl",
+            "run_source_controls": True,
+        },
+        "rows": [
+            {
+                "label": "candidate",
+                "base_label": "dynalign_module_replace",
+                "residual_rank": 16,
+                "bridge_bank_size": 4,
+                "accuracy": 0.125,
+                "paired_vs_target": {"win": 3, "loss": 1, "tie": 28},
+                "numeric_extraction_coverage": 32,
+                "empty_predictions": 0,
+                "reused_existing_checkpoint": False,
+                "seed": 1,
+                "source_control_status": "source_controls_do_not_clear_gate",
+                "source_control_passed": False,
+                "source_controls": {
+                    "status": "source_controls_do_not_clear_gate",
+                    "passed": False,
+                    "readout_json": "/tmp/candidate/source_controls/source_control_readout.json",
+                    "prediction_outputs": {
+                        "zero_source": "/tmp/candidate/source_controls/zero_source.jsonl",
+                        "shuffled_source_salt1": "/tmp/candidate/source_controls/shuffled_source_salt1.jsonl",
+                    },
+                },
+            }
+        ],
+        "checks": {
+            "candidate": {
+                "row_count_matches_slice": True,
+                "example_ids_match_target": True,
+                "no_empty_predictions": True,
+                "numeric_extraction_coverage": True,
+                "beats_target": True,
+            }
+        },
+    }
+    path = tmp_path / "out.md"
+    sweep._write_markdown(path, payload)
+    text = path.read_text()
+
+    assert "| dynalign_module_replace | 16 | 4 | 0.1250 | 3 | 1 | 28 | 32 | 0 | ok | 0 | - | no | no |" in text
+    assert "## Source Controls" in text
+    assert "| `candidate` | source_controls_do_not_clear_gate | no |" in text
 
 
 def test_payload_round_trip_json() -> None:
@@ -442,6 +516,80 @@ def test_parse_args_accepts_fit_ridge_override(monkeypatch) -> None:
     assert args.fit_ridge_override_streams == "v"
     assert args.fit_ridge_override_layers == [8, 10]
     assert args.fit_ridge_protected_rank == 2
+
+
+def test_run_source_controls_for_row_invokes_controls_and_analyzer(
+    tmp_path: pathlib.Path, monkeypatch
+) -> None:
+    commands: list[list[str]] = []
+
+    def _fake_run(cmd: list[str]) -> None:
+        commands.append(cmd)
+        if str(sweep.ROOT / "scripts" / "analyze_gsm8k_source_controls.py") in cmd:
+            output_json = pathlib.Path(cmd[cmd.index("--output-json") + 1])
+            output_md = pathlib.Path(cmd[cmd.index("--output-md") + 1])
+            output_json.parent.mkdir(parents=True, exist_ok=True)
+            output_json.write_text(
+                json.dumps(
+                    {
+                        "gate": {
+                            "status": "source_controls_do_not_clear_gate",
+                            "checks": [],
+                        },
+                        "live_summary": {"correct": 3, "n": 32},
+                        "target_summary": {"correct": 2, "n": 32},
+                        "control_summaries": [],
+                    }
+                )
+                + "\n"
+            )
+            output_md.write_text("# controls\n")
+            return
+        prediction_output = pathlib.Path(cmd[cmd.index("--prediction-output") + 1])
+        prediction_output.parent.mkdir(parents=True, exist_ok=True)
+        prediction_output.write_text("")
+
+    monkeypatch.setattr(sweep, "_run", _fake_run)
+
+    row = {
+        "label": "candidate",
+        "prediction_output": str(tmp_path / "live.jsonl"),
+    }
+    config = sweep.ResidualSweepConfig(
+        baseline_results_dir=str(tmp_path / "baseline"),
+        source_control_random_salt=9,
+    )
+    sweep._run_source_controls_for_row(
+        row=row,
+        checkpoint_path=tmp_path / "translator.pt",
+        config=config,
+        materialized_eval_file=tmp_path / "eval.jsonl",
+        results_dir=tmp_path / "results",
+    )
+
+    eval_commands = [cmd for cmd in commands if str(sweep.ROOT / "latent_bridge" / "evaluate.py") in cmd]
+    analyzer_commands = [
+        cmd for cmd in commands if str(sweep.ROOT / "scripts" / "analyze_gsm8k_source_controls.py") in cmd
+    ]
+
+    assert len(eval_commands) == 2
+    assert len(analyzer_commands) == 1
+    assert any("--source-kv-control" in cmd and "zero" in cmd for cmd in eval_commands)
+    assert any(
+        "--source-prompt-control" in cmd and "shuffle_examples" in cmd
+        for cmd in eval_commands
+    )
+    assert all(cmd.count("--random-salt") == 1 for cmd in eval_commands)
+    assert all(cmd[cmd.index("--random-salt") + 1] == "9" for cmd in eval_commands)
+
+    analyzer = analyzer_commands[0]
+    assert "--fallback-nonnumeric-controls-to-target" in analyzer
+    assert any(part.startswith("zero_source=") for part in analyzer)
+    assert any(part.startswith("shuffled_source_salt9=") for part in analyzer)
+    assert row["source_control_status"] == "source_controls_do_not_clear_gate"
+    assert row["source_controls"]["prediction_outputs"]["zero_source"].endswith(
+        "candidate/source_controls/zero_source.jsonl"
+    )
 
 
 def test_run_sweep_records_failure_row_instead_of_aborting(tmp_path: pathlib.Path, monkeypatch) -> None:
