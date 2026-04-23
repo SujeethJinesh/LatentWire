@@ -136,6 +136,12 @@ def parse_args() -> argparse.Namespace:
         help="Limit the fit ridge override to a target layer; repeat to select multiple layers",
     )
     p.add_argument(
+        "--fit-ridge-protected-rank",
+        type=int,
+        default=None,
+        help="Keep this many high-innovation output channels at the base ridge while the tail uses the fit ridge override",
+    )
+    p.add_argument(
         "--alignment-rank",
         type=int,
         default=None,
@@ -3105,6 +3111,7 @@ def main() -> None:
             if args.fit_ridge_override_layers
             else None
         ),
+        fit_ridge_protected_rank=args.fit_ridge_protected_rank,
         alignment_rank=args.alignment_rank,
         transport_residual_rank=args.transport_residual_rank,
         transport_temperature=args.transport_temperature,

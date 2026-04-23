@@ -546,6 +546,8 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
             "8",
             "--fit-ridge-override-layer",
             "10",
+            "--fit-ridge-protected-rank",
+            "2",
             "--source-reasoning-mode",
             "cot",
         ],
@@ -561,6 +563,7 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
     assert args.fit_ridge_override_lambda == 0.01
     assert args.fit_ridge_override_streams == "v"
     assert args.fit_ridge_override_layers == [8, 10]
+    assert args.fit_ridge_protected_rank == 2
     assert args.source_reasoning_mode == "cot"
 
 

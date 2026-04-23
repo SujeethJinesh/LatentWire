@@ -1207,6 +1207,62 @@ def test_fit_ridge_override_targets_only_requested_layer_and_stream(monkeypatch)
     assert tr.config.fit_ridge_override_layers == (1,)
 
 
+def test_fit_alignment_with_protected_outputs_splits_tail_lambda(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    calls: list[tuple[float, int]] = []
+
+    def _fake_fit_alignment(
+        X: torch.Tensor,
+        Y: torch.Tensor,
+        method: str = "auto",
+        lam: float = 1e-3,
+        rank: int | None = None,
+    ) -> torch.Tensor:
+        del method, rank
+        calls.append((float(lam), int(Y.shape[1])))
+        return torch.full(
+            (X.shape[1], Y.shape[1]),
+            float(lam),
+            dtype=X.dtype,
+            device=X.device,
+        )
+
+    monkeypatch.setattr(translator_mod, "fit_alignment", _fake_fit_alignment)
+
+    X = torch.randn(5, tr.d_s)
+    Y = torch.randn(5, tr.d_t)
+    mask = torch.tensor([True, False, True, False])
+
+    W = tr._fit_alignment_with_protected_outputs(
+        X,
+        Y,
+        method="ridge",
+        lam=1e-2,
+        protected_lam=1e-3,
+        protected_output_mask=mask,
+    )
+
+    assert calls == [(1e-3, 2), (1e-2, 2)]
+    assert torch.allclose(W[:, mask], torch.full_like(W[:, mask], 1e-3))
+    assert torch.allclose(W[:, ~mask], torch.full_like(W[:, ~mask], 1e-2))
+
+
+def test_fit_ridge_top_output_mask_selects_innovation_outliers(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    residual = torch.tensor(
+        [
+            [0.0, 1.0, 10.0, 1.0],
+            [0.0, 1.0, -8.0, 1.0],
+            [5.0, 1.0, 0.0, 1.0],
+        ],
+        dtype=torch.float32,
+    )
+
+    mask = tr._fit_ridge_top_output_mask(residual, rank=2)
+
+    assert mask.tolist() == [True, False, True, False]
+
+
 def test_selective_conditioning_targets_only_requested_layers(monkeypatch) -> None:
     monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
     monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))

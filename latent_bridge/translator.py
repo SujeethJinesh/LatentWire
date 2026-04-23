@@ -94,6 +94,9 @@ class TranslatorConfig:
     fit_ridge_override_lambda: float | None = None
     fit_ridge_override_streams: str = "kv"
     fit_ridge_override_layers: tuple[int, ...] | None = None
+    # When set with a fit ridge override, selected high-signal output channels
+    # keep the base ridge while the remaining tail uses the override lambda.
+    fit_ridge_protected_rank: int | None = None
     alignment_rank: int | None = None  # for cca / reduced_rank
     # Optional low-rank residual added on top of grouped soft transport.
     transport_residual_rank: int | None = None
@@ -314,6 +317,13 @@ class TranslatorConfig:
             self.fit_ridge_override_layers = tuple(
                 sorted({int(layer) for layer in self.fit_ridge_override_layers})
             )
+        if self.fit_ridge_protected_rank is not None:
+            self.fit_ridge_protected_rank = int(self.fit_ridge_protected_rank)
+            if self.fit_ridge_protected_rank <= 0:
+                raise ValueError(
+                    "fit_ridge_protected_rank must be positive when set, "
+                    f"got {self.fit_ridge_protected_rank}"
+                )
 
 
 class RotAlignKVTranslator(nn.Module):
@@ -907,6 +917,74 @@ class RotAlignKVTranslator(nn.Module):
         if self._fit_ridge_override_applies(tgt_layer_idx, kind):
             return float(self.config.fit_ridge_override_lambda)
         return float(self.config.ridge_lambda)
+
+    @staticmethod
+    def _fit_ridge_top_output_mask(target: torch.Tensor, rank: int) -> torch.Tensor:
+        target_f = target.float()
+        score = target_f.abs().amax(dim=0) + target_f.std(dim=0, unbiased=False)
+        score = torch.nan_to_num(score, nan=0.0, posinf=0.0, neginf=0.0)
+        keep = max(1, min(int(rank), score.numel()))
+        top_idx = torch.topk(score, k=keep, largest=True).indices
+        mask = torch.zeros(score.numel(), dtype=torch.bool, device=target.device)
+        mask[top_idx] = True
+        return mask
+
+    def _fit_ridge_protected_output_mask(
+        self,
+        target: torch.Tensor,
+        tgt_layer_idx: int,
+        kind: str,
+    ) -> torch.Tensor | None:
+        rank = self.config.fit_ridge_protected_rank
+        if rank is None or not self._fit_ridge_override_applies(tgt_layer_idx, kind):
+            return None
+        return self._fit_ridge_top_output_mask(target, int(rank))
+
+    @staticmethod
+    def _clip_rank_for_outputs(rank: int | None, x_dim: int, y_dim: int) -> int | None:
+        if rank is None:
+            return None
+        return max(1, min(int(rank), int(x_dim), int(y_dim)))
+
+    def _fit_alignment_with_protected_outputs(
+        self,
+        X: torch.Tensor,
+        Y: torch.Tensor,
+        *,
+        method: str,
+        lam: float,
+        rank: int | None = None,
+        protected_output_mask: torch.Tensor | None = None,
+        protected_lam: float | None = None,
+    ) -> torch.Tensor:
+        if protected_output_mask is None or protected_lam is None:
+            return fit_alignment(X, Y, method=method, lam=lam, rank=rank)
+        mask = protected_output_mask.to(device=Y.device, dtype=torch.bool)
+        if mask.numel() != Y.shape[1]:
+            raise ValueError(
+                "protected_output_mask must match target feature dimension, "
+                f"got {mask.numel()} and {Y.shape[1]}"
+            )
+        if not bool(mask.any()):
+            return fit_alignment(X, Y, method=method, lam=lam, rank=rank)
+        if bool(mask.all()):
+            return fit_alignment(X, Y, method=method, lam=protected_lam, rank=rank)
+
+        W = torch.zeros(X.shape[1], Y.shape[1], dtype=Y.dtype, device=Y.device)
+        for submask, sub_lam in ((mask, protected_lam), (~mask, lam)):
+            cols = torch.nonzero(submask, as_tuple=False).flatten()
+            if cols.numel() == 0:
+                continue
+            sub_rank = self._clip_rank_for_outputs(rank, X.shape[1], int(cols.numel()))
+            W_sub = fit_alignment(
+                X,
+                Y[:, cols],
+                method=method,
+                lam=float(sub_lam),
+                rank=sub_rank,
+            )
+            W[:, cols] = W_sub.to(dtype=W.dtype, device=W.device)
+        return W
 
     @staticmethod
     def _build_layer_map(cfg: TranslatorConfig) -> list[int]:
@@ -1638,6 +1716,9 @@ class RotAlignKVTranslator(nn.Module):
         Y: torch.Tensor,
         *,
         lam: float,
+        protected_lam: float | None = None,
+        protected_output_mask: torch.Tensor | None = None,
+        protected_rank: int | None = None,
         residual_rank: int | None,
         src_layer_idx: int,
         tgt_layer_idx: int,
@@ -1772,11 +1853,17 @@ class RotAlignKVTranslator(nn.Module):
         if residual_rank is not None and int(residual_rank) > 0:
             resid_rank = max(1, min(int(residual_rank), min(X.shape[1], Y.shape[1])))
             base_pred = X @ W
-            W_resid = fit_alignment(
+            residual_target = Y - base_pred
+            effective_mask = protected_output_mask
+            if effective_mask is None and protected_rank is not None:
+                effective_mask = self._fit_ridge_top_output_mask(residual_target, int(protected_rank))
+            W_resid = self._fit_alignment_with_protected_outputs(
                 X,
-                Y - base_pred,
+                residual_target,
                 method="reduced_rank",
                 lam=lam,
+                protected_lam=protected_lam,
+                protected_output_mask=effective_mask,
                 rank=resid_rank,
             )
             W = W + W_resid.to(dtype=X.dtype)
@@ -4848,6 +4935,31 @@ class RotAlignKVTranslator(nn.Module):
 
             lam_k = self._fit_ridge_lambda(tgt_l, "k")
             lam_v = self._fit_ridge_lambda(tgt_l, "v")
+            protected_rank_k = (
+                self.config.fit_ridge_protected_rank
+                if self._fit_ridge_override_applies(tgt_l, "k")
+                else None
+            )
+            protected_rank_v = (
+                self.config.fit_ridge_protected_rank
+                if self._fit_ridge_override_applies(tgt_l, "v")
+                else None
+            )
+            protected_mask_k = (
+                None
+                if grouped_alignment
+                else self._fit_ridge_protected_output_mask(Yk_fit, tgt_l, "k")
+            )
+            protected_mask_v = (
+                None
+                if grouped_alignment
+                else self._fit_ridge_protected_output_mask(Yv_fit, tgt_l, "v")
+            )
+            protected_lam_k = float(self.config.ridge_lambda) if protected_mask_k is not None else None
+            protected_lam_v = float(self.config.ridge_lambda) if protected_mask_v is not None else None
+            if grouped_alignment:
+                protected_lam_k = float(self.config.ridge_lambda) if protected_rank_k is not None else None
+                protected_lam_v = float(self.config.ridge_lambda) if protected_rank_v is not None else None
 
             if grouped_alignment:
                 if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_adaptive_canonical_transport", "grouped_rotational_transport", "grouped_fitted_rotation_transport", "grouped_shared_basis_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
@@ -4855,6 +4967,9 @@ class RotAlignKVTranslator(nn.Module):
                         Xk,
                         Yk_fit,
                         lam=lam_k,
+                        protected_lam=protected_lam_k,
+                        protected_output_mask=protected_mask_k,
+                        protected_rank=protected_rank_k,
                         residual_rank=self.config.transport_residual_rank,
                         src_layer_idx=src_l,
                         tgt_layer_idx=tgt_l,
@@ -4863,6 +4978,9 @@ class RotAlignKVTranslator(nn.Module):
                         Xv,
                         Yv_fit,
                         lam=lam_v,
+                        protected_lam=protected_lam_v,
+                        protected_output_mask=protected_mask_v,
+                        protected_rank=protected_rank_v,
                         residual_rank=self.config.transport_residual_rank,
                         src_layer_idx=src_l,
                         tgt_layer_idx=tgt_l,
@@ -4941,18 +5059,22 @@ class RotAlignKVTranslator(nn.Module):
                         rank=self.config.alignment_rank,
                     )
             else:
-                W_K = fit_alignment(
+                W_K = self._fit_alignment_with_protected_outputs(
                     Xk,
                     Yk_fit,
                     method=self.config.alignment_method,
                     lam=lam_k,
+                    protected_lam=protected_lam_k,
+                    protected_output_mask=protected_mask_k,
                     rank=self.config.alignment_rank,
                 )
-                W_V = fit_alignment(
+                W_V = self._fit_alignment_with_protected_outputs(
                     Xv,
                     Yv_fit,
                     method=self.config.alignment_method,
                     lam=lam_v,
+                    protected_lam=protected_lam_v,
+                    protected_output_mask=protected_mask_v,
                     rank=self.config.alignment_rank,
                 )
             self.W_K[tgt_l].data.copy_(W_K.to(self.W_K[tgt_l].dtype))

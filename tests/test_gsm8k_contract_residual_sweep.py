@@ -56,11 +56,12 @@ def test_checkpoint_path_fit_ridge_override_disables_existing_reuse() -> None:
         fit_ridge_override_lambda=1e-2,
         fit_ridge_override_streams="v",
         fit_ridge_override_layers=(8,),
+        fit_ridge_protected_rank=2,
     )
     path = sweep._checkpoint_path("dynalign_module_replace", 8, config)
     assert str(path).endswith(
         "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/"
-        "qwen25_to_qwen3_grouped_subspace_transport_w010_r8_dynalign_module_replace_cal64_chat_fitridgev_layers8_lam0p01.pt"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r8_dynalign_module_replace_cal64_chat_fitridgev_layers8_lam0p01_protect2.pt"
     )
 
 
@@ -326,6 +327,7 @@ def test_calibrate_checkpoint_passes_whitening_flags(tmp_path: pathlib.Path, mon
             fit_ridge_override_lambda=1e-2,
             fit_ridge_override_streams="v",
             fit_ridge_override_layers=(8,),
+            fit_ridge_protected_rank=2,
         ),
     )
 
@@ -338,8 +340,10 @@ def test_calibrate_checkpoint_passes_whitening_flags(tmp_path: pathlib.Path, mon
     assert "--fit-ridge-override-lambda" in commands[0]
     assert "--fit-ridge-override-streams" in commands[0]
     assert "--fit-ridge-override-layer" in commands[0]
+    assert "--fit-ridge-protected-rank" in commands[0]
     assert "v" in commands[0]
     assert "8" in commands[0]
+    assert "2" in commands[0]
     assert "0.01" in commands[0]
 
 
@@ -381,12 +385,15 @@ def test_parse_args_accepts_fit_ridge_override(monkeypatch) -> None:
             "8",
             "--fit-ridge-override-layer",
             "10",
+            "--fit-ridge-protected-rank",
+            "2",
         ],
     )
     args = sweep._parse_args()
     assert args.fit_ridge_override_lambda == 0.01
     assert args.fit_ridge_override_streams == "v"
     assert args.fit_ridge_override_layers == [8, 10]
+    assert args.fit_ridge_protected_rank == 2
 
 
 def test_run_sweep_records_failure_row_instead_of_aborting(tmp_path: pathlib.Path, monkeypatch) -> None:

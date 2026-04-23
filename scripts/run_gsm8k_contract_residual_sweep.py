@@ -126,6 +126,7 @@ class ResidualSweepConfig:
     fit_ridge_override_lambda: float | None = None
     fit_ridge_override_streams: str = "kv"
     fit_ridge_override_layers: tuple[int, ...] | None = None
+    fit_ridge_protected_rank: int | None = None
     transport_residual_rank: int = 4
     transport_temperature: float = 0.1
     transport_sinkhorn_iters: int = 8
@@ -175,6 +176,8 @@ def _conditioning_suffix(config: ResidualSweepConfig) -> str:
             parts.append(f"fitridge{streams}_layers{override_layers}_lam{_float_suffix(config.fit_ridge_override_lambda)}")
         else:
             parts.append(f"fitridge{streams}_lam{_float_suffix(config.fit_ridge_override_lambda)}")
+        if config.fit_ridge_protected_rank is not None:
+            parts.append(f"protect{int(config.fit_ridge_protected_rank)}")
     return "" if not parts else "_" + "_".join(parts)
 
 
@@ -199,6 +202,7 @@ def _conditioning_payload(config: ResidualSweepConfig) -> dict[str, Any]:
         "fit_ridge_override_lambda": config.fit_ridge_override_lambda,
         "fit_ridge_override_streams": config.fit_ridge_override_streams,
         "fit_ridge_override_layers": list(config.fit_ridge_override_layers or ()),
+        "fit_ridge_protected_rank": config.fit_ridge_protected_rank,
     }
 
 
@@ -476,6 +480,8 @@ def _calibrate_checkpoint(
             cmd.extend(["--fit-ridge-override-streams", config.fit_ridge_override_streams])
             for layer in config.fit_ridge_override_layers or ():
                 cmd.extend(["--fit-ridge-override-layer", str(layer)])
+            if config.fit_ridge_protected_rank is not None:
+                cmd.extend(["--fit-ridge-protected-rank", str(config.fit_ridge_protected_rank)])
         _run(cmd)
     checkpoint_summary = _checkpoint_finite_summary(checkpoint_path)
     if int(checkpoint_summary["nonfinite_numel"]) > 0:
@@ -757,6 +763,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--fit-ridge-override-lambda", type=float, default=None)
     parser.add_argument("--fit-ridge-override-streams", choices=["kv", "k", "v"], default="kv")
     parser.add_argument("--fit-ridge-override-layer", type=int, action="append", dest="fit_ridge_override_layers")
+    parser.add_argument("--fit-ridge-protected-rank", type=int, default=None)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--rank", type=int, action="append", dest="ranks")
     parser.add_argument("--base", action="append", choices=sorted(DEFAULT_BASES), dest="bases")
@@ -809,6 +816,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
             if args.fit_ridge_override_layers
             else None
         ),
+        fit_ridge_protected_rank=args.fit_ridge_protected_rank,
         seed=args.seed,
         ranks=tuple(args.ranks) if args.ranks else ResidualSweepConfig.ranks,
         bases=tuple(args.bases) if args.bases else ResidualSweepConfig.bases,
