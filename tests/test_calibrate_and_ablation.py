@@ -2155,6 +2155,12 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_
             "12",
             "--innovation-default-weight",
             "0.75",
+            "--innovation-control-weight",
+            "0.5",
+            "--innovation-control-mode",
+            "zero_and_shuffle",
+            "--innovation-contrastive-margin",
+            "0.01",
         ],
     )
     args = calibrate.parse_args()
@@ -2163,6 +2169,9 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_
     assert args.innovation_target_set_json == "targets.json"
     assert args.innovation_positive_weight == 12
     assert args.innovation_default_weight == 0.75
+    assert args.innovation_control_weight == 0.5
+    assert args.innovation_control_mode == "zero_and_shuffle"
+    assert args.innovation_contrastive_margin == 0.01
 
 
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_value_bank_module_replace(monkeypatch) -> None:

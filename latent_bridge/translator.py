@@ -291,6 +291,9 @@ class TranslatorConfig:
     quantization_correction_rank: int | None = None
     bridge_bank_size: int = 4
     bridge_bank_temperature: float = 8.0
+    innovation_control_weight: float = 0.0
+    innovation_control_mode: str = "none"
+    innovation_contrastive_margin: float = 0.0
 
     # Fusion rule for combining target and translated K/V. 'static' keeps the
     # checkpointed scalar gates as-is; cosine-based rules attenuate translated
@@ -305,6 +308,49 @@ class TranslatorConfig:
         self.bridge_bank_size = int(self.bridge_bank_size)
         if self.bridge_bank_size < 0:
             raise ValueError(f"bridge_bank_size must be non-negative, got {self.bridge_bank_size}")
+        valid_innovation_control_modes = {"none", "zero", "shuffle", "zero_and_shuffle"}
+        if self.innovation_control_mode not in valid_innovation_control_modes:
+            raise ValueError(
+                "innovation_control_mode must be one of "
+                f"{sorted(valid_innovation_control_modes)}, got {self.innovation_control_mode!r}"
+            )
+        self.innovation_control_weight = float(self.innovation_control_weight)
+        if self.innovation_control_weight < 0.0:
+            raise ValueError(
+                f"innovation_control_weight must be non-negative, got {self.innovation_control_weight}"
+            )
+        self.innovation_contrastive_margin = float(self.innovation_contrastive_margin)
+        if self.innovation_contrastive_margin < 0.0:
+            raise ValueError(
+                "innovation_contrastive_margin must be non-negative, "
+                f"got {self.innovation_contrastive_margin}"
+            )
+        if self.innovation_control_weight == 0.0 and (
+            self.innovation_control_mode != "none"
+            or self.innovation_contrastive_margin > 0.0
+        ):
+            raise ValueError(
+                "innovation_control_mode and innovation_contrastive_margin require "
+                "innovation_control_weight > 0"
+            )
+        if self.innovation_control_weight > 0.0 and self.innovation_control_mode == "none":
+            raise ValueError(
+                "innovation_control_weight > 0 requires innovation_control_mode != 'none'"
+            )
+        innovation_controls_enabled = (
+            self.innovation_control_weight > 0.0
+            or self.innovation_control_mode != "none"
+            or self.innovation_contrastive_margin > 0.0
+        )
+        if (
+            innovation_controls_enabled
+            and self.quantization_correction
+            != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        ):
+            raise ValueError(
+                "innovation source controls are only supported for "
+                "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+            )
         valid_streams = {"kv", "k", "v"}
         if self.whitening_streams not in valid_streams:
             raise ValueError(f"Invalid whitening_streams: {self.whitening_streams}")
@@ -2851,6 +2897,9 @@ class RotAlignKVTranslator(nn.Module):
         sample_prompt_ids: torch.Tensor | None = None,
         interaction_prompt_batch_size: int = 4,
         interaction_temperature: float = 1.0,
+        source_control_weight: float = 0.0,
+        source_control_mode: str = "none",
+        source_contrastive_margin: float = 0.0,
     ) -> tuple[torch.Tensor, ...]:
         tensors = (
             quantized_k.float(),
@@ -2920,9 +2969,31 @@ class RotAlignKVTranslator(nn.Module):
             feature_w_v = feature_w_v / feature_w_v.mean().clamp_min(1e-8)
         prompt_ids_cpu = None
         unique_prompt_ids = None
-        if float(interaction_distill_weight) > 0.0:
+        source_control_mode = str(source_control_mode)
+        valid_control_modes = {"none", "zero", "shuffle", "zero_and_shuffle"}
+        if source_control_mode not in valid_control_modes:
+            raise ValueError(
+                f"source_control_mode must be one of {sorted(valid_control_modes)}, "
+                f"got {source_control_mode!r}"
+            )
+        if float(source_control_weight) < 0.0:
+            raise ValueError("source_control_weight must be non-negative")
+        if float(source_contrastive_margin) < 0.0:
+            raise ValueError("source_contrastive_margin must be non-negative")
+        shuffle_idx = None
+        needs_prompt_ids = (
+            float(interaction_distill_weight) > 0.0
+            or (
+                float(source_control_weight) > 0.0
+                and source_control_mode in {"shuffle", "zero_and_shuffle"}
+            )
+        )
+        if needs_prompt_ids:
             if sample_prompt_ids is None:
-                raise ValueError("sample_prompt_ids are required when interaction_distill_weight > 0")
+                raise ValueError(
+                    "sample_prompt_ids are required for prompt-local interaction "
+                    "distillation or shuffled source controls"
+                )
             prompt_ids_cpu = sample_prompt_ids.detach().to("cpu", dtype=torch.long).view(-1)
             if prompt_ids_cpu.numel() != qk.shape[0]:
                 raise ValueError(
@@ -2930,22 +3001,51 @@ class RotAlignKVTranslator(nn.Module):
                     f"got {int(prompt_ids_cpu.numel())} ids for {qk.shape[0]} samples"
                 )
             unique_prompt_ids = torch.unique(prompt_ids_cpu)
+            if (
+                float(source_control_weight) > 0.0
+                and source_control_mode in {"shuffle", "zero_and_shuffle"}
+            ):
+                if unique_prompt_ids.numel() < 2:
+                    raise ValueError("shuffled source controls require at least two prompts")
+                rolled_prompt_ids = torch.roll(unique_prompt_ids, shifts=1)
+                shuffle_idx_cpu = torch.empty_like(prompt_ids_cpu)
+                for src_prompt, dst_prompt in zip(unique_prompt_ids.tolist(), rolled_prompt_ids.tolist()):
+                    src_idx = torch.nonzero(prompt_ids_cpu == int(src_prompt), as_tuple=False).view(-1)
+                    dst_idx = torch.nonzero(prompt_ids_cpu == int(dst_prompt), as_tuple=False).view(-1)
+                    repeats = torch.arange(src_idx.numel(), dtype=torch.long) % dst_idx.numel()
+                    shuffle_idx_cpu[src_idx] = dst_idx[repeats]
+                shuffle_idx = shuffle_idx_cpu.to(device=qk.device)
+
+        def module_forward(
+            mem_qk: torch.Tensor,
+            mem_pk: torch.Tensor,
+            mem_qv: torch.Tensor,
+            mem_pv: torch.Tensor,
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            live_memory = torch.stack([mem_qk, mem_pk, mem_qv, mem_pv], dim=1)
+            slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
+            memory = torch.cat([live_memory, slot_memory], dim=1)
+            q_hidden = query @ q_proj
+            key_hidden = torch.einsum("nmd,dr->nmr", memory, k_proj)
+            value_hidden = torch.einsum("nmd,dr->nmr", memory, v_proj)
+            attn_logits = torch.einsum("nr,nmr->nm", q_hidden, key_hidden) / math.sqrt(float(rank))
+            attn = torch.softmax(attn_logits, dim=-1)
+            context = torch.einsum("nm,nmr->nr", attn, value_hidden)
+            hidden = F.gelu(context @ hidden_proj)
+            return hidden @ out_k, hidden @ out_v
+
+        def weighted_mean(values: torch.Tensor) -> torch.Tensor:
+            if sample_w is None:
+                return values.mean()
+            weights_1d = sample_w.to(device=values.device, dtype=values.dtype)
+            while weights_1d.ndim < values.ndim:
+                weights_1d = weights_1d.unsqueeze(-1)
+            return (weights_1d * values).mean()
 
         with torch.enable_grad():
             for _ in range(max(1, int(steps))):
                 optimizer.zero_grad(set_to_none=True)
-                live_memory = torch.stack([qk, pk, qv, pv], dim=1)
-                slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
-                memory = torch.cat([live_memory, slot_memory], dim=1)
-                q_hidden = query @ q_proj
-                key_hidden = torch.einsum("nmd,dr->nmr", memory, k_proj)
-                value_hidden = torch.einsum("nmd,dr->nmr", memory, v_proj)
-                attn_logits = torch.einsum("nr,nmr->nm", q_hidden, key_hidden) / math.sqrt(float(rank))
-                attn = torch.softmax(attn_logits, dim=-1)
-                context = torch.einsum("nm,nmr->nr", attn, value_hidden)
-                hidden = F.gelu(context @ hidden_proj)
-                pred_k = hidden @ out_k
-                pred_v = hidden @ out_v
+                pred_k, pred_v = module_forward(qk, pk, qv, pv)
                 diff_k = (pred_k - yk).pow(2)
                 diff_v = (pred_v - yv).pow(2)
                 if feature_w_k is not None:
@@ -2957,6 +3057,42 @@ class RotAlignKVTranslator(nn.Module):
                 else:
                     weights = sample_w.to(device=pred_k.device, dtype=pred_k.dtype).view(-1, 1)
                     loss = (weights * diff_k).mean() + (weights * diff_v).mean()
+                if float(source_control_weight) > 0.0 and source_control_mode != "none":
+                    control_losses: list[torch.Tensor] = []
+                    margin_losses: list[torch.Tensor] = []
+                    zero = torch.zeros_like(qk)
+                    if source_control_mode in {"zero", "zero_and_shuffle"}:
+                        ctrl_k, ctrl_v = module_forward(zero, zero, zero, zero)
+                        control_losses.append(weighted_mean(ctrl_k.pow(2)) + weighted_mean(ctrl_v.pow(2)))
+                        if float(source_contrastive_margin) > 0.0:
+                            matched_norm = pred_k.pow(2).mean(dim=-1) + pred_v.pow(2).mean(dim=-1)
+                            ctrl_norm = ctrl_k.pow(2).mean(dim=-1) + ctrl_v.pow(2).mean(dim=-1)
+                            margin_losses.append(
+                                weighted_mean(
+                                    F.relu(float(source_contrastive_margin) + ctrl_norm - matched_norm)
+                                )
+                            )
+                    if source_control_mode in {"shuffle", "zero_and_shuffle"}:
+                        assert shuffle_idx is not None
+                        ctrl_k, ctrl_v = module_forward(
+                            qk.index_select(0, shuffle_idx),
+                            pk.index_select(0, shuffle_idx),
+                            qv.index_select(0, shuffle_idx),
+                            pv.index_select(0, shuffle_idx),
+                        )
+                        control_losses.append(weighted_mean(ctrl_k.pow(2)) + weighted_mean(ctrl_v.pow(2)))
+                        if float(source_contrastive_margin) > 0.0:
+                            matched_norm = pred_k.pow(2).mean(dim=-1) + pred_v.pow(2).mean(dim=-1)
+                            ctrl_norm = ctrl_k.pow(2).mean(dim=-1) + ctrl_v.pow(2).mean(dim=-1)
+                            margin_losses.append(
+                                weighted_mean(
+                                    F.relu(float(source_contrastive_margin) + ctrl_norm - matched_norm)
+                                )
+                            )
+                    if control_losses:
+                        loss = loss + float(source_control_weight) * torch.stack(control_losses).mean()
+                    if margin_losses:
+                        loss = loss + float(source_control_weight) * torch.stack(margin_losses).mean()
                 logit_pred_k = (pred_k * query).sum(dim=-1)
                 logit_tgt_k = (yk * query).sum(dim=-1)
                 logit_pred_v = (pred_v * query).sum(dim=-1)
@@ -5325,13 +5461,20 @@ class RotAlignKVTranslator(nn.Module):
                         base_v = V_quant @ proj_v + V_pred @ aux_proj_v + bias_v
                         resid_target_v = Yv_fit - base_v
                         sample_prompt_ids = None
+                        query_innovation_source_control_needs_prompt_ids = (
+                            self.config.quantization_correction
+                            == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+                            and self.config.innovation_control_weight > 0.0
+                            and self.config.innovation_control_mode
+                            in {"shuffle", "zero_and_shuffle"}
+                        )
                         if self.config.quantization_correction in {
                             "bridge_ridge_qk_cab_adapter",
                             "bridge_ridge_qk_emkd_adapter",
                             "bridge_ridge_qk_readout_adapter",
                             "bridge_ridge_qk_dynalign_dwainteract_module_replace",
                             "bridge_ridge_qk_dynalign_interact_module_replace",
-                        }:
+                        } or query_innovation_source_control_needs_prompt_ids:
                             if self._bridge_sample_prompt_ids is None:
                                 raise ValueError(
                                     f"{self.config.quantization_correction} requires bridge sample prompt ids; "
@@ -5544,7 +5687,10 @@ class RotAlignKVTranslator(nn.Module):
                                 feature_weights_v=self._fit_saliency_feature_weights(target_v_fit, V_pred, query_features) if self.config.quantization_correction == "bridge_ridge_qk_dynalign_saliency_module_replace" else None,
                                 span_preference_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_dynalign_prefdist_module_replace" else 0.0,
                                 interaction_distill_weight=0.25 if self.config.quantization_correction in {"bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace"} else 0.0,
-                                sample_prompt_ids=sample_prompt_ids if self.config.quantization_correction in {"bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace"} else None,
+                                sample_prompt_ids=sample_prompt_ids if self.config.quantization_correction in {"bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace"} or query_innovation_source_control_needs_prompt_ids else None,
+                                source_control_weight=self.config.innovation_control_weight if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 0.0,
+                                source_control_mode=self.config.innovation_control_mode if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else "none",
+                                source_contrastive_margin=self.config.innovation_contrastive_margin if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 0.0,
                             )
                             if self.config.quantization_correction in {
                                 "bridge_ridge_qk_dynalign_query_resampler_replace",

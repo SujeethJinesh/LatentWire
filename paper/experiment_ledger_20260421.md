@@ -2257,3 +2257,117 @@ Next exact gate:
   reaches `>=2/6` clean residual IDs in matched exact-ID scoring
 - then run translated-KV-zero, source-zero, two shuffle salts, and the
   target-self sidecar bound
+
+## 2026-04-23 15:25 PDT — SVAMP32 source-control contrastive innovation
+
+Paper status:
+
+- not ICLR-ready
+- current story: target self-repair is the decoder-side-information floor, and
+  source communication must add clean residual innovation above it
+- blocking gap: no candidate exposes `>=2/6` clean source-necessary IDs under
+  strict exact-ID controls
+
+Top next moves considered:
+
+- source-control query-innovation objective. This matters because it directly
+  targets source necessity through zero and shuffled source negatives. It might
+  fail by suppressing all residual innovation. Cost: one calibration plus one
+  matched sweep. Helps same-pair, robustness, and interpretability.
+- V-full `both` transport screen on the prior ID-weighted checkpoint. This
+  matters because value transport may expose another clean ID. It might fail by
+  adding V noise or target-cache wins. Cost: one decode sweep. Helps same-pair
+  and efficiency.
+- larger Q-former / Perceiver connector. This matters because a stronger
+  learned bottleneck is the best architectural story after scalar objectives
+  saturate. It might fail by adding too many degrees before the live gate. Cost:
+  high. Helps cross-family and interpretability if it works.
+
+Decision:
+
+- picked source-control query-innovation objective
+- rationale: runtime gate search and scalar clean-ID weighting were already
+  saturated, so the next most direct hypothesis was matched-source-vs-control
+  training pressure
+
+What changed:
+
+- added default-off query-innovation source-control knobs:
+  - `innovation_control_weight`
+  - `innovation_control_mode`
+  - `innovation_contrastive_margin`
+- constrained source controls to
+  `bridge_ridge_qk_dynalign_query_innovation_resampler_replace`
+- trained zero and shuffled controls toward zero innovation delta, not full
+  target reconstruction
+- added regression coverage for CLI parse, config validation, prompt-ID
+  forwarding, and shuffled-control prompt-ID requirements
+- created memo:
+  - `paper/svamp32_control_contrastive_innovation_20260423.md`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_translator_core.py tests/test_calibrate_and_ablation.py -q`
+- result: `214 passed`
+
+Artifacts:
+
+- checkpoint:
+  - `.debug/svamp32_control_contrastive_innovation_20260423/checkpoints/qwen25_to_qwen3_svamp32_control_zero_shuffle_w010_m001_r16_bank16_seed1.pt`
+- matched sweep:
+  - `.debug/svamp32_control_contrastive_innovation_20260423/preds/control_zero_shuffle_w010_m001_attention_gate_sweep.jsonl`
+- readouts:
+  - `results/svamp32_control_contrastive_innovation_20260423/control_zero_shuffle_w010_m001_attention_clean_targets.json`
+  - `results/svamp32_control_contrastive_innovation_20260423/control_zero_shuffle_w010_m001_attention_clean_targets.md`
+
+Candidate settings:
+
+- correction: `bridge_ridge_qk_dynalign_query_innovation_resampler_replace`
+- rank: `16`
+- bank size: `16`
+- seed: `1`
+- positive/default innovation weights: `16` / `1`
+- source-control mode: `zero_and_shuffle`
+- source-control weight: `0.10`
+- contrastive margin: `0.001`
+- prompt IDs for source controls: `1411` samples, `32` prompts
+- average fit quality:
+  - K cosine: `0.951`
+  - V cosine: `0.734`
+
+Evidence:
+
+- status: `no_matched_gate_candidate_for_controls`
+- target-alone: `8/32`
+- C2C teacher: `16/32`
+- target_self_repair: `14/32`
+- best row: `rotalign_kv_gate_0.12`, `9/32`
+- clean residual recovered: `0/6`
+- teacher-only recovered: `1`
+- delta vs target_self_repair: `-5`
+- target losses at best row: `0`
+- oracle `target_self_repair + clean candidate`: `14/32`
+- verdict: do not run translated-zero, source-zero, shuffled-source, or
+  sidecar controls for this checkpoint
+
+Hypothesis update:
+
+- weakened: naive source-control contrastive pressure on the existing
+  query-innovation resampler can expose clean source-necessary IDs
+- strengthened: scalar/objective tweaks on this architecture are saturated
+- still alive: V-full `both` transport screen as a cheap falsification branch
+- promoted: small learned query bottleneck / Q-former-style connector that can
+  preserve target self-repair while injecting bounded source innovation
+
+Operational note:
+
+- seven-gate full generation sweeps are too expensive for broad iteration on
+  MPS; future candidate screens should use fewer gates until a row is near
+  promotion
+
+Next exact gate:
+
+- run the cheap V-full `both` transport screen on the prior ID-weighted
+  checkpoint or implement the small query bottleneck
+- unchanged promotion criterion: `>=2/6` clean residual IDs in matched exact-ID
+  scoring before any control sweep

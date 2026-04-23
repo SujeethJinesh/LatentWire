@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import pytest
 import torch
 
 from latent_bridge import (
@@ -4903,6 +4904,130 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_query_innovation_resampler_forw
 
     assert base_ridge_weighted == [False, False]
     assert torch.allclose(captured["sample_weights"], expected_weights)
+
+
+def test_fit_from_pairs_query_innovation_forwards_source_controls(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        quantization_correction_rank=1,
+        innovation_control_weight=0.5,
+        innovation_control_mode="zero_and_shuffle",
+        innovation_contrastive_margin=0.01,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+    prompt_ids = torch.tensor([0, 0, 1, 1], dtype=torch.long)
+    tr.set_bridge_sample_prompt_ids(prompt_ids)
+
+    captured: dict[str, object] = {}
+
+    def fake_bridge_ridge(self, quantized, predicted, target, *, lam, sample_weights=None):
+        del quantized, predicted, target, lam, sample_weights
+        return (
+            torch.zeros(self.d_t, self.d_t, dtype=torch.float32),
+            torch.zeros(self.d_t, self.d_t, dtype=torch.float32),
+            torch.zeros(self.d_t, dtype=torch.float32),
+        )
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        sample_prompt_ids=None,
+        source_control_weight=0.0,
+        source_control_mode="none",
+        source_contrastive_margin=0.0,
+        **kwargs,
+    ):
+        del quantized_k, predicted_k, quantized_v, predicted_v, query_features
+        del target_k, target_v, kwargs
+        captured["sample_prompt_ids"] = sample_prompt_ids.detach().cpu().clone()
+        captured["source_control_weight"] = source_control_weight
+        captured["source_control_mode"] = source_control_mode
+        captured["source_contrastive_margin"] = source_contrastive_margin
+        return (
+            torch.zeros(self.config.bridge_bank_size, self.d_t, dtype=torch.float32),
+            torch.zeros(self.d_t, rank, dtype=torch.float32),
+            torch.zeros(self.d_t, rank, dtype=torch.float32),
+            torch.zeros(self.d_t, rank, dtype=torch.float32),
+            torch.zeros(rank, rank, dtype=torch.float32),
+            torch.zeros(rank, self.d_t, dtype=torch.float32),
+            torch.zeros(rank, self.d_t, dtype=torch.float32),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_ridge_correction", fake_bridge_ridge)
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+
+    tr.fit_from_pairs([(base, base + 0.5)], [(base * 1.5, base * 2.0)])
+
+    assert torch.equal(captured["sample_prompt_ids"], prompt_ids)
+    assert captured["source_control_weight"] == 0.5
+    assert captured["source_control_mode"] == "zero_and_shuffle"
+    assert captured["source_contrastive_margin"] == 0.01
+
+
+def test_query_innovation_shuffled_source_controls_require_prompt_ids(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        quantization_correction_rank=1,
+    )
+    rows = torch.randn(4, tr.d_t, dtype=torch.float32)
+
+    with pytest.raises(ValueError, match="sample_prompt_ids are required"):
+        tr._fit_bridge_query_module_replace(
+            rows,
+            rows,
+            rows,
+            rows,
+            rows,
+            rows,
+            rows,
+            rank=1,
+            steps=1,
+            source_control_weight=0.5,
+            source_control_mode="shuffle",
+        )
+
+
+def test_innovation_source_controls_are_query_innovation_only() -> None:
+    with pytest.raises(ValueError, match="only supported"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_dynalign_query_resampler_replace",
+            innovation_control_weight=0.5,
+            innovation_control_mode="zero",
+        )
 
 
 def test_dynalign_query_innovation_resampler_fuse_adds_bounded_residual(monkeypatch) -> None:

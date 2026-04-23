@@ -385,6 +385,27 @@ def parse_args() -> argparse.Namespace:
         help="Prompt-level sample weight for non-target IDs when innovation target weighting is enabled.",
     )
     p.add_argument(
+        "--innovation-control-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Default-off source-control loss weight for query-innovation resampler "
+            "training. Controls are trained toward zero innovation."
+        ),
+    )
+    p.add_argument(
+        "--innovation-control-mode",
+        choices=["none", "zero", "shuffle", "zero_and_shuffle"],
+        default="none",
+        help="Source-control type for query-innovation resampler training.",
+    )
+    p.add_argument(
+        "--innovation-contrastive-margin",
+        type=float,
+        default=0.0,
+        help="Optional margin separating matched-source innovation norm from control-source norm.",
+    )
+    p.add_argument(
         "--source-reasoning-mode",
         choices=["plain", "brief_analysis", "cot", "scratchpad"],
         default="plain",
@@ -2950,6 +2971,32 @@ def main() -> None:
     dtype = torch_dtype(args.dtype)
     source_enable_thinking = _optional_bool_from_arg(args.source_enable_thinking)
     target_enable_thinking = _optional_bool_from_arg(args.target_enable_thinking)
+    innovation_controls_enabled = (
+        args.innovation_control_weight > 0.0
+        or args.innovation_control_mode != "none"
+        or args.innovation_contrastive_margin > 0.0
+    )
+    if args.innovation_control_weight == 0.0 and (
+        args.innovation_control_mode != "none"
+        or args.innovation_contrastive_margin > 0.0
+    ):
+        raise ValueError(
+            "--innovation-control-mode and --innovation-contrastive-margin require "
+            "--innovation-control-weight > 0"
+        )
+    if args.innovation_control_weight > 0.0 and args.innovation_control_mode == "none":
+        raise ValueError(
+            "--innovation-control-weight > 0 requires --innovation-control-mode != none"
+        )
+    if (
+        innovation_controls_enabled
+        and args.quantization_correction
+        != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+    ):
+        raise ValueError(
+            "innovation source-control flags require "
+            "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        )
 
     prompt_records = load_prompt_records(args.calibration_file)
     prompts = [prompt for prompt, _ in prompt_records]
@@ -3234,6 +3281,9 @@ def main() -> None:
         quantization_correction=args.quantization_correction,
         quantization_correction_rank=args.quantization_correction_rank,
         bridge_bank_size=args.bridge_bank_size,
+        innovation_control_weight=args.innovation_control_weight,
+        innovation_control_mode=args.innovation_control_mode,
+        innovation_contrastive_margin=args.innovation_contrastive_margin,
         learned_fusion_dropout=args.learned_fusion_dropout,
         seed=args.seed,
     )
@@ -3533,6 +3583,22 @@ def main() -> None:
             f"matched_prompts={matched_prompts}, samples={int(sample_weights.numel())}, "
             f"default={args.innovation_default_weight:.3f}, "
             f"positive={args.innovation_positive_weight:.3f}"
+        )
+
+    if (
+        args.quantization_correction
+        == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        and args.innovation_control_weight > 0.0
+        and args.innovation_control_mode in {"shuffle", "zero_and_shuffle"}
+    ):
+        if sample_prompt_ids is None:
+            raise ValueError(
+                "--innovation-control-mode shuffle requires aligned bridge sample prompt IDs"
+            )
+        translator.set_bridge_sample_prompt_ids(sample_prompt_ids)
+        print(
+            "Built bridge sample prompt ids for query-innovation source controls: "
+            f"samples={int(sample_prompt_ids.numel())}, prompts={len(prompts)}"
         )
 
     if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_query_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace"}:
