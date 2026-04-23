@@ -1242,7 +1242,7 @@ def test_fit_alignment_with_protected_outputs_splits_tail_lambda(monkeypatch) ->
         protected_output_mask=mask,
     )
 
-    assert calls == [(1e-3, 2), (1e-2, 2)]
+    assert calls == [(1e-2, 4), (1e-3, 2)]
     assert torch.allclose(W[:, mask], torch.full_like(W[:, mask], 1e-3))
     assert torch.allclose(W[:, ~mask], torch.full_like(W[:, ~mask], 1e-2))
 

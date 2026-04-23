@@ -970,20 +970,17 @@ class RotAlignKVTranslator(nn.Module):
         if bool(mask.all()):
             return fit_alignment(X, Y, method=method, lam=protected_lam, rank=rank)
 
-        W = torch.zeros(X.shape[1], Y.shape[1], dtype=Y.dtype, device=Y.device)
-        for submask, sub_lam in ((mask, protected_lam), (~mask, lam)):
-            cols = torch.nonzero(submask, as_tuple=False).flatten()
-            if cols.numel() == 0:
-                continue
-            sub_rank = self._clip_rank_for_outputs(rank, X.shape[1], int(cols.numel()))
-            W_sub = fit_alignment(
-                X,
-                Y[:, cols],
-                method=method,
-                lam=float(sub_lam),
-                rank=sub_rank,
-            )
-            W[:, cols] = W_sub.to(dtype=W.dtype, device=W.device)
+        W = fit_alignment(X, Y, method=method, lam=lam, rank=rank)
+        protected_cols = torch.nonzero(mask, as_tuple=False).flatten()
+        protected_rank = self._clip_rank_for_outputs(rank, X.shape[1], int(protected_cols.numel()))
+        W_protected = fit_alignment(
+            X,
+            Y[:, protected_cols],
+            method=method,
+            lam=float(protected_lam),
+            rank=protected_rank,
+        )
+        W[:, protected_cols] = W_protected.to(dtype=W.dtype, device=W.device)
         return W
 
     @staticmethod
