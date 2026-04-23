@@ -1167,13 +1167,23 @@ def test_build_rotalign_prefix_state_uses_matching_source_and_target_prefix_leng
     assert stats["bits"] > 0.0
 
 
-def test_build_rotalign_prefix_state_query_resampler_collects_live_query_heads(monkeypatch) -> None:
+@pytest.mark.parametrize(
+    "quantization_correction",
+    [
+        "bridge_ridge_qk_dynalign_query_resampler_replace",
+        "bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+    ],
+)
+def test_build_rotalign_prefix_state_query_resampler_collects_live_query_heads(
+    monkeypatch,
+    quantization_correction,
+) -> None:
     tok_s = FakeTokenizer()
     tok_t = FakeTokenizer()
     src = FakeCausalLM(preferred_token_id=4, n_layers=2)
     tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
     translator = _make_identity_translator(monkeypatch, layers=2)
-    translator.config.quantization_correction = "bridge_ridge_qk_dynalign_query_resampler_replace"
+    translator.config.quantization_correction = quantization_correction
 
     query_head_calls = 0
     seen_query_features: list[torch.Tensor | None] = []

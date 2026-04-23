@@ -706,3 +706,86 @@ and fails strict numeric coverage. Bank16 is fully valid but exact target
 parity. The next exact gate is the target-safe innovation/residual
 query-resampler branch with matched zero/shuffled-source controls; GSM70 and
 cross-family widening remain blocked until that branch clears GSM8K32 seed1.
+
+`paper/gsm8k32_query_innovation_resampler_seed1_20260423.md` records the
+target-safe residual/innovation query-resampler follow-up. The new
+`bridge_ridge_qk_dynalign_query_innovation_resampler_replace` branch reuses the
+guarded query-resampler path, fits only `target - base_bridge_prediction`, and
+applies a bounded additive residual at fusion time instead of full KV
+replacement. It is wired through calibration, evaluation, the GSM8K residual
+sweep runner, and regression tests.
+
+Runs:
+
+```bash
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_query_innovation_resampler_replace \
+  --rank 16 \
+  --bits 4 \
+  --bridge-bank-size 16 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_query_innovation_resampler_seed1_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_query_innovation_resampler_seed1_20260423 \
+  --seed 1
+
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_query_innovation_resampler_replace \
+  --rank 16 \
+  --bits 4 \
+  --bridge-bank-size 16 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_query_innovation_resampler_seed1_gate025_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_query_innovation_resampler_seed1_20260423 \
+  --seed 1 \
+  --gate 0.25
+
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_query_innovation_resampler_replace \
+  --rank 16 \
+  --bits 4 \
+  --bridge-bank-size 16 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_query_innovation_resampler_seed1_gate015_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_query_innovation_resampler_seed1_20260423 \
+  --seed 1 \
+  --gate 0.15
+```
+
+Readout:
+
+- checkpoint nonfinite values: `0`
+- first bad key: `-`
+- checkpoint max abs: `6416.1553`
+- checkpoint SHA256:
+  `b1f0cfa62c67ffcbdbce631c6cfd80df3240e132e252b0775aef355940a557b8`
+- gate `0.10`: accuracy `2/32`, paired vs target `0` wins / `0` losses /
+  `32` ties, numeric coverage `32/32`, empty predictions `0`
+- gate `0.25`: accuracy `2/32`, paired vs target `1` win / `1` loss /
+  `30` ties, numeric coverage `32/32`, empty predictions `0`
+- gate `0.15`: accuracy `3/32`, paired vs target `1` win / `0` losses /
+  `31` ties, numeric coverage `32/32`, empty predictions `0`
+- gate `0.15` zero-source control: accuracy `2/32`, paired vs target `1` win /
+  `1` loss / `30` ties, live-win retention `1/1`
+- gate `0.15` shuffled-source control: accuracy `3/32`, paired vs target `1`
+  win / `0` losses / `31` ties, live-win retention `1/1`, deranged source
+  indices, `4/32` target fallback
+- source-control status: `source_controls_do_not_clear_gate`
+- diagnostic note: the only candidate-only win has the same numeric answer as
+  text-to-text; source-alone is wrong, but zero/shuffled controls retain the
+  win ID.
+
+This branch clears implementation, checkpoint, coverage, and one live-row
+smoke gate at fixed gate `0.15`, but it fails the required source-control gate.
+The result weakens the innovation-resampler as a publishable positive method:
+the branch can move answers through a bounded target-safe path, but the
+observed win is not proven to depend on real source communication. Do not widen
+this row to GSM70 or cross-family. The next exact gate is either the strongest
+existing real lane with seed/source-control repeats, or a source-control-aware
+verifier/gate that can suppress wins retained under zero/shuffled source before
+retesting this same GSM8K32 seed-1 surface.

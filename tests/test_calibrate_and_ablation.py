@@ -2100,6 +2100,31 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_resampler_r
     assert args.quantization_correction_rank == 16
 
 
+def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_resampler_replace(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+            "--quantization-correction-rank",
+            "16",
+        ],
+    )
+    args = calibrate.parse_args()
+    assert args.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+    assert args.quantization_correction_rank == 16
+
+
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_value_bank_module_replace(monkeypatch) -> None:
     monkeypatch.setattr(
         calibrate.sys,
