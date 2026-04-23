@@ -455,3 +455,29 @@ target-cache parity. Do not run seed `0`, GSM70, or cross-family widening for
 protected scalar ridge. The next gate should shift from scalar closed-form
 stabilization to either a source-correctness/flip-table diagnostic on the live
 seed-0 wins, or a learned query/resampler connector with an explicit bottleneck.
+
+`paper/gsm8k70_source_controls_20260423.md` records the first strict
+source-control gate on the live GSM8K70 seed-0 row. Commit `4408e61a` added
+`--source-prompt-control shuffle_examples` and per-record source-control
+telemetry. `scripts/analyze_gsm8k_source_controls.py` then compared the live
+row against zero-source and deterministic shuffled-source controls.
+
+Readout:
+
+- live matched-source row: `8/70`, paired vs target `6` wins / `2` losses /
+  `62` ties, numeric coverage `70/70`.
+- zero_source: `0/70`, paired vs target `0` wins / `4` losses / `66` ties,
+  live-win retention `0/6`, numeric coverage `0/70`.
+- shuffled_source_salt0: `0/70`, paired vs target `0` wins / `4` losses /
+  `66` ties, live-win retention `0/6`, source derangement telemetry passes,
+  numeric coverage `1/70`.
+
+This weakens the target-cache explanation: neither control preserves any live
+candidate-only wins, and the shuffled-source artifact confirms source examples
+were mismatched while target ids/order were preserved. It does not yet clear the
+strict reviewer gate, because the controls collapse through low numeric
+coverage and empty/non-numeric generations. Treat the live row as matched-source
+dependent but not yet reviewer-ready. The next exact gate is a
+validity-preserving shuffled-source mismatch control, likely via a target-safe
+fusion shrinkage/verifier fallback or a learned bottleneck/resampler connector,
+before seed repeats or cross-family widening.
