@@ -177,6 +177,22 @@ def test_calibrate_build_innovation_prompt_weights_marks_target_ids() -> None:
     assert torch.allclose(weights, torch.tensor([0.5, 8.0, 0.5]))
 
 
+def test_calibrate_build_innovation_prompt_weight_plan_marks_target_self_preserve_ids() -> None:
+    weights, matched, preserve_mask, preserve_matched = calibrate.build_innovation_prompt_weight_plan(
+        [{"a"}, {"target", "metadata-id"}, {"self-repair"}, set()],
+        {"target"},
+        positive_weight=8.0,
+        default_weight=0.5,
+        preserve_ids={"self-repair"},
+        preserve_weight=4.0,
+    )
+
+    assert matched == 1
+    assert preserve_matched == 1
+    assert torch.allclose(weights, torch.tensor([0.5, 8.0, 4.0, 0.5]))
+    assert torch.equal(preserve_mask, torch.tensor([False, False, True, False]))
+
+
 class _FakeCache:
     def __init__(self, layers):
         self.layers = layers
@@ -2161,6 +2177,10 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_
             "zero_and_shuffle",
             "--innovation-contrastive-margin",
             "0.01",
+            "--innovation-target-self-preserve-weight",
+            "6",
+            "--innovation-value-loss-weight",
+            "0.25",
         ],
     )
     args = calibrate.parse_args()
@@ -2172,6 +2192,8 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_
     assert args.innovation_control_weight == 0.5
     assert args.innovation_control_mode == "zero_and_shuffle"
     assert args.innovation_contrastive_margin == 0.01
+    assert args.innovation_target_self_preserve_weight == 6
+    assert args.innovation_value_loss_weight == 0.25
 
 
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_value_bank_module_replace(monkeypatch) -> None:

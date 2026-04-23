@@ -294,6 +294,7 @@ class TranslatorConfig:
     innovation_control_weight: float = 0.0
     innovation_control_mode: str = "none"
     innovation_contrastive_margin: float = 0.0
+    innovation_value_loss_weight: float = 1.0
 
     # Fusion rule for combining target and translated K/V. 'static' keeps the
     # checkpointed scalar gates as-is; cosine-based rules attenuate translated
@@ -325,6 +326,15 @@ class TranslatorConfig:
                 "innovation_contrastive_margin must be non-negative, "
                 f"got {self.innovation_contrastive_margin}"
             )
+        self.innovation_value_loss_weight = float(self.innovation_value_loss_weight)
+        if (
+            not math.isfinite(self.innovation_value_loss_weight)
+            or self.innovation_value_loss_weight < 0.0
+        ):
+            raise ValueError(
+                "innovation_value_loss_weight must be finite and non-negative, "
+                f"got {self.innovation_value_loss_weight}"
+            )
         if self.innovation_control_weight == 0.0 and (
             self.innovation_control_mode != "none"
             or self.innovation_contrastive_margin > 0.0
@@ -349,6 +359,15 @@ class TranslatorConfig:
         ):
             raise ValueError(
                 "innovation source controls are only supported for "
+                "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+            )
+        if (
+            self.innovation_value_loss_weight != 1.0
+            and self.quantization_correction
+            != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        ):
+            raise ValueError(
+                "innovation_value_loss_weight is only supported for "
                 "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
             )
         valid_streams = {"kv", "k", "v"}
@@ -507,6 +526,7 @@ class RotAlignKVTranslator(nn.Module):
         self._bridge_prompt_cluster_labels: list[torch.Tensor] | None = None
         self._bridge_sample_prompt_ids: torch.Tensor | None = None
         self._bridge_sample_weights: list[torch.Tensor] | None = None
+        self._bridge_zero_residual_masks: list[torch.Tensor] | None = None
         self._bridge_sample_query_features: list[torch.Tensor] | None = None
         self._bridge_prediction_teacher_log_probs: torch.Tensor | None = None
         self._bridge_prediction_teacher_output_rows: torch.Tensor | None = None
@@ -2900,6 +2920,7 @@ class RotAlignKVTranslator(nn.Module):
         source_control_weight: float = 0.0,
         source_control_mode: str = "none",
         source_contrastive_margin: float = 0.0,
+        value_loss_weight: float = 1.0,
     ) -> tuple[torch.Tensor, ...]:
         tensors = (
             quantized_k.float(),
@@ -2980,6 +3001,9 @@ class RotAlignKVTranslator(nn.Module):
             raise ValueError("source_control_weight must be non-negative")
         if float(source_contrastive_margin) < 0.0:
             raise ValueError("source_contrastive_margin must be non-negative")
+        value_loss_weight_f = float(value_loss_weight)
+        if not math.isfinite(value_loss_weight_f) or value_loss_weight_f < 0.0:
+            raise ValueError("value_loss_weight must be finite and non-negative")
         shuffle_idx = None
         needs_prompt_ids = (
             float(interaction_distill_weight) > 0.0
@@ -3053,20 +3077,23 @@ class RotAlignKVTranslator(nn.Module):
                 if feature_w_v is not None:
                     diff_v = diff_v * feature_w_v.to(device=pred_v.device, dtype=pred_v.dtype).view(1, -1)
                 if sample_w is None:
-                    loss = diff_k.mean() + diff_v.mean()
+                    loss = diff_k.mean() + value_loss_weight_f * diff_v.mean()
                 else:
                     weights = sample_w.to(device=pred_k.device, dtype=pred_k.dtype).view(-1, 1)
-                    loss = (weights * diff_k).mean() + (weights * diff_v).mean()
+                    loss = (weights * diff_k).mean() + value_loss_weight_f * (weights * diff_v).mean()
                 if float(source_control_weight) > 0.0 and source_control_mode != "none":
                     control_losses: list[torch.Tensor] = []
                     margin_losses: list[torch.Tensor] = []
                     zero = torch.zeros_like(qk)
                     if source_control_mode in {"zero", "zero_and_shuffle"}:
                         ctrl_k, ctrl_v = module_forward(zero, zero, zero, zero)
-                        control_losses.append(weighted_mean(ctrl_k.pow(2)) + weighted_mean(ctrl_v.pow(2)))
+                        control_losses.append(
+                            weighted_mean(ctrl_k.pow(2))
+                            + value_loss_weight_f * weighted_mean(ctrl_v.pow(2))
+                        )
                         if float(source_contrastive_margin) > 0.0:
-                            matched_norm = pred_k.pow(2).mean(dim=-1) + pred_v.pow(2).mean(dim=-1)
-                            ctrl_norm = ctrl_k.pow(2).mean(dim=-1) + ctrl_v.pow(2).mean(dim=-1)
+                            matched_norm = pred_k.pow(2).mean(dim=-1) + value_loss_weight_f * pred_v.pow(2).mean(dim=-1)
+                            ctrl_norm = ctrl_k.pow(2).mean(dim=-1) + value_loss_weight_f * ctrl_v.pow(2).mean(dim=-1)
                             margin_losses.append(
                                 weighted_mean(
                                     F.relu(float(source_contrastive_margin) + ctrl_norm - matched_norm)
@@ -3080,10 +3107,13 @@ class RotAlignKVTranslator(nn.Module):
                             qv.index_select(0, shuffle_idx),
                             pv.index_select(0, shuffle_idx),
                         )
-                        control_losses.append(weighted_mean(ctrl_k.pow(2)) + weighted_mean(ctrl_v.pow(2)))
+                        control_losses.append(
+                            weighted_mean(ctrl_k.pow(2))
+                            + value_loss_weight_f * weighted_mean(ctrl_v.pow(2))
+                        )
                         if float(source_contrastive_margin) > 0.0:
-                            matched_norm = pred_k.pow(2).mean(dim=-1) + pred_v.pow(2).mean(dim=-1)
-                            ctrl_norm = ctrl_k.pow(2).mean(dim=-1) + ctrl_v.pow(2).mean(dim=-1)
+                            matched_norm = pred_k.pow(2).mean(dim=-1) + value_loss_weight_f * pred_v.pow(2).mean(dim=-1)
+                            ctrl_norm = ctrl_k.pow(2).mean(dim=-1) + value_loss_weight_f * ctrl_v.pow(2).mean(dim=-1)
                             margin_losses.append(
                                 weighted_mean(
                                     F.relu(float(source_contrastive_margin) + ctrl_norm - matched_norm)
@@ -3098,12 +3128,12 @@ class RotAlignKVTranslator(nn.Module):
                 logit_pred_v = (pred_v * query).sum(dim=-1)
                 logit_tgt_v = (yv * query).sum(dim=-1)
                 if sample_w is None:
-                    logit_loss = F.mse_loss(logit_pred_k, logit_tgt_k) + F.mse_loss(logit_pred_v, logit_tgt_v)
+                    logit_loss = F.mse_loss(logit_pred_k, logit_tgt_k) + value_loss_weight_f * F.mse_loss(logit_pred_v, logit_tgt_v)
                 else:
                     weights_1d = sample_w.to(device=pred_k.device, dtype=pred_k.dtype)
                     logit_loss = (
                         (weights_1d * (logit_pred_k - logit_tgt_k).pow(2)).mean()
-                        + (weights_1d * (logit_pred_v - logit_tgt_v).pow(2)).mean()
+                        + value_loss_weight_f * (weights_1d * (logit_pred_v - logit_tgt_v).pow(2)).mean()
                     )
                 loss = loss + float(logit_weight) * logit_loss
                 if (
@@ -3118,7 +3148,8 @@ class RotAlignKVTranslator(nn.Module):
                     teacher_logits = teacher_topk_log_probs.to(device=qk.device, dtype=torch.float32)
                     teacher_probs = torch.softmax(teacher_logits, dim=-1)
                     teacher_rows = teacher_topk_output_rows.to(device=qk.device, dtype=torch.float32)
-                    hidden_pred = 0.5 * ((pred_k * query) + (pred_v * query))
+                    hidden_denom = 1.0 + value_loss_weight_f
+                    hidden_pred = ((pred_k * query) + value_loss_weight_f * (pred_v * query)) / hidden_denom
                     student_logits = torch.einsum("nd,nkd->nk", hidden_pred, teacher_rows) / math.sqrt(float(self.d_t))
                     student_log_probs = torch.log_softmax(student_logits, dim=-1)
                     per_sample_kl = torch.sum(
@@ -3132,7 +3163,7 @@ class RotAlignKVTranslator(nn.Module):
                             weights_1d = sample_w.to(device=pred_k.device, dtype=pred_k.dtype)
                             loss = loss + float(prediction_distill_weight) * (weights_1d * per_sample_kl).mean()
                     if float(dynamic_prediction_weight) > 0.0:
-                        context_hidden = 0.5 * ((qk + qv) * query)
+                        context_hidden = ((qk + value_loss_weight_f * qv) * query) / hidden_denom
                         context_logits = torch.einsum("nd,nkd->nk", context_hidden, teacher_rows) / math.sqrt(float(self.d_t))
                         dynamic_teacher_probs = torch.softmax(teacher_logits + context_logits, dim=-1)
                         dynamic_per_sample_kl = torch.sum(
@@ -3180,8 +3211,12 @@ class RotAlignKVTranslator(nn.Module):
                         if prompt_idx.numel() <= 1:
                             continue
                         prompt_idx = prompt_idx.to(device=qk.device)
-                        full_pred = 0.5 * (pred_k[prompt_idx] + pred_v[prompt_idx])
-                        full_tgt = 0.5 * (yk[prompt_idx] + yv[prompt_idx])
+                        full_pred = (
+                            pred_k[prompt_idx] + value_loss_weight_f * pred_v[prompt_idx]
+                        ) / (1.0 + value_loss_weight_f)
+                        full_tgt = (
+                            yk[prompt_idx] + value_loss_weight_f * yv[prompt_idx]
+                        ) / (1.0 + value_loss_weight_f)
                         feat_pred = F.normalize(full_pred, dim=-1)
                         feat_tgt = F.normalize(full_tgt, dim=-1)
                         sim_pred = (feat_pred @ feat_pred.T) / temperature
@@ -4046,6 +4081,19 @@ class RotAlignKVTranslator(nn.Module):
                 raise ValueError(f"Bridge sample weights at layer {layer_idx} must be positive")
             prepared.append(vec)
         self._bridge_sample_weights = prepared
+
+    def set_bridge_zero_residual_masks(self, masks: Sequence[torch.Tensor]) -> None:
+        if len(masks) != self.config.num_tgt_layers:
+            raise ValueError(
+                f"Expected {self.config.num_tgt_layers} bridge zero-residual masks, got {len(masks)}"
+            )
+        prepared: list[torch.Tensor] = []
+        for layer_idx, mask in enumerate(masks):
+            vec = mask.detach().to("cpu", dtype=torch.bool).view(-1)
+            if vec.numel() == 0:
+                raise ValueError(f"Bridge zero-residual mask at layer {layer_idx} must be non-empty")
+            prepared.append(vec)
+        self._bridge_zero_residual_masks = prepared
 
     def set_bridge_sample_prompt_ids(self, sample_prompt_ids: torch.Tensor) -> None:
         prompt_ids = sample_prompt_ids.detach().to("cpu", dtype=torch.long).view(-1)
@@ -5384,6 +5432,7 @@ class RotAlignKVTranslator(nn.Module):
             elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_anchor_tail_module_replace", "bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_query_resampler_replace", "bridge_ridge_qk_dynalign_query_innovation_resampler_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_query_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                 sample_weights = None
                 module_sample_weights = None
+                module_zero_residual_mask = None
                 dynamic_module_weight_modes = {
                     "bridge_ridge_qk_dynalign_dwakd_module_replace",
                     "bridge_ridge_qk_dynalign_likelihood_module_replace",
@@ -5409,6 +5458,12 @@ class RotAlignKVTranslator(nn.Module):
                     and self._bridge_sample_weights is not None
                 ):
                     module_sample_weights = self._bridge_sample_weights[tgt_l].to(device=Xk.device)
+                if (
+                    self.config.quantization_correction
+                    == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+                    and self._bridge_zero_residual_masks is not None
+                ):
+                    module_zero_residual_mask = self._bridge_zero_residual_masks[tgt_l].to(device=Xk.device)
                 if self.config.quantization_correction == "bridge_ridge_qk_projector":
                     if self._bridge_sample_query_features is None:
                         raise ValueError(
@@ -5661,6 +5716,19 @@ class RotAlignKVTranslator(nn.Module):
                             ):
                                 target_k_fit = target_k_fit - base_k
                                 target_v_fit = target_v_fit - base_v
+                                if module_zero_residual_mask is not None:
+                                    zero_mask = module_zero_residual_mask.to(
+                                        device=target_k_fit.device,
+                                        dtype=torch.bool,
+                                    ).view(-1)
+                                    if zero_mask.numel() != target_k_fit.shape[0]:
+                                        raise ValueError(
+                                            "bridge zero-residual mask must align with "
+                                            "calibration samples, got "
+                                            f"{int(zero_mask.numel())} vs {target_k_fit.shape[0]}"
+                                        )
+                                    target_k_fit = target_k_fit.masked_fill(zero_mask.view(-1, 1), 0.0)
+                                    target_v_fit = target_v_fit.masked_fill(zero_mask.view(-1, 1), 0.0)
                             (
                                 module_slots,
                                 module_q,
@@ -5691,6 +5759,7 @@ class RotAlignKVTranslator(nn.Module):
                                 source_control_weight=self.config.innovation_control_weight if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 0.0,
                                 source_control_mode=self.config.innovation_control_mode if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else "none",
                                 source_contrastive_margin=self.config.innovation_contrastive_margin if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 0.0,
+                                value_loss_weight=self.config.innovation_value_loss_weight if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 1.0,
                             )
                             if self.config.quantization_correction in {
                                 "bridge_ridge_qk_dynalign_query_resampler_replace",

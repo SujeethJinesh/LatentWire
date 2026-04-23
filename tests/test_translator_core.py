@@ -4906,6 +4906,85 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_query_innovation_resampler_forw
     assert torch.allclose(captured["sample_weights"], expected_weights)
 
 
+def test_fit_from_pairs_query_innovation_applies_zero_residual_mask_and_value_weight(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        quantization_correction_rank=1,
+        innovation_value_loss_weight=0.0,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+    tr.set_bridge_zero_residual_masks([torch.tensor([False, True, False, True])])
+
+    captured: dict[str, object] = {}
+
+    def fake_bridge_ridge(self, quantized, predicted, target, *, lam, sample_weights=None):
+        del quantized, predicted, target, lam, sample_weights
+        return (
+            torch.zeros(self.d_t, self.d_t, dtype=torch.float32),
+            torch.zeros(self.d_t, self.d_t, dtype=torch.float32),
+            torch.full((self.d_t,), 0.25, dtype=torch.float32),
+        )
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        value_loss_weight=1.0,
+        **kwargs,
+    ):
+        del quantized_k, predicted_k, quantized_v, predicted_v, query_features
+        del target_v, rank, kwargs
+        captured["target_k"] = target_k.detach().cpu().clone()
+        captured["value_loss_weight"] = value_loss_weight
+        return (
+            torch.zeros(self.config.bridge_bank_size, self.d_t, dtype=torch.float32),
+            torch.zeros(self.d_t, 1, dtype=torch.float32),
+            torch.zeros(self.d_t, 1, dtype=torch.float32),
+            torch.zeros(self.d_t, 1, dtype=torch.float32),
+            torch.zeros(1, 1, dtype=torch.float32),
+            torch.zeros(1, self.d_t, dtype=torch.float32),
+            torch.zeros(1, self.d_t, dtype=torch.float32),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_ridge_correction", fake_bridge_ridge)
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+
+    tr.fit_from_pairs([(base, base + 0.5)], [(base * 1.5, base * 2.0)])
+
+    target_k = captured["target_k"]
+    assert isinstance(target_k, torch.Tensor)
+    assert torch.allclose(target_k[1], torch.zeros_like(target_k[1]))
+    assert torch.allclose(target_k[3], torch.zeros_like(target_k[3]))
+    assert not torch.allclose(target_k[0], torch.zeros_like(target_k[0]))
+    assert captured["value_loss_weight"] == 0.0
+
+
 def test_fit_from_pairs_query_innovation_forwards_source_controls(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

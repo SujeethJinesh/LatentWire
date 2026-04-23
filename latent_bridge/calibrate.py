@@ -385,6 +385,24 @@ def parse_args() -> argparse.Namespace:
         help="Prompt-level sample weight for non-target IDs when innovation target weighting is enabled.",
     )
     p.add_argument(
+        "--innovation-target-self-preserve-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Prompt-level sample weight for ids.target_self_repair and a no-op residual "
+            "target on those prompts. Requires --innovation-target-set-json."
+        ),
+    )
+    p.add_argument(
+        "--innovation-value-loss-weight",
+        type=float,
+        default=1.0,
+        help=(
+            "Relative V residual/logit loss weight for query-innovation fitting. "
+            "Use 0.0 for K-only codec screens."
+        ),
+    )
+    p.add_argument(
         "--innovation-control-weight",
         type=float,
         default=0.0,
@@ -496,16 +514,22 @@ def load_prompts(path: str) -> list[str]:
 
 
 def load_innovation_target_ids(path: str) -> set[str]:
+    clean_ids, _ = load_innovation_target_sets(path)
+    return clean_ids
+
+
+def load_innovation_target_sets(path: str) -> tuple[set[str], set[str]]:
     with open(path, "r", encoding="utf-8") as handle:
         payload = json.load(handle)
     ids_payload = payload.get("ids", {}) if isinstance(payload, dict) else {}
     target_ids = ids_payload.get("clean_residual_targets", []) if isinstance(ids_payload, dict) else []
+    preserve_ids = ids_payload.get("target_self_repair", []) if isinstance(ids_payload, dict) else []
     target_set = {str(item) for item in target_ids}
     if not target_set:
         raise ValueError(
             f"{path} does not contain any ids.clean_residual_targets entries"
         )
-    return target_set
+    return target_set, {str(item) for item in preserve_ids}
 
 
 def build_innovation_prompt_weights(
@@ -526,6 +550,44 @@ def build_innovation_prompt_weights(
         else:
             weights.append(float(default_weight))
     return torch.tensor(weights, dtype=torch.float32), matched
+
+
+def build_innovation_prompt_weight_plan(
+    prompt_example_ids: Sequence[set[str]],
+    target_ids: set[str],
+    *,
+    positive_weight: float,
+    default_weight: float,
+    preserve_ids: set[str] | None = None,
+    preserve_weight: float = 0.0,
+) -> tuple[torch.Tensor, int, torch.Tensor, int]:
+    if positive_weight <= 0.0 or default_weight <= 0.0:
+        raise ValueError("innovation prompt weights must be positive")
+    if preserve_weight < 0.0:
+        raise ValueError("innovation target-self preserve weight must be non-negative")
+    preserve_ids = preserve_ids or set()
+    weights: list[float] = []
+    preserve_mask: list[bool] = []
+    matched = 0
+    preserve_matched = 0
+    for ids in prompt_example_ids:
+        if ids & target_ids:
+            weights.append(float(positive_weight))
+            preserve_mask.append(False)
+            matched += 1
+        elif preserve_weight > 0.0 and ids & preserve_ids:
+            weights.append(float(preserve_weight))
+            preserve_mask.append(True)
+            preserve_matched += 1
+        else:
+            weights.append(float(default_weight))
+            preserve_mask.append(False)
+    return (
+        torch.tensor(weights, dtype=torch.float32),
+        matched,
+        torch.tensor(preserve_mask, dtype=torch.bool),
+        preserve_matched,
+    )
 
 
 def _optional_bool_from_arg(value: str) -> bool | None:
@@ -2997,6 +3059,27 @@ def main() -> None:
             "innovation source-control flags require "
             "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
         )
+    if args.innovation_target_self_preserve_weight < 0.0:
+        raise ValueError("--innovation-target-self-preserve-weight must be non-negative")
+    if (
+        args.innovation_target_self_preserve_weight > 0.0
+        and args.innovation_target_set_json is None
+    ):
+        raise ValueError(
+            "--innovation-target-self-preserve-weight requires "
+            "--innovation-target-set-json"
+        )
+    if args.innovation_value_loss_weight < 0.0:
+        raise ValueError("--innovation-value-loss-weight must be non-negative")
+    if (
+        args.innovation_value_loss_weight != 1.0
+        and args.quantization_correction
+        != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+    ):
+        raise ValueError(
+            "--innovation-value-loss-weight requires "
+            "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        )
 
     prompt_records = load_prompt_records(args.calibration_file)
     prompts = [prompt for prompt, _ in prompt_records]
@@ -3284,6 +3367,7 @@ def main() -> None:
         innovation_control_weight=args.innovation_control_weight,
         innovation_control_mode=args.innovation_control_mode,
         innovation_contrastive_margin=args.innovation_contrastive_margin,
+        innovation_value_loss_weight=args.innovation_value_loss_weight,
         learned_fusion_dropout=args.learned_fusion_dropout,
         seed=args.seed,
     )
@@ -3561,12 +3645,24 @@ def main() -> None:
             raise ValueError(
                 "--innovation-target-set-json requires aligned bridge sample prompt IDs"
             )
-        target_ids = load_innovation_target_ids(args.innovation_target_set_json)
-        prompt_weights, matched_prompts = build_innovation_prompt_weights(
+        target_ids, preserve_ids = load_innovation_target_sets(args.innovation_target_set_json)
+        if args.innovation_target_self_preserve_weight > 0.0 and not preserve_ids:
+            raise ValueError(
+                f"{args.innovation_target_set_json} does not contain any "
+                "ids.target_self_repair entries"
+            )
+        (
+            prompt_weights,
+            matched_prompts,
+            prompt_preserve_mask,
+            preserve_matched_prompts,
+        ) = build_innovation_prompt_weight_plan(
             prompt_example_ids,
             target_ids,
             positive_weight=args.innovation_positive_weight,
             default_weight=args.innovation_default_weight,
+            preserve_ids=preserve_ids,
+            preserve_weight=args.innovation_target_self_preserve_weight,
         )
         if matched_prompts == 0:
             raise ValueError(
@@ -3578,11 +3674,24 @@ def main() -> None:
         translator.set_bridge_sample_weights(
             [sample_weights.clone() for _ in range(config.num_tgt_layers)]
         )
+        if args.innovation_target_self_preserve_weight > 0.0:
+            if preserve_matched_prompts == 0:
+                raise ValueError(
+                    "No calibration prompts matched ids.target_self_repair from "
+                    f"{args.innovation_target_set_json}; use a JSONL calibration file "
+                    "with stable example IDs."
+                )
+            sample_preserve_mask = prompt_preserve_mask[sample_prompt_ids]
+            translator.set_bridge_zero_residual_masks(
+                [sample_preserve_mask.clone() for _ in range(config.num_tgt_layers)]
+            )
         print(
             "Built innovation target sample weights: "
             f"matched_prompts={matched_prompts}, samples={int(sample_weights.numel())}, "
             f"default={args.innovation_default_weight:.3f}, "
-            f"positive={args.innovation_positive_weight:.3f}"
+            f"positive={args.innovation_positive_weight:.3f}, "
+            f"target_self_preserve_prompts={preserve_matched_prompts}, "
+            f"target_self_preserve={args.innovation_target_self_preserve_weight:.3f}"
         )
 
     if (

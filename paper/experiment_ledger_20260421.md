@@ -2471,3 +2471,117 @@ Next exact gate:
   `paper/svamp32_next_method_conditional_residual_query_codec_20260423.md`
 - promotion criterion remains `>=2/6` clean residual IDs in matched exact-ID
   scoring before any source-destroying controls
+
+## 2026-04-23: SVAMP32 Target-Self-Preserving K-Only Query Codec
+
+Current paper readiness:
+
+- not ICLR-ready
+- estimated distance: medium-high; the paper still lacks a same-pair
+  source-conditioned positive method beyond the target self-repair floor
+
+Current paper story:
+
+- target self-repair remains a strong decoder-side floor at `14/32`
+- source communication must add conditional residual signal on the six clean
+  C2C-only IDs without losing the target-self-repair IDs
+
+Blocking gap:
+
+- no source-conditioned method has reached `>=2/6` clean residual recoveries
+  under matched exact-ID scoring
+
+Top moves considered:
+
+- target-self-preserving K-only residual query codec. This matters because the
+  previous query-innovation checkpoint had one clean source-necessary ID and
+  value transport looked noisy. It might fail by suppressing the residual too
+  hard or memorizing target-cache behavior. Cost: one calibration plus matched
+  gate sweep. Helps same-pair and reproducibility.
+- actual target-conditioned query-memory variant. This matters because
+  Q-Former/Perceiver/Wyner-Ziv priors point to decoder side information. It
+  might fail from coordinate mismatch or target-cache leakage. Cost:
+  implementation plus calibration. Helps same-pair, interpretability, and
+  efficiency if it works.
+- runtime sidecar/verifier selector around existing rows. This matters for
+  no-harm preservation. It might fail because the sidecar bound already showed
+  the existing row cannot clear the gate. Cost: low. Helps robustness but not
+  enough without a stronger residual row.
+
+Decision:
+
+- implemented and tested the bounded K-only protected-loss variant first
+- did not run zero/shuffle controls because matched exact-ID recovery was
+  `0/6`, below the promotion gate
+
+Code changes:
+
+- `latent_bridge/calibrate.py`
+  - added `--innovation-target-self-preserve-weight`
+  - added `--innovation-value-loss-weight`
+  - expanded `ids.target_self_repair` into no-op residual masks when enabled
+- `latent_bridge/translator.py`
+  - added query-innovation value-loss weighting
+  - added calibration-time zero-residual masks for protected prompts
+- tests added for prompt-weight plans, CLI parsing, zero-residual masking, and
+  value-loss forwarding
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_calibrate_and_ablation.py \
+  tests/test_translator_core.py -q
+```
+
+Result: `216 passed`
+
+Artifacts:
+
+- checkpoint:
+  - `.debug/svamp32_conditional_residual_query_codec_20260423/checkpoints/qwen25_to_qwen3_svamp32_preserve_konly_query_codec_r16_bank16_seed1.pt`
+  - sha256: `a6236dd37c2dd8caa0d3928d644286ce5843ee26ff8f6fb336dcbfd8e6e24eca`
+- matched sweep:
+  - `.debug/svamp32_conditional_residual_query_codec_20260423/preds/preserve_konly_attention_gate_sweep.jsonl`
+  - JSONL sha256: `dc8cf4cb13e210d19ae56462bd741c4043fc237d8e2e7311bd42181aef1fa167`
+  - meta sha256: `091a0ea04cd543a6c321bf7d525fc3ae6e204d18834f95dad3d5114a212499b0`
+- readout:
+  - `results/svamp32_conditional_residual_query_codec_20260423/preserve_konly_attention_clean_targets.json`
+  - sha256: `73256d6e51fbe9e09ef357c1939087c67db821cf8cf6b34f86fb5a90d0edeb11`
+  - `results/svamp32_conditional_residual_query_codec_20260423/preserve_konly_attention_clean_targets.md`
+  - sha256: `0207a238675f8cceca3a7e25f21906d9579a061b9e771fd19ba52e8942201f89`
+- memo:
+  - `paper/svamp32_conditional_residual_query_codec_20260423.md`
+
+Evidence:
+
+- calibration matched all `6` clean residual prompts and all `3`
+  target-self-preserve prompts
+- dynamic token-mixture samples: `1411`
+- average fit quality: K cosine `0.951`, V cosine `0.734`
+- matched readout status: `no_matched_gate_candidate_for_controls`
+- best matched rows: `8/32` at gates `0.05`, `0.12`, `0.15`, `0.17`,
+  `0.20`, and `0.25`
+- clean residual recovered: `0/6` at every gate
+- teacher-only recovered: `1` at every gate, ID `575d7e83d84c1e67`
+- target-self delta: `-6` or `-7` versus the `14/32` target self-repair row
+- numeric extraction coverage: `32/32`
+- exact ordered ID parity: true
+
+Hypothesis update:
+
+- weakened: target-self no-op loss plus K-only value-loss suppression as a
+  sufficient conditional codec
+- killed for now: this bounded protected-loss variant as a same-pair gate
+  candidate
+- still alive: a real target-conditioned memory variant that appends target
+  prior K/V to the query resampler memory instead of only changing losses
+- saturated: further scalar/gate/value-loss screens on the current residual
+  learner unless the architecture changes
+
+Next exact gate:
+
+- implement an isolated opt-in conditional query-memory variant:
+  `[source K/V, target-prior K/V, learned slots]`
+- rerun the same SVAMP32 matched gate and only spend controls if it reaches
+  `>=2/6` clean residual IDs while preserving near-target-self accuracy
