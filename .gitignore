@@ -14,6 +14,7 @@ venv/
 .nfs*
 code-server-*
 *.pt*
+!*.pt.health.json
 quantization/data/local_smoke_tests/hf_cache/
 quantization/data/local_smoke_tests/checkpoints/
 quantization/data/step_1_kv_ptq/local_smoke_tests/hf_cache/

@@ -7,6 +7,10 @@
   active positive clues, and the next stack to test.
 - `matched_competitor_matrix_20260421.md` is the explicit GSM70 comparison
   matrix with missing competitor rows preserved.
+- `gsm8k_contract_artifact_manifest_20260422.md` is the tracked provenance
+  index for the current GSM contract evidence chain: smoke gate, live
+  `dynalign_module_replace_residrank16` row, matched control, larger frozen
+  slice, and the seed-collapse checkpoint-health artifact.
 - `ablation_evidence_ladder_20260421.md` is the telemetry-driven stack
   decision table for toy positives, controls, and blockers.
 - `../results/query_pool_toy_20260421/hub_router_frontier_sweep_20260421.md`

@@ -1,0 +1,164 @@
+{
+  "artifacts": {
+    "larger_slice_campaign_json": "results/gsm8k_contract_campaign_slice128_seed0_20260422/gsm8k_contract_campaign.json",
+    "live_contract_json": "results/gsm8k_contract_residual_rank16_dynalign_20260421/gsm8k_contract_residual_sweep_20260421.json",
+    "matched_control_json": "results/gsm8k_contract_residual_rank16_tokenbasis_20260421/gsm8k_contract_residual_sweep_20260421.json",
+    "seed1_health_json": "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat_seed1.pt.health.json",
+    "smoke_contract_json": "results/gsm8k_smoke_contract_20260421/gsm8k_smoke_contract_20260421.json"
+  },
+  "current_story": {
+    "live_label": "dynalign_module_replace_residrank16",
+    "main_blocker": "seed_stability_and_cross_family_falsification",
+    "status": "same_pair_live_clue"
+  },
+  "date": "2026-04-22",
+  "larger_slice_campaign": {
+    "c2c_accuracy": 0.12857142857142856,
+    "candidate_accuracy_max": 0.11428571428571428,
+    "candidate_accuracy_mean": 0.11428571428571428,
+    "candidate_accuracy_min": 0.11428571428571428,
+    "delta_ci_high_mean": 0.14285714285714285,
+    "delta_ci_low_mean": -0.014285714285714285,
+    "delta_mean_vs_target": 0.05714285714285714,
+    "losses_mean": 2.0,
+    "seeds_completed": [
+      0
+    ],
+    "slice_size": 70,
+    "target_accuracy": 0.05714285714285714,
+    "wins_mean": 6.0
+  },
+  "matched_control": {
+    "accuracy": 0.0625,
+    "checkpoint_path": "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/gsm8k_contract_residual_rank16_tokenbasis_20260421/tokenbasis_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_tokenbasis_replace_cal64_chat.pt",
+    "label": "tokenbasis_replace_residrank16",
+    "numeric_coverage": 32,
+    "paired_vs_target": {
+      "loss": 0,
+      "tie": 32,
+      "win": 0
+    }
+  },
+  "next_exact_gates": [
+    "finish the larger frozen same-pair seed-repeat campaign without non-finite checkpoints",
+    "preserve or beat the old 0.0938 ceiling while keeping full numeric coverage",
+    "run one strict matched cross-family falsification pair before widening benchmarks"
+  ],
+  "same_pair_live_row": {
+    "accuracy": 0.125,
+    "checkpoint_path": "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/gsm8k_contract_residual_rank16_dynalign_20260421/dynalign_module_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat.pt",
+    "label": "dynalign_module_replace_residrank16",
+    "numeric_coverage": 32,
+    "paired_vs_target": {
+      "loss": 0,
+      "tie": 30,
+      "win": 2
+    }
+  },
+  "seed1_health": {
+    "checkpoint_path": "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat_seed1.pt",
+    "first_bad_key": "W_V.8",
+    "nonfinite_keys": [
+      "W_V.8",
+      "quant_proj_V.8",
+      "quant_aux_proj_V.8",
+      "quant_query_resid_V_left.8",
+      "quant_query_resid_V_right.8",
+      "quant_query_aux_resid_V_left.8",
+      "quant_query_aux_resid_V_right.8",
+      "quant_query_module_slots.8"
+    ],
+    "nonfinite_numel": 2381056,
+    "seed": 1,
+    "top_abs_tensors": [
+      {
+        "key": "W_V.8",
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "nonfinite_numel": 131072,
+        "shape": [
+          128,
+          1024
+        ]
+      },
+      {
+        "key": "quant_proj_V.8",
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "nonfinite_numel": 1048576,
+        "shape": [
+          1024,
+          1024
+        ]
+      },
+      {
+        "key": "quant_aux_proj_V.8",
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "nonfinite_numel": 1048576,
+        "shape": [
+          1024,
+          1024
+        ]
+      },
+      {
+        "key": "quant_query_resid_V_left.8",
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "nonfinite_numel": 16384,
+        "shape": [
+          1024,
+          16
+        ]
+      },
+      {
+        "key": "quant_query_resid_V_right.8",
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "nonfinite_numel": 16384,
+        "shape": [
+          16,
+          1024
+        ]
+      },
+      {
+        "key": "quant_query_aux_resid_V_left.8",
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "nonfinite_numel": 16384,
+        "shape": [
+          1024,
+          16
+        ]
+      },
+      {
+        "key": "quant_query_aux_resid_V_right.8",
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "nonfinite_numel": 16384,
+        "shape": [
+          16,
+          1024
+        ]
+      },
+      {
+        "key": "quant_query_module_slots.8",
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "nonfinite_numel": 4096,
+        "shape": [
+          4,
+          1024
+        ]
+      }
+    ]
+  },
+  "smoke_contract": {
+    "all_checks_pass": false,
+    "c2c_accuracy": 0.125,
+    "rotalign_accuracy": 0.0625,
+    "rotalign_numeric_coverage": 28,
+    "slice_size": 32,
+    "target_accuracy": 0.0625
+  }
+}
