@@ -144,3 +144,54 @@ def test_probe_rejects_rows_missing_reference_ids(tmp_path: pathlib.Path) -> Non
         assert "Missing reference IDs" in str(exc)
     else:
         raise AssertionError("expected missing reference ID validation failure")
+
+
+def test_require_exact_artifacts_rejects_subsetted_candidate(tmp_path: pathlib.Path) -> None:
+    target = tmp_path / "target.jsonl"
+    teacher = tmp_path / "teacher.jsonl"
+    candidate = tmp_path / "candidate.jsonl"
+    _write_jsonl(
+        target,
+        [
+            _record("a", method="target_alone", correct=False, index=0),
+            _record("b", method="target_alone", correct=False, index=1),
+        ],
+    )
+    _write_jsonl(
+        teacher,
+        [
+            _record("a", method="c2c", correct=True, index=0),
+            _record("b", method="c2c", correct=True, index=1),
+        ],
+    )
+    _write_jsonl(
+        candidate,
+        [
+            _record("a", method="candidate", correct=True, index=0),
+            _record("b", method="candidate", correct=False, index=1),
+            _record("c", method="candidate", correct=True, index=2),
+        ],
+    )
+
+    try:
+        probe.main(
+            [
+                "--target",
+                f"target=path={target},method=target_alone",
+                "--teacher",
+                f"c2c=path={teacher},method=c2c_generate",
+                "--candidate",
+                f"candidate=path={candidate},method=candidate",
+                "--require-exact-artifacts",
+                "--output-json",
+                str(tmp_path / "probe.json"),
+                "--output-md",
+                str(tmp_path / "probe.md"),
+            ]
+        )
+    except ValueError as exc:
+        assert "Non-exact artifacts" in str(exc)
+        assert "candidate.candidate" in str(exc)
+        assert "artifact_n=3 != reference_n=2" in str(exc)
+    else:
+        raise AssertionError("expected strict artifact validation failure")

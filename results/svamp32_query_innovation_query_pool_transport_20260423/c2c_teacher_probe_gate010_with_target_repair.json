@@ -135,7 +135,7 @@
     {
       "accuracy": 0.4375,
       "artifact_contains_reference_ids": true,
-      "artifact_n": 70,
+      "artifact_n": 32,
       "artifact_prefix_id_parity": true,
       "correct": 14,
       "empty_predictions": 0,
@@ -152,7 +152,7 @@
         "e7dd2efb5ec99a06"
       ],
       "numeric_extraction_coverage": 32,
-      "path": "results/process_repair_holdout_20260421/qwen_svamp70_process_repair_controls_strict_selector_telemetry.jsonl",
+      "path": "results/svamp32_query_innovation_query_pool_transport_20260423/target_self_repair_exact32.jsonl",
       "teacher_only_recovered_count": 3,
       "teacher_only_recovered_ids": [
         "4c84ebf42812703b",
@@ -173,7 +173,7 @@
     {
       "accuracy": 0.3125,
       "artifact_contains_reference_ids": true,
-      "artifact_n": 70,
+      "artifact_n": 32,
       "artifact_prefix_id_parity": true,
       "correct": 10,
       "empty_predictions": 0,
@@ -188,7 +188,7 @@
         "b0b71023ae4d233b"
       ],
       "numeric_extraction_coverage": 32,
-      "path": "results/process_repair_holdout_20260421/qwen_svamp70_process_repair_controls_strict_selector_telemetry.jsonl",
+      "path": "results/svamp32_query_innovation_query_pool_transport_20260423/selected_route_no_repair_exact32.jsonl",
       "teacher_only_recovered_count": 1,
       "teacher_only_recovered_ids": [
         "4d780f825bb8541c"

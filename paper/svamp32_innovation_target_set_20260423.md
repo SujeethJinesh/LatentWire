@@ -59,6 +59,10 @@ gate reports:
   `min_clean_source_necessary`
 - verdict: `no_candidate_passes_target_self_repair_gate`
 
+The target set was regenerated from a strict exact-32 probe. The
+target_self_repair and selected_route_no_repair controls are no longer scored
+by implicitly subsetting the original 70-row repair artifact at promotion time.
+
 ## Top 3 Next Moves
 
 1. C2C-distilled conditional innovation fuser. Train only on the clean residual

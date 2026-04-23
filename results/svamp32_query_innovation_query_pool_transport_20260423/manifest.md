@@ -11,6 +11,7 @@
 - target-self-repair paper gate: `no_candidate_passes_target_self_repair_gate`
 - innovation target-set status: `residual_headroom_available`
 - clean-target paper gate: `no_candidate_passes_target_self_repair_gate`
+- strict provenance: `exact-32 target_self_repair and selected_route_no_repair materialized`
 
 ## Gate Sweep
 
@@ -28,6 +29,8 @@
 - only teacher-only recovered ID: `575d7e83d84c1e67`
 - that teacher-only ID is retained by zero-source, shuffled-source, and source-alone
 - exact ordered ID parity: target / matched / zero-source / shuffled-source all `true`
+- exact repair controls: target_self_repair and selected_route_no_repair are
+  materialized as exact-32 slices from the original 70-row repair artifact
 
 ## Target-Self-Repair Gate
 
@@ -79,13 +82,21 @@
 - `c2c_teacher_probe_gate010.md`
   - sha256: `dfc6b9f4fea867b9a8a5b407c85ffe3c22084dbad5a1774a3762258761eaa0d9`
 - `c2c_teacher_probe_gate010_with_target_repair.json`
-  - sha256: `1967901c0062696eac924c9c30ce0316f89999e5b099c9f06f7ee059eb9b8dbc`
+  - sha256: `f776a6f2433bcdf7be1c593d114eb194e89c7fdde0e2c874daae1b9196acfeae`
 - `c2c_teacher_probe_gate010_with_target_repair.md`
-  - sha256: `b0ae99127d5427a6c83ae1b01121e04c84b99ce57002ec216bc884acba47c2b7`
+  - sha256: `2a7f97a152768cc8bbeb6f645bc73332160bd8d9009cfb070c43305c56f163f9`
 - `paper_gate_gate010_with_target_repair.json`
-  - sha256: `3795cf64ec4eb96cda2cad3d41afa45021727662424a89cd27993cfb78fbb603`
+  - sha256: `6a364762e9b2106d27aed542c137a50b56f8dd9d77fd681b4aaafd2cb1113e32`
 - `paper_gate_gate010_with_target_repair.md`
-  - sha256: `0f6fe50d7ce8f693eea068c3d85ea353969b6cad6f6675f434e0f09f65b2e8c6`
+  - sha256: `a0b846fc31a9379a081e4e3bfa332a007b2e87b189e8f16eac5a2391e5483a1f`
+- `target_self_repair_exact32.jsonl`
+  - sha256: `efd86a9b2cf710b5c42f67ea1d50af2a503d94ca67fee5dcdec36586a5bf2b3a`
+- `target_self_repair_exact32.jsonl.meta.json`
+  - sha256: `0c1ff98e525a49a88fb86e3af5b01304c01094e257c2b7db4882adb4ab5475d7`
+- `selected_route_no_repair_exact32.jsonl`
+  - sha256: `12c98ca9e741a779b32f4c9a5264d729992983211aa11bfe84cf5dcf5de614fd`
+- `selected_route_no_repair_exact32.jsonl.meta.json`
+  - sha256: `3f51c9570c2efe30bc3f9e971db6c40d5f502c36657c27a00d4cea6f57a4f030`
 - `svamp32_innovation_target_set_20260423.json`
   - sha256: `9f9e3faef2a9d7632be65e3ef99e8af8ec2cb0576fa0d4fa926b1f1772daf3f0`
 - `svamp32_innovation_target_set_20260423.md`

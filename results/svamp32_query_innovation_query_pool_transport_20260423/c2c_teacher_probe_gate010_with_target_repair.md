@@ -51,6 +51,6 @@
 - source.t2t: `results/svamp_exactid_baselines32_20260423/text_to_text.jsonl` method `text_to_text`
 - control.zero_source: `results/svamp32_query_innovation_query_pool_transport_20260423/query_pool_transport_gate010_zero_source.jsonl` method `rotalign_kv`
 - control.shuffled_source: `results/svamp32_query_innovation_query_pool_transport_20260423/query_pool_transport_gate010_shuffled_source_salt1.jsonl` method `rotalign_kv`
-- control.target_self_repair: `results/process_repair_holdout_20260421/qwen_svamp70_process_repair_controls_strict_selector_telemetry.jsonl` method `target_self_repair`
-- control.selected_route_no_repair: `results/process_repair_holdout_20260421/qwen_svamp70_process_repair_controls_strict_selector_telemetry.jsonl` method `selected_route_no_repair`
+- control.target_self_repair: `results/svamp32_query_innovation_query_pool_transport_20260423/target_self_repair_exact32.jsonl` method `target_self_repair`
+- control.selected_route_no_repair: `results/svamp32_query_innovation_query_pool_transport_20260423/selected_route_no_repair_exact32.jsonl` method `selected_route_no_repair`
 - candidate.query_pool_matched: `results/svamp32_query_innovation_query_pool_transport_20260423/query_pool_transport_gate010_matched.jsonl` method `rotalign_kv`

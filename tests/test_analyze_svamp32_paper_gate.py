@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+from copy import deepcopy
 
 from scripts import analyze_svamp32_paper_gate as gate
 
@@ -76,6 +77,45 @@ def _probe_payload() -> dict:
                     "candidate_teacher_only_retained_ids": [],
                 },
             },
+        },
+    }
+
+
+def _paper_probe_payload() -> dict:
+    payload = deepcopy(_probe_payload())
+    payload["reference_n"] = 32
+    payload["teacher_only_ids"] = ["a", "b", "c", "d", "e", "f"]
+    for role in ("target_summary", "teacher_summary"):
+        payload[role].update(
+            {
+                "label": role.removesuffix("_summary"),
+                "n": 32,
+                "artifact_n": 32,
+                "exact_ordered_id_parity": True,
+                "numeric_extraction_coverage": 32,
+            }
+        )
+    for group in ("controls", "candidates"):
+        for row in payload[group]:
+            row.update(
+                {
+                    "n": 32,
+                    "artifact_n": 32,
+                    "exact_ordered_id_parity": True,
+                    "numeric_extraction_coverage": 32,
+                }
+            )
+    return payload
+
+
+def _target_set_payload() -> dict:
+    return {
+        "summary": {
+            "required_clean_residual_to_clear_gate_if_preserving_self": 2,
+        },
+        "ids": {
+            "teacher_only": ["a", "b", "c", "d", "e", "f"],
+            "clean_residual_targets": ["e", "f"],
         },
     }
 
@@ -166,6 +206,7 @@ def test_cli_writes_json_and_markdown(tmp_path: pathlib.Path) -> None:
         [
             "--probe-json",
             str(probe_json),
+            "--allow-legacy-gate",
             "--output-json",
             str(output_json),
             "--output-md",
@@ -191,6 +232,7 @@ def test_cli_uses_target_set_default_clean_residual_requirement(tmp_path: pathli
                     "required_clean_residual_to_clear_gate_if_preserving_self": 2,
                 },
                 "ids": {
+                    "teacher_only": ["a", "b", "c", "d", "e", "f"],
                     "clean_residual_targets": ["e", "f"],
                 },
             }
@@ -204,6 +246,7 @@ def test_cli_uses_target_set_default_clean_residual_requirement(tmp_path: pathli
             str(probe_json),
             "--target-set-json",
             str(target_set_json),
+            "--allow-legacy-gate",
             "--output-json",
             str(output_json),
             "--output-md",
@@ -217,3 +260,87 @@ def test_cli_uses_target_set_default_clean_residual_requirement(tmp_path: pathli
     assert payload["passing_candidates"] == ["passes"]
     assert "minimum clean residual C2C-only recovered" in output_md.read_text()
     assert "minimum clean source-necessary recovered" in output_md.read_text()
+
+
+def test_cli_requires_target_set_unless_legacy(tmp_path: pathlib.Path) -> None:
+    probe_json = tmp_path / "probe.json"
+    probe_json.write_text(json.dumps(_probe_payload()), encoding="utf-8")
+
+    try:
+        gate.main(
+            [
+                "--probe-json",
+                str(probe_json),
+                "--output-json",
+                str(tmp_path / "gate.json"),
+                "--output-md",
+                str(tmp_path / "gate.md"),
+            ]
+        )
+    except ValueError as exc:
+        assert "requires --target-set-json" in str(exc)
+    else:
+        raise AssertionError("expected missing target set failure")
+
+
+def test_strict_paper_provenance_rejects_subset_artifact(tmp_path: pathlib.Path) -> None:
+    probe = _paper_probe_payload()
+    probe["controls"][0]["artifact_n"] = 70
+    probe_json = tmp_path / "probe.json"
+    target_set_json = tmp_path / "target_set.json"
+    probe_json.write_text(json.dumps(probe), encoding="utf-8")
+    target_set_json.write_text(json.dumps(_target_set_payload()), encoding="utf-8")
+
+    try:
+        gate.main(
+            [
+                "--probe-json",
+                str(probe_json),
+                "--target-set-json",
+                str(target_set_json),
+                "--output-json",
+                str(tmp_path / "gate.json"),
+                "--output-md",
+                str(tmp_path / "gate.md"),
+            ]
+        )
+    except ValueError as exc:
+        assert "SVAMP32 paper provenance validation failed" in str(exc)
+        assert "control.target_self_repair" in str(exc)
+        assert "artifact_n=70 != reference_n=32" in str(exc)
+    else:
+        raise AssertionError("expected strict provenance failure")
+
+
+def test_strict_paper_provenance_rejects_target_set_mismatch() -> None:
+    target_set_payload = _target_set_payload()
+    target_set_payload["ids"]["teacher_only"] = ["a", "b"]
+
+    try:
+        gate.validate_paper_provenance(
+            _paper_probe_payload(),
+            target_set_payload,
+            expected_n=32,
+            min_numeric_coverage=31,
+        )
+    except ValueError as exc:
+        assert "teacher_only does not match" in str(exc)
+    else:
+        raise AssertionError("expected target-set mismatch failure")
+
+
+def test_strict_paper_provenance_rejects_low_numeric_coverage() -> None:
+    probe = _paper_probe_payload()
+    probe["candidates"][0]["numeric_extraction_coverage"] = 30
+
+    try:
+        gate.validate_paper_provenance(
+            probe,
+            _target_set_payload(),
+            expected_n=32,
+            min_numeric_coverage=31,
+        )
+    except ValueError as exc:
+        assert "numeric_extraction_coverage=30 < 31" in str(exc)
+    else:
+        raise AssertionError("expected numeric coverage failure")

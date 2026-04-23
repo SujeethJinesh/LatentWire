@@ -54,6 +54,13 @@ Updated gate behavior:
   C2C-only recoveries from the target set
 - by default the minimum clean residual and clean source-necessary counts are
   read from `required_clean_residual_to_clear_gate_if_preserving_self`
+- promotion mode now requires `--target-set-json` unless `--allow-legacy-gate`
+  is explicitly set
+- promotion mode validates strict provenance before scoring: exact `32` rows,
+  exact ordered ID parity, exact source artifact size, and numeric extraction
+  coverage at least `31/32`
+- the target_self_repair and selected_route_no_repair rows were materialized as
+  exact-32 slices before regenerating this probe
 
 Applied it to:
 
@@ -78,6 +85,10 @@ controls, so it is not sufficient evidence of source-specific communication.
 With the clean residual target set enabled, query_pool_matched recovers `0/6`
 clean residual C2C-only IDs and `0/6` clean source-necessary IDs. It fails
 `min_clean_residual_recovered` and `min_clean_source_necessary`.
+
+The regenerated probe now has strict exact-artifact provenance for every row.
+The earlier 70-row target_self_repair control is retained only as the source
+artifact for the exact-32 materialized slice.
 
 ## Top 3 Next Moves
 

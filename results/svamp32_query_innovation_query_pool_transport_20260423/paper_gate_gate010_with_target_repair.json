@@ -2,11 +2,21 @@
   "candidates": [
     {
       "candidate_label": "query_pool_matched",
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "clean_residual_retained_by_source_controls_count": 0,
+      "clean_residual_retained_by_source_controls_ids": [],
+      "clean_residual_target_set_present": false,
+      "clean_source_necessary_count": 0,
+      "clean_source_necessary_ids": [],
       "correct": 9,
       "criteria": {
         "beats_target_self_repair": false,
+        "clean_residual_target_set_present": true,
         "max_losses_vs_target": true,
         "max_source_control_retained": true,
+        "min_clean_residual_recovered": true,
+        "min_clean_source_necessary": true,
         "min_correct": false,
         "min_teacher_only": false,
         "min_unique_vs_target_self_repair": false,
@@ -29,6 +39,8 @@
       ],
       "source_control_details": {
         "shuffled_source": {
+          "candidate_clean_residual_retained_count": 0,
+          "candidate_clean_residual_retained_ids": [],
           "candidate_teacher_only_retained_count": 1,
           "candidate_teacher_only_retained_ids": [
             "575d7e83d84c1e67"
@@ -38,6 +50,8 @@
           "present": true
         },
         "zero_source": {
+          "candidate_clean_residual_retained_count": 0,
+          "candidate_clean_residual_retained_ids": [],
           "candidate_teacher_only_retained_count": 1,
           "candidate_teacher_only_retained_ids": [
             "575d7e83d84c1e67"
@@ -60,9 +74,16 @@
       ]
     }
   ],
+  "clean_residual_target_set": {
+    "count": 0,
+    "ids": [],
+    "present": false
+  },
   "config": {
     "max_losses_vs_target": 1,
     "max_source_control_retained": 1,
+    "min_clean_residual_recovered": 0,
+    "min_clean_source_necessary": 0,
     "min_correct": 16,
     "min_delta_vs_target_self": 1,
     "min_teacher_only": 5,

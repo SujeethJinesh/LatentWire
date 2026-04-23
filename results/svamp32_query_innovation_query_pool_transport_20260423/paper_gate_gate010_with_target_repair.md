@@ -13,14 +13,16 @@
 - minimum delta vs target_self_repair: `+1`
 - minimum C2C-only recovered: `5/10`
 - minimum C2C-only unique vs target_self_repair: `2`
+- minimum clean residual C2C-only recovered: `0`
+- minimum clean source-necessary recovered: `0`
 - maximum target losses: `1`
 - maximum retained by any source control: `1`
 
 ## Candidate Decisions
 
-| Candidate | Status | Correct | Delta vs self-repair | C2C-only | Unique vs self-repair | Max source-control retained | Target losses | Failing criteria |
-|---|---|---:|---:|---:|---:|---:|---:|---|
-| query_pool_matched | `fails_paper_gate` | 9/32 | -5 | 1 | 1 | 1 | 1 | min_correct, beats_target_self_repair, min_teacher_only, min_unique_vs_target_self_repair |
+| Candidate | Status | Correct | Delta vs self-repair | C2C-only | Unique vs self-repair | Clean residual | Clean source-necessary | Max source-control retained | Target losses | Failing criteria |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| query_pool_matched | `fails_paper_gate` | 9/32 | -5 | 1 | 1 | 0 | 0 | 1 | 1 | min_correct, beats_target_self_repair, min_teacher_only, min_unique_vs_target_self_repair |
 
 ## Criteria Detail
 
@@ -31,7 +33,12 @@
 - `beats_target_self_repair`: `fail`
 - `min_teacher_only`: `fail`
 - `min_unique_vs_target_self_repair`: `fail`
+- `clean_residual_target_set_present`: `pass`
+- `min_clean_residual_recovered`: `pass`
+- `min_clean_source_necessary`: `pass`
 - `max_losses_vs_target`: `pass`
 - `max_source_control_retained`: `pass`
 - C2C-only unique vs target_self_repair: `575d7e83d84c1e67`
 - C2C-only retained by source controls: `575d7e83d84c1e67`
+- Clean residual C2C-only recovered: none
+- Clean source-necessary C2C-only recovered: none

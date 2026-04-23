@@ -47,7 +47,10 @@ def _as_id_set(row: dict[str, Any], field: str) -> set[str]:
 
 
 def _clean_residual_ids_from_target_set(path: pathlib.Path) -> set[str]:
-    payload = _load_json(path)
+    return _clean_residual_ids_from_target_payload(_load_json(path))
+
+
+def _clean_residual_ids_from_target_payload(payload: dict[str, Any]) -> set[str]:
     return {
         str(value)
         for value in payload.get("ids", {}).get("clean_residual_targets", [])
@@ -55,13 +58,85 @@ def _clean_residual_ids_from_target_set(path: pathlib.Path) -> set[str]:
 
 
 def _min_clean_residual_from_target_set(path: pathlib.Path) -> int:
-    payload = _load_json(path)
+    return _min_clean_residual_from_target_payload(_load_json(path))
+
+
+def _min_clean_residual_from_target_payload(payload: dict[str, Any]) -> int:
     return int(
         payload.get("summary", {}).get(
             "required_clean_residual_to_clear_gate_if_preserving_self",
             0,
         )
     )
+
+
+def _row_provenance_issues(
+    row: dict[str, Any],
+    *,
+    role: str,
+    reference_n: int,
+    min_numeric_coverage: int,
+) -> list[str]:
+    label = str(row.get("label", role))
+    prefix = f"{role}.{label}"
+    issues: list[str] = []
+    if int(row.get("n", -1)) != reference_n:
+        issues.append(f"{prefix}: n={row.get('n')} != reference_n={reference_n}")
+    if int(row.get("artifact_n", -1)) != reference_n:
+        issues.append(
+            f"{prefix}: artifact_n={row.get('artifact_n')} != reference_n={reference_n}"
+        )
+    if not bool(row.get("exact_ordered_id_parity")):
+        issues.append(f"{prefix}: exact_ordered_id_parity=false")
+    if int(row.get("numeric_extraction_coverage", 0)) < min_numeric_coverage:
+        issues.append(
+            f"{prefix}: numeric_extraction_coverage={row.get('numeric_extraction_coverage')} "
+            f"< {min_numeric_coverage}"
+        )
+    return issues
+
+
+def validate_paper_provenance(
+    probe_payload: dict[str, Any],
+    target_set_payload: dict[str, Any],
+    *,
+    expected_n: int,
+    min_numeric_coverage: int,
+) -> None:
+    reference_n = int(probe_payload.get("reference_n", 0))
+    issues: list[str] = []
+    if reference_n != expected_n:
+        issues.append(f"probe.reference_n={reference_n} != expected_n={expected_n}")
+    for role, rows in (
+        ("target", [probe_payload.get("target_summary", {})]),
+        ("teacher", [probe_payload.get("teacher_summary", {})]),
+        ("source", list(probe_payload.get("sources", []))),
+        ("control", list(probe_payload.get("controls", []))),
+        ("candidate", list(probe_payload.get("candidates", []))),
+    ):
+        for row in rows:
+            issues.extend(
+                _row_provenance_issues(
+                    row,
+                    role=role,
+                    reference_n=reference_n,
+                    min_numeric_coverage=min_numeric_coverage,
+                )
+            )
+
+    probe_teacher_only = {str(value) for value in probe_payload.get("teacher_only_ids", [])}
+    target_teacher_only = {
+        str(value) for value in target_set_payload.get("ids", {}).get("teacher_only", [])
+    }
+    clean_residual_ids = _clean_residual_ids_from_target_payload(target_set_payload)
+    if probe_teacher_only != target_teacher_only:
+        issues.append("target_set.ids.teacher_only does not match probe teacher_only_ids")
+    if not clean_residual_ids.issubset(probe_teacher_only):
+        issues.append("target_set clean_residual_targets is not a subset of probe teacher_only_ids")
+    if _min_clean_residual_from_target_payload(target_set_payload) <= 0:
+        issues.append("target_set required clean residual threshold must be positive")
+    if issues:
+        raise ValueError("SVAMP32 paper provenance validation failed: " + "; ".join(issues))
 
 
 def _control_overlap(
@@ -327,6 +402,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--probe-json", required=True)
     parser.add_argument("--target-set-json")
+    parser.add_argument(
+        "--allow-legacy-gate",
+        action="store_true",
+        help="Allow scoring without target-set/provenance validation for old exploratory artifacts.",
+    )
+    parser.add_argument("--expected-n", type=int, default=32)
+    parser.add_argument("--min-numeric-coverage", type=int, default=31)
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
     parser.add_argument("--target-self-label", default=GateConfig.target_self_label)
@@ -361,17 +443,28 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> dict[str, Any]:
     args = parse_args(argv)
     source_controls = tuple(args.source_control_label or GateConfig.source_control_labels)
+    target_set_payload = _load_json(pathlib.Path(args.target_set_json)) if args.target_set_json else None
+    if target_set_payload is None and not args.allow_legacy_gate:
+        raise ValueError("SVAMP32 paper gate requires --target-set-json unless --allow-legacy-gate is set")
+    probe_payload = _load_json(pathlib.Path(args.probe_json))
+    if target_set_payload is not None and not args.allow_legacy_gate:
+        validate_paper_provenance(
+            probe_payload,
+            target_set_payload,
+            expected_n=args.expected_n,
+            min_numeric_coverage=args.min_numeric_coverage,
+        )
     clean_residual_ids = (
-        _clean_residual_ids_from_target_set(pathlib.Path(args.target_set_json))
-        if args.target_set_json
+        _clean_residual_ids_from_target_payload(target_set_payload)
+        if target_set_payload is not None
         else None
     )
     min_clean_residual = (
         int(args.min_clean_residual_recovered)
         if args.min_clean_residual_recovered is not None
         else (
-            _min_clean_residual_from_target_set(pathlib.Path(args.target_set_json))
-            if args.target_set_json
+            _min_clean_residual_from_target_payload(target_set_payload)
+            if target_set_payload is not None
             else GateConfig.min_clean_residual_recovered
         )
     )
@@ -393,7 +486,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         max_source_control_retained=args.max_source_control_retained,
     )
     payload = evaluate_gate(
-        _load_json(pathlib.Path(args.probe_json)),
+        probe_payload,
         config=config,
         clean_residual_ids=clean_residual_ids,
     )

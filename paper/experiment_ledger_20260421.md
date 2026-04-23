@@ -1751,3 +1751,100 @@ Next exact gate:
 - run matched / post-bridge-zero if available / zero-source / shuffled-source
   with at least two salts / target_self_repair
 - run `scripts/analyze_svamp32_paper_gate.py --target-set-json ...`
+
+## 2026-04-23 12:40 PDT — strict SVAMP32 promotion provenance
+
+Paper status:
+
+- not ICLR-ready
+- current story: the clean residual target set is real, but method promotion
+  must fail closed on stale or subsetted artifacts
+- blocking gap: next connector still needs at least two clean source-necessary
+  residual wins, but the gate must first guarantee exact artifact provenance
+
+Top 3 next moves considered:
+
+- strict provenance hardening. This matters because the previous
+  target_self_repair comparator was scored as `n=32` from an `artifact_n=70`
+  source. It might fail by invalidating prior readouts, but the expected
+  evidence is cleaner replay accounting. Cost: low. Helps reproducibility.
+- ID-weighted conditional innovation connector. This matters because it
+  directly attacks the clean residual gate. It might fail by learning an ID or
+  target-cache prior. Cost: medium/high. Helps same-pair and interpretability.
+- full source-necessity control contract. This matters because the existing
+  false positive is control retention. It might fail if not all controls are
+  implemented for the current candidate path. Cost: medium. Helps robustness.
+
+Decision:
+
+- picked strict provenance hardening because it is the promotion precondition
+  for any next method row
+
+What changed:
+
+- added `scripts/materialize_exact_id_slice.py`
+- added `tests/test_materialize_exact_id_slice.py`
+- added `--require-exact-artifacts` to
+  `scripts/analyze_c2c_teacher_innovation.py`
+- made `scripts/analyze_svamp32_paper_gate.py` fail closed by default:
+  `--target-set-json` is required unless `--allow-legacy-gate` is set
+- added strict SVAMP32 paper provenance validation:
+  - `reference_n == expected_n == 32`
+  - every scored row has `n == artifact_n == reference_n`
+  - every scored row has exact ordered ID parity
+  - every scored row has numeric extraction coverage at least `31/32`
+  - target-set `ids.teacher_only` matches probe `teacher_only_ids`
+  - target-set clean residual IDs are a subset of probe teacher-only IDs
+- materialized exact-32 repair-control slices:
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/target_self_repair_exact32.jsonl`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/selected_route_no_repair_exact32.jsonl`
+- regenerated strict-provenance probe and gate artifacts:
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010_with_target_repair.json`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_clean_targets.json`
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_analyze_svamp32_paper_gate.py \
+  tests/test_analyze_c2c_teacher_innovation.py \
+  tests/test_materialize_exact_id_slice.py \
+  tests/test_build_svamp32_innovation_target_set.py -q
+```
+
+Result: `19 passed`
+
+Evidence:
+
+- exact target_self_repair slice:
+  - output `32/32`
+  - source artifact `70` rows
+  - dropped source rows: `38`
+  - exact ordered ID parity: `true`
+- exact selected_route_no_repair slice:
+  - output `32/32`
+  - source artifact `70` rows
+  - dropped source rows: `38`
+  - exact ordered ID parity: `true`
+- strict gate verdict remains:
+  `no_candidate_passes_target_self_repair_gate`
+- query_pool_matched remains saturated:
+  - clean residual recovered: `0/6`
+  - clean source-necessary recovered: `0/6`
+
+Subagent context:
+
+- literature and lateral agents converged on a Wyner-Ziv / Kalman conditional
+  innovation bottleneck with Q-Former/Perceiver-style source queries as the
+  best creative method branch
+- ablation agent promoted union-of-controls clean-source-necessity replay as
+  mandatory for the next candidate
+- audit agent promoted strict gate provenance as the highest-value bounded
+  hardening step
+
+Next exact gate:
+
+- implement the smallest ID-weighted conditional innovation candidate
+- run matched, source-kv-zero, translated-kv-zero if available, two shuffled
+  salts, and target_self_repair
+- score with the strict-provenance SVAMP32 paper gate

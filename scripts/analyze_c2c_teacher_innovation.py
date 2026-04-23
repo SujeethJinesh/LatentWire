@@ -331,6 +331,25 @@ def _load_spec_rows(specs: list[str], reference_ids: list[str]) -> tuple[list[di
     return summaries, rows_by_label
 
 
+def _strict_artifact_issues(
+    rows: list[dict[str, Any]],
+    *,
+    role: str,
+    reference_n: int,
+) -> list[str]:
+    issues: list[str] = []
+    for row in rows:
+        label = str(row["label"])
+        row_issues: list[str] = []
+        if int(row["artifact_n"]) != reference_n:
+            row_issues.append(f"artifact_n={row['artifact_n']} != reference_n={reference_n}")
+        if not bool(row["exact_ordered_id_parity"]):
+            row_issues.append("exact_ordered_id_parity=false")
+        if row_issues:
+            issues.append(f"{role}.{label}: {', '.join(row_issues)}")
+    return issues
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     target_spec = _parse_spec(args.target)
     teacher_spec = _parse_spec(args.teacher)
@@ -396,6 +415,34 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         teacher_correct=teacher_correct,
         teacher_only_ids=teacher_only_ids,
     )
+
+    if args.require_exact_artifacts:
+        strict_issues: list[str] = []
+        strict_issues.extend(
+            _strict_artifact_issues([target_summary], role="target", reference_n=len(reference_ids))
+        )
+        strict_issues.extend(
+            _strict_artifact_issues([teacher_summary], role="teacher", reference_n=len(reference_ids))
+        )
+        strict_issues.extend(
+            _strict_artifact_issues(source_summaries, role="source", reference_n=len(reference_ids))
+        )
+        strict_issues.extend(
+            _strict_artifact_issues(
+                control_summaries_list,
+                role="control",
+                reference_n=len(reference_ids),
+            )
+        )
+        strict_issues.extend(
+            _strict_artifact_issues(
+                candidate_summaries,
+                role="candidate",
+                reference_n=len(reference_ids),
+            )
+        )
+        if strict_issues:
+            raise ValueError("Non-exact artifacts under --require-exact-artifacts: " + "; ".join(strict_issues))
 
     notes: list[str] = []
     statuses = {row["label"]: row["teacher_probe_status"] for row in candidate_summaries}
@@ -471,6 +518,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--candidate", action="append", default=[], help="repeatable label=path=...,method=...")
     parser.add_argument("--min-teacher-only", type=int, default=5)
     parser.add_argument("--require-controls", action="store_true")
+    parser.add_argument(
+        "--require-exact-artifacts",
+        action="store_true",
+        help=(
+            "Reject any row whose source artifact is not exactly the reference "
+            "ID slice in the same order."
+        ),
+    )
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
     return parser.parse_args(argv)

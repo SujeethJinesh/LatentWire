@@ -1,0 +1,15 @@
+{
+  "date": "2026-04-23",
+  "dropped_source_rows": 38,
+  "exact_ordered_id_parity": true,
+  "output_jsonl": "results/svamp32_query_innovation_query_pool_transport_20260423/selected_route_no_repair_exact32.jsonl",
+  "output_n": 32,
+  "output_sha256": "12c98ca9e741a779b32f4c9a5264d729992983211aa11bfe84cf5dcf5de614fd",
+  "reference_jsonl": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl",
+  "reference_n": 32,
+  "reference_sha256": "202336cb3f516afff6633e39f3ecb069a39456f1ff894b47373f93e819e77304",
+  "source_artifact_n": 70,
+  "source_jsonl": "results/process_repair_holdout_20260421/qwen_svamp70_process_repair_controls_strict_selector_telemetry.jsonl",
+  "source_method": "selected_route_no_repair",
+  "source_sha256": "ead131f719e1e35aae8e0ad7888b9c6da960d548f00f288266abdc4b620e23ce"
+}
