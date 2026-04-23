@@ -481,3 +481,27 @@ dependent but not yet reviewer-ready. The next exact gate is a
 validity-preserving shuffled-source mismatch control, likely via a target-safe
 fusion shrinkage/verifier fallback or a learned bottleneck/resampler connector,
 before seed repeats or cross-family widening.
+
+Follow-up target-fallback diagnostic on the same artifacts:
+`results/gsm8k70_source_controls_20260423/seed0/source_control_target_fallback_readout_20260423.md`.
+`scripts/analyze_gsm8k_source_controls.py` now supports a conservative
+`--fallback-nonnumeric-controls-to-target` mode that replaces only empty or
+nonnumeric control outputs with the paired `target_alone` prediction. This is a
+diagnostic safety envelope, not a method claim.
+
+Readout:
+
+- zero_source + target fallback: `4/70`, paired vs target `0` wins / `0`
+  losses / `70` ties, live-win retention `0/6`, numeric coverage `70/70`.
+- shuffled_source_salt0 + target fallback: `4/70`, paired vs target `0` wins /
+  `0` losses / `70` ties, live-win retention `0/6`, numeric coverage `70/70`,
+  source derangement telemetry passes.
+
+This clears the seed-0 diagnostic source-dependence gate: even after giving the
+controls a target-safe fallback, the decisive shuffled-source control remains at
+target level and retains none of the live matched-source wins. It still does not
+clear the paper method gate, because seed stability remains negative and
+nonfinite/target-parity follow-ups dominate. The next exact gate is a symmetric
+target-safe live/control path that preserves the seed-0 lift while making at
+least one additional finite seed positive; otherwise pivot to the learned
+query/resampler connector branch.

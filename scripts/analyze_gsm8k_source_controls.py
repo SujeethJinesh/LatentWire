@@ -51,6 +51,37 @@ def _numeric_coverage(records: list[dict[str, Any]]) -> int:
     )
 
 
+def _needs_numeric_fallback(record: dict[str, Any]) -> bool:
+    prediction = str(record.get("prediction", ""))
+    return not prediction.strip() or not harness._has_numeric_extraction(prediction)
+
+
+def _apply_target_fallback(
+    records: list[dict[str, Any]],
+    target_records: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    target_by_id = _by_id(target_records)
+    patched: list[dict[str, Any]] = []
+    for record in records:
+        row = dict(record)
+        fallback_used = _needs_numeric_fallback(row)
+        row["target_fallback_used"] = bool(fallback_used)
+        if fallback_used:
+            target = target_by_id[str(row["example_id"])]
+            row["original_prediction_before_target_fallback"] = row.get("prediction", "")
+            row["original_correct_before_target_fallback"] = bool(row.get("correct"))
+            row["original_normalized_prediction_before_target_fallback"] = row.get(
+                "normalized_prediction"
+            )
+            row["prediction"] = target.get("prediction", "")
+            row["correct"] = bool(target.get("correct"))
+            if "normalized_prediction" in target:
+                row["normalized_prediction"] = target.get("normalized_prediction")
+            row["target_fallback_method"] = str(target.get("method", "target_alone"))
+        patched.append(row)
+    return patched
+
+
 def _paired_counts(candidate: list[dict[str, Any]], baseline: list[dict[str, Any]]) -> dict[str, int]:
     return harness.paired_vs_baseline(candidate, baseline)
 
@@ -67,6 +98,7 @@ def _telemetry_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
         "source_prompt_control": dict(Counter(str(record.get("source_prompt_control", "missing")) for record in records)),
         "source_kv_control": dict(Counter(str(record.get("source_kv_control", "missing")) for record in records)),
         "translated_kv_control": dict(Counter(str(record.get("translated_kv_control", "missing")) for record in records)),
+        "target_fallback_used": int(sum(int(bool(record.get("target_fallback_used", False))) for record in records)),
         "source_index_telemetry_present": has_source_indices,
         "source_index_deranged": bool(
             has_source_indices
@@ -183,8 +215,8 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         "",
         "## Controls",
         "",
-        "| Row | Correct | Pair vs target | Pair vs live | Live-win retention | Numeric coverage | Deranged |",
-        "|---|---:|---:|---:|---:|---:|---:|",
+        "| Row | Correct | Pair vs target | Pair vs live | Live-win retention | Numeric coverage | Deranged | Target fallback |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for summary in payload["control_summaries"]:
         target_pair = summary["paired_vs_target"]
@@ -195,7 +227,8 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
             f"{live_pair['win']}/{live_pair['loss']}/{live_pair['tie']} | "
             f"{summary.get('live_win_retention_count', 0)}/{summary.get('live_win_count', 0)} | "
             f"{summary['numeric_extraction_coverage']}/{summary['n']} | "
-            f"{summary['telemetry']['source_index_deranged']} |"
+            f"{summary['telemetry']['source_index_deranged']} | "
+            f"{summary['telemetry'].get('target_fallback_used', 0)}/{summary['n']} |"
         )
     lines.extend(["", "## Gate Checks", ""])
     for check in payload["gate"]["checks"]:
@@ -235,6 +268,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         label, path = spec.split("=", 1)
         control_artifacts[label] = path
         control_records = _records_for_method(_read_jsonl(ROOT / path), args.control_method)
+        if args.fallback_nonnumeric_controls_to_target:
+            control_records = _apply_target_fallback(control_records, target_records)
         control_summaries.append(
             _row_summary(
                 label=label,
@@ -248,6 +283,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     payload = {
         "date": str(date.today()),
         "live_label": args.live_label,
+        "control_target_fallback": {
+            "fallback_nonnumeric_controls_to_target": bool(
+                args.fallback_nonnumeric_controls_to_target
+            ),
+            "policy": (
+                "copy target_alone prediction/correctness only for empty or nonnumeric control outputs"
+                if args.fallback_nonnumeric_controls_to_target
+                else "none"
+            ),
+        },
         "artifacts": {
             "baseline_predictions": args.baseline_predictions,
             "live_predictions": args.live_predictions,
@@ -280,6 +325,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--live-label", default="live")
     parser.add_argument("--control", action="append", default=[], help="Control spec label=path. Repeatable.")
     parser.add_argument("--control-method", default="rotalign_kv")
+    parser.add_argument(
+        "--fallback-nonnumeric-controls-to-target",
+        action="store_true",
+        help=(
+            "Conservative diagnostic: for control rows with empty or nonnumeric outputs, "
+            "score the target_alone prediction instead of the invalid control output."
+        ),
+    )
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
     args = parser.parse_args(argv)

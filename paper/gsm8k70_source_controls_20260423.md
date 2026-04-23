@@ -43,28 +43,52 @@ evidence says the live row depends on matched source state, but the control
 surface is too destructive to claim a clean, validity-preserving source
 dependence result.
 
+## Target-Fallback Diagnostic
+
+A conservative target-safe readout was added in
+`scripts/analyze_gsm8k_source_controls.py`: when a control row is empty or
+nonnumeric, score the corresponding `target_alone` prediction instead. This
+does not create a new method result; it gives each no/mismatched-source control
+the strongest target-safe fallback available from the same frozen slice.
+
+Readout:
+`results/gsm8k70_source_controls_20260423/seed0/source_control_target_fallback_readout_20260423.md`
+
+| Row | Correct | Pair vs target | Pair vs live | Live-win retention | Numeric coverage | Target fallback |
+|---|---:|---:|---:|---:|---:|---:|
+| zero_source + target fallback | `4/70` | `0/0/70` | `2/6/62` | `0/6` | `70/70` | `70/70` |
+| shuffled_source_salt0 + target fallback | `4/70` | `0/0/70` | `2/6/62` | `0/6` | `70/70` | `69/70` |
+
+This clears the diagnostic version of the source-dependence gate for seed `0`:
+the decisive shuffled-source control has full id parity, full numeric coverage,
+confirmed source derangement, target-level accuracy, no wins over target, and
+`0/6` live-win retention. The live row still cannot be promoted as a method,
+because the seed-stability gate is unresolved and prior repeats are nonfinite
+or target-negative.
+
 ## Status
 
 - alive: matched-source same-family transfer signal on seed `0`; live wins are
-  not retained by zero or shuffled sources.
+  not retained by zero or shuffled sources, even under target-safe fallback.
 - weakened: the live branch as a reviewer-ready positive method, because the
-  controls are validity-weak and finite seed repeats remain unstable/negative.
+  finite seed repeats remain unstable/negative.
 - saturated: closed-form `W_V.8` ridge/protected-ridge stabilization; it fixes
   nonfinites but collapses to target parity.
 - blocked: paper claim that the method robustly communicates useful source
-  information rather than poisoning or overfitting the target prefix.
+  information across seeds and families.
 
 ## Next Gate
 
-Run a validity-preserving mismatch control before widening benchmarks:
+Do not widen benchmarks yet. The next exact gate is seed stability with a
+validity-preserving target-safe path:
 
-1. Keep matched target prompt and exact GSM8K70 seed-0 slice.
-2. Use shuffled source examples, but add a target-preserving safety path:
-   runtime verifier/fallback, calibrated fusion shrinkage, or learned
-   bottleneck/resampler that cannot catastrophically poison the target prefix.
-3. Require full id parity, no empty predictions, high numeric coverage, and
-   collapse of live-win retention under mismatch.
+1. Keep matched target prompt and exact GSM8K70 slice.
+2. Add a symmetric safety envelope to the live and shuffled rows, preferably a
+   target-safe fusion shrinkage/verifier fallback or learned bottleneck that
+   cannot catastrophically poison the target prefix.
+3. Require the seed-0 live lift to survive that safety path and require the next
+   finite valid seed to become positive, not just target-parity.
 
-If that clears, repeat on the next finite valid seed and then run one strict
-cross-family falsification pair. If it fails, demote the live row to a brittle
-source-state perturbation and pivot to a safer connector method.
+If that clears, run one strict cross-family falsification pair. If it fails,
+demote the current dynalign residual lane to a brittle same-seed source-state
+perturbation and pivot to the learned query/resampler connector.
