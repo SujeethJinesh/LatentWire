@@ -1,0 +1,853 @@
+{
+  "artifacts": {
+    "baseline_predictions": "results/gsm8k_contract_campaign_slice128_seed0_20260422/smoke/gsm8k32_latentwire.jsonl",
+    "candidates": {
+      "gated_live": ".debug/gsm8k70_runtime_accept_fallback_20260423/seed0/dynalign_module_replace_residrank16_accept_selector_gap_min_ge_0p02923736.jsonl",
+      "raw_live": ".debug/gsm8k70_runtime_accept_fallback_20260423/seed0/dynalign_module_replace_residrank16.jsonl"
+    },
+    "controls": {
+      "shuffled_source_salt0": ".debug/gsm8k70_runtime_accept_fallback_20260423/seed0/dynalign_module_replace_residrank16_accept_selector_gap_min_ge_0p02923736/source_controls/shuffled_source_salt0_accept_selector_gap_min_ge_0p02923736.jsonl",
+      "zero_source": ".debug/gsm8k70_runtime_accept_fallback_20260423/seed0/dynalign_module_replace_residrank16_accept_selector_gap_min_ge_0p02923736/source_controls/zero_source_accept_selector_gap_min_ge_0p02923736.jsonl"
+    },
+    "sources": {
+      "seed0": "results/gsm8k70_seed_repeat_full_20260422/seed0/gsm8k32_source_alone.jsonl"
+    }
+  },
+  "candidates": [
+    {
+      "candidate_loss_count_vs_target": 2,
+      "candidate_loss_ids_vs_target": [
+        "0a76adc06405c2b2",
+        "f78c12a251b59dfa"
+      ],
+      "candidate_win_count_vs_target": 6,
+      "candidate_win_ids_vs_target": [
+        "31715a2b361f0b6d",
+        "5731a4ad3129a17c",
+        "645a38303f97c7b7",
+        "c594490a62aaf8d6",
+        "d93e09b5fea44c89",
+        "e100c479d9fc22f8"
+      ],
+      "candidate_win_provenance": [
+        {
+          "candidate": {
+            "correct": true,
+            "normalized_prediction": "60",
+            "prediction": "To prepare the two dishes, Kelian needs to read:\n\n- 20 instructions for the first dish  \n- 2 \u00d7 20 = 40 instructions for the second dish  \n\nSo, the total number of instructions is:\n\n$$\n20 + 40 = 60\n$$\n\n**",
+            "present": true,
+            "score": 0.03144955635070801
+          },
+          "control_correct_labels": [
+            "shuffled_source_salt0",
+            "zero_source"
+          ],
+          "controls": {
+            "shuffled_source_salt0": {
+              "correct": true,
+              "normalized_prediction": "60",
+              "prediction": "To find the total number of instructions, we add the number of instructions for each dish:\n\n- First dish: 20 instructions  \n- Second dish: 2 \u00d7 20 = 40 instructions  \n\nTotal instructions = 20 + 40 = **60**\n\nAnswer: **60**",
+              "present": true,
+              "score": 0.03144955635070801
+            },
+            "zero_source": {
+              "correct": true,
+              "normalized_prediction": "60",
+              "prediction": "To prepare the two dishes, Kelian needs to read:\n\n- 20 instructions for the first dish  \n- 2 \u00d7 20 = 40 instructions for the second dish  \n\nSo, the total number of instructions is:\n\n$$ 20 + 40 = 60 $$\n\n**Answer",
+              "present": true,
+              "score": 0.03144955635070801
+            }
+          },
+          "example_id": "31715a2b361f0b6d",
+          "score_contrast": {
+            "candidate_minus_max_control": 0.0,
+            "candidate_score": 0.03144955635070801,
+            "max_control_score": 0.03144955635070801,
+            "passes_margin": false
+          },
+          "source_correct_labels": [],
+          "sources": {
+            "seed0": {
+              "correct": false,
+              "normalized_prediction": "2",
+              "prediction": "To solve this problem, we need to determine the total number of instructions in both recipes and then add those together.\n\n1. **First Recipe:**\n   - The first recipe has 20 instructions.\n\n2. **Second Recipe:**\n   - The second recipe has twice as many instructions as the first one.",
+              "present": true,
+              "score": null
+            }
+          },
+          "target": {
+            "correct": false,
+            "normalized_prediction": "40",
+            "prediction": "We are told that:\n\n- The first recipe has **20 instructions**.\n- The second recipe has **twice as many instructions as the first**.\n\nSo, the second recipe has:\n\n$$\n2 \\times 20 = 40 \\text{ instructions}\n$$\n\nNow, we are to find",
+            "present": true,
+            "score": null
+          },
+          "text": {
+            "correct": false,
+            "normalized_prediction": "3",
+            "prediction": "1. The first recipe has 20 instructions.\n2. The second recipe has twice as many instructions as the first one, so it has $ 2 \\times 20 = 40 $ instructions.\n3. To prepare both dishes, Kelian needs to read all the instructions from both recipes.\n\nSo",
+            "present": true,
+            "score": null
+          }
+        },
+        {
+          "candidate": {
+            "correct": true,
+            "normalized_prediction": "75",
+            "prediction": "Terry eats 2 yogurts a day, and they are on sale at 4 yogurts for $5.00.  \nOver 30 days, he spends:  \n$$\n2 \\times 30 \\times \\frac{5}{4} = 75 \\text{",
+            "present": true,
+            "score": 0.02884509414434433
+          },
+          "control_correct_labels": [],
+          "controls": {
+            "shuffled_source_salt0": {
+              "correct": false,
+              "normalized_prediction": "6",
+              "prediction": "Terry eats 2 yogurts a day, and they are on sale at 4 yogurts for $5.00.  \nOver 30 days, he spends:  \n$$\n2 \\text{ yogurts/day} \\times 30 \\text{ days} = 6",
+              "present": true,
+              "score": null
+            },
+            "zero_source": {
+              "correct": false,
+              "normalized_prediction": "6",
+              "prediction": "Terry eats 2 yogurts a day, and they are on sale at 4 yogurts for $5.00.  \nOver 30 days, he spends:  \n$$\n2 \\text{ yogurts/day} \\times 30 \\text{ days} = 6",
+              "present": true,
+              "score": null
+            }
+          },
+          "example_id": "5731a4ad3129a17c",
+          "score_contrast": {
+            "candidate_minus_max_control": null,
+            "candidate_score": 0.02884509414434433,
+            "max_control_score": null,
+            "passes_margin": false
+          },
+          "source_correct_labels": [],
+          "sources": {
+            "seed0": {
+              "correct": false,
+              "normalized_prediction": "30",
+              "prediction": "To solve this problem, we need to determine how many yogurts Terry eats in 30 days and then calculate the total cost based on the current price of 4 yogurts for $5.00.\n\nFirst, let's find out how many yogurts Terry eats in 30 days:",
+              "present": true,
+              "score": null
+            }
+          },
+          "target": {
+            "correct": false,
+            "normalized_prediction": "6",
+            "prediction": "Terry eats 2 yogurts a day, and they are on sale at 4 yogurts for $5.00.  \nOver 30 days, he spends:  \n$$\n2 \\text{ yogurts/day} \\times 30 \\text{ days} = 6",
+            "present": true,
+            "score": null
+          },
+          "text": {
+            "correct": false,
+            "normalized_prediction": "1.25",
+            "prediction": "Terry eats 2 yogurts a day.  \nOver 30 days, he eats $ 2 \\times 30 = 60 $ yogurts.  \n\nSince 4 yogurts cost $5.00, 1 yogurt costs $1.25.  \n\nOver",
+            "present": true,
+            "score": null
+          }
+        },
+        {
+          "candidate": {
+            "correct": true,
+            "normalized_prediction": "7",
+            "prediction": "Billy sells DVDs to 3 customers first, then to 2 customers, and then to 3 customers. The total number of DVDs he sells is:\n\n$$\n3 \\times 1 + 2 \\times 2 + 3 \\times 0 = 3 + 4 + 0 = 7",
+            "present": true,
+            "score": 0.02981119602918625
+          },
+          "control_correct_labels": [],
+          "controls": {
+            "shuffled_source_salt0": {
+              "correct": false,
+              "normalized_prediction": "2",
+              "prediction": "Billy sells DVDs to 3 customers first, then to 2 more, and finally to 3 customers who don't buy any DVDs. \n\n- 3 customers buy 1 DVD each: $3 \\times 1 = 3$\n- 2 customers buy 2 DVDs each: $2 \\times",
+              "present": true,
+              "score": 0.02981119602918625
+            },
+            "zero_source": {
+              "correct": false,
+              "normalized_prediction": "3",
+              "prediction": "Billy sells DVDs to 8 customers on Tuesday. The first 3 customers buy 1 DVD each, the next 2 customers buy 2 DVDs each, and the last 3 customers don't buy any DVDs.\n\n- First 3 customers: $ 3 \\times 1 = 3 $ DVDs  \n-",
+              "present": true,
+              "score": null
+            }
+          },
+          "example_id": "645a38303f97c7b7",
+          "score_contrast": {
+            "candidate_minus_max_control": 0.0,
+            "candidate_score": 0.02981119602918625,
+            "max_control_score": 0.02981119602918625,
+            "passes_margin": false
+          },
+          "source_correct_labels": [],
+          "sources": {
+            "seed0": {
+              "correct": false,
+              "normalized_prediction": "2",
+              "prediction": "To solve this problem, let's break it down step by step:\n\n1. **Identify the number of customers and their purchases:**\n   - Billy has 8 customers in total.\n   - The first 3 customers each buy 1 DVD.\n   - The next 2 customers each buy 2 DVDs.",
+              "present": true,
+              "score": null
+            }
+          },
+          "target": {
+            "correct": false,
+            "normalized_prediction": "3",
+            "prediction": "Billy sells DVDs to 8 customers on Tuesday. The first 3 customers buy 1 DVD each, the next 2 customers buy 2 DVDs each, and the last 3 customers don't buy any DVDs.\n\n- First 3 customers: $ 3 \\times 1 = 3 $ DVDs  \n-",
+            "present": true,
+            "score": null
+          },
+          "text": {
+            "correct": false,
+            "normalized_prediction": "3",
+            "prediction": "Billy sold a total of:\n\n- 8 customers on Tuesday  \n- 3 customers who bought 1 DVD each  \n- 2 customers who bought 2 DVDs each  \n- 3 customers who bought no DVDs  \n\nSo, the total number of DVDs sold on Tuesday is:\n\n$$\n8 + (3 \\times",
+            "present": true,
+            "score": null
+          }
+        },
+        {
+          "candidate": {
+            "correct": true,
+            "normalized_prediction": "70",
+            "prediction": "The groomer costs $100, and there is a 30% discount for being a new customer. \n\n$$\n100 \\times (1 - 0.30) = 100 \\times 0.70 = 70\n$$\n\nThe final answer is",
+            "present": true,
+            "score": 0.025610461831092834
+          },
+          "control_correct_labels": [],
+          "controls": {
+            "shuffled_source_salt0": {
+              "correct": false,
+              "normalized_prediction": "0.3",
+              "prediction": "John adopts a dog and takes it to the groomer. The groomer costs $100, and there is a 30% discount for being a new customer. \n\nTo find the cost of the grooming, we calculate:\n\n$$\n100 \\times (1 - 0.30)",
+              "present": true,
+              "score": null
+            },
+            "zero_source": {
+              "correct": false,
+              "normalized_prediction": "0.3",
+              "prediction": "John adopts a dog and takes it to the groomer. The groomer costs $100, and there is a 30% discount for being a new customer. \n\nTo find the cost of the grooming, we calculate:\n\n$$\n100 \\times (1 - 0.30)",
+              "present": true,
+              "score": null
+            }
+          },
+          "example_id": "c594490a62aaf8d6",
+          "score_contrast": {
+            "candidate_minus_max_control": null,
+            "candidate_score": 0.025610461831092834,
+            "max_control_score": null,
+            "passes_margin": false
+          },
+          "source_correct_labels": [],
+          "sources": {
+            "seed0": {
+              "correct": false,
+              "normalized_prediction": "30",
+              "prediction": "To solve this problem, we need to calculate the discounted cost of the grooming service. Here's the step-by-step process:\n\n1. **Identify the original cost**: The original cost of the grooming service is $100.\n\n2. **Determine the discount rate**: The groomer offers a 30",
+              "present": true,
+              "score": null
+            }
+          },
+          "target": {
+            "correct": false,
+            "normalized_prediction": "0.3",
+            "prediction": "John adopts a dog and takes it to the groomer. The groomer costs $100, and there is a 30% discount for being a new customer. \n\nTo find the cost of the grooming, we calculate:\n\n$$\n100 \\times (1 - 0.30)",
+            "present": true,
+            "score": null
+          },
+          "text": {
+            "correct": false,
+            "normalized_prediction": "90",
+            "prediction": "John pays $100 - ($100 * 30%) = $90 for the grooming service.\n\nFinal numeric answer: **$90**.",
+            "present": true,
+            "score": null
+          }
+        },
+        {
+          "candidate": {
+            "correct": true,
+            "normalized_prediction": "100",
+            "prediction": "Since Sarah does 400 pounds of laundry, and she does 4 times as much as David, we can calculate the amount of laundry David does as:\n\n$$\n400 \\div 4 = 100\n$$\n\nThen, since Raymond does half as much as Sarah, we can calculate",
+            "present": true,
+            "score": 0.027988694608211517
+          },
+          "control_correct_labels": [],
+          "controls": {
+            "shuffled_source_salt0": {
+              "correct": false,
+              "normalized_prediction": "4",
+              "prediction": "Let's solve the problem step by step:\n\n- Sarah does 4 times as much laundry as David:  \n  $ 4 \\times \\text{David's laundry} = \\text{Sarah's laundry} $\n\n- Raymond does half as much laundry as Sarah:  \n  $ \\text{Raymond's laundry",
+              "present": true,
+              "score": null
+            },
+            "zero_source": {
+              "correct": false,
+              "normalized_prediction": "4",
+              "prediction": "Let's solve the problem step by step:\n\n- Sarah does 4 times as much laundry as David:  \n  $ 4 \\times \\text{David's laundry} = \\text{Sarah's laundry} $\n\n- Raymond does half as much laundry as Sarah:  \n  $ \\text{Raymond's laundry",
+              "present": true,
+              "score": null
+            }
+          },
+          "example_id": "d93e09b5fea44c89",
+          "score_contrast": {
+            "candidate_minus_max_control": null,
+            "candidate_score": 0.027988694608211517,
+            "max_control_score": null,
+            "passes_margin": false
+          },
+          "source_correct_labels": [],
+          "sources": {
+            "seed0": {
+              "correct": false,
+              "normalized_prediction": "4",
+              "prediction": "To solve this problem, we need to determine the amount of laundry each person does and then find the difference between the two amounts.\n\n1. **Determine Sarah's Laundry:**\n   - Sarah does 4 times as much laundry as David.\n   - Let \\( D \\) represent the amount of laundry David does.",
+              "present": true,
+              "score": null
+            }
+          },
+          "target": {
+            "correct": false,
+            "normalized_prediction": "4",
+            "prediction": "Let's solve the problem step by step:\n\n- Sarah does 4 times as much laundry as David:  \n  $ 4 \\times \\text{David's laundry} = \\text{Sarah's laundry} $\n\n- Raymond does half as much laundry as Sarah:  \n  $ \\text{Raymond's laundry",
+            "present": true,
+            "score": null
+          },
+          "text": {
+            "correct": false,
+            "normalized_prediction": "1",
+            "prediction": "We are given the following information:\n\n- Raymond does **half as much laundry as Sarah**.\n- Sarah does **4 times as much laundry as David**.\n- Sarah does **400 pounds of laundry**.\n\n---\n\n### Step 1: Express Sarah's laundry in terms of David's.\n\nWe are told that",
+            "present": true,
+            "score": null
+          }
+        },
+        {
+          "candidate": {
+            "correct": true,
+            "normalized_prediction": "187",
+            "prediction": "There are $6 \\times 20 = 120$ raspberry clusters and $67$ individual raspberries. \n\nTotal number of raspberries = $120 + 67 = 187$\n\nFinal answer: $\\boxed{187}$",
+            "present": true,
+            "score": 0.03053906559944153
+          },
+          "control_correct_labels": [
+            "shuffled_source_salt0",
+            "zero_source"
+          ],
+          "controls": {
+            "shuffled_source_salt0": {
+              "correct": true,
+              "normalized_prediction": "187",
+              "prediction": "There are $6 \\times 20 = 120$ raspberry clusters and $67$ individual raspberries. \n\nTotal number of raspberries = $120 + 67 = 187$\n\nFinal answer: $\\boxed{187}$",
+              "present": true,
+              "score": 0.03053906559944153
+            },
+            "zero_source": {
+              "correct": true,
+              "normalized_prediction": "187",
+              "prediction": "There are 6 clusters of 20 fruit each, so $6 \\times 20 = 120$ raspberry fruits. There are 67 individual raspberry fruits scattered across the bush. \n\nTotal number of raspberries = $120 + 67 = 187$\n\nFinal",
+              "present": true,
+              "score": 0.03053906559944153
+            }
+          },
+          "example_id": "e100c479d9fc22f8",
+          "score_contrast": {
+            "candidate_minus_max_control": 0.0,
+            "candidate_score": 0.03053906559944153,
+            "max_control_score": 0.03053906559944153,
+            "passes_margin": false
+          },
+          "source_correct_labels": [],
+          "sources": {
+            "seed0": {
+              "correct": false,
+              "normalized_prediction": "6",
+              "prediction": "To solve this problem, we need to calculate the total number of raspberries in the raspberry bush. Here's the step-by-step reasoning:\n\n1. **Calculate the total number of fruit clusters:**\n   - There are 6 clusters of 20 fruit each.\n   - Total number of fruit clusters = 6",
+              "present": true,
+              "score": null
+            }
+          },
+          "target": {
+            "correct": false,
+            "normalized_prediction": "67",
+            "prediction": "A raspberry bush has 6 clusters of 20 fruit each, so the total number of fruit from the clusters is:\n\n$$\n6 \\times 20 = 120\n$$\n\nThere are also 67 individual fruit scattered across the bush.\n\nSo the total number of raspberries is:\n\n$$",
+            "present": true,
+            "score": null
+          },
+          "text": {
+            "correct": false,
+            "normalized_prediction": "18",
+            "prediction": "We are given:\n\n- There are 6 clusters of 20 fruit each.\n- There are 67 individual fruit scattered across the bush.\n\nTo find the total number of raspberries:\n\n$$\n6 \\times 20 + 67 = 120 + 67 = 18",
+            "present": true,
+            "score": null
+          }
+        }
+      ],
+      "candidate_win_text_correct_count": 0,
+      "candidate_win_text_correct_ids": [],
+      "control_overlap": {
+        "shuffled_source_salt0": {
+          "candidate_win_retention_count": 2,
+          "candidate_win_retention_ids": [
+            "31715a2b361f0b6d",
+            "e100c479d9fc22f8"
+          ],
+          "candidate_win_retention_ratio": 0.3333333333333333,
+          "control_correct": 6,
+          "control_correct_candidate_wrong_ids": [
+            "0a76adc06405c2b2",
+            "f78c12a251b59dfa"
+          ],
+          "control_win_count_vs_target": 2,
+          "control_win_ids_vs_target": [
+            "31715a2b361f0b6d",
+            "e100c479d9fc22f8"
+          ]
+        },
+        "zero_source": {
+          "candidate_win_retention_count": 2,
+          "candidate_win_retention_ids": [
+            "31715a2b361f0b6d",
+            "e100c479d9fc22f8"
+          ],
+          "candidate_win_retention_ratio": 0.3333333333333333,
+          "control_correct": 6,
+          "control_correct_candidate_wrong_ids": [
+            "0a76adc06405c2b2",
+            "f78c12a251b59dfa"
+          ],
+          "control_win_count_vs_target": 2,
+          "control_win_ids_vs_target": [
+            "31715a2b361f0b6d",
+            "e100c479d9fc22f8"
+          ]
+        }
+      },
+      "gate_status": "candidate_wins_not_explained_by_source_alone",
+      "label": "raw_live",
+      "oracle": {
+        "target_or_any_source": 5,
+        "target_or_candidate": 10,
+        "target_or_candidate_or_any_source": 11,
+        "target_or_text": 6
+      },
+      "score_contrast": {
+        "evaluated_candidate_win_count": 3,
+        "exact_equal_score_count": 3,
+        "passed_candidate_win_count": 0,
+        "passed_candidate_win_ids": [],
+        "score_field": "selector_gap_min",
+        "score_margin": 0.0
+      },
+      "source_overlap": {
+        "seed0": {
+          "candidate_win_source_correct_count": 0,
+          "candidate_win_source_correct_ids": [],
+          "candidate_win_source_only_overlap_count": 0,
+          "candidate_win_source_only_overlap_ids": [],
+          "candidate_win_source_wrong_count": 6,
+          "source_correct": 1,
+          "source_only_win_count_vs_target": 1,
+          "source_only_win_ids_vs_target": [
+            "83c30ca17156668c"
+          ]
+        }
+      },
+      "summary": {
+        "accuracy": 0.11428571428571428,
+        "correct": 8,
+        "empty_predictions": 0,
+        "label": "raw_live",
+        "n": 70,
+        "numeric_extraction_coverage": 70,
+        "ordered_id_parity": true,
+        "paired_vs_target": {
+          "loss": 2,
+          "tie": 62,
+          "win": 6
+        },
+        "paired_vs_text": {
+          "loss": 2,
+          "tie": 60,
+          "win": 8
+        },
+        "set_id_parity": true
+      }
+    },
+    {
+      "candidate_loss_count_vs_target": 0,
+      "candidate_loss_ids_vs_target": [],
+      "candidate_win_count_vs_target": 3,
+      "candidate_win_ids_vs_target": [
+        "31715a2b361f0b6d",
+        "645a38303f97c7b7",
+        "e100c479d9fc22f8"
+      ],
+      "candidate_win_provenance": [
+        {
+          "candidate": {
+            "correct": true,
+            "normalized_prediction": "60",
+            "prediction": "To prepare the two dishes, Kelian needs to read:\n\n- 20 instructions for the first dish  \n- 2 \u00d7 20 = 40 instructions for the second dish  \n\nSo, the total number of instructions is:\n\n$$\n20 + 40 = 60\n$$\n\n**",
+            "present": true,
+            "score": 0.03144955635070801
+          },
+          "control_correct_labels": [
+            "shuffled_source_salt0",
+            "zero_source"
+          ],
+          "controls": {
+            "shuffled_source_salt0": {
+              "correct": true,
+              "normalized_prediction": "60",
+              "prediction": "To find the total number of instructions, we add the number of instructions for each dish:\n\n- First dish: 20 instructions  \n- Second dish: 2 \u00d7 20 = 40 instructions  \n\nTotal instructions = 20 + 40 = **60**\n\nAnswer: **60**",
+              "present": true,
+              "score": 0.03144955635070801
+            },
+            "zero_source": {
+              "correct": true,
+              "normalized_prediction": "60",
+              "prediction": "To prepare the two dishes, Kelian needs to read:\n\n- 20 instructions for the first dish  \n- 2 \u00d7 20 = 40 instructions for the second dish  \n\nSo, the total number of instructions is:\n\n$$ 20 + 40 = 60 $$\n\n**Answer",
+              "present": true,
+              "score": 0.03144955635070801
+            }
+          },
+          "example_id": "31715a2b361f0b6d",
+          "score_contrast": {
+            "candidate_minus_max_control": 0.0,
+            "candidate_score": 0.03144955635070801,
+            "max_control_score": 0.03144955635070801,
+            "passes_margin": false
+          },
+          "source_correct_labels": [],
+          "sources": {
+            "seed0": {
+              "correct": false,
+              "normalized_prediction": "2",
+              "prediction": "To solve this problem, we need to determine the total number of instructions in both recipes and then add those together.\n\n1. **First Recipe:**\n   - The first recipe has 20 instructions.\n\n2. **Second Recipe:**\n   - The second recipe has twice as many instructions as the first one.",
+              "present": true,
+              "score": null
+            }
+          },
+          "target": {
+            "correct": false,
+            "normalized_prediction": "40",
+            "prediction": "We are told that:\n\n- The first recipe has **20 instructions**.\n- The second recipe has **twice as many instructions as the first**.\n\nSo, the second recipe has:\n\n$$\n2 \\times 20 = 40 \\text{ instructions}\n$$\n\nNow, we are to find",
+            "present": true,
+            "score": null
+          },
+          "text": {
+            "correct": false,
+            "normalized_prediction": "3",
+            "prediction": "1. The first recipe has 20 instructions.\n2. The second recipe has twice as many instructions as the first one, so it has $ 2 \\times 20 = 40 $ instructions.\n3. To prepare both dishes, Kelian needs to read all the instructions from both recipes.\n\nSo",
+            "present": true,
+            "score": null
+          }
+        },
+        {
+          "candidate": {
+            "correct": true,
+            "normalized_prediction": "7",
+            "prediction": "Billy sells DVDs to 3 customers first, then to 2 customers, and then to 3 customers. The total number of DVDs he sells is:\n\n$$\n3 \\times 1 + 2 \\times 2 + 3 \\times 0 = 3 + 4 + 0 = 7",
+            "present": true,
+            "score": 0.02981119602918625
+          },
+          "control_correct_labels": [],
+          "controls": {
+            "shuffled_source_salt0": {
+              "correct": false,
+              "normalized_prediction": "2",
+              "prediction": "Billy sells DVDs to 3 customers first, then to 2 more, and finally to 3 customers who don't buy any DVDs. \n\n- 3 customers buy 1 DVD each: $3 \\times 1 = 3$\n- 2 customers buy 2 DVDs each: $2 \\times",
+              "present": true,
+              "score": 0.02981119602918625
+            },
+            "zero_source": {
+              "correct": false,
+              "normalized_prediction": "3",
+              "prediction": "Billy sells DVDs to 8 customers on Tuesday. The first 3 customers buy 1 DVD each, the next 2 customers buy 2 DVDs each, and the last 3 customers don't buy any DVDs.\n\n- First 3 customers: $ 3 \\times 1 = 3 $ DVDs  \n-",
+              "present": true,
+              "score": null
+            }
+          },
+          "example_id": "645a38303f97c7b7",
+          "score_contrast": {
+            "candidate_minus_max_control": 0.0,
+            "candidate_score": 0.02981119602918625,
+            "max_control_score": 0.02981119602918625,
+            "passes_margin": false
+          },
+          "source_correct_labels": [],
+          "sources": {
+            "seed0": {
+              "correct": false,
+              "normalized_prediction": "2",
+              "prediction": "To solve this problem, let's break it down step by step:\n\n1. **Identify the number of customers and their purchases:**\n   - Billy has 8 customers in total.\n   - The first 3 customers each buy 1 DVD.\n   - The next 2 customers each buy 2 DVDs.",
+              "present": true,
+              "score": null
+            }
+          },
+          "target": {
+            "correct": false,
+            "normalized_prediction": "3",
+            "prediction": "Billy sells DVDs to 8 customers on Tuesday. The first 3 customers buy 1 DVD each, the next 2 customers buy 2 DVDs each, and the last 3 customers don't buy any DVDs.\n\n- First 3 customers: $ 3 \\times 1 = 3 $ DVDs  \n-",
+            "present": true,
+            "score": null
+          },
+          "text": {
+            "correct": false,
+            "normalized_prediction": "3",
+            "prediction": "Billy sold a total of:\n\n- 8 customers on Tuesday  \n- 3 customers who bought 1 DVD each  \n- 2 customers who bought 2 DVDs each  \n- 3 customers who bought no DVDs  \n\nSo, the total number of DVDs sold on Tuesday is:\n\n$$\n8 + (3 \\times",
+            "present": true,
+            "score": null
+          }
+        },
+        {
+          "candidate": {
+            "correct": true,
+            "normalized_prediction": "187",
+            "prediction": "There are $6 \\times 20 = 120$ raspberry clusters and $67$ individual raspberries. \n\nTotal number of raspberries = $120 + 67 = 187$\n\nFinal answer: $\\boxed{187}$",
+            "present": true,
+            "score": 0.03053906559944153
+          },
+          "control_correct_labels": [
+            "shuffled_source_salt0",
+            "zero_source"
+          ],
+          "controls": {
+            "shuffled_source_salt0": {
+              "correct": true,
+              "normalized_prediction": "187",
+              "prediction": "There are $6 \\times 20 = 120$ raspberry clusters and $67$ individual raspberries. \n\nTotal number of raspberries = $120 + 67 = 187$\n\nFinal answer: $\\boxed{187}$",
+              "present": true,
+              "score": 0.03053906559944153
+            },
+            "zero_source": {
+              "correct": true,
+              "normalized_prediction": "187",
+              "prediction": "There are 6 clusters of 20 fruit each, so $6 \\times 20 = 120$ raspberry fruits. There are 67 individual raspberry fruits scattered across the bush. \n\nTotal number of raspberries = $120 + 67 = 187$\n\nFinal",
+              "present": true,
+              "score": 0.03053906559944153
+            }
+          },
+          "example_id": "e100c479d9fc22f8",
+          "score_contrast": {
+            "candidate_minus_max_control": 0.0,
+            "candidate_score": 0.03053906559944153,
+            "max_control_score": 0.03053906559944153,
+            "passes_margin": false
+          },
+          "source_correct_labels": [],
+          "sources": {
+            "seed0": {
+              "correct": false,
+              "normalized_prediction": "6",
+              "prediction": "To solve this problem, we need to calculate the total number of raspberries in the raspberry bush. Here's the step-by-step reasoning:\n\n1. **Calculate the total number of fruit clusters:**\n   - There are 6 clusters of 20 fruit each.\n   - Total number of fruit clusters = 6",
+              "present": true,
+              "score": null
+            }
+          },
+          "target": {
+            "correct": false,
+            "normalized_prediction": "67",
+            "prediction": "A raspberry bush has 6 clusters of 20 fruit each, so the total number of fruit from the clusters is:\n\n$$\n6 \\times 20 = 120\n$$\n\nThere are also 67 individual fruit scattered across the bush.\n\nSo the total number of raspberries is:\n\n$$",
+            "present": true,
+            "score": null
+          },
+          "text": {
+            "correct": false,
+            "normalized_prediction": "18",
+            "prediction": "We are given:\n\n- There are 6 clusters of 20 fruit each.\n- There are 67 individual fruit scattered across the bush.\n\nTo find the total number of raspberries:\n\n$$\n6 \\times 20 + 67 = 120 + 67 = 18",
+            "present": true,
+            "score": null
+          }
+        }
+      ],
+      "candidate_win_text_correct_count": 0,
+      "candidate_win_text_correct_ids": [],
+      "control_overlap": {
+        "shuffled_source_salt0": {
+          "candidate_win_retention_count": 2,
+          "candidate_win_retention_ids": [
+            "31715a2b361f0b6d",
+            "e100c479d9fc22f8"
+          ],
+          "candidate_win_retention_ratio": 0.6666666666666666,
+          "control_correct": 6,
+          "control_correct_candidate_wrong_ids": [],
+          "control_win_count_vs_target": 2,
+          "control_win_ids_vs_target": [
+            "31715a2b361f0b6d",
+            "e100c479d9fc22f8"
+          ]
+        },
+        "zero_source": {
+          "candidate_win_retention_count": 2,
+          "candidate_win_retention_ids": [
+            "31715a2b361f0b6d",
+            "e100c479d9fc22f8"
+          ],
+          "candidate_win_retention_ratio": 0.6666666666666666,
+          "control_correct": 6,
+          "control_correct_candidate_wrong_ids": [],
+          "control_win_count_vs_target": 2,
+          "control_win_ids_vs_target": [
+            "31715a2b361f0b6d",
+            "e100c479d9fc22f8"
+          ]
+        }
+      },
+      "gate_status": "candidate_wins_not_source_specific_under_controls",
+      "label": "gated_live",
+      "oracle": {
+        "target_or_any_source": 5,
+        "target_or_candidate": 7,
+        "target_or_candidate_or_any_source": 8,
+        "target_or_text": 6
+      },
+      "score_contrast": {
+        "evaluated_candidate_win_count": 3,
+        "exact_equal_score_count": 3,
+        "passed_candidate_win_count": 0,
+        "passed_candidate_win_ids": [],
+        "score_field": "selector_gap_min",
+        "score_margin": 0.0
+      },
+      "source_overlap": {
+        "seed0": {
+          "candidate_win_source_correct_count": 0,
+          "candidate_win_source_correct_ids": [],
+          "candidate_win_source_only_overlap_count": 0,
+          "candidate_win_source_only_overlap_ids": [],
+          "candidate_win_source_wrong_count": 3,
+          "source_correct": 1,
+          "source_only_win_count_vs_target": 1,
+          "source_only_win_ids_vs_target": [
+            "83c30ca17156668c"
+          ]
+        }
+      },
+      "summary": {
+        "accuracy": 0.1,
+        "correct": 7,
+        "empty_predictions": 0,
+        "label": "gated_live",
+        "n": 70,
+        "numeric_extraction_coverage": 70,
+        "ordered_id_parity": true,
+        "paired_vs_target": {
+          "loss": 0,
+          "tie": 67,
+          "win": 3
+        },
+        "paired_vs_text": {
+          "loss": 2,
+          "tie": 61,
+          "win": 7
+        },
+        "set_id_parity": true
+      }
+    }
+  ],
+  "date": "2026-04-23",
+  "gate": {
+    "candidate_statuses": {
+      "gated_live": "candidate_wins_not_source_specific_under_controls",
+      "raw_live": "candidate_wins_not_explained_by_source_alone"
+    },
+    "notes": [
+      "At least one candidate has target-relative wins retained by zero/shuffle controls.",
+      "raw_live score contrast `selector_gap_min` kept 0 / 3 target-relative wins at margin 0; exact-equal score wins: 3.",
+      "gated_live score contrast `selector_gap_min` kept 0 / 3 target-relative wins at margin 0; exact-equal score wins: 3."
+    ],
+    "status": "control_retention_blocks_positive_claim"
+  },
+  "oracle": [
+    {
+      "components": {
+        "target": 4
+      },
+      "correct": 4,
+      "label": "target"
+    },
+    {
+      "components": {
+        "target": 4,
+        "text": 2
+      },
+      "correct": 6,
+      "label": "target_or_text"
+    },
+    {
+      "components": {
+        "seed0": 1,
+        "target": 4
+      },
+      "correct": 5,
+      "label": "target_or_source.seed0"
+    }
+  ],
+  "score_field": "selector_gap_min",
+  "score_margin": 0.0,
+  "sources": [
+    {
+      "label": "seed0",
+      "oracle_target_or_source": 5,
+      "summary": {
+        "accuracy": 0.014285714285714285,
+        "correct": 1,
+        "empty_predictions": 0,
+        "label": "seed0",
+        "n": 70,
+        "numeric_extraction_coverage": 70,
+        "ordered_id_parity": true,
+        "paired_vs_target": {
+          "loss": 4,
+          "tie": 65,
+          "win": 1
+        },
+        "paired_vs_text": {
+          "loss": 2,
+          "tie": 67,
+          "win": 1
+        },
+        "set_id_parity": true
+      }
+    }
+  ],
+  "target_summary": {
+    "accuracy": 0.05714285714285714,
+    "correct": 4,
+    "empty_predictions": 0,
+    "label": "target_alone",
+    "n": 70,
+    "numeric_extraction_coverage": 70,
+    "ordered_id_parity": true,
+    "paired_vs_target": {
+      "loss": 0,
+      "tie": 70,
+      "win": 0
+    },
+    "paired_vs_text": {
+      "loss": 2,
+      "tie": 64,
+      "win": 4
+    },
+    "set_id_parity": true
+  },
+  "text_summary": {
+    "accuracy": 0.02857142857142857,
+    "correct": 2,
+    "empty_predictions": 0,
+    "label": "text_to_text",
+    "n": 70,
+    "numeric_extraction_coverage": 70,
+    "ordered_id_parity": true,
+    "paired_vs_target": {
+      "loss": 4,
+      "tie": 64,
+      "win": 2
+    },
+    "paired_vs_text": {
+      "loss": 0,
+      "tie": 70,
+      "win": 0
+    },
+    "set_id_parity": true
+  }
+}

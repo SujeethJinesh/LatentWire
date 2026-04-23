@@ -977,3 +977,33 @@ fresh controls. The next exact gate is a control-contrastive learned innovation
 connector: train a small bottleneck/additive sidecar with matched-source
 positives and zero/shuffled-source penalties, then rerun this same GSM70 seed-0
 source-control gate before any widening.
+
+`paper/gsm8k70_communication_headroom_20260423.md` adds a reusable
+communication-headroom analyzer and reruns the GSM70 seed-0 readout against
+source-alone, raw live, gated live, raw controls, and gated controls. The result
+sharpens the negative decision: source-alone is `1/70`, target-or-source oracle
+is only `5/70`, source-alone explains `0/6` raw live wins and `0/3` gated live
+wins, raw controls retain `3/6` raw live wins, gated controls retain `2/3`
+gated live wins, and `selector_gap_min` score contrast keeps `0/6` raw live
+wins because every raw live win has exactly equal matched/zero/shuffled-source
+scores.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_gsm8k_communication_headroom.py \
+  --baseline-predictions results/gsm8k_contract_campaign_slice128_seed0_20260422/smoke/gsm8k32_latentwire.jsonl \
+  --source seed0=results/gsm8k70_seed_repeat_full_20260422/seed0/gsm8k32_source_alone.jsonl \
+  --candidate raw_live=.debug/gsm8k70_runtime_accept_fallback_20260423/seed0/dynalign_module_replace_residrank16.jsonl \
+  --control zero_source_raw=.debug/gsm8k70_runtime_accept_fallback_20260423/seed0/dynalign_module_replace_residrank16_accept_selector_gap_min_ge_0p02923736/source_controls/zero_source_raw.jsonl \
+  --control shuffled_source_salt0_raw=.debug/gsm8k70_runtime_accept_fallback_20260423/seed0/dynalign_module_replace_residrank16_accept_selector_gap_min_ge_0p02923736/source_controls/shuffled_source_salt0_raw.jsonl \
+  --score-field selector_gap_min \
+  --output-json results/gsm8k70_communication_headroom_20260423/headroom_raw_controls.json \
+  --output-md results/gsm8k70_communication_headroom_20260423/headroom_raw_controls.md
+```
+
+Decision: do not implement delayed selector-gap contrastive gating; it would
+accept zero raw live wins on this decisive surface. The next exact gate is a
+learned source-control-contrastive innovation connector, or a preliminary
+stronger-source slice selection if GSM8K70 source-alone is judged too weak to
+expose real communication.

@@ -74,6 +74,8 @@ def test_residual_sweep_uses_shared_runtime_helpers(tmp_path: pathlib.Path, monk
             str(sweep.DEFAULT_BASES["dynalign_preserve_module_replace"]["quantization_correction"]),
             "--quantization-correction-rank",
             "16",
+            "--bridge-bank-size",
+            str(config.bridge_bank_size),
             "--source-reasoning-mode",
             config.source_reasoning_mode,
             "--device",
