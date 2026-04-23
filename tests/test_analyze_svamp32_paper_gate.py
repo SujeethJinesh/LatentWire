@@ -110,6 +110,52 @@ def test_missing_required_controls_cannot_pass() -> None:
     ]
 
 
+def test_target_set_requires_clean_residual_recovery() -> None:
+    payload = gate.evaluate_gate(
+        _probe_payload(),
+        config=gate.GateConfig(min_clean_residual_recovered=2),
+        clean_residual_ids={"e", "f"},
+    )
+
+    by_label = {row["candidate_label"]: row for row in payload["candidates"]}
+    assert by_label["passes"]["status"] == "passes_paper_gate"
+    assert by_label["passes"]["clean_residual_recovered_ids"] == ["e", "f"]
+    assert by_label["passes"]["clean_source_necessary_ids"] == ["e", "f"]
+    assert by_label["fails_like_query_pool"]["status"] == "fails_paper_gate"
+    assert "min_clean_residual_recovered" in by_label["fails_like_query_pool"]["failing_criteria"]
+
+
+def test_source_controls_can_remove_clean_source_necessary_wins() -> None:
+    payload = gate.evaluate_gate(
+        _probe_payload(),
+        config=gate.GateConfig(
+            min_clean_residual_recovered=2,
+            min_clean_source_necessary=2,
+        ),
+        clean_residual_ids={"d", "e", "f"},
+    )
+
+    by_label = {row["candidate_label"]: row for row in payload["candidates"]}
+    assert by_label["passes"]["clean_residual_recovered_ids"] == ["d", "e", "f"]
+    assert by_label["passes"]["clean_residual_retained_by_source_controls_ids"] == ["d"]
+    assert by_label["passes"]["clean_source_necessary_ids"] == ["e", "f"]
+    assert by_label["passes"]["status"] == "passes_paper_gate"
+    assert by_label["fails_like_query_pool"]["clean_residual_recovered_ids"] == ["d"]
+    assert by_label["fails_like_query_pool"]["clean_source_necessary_ids"] == []
+    assert "min_clean_source_necessary" in by_label["fails_like_query_pool"]["failing_criteria"]
+
+
+def test_clean_residual_requirement_fails_without_target_set() -> None:
+    payload = gate.evaluate_gate(
+        _probe_payload(),
+        config=gate.GateConfig(min_clean_residual_recovered=2),
+    )
+
+    by_label = {row["candidate_label"]: row for row in payload["candidates"]}
+    assert by_label["passes"]["status"] == "fails_paper_gate"
+    assert "clean_residual_target_set_present" in by_label["passes"]["failing_criteria"]
+
+
 def test_cli_writes_json_and_markdown(tmp_path: pathlib.Path) -> None:
     probe_json = tmp_path / "probe.json"
     output_json = tmp_path / "gate.json"
@@ -130,3 +176,44 @@ def test_cli_writes_json_and_markdown(tmp_path: pathlib.Path) -> None:
     assert payload["passing_candidates"] == ["passes"]
     assert json.loads(output_json.read_text())["passing_candidates"] == ["passes"]
     assert "SVAMP32 Target-Self-Repair Paper Gate" in output_md.read_text()
+
+
+def test_cli_uses_target_set_default_clean_residual_requirement(tmp_path: pathlib.Path) -> None:
+    probe_json = tmp_path / "probe.json"
+    target_set_json = tmp_path / "target_set.json"
+    output_json = tmp_path / "gate.json"
+    output_md = tmp_path / "gate.md"
+    probe_json.write_text(json.dumps(_probe_payload()), encoding="utf-8")
+    target_set_json.write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "required_clean_residual_to_clear_gate_if_preserving_self": 2,
+                },
+                "ids": {
+                    "clean_residual_targets": ["e", "f"],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = gate.main(
+        [
+            "--probe-json",
+            str(probe_json),
+            "--target-set-json",
+            str(target_set_json),
+            "--output-json",
+            str(output_json),
+            "--output-md",
+            str(output_md),
+        ]
+    )
+
+    assert payload["config"]["min_clean_residual_recovered"] == 2
+    assert payload["config"]["min_clean_source_necessary"] == 2
+    assert payload["clean_residual_target_set"]["ids"] == ["e", "f"]
+    assert payload["passing_candidates"] == ["passes"]
+    assert "minimum clean residual C2C-only recovered" in output_md.read_text()
+    assert "minimum clean source-necessary recovered" in output_md.read_text()

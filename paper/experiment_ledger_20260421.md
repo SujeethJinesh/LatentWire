@@ -1670,3 +1670,84 @@ Next exact gate:
   at least two salts, and target_self_repair
 - score with `scripts/analyze_c2c_teacher_innovation.py` and
   `scripts/analyze_svamp32_paper_gate.py`
+
+## 2026-04-23 20:20 PT — SVAMP32 clean-target paper gate integration
+
+Paper status:
+
+- not ICLR-ready
+- current story: there is enough clean residual C2C headroom, but candidate
+  promotion must explicitly recover those clean IDs rather than generic
+  C2C-only or target-self-repair IDs
+- blocking gap: a next connector must preserve target_self_repair and add clean
+  source-specific residual wins
+
+What changed:
+
+- extended `scripts/analyze_svamp32_paper_gate.py` with optional
+  `--target-set-json`
+- when a target set is provided, the gate requires clean residual recovery from
+  `ids.clean_residual_targets`
+- default clean-residual and clean-source-necessary thresholds are read from
+  `summary.required_clean_residual_to_clear_gate_if_preserving_self`
+- added tests for clean residual pass/fail, clean source-control subtraction,
+  and missing target-set failure
+- materialized clean-target gate artifacts:
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_clean_targets.json`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_clean_targets.md`
+- updated:
+  - `paper/svamp32_target_self_repair_paper_gate_20260423.md`
+  - `paper/svamp32_innovation_target_set_20260423.md`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/manifest.md`
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_analyze_svamp32_paper_gate.py \
+  tests/test_build_svamp32_innovation_target_set.py \
+  tests/test_analyze_c2c_teacher_innovation.py -q
+```
+
+Result: `11 passed`
+
+Gate command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_svamp32_paper_gate.py \
+  --probe-json results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010_with_target_repair.json \
+  --target-set-json results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json \
+  --output-json results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_clean_targets.json \
+  --output-md results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_clean_targets.md
+```
+
+Evidence:
+
+- clean residual target set size: `6`
+- required clean residual / clean source-necessary wins if preserving
+  target_self_repair: `2`
+- query_pool_matched clean residual recovered: `0/6`
+- query_pool_matched clean source-necessary recovered: `0/6`
+- query_pool_matched added failing criteria:
+  `min_clean_residual_recovered`, `min_clean_source_necessary`
+- verdict remains:
+  `no_candidate_passes_target_self_repair_gate`
+
+Status update:
+
+- alive:
+  - target-self-preserving conditional innovation fuser
+  - Wyner-Ziv / Q-Former query bottleneck using target cache as side
+    information
+- saturated:
+  - current query_pool_transport row; it recovers no clean residual target IDs
+- promoted:
+  - any next candidate must be scored against the clean target set, not only
+    aggregate C2C-only recovery
+
+Next exact gate:
+
+- implement the smallest conditional innovation candidate
+- run matched / post-bridge-zero if available / zero-source / shuffled-source
+  with at least two salts / target_self_repair
+- run `scripts/analyze_svamp32_paper_gate.py --target-set-json ...`

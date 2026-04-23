@@ -24,6 +24,8 @@ class GateConfig:
     min_delta_vs_target_self: int = 1
     min_teacher_only: int = 5
     min_unique_vs_target_self: int = 2
+    min_clean_residual_recovered: int = 0
+    min_clean_source_necessary: int = 0
     max_losses_vs_target: int = 1
     max_source_control_retained: int = 1
 
@@ -44,6 +46,24 @@ def _as_id_set(row: dict[str, Any], field: str) -> set[str]:
     return {str(value) for value in row.get(field, [])}
 
 
+def _clean_residual_ids_from_target_set(path: pathlib.Path) -> set[str]:
+    payload = _load_json(path)
+    return {
+        str(value)
+        for value in payload.get("ids", {}).get("clean_residual_targets", [])
+    }
+
+
+def _min_clean_residual_from_target_set(path: pathlib.Path) -> int:
+    payload = _load_json(path)
+    return int(
+        payload.get("summary", {}).get(
+            "required_clean_residual_to_clear_gate_if_preserving_self",
+            0,
+        )
+    )
+
+
 def _control_overlap(
     probe_payload: dict[str, Any],
     candidate_label: str,
@@ -61,6 +81,7 @@ def evaluate_candidate(
     candidate: dict[str, Any],
     *,
     controls: dict[str, dict[str, Any]],
+    clean_residual_ids: set[str] | None,
     config: GateConfig,
 ) -> dict[str, Any]:
     label = str(candidate["label"])
@@ -72,10 +93,14 @@ def evaluate_candidate(
     )
     candidate_teacher_ids = _as_id_set(candidate, "teacher_only_recovered_ids")
     unique_vs_target_self = candidate_teacher_ids - target_self_teacher_ids
+    clean_residual_target_set_present = clean_residual_ids is not None
+    clean_residual_id_set = clean_residual_ids or set()
+    clean_residual_recovered = candidate_teacher_ids & clean_residual_id_set
 
     source_control_details: dict[str, dict[str, Any]] = {}
     max_source_retained = 0
     retained_by_source_controls: set[str] = set()
+    clean_retained_by_source_controls: set[str] = set()
     missing_source_controls: list[str] = []
     for control_label in config.source_control_labels:
         overlap = _control_overlap(probe_payload, label, control_label)
@@ -87,14 +112,19 @@ def evaluate_candidate(
         retained_count = int(overlap.get("candidate_teacher_only_retained_count", len(retained)))
         max_source_retained = max(max_source_retained, retained_count)
         retained_by_source_controls.update(retained)
+        clean_retained = retained & clean_residual_id_set
+        clean_retained_by_source_controls.update(clean_retained)
         source_control_details[control_label] = {
             "candidate_teacher_only_retained_count": retained_count,
             "candidate_teacher_only_retained_ids": sorted(retained),
+            "candidate_clean_residual_retained_count": len(clean_retained),
+            "candidate_clean_residual_retained_ids": sorted(clean_retained),
             "control_present": control_present,
             "overlap_present": overlap_present,
             "present": control_present and overlap_present,
         }
 
+    clean_source_necessary = clean_residual_recovered - clean_retained_by_source_controls
     correct = int(candidate.get("correct", 0))
     losses_vs_target = int(candidate.get("losses_vs_target_count", 0))
     criteria = {
@@ -105,6 +135,19 @@ def evaluate_candidate(
         "min_teacher_only": len(candidate_teacher_ids) >= config.min_teacher_only,
         "min_unique_vs_target_self_repair": (
             len(unique_vs_target_self) >= config.min_unique_vs_target_self
+        ),
+        "clean_residual_target_set_present": (
+            clean_residual_target_set_present
+            or (
+                config.min_clean_residual_recovered <= 0
+                and config.min_clean_source_necessary <= 0
+            )
+        ),
+        "min_clean_residual_recovered": (
+            len(clean_residual_recovered) >= config.min_clean_residual_recovered
+        ),
+        "min_clean_source_necessary": (
+            len(clean_source_necessary) >= config.min_clean_source_necessary
         ),
         "max_losses_vs_target": losses_vs_target <= config.max_losses_vs_target,
         "max_source_control_retained": (
@@ -122,6 +165,16 @@ def evaluate_candidate(
         "teacher_only_recovered_ids": sorted(candidate_teacher_ids),
         "unique_vs_target_self_repair_count": len(unique_vs_target_self),
         "unique_vs_target_self_repair_ids": sorted(unique_vs_target_self),
+        "clean_residual_recovered_count": len(clean_residual_recovered),
+        "clean_residual_recovered_ids": sorted(clean_residual_recovered),
+        "clean_residual_retained_by_source_controls_count": len(
+            clean_retained_by_source_controls
+        ),
+        "clean_residual_retained_by_source_controls_ids": sorted(
+            clean_retained_by_source_controls
+        ),
+        "clean_source_necessary_count": len(clean_source_necessary),
+        "clean_source_necessary_ids": sorted(clean_source_necessary),
         "retained_by_source_controls_count": len(retained_by_source_controls),
         "retained_by_source_controls_ids": sorted(retained_by_source_controls),
         "max_source_control_retained_count": max_source_retained,
@@ -129,16 +182,28 @@ def evaluate_candidate(
         "criteria": criteria,
         "failing_criteria": failing,
         "target_self_repair_present": target_self_present,
+        "clean_residual_target_set_present": clean_residual_target_set_present,
         "missing_source_control_labels": missing_source_controls,
         "source_control_details": source_control_details,
     }
 
 
-def evaluate_gate(probe_payload: dict[str, Any], *, config: GateConfig) -> dict[str, Any]:
+def evaluate_gate(
+    probe_payload: dict[str, Any],
+    *,
+    config: GateConfig,
+    clean_residual_ids: set[str] | None = None,
+) -> dict[str, Any]:
     controls = _rows_by_label(probe_payload.get("controls", []))
     candidate_rows = list(probe_payload.get("candidates", []))
     candidates = [
-        evaluate_candidate(probe_payload, row, controls=controls, config=config)
+        evaluate_candidate(
+            probe_payload,
+            row,
+            controls=controls,
+            clean_residual_ids=clean_residual_ids,
+            config=config,
+        )
         for row in candidate_rows
     ]
     passing = [row["candidate_label"] for row in candidates if row["status"] == "passes_paper_gate"]
@@ -154,8 +219,15 @@ def evaluate_gate(probe_payload: dict[str, Any], *, config: GateConfig) -> dict[
             "min_delta_vs_target_self": config.min_delta_vs_target_self,
             "min_teacher_only": config.min_teacher_only,
             "min_unique_vs_target_self": config.min_unique_vs_target_self,
+            "min_clean_residual_recovered": config.min_clean_residual_recovered,
+            "min_clean_source_necessary": config.min_clean_source_necessary,
             "max_losses_vs_target": config.max_losses_vs_target,
             "max_source_control_retained": config.max_source_control_retained,
+        },
+        "clean_residual_target_set": {
+            "present": clean_residual_ids is not None,
+            "count": len(clean_residual_ids or set()),
+            "ids": sorted(clean_residual_ids or set()),
         },
         "reference": {
             "target_correct": int(probe_payload.get("target_summary", {}).get("correct", 0)),
@@ -191,23 +263,27 @@ def write_markdown(payload: dict[str, Any], output_md: pathlib.Path) -> None:
         f"- minimum delta vs target_self_repair: `+{payload['config']['min_delta_vs_target_self']}`",
         f"- minimum C2C-only recovered: `{payload['config']['min_teacher_only']}/{payload['reference']['teacher_only_count']}`",
         f"- minimum C2C-only unique vs target_self_repair: `{payload['config']['min_unique_vs_target_self']}`",
+        f"- minimum clean residual C2C-only recovered: `{payload['config']['min_clean_residual_recovered']}`",
+        f"- minimum clean source-necessary recovered: `{payload['config']['min_clean_source_necessary']}`",
         f"- maximum target losses: `{payload['config']['max_losses_vs_target']}`",
         f"- maximum retained by any source control: `{payload['config']['max_source_control_retained']}`",
         "",
         "## Candidate Decisions",
         "",
-        "| Candidate | Status | Correct | Delta vs self-repair | C2C-only | Unique vs self-repair | Max source-control retained | Target losses | Failing criteria |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---|",
+        "| Candidate | Status | Correct | Delta vs self-repair | C2C-only | Unique vs self-repair | Clean residual | Clean source-necessary | Max source-control retained | Target losses | Failing criteria |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for row in payload["candidates"]:
         lines.append(
-            "| {candidate} | `{status}` | {correct}/32 | {delta:+d} | {teacher_only} | {unique} | {retained} | {losses} | {failing} |".format(
+            "| {candidate} | `{status}` | {correct}/32 | {delta:+d} | {teacher_only} | {unique} | {clean} | {source_necessary} | {retained} | {losses} | {failing} |".format(
                 candidate=row["candidate_label"],
                 status=row["status"],
                 correct=int(row["correct"]),
                 delta=int(row["delta_vs_target_self_repair"]),
                 teacher_only=int(row["teacher_only_recovered_count"]),
                 unique=int(row["unique_vs_target_self_repair_count"]),
+                clean=int(row["clean_residual_recovered_count"]),
+                source_necessary=int(row["clean_source_necessary_count"]),
                 retained=int(row["max_source_control_retained_count"]),
                 losses=int(row["losses_vs_target_count"]),
                 failing=", ".join(row["failing_criteria"]) or "none",
@@ -230,6 +306,18 @@ def write_markdown(payload: dict[str, Any], output_md: pathlib.Path) -> None:
             if row["retained_by_source_controls_ids"]
             else "- C2C-only retained by source controls: none"
         )
+        lines.append(
+            "- Clean residual C2C-only recovered: "
+            + ", ".join(f"`{item}`" for item in row["clean_residual_recovered_ids"])
+            if row["clean_residual_recovered_ids"]
+            else "- Clean residual C2C-only recovered: none"
+        )
+        lines.append(
+            "- Clean source-necessary C2C-only recovered: "
+            + ", ".join(f"`{item}`" for item in row["clean_source_necessary_ids"])
+            if row["clean_source_necessary_ids"]
+            else "- Clean source-necessary C2C-only recovered: none"
+        )
         lines.append("")
     output_md.parent.mkdir(parents=True, exist_ok=True)
     output_md.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
@@ -238,6 +326,7 @@ def write_markdown(payload: dict[str, Any], output_md: pathlib.Path) -> None:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--probe-json", required=True)
+    parser.add_argument("--target-set-json")
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
     parser.add_argument("--target-self-label", default=GateConfig.target_self_label)
@@ -254,6 +343,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=int,
         default=GateConfig.min_unique_vs_target_self,
     )
+    parser.add_argument("--min-clean-residual-recovered", type=int, default=None)
+    parser.add_argument("--min-clean-source-necessary", type=int, default=None)
     parser.add_argument(
         "--max-losses-vs-target",
         type=int,
@@ -270,6 +361,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> dict[str, Any]:
     args = parse_args(argv)
     source_controls = tuple(args.source_control_label or GateConfig.source_control_labels)
+    clean_residual_ids = (
+        _clean_residual_ids_from_target_set(pathlib.Path(args.target_set_json))
+        if args.target_set_json
+        else None
+    )
+    min_clean_residual = (
+        int(args.min_clean_residual_recovered)
+        if args.min_clean_residual_recovered is not None
+        else (
+            _min_clean_residual_from_target_set(pathlib.Path(args.target_set_json))
+            if args.target_set_json
+            else GateConfig.min_clean_residual_recovered
+        )
+    )
+    min_clean_source_necessary = (
+        int(args.min_clean_source_necessary)
+        if args.min_clean_source_necessary is not None
+        else min_clean_residual
+    )
     config = GateConfig(
         target_self_label=args.target_self_label,
         source_control_labels=source_controls,
@@ -277,10 +387,16 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         min_delta_vs_target_self=args.min_delta_vs_target_self,
         min_teacher_only=args.min_teacher_only,
         min_unique_vs_target_self=args.min_unique_vs_target_self,
+        min_clean_residual_recovered=min_clean_residual,
+        min_clean_source_necessary=min_clean_source_necessary,
         max_losses_vs_target=args.max_losses_vs_target,
         max_source_control_retained=args.max_source_control_retained,
     )
-    payload = evaluate_gate(_load_json(pathlib.Path(args.probe_json)), config=config)
+    payload = evaluate_gate(
+        _load_json(pathlib.Path(args.probe_json)),
+        config=config,
+        clean_residual_ids=clean_residual_ids,
+    )
     output_json = pathlib.Path(args.output_json)
     output_json.parent.mkdir(parents=True, exist_ok=True)
     output_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

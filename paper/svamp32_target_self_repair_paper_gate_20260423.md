@@ -48,6 +48,13 @@ paper threshold:
 Missing target_self_repair or missing source-control overlap is treated as a
 gate failure, not as a zero-count control.
 
+Updated gate behavior:
+
+- if `--target-set-json` is provided, the gate also requires clean residual
+  C2C-only recoveries from the target set
+- by default the minimum clean residual and clean source-necessary counts are
+  read from `required_clean_residual_to_clear_gate_if_preserving_self`
+
 Applied it to:
 
 - `results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010_with_target_repair.json`
@@ -55,6 +62,8 @@ Applied it to:
 Gate result:
 
 - `no_candidate_passes_target_self_repair_gate`
+- clean-target gate result:
+  `no_candidate_passes_target_self_repair_gate`
 
 ## Evidence
 
@@ -65,6 +74,10 @@ Gate result:
 The only matched C2C-only recovered ID is `575d7e83d84c1e67`. It is unique
 versus target_self_repair but retained by both zero-source and shuffled-source
 controls, so it is not sufficient evidence of source-specific communication.
+
+With the clean residual target set enabled, query_pool_matched recovers `0/6`
+clean residual C2C-only IDs and `0/6` clean source-necessary IDs. It fails
+`min_clean_residual_recovered` and `min_clean_source_necessary`.
 
 ## Top 3 Next Moves
 

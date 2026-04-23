@@ -48,6 +48,17 @@ If a connector preserves the `14/32` target_self_repair row, it only needs `2`
 clean residual C2C-only wins to satisfy the current hard gate, and the oracle
 target_self_repair plus C2C-teacher ceiling is `21/32`.
 
+The paper gate now accepts this target-set artifact directly via
+`--target-set-json` and requires clean residual recovery when scoring a
+candidate. On the existing query_pool_transport row, the stricter clean-target
+gate reports:
+
+- clean residual recovered: `0/6`
+- clean source-necessary recovered: `0/6`
+- added failing criteria: `min_clean_residual_recovered`,
+  `min_clean_source_necessary`
+- verdict: `no_candidate_passes_target_self_repair_gate`
+
 ## Top 3 Next Moves
 
 1. C2C-distilled conditional innovation fuser. Train only on the clean residual

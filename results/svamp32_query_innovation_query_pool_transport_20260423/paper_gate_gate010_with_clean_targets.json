@@ -1,0 +1,116 @@
+{
+  "candidates": [
+    {
+      "candidate_label": "query_pool_matched",
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "clean_residual_retained_by_source_controls_count": 0,
+      "clean_residual_retained_by_source_controls_ids": [],
+      "clean_residual_target_set_present": true,
+      "clean_source_necessary_count": 0,
+      "clean_source_necessary_ids": [],
+      "correct": 9,
+      "criteria": {
+        "beats_target_self_repair": false,
+        "clean_residual_target_set_present": true,
+        "max_losses_vs_target": true,
+        "max_source_control_retained": true,
+        "min_clean_residual_recovered": false,
+        "min_clean_source_necessary": false,
+        "min_correct": false,
+        "min_teacher_only": false,
+        "min_unique_vs_target_self_repair": false,
+        "source_controls_present": true,
+        "target_self_repair_present": true
+      },
+      "delta_vs_target_self_repair": -5,
+      "failing_criteria": [
+        "min_correct",
+        "beats_target_self_repair",
+        "min_teacher_only",
+        "min_unique_vs_target_self_repair",
+        "min_clean_residual_recovered",
+        "min_clean_source_necessary"
+      ],
+      "losses_vs_target_count": 1,
+      "max_source_control_retained_count": 1,
+      "missing_source_control_labels": [],
+      "retained_by_source_controls_count": 1,
+      "retained_by_source_controls_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "source_control_details": {
+        "shuffled_source": {
+          "candidate_clean_residual_retained_count": 0,
+          "candidate_clean_residual_retained_ids": [],
+          "candidate_teacher_only_retained_count": 1,
+          "candidate_teacher_only_retained_ids": [
+            "575d7e83d84c1e67"
+          ],
+          "control_present": true,
+          "overlap_present": true,
+          "present": true
+        },
+        "zero_source": {
+          "candidate_clean_residual_retained_count": 0,
+          "candidate_clean_residual_retained_ids": [],
+          "candidate_teacher_only_retained_count": 1,
+          "candidate_teacher_only_retained_ids": [
+            "575d7e83d84c1e67"
+          ],
+          "control_present": true,
+          "overlap_present": true,
+          "present": true
+        }
+      },
+      "status": "fails_paper_gate",
+      "target_self_repair_correct": 14,
+      "target_self_repair_present": true,
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "unique_vs_target_self_repair_count": 1,
+      "unique_vs_target_self_repair_ids": [
+        "575d7e83d84c1e67"
+      ]
+    }
+  ],
+  "clean_residual_target_set": {
+    "count": 6,
+    "ids": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "e3ab8666238a289e"
+    ],
+    "present": true
+  },
+  "config": {
+    "max_losses_vs_target": 1,
+    "max_source_control_retained": 1,
+    "min_clean_residual_recovered": 2,
+    "min_clean_source_necessary": 2,
+    "min_correct": 16,
+    "min_delta_vs_target_self": 1,
+    "min_teacher_only": 5,
+    "min_unique_vs_target_self": 2,
+    "source_control_labels": [
+      "zero_source",
+      "shuffled_source"
+    ],
+    "target_self_label": "target_self_repair"
+  },
+  "date": "2026-04-23",
+  "passing_candidates": [],
+  "reference": {
+    "target_correct": 8,
+    "target_self_repair_correct": 14,
+    "target_self_repair_teacher_only": 3,
+    "teacher_correct": 16,
+    "teacher_only_count": 10
+  },
+  "status": "no_candidate_passes_target_self_repair_gate"
+}

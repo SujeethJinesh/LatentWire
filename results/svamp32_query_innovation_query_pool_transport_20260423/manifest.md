@@ -10,6 +10,7 @@
 - result: `candidate_teacher_recovery_explained_by_controls`
 - target-self-repair paper gate: `no_candidate_passes_target_self_repair_gate`
 - innovation target-set status: `residual_headroom_available`
+- clean-target paper gate: `no_candidate_passes_target_self_repair_gate`
 
 ## Gate Sweep
 
@@ -45,6 +46,16 @@
 - target_self_repair plus C2C teacher oracle: `21/32`
 - required clean residual wins if preserving target_self_repair: `2`
 
+## Clean-Target Paper Gate
+
+- clean residual target set present: `true`
+- minimum clean residual C2C-only recovered: `2`
+- minimum clean source-necessary recovered: `2`
+- query_pool_matched clean residual recovered: `0/6`
+- query_pool_matched clean source-necessary recovered: `0/6`
+- additional failing criteria: `min_clean_residual_recovered`,
+  `min_clean_source_necessary`
+
 ## Artifact Hashes
 
 - `live_gate_sweep.jsonl`
@@ -79,3 +90,7 @@
   - sha256: `9f9e3faef2a9d7632be65e3ef99e8af8ec2cb0576fa0d4fa926b1f1772daf3f0`
 - `svamp32_innovation_target_set_20260423.md`
   - sha256: `c82b8bdf9b0b8a5265fe39ecc2b6fd3e66982beda9e6f9d1cd9279c226706f74`
+- `paper_gate_gate010_with_clean_targets.json`
+  - sha256: `b8777c582675c9281ebd749a63e63bd79e11e3777e21ae457b62ef21265880eb`
+- `paper_gate_gate010_with_clean_targets.md`
+  - sha256: `62cebb57541db1df8157fe39069ca454c177c766828deb9f9d6cd260546d71a7`
