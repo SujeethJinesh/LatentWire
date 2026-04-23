@@ -1167,6 +1167,56 @@ def test_build_rotalign_prefix_state_uses_matching_source_and_target_prefix_leng
     assert stats["bits"] > 0.0
 
 
+def test_build_rotalign_prefix_state_query_resampler_collects_live_query_heads(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.config.quantization_correction = "bridge_ridge_qk_dynalign_query_resampler_replace"
+
+    query_head_calls = 0
+    seen_query_features: list[torch.Tensor | None] = []
+
+    def fake_last_token_query_heads(*args, **kwargs):
+        nonlocal query_head_calls
+        query_head_calls += 1
+        return [torch.ones(1, 1, dtype=torch.float32) for _ in range(2)]
+
+    def fake_translate_layer(
+        K_s,
+        V_s,
+        *,
+        tgt_layer_idx,
+        quantize=True,
+        quantization_control="real",
+        runtime_attention_profile=None,
+        runtime_query_features=None,
+    ):
+        seen_query_features.append(runtime_query_features)
+        return K_s.clone(), V_s.clone()
+
+    monkeypatch.setattr(evaluate, "_last_token_query_heads", fake_last_token_query_heads)
+    translator.translate_layer = fake_translate_layer  # type: ignore[method-assign]
+
+    evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=False,
+        protocol="fused",
+    )
+
+    assert query_head_calls == 1
+    assert len(seen_query_features) == 2
+    assert all(feature is not None for feature in seen_query_features)
+
+
 def test_build_rotalign_prefix_state_layer_knockout_removes_communication_bits(monkeypatch) -> None:
     tok_s = FakeTokenizer()
     tok_t = FakeTokenizer()

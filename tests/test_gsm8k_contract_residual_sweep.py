@@ -137,6 +137,15 @@ def test_checkpoint_path_builds_new_value_routed_rank_path() -> None:
     )
 
 
+def test_checkpoint_path_builds_new_query_resampler_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_query_resampler_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_query_resampler_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_resampler_replace_cal64_chat.pt"
+    )
+
+
 def test_checkpoint_path_builds_new_value_bank_rank_path() -> None:
     config = sweep.ResidualSweepConfig()
     path = sweep._checkpoint_path("dynalign_value_bank_module_replace", 16, config)

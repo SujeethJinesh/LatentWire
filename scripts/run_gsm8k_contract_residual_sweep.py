@@ -71,6 +71,11 @@ DEFAULT_BASES: dict[str, dict[str, str | int]] = {
         "checkpoint_path": "",
         "existing_rank": -1,
     },
+    "dynalign_query_resampler_replace": {
+        "quantization_correction": "bridge_ridge_qk_dynalign_query_resampler_replace",
+        "checkpoint_path": "",
+        "existing_rank": -1,
+    },
     "dynalign_value_bank_module_replace": {
         "quantization_correction": "bridge_ridge_qk_dynalign_value_bank_module_replace",
         "checkpoint_path": "",

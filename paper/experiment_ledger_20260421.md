@@ -582,3 +582,66 @@ reuse the slotted query-module plumbing, expose bottleneck slots/rank as first-
 class provenance, add fit-time finite/norm checks or fallback-to-base for bad
 layers, and evaluate with matched/zero/shuffled-source target-safe controls plus
 a `0/4/16/32` slot capacity/null sweep before any cross-family widening.
+
+`paper/gsm8k32_guarded_query_resampler_seed1_20260423.md` records the first
+explicit guarded query/resampler connector gate. The implementation added the
+new correction `bridge_ridge_qk_dynalign_query_resampler_replace`, reused the
+slotted query-module replacement path, added branch-specific finite/high-norm
+guards before checkpoint materialization, wired calibration/evaluation/sweep
+registration, and added translator/evaluation/parser/sweep regression tests.
+
+Runs:
+
+```bash
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_query_resampler_replace \
+  --rank 16 \
+  --bits 4 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_guarded_query_resampler_seed1_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_guarded_query_resampler_seed1_20260423 \
+  --seed 1
+
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_query_resampler_replace \
+  --rank 16 \
+  --bits 4 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_guarded_query_resampler_seed1_evalfix_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_guarded_query_resampler_seed1_20260423 \
+  --seed 1
+```
+
+The first run produced a finite checkpoint but exposed a missing evaluation
+dispatch for live query heads. The dispatch was fixed and the second run reused
+the same checkpoint.
+
+Readout:
+
+- status: `ok`
+- checkpoint nonfinite values: `0`
+- first bad key: `-`
+- checkpoint max abs: `6416.1553`
+- checkpoint SHA256:
+  `b4accaec6a9b6414015c58017a0b77894be88462898654b0261b690a9d7653c7`
+- accuracy: `2/32`
+- paired vs target: `0` wins / `0` losses / `32` ties
+- exact ID parity: pass
+- numeric coverage: `32/32`
+- empty predictions: `0`
+- summary JSON SHA256:
+  `a61ff8f9ec5b3deecb08ba7ca22671164438aa6a24a37bc276a3fec19a9ad290`
+
+This clears the immediate checkpoint-health/validity blocker for the learned
+connector family, but it does not clear the positive-method gate. The guarded
+branch converts the prior seed-1 nonfinite failure into exact target parity,
+which is useful evidence but not a publishable communication result. The
+guarded query/resampler surface remains alive as the finite implementation
+surface, while this exact full-replacement guarded variant is weakened as a
+positive method. The next exact gate is either an innovation/residual-only
+target-safe query-resampler path or a cheap `bridge_bank_size = 0/4/16/32`
+capacity/null sweep on GSM8K32 seed1 before any GSM70 or cross-family widening.
