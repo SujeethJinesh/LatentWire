@@ -391,3 +391,22 @@ branch should stay narrow and robustness-first:
 1. `V`-only anchor-preserving selective precision / tail coding
 2. rerun the same GSM70 seed audit
 3. only then reopen cross-family or broader benchmark expansion
+
+`paper/gsm8k32_v8_outlier_escrow_and_srcwhite_l8_kv_20260423.md` records two
+follow-up gates after the simple whitening sweep:
+
+- `bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace` was implemented
+  and tested on GSM8K32 seed `1`, but the checkpoint still quarantined with
+  `2,381,056` non-finite values and first bad key `W_V.8`. This kills the
+  current protected-channel escrow branch as a fix for the bad-seed layer-8
+  value failure.
+- Source-only layer-8 `K/V` conditioning was then run as the cheapest
+  no-code fallback. It produced a finite checkpoint and valid coverage on seed
+  `1`, but only tied target (`0` wins, `0` losses, `32` ties; accuracy
+  `0.0625`). This weakens the hypothesis that target whitening was the only
+  reason conditioned rows erased the live seed-0 signal.
+
+Do not run seed `0`, GSM70, or cross-family widening for either branch. The next
+exact gate is now a direct layer/stream-specific `W_V.8` fit regularization or
+diagnostic branch, because the blocker remains localized to the same value-side
+fit surface rather than to runtime tail quantization or target whitening alone.
