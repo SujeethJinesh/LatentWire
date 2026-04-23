@@ -1848,3 +1848,115 @@ Next exact gate:
 - run matched, source-kv-zero, translated-kv-zero if available, two shuffled
   salts, and target_self_repair
 - score with the strict-provenance SVAMP32 paper gate
+
+## 2026-04-23 - SVAMP32 ID-Weighted Query Innovation
+
+Paper readiness:
+
+- not ICLR-ready
+- the live method now has one clean source-necessary residual win, but still
+  fails the target-self-repair paper gate
+
+Current story:
+
+- the target cache is strong decoder side information
+- the promising direction is conditional source innovation over
+  `target_self_repair`, not full cache replacement
+
+Blocking gap:
+
+- recover at least `2/6` clean residual IDs while preserving
+  `target_self_repair`'s `14/32`
+
+Top next moves considered:
+
+- ID-weighted query innovation module fit. This directly targets the clean
+  residual IDs, but may memorize IDs or learn target-side repair. Cost: medium.
+  Helps same-pair, reproducibility, and interpretability.
+- full source-necessity control runner. This prevents false promotion, but is
+  not worth full cost unless the matched row recovers enough clean IDs. Cost:
+  medium/high. Helps robustness.
+- new target-side-information connector. This is the cleanest paper story
+  from Wyner-Ziv/Q-Former/Perceiver priors, but has higher implementation risk.
+  Cost: high. Helps same-pair, efficiency, and interpretability.
+
+Decision:
+
+- implemented the smallest exact-ID-weighted hook on the existing
+  `bridge_ridge_qk_dynalign_query_innovation_resampler_replace` path
+
+What changed:
+
+- `latent_bridge/calibrate.py`
+  - added JSONL-aware prompt metadata loading
+  - reconstructs stable generation example IDs matching evaluation artifacts
+  - added `--innovation-target-set-json`
+  - added `--innovation-positive-weight`
+  - added `--innovation-default-weight`
+  - expands prompt-level clean residual target IDs to flattened bridge sample
+    weights via `sample_prompt_ids`
+- `latent_bridge/translator.py`
+  - forwards optional sample weights into the query-innovation module fit
+  - leaves the base ridge fit unweighted for this mode
+- tests added for metadata extraction, prompt-weight construction, CLI parsing,
+  and query-innovation sample-weight forwarding
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_calibrate_and_ablation.py \
+  tests/test_translator_core.py -q
+```
+
+Result: `211 passed`
+
+Artifacts:
+
+- checkpoint:
+  `.debug/checkpoints_svamp32_conditional_innovation_20260423/id_weighted_query_innovation/qwen25_to_qwen3_svamp32_idweighted_query_innovation_r16_bank16_seed1.pt`
+- run directory:
+  `results/svamp32_idweighted_query_innovation_20260423/`
+- readout:
+  `paper/svamp32_idweighted_query_innovation_20260423.md`
+
+Evidence:
+
+- calibration matched all `6` clean residual target prompts
+- dynamic token-mixture samples: `1411`
+- matched gate sweep:
+  - `0.10`: `8/32`, clean residual recovered `0/6`
+  - `0.15`: `10/32`, clean residual recovered `1/6`
+  - `0.20`: `8/32`, clean residual recovered `0/6`
+- `gate015` recovered teacher-only IDs
+  `575d7e83d84c1e67` and `aee922049c757331`
+- `575d7e83d84c1e67` is retained by `translated_kv_zero`, so it is not a clean
+  source-necessary win
+- `aee922049c757331` disappears under `translated_kv_zero`, so it is the first
+  clean source-necessary residual win for this branch
+- strict target-set gate remains:
+  `no_candidate_passes_target_self_repair_gate`
+- gate failure reasons:
+  - `min_correct`
+  - `beats_target_self_repair`
+  - `min_teacher_only`
+  - `min_clean_residual_recovered`
+  - `min_clean_source_necessary`
+
+Hypothesis update:
+
+- revived: conditional innovation can move at least one clean source-necessary
+  residual ID
+- weakened: ID weighting alone is sufficient to clear the gate
+- promoted: preserve `target_self_repair` first, then add bounded source
+  innovation as a repair sidecar
+- still blocked: no method has `>=2/6` clean residual source-necessary wins
+
+Next exact gate:
+
+- implement target-self-preserving residual composition:
+  `target_self_repair + source innovation sidecar`
+- require `>=2/6` clean source-necessary IDs and no regression below
+  `14/32`
+- rerun matched, translated-KV-zero, source-KV-zero, two shuffled-source salts,
+  and strict target-set paper gate

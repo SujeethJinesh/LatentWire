@@ -146,6 +146,37 @@ class _ScriptedOffsetTokenizer(_FakeTokenizer):
         )
 
 
+def test_calibrate_load_prompt_records_extracts_stable_generation_ids(tmp_path) -> None:
+    path = tmp_path / "calibration.jsonl"
+    row = {
+        "question": (
+            "Tiffany was collecting cans for recycling. On monday she had 7 bags of cans. "
+            "The next day she found 12 more bags worth of cans. How many more bags did she "
+            "find on the next day than she had on monday?"
+        ),
+        "answer": "5",
+        "aliases": ["5.0", "#### 5"],
+        "metadata": {"id": "chal-31", "dataset": "SVAMP"},
+    }
+    path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+
+    records = calibrate.load_prompt_records(str(path))
+
+    assert records == [(row["question"], {"chal-31", "013133cdef4f637c"})]
+
+
+def test_calibrate_build_innovation_prompt_weights_marks_target_ids() -> None:
+    weights, matched = calibrate.build_innovation_prompt_weights(
+        [{"a"}, {"target", "metadata-id"}, set()],
+        {"target"},
+        positive_weight=8.0,
+        default_weight=0.5,
+    )
+
+    assert matched == 1
+    assert torch.allclose(weights, torch.tensor([0.5, 8.0, 0.5]))
+
+
 class _FakeCache:
     def __init__(self, layers):
         self.layers = layers
@@ -2118,11 +2149,20 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_
             "bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
             "--quantization-correction-rank",
             "16",
+            "--innovation-target-set-json",
+            "targets.json",
+            "--innovation-positive-weight",
+            "12",
+            "--innovation-default-weight",
+            "0.75",
         ],
     )
     args = calibrate.parse_args()
     assert args.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
     assert args.quantization_correction_rank == 16
+    assert args.innovation_target_set_json == "targets.json"
+    assert args.innovation_positive_weight == 12
+    assert args.innovation_default_weight == 0.75
 
 
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_value_bank_module_replace(monkeypatch) -> None:

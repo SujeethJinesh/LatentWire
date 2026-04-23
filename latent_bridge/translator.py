@@ -5247,13 +5247,32 @@ class RotAlignKVTranslator(nn.Module):
                 self.quant_bias_V[tgt_l].data.copy_(bias_v.to(self.quant_bias_V[tgt_l].dtype))
             elif self.config.quantization_correction in {"bridge_ridge", "bridge_ridge_query", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_weighted", "bridge_ridge_qk_projector", "bridge_ridge_qk_adapter", "bridge_ridge_qk_affinity_adapter", "bridge_ridge_qk_attnkl_adapter", "bridge_ridge_qk_cab_adapter", "bridge_ridge_qk_emkd_adapter", "bridge_ridge_qk_readout_adapter", "bridge_ridge_qk_predkl_adapter", "bridge_ridge_qk_asym_adapter", "bridge_ridge_qk_asym_projector", "bridge_ridge_qk_asym_predkl_adapter", "bridge_ridge_qk_asym_dynmap_adapter", "bridge_ridge_qk_xattn_adapter", "bridge_ridge_qk_xattn_dynmap_adapter", "bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_anchor_tail_module_replace", "bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_query_resampler_replace", "bridge_ridge_qk_dynalign_query_innovation_resampler_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_query_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace", "bridge_ridge_qk_sae_adapter", "bridge_ridge_qk_generated_adapter"}:
                 sample_weights = None
-                if self.config.quantization_correction in {"bridge_ridge_qk_weighted", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace"}:
+                module_sample_weights = None
+                dynamic_module_weight_modes = {
+                    "bridge_ridge_qk_dynalign_dwakd_module_replace",
+                    "bridge_ridge_qk_dynalign_likelihood_module_replace",
+                    "bridge_ridge_qk_dynalign_spanalm_module_replace",
+                    "bridge_ridge_qk_dynalign_prefdist_module_replace",
+                    "bridge_ridge_qk_dynalign_dwainteract_module_replace",
+                }
+                if self.config.quantization_correction in {
+                    "bridge_ridge_qk_weighted",
+                    *dynamic_module_weight_modes,
+                }:
                     if self._bridge_sample_weights is None:
                         raise ValueError(
                             f"{self.config.quantization_correction} requires bridge sample weights; "
                             "call set_bridge_sample_weights() before fit_from_pairs"
                         )
                     sample_weights = self._bridge_sample_weights[tgt_l].to(device=Xk.device)
+                    if self.config.quantization_correction in dynamic_module_weight_modes:
+                        module_sample_weights = sample_weights
+                elif (
+                    self.config.quantization_correction
+                    == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+                    and self._bridge_sample_weights is not None
+                ):
+                    module_sample_weights = self._bridge_sample_weights[tgt_l].to(device=Xk.device)
                 if self.config.quantization_correction == "bridge_ridge_qk_projector":
                     if self._bridge_sample_query_features is None:
                         raise ValueError(
@@ -5520,7 +5539,7 @@ class RotAlignKVTranslator(nn.Module):
                                 dynamic_prediction_weight=0.25 if self.config.quantization_correction in {"bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace"} else 0.0,
                                 teacher_topk_log_probs=teacher_log_probs,
                                 teacher_topk_output_rows=teacher_output_rows,
-                                sample_weights=sample_weights if self.config.quantization_correction in {"bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace"} else None,
+                                sample_weights=module_sample_weights,
                                 feature_weights_k=self._fit_saliency_feature_weights(target_k_fit, K_pred, query_features) if self.config.quantization_correction == "bridge_ridge_qk_dynalign_saliency_module_replace" else None,
                                 feature_weights_v=self._fit_saliency_feature_weights(target_v_fit, V_pred, query_features) if self.config.quantization_correction == "bridge_ridge_qk_dynalign_saliency_module_replace" else None,
                                 span_preference_weight=0.25 if self.config.quantization_correction == "bridge_ridge_qk_dynalign_prefdist_module_replace" else 0.0,

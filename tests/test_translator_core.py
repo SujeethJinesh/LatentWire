@@ -4828,6 +4828,83 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_query_innovation_resampler_fits
     assert torch.allclose(captured["target_v"], expected_v)
 
 
+def test_fit_from_pairs_bridge_ridge_qk_dynalign_query_innovation_resampler_forwards_sample_weights(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+    expected_weights = torch.tensor([1.0, 4.0, 1.0, 4.0], dtype=torch.float32)
+    tr.set_bridge_sample_weights([expected_weights])
+
+    base_ridge_weighted: list[bool] = []
+    captured: dict[str, torch.Tensor] = {}
+
+    def fake_bridge_ridge(self, quantized, predicted, target, *, lam, sample_weights=None):
+        del quantized, predicted, target, lam
+        base_ridge_weighted.append(sample_weights is not None)
+        return (
+            torch.zeros(self.d_t, self.d_t, dtype=torch.float32),
+            torch.zeros(self.d_t, self.d_t, dtype=torch.float32),
+            torch.full((self.d_t,), 0.25, dtype=torch.float32),
+        )
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        sample_weights=None,
+        **kwargs,
+    ):
+        del quantized_k, predicted_k, quantized_v, predicted_v, query_features
+        del target_k, target_v, rank, kwargs
+        assert sample_weights is not None
+        captured["sample_weights"] = sample_weights.detach().cpu().clone()
+        return (
+            torch.zeros(self.config.bridge_bank_size, self.d_t, dtype=torch.float32),
+            torch.zeros(self.d_t, 1, dtype=torch.float32),
+            torch.zeros(self.d_t, 1, dtype=torch.float32),
+            torch.zeros(self.d_t, 1, dtype=torch.float32),
+            torch.zeros(1, 1, dtype=torch.float32),
+            torch.zeros(1, self.d_t, dtype=torch.float32),
+            torch.zeros(1, self.d_t, dtype=torch.float32),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_ridge_correction", fake_bridge_ridge)
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+
+    tr.fit_from_pairs([(base, base + 0.5)], [(base * 1.5, base * 2.0)])
+
+    assert base_ridge_weighted == [False, False]
+    assert torch.allclose(captured["sample_weights"], expected_weights)
+
+
 def test_dynalign_query_innovation_resampler_fuse_adds_bounded_residual(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

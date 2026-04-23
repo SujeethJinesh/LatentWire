@@ -32,10 +32,12 @@ cross-family pairs; see method.md §5.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import math
 import pathlib
 import sys
-from typing import Iterable, Sequence
+from typing import Any, Iterable, Sequence
 
 # Allow running from the repo root
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -362,6 +364,27 @@ def parse_args() -> argparse.Namespace:
         help="Dropout rate used when fitting the tiny coordinatewise learned fusion layer",
     )
     p.add_argument(
+        "--innovation-target-set-json",
+        default=None,
+        help=(
+            "SVAMP32 innovation target-set JSON. When used with "
+            "bridge_ridge_qk_dynalign_query_innovation_resampler_replace, clean residual "
+            "target IDs receive higher module-fit weight."
+        ),
+    )
+    p.add_argument(
+        "--innovation-positive-weight",
+        type=float,
+        default=16.0,
+        help="Prompt-level sample weight for IDs in ids.clean_residual_targets.",
+    )
+    p.add_argument(
+        "--innovation-default-weight",
+        type=float,
+        default=1.0,
+        help="Prompt-level sample weight for non-target IDs when innovation target weighting is enabled.",
+    )
+    p.add_argument(
         "--source-reasoning-mode",
         choices=["plain", "brief_analysis", "cot", "scratchpad"],
         default="plain",
@@ -404,9 +427,84 @@ def torch_dtype(name: str) -> torch.dtype:
     }[name]
 
 
-def load_prompts(path: str) -> list[str]:
+def _stable_example_id(payload: dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, ensure_ascii=True)
+    return hashlib.sha1(canonical.encode("utf-8")).hexdigest()[:16]
+
+
+def _prompt_record_ids(obj: dict[str, Any], prompt: str) -> set[str]:
+    ids: set[str] = set()
+    for key in ("example_id", "id"):
+        value = obj.get(key)
+        if value is not None:
+            ids.add(str(value))
+    metadata = obj.get("metadata")
+    if isinstance(metadata, dict):
+        for key in ("example_id", "id"):
+            value = metadata.get(key)
+            if value is not None:
+                ids.add(str(value))
+    raw_answer = obj.get("answer_text", obj.get("answer", obj.get("target")))
+    if raw_answer is not None:
+        aliases = obj.get("aliases", [])
+        answers = [str(raw_answer), *[str(alias) for alias in aliases]]
+        ids.add(_stable_example_id({"prompt": str(prompt), "answers": answers}))
+    return ids
+
+
+def load_prompt_records(path: str) -> list[tuple[str, set[str]]]:
+    records: list[tuple[str, set[str]]] = []
     with open(path, "r", encoding="utf-8") as f:
-        return [line.strip() for line in f if line.strip()]
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line:
+                continue
+            if line.startswith("{"):
+                obj = json.loads(line)
+                prompt = obj.get("prompt") or obj.get("question")
+                if prompt is None:
+                    raise ValueError("JSONL calibration records require `prompt` or `question`")
+                records.append((str(prompt).strip(), _prompt_record_ids(obj, str(prompt))))
+            else:
+                records.append((line, set()))
+    return records
+
+
+def load_prompts(path: str) -> list[str]:
+    return [prompt for prompt, _ in load_prompt_records(path)]
+
+
+def load_innovation_target_ids(path: str) -> set[str]:
+    with open(path, "r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    ids_payload = payload.get("ids", {}) if isinstance(payload, dict) else {}
+    target_ids = ids_payload.get("clean_residual_targets", []) if isinstance(ids_payload, dict) else []
+    target_set = {str(item) for item in target_ids}
+    if not target_set:
+        raise ValueError(
+            f"{path} does not contain any ids.clean_residual_targets entries"
+        )
+    return target_set
+
+
+def build_innovation_prompt_weights(
+    prompt_example_ids: Sequence[set[str]],
+    target_ids: set[str],
+    *,
+    positive_weight: float,
+    default_weight: float,
+) -> tuple[torch.Tensor, int]:
+    if positive_weight <= 0.0 or default_weight <= 0.0:
+        raise ValueError("innovation prompt weights must be positive")
+    weights: list[float] = []
+    matched = 0
+    for ids in prompt_example_ids:
+        if ids & target_ids:
+            weights.append(float(positive_weight))
+            matched += 1
+        else:
+            weights.append(float(default_weight))
+    return torch.tensor(weights, dtype=torch.float32), matched
 
 
 def _optional_bool_from_arg(value: str) -> bool | None:
@@ -2853,7 +2951,9 @@ def main() -> None:
     source_enable_thinking = _optional_bool_from_arg(args.source_enable_thinking)
     target_enable_thinking = _optional_bool_from_arg(args.target_enable_thinking)
 
-    prompts = load_prompts(args.calibration_file)
+    prompt_records = load_prompt_records(args.calibration_file)
+    prompts = [prompt for prompt, _ in prompt_records]
+    prompt_example_ids = [ids for _, ids in prompt_records]
     print(f"Loaded {len(prompts)} calibration prompts from {args.calibration_file}")
 
     print(f"\nLoading source model: {args.source_model}")
@@ -3396,6 +3496,43 @@ def main() -> None:
                 if int(length) > 0
             ],
             dim=0,
+        )
+
+    if args.innovation_target_set_json is not None:
+        if (
+            args.quantization_correction
+            != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        ):
+            raise ValueError(
+                "--innovation-target-set-json is currently only supported for "
+                "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+            )
+        if sample_prompt_ids is None:
+            raise ValueError(
+                "--innovation-target-set-json requires aligned bridge sample prompt IDs"
+            )
+        target_ids = load_innovation_target_ids(args.innovation_target_set_json)
+        prompt_weights, matched_prompts = build_innovation_prompt_weights(
+            prompt_example_ids,
+            target_ids,
+            positive_weight=args.innovation_positive_weight,
+            default_weight=args.innovation_default_weight,
+        )
+        if matched_prompts == 0:
+            raise ValueError(
+                "No calibration prompts matched ids.clean_residual_targets from "
+                f"{args.innovation_target_set_json}; use a JSONL calibration file "
+                "with stable example IDs."
+            )
+        sample_weights = prompt_weights[sample_prompt_ids]
+        translator.set_bridge_sample_weights(
+            [sample_weights.clone() for _ in range(config.num_tgt_layers)]
+        )
+        print(
+            "Built innovation target sample weights: "
+            f"matched_prompts={matched_prompts}, samples={int(sample_weights.numel())}, "
+            f"default={args.innovation_default_weight:.3f}, "
+            f"positive={args.innovation_positive_weight:.3f}"
         )
 
     if args.quantization_correction in {"bridge_low_rank_bank", "bridge_ridge_residual_bank", "bridge_ridge_qk_residual_bank", "bridge_ridge_qk_cab_bank", "bridge_ridge_qk_predkl_bank", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_query_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace"}:
