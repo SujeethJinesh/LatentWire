@@ -1,0 +1,32 @@
+{
+  "method_summary": {
+    "c2c": {
+      "accuracy": 0.2,
+      "count": 5
+    }
+  },
+  "metric_summary": {
+    "c2c_accuracy": 0.2,
+    "c2c_examples_per_sec": 0.15412570923093144,
+    "c2c_generated_tokens_avg": 59.8,
+    "c2c_latency_sec": 6.48821020834148,
+    "c2c_tokens_per_sec": 9.2167174120097,
+    "c2c_ttft_sec": 6.48821020834148
+  },
+  "paired_examples": {},
+  "paired_summary": {},
+  "run_config": {
+    "baseline": "c2c",
+    "device": "mps",
+    "eval_file": "/Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/_artifacts/svamp_eval_70_5.jsonl",
+    "limit": null,
+    "local_root": "/Users/sujeethjinesh/Desktop/LatentWire/.hf_home/hub/models--nics-efc--C2C_Fuser/snapshots/909c76d71cfb946171aa2ab7912dd07c0ba2e995",
+    "max_new_tokens": 64,
+    "published_checkpoint_dir": "qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+    "published_config_path": "qwen3_0.6b+qwen2.5_0.5b_Fuser/config.json",
+    "published_repo_id": "nics-efc/C2C_Fuser",
+    "published_subdir": "qwen3_0.6b+qwen2.5_0.5b_Fuser",
+    "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "target_model": "Qwen/Qwen3-0.6B"
+  }
+}

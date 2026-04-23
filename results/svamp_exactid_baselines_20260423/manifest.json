@@ -1,0 +1,292 @@
+{
+  "claim_policy": "dev-smoke when --limit is below the frozen decision size; paper-eligible only after rerunning the frozen gate with seed/control protocol",
+  "date": "2026-04-23",
+  "device": "mps",
+  "dry_run": false,
+  "eval_file": "data/svamp_eval_70.jsonl",
+  "limit": 5,
+  "materialized_eval_file": "results/svamp_exactid_baselines_20260423/_artifacts/svamp_eval_70_5.jsonl",
+  "max_new_tokens": 64,
+  "method_summaries": {
+    "c2c": {
+      "accuracy": 0.2,
+      "correct": 1,
+      "correct_ids": [
+        "316b525a4fcbfb89"
+      ],
+      "empty_predictions": 0,
+      "exact_id_parity": true,
+      "method": "c2c",
+      "n": 5,
+      "numeric_extraction_coverage": 5,
+      "ordered_example_ids": [
+        "013133cdef4f637c",
+        "d64f6e35083ffe8c",
+        "3e8a5691f5443495",
+        "316b525a4fcbfb89",
+        "e26bdbcab1449bbe"
+      ],
+      "path": "results/svamp_exactid_baselines_20260423/c2c_generate.jsonl",
+      "record_method": "c2c_generate",
+      "set_id_parity": true
+    },
+    "source": {
+      "accuracy": 0.4,
+      "correct": 2,
+      "correct_ids": [
+        "316b525a4fcbfb89",
+        "d64f6e35083ffe8c"
+      ],
+      "empty_predictions": 0,
+      "exact_id_parity": true,
+      "method": "source",
+      "n": 5,
+      "numeric_extraction_coverage": 5,
+      "ordered_example_ids": [
+        "013133cdef4f637c",
+        "d64f6e35083ffe8c",
+        "3e8a5691f5443495",
+        "316b525a4fcbfb89",
+        "e26bdbcab1449bbe"
+      ],
+      "path": "results/svamp_exactid_baselines_20260423/source_alone.jsonl",
+      "record_method": "source_alone",
+      "set_id_parity": true
+    },
+    "t2t": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "correct_ids": [],
+      "empty_predictions": 0,
+      "exact_id_parity": true,
+      "method": "t2t",
+      "n": 5,
+      "numeric_extraction_coverage": 5,
+      "ordered_example_ids": [
+        "013133cdef4f637c",
+        "d64f6e35083ffe8c",
+        "3e8a5691f5443495",
+        "316b525a4fcbfb89",
+        "e26bdbcab1449bbe"
+      ],
+      "path": "results/svamp_exactid_baselines_20260423/text_to_text.jsonl",
+      "record_method": "text_to_text",
+      "set_id_parity": true
+    },
+    "target": {
+      "accuracy": 0.4,
+      "correct": 2,
+      "correct_ids": [
+        "013133cdef4f637c",
+        "316b525a4fcbfb89"
+      ],
+      "empty_predictions": 0,
+      "exact_id_parity": true,
+      "method": "target",
+      "n": 5,
+      "numeric_extraction_coverage": 5,
+      "ordered_example_ids": [
+        "013133cdef4f637c",
+        "d64f6e35083ffe8c",
+        "3e8a5691f5443495",
+        "316b525a4fcbfb89",
+        "e26bdbcab1449bbe"
+      ],
+      "path": "results/svamp_exactid_baselines_20260423/target_alone.jsonl",
+      "record_method": "target_alone",
+      "set_id_parity": true
+    }
+  },
+  "methods": [
+    "target",
+    "source",
+    "t2t",
+    "c2c"
+  ],
+  "pairwise_vs_target": [
+    {
+      "both_correct_count": 1,
+      "method": "c2c",
+      "method_only_count": 0,
+      "method_only_ids": [],
+      "n": 5,
+      "oracle_accuracy": 0.4,
+      "oracle_count": 2,
+      "target_method": "target",
+      "target_only_count": 1,
+      "target_only_ids": [
+        "013133cdef4f637c"
+      ]
+    },
+    {
+      "both_correct_count": 1,
+      "method": "source",
+      "method_only_count": 1,
+      "method_only_ids": [
+        "d64f6e35083ffe8c"
+      ],
+      "n": 5,
+      "oracle_accuracy": 0.6,
+      "oracle_count": 3,
+      "target_method": "target",
+      "target_only_count": 1,
+      "target_only_ids": [
+        "013133cdef4f637c"
+      ]
+    },
+    {
+      "both_correct_count": 0,
+      "method": "t2t",
+      "method_only_count": 0,
+      "method_only_ids": [],
+      "n": 5,
+      "oracle_accuracy": 0.4,
+      "oracle_count": 2,
+      "target_method": "target",
+      "target_only_count": 2,
+      "target_only_ids": [
+        "013133cdef4f637c",
+        "316b525a4fcbfb89"
+      ]
+    }
+  ],
+  "results_dir": "results/svamp_exactid_baselines_20260423",
+  "runs": [
+    {
+      "command": [
+        "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+        "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/evaluate.py",
+        "--translator",
+        "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt",
+        "--source-model",
+        "Qwen/Qwen2.5-0.5B-Instruct",
+        "--target-model",
+        "Qwen/Qwen3-0.6B",
+        "--eval-file",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/_artifacts/svamp_eval_70_5.jsonl",
+        "--task-type",
+        "generation",
+        "--device",
+        "mps",
+        "--max-new-tokens",
+        "64",
+        "--source-reasoning-mode",
+        "brief_analysis",
+        "--methods",
+        "target",
+        "--prediction-output",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/target_alone.jsonl",
+        "--source-use-chat-template",
+        "--target-use-chat-template",
+        "--source-enable-thinking",
+        "false",
+        "--target-enable-thinking",
+        "false"
+      ],
+      "existing_output_validation": "ok",
+      "log": "results/svamp_exactid_baselines_20260423/logs/target.log",
+      "method": "target",
+      "prediction_output": "results/svamp_exactid_baselines_20260423/target_alone.jsonl",
+      "status": "skipped_existing"
+    },
+    {
+      "command": [
+        "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+        "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/evaluate.py",
+        "--translator",
+        "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt",
+        "--source-model",
+        "Qwen/Qwen2.5-0.5B-Instruct",
+        "--target-model",
+        "Qwen/Qwen3-0.6B",
+        "--eval-file",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/_artifacts/svamp_eval_70_5.jsonl",
+        "--task-type",
+        "generation",
+        "--device",
+        "mps",
+        "--max-new-tokens",
+        "64",
+        "--source-reasoning-mode",
+        "brief_analysis",
+        "--methods",
+        "source",
+        "--prediction-output",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/source_alone.jsonl",
+        "--source-use-chat-template",
+        "--target-use-chat-template",
+        "--source-enable-thinking",
+        "false",
+        "--target-enable-thinking",
+        "false"
+      ],
+      "existing_output_validation": "ok",
+      "log": "results/svamp_exactid_baselines_20260423/logs/source.log",
+      "method": "source",
+      "prediction_output": "results/svamp_exactid_baselines_20260423/source_alone.jsonl",
+      "status": "skipped_existing"
+    },
+    {
+      "command": [
+        "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+        "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/evaluate.py",
+        "--translator",
+        "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt",
+        "--source-model",
+        "Qwen/Qwen2.5-0.5B-Instruct",
+        "--target-model",
+        "Qwen/Qwen3-0.6B",
+        "--eval-file",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/_artifacts/svamp_eval_70_5.jsonl",
+        "--task-type",
+        "generation",
+        "--device",
+        "mps",
+        "--max-new-tokens",
+        "64",
+        "--source-reasoning-mode",
+        "brief_analysis",
+        "--methods",
+        "t2t",
+        "--prediction-output",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/text_to_text.jsonl",
+        "--source-use-chat-template",
+        "--target-use-chat-template",
+        "--source-enable-thinking",
+        "false",
+        "--target-enable-thinking",
+        "false"
+      ],
+      "existing_output_validation": "ok",
+      "log": "results/svamp_exactid_baselines_20260423/logs/t2t.log",
+      "method": "t2t",
+      "prediction_output": "results/svamp_exactid_baselines_20260423/text_to_text.jsonl",
+      "status": "skipped_existing"
+    },
+    {
+      "command": [
+        "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+        "/Users/sujeethjinesh/Desktop/LatentWire/scripts/run_c2c_eval.py",
+        "--source-model",
+        "Qwen/Qwen2.5-0.5B-Instruct",
+        "--target-model",
+        "Qwen/Qwen3-0.6B",
+        "--eval-file",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/_artifacts/svamp_eval_70_5.jsonl",
+        "--device",
+        "mps",
+        "--max-new-tokens",
+        "64",
+        "--prediction-output",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/c2c_generate.jsonl"
+      ],
+      "existing_output_validation": "ok",
+      "log": "results/svamp_exactid_baselines_20260423/logs/c2c.log",
+      "method": "c2c",
+      "prediction_output": "results/svamp_exactid_baselines_20260423/c2c_generate.jsonl",
+      "status": "skipped_existing"
+    }
+  ],
+  "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "target_model": "Qwen/Qwen3-0.6B"
+}

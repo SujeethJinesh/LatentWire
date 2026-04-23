@@ -1040,3 +1040,33 @@ per-method jobs. If `source_alone` or another latent-accessible source row has
 `>=5` to `10` source-only wins, use that as the first connector gate; if only
 text/C2C has headroom, use it as a teacher/upper-bound surface rather than a
 direct paper claim.
+
+`paper/svamp_exactid_baselines_20260423.md` adds a resumable generation-baseline
+materializer and validates it on a fresh exact-ID SVAMP dev-smoke slice. The new
+runner writes one method per artifact, materializes the exact eval slice under
+the results directory, logs each command independently, and skips only artifacts
+that parse with the expected count and ordered `example_id` parity. The
+`limit=5` run completed all four rows: target `2/5`, source `2/5`, text-to-text
+`0/5`, and C2C `1/5`, all with exact ordered ID parity and `5/5` numeric
+coverage. Source has one source-only win over target and a source/target oracle
+of `3/5`; text-to-text and C2C add no source-only wins on this tiny slice.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --results-dir results/svamp_exactid_baselines_20260423 \
+  --limit 5 \
+  --methods target source t2t c2c \
+  --device mps \
+  --max-new-tokens 64 \
+  --continue-on-error
+```
+
+Decision: the runner clears the reproducibility/resume gate, but `N=5` is only a
+dev smoke. The next exact gate is SVAMP32 with the same rows. Promote connector
+training only if source or another latent-accessible source row reaches at least
+`5/32` source-only wins with exact ordered ID parity and near-complete numeric
+coverage; otherwise frame SVAMP as a teacher/headroom surface and do not claim a
+direct latent-source positive result.

@@ -1,0 +1,23 @@
+$ /Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python /Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/evaluate.py --translator /Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt --source-model Qwen/Qwen2.5-0.5B-Instruct --target-model Qwen/Qwen3-0.6B --eval-file /Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/_artifacts/svamp_eval_70_5.jsonl --task-type generation --device mps --max-new-tokens 64 --source-reasoning-mode brief_analysis --methods t2t --prediction-output /Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/text_to_text.jsonl --source-use-chat-template --target-use-chat-template --source-enable-thinking false --target-enable-thinking false
+
+/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/lib/python3.11/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loaded 5 generation examples from /Users/sujeethjinesh/Desktop/LatentWire/results/svamp_exactid_baselines_20260423/_artifacts/svamp_eval_70_5.jsonl
+
+Loading source: Qwen/Qwen2.5-0.5B-Instruct
+Sliding Window Attention is enabled but not implemented for `sdpa`; unexpected results may be encountered.
+Loading target: Qwen/Qwen3-0.6B
+Loading translator from /Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt
+/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:631: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.7` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:636: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.8` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:653: UserWarning: `do_sample` is set to `False`. However, `top_k` is set to `20` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_k`.
+  warnings.warn(
+
+=== Summary ===
+                text_to_text: 0.000000
+       text_to_text_ttft_sec: 3.343954
+  text_to_text_tokens_per_sec: 7.167300
+  text_to_text_examples_per_sec: 0.111989
+    text_to_text_latency_sec: 8.929443
