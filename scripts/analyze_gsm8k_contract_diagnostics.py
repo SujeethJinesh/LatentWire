@@ -12,6 +12,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts import harness_common as harness
 from scripts import run_gsm8k_smoke_contract as smoke
 
 
@@ -48,7 +49,7 @@ def _resolve_candidate_records(
     *,
     method_name: str,
 ) -> list[dict[str, Any]]:
-    grouped = smoke._group_by_method(candidate_records)
+    grouped = harness.group_by_method(candidate_records)
     if method_name in grouped:
         return grouped[method_name]
     if len(grouped) == 1:
@@ -60,7 +61,7 @@ def _paired_counts(
     method_records: list[dict[str, Any]],
     baseline_records: list[dict[str, Any]],
 ) -> dict[str, int]:
-    return smoke._paired_vs_baseline(method_records, baseline_records)
+    return harness.paired_vs_baseline(method_records, baseline_records)
 
 
 def _oracle_counts(
@@ -228,7 +229,7 @@ def _ensure_materialized_eval(
     baseline_config: dict[str, Any],
 ) -> pathlib.Path:
     materialized = pathlib.Path(str(baseline_config["materialized_eval_file"]))
-    smoke._materialize_slice(ROOT / str(baseline_config["eval_file"]), materialized, int(baseline_config["slice_size"]))
+    harness.materialize_slice(ROOT / str(baseline_config["eval_file"]), materialized, int(baseline_config["slice_size"]))
     return materialized
 
 
@@ -242,7 +243,7 @@ def _ensure_source_output(
         return output_path
     config = baseline_payload["config"]
     cmd = [
-        str(ROOT / ".venv" / "bin" / "python"),
+        harness.python_executable(ROOT),
         str(ROOT / "latent_bridge" / "evaluate.py"),
         "--source-model",
         str(config["source_model"]),
@@ -265,17 +266,12 @@ def _ensure_source_output(
         "--prediction-output",
         str(output_path),
     ]
-    if bool(config.get("use_chat_template", False)):
-        cmd.extend(
-            [
-                "--source-use-chat-template",
-                "--target-use-chat-template",
-                "--source-enable-thinking",
-                "false" if not bool(config.get("enable_thinking", False)) else "true",
-                "--target-enable-thinking",
-                "false" if not bool(config.get("enable_thinking", False)) else "true",
-            ]
+    cmd.extend(
+        harness.chat_template_cli_args(
+            enabled=bool(config.get("use_chat_template", False)),
+            thinking=bool(config.get("enable_thinking", False)),
         )
+    )
     smoke._run(cmd, cwd=ROOT)
     return output_path
 
@@ -285,16 +281,22 @@ def run_diagnostics(config: DiagnosticsConfig) -> dict[str, Any]:
     baseline_payload = _read_json(baseline_json)
     baseline_config = baseline_payload["config"]
     materialized_eval_file = _ensure_materialized_eval(baseline_config=baseline_config)
-    examples = smoke.load_generation(str(materialized_eval_file))
+    examples = harness.load_generation(str(materialized_eval_file))
 
-    baseline_output = pathlib.Path(str(baseline_payload["artifacts"]["latentwire_prediction_output"]))
-    baseline_records = smoke._attach_prompts(smoke._read_jsonl(baseline_output), materialized_eval_file)
-    baseline_groups = smoke._group_by_method(baseline_records)
+    artifact_paths = baseline_payload["artifacts"]
+    baseline_output = pathlib.Path(
+        str(
+            artifact_paths.get("bridge_prediction_output")
+            or artifact_paths["latentwire_prediction_output"]
+        )
+    )
+    baseline_records = harness.attach_prompts(harness.read_jsonl(baseline_output), materialized_eval_file)
+    baseline_groups = harness.group_by_method(baseline_records)
     target_records = baseline_groups["target_alone"]
     text_records = baseline_groups["text_to_text"]
 
     candidate_output = ROOT / config.candidate_prediction_output
-    candidate_records = smoke._attach_prompts(smoke._read_jsonl(candidate_output), materialized_eval_file)
+    candidate_records = harness.attach_prompts(harness.read_jsonl(candidate_output), materialized_eval_file)
     candidate_method_records = _resolve_candidate_records(candidate_records, method_name=config.candidate_method)
 
     diagnostics_dir = ROOT / (config.results_dir or str(candidate_output.parent.relative_to(ROOT)))
@@ -303,8 +305,8 @@ def run_diagnostics(config: DiagnosticsConfig) -> dict[str, Any]:
         materialized_eval_file=materialized_eval_file,
         output_path=diagnostics_dir / config.source_output_name,
     )
-    source_records = smoke._attach_prompts(smoke._read_jsonl(source_output), materialized_eval_file)
-    source_method_records = smoke._group_by_method(source_records)["source_alone"]
+    source_records = harness.attach_prompts(harness.read_jsonl(source_output), materialized_eval_file)
+    source_method_records = harness.group_by_method(source_records)["source_alone"]
 
     candidate_pairs = _paired_counts(candidate_method_records, target_records)
     oracle = _oracle_counts(candidate_method_records, target_records)
@@ -370,7 +372,7 @@ def run_diagnostics(config: DiagnosticsConfig) -> dict[str, Any]:
         "text_to_text_target_only_losses": text_target_only_losses,
     }
     diagnostics_dir.mkdir(parents=True, exist_ok=True)
-    smoke._write_json(diagnostics_dir / f"{config.candidate_label}_diagnostics_20260422.json", payload)
+    harness.write_json(diagnostics_dir / f"{config.candidate_label}_diagnostics_20260422.json", payload)
     _write_markdown(diagnostics_dir / f"{config.candidate_label}_diagnostics_20260422.md", payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
     return payload

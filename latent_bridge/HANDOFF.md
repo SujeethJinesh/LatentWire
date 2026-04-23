@@ -1,8 +1,16 @@
-# RotAlign-KV: Project Handoff Document
+# RotAlign-KV: Historical Handoff Document
 
-**Last updated:** April 13, 2026
-**Status:** Implementation complete, validated on synthetic data, awaiting real-model experiments
-**Target venues:** COLM 2026 workshop (deadline June 23, 2026) → ICLR 2027 full paper (deadline ~late September 2026)
+**Last updated:** April 22, 2026
+**Status:** Historical implementation memo. Do not use this file as the current
+project state.
+**Current sources of truth:** `paper/README.md`,
+`paper/experiment_ledger_20260421.md`,
+`paper/benchmark_expansion_order_20260422.md`,
+`paper/gsm8k70_seed_stability_partial_20260422.md`
+
+This document predates the current real-model campaign state. It still contains
+useful background on the original RotAlign framing, but it is stale on live
+results, venue targeting, and repo layout.
 
 ---
 

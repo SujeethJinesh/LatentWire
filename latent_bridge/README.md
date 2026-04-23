@@ -1,8 +1,31 @@
-# RotAlign-KV
+# latent_bridge / RotAlign-KV
 
 **Cross-model KV-cache transfer via rotational alignment and Lloyd-Max quantization.**
 
-See [`method.md`](method.md) for the formal writeup, math, and experimental protocol.
+This file is implementation-facing. For the current paper status, live
+benchmark branches, and reviewer-facing decision surface, start with:
+
+- [`../paper/README.md`](../paper/README.md)
+- [`../paper/experiment_ledger_20260421.md`](../paper/experiment_ledger_20260421.md)
+- [`../paper/benchmark_expansion_order_20260422.md`](../paper/benchmark_expansion_order_20260422.md)
+
+`LatentWire` is the repo, `latent_bridge` is the implementation package, and
+`rotalign/` is a backward-compatibility import shim. The live code layout is:
+
+```
+LatentWire/
+├── latent_bridge/                Main implementation package
+├── rotalign/                     Compatibility alias for older imports
+├── scripts/                      Calibration, evaluation, sweeps, campaigns
+├── tests/                        Regression coverage
+├── paper/                        Ledgers, notes, manuscript scaffold
+├── references/                   Papers, memos, external baseline repos
+├── results/                      Local experiment outputs
+└── checkpoints/                  Local calibration artifacts
+```
+
+See [`method.md`](method.md) for the formal writeup, math, and implementation
+protocol for the RotAlign-KV family.
 
 ## Core idea in one paragraph
 
@@ -45,20 +68,14 @@ trainable fusion gate, and no deep networks anywhere.
 ## Repository layout
 
 ```
-rotalign_kv/
+latent_bridge/
 ├── method.md                     Formal writeup: math, protocol, contributions
 ├── README.md                     This file
-├── requirements.txt
-├── rotalign/                     Core library
-│   ├── __init__.py               Public API
-│   ├── rotation.py               Haar rotation, Hadamard, ZCA whitening
-│   ├── procrustes.py             5 closed-form alignment solvers
-│   ├── quantize.py               Lloyd-Max scalar quantizer (searchsorted-optimized)
-│   └── translator.py             RotAlignKVTranslator composing all stages
-└── scripts/
-    ├── demo.py                   Self-contained sanity check (no model downloads)
-    ├── calibrate.py              Fit translator on real HF models
-    └── evaluate.py               Compare against baselines on MCQ and generation tasks
+├── requirements.txt              Historical local package requirements
+├── rotation.py                   Haar rotation, Hadamard, ZCA whitening
+├── procrustes.py                 Closed-form alignment solvers
+├── quantize.py                   Lloyd-Max scalar quantizer
+└── translator.py                 RotAlignKVTranslator and current bridge family
 ```
 
 ## Component study
@@ -86,7 +103,7 @@ over flag combinations.
 ### 1. Install
 
 ```bash
-source .venv/bin/activate
+source ../venv_arm64/bin/activate  # or ../.venv/bin/activate
 pip install -r requirements.txt
 ```
 

@@ -8,7 +8,7 @@ from scripts import run_gsm8k_contract_campaign as campaign
 def test_materialized_eval_path_uses_results_root_and_slice() -> None:
     config = campaign.CampaignConfig(results_root="results/my_campaign", slice_size=128)
     path = campaign._materialized_eval_path(config)
-    assert path.endswith("my_campaign_gsm8k_eval_128.jsonl")
+    assert path.endswith("results/my_campaign/_artifacts/gsm8k_eval_128.jsonl")
 
 
 def test_aggregate_rows_computes_seed_stats() -> None:

@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts import analyze_gsm8k_contract_diagnostics as diagnostics
+from scripts import harness_common as harness
 from scripts import run_gsm8k_smoke_contract as smoke
 
 
@@ -50,7 +51,7 @@ class CampaignConfig:
 
 
 def _run(cmd: list[str]) -> None:
-    smoke._run(cmd, cwd=ROOT)
+    harness.run(cmd, cwd=ROOT)
 
 
 def _campaign_baseline_dir(config: CampaignConfig) -> pathlib.Path:
@@ -64,15 +65,20 @@ def _seed_results_dir(config: CampaignConfig, seed: int) -> pathlib.Path:
 
 
 def _materialized_eval_path(config: CampaignConfig) -> str:
-    root_tag = pathlib.Path(config.results_root).name.replace("/", "_")
-    return f"/tmp/{root_tag}_gsm8k_eval_{int(config.slice_size)}.jsonl"
+    return str(
+        harness.resolve_materialized_eval_file(
+            None,
+            results_dir=ROOT / config.results_root,
+            slice_size=config.slice_size,
+        )
+    )
 
 
 def _run_smoke_contract(config: CampaignConfig, baseline_dir: pathlib.Path) -> None:
     if config.skip_smoke and baseline_dir.joinpath(SMOKE_PAYLOAD_NAME).exists():
         return
     cmd = [
-        str(ROOT / ".venv" / "bin" / "python"),
+        harness.python_executable(ROOT),
         str(ROOT / "scripts" / "run_gsm8k_smoke_contract.py"),
         "--source-model",
         config.source_model,
@@ -113,7 +119,7 @@ def _run_smoke_contract(config: CampaignConfig, baseline_dir: pathlib.Path) -> N
 def _run_residual_sweep(config: CampaignConfig, baseline_dir: pathlib.Path, seed: int) -> pathlib.Path:
     results_dir = _seed_results_dir(config, seed)
     cmd = [
-        str(ROOT / ".venv" / "bin" / "python"),
+        harness.python_executable(ROOT),
         str(ROOT / "scripts" / "run_gsm8k_contract_residual_sweep.py"),
         "--source-model",
         config.source_model,
@@ -171,7 +177,7 @@ def _run_diagnostics(
     if not candidate_output.exists():
         raise FileNotFoundError(f"Candidate output not found: {candidate_output}")
     cmd = [
-        str(ROOT / ".venv" / "bin" / "python"),
+        harness.python_executable(ROOT),
         str(ROOT / "scripts" / "analyze_gsm8k_contract_diagnostics.py"),
         "--candidate-prediction-output",
         str(candidate_output.relative_to(ROOT)),
@@ -222,10 +228,10 @@ def _candidate_paired_stats(
     bootstrap_seed: int,
 ) -> dict[str, Any]:
     baseline_output = baseline_dir / "gsm8k32_latentwire.jsonl"
-    baseline_records = smoke._attach_prompts(smoke._read_jsonl(baseline_output), materialized_eval_file)
-    target_records = smoke._group_by_method(baseline_records)["target_alone"]
+    baseline_records = harness.attach_prompts(harness.read_jsonl(baseline_output), materialized_eval_file)
+    target_records = harness.group_by_method(baseline_records)["target_alone"]
 
-    candidate_records = smoke._attach_prompts(smoke._read_jsonl(candidate_output), materialized_eval_file)
+    candidate_records = harness.attach_prompts(harness.read_jsonl(candidate_output), materialized_eval_file)
     method_records = diagnostics._resolve_candidate_records(candidate_records, method_name=candidate_method)
     target_by_id = {str(row["example_id"]): row for row in target_records}
     deltas = [float(bool(row["correct"])) - float(bool(target_by_id[str(row["example_id"])]["correct"])) for row in method_records]
@@ -234,7 +240,7 @@ def _candidate_paired_stats(
         samples=bootstrap_samples,
         seed=bootstrap_seed,
     )
-    paired = smoke._paired_vs_baseline(method_records, target_records)
+    paired = harness.paired_vs_baseline(method_records, target_records)
     return {
         "paired_n": len(deltas),
         "delta_vs_target": float(sum(deltas) / max(len(deltas), 1)),
@@ -360,7 +366,7 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
     _run_smoke_contract(config, baseline_dir)
     baseline_payload = _load_json(baseline_dir / SMOKE_PAYLOAD_NAME)
     materialized_eval_file = pathlib.Path(_materialized_eval_path(config))
-    smoke._materialize_slice(ROOT / config.eval_file, materialized_eval_file, config.slice_size)
+    harness.materialize_slice(ROOT / config.eval_file, materialized_eval_file, config.slice_size)
 
     seed_payloads: dict[int, dict[str, Any]] = {}
     seed_artifacts: dict[int, dict[str, Any]] = {}
@@ -426,7 +432,7 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
     }
     results_root = ROOT / config.results_root
     results_root.mkdir(parents=True, exist_ok=True)
-    smoke._write_json(results_root / "gsm8k_contract_campaign.json", payload)
+    harness.write_json(results_root / "gsm8k_contract_campaign.json", payload)
     _write_markdown(results_root / "gsm8k_contract_campaign.md", payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
     return payload

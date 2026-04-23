@@ -12,12 +12,13 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts import harness_common as harness
 from scripts import run_gsm8k_smoke_contract as smoke
 
 
 DEFAULT_BASELINE_RESULTS_DIR = "results/gsm8k_smoke_contract_20260421"
 DEFAULT_SWEEP_RESULTS_DIR = "results/gsm8k_contract_checkpoint_sweep_20260421"
-DEFAULT_MATERIALIZED_EVAL_FILE = "/tmp/gsm8k_eval_32.jsonl"
+DEFAULT_MATERIALIZED_EVAL_FILE: str | None = None
 
 DEFAULT_CANDIDATES: dict[str, str] = {
     "dynalign_module_replace": "checkpoints/bridge_ridge_qk_dynalign_module_replace_20260420/qwen25_to_qwen3_grouped_subspace_transport_w010_r4_dynalign_module_replace_cal64_chat.pt",
@@ -33,7 +34,7 @@ class SweepConfig:
     target_model: str = smoke.DEFAULT_TARGET_MODEL
     eval_file: str = smoke.DEFAULT_EVAL_FILE
     slice_size: int = 32
-    materialized_eval_file: str = DEFAULT_MATERIALIZED_EVAL_FILE
+    materialized_eval_file: str | None = DEFAULT_MATERIALIZED_EVAL_FILE
     baseline_results_dir: str = DEFAULT_BASELINE_RESULTS_DIR
     results_dir: str = DEFAULT_SWEEP_RESULTS_DIR
     device: str = "mps"
@@ -55,8 +56,8 @@ def _candidate_row(
     records: list[dict[str, Any]],
     baseline_target_records: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    row = smoke._method_row(records)
-    row["paired_vs_target"] = smoke._paired_vs_baseline(records, baseline_target_records)
+    row = harness.method_row(records)
+    row["paired_vs_target"] = harness.paired_vs_baseline(records, baseline_target_records)
     row["checkpoint_path"] = str(checkpoint_path)
     row["label"] = label
     return row
@@ -68,8 +69,8 @@ def _load_baseline_target_records(results_dir: pathlib.Path, materialized_eval_f
         raise FileNotFoundError(
             f"Baseline contract output not found at {baseline_output}. Run scripts/run_gsm8k_smoke_contract.py first."
         )
-    baseline_records = smoke._attach_prompts(smoke._read_jsonl(baseline_output), materialized_eval_file)
-    return smoke._group_by_method(baseline_records)["target_alone"]
+    baseline_records = harness.attach_prompts(harness.read_jsonl(baseline_output), materialized_eval_file)
+    return harness.group_by_method(baseline_records)["target_alone"]
 
 
 def _run_candidate(
@@ -81,7 +82,7 @@ def _run_candidate(
     baseline_target_records: list[dict[str, Any]],
     results_dir: pathlib.Path,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    py = str(ROOT / ".venv" / "bin" / "python")
+    py = harness.python_executable(ROOT)
     prediction_output = results_dir / f"{label}.jsonl"
     if not prediction_output.exists():
         cmd = [
@@ -118,21 +119,16 @@ def _run_candidate(
             "--prediction-output",
             str(prediction_output),
         ]
-        if config.use_chat_template:
-            cmd.extend(
-                [
-                    "--source-use-chat-template",
-                    "--target-use-chat-template",
-                    "--source-enable-thinking",
-                    "false" if not config.enable_thinking else "true",
-                    "--target-enable-thinking",
-                    "false" if not config.enable_thinking else "true",
-                ]
+        cmd.extend(
+            harness.chat_template_cli_args(
+                enabled=config.use_chat_template,
+                thinking=config.enable_thinking,
             )
+        )
         smoke._run(cmd, cwd=ROOT)
 
-    records = smoke._attach_prompts(smoke._read_jsonl(prediction_output), materialized_eval_file)
-    method_records = smoke._group_by_method(records)["rotalign_kv"]
+    records = harness.attach_prompts(harness.read_jsonl(prediction_output), materialized_eval_file)
+    method_records = harness.group_by_method(records)["rotalign_kv"]
     row = _candidate_row(
         label=label,
         checkpoint_path=checkpoint_path,
@@ -179,8 +175,12 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
 def run_sweep(config: SweepConfig) -> dict[str, Any]:
     results_dir = ROOT / config.results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
-    materialized = pathlib.Path(config.materialized_eval_file)
-    smoke._materialize_slice(ROOT / config.eval_file, materialized, config.slice_size)
+    materialized = harness.resolve_materialized_eval_file(
+        config.materialized_eval_file,
+        results_dir=results_dir,
+        slice_size=config.slice_size,
+    )
+    harness.materialize_slice(ROOT / config.eval_file, materialized, config.slice_size)
 
     baseline_target_records = _load_baseline_target_records(ROOT / config.baseline_results_dir, materialized)
     candidates = config.candidates or DEFAULT_CANDIDATES
@@ -207,7 +207,7 @@ def run_sweep(config: SweepConfig) -> dict[str, Any]:
         "rows": rows,
         "checks": checks,
     }
-    smoke._write_json(results_dir / "gsm8k_contract_checkpoint_sweep_20260421.json", payload)
+    harness.write_json(results_dir / "gsm8k_contract_checkpoint_sweep_20260421.json", payload)
     _write_markdown(results_dir / "gsm8k_contract_checkpoint_sweep_20260421.md", payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
     return payload

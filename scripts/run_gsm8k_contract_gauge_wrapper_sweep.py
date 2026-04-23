@@ -12,6 +12,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts import harness_common as harness
 from scripts import run_gsm8k_contract_checkpoint_sweep as checkpoint_sweep
 from scripts import run_gsm8k_smoke_contract as smoke
 
@@ -19,7 +20,7 @@ from scripts import run_gsm8k_smoke_contract as smoke
 DEFAULT_BASELINE_RESULTS_DIR = "results/gsm8k_smoke_contract_20260421"
 DEFAULT_SWEEP_RESULTS_DIR = "results/gsm8k_contract_gauge_wrapper_sweep_20260421"
 DEFAULT_CHECKPOINTS_DIR = "checkpoints/gsm8k_contract_gauge_wrapper_sweep_20260421"
-DEFAULT_MATERIALIZED_EVAL_FILE = "/tmp/gsm8k_eval_32.jsonl"
+DEFAULT_MATERIALIZED_EVAL_FILE: str | None = None
 DEFAULT_CALIBRATION_FILE = ".debug/calibration_64.txt"
 
 DEFAULT_ALIGNMENT_CANDIDATES: dict[str, dict[str, Any]] = {
@@ -38,7 +39,7 @@ class GaugeWrapperSweepConfig:
     target_model: str = smoke.DEFAULT_TARGET_MODEL
     eval_file: str = smoke.DEFAULT_EVAL_FILE
     slice_size: int = 32
-    materialized_eval_file: str = DEFAULT_MATERIALIZED_EVAL_FILE
+    materialized_eval_file: str | None = DEFAULT_MATERIALIZED_EVAL_FILE
     baseline_results_dir: str = DEFAULT_BASELINE_RESULTS_DIR
     results_dir: str = DEFAULT_SWEEP_RESULTS_DIR
     checkpoints_dir: str = DEFAULT_CHECKPOINTS_DIR
@@ -93,7 +94,7 @@ def _calibrate_checkpoint(
         return checkpoint_path
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     cmd = [
-        str(ROOT / ".venv" / "bin" / "python"),
+        harness.python_executable(ROOT),
         str(ROOT / "scripts" / "calibrate.py"),
         "--calibration-file",
         str(ROOT / config.calibration_file),
@@ -135,17 +136,12 @@ def _calibrate_checkpoint(
     canonical_rank = candidate.get("canonical_subspace_rank")
     if canonical_rank is not None:
         cmd.extend(["--canonical-subspace-rank", str(canonical_rank)])
-    if config.use_chat_template:
-        cmd.extend(
-            [
-                "--source-use-chat-template",
-                "--target-use-chat-template",
-                "--source-enable-thinking",
-                "false" if not config.enable_thinking else "true",
-                "--target-enable-thinking",
-                "false" if not config.enable_thinking else "true",
-            ]
+    cmd.extend(
+        harness.chat_template_cli_args(
+            enabled=config.use_chat_template,
+            thinking=config.enable_thinking,
         )
+    )
     _run(cmd)
     return checkpoint_path
 
@@ -162,7 +158,7 @@ def _run_candidate(
     prediction_output = results_dir / f"{label}.jsonl"
     if not prediction_output.exists():
         cmd = [
-            str(ROOT / ".venv" / "bin" / "python"),
+            harness.python_executable(ROOT),
             str(ROOT / "latent_bridge" / "evaluate.py"),
             "--translator",
             str(checkpoint_path),
@@ -195,21 +191,16 @@ def _run_candidate(
             "--prediction-output",
             str(prediction_output),
         ]
-        if config.use_chat_template:
-            cmd.extend(
-                [
-                    "--source-use-chat-template",
-                    "--target-use-chat-template",
-                    "--source-enable-thinking",
-                    "false" if not config.enable_thinking else "true",
-                    "--target-enable-thinking",
-                    "false" if not config.enable_thinking else "true",
-                ]
+        cmd.extend(
+            harness.chat_template_cli_args(
+                enabled=config.use_chat_template,
+                thinking=config.enable_thinking,
             )
+        )
         _run(cmd)
 
-    records = smoke._attach_prompts(smoke._read_jsonl(prediction_output), materialized_eval_file)
-    method_records = smoke._group_by_method(records)["rotalign_kv"]
+    records = harness.attach_prompts(harness.read_jsonl(prediction_output), materialized_eval_file)
+    method_records = harness.group_by_method(records)["rotalign_kv"]
     row = checkpoint_sweep._candidate_row(
         label=label,
         checkpoint_path=checkpoint_path,
@@ -263,8 +254,12 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
 def run_sweep(config: GaugeWrapperSweepConfig) -> dict[str, Any]:
     results_dir = ROOT / config.results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
-    materialized = pathlib.Path(config.materialized_eval_file)
-    smoke._materialize_slice(ROOT / config.eval_file, materialized, config.slice_size)
+    materialized = harness.resolve_materialized_eval_file(
+        config.materialized_eval_file,
+        results_dir=results_dir,
+        slice_size=config.slice_size,
+    )
+    harness.materialize_slice(ROOT / config.eval_file, materialized, config.slice_size)
     baseline_target_records = checkpoint_sweep._load_baseline_target_records(ROOT / config.baseline_results_dir, materialized)
     candidates = config.candidates or DEFAULT_ALIGNMENT_CANDIDATES
 
@@ -295,7 +290,7 @@ def run_sweep(config: GaugeWrapperSweepConfig) -> dict[str, Any]:
         "rows": rows,
         "checks": checks,
     }
-    smoke._write_json(results_dir / "gsm8k_contract_gauge_wrapper_sweep_20260421.json", payload)
+    harness.write_json(results_dir / "gsm8k_contract_gauge_wrapper_sweep_20260421.json", payload)
     _write_markdown(results_dir / "gsm8k_contract_gauge_wrapper_sweep_20260421.md", payload)
     print(json.dumps(payload, indent=2, sort_keys=True))
     return payload

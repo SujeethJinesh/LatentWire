@@ -17,6 +17,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts import harness_common as harness
+
 
 DEFAULT_SOURCE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 DEFAULT_TARGET_MODEL = "Qwen/Qwen3-0.6B"
@@ -31,7 +33,7 @@ class GSM8KSmokeConfig:
     checkpoint_path: str = DEFAULT_CHECKPOINT
     eval_file: str = DEFAULT_EVAL_FILE
     slice_size: int = 32
-    materialized_eval_file: str = "/tmp/gsm8k_eval_32.jsonl"
+    materialized_eval_file: str | None = None
     results_dir: str = "results/gsm8k_smoke_contract_20260421"
     device: str = "mps"
     max_new_tokens: int = 64
@@ -313,10 +315,14 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
 def run_smoke(config: GSM8KSmokeConfig) -> dict[str, Any]:
     results_dir = ROOT / config.results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
-    materialized = pathlib.Path(config.materialized_eval_file)
+    materialized = harness.resolve_materialized_eval_file(
+        config.materialized_eval_file,
+        results_dir=results_dir,
+        slice_size=config.slice_size,
+    )
     _materialize_slice(ROOT / config.eval_file, materialized, config.slice_size)
 
-    py = str(ROOT / ".venv" / "bin" / "python")
+    py = harness.python_executable(ROOT)
     base_eval_cmd = [
         py,
         str(ROOT / "latent_bridge" / "evaluate.py"),
@@ -347,17 +353,12 @@ def run_smoke(config: GSM8KSmokeConfig) -> dict[str, Any]:
         "--fixed-gate",
         f"{config.gate:.2f}",
     ]
-    if config.use_chat_template:
-        base_eval_cmd.extend(
-            [
-                "--source-use-chat-template",
-                "--target-use-chat-template",
-                "--source-enable-thinking",
-                "false" if not config.enable_thinking else "true",
-                "--target-enable-thinking",
-                "false" if not config.enable_thinking else "true",
-            ]
+    base_eval_cmd.extend(
+        harness.chat_template_cli_args(
+            enabled=config.use_chat_template,
+            thinking=config.enable_thinking,
         )
+    )
 
     latentwire_output = results_dir / "gsm8k32_latentwire.jsonl"
     target_rerun_output = results_dir / "gsm8k32_target_rerun.jsonl"
@@ -494,6 +495,8 @@ def run_smoke(config: GSM8KSmokeConfig) -> dict[str, Any]:
         "config": asdict(config),
         "artifacts": {
             "materialized_eval_file": str(materialized),
+            "bridge_prediction_output": str(latentwire_output),
+            "bridge_sidecar": str(latentwire_output.with_suffix(latentwire_output.suffix + ".meta.json")),
             "latentwire_prediction_output": str(latentwire_output),
             "latentwire_sidecar": str(latentwire_output.with_suffix(latentwire_output.suffix + ".meta.json")),
             "target_rerun_prediction_output": str(target_rerun_output),
@@ -518,7 +521,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--checkpoint-path", default=DEFAULT_CHECKPOINT)
     parser.add_argument("--eval-file", default=DEFAULT_EVAL_FILE)
     parser.add_argument("--slice-size", type=int, default=32)
-    parser.add_argument("--materialized-eval-file", default="/tmp/gsm8k_eval_32.jsonl")
+    parser.add_argument("--materialized-eval-file", default=None)
     parser.add_argument("--results-dir", default="results/gsm8k_smoke_contract_20260421")
     parser.add_argument("--device", default="mps")
     parser.add_argument("--max-new-tokens", type=int, default=64)
