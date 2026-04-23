@@ -25,6 +25,10 @@
 - `gsm8k32_selective_conditioning_v_all_layers_20260423.md` is the broader
   `V`-only all-layer conditioning follow-up. It is also finite but not
   promotable: seed `1` ties target and seed `0` again falls below target.
+- `gsm8k32_selective_conditioning_l8_kv_20260423.md` is the last simple
+  whitening screen. Layer-8 `K/V` conditioning gives the best conditioned
+  bad-seed row so far, but seed `0` still falls below target, so whitening is
+  no longer the next method branch.
 - `ablation_evidence_ladder_20260421.md` is the telemetry-driven stack
   decision table for toy positives, controls, and blockers.
 - `../results/query_pool_toy_20260421/hub_router_frontier_sweep_20260421.md`

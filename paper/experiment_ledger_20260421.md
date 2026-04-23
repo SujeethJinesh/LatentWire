@@ -335,6 +335,21 @@ is layer-8 source+target conditioning across both `K/V`; if that also kills
 seed `0`, stop whitening sweeps and move to a protected/outlier-escrow
 calibration fit for the layer-8 `V` family.
 
+`paper/gsm8k32_selective_conditioning_l8_kv_20260423.md` is that final simple
+whitening screen. It conditions both `K/V` but only at target layer `8`. The
+bad-seed read is the best conditioned row so far, but the branch still fails
+the seed-0 guard:
+
+- seed `1`: `0.0938`, full coverage, no non-finite checkpoint values
+- seed `0`: `0.0312`, full coverage, no non-finite checkpoint values
+
+Treat this as the end of the simple whitening sweep. Conditioning reliably
+removes the catastrophic checkpoint failure, and layer-8 `K/V` coupling can
+recover a positive bad-seed row, but every whitening variant tested so far
+erases the live seed-0 signal. The next method branch should patch the layer-8
+`V` calibration fit with protected/outlier-escrow smoothing rather than keep
+tuning whitening scope.
+
 `paper/gsm8k70_campaign_20260422.md` is the first larger frozen same-pair read
 after the reviewer pivot. It shows that the live
 `dynalign_module_replace_residrank16` lane survives beyond GSM8K32:
