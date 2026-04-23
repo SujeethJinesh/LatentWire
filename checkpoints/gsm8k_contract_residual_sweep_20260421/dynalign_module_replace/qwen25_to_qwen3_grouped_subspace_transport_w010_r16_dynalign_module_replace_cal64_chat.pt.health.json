@@ -1,0 +1,109 @@
+{
+  "base_label": "dynalign_module_replace",
+  "checkpoint_path": "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat.pt",
+  "conditioning": {
+    "bridge_bank_size": 4,
+    "conditioning_target_layers": [],
+    "fit_ridge_override_lambda": null,
+    "fit_ridge_override_layers": [],
+    "fit_ridge_override_streams": "kv",
+    "fit_ridge_protected_rank": null,
+    "target_whitening": false,
+    "target_whitening_streams": "kv",
+    "whitening": false,
+    "whitening_streams": "kv"
+  },
+  "first_bad_key": null,
+  "floating_tensor_keys": 2390,
+  "freshly_created": false,
+  "max_abs": 5808.2841796875,
+  "nonfinite_keys": [],
+  "nonfinite_numel": 0,
+  "quarantined_checkpoint_path": null,
+  "residual_rank": 16,
+  "seed": 0,
+  "tensor_keys": 2392,
+  "top_abs_tensors": [
+    {
+      "key": "quant_aux_proj_K.24",
+      "max_abs": 5808.2841796875,
+      "mean_abs": 240.64431762695312,
+      "nonfinite_numel": 0,
+      "shape": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "key": "quant_aux_proj_K.19",
+      "max_abs": 2728.76513671875,
+      "mean_abs": 66.33755493164062,
+      "nonfinite_numel": 0,
+      "shape": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "key": "quant_aux_proj_V.6",
+      "max_abs": 2543.930419921875,
+      "mean_abs": 43.99560546875,
+      "nonfinite_numel": 0,
+      "shape": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "key": "quant_bias_K.0",
+      "max_abs": 1977.6153564453125,
+      "mean_abs": 452.40570068359375,
+      "nonfinite_numel": 0,
+      "shape": [
+        1,
+        1024
+      ]
+    },
+    {
+      "key": "quant_aux_proj_K.23",
+      "max_abs": 1959.1571044921875,
+      "mean_abs": 83.77890014648438,
+      "nonfinite_numel": 0,
+      "shape": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "key": "quant_aux_proj_K.25",
+      "max_abs": 1516.16162109375,
+      "mean_abs": 48.08538055419922,
+      "nonfinite_numel": 0,
+      "shape": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "key": "quant_aux_proj_V.12",
+      "max_abs": 1426.5703125,
+      "mean_abs": 36.370452880859375,
+      "nonfinite_numel": 0,
+      "shape": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "key": "quant_aux_proj_K.21",
+      "max_abs": 1345.1214599609375,
+      "mean_abs": 43.612388610839844,
+      "nonfinite_numel": 0,
+      "shape": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "total_numel": 402606580
+}

@@ -20,6 +20,8 @@ DEFAULT_HEALTH_JSON = ROOT / (
 )
 DEFAULT_OUTPUT_JSON = ROOT / "paper/gsm8k_contract_artifact_manifest_20260422.json"
 DEFAULT_OUTPUT_MD = ROOT / "paper/gsm8k_contract_artifact_manifest_20260422.md"
+LIVE_LABEL = "dynalign_module_replace_residrank16"
+CONTROL_LABEL = "tokenbasis_replace_residrank16"
 
 
 def _read_json(path: pathlib.Path) -> dict[str, Any]:
@@ -31,6 +33,26 @@ def _relative(path: pathlib.Path) -> str:
         return str(path.relative_to(ROOT))
     except ValueError:
         return str(path)
+
+
+def _row_by_label(rows: list[dict[str, Any]], label: str) -> dict[str, Any]:
+    matches = [row for row in rows if row.get("label") == label]
+    if len(matches) != 1:
+        raise ValueError(f"Expected exactly one row with label {label!r}, found {len(matches)}")
+    return matches[0]
+
+
+def _source_control_artifacts(row: dict[str, Any]) -> dict[str, Any] | None:
+    source_controls = row.get("source_controls")
+    if not source_controls:
+        return None
+    return {
+        "status": source_controls.get("status"),
+        "passed": bool(source_controls.get("passed", False)),
+        "readout_json": source_controls.get("readout_json"),
+        "readout_md": source_controls.get("readout_md"),
+        "prediction_outputs": dict(source_controls.get("prediction_outputs", {})),
+    }
 
 
 def _build_manifest(
@@ -47,16 +69,16 @@ def _build_manifest(
     health_json: pathlib.Path,
 ) -> dict[str, Any]:
     smoke_rows = smoke_payload["rows"]
-    live_row = live_payload["rows"][0]
-    control_row = control_payload["rows"][0]
-    campaign_row = campaign_payload["aggregate_rows"]["dynalign_module_replace_residrank16"]
+    live_row = _row_by_label(live_payload["rows"], LIVE_LABEL)
+    control_row = _row_by_label(control_payload["rows"], CONTROL_LABEL)
+    campaign_row = campaign_payload["aggregate_rows"][LIVE_LABEL]
     campaign_baseline = campaign_payload["baseline_summary"]
 
     return {
         "date": "2026-04-22",
         "current_story": {
             "status": "same_pair_live_clue",
-            "live_label": "dynalign_module_replace_residrank16",
+            "live_label": LIVE_LABEL,
             "main_blocker": "seed_stability_and_cross_family_falsification",
         },
         "artifacts": {
@@ -84,6 +106,7 @@ def _build_manifest(
             },
             "numeric_coverage": int(live_row["numeric_extraction_coverage"]),
             "checkpoint_path": str(live_row["checkpoint_path"]),
+            "source_controls": _source_control_artifacts(live_row),
         },
         "matched_control": {
             "label": str(control_row["label"]),
@@ -95,9 +118,10 @@ def _build_manifest(
             },
             "numeric_coverage": int(control_row["numeric_extraction_coverage"]),
             "checkpoint_path": str(control_row["checkpoint_path"]),
+            "source_controls": _source_control_artifacts(control_row),
         },
         "larger_slice_campaign": {
-            "slice_size": int(campaign_payload["aggregate_rows"]["dynalign_module_replace_residrank16"]["paired_n"]),
+            "slice_size": int(campaign_payload["aggregate_rows"][LIVE_LABEL]["paired_n"]),
             "seeds_completed": list(campaign_row["seeds"]),
             "candidate_accuracy_mean": float(campaign_row["accuracy_mean"]),
             "candidate_accuracy_min": float(campaign_row["accuracy_min"]),

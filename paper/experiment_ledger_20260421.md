@@ -822,3 +822,56 @@ failure mode first-class so future rows cannot bypass the falsification check.
 The next exact gate is to run the integrated wrapper on GSM70
 `dynalign_module_replace_residrank16` seed 0 plus one finite repeat, then decide
 whether a source-control-aware accept/fallback gate is worth implementing.
+
+`paper/gsm8k70_integrated_source_controls_20260423.md` records the integrated
+source-control gate on the strongest remaining GSM70 lane. Seed 0 was rerun
+through `scripts/run_gsm8k_contract_residual_sweep.py --run-source-controls` on
+the frozen 70-example slice with the campaign baseline. The live row was
+regenerated; the prior matched zero-source and shuffled-source control JSONL
+files were reused through row-local `.debug` symlinks and re-analyzed by the
+new wrapper path.
+
+Readout:
+
+- seed 0 live: `8/70`, paired vs target `6` wins / `2` losses / `62` ties,
+  numeric coverage `70/70`, empty predictions `0`
+- seed 0 source-control status:
+  `source_controls_support_matched_source_signal`
+- zero-source + target fallback: `4/70`, paired vs target `0/0/70`,
+  paired vs live `2/6/62`, live-win retention `0/6`, coverage `70/70`
+- shuffled-source + target fallback: `4/70`, paired vs target `0/0/70`,
+  paired vs live `2/6/62`, live-win retention `0/6`, coverage `70/70`,
+  source deranged
+- seed 3 finite repeat: `2/70`, paired vs target `1` win / `3` losses /
+  `66` ties, numeric coverage `69/70`, source-control status
+  `not_run_live_gate_failed`
+- seed 0 wrapper JSON SHA256:
+  `0ada9e55c0c3518b36049c2a99f817f0f62a6b21e5be05f21665896972851d3f`
+- seed 0 source-control readout SHA256:
+  `c6bf310dea326ddbee116e656c64db5f5556b8fca163818fbb29e44ad630ed86`
+- seed 3 wrapper JSON SHA256:
+  `f2762cb777a71ef220df36c561dca964ce893800e1eb3bd9dc34f60283592a51`
+
+This strengthens the seed-0 source-dependence interpretation but does not
+promote the raw dynalign lane. The finite repeat is target-negative, so the
+blocking gap is now target-safe selection/robustness rather than source
+controls on seed 0. The next exact gate is an offline control-calibrated
+accept/fallback replay over the seed-0 and seed-3 artifacts: accept the latent
+intervention only when a predeclared score keeps zero/shuffled control accepts
+near zero and avoids seed-3 harms. If that fails, demote dynalign to a brittle
+mechanism probe and return the main method effort to learned
+connector/conditional innovation designs.
+
+The repo cleanup sidecar also identified a manifest drift risk. In response,
+`scripts/build_gsm8k_contract_manifest.py` now resolves live/control rows by
+explicit label instead of positional `rows[0]`, and preserves source-control
+sidecar paths when present. Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_build_gsm8k_contract_manifest.py \
+  tests/test_gsm8k_contract_residual_sweep.py \
+  tests/test_analyze_gsm8k_source_controls.py
+```
+
+Readout: `41 passed in 0.10s`.

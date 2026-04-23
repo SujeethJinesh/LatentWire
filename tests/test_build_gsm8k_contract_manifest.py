@@ -34,11 +34,27 @@ def test_build_manifest_extracts_current_evidence_chain(tmp_path: pathlib.Path) 
             {
                 "rows": [
                     {
+                        "label": "wrong_high_accuracy_row",
+                        "accuracy": 1.0,
+                        "numeric_extraction_coverage": 32,
+                        "checkpoint_path": "checkpoints/wrong.pt",
+                        "paired_vs_target": {"win": 32, "loss": 0, "tie": 0},
+                    },
+                    {
                         "label": "dynalign_module_replace_residrank16",
                         "accuracy": 0.125,
                         "numeric_extraction_coverage": 32,
                         "checkpoint_path": "checkpoints/live.pt",
                         "paired_vs_target": {"win": 2, "loss": 0, "tie": 30},
+                        "source_controls": {
+                            "status": "source_controls_support_matched_source_signal",
+                            "passed": True,
+                            "readout_json": "results/live/source_control_readout.json",
+                            "readout_md": "results/live/source_control_readout.md",
+                            "prediction_outputs": {
+                                "zero_source": "results/live/zero_source.jsonl"
+                            },
+                        },
                     }
                 ]
             }
@@ -48,6 +64,13 @@ def test_build_manifest_extracts_current_evidence_chain(tmp_path: pathlib.Path) 
         json.dumps(
             {
                 "rows": [
+                    {
+                        "label": "wrong_control_row",
+                        "accuracy": 1.0,
+                        "numeric_extraction_coverage": 32,
+                        "checkpoint_path": "checkpoints/wrong_control.pt",
+                        "paired_vs_target": {"win": 32, "loss": 0, "tie": 0},
+                    },
                     {
                         "label": "tokenbasis_replace_residrank16",
                         "accuracy": 0.0625,
@@ -110,7 +133,9 @@ def test_build_manifest_extracts_current_evidence_chain(tmp_path: pathlib.Path) 
     )
 
     assert built["smoke_contract"]["rotalign_numeric_coverage"] == 28
+    assert built["same_pair_live_row"]["label"] == "dynalign_module_replace_residrank16"
     assert built["same_pair_live_row"]["paired_vs_target"]["win"] == 2
+    assert built["same_pair_live_row"]["source_controls"]["readout_json"] == "results/live/source_control_readout.json"
     assert built["matched_control"]["label"] == "tokenbasis_replace_residrank16"
     assert built["larger_slice_campaign"]["slice_size"] == 70
     assert built["seed1_health"]["first_bad_key"] == "W_V.8"
