@@ -88,6 +88,12 @@ class TranslatorConfig:
     # true per-head alignment.
     alignment_method: str = "auto"
     ridge_lambda: float = 1e-3
+    # Optional override for the closed-form source->target fit on selected
+    # target layers/streams. This lets us test localized numerical fixes
+    # without changing bridge-correction ridge terms or unrelated layers.
+    fit_ridge_override_lambda: float | None = None
+    fit_ridge_override_streams: str = "kv"
+    fit_ridge_override_layers: tuple[int, ...] | None = None
     alignment_rank: int | None = None  # for cca / reduced_rank
     # Optional low-rank residual added on top of grouped soft transport.
     transport_residual_rank: int | None = None
@@ -290,9 +296,23 @@ class TranslatorConfig:
             raise ValueError(f"Invalid whitening_streams: {self.whitening_streams}")
         if self.target_whitening_streams not in valid_streams:
             raise ValueError(f"Invalid target_whitening_streams: {self.target_whitening_streams}")
+        if self.fit_ridge_override_streams not in valid_streams:
+            raise ValueError(f"Invalid fit_ridge_override_streams: {self.fit_ridge_override_streams}")
+        if self.fit_ridge_override_lambda is not None:
+            override_lambda = float(self.fit_ridge_override_lambda)
+            if not math.isfinite(override_lambda) or override_lambda <= 0.0:
+                raise ValueError(
+                    "fit_ridge_override_lambda must be finite and positive "
+                    f"when set, got {self.fit_ridge_override_lambda}"
+                )
+            self.fit_ridge_override_lambda = override_lambda
         if self.conditioning_target_layers is not None:
             self.conditioning_target_layers = tuple(
                 sorted({int(layer) for layer in self.conditioning_target_layers})
+            )
+        if self.fit_ridge_override_layers is not None:
+            self.fit_ridge_override_layers = tuple(
+                sorted({int(layer) for layer in self.fit_ridge_override_layers})
             )
 
 
@@ -874,6 +894,19 @@ class RotAlignKVTranslator(nn.Module):
             and self._conditioning_layer_applies(tgt_layer_idx)
             and self._conditioning_stream_applies(self.config.target_whitening_streams, kind)
         )
+
+    def _fit_ridge_override_applies(self, tgt_layer_idx: int, kind: str) -> bool:
+        layers = self.config.fit_ridge_override_layers
+        return (
+            self.config.fit_ridge_override_lambda is not None
+            and (layers is None or int(tgt_layer_idx) in layers)
+            and self._conditioning_stream_applies(self.config.fit_ridge_override_streams, kind)
+        )
+
+    def _fit_ridge_lambda(self, tgt_layer_idx: int, kind: str) -> float:
+        if self._fit_ridge_override_applies(tgt_layer_idx, kind):
+            return float(self.config.fit_ridge_override_lambda)
+        return float(self.config.ridge_lambda)
 
     @staticmethod
     def _build_layer_map(cfg: TranslatorConfig) -> list[int]:
@@ -4813,12 +4846,15 @@ class RotAlignKVTranslator(nn.Module):
             else:
                 Yv_fit = Yv
 
+            lam_k = self._fit_ridge_lambda(tgt_l, "k")
+            lam_v = self._fit_ridge_lambda(tgt_l, "v")
+
             if grouped_alignment:
                 if self.config.alignment_method in {"grouped_transport", "grouped_permutation", "grouped_signature_transport", "grouped_subspace_transport", "grouped_canonical_transport", "grouped_adaptive_canonical_transport", "grouped_rotational_transport", "grouped_fitted_rotation_transport", "grouped_shared_basis_transport", "grouped_covariance_transport", "grouped_template_transport", "grouped_qk_retrieval_transport", "grouped_contrastive_template_transport", "grouped_template_subspace_transport"}:
                     W_K, plan_k = self._fit_group_transport_alignment(
                         Xk,
                         Yk_fit,
-                        lam=self.config.ridge_lambda,
+                        lam=lam_k,
                         residual_rank=self.config.transport_residual_rank,
                         src_layer_idx=src_l,
                         tgt_layer_idx=tgt_l,
@@ -4826,7 +4862,7 @@ class RotAlignKVTranslator(nn.Module):
                     W_V, plan_v = self._fit_group_transport_alignment(
                         Xv,
                         Yv_fit,
-                        lam=self.config.ridge_lambda,
+                        lam=lam_v,
                         residual_rank=self.config.transport_residual_rank,
                         src_layer_idx=src_l,
                         tgt_layer_idx=tgt_l,
@@ -4843,7 +4879,7 @@ class RotAlignKVTranslator(nn.Module):
                     W_K, plan_k = self._fit_broadcast_template_transport_alignment(
                         Xk,
                         Yk_fit,
-                        lam=self.config.ridge_lambda,
+                        lam=lam_k,
                         residual_rank=self.config.transport_residual_rank,
                         src_layer_idx=src_l,
                         tgt_layer_idx=tgt_l,
@@ -4857,7 +4893,7 @@ class RotAlignKVTranslator(nn.Module):
                     W_V, plan_v = self._fit_broadcast_template_transport_alignment(
                         Xv,
                         Yv_fit,
-                        lam=self.config.ridge_lambda,
+                        lam=lam_v,
                         residual_rank=self.config.transport_residual_rank,
                         src_layer_idx=src_l,
                         tgt_layer_idx=tgt_l,
@@ -4894,14 +4930,14 @@ class RotAlignKVTranslator(nn.Module):
                         Xk,
                         Yk_fit,
                         method=self.config.alignment_method,
-                        lam=self.config.ridge_lambda,
+                        lam=lam_k,
                         rank=self.config.alignment_rank,
                     )
                     W_V = self._fit_grouped_alignment(
                         Xv,
                         Yv_fit,
                         method=self.config.alignment_method,
-                        lam=self.config.ridge_lambda,
+                        lam=lam_v,
                         rank=self.config.alignment_rank,
                     )
             else:
@@ -4909,14 +4945,14 @@ class RotAlignKVTranslator(nn.Module):
                     Xk,
                     Yk_fit,
                     method=self.config.alignment_method,
-                    lam=self.config.ridge_lambda,
+                    lam=lam_k,
                     rank=self.config.alignment_rank,
                 )
                 W_V = fit_alignment(
                     Xv,
                     Yv_fit,
                     method=self.config.alignment_method,
-                    lam=self.config.ridge_lambda,
+                    lam=lam_v,
                     rank=self.config.alignment_rank,
                 )
             self.W_K[tgt_l].data.copy_(W_K.to(self.W_K[tgt_l].dtype))
@@ -6321,14 +6357,14 @@ class RotAlignKVTranslator(nn.Module):
                     Xk[:, src_slice],
                     Yk_fit[:, tgt_slice],
                     method=base_method,
-                    lam=self.config.ridge_lambda,
+                    lam=lam_k,
                     rank=self.config.alignment_rank,
                 )
                 WgV = fit_alignment(
                     Xv[:, src_slice],
                     Yv_fit[:, tgt_slice],
                     method=base_method,
-                    lam=self.config.ridge_lambda,
+                    lam=lam_v,
                     rank=self.config.alignment_rank,
                 )
                 qg_k = alignment_quality(Xk[:, src_slice], Yk_fit[:, tgt_slice], WgK)

@@ -116,6 +116,26 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--ridge-lambda", type=float, default=1e-3)
     p.add_argument(
+        "--fit-ridge-override-lambda",
+        type=float,
+        default=None,
+        help="Override source->target fit ridge lambda for selected target layers/streams",
+    )
+    p.add_argument(
+        "--fit-ridge-override-streams",
+        choices=["kv", "k", "v"],
+        default="kv",
+        help="Streams receiving the fit ridge override",
+    )
+    p.add_argument(
+        "--fit-ridge-override-layer",
+        type=int,
+        action="append",
+        dest="fit_ridge_override_layers",
+        default=None,
+        help="Limit the fit ridge override to a target layer; repeat to select multiple layers",
+    )
+    p.add_argument(
         "--alignment-rank",
         type=int,
         default=None,
@@ -3078,6 +3098,13 @@ def main() -> None:
         ),
         alignment_method=args.alignment,
         ridge_lambda=args.ridge_lambda,
+        fit_ridge_override_lambda=args.fit_ridge_override_lambda,
+        fit_ridge_override_streams=args.fit_ridge_override_streams,
+        fit_ridge_override_layers=(
+            tuple(args.fit_ridge_override_layers)
+            if args.fit_ridge_override_layers
+            else None
+        ),
         alignment_rank=args.alignment_rank,
         transport_residual_rank=args.transport_residual_rank,
         transport_temperature=args.transport_temperature,

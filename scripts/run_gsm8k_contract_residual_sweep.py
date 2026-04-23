@@ -123,6 +123,9 @@ class ResidualSweepConfig:
     alignment: str = "grouped_subspace_transport"
     bits: int = 4
     ridge_lambda: float = 1e-3
+    fit_ridge_override_lambda: float | None = None
+    fit_ridge_override_streams: str = "kv"
+    fit_ridge_override_layers: tuple[int, ...] | None = None
     transport_residual_rank: int = 4
     transport_temperature: float = 0.1
     transport_sinkhorn_iters: int = 8
@@ -146,6 +149,10 @@ def _candidate_label(base_label: str, rank: int) -> str:
     return f"{base_label}_residrank{rank}"
 
 
+def _float_suffix(value: float) -> str:
+    return f"{float(value):g}".replace("-", "m").replace("+", "").replace(".", "p")
+
+
 def _conditioning_suffix(config: ResidualSweepConfig) -> str:
     parts: list[str] = []
     if config.whitening:
@@ -161,17 +168,43 @@ def _conditioning_suffix(config: ResidualSweepConfig) -> str:
     if config.conditioning_target_layers:
         layer_suffix = "-".join(str(layer) for layer in config.conditioning_target_layers)
         parts.append(f"layers{layer_suffix}")
+    if config.fit_ridge_override_lambda is not None:
+        streams = config.fit_ridge_override_streams
+        if config.fit_ridge_override_layers:
+            override_layers = "-".join(str(layer) for layer in config.fit_ridge_override_layers)
+            parts.append(f"fitridge{streams}_layers{override_layers}_lam{_float_suffix(config.fit_ridge_override_lambda)}")
+        else:
+            parts.append(f"fitridge{streams}_lam{_float_suffix(config.fit_ridge_override_lambda)}")
     return "" if not parts else "_" + "_".join(parts)
 
 
-def _checkpoint_path(base_label: str, rank: int, config: ResidualSweepConfig) -> pathlib.Path:
+def _can_reuse_existing_checkpoint(base_label: str, rank: int, config: ResidualSweepConfig) -> bool:
     base_meta = DEFAULT_BASES[base_label]
-    if (
+    return (
         rank == int(base_meta["existing_rank"])
         and int(config.seed) == 0
         and not config.whitening
         and not config.target_whitening
-    ):
+        and config.fit_ridge_override_lambda is None
+    )
+
+
+def _conditioning_payload(config: ResidualSweepConfig) -> dict[str, Any]:
+    return {
+        "whitening": bool(config.whitening),
+        "target_whitening": bool(config.target_whitening),
+        "whitening_streams": config.whitening_streams,
+        "target_whitening_streams": config.target_whitening_streams,
+        "conditioning_target_layers": list(config.conditioning_target_layers or ()),
+        "fit_ridge_override_lambda": config.fit_ridge_override_lambda,
+        "fit_ridge_override_streams": config.fit_ridge_override_streams,
+        "fit_ridge_override_layers": list(config.fit_ridge_override_layers or ()),
+    }
+
+
+def _checkpoint_path(base_label: str, rank: int, config: ResidualSweepConfig) -> pathlib.Path:
+    if _can_reuse_existing_checkpoint(base_label, rank, config):
+        base_meta = DEFAULT_BASES[base_label]
         return ROOT / str(base_meta["checkpoint_path"])
     seed_suffix = "" if int(config.seed) == 0 else f"_seed{int(config.seed)}"
     conditioning_suffix = _conditioning_suffix(config)
@@ -266,6 +299,7 @@ def _write_checkpoint_health(
         "checkpoint_path": str(checkpoint_path),
         "freshly_created": bool(freshly_created),
         "quarantined_checkpoint_path": str(quarantined_path) if quarantined_path is not None else None,
+        "conditioning": _conditioning_payload(config),
         **checkpoint_summary,
     }
     smoke._write_json(health_path, payload)
@@ -350,25 +384,14 @@ def _failure_row(
         "empty_predictions": config.slice_size,
         "paired_vs_target": {"win": 0, "loss": 0, "tie": 0},
         "seed": int(config.seed),
-        "reused_existing_checkpoint": (
-            rank == int(DEFAULT_BASES[base_label]["existing_rank"])
-            and int(config.seed) == 0
-            and not config.whitening
-            and not config.target_whitening
-        ),
+        "reused_existing_checkpoint": _can_reuse_existing_checkpoint(base_label, rank, config),
         "status": _failure_status(error, checkpoint_summary),
         "failure_reason": str(error),
         "checkpoint_path": str(checkpoint_path),
         "checkpoint_nonfinite_numel": int(checkpoint_summary.get("nonfinite_numel", 0)),
         "checkpoint_first_bad_key": checkpoint_summary.get("first_bad_key"),
         "checkpoint_max_abs": float(checkpoint_summary.get("max_abs", 0.0)),
-        "conditioning": {
-            "whitening": bool(config.whitening),
-            "target_whitening": bool(config.target_whitening),
-            "whitening_streams": config.whitening_streams,
-            "target_whitening_streams": config.target_whitening_streams,
-            "conditioning_target_layers": list(config.conditioning_target_layers or ()),
-        },
+        "conditioning": _conditioning_payload(config),
         "checkpoint_summary": checkpoint_summary,
     }
     checks = {
@@ -448,6 +471,11 @@ def _calibrate_checkpoint(
         if config.conditioning_target_layers:
             for layer in config.conditioning_target_layers:
                 cmd.extend(["--conditioning-target-layer", str(layer)])
+        if config.fit_ridge_override_lambda is not None:
+            cmd.extend(["--fit-ridge-override-lambda", str(config.fit_ridge_override_lambda)])
+            cmd.extend(["--fit-ridge-override-streams", config.fit_ridge_override_streams])
+            for layer in config.fit_ridge_override_layers or ():
+                cmd.extend(["--fit-ridge-override-layer", str(layer)])
         _run(cmd)
     checkpoint_summary = _checkpoint_finite_summary(checkpoint_path)
     if int(checkpoint_summary["nonfinite_numel"]) > 0:
@@ -556,23 +584,12 @@ def _run_candidate(
     row["base_label"] = base_label
     row["residual_rank"] = rank
     row["seed"] = int(config.seed)
-    row["reused_existing_checkpoint"] = (
-        rank == int(DEFAULT_BASES[base_label]["existing_rank"])
-        and int(config.seed) == 0
-        and not config.whitening
-        and not config.target_whitening
-    )
+    row["reused_existing_checkpoint"] = _can_reuse_existing_checkpoint(base_label, rank, config)
     row["status"] = "ok"
     row["checkpoint_nonfinite_numel"] = int(checkpoint_summary.get("nonfinite_numel", 0))
     row["checkpoint_first_bad_key"] = checkpoint_summary.get("first_bad_key")
     row["checkpoint_max_abs"] = float(checkpoint_summary.get("max_abs", 0.0))
-    row["conditioning"] = {
-        "whitening": bool(config.whitening),
-        "target_whitening": bool(config.target_whitening),
-        "whitening_streams": config.whitening_streams,
-        "target_whitening_streams": config.target_whitening_streams,
-        "conditioning_target_layers": list(config.conditioning_target_layers or ()),
-    }
+    row["conditioning"] = _conditioning_payload(config)
     row["checkpoint_summary"] = checkpoint_summary
     checks = _row_checks(row, baseline_target_records, config.slice_size)
     return row, checks
@@ -737,6 +754,9 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--whitening-streams", choices=["kv", "k", "v"], default="kv")
     parser.add_argument("--target-whitening-streams", choices=["kv", "k", "v"], default="kv")
     parser.add_argument("--conditioning-target-layer", type=int, action="append", dest="conditioning_target_layers")
+    parser.add_argument("--fit-ridge-override-lambda", type=float, default=None)
+    parser.add_argument("--fit-ridge-override-streams", choices=["kv", "k", "v"], default="kv")
+    parser.add_argument("--fit-ridge-override-layer", type=int, action="append", dest="fit_ridge_override_layers")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--rank", type=int, action="append", dest="ranks")
     parser.add_argument("--base", action="append", choices=sorted(DEFAULT_BASES), dest="bases")
@@ -780,6 +800,13 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         conditioning_target_layers=(
             tuple(args.conditioning_target_layers)
             if args.conditioning_target_layers
+            else None
+        ),
+        fit_ridge_override_lambda=args.fit_ridge_override_lambda,
+        fit_ridge_override_streams=args.fit_ridge_override_streams,
+        fit_ridge_override_layers=(
+            tuple(args.fit_ridge_override_layers)
+            if args.fit_ridge_override_layers
             else None
         ),
         seed=args.seed,

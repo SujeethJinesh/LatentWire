@@ -538,6 +538,14 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
             "random",
             "--whitening",
             "--target-whitening",
+            "--fit-ridge-override-lambda",
+            "0.01",
+            "--fit-ridge-override-streams",
+            "v",
+            "--fit-ridge-override-layer",
+            "8",
+            "--fit-ridge-override-layer",
+            "10",
             "--source-reasoning-mode",
             "cot",
         ],
@@ -550,6 +558,9 @@ def test_calibrate_parse_args_supports_unit_tested_ablation_flags(monkeypatch) -
     assert args.layer_pairing == "random"
     assert args.whitening is True
     assert args.target_whitening is True
+    assert args.fit_ridge_override_lambda == 0.01
+    assert args.fit_ridge_override_streams == "v"
+    assert args.fit_ridge_override_layers == [8, 10]
     assert args.source_reasoning_mode == "cot"
 
 

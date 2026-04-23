@@ -1161,6 +1161,52 @@ def test_selective_target_whitening_applies_only_to_v_stream(monkeypatch) -> Non
     assert torch.allclose(V_hat, 4.0 * V)
 
 
+def test_fit_ridge_override_targets_only_requested_layer_and_stream(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        src_layers=1,
+        tgt_layers=2,
+        alignment_method="ridge",
+        ridge_lambda=1e-3,
+        fit_ridge_override_lambda=1e-2,
+        fit_ridge_override_streams="v",
+        fit_ridge_override_layers=(1,),
+    )
+    calls: list[float] = []
+
+    def _fake_fit_alignment(
+        X: torch.Tensor,
+        Y: torch.Tensor,
+        method: str = "auto",
+        lam: float = 1e-3,
+        rank: int | None = None,
+    ) -> torch.Tensor:
+        calls.append(float(lam))
+        return torch.full(
+            (X.shape[1], Y.shape[1]),
+            float(lam),
+            dtype=X.dtype,
+            device=X.device,
+        )
+
+    monkeypatch.setattr(translator_mod, "fit_alignment", _fake_fit_alignment)
+
+    src = torch.arange(24, dtype=torch.float32).view(2, 2, 3, 2)
+    tr.fit_from_pairs(
+        [(src, src + 1.0)],
+        [
+            (src + 2.0, src + 3.0),
+            (src + 4.0, src + 5.0),
+        ],
+    )
+
+    assert any(abs(call - 1e-2) < 1e-12 for call in calls)
+    assert any(abs(call - 1e-3) < 1e-12 for call in calls)
+    assert torch.allclose(tr.W_K[1], torch.full_like(tr.W_K[1], 1e-3))
+    assert torch.allclose(tr.W_V[1], torch.full_like(tr.W_V[1], 1e-2))
+    assert tr.config.fit_ridge_override_layers == (1,)
+
+
 def test_selective_conditioning_targets_only_requested_layers(monkeypatch) -> None:
     monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
     monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
