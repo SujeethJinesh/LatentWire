@@ -505,3 +505,40 @@ nonfinite/target-parity follow-ups dominate. The next exact gate is a symmetric
 target-safe live/control path that preserves the seed-0 lift while making at
 least one additional finite seed positive; otherwise pivot to the learned
 query/resampler connector branch.
+
+`paper/gsm8k32_anchor_tail_seed1_20260422.md` now includes a 2026-04-23
+independent rerun of the V-only anchor/tail seed-1 screen with explicit scratch
+checkpoint provenance. The rerun used:
+
+```bash
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_anchor_tail_module_replace \
+  --rank 16 \
+  --bits 4 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_dynalign_anchor_tail_resid16_seed1_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_dynalign_anchor_tail_resid16_seed1_20260423 \
+  --seed 1
+```
+
+Readout:
+
+- status: `checkpoint_nonfinite`
+- first bad key: `W_V.8`
+- checkpoint nonfinite values: `2,381,056`
+- numeric coverage: `0/32`
+- empty predictions: `32`
+- summary JSON SHA256:
+  `c447f87287b319933c7269d3e6df644ca10a8244af565cfc475edf5194012b30`
+
+This confirms the earlier anchor-tail falsification and marks the wrapper-only
+V-anchor/tail selective-precision lane as saturated. It should not be run on
+seed `0`, GSM70, or cross-family pairs. The branch fails before evaluation, so
+it cannot clear the current stability gate. Combined with the ridge and
+protected-ridge rows, the closed-form value-side repair lane is now mostly
+exhausted unless a new diagnostic changes the failure surface. The next exact
+gate should be the learned query/resampler connector with an explicit
+bottleneck and the same matched/zero/shuffled-source target-safe control
+envelope.

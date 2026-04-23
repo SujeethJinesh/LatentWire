@@ -100,3 +100,59 @@ current wrapper:
    - a smaller layer-local value-only repair path
 2. rerun the same bad-seed check first
 3. only if that stays finite, reopen the full GSM70 seed audit
+
+## 2026-04-23 Independent Rerun
+
+The same frozen GSM8K32 seed-1 falsification was rerun with an explicit
+scratch checkpoint directory:
+
+```bash
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_anchor_tail_module_replace \
+  --rank 16 \
+  --bits 4 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_dynalign_anchor_tail_resid16_seed1_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_dynalign_anchor_tail_resid16_seed1_20260423 \
+  --seed 1
+```
+
+Rerun artifacts:
+
+- summary JSON:
+  `.debug/gsm8k32_dynalign_anchor_tail_resid16_seed1_20260423/gsm8k_contract_residual_sweep_20260421.json`
+- summary JSON SHA256:
+  `c447f87287b319933c7269d3e6df644ca10a8244af565cfc475edf5194012b30`
+- summary MD:
+  `.debug/gsm8k32_dynalign_anchor_tail_resid16_seed1_20260423/gsm8k_contract_residual_sweep_20260421.md`
+- summary MD SHA256:
+  `bde5f2c0178a74641ed336f6615fc52412d90d1d2bb15784b3a284e22074c113`
+- checkpoint health JSON:
+  `.debug/checkpoints_gsm8k32_dynalign_anchor_tail_resid16_seed1_20260423/dynalign_anchor_tail_module_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_anchor_tail_module_replace_cal64_chat_seed1.pt.health.json`
+- checkpoint health JSON SHA256:
+  `c91a6687b0fb413954f1bc216ec41a2b44f62c39deba0df525316c180b0570c7`
+
+Result:
+
+- status: `checkpoint_nonfinite`
+- first bad key: `W_V.8`
+- checkpoint nonfinite values: `2,381,056`
+- checkpoint max abs: `6416.1553`
+- numeric coverage: `0/32`
+- empty predictions: `32`
+
+This confirms the 2026-04-22 falsification: the current V-only anchor-tail
+wrapper is too late in the pipeline because the layer-8 value-side fit is
+already non-finite before runtime tail coding can matter.
+
+Updated branch status:
+
+- killed/saturated: wrapper-only V-anchor/tail selective precision as a
+  stability fix
+- weakened: closed-form scalar value-side stabilization as the main rescue
+  family, given the later finite-but-target-parity ridge/protected-ridge rows
+- promoted next: a learned query/resampler connector with an explicit
+  bottleneck, or another intervention that changes the layer-8 value fit before
+  checkpoint materialization rather than wrapping its output
