@@ -282,6 +282,16 @@ protected anchor exact. Treat this as the next same-pair falsification branch,
 but judge it primarily on the larger frozen campaign and bytes-aware reporting,
 not on GSM8K32 alone.
 
+`paper/gsm8k32_anchor_tail_seed1_20260422.md` is the first bad-seed
+falsification of that scaffold after tightening it into a true `V`-only runtime
+wrapper. It is a clean negative on seed `1`: the checkpoint still quarantines
+with `2,381,056` non-finite values and the same layer-8 `V` family
+(`W_V.8`, `quant_proj_V.8`, `quant_aux_proj_V.8`, and the matching residual
+slots). Treat this as evidence that wrapper-level value-side anchor-tail repair
+does not move the instability upstream. The next bounded robustness branch
+should patch the layer-8 `V` calibration fit itself before spending more budget
+on wrapper-only codec variants.
+
 `paper/gsm8k70_campaign_20260422.md` is the first larger frozen same-pair read
 after the reviewer pivot. It shows that the live
 `dynalign_module_replace_residrank16` lane survives beyond GSM8K32:

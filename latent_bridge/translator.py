@@ -199,6 +199,11 @@ class TranslatorConfig:
     # live dynalign module shape but preserves the most salient target
     # directions from the base bridge and only repairs the learned-importance
     # tail, and
+    # `bridge_ridge_qk_dynalign_anchor_tail_module_replace` keeps the same
+    # saliency-selected preserve-versus-tail split, but only on the `V` side:
+    # `K` stays on the live module-replacement path while `V` keeps a small
+    # exact residual anchor against the base bridge and only the remaining
+    # value-side tail is quantized, and
     # `bridge_ridge_qk_dynalign_routed_module_replace` keeps that same direct
     # output-aware module shape but learns a tiny query-conditioned gate over
     # when to trust the repaired output versus the base bridge,
@@ -4160,7 +4165,10 @@ class RotAlignKVTranslator(nn.Module):
                         complement = torch.eye(self.d_t, device=x.device, dtype=x.dtype) - preserve
                         return base @ preserve + module_pred @ complement
                     if self.config.quantization_correction == "bridge_ridge_qk_dynalign_anchor_tail_module_replace":
-                        return self._quantize_tail_with_preserve(module_pred, preserve_proj)
+                        if kind == "K":
+                            return module_pred
+                        value_delta = module_pred - base
+                        return base + self._quantize_tail_with_preserve(value_delta, preserve_proj)
                     if self.config.quantization_correction == "bridge_ridge_qk_dynalign_routed_module_replace":
                         gate = torch.sigmoid(
                             qfeat @ route_proj.to(device=x.device, dtype=x.dtype)
@@ -5115,8 +5123,32 @@ class RotAlignKVTranslator(nn.Module):
                             if self.config.quantization_correction in {"bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_anchor_tail_module_replace"}:
                                 preserve_rank = max(1, min(int(self.config.quantization_correction_rank or 8), self.d_t))
                                 if self.config.quantization_correction in {"bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_anchor_tail_module_replace"}:
-                                    preserve_proj_k = self._fit_saliency_preserve_projector(Yk_fit, K_pred, query_features, preserve_rank)
-                                    preserve_proj_v = self._fit_saliency_preserve_projector(Yv_fit, V_pred, query_features, preserve_rank)
+                                    if self.config.quantization_correction == "bridge_ridge_qk_dynalign_anchor_tail_module_replace":
+                                        preserve_proj_k = torch.zeros(
+                                            self.d_t,
+                                            self.d_t,
+                                            dtype=Yk_fit.dtype,
+                                            device=Yk_fit.device,
+                                        )
+                                        preserve_proj_v = self._fit_saliency_preserve_projector(
+                                            Yv_fit,
+                                            V_pred,
+                                            query_features,
+                                            preserve_rank,
+                                        )
+                                    else:
+                                        preserve_proj_k = self._fit_saliency_preserve_projector(
+                                            Yk_fit,
+                                            K_pred,
+                                            query_features,
+                                            preserve_rank,
+                                        )
+                                        preserve_proj_v = self._fit_saliency_preserve_projector(
+                                            Yv_fit,
+                                            V_pred,
+                                            query_features,
+                                            preserve_rank,
+                                        )
                                 else:
                                     preserve_proj_k = self._fit_preserve_projector(Yk_fit, preserve_rank)
                                     preserve_proj_v = self._fit_preserve_projector(Yv_fit, preserve_rank)

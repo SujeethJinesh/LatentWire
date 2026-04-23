@@ -11,6 +11,9 @@
   index for the current GSM contract evidence chain: smoke gate, live
   `dynalign_module_replace_residrank16` row, matched control, larger frozen
   slice, and the seed-collapse checkpoint-health artifact.
+- `gsm8k32_anchor_tail_seed1_20260422.md` is the first bad-seed falsification
+  of the new `V`-only anchor-tail runtime wrapper. It shows the wrapper alone
+  does not remove the repeated layer-8 `V` checkpoint collapse.
 - `ablation_evidence_ladder_20260421.md` is the telemetry-driven stack
   decision table for toy positives, controls, and blockers.
 - `../results/query_pool_toy_20260421/hub_router_frontier_sweep_20260421.md`
