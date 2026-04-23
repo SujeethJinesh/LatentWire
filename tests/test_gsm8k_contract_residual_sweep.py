@@ -36,11 +36,18 @@ def test_checkpoint_path_builds_seeded_rank_path() -> None:
 
 
 def test_checkpoint_path_builds_conditioned_rank_path() -> None:
-    config = sweep.ResidualSweepConfig(seed=1, whitening=True, target_whitening=True)
+    config = sweep.ResidualSweepConfig(
+        seed=1,
+        whitening=True,
+        target_whitening=True,
+        whitening_streams="v",
+        target_whitening_streams="v",
+        conditioning_target_layers=(8,),
+    )
     path = sweep._checkpoint_path("dynalign_module_replace", 16, config)
     assert str(path).endswith(
         "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/"
-        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat_srcwhite_tgtwhite_seed1.pt"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat_srcwhitev_tgtwhitev_layers8_seed1.pt"
     )
 
 
@@ -287,12 +294,49 @@ def test_calibrate_checkpoint_passes_whitening_flags(tmp_path: pathlib.Path, mon
         base_label="dynalign_module_replace",
         rank=16,
         checkpoint_path=ckpt,
-        config=sweep.ResidualSweepConfig(seed=1, whitening=True, target_whitening=True),
+        config=sweep.ResidualSweepConfig(
+            seed=1,
+            whitening=True,
+            target_whitening=True,
+            whitening_streams="v",
+            target_whitening_streams="v",
+            conditioning_target_layers=(8,),
+        ),
     )
 
     assert summary["nonfinite_numel"] == 0
     assert any(part == "--whitening" for part in commands[0])
     assert any(part == "--target-whitening" for part in commands[0])
+    assert "--whitening-streams" in commands[0]
+    assert "--target-whitening-streams" in commands[0]
+    assert "--conditioning-target-layer" in commands[0]
+    assert "v" in commands[0]
+    assert "8" in commands[0]
+
+
+def test_parse_args_accepts_selective_conditioning(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--whitening",
+            "--target-whitening",
+            "--whitening-streams",
+            "v",
+            "--target-whitening-streams",
+            "v",
+            "--conditioning-target-layer",
+            "8",
+            "--conditioning-target-layer",
+            "10",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.whitening is True
+    assert args.target_whitening is True
+    assert args.whitening_streams == "v"
+    assert args.target_whitening_streams == "v"
+    assert args.conditioning_target_layers == [8, 10]
 
 
 def test_run_sweep_records_failure_row_instead_of_aborting(tmp_path: pathlib.Path, monkeypatch) -> None:

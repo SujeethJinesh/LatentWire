@@ -40,6 +40,11 @@ class CampaignConfig:
     source_reasoning_mode: str = "brief_analysis"
     use_chat_template: bool = True
     enable_thinking: bool = False
+    whitening: bool = False
+    target_whitening: bool = False
+    whitening_streams: str = "kv"
+    target_whitening_streams: str = "kv"
+    conditioning_target_layers: tuple[int, ...] | None = None
     seeds: tuple[int, ...] = (0,)
     bases: tuple[str, ...] = ("dynalign_module_replace",)
     ranks: tuple[int, ...] = (16,)
@@ -158,6 +163,13 @@ def _run_residual_sweep(config: CampaignConfig, baseline_dir: pathlib.Path, seed
         cmd.append("--no-chat-template")
     if config.enable_thinking:
         cmd.append("--enable-thinking")
+    if config.whitening:
+        cmd.extend(["--whitening", "--whitening-streams", config.whitening_streams])
+    if config.target_whitening:
+        cmd.extend(["--target-whitening", "--target-whitening-streams", config.target_whitening_streams])
+    if config.conditioning_target_layers:
+        for layer in config.conditioning_target_layers:
+            cmd.extend(["--conditioning-target-layer", str(layer)])
     for rank in config.ranks:
         cmd.extend(["--rank", str(rank)])
     for base in config.bases:
@@ -467,6 +479,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source-reasoning-mode", default="brief_analysis")
     parser.add_argument("--no-chat-template", action="store_true")
     parser.add_argument("--enable-thinking", action="store_true")
+    parser.add_argument("--whitening", action="store_true")
+    parser.add_argument("--target-whitening", action="store_true")
+    parser.add_argument("--whitening-streams", choices=["kv", "k", "v"], default="kv")
+    parser.add_argument("--target-whitening-streams", choices=["kv", "k", "v"], default="kv")
+    parser.add_argument("--conditioning-target-layer", action="append", type=int, dest="conditioning_target_layers")
     parser.add_argument("--seed", action="append", type=int, dest="seeds")
     parser.add_argument("--base", action="append", dest="bases")
     parser.add_argument("--rank", action="append", type=int, dest="ranks")
@@ -496,6 +513,15 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         source_reasoning_mode=args.source_reasoning_mode,
         use_chat_template=not args.no_chat_template,
         enable_thinking=args.enable_thinking,
+        whitening=bool(args.whitening),
+        target_whitening=bool(args.target_whitening),
+        whitening_streams=args.whitening_streams,
+        target_whitening_streams=args.target_whitening_streams,
+        conditioning_target_layers=(
+            tuple(args.conditioning_target_layers)
+            if args.conditioning_target_layers
+            else None
+        ),
         seeds=tuple(args.seeds) if args.seeds else CampaignConfig.seeds,
         bases=tuple(args.bases) if args.bases else CampaignConfig.bases,
         ranks=tuple(args.ranks) if args.ranks else CampaignConfig.ranks,

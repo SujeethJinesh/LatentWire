@@ -308,6 +308,19 @@ selective than global whitening: layer-local or `V`-only conditioning around
 the layer-8 failure family, rerun on the same `0/1/2` seed controls, and only
 then reopen GSM70.
 
+`paper/gsm8k32_selective_conditioning_l8_v_20260423.md` is the first targeted
+version of that idea. It conditions only the `V` stream and only target layer
+`8` with source+target whitening. The read is finite but negative:
+
+- seed `1`: `0.0625`, full coverage, no non-finite checkpoint values
+- seed `0`: `0.0312`, full coverage, no non-finite checkpoint values
+
+Treat this as evidence that conditioning touches the numerical failure surface,
+but the exact layer-8 `V` intersection is too narrow and is not promotable. The
+next conditioning screen should broaden one axis before any GSM70 rerun:
+`V`-only source+target conditioning across all layers, or layer-8
+source+target conditioning across both `K/V`.
+
 `paper/gsm8k70_campaign_20260422.md` is the first larger frozen same-pair read
 after the reviewer pivot. It shows that the live
 `dynalign_module_replace_residrank16` lane survives beyond GSM8K32:

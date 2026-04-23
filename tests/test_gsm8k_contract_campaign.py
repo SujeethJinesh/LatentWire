@@ -87,6 +87,31 @@ def test_parse_args_accepts_repeated_seed_base_rank_and_candidate(monkeypatch) -
     assert args.bootstrap_seed == 17
 
 
+def test_parse_args_accepts_selective_conditioning(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_campaign.py",
+            "--results-root",
+            "results/campaign",
+            "--whitening",
+            "--target-whitening",
+            "--whitening-streams",
+            "v",
+            "--target-whitening-streams",
+            "v",
+            "--conditioning-target-layer",
+            "8",
+        ],
+    )
+    args = campaign._parse_args()
+    assert args.whitening is True
+    assert args.target_whitening is True
+    assert args.whitening_streams == "v"
+    assert args.target_whitening_streams == "v"
+    assert args.conditioning_target_layers == [8]
+
+
 def test_write_markdown_renders_aggregate_rows(tmp_path) -> None:
     payload = {
         "date": "2026-04-22",
@@ -240,3 +265,28 @@ def test_run_campaign_skips_failed_candidate_rows_without_outputs(tmp_path: path
     assert payload["paired_stats_by_label"] == {}
     assert payload["diagnostic_rows"] == {}
     assert payload["seed_artifacts"][0]["diagnostics"] == []
+
+
+def test_run_residual_sweep_forwards_selective_conditioning_flags(tmp_path: pathlib.Path, monkeypatch) -> None:
+    commands: list[list[str]] = []
+    monkeypatch.setattr(campaign, "_run", lambda cmd: commands.append(cmd))
+
+    config = campaign.CampaignConfig(
+        results_root=".debug/test_campaign_selective_conditioning",
+        whitening=True,
+        target_whitening=True,
+        whitening_streams="v",
+        target_whitening_streams="v",
+        conditioning_target_layers=(8,),
+    )
+    baseline_dir = campaign.ROOT / ".debug" / "test_campaign_selective_conditioning_baseline"
+    campaign._run_residual_sweep(config, baseline_dir, seed=1)
+
+    cmd = commands[0]
+    assert "--whitening" in cmd
+    assert "--target-whitening" in cmd
+    assert "--whitening-streams" in cmd
+    assert "--target-whitening-streams" in cmd
+    assert "--conditioning-target-layer" in cmd
+    assert "v" in cmd
+    assert "8" in cmd

@@ -125,6 +125,9 @@ class ResidualSweepConfig:
     transport_signature_weight: float = 0.0
     whitening: bool = False
     target_whitening: bool = False
+    whitening_streams: str = "kv"
+    target_whitening_streams: str = "kv"
+    conditioning_target_layers: tuple[int, ...] | None = None
     seed: int = 0
     ranks: tuple[int, ...] = (2, 4, 8, 16)
     bases: tuple[str, ...] = ("dynalign_module_replace", "tokenbasis_replace")
@@ -141,9 +144,18 @@ def _candidate_label(base_label: str, rank: int) -> str:
 def _conditioning_suffix(config: ResidualSweepConfig) -> str:
     parts: list[str] = []
     if config.whitening:
-        parts.append("srcwhite")
+        parts.append(
+            "srcwhite" if config.whitening_streams == "kv" else f"srcwhite{config.whitening_streams}"
+        )
     if config.target_whitening:
-        parts.append("tgtwhite")
+        parts.append(
+            "tgtwhite"
+            if config.target_whitening_streams == "kv"
+            else f"tgtwhite{config.target_whitening_streams}"
+        )
+    if config.conditioning_target_layers:
+        layer_suffix = "-".join(str(layer) for layer in config.conditioning_target_layers)
+        parts.append(f"layers{layer_suffix}")
     return "" if not parts else "_" + "_".join(parts)
 
 
@@ -348,6 +360,9 @@ def _failure_row(
         "conditioning": {
             "whitening": bool(config.whitening),
             "target_whitening": bool(config.target_whitening),
+            "whitening_streams": config.whitening_streams,
+            "target_whitening_streams": config.target_whitening_streams,
+            "conditioning_target_layers": list(config.conditioning_target_layers or ()),
         },
         "checkpoint_summary": checkpoint_summary,
     }
@@ -421,8 +436,13 @@ def _calibrate_checkpoint(
         )
         if config.whitening:
             cmd.append("--whitening")
+            cmd.extend(["--whitening-streams", config.whitening_streams])
         if config.target_whitening:
             cmd.append("--target-whitening")
+            cmd.extend(["--target-whitening-streams", config.target_whitening_streams])
+        if config.conditioning_target_layers:
+            for layer in config.conditioning_target_layers:
+                cmd.extend(["--conditioning-target-layer", str(layer)])
         _run(cmd)
     checkpoint_summary = _checkpoint_finite_summary(checkpoint_path)
     if int(checkpoint_summary["nonfinite_numel"]) > 0:
@@ -544,6 +564,9 @@ def _run_candidate(
     row["conditioning"] = {
         "whitening": bool(config.whitening),
         "target_whitening": bool(config.target_whitening),
+        "whitening_streams": config.whitening_streams,
+        "target_whitening_streams": config.target_whitening_streams,
+        "conditioning_target_layers": list(config.conditioning_target_layers or ()),
     }
     row["checkpoint_summary"] = checkpoint_summary
     checks = _row_checks(row, baseline_target_records, config.slice_size)
@@ -706,6 +729,9 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--transport-signature-weight", type=float, default=0.0)
     parser.add_argument("--whitening", action="store_true")
     parser.add_argument("--target-whitening", action="store_true")
+    parser.add_argument("--whitening-streams", choices=["kv", "k", "v"], default="kv")
+    parser.add_argument("--target-whitening-streams", choices=["kv", "k", "v"], default="kv")
+    parser.add_argument("--conditioning-target-layer", type=int, action="append", dest="conditioning_target_layers")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--rank", type=int, action="append", dest="ranks")
     parser.add_argument("--base", action="append", choices=sorted(DEFAULT_BASES), dest="bases")
@@ -744,6 +770,13 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         transport_signature_weight=args.transport_signature_weight,
         whitening=args.whitening,
         target_whitening=args.target_whitening,
+        whitening_streams=args.whitening_streams,
+        target_whitening_streams=args.target_whitening_streams,
+        conditioning_target_layers=(
+            tuple(args.conditioning_target_layers)
+            if args.conditioning_target_layers
+            else None
+        ),
         seed=args.seed,
         ranks=tuple(args.ranks) if args.ranks else ResidualSweepConfig.ranks,
         bases=tuple(args.bases) if args.bases else ResidualSweepConfig.bases,

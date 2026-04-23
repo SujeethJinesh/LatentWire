@@ -1119,6 +1119,103 @@ def test_target_whitening_save_load_preserves_translation(monkeypatch, tmp_path)
     assert torch.allclose(loaded.whiten_K_tgt_inv[0], tr.whiten_K_tgt_inv[0])
 
 
+def test_selective_source_whitening_applies_only_to_v_stream(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        use_whitening=True,
+        whitening_streams="v",
+    )
+    with torch.no_grad():
+        tr.whiten_K_src[0].zero_()
+        tr.whiten_K_mean[0].zero_()
+        tr.whiten_V_src[0].copy_(2.0 * torch.eye(4))
+        tr.whiten_V_mean[0].zero_()
+
+    K = torch.arange(12, dtype=torch.float32).view(1, 2, 3, 2)
+    V = K + 1.0
+
+    K_hat, V_hat = tr.translate_layer(K, V, tgt_layer_idx=0, quantize=False)
+
+    assert torch.allclose(K_hat, K)
+    assert torch.allclose(V_hat, 2.0 * V)
+
+
+def test_selective_target_whitening_applies_only_to_v_stream(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        use_target_whitening=True,
+        target_whitening_streams="v",
+    )
+    with torch.no_grad():
+        tr.whiten_K_tgt_inv[0].zero_()
+        tr.whiten_K_tgt_mean[0].zero_()
+        tr.whiten_V_tgt_inv[0].copy_(4.0 * torch.eye(4))
+        tr.whiten_V_tgt_mean[0].zero_()
+
+    K = torch.arange(12, dtype=torch.float32).view(1, 2, 3, 2)
+    V = K + 1.0
+
+    K_hat, V_hat = tr.translate_layer(K, V, tgt_layer_idx=0, quantize=False)
+
+    assert torch.allclose(K_hat, K)
+    assert torch.allclose(V_hat, 4.0 * V)
+
+
+def test_selective_conditioning_targets_only_requested_layers(monkeypatch) -> None:
+    monkeypatch.setattr(translator_mod, "GaussianQuantizer", _TinyQuantizer)
+    monkeypatch.setattr(translator_mod, "make_rotation", lambda d, **_: torch.eye(d))
+
+    tr = RotAlignKVTranslator(
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=2,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=2,
+            alignment_method="procrustes",
+            use_whitening=True,
+            use_target_whitening=True,
+            whitening_streams="v",
+            target_whitening_streams="v",
+            conditioning_target_layers=(1,),
+        )
+    )
+
+    src0 = torch.randn(4, 2, 3, 2, dtype=torch.float32)
+    src1 = torch.randn(4, 2, 3, 2, dtype=torch.float32)
+    scale = torch.diag(torch.tensor([2.0, 0.5, 1.5, 0.75], dtype=torch.float32))
+    bias = torch.tensor([[0.2, -0.3, 0.1, 0.05]], dtype=torch.float32)
+    tgt1_flat = src1.permute(0, 2, 1, 3).reshape(-1, 4) @ scale + bias
+    tgt1 = tgt1_flat.reshape(4, 3, 2, 2).permute(0, 2, 1, 3).contiguous()
+
+    src_kvs = [
+        (src0, src0 + 0.1),
+        (src1, src1 + 0.2),
+    ]
+    tgt_kvs = [
+        (src0, src0 + 0.1),
+        (src1, tgt1),
+    ]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    eye_src = torch.eye(4)
+    eye_tgt = torch.eye(4)
+    zero_mean = torch.zeros(1, 4)
+
+    assert torch.allclose(tr.whiten_K_src[0], eye_src)
+    assert torch.allclose(tr.whiten_K_src[1], eye_src)
+    assert torch.allclose(tr.whiten_K_tgt[0], eye_tgt)
+    assert torch.allclose(tr.whiten_K_tgt[1], eye_tgt)
+    assert torch.allclose(tr.whiten_V_src[0], eye_src)
+    assert torch.allclose(tr.whiten_V_tgt[0], eye_tgt)
+    assert torch.allclose(tr.whiten_V_mean[0], zero_mean)
+    assert torch.allclose(tr.whiten_V_tgt_mean[0], zero_mean)
+    assert not torch.allclose(tr.whiten_V_src[1], eye_src)
+    assert not torch.allclose(tr.whiten_V_tgt[1], eye_tgt)
+
+
 def test_learned_affine_fusion_uses_stored_coordinatewise_scales(monkeypatch) -> None:
     tr = _make_identity_translator(monkeypatch)
     with torch.no_grad():

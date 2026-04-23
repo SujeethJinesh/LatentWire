@@ -18,6 +18,10 @@
   follow-up on the live dynalign residual lane. It shows that source+target
   whitening removes the catastrophic bad-seed checkpoint collapse on GSM8K32,
   but currently trades away the seed-0 ceiling.
+- `gsm8k32_selective_conditioning_l8_v_20260423.md` is the first selective
+  conditioning follow-up. It shows that exact layer-8 `V`-only conditioning is
+  finite but not promotable: seed `1` only ties target and seed `0` falls below
+  target.
 - `ablation_evidence_ladder_20260421.md` is the telemetry-driven stack
   decision table for toy positives, controls, and blockers.
 - `../results/query_pool_toy_20260421/hub_router_frontier_sweep_20260421.md`

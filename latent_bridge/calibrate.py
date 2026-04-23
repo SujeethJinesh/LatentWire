@@ -175,9 +175,29 @@ def parse_args() -> argparse.Namespace:
         help="Apply ZCA whitening of source coords before alignment",
     )
     p.add_argument(
+        "--whitening-streams",
+        choices=["kv", "k", "v"],
+        default="kv",
+        help="Which source streams to whiten: both (`kv`), keys only (`k`), or values only (`v`)",
+    )
+    p.add_argument(
         "--target-whitening",
         action="store_true",
         help="Canonicalize target rotated coordinates too, then dewhiten after projection",
+    )
+    p.add_argument(
+        "--target-whitening-streams",
+        choices=["kv", "k", "v"],
+        default="kv",
+        help="Which target streams to canonicalize/dewhiten: both (`kv`), keys only (`k`), or values only (`v`)",
+    )
+    p.add_argument(
+        "--conditioning-target-layer",
+        type=int,
+        action="append",
+        dest="conditioning_target_layers",
+        default=None,
+        help="Limit conditioning to specific target layers; repeat the flag to select multiple layers",
     )
     p.add_argument(
         "--layer-pairing",
@@ -3047,6 +3067,13 @@ def main() -> None:
         rotation_kind=args.rotation,
         use_whitening=args.whitening,
         use_target_whitening=args.target_whitening,
+        whitening_streams=args.whitening_streams,
+        target_whitening_streams=args.target_whitening_streams,
+        conditioning_target_layers=(
+            tuple(args.conditioning_target_layers)
+            if args.conditioning_target_layers
+            else None
+        ),
         alignment_method=args.alignment,
         ridge_lambda=args.ridge_lambda,
         alignment_rank=args.alignment_rank,

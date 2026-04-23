@@ -55,6 +55,14 @@ class TranslatorConfig:
     # Canonicalize the target rotated coordinates too, then dewhiten after
     # projection. This gives us a symmetric quotient-space style alignment.
     use_target_whitening: bool = False
+    # Restrict conditioning to a subset of streams. `kv` keeps the legacy
+    # behavior, while `k` / `v` let us target the anchor or tail only.
+    whitening_streams: str = "kv"
+    target_whitening_streams: str = "kv"
+    # Optional target-layer allowlist for conditioning. When unset, apply to
+    # every target layer; when set, only the listed target layers use the
+    # fitted whitening/dewhitening transforms.
+    conditioning_target_layers: tuple[int, ...] | None = None
 
     # Alignment solver: 'auto' | 'identity' | 'procrustes'
     #                 | 'procrustes_rand' | 'ridge' | 'cca' | 'reduced_rank'
@@ -272,6 +280,17 @@ class TranslatorConfig:
     # Rotation RNG
     seed: int = 0
 
+    def __post_init__(self) -> None:
+        valid_streams = {"kv", "k", "v"}
+        if self.whitening_streams not in valid_streams:
+            raise ValueError(f"Invalid whitening_streams: {self.whitening_streams}")
+        if self.target_whitening_streams not in valid_streams:
+            raise ValueError(f"Invalid target_whitening_streams: {self.target_whitening_streams}")
+        if self.conditioning_target_layers is not None:
+            self.conditioning_target_layers = tuple(
+                sorted({int(layer) for layer in self.conditioning_target_layers})
+            )
+
 
 class RotAlignKVTranslator(nn.Module):
     """Cross-model KV-cache translator with rotational alignment and optional
@@ -388,6 +407,7 @@ class RotAlignKVTranslator(nn.Module):
         # Calibration-time head descriptors are used only while fitting
         # template/signature-based transport and are not checkpoint state.
         self._transport_src_group_templates: list[torch.Tensor] | None = None
+
         self._transport_tgt_group_templates: list[torch.Tensor] | None = None
         self._transport_src_group_template_banks: list[torch.Tensor] | None = None
         self._transport_tgt_group_template_banks: list[torch.Tensor] | None = None
@@ -828,6 +848,28 @@ class RotAlignKVTranslator(nn.Module):
             self.fusion_head_bias_K = None
             self.fusion_head_bias_V = None
         self._fitted = False
+
+    def _conditioning_layer_applies(self, tgt_layer_idx: int) -> bool:
+        layers = self.config.conditioning_target_layers
+        return layers is None or int(tgt_layer_idx) in layers
+
+    @staticmethod
+    def _conditioning_stream_applies(stream_spec: str, kind: str) -> bool:
+        return stream_spec == "kv" or stream_spec == kind.lower()
+
+    def _source_whitening_applies(self, tgt_layer_idx: int, kind: str) -> bool:
+        return (
+            self.config.use_whitening
+            and self._conditioning_layer_applies(tgt_layer_idx)
+            and self._conditioning_stream_applies(self.config.whitening_streams, kind)
+        )
+
+    def _target_whitening_applies(self, tgt_layer_idx: int, kind: str) -> bool:
+        return (
+            self.config.use_target_whitening
+            and self._conditioning_layer_applies(tgt_layer_idx)
+            and self._conditioning_stream_applies(self.config.target_whitening_streams, kind)
+        )
 
     @staticmethod
     def _build_layer_map(cfg: TranslatorConfig) -> list[int]:
@@ -4428,12 +4470,13 @@ class RotAlignKVTranslator(nn.Module):
         V_s_rot = self._rotate_and_flatten(V_s, self.R_s)
 
         # 1b) Optional: apply fitted ZCA whitening to the source.
-        if self.config.use_whitening:
+        if self._source_whitening_applies(tgt_layer_idx, "k"):
             K_s_rot = apply_whitening(
                 K_s_rot,
                 self.whiten_K_src[tgt_layer_idx],
                 self.whiten_K_mean[tgt_layer_idx],
             )
+        if self._source_whitening_applies(tgt_layer_idx, "v"):
             V_s_rot = apply_whitening(
                 V_s_rot,
                 self.whiten_V_src[tgt_layer_idx],
@@ -4505,12 +4548,13 @@ class RotAlignKVTranslator(nn.Module):
             else:
                 raise ValueError(f"Unknown quantization_control: {quantization_control}")
 
-        if self.config.use_target_whitening:
+        if self._target_whitening_applies(tgt_layer_idx, "k"):
             K_t_rot = undo_whitening(
                 K_t_rot,
                 self.whiten_K_tgt_inv[tgt_layer_idx],
                 self.whiten_K_tgt_mean[tgt_layer_idx],
             )
+        if self._target_whitening_applies(tgt_layer_idx, "v"):
             V_t_rot = undo_whitening(
                 V_t_rot,
                 self.whiten_V_tgt_inv[tgt_layer_idx],
@@ -4696,37 +4740,44 @@ class RotAlignKVTranslator(nn.Module):
             # whiten the *source*, since the target is what we're predicting
             # and should stay in its native scale for the alignment to be
             # interpretable.
-            if self.config.use_whitening:
+            if self._source_whitening_applies(tgt_l, "k"):
                 if grouped_alignment:
                     W_zca_k, mean_k = self._fit_grouped_whitening(Xk, use_target=False)
-                    W_zca_v, mean_v = self._fit_grouped_whitening(Xv, use_target=False)
                 else:
                     W_zca_k, mean_k = fit_zca_whitening(Xk)
-                    W_zca_v, mean_v = fit_zca_whitening(Xv)
                 self.whiten_K_src[tgt_l].data.copy_(W_zca_k)
-                self.whiten_V_src[tgt_l].data.copy_(W_zca_v)
                 self.whiten_K_mean[tgt_l].data.copy_(mean_k)
-                self.whiten_V_mean[tgt_l].data.copy_(mean_v)
                 Xk = apply_whitening(Xk, W_zca_k, mean_k)
+            if self._source_whitening_applies(tgt_l, "v"):
+                if grouped_alignment:
+                    W_zca_v, mean_v = self._fit_grouped_whitening(Xv, use_target=False)
+                else:
+                    W_zca_v, mean_v = fit_zca_whitening(Xv)
+                self.whiten_V_src[tgt_l].data.copy_(W_zca_v)
+                self.whiten_V_mean[tgt_l].data.copy_(mean_v)
                 Xv = apply_whitening(Xv, W_zca_v, mean_v)
 
-            if self.config.use_target_whitening:
+            if self._target_whitening_applies(tgt_l, "k"):
                 if grouped_alignment:
                     W_tgt_k, mean_tgt_k = self._fit_grouped_whitening(Yk, use_target=True)
-                    W_tgt_v, mean_tgt_v = self._fit_grouped_whitening(Yv, use_target=True)
                 else:
                     W_tgt_k, mean_tgt_k = fit_zca_whitening(Yk)
-                    W_tgt_v, mean_tgt_v = fit_zca_whitening(Yv)
                 self.whiten_K_tgt[tgt_l].data.copy_(W_tgt_k)
-                self.whiten_V_tgt[tgt_l].data.copy_(W_tgt_v)
                 self.whiten_K_tgt_inv[tgt_l].data.copy_(torch.linalg.pinv(W_tgt_k).to(dtype=W_tgt_k.dtype))
-                self.whiten_V_tgt_inv[tgt_l].data.copy_(torch.linalg.pinv(W_tgt_v).to(dtype=W_tgt_v.dtype))
                 self.whiten_K_tgt_mean[tgt_l].data.copy_(mean_tgt_k)
-                self.whiten_V_tgt_mean[tgt_l].data.copy_(mean_tgt_v)
                 Yk_fit = apply_whitening(Yk, W_tgt_k, mean_tgt_k)
-                Yv_fit = apply_whitening(Yv, W_tgt_v, mean_tgt_v)
             else:
                 Yk_fit = Yk
+            if self._target_whitening_applies(tgt_l, "v"):
+                if grouped_alignment:
+                    W_tgt_v, mean_tgt_v = self._fit_grouped_whitening(Yv, use_target=True)
+                else:
+                    W_tgt_v, mean_tgt_v = fit_zca_whitening(Yv)
+                self.whiten_V_tgt[tgt_l].data.copy_(W_tgt_v)
+                self.whiten_V_tgt_inv[tgt_l].data.copy_(torch.linalg.pinv(W_tgt_v).to(dtype=W_tgt_v.dtype))
+                self.whiten_V_tgt_mean[tgt_l].data.copy_(mean_tgt_v)
+                Yv_fit = apply_whitening(Yv, W_tgt_v, mean_tgt_v)
+            else:
                 Yv_fit = Yv
 
             if grouped_alignment:
@@ -6085,12 +6136,13 @@ class RotAlignKVTranslator(nn.Module):
                 paired_aux_input=K_pred,
                 runtime_query_features=fit_runtime_query_features,
             )
-            if self.config.use_target_whitening:
+            if self._target_whitening_applies(tgt_l, "k"):
                 K_runtime = undo_whitening(
                     K_runtime,
                     self.whiten_K_tgt_inv[tgt_l],
                     self.whiten_K_tgt_mean[tgt_l],
                 )
+            if self._target_whitening_applies(tgt_l, "v"):
                 V_runtime = undo_whitening(
                     V_runtime,
                     self.whiten_V_tgt_inv[tgt_l],
@@ -6151,13 +6203,14 @@ class RotAlignKVTranslator(nn.Module):
 
             q_k = alignment_quality(Xk, Yk_fit, W_K)
             q_v = alignment_quality(Xv, Yv_fit, W_V)
-            if self.config.use_target_whitening:
+            if self._target_whitening_applies(tgt_l, "k"):
                 Yk_hat = Xk @ W_K
-                Yv_hat = Xv @ W_V
                 q_k["original_space_relative_frobenius_error"] = float(
                     (undo_whitening(Yk_hat, self.whiten_K_tgt_inv[tgt_l], self.whiten_K_tgt_mean[tgt_l]) - Yk).norm()
                     / (Yk.norm() + 1e-12)
                 )
+            if self._target_whitening_applies(tgt_l, "v"):
+                Yv_hat = Xv @ W_V
                 q_v["original_space_relative_frobenius_error"] = float(
                     (undo_whitening(Yv_hat, self.whiten_V_tgt_inv[tgt_l], self.whiten_V_tgt_mean[tgt_l]) - Yv).norm()
                     / (Yv.norm() + 1e-12)
