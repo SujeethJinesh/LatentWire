@@ -211,6 +211,9 @@ python scripts/calibrate.py \
   diagonal scale+bias repair; `bridge_affine` is a coordinatewise bridge over
   both the dequantized tensor and the pre-quant translated prediction;
   `bridge_ridge` is a full linear bridge over those same two signals;
+  current dynalign research modes also include
+  `bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace`, which tests a
+  layer-8 value-channel protected-anchor path for the bad-seed GSM8K gate;
   `bridge_ridge_query` applies that same bridge but gates it by live target
   attention-template agreement; `bridge_low_rank_bank` replaces the bridge with
   a small query-conditioned low-rank expert bank; `bridge_ridge_residual_bank`

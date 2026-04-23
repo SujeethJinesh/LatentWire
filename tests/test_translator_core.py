@@ -3220,6 +3220,97 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_anchor_tail_module_replace_stor
     assert torch.allclose(preserve_v, torch.diag(torch.diagonal(preserve_v)), atol=1e-5)
 
 
+def test_fit_outlier_escrow_projector_selects_outlier_and_error_channels(monkeypatch) -> None:
+    tr = _make_identity_translator(monkeypatch)
+    target = torch.tensor(
+        [
+            [50.0, 1.0, 1.0, 1.0],
+            [0.0, 1.0, 1.0, 1.0],
+            [0.0, 1.0, 1.0, 1.0],
+            [0.0, 1.0, 1.0, 1.0],
+        ],
+        dtype=torch.float32,
+    )
+    base = target.clone()
+    base[:, 2] = 80.0
+    query_features = torch.zeros_like(target)
+
+    projector = tr._fit_outlier_escrow_projector(target, base, query_features, rank=2)
+
+    diag = torch.diagonal(projector)
+    assert torch.count_nonzero(diag) == 2
+    assert diag[0] == 1.0
+    assert diag[2] == 1.0
+
+
+def test_fit_from_pairs_bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace_stores_layer8_v_mask(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        tgt_layers=9,
+        quantization_correction="bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace",
+        quantization_correction_rank=1,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32) for _ in range(9)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+
+    calls = 0
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        **kwargs,
+    ):
+        nonlocal calls
+        del quantized_k, predicted_k, quantized_v, predicted_v, query_features, target_k, target_v, kwargs
+        calls += 1
+        return (
+            torch.full((self.config.bridge_bank_size, self.d_t), 1.0, dtype=torch.float32),
+            torch.full((self.d_t, rank), 2.0, dtype=torch.float32),
+            torch.full((self.d_t, rank), 3.0, dtype=torch.float32),
+            torch.full((self.d_t, rank), 4.0, dtype=torch.float32),
+            torch.full((rank, rank), 5.0, dtype=torch.float32),
+            torch.full((rank, self.d_t), 6.0, dtype=torch.float32),
+            torch.full((rank, self.d_t), 7.0, dtype=torch.float32),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    src_kvs = [(base, base + 0.5)]
+    tgt_kvs = [(base * 1.5, base * 2.0) for _ in range(9)]
+
+    tr.fit_from_pairs(src_kvs, tgt_kvs)
+
+    assert calls == 9
+    assert torch.count_nonzero(tr.quant_preserve_proj_V[8]) == 1
+    assert torch.count_nonzero(tr.quant_preserve_proj_K[8]) == 0
+    for layer_idx in range(8):
+        assert torch.count_nonzero(tr.quant_preserve_proj_V[layer_idx]) == 0
+
+
 def test_quantize_tail_with_preserve_keeps_anchor_and_quantizes_tail(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,
@@ -3310,6 +3401,69 @@ def test_bridge_ridge_qk_dynalign_anchor_tail_module_replace_applies_tail_quanti
     assert torch.allclose(shifted_calls[0][1], tr.quant_preserve_proj_V[0], atol=1e-6)
     assert torch.allclose(out_k_shifted, out_k_plain, atol=1e-6)
     assert not torch.allclose(out_v_shifted, out_v_plain)
+
+
+def test_bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace_quantizes_only_layer8_v_tail(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        tgt_layers=9,
+        quantization_correction="bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace",
+        quantization_correction_rank=1,
+    )
+    with torch.no_grad():
+        tr.quant_proj_K[8].copy_(torch.eye(tr.d_t))
+        tr.quant_proj_V[8].copy_(torch.eye(tr.d_t))
+        tr.quant_aux_proj_K[8].zero_()
+        tr.quant_aux_proj_V[8].zero_()
+        tr.quant_bias_K[8].zero_()
+        tr.quant_bias_V[8].zero_()
+        tr.quant_query_resid_K_left[8].zero_()
+        tr.quant_query_resid_K_right[8].zero_()
+        tr.quant_query_aux_resid_K_left[8].zero_()
+        tr.quant_query_aux_resid_K_right[8].zero_()
+        tr.quant_query_resid_V_left[8].zero_()
+        tr.quant_query_resid_V_right[8].zero_()
+        tr.quant_query_aux_resid_V_left[8].zero_()
+        tr.quant_query_aux_resid_V_right[8].zero_()
+        tr.quant_query_module_slots[8].copy_(torch.tensor([[1.0, 0.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.quant_query_module_q[8].copy_(torch.tensor([[1.0], [0.0], [1.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_module_k[8].copy_(torch.tensor([[1.0], [0.0], [1.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_module_v[8].copy_(torch.tensor([[1.0], [0.0], [0.0], [0.0]], dtype=torch.float32))
+        tr.quant_query_module_hidden[8].copy_(torch.tensor([[1.0]], dtype=torch.float32))
+        tr.quant_query_module_K_out[8].copy_(torch.tensor([[3.0, 1.0, 0.0, 0.0]], dtype=torch.float32))
+        tr.quant_query_module_V_out[8].copy_(torch.tensor([[4.0, 1.5, 1.0, 0.0]], dtype=torch.float32))
+        tr.quant_preserve_proj_V[8].copy_(torch.diag(torch.tensor([1.0, 0.0, 0.0, 0.0], dtype=torch.float32)))
+
+    K_base = torch.tensor([[[[1.0, 0.0]], [[1.0, 0.0]]]], dtype=torch.float32)
+    V_base = torch.tensor([[[[2.0, 0.0]], [[2.0, 0.0]]]], dtype=torch.float32)
+    qfeat = torch.tensor([[[1.0, 0.0, 1.0, 0.0]]], dtype=torch.float32)
+
+    shifted_calls: list[tuple[torch.Tensor, torch.Tensor]] = []
+
+    def shifted_quantize_tail(self, values, preserve_proj):
+        shifted_calls.append((values.detach().clone(), preserve_proj.detach().clone()))
+        return values + 0.75
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_quantize_tail_with_preserve", shifted_quantize_tail)
+    tr.translate_layer(
+        K_base,
+        V_base,
+        tgt_layer_idx=7,
+        quantize=True,
+        runtime_query_features=qfeat,
+    )
+    assert shifted_calls == []
+
+    tr.translate_layer(
+        K_base,
+        V_base,
+        tgt_layer_idx=8,
+        quantize=True,
+        runtime_query_features=qfeat,
+    )
+
+    assert len(shifted_calls) == 1
+    assert torch.allclose(shifted_calls[0][1], tr.quant_preserve_proj_V[8], atol=1e-6)
 
 
 def test_fit_from_pairs_bridge_ridge_qk_dynalign_routed_module_replace_stores_route_gates(monkeypatch) -> None:
