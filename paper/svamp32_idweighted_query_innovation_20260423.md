@@ -185,6 +185,70 @@ Interpretation: the target-self-preserving sidecar idea remains alive, but
 wrapping this exact `gate015` candidate is not worth a runtime implementation.
 Even a perfect oracle router around it cannot clear the current paper gate.
 
+## Fine Attention Gate Search
+
+After the sidecar bound failed, I tested whether the same checkpoint could
+expose a second clean residual ID through a finer matched-only attention-gate
+sweep before spending controls.
+
+Command:
+
+```bash
+./venv_arm64/bin/python latent_bridge/evaluate.py \
+  --translator .debug/checkpoints_svamp32_conditional_innovation_20260423/id_weighted_query_innovation/qwen25_to_qwen3_svamp32_idweighted_query_innovation_r16_bank16_seed1.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --kv-transport k_only \
+  --position-selection-ratio 0.5 \
+  --position-selection-metric attention \
+  --gate-mode sweep \
+  --gate-values 0.05 0.10 0.125 0.15 0.175 0.20 0.25 \
+  --methods rotalign \
+  --prediction-output .debug/svamp32_candidate_search_20260423/idweighted_attention_fine_gate_sweep.jsonl \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 1
+```
+
+Readout artifacts:
+
+- `.debug/svamp32_candidate_search_20260423/idweighted_attention_fine_gate_sweep.jsonl`
+- `results/svamp32_idweighted_query_innovation_20260423/fine_gate_sweep_clean_targets_attention.json`
+- `results/svamp32_idweighted_query_innovation_20260423/fine_gate_sweep_clean_targets_attention.md`
+
+Result:
+
+- status: `no_matched_gate_candidate_for_controls`
+- best row: `rotalign_kv_gate_0.17`, `11/32`
+- clean residual recovered: `1/6`
+- clean residual ID: `aee922049c757331`
+- oracle `target_self_repair + clean candidate` bound: `15/32`
+- numeric extraction coverage: `32/32` for every row
+
+Matched-only gate ranking:
+
+| Gate | Correct | Teacher-only recovered | Clean residual recovered |
+|---:|---:|---:|---:|
+| `0.05` | `8/32` | `1` | `0` |
+| `0.10` | `8/32` | `1` | `0` |
+| `0.125` | `8/32` | `1` | `0` |
+| `0.15` | `10/32` | `2` | `1` |
+| `0.175` | `11/32` | `2` | `1` |
+| `0.20` | `8/32` | `1` | `0` |
+| `0.25` | `7/32` | `0` | `0` |
+
+Interpretation: fixed attention-gate retuning of this checkpoint is saturated.
+It improves the matched row from `10/32` to `11/32` but still only recovers the
+same single clean residual ID, so translated-KV-zero, source-zero, and shuffle
+controls are not justified for the fine-gate rows.
+
 ## Interpretation
 
 The branch is revived but not promoted. The clean win on
@@ -193,11 +257,15 @@ The branch is revived but not promoted. The clean win on
 clean source-necessary ID is below the gate and the row is still worse than
 `target_self_repair`.
 
+The fine attention-gate sweep weakens the hypothesis that runtime thresholding
+alone can rescue the existing ID-weighted checkpoint. The next candidate should
+change training or the bottleneck objective, not just the runtime gate.
+
 The next method should still preserve the target_self_repair row and add source
 innovation on top, rather than replacing it. But the sidecar-bound result
-promotes a new candidate/search step before runtime router work: the candidate
-must first expose at least two clean source-necessary IDs under matched versus
-source-destroying controls.
+and fine-gate result promote a new candidate/search step before runtime router
+work: the candidate must first expose at least two clean source-necessary IDs
+under matched versus source-destroying controls.
 
 ## Next Gate
 

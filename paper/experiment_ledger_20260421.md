@@ -2060,3 +2060,112 @@ Next exact gate:
 - then implement the runtime target-self-preserving acceptor with
   translated-KV-zero, source-zero, two shuffled-source salts, and clean-ID swap
   controls
+
+## 2026-04-23 14:29 PDT — SVAMP32 ID-weighted fine attention gate search
+
+Paper status:
+
+- not ICLR-ready
+- current story: target self-repair is the decoder-side-information floor, and
+  source communication must add clean residual innovation on top
+- blocking gap: no candidate exposes `>=2/6` clean source-necessary IDs under
+  strict exact-ID controls
+
+Top next moves considered:
+
+- fine fixed-gate search on the existing ID-weighted checkpoint. This matters
+  because it is the cheapest way to test whether the second clean residual ID
+  is hidden behind a runtime threshold. It might fail if the checkpoint only
+  learned one source-specific residual. Cost: one SVAMP32 seven-gate decode.
+  Helps same-pair, robustness, and reproducibility.
+- new calibration-side source-control/contrastive query-innovation objective.
+  This matters because it directly penalizes target-cache and translated-zero
+  residuals. It might overfit the six clean IDs. Cost: medium. Helps
+  same-pair, robustness, and interpretability.
+- runtime target-self-preserving acceptor. This matters for the final method
+  shape, but it might only wrap a one-ID candidate. Cost: medium/high. Helps
+  robustness and interpretability.
+
+Decision:
+
+- picked fine fixed-gate search first
+- rationale: controls and runtime router work are premature unless a matched
+  candidate first reaches `>=2/6` clean residual IDs
+
+What changed:
+
+- added `scripts/analyze_svamp32_gate_sweep_clean_targets.py`
+- added `tests/test_analyze_svamp32_gate_sweep_clean_targets.py`
+- materialized:
+  - `.debug/svamp32_candidate_search_20260423/idweighted_attention_fine_gate_sweep.jsonl`
+  - `results/svamp32_idweighted_query_innovation_20260423/fine_gate_sweep_clean_targets_attention.json`
+  - `results/svamp32_idweighted_query_innovation_20260423/fine_gate_sweep_clean_targets_attention.md`
+- updated:
+  - `results/svamp32_idweighted_query_innovation_20260423/manifest.md`
+  - `paper/svamp32_idweighted_query_innovation_20260423.md`
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_analyze_svamp32_gate_sweep_clean_targets.py \
+  tests/test_analyze_svamp32_source_sidecar_bound.py -q
+```
+
+Result: `8 passed`
+
+Fine sweep command:
+
+```bash
+./venv_arm64/bin/python latent_bridge/evaluate.py \
+  --translator .debug/checkpoints_svamp32_conditional_innovation_20260423/id_weighted_query_innovation/qwen25_to_qwen3_svamp32_idweighted_query_innovation_r16_bank16_seed1.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --kv-transport k_only \
+  --position-selection-ratio 0.5 \
+  --position-selection-metric attention \
+  --gate-mode sweep \
+  --gate-values 0.05 0.10 0.125 0.15 0.175 0.20 0.25 \
+  --methods rotalign \
+  --prediction-output .debug/svamp32_candidate_search_20260423/idweighted_attention_fine_gate_sweep.jsonl \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 1
+```
+
+Evidence:
+
+- status: `no_matched_gate_candidate_for_controls`
+- target-alone: `8/32`
+- C2C teacher: `16/32`
+- target_self_repair: `14/32`
+- best fine row: `rotalign_kv_gate_0.17`, `11/32`
+- best fine row clean residual recovered: `1/6`
+- best fine row clean residual ID: `aee922049c757331`
+- best fine row teacher-only recovered: `2`
+- oracle `target_self_repair + clean candidate`: `15/32`
+- numeric extraction coverage: `32/32` for every row
+- verdict: no fine attention-gate row justifies translated-KV-zero,
+  source-zero, or shuffle controls
+
+Hypothesis update:
+
+- weakened: runtime threshold search alone can rescue the ID-weighted
+  query-innovation checkpoint
+- saturated for now: attention fixed-gate retuning of this exact checkpoint
+- promoted: train/search a new candidate with source-control contrastive
+  pressure or a changed bottleneck before router implementation
+
+Next exact gate:
+
+- train or search a candidate that reaches `>=2/6` clean residual IDs in
+  matched exact-ID scoring
+- only then run translated-KV-zero, source-zero, two shuffle salts, and the
+  target-self sidecar bound

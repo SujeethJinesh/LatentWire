@@ -5,6 +5,7 @@
 - checkpoint: `.debug/checkpoints_svamp32_conditional_innovation_20260423/id_weighted_query_innovation/qwen25_to_qwen3_svamp32_idweighted_query_innovation_r16_bank16_seed1.pt`
 - strict target-set gate: `no_candidate_passes_target_self_repair_gate`
 - target-self sidecar oracle bound: `oracle_sidecar_bound_fails_gate`
+- fine attention gate sweep: `no_matched_gate_candidate_for_controls`
 
 ## Main Evidence
 
@@ -16,6 +17,8 @@
 - best matched clean source-necessary recovered: `1/6`
 - oracle target_self_repair + clean source sidecar bound: `15/32`
 - sidecar-bound failing criteria: `min_correct`, `min_clean_source_necessary`
+- fine attention sweep best row: `gate017`, `11/32`, clean residual `1/6`
+- fine attention sweep verdict: no row reached `>=2/6` clean residual IDs
 
 ## Artifact Hashes
 
@@ -31,3 +34,7 @@
   - sha256: `678015b227017b2c679d2708ff89311fa749407814320c138be49789aeb3ad08`
 - `source_sidecar_bound_gate015_targetself_translated_zero.md`
   - sha256: `2b4958c03166acd9e78b55e9c3f9a65647c8136606093acf9a94f14e06c87ed8`
+- `fine_gate_sweep_clean_targets_attention.json`
+  - sha256: `b6cf5d9b6731485dfaa11fd29785df347fdce08f777db8f5a41d36981a90abd4`
+- `fine_gate_sweep_clean_targets_attention.md`
+  - sha256: `a7d341b1c065faeb2b024e798460ae166571fcfb94e7d49095e6d1c9f9131bc6`
