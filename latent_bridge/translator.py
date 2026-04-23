@@ -298,6 +298,9 @@ class TranslatorConfig:
     seed: int = 0
 
     def __post_init__(self) -> None:
+        self.bridge_bank_size = int(self.bridge_bank_size)
+        if self.bridge_bank_size < 0:
+            raise ValueError(f"bridge_bank_size must be non-negative, got {self.bridge_bank_size}")
         valid_streams = {"kv", "k", "v"}
         if self.whitening_streams not in valid_streams:
             raise ValueError(f"Invalid whitening_streams: {self.whitening_streams}")
@@ -2842,7 +2845,12 @@ class RotAlignKVTranslator(nn.Module):
 
         qk, pk, qv, pv, query, yk, yv = tensors
         rank = max(1, min(int(rank), self.d_t))
-        num_slots = max(1, int(self.config.bridge_bank_size))
+        min_slots = (
+            0
+            if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_resampler_replace"
+            else 1
+        )
+        num_slots = max(min_slots, int(self.config.bridge_bank_size))
         gen = torch.Generator(device="cpu").manual_seed(931_771 + int(self.config.seed) * 193 + int(rank))
         scale = 1e-2
 

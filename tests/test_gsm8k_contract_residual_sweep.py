@@ -146,6 +146,15 @@ def test_checkpoint_path_builds_new_query_resampler_rank_path() -> None:
     )
 
 
+def test_checkpoint_path_builds_query_resampler_bridge_bank_path() -> None:
+    config = sweep.ResidualSweepConfig(seed=1, bridge_bank_size=16)
+    path = sweep._checkpoint_path("dynalign_query_resampler_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_query_resampler_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_resampler_replace_cal64_chat_bank16_seed1.pt"
+    )
+
+
 def test_checkpoint_path_builds_new_value_bank_rank_path() -> None:
     config = sweep.ResidualSweepConfig()
     path = sweep._checkpoint_path("dynalign_value_bank_module_replace", 16, config)
@@ -215,6 +224,19 @@ def test_parse_args_accepts_seed(monkeypatch) -> None:
     assert args.seed == 13
 
 
+def test_parse_args_accepts_bridge_bank_size(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--bridge-bank-size",
+            "0",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.bridge_bank_size == 0
+
+
 def test_write_markdown_renders_rows(tmp_path) -> None:
     payload = {
         "date": "2026-04-21",
@@ -232,6 +254,7 @@ def test_write_markdown_renders_rows(tmp_path) -> None:
                 "label": "dynalign_module_replace_residrank16",
                 "base_label": "dynalign_module_replace",
                 "residual_rank": 16,
+                "bridge_bank_size": 8,
                 "accuracy": 0.125,
                 "paired_vs_target": {"win": 3, "loss": 1, "tie": 28},
                 "numeric_extraction_coverage": 32,
@@ -254,7 +277,7 @@ def test_write_markdown_renders_rows(tmp_path) -> None:
     sweep._write_markdown(path, payload)
     text = path.read_text()
     assert "- seed: `7`" in text
-    assert "| dynalign_module_replace | 16 | 0.1250 | 3 | 1 | 28 | 32 | 0 | ok | 0 | - | no | yes |" in text
+    assert "| dynalign_module_replace | 16 | 8 | 0.1250 | 3 | 1 | 28 | 32 | 0 | ok | 0 | - | no | yes |" in text
     assert "`dynalign_module_replace_residrank16` — row_count_matches_slice=PASS" in text
 
 
@@ -333,6 +356,7 @@ def test_calibrate_checkpoint_passes_whitening_flags(tmp_path: pathlib.Path, mon
             whitening_streams="v",
             target_whitening_streams="v",
             conditioning_target_layers=(8,),
+            bridge_bank_size=16,
             fit_ridge_override_lambda=1e-2,
             fit_ridge_override_streams="v",
             fit_ridge_override_layers=(8,),
@@ -341,17 +365,23 @@ def test_calibrate_checkpoint_passes_whitening_flags(tmp_path: pathlib.Path, mon
     )
 
     assert summary["nonfinite_numel"] == 0
+    assert pathlib.Path(summary["health_path"]).exists()
+    health = json.loads(pathlib.Path(summary["health_path"]).read_text())
+    assert health["freshly_created"] is True
+    assert health["conditioning"]["bridge_bank_size"] == 16
     assert any(part == "--whitening" for part in commands[0])
     assert any(part == "--target-whitening" for part in commands[0])
     assert "--whitening-streams" in commands[0]
     assert "--target-whitening-streams" in commands[0]
     assert "--conditioning-target-layer" in commands[0]
+    assert "--bridge-bank-size" in commands[0]
     assert "--fit-ridge-override-lambda" in commands[0]
     assert "--fit-ridge-override-streams" in commands[0]
     assert "--fit-ridge-override-layer" in commands[0]
     assert "--fit-ridge-protected-rank" in commands[0]
     assert "v" in commands[0]
     assert "8" in commands[0]
+    assert "16" in commands[0]
     assert "2" in commands[0]
     assert "0.01" in commands[0]
 
@@ -473,6 +503,7 @@ def test_write_markdown_renders_failure_row(tmp_path: pathlib.Path) -> None:
                 "label": "dynalign_module_replace_residrank16",
                 "base_label": "dynalign_module_replace",
                 "residual_rank": 16,
+                "bridge_bank_size": 4,
                 "accuracy": 0.0,
                 "paired_vs_target": {"win": 0, "loss": 0, "tie": 0},
                 "numeric_extraction_coverage": 0,
@@ -501,5 +532,5 @@ def test_write_markdown_renders_failure_row(tmp_path: pathlib.Path) -> None:
     path = tmp_path / "out.md"
     sweep._write_markdown(path, payload)
     text = path.read_text()
-    assert "| dynalign_module_replace | 16 | 0.0000 | 0 | 0 | 0 | 0 | 70 | checkpoint_nonfinite | 11 | quant_proj_K.1 | no | no |" in text
+    assert "| dynalign_module_replace | 16 | 4 | 0.0000 | 0 | 0 | 0 | 0 | 70 | checkpoint_nonfinite | 11 | quant_proj_K.1 | no | no |" in text
     assert "top_tensor=quant_proj_K.1 (max_abs=42.0000, nonfinite=11)" in text

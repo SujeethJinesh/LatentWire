@@ -4749,6 +4749,55 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_query_resampler_guards_nonfinit
     assert torch.allclose(tr.quant_query_module_V_out[0], torch.zeros_like(tr.quant_query_module_V_out[0]))
 
 
+def test_dynalign_query_resampler_allows_zero_bridge_bank(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_resampler_replace",
+        quantization_correction_rank=1,
+        bridge_bank_size=0,
+    )
+
+    assert tr.quant_query_module_slots[0].shape == (0, tr.d_t)
+
+    base = torch.tensor(
+        [
+            [1.0, 0.0, 0.0, 1.0],
+            [0.5, 0.5, 1.0, 0.0],
+            [1.5, 0.0, 0.5, 0.5],
+        ],
+        dtype=torch.float32,
+    )
+    fitted = tr._fit_bridge_query_module_replace(
+        base,
+        base + 0.1,
+        base + 0.2,
+        base + 0.3,
+        torch.ones_like(base),
+        base + 0.4,
+        base + 0.5,
+        rank=1,
+        steps=1,
+    )
+
+    assert fitted[0].shape == (0, tr.d_t)
+    assert all(torch.isfinite(tensor).all().item() for tensor in fitted)
+
+    K_base = torch.tensor([[[[1.0, 0.0]], [[1.0, 0.0]]]], dtype=torch.float32)
+    V_base = torch.tensor([[[[2.0, 0.0]], [[2.0, 0.0]]]], dtype=torch.float32)
+    out_k, out_v = tr.translate_layer(
+        K_base,
+        V_base,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_query_features=torch.ones(1, 1, tr.d_t, dtype=torch.float32),
+    )
+
+    assert out_k.shape == K_base.shape
+    assert out_v.shape == V_base.shape
+    assert torch.isfinite(out_k).all()
+    assert torch.isfinite(out_v).all()
+
+
 def test_fit_from_pairs_bridge_ridge_qk_dynalign_dwakd_module_replace_uses_dynamic_teacher_and_weights(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

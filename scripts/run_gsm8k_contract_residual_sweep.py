@@ -127,6 +127,7 @@ class ResidualSweepConfig:
     enable_thinking: bool = False
     alignment: str = "grouped_subspace_transport"
     bits: int = 4
+    bridge_bank_size: int = 4
     ridge_lambda: float = 1e-3
     fit_ridge_override_lambda: float | None = None
     fit_ridge_override_streams: str = "kv"
@@ -146,13 +147,20 @@ class ResidualSweepConfig:
     ranks: tuple[int, ...] = (2, 4, 8, 16)
     bases: tuple[str, ...] = ("dynalign_module_replace", "tokenbasis_replace")
 
+    def __post_init__(self) -> None:
+        bridge_bank_size = int(self.bridge_bank_size)
+        if bridge_bank_size < 0:
+            raise ValueError(f"bridge_bank_size must be non-negative, got {bridge_bank_size}")
+        object.__setattr__(self, "bridge_bank_size", bridge_bank_size)
+
 
 def _run(cmd: list[str]) -> None:
     smoke._run(cmd, cwd=ROOT)
 
 
-def _candidate_label(base_label: str, rank: int) -> str:
-    return f"{base_label}_residrank{rank}"
+def _candidate_label(base_label: str, rank: int, bridge_bank_size: int = 4) -> str:
+    bank_suffix = "" if int(bridge_bank_size) == 4 else f"_bank{int(bridge_bank_size)}"
+    return f"{base_label}_residrank{rank}{bank_suffix}"
 
 
 def _float_suffix(value: float) -> str:
@@ -181,8 +189,10 @@ def _conditioning_suffix(config: ResidualSweepConfig) -> str:
             parts.append(f"fitridge{streams}_layers{override_layers}_lam{_float_suffix(config.fit_ridge_override_lambda)}")
         else:
             parts.append(f"fitridge{streams}_lam{_float_suffix(config.fit_ridge_override_lambda)}")
-        if config.fit_ridge_protected_rank is not None:
-            parts.append(f"protect{int(config.fit_ridge_protected_rank)}")
+    if config.fit_ridge_protected_rank is not None:
+        parts.append(f"protect{int(config.fit_ridge_protected_rank)}")
+    if int(config.bridge_bank_size) != 4:
+        parts.append(f"bank{int(config.bridge_bank_size)}")
     return "" if not parts else "_" + "_".join(parts)
 
 
@@ -194,6 +204,7 @@ def _can_reuse_existing_checkpoint(base_label: str, rank: int, config: ResidualS
         and not config.whitening
         and not config.target_whitening
         and config.fit_ridge_override_lambda is None
+        and int(config.bridge_bank_size) == 4
     )
 
 
@@ -204,6 +215,7 @@ def _conditioning_payload(config: ResidualSweepConfig) -> dict[str, Any]:
         "whitening_streams": config.whitening_streams,
         "target_whitening_streams": config.target_whitening_streams,
         "conditioning_target_layers": list(config.conditioning_target_layers or ()),
+        "bridge_bank_size": int(config.bridge_bank_size),
         "fit_ridge_override_lambda": config.fit_ridge_override_lambda,
         "fit_ridge_override_streams": config.fit_ridge_override_streams,
         "fit_ridge_override_layers": list(config.fit_ridge_override_layers or ()),
@@ -382,9 +394,10 @@ def _failure_row(
     error: Exception,
 ) -> tuple[dict[str, Any], dict[str, bool]]:
     row = {
-        "label": _candidate_label(base_label, rank),
+        "label": _candidate_label(base_label, rank, config.bridge_bank_size),
         "base_label": base_label,
         "residual_rank": rank,
+        "bridge_bank_size": int(config.bridge_bank_size),
         "accuracy": 0.0,
         "n": 0,
         "correct": 0,
@@ -400,6 +413,7 @@ def _failure_row(
         "checkpoint_nonfinite_numel": int(checkpoint_summary.get("nonfinite_numel", 0)),
         "checkpoint_first_bad_key": checkpoint_summary.get("first_bad_key"),
         "checkpoint_max_abs": float(checkpoint_summary.get("max_abs", 0.0)),
+        "checkpoint_health_path": checkpoint_summary.get("health_path"),
         "conditioning": _conditioning_payload(config),
         "checkpoint_summary": checkpoint_summary,
     }
@@ -456,6 +470,8 @@ def _calibrate_checkpoint(
             str(base_meta["quantization_correction"]),
             "--quantization-correction-rank",
             str(rank),
+            "--bridge-bank-size",
+            str(config.bridge_bank_size),
             "--source-reasoning-mode",
             config.source_reasoning_mode,
             "--device",
@@ -512,6 +528,16 @@ def _calibrate_checkpoint(
             f"first_bad_key={checkpoint_summary['first_bad_key']} max_abs={checkpoint_summary['max_abs']:.4f} "
             f"health_path={health_path}"
         )
+    health_path = _write_checkpoint_health(
+        checkpoint_path=checkpoint_path,
+        base_label=base_label,
+        rank=rank,
+        config=config,
+        checkpoint_summary=checkpoint_summary,
+        freshly_created=created_checkpoint,
+        quarantined_path=None,
+    )
+    checkpoint_summary["health_path"] = str(health_path)
     return checkpoint_summary
 
 
@@ -537,7 +563,7 @@ def _run_candidate(
     baseline_target_records: list[dict[str, Any]],
     results_dir: pathlib.Path,
 ) -> tuple[dict[str, Any], dict[str, bool]]:
-    label = _candidate_label(base_label, rank)
+    label = _candidate_label(base_label, rank, config.bridge_bank_size)
     prediction_output = results_dir / f"{label}.jsonl"
     if not prediction_output.exists():
         cmd = [
@@ -594,12 +620,16 @@ def _run_candidate(
     )
     row["base_label"] = base_label
     row["residual_rank"] = rank
+    row["bridge_bank_size"] = int(config.bridge_bank_size)
     row["seed"] = int(config.seed)
     row["reused_existing_checkpoint"] = _can_reuse_existing_checkpoint(base_label, rank, config)
     row["status"] = "ok"
     row["checkpoint_nonfinite_numel"] = int(checkpoint_summary.get("nonfinite_numel", 0))
     row["checkpoint_first_bad_key"] = checkpoint_summary.get("first_bad_key")
     row["checkpoint_max_abs"] = float(checkpoint_summary.get("max_abs", 0.0))
+    row["checkpoint_health_path"] = checkpoint_summary.get("health_path")
+    row["prediction_output"] = str(prediction_output)
+    row["prediction_meta_output"] = str(prediction_output.with_suffix(prediction_output.suffix + ".meta.json"))
     row["conditioning"] = _conditioning_payload(config)
     row["checkpoint_summary"] = checkpoint_summary
     checks = _row_checks(row, baseline_target_records, config.slice_size)
@@ -615,10 +645,11 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- source -> target: `{payload['config']['source_model']} -> {payload['config']['target_model']}`",
         f"- calibration file: `{payload['config']['calibration_file']}`",
         f"- seed: `{payload['config']['seed']}`",
+        f"- bridge bank size: `{payload['config'].get('bridge_bank_size', 4)}`",
         f"- slice: `{payload['config']['slice_size']}` examples from `{payload['config']['eval_file']}`",
         "",
-        "| Base | Residual rank | Accuracy | Win vs target | Loss vs target | Tie vs target | Numeric coverage | Empty preds | Status | Nonfinite | First bad key | Reused ckpt | Promote? |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---|---:|---:|",
+        "| Base | Residual rank | Bridge bank | Accuracy | Win vs target | Loss vs target | Tie vs target | Numeric coverage | Empty preds | Status | Nonfinite | First bad key | Reused ckpt | Promote? |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|---|---:|---:|",
     ]
     for row in payload["rows"]:
         paired = row["paired_vs_target"]
@@ -633,7 +664,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         )
         first_bad_key = row.get("checkpoint_first_bad_key") or "-"
         lines.append(
-            f"| {row['base_label']} | {row['residual_rank']} | {row['accuracy']:.4f} | "
+            f"| {row['base_label']} | {row['residual_rank']} | {row.get('bridge_bank_size', 4)} | {row['accuracy']:.4f} | "
             f"{paired['win']} | {paired['loss']} | {paired['tie']} | {row['numeric_extraction_coverage']} | "
             f"{row['empty_predictions']} | {row.get('status', 'ok')} | {row.get('checkpoint_nonfinite_numel', 0)} | "
             f"{first_bad_key} | {'yes' if row['reused_existing_checkpoint'] else 'no'} | {'yes' if promote else 'no'} |"
@@ -754,6 +785,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--enable-thinking", action="store_true")
     parser.add_argument("--alignment", default="grouped_subspace_transport")
     parser.add_argument("--bits", type=int, default=4)
+    parser.add_argument("--bridge-bank-size", type=int, default=4)
     parser.add_argument("--ridge-lambda", type=float, default=1e-3)
     parser.add_argument("--transport-residual-rank", type=int, default=4)
     parser.add_argument("--transport-temperature", type=float, default=0.1)
@@ -799,6 +831,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         enable_thinking=args.enable_thinking,
         alignment=args.alignment,
         bits=args.bits,
+        bridge_bank_size=args.bridge_bank_size,
         ridge_lambda=args.ridge_lambda,
         transport_residual_rank=args.transport_residual_rank,
         transport_temperature=args.transport_temperature,

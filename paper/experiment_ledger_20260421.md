@@ -645,3 +645,64 @@ surface, while this exact full-replacement guarded variant is weakened as a
 positive method. The next exact gate is either an innovation/residual-only
 target-safe query-resampler path or a cheap `bridge_bank_size = 0/4/16/32`
 capacity/null sweep on GSM8K32 seed1 before any GSM70 or cross-family widening.
+
+`paper/gsm8k32_query_resampler_bank_sweep_seed1_20260423.md` records the
+capacity/null follow-up for the guarded query-resampler branch. The sweep runner
+now exposes `--bridge-bank-size`, disambiguates non-default bank sizes in
+labels/checkpoint names, records capacity in row conditioning, and writes
+checkpoint health sidecars for successful checkpoints. The translator now
+allows `bridge_bank_size=0` as a true no-private-slot null for
+`bridge_ridge_qk_dynalign_query_resampler_replace`.
+
+Runs:
+
+```bash
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_query_resampler_replace \
+  --rank 16 \
+  --bits 4 \
+  --bridge-bank-size 0 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_query_resampler_bank0_seed1_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_query_resampler_bank_sweep_seed1_20260423 \
+  --seed 1
+
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_query_resampler_replace \
+  --rank 16 \
+  --bits 4 \
+  --bridge-bank-size 16 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_query_resampler_bank16_seed1_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_query_resampler_bank_sweep_seed1_20260423 \
+  --seed 1
+```
+
+Readout:
+
+- bank0: status `ok`, checkpoint nonfinite values `0`, accuracy `2/32`,
+  paired vs target `1` win / `1` loss / `30` ties, numeric coverage `31/32`,
+  empty predictions `0`, diagnostic status `invalid_artifact`
+- bank16: status `ok`, checkpoint nonfinite values `0`, accuracy `2/32`,
+  paired vs target `0` wins / `0` losses / `32` ties, numeric coverage `32/32`,
+  empty predictions `0`, diagnostic status `target_parity_or_negative`
+- bank0 checkpoint SHA256:
+  `29d568668cf0bfb2d3d6638293b937b36dc89685d6bf79edab558cd8e203f543`
+- bank16 checkpoint SHA256:
+  `900193a8f035b79b4cc4c247d205693b4d99f15a28b44a63b7eab376d56b4a3e`
+- bank0 diagnostics JSON SHA256:
+  `1d9a4ac1257c79395fb62ae95b9b463ebf7adafdfd4864ec0cdc85c67cc5c473`
+- bank16 diagnostics JSON SHA256:
+  `40eece8d88af2d3d40a4045b7abec83d4040292c274bb7ea905ddc51bed1cc1c`
+
+This weakens plain capacity scaling of the guarded full-replacement
+query-resampler. Bank0 shows the live-memory path can change target outcomes,
+including one non-copy candidate-only win, but it also creates one target loss
+and fails strict numeric coverage. Bank16 is fully valid but exact target
+parity. The next exact gate is the target-safe innovation/residual
+query-resampler branch with matched zero/shuffled-source controls; GSM70 and
+cross-family widening remain blocked until that branch clears GSM8K32 seed1.
