@@ -8,6 +8,7 @@
 - focused tests: `./venv_arm64/bin/python -m pytest tests/test_evaluate_helpers.py -k 'query_pool_transport or resize_position_scores or shuffle_examples_uses_mismatched_source_prompt' -q`
 - test result: `5 passed`
 - result: `candidate_teacher_recovery_explained_by_controls`
+- target-self-repair paper gate: `no_candidate_passes_target_self_repair_gate`
 
 ## Gate Sweep
 
@@ -25,6 +26,14 @@
 - only teacher-only recovered ID: `575d7e83d84c1e67`
 - that teacher-only ID is retained by zero-source, shuffled-source, and source-alone
 - exact ordered ID parity: target / matched / zero-source / shuffled-source all `true`
+
+## Target-Self-Repair Gate
+
+- target_self_repair: `14/32`, `3/10` C2C-only recoveries, `0` target losses
+- query_pool_matched: `9/32`, `1/10` C2C-only recoveries, `1` target loss
+- delta versus target_self_repair: `-5`
+- failing criteria: `min_correct`, `beats_target_self_repair`, `min_teacher_only`, `min_unique_vs_target_self_repair`
+- retained by source controls: `575d7e83d84c1e67`
 
 ## Artifact Hashes
 
@@ -48,3 +57,11 @@
   - sha256: `05d5ffd9f23cd7765e42895735b423a30d2aab1daa901080ae19ad57d5778723`
 - `c2c_teacher_probe_gate010.md`
   - sha256: `dfc6b9f4fea867b9a8a5b407c85ffe3c22084dbad5a1774a3762258761eaa0d9`
+- `c2c_teacher_probe_gate010_with_target_repair.json`
+  - sha256: `1967901c0062696eac924c9c30ce0316f89999e5b099c9f06f7ee059eb9b8dbc`
+- `c2c_teacher_probe_gate010_with_target_repair.md`
+  - sha256: `b0ae99127d5427a6c83ae1b01121e04c84b99ce57002ec216bc884acba47c2b7`
+- `paper_gate_gate010_with_target_repair.json`
+  - sha256: `3795cf64ec4eb96cda2cad3d41afa45021727662424a89cd27993cfb78fbb603`
+- `paper_gate_gate010_with_target_repair.md`
+  - sha256: `0f6fe50d7ce8f693eea068c3d85ea353969b6cad6f6675f434e0f09f65b2e8c6`

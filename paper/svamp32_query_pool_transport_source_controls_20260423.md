@@ -223,6 +223,24 @@ Probe gate result:
 
 - `candidate_teacher_recovery_explained_by_controls`
 
+### Target-Self-Repair Paper Gate
+
+After adding the existing target-side repair row as a hard comparator, the
+current live query-pool row fails the paper gate:
+
+| Row | Correct | C2C-only recovered | Target losses | Note |
+|---|---:|---:|---:|---|
+| target_self_repair | `14/32` | `3/10` | `0` | target-only repair ceiling on this frozen slice |
+| query_pool_matched | `9/32` | `1/10` | `1` | `-5` versus target_self_repair |
+
+Gate verdict:
+
+- `no_candidate_passes_target_self_repair_gate`
+
+The matched row's only C2C-only recovery, `575d7e83d84c1e67`, is not a clean
+source-communication win: it is unique versus target_self_repair, but retained
+by both zero-source and shuffled-source controls.
+
 Artifact sanity:
 
 - exact ordered example-ID parity: `true` for target, matched, zero-source, and
@@ -263,10 +281,12 @@ evaluated against:
 
 Promotion threshold:
 
-- matched-source recovers at least `4/10` C2C-only wins
-- overall accuracy reaches at least `11/32`
+- matched-source reaches at least `16/32`
+- matched-source beats target_self_repair by at least `+1`
+- matched-source recovers at least `5/10` C2C-only wins
+- at least `2` C2C-only wins are unique versus target_self_repair
 - matched-source loses at most `1` target-correct ID
-- zero/shuffle/target-self-repair recover at most `1` of the same matched
+- zero-source and shuffled-source each retain at most `1` of the same matched
   teacher-only wins
 
 ## Artifacts
@@ -277,3 +297,7 @@ Promotion threshold:
 - `results/svamp32_query_innovation_query_pool_transport_20260423/query_pool_transport_gate010_shuffled_source_salt1.jsonl`
 - `results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010.json`
 - `results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010.md`
+- `results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010_with_target_repair.json`
+- `results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010_with_target_repair.md`
+- `results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_target_repair.json`
+- `results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_target_repair.md`

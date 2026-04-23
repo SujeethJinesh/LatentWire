@@ -1511,6 +1511,87 @@ Next exact gate:
 
 - a target-conditioned innovation connector on the same frozen SVAMP32 surface
   with matched / zero-source / shuffled-source / target-self-repair rows
-- promotion only if matched-source gets at least `4/10` C2C-only recoveries,
-  at least `11/32`, loses at most `1` target-correct ID, and the controls
-  recover at most `1` of the same matched teacher-only wins
+- superseded by the stricter target-self-repair paper gate below: promotion now
+  requires `16/32`, `+1` versus target_self_repair, at least `5/10` C2C-only
+  recoveries, at least `2` C2C-only recoveries unique versus
+  target_self_repair, at most `1` target loss, and at most `1` retained
+  matched C2C-only win under each source control
+
+## 2026-04-23 19:05 PT — SVAMP32 target-self-repair paper gate
+
+Paper status:
+
+- not ICLR-ready
+- current story: SVAMP32 has real C2C teacher headroom, but current
+  learned/rotalign rows do not separate matched-source communication from
+  target-side repair or source controls
+- submission blocker: a candidate must beat target_self_repair and recover
+  C2C-only wins not retained under zero/shuffled source
+
+What changed:
+
+- added `scripts/analyze_svamp32_paper_gate.py`
+- added `tests/test_analyze_svamp32_paper_gate.py`
+- materialized target-self-repair gate artifacts for the live
+  query_pool_transport row:
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010_with_target_repair.json`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010_with_target_repair.md`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_target_repair.json`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_target_repair.md`
+- updated:
+  - `paper/svamp32_query_pool_transport_source_controls_20260423.md`
+  - `paper/svamp32_target_self_repair_paper_gate_20260423.md`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/manifest.md`
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_paper_gate.py tests/test_analyze_c2c_teacher_innovation.py -q
+```
+
+Result: `5 passed`
+
+Gate command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_svamp32_paper_gate.py \
+  --probe-json results/svamp32_query_innovation_query_pool_transport_20260423/c2c_teacher_probe_gate010_with_target_repair.json \
+  --output-json results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_target_repair.json \
+  --output-md results/svamp32_query_innovation_query_pool_transport_20260423/paper_gate_gate010_with_target_repair.md
+```
+
+Evidence:
+
+- target-alone: `8/32`
+- C2C teacher: `16/32`
+- target_self_repair: `14/32`, `3/10` C2C-only recoveries, `0` target losses
+- query_pool_matched: `9/32`, `1/10` C2C-only recovery, `1` target loss
+- query_pool_matched delta versus target_self_repair: `-5`
+- query_pool_matched gate verdict: `fails_paper_gate`
+- run verdict: `no_candidate_passes_target_self_repair_gate`
+- failing criteria:
+  - `min_correct`
+  - `beats_target_self_repair`
+  - `min_teacher_only`
+  - `min_unique_vs_target_self_repair`
+- only recovered C2C-only ID: `575d7e83d84c1e67`
+- that ID is retained by both zero-source and shuffled-source controls
+
+Status update:
+
+- alive:
+  - C2C-distilled conditional innovation fuser
+  - learned Q-Former/Perceiver-style query-bottleneck connector
+- saturated:
+  - selector/runtime swaps on the current query-innovation-resampler checkpoint
+  - query_pool_transport as a paper method on SVAMP32
+- blocked:
+  - any same-pair claim that does not beat target_self_repair on exact IDs
+
+Next exact gate:
+
+- implement one target-conditioned connector or C2C-distilled innovation fuser
+- run matched / zero-source / shuffled-source / target_self_repair on the same
+  frozen SVAMP32 exact-ID surface
+- promote only if `scripts/analyze_svamp32_paper_gate.py` returns
+  `candidate_passes_target_self_repair_gate`
