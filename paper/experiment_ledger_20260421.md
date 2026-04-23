@@ -320,4 +320,11 @@ The local diagnosis is now sharper: the seed `1` checkpoint contains
 `2,381,056` non-finite values, so this is not just a small benchmark swing.
 The residual-sweep harness now validates checkpoints for non-finite tensors
 before evaluation so this class of failure becomes a loud calibration error
-instead of a misleading punctuation-collapse benchmark row.
+instead of a misleading punctuation-collapse benchmark row. The new seeded
+health artifact at
+`results/gsm8k_contract_residual_seed1_health_20260422/gsm8k_contract_residual_sweep_20260421.md`
+also narrows the failure family: the first bad tensor is `W_V.8`, and the
+non-finite block extends across `quant_proj_V.8`, `quant_aux_proj_V.8`, and
+the layer-8 V-side residual-slot tensors. Treat that as the new concrete
+stability gate before spending more budget on cross-family or additive-method
+expansion.

@@ -206,7 +206,7 @@ def test_write_markdown_renders_rows(tmp_path) -> None:
     sweep._write_markdown(path, payload)
     text = path.read_text()
     assert "- seed: `7`" in text
-    assert "| dynalign_module_replace | 16 | 0.1250 | 3 | 1 | 28 | 32 | 0 | no | yes |" in text
+    assert "| dynalign_module_replace | 16 | 0.1250 | 3 | 1 | 28 | 32 | 0 | ok | 0 | - | no | yes |" in text
     assert "`dynalign_module_replace_residrank16` — row_count_matches_slice=PASS" in text
 
 
@@ -222,6 +222,8 @@ def test_checkpoint_finite_summary_detects_nonfinite(tmp_path: pathlib.Path) -> 
     summary = sweep._checkpoint_finite_summary(ckpt)
     assert summary["nonfinite_numel"] == 1
     assert summary["first_bad_key"] == "weight"
+    assert summary["nonfinite_keys"] == ["weight"]
+    assert summary["top_abs_tensors"][0]["key"] == "weight"
 
 
 def test_calibrate_checkpoint_rejects_existing_nonfinite_checkpoint(tmp_path: pathlib.Path, monkeypatch) -> None:
@@ -235,3 +237,129 @@ def test_calibrate_checkpoint_rejects_existing_nonfinite_checkpoint(tmp_path: pa
             checkpoint_path=ckpt,
             config=sweep.ResidualSweepConfig(),
         )
+
+
+def test_calibrate_checkpoint_quarantines_new_nonfinite_checkpoint(tmp_path: pathlib.Path, monkeypatch) -> None:
+    ckpt = tmp_path / "fresh_bad.pt"
+
+    def _fake_run(cmd: list[str]) -> None:
+        torch.save({"state_dict": {"weight": torch.tensor([1.0, float("nan")], dtype=torch.float32)}}, ckpt)
+
+    monkeypatch.setattr(sweep, "_run", _fake_run)
+
+    with pytest.raises(ValueError, match="health_path="):
+        sweep._calibrate_checkpoint(
+            base_label="dynalign_preserve_module_replace",
+            rank=16,
+            checkpoint_path=ckpt,
+            config=sweep.ResidualSweepConfig(seed=3),
+        )
+
+    quarantined = sweep._quarantined_checkpoint_path(ckpt)
+    health_path = sweep._checkpoint_health_path(ckpt)
+    assert not ckpt.exists()
+    assert quarantined.exists()
+    health = json.loads(health_path.read_text())
+    assert health["freshly_created"] is True
+    assert health["nonfinite_numel"] == 1
+    assert health["quarantined_checkpoint_path"] == str(quarantined)
+
+
+def test_run_sweep_records_failure_row_instead_of_aborting(tmp_path: pathlib.Path, monkeypatch) -> None:
+    monkeypatch.setattr(sweep.smoke, "_materialize_slice", lambda src, dst, size: pathlib.Path(dst).write_text(""))
+    monkeypatch.setattr(
+        sweep.checkpoint_sweep,
+        "_load_baseline_target_records",
+        lambda results_dir, materialized_eval_file: [{"example_id": "ex1", "correct": 0}],
+    )
+    monkeypatch.setattr(
+        sweep,
+        "_calibrate_checkpoint",
+        lambda **kwargs: (_ for _ in ()).throw(ValueError("Checkpoint contains non-finite values: path=bad.pt")),
+    )
+    monkeypatch.setattr(
+        sweep,
+        "_safe_checkpoint_summary",
+        lambda checkpoint_path: {
+            "checkpoint_exists": False,
+            "nonfinite_numel": 11,
+            "first_bad_key": "quant_proj_K.1",
+            "max_abs": 42.0,
+            "top_abs_tensors": [{"key": "quant_proj_K.1", "max_abs": 42.0, "nonfinite_numel": 11}],
+        },
+    )
+
+    config = sweep.ResidualSweepConfig(
+        eval_file="data/gsm8k_eval_70.jsonl",
+        slice_size=1,
+        materialized_eval_file=str(tmp_path / "eval.jsonl"),
+        baseline_results_dir=str(tmp_path / "baseline"),
+        results_dir=str(tmp_path / "results"),
+        checkpoints_dir=str(tmp_path / "checkpoints"),
+        bases=("dynalign_module_replace",),
+        ranks=(16,),
+    )
+    payload = sweep.run_sweep(config)
+    row = payload["rows"][0]
+    checks = payload["checks"][row["label"]]
+
+    assert row["status"] == "checkpoint_nonfinite"
+    assert row["checkpoint_nonfinite_numel"] == 11
+    assert row["checkpoint_first_bad_key"] == "quant_proj_K.1"
+    assert row["accuracy"] == 0.0
+    assert checks == {
+        "row_count_matches_slice": False,
+        "example_ids_match_target": False,
+        "no_empty_predictions": False,
+        "numeric_extraction_coverage": False,
+        "beats_target": False,
+    }
+
+
+def test_write_markdown_renders_failure_row(tmp_path: pathlib.Path) -> None:
+    payload = {
+        "date": "2026-04-22",
+        "baseline_contract": "/tmp/gsm8k_smoke_contract_20260421.md",
+        "config": {
+            "source_model": "src",
+            "target_model": "tgt",
+            "calibration_file": ".debug/calibration_64.txt",
+            "seed": 1,
+            "slice_size": 70,
+            "eval_file": "data/gsm8k_eval_70.jsonl",
+        },
+        "rows": [
+            {
+                "label": "dynalign_module_replace_residrank16",
+                "base_label": "dynalign_module_replace",
+                "residual_rank": 16,
+                "accuracy": 0.0,
+                "paired_vs_target": {"win": 0, "loss": 0, "tie": 0},
+                "numeric_extraction_coverage": 0,
+                "empty_predictions": 70,
+                "reused_existing_checkpoint": False,
+                "status": "checkpoint_nonfinite",
+                "checkpoint_nonfinite_numel": 11,
+                "checkpoint_first_bad_key": "quant_proj_K.1",
+                "checkpoint_summary": {
+                    "top_abs_tensors": [
+                        {"key": "quant_proj_K.1", "max_abs": 42.0, "nonfinite_numel": 11}
+                    ]
+                },
+            }
+        ],
+        "checks": {
+            "dynalign_module_replace_residrank16": {
+                "row_count_matches_slice": False,
+                "example_ids_match_target": False,
+                "no_empty_predictions": False,
+                "numeric_extraction_coverage": False,
+                "beats_target": False,
+            }
+        },
+    }
+    path = tmp_path / "out.md"
+    sweep._write_markdown(path, payload)
+    text = path.read_text()
+    assert "| dynalign_module_replace | 16 | 0.0000 | 0 | 0 | 0 | 0 | 70 | checkpoint_nonfinite | 11 | quant_proj_K.1 | no | no |" in text
+    assert "top_tensor=quant_proj_K.1 (max_abs=42.0000, nonfinite=11)" in text

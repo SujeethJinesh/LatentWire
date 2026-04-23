@@ -4745,10 +4745,15 @@ We also now know the failure mode is numerical:
 - the visible generation collapse is repeated punctuation, not an ordinary weak
   decode
 - the harness now validates checkpoints for non-finite values before running
-  evaluation
+  evaluation and persists a structured failure row / health sidecar instead of
+  dying before writing artifacts
+- the first localized bad tensor in that structured read is `W_V.8`, with the
+  wider corrupt family covering `quant_proj_V.8`, `quant_aux_proj_V.8`, and
+  the layer-8 V-side residual-slot tensors
 
 So the immediate decision order tightens again:
 
 1. finish the seed-stability gate
-2. isolate whether the collapse is a real calibration instability or a bug
+2. isolate whether that layer-8 V-side corruption is a real calibration
+   instability or a bug
 3. only then decide whether to spend more on cross-family generalization

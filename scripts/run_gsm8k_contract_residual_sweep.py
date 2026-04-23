@@ -16,12 +16,13 @@ if str(ROOT) not in sys.path:
 
 from scripts import run_gsm8k_contract_checkpoint_sweep as checkpoint_sweep
 from scripts import run_gsm8k_smoke_contract as smoke
+from scripts import harness_common as harness
 
 
 DEFAULT_BASELINE_RESULTS_DIR = "results/gsm8k_smoke_contract_20260421"
 DEFAULT_SWEEP_RESULTS_DIR = "results/gsm8k_contract_residual_sweep_20260421"
 DEFAULT_CHECKPOINTS_DIR = "checkpoints/gsm8k_contract_residual_sweep_20260421"
-DEFAULT_MATERIALIZED_EVAL_FILE = "/tmp/gsm8k_eval_32.jsonl"
+DEFAULT_MATERIALIZED_EVAL_FILE = None
 DEFAULT_CALIBRATION_FILE = ".debug/calibration_64.txt"
 
 DEFAULT_BASES: dict[str, dict[str, str | int]] = {
@@ -99,7 +100,7 @@ class ResidualSweepConfig:
     target_model: str = smoke.DEFAULT_TARGET_MODEL
     eval_file: str = smoke.DEFAULT_EVAL_FILE
     slice_size: int = 32
-    materialized_eval_file: str = DEFAULT_MATERIALIZED_EVAL_FILE
+    materialized_eval_file: str | None = DEFAULT_MATERIALIZED_EVAL_FILE
     baseline_results_dir: str = DEFAULT_BASELINE_RESULTS_DIR
     results_dir: str = DEFAULT_SWEEP_RESULTS_DIR
     checkpoints_dir: str = DEFAULT_CHECKPOINTS_DIR
@@ -156,6 +157,8 @@ def _checkpoint_finite_summary(checkpoint_path: pathlib.Path) -> dict[str, Any]:
     nonfinite_numel = 0
     max_abs = 0.0
     first_bad_key: str | None = None
+    nonfinite_keys: list[str] = []
+    top_abs_tensors: list[dict[str, Any]] = []
     for key, value in state.items():
         if not torch.is_tensor(value):
             continue
@@ -164,13 +167,33 @@ def _checkpoint_finite_summary(checkpoint_path: pathlib.Path) -> dict[str, Any]:
         if not value.is_floating_point():
             continue
         floating_tensor_keys += 1
-        if value.numel():
-            max_abs = max(max_abs, float(value.abs().max().item()))
         bad = ~torch.isfinite(value)
         bad_count = int(bad.sum().item())
         nonfinite_numel += bad_count
         if bad_count > 0 and first_bad_key is None:
             first_bad_key = str(key)
+            nonfinite_keys.append(str(key))
+        elif bad_count > 0:
+            nonfinite_keys.append(str(key))
+        abs_value = value.abs()
+        finite_abs = abs_value[torch.isfinite(abs_value)]
+        tensor_max_abs = float(finite_abs.max().item()) if finite_abs.numel() else 0.0
+        tensor_mean_abs = float(finite_abs.mean().item()) if finite_abs.numel() else 0.0
+        if finite_abs.numel():
+            max_abs = max(max_abs, tensor_max_abs)
+        top_abs_tensors.append(
+            {
+                "key": str(key),
+                "shape": list(value.shape),
+                "max_abs": tensor_max_abs,
+                "mean_abs": tensor_mean_abs,
+                "nonfinite_numel": bad_count,
+            }
+        )
+    top_abs_tensors.sort(
+        key=lambda item: (int(item["nonfinite_numel"] > 0), float(item["max_abs"])),
+        reverse=True,
+    )
     return {
         "tensor_keys": tensor_keys,
         "floating_tensor_keys": floating_tensor_keys,
@@ -178,10 +201,44 @@ def _checkpoint_finite_summary(checkpoint_path: pathlib.Path) -> dict[str, Any]:
         "nonfinite_numel": nonfinite_numel,
         "max_abs": max_abs,
         "first_bad_key": first_bad_key,
+        "nonfinite_keys": nonfinite_keys[:8],
+        "top_abs_tensors": top_abs_tensors[:8],
     }
 
 
-def _validate_checkpoint_finite(checkpoint_path: pathlib.Path) -> None:
+def _checkpoint_health_path(checkpoint_path: pathlib.Path) -> pathlib.Path:
+    return checkpoint_path.with_suffix(checkpoint_path.suffix + ".health.json")
+
+
+def _quarantined_checkpoint_path(checkpoint_path: pathlib.Path) -> pathlib.Path:
+    return checkpoint_path.with_name(checkpoint_path.stem + ".nonfinite" + checkpoint_path.suffix)
+
+
+def _write_checkpoint_health(
+    *,
+    checkpoint_path: pathlib.Path,
+    base_label: str,
+    rank: int,
+    config: ResidualSweepConfig,
+    checkpoint_summary: dict[str, Any],
+    freshly_created: bool,
+    quarantined_path: pathlib.Path | None,
+) -> pathlib.Path:
+    health_path = _checkpoint_health_path(checkpoint_path)
+    payload = {
+        "base_label": base_label,
+        "residual_rank": rank,
+        "seed": int(config.seed),
+        "checkpoint_path": str(checkpoint_path),
+        "freshly_created": bool(freshly_created),
+        "quarantined_checkpoint_path": str(quarantined_path) if quarantined_path is not None else None,
+        **checkpoint_summary,
+    }
+    smoke._write_json(health_path, payload)
+    return health_path
+
+
+def _validate_checkpoint_finite(checkpoint_path: pathlib.Path) -> dict[str, Any]:
     summary = _checkpoint_finite_summary(checkpoint_path)
     if int(summary["nonfinite_numel"]) > 0:
         raise ValueError(
@@ -189,6 +246,93 @@ def _validate_checkpoint_finite(checkpoint_path: pathlib.Path) -> None:
             f"path={checkpoint_path} nonfinite_numel={summary['nonfinite_numel']} "
             f"first_bad_key={summary['first_bad_key']} max_abs={summary['max_abs']:.4f}"
         )
+    return summary
+
+
+def _safe_checkpoint_summary(checkpoint_path: pathlib.Path) -> dict[str, Any]:
+    health_path = _checkpoint_health_path(checkpoint_path)
+    if not checkpoint_path.exists():
+        if health_path.exists():
+            try:
+                payload = json.loads(health_path.read_text())
+                payload["checkpoint_exists"] = False
+                return payload
+            except Exception:
+                pass
+        return {
+            "checkpoint_exists": False,
+            "tensor_keys": 0,
+            "floating_tensor_keys": 0,
+            "total_numel": 0,
+            "nonfinite_numel": 0,
+            "max_abs": 0.0,
+            "first_bad_key": None,
+            "nonfinite_keys": [],
+            "top_abs_tensors": [],
+        }
+    try:
+        return {"checkpoint_exists": True, **_checkpoint_finite_summary(checkpoint_path)}
+    except Exception as exc:
+        return {
+            "checkpoint_exists": True,
+            "summary_error": str(exc),
+            "tensor_keys": 0,
+            "floating_tensor_keys": 0,
+            "total_numel": 0,
+            "nonfinite_numel": 0,
+            "max_abs": 0.0,
+            "first_bad_key": None,
+            "nonfinite_keys": [],
+            "top_abs_tensors": [],
+        }
+
+
+def _failure_status(exc: Exception, checkpoint_summary: dict[str, Any]) -> str:
+    if int(checkpoint_summary.get("nonfinite_numel", 0)) > 0:
+        return "checkpoint_nonfinite"
+    if isinstance(exc, FileNotFoundError):
+        return "checkpoint_missing"
+    return "candidate_error"
+
+
+def _failure_row(
+    *,
+    base_label: str,
+    rank: int,
+    checkpoint_path: pathlib.Path,
+    checkpoint_summary: dict[str, Any],
+    config: ResidualSweepConfig,
+    error: Exception,
+) -> tuple[dict[str, Any], dict[str, bool]]:
+    row = {
+        "label": _candidate_label(base_label, rank),
+        "base_label": base_label,
+        "residual_rank": rank,
+        "accuracy": 0.0,
+        "n": 0,
+        "correct": 0,
+        "example_ids": [],
+        "numeric_extraction_coverage": 0,
+        "empty_predictions": config.slice_size,
+        "paired_vs_target": {"win": 0, "loss": 0, "tie": 0},
+        "seed": int(config.seed),
+        "reused_existing_checkpoint": rank == int(DEFAULT_BASES[base_label]["existing_rank"]) and int(config.seed) == 0,
+        "status": _failure_status(error, checkpoint_summary),
+        "failure_reason": str(error),
+        "checkpoint_path": str(checkpoint_path),
+        "checkpoint_nonfinite_numel": int(checkpoint_summary.get("nonfinite_numel", 0)),
+        "checkpoint_first_bad_key": checkpoint_summary.get("first_bad_key"),
+        "checkpoint_max_abs": float(checkpoint_summary.get("max_abs", 0.0)),
+        "checkpoint_summary": checkpoint_summary,
+    }
+    checks = {
+        "row_count_matches_slice": False,
+        "example_ids_match_target": False,
+        "no_empty_predictions": False,
+        "numeric_extraction_coverage": False,
+        "beats_target": False,
+    }
+    return row, checks
 
 
 def _calibrate_checkpoint(
@@ -197,12 +341,14 @@ def _calibrate_checkpoint(
     rank: int,
     checkpoint_path: pathlib.Path,
     config: ResidualSweepConfig,
-) -> None:
+) -> dict[str, Any]:
+    created_checkpoint = False
     if not checkpoint_path.exists():
         checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        created_checkpoint = True
         base_meta = DEFAULT_BASES[base_label]
         cmd = [
-            str(ROOT / ".venv" / "bin" / "python"),
+            harness.python_executable(ROOT),
             str(ROOT / "scripts" / "calibrate.py"),
             "--calibration-file",
             str(ROOT / config.calibration_file),
@@ -241,19 +387,38 @@ def _calibrate_checkpoint(
             "--seed",
             str(config.seed),
         ]
-        if config.use_chat_template:
-            cmd.extend(
-                [
-                    "--source-use-chat-template",
-                    "--target-use-chat-template",
-                    "--source-enable-thinking",
-                    "false" if not config.enable_thinking else "true",
-                    "--target-enable-thinking",
-                    "false" if not config.enable_thinking else "true",
-                ]
+        cmd.extend(
+            harness.chat_template_cli_args(
+                enabled=config.use_chat_template,
+                thinking=config.enable_thinking,
             )
+        )
         _run(cmd)
-    _validate_checkpoint_finite(checkpoint_path)
+    checkpoint_summary = _checkpoint_finite_summary(checkpoint_path)
+    if int(checkpoint_summary["nonfinite_numel"]) > 0:
+        quarantined_path: pathlib.Path | None = None
+        if created_checkpoint and checkpoint_path.exists():
+            quarantined_path = _quarantined_checkpoint_path(checkpoint_path)
+            quarantined_path.parent.mkdir(parents=True, exist_ok=True)
+            if quarantined_path.exists():
+                quarantined_path.unlink()
+            checkpoint_path.replace(quarantined_path)
+        health_path = _write_checkpoint_health(
+            checkpoint_path=checkpoint_path,
+            base_label=base_label,
+            rank=rank,
+            config=config,
+            checkpoint_summary=checkpoint_summary,
+            freshly_created=created_checkpoint,
+            quarantined_path=quarantined_path,
+        )
+        raise ValueError(
+            "Checkpoint contains non-finite values: "
+            f"path={checkpoint_path} nonfinite_numel={checkpoint_summary['nonfinite_numel']} "
+            f"first_bad_key={checkpoint_summary['first_bad_key']} max_abs={checkpoint_summary['max_abs']:.4f} "
+            f"health_path={health_path}"
+        )
+    return checkpoint_summary
 
 
 def _row_checks(row: dict[str, Any], baseline_target_records: list[dict[str, Any]], slice_size: int) -> dict[str, bool]:
@@ -272,6 +437,7 @@ def _run_candidate(
     base_label: str,
     rank: int,
     checkpoint_path: pathlib.Path,
+    checkpoint_summary: dict[str, Any],
     config: ResidualSweepConfig,
     materialized_eval_file: pathlib.Path,
     baseline_target_records: list[dict[str, Any]],
@@ -281,7 +447,7 @@ def _run_candidate(
     prediction_output = results_dir / f"{label}.jsonl"
     if not prediction_output.exists():
         cmd = [
-            str(ROOT / ".venv" / "bin" / "python"),
+            harness.python_executable(ROOT),
             str(ROOT / "latent_bridge" / "evaluate.py"),
             "--translator",
             str(checkpoint_path),
@@ -316,17 +482,12 @@ def _run_candidate(
             "--random-salt",
             str(config.seed),
         ]
-        if config.use_chat_template:
-            cmd.extend(
-                [
-                    "--source-use-chat-template",
-                    "--target-use-chat-template",
-                    "--source-enable-thinking",
-                    "false" if not config.enable_thinking else "true",
-                    "--target-enable-thinking",
-                    "false" if not config.enable_thinking else "true",
-                ]
+        cmd.extend(
+            harness.chat_template_cli_args(
+                enabled=config.use_chat_template,
+                thinking=config.enable_thinking,
             )
+        )
         _run(cmd)
 
     records = smoke._attach_prompts(smoke._read_jsonl(prediction_output), materialized_eval_file)
@@ -341,6 +502,11 @@ def _run_candidate(
     row["residual_rank"] = rank
     row["seed"] = int(config.seed)
     row["reused_existing_checkpoint"] = rank == int(DEFAULT_BASES[base_label]["existing_rank"]) and int(config.seed) == 0
+    row["status"] = "ok"
+    row["checkpoint_nonfinite_numel"] = int(checkpoint_summary.get("nonfinite_numel", 0))
+    row["checkpoint_first_bad_key"] = checkpoint_summary.get("first_bad_key")
+    row["checkpoint_max_abs"] = float(checkpoint_summary.get("max_abs", 0.0))
+    row["checkpoint_summary"] = checkpoint_summary
     checks = _row_checks(row, baseline_target_records, config.slice_size)
     return row, checks
 
@@ -356,28 +522,49 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- seed: `{payload['config']['seed']}`",
         f"- slice: `{payload['config']['slice_size']}` examples from `{payload['config']['eval_file']}`",
         "",
-        "| Base | Residual rank | Accuracy | Win vs target | Loss vs target | Tie vs target | Numeric coverage | Empty preds | Reused ckpt | Promote? |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Base | Residual rank | Accuracy | Win vs target | Loss vs target | Tie vs target | Numeric coverage | Empty preds | Status | Nonfinite | First bad key | Reused ckpt | Promote? |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---|---:|---:|",
     ]
     for row in payload["rows"]:
         paired = row["paired_vs_target"]
         checks = payload["checks"][row["label"]]
         promote = (
-            checks["numeric_extraction_coverage"]
+            row.get("status", "ok") == "ok"
+            and checks["numeric_extraction_coverage"]
             and checks["beats_target"]
             and checks["row_count_matches_slice"]
             and checks["example_ids_match_target"]
             and checks["no_empty_predictions"]
         )
+        first_bad_key = row.get("checkpoint_first_bad_key") or "-"
         lines.append(
             f"| {row['base_label']} | {row['residual_rank']} | {row['accuracy']:.4f} | "
             f"{paired['win']} | {paired['loss']} | {paired['tie']} | {row['numeric_extraction_coverage']} | "
-            f"{row['empty_predictions']} | {'yes' if row['reused_existing_checkpoint'] else 'no'} | {'yes' if promote else 'no'} |"
+            f"{row['empty_predictions']} | {row.get('status', 'ok')} | {row.get('checkpoint_nonfinite_numel', 0)} | "
+            f"{first_bad_key} | {'yes' if row['reused_existing_checkpoint'] else 'no'} | {'yes' if promote else 'no'} |"
         )
     lines.extend(["", "## Checks", ""])
     for label, checks in payload["checks"].items():
         status = ", ".join(f"{name}={'PASS' if passed else 'FAIL'}" for name, passed in checks.items())
         lines.append(f"- `{label}` — {status}")
+    lines.extend(["", "## Checkpoint Health", ""])
+    for row in payload["rows"]:
+        checkpoint_summary = row.get("checkpoint_summary", {})
+        top_abs = checkpoint_summary.get("top_abs_tensors", [])
+        if top_abs:
+            top_entry = top_abs[0]
+            top_entry_text = (
+                f"{top_entry['key']} (max_abs={top_entry['max_abs']:.4f}, "
+                f"nonfinite={top_entry['nonfinite_numel']})"
+            )
+        else:
+            top_entry_text = "-"
+        lines.append(
+            f"- `{row['label']}` — status={row.get('status', 'ok')}, "
+            f"nonfinite_numel={row.get('checkpoint_nonfinite_numel', 0)}, "
+            f"first_bad_key={row.get('checkpoint_first_bad_key') or '-'}, "
+            f"top_tensor={top_entry_text}"
+        )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n")
 
@@ -385,8 +572,12 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
 def run_sweep(config: ResidualSweepConfig) -> dict[str, Any]:
     results_dir = ROOT / config.results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
-    materialized = pathlib.Path(config.materialized_eval_file)
-    smoke._materialize_slice(ROOT / config.eval_file, materialized, config.slice_size)
+    materialized = harness.resolve_materialized_eval_file(
+        config.materialized_eval_file,
+        results_dir=results_dir,
+        slice_size=config.slice_size,
+    )
+    harness.materialize_slice(ROOT / config.eval_file, materialized, config.slice_size)
     baseline_target_records = checkpoint_sweep._load_baseline_target_records(ROOT / config.baseline_results_dir, materialized)
 
     rows: list[dict[str, Any]] = []
@@ -394,21 +585,33 @@ def run_sweep(config: ResidualSweepConfig) -> dict[str, Any]:
     for base_label in config.bases:
         for rank in config.ranks:
             checkpoint_path = _checkpoint_path(base_label, rank, config)
-            _calibrate_checkpoint(
-                base_label=base_label,
-                rank=rank,
-                checkpoint_path=checkpoint_path,
-                config=config,
-            )
-            row, row_checks = _run_candidate(
-                base_label=base_label,
-                rank=rank,
-                checkpoint_path=checkpoint_path,
-                config=config,
-                materialized_eval_file=materialized,
-                baseline_target_records=baseline_target_records,
-                results_dir=results_dir,
-            )
+            try:
+                checkpoint_summary = _calibrate_checkpoint(
+                    base_label=base_label,
+                    rank=rank,
+                    checkpoint_path=checkpoint_path,
+                    config=config,
+                )
+                row, row_checks = _run_candidate(
+                    base_label=base_label,
+                    rank=rank,
+                    checkpoint_path=checkpoint_path,
+                    checkpoint_summary=checkpoint_summary,
+                    config=config,
+                    materialized_eval_file=materialized,
+                    baseline_target_records=baseline_target_records,
+                    results_dir=results_dir,
+                )
+            except Exception as exc:
+                checkpoint_summary = _safe_checkpoint_summary(checkpoint_path)
+                row, row_checks = _failure_row(
+                    base_label=base_label,
+                    rank=rank,
+                    checkpoint_path=checkpoint_path,
+                    checkpoint_summary=checkpoint_summary,
+                    config=config,
+                    error=exc,
+                )
             rows.append(row)
             checks[row["label"]] = row_checks
 
@@ -417,6 +620,9 @@ def run_sweep(config: ResidualSweepConfig) -> dict[str, Any]:
         "date": "2026-04-21",
         "baseline_contract": str(ROOT / config.baseline_results_dir / "gsm8k_smoke_contract_20260421.md"),
         "config": asdict(config),
+        "artifacts": {
+            "materialized_eval_file": str(materialized),
+        },
         "rows": rows,
         "checks": checks,
     }

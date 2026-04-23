@@ -35,7 +35,15 @@ The seed `1` checkpoint is numerically corrupted rather than merely weak:
 
 - seed `0` checkpoint: `0` non-finite values
 - seed `1` checkpoint: `2,381,056` non-finite values
-- the largest observed divergence is in `quant_proj_K.1`
+- the new harness-backed failure row localizes the first bad tensor to
+  `W_V.8`
+- the same corrupted family includes `quant_proj_V.8`,
+  `quant_aux_proj_V.8`, and the layer-8 V-side residual-slot tensors
+
+The structured failure artifacts now live at:
+
+- `results/gsm8k_contract_residual_seed1_health_20260422/gsm8k_contract_residual_sweep_20260421.md`
+- `checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat_seed1.pt.health.json`
 
 So the current failure mode should be treated as a calibration robustness bug
 or instability, not just benchmark variance.
@@ -59,5 +67,7 @@ After this partial read, the story becomes:
    - true method instability
    - calibration instability
    - or a checkpoint-generation bug
-3. only after that, decide whether to invest in cross-family testing or move
+3. use the new checkpoint-health row to check whether reruns fail in the same
+   layer-8 V-side family or move elsewhere
+4. only after that, decide whether to invest in cross-family testing or move
    straight to robustness fixes
