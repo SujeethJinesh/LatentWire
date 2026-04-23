@@ -1772,6 +1772,24 @@ def _resample_position_profile(profile: torch.Tensor, target_len: int) -> torch.
     return out / out.sum().clamp_min(1e-8)
 
 
+def _resize_position_scores(scores: torch.Tensor | None, target_len: int) -> torch.Tensor | None:
+    if scores is None:
+        return None
+    if target_len <= 0:
+        raise ValueError("target_len must be positive")
+    scores = scores.float().view(-1)
+    if scores.numel() == target_len:
+        return scores
+    if scores.numel() <= 0:
+        raise ValueError("scores must contain at least one position")
+    return F.interpolate(
+        scores.view(1, 1, -1),
+        size=target_len,
+        mode="linear",
+        align_corners=False,
+    ).view(-1)
+
+
 def _translate_layer_with_optional_runtime_attention(
     translator: RotAlignKVTranslator,
     K_s: torch.Tensor,
@@ -4179,16 +4197,20 @@ def _build_rotalign_prefix_state(
                 active_v_token_counts.append(keep_list)
         else:
             def position_scores_for_metric(metric: str) -> torch.Tensor | None:
+                target_seq_len = K_t_aligned.shape[2]
                 if metric == "source_attention":
                     if source_layer_position_scores is None:
                         return None
-                    return source_layer_position_scores[src_l][-K_t_aligned.shape[2] :]
+                    return _resize_position_scores(
+                        source_layer_position_scores[src_l][-target_seq_len:],
+                        target_seq_len,
+                    )
                 if metric == "attention_prior":
                     if fixed_position_profiles is None:
                         return None
                     return _resample_position_profile(
                         fixed_position_profiles[tgt_l].to(device=K_t_aligned.device),
-                        K_t_aligned.shape[2],
+                        target_seq_len,
                     )
                 if metric in {
                     "attention",
@@ -4198,7 +4220,7 @@ def _build_rotalign_prefix_state(
                     "attention_disagreement_stratified",
                     "attention_shuffled",
                 }:
-                    return runtime_position_scores
+                    return _resize_position_scores(runtime_position_scores, target_seq_len)
                 return None
 
             branch_position_ratio = position_selection_ratio

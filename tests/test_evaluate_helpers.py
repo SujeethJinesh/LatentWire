@@ -649,6 +649,43 @@ def test_query_pool_transport_pools_bins_without_changing_cache_shape() -> None:
     assert trace["query_pool_mean_bin_span"] == pytest.approx(2.0)
 
 
+def test_resize_position_scores_resamples_to_target_length() -> None:
+    scores = torch.tensor([1.0, 3.0, 2.0, 6.0, 4.0, 5.0])
+
+    resized = evaluate._resize_position_scores(scores, 4)
+
+    assert resized is not None
+    assert resized.shape == (4,)
+    assert torch.isfinite(resized).all()
+    assert resized.tolist() == pytest.approx([1.5, 2.25, 5.5, 4.75])
+
+
+def test_query_pool_transport_accepts_resized_runtime_scores() -> None:
+    K_t = torch.zeros(1, 1, 4, 1)
+    V_t = torch.zeros(1, 1, 4, 1)
+    K_hat = torch.tensor([[[[1.0], [3.0], [10.0], [14.0]]]])
+    V_hat = torch.tensor([[[[101.0], [103.0], [110.0], [114.0]]]])
+    raw_scores = torch.tensor([1.0, 3.0, 2.0, 6.0, 4.0, 5.0])
+
+    selected_k, selected_v, trace = evaluate._apply_position_selection(
+        K_t,
+        V_t,
+        K_hat,
+        V_hat,
+        protocol="translated_only",
+        kv_transport="both",
+        position_selection_ratio=0.5,
+        position_selection_metric="query_pool_transport",
+        position_scores=evaluate._resize_position_scores(raw_scores, K_hat.shape[2]),
+        return_trace=True,
+    )
+
+    assert selected_k.shape == K_hat.shape
+    assert selected_v.shape == V_hat.shape
+    assert trace["selection_policy"] == "query_pool_transport_bins"
+    assert len(trace["selected_positions_full"]) == 2
+
+
 def test_evaluate_parse_args_accepts_layer_knockout(monkeypatch) -> None:
     monkeypatch.setattr(
         evaluate.sys,

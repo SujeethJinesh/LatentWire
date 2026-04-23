@@ -1433,3 +1433,84 @@ as the paper method. The next exact gate is a control-discriminating innovation
 connector on the same frozen SVAMP32 surface, likely with an explicit
 verifier/contrastive rule that rejects wins retained under zero/shuffled
 source.
+
+## 2026-04-23 18:20 PT — SVAMP32 query_pool_transport source controls
+
+Paper status:
+
+- still not ICLR-ready
+- same submission blocker: a matched-source connector must recover frozen-ID
+  C2C-only wins that zero/shuffled-source controls do not
+
+What ran:
+
+- reused the existing learned
+  `bridge_ridge_qk_dynalign_query_innovation_resampler_replace` checkpoint
+- switched runtime selection to `query_pool_transport`
+- swept `0.10/0.15/0.25` on the frozen SVAMP32 slice
+- then ran exact matched, zero-source, and deterministic shuffled-source rows
+  for gate `0.10`
+- then ran `scripts/analyze_c2c_teacher_innovation.py`
+
+Repo fix:
+
+- shuffled-source initially crashed because runtime attention-derived position
+  scores were not resized to translated KV length for
+  `query_pool_transport`
+- fixed this in `latent_bridge/evaluate.py` via
+  `_resize_position_scores()`
+- added focused regression coverage in `tests/test_evaluate_helpers.py`
+- focused test result:
+  `./venv_arm64/bin/python -m pytest tests/test_evaluate_helpers.py -k 'query_pool_transport or resize_position_scores or shuffle_examples_uses_mismatched_source_prompt' -q`
+  -> `5 passed`
+
+Evidence:
+
+- gate sweep:
+  - `0.10`: `9/32`
+  - `0.15`: `7/32`
+  - `0.25`: `6/32`
+- gate `0.10` exact rows:
+  - matched: `9/32`, wins `3e8a5691f5443495` and `575d7e83d84c1e67`, loss
+    `c042f0a2949ff8e6`
+  - zero-source: `8/32`, reproduces both matched wins, adds extra loss
+    `de2a795ab37694af`
+  - shuffled-source: `9/32`, reproduces the full matched headline row with
+    `31/32` numeric coverage and `1` empty prediction
+- teacher probe:
+  - matched recovers only `1/10` C2C-only IDs: `575d7e83d84c1e67`
+  - zero-source also recovers `575d7e83d84c1e67`
+  - shuffled-source also recovers `575d7e83d84c1e67`
+  - source-alone also recovers `575d7e83d84c1e67`
+  - probe verdict:
+    `candidate_teacher_recovery_explained_by_controls`
+- artifact sanity:
+  - exact ordered ID parity is `true` across target/matched/zero/shuffled rows
+  - shuffled rows all carry `source_prompt_control=shuffle_examples`
+  - shuffled rows have `0` same-index source mappings
+
+Status update:
+
+- alive:
+  - decoder-conditioned innovation connectors as a class
+- weakened:
+  - `query_pool_transport` as a runtime wrapper on the current learned
+    innovation checkpoint
+- saturated:
+  - deterministic selector swaps on this checkpoint for the frozen SVAMP32
+    paper gate
+
+Decision:
+
+- do not widen this runtime family further
+- after the control-path bug fix, shuffled-source still reproduces the full
+  matched row and the only teacher-only recovery
+- treat this as a clean negative result, not a live positive-method candidate
+
+Next exact gate:
+
+- a target-conditioned innovation connector on the same frozen SVAMP32 surface
+  with matched / zero-source / shuffled-source / target-self-repair rows
+- promotion only if matched-source gets at least `4/10` C2C-only recoveries,
+  at least `11/32`, loses at most `1` target-correct ID, and the controls
+  recover at most `1` of the same matched teacher-only wins
