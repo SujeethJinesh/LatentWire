@@ -1595,3 +1595,78 @@ Next exact gate:
   frozen SVAMP32 exact-ID surface
 - promote only if `scripts/analyze_svamp32_paper_gate.py` returns
   `candidate_passes_target_self_repair_gate`
+
+## 2026-04-23 19:45 PT — SVAMP32 clean innovation target set
+
+Paper status:
+
+- not ICLR-ready
+- current story: the live method needs a source-specific residual innovation
+  connector, not another target-cache perturbation
+- blocking gap: identify which C2C-only IDs remain legitimate positives after
+  removing target_self_repair, source-alone/text relay, and zero/shuffled-source
+  explanations
+
+What changed:
+
+- added `scripts/build_svamp32_innovation_target_set.py`
+- added `tests/test_build_svamp32_innovation_target_set.py`
+- materialized:
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.md`
+- updated:
+  - `paper/svamp32_innovation_target_set_20260423.md`
+  - `results/svamp32_query_innovation_query_pool_transport_20260423/manifest.md`
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_build_svamp32_innovation_target_set.py tests/test_analyze_svamp32_paper_gate.py -q
+```
+
+Result: `5 passed`
+
+Evidence:
+
+- target-alone: `8/32`
+- C2C teacher: `16/32`
+- target_self_repair: `14/32`
+- target_self_repair C2C-only recoveries: `3/10`
+- clean residual C2C-only targets after removing target_self_repair,
+  source-alone/text relay, and zero/shuffled-source explanations: `6`
+- clean residual target IDs:
+  - `13cb77b698eeadb5`
+  - `1d50b408c8f5cd2c`
+  - `2de1549556000830`
+  - `6e9745b37ab6fc45`
+  - `aee922049c757331`
+  - `e3ab8666238a289e`
+- excluded as target_self_repair recovered:
+  - `4c84ebf42812703b`
+  - `4d780f825bb8541c`
+  - `de1bf4d142544e5b`
+- excluded as source/source-control explained:
+  - `575d7e83d84c1e67`
+- target_self_repair plus C2C teacher oracle: `21/32`
+- required clean residual wins if preserving target_self_repair: `2`
+
+Status update:
+
+- alive:
+  - C2C-distilled conditional innovation fuser
+  - Wyner-Ziv / Q-Former-style conditional innovation bottleneck
+  - source-necessity replay ablation for the next candidate
+- saturated:
+  - current query_pool_transport row and selector/runtime variants
+- promoted:
+  - train/evaluate only against the clean residual target set for positive
+    source communication claims
+
+Next exact gate:
+
+- implement the smallest target-self-preserving conditional innovation
+  connector
+- run matched, post-bridge-zero if available, zero-source, shuffled-source with
+  at least two salts, and target_self_repair
+- score with `scripts/analyze_c2c_teacher_innovation.py` and
+  `scripts/analyze_svamp32_paper_gate.py`

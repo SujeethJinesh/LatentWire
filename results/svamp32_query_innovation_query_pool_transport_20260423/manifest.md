@@ -9,6 +9,7 @@
 - test result: `5 passed`
 - result: `candidate_teacher_recovery_explained_by_controls`
 - target-self-repair paper gate: `no_candidate_passes_target_self_repair_gate`
+- innovation target-set status: `residual_headroom_available`
 
 ## Gate Sweep
 
@@ -34,6 +35,15 @@
 - delta versus target_self_repair: `-5`
 - failing criteria: `min_correct`, `beats_target_self_repair`, `min_teacher_only`, `min_unique_vs_target_self_repair`
 - retained by source controls: `575d7e83d84c1e67`
+
+## Innovation Target Set
+
+- clean residual C2C-only targets: `6`
+- clean target IDs: `13cb77b698eeadb5`, `1d50b408c8f5cd2c`, `2de1549556000830`, `6e9745b37ab6fc45`, `aee922049c757331`, `e3ab8666238a289e`
+- target_self_repair already recovers: `4c84ebf42812703b`, `4d780f825bb8541c`, `de1bf4d142544e5b`
+- source/source-control explained: `575d7e83d84c1e67`
+- target_self_repair plus C2C teacher oracle: `21/32`
+- required clean residual wins if preserving target_self_repair: `2`
 
 ## Artifact Hashes
 
@@ -65,3 +75,7 @@
   - sha256: `3795cf64ec4eb96cda2cad3d41afa45021727662424a89cd27993cfb78fbb603`
 - `paper_gate_gate010_with_target_repair.md`
   - sha256: `0f6fe50d7ce8f693eea068c3d85ea353969b6cad6f6675f434e0f09f65b2e8c6`
+- `svamp32_innovation_target_set_20260423.json`
+  - sha256: `9f9e3faef2a9d7632be65e3ef99e8af8ec2cb0576fa0d4fa926b1f1772daf3f0`
+- `svamp32_innovation_target_set_20260423.md`
+  - sha256: `c82b8bdf9b0b8a5265fe39ecc2b6fd3e66982beda9e6f9d1cd9279c226706f74`

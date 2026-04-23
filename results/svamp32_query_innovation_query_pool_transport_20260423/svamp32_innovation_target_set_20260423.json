@@ -1,0 +1,176 @@
+{
+  "config": {
+    "min_correct": 16,
+    "min_teacher_only": 5,
+    "min_unique_vs_target_self": 2,
+    "source_control_labels": [
+      "zero_source",
+      "shuffled_source"
+    ],
+    "source_labels": [
+      "source",
+      "t2t"
+    ],
+    "target_self_label": "target_self_repair"
+  },
+  "date": "2026-04-23",
+  "ids": {
+    "clean_residual_targets": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "e3ab8666238a289e"
+    ],
+    "current_candidate": [
+      "575d7e83d84c1e67"
+    ],
+    "source_control_explained": [
+      "575d7e83d84c1e67"
+    ],
+    "source_explained": [
+      "575d7e83d84c1e67"
+    ],
+    "target_self_repair": [
+      "4c84ebf42812703b",
+      "4d780f825bb8541c",
+      "de1bf4d142544e5b"
+    ],
+    "teacher_only": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "4c84ebf42812703b",
+      "4d780f825bb8541c",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "de1bf4d142544e5b",
+      "e3ab8666238a289e"
+    ]
+  },
+  "status": "residual_headroom_available",
+  "summary": {
+    "can_clear_gate_if_preserving_target_self": true,
+    "clean_residual_teacher_only_count": 6,
+    "current_candidate_teacher_only_count": 1,
+    "oracle_target_self_plus_teacher_correct": 21,
+    "required_clean_residual_to_clear_gate_if_preserving_self": 2,
+    "source_control_explained_teacher_only_count": 1,
+    "source_explained_teacher_only_count": 1,
+    "target_correct": 8,
+    "target_self_repair_correct": 14,
+    "target_self_repair_teacher_only_count": 3,
+    "teacher_correct": 16,
+    "teacher_only_count": 10
+  },
+  "teacher_only_rows": [
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "13cb77b698eeadb5",
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "1d50b408c8f5cd2c",
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "2de1549556000830",
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [
+        "target_self_repair"
+      ],
+      "example_id": "4c84ebf42812703b",
+      "labels": [
+        "target_self_repair"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [
+        "selected_route_no_repair",
+        "target_self_repair"
+      ],
+      "example_id": "4d780f825bb8541c",
+      "labels": [
+        "target_self_repair"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [
+        "query_pool_matched"
+      ],
+      "control_correct_labels": [
+        "shuffled_source",
+        "zero_source"
+      ],
+      "example_id": "575d7e83d84c1e67",
+      "labels": [
+        "source_or_text",
+        "source_control",
+        "current_candidate"
+      ],
+      "source_correct_labels": [
+        "source"
+      ]
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "6e9745b37ab6fc45",
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "aee922049c757331",
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [
+        "target_self_repair"
+      ],
+      "example_id": "de1bf4d142544e5b",
+      "labels": [
+        "target_self_repair"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "e3ab8666238a289e",
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_correct_labels": []
+    }
+  ]
+}
