@@ -1305,3 +1305,131 @@ innovation connector on the same frozen SVAMP32 IDs, with the same strict
 matched/zero/shuffle evaluation and the predeclared promotion threshold
 (`>=4/10` teacher-only recoveries, `>=11/32` overall, `<=1` target loss, and
 controls recovering at most one of the same matched teacher-only wins).
+
+`paper/svamp32_query_innovation_resampler_gate015_20260423.md` records the next
+same-pair learned-connector gate on the frozen SVAMP32 C2C-teacher surface.
+Rather than retraining, this turn reused the existing finite
+`bridge_ridge_qk_dynalign_query_innovation_resampler_replace` checkpoint from
+the earlier GSM8K32 seed-1 run and tested whether its promising `0.15` gate
+transfers to the stronger exact-ID SVAMP32 surface.
+
+First, a tiny fixed-gate transfer sweep:
+
+```bash
+./venv_arm64/bin/python latent_bridge/evaluate.py \
+  --translator .debug/checkpoints_gsm8k32_query_innovation_resampler_seed1_20260423/dynalign_query_innovation_resampler_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_innovation_resampler_replace_cal64_chat_bank16_seed1.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --kv-transport k_only \
+  --position-selection-ratio 0.5 \
+  --position-selection-metric attention \
+  --gate-mode sweep \
+  --gate-values 0.10 0.15 0.25 \
+  --methods rotalign \
+  --prediction-output .debug/svamp32_query_innovation_resampler_gate_sweep_20260423/live_gate_sweep.jsonl \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 1
+```
+
+Sweep readout:
+
+- gate `0.10`: `7/32`, below target
+- gate `0.15`: `9/32`, the only live gate
+- gate `0.25`: `8/32`, target parity
+
+Then exact controls at gate `0.15` plus the C2C-teacher probe:
+
+```bash
+./venv_arm64/bin/python latent_bridge/evaluate.py \
+  --translator .debug/checkpoints_gsm8k32_query_innovation_resampler_seed1_20260423/dynalign_query_innovation_resampler_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_innovation_resampler_replace_cal64_chat_bank16_seed1.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --kv-transport k_only \
+  --position-selection-ratio 0.5 \
+  --position-selection-metric attention \
+  --gate-mode fixed \
+  --fixed-gate 0.15 \
+  --methods rotalign \
+  --prediction-output results/svamp32_query_innovation_resampler_gate015_20260423/query_innovation_gate015_zero_source.jsonl \
+  --source-kv-control zero \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 1
+```
+
+```bash
+./venv_arm64/bin/python latent_bridge/evaluate.py \
+  --translator .debug/checkpoints_gsm8k32_query_innovation_resampler_seed1_20260423/dynalign_query_innovation_resampler_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_innovation_resampler_replace_cal64_chat_bank16_seed1.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --kv-transport k_only \
+  --position-selection-ratio 0.5 \
+  --position-selection-metric attention \
+  --gate-mode fixed \
+  --fixed-gate 0.15 \
+  --methods rotalign \
+  --prediction-output results/svamp32_query_innovation_resampler_gate015_20260423/query_innovation_gate015_shuffled_source_salt1.jsonl \
+  --source-prompt-control shuffle_examples \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 1
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_c2c_teacher_innovation.py \
+  --target target=path=results/svamp_exactid_baselines32_20260423/target_alone.jsonl,method=target_alone \
+  --teacher c2c=path=results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl,method=c2c_generate \
+  --source source=path=results/svamp_exactid_baselines32_20260423/source_alone.jsonl,method=source_alone \
+  --source t2t=path=results/svamp_exactid_baselines32_20260423/text_to_text.jsonl,method=text_to_text \
+  --candidate matched=path=results/svamp32_query_innovation_resampler_gate015_20260423/query_innovation_gate015_matched.jsonl,method=rotalign_kv \
+  --control zero_source=path=results/svamp32_query_innovation_resampler_gate015_20260423/query_innovation_gate015_zero_source.jsonl,method=rotalign_kv \
+  --control shuffled_source=path=results/svamp32_query_innovation_resampler_gate015_20260423/query_innovation_gate015_shuffled_source_salt1.jsonl,method=rotalign_kv \
+  --output-json results/svamp32_query_innovation_resampler_gate015_20260423/c2c_teacher_probe_gate015.json \
+  --output-md results/svamp32_query_innovation_resampler_gate015_20260423/c2c_teacher_probe_gate015.md
+```
+
+Evidence:
+
+- matched gate `0.15`: `9/32`, wins `3e8a5691f5443495` and
+  `575d7e83d84c1e67`, loss `c042f0a2949ff8e6`
+- zero-source: `8/32`, retains `575d7e83d84c1e67` and the same target loss
+- shuffled-source: `9/32`, reproduces both matched wins and the same target
+  loss, but with only `31/32` numeric coverage and `1` empty prediction
+- matched teacher-only recovered count: `1/10`
+- the only teacher-only recovered ID is `575d7e83d84c1e67`
+- that same teacher-only ID is recovered by both zero-source and
+  shuffled-source controls
+- the other matched-only win, `3e8a5691f5443495`, is not on the C2C teacher
+  surface
+- probe gate result: `candidate_teacher_recovery_explained_by_controls`
+
+Decision: the current fixed-gate query-innovation-resampler checkpoint is
+weakened on the exact SVAMP32 paper surface. It can move answers, but its only
+teacher-only recovery is fully explained by controls, and shuffled-source
+reproduces the full matched headline row. Do not widen this branch or treat it
+as the paper method. The next exact gate is a control-discriminating innovation
+connector on the same frozen SVAMP32 surface, likely with an explicit
+verifier/contrastive rule that rejects wins retained under zero/shuffled
+source.
