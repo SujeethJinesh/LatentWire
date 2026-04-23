@@ -249,6 +249,68 @@ It improves the matched row from `10/32` to `11/32` but still only recovers the
 same single clean residual ID, so translated-KV-zero, source-zero, and shuffle
 controls are not justified for the fine-gate rows.
 
+## Focused Weight/Default Retrain
+
+After runtime gate retuning saturated, I tested a calibration-side pressure
+change while keeping the same query-innovation resampler architecture:
+
+- `innovation-positive-weight`: `32`
+- `innovation-default-weight`: `0.25`
+- rank: `16`
+- bank size: `16`
+- seed: `1`
+
+Checkpoint:
+
+- `.debug/svamp32_clean_innovation_sweep_20260423/checkpoints/idw_p32_d025_r16_b16_seed1.pt`
+
+Matched sweep:
+
+```bash
+./venv_arm64/bin/python latent_bridge/evaluate.py \
+  --translator .debug/svamp32_clean_innovation_sweep_20260423/checkpoints/idw_p32_d025_r16_b16_seed1.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --kv-transport k_only \
+  --position-selection-ratio 0.5 \
+  --position-selection-metric attention \
+  --gate-mode sweep \
+  --gate-values 0.10 0.125 0.15 0.175 0.20 \
+  --methods rotalign \
+  --prediction-output .debug/svamp32_clean_innovation_sweep_20260423/preds/idw_p32_d025_r16_b16_seed1_attention_gate_sweep.jsonl \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 1
+```
+
+Readout artifacts:
+
+- `.debug/svamp32_clean_innovation_sweep_20260423/preds/idw_p32_d025_r16_b16_seed1_attention_gate_sweep.jsonl`
+- `results/svamp32_idweighted_query_innovation_20260423/idw_p32_d025_r16_b16_attention_clean_targets.json`
+- `results/svamp32_idweighted_query_innovation_20260423/idw_p32_d025_r16_b16_attention_clean_targets.md`
+
+Result:
+
+- status: `no_matched_gate_candidate_for_controls`
+- best row: `rotalign_kv_gate_0.17`, `10/32`
+- clean residual recovered: `0/6`
+- teacher-only recovered: `1`
+- target losses at best row: `0`
+- oracle `target_self_repair + clean candidate` bound: `14/32`
+- numeric extraction coverage: `32/32` for every row
+
+Interpretation: stronger clean-ID pressure with a lower default weight is not
+the missing lever. It erased the one clean residual ID found by the previous
+checkpoint and did not expose a second ID, so this calibration-side variant is
+killed without source-destroying controls.
+
 ## Interpretation
 
 The branch is revived but not promoted. The clean win on
@@ -259,13 +321,13 @@ clean source-necessary ID is below the gate and the row is still worse than
 
 The fine attention-gate sweep weakens the hypothesis that runtime thresholding
 alone can rescue the existing ID-weighted checkpoint. The next candidate should
-change training or the bottleneck objective, not just the runtime gate.
+change the bottleneck objective, not just the runtime gate or scalar ID weights.
 
 The next method should still preserve the target_self_repair row and add source
 innovation on top, rather than replacing it. But the sidecar-bound result
-and fine-gate result promote a new candidate/search step before runtime router
-work: the candidate must first expose at least two clean source-necessary IDs
-under matched versus source-destroying controls.
+fine-gate result, and focused retrain promote a source-control contrastive
+candidate before runtime router work: the candidate must first expose at least
+two clean source-necessary IDs under matched versus source-destroying controls.
 
 ## Next Gate
 

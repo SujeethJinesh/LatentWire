@@ -2169,3 +2169,91 @@ Next exact gate:
   matched exact-ID scoring
 - only then run translated-KV-zero, source-zero, two shuffle salts, and the
   target-self sidecar bound
+
+## 2026-04-23 15:09 PDT — SVAMP32 focused clean-ID retrain
+
+Paper status:
+
+- not ICLR-ready
+- current story: target self-repair is the decoder-side-information floor, and
+  source communication must add clean residual innovation on top
+- blocking gap: no candidate exposes `>=2/6` clean source-necessary IDs under
+  strict exact-ID controls
+
+Top next moves considered:
+
+- focused clean-ID retrain with stronger positive pressure. This matters
+  because it tests whether scalar calibration weighting, rather than runtime
+  gate choice, can expose the second clean residual ID. It might fail by
+  overfitting or suppressing the one real source-specific residual. Cost: one
+  calibration plus one five-gate decode. Helps same-pair and reproducibility.
+- explicit source-control contrastive query-innovation objective. This matters
+  because it optimizes source necessity directly. It might be invasive and
+  overfit the six clean IDs. Cost: high. Helps robustness and interpretability.
+- asymmetric value-side transport search. This matters because the current
+  matched row is `k_only`, so `V` may carry answer-side source innovation. It
+  might increase target losses or recover target-cache wins. Cost: medium.
+  Helps same-pair and efficiency.
+
+Decision:
+
+- picked focused clean-ID retrain first
+- rationale: it is the cheapest training-surface change after runtime gate
+  retuning saturated, and it is less invasive than a new contrastive objective
+
+What changed:
+
+- calibrated:
+  - `.debug/svamp32_clean_innovation_sweep_20260423/checkpoints/idw_p32_d025_r16_b16_seed1.pt`
+- evaluated:
+  - `.debug/svamp32_clean_innovation_sweep_20260423/preds/idw_p32_d025_r16_b16_seed1_attention_gate_sweep.jsonl`
+- materialized:
+  - `results/svamp32_idweighted_query_innovation_20260423/idw_p32_d025_r16_b16_attention_clean_targets.json`
+  - `results/svamp32_idweighted_query_innovation_20260423/idw_p32_d025_r16_b16_attention_clean_targets.md`
+- updated:
+  - `results/svamp32_idweighted_query_innovation_20260423/manifest.md`
+  - `paper/svamp32_idweighted_query_innovation_20260423.md`
+
+Calibration:
+
+- correction: `bridge_ridge_qk_dynalign_query_innovation_resampler_replace`
+- rank: `16`
+- bank size: `16`
+- `innovation-positive-weight`: `32`
+- `innovation-default-weight`: `0.25`
+- matched clean residual prompts: `6`
+- samples: `1411`
+- average fit quality:
+  - K cosine: `0.951`
+  - V cosine: `0.734`
+
+Evidence:
+
+- status: `no_matched_gate_candidate_for_controls`
+- target-alone: `8/32`
+- C2C teacher: `16/32`
+- target_self_repair: `14/32`
+- best row: `rotalign_kv_gate_0.17`, `10/32`
+- clean residual recovered: `0/6`
+- teacher-only recovered: `1`
+- target losses at best row: `0`
+- oracle `target_self_repair + clean candidate`: `14/32`
+- numeric extraction coverage: `32/32` for every row
+- verdict: no source-destroying controls are justified
+
+Hypothesis update:
+
+- killed for now: scalar clean-ID overpressure on this query-innovation
+  resampler
+- weakened: calibration-side weighting alone can recover the second clean ID
+- promoted: explicit source-control contrastive innovation fuser, because both
+  runtime gate retuning and scalar ID weighting are saturated/negative
+- still alive as a cheap side branch: one bounded V-side `both` transport
+  matched-only sweep, but it should not displace the contrastive objective
+
+Next exact gate:
+
+- implement or train a source-control contrastive innovation candidate that
+  reaches `>=2/6` clean residual IDs in matched exact-ID scoring
+- then run translated-KV-zero, source-zero, two shuffle salts, and the
+  target-self sidecar bound

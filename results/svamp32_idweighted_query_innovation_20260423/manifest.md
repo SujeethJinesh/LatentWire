@@ -6,6 +6,7 @@
 - strict target-set gate: `no_candidate_passes_target_self_repair_gate`
 - target-self sidecar oracle bound: `oracle_sidecar_bound_fails_gate`
 - fine attention gate sweep: `no_matched_gate_candidate_for_controls`
+- focused weight/default retrain: `no_matched_gate_candidate_for_controls`
 
 ## Main Evidence
 
@@ -19,6 +20,10 @@
 - sidecar-bound failing criteria: `min_correct`, `min_clean_source_necessary`
 - fine attention sweep best row: `gate017`, `11/32`, clean residual `1/6`
 - fine attention sweep verdict: no row reached `>=2/6` clean residual IDs
+- focused retrain best row: `positive=32`, `default=0.25`, `gate017`,
+  `10/32`, clean residual `0/6`
+- focused retrain verdict: stronger clean-ID pressure killed the previously
+  clean ID rather than exposing a second one
 
 ## Artifact Hashes
 
@@ -38,3 +43,7 @@
   - sha256: `b6cf5d9b6731485dfaa11fd29785df347fdce08f777db8f5a41d36981a90abd4`
 - `fine_gate_sweep_clean_targets_attention.md`
   - sha256: `a7d341b1c065faeb2b024e798460ae166571fcfb94e7d49095e6d1c9f9131bc6`
+- `idw_p32_d025_r16_b16_attention_clean_targets.json`
+  - sha256: `dbe5b804e5bbff58bb18f9d18e85fa8a562cfc2e155aa1b75b4ab696dfef289e`
+- `idw_p32_d025_r16_b16_attention_clean_targets.md`
+  - sha256: `dc5520078caed3165af8ec60f57b0e4b4f95cacc956564005096a2ae7339476d`
