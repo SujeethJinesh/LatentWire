@@ -4379,6 +4379,17 @@ def _limit_examples(examples, limit: int | None):
     return list(examples[:limit])
 
 
+def _source_control_index(index: int, count: int, mode: str, random_salt: int = 0) -> int:
+    if mode == "real":
+        return int(index)
+    if mode == "shuffle_examples":
+        if count <= 1:
+            return int(index)
+        shift = 1 + (abs(int(random_salt)) % (count - 1))
+        return int((index + shift) % count)
+    raise ValueError(f"Unknown source_prompt_control: {mode}")
+
+
 def _parse_target_layer_set(value: str | None) -> set[int]:
     if value is None or not value.strip():
         return set()
@@ -4406,6 +4417,7 @@ def _search_per_layer_gates(
     protocol: str,
     source_reasoning_mode: str,
     gate_values: list[float],
+    source_prompt_control: str = "real",
     source_kv_control: str = "real",
     quantization_control: str = "real",
     translated_kv_control: str = "real",
@@ -4477,6 +4489,7 @@ def _search_per_layer_gates(
                 quantize=quantize,
                 protocol=protocol,
                 source_reasoning_mode=source_reasoning_mode,
+                source_prompt_control=source_prompt_control,
                 source_kv_control=source_kv_control,
                 quantization_control=quantization_control,
                 translated_kv_control=translated_kv_control,
@@ -4503,6 +4516,7 @@ def _search_per_layer_gates(
             quantize=quantize,
             protocol=protocol,
             source_reasoning_mode=source_reasoning_mode,
+            source_prompt_control=source_prompt_control,
             source_kv_control=source_kv_control,
             quantization_control=quantization_control,
             translated_kv_control=translated_kv_control,
@@ -4752,6 +4766,7 @@ def eval_rotalign_kv(
     quantize: bool = True,
     protocol: str = "fused",
     source_reasoning_mode: str = "brief_analysis",
+    source_prompt_control: str = "real",
     source_kv_control: str = "real",
     quantization_control: str = "real",
     translated_kv_control: str = "real",
@@ -4783,7 +4798,9 @@ def eval_rotalign_kv(
     translator = translator.to(device).eval()
     correct = 0
     for idx, ex in enumerate(examples):
-        source_prompt = _source_reasoning_prompt(_mcq_prompt(ex.question), source_reasoning_mode)
+        source_idx = _source_control_index(idx, len(examples), source_prompt_control, random_salt)
+        source_ex = examples[source_idx]
+        source_prompt = _source_reasoning_prompt(_mcq_prompt(source_ex.question), source_reasoning_mode)
         target_prompt = _mcq_prompt(ex.question)
         build_kwargs: dict[str, Any] = {}
         if fixed_position_profiles is not None:
@@ -4845,6 +4862,9 @@ def eval_rotalign_kv(
             correct=is_correct,
             extra={
                 "protocol": protocol,
+                "source_prompt_control": source_prompt_control,
+                "source_control_source_index": source_idx,
+                "source_control_source_example_id": _mcq_example_id(source_ex),
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
                 "translated_kv_control": translated_kv_control,
@@ -5082,6 +5102,7 @@ def _eval_generation_rotalign(
     quantize: bool,
     protocol: str,
     source_reasoning_mode: str = "brief_analysis",
+    source_prompt_control: str = "real",
     source_kv_control: str = "real",
     quantization_control: str = "real",
     translated_kv_control: str = "real",
@@ -5138,6 +5159,7 @@ def _eval_generation_rotalign(
         quantize,
         protocol,
         source_reasoning_mode,
+        source_prompt_control,
         source_kv_control,
         quantization_control,
         translated_kv_control,
@@ -5168,6 +5190,7 @@ def _eval_generation_rotalign_with_stats(
     quantize: bool,
     protocol: str,
     source_reasoning_mode: str = "brief_analysis",
+    source_prompt_control: str = "real",
     source_kv_control: str = "real",
     quantization_control: str = "real",
     translated_kv_control: str = "real",
@@ -5208,13 +5231,15 @@ def _eval_generation_rotalign_with_stats(
     total_elapsed = 0.0
     for idx, ex in enumerate(examples):
         example_started = time.perf_counter()
-        source_prompt = _source_reasoning_prompt(ex.prompt, source_reasoning_mode)
+        source_idx = _source_control_index(idx, len(examples), source_prompt_control, random_salt)
+        source_ex = examples[source_idx]
+        source_prompt = _source_reasoning_prompt(source_ex.prompt, source_reasoning_mode)
         target_prompt = ex.prompt
         if protocol == "text_kv_hybrid":
             hint = _generate_source_hint(
                 source_model,
                 source_tokenizer,
-                ex.prompt,
+                source_ex.prompt,
                 device,
                 source_reasoning_mode,
                 use_chat_template=source_use_chat_template,
@@ -5290,6 +5315,9 @@ def _eval_generation_rotalign_with_stats(
             correct=is_correct,
             extra={
                 "protocol": protocol,
+                "source_prompt_control": source_prompt_control,
+                "source_control_source_index": source_idx,
+                "source_control_source_example_id": _generation_example_id(source_ex),
                 "source_kv_control": source_kv_control,
                 "quantization_control": quantization_control,
                 "translated_kv_control": translated_kv_control,
@@ -5393,6 +5421,15 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--no-quantize", action="store_true",
                    help="Disable Lloyd-Max quantization during translation (ablation)")
+    p.add_argument(
+        "--source-prompt-control",
+        choices=["real", "shuffle_examples"],
+        default="real",
+        help=(
+            "Eval-only source prompt control. shuffle_examples builds source KVs from "
+            "a deterministic derangement of examples while scoring the original target prompt."
+        ),
+    )
     p.add_argument(
         "--source-kv-control",
         choices=["real", "zero", "random", "shuffle_positions"],
@@ -5761,6 +5798,7 @@ def main() -> None:
     runtime_head_gate_metric = getattr(args, "runtime_head_gate_metric", "none")
     runtime_head_gate_strength = float(getattr(args, "runtime_head_gate_strength", 1.0))
     random_salt = int(getattr(args, "random_salt", 0))
+    source_prompt_control = getattr(args, "source_prompt_control", "real")
     runtime_head_prior_file = getattr(args, "runtime_head_prior_file", None)
     runtime_head_prior_load = getattr(args, "runtime_head_prior_load", None)
     runtime_head_prior_save = getattr(args, "runtime_head_prior_save", None)
@@ -6301,6 +6339,7 @@ def main() -> None:
                     protocol=protocol,
                     source_reasoning_mode=args.source_reasoning_mode,
                     gate_values=args.gate_values,
+                    source_prompt_control=source_prompt_control,
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
                     translated_kv_control=args.translated_kv_control,
@@ -6342,6 +6381,7 @@ def main() -> None:
                     quantize=not args.no_quantize,
                     protocol=protocol,
                     source_reasoning_mode=args.source_reasoning_mode,
+                    source_prompt_control=source_prompt_control,
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
                     translated_kv_control=args.translated_kv_control,
@@ -6488,6 +6528,7 @@ def main() -> None:
                     protocol=protocol,
                     source_reasoning_mode=args.source_reasoning_mode,
                     gate_values=args.gate_values,
+                    source_prompt_control=source_prompt_control,
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
                     translated_kv_control=args.translated_kv_control,
@@ -6529,6 +6570,7 @@ def main() -> None:
                     quantize=not args.no_quantize,
                     protocol=protocol,
                     source_reasoning_mode=args.source_reasoning_mode,
+                    source_prompt_control=source_prompt_control,
                     source_kv_control=args.source_kv_control,
                     quantization_control=args.quantization_control,
                     translated_kv_control=args.translated_kv_control,
@@ -6597,6 +6639,7 @@ def main() -> None:
                 "gate_search_file": args.gate_search_file,
                 "gate_search_limit": args.gate_search_limit,
                 "quantize": not args.no_quantize,
+                "source_prompt_control": source_prompt_control,
                 "source_kv_control": args.source_kv_control,
                 "quantization_control": args.quantization_control,
                 "translated_kv_control": args.translated_kv_control,

@@ -355,6 +355,8 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
             "8",
             "--source-kv-control",
             "shuffle_positions",
+            "--source-prompt-control",
+            "shuffle_examples",
             "--quantization-control",
             "matched_noise",
             "--translated-kv-control",
@@ -398,6 +400,7 @@ def test_evaluate_parse_args_supports_gate_search(monkeypatch) -> None:
     assert args.gate_mode == "search"
     assert args.gate_search_file == "dev.jsonl"
     assert args.gate_search_limit == 8
+    assert args.source_prompt_control == "shuffle_examples"
     assert args.source_kv_control == "shuffle_positions"
     assert args.quantization_control == "matched_noise"
     assert args.translated_kv_control == "zero"
@@ -689,6 +692,13 @@ def test_source_kv_controls_are_negative_controls() -> None:
     assert K_rand.shape == K.shape
     assert V_rand.shape == V.shape
     assert not torch.equal(K_rand, K)
+
+
+def test_source_prompt_control_index_uses_deterministic_derangement() -> None:
+    assert [evaluate._source_control_index(i, 4, "real", 9) for i in range(4)] == [0, 1, 2, 3]
+    assert [evaluate._source_control_index(i, 4, "shuffle_examples", 0) for i in range(4)] == [1, 2, 3, 0]
+    assert [evaluate._source_control_index(i, 4, "shuffle_examples", 2) for i in range(4)] == [3, 0, 1, 2]
+    assert evaluate._source_control_index(0, 1, "shuffle_examples", 0) == 0
 
 
 def test_translated_kv_controls_are_target_space_controls() -> None:
@@ -2809,6 +2819,76 @@ def test_generation_rotalign_uses_source_reasoning_prompt(monkeypatch) -> None:
     assert latency >= 0.0
     assert "scratchpad" in captured["source_prompt"].lower()
     assert captured["target_prompt"] == "solve this"
+
+
+def test_generation_rotalign_shuffle_examples_uses_mismatched_source_prompt(monkeypatch) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    captured: list[tuple[str, str]] = []
+
+    def fake_build_rotalign_prefix_state(
+        source_model,
+        source_tokenizer,
+        target_model,
+        target_tokenizer,
+        translator_obj,
+        source_prompt,
+        target_prompt,
+        device,
+        quantize,
+        protocol,
+        source_kv_control="real",
+        quantization_control="real",
+        translated_kv_control="real",
+        fusion_rule="static",
+        kv_transport="both",
+        position_selection_ratio=1.0,
+        position_selection_metric="energy",
+        fixed_position_profiles=None,
+        runtime_head_selection_ratio=1.0,
+        runtime_head_selection_metric="attention_peak",
+        fixed_head_profiles=None,
+        runtime_head_prior_alpha=0.5,
+        per_head_position_budget_mode="none",
+        **kwargs,
+    ):
+        captured.append((source_prompt, target_prompt))
+        return evaluate.PrefixState(None, torch.tensor([[2]], dtype=torch.long), 1), {"bits": 16.0}
+
+    monkeypatch.setattr(evaluate, "_build_rotalign_prefix_state", fake_build_rotalign_prefix_state)
+
+    examples = [
+        evaluate.GenerationExample(prompt="first question", answers=["A"]),
+        evaluate.GenerationExample(prompt="second question", answers=["A"]),
+    ]
+    records: list[dict] = []
+
+    stats = evaluate._eval_generation_rotalign_with_stats(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        examples,
+        "cpu",
+        max_new_tokens=1,
+        quantize=False,
+        protocol="fused",
+        source_reasoning_mode="plain",
+        source_prompt_control="shuffle_examples",
+        random_salt=0,
+        records=records,
+    )
+
+    assert stats["accuracy"] == 1.0
+    assert captured == [("second question", "first question"), ("first question", "second question")]
+    assert records[0]["source_prompt_control"] == "shuffle_examples"
+    assert records[0]["source_control_source_index"] == 1
+    assert records[1]["source_control_source_index"] == 0
+    assert records[0]["source_control_source_example_id"] == evaluate._generation_example_id(examples[1])
 
 
 def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
