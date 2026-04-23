@@ -2371,3 +2371,103 @@ Next exact gate:
   checkpoint or implement the small query bottleneck
 - unchanged promotion criterion: `>=2/6` clean residual IDs in matched exact-ID
   scoring before any control sweep
+
+## 2026-04-23 16:03 PDT — SVAMP32 value transport screen
+
+Paper status:
+
+- not ICLR-ready
+- current story: target self-repair is the decoder-side-information floor, and
+  source communication must add clean residual innovation above it
+- blocking gap: no candidate exposes `>=2/6` clean source-necessary IDs under
+  strict exact-ID controls
+
+Top next moves considered:
+
+- V-full `both` transport screen on the prior ID-weighted checkpoint. This
+  matters because the prior live row was `k_only`, so value-side answer
+  evidence could expose another clean residual ID. It might fail by adding V
+  noise or target-cache wins. Cost: one focused decode. Helps same-pair and
+  efficiency.
+- sparse source-attention V follow-up. This matters because full V could be too
+  noisy while a sparse V lane might preserve the K route and add answer-side
+  source evidence. It might fail by recovering only the same known clean ID.
+  Cost: one three-gate decode. Helps same-pair and efficiency.
+- conditional query-bottleneck connector. This matters because scalar bridge
+  tweaks are now saturated and learned connector priors are stronger. It might
+  fail by memorizing the six clean IDs or leaking target repair. Cost:
+  medium-high. Helps interpretability and reproducibility if it works.
+
+Decision:
+
+- ran V-full first, then one sparse source-attention V follow-up after V-full
+  failed
+- rationale: this killed the remaining cheap runtime value-side hypothesis
+  before spending implementation time on the query-bottleneck branch
+
+References checked:
+
+- C2C: https://arxiv.org/abs/2510.03215
+- KVComm: https://arxiv.org/abs/2510.03346
+- BLIP-2 / Q-Former: https://arxiv.org/abs/2301.12597
+- Perceiver IO: https://arxiv.org/abs/2107.14795
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_gate_sweep_clean_targets.py -q`
+- result: `4 passed`
+
+Artifacts:
+
+- checkpoint:
+  - `.debug/checkpoints_svamp32_conditional_innovation_20260423/id_weighted_query_innovation/qwen25_to_qwen3_svamp32_idweighted_query_innovation_r16_bank16_seed1.pt`
+  - sha256: `4e67fdf2b6ea2c962036aad080ec3fe6c64a4083c627a282b925bdf546b90831`
+- V-full matched sweep:
+  - `.debug/svamp32_vfull_both_transport_20260423/preds/idweighted_both_vfull_attention_gate_sweep.jsonl`
+  - JSONL sha256: `d9bbed502ba4293120362b396188bf12458f1d10bcd482718c23184eed440dff`
+  - meta sha256: `849e318a9c00be1a86951b66f435986d2b1ba664b4c0dc8068dbc81432cb2744`
+- sparse source-attention V matched sweep:
+  - `.debug/svamp32_vfull_both_transport_20260423/preds/idweighted_sparse_sourcev_attention_gate_sweep.jsonl`
+  - JSONL sha256: `988820878a2a3f3659a3f8448e2d4e0b1c44ec815667219ac8bf69e1a1dfb1ab`
+  - meta sha256: `463c66f7b6f43f533df0abe509e797bec1263981892a623ad9f4f724739f389d`
+- readouts:
+  - `results/svamp32_vfull_both_transport_20260423/idweighted_both_vfull_attention_clean_targets.json`
+  - `results/svamp32_vfull_both_transport_20260423/idweighted_both_vfull_attention_clean_targets.md`
+  - `results/svamp32_vfull_both_transport_20260423/idweighted_sparse_sourcev_attention_clean_targets.json`
+  - `results/svamp32_vfull_both_transport_20260423/idweighted_sparse_sourcev_attention_clean_targets.md`
+  - `results/svamp32_vfull_both_transport_20260423/manifest.md`
+- memo:
+  - `paper/svamp32_value_transport_screen_20260423.md`
+- next-method memo from creative subagent:
+  - `paper/svamp32_next_method_conditional_residual_query_codec_20260423.md`
+
+Evidence:
+
+- V-full status: `no_matched_gate_candidate_for_controls`
+- V-full best row: `rotalign_kv_gate_0.20`, `9/32`
+- V-full clean residual recovered: `0/6`
+- V-full target losses: `2`
+- V-full transport bytes: `1,193,918.25`
+- sparse source-attention V status: `no_matched_gate_candidate_for_controls`
+- sparse source-attention V best rows: `rotalign_kv_gate_0.15` and
+  `rotalign_kv_gate_0.17`, `10/32`
+- sparse source-attention V clean residual recovered: `1/6`
+- sparse source-attention V clean ID: `aee922049c757331`
+- sparse source-attention V target losses: `1` at gate `0.15`
+- sparse source-attention V transport bytes: `597,337.671875`
+
+Hypothesis update:
+
+- killed for now: full value transport can rescue the prior ID-weighted
+  checkpoint
+- weakened: runtime sparse value selection can expose a second clean residual ID
+- saturated: runtime K/V selection on this checkpoint
+- promoted: target-self-preserving conditional residual query codec / learned
+  query bottleneck
+
+Next exact gate:
+
+- implement or train the conditional residual query codec described in
+  `paper/svamp32_next_method_conditional_residual_query_codec_20260423.md`
+- promotion criterion remains `>=2/6` clean residual IDs in matched exact-ID
+  scoring before any source-destroying controls

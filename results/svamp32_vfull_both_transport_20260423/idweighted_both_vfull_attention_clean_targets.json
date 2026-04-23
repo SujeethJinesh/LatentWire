@@ -1,0 +1,177 @@
+{
+  "artifacts": {
+    "candidate_jsonl": ".debug/svamp32_vfull_both_transport_20260423/preds/idweighted_both_vfull_attention_gate_sweep.jsonl",
+    "target_jsonl": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl",
+    "target_set_json": "results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json",
+    "teacher_jsonl": "results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl"
+  },
+  "config": {
+    "expected_n": 32,
+    "min_clean_residual_recovered": 2,
+    "min_numeric_coverage": 31,
+    "target_self_correct": 14
+  },
+  "date": "2026-04-23",
+  "passing_methods": [],
+  "reference": {
+    "clean_residual_target_count": 6,
+    "clean_residual_target_ids": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "e3ab8666238a289e"
+    ],
+    "target_correct": 8,
+    "teacher_correct": 16,
+    "teacher_only_count": 10
+  },
+  "rows": [
+    {
+      "accuracy": 0.28125,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "correct": 9,
+      "delta_vs_target": 1,
+      "delta_vs_target_self_repair": -5,
+      "duplicate_example_ids": [],
+      "exact_ordered_id_parity": true,
+      "losses_vs_target_count": 2,
+      "losses_vs_target_ids": [
+        "0d2b4f7681973e19",
+        "c042f0a2949ff8e6"
+      ],
+      "method": "rotalign_kv_gate_0.20",
+      "n": 32,
+      "numeric_extraction_coverage": 32,
+      "oracle_target_self_plus_clean_candidate_bound": 14,
+      "status": "matched_candidate_below_clean_gate",
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "wins_vs_target_count": 3,
+      "wins_vs_target_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67",
+        "b0b71023ae4d233b"
+      ]
+    },
+    {
+      "accuracy": 0.25,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "correct": 8,
+      "delta_vs_target": 0,
+      "delta_vs_target_self_repair": -6,
+      "duplicate_example_ids": [],
+      "exact_ordered_id_parity": true,
+      "losses_vs_target_count": 1,
+      "losses_vs_target_ids": [
+        "de2a795ab37694af"
+      ],
+      "method": "rotalign_kv_gate_0.10",
+      "n": 32,
+      "numeric_extraction_coverage": 32,
+      "oracle_target_self_plus_clean_candidate_bound": 14,
+      "status": "matched_candidate_below_clean_gate",
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "wins_vs_target_count": 1,
+      "wins_vs_target_ids": [
+        "575d7e83d84c1e67"
+      ]
+    },
+    {
+      "accuracy": 0.25,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "correct": 8,
+      "delta_vs_target": 0,
+      "delta_vs_target_self_repair": -6,
+      "duplicate_example_ids": [],
+      "exact_ordered_id_parity": true,
+      "losses_vs_target_count": 2,
+      "losses_vs_target_ids": [
+        "0d2b4f7681973e19",
+        "c042f0a2949ff8e6"
+      ],
+      "method": "rotalign_kv_gate_0.17",
+      "n": 32,
+      "numeric_extraction_coverage": 32,
+      "oracle_target_self_plus_clean_candidate_bound": 14,
+      "status": "matched_candidate_below_clean_gate",
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "wins_vs_target_count": 2,
+      "wins_vs_target_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67"
+      ]
+    },
+    {
+      "accuracy": 0.25,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "correct": 8,
+      "delta_vs_target": 0,
+      "delta_vs_target_self_repair": -6,
+      "duplicate_example_ids": [],
+      "exact_ordered_id_parity": true,
+      "losses_vs_target_count": 2,
+      "losses_vs_target_ids": [
+        "0d2b4f7681973e19",
+        "c042f0a2949ff8e6"
+      ],
+      "method": "rotalign_kv_gate_0.15",
+      "n": 32,
+      "numeric_extraction_coverage": 32,
+      "oracle_target_self_plus_clean_candidate_bound": 14,
+      "status": "matched_candidate_below_clean_gate",
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "wins_vs_target_count": 2,
+      "wins_vs_target_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67"
+      ]
+    },
+    {
+      "accuracy": 0.25,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "correct": 8,
+      "delta_vs_target": 0,
+      "delta_vs_target_self_repair": -6,
+      "duplicate_example_ids": [],
+      "exact_ordered_id_parity": true,
+      "losses_vs_target_count": 2,
+      "losses_vs_target_ids": [
+        "c042f0a2949ff8e6",
+        "de2a795ab37694af"
+      ],
+      "method": "rotalign_kv_gate_0.12",
+      "n": 32,
+      "numeric_extraction_coverage": 32,
+      "oracle_target_self_plus_clean_candidate_bound": 14,
+      "status": "matched_candidate_below_clean_gate",
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "wins_vs_target_count": 2,
+      "wins_vs_target_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67"
+      ]
+    }
+  ],
+  "status": "no_matched_gate_candidate_for_controls"
+}
