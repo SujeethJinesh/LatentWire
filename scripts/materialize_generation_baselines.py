@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import pathlib
 import subprocess
 import sys
@@ -50,6 +52,14 @@ def _display_path(path: pathlib.Path) -> str:
 def _count_jsonl(path: pathlib.Path) -> int:
     with path.open("r", encoding="utf-8") as handle:
         return sum(1 for line in handle if line.strip())
+
+
+def _sha256_file(path: pathlib.Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _write_json(path: pathlib.Path, payload: dict[str, Any]) -> None:
@@ -167,8 +177,6 @@ def _records_for_expected_method(path: pathlib.Path, expected_method: str) -> li
     grouped = harness.group_by_method(harness.read_jsonl(path))
     if expected_method in grouped:
         return grouped[expected_method]
-    if len(grouped) == 1:
-        return next(iter(grouped.values()))
     raise KeyError(f"Expected method {expected_method!r} in {path}; found {sorted(grouped)}")
 
 
@@ -198,8 +206,83 @@ def _summarize_record_file(
         "ordered_example_ids": ordered_ids,
         "exact_id_parity": ordered_ids == expected_ids,
         "set_id_parity": set(ordered_ids) == set(expected_ids),
+        "unique_example_ids": len(set(ordered_ids)) == len(ordered_ids),
         "correct_ids": sorted(correct_ids),
     }
+
+
+def _same_resolved_path(left: Any, right: pathlib.Path) -> bool:
+    if left is None:
+        return False
+    try:
+        return pathlib.Path(str(left)).resolve() == right.resolve()
+    except OSError:
+        return False
+
+
+def _expected_sidecar_config(
+    *,
+    method: str,
+    materialized_eval_file: pathlib.Path,
+    args: argparse.Namespace,
+) -> dict[str, Any]:
+    config: dict[str, Any] = {
+        "source_model": args.source_model,
+        "target_model": args.target_model,
+        "device": args.device,
+        "max_new_tokens": int(args.max_new_tokens),
+        "eval_file": materialized_eval_file,
+    }
+    if method == "c2c":
+        config["baseline"] = "c2c"
+    else:
+        config.update(
+            {
+                "translator": _resolve(args.translator),
+                "source_reasoning_mode": args.source_reasoning_mode,
+                "source_use_chat_template": bool(args.use_chat_template),
+                "target_use_chat_template": bool(args.use_chat_template),
+                "source_enable_thinking": "true" if bool(args.enable_thinking) else "false",
+                "target_enable_thinking": "true" if bool(args.enable_thinking) else "false",
+                "methods": [method],
+            }
+        )
+    return config
+
+
+def _validate_sidecar_config(
+    *,
+    method: str,
+    path: pathlib.Path,
+    materialized_eval_file: pathlib.Path,
+    args: argparse.Namespace,
+) -> tuple[bool, str]:
+    sidecar_path = path.with_suffix(path.suffix + ".meta.json")
+    if not sidecar_path.exists():
+        return False, "missing_sidecar"
+    try:
+        sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001 - validation should explain corrupt artifacts.
+        return False, f"invalid_sidecar:{exc}"
+    run_config = sidecar.get("run_config")
+    if not isinstance(run_config, dict):
+        return False, "missing_run_config"
+    expected = _expected_sidecar_config(
+        method=method,
+        materialized_eval_file=materialized_eval_file,
+        args=args,
+    )
+    mismatches: list[str] = []
+    for key, expected_value in expected.items():
+        actual = run_config.get(key)
+        if isinstance(expected_value, pathlib.Path):
+            if not _same_resolved_path(actual, expected_value):
+                mismatches.append(key)
+        elif actual != expected_value:
+            mismatches.append(key)
+    if mismatches:
+        return False, "config_mismatch:" + ",".join(mismatches)
+    return True, "ok"
 
 
 def _validate_record_file(
@@ -207,6 +290,8 @@ def _validate_record_file(
     method: str,
     path: pathlib.Path,
     expected_ids: list[str],
+    materialized_eval_file: pathlib.Path,
+    args: argparse.Namespace,
 ) -> tuple[bool, str, dict[str, Any] | None]:
     if not path.exists():
         return False, "missing", None
@@ -222,7 +307,30 @@ def _validate_record_file(
         return False, f"wrong_count:{summary['n']}!=expected:{len(expected_ids)}", summary
     if not bool(summary["exact_id_parity"]):
         return False, "ordered_id_mismatch", summary
+    if not bool(summary["unique_example_ids"]):
+        return False, "duplicate_example_ids", summary
+    sidecar_valid, sidecar_status = _validate_sidecar_config(
+        method=method,
+        path=path,
+        materialized_eval_file=materialized_eval_file,
+        args=args,
+    )
+    summary["sidecar_config_validation"] = sidecar_status
+    if not sidecar_valid:
+        return False, sidecar_status, summary
     return True, "ok", summary
+
+
+def _temp_prediction_path(path: pathlib.Path, *, method: str) -> pathlib.Path:
+    return path.with_name(f".{path.name}.tmp.{method}.{os.getpid()}")
+
+
+def _replace_prediction_artifact(temp_output: pathlib.Path, final_output: pathlib.Path) -> None:
+    temp_sidecar = temp_output.with_suffix(temp_output.suffix + ".meta.json")
+    final_sidecar = final_output.with_suffix(final_output.suffix + ".meta.json")
+    temp_output.replace(final_output)
+    if temp_sidecar.exists():
+        temp_sidecar.replace(final_sidecar)
 
 
 def _pairwise_vs_target(method_summaries: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
@@ -347,16 +455,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             method=method,
             path=prediction_output,
             expected_ids=expected_ids,
+            materialized_eval_file=materialized_eval_file,
+            args=args,
+        )
+        command_output = (
+            prediction_output
+            if existing_valid or args.dry_run
+            else _temp_prediction_path(prediction_output, method=method)
         )
         command = _command_for_method(
             method=method,
             eval_file=materialized_eval_file,
-            prediction_output=prediction_output,
+            prediction_output=command_output,
             args=args,
         )
         row: dict[str, Any] = {
             "method": method,
             "prediction_output": _display_path(prediction_output),
+            "command_prediction_output": _display_path(command_output),
             "log": _display_path(log_path),
             "command": command,
             "existing_output_validation": validation,
@@ -368,8 +484,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         else:
             result = _run_logged(command, log_path=log_path)
             row.update(result)
-            row["status"] = "ran" if result["returncode"] == 0 else "failed"
-            if result["returncode"] != 0:
+            if result["returncode"] == 0:
+                temp_valid, temp_validation, _ = _validate_record_file(
+                    method=method,
+                    path=command_output,
+                    expected_ids=expected_ids,
+                    materialized_eval_file=materialized_eval_file,
+                    args=args,
+                )
+                row["temp_output_validation"] = temp_validation
+                if temp_valid:
+                    _replace_prediction_artifact(command_output, prediction_output)
+                    row["status"] = "ran"
+                else:
+                    row["status"] = "failed_validation"
+                    failures.append(row)
+            else:
+                row["status"] = "failed"
                 failures.append(row)
         runs.append(row)
 
@@ -380,6 +511,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             method=method,
             path=prediction_output,
             expected_ids=expected_ids,
+            materialized_eval_file=materialized_eval_file,
+            args=args,
         )
         if summary is not None:
             method_summaries[method] = summary
@@ -392,8 +525,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         ),
         "dry_run": bool(args.dry_run),
         "eval_file": _display_path(eval_file),
+        "eval_file_sha256": _sha256_file(eval_file),
         "materialized_eval_file": _display_path(materialized_eval_file),
+        "materialized_eval_file_sha256": _sha256_file(materialized_eval_file),
         "results_dir": _display_path(results_dir),
+        "translator": _display_path(_resolve(args.translator)),
+        "translator_sha256": _sha256_file(_resolve(args.translator)) if _resolve(args.translator).exists() else None,
         "limit": int(args.limit),
         "source_model": args.source_model,
         "target_model": args.target_model,

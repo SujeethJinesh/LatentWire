@@ -1070,3 +1070,43 @@ training only if source or another latent-accessible source row reaches at least
 `5/32` source-only wins with exact ordered ID parity and near-complete numeric
 coverage; otherwise frame SVAMP as a teacher/headroom surface and do not claim a
 direct latent-source positive result.
+
+`paper/svamp32_exactid_c2c_teacher_gate_20260423.md` scales the fresh SVAMP
+materialization gate to `N=32` and hardens the runner before recording the
+manifest. The runner now validates unique ordered IDs, strict method names,
+sidecar config parity, manifest SHA256 provenance, and uses temp outputs for new
+runs before replacing final artifacts. The SVAMP32 rows all have exact ordered
+ID parity and unique IDs. Results: target `8/32`; source `5/32` with `3`
+source-only wins and source/target oracle `11/32`; text-to-text `2/32` with `1`
+source-only win; C2C `16/32` with `10` C2C-only wins and target/C2C oracle
+`18/32`. Numeric coverage is complete except source-alone, which is `31/32`.
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --results-dir results/svamp_exactid_baselines32_20260423 \
+  --limit 32 \
+  --methods target source t2t c2c \
+  --device mps \
+  --max-new-tokens 64 \
+  --continue-on-error
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_source_headroom_surfaces.py \
+  --surface fresh_svamp32_source=target_path=results/svamp_exactid_baselines32_20260423/target_alone.jsonl,source_path=results/svamp_exactid_baselines32_20260423/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=fresh_svamp32_source \
+  --surface fresh_svamp32_t2t=target_path=results/svamp_exactid_baselines32_20260423/target_alone.jsonl,source_path=results/svamp_exactid_baselines32_20260423/text_to_text.jsonl,target_method=target_alone,source_method=text_to_text,note=fresh_svamp32_text \
+  --surface fresh_svamp32_c2c=target_path=results/svamp_exactid_baselines32_20260423/target_alone.jsonl,source_path=results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl,target_method=target_alone,source_method=c2c_generate,note=fresh_svamp32_c2c \
+  --min-source-only 5 \
+  --output-json results/svamp_exactid_baselines32_20260423/headroom_surfaces.json \
+  --output-md results/svamp_exactid_baselines32_20260423/headroom_surfaces.md
+```
+
+Decision: the direct source-alone SVAMP32 gate fails (`3/32` source-only wins,
+below the predeclared `5/32` threshold), so do not claim direct latent-source
+transfer from source-alone on this surface. C2C is a strong teacher/competitor
+surface (`10` C2C-only wins), so the next exact gate is a C2C-teacher innovation
+probe on the same SVAMP32 IDs with matched-source, zero-source, shuffled-source,
+and target-only rows. Kill the branch if controls retain the C2C-overlap wins.

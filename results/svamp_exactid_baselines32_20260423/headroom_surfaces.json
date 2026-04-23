@@ -1,0 +1,397 @@
+{
+  "date": "2026-04-23",
+  "min_source_only": 5,
+  "ranked_surfaces": [
+    {
+      "artifacts": {
+        "eval_file": null,
+        "source_path": "results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl",
+        "target_path": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl"
+      },
+      "id_sources": {
+        "exact_ordered_id_parity": true,
+        "set_id_parity": true,
+        "source": "example_id",
+        "strict_ids": true,
+        "target": "example_id"
+      },
+      "label": "fresh_svamp32_c2c",
+      "methods": {
+        "source_method": "c2c_generate",
+        "target_method": "target_alone"
+      },
+      "note": "fresh_svamp32_c2c",
+      "overlap": {
+        "both_correct_count": 6,
+        "both_correct_ids": [
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "de2a795ab37694af",
+          "f367349ce0604296"
+        ],
+        "both_wrong_count": 14,
+        "oracle_accuracy": 0.5625,
+        "oracle_gain_vs_target_count": 10,
+        "source_only_count": 10,
+        "source_only_ids": [
+          "13cb77b698eeadb5",
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "575d7e83d84c1e67",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "target_only_count": 2,
+        "target_only_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19"
+        ],
+        "target_or_source_oracle_count": 18
+      },
+      "source": {
+        "accuracy": 0.5,
+        "correct": 16,
+        "empty_predictions": 0,
+        "label": "c2c_generate",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      },
+      "status": "strong_source_complementary_surface",
+      "target": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "empty_predictions": 0,
+        "label": "target_alone",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      }
+    },
+    {
+      "artifacts": {
+        "eval_file": null,
+        "source_path": "results/svamp_exactid_baselines32_20260423/source_alone.jsonl",
+        "target_path": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl"
+      },
+      "id_sources": {
+        "exact_ordered_id_parity": true,
+        "set_id_parity": true,
+        "source": "example_id",
+        "strict_ids": true,
+        "target": "example_id"
+      },
+      "label": "fresh_svamp32_source",
+      "methods": {
+        "source_method": "source_alone",
+        "target_method": "target_alone"
+      },
+      "note": "fresh_svamp32_source",
+      "overlap": {
+        "both_correct_count": 2,
+        "both_correct_ids": [
+          "316b525a4fcbfb89",
+          "de2a795ab37694af"
+        ],
+        "both_wrong_count": 21,
+        "oracle_accuracy": 0.34375,
+        "oracle_gain_vs_target_count": 3,
+        "source_only_count": 3,
+        "source_only_ids": [
+          "575d7e83d84c1e67",
+          "b0b71023ae4d233b",
+          "d64f6e35083ffe8c"
+        ],
+        "target_only_count": 6,
+        "target_only_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "f367349ce0604296"
+        ],
+        "target_or_source_oracle_count": 11
+      },
+      "source": {
+        "accuracy": 0.15625,
+        "correct": 5,
+        "empty_predictions": 0,
+        "label": "source_alone",
+        "n": 32,
+        "numeric_extraction_coverage": 31
+      },
+      "status": "weak_source_complementary_surface",
+      "target": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "empty_predictions": 0,
+        "label": "target_alone",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      }
+    },
+    {
+      "artifacts": {
+        "eval_file": null,
+        "source_path": "results/svamp_exactid_baselines32_20260423/text_to_text.jsonl",
+        "target_path": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl"
+      },
+      "id_sources": {
+        "exact_ordered_id_parity": true,
+        "set_id_parity": true,
+        "source": "example_id",
+        "strict_ids": true,
+        "target": "example_id"
+      },
+      "label": "fresh_svamp32_t2t",
+      "methods": {
+        "source_method": "text_to_text",
+        "target_method": "target_alone"
+      },
+      "note": "fresh_svamp32_text",
+      "overlap": {
+        "both_correct_count": 1,
+        "both_correct_ids": [
+          "f367349ce0604296"
+        ],
+        "both_wrong_count": 23,
+        "oracle_accuracy": 0.28125,
+        "oracle_gain_vs_target_count": 1,
+        "source_only_count": 1,
+        "source_only_ids": [
+          "4ef979ea2bf931df"
+        ],
+        "target_only_count": 7,
+        "target_only_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "de2a795ab37694af"
+        ],
+        "target_or_source_oracle_count": 9
+      },
+      "source": {
+        "accuracy": 0.0625,
+        "correct": 2,
+        "empty_predictions": 0,
+        "label": "text_to_text",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      },
+      "status": "weak_source_complementary_surface",
+      "target": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "empty_predictions": 0,
+        "label": "target_alone",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      }
+    }
+  ],
+  "recommended_next_gate": "run learned connector on highest-ranked strong surface",
+  "surfaces": [
+    {
+      "artifacts": {
+        "eval_file": null,
+        "source_path": "results/svamp_exactid_baselines32_20260423/source_alone.jsonl",
+        "target_path": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl"
+      },
+      "id_sources": {
+        "exact_ordered_id_parity": true,
+        "set_id_parity": true,
+        "source": "example_id",
+        "strict_ids": true,
+        "target": "example_id"
+      },
+      "label": "fresh_svamp32_source",
+      "methods": {
+        "source_method": "source_alone",
+        "target_method": "target_alone"
+      },
+      "note": "fresh_svamp32_source",
+      "overlap": {
+        "both_correct_count": 2,
+        "both_correct_ids": [
+          "316b525a4fcbfb89",
+          "de2a795ab37694af"
+        ],
+        "both_wrong_count": 21,
+        "oracle_accuracy": 0.34375,
+        "oracle_gain_vs_target_count": 3,
+        "source_only_count": 3,
+        "source_only_ids": [
+          "575d7e83d84c1e67",
+          "b0b71023ae4d233b",
+          "d64f6e35083ffe8c"
+        ],
+        "target_only_count": 6,
+        "target_only_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "f367349ce0604296"
+        ],
+        "target_or_source_oracle_count": 11
+      },
+      "source": {
+        "accuracy": 0.15625,
+        "correct": 5,
+        "empty_predictions": 0,
+        "label": "source_alone",
+        "n": 32,
+        "numeric_extraction_coverage": 31
+      },
+      "status": "weak_source_complementary_surface",
+      "target": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "empty_predictions": 0,
+        "label": "target_alone",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      }
+    },
+    {
+      "artifacts": {
+        "eval_file": null,
+        "source_path": "results/svamp_exactid_baselines32_20260423/text_to_text.jsonl",
+        "target_path": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl"
+      },
+      "id_sources": {
+        "exact_ordered_id_parity": true,
+        "set_id_parity": true,
+        "source": "example_id",
+        "strict_ids": true,
+        "target": "example_id"
+      },
+      "label": "fresh_svamp32_t2t",
+      "methods": {
+        "source_method": "text_to_text",
+        "target_method": "target_alone"
+      },
+      "note": "fresh_svamp32_text",
+      "overlap": {
+        "both_correct_count": 1,
+        "both_correct_ids": [
+          "f367349ce0604296"
+        ],
+        "both_wrong_count": 23,
+        "oracle_accuracy": 0.28125,
+        "oracle_gain_vs_target_count": 1,
+        "source_only_count": 1,
+        "source_only_ids": [
+          "4ef979ea2bf931df"
+        ],
+        "target_only_count": 7,
+        "target_only_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "de2a795ab37694af"
+        ],
+        "target_or_source_oracle_count": 9
+      },
+      "source": {
+        "accuracy": 0.0625,
+        "correct": 2,
+        "empty_predictions": 0,
+        "label": "text_to_text",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      },
+      "status": "weak_source_complementary_surface",
+      "target": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "empty_predictions": 0,
+        "label": "target_alone",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      }
+    },
+    {
+      "artifacts": {
+        "eval_file": null,
+        "source_path": "results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl",
+        "target_path": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl"
+      },
+      "id_sources": {
+        "exact_ordered_id_parity": true,
+        "set_id_parity": true,
+        "source": "example_id",
+        "strict_ids": true,
+        "target": "example_id"
+      },
+      "label": "fresh_svamp32_c2c",
+      "methods": {
+        "source_method": "c2c_generate",
+        "target_method": "target_alone"
+      },
+      "note": "fresh_svamp32_c2c",
+      "overlap": {
+        "both_correct_count": 6,
+        "both_correct_ids": [
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "de2a795ab37694af",
+          "f367349ce0604296"
+        ],
+        "both_wrong_count": 14,
+        "oracle_accuracy": 0.5625,
+        "oracle_gain_vs_target_count": 10,
+        "source_only_count": 10,
+        "source_only_ids": [
+          "13cb77b698eeadb5",
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "575d7e83d84c1e67",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "target_only_count": 2,
+        "target_only_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19"
+        ],
+        "target_or_source_oracle_count": 18
+      },
+      "source": {
+        "accuracy": 0.5,
+        "correct": 16,
+        "empty_predictions": 0,
+        "label": "c2c_generate",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      },
+      "status": "strong_source_complementary_surface",
+      "target": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "empty_predictions": 0,
+        "label": "target_alone",
+        "n": 32,
+        "numeric_extraction_coverage": 32
+      }
+    }
+  ]
+}
