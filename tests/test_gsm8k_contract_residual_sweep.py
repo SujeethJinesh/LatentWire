@@ -263,6 +263,111 @@ def test_parse_args_accepts_source_controls(monkeypatch) -> None:
     assert args.no_source_control_target_fallback is True
 
 
+def test_parse_args_accepts_accept_fallback(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--accept-fallback-score-field",
+            "selector_gap_min",
+            "--accept-fallback-threshold",
+            "0.029237359762191772",
+            "--accept-fallback-max-numeric-len",
+            "9",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.accept_fallback_score_field == "selector_gap_min"
+    assert args.accept_fallback_threshold == 0.029237359762191772
+    assert args.accept_fallback_max_numeric_len == 9
+
+
+def test_accept_fallback_rejects_low_score_and_target_match(tmp_path: pathlib.Path) -> None:
+    config = sweep.ResidualSweepConfig(
+        accept_fallback_score_field="selector_gap_min",
+        accept_fallback_threshold=0.5,
+    )
+    target_records = [
+        {
+            "example_id": "a",
+            "method": "target_alone",
+            "prediction": "answer is 0",
+            "normalized_prediction": "0",
+            "correct": False,
+            "generated_tokens": 2,
+            "latency_sec": 0.1,
+        },
+        {
+            "example_id": "b",
+            "method": "target_alone",
+            "prediction": "answer is 1",
+            "normalized_prediction": "1",
+            "correct": True,
+            "generated_tokens": 3,
+            "latency_sec": 0.2,
+        },
+        {
+            "example_id": "c",
+            "method": "target_alone",
+            "prediction": "answer is 2",
+            "normalized_prediction": "2",
+            "correct": False,
+            "generated_tokens": 4,
+            "latency_sec": 0.3,
+        },
+    ]
+    candidate_records = [
+        {
+            "example_id": "a",
+            "method": "rotalign_kv_gate_0.10",
+            "prediction": "answer is 7",
+            "normalized_prediction": "7",
+            "correct": True,
+            "selector_trace": [{"score_gap": 0.7}],
+            "generated_tokens": 5,
+            "latency_sec": 0.4,
+        },
+        {
+            "example_id": "b",
+            "method": "rotalign_kv_gate_0.10",
+            "prediction": "answer is 9",
+            "normalized_prediction": "9",
+            "correct": False,
+            "selector_trace": [{"score_gap": 0.2}],
+            "generated_tokens": 6,
+            "latency_sec": 0.5,
+        },
+        {
+            "example_id": "c",
+            "method": "rotalign_kv_gate_0.10",
+            "prediction": "answer is 2",
+            "normalized_prediction": "2",
+            "correct": True,
+            "selector_trace": [{"score_gap": 0.8}],
+            "generated_tokens": 7,
+            "latency_sec": 0.6,
+        },
+    ]
+
+    records, summary = sweep._apply_accept_fallback_to_records(
+        records=candidate_records,
+        target_records=target_records,
+        config=config,
+        output_path=tmp_path / "gated.jsonl",
+    )
+
+    assert summary["accepted_ids"] == ["a"]
+    assert summary["rejected_reasons"] == {
+        "score_below_threshold": 1,
+        "candidate_matches_target_numeric": 1,
+    }
+    assert [record["accepted_candidate"] for record in records] == [True, False, False]
+    assert [record["correct"] for record in records] == [True, True, False]
+    assert records[0]["latency_sec"] == 0.5
+    assert records[1]["accept_fallback_reason"] == "score_below_threshold"
+    assert (tmp_path / "gated.jsonl").exists()
+
+
 def test_write_markdown_renders_rows(tmp_path) -> None:
     payload = {
         "date": "2026-04-21",
@@ -564,6 +669,7 @@ def test_run_source_controls_for_row_invokes_controls_and_analyzer(
         checkpoint_path=tmp_path / "translator.pt",
         config=config,
         materialized_eval_file=tmp_path / "eval.jsonl",
+        baseline_target_records=[],
         results_dir=tmp_path / "results",
     )
 
@@ -590,6 +696,90 @@ def test_run_source_controls_for_row_invokes_controls_and_analyzer(
     assert row["source_controls"]["prediction_outputs"]["zero_source"].endswith(
         "candidate/source_controls/zero_source.jsonl"
     )
+
+
+def test_run_source_controls_for_row_gates_raw_control_outputs(
+    tmp_path: pathlib.Path, monkeypatch
+) -> None:
+    commands: list[list[str]] = []
+    target_records = [
+        {
+            "example_id": "ex",
+            "method": "target_alone",
+            "prediction": "answer is 1",
+            "normalized_prediction": "1",
+            "correct": False,
+        }
+    ]
+
+    def _raw_control_record() -> dict:
+        return {
+            "example_id": "ex",
+            "index": 0,
+            "method": "rotalign_kv_gate_0.10",
+            "prediction": "answer is 2",
+            "normalized_prediction": "2",
+            "correct": True,
+            "selector_trace": [{"score_gap": 0.7}],
+        }
+
+    def _fake_run(cmd: list[str]) -> None:
+        commands.append(cmd)
+        if str(sweep.ROOT / "scripts" / "analyze_gsm8k_source_controls.py") in cmd:
+            output_json = pathlib.Path(cmd[cmd.index("--output-json") + 1])
+            output_md = pathlib.Path(cmd[cmd.index("--output-md") + 1])
+            output_json.parent.mkdir(parents=True, exist_ok=True)
+            output_json.write_text(
+                json.dumps(
+                    {
+                        "gate": {"status": "source_controls_do_not_clear_gate", "checks": []},
+                        "live_summary": {"correct": 1, "n": 1},
+                        "target_summary": {"correct": 0, "n": 1},
+                        "control_summaries": [],
+                    }
+                )
+                + "\n"
+            )
+            output_md.write_text("# controls\n")
+            return
+        prediction_output = pathlib.Path(cmd[cmd.index("--prediction-output") + 1])
+        prediction_output.parent.mkdir(parents=True, exist_ok=True)
+        prediction_output.write_text(json.dumps(_raw_control_record()) + "\n")
+
+    monkeypatch.setattr(sweep, "_run", _fake_run)
+
+    row = {
+        "label": "candidate_accept_selector_gap_min_ge_0p5",
+        "prediction_output": str(tmp_path / "live_gated.jsonl"),
+    }
+    config = sweep.ResidualSweepConfig(
+        baseline_results_dir=str(tmp_path / "baseline"),
+        source_control_random_salt=4,
+        accept_fallback_score_field="selector_gap_min",
+        accept_fallback_threshold=0.5,
+    )
+    sweep._run_source_controls_for_row(
+        row=row,
+        checkpoint_path=tmp_path / "translator.pt",
+        config=config,
+        materialized_eval_file=tmp_path / "eval.jsonl",
+        baseline_target_records=target_records,
+        results_dir=tmp_path / "results",
+    )
+
+    analyzer = next(
+        cmd
+        for cmd in commands
+        if str(sweep.ROOT / "scripts" / "analyze_gsm8k_source_controls.py") in cmd
+    )
+    control_specs = [part for part in analyzer if part.startswith("zero_source=") or part.startswith("shuffled_source_salt4=")]
+    assert all("_accept_selector_gap_min_ge_0p5" in spec for spec in control_specs)
+    assert all("_raw.jsonl" not in spec for spec in control_specs)
+    zero_gated = pathlib.Path(row["source_controls"]["prediction_outputs"]["zero_source"])
+    zero_raw = pathlib.Path(row["source_controls"]["raw_prediction_outputs"]["zero_source"])
+    assert zero_gated.exists()
+    assert zero_raw.exists()
+    assert json.loads(zero_gated.read_text())["accepted_candidate"] is True
 
 
 def test_run_sweep_records_failure_row_instead_of_aborting(tmp_path: pathlib.Path, monkeypatch) -> None:

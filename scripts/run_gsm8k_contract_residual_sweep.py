@@ -15,9 +15,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts import analyze_gsm8k_accept_fallback as accept_fallback
+from scripts import harness_common as harness
 from scripts import run_gsm8k_contract_checkpoint_sweep as checkpoint_sweep
 from scripts import run_gsm8k_smoke_contract as smoke
-from scripts import harness_common as harness
 
 
 DEFAULT_BASELINE_RESULTS_DIR = "results/gsm8k_smoke_contract_20260421"
@@ -142,6 +143,9 @@ class ResidualSweepConfig:
     run_source_controls: bool = False
     source_control_random_salt: int | None = None
     fallback_nonnumeric_controls_to_target: bool = True
+    accept_fallback_score_field: str | None = None
+    accept_fallback_threshold: float | None = None
+    accept_fallback_max_numeric_len: int = 12
     transport_residual_rank: int = 4
     transport_temperature: float = 0.1
     transport_sinkhorn_iters: int = 8
@@ -161,6 +165,15 @@ class ResidualSweepConfig:
         if bridge_bank_size < 0:
             raise ValueError(f"bridge_bank_size must be non-negative, got {bridge_bank_size}")
         object.__setattr__(self, "bridge_bank_size", bridge_bank_size)
+        accept_field_set = self.accept_fallback_score_field is not None
+        accept_threshold_set = self.accept_fallback_threshold is not None
+        if accept_field_set != accept_threshold_set:
+            raise ValueError(
+                "accept fallback requires both accept_fallback_score_field and "
+                "accept_fallback_threshold"
+            )
+        if int(self.accept_fallback_max_numeric_len) < 1:
+            raise ValueError("accept_fallback_max_numeric_len must be positive")
 
 
 def _run(cmd: list[str]) -> None:
@@ -174,6 +187,36 @@ def _candidate_label(base_label: str, rank: int, bridge_bank_size: int = 4) -> s
 
 def _float_suffix(value: float) -> str:
     return f"{float(value):g}".replace("-", "m").replace("+", "").replace(".", "p")
+
+
+def _short_float_suffix(value: float) -> str:
+    return f"{float(value):.8g}".replace("-", "m").replace("+", "").replace(".", "p")
+
+
+def _accept_fallback_enabled(config: ResidualSweepConfig) -> bool:
+    return (
+        config.accept_fallback_score_field is not None
+        and config.accept_fallback_threshold is not None
+    )
+
+
+def _accept_fallback_label_suffix(config: ResidualSweepConfig) -> str:
+    if not _accept_fallback_enabled(config):
+        return ""
+    return (
+        f"_accept_{config.accept_fallback_score_field}_ge_"
+        f"{_short_float_suffix(float(config.accept_fallback_threshold))}"
+    )
+
+
+def _accept_fallback_method_name(config: ResidualSweepConfig) -> str:
+    if not _accept_fallback_enabled(config):
+        return "rotalign_kv"
+    return f"rotalign_kv{_accept_fallback_label_suffix(config)}_numeric_changed"
+
+
+def _row_label(base_label: str, rank: int, config: ResidualSweepConfig) -> str:
+    return _candidate_label(base_label, rank, config.bridge_bank_size) + _accept_fallback_label_suffix(config)
 
 
 def _conditioning_suffix(config: ResidualSweepConfig) -> str:
@@ -403,7 +446,7 @@ def _failure_row(
     error: Exception,
 ) -> tuple[dict[str, Any], dict[str, bool]]:
     row = {
-        "label": _candidate_label(base_label, rank, config.bridge_bank_size),
+        "label": _row_label(base_label, rank, config),
         "base_label": base_label,
         "residual_rank": rank,
         "bridge_bank_size": int(config.bridge_bank_size),
@@ -618,6 +661,150 @@ def _baseline_predictions_path(config: ResidualSweepConfig) -> pathlib.Path:
     return ROOT / config.baseline_results_dir / "gsm8k32_latentwire.jsonl"
 
 
+def _write_jsonl(path: pathlib.Path, records: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        for record in records:
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def _accept_fallback_output_path(raw_path: pathlib.Path, config: ResidualSweepConfig) -> pathlib.Path:
+    if not _accept_fallback_enabled(config):
+        return raw_path
+    return raw_path.with_name(raw_path.stem + _accept_fallback_label_suffix(config) + raw_path.suffix)
+
+
+def _accept_fallback_decision(
+    *,
+    candidate_record: dict[str, Any],
+    target_record: dict[str, Any],
+    config: ResidualSweepConfig,
+) -> tuple[bool, dict[str, Any]]:
+    if not _accept_fallback_enabled(config):
+        return True, {"reason": "accept_fallback_disabled"}
+    assert config.accept_fallback_score_field is not None
+    assert config.accept_fallback_threshold is not None
+    score = accept_fallback._score(candidate_record, config.accept_fallback_score_field)
+    candidate_numeric = accept_fallback._numeric_prediction(candidate_record)
+    target_numeric = accept_fallback._numeric_prediction(target_record)
+    rejected_reason = ""
+    if candidate_numeric is None:
+        rejected_reason = "candidate_missing_numeric"
+    elif accept_fallback._is_degenerate_numeric(
+        candidate_record,
+        max_numeric_len=int(config.accept_fallback_max_numeric_len),
+    ):
+        rejected_reason = "candidate_degenerate_numeric"
+    elif candidate_numeric == target_numeric:
+        rejected_reason = "candidate_matches_target_numeric"
+    elif score is None:
+        rejected_reason = "missing_score"
+    elif float(score) < float(config.accept_fallback_threshold):
+        rejected_reason = "score_below_threshold"
+    accepted = not rejected_reason
+    return accepted, {
+        "score_field": config.accept_fallback_score_field,
+        "score": score,
+        "threshold": float(config.accept_fallback_threshold),
+        "candidate_numeric_prediction": candidate_numeric,
+        "target_numeric_prediction": target_numeric,
+        "reason": "accepted" if accepted else rejected_reason,
+    }
+
+
+def _apply_accept_fallback_to_records(
+    *,
+    records: list[dict[str, Any]],
+    target_records: list[dict[str, Any]],
+    config: ResidualSweepConfig,
+    output_path: pathlib.Path,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    if not _accept_fallback_enabled(config):
+        return records, {
+            "enabled": False,
+            "prediction_output": str(output_path),
+        }
+    method_name = _accept_fallback_method_name(config)
+    target_by_id = {str(record["example_id"]): record for record in target_records}
+    accepted_ids: list[str] = []
+    fallback_ids: list[str] = []
+    accepted_correct_ids: list[str] = []
+    accepted_wrong_ids: list[str] = []
+    rejected_reasons: dict[str, int] = {}
+    replay_records: list[dict[str, Any]] = []
+    for candidate_record in records:
+        example_id = str(candidate_record["example_id"])
+        target_record = target_by_id[example_id]
+        accepted, decision = _accept_fallback_decision(
+            candidate_record=candidate_record,
+            target_record=target_record,
+            config=config,
+        )
+        chosen = candidate_record if accepted else target_record
+        row = dict(chosen)
+        row["method"] = method_name
+        row["accepted_candidate"] = bool(accepted)
+        row["fallback_to_target"] = not accepted
+        row["accept_fallback_score_field"] = decision["score_field"]
+        row["accept_fallback_score"] = decision["score"]
+        row["accept_fallback_threshold"] = decision["threshold"]
+        row["accept_fallback_reason"] = decision["reason"]
+        row["candidate_method_before_accept_fallback"] = candidate_record.get("method")
+        row["candidate_correct_before_accept_fallback"] = bool(candidate_record.get("correct"))
+        row["candidate_prediction_before_accept_fallback"] = candidate_record.get("prediction")
+        row["candidate_normalized_prediction_before_accept_fallback"] = decision[
+            "candidate_numeric_prediction"
+        ]
+        row["target_correct_before_accept_fallback"] = bool(target_record.get("correct"))
+        row["target_prediction_before_accept_fallback"] = target_record.get("prediction")
+        row["target_normalized_prediction_before_accept_fallback"] = decision[
+            "target_numeric_prediction"
+        ]
+        row["candidate_prediction_output_required"] = True
+        candidate_latency = float(candidate_record.get("latency_sec", 0.0) or 0.0)
+        target_latency = float(target_record.get("latency_sec", 0.0) or 0.0)
+        row["candidate_latency_sec_before_accept_fallback"] = candidate_latency
+        row["target_latency_sec_before_accept_fallback"] = target_latency
+        row["latency_sec"] = candidate_latency + target_latency
+        row["candidate_generated_tokens_before_accept_fallback"] = int(
+            candidate_record.get("generated_tokens", 0) or 0
+        )
+        row["target_generated_tokens_before_accept_fallback"] = int(
+            target_record.get("generated_tokens", 0) or 0
+        )
+        row["generated_tokens"] = int(
+            row["candidate_generated_tokens_before_accept_fallback"]
+            + row["target_generated_tokens_before_accept_fallback"]
+        )
+        if accepted:
+            accepted_ids.append(example_id)
+            if bool(candidate_record.get("correct")):
+                accepted_correct_ids.append(example_id)
+            else:
+                accepted_wrong_ids.append(example_id)
+        else:
+            fallback_ids.append(example_id)
+            reason = str(decision["reason"])
+            rejected_reasons[reason] = rejected_reasons.get(reason, 0) + 1
+        replay_records.append(row)
+    _write_jsonl(output_path, replay_records)
+    return replay_records, {
+        "enabled": True,
+        "method": method_name,
+        "score_field": config.accept_fallback_score_field,
+        "threshold": float(config.accept_fallback_threshold),
+        "max_numeric_len": int(config.accept_fallback_max_numeric_len),
+        "prediction_output": str(output_path),
+        "accepted_count": len(accepted_ids),
+        "fallback_count": len(fallback_ids),
+        "accepted_ids": accepted_ids,
+        "fallback_ids": fallback_ids,
+        "accepted_correct_ids": accepted_correct_ids,
+        "accepted_wrong_ids": accepted_wrong_ids,
+        "rejected_reasons": rejected_reasons,
+    }
+
+
 def _source_control_random_salt(config: ResidualSweepConfig) -> int:
     if config.source_control_random_salt is not None:
         return int(config.source_control_random_salt)
@@ -644,36 +831,61 @@ def _run_source_controls_for_row(
     checkpoint_path: pathlib.Path,
     config: ResidualSweepConfig,
     materialized_eval_file: pathlib.Path,
+    baseline_target_records: list[dict[str, Any]],
     results_dir: pathlib.Path,
 ) -> dict[str, Any]:
     label = row["label"]
     salt = _source_control_random_salt(config)
     control_dir = results_dir / label / "source_controls"
     control_dir.mkdir(parents=True, exist_ok=True)
-    zero_output = control_dir / "zero_source.jsonl"
-    shuffled_output = control_dir / f"shuffled_source_salt{salt}.jsonl"
+    zero_raw_output = control_dir / ("zero_source_raw.jsonl" if _accept_fallback_enabled(config) else "zero_source.jsonl")
+    shuffled_raw_output = control_dir / (
+        f"shuffled_source_salt{salt}_raw.jsonl"
+        if _accept_fallback_enabled(config)
+        else f"shuffled_source_salt{salt}.jsonl"
+    )
+    zero_output = _accept_fallback_output_path(control_dir / "zero_source.jsonl", config)
+    shuffled_output = _accept_fallback_output_path(control_dir / f"shuffled_source_salt{salt}.jsonl", config)
 
-    if not zero_output.exists():
+    if not zero_raw_output.exists():
         cmd = _evaluate_command(
             checkpoint_path=checkpoint_path,
             config=config,
             materialized_eval_file=materialized_eval_file,
-            prediction_output=zero_output,
+            prediction_output=zero_raw_output,
             random_salt=salt,
         )
         cmd.extend(["--source-kv-control", "zero"])
         _run(cmd)
 
-    if not shuffled_output.exists():
+    if not shuffled_raw_output.exists():
         cmd = _evaluate_command(
             checkpoint_path=checkpoint_path,
             config=config,
             materialized_eval_file=materialized_eval_file,
-            prediction_output=shuffled_output,
+            prediction_output=shuffled_raw_output,
             random_salt=salt,
         )
         cmd.extend(["--source-prompt-control", "shuffle_examples"])
         _run(cmd)
+
+    zero_summary: dict[str, Any] | None = None
+    shuffled_summary: dict[str, Any] | None = None
+    if _accept_fallback_enabled(config):
+        zero_records = smoke._group_by_method(smoke._read_jsonl(zero_raw_output))["rotalign_kv"]
+        _, zero_summary = _apply_accept_fallback_to_records(
+            records=zero_records,
+            target_records=baseline_target_records,
+            config=config,
+            output_path=zero_output,
+        )
+        shuffled_records = smoke._group_by_method(smoke._read_jsonl(shuffled_raw_output))["rotalign_kv"]
+        _, shuffled_summary = _apply_accept_fallback_to_records(
+            records=shuffled_records,
+            target_records=baseline_target_records,
+            config=config,
+            output_path=shuffled_output,
+        )
 
     output_json = control_dir / "source_control_readout.json"
     output_md = control_dir / "source_control_readout.md"
@@ -718,6 +930,16 @@ def _run_source_controls_for_row(
             "zero_source": str(zero_output),
             f"shuffled_source_salt{salt}": str(shuffled_output),
         },
+        "raw_prediction_outputs": {
+            "zero_source": str(zero_raw_output),
+            f"shuffled_source_salt{salt}": str(shuffled_raw_output),
+        },
+        "accept_fallback": {
+            "zero_source": zero_summary,
+            f"shuffled_source_salt{salt}": shuffled_summary,
+        }
+        if _accept_fallback_enabled(config)
+        else None,
         "gate": payload["gate"],
         "live_summary": payload.get("live_summary"),
         "target_summary": payload.get("target_summary"),
@@ -737,19 +959,32 @@ def _run_candidate(
     baseline_target_records: list[dict[str, Any]],
     results_dir: pathlib.Path,
 ) -> tuple[dict[str, Any], dict[str, bool]]:
-    label = _candidate_label(base_label, rank, config.bridge_bank_size)
-    prediction_output = results_dir / f"{label}.jsonl"
-    if not prediction_output.exists():
+    raw_label = _candidate_label(base_label, rank, config.bridge_bank_size)
+    label = _row_label(base_label, rank, config)
+    raw_prediction_output = results_dir / f"{raw_label}.jsonl"
+    prediction_output = _accept_fallback_output_path(results_dir / f"{raw_label}.jsonl", config)
+    if not raw_prediction_output.exists():
         cmd = _evaluate_command(
             checkpoint_path=checkpoint_path,
             config=config,
             materialized_eval_file=materialized_eval_file,
-            prediction_output=prediction_output,
+            prediction_output=raw_prediction_output,
         )
         _run(cmd)
 
-    records = smoke._attach_prompts(smoke._read_jsonl(prediction_output), materialized_eval_file)
-    method_records = smoke._group_by_method(records)["rotalign_kv"]
+    raw_records = smoke._attach_prompts(smoke._read_jsonl(raw_prediction_output), materialized_eval_file)
+    raw_method_records = smoke._group_by_method(raw_records)["rotalign_kv"]
+    accept_fallback_summary: dict[str, Any] | None = None
+    if _accept_fallback_enabled(config):
+        method_records, accept_fallback_summary = _apply_accept_fallback_to_records(
+            records=raw_method_records,
+            target_records=baseline_target_records,
+            config=config,
+            output_path=prediction_output,
+        )
+    else:
+        records = raw_records
+        method_records = raw_method_records
     row = checkpoint_sweep._candidate_row(
         label=label,
         checkpoint_path=checkpoint_path,
@@ -767,7 +1002,11 @@ def _run_candidate(
     row["checkpoint_max_abs"] = float(checkpoint_summary.get("max_abs", 0.0))
     row["checkpoint_health_path"] = checkpoint_summary.get("health_path")
     row["prediction_output"] = str(prediction_output)
+    row["raw_prediction_output"] = str(raw_prediction_output)
     row["prediction_meta_output"] = str(prediction_output.with_suffix(prediction_output.suffix + ".meta.json"))
+    row["raw_prediction_meta_output"] = str(raw_prediction_output.with_suffix(raw_prediction_output.suffix + ".meta.json"))
+    if accept_fallback_summary is not None:
+        row["accept_fallback"] = accept_fallback_summary
     row["conditioning"] = _conditioning_payload(config)
     row["checkpoint_summary"] = checkpoint_summary
     checks = _row_checks(row, baseline_target_records, config.slice_size)
@@ -785,6 +1024,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- seed: `{payload['config']['seed']}`",
         f"- bridge bank size: `{payload['config'].get('bridge_bank_size', 4)}`",
         f"- source controls: `{'enabled' if payload['config'].get('run_source_controls') else 'disabled'}`",
+        f"- accept/fallback: `{'enabled' if payload['config'].get('accept_fallback_score_field') else 'disabled'}`",
         f"- slice: `{payload['config']['slice_size']}` examples from `{payload['config']['eval_file']}`",
         "",
         "| Base | Residual rank | Bridge bank | Accuracy | Win vs target | Loss vs target | Tie vs target | Numeric coverage | Empty preds | Status | Nonfinite | First bad key | Reused ckpt | Promote? |",
@@ -811,6 +1051,23 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         status = ", ".join(f"{name}={'PASS' if passed else 'FAIL'}" for name, passed in checks.items())
         lines.append(f"- `{label}` — {status}")
     rows_with_controls = [row for row in payload["rows"] if row.get("source_controls")]
+    rows_with_accept_fallback = [row for row in payload["rows"] if row.get("accept_fallback")]
+    if rows_with_accept_fallback:
+        lines.extend(["", "## Accept/Fallback", ""])
+        lines.extend(
+            [
+                "| Row | Method | Score field | Threshold | Accepted | Fallback | Output | Raw output |",
+                "|---|---|---|---:|---:|---:|---|---|",
+            ]
+        )
+        for row in rows_with_accept_fallback:
+            summary = row["accept_fallback"]
+            lines.append(
+                f"| `{row['label']}` | `{summary.get('method', '-')}` | "
+                f"`{summary.get('score_field', '-')}` | {float(summary.get('threshold', 0.0)):.8g} | "
+                f"{summary.get('accepted_count', '-')} | {summary.get('fallback_count', '-')} | "
+                f"`{row.get('prediction_output', '-')}` | `{row.get('raw_prediction_output', '-')}` |"
+            )
     if rows_with_controls:
         lines.extend(["", "## Source Controls", ""])
         lines.extend(
@@ -891,6 +1148,7 @@ def run_sweep(config: ResidualSweepConfig) -> dict[str, Any]:
                                 checkpoint_path=checkpoint_path,
                                 config=config,
                                 materialized_eval_file=materialized,
+                                baseline_target_records=baseline_target_records,
                                 results_dir=results_dir,
                             )
                         except Exception as control_exc:
@@ -1007,6 +1265,23 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Disable conservative target fallback for empty or nonnumeric control outputs.",
     )
+    parser.add_argument(
+        "--accept-fallback-score-field",
+        default=None,
+        help="Enable runtime accept/fallback using this candidate score field.",
+    )
+    parser.add_argument(
+        "--accept-fallback-threshold",
+        type=float,
+        default=None,
+        help="Frozen threshold for --accept-fallback-score-field.",
+    )
+    parser.add_argument(
+        "--accept-fallback-max-numeric-len",
+        type=int,
+        default=12,
+        help="Reject candidate numerics longer than this before target fallback.",
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--rank", type=int, action="append", dest="ranks")
     parser.add_argument("--base", action="append", choices=sorted(DEFAULT_BASES), dest="bases")
@@ -1064,6 +1339,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         run_source_controls=args.run_source_controls,
         source_control_random_salt=args.source_control_random_salt,
         fallback_nonnumeric_controls_to_target=not args.no_source_control_target_fallback,
+        accept_fallback_score_field=args.accept_fallback_score_field,
+        accept_fallback_threshold=args.accept_fallback_threshold,
+        accept_fallback_max_numeric_len=args.accept_fallback_max_numeric_len,
         seed=args.seed,
         ranks=tuple(args.ranks) if args.ranks else ResidualSweepConfig.ranks,
         bases=tuple(args.bases) if args.bases else ResidualSweepConfig.bases,

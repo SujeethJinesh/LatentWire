@@ -926,3 +926,54 @@ chosen in offline replay. The next exact gate is to freeze
 seed 0, seed 3, and matched zero/shuffled-source controls from scratch. If the
 runtime replay collapses, demote dynalign to a brittle mechanism probe and move
 the main method effort to a learned contrastive innovation connector.
+
+`paper/gsm8k70_runtime_accept_fallback_20260423.md` records the runtime
+validation of that frozen q0.70 selector-gap policy. The wrapper now supports
+runtime accept/fallback rows while preserving raw and gated live/control JSONL
+files separately. The fresh seed-0 live row reproduced the offline positive,
+but fresh raw controls also passed the selector, so the branch is killed as a
+paper method.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_module_replace \
+  --rank 16 \
+  --bits 4 \
+  --kv-transport k_only \
+  --slice-size 70 \
+  --eval-file data/gsm8k_eval_70.jsonl \
+  --materialized-eval-file results/gsm8k70_seed_repeat_full_20260422/_artifacts/gsm8k_eval_70.jsonl \
+  --baseline-results-dir results/gsm8k_contract_campaign_slice128_seed0_20260422/smoke \
+  --results-dir .debug/gsm8k70_runtime_accept_fallback_20260423/seed0 \
+  --checkpoints-dir checkpoints/gsm8k_contract_residual_sweep_20260421 \
+  --seed 0 \
+  --gate 0.10 \
+  --run-source-controls \
+  --source-control-random-salt 0 \
+  --accept-fallback-score-field selector_gap_min \
+  --accept-fallback-threshold 0.029237359762191772
+```
+
+Readout:
+
+- target baseline: `4/70`
+- live matched source: `7/70`, paired `3/0/67`, accepted `13`
+- zero-source control: `6/70`, paired `2/0/68`, accepted `14`, retained `2/3`
+  live wins
+- shuffled-source control: `6/70`, paired `2/0/68`, accepted `14`, retained
+  `2/3` live wins
+- retained control win IDs: `31715a2b361f0b6d`, `e100c479d9fc22f8`
+- source-control status: `source_controls_do_not_clear_gate`
+- runtime sweep JSON SHA256:
+  `1af3ea2d9abcfe01db7da65c4b9b05ee19d46c242e6dd96310e96ea874f02ba3`
+- source-control readout JSON SHA256:
+  `8bd30ce4b99de871c54b847b37eb0a7c0d0ec7f5af2e398624de9d9aee9de09f`
+
+Decision: do not run seed 3 or cross-family for this policy. The q0.70
+selector-gap branch is killed because the gate is not source-specific under
+fresh controls. The next exact gate is a control-contrastive learned innovation
+connector: train a small bottleneck/additive sidecar with matched-source
+positives and zero/shuffled-source penalties, then rerun this same GSM70 seed-0
+source-control gate before any widening.
