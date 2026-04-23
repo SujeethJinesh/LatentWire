@@ -875,3 +875,54 @@ sidecar paths when present. Verification:
 ```
 
 Readout: `41 passed in 0.10s`.
+
+`paper/gsm8k70_accept_fallback_replay_20260423.md` records the offline
+accept/fallback replay over the strongest remaining GSM70 lane. The replay
+tested `dynalign_module_replace_residrank16` seed 0, the finite seed-3 repeat,
+and the seed-0 zero/shuffled-source controls against target fallback using
+non-oracle selector telemetry.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_gsm8k_accept_fallback.py \
+  --baseline-predictions results/gsm8k_contract_campaign_slice128_seed0_20260422/smoke/gsm8k32_latentwire.jsonl \
+  --candidate seed0=.debug/gsm8k70_integrated_source_controls_20260423/seed0/dynalign_module_replace_residrank16.jsonl \
+  --candidate seed3=.debug/gsm8k70_integrated_source_controls_20260423/seed3/dynalign_module_replace_residrank16.jsonl \
+  --control zero_source=.debug/gsm8k70_integrated_source_controls_20260423/seed0/dynalign_module_replace_residrank16/source_controls/zero_source.jsonl \
+  --control shuffled_source_salt0=.debug/gsm8k70_integrated_source_controls_20260423/seed0/dynalign_module_replace_residrank16/source_controls/shuffled_source_salt0.jsonl \
+  --score-field selector_gap_min \
+  --score-quantile 0.6 \
+  --score-quantile 0.7 \
+  --score-quantile 0.75 \
+  --score-quantile 0.8 \
+  --score-quantile 0.9 \
+  --output-json results/gsm8k70_accept_fallback_replay_20260423/accept_fallback_replay.json \
+  --output-md results/gsm8k70_accept_fallback_replay_20260423/accept_fallback_replay.md
+```
+
+Readout:
+
+- target baseline: `4/70`
+- `numeric_changed`: seed 0 `8/70`, paired `6/2/62`; seed 3 `2/70`,
+  paired `1/3/66`; fails because harms remain
+- `selector_gap_min_ge_q0p7_numeric_changed`: seed 0 `7/70`, paired
+  `3/0/67`, accepted `13`; seed 3 `5/70`, paired `1/0/69`, accepted `16`;
+  zero-source and shuffled-source controls both `4/70`, paired `0/0/70`,
+  accepted `0`
+- q0.75/q0.80/q0.90 selector-gap policies also clear the offline gate with no
+  target losses and zero control accepts, but retain fewer seed-0 wins as the
+  threshold tightens
+- replay JSON SHA256:
+  `3ac363245ac963c4354175ae29ccfc454209ab3bb50b9489fef590da0b7330f9`
+- replay markdown SHA256:
+  `af42eb83c5c50b2443fb2793af6f8f4064df371aa1ab36f0e6cb32906a313370`
+
+This promotes a selector-gap gated target-fallback method as the next live
+branch, but it is not yet a publishable method result because the threshold was
+chosen in offline replay. The next exact gate is to freeze
+`selector_gap_min_ge_q0p7_numeric_changed` at threshold
+`0.029237359762191772`, implement it in the runtime evaluation path, and rerun
+seed 0, seed 3, and matched zero/shuffled-source controls from scratch. If the
+runtime replay collapses, demote dynalign to a brittle mechanism probe and move
+the main method effort to a learned contrastive innovation connector.
