@@ -430,3 +430,27 @@ exact gate should preserve value-side information while stabilizing the layer-8
 fit surface: a protected value-channel / value-innovation codec with explicit
 byte accounting, tested first on GSM8K32 seed `1` and only then on seed `0` if
 it is finite and positive.
+
+`paper/gsm8k32_wv8_protected_fit_ridge_20260423.md` records that protected
+value-channel follow-up. Commits `4d71704f` and `a3bc0509` added
+`fit_ridge_protected_rank`, calibrate/residual-sweep provenance, and then
+stabilized the implementation from a split-tail residual solve to a safer
+full-tail-plus-protected-overwrite solve.
+
+Reads on GSM8K32 seed `1`:
+
+- unsafe protected split, rank `2`: `checkpoint_nonfinite`, first bad key
+  `W_V.8`, `2,380,800` non-finite checkpoint values. This kills the split-tail
+  residual solve.
+- protected overwrite, rank `2`: finite, accuracy `0.0625`, full coverage,
+  `0` wins / `0` losses / `32` ties vs target.
+- protected overwrite, rank `4`: finite, accuracy `0.0625`, full coverage,
+  `0` wins / `0` losses / `32` ties vs target.
+
+Treat this as a weakened scalar protected-ridge branch, not a rescue. The safer
+overwrite primitive is useful infrastructure and fixes nonfinites, but tiny
+protected ranks do not recover bad-seed communication; they still collapse to
+target-cache parity. Do not run seed `0`, GSM70, or cross-family widening for
+protected scalar ridge. The next gate should shift from scalar closed-form
+stabilization to either a source-correctness/flip-table diagnostic on the live
+seed-0 wins, or a learned query/resampler connector with an explicit bottleneck.
