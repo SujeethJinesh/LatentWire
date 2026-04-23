@@ -1150,3 +1150,158 @@ shuffled-source, and target-only controls. Promote only if matched source
 recovers at least `4/10` C2C-only wins, reaches at least `11/32`, loses no more
 than one target-correct ID, and controls recover at most one of the same
 C2C-only wins.
+
+`paper/svamp32_dynalign_source_controls_20260423.md` resolves the remaining
+legacy-dynalign ambiguity on the SVAMP32 exact-ID C2C-teacher gate. Using the
+same prefdist dynalign checkpoint and the frozen materialized 32-example SVAMP
+slice, I ran exact-ID zero-source and deterministic shuffled-source controls for
+the two legacy salts that still had any teacher-only overlap. Salt 1 is cleanly
+killed: its only teacher-only recovery (`575d7e83d84c1e67`) is reproduced by
+both zero-source and shuffled-source controls, so the salt 1 hint is not
+source-specific. Salt 2 remains only a weak lower-bound clue: the matched row is
+`8/32`, recovers `2/10` C2C-only IDs, loses `4` target-correct IDs, and one of
+its teacher-only hits (`4d780f825bb8541c`) is reproduced by shuffled-source.
+The second hit (`e3ab8666238a289e`) remains matched-only in this probe, but that
+is still far below a paper-grade gate.
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/evaluate.py \
+  --translator checkpoints/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen25_to_qwen3_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --methods rotalign \
+  --gate-mode fixed \
+  --fixed-gate 0.1 \
+  --fusion-rule static \
+  --kv-transport both \
+  --position-selection-metric attention \
+  --position-selection-ratio 0.50 \
+  --kv-route-selection-ratio 0.25 \
+  --kv-value-selection-ratio 0.75 \
+  --kv-route-selection-metric random \
+  --kv-value-selection-metric random \
+  --runtime-head-selection-metric attention_peak \
+  --runtime-head-selection-ratio 1.0 \
+  --source-reasoning-mode brief_analysis \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 1 \
+  --source-kv-control zero \
+  --prediction-output results/svamp32_dynalign_source_controls_20260423/dynalign_salt1_zero_source.jsonl
+```
+
+```bash
+./venv_arm64/bin/python scripts/evaluate.py \
+  --translator checkpoints/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen25_to_qwen3_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --methods rotalign \
+  --gate-mode fixed \
+  --fixed-gate 0.1 \
+  --fusion-rule static \
+  --kv-transport both \
+  --position-selection-metric attention \
+  --position-selection-ratio 0.50 \
+  --kv-route-selection-ratio 0.25 \
+  --kv-value-selection-ratio 0.75 \
+  --kv-route-selection-metric random \
+  --kv-value-selection-metric random \
+  --runtime-head-selection-metric attention_peak \
+  --runtime-head-selection-ratio 1.0 \
+  --source-reasoning-mode brief_analysis \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 1 \
+  --source-prompt-control shuffle_examples \
+  --prediction-output results/svamp32_dynalign_source_controls_20260423/dynalign_salt1_shuffled_source_salt1.jsonl
+```
+
+```bash
+./venv_arm64/bin/python scripts/evaluate.py \
+  --translator checkpoints/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen25_to_qwen3_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --methods rotalign \
+  --gate-mode fixed \
+  --fixed-gate 0.1 \
+  --fusion-rule static \
+  --kv-transport both \
+  --position-selection-metric attention \
+  --position-selection-ratio 0.50 \
+  --kv-route-selection-ratio 0.25 \
+  --kv-value-selection-ratio 0.75 \
+  --kv-route-selection-metric random \
+  --kv-value-selection-metric random \
+  --runtime-head-selection-metric attention_peak \
+  --runtime-head-selection-ratio 1.0 \
+  --source-reasoning-mode brief_analysis \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 2 \
+  --source-kv-control zero \
+  --prediction-output results/svamp32_dynalign_source_controls_20260423/dynalign_salt2_zero_source.jsonl
+```
+
+```bash
+./venv_arm64/bin/python scripts/evaluate.py \
+  --translator checkpoints/bridge_ridge_qk_dynalign_prefdist_module_replace_20260420_diag/qwen25_to_qwen3_grouped_subspace_transport_w010_r4_dynalign_prefdist_module_replace_cal16_chat.pt \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --task-type generation \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --methods rotalign \
+  --gate-mode fixed \
+  --fixed-gate 0.1 \
+  --fusion-rule static \
+  --kv-transport both \
+  --position-selection-metric attention \
+  --position-selection-ratio 0.50 \
+  --kv-route-selection-ratio 0.25 \
+  --kv-value-selection-ratio 0.75 \
+  --kv-route-selection-metric random \
+  --kv-value-selection-metric random \
+  --runtime-head-selection-metric attention_peak \
+  --runtime-head-selection-ratio 1.0 \
+  --source-reasoning-mode brief_analysis \
+  --source-use-chat-template \
+  --target-use-chat-template \
+  --source-enable-thinking false \
+  --target-enable-thinking false \
+  --random-salt 2 \
+  --source-prompt-control shuffle_examples \
+  --prediction-output results/svamp32_dynalign_source_controls_20260423/dynalign_salt2_shuffled_source_salt2.jsonl
+```
+
+Decision: legacy dynalign is not promotable as the positive method. Keep salt 2
+only as a weak lower-bound comparator because one teacher-only ID remains
+matched-only. The next exact gate is a learned source-control-contrastive
+innovation connector on the same frozen SVAMP32 IDs, with the same strict
+matched/zero/shuffle evaluation and the predeclared promotion threshold
+(`>=4/10` teacher-only recoveries, `>=11/32` overall, `<=1` target loss, and
+controls recovering at most one of the same matched teacher-only wins).

@@ -1,0 +1,993 @@
+{
+  "candidate_control_overlap": {
+    "dynalign_salt1_matched": {
+      "shuffled_source_salt1": {
+        "candidate_teacher_only_retained_count": 1,
+        "candidate_teacher_only_retained_ids": [
+          "575d7e83d84c1e67"
+        ],
+        "candidate_teacher_only_retention_ratio": 1.0,
+        "control_teacher_only_recovered_count": 1
+      },
+      "zero_source": {
+        "candidate_teacher_only_retained_count": 1,
+        "candidate_teacher_only_retained_ids": [
+          "575d7e83d84c1e67"
+        ],
+        "candidate_teacher_only_retention_ratio": 1.0,
+        "control_teacher_only_recovered_count": 1
+      }
+    }
+  },
+  "candidates": [
+    {
+      "accuracy": 0.28125,
+      "artifact_contains_reference_ids": true,
+      "artifact_n": 70,
+      "artifact_prefix_id_parity": true,
+      "correct": 9,
+      "empty_predictions": 0,
+      "exact_ordered_id_parity": true,
+      "label": "dynalign_salt1_matched",
+      "losses_vs_target_count": 2,
+      "losses_vs_target_ids": [
+        "013133cdef4f637c",
+        "de2a795ab37694af"
+      ],
+      "method": "rotalign_kv",
+      "n": 32,
+      "non_teacher_wins_vs_target_count": 2,
+      "non_teacher_wins_vs_target_ids": [
+        "3e8a5691f5443495",
+        "b0b71023ae4d233b"
+      ],
+      "numeric_extraction_coverage": 32,
+      "path": "results/process_repair_holdout_20260421/qwen_svamp70_dynalign_prefdist_asym_kv_random_r025_v075_cal16_chat_salt1_telemetry.jsonl",
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "teacher_overlap_correct_count": 6,
+      "teacher_probe_status": "teacher_recovery_explained_by_controls",
+      "wins_vs_target_count": 3,
+      "wins_vs_target_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67",
+        "b0b71023ae4d233b"
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "accuracy": 0.1875,
+      "artifact_contains_reference_ids": true,
+      "artifact_n": 32,
+      "artifact_prefix_id_parity": true,
+      "correct": 6,
+      "empty_predictions": 0,
+      "exact_ordered_id_parity": true,
+      "label": "zero_source",
+      "losses_vs_target_count": 4,
+      "losses_vs_target_ids": [
+        "013133cdef4f637c",
+        "0d2b4f7681973e19",
+        "c042f0a2949ff8e6",
+        "de2a795ab37694af"
+      ],
+      "method": "rotalign_kv",
+      "n": 32,
+      "non_teacher_wins_vs_target_count": 1,
+      "non_teacher_wins_vs_target_ids": [
+        "3e8a5691f5443495"
+      ],
+      "numeric_extraction_coverage": 32,
+      "path": "results/svamp32_dynalign_source_controls_20260423/dynalign_salt1_zero_source.jsonl",
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "teacher_overlap_correct_count": 5,
+      "wins_vs_target_count": 2,
+      "wins_vs_target_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67"
+      ]
+    },
+    {
+      "accuracy": 0.28125,
+      "artifact_contains_reference_ids": true,
+      "artifact_n": 32,
+      "artifact_prefix_id_parity": true,
+      "correct": 9,
+      "empty_predictions": 1,
+      "exact_ordered_id_parity": true,
+      "label": "shuffled_source_salt1",
+      "losses_vs_target_count": 2,
+      "losses_vs_target_ids": [
+        "c042f0a2949ff8e6",
+        "de2a795ab37694af"
+      ],
+      "method": "rotalign_kv",
+      "n": 32,
+      "non_teacher_wins_vs_target_count": 2,
+      "non_teacher_wins_vs_target_ids": [
+        "3e8a5691f5443495",
+        "b0b71023ae4d233b"
+      ],
+      "numeric_extraction_coverage": 31,
+      "path": "results/svamp32_dynalign_source_controls_20260423/dynalign_salt1_shuffled_source_salt1.jsonl",
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "teacher_overlap_correct_count": 5,
+      "wins_vs_target_count": 3,
+      "wins_vs_target_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67",
+        "b0b71023ae4d233b"
+      ]
+    }
+  ],
+  "date": "2026-04-23",
+  "gate": {
+    "candidate_statuses": {
+      "dynalign_salt1_matched": "teacher_recovery_explained_by_controls"
+    },
+    "notes": [
+      "Teacher-only recovery is fully reproduced by at least one provided control."
+    ],
+    "status": "candidate_teacher_recovery_explained_by_controls"
+  },
+  "min_teacher_only": 5,
+  "reference_n": 32,
+  "sources": [
+    {
+      "accuracy": 0.15625,
+      "artifact_contains_reference_ids": true,
+      "artifact_n": 32,
+      "artifact_prefix_id_parity": true,
+      "correct": 5,
+      "empty_predictions": 0,
+      "exact_ordered_id_parity": true,
+      "label": "source",
+      "losses_vs_target_count": 6,
+      "losses_vs_target_ids": [
+        "013133cdef4f637c",
+        "0d2b4f7681973e19",
+        "2f80204fc9e0896f",
+        "a85be5ec651dac24",
+        "c042f0a2949ff8e6",
+        "f367349ce0604296"
+      ],
+      "method": "source_alone",
+      "n": 32,
+      "non_teacher_wins_vs_target_count": 2,
+      "non_teacher_wins_vs_target_ids": [
+        "b0b71023ae4d233b",
+        "d64f6e35083ffe8c"
+      ],
+      "numeric_extraction_coverage": 31,
+      "path": "results/svamp_exactid_baselines32_20260423/source_alone.jsonl",
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "teacher_overlap_correct_count": 3,
+      "wins_vs_target_count": 3,
+      "wins_vs_target_ids": [
+        "575d7e83d84c1e67",
+        "b0b71023ae4d233b",
+        "d64f6e35083ffe8c"
+      ]
+    },
+    {
+      "accuracy": 0.0625,
+      "artifact_contains_reference_ids": true,
+      "artifact_n": 32,
+      "artifact_prefix_id_parity": true,
+      "correct": 2,
+      "empty_predictions": 0,
+      "exact_ordered_id_parity": true,
+      "label": "t2t",
+      "losses_vs_target_count": 7,
+      "losses_vs_target_ids": [
+        "013133cdef4f637c",
+        "0d2b4f7681973e19",
+        "2f80204fc9e0896f",
+        "316b525a4fcbfb89",
+        "a85be5ec651dac24",
+        "c042f0a2949ff8e6",
+        "de2a795ab37694af"
+      ],
+      "method": "text_to_text",
+      "n": 32,
+      "non_teacher_wins_vs_target_count": 1,
+      "non_teacher_wins_vs_target_ids": [
+        "4ef979ea2bf931df"
+      ],
+      "numeric_extraction_coverage": 32,
+      "path": "results/svamp_exactid_baselines32_20260423/text_to_text.jsonl",
+      "teacher_only_recovered_count": 0,
+      "teacher_only_recovered_ids": [],
+      "teacher_overlap_correct_count": 1,
+      "wins_vs_target_count": 1,
+      "wins_vs_target_ids": [
+        "4ef979ea2bf931df"
+      ]
+    }
+  ],
+  "target_summary": {
+    "accuracy": 0.25,
+    "artifact_contains_reference_ids": true,
+    "artifact_n": 32,
+    "artifact_prefix_id_parity": true,
+    "correct": 8,
+    "empty_predictions": 0,
+    "exact_ordered_id_parity": true,
+    "label": "target",
+    "losses_vs_target_count": 0,
+    "losses_vs_target_ids": [],
+    "method": "target_alone",
+    "n": 32,
+    "non_teacher_wins_vs_target_count": 0,
+    "non_teacher_wins_vs_target_ids": [],
+    "numeric_extraction_coverage": 32,
+    "path": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl",
+    "teacher_only_recovered_count": 0,
+    "teacher_only_recovered_ids": [],
+    "teacher_overlap_correct_count": 6,
+    "wins_vs_target_count": 0,
+    "wins_vs_target_ids": []
+  },
+  "teacher_only_count": 10,
+  "teacher_only_ids": [
+    "13cb77b698eeadb5",
+    "1d50b408c8f5cd2c",
+    "2de1549556000830",
+    "4c84ebf42812703b",
+    "4d780f825bb8541c",
+    "575d7e83d84c1e67",
+    "6e9745b37ab6fc45",
+    "aee922049c757331",
+    "de1bf4d142544e5b",
+    "e3ab8666238a289e"
+  ],
+  "teacher_only_provenance": [
+    {
+      "candidate_correct_labels": [],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "46",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "46",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "46",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "13cb77b698eeadb5",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": null,
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "4",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "46",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "luke played 177 rounds of the trivia game, so he scored a total of 177 x 46 = 8142 points. to find out how many points he scored in the game, we need to add the points he gained in each round to the total points he scored in",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "25",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "246",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "25",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "1d50b408c8f5cd2c",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "25",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "25",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "1",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "on the previous day, there were 703 visitors. on the current day, there were 246 visitors. in total, there were 703 + 246 = 949 visitors. since there are 25 days in a year, there were 949",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "1",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "33",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "3",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "2de1549556000830",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "33",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "33",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "33",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "the frog jumped 33 inches farther than the grasshopper, so the frog jumped 9 + 33 = 42 inches. the mouse jumped 3 inches lesser than the frog, so the mouse jumped 42 - 3 = 39 inches. #### 39 the answer",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "12",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "4c84ebf42812703b",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "12",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "2",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "the recipe calls for 12 cups of flour and 5 cups of sugar. mary already put in some cups of flour, and she still needs 2 more cups of flour. so the total number of cups of flour she has put in is 12 - 2 = 10 cups. therefore",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "34",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "1",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "1",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "4d780f825bb8541c",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "14",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "12",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "1",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "julia played tag with 12 kids on monday and 14 kids on tuesday, so she played with a total of 12+14 = 26 kids. if she spent a total of 34 hours to play tag on both days, then she spent 34/26",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [
+        "dynalign_salt1_matched"
+      ],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": true,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [
+        "shuffled_source_salt1",
+        "zero_source"
+      ],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": true,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": true,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "575d7e83d84c1e67",
+      "source_correct_labels": [
+        "source"
+      ],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": true,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "60",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "24",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "emily has 6 beads and each necklace takes 3 beads, so she can make 6/3 = 2 necklaces. therefore, emily can make 2 necklaces for her 72 friends. #### 2 the answer is: 2",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "600",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": null,
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "600",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "6e9745b37ab6fc45",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "3",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "661",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "600",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "if there were 600 visitors the previous day, and 661 visitors came to the buckingham palace on that day, then there were 661 - 600 = 61 more visitors than the previous day. #### 61 the answer is: 61",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "5",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "-9",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "8",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "aee922049c757331",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "5",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "3",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "17",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "dan has $ 4. he bought a candy bar for $ 8, so he has $ 4 - $ 8 = -$ 4 left. his friend gave him $ 5, so he now has $ -$ 4 + $ 5 = $ 1 left. #### 1 the",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "97",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "de1bf4d142544e5b",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "40",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "2",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "if there were 97 alligators and 40 of them were hiding, then the number of alligators not hiding is 97 - 40 = 57 #### 57 the answer is: 57",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {
+        "dynalign_salt1_matched": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "control_correct_labels": [],
+      "controls": {
+        "shuffled_source_salt1": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "2",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "zero_source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "5",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "example_id": "e3ab8666238a289e",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "5",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "5",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "4",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "there were 3 birds and 4 storks sitting on the fence. after 2 more birds joined, there were a total of 3 + 2 = 5 birds sitting on the fence. there were 4 storks sitting on the fence. so, there are 5 - 4 = 1",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    }
+  ],
+  "teacher_summary": {
+    "accuracy": 0.5,
+    "artifact_contains_reference_ids": true,
+    "artifact_n": 32,
+    "artifact_prefix_id_parity": true,
+    "correct": 16,
+    "empty_predictions": 0,
+    "exact_ordered_id_parity": true,
+    "label": "c2c",
+    "losses_vs_target_count": 2,
+    "losses_vs_target_ids": [
+      "013133cdef4f637c",
+      "0d2b4f7681973e19"
+    ],
+    "method": "c2c_generate",
+    "n": 32,
+    "non_teacher_wins_vs_target_count": 0,
+    "non_teacher_wins_vs_target_ids": [],
+    "numeric_extraction_coverage": 32,
+    "path": "results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl",
+    "teacher_only_recovered_count": 10,
+    "teacher_only_recovered_ids": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "4c84ebf42812703b",
+      "4d780f825bb8541c",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "de1bf4d142544e5b",
+      "e3ab8666238a289e"
+    ],
+    "teacher_overlap_correct_count": 16,
+    "wins_vs_target_count": 10,
+    "wins_vs_target_ids": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "4c84ebf42812703b",
+      "4d780f825bb8541c",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "de1bf4d142544e5b",
+      "e3ab8666238a289e"
+    ]
+  }
+}
