@@ -1,0 +1,86 @@
+{
+  "artifacts": {
+    "probe_json": "results/svamp32_idweighted_query_innovation_20260423/c2c_teacher_probe_gate015_targetself_translated_zero.json",
+    "target_set_json": "results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json"
+  },
+  "candidate": {
+    "clean_new_vs_target_self_count": 1,
+    "clean_new_vs_target_self_ids": [
+      "aee922049c757331"
+    ],
+    "clean_source_necessary_count": 1,
+    "clean_source_necessary_ids": [
+      "aee922049c757331"
+    ],
+    "label": "gate015",
+    "matched_clean_residual_recovered_count": 1,
+    "matched_clean_residual_recovered_ids": [
+      "aee922049c757331"
+    ],
+    "matched_correct": 10,
+    "matched_teacher_only_recovered_count": 2,
+    "matched_teacher_only_recovered_ids": [
+      "575d7e83d84c1e67",
+      "aee922049c757331"
+    ],
+    "missing_source_control_labels": [],
+    "retained_by_source_controls_count": 1,
+    "retained_by_source_controls_ids": [
+      "575d7e83d84c1e67"
+    ],
+    "source_control_details": {
+      "translated_kv_zero": {
+        "candidate_teacher_only_retained_count": 1,
+        "candidate_teacher_only_retained_ids": [
+          "575d7e83d84c1e67"
+        ],
+        "control_teacher_only_recovered_count": 1,
+        "present": true
+      }
+    }
+  },
+  "config": {
+    "candidate_label": "gate015",
+    "expected_n": 32,
+    "min_clean_source_necessary": 2,
+    "min_correct": 16,
+    "min_delta_vs_target_self": 1,
+    "min_numeric_coverage": 31,
+    "source_control_labels": [
+      "translated_kv_zero"
+    ],
+    "target_self_label": "target_self_repair"
+  },
+  "date": "2026-04-23",
+  "interpretation": "This is an oracle upper bound for a target-self-preserving sidecar. It is not a deployable method because it assumes perfect knowledge of which clean candidate wins to add.",
+  "oracle_sidecar_bound": {
+    "clean_source_necessary_count": 1,
+    "clean_source_necessary_ids": [
+      "aee922049c757331"
+    ],
+    "correct": 15,
+    "criteria": {
+      "min_clean_source_necessary": false,
+      "min_correct": false,
+      "min_delta_vs_target_self": true,
+      "source_controls_present": true,
+      "target_losses_prevented_by_sidecar": true
+    },
+    "delta_vs_target_self": 1,
+    "failing_criteria": [
+      "min_correct",
+      "min_clean_source_necessary"
+    ],
+    "target_losses_vs_target_self": 0
+  },
+  "reference": {
+    "clean_residual_target_count": 6,
+    "n": 32,
+    "target_correct": 8,
+    "target_self_repair_correct": 14,
+    "target_self_repair_teacher_only_count": 3,
+    "teacher_correct": 16,
+    "teacher_only_count": 10
+  },
+  "status": "oracle_sidecar_bound_fails_gate"
+}

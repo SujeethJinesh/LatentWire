@@ -1960,3 +1960,103 @@ Next exact gate:
   `14/32`
 - rerun matched, translated-KV-zero, source-KV-zero, two shuffled-source salts,
   and strict target-set paper gate
+
+## 2026-04-23 13:23 PDT — SVAMP32 source-innovation sidecar bound
+
+Paper status:
+
+- not ICLR-ready
+- current story: target self-repair is the decoder-side-information floor, and
+  source communication should add only clean residual innovation
+- blocking gap: current live candidate has one clean source-necessary ID, but
+  the paper gate requires two while preserving target_self_repair
+
+Top next moves considered:
+
+- sidecar oracle/proxy-bound analyzer. This matters because it tests whether
+  the current candidate is worth wrapping in a target-self-preserving runtime
+  router. It might fail if the candidate only exposes one clean source-specific
+  ID. Cost: low. Helps reproducibility, robustness, and interpretability.
+- runtime target-self-preserving source sidecar. This matters because it is the
+  real method shape. It might fail or leak because no valid source-necessity
+  router exists yet. Cost: medium/high. Helps same-pair and robustness.
+- another ID-weighted residual fit. This might find the second clean ID, but it
+  risks overfitting without first quantifying the sidecar headroom. Cost:
+  medium. Helps same-pair.
+
+Decision:
+
+- picked the sidecar oracle-bound analyzer first
+- rationale: if a perfect target-self-preserving sidecar around the current
+  `gate015` candidate cannot clear the paper gate, runtime router work on that
+  exact candidate is premature
+
+What changed:
+
+- added `scripts/analyze_svamp32_source_sidecar_bound.py`
+- added `tests/test_analyze_svamp32_source_sidecar_bound.py`
+- materialized:
+  - `results/svamp32_idweighted_query_innovation_20260423/source_sidecar_bound_gate015_targetself_translated_zero.json`
+  - `results/svamp32_idweighted_query_innovation_20260423/source_sidecar_bound_gate015_targetself_translated_zero.md`
+- added:
+  - `results/svamp32_idweighted_query_innovation_20260423/manifest.md`
+- updated:
+  - `paper/svamp32_idweighted_query_innovation_20260423.md`
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_analyze_svamp32_source_sidecar_bound.py \
+  tests/test_analyze_svamp32_paper_gate.py \
+  tests/test_analyze_c2c_teacher_innovation.py \
+  tests/test_build_svamp32_innovation_target_set.py -q
+```
+
+Result: `20 passed`
+
+Bound command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_svamp32_source_sidecar_bound.py \
+  --probe-json results/svamp32_idweighted_query_innovation_20260423/c2c_teacher_probe_gate015_targetself_translated_zero.json \
+  --target-set-json results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json \
+  --candidate-label gate015 \
+  --source-control-label translated_kv_zero \
+  --output-json results/svamp32_idweighted_query_innovation_20260423/source_sidecar_bound_gate015_targetself_translated_zero.json \
+  --output-md results/svamp32_idweighted_query_innovation_20260423/source_sidecar_bound_gate015_targetself_translated_zero.md
+```
+
+Evidence:
+
+- target-alone: `8/32`
+- C2C teacher: `16/32`
+- target_self_repair: `14/32`
+- matched `gate015`: `10/32`
+- matched `gate015` C2C-only recovered: `2`
+- matched clean residual recovered: `1/6`
+- retained by translated-KV-zero: `575d7e83d84c1e67`
+- clean source-necessary ID: `aee922049c757331`
+- oracle `target_self_repair + clean source sidecar`: `15/32`
+- target losses versus `target_self_repair`: `0`
+- verdict: `oracle_sidecar_bound_fails_gate`
+- failing criteria:
+  - `min_correct`
+  - `min_clean_source_necessary`
+
+Hypothesis update:
+
+- promoted: target-self-preserving source innovation remains the right method
+  shape
+- killed for now: wrapping this exact `gate015` candidate in a runtime sidecar,
+  because even a perfect oracle router reaches only `15/32`
+- still alive: training/searching for a candidate with at least two clean
+  source-necessary IDs before router implementation
+
+Next exact gate:
+
+- produce a candidate that exposes `>=2/6` clean source-necessary IDs under
+  matched versus source-destroying controls
+- then implement the runtime target-self-preserving acceptor with
+  translated-KV-zero, source-zero, two shuffled-source salts, and clean-ID swap
+  controls

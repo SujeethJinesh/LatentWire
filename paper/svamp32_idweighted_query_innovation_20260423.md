@@ -142,6 +142,49 @@ Paper gate:
   - `min_clean_residual_recovered`
   - `min_clean_source_necessary`
 
+## Target-Self Sidecar Bound
+
+To test whether this exact candidate is worth wrapping in a deployable
+target-self-preserving sidecar, I added an oracle-bound analysis:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_svamp32_source_sidecar_bound.py \
+  --probe-json results/svamp32_idweighted_query_innovation_20260423/c2c_teacher_probe_gate015_targetself_translated_zero.json \
+  --target-set-json results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json \
+  --candidate-label gate015 \
+  --source-control-label translated_kv_zero \
+  --output-json results/svamp32_idweighted_query_innovation_20260423/source_sidecar_bound_gate015_targetself_translated_zero.json \
+  --output-md results/svamp32_idweighted_query_innovation_20260423/source_sidecar_bound_gate015_targetself_translated_zero.md
+```
+
+Result:
+
+- status: `oracle_sidecar_bound_fails_gate`
+- oracle `target_self_repair + clean source sidecar`: `15/32`
+- delta versus `target_self_repair`: `+1`
+- target losses versus `target_self_repair`: `0`
+- clean source-necessary IDs: `1/6`
+- clean source-necessary ID: `aee922049c757331`
+- failing criteria:
+  - `min_correct`
+  - `min_clean_source_necessary`
+
+Analyzer verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_analyze_svamp32_source_sidecar_bound.py \
+  tests/test_analyze_svamp32_paper_gate.py \
+  tests/test_analyze_c2c_teacher_innovation.py \
+  tests/test_build_svamp32_innovation_target_set.py -q
+```
+
+Result: `20 passed`
+
+Interpretation: the target-self-preserving sidecar idea remains alive, but
+wrapping this exact `gate015` candidate is not worth a runtime implementation.
+Even a perfect oracle router around it cannot clear the current paper gate.
+
 ## Interpretation
 
 The branch is revived but not promoted. The clean win on
@@ -150,11 +193,11 @@ The branch is revived but not promoted. The clean win on
 clean source-necessary ID is below the gate and the row is still worse than
 `target_self_repair`.
 
-The next method should preserve the target_self_repair row and add source
-innovation on top, rather than replacing it. The strongest next branch is a
-target-self-conditioned residual composition: start from target_self_repair,
-then allow an additive source innovation only on IDs/layers whose translated
-packet beats translated-KV-zero.
+The next method should still preserve the target_self_repair row and add source
+innovation on top, rather than replacing it. But the sidecar-bound result
+promotes a new candidate/search step before runtime router work: the candidate
+must first expose at least two clean source-necessary IDs under matched versus
+source-destroying controls.
 
 ## Next Gate
 
