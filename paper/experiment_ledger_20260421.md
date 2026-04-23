@@ -410,3 +410,23 @@ Do not run seed `0`, GSM70, or cross-family widening for either branch. The next
 exact gate is now a direct layer/stream-specific `W_V.8` fit regularization or
 diagnostic branch, because the blocker remains localized to the same value-side
 fit surface rather than to runtime tail quantization or target whitening alone.
+
+`paper/gsm8k32_wv8_fit_ridge_override_20260423.md` records that direct
+layer/stream-specific fit regularization gate. Commit `fba00f40` added a
+generic per-layer/per-stream source-to-target fit ridge override with calibrate
+and residual-sweep provenance. The first GSM8K32 bad-seed run used only
+`W_V.8` at lambda `1e-2`:
+
+- seed `1`: finite, accuracy `0.0625`, full coverage, no empty predictions
+- paired vs target: `0` wins, `0` losses, `32` ties
+- checkpoint nonfinite values: `0`; first bad key: none
+- checkpoint max abs: `6416.1553`, with top abs in `quant_aux_proj_V.15`
+
+Treat this as a weakened branch, not a rescue. Localized `W_V.8` ridge damping
+removes the catastrophic nonfinite checkpoint failure, but it collapses to
+target-cache parity and does not establish communication. Do not run seed `0`,
+GSM70, or cross-family widening for scalar ridge-only stabilization. The next
+exact gate should preserve value-side information while stabilizing the layer-8
+fit surface: a protected value-channel / value-innovation codec with explicit
+byte accounting, tested first on GSM8K32 seed `1` and only then on seed `0` if
+it is finite and positive.
