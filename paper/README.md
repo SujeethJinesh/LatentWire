@@ -14,6 +14,10 @@
 - `gsm8k32_anchor_tail_seed1_20260422.md` is the first bad-seed falsification
   of the new `V`-only anchor-tail runtime wrapper. It shows the wrapper alone
   does not remove the repeated layer-8 `V` checkpoint collapse.
+- `gsm8k32_conditioned_bad_seed_controls_20260423.md` is the next robustness
+  follow-up on the live dynalign residual lane. It shows that source+target
+  whitening removes the catastrophic bad-seed checkpoint collapse on GSM8K32,
+  but currently trades away the seed-0 ceiling.
 - `ablation_evidence_ladder_20260421.md` is the telemetry-driven stack
   decision table for toy positives, controls, and blockers.
 - `../results/query_pool_toy_20260421/hub_router_frontier_sweep_20260421.md`

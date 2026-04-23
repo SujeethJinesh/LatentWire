@@ -292,6 +292,22 @@ does not move the instability upstream. The next bounded robustness branch
 should patch the layer-8 `V` calibration fit itself before spending more budget
 on wrapper-only codec variants.
 
+`paper/gsm8k32_conditioned_bad_seed_controls_20260423.md` is the first
+conditioning-first robustness follow-up on the live lane. It is mixed but
+important:
+
+- seed `0`: finite, but falls from `0.1250` to `0.0625`
+- seed `1`: finite, rises from `checkpoint_nonfinite` to `0.0625`
+- seed `2`: finite, rises from `checkpoint_nonfinite` to `0.0938`
+
+Treat this as the first evidence that conditioning can remove the catastrophic
+bad-seed failure on the exact frozen contract, but only by trading away some of
+the best-seed ceiling. So global source+target whitening is a live stabilizer,
+not yet the paper method. The next exact robustness branch should be more
+selective than global whitening: layer-local or `V`-only conditioning around
+the layer-8 failure family, rerun on the same `0/1/2` seed controls, and only
+then reopen GSM70.
+
 `paper/gsm8k70_campaign_20260422.md` is the first larger frozen same-pair read
 after the reviewer pivot. It shows that the live
 `dynalign_module_replace_residrank16` lane survives beyond GSM8K32:

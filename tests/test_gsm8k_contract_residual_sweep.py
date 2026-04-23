@@ -35,6 +35,15 @@ def test_checkpoint_path_builds_seeded_rank_path() -> None:
     )
 
 
+def test_checkpoint_path_builds_conditioned_rank_path() -> None:
+    config = sweep.ResidualSweepConfig(seed=1, whitening=True, target_whitening=True)
+    path = sweep._checkpoint_path("dynalign_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat_srcwhite_tgtwhite_seed1.pt"
+    )
+
+
 def test_checkpoint_path_builds_new_preserve_rank_path() -> None:
     config = sweep.ResidualSweepConfig()
     path = sweep._checkpoint_path("dynalign_preserve_module_replace", 16, config)
@@ -263,6 +272,27 @@ def test_calibrate_checkpoint_quarantines_new_nonfinite_checkpoint(tmp_path: pat
     assert health["freshly_created"] is True
     assert health["nonfinite_numel"] == 1
     assert health["quarantined_checkpoint_path"] == str(quarantined)
+
+
+def test_calibrate_checkpoint_passes_whitening_flags(tmp_path: pathlib.Path, monkeypatch) -> None:
+    ckpt = tmp_path / "fresh_good.pt"
+    commands: list[list[str]] = []
+
+    def _fake_run(cmd: list[str]) -> None:
+        commands.append(cmd)
+        torch.save({"state_dict": {"weight": torch.tensor([1.0], dtype=torch.float32)}}, ckpt)
+
+    monkeypatch.setattr(sweep, "_run", _fake_run)
+    summary = sweep._calibrate_checkpoint(
+        base_label="dynalign_module_replace",
+        rank=16,
+        checkpoint_path=ckpt,
+        config=sweep.ResidualSweepConfig(seed=1, whitening=True, target_whitening=True),
+    )
+
+    assert summary["nonfinite_numel"] == 0
+    assert any(part == "--whitening" for part in commands[0])
+    assert any(part == "--target-whitening" for part in commands[0])
 
 
 def test_run_sweep_records_failure_row_instead_of_aborting(tmp_path: pathlib.Path, monkeypatch) -> None:

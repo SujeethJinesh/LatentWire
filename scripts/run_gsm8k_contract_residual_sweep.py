@@ -123,6 +123,8 @@ class ResidualSweepConfig:
     transport_sinkhorn_iters: int = 8
     transport_signature_rank: int = 8
     transport_signature_weight: float = 0.0
+    whitening: bool = False
+    target_whitening: bool = False
     seed: int = 0
     ranks: tuple[int, ...] = (2, 4, 8, 16)
     bases: tuple[str, ...] = ("dynalign_module_replace", "tokenbasis_replace")
@@ -136,14 +138,29 @@ def _candidate_label(base_label: str, rank: int) -> str:
     return f"{base_label}_residrank{rank}"
 
 
+def _conditioning_suffix(config: ResidualSweepConfig) -> str:
+    parts: list[str] = []
+    if config.whitening:
+        parts.append("srcwhite")
+    if config.target_whitening:
+        parts.append("tgtwhite")
+    return "" if not parts else "_" + "_".join(parts)
+
+
 def _checkpoint_path(base_label: str, rank: int, config: ResidualSweepConfig) -> pathlib.Path:
     base_meta = DEFAULT_BASES[base_label]
-    if rank == int(base_meta["existing_rank"]) and int(config.seed) == 0:
+    if (
+        rank == int(base_meta["existing_rank"])
+        and int(config.seed) == 0
+        and not config.whitening
+        and not config.target_whitening
+    ):
         return ROOT / str(base_meta["checkpoint_path"])
     seed_suffix = "" if int(config.seed) == 0 else f"_seed{int(config.seed)}"
+    conditioning_suffix = _conditioning_suffix(config)
     filename = (
         f"qwen25_to_qwen3_grouped_subspace_transport_w010_r{rank}_"
-        f"{base_label}_cal64_chat{seed_suffix}.pt"
+        f"{base_label}_cal64_chat{conditioning_suffix}{seed_suffix}.pt"
     )
     return ROOT / config.checkpoints_dir / base_label / filename
 
@@ -316,13 +333,22 @@ def _failure_row(
         "empty_predictions": config.slice_size,
         "paired_vs_target": {"win": 0, "loss": 0, "tie": 0},
         "seed": int(config.seed),
-        "reused_existing_checkpoint": rank == int(DEFAULT_BASES[base_label]["existing_rank"]) and int(config.seed) == 0,
+        "reused_existing_checkpoint": (
+            rank == int(DEFAULT_BASES[base_label]["existing_rank"])
+            and int(config.seed) == 0
+            and not config.whitening
+            and not config.target_whitening
+        ),
         "status": _failure_status(error, checkpoint_summary),
         "failure_reason": str(error),
         "checkpoint_path": str(checkpoint_path),
         "checkpoint_nonfinite_numel": int(checkpoint_summary.get("nonfinite_numel", 0)),
         "checkpoint_first_bad_key": checkpoint_summary.get("first_bad_key"),
         "checkpoint_max_abs": float(checkpoint_summary.get("max_abs", 0.0)),
+        "conditioning": {
+            "whitening": bool(config.whitening),
+            "target_whitening": bool(config.target_whitening),
+        },
         "checkpoint_summary": checkpoint_summary,
     }
     checks = {
@@ -393,6 +419,10 @@ def _calibrate_checkpoint(
                 thinking=config.enable_thinking,
             )
         )
+        if config.whitening:
+            cmd.append("--whitening")
+        if config.target_whitening:
+            cmd.append("--target-whitening")
         _run(cmd)
     checkpoint_summary = _checkpoint_finite_summary(checkpoint_path)
     if int(checkpoint_summary["nonfinite_numel"]) > 0:
@@ -501,11 +531,20 @@ def _run_candidate(
     row["base_label"] = base_label
     row["residual_rank"] = rank
     row["seed"] = int(config.seed)
-    row["reused_existing_checkpoint"] = rank == int(DEFAULT_BASES[base_label]["existing_rank"]) and int(config.seed) == 0
+    row["reused_existing_checkpoint"] = (
+        rank == int(DEFAULT_BASES[base_label]["existing_rank"])
+        and int(config.seed) == 0
+        and not config.whitening
+        and not config.target_whitening
+    )
     row["status"] = "ok"
     row["checkpoint_nonfinite_numel"] = int(checkpoint_summary.get("nonfinite_numel", 0))
     row["checkpoint_first_bad_key"] = checkpoint_summary.get("first_bad_key")
     row["checkpoint_max_abs"] = float(checkpoint_summary.get("max_abs", 0.0))
+    row["conditioning"] = {
+        "whitening": bool(config.whitening),
+        "target_whitening": bool(config.target_whitening),
+    }
     row["checkpoint_summary"] = checkpoint_summary
     checks = _row_checks(row, baseline_target_records, config.slice_size)
     return row, checks
@@ -665,6 +704,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--transport-sinkhorn-iters", type=int, default=8)
     parser.add_argument("--transport-signature-rank", type=int, default=8)
     parser.add_argument("--transport-signature-weight", type=float, default=0.0)
+    parser.add_argument("--whitening", action="store_true")
+    parser.add_argument("--target-whitening", action="store_true")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--rank", type=int, action="append", dest="ranks")
     parser.add_argument("--base", action="append", choices=sorted(DEFAULT_BASES), dest="bases")
@@ -701,6 +742,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         transport_sinkhorn_iters=args.transport_sinkhorn_iters,
         transport_signature_rank=args.transport_signature_rank,
         transport_signature_weight=args.transport_signature_weight,
+        whitening=args.whitening,
+        target_whitening=args.target_whitening,
         seed=args.seed,
         ranks=tuple(args.ranks) if args.ranks else ResidualSweepConfig.ranks,
         bases=tuple(args.bases) if args.bases else ResidualSweepConfig.bases,
