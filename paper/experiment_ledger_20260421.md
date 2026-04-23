@@ -542,3 +542,43 @@ exhausted unless a new diagnostic changes the failure surface. The next exact
 gate should be the learned query/resampler connector with an explicit
 bottleneck and the same matched/zero/shuffled-source target-safe control
 envelope.
+
+`paper/gsm8k32_value_routed_seed1_20260423.md` records the cheapest existing
+learned-connector seed-stability screen. The branch
+`dynalign_value_routed_module_replace_residrank16` had preserved the GSM8K32
+seed-0 live row at `4/32` with full coverage, so it was the nearest existing
+learned query/module surface to test before adding a new query-resampler mode.
+
+Run:
+
+```bash
+./venv_arm64/bin/python scripts/run_gsm8k_contract_residual_sweep.py \
+  --base dynalign_value_routed_module_replace \
+  --rank 16 \
+  --bits 4 \
+  --kv-transport k_only \
+  --slice-size 32 \
+  --baseline-results-dir results/gsm8k_smoke_contract_20260421 \
+  --results-dir .debug/gsm8k32_dynalign_value_routed_resid16_seed1_20260423 \
+  --checkpoints-dir .debug/checkpoints_gsm8k32_dynalign_value_routed_resid16_seed1_20260423 \
+  --seed 1
+```
+
+Readout:
+
+- status: `checkpoint_nonfinite`
+- first bad key: `W_V.8`
+- checkpoint nonfinite values: `2,382,081`
+- numeric coverage: `0/32`
+- empty predictions: `32`
+- summary JSON SHA256:
+  `9a29f7357a230ccaaf3ae9992d090c4207c3ce917fb893b27f36a68bb4f12fa7`
+
+This kills rerunning the current value-routed branch as the next seed-stability
+rescue. The failure repeats the same layer-8 value family as the live bad seeds
+and anchor-tail wrapper. The next exact gate is now an explicit guarded
+query/resampler connector branch, not another existing value-routed rerun:
+reuse the slotted query-module plumbing, expose bottleneck slots/rank as first-
+class provenance, add fit-time finite/norm checks or fallback-to-base for bad
+layers, and evaluate with matched/zero/shuffled-source target-safe controls plus
+a `0/4/16/32` slot capacity/null sweep before any cross-family widening.
