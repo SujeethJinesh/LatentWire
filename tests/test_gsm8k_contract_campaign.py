@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import pathlib
 
 from scripts import run_gsm8k_contract_campaign as campaign
 
@@ -168,3 +169,74 @@ def test_payload_round_trip_json() -> None:
     payload = {"aggregate_rows": {"foo": {"accuracy_mean": 0.5}}}
     dumped = json.dumps(payload, sort_keys=True)
     assert json.loads(dumped)["aggregate_rows"]["foo"]["accuracy_mean"] == 0.5
+
+
+def test_candidate_row_finds_matching_label() -> None:
+    payload = {
+        "rows": [
+            {"label": "a", "accuracy": 0.0},
+            {"label": "b", "accuracy": 1.0},
+        ]
+    }
+    assert campaign._candidate_row(payload, "b") == {"label": "b", "accuracy": 1.0}
+    assert campaign._candidate_row(payload, "c") is None
+
+
+def test_run_campaign_skips_failed_candidate_rows_without_outputs(tmp_path: pathlib.Path, monkeypatch) -> None:
+    baseline_dir = tmp_path / "baseline"
+    baseline_dir.mkdir(parents=True, exist_ok=True)
+    (baseline_dir / campaign.SMOKE_PAYLOAD_NAME).write_text(json.dumps({"rows": {}}))
+
+    seed0_dir = tmp_path / "results" / "seed0"
+    seed0_dir.mkdir(parents=True, exist_ok=True)
+    (seed0_dir / campaign.RESIDUAL_PAYLOAD_NAME).write_text(
+        json.dumps(
+            {
+                "rows": [
+                    {
+                        "label": "dynalign_module_replace_residrank16",
+                        "accuracy": 0.0,
+                        "paired_vs_target": {"win": 0, "loss": 0, "tie": 0},
+                        "base_label": "dynalign_module_replace",
+                        "residual_rank": 16,
+                        "seed": 0,
+                        "status": "checkpoint_nonfinite",
+                    }
+                ]
+            }
+        )
+    )
+
+    monkeypatch.setattr(campaign, "_run_smoke_contract", lambda config, baseline_dir: None)
+    monkeypatch.setattr(campaign, "_run_residual_sweep", lambda config, baseline_dir, seed: seed0_dir)
+    monkeypatch.setattr(
+        campaign.harness,
+        "materialize_slice",
+        lambda src, dst, limit: (pathlib.Path(dst).parent.mkdir(parents=True, exist_ok=True), pathlib.Path(dst).write_text("")),
+    )
+
+    def _unexpected(*args, **kwargs):
+        raise AssertionError("should not be called for failed candidate rows")
+
+    monkeypatch.setattr(campaign, "_candidate_paired_stats", _unexpected)
+    monkeypatch.setattr(campaign, "_run_diagnostics", _unexpected)
+
+    config = campaign.CampaignConfig(
+        results_root=str(tmp_path / "results"),
+        eval_file="data/gsm8k_eval_70.jsonl",
+        slice_size=70,
+        seeds=(0,),
+        bases=("dynalign_module_replace",),
+        ranks=(16,),
+        candidate_labels=("dynalign_module_replace_residrank16",),
+        baseline_results_dir=str(baseline_dir),
+        skip_smoke=True,
+    )
+    payload = campaign.run_campaign(config)
+
+    row = payload["aggregate_rows"]["dynalign_module_replace_residrank16"]
+    assert row["n_seeds"] == 1
+    assert row["accuracy_mean"] == 0.0
+    assert payload["paired_stats_by_label"] == {}
+    assert payload["diagnostic_rows"] == {}
+    assert payload["seed_artifacts"][0]["diagnostics"] == []

@@ -276,6 +276,13 @@ def _aggregate_rows(seed_payloads: dict[int, dict[str, Any]]) -> dict[str, dict[
     return summary
 
 
+def _candidate_row(seed_payload: dict[str, Any], candidate_label: str) -> dict[str, Any] | None:
+    for row in seed_payload.get("rows", []):
+        if str(row.get("label")) == candidate_label:
+            return row
+    return None
+
+
 def _aggregate_diagnostics(diagnostics_by_label: dict[str, list[dict[str, Any]]]) -> dict[str, dict[str, Any]]:
     summary: dict[str, dict[str, Any]] = {}
     for label, entries in sorted(diagnostics_by_label.items()):
@@ -322,12 +329,13 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     for label, row in payload["aggregate_rows"].items():
         ci = (
             f"[{row['delta_ci_low_mean']:.4f}, {row['delta_ci_high_mean']:.4f}]"
-            if row["delta_ci_low_mean"] is not None and row["delta_ci_high_mean"] is not None
+            if row.get("delta_ci_low_mean") is not None and row.get("delta_ci_high_mean") is not None
             else "-"
         )
         lines.append(
             f"| {label} | {row['n_seeds']} | {row['accuracy_mean']:.4f} | {row['accuracy_min']:.4f} | "
-            f"{row['accuracy_max']:.4f} | {row['delta_mean']:.4f} | {ci} | {row['wins_mean']:.2f} | {row['losses_mean']:.2f} | {row['positive_seed_count']} |"
+            f"{row['accuracy_max']:.4f} | {row.get('delta_mean', 0.0):.4f} | {ci} | "
+            f"{row['wins_mean']:.2f} | {row['losses_mean']:.2f} | {row.get('positive_seed_count', 0)} |"
         )
     lines.extend(["", "## Seed Artifacts", ""])
     for seed, info in sorted(payload["seed_artifacts"].items()):
@@ -378,25 +386,29 @@ def run_campaign(config: CampaignConfig) -> dict[str, Any]:
         seed_payloads[int(seed)] = residual_payload
         diagnostics_paths: list[str] = []
         for candidate_label in config.candidate_labels:
-            available_labels = {str(row["label"]) for row in residual_payload["rows"]}
-            if candidate_label in available_labels:
-                paired_stats = _candidate_paired_stats(
-                    baseline_dir=baseline_dir,
-                    materialized_eval_file=materialized_eval_file,
-                    candidate_output=seed_results_dir / f"{candidate_label}.jsonl",
-                    candidate_method="rotalign_kv",
-                    bootstrap_samples=config.bootstrap_samples,
-                    bootstrap_seed=config.bootstrap_seed + int(seed) * 10_000 + sum(ord(ch) for ch in candidate_label),
-                )
-                paired_stats_by_label.setdefault(candidate_label, []).append({"seed": int(seed), **paired_stats})
-                diagnostics_json = _run_diagnostics(
-                    config=config,
-                    baseline_dir=baseline_dir,
-                    seed_results_dir=seed_results_dir,
-                    candidate_label=candidate_label,
-                )
-                diagnostics_by_label.setdefault(candidate_label, []).append(_load_json(diagnostics_json))
-                diagnostics_paths.append(str(diagnostics_json))
+            row = _candidate_row(residual_payload, candidate_label)
+            if row is None or str(row.get("status", "ok")) != "ok":
+                continue
+            candidate_output = seed_results_dir / f"{candidate_label}.jsonl"
+            if not candidate_output.exists():
+                continue
+            paired_stats = _candidate_paired_stats(
+                baseline_dir=baseline_dir,
+                materialized_eval_file=materialized_eval_file,
+                candidate_output=candidate_output,
+                candidate_method="rotalign_kv",
+                bootstrap_samples=config.bootstrap_samples,
+                bootstrap_seed=config.bootstrap_seed + int(seed) * 10_000 + sum(ord(ch) for ch in candidate_label),
+            )
+            paired_stats_by_label.setdefault(candidate_label, []).append({"seed": int(seed), **paired_stats})
+            diagnostics_json = _run_diagnostics(
+                config=config,
+                baseline_dir=baseline_dir,
+                seed_results_dir=seed_results_dir,
+                candidate_label=candidate_label,
+            )
+            diagnostics_by_label.setdefault(candidate_label, []).append(_load_json(diagnostics_json))
+            diagnostics_paths.append(str(diagnostics_json))
         seed_artifacts[int(seed)] = {
             "residual_payload": str(seed_results_dir / RESIDUAL_PAYLOAD_NAME),
             "diagnostics": diagnostics_paths,

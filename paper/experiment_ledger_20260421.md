@@ -300,31 +300,26 @@ pure GSM8K32 artifact, but still not as a promotable paper result:
 4. the next critical steps are multi-seed repetition on the same larger slice
    and one matched cross-family falsification pair
 
-`paper/gsm8k70_seed_stability_partial_20260422.md` is the first repeat-seed
-follow-up on that larger slice. It changes the read materially:
+`paper/gsm8k70_seed_stability_full_20260422.md` is the current four-seed read
+on that larger slice. It is stronger and more negative than the first partial
+repeat-seed note:
 
-- seed `0`: `0.1143` (`8/70`)
-- seed `1`: `0.0000` (`0/70`)
-- seed `1` fails numeric extraction coverage completely and collapses into
-  repeated punctuation outputs
+- seed `0`: `0.1143` (`8/70`), positive
+- seed `1`: `0.0000` (`0/70`), `checkpoint_nonfinite`
+- seed `2`: `0.0000` (`0/70`), `checkpoint_nonfinite`
+- seed `3`: `0.0286` (`2/70`), finite but below target
 
-Treat this as evidence that the live lane is currently seed-fragile, not yet a
-stable positive method. The next highest-priority question is now whether that
-collapse reflects:
+Treat this as the current stability verdict on the live same-pair lane:
 
-1. a real calibration instability
-2. a fragile learned correction family
-3. or a checkpoint-generation / evaluation bug
+1. only `1 / 4` attempted seeds is both finite and above target
+2. the repeated collapse is not random:
+   - seeds `1` and `2` both fail in the same layer-8 `V` family
+3. finite seeds can still be weak:
+   - seed `3` is numerically valid but loses to `target_alone`
 
-The local diagnosis is now sharper: the seed `1` checkpoint contains
-`2,381,056` non-finite values, so this is not just a small benchmark swing.
-The residual-sweep harness now validates checkpoints for non-finite tensors
-before evaluation so this class of failure becomes a loud calibration error
-instead of a misleading punctuation-collapse benchmark row. The new seeded
-health artifact at
-`results/gsm8k_contract_residual_seed1_health_20260422/gsm8k_contract_residual_sweep_20260421.md`
-also narrows the failure family: the first bad tensor is `W_V.8`, and the
-non-finite block extends across `quant_proj_V.8`, `quant_aux_proj_V.8`, and
-the layer-8 V-side residual-slot tensors. Treat that as the new concrete
-stability gate before spending more budget on cross-family or additive-method
-expansion.
+So the live row remains a mechanism clue, not a stable method. The next exact
+branch should stay narrow and robustness-first:
+
+1. `V`-only anchor-preserving selective precision / tail coding
+2. rerun the same GSM70 seed audit
+3. only then reopen cross-family or broader benchmark expansion
