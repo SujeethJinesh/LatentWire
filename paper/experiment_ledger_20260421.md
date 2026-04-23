@@ -1007,3 +1007,36 @@ accept zero raw live wins on this decisive surface. The next exact gate is a
 learned source-control-contrastive innovation connector, or a preliminary
 stronger-source slice selection if GSM8K70 source-alone is judged too weak to
 expose real communication.
+
+`paper/source_headroom_surface_scan_20260423.md` adds a source-headroom surface
+scanner and ranks available frozen target/source-like surfaces before connector
+training. The scan confirms GSM source-alone is a poor primary gate (`1`
+source-only win on GSM70, `1` on GSM32), while SVAMP and C2C/text surfaces have
+substantially more target-complementary headroom: SVAMP70 text relay has `26`
+source-only wins and oracle `31/70`; SVAMP70 C2C has `18` source-only wins and
+oracle `39/70`; SVAMP70 process repair has `17` source-only wins and oracle
+`38/70`; GSM70 C2C has `7` source-only wins and oracle `11/70`. A follow-up
+communication-headroom readout using GSM70 C2C as the source-like row found that
+raw dynalign overlaps C2C on `2/6` raw live wins, but both overlaps are also
+retained by raw zero-source and shuffled-source controls, so current dynalign is
+not yet a source-specific C2C-style innovation transfer.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_source_headroom_surfaces.py \
+  --surface gsm70_source_alone=target_path=results/gsm8k_contract_campaign_slice128_seed0_20260422/smoke/gsm8k32_latentwire.jsonl,source_path=results/gsm8k70_seed_repeat_full_20260422/seed0/gsm8k32_source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=gsm70_source_alone \
+  --surface svamp70_text_relay=path=results/svamp_replication_20260417/predictions/svamp70_attention_g010_pos05.jsonl,target_method=target_alone,source_method=text_to_text,eval_file=data/svamp_eval_70.jsonl,note=svamp_text_relay \
+  --surface svamp70_c2c=target_path=results/process_repair_holdout_20260421/qwen_svamp70_process_repair_strict_selector_telemetry.jsonl,source_path=results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl,target_method=target_alone,source_method=c2c_generate,note=svamp_c2c \
+  --surface gsm70_c2c=target_path=results/gsm8k_contract_campaign_slice128_seed0_20260422/smoke/gsm8k32_latentwire.jsonl,source_path=results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl,target_method=target_alone,source_method=c2c_generate,note=gsm_c2c \
+  --min-source-only 5 \
+  --output-json results/source_headroom_surfaces_20260423/headroom_surfaces.json \
+  --output-md results/source_headroom_surfaces_20260423/headroom_surfaces.md
+```
+
+Decision: before training the learned control-contrastive innovation connector,
+materialize fresh exact-ID SVAMP70 source/target/text/C2C rows in resumable
+per-method jobs. If `source_alone` or another latent-accessible source row has
+`>=5` to `10` source-only wins, use that as the first connector gate; if only
+text/C2C has headroom, use it as a teacher/upper-bound surface rather than a
+direct paper claim.
