@@ -5237,6 +5237,116 @@ def test_delta_only_memory_control_requires_delta_memory() -> None:
         )
 
 
+def test_innovation_connector_mode_validation() -> None:
+    with pytest.raises(ValueError, match="innovation_connector_mode must be one of"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            innovation_connector_mode="bad_mode",
+        )
+
+    with pytest.raises(ValueError, match="innovation_connector_mode is only supported"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_dynalign_query_resampler_replace",
+            innovation_connector_mode="perceiver_queries",
+        )
+
+    with pytest.raises(ValueError, match="requires bridge_bank_size > 0"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+            bridge_bank_size=0,
+            innovation_connector_mode="perceiver_queries",
+        )
+
+
+def test_query_innovation_perceiver_connector_fit_and_runtime_are_finite(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        quantization_correction_rank=1,
+        bridge_bank_size=2,
+        innovation_connector_mode="perceiver_queries",
+    )
+
+    base = torch.tensor(
+        [
+            [1.0, 0.0, 0.0, 1.0],
+            [0.5, 0.5, 1.0, 0.0],
+            [1.5, 0.0, 0.5, 0.5],
+        ],
+        dtype=torch.float32,
+    )
+    fitted = tr._fit_bridge_query_module_replace(
+        base,
+        base + 0.1,
+        base + 0.2,
+        base + 0.3,
+        torch.ones_like(base),
+        base + 0.4,
+        base + 0.5,
+        rank=1,
+        steps=1,
+    )
+
+    assert fitted[0].shape == (2, tr.d_t)
+    assert all(torch.isfinite(tensor).all().item() for tensor in fitted)
+    with torch.no_grad():
+        for target, tensor in zip(
+            (
+                tr.quant_query_module_slots[0],
+                tr.quant_query_module_q[0],
+                tr.quant_query_module_k[0],
+                tr.quant_query_module_v[0],
+                tr.quant_query_module_hidden[0],
+                tr.quant_query_module_K_out[0],
+                tr.quant_query_module_V_out[0],
+            ),
+            fitted,
+        ):
+            target.copy_(tensor)
+
+    equations: list[str] = []
+    original_einsum = torch.einsum
+
+    def spy_einsum(equation, *operands):
+        equations.append(equation)
+        return original_einsum(equation, *operands)
+
+    monkeypatch.setattr(translator_mod.torch, "einsum", spy_einsum)
+
+    K_base = torch.tensor([[[[1.0, 0.0]], [[1.0, 0.0]]]], dtype=torch.float32)
+    V_base = torch.tensor([[[[2.0, 0.0]], [[2.0, 0.0]]]], dtype=torch.float32)
+    out_k, out_v = tr.translate_layer(
+        K_base,
+        V_base,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_query_features=torch.ones(1, 1, tr.d_t, dtype=torch.float32),
+    )
+
+    assert out_k.shape == K_base.shape
+    assert out_v.shape == V_base.shape
+    assert torch.isfinite(out_k).all()
+    assert torch.isfinite(out_v).all()
+    assert "qr,...mr->...qm" in equations
+
+
 @pytest.mark.parametrize(
     "memory_control",
     ["combined", "no_delta", "source_only", "target_only", "delta_only", "slots_only"],

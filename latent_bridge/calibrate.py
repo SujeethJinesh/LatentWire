@@ -419,6 +419,17 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     p.add_argument(
+        "--innovation-connector-mode",
+        choices=["single_query", "perceiver_queries"],
+        default="single_query",
+        help=(
+            "Connector topology for query-innovation fitting. single_query uses the "
+            "receiver query directly over memory rows; perceiver_queries uses "
+            "bridge-bank slots as learned connector queries that first cross-attend "
+            "to source/target memory, then are read by the receiver query."
+        ),
+    )
+    p.add_argument(
         "--innovation-control-weight",
         type=float,
         default=0.0,
@@ -3399,6 +3410,7 @@ def main() -> None:
             or args.innovation_conditional_delta_memory
         ),
         innovation_conditional_delta_memory=args.innovation_conditional_delta_memory,
+        innovation_connector_mode=args.innovation_connector_mode,
         learned_fusion_dropout=args.learned_fusion_dropout,
         seed=args.seed,
     )

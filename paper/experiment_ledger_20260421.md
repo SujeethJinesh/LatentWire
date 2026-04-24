@@ -2999,3 +2999,109 @@ Next exact gate:
   - matched-vs-zero/shuffled/target-only source controls
 - require `>=14/32`, `>=2/6` clean residual IDs, at most `1` target-correct
   loss, exact ID parity, and source-control collapse before widening
+
+## 2026-04-24 - SVAMP32 Perceiver-query connector smoke
+
+Question:
+
+- does a minimal receiver-conditioned learned-query connector, inspired by
+  Q-Former/Perceiver bottlenecks, recover clean source-necessary SVAMP32
+  residual IDs where scalar/delta-memory query-innovation variants failed?
+
+Decision:
+
+- implemented a default-off `innovation_connector_mode=perceiver_queries`
+  topology for the query-innovation connector
+- trained one exact-ID SVAMP32 checkpoint with `8` learned connector queries,
+  K-only loss, target/delta memory, and zero/shuffle source-control training
+- ran the matched gate sweep only
+- did not run source-zero, source-shuffle, or target-only memory controls
+  because matched performance failed the clean residual gate
+
+Implementation:
+
+- `latent_bridge/translator.py`
+  - added `TranslatorConfig.innovation_connector_mode`
+  - added validation for supported correction family and nonzero query bank
+  - fit path: bridge-bank rows can act as learned connector queries over
+    live source/target memory before receiver-query readout
+  - runtime path mirrors the fit-time Perceiver-query topology
+- `latent_bridge/calibrate.py`
+  - added `--innovation-connector-mode`
+- tests
+  - parser coverage for the new CLI flag
+  - config validation for invalid/unsupported modes
+  - finite fit/runtime smoke with a runtime equation spy
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_perceiver_query_connector_20260424.md`
+- results manifest:
+  - `results/svamp32_perceiver_query_connector_20260424/manifest.md`
+- clean-target readout:
+  - `results/svamp32_perceiver_query_connector_20260424/perceiver_queries_w030_m010_attention_clean_targets.json`
+  - sha256: `fbccf197d063dfd133f584a0397322f2e35f6e6de710b8ec92cf5dc594335e3c`
+  - `results/svamp32_perceiver_query_connector_20260424/perceiver_queries_w030_m010_attention_clean_targets.md`
+  - sha256: `fd80e0f402bfa2e49166262d29b1950b3d2abb550bf28fc2c7b63d23e8b062e9`
+- scratch checkpoint/logs/preds:
+  - `.debug/svamp32_perceiver_query_connector_20260424/checkpoints/qwen25_to_qwen3_svamp32_perceiver_queries_w030_m010_r16_q8_seed1.pt`
+  - sha256: `ad64ffd29b5e31f029e9a4d14d75ed6bcb64906d44dc7746532f1606146712f0`
+  - `.debug/svamp32_perceiver_query_connector_20260424/preds/perceiver_queries_combined_attention_gate_sweep.jsonl`
+  - sha256: `a45d014b712f1e315210335a899cd12f18ada8d24e11c40addd53609350927e0`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_translator_core.py tests/test_calibrate_and_ablation.py -q`
+- result: `234 passed in 3.90s`
+
+Evidence:
+
+- calibration matched `6` clean residual prompts and `3`
+  target-self-preserve prompts
+- dynamic token-mixture samples: `1411`
+- average fit quality: K cosine `0.951`, V cosine `0.734`
+- matched readout status: `no_matched_gate_candidate_for_controls`
+- best row: `rotalign_kv_gate_0.15`
+- best row accuracy: `10/32`
+- clean residual recovered: `0/6`
+- teacher-only recovered: `2`
+- delta vs target self-repair: `-4`
+- target losses: `1`
+- exact ordered ID parity: true
+- numeric extraction coverage: `32/32`
+- average bytes: `397,923.75`
+- best latency among tested gates: `7.262815` seconds/example
+
+Subagent synthesis:
+
+- literature and internet-creative agents both recommended a small
+  receiver-conditioned Q-Former/Perceiver connector, citing BLIP-2, Flamingo,
+  Perceiver IO, C2C, and KV communication work as the closest design analogs
+- ablation agent recommended matched-first promotion with source-zero,
+  shuffled-source, and target-only controls only after the matched row clears
+- repo-audit agent warned that runtime integration was the main reproducibility
+  risk, so tests now assert the runtime Perceiver-query path is actually used
+
+Hypothesis update:
+
+- killed: this specific 8-query K-only Perceiver-query checkpoint as a
+  same-pair positive method row
+- weakened: learned connector queries alone are enough to recover clean
+  source-necessary residual IDs under the current query-innovation objective
+- weakened: more slot/query topology without a stronger teacher or answer-token
+  objective will overcome the target-self-repair floor
+- still alive: receiver-conditioned connectors with explicit C2C residual
+  distillation or teacher-forced answer-token objectives
+- promoted: a cheaper feasibility diagnostic before another full 32-example
+  generation sweep
+
+Next exact gate:
+
+- train/evaluate the connector on the `6` clean residual IDs with explicit C2C
+  residual distillation or teacher-forced answer-token loss
+- include matched, zero-source, shuffled-source, and target-only memory in one
+  small diagnostic
+- promote only if matched recovers at least `2/6` clean IDs, source controls
+  collapse those wins, target-self-repair IDs are preserved, and exact ID parity
+  remains true

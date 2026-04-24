@@ -298,6 +298,7 @@ class TranslatorConfig:
     innovation_conditional_target_memory: bool = False
     innovation_conditional_delta_memory: bool = False
     innovation_memory_control: str = "combined"
+    innovation_connector_mode: str = "single_query"
 
     # Fusion rule for combining target and translated K/V. 'static' keeps the
     # checkpointed scalar gates as-is; cosine-based rules attenuate translated
@@ -404,6 +405,26 @@ class TranslatorConfig:
             raise ValueError("innovation_memory_control='delta_only' requires innovation_conditional_delta_memory")
         if self.innovation_memory_control == "target_only" and not self.innovation_conditional_target_memory:
             raise ValueError("innovation_memory_control='target_only' requires innovation_conditional_target_memory")
+        valid_innovation_connector_modes = {"single_query", "perceiver_queries"}
+        if self.innovation_connector_mode not in valid_innovation_connector_modes:
+            raise ValueError(
+                "innovation_connector_mode must be one of "
+                f"{sorted(valid_innovation_connector_modes)}, got "
+                f"{self.innovation_connector_mode!r}"
+            )
+        if (
+            self.innovation_connector_mode != "single_query"
+            and self.quantization_correction
+            != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        ):
+            raise ValueError(
+                "innovation_connector_mode is only supported for "
+                "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+            )
+        if self.innovation_connector_mode == "perceiver_queries" and self.bridge_bank_size <= 0:
+            raise ValueError(
+                "innovation_connector_mode='perceiver_queries' requires bridge_bank_size > 0"
+            )
         valid_streams = {"kv", "k", "v"}
         if self.whitening_streams not in valid_streams:
             raise ValueError(f"Invalid whitening_streams: {self.whitening_streams}")
@@ -3090,6 +3111,8 @@ class RotAlignKVTranslator(nn.Module):
                     shuffle_idx_cpu[src_idx] = dst_idx[repeats]
                 shuffle_idx = shuffle_idx_cpu.to(device=qk.device)
 
+        use_perceiver_queries = self.config.innovation_connector_mode == "perceiver_queries"
+
         def module_forward(
             mem_qk: torch.Tensor,
             mem_pk: torch.Tensor,
@@ -3109,14 +3132,37 @@ class RotAlignKVTranslator(nn.Module):
                     cond_v_live = cond_v.to(device=mem_qk.device, dtype=mem_qk.dtype)
                     memory_rows.extend([mem_pk - cond_k_live, mem_pv - cond_v_live])
             live_memory = torch.stack(memory_rows, dim=1)
-            slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
-            memory = torch.cat([live_memory, slot_memory], dim=1)
             q_hidden = query @ q_proj
-            key_hidden = torch.einsum("nmd,dr->nmr", memory, k_proj)
-            value_hidden = torch.einsum("nmd,dr->nmr", memory, v_proj)
-            attn_logits = torch.einsum("nr,nmr->nm", q_hidden, key_hidden) / math.sqrt(float(rank))
-            attn = torch.softmax(attn_logits, dim=-1)
-            context = torch.einsum("nm,nmr->nr", attn, value_hidden)
+            if use_perceiver_queries:
+                key_hidden = torch.einsum("nmd,dr->nmr", live_memory, k_proj)
+                value_hidden = torch.einsum("nmd,dr->nmr", live_memory, v_proj)
+                connector_queries = slot_tokens @ q_proj
+                connector_logits = torch.einsum(
+                    "qr,nmr->nqm",
+                    connector_queries,
+                    key_hidden,
+                ) / math.sqrt(float(rank))
+                connector_attn = torch.softmax(connector_logits, dim=-1)
+                connector_context = torch.einsum(
+                    "nqm,nmr->nqr",
+                    connector_attn,
+                    value_hidden,
+                )
+                readout_logits = torch.einsum(
+                    "nr,nqr->nq",
+                    q_hidden,
+                    connector_context,
+                ) / math.sqrt(float(rank))
+                readout_attn = torch.softmax(readout_logits, dim=-1)
+                context = torch.einsum("nq,nqr->nr", readout_attn, connector_context)
+            else:
+                slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
+                memory = torch.cat([live_memory, slot_memory], dim=1)
+                key_hidden = torch.einsum("nmd,dr->nmr", memory, k_proj)
+                value_hidden = torch.einsum("nmd,dr->nmr", memory, v_proj)
+                attn_logits = torch.einsum("nr,nmr->nm", q_hidden, key_hidden) / math.sqrt(float(rank))
+                attn = torch.softmax(attn_logits, dim=-1)
+                context = torch.einsum("nm,nmr->nr", attn, value_hidden)
             hidden = F.gelu(context @ hidden_proj)
             return hidden @ out_k, hidden @ out_v
 
@@ -4703,24 +4749,66 @@ class RotAlignKVTranslator(nn.Module):
                         live_rows = []
                     else:
                         raise ValueError(f"Unknown innovation_memory_control: {memory_control}")
-                slot_memory = module_slots.to(device=x.device, dtype=x.dtype)
-                if x.ndim == 3:
-                    slot_memory = slot_memory.unsqueeze(0).unsqueeze(0).expand(x.shape[0], x.shape[1], -1, -1)
+                module_q_dev = module_q.to(device=x.device, dtype=x.dtype)
+                module_k_dev = module_k.to(device=x.device, dtype=x.dtype)
+                module_v_dev = module_v.to(device=x.device, dtype=x.dtype)
+                rank_scale = math.sqrt(float(max(1, module_q.shape[-1])))
+                q_hidden = qfeat @ module_q_dev
+                if self.config.innovation_connector_mode == "perceiver_queries":
+                    if live_rows:
+                        memory = torch.stack(live_rows, dim=-2)
+                    else:
+                        memory = torch.zeros(
+                            (*x.shape[:-1], 1, x.shape[-1]),
+                            dtype=x.dtype,
+                            device=x.device,
+                        )
+                    key_hidden = torch.einsum("...md,dr->...mr", memory, module_k_dev)
+                    value_hidden = torch.einsum("...md,dr->...mr", memory, module_v_dev)
+                    connector_queries = module_slots.to(device=x.device, dtype=x.dtype) @ module_q_dev
+                    connector_logits = torch.einsum(
+                        "qr,...mr->...qm",
+                        connector_queries,
+                        key_hidden,
+                    ) / rank_scale
+                    connector_attn = torch.softmax(connector_logits, dim=-1)
+                    connector_context = torch.einsum(
+                        "...qm,...mr->...qr",
+                        connector_attn,
+                        value_hidden,
+                    )
+                    readout_logits = torch.einsum(
+                        "...r,...qr->...q",
+                        q_hidden,
+                        connector_context,
+                    ) / rank_scale
+                    readout_attn = torch.softmax(readout_logits, dim=-1)
+                    context = torch.einsum("...q,...qr->...r", readout_attn, connector_context)
                 else:
-                    slot_memory = slot_memory.unsqueeze(0).expand(x.shape[0], -1, -1)
-                if live_rows:
-                    live_memory = torch.stack(live_rows, dim=-2)
-                    memory = torch.cat([live_memory, slot_memory], dim=-2)
-                else:
-                    if slot_memory.shape[-2] == 0:
-                        raise ValueError("innovation_memory_control='slots_only' requires bridge_bank_size > 0")
-                    memory = slot_memory
-                q_hidden = qfeat @ module_q.to(device=x.device, dtype=x.dtype)
-                key_hidden = torch.einsum("...md,dr->...mr", memory, module_k.to(device=x.device, dtype=x.dtype))
-                value_hidden = torch.einsum("...md,dr->...mr", memory, module_v.to(device=x.device, dtype=x.dtype))
-                attn_logits = torch.einsum("...r,...mr->...m", q_hidden, key_hidden) / math.sqrt(float(max(1, module_q.shape[-1])))
-                attn = torch.softmax(attn_logits, dim=-1)
-                context = torch.einsum("...m,...mr->...r", attn, value_hidden)
+                    slot_memory = module_slots.to(device=x.device, dtype=x.dtype)
+                    if x.ndim == 3:
+                        slot_memory = slot_memory.unsqueeze(0).unsqueeze(0).expand(
+                            x.shape[0],
+                            x.shape[1],
+                            -1,
+                            -1,
+                        )
+                    else:
+                        slot_memory = slot_memory.unsqueeze(0).expand(x.shape[0], -1, -1)
+                    if live_rows:
+                        live_memory = torch.stack(live_rows, dim=-2)
+                        memory = torch.cat([live_memory, slot_memory], dim=-2)
+                    else:
+                        if slot_memory.shape[-2] == 0:
+                            raise ValueError(
+                                "innovation_memory_control='slots_only' requires bridge_bank_size > 0"
+                            )
+                        memory = slot_memory
+                    key_hidden = torch.einsum("...md,dr->...mr", memory, module_k_dev)
+                    value_hidden = torch.einsum("...md,dr->...mr", memory, module_v_dev)
+                    attn_logits = torch.einsum("...r,...mr->...m", q_hidden, key_hidden) / rank_scale
+                    attn = torch.softmax(attn_logits, dim=-1)
+                    context = torch.einsum("...m,...mr->...r", attn, value_hidden)
                 hidden = F.gelu(context @ module_hidden.to(device=x.device, dtype=x.dtype))
                 module_pred = hidden @ module_out.to(device=x.device, dtype=x.dtype)
                 if self.config.quantization_correction in {"bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_anchor_tail_module_replace", "bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_query_resampler_replace", "bridge_ridge_qk_dynalign_query_innovation_resampler_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_query_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace"}:
