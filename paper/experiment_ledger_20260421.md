@@ -3105,3 +3105,100 @@ Next exact gate:
 - promote only if matched recovers at least `2/6` clean IDs, source controls
   collapse those wins, target-self-repair IDs are preserved, and exact ID parity
   remains true
+
+## 2026-04-24 - SVAMP32 teacher-forced connector diagnostic
+
+Question:
+
+- does the failed 8-query Perceiver connector checkpoint contain hidden
+  teacher-forced source-specific answer evidence on the six clean SVAMP32
+  residual IDs?
+
+Decision:
+
+- implemented a standalone answer-margin diagnostic instead of running another
+  full generation sweep
+- scored gold numeric continuations against target-alone wrong numeric
+  distractors under matched, zero-source, shuffled-source, target-only, and
+  slots-only controls
+- killed this checkpoint as a source-necessary positive row
+
+Implementation:
+
+- `scripts/analyze_svamp32_teacher_forced_connector_diagnostic.py`
+  - loads a fitted `RotAlignKVTranslator`
+  - reuses the existing fused prefix-state and continuation logprob path
+  - writes exact-ID JSON and Markdown artifacts
+  - records per-control source IDs, margins, bytes, and gate status
+- `tests/test_analyze_svamp32_teacher_forced_connector_diagnostic.py`
+  - covers continuation-template validation and summary gate accounting
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_teacher_forced_connector_diagnostic_20260424.md`
+- results manifest:
+  - `results/svamp32_teacher_forced_connector_diagnostic_20260424/manifest.md`
+- clean-only diagnostic:
+  - `results/svamp32_teacher_forced_connector_diagnostic_20260424/perceiver_queries_gate015_answer_margin_clean.json`
+  - sha256: `3e67de34ca7121cc803bc10bad78b1b3aab4e2857efd8654eab6655132f693a9`
+  - `results/svamp32_teacher_forced_connector_diagnostic_20260424/perceiver_queries_gate015_answer_margin_clean.md`
+  - sha256: `098cd43ddddc9e269f357699260880cacab3cc4925851035db90323107ccb48d`
+- clean plus target-self diagnostic:
+  - `results/svamp32_teacher_forced_connector_diagnostic_20260424/perceiver_queries_gate015_answer_margin_clean_self.json`
+  - sha256: `47443a71295606330e26911777ed4b496f390506538f943695e2e1d6df746c0c`
+  - `results/svamp32_teacher_forced_connector_diagnostic_20260424/perceiver_queries_gate015_answer_margin_clean_self.md`
+  - sha256: `6bf0367b38a34621508ebb8c4e40209462ac7107c432914d650a0ea584be6903`
+- scratch log:
+  - `.debug/svamp32_teacher_forced_connector_diagnostic_20260424/logs/perceiver_queries_gate015_answer_margin_clean_self.log`
+  - sha256: `ebecf85e36ff89b93ba15b947eaf889ecb30af1ac728c43b01ae691c23d182b0`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_teacher_forced_connector_diagnostic.py -q`
+- result: `2 passed in 0.01s`
+
+Evidence:
+
+- clean residual IDs scored: `6`
+- target-self-repair IDs scored: `3`
+- matched-positive clean IDs: `2`
+- matched-only clean IDs: `0`
+- control-leak clean IDs: `2`
+- mean matched margin: `-3.764944`
+- mean best-control margin: `-2.272635`
+- mean matched-minus-control margin: `-1.492309`
+- the two matched-positive clean IDs were `aee922049c757331` and
+  `e3ab8666238a289e`, but both had stronger zero-source margins than matched
+  source margins
+
+Subagent synthesis:
+
+- literature and internet-creative agents recommended teacher-forced
+  source-control answer margins before another generation sweep
+- ablation agent recommended the minimal decisive controls: matched,
+  zero-source, shuffled-source, target-only, and slots-only
+- repo-audit agent recommended a standalone script and explicit artifact
+  manifests to keep the diagnostic reproducible
+
+Hypothesis update:
+
+- killed: this Perceiver-query checkpoint contains hidden matched-only answer
+  signal on the clean residual IDs
+- killed: another full generation sweep from this checkpoint is likely to
+  produce a source-necessary positive row
+- weakened: K-only Perceiver-query transport under the current objective is
+  enough to create a usable residual channel before answer-token supervision
+- still alive: receiver-conditioned connectors with direct answer-token or C2C
+  residual objectives and source-destroying controls
+- promoted: controlled answer-token microfit as the next architecture gate
+
+Next exact gate:
+
+- do not widen benchmarks or run seed repeats for this killed checkpoint
+- train a small answer-token or C2C residual microfit on the six clean residual
+  IDs plus target-self-preserve IDs
+- evaluate with the new teacher-forced diagnostic before greedy generation
+- promote only if matched-only positive margins appear on at least `2/6` clean
+  IDs and collapse under zero-source, shuffled-source, target-only, and
+  slots-only controls
