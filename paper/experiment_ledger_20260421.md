@@ -3304,3 +3304,86 @@ Next exact gate:
   answer-margin sidecar with the same `>=2/6` matched-only gate
 - do not widen benchmark scope until a live row clears the teacher-forced
   source-necessity gate
+
+## 2026-04-24 - SVAMP32 source margin audit
+
+Question:
+
+- do the six clean SVAMP32 residual IDs contain source-side answer evidence
+  under source-alone teacher-forced gold-vs-target-wrong numeric margins?
+
+Decision:
+
+- implemented `scripts/analyze_svamp32_source_margin_audit.py`
+- scored source and target model answer margins on the six clean residual IDs
+  plus three target-self-repair IDs
+- separated source/text final-answer correctness from teacher-forced source
+  answer margins
+- killed source-final-answer and source-margin informativeness for this
+  same-pair Qwen2.5-0.5B to Qwen3-0.6B surface
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_source_margin_audit_20260424.md`
+- results manifest:
+  - `results/svamp32_source_margin_audit_20260424/manifest.md`
+- diagnostic:
+  - `results/svamp32_source_margin_audit_20260424/source_margin_clean_self.json`
+  - sha256: `16ab06a97024d61cbb6efb3b1cfbebacc9f542bab25862e1671b5e4ec7a919ff`
+  - `results/svamp32_source_margin_audit_20260424/source_margin_clean_self.md`
+  - sha256: `9bb5a859eff08ff0727ab6fd8d57bc37b38dbd8dae0f072b725e6fb609f9b91b`
+- scratch log:
+  - `.debug/svamp32_source_margin_audit_20260424/logs/source_margin_clean_self.log`
+  - sha256: `ce606e110ab7f35096ea799d52bedeeed070d8590d0b3db1af789f11b5ab03c3`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_margin_audit.py -q`
+- result: `3 passed in 0.02s`
+- `./venv_arm64/bin/python -m pytest -q`
+- result: `657 passed in 25.85s`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_margin_audit.py`
+- result: pass
+
+Evidence:
+
+- clean residual IDs scored: `6`
+- target-self-repair IDs scored: `3`
+- source/text final clean correct: `0/6`
+- source-margin positive clean IDs: `2/6`
+- source-margin positive+advantage clean IDs: `0/6`
+- mean source margin: `-3.065174`
+- mean target margin: `-3.624139`
+- mean source-minus-target margin: `0.558965`
+- the only source-positive clean IDs were `aee922049c757331` and
+  `e3ab8666238a289e`, and both had stronger target-alone margins
+
+Subagent synthesis:
+
+- source-audit and ablation agents converged on the same pass/fail rule:
+  promote only if source is positive and beats target/control evidence on at
+  least `2/6` clean residual IDs
+- repo-audit agent emphasized exact-ID provenance and numeric coverage before
+  scoring any source-informativeness claim
+- creative internet agent suggested latent arithmetic-syndrome sidecars, but
+  only as a new branch with zero/shuffle controls
+
+Hypothesis update:
+
+- killed: source/text final-answer relay is informative on the clean residual
+  IDs
+- killed: source answer-token margins justify more same-pair connector tuning
+- weakened: standalone answer-margin sidecar for this pair
+- still alive: C2C/cache-residual distillation because C2C remains `16/32`
+  while source final answers and source margins fail
+- promoted: stronger-source/cross-family source-informativeness falsification
+  or a C2C-residual distillation gate
+
+Next exact gate:
+
+- do not run another same-pair Qwen2.5-0.5B to Qwen3-0.6B calibration-proxy
+  connector
+- run a strict stronger-source or cross-family source-informativeness gate on
+  the same frozen SVAMP32 IDs, or implement a C2C-residual distillation sidecar
+  that must clear the same `>=2/6` clean matched-vs-control threshold
