@@ -670,5 +670,12 @@
     "path": "references/452_syndrome_sidecar_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for C2C-derived latent syndrome sidecars using target candidate pools as decoder side information, with source-control residue gates."
+  },
+  {
+    "num": 453,
+    "slug": "learned_syndrome_probe_refs",
+    "path": "references/453_learned_syndrome_probe_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for cross-fitted learned query-bottleneck syndrome predictors, source-token controls, and verifier-gated repair followups after pooled hidden readout failed."
   }
 ]

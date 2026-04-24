@@ -3670,3 +3670,104 @@ Next exact gate:
 - require matched `>=14/32`, target-self `3/3`, clean source-necessary
   `>=2/6`, numeric coverage `>=31/32`, exact ID parity, and all
   source-destroying controls `0/6` clean
+
+## 2026-04-24 - SVAMP32 learned syndrome probe
+
+Gate:
+
+- test whether a cross-fitted learned query bottleneck over source token states
+  can recover the C2C-derived residue syndrome after pooled hidden readout
+  failed
+- keep the strict target-side candidate pool and require matched `>=14/32`,
+  target-self `3/3`, clean source-necessary `>=2/6`, exact ID parity, numeric
+  coverage `>=31/32`, and zero/shuffle/label-shuffle/same-norm-noise/
+  target-only/slots-only clean union `0/6`
+
+Decision:
+
+- implemented `scripts/analyze_svamp32_learned_syndrome_probe.py`
+- added focused tests in `tests/test_analyze_svamp32_learned_syndrome_probe.py`
+- ran two source-token query bottleneck variants:
+  - `q=4`, `h=16`, `8` outer folds, `80` epochs
+  - `q=8`, `h=64`, `8` outer folds, `120` epochs
+- weakened the learned source-token syndrome branch; neither variant reaches
+  the target-only floor or recovers any clean source-necessary IDs
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_learned_syndrome_probe_20260424.md`
+- results manifest:
+  - `results/svamp32_learned_syndrome_probe_20260424/manifest.md`
+- learned `q=4`, `h=16` probe:
+  - `results/svamp32_learned_syndrome_probe_20260424/qbottleneck_q4_h16_f8_seed1_targetpool_probe.json`
+  - sha256: `8115eeabe5c98d6699c3aad7dd477bcb1740c84fbd8d7f4927922106f9193908`
+- learned `q=8`, `h=64` probe:
+  - `results/svamp32_learned_syndrome_probe_20260424/qbottleneck_q8_h64_f8_seed1_targetpool_probe.json`
+  - sha256: `ae61f6f4c4947a5b6596537c75a2ffe2b7733735ed3ea2fbfe72b76424f43052`
+- references:
+  - `references/453_learned_syndrome_probe_refs.md`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_learned_syndrome_probe.py -q`
+- result: `3 passed in 0.95s`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_learned_syndrome_probe.py`
+- result: pass
+
+Evidence:
+
+- `q=4`, `h=16`, `8`-fold source-token query bottleneck:
+  - status: `learned_syndrome_probe_fails_gate`
+  - matched: `10/32`
+  - target-only fallback: `14/32`
+  - zero-source: `11/32`
+  - shuffled-source: `10/32`
+  - label-shuffled: `13/32`
+  - same-norm-noise: `14/32`
+  - slots-only: `8/32`
+  - clean source-necessary: `0/6`
+  - target-self: `2/3`
+  - teacher numeric coverage: `32/32`
+- `q=8`, `h=64`, `8`-fold source-token query bottleneck:
+  - status: `learned_syndrome_probe_fails_gate`
+  - matched: `9/32`
+  - target-only fallback: `14/32`
+  - zero-source: `14/32`
+  - shuffled-source: `10/32`
+  - label-shuffled: `13/32`
+  - same-norm-noise: `14/32`
+  - slots-only: `8/32`
+  - clean source-necessary: `0/6`
+  - target-self: `2/3`
+  - teacher numeric coverage: `32/32`
+
+Subagent synthesis:
+
+- repo agent recommended a sibling analyzer around the existing syndrome
+  decoder rather than editing `translator.py`
+- ablation agent recommended adding token-order/noise-style source-destroying
+  controls and keeping the clean-control union hard at `0/6`
+- literature agent recommended query bottlenecks, cross-fitting, and verifier
+  gates; the verifier branch is lower priority until a source-derived clean
+  signal exists
+
+Hypothesis update:
+
+- weakened: source-token query bottlenecks recover the C2C residue syndrome
+  from frozen Qwen2.5-0.5B source states
+- promoted: C2C-residual distillation or another C2C-mechanism-derived source
+  signal as the next exact branch
+- rejected for now: verifier-gated repair, because there is no source-derived
+  clean signal to gate
+- still alive: C2C-derived syndrome sidecar as a strict bound and target for
+  the next predictor
+
+Next exact gate:
+
+- inspect C2C artifact/cache availability and implement the smallest
+  C2C-residual distillation probe that predicts the same compact residue from
+  deployable source/cache signals rather than C2C final answers
+- require matched `>=14/32`, target-self `3/3`, clean source-necessary
+  `>=2/6`, numeric coverage `>=31/32`, exact ID parity, and all
+  source-destroying controls `0/6` clean
