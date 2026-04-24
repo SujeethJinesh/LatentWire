@@ -97,7 +97,9 @@ def _numeric_answer(answers: Sequence[str]) -> str:
     raise ValueError(f"Could not extract numeric answer from {answers!r}")
 
 
-def _prediction_numeric(row: dict[str, Any]) -> str | None:
+def _prediction_numeric(row: dict[str, Any] | None) -> str | None:
+    if row is None:
+        return None
     normalized = str(row.get("normalized_prediction") or "").strip()
     if normalized:
         return normalized
@@ -114,6 +116,16 @@ def _bool_arg(value: str | None) -> bool | None:
     if value is None:
         return None
     return value.lower() == "true"
+
+
+def _torch_dtype(name: str):
+    import torch
+
+    return {
+        "float32": torch.float32,
+        "float16": torch.float16,
+        "bfloat16": torch.bfloat16,
+    }[name]
 
 
 def _mean(values: Sequence[float]) -> float:
@@ -169,6 +181,12 @@ def _summarize_rows(
         row for row in clean_rows if bool(row.get("source_alone_correct"))
     ]
     text_final_clean = [row for row in clean_rows if bool(row.get("text_to_text_correct"))]
+    source_final_unknown = [
+        row for row in clean_rows if row.get("source_alone_correct") is None
+    ]
+    text_final_unknown = [
+        row for row in clean_rows if row.get("text_to_text_correct") is None
+    ]
     source_text_union_clean = [
         row
         for row in clean_rows
@@ -196,8 +214,10 @@ def _summarize_rows(
         "target_self_ids_scored": len(target_self_rows),
         "source_final_clean_correct_count": len(source_final_clean),
         "source_final_clean_correct_ids": [row["example_id"] for row in source_final_clean],
+        "source_final_clean_unknown_count": len(source_final_unknown),
         "text_final_clean_correct_count": len(text_final_clean),
         "text_final_clean_correct_ids": [row["example_id"] for row in text_final_clean],
+        "text_final_clean_unknown_count": len(text_final_unknown),
         "source_text_union_clean_correct_count": len(source_text_union_clean),
         "source_text_union_clean_correct_ids": [
             row["example_id"] for row in source_text_union_clean
@@ -237,6 +257,8 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- status: `{payload['status']}`",
         f"- clean IDs scored: `{summary['clean_ids_scored']}`",
         f"- source/text final clean correct: `{summary['source_text_union_clean_correct_count']}/{summary['clean_ids_scored']}`",
+        f"- source final unknown: `{summary['source_final_clean_unknown_count']}/{summary['clean_ids_scored']}`",
+        f"- text final unknown: `{summary['text_final_clean_unknown_count']}/{summary['clean_ids_scored']}`",
         f"- source-margin positive clean IDs: `{summary['source_margin_positive_clean_count']}/{summary['clean_ids_scored']}`",
         f"- source-margin positive+advantage clean IDs: `{summary['source_margin_positive_advantage_clean_count']}/{summary['clean_ids_scored']}`",
         f"- mean source margin: `{summary['mean_source_margin_clean']:.6f}`",
@@ -300,12 +322,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--eval-file", required=True)
     parser.add_argument("--target-jsonl", required=True)
     parser.add_argument("--teacher-jsonl", required=True)
-    parser.add_argument("--source-jsonl", required=True)
-    parser.add_argument("--text-jsonl", required=True)
+    parser.add_argument("--source-jsonl")
+    parser.add_argument("--text-jsonl")
     parser.add_argument("--target-set-json", required=True)
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
     parser.add_argument("--device", default="mps")
+    parser.add_argument("--dtype", choices=["float32", "float16", "bfloat16"], default="float32")
     parser.add_argument("--source-reasoning-mode", default="brief_analysis")
     parser.add_argument("--source-use-chat-template", action="store_true")
     parser.add_argument("--target-use-chat-template", action="store_true")
@@ -326,8 +349,8 @@ def main(argv: list[str] | None = None) -> None:
     eval_path = _resolve(args.eval_file)
     target_path = _resolve(args.target_jsonl)
     teacher_path = _resolve(args.teacher_jsonl)
-    source_path = _resolve(args.source_jsonl)
-    text_path = _resolve(args.text_jsonl)
+    source_path = _resolve(args.source_jsonl) if args.source_jsonl else None
+    text_path = _resolve(args.text_jsonl) if args.text_jsonl else None
     target_set_path = _resolve(args.target_set_json)
     output_json = _resolve(args.output_json)
     output_md = _resolve(args.output_md)
@@ -343,8 +366,16 @@ def main(argv: list[str] | None = None) -> None:
 
     target_records = _by_id(_method_records(target_path, "target_alone"))
     teacher_records = _by_id(_method_records(teacher_path, "c2c_generate"))
-    source_records = _by_id(_method_records(source_path, "source_alone"))
-    text_records = _by_id(_method_records(text_path, "text_to_text"))
+    source_records = (
+        _by_id(_method_records(source_path, "source_alone"))
+        if source_path is not None
+        else {}
+    )
+    text_records = (
+        _by_id(_method_records(text_path, "text_to_text"))
+        if text_path is not None
+        else {}
+    )
     target_ids = _load_target_ids(target_set_path)
     scored_ids = list(target_ids["clean_residual_targets"])
     if args.score_target_self:
@@ -362,15 +393,20 @@ def main(argv: list[str] | None = None) -> None:
 
     source_enable_thinking = _bool_arg(args.source_enable_thinking)
     target_enable_thinking = _bool_arg(args.target_enable_thinking)
+    dtype = _torch_dtype(str(args.dtype))
     print(f"Loading source model: {args.source_model}", flush=True)
     source_tokenizer = AutoTokenizer.from_pretrained(args.source_model)
     source_model = (
-        AutoModelForCausalLM.from_pretrained(args.source_model).to(args.device).eval()
+        AutoModelForCausalLM.from_pretrained(args.source_model, torch_dtype=dtype)
+        .to(args.device)
+        .eval()
     )
     print(f"Loading target model: {args.target_model}", flush=True)
     target_tokenizer = AutoTokenizer.from_pretrained(args.target_model)
     target_model = (
-        AutoModelForCausalLM.from_pretrained(args.target_model).to(args.device).eval()
+        AutoModelForCausalLM.from_pretrained(args.target_model, torch_dtype=dtype)
+        .to(args.device)
+        .eval()
     )
 
     rows: list[dict[str, Any]] = []
@@ -382,8 +418,10 @@ def main(argv: list[str] | None = None) -> None:
         text_row = text_records.get(example_id)
         if target_row is None or teacher_row is None:
             raise ValueError(f"Missing target/teacher record for {example_id}")
-        if source_row is None or text_row is None:
-            raise ValueError(f"Missing source/text record for {example_id}")
+        if source_path is not None and source_row is None:
+            raise ValueError(f"Missing source record for {example_id}")
+        if text_path is not None and text_row is None:
+            raise ValueError(f"Missing text-to-text record for {example_id}")
         gold_answer = _numeric_answer(example.answers)
         distractor_answer = _prediction_numeric(target_row) or ""
         if not distractor_answer or distractor_answer == gold_answer:
@@ -463,8 +501,12 @@ def main(argv: list[str] | None = None) -> None:
                 "text_to_text_prediction": _prediction_numeric(text_row),
                 "target_alone_correct": bool(target_row.get("correct")),
                 "teacher_correct": bool(teacher_row.get("correct")),
-                "source_alone_correct": bool(source_row.get("correct")),
-                "text_to_text_correct": bool(text_row.get("correct")),
+                "source_alone_correct": (
+                    bool(source_row.get("correct")) if source_row is not None else None
+                ),
+                "text_to_text_correct": (
+                    bool(text_row.get("correct")) if text_row is not None else None
+                ),
                 "source_gold_logprob": float(source_gold),
                 "source_distractor_logprob": float(source_distractor),
                 "source_margin": source_margin,
@@ -499,13 +541,14 @@ def main(argv: list[str] | None = None) -> None:
             "eval_file": _display_path(eval_path),
             "target_jsonl": _display_path(target_path),
             "teacher_jsonl": _display_path(teacher_path),
-            "source_jsonl": _display_path(source_path),
-            "text_jsonl": _display_path(text_path),
+            "source_jsonl": _display_path(source_path) if source_path else None,
+            "text_jsonl": _display_path(text_path) if text_path else None,
             "target_set_json": _display_path(target_set_path),
         },
         "config": {
             "source_model": args.source_model,
             "target_model": args.target_model,
+            "dtype": args.dtype,
             "source_reasoning_mode": args.source_reasoning_mode,
             "source_use_chat_template": bool(args.source_use_chat_template),
             "target_use_chat_template": bool(args.target_use_chat_template),

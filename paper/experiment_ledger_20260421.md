@@ -3387,3 +3387,102 @@ Next exact gate:
 - run a strict stronger-source or cross-family source-informativeness gate on
   the same frozen SVAMP32 IDs, or implement a C2C-residual distillation sidecar
   that must clear the same `>=2/6` clean matched-vs-control threshold
+
+## 2026-04-24 - SVAMP32 stronger-source margin audit
+
+Question:
+
+- was the failed Qwen2.5-0.5B to Qwen3-0.6B source-margin audit just a weak
+  source problem, or do stronger Qwen sources still fail to expose the six
+  clean SVAMP32 residual IDs?
+
+Decision:
+
+- extended `scripts/analyze_svamp32_source_margin_audit.py` with optional
+  source/text provenance and `--dtype`
+- added `scripts/materialize_generation_id_subset.py` for exact stable-ID
+  generation subsets
+- ran stronger-source audits for `Qwen/Qwen2.5-1.5B-Instruct` and
+  `Qwen/Qwen2.5-7B-Instruct`
+- killed source-final/source-margin stronger-source escalation as the next
+  method path because the strongest source still exposes only isolated
+  `1/6` clean signals per channel
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_stronger_source_margin_audit_20260424.md`
+- results manifest:
+  - `results/svamp32_stronger_source_margin_audit_20260424/manifest.md`
+- 1.5B final audit:
+  - `results/svamp32_stronger_source_margin_audit_20260424/qwen25_15b_to_qwen3_06b_source_margin_clean_self_with_sourcegen.json`
+  - sha256: `2c0b067317e6e47235a167a50f9a609aff02e2c4105c30c3c630f63bf895fa58`
+- 7B final audit:
+  - `results/svamp32_stronger_source_margin_audit_20260424/qwen25_7b_to_qwen3_06b_source_margin_clean_self_with_source_text.json`
+  - sha256: `59bffba1dd9bd06155bab537a888bdc4bac92eaf963258aebc19363cfe806e97`
+- exact clean+self subset:
+  - `results/svamp32_stronger_source_margin_audit_20260424/svamp32_clean_self_eval.jsonl`
+  - sha256: `07784ad26e52e51a1c6080b71294543bf420854b67e4851f5fe6a6dcf0e30995`
+- 7B source/text subset predictions:
+  - `results/svamp32_stronger_source_margin_audit_20260424/qwen25_7b_source_alone_clean_self.jsonl`
+  - sha256: `0163af711efba78a106a54a85ab10ebab22d9bb5612c4b4f4df40302554a3774`
+  - `results/svamp32_stronger_source_margin_audit_20260424/qwen25_7b_text_to_text_clean_self.jsonl`
+  - sha256: `1261e702f8e9e089ffe1cdf2f43282dfba8c93ddb105479575e726a37dd0f860`
+- 1.5B full-32 source baseline:
+  - `results/svamp32_stronger_source_baselines_20260424/source_alone.jsonl`
+  - sha256: `24c00515dec342c44b52267b5a9d269f6ee92b2f7ba0676bb30db4ccd535a228`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_margin_audit.py tests/test_materialize_generation_id_subset.py -q`
+- result: `6 passed in 0.03s`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_margin_audit.py scripts/materialize_generation_id_subset.py`
+- result: pass
+- `./venv_arm64/bin/python -m pytest -q`
+- result: `660 passed in 25.35s`
+- JSON artifact validation
+- result: pass
+- `git diff --check`
+- result: pass
+
+Evidence:
+
+- 1.5B source-final full SVAMP32: `3/32`
+- 1.5B source-final clean residual: `0/6`
+- 1.5B source-margin positive+advantage clean IDs: `1/6`
+- 7B source-final clean residual: `0/6`
+- 7B text-relay clean residual: `1/6`
+- 7B source-margin positive+advantage clean IDs: `1/6`
+- 7B positive-margin ID: `6e9745b37ab6fc45`
+- 7B text-relay clean ID: `e3ab8666238a289e`
+
+Subagent synthesis:
+
+- source-pair agent recommended the 1.5B stronger-source gate and exact pass
+  thresholds
+- ablation agent recommended attaching source/text final-answer provenance and
+  treating prompt/template sensitivity as a follow-up only if this gate cleared
+- repo-audit agent recommended optional source/text JSONL fields so margin-only
+  audits do not depend on stale source artifacts
+- creative/literature agent recommended a Wyner-Ziv latent syndrome sidecar as
+  the next branch if stronger-source answer evidence remained weak
+
+Hypothesis update:
+
+- killed: source scale alone creates a source-answer or source-margin surface
+  strong enough for the current clean SVAMP32 residual IDs
+- killed: source-final copying is the right next positive-method path
+- weakened: stronger-source text relay as a baseline branch; it gets only
+  `1/6` clean on the 7B subset
+- revived weakly: one clean ID has robust source-margin advantage under 1.5B
+  and 7B sources
+- promoted: C2C-residual distillation or source-control syndrome sidecar,
+  because C2C remains the only signal with `16/32` headroom
+
+Next exact gate:
+
+- implement a C2C-residual or latent-syndrome sidecar that uses target
+  candidate pools as decoder side information
+- require `>=2/6` clean residual IDs, matched source beating zero/shuffle/
+  target-only/slots-only controls, and preservation of the `>=14/32`
+  target-self/self-repair floor

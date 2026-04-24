@@ -1,0 +1,25 @@
+{
+  "date": "2026-04-24",
+  "eval_file": "results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl",
+  "eval_file_sha256": "90093683765363baf86c5402d66d7b4641ef22e4957c0de80ff6768da3968b64",
+  "id_fields": [
+    "clean_residual_targets",
+    "target_self_repair"
+  ],
+  "output_jsonl": "results/svamp32_stronger_source_margin_audit_20260424/svamp32_clean_self_eval.jsonl",
+  "output_n": 9,
+  "output_sha256": "07784ad26e52e51a1c6080b71294543bf420854b67e4851f5fe6a6dcf0e30995",
+  "selected_ids": [
+    "13cb77b698eeadb5",
+    "1d50b408c8f5cd2c",
+    "2de1549556000830",
+    "6e9745b37ab6fc45",
+    "aee922049c757331",
+    "e3ab8666238a289e",
+    "4c84ebf42812703b",
+    "4d780f825bb8541c",
+    "de1bf4d142544e5b"
+  ],
+  "target_set_json": "results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json",
+  "target_set_sha256": "9f9e3faef2a9d7632be65e3ef99e8af8ec2cb0576fa0d4fa926b1f1772daf3f0"
+}

@@ -1,0 +1,314 @@
+{
+  "artifacts": {
+    "eval_file": "results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl",
+    "source_jsonl": "results/svamp32_stronger_source_baselines_20260424/source_alone.jsonl",
+    "target_jsonl": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl",
+    "target_set_json": "results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json",
+    "teacher_jsonl": "results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl",
+    "text_jsonl": null
+  },
+  "config": {
+    "continuation_template": " {answer}",
+    "min_margin_delta": 0.0,
+    "source_enable_thinking": false,
+    "source_model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "source_reasoning_mode": "brief_analysis",
+    "source_use_chat_template": true,
+    "target_enable_thinking": false,
+    "target_model": "Qwen/Qwen3-0.6B",
+    "target_use_chat_template": true
+  },
+  "date": "2026-04-24",
+  "ids": {
+    "clean_residual_targets": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "e3ab8666238a289e"
+    ],
+    "target_self_repair": [
+      "4c84ebf42812703b",
+      "4d780f825bb8541c",
+      "de1bf4d142544e5b"
+    ],
+    "teacher_only": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "4c84ebf42812703b",
+      "4d780f825bb8541c",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "de1bf4d142544e5b",
+      "e3ab8666238a289e"
+    ]
+  },
+  "rows": [
+    {
+      "distractor_answer": "46",
+      "example_id": "13cb77b698eeadb5",
+      "gold_answer": "8142",
+      "index": 12,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_alone_correct": false,
+      "source_alone_prediction": "7902",
+      "source_distractor_logprob": -25.805009841918945,
+      "source_gold_logprob": -33.40388107299805,
+      "source_margin": -7.598871231079102,
+      "source_minus_target_margin": 5.418966293334961,
+      "status": "no_source_margin_advantage",
+      "target_alone_correct": false,
+      "target_distractor_logprob": -28.629497528076172,
+      "target_gold_logprob": -41.647335052490234,
+      "target_margin": -13.017837524414062,
+      "target_prediction": "46",
+      "teacher_correct": true,
+      "teacher_prediction": "luke played 177 rounds of the trivia game, so he scored a total of 177 x 46 = 8142 points. to find out how many points he scored in the game, we need to add the points he gained in each round to the total points he scored in",
+      "text_to_text_correct": null,
+      "text_to_text_prediction": null
+    },
+    {
+      "distractor_answer": "1",
+      "example_id": "1d50b408c8f5cd2c",
+      "gold_answer": "949",
+      "index": 6,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_alone_correct": false,
+      "source_alone_prediction": "246",
+      "source_distractor_logprob": -18.00993537902832,
+      "source_gold_logprob": -22.480831146240234,
+      "source_margin": -4.470895767211914,
+      "source_minus_target_margin": 7.133256912231445,
+      "status": "no_source_margin_advantage",
+      "target_alone_correct": false,
+      "target_distractor_logprob": -20.207073211669922,
+      "target_gold_logprob": -31.81122589111328,
+      "target_margin": -11.60415267944336,
+      "target_prediction": "1",
+      "teacher_correct": true,
+      "teacher_prediction": "on the previous day, there were 703 visitors. on the current day, there were 246 visitors. in total, there were 703 + 246 = 949 visitors. since there are 25 days in a year, there were 949",
+      "text_to_text_correct": null,
+      "text_to_text_prediction": null
+    },
+    {
+      "distractor_answer": "33",
+      "example_id": "2de1549556000830",
+      "gold_answer": "39",
+      "index": 14,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_alone_correct": false,
+      "source_alone_prediction": "3",
+      "source_distractor_logprob": -23.727867126464844,
+      "source_gold_logprob": -32.49298095703125,
+      "source_margin": -8.765113830566406,
+      "source_minus_target_margin": 0.575653076171875,
+      "status": "no_source_margin_advantage",
+      "target_alone_correct": false,
+      "target_distractor_logprob": -31.516517639160156,
+      "target_gold_logprob": -40.85728454589844,
+      "target_margin": -9.340766906738281,
+      "target_prediction": "33",
+      "teacher_correct": true,
+      "teacher_prediction": "the frog jumped 33 inches farther than the grasshopper, so the frog jumped 9 + 33 = 42 inches. the mouse jumped 3 inches lesser than the frog, so the mouse jumped 42 - 3 = 39 inches. #### 39 the answer",
+      "text_to_text_correct": null,
+      "text_to_text_prediction": null
+    },
+    {
+      "distractor_answer": "600",
+      "example_id": "6e9745b37ab6fc45",
+      "gold_answer": "61",
+      "index": 29,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_alone_correct": false,
+      "source_alone_prediction": "661",
+      "source_distractor_logprob": -22.496618270874023,
+      "source_gold_logprob": -20.21854019165039,
+      "source_margin": 2.278078079223633,
+      "source_minus_target_margin": 10.571968078613281,
+      "status": "source_positive_advantage",
+      "target_alone_correct": false,
+      "target_distractor_logprob": -27.274263381958008,
+      "target_gold_logprob": -35.568153381347656,
+      "target_margin": -8.293889999389648,
+      "target_prediction": "600",
+      "teacher_correct": true,
+      "teacher_prediction": "if there were 600 visitors the previous day, and 661 visitors came to the buckingham palace on that day, then there were 661 - 600 = 61 more visitors than the previous day. #### 61 the answer is: 61",
+      "text_to_text_correct": null,
+      "text_to_text_prediction": null
+    },
+    {
+      "distractor_answer": "17",
+      "example_id": "aee922049c757331",
+      "gold_answer": "1",
+      "index": 5,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_alone_correct": false,
+      "source_alone_prediction": "4",
+      "source_distractor_logprob": -26.57730484008789,
+      "source_gold_logprob": -18.927480697631836,
+      "source_margin": 7.649824142456055,
+      "source_minus_target_margin": -6.872936248779297,
+      "status": "no_source_margin_advantage",
+      "target_alone_correct": false,
+      "target_distractor_logprob": -33.94738006591797,
+      "target_gold_logprob": -19.424619674682617,
+      "target_margin": 14.522760391235352,
+      "target_prediction": "17",
+      "teacher_correct": true,
+      "teacher_prediction": "dan has $ 4. he bought a candy bar for $ 8, so he has $ 4 - $ 8 = -$ 4 left. his friend gave him $ 5, so he now has $ -$ 4 + $ 5 = $ 1 left. #### 1 the",
+      "text_to_text_correct": null,
+      "text_to_text_prediction": null
+    },
+    {
+      "distractor_answer": "4",
+      "example_id": "e3ab8666238a289e",
+      "gold_answer": "1",
+      "index": 13,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "source_alone_correct": false,
+      "source_alone_prediction": "3",
+      "source_distractor_logprob": -19.29561424255371,
+      "source_gold_logprob": -17.123380661010742,
+      "source_margin": 2.1722335815429688,
+      "source_minus_target_margin": -3.8168163299560547,
+      "status": "no_source_margin_advantage",
+      "target_alone_correct": false,
+      "target_distractor_logprob": -26.814592361450195,
+      "target_gold_logprob": -20.825542449951172,
+      "target_margin": 5.989049911499023,
+      "target_prediction": "4",
+      "teacher_correct": true,
+      "teacher_prediction": "there were 3 birds and 4 storks sitting on the fence. after 2 more birds joined, there were a total of 3 + 2 = 5 birds sitting on the fence. there were 4 storks sitting on the fence. so, there are 5 - 4 = 1",
+      "text_to_text_correct": null,
+      "text_to_text_prediction": null
+    },
+    {
+      "distractor_answer": "2",
+      "example_id": "4c84ebf42812703b",
+      "gold_answer": "10",
+      "index": 10,
+      "labels": [
+        "target_self_repair"
+      ],
+      "source_alone_correct": false,
+      "source_alone_prediction": "2",
+      "source_distractor_logprob": -24.803634643554688,
+      "source_gold_logprob": -29.824983596801758,
+      "source_margin": -5.02134895324707,
+      "source_minus_target_margin": 0.9120426177978516,
+      "status": "no_source_margin_advantage",
+      "target_alone_correct": false,
+      "target_distractor_logprob": -23.762998580932617,
+      "target_gold_logprob": -29.69639015197754,
+      "target_margin": -5.933391571044922,
+      "target_prediction": "2",
+      "teacher_correct": true,
+      "teacher_prediction": "the recipe calls for 12 cups of flour and 5 cups of sugar. mary already put in some cups of flour, and she still needs 2 more cups of flour. so the total number of cups of flour she has put in is 12 - 2 = 10 cups. therefore",
+      "text_to_text_correct": null,
+      "text_to_text_prediction": null
+    },
+    {
+      "distractor_answer": "1",
+      "example_id": "4d780f825bb8541c",
+      "gold_answer": "26",
+      "index": 18,
+      "labels": [
+        "target_self_repair"
+      ],
+      "source_alone_correct": false,
+      "source_alone_prediction": "12",
+      "source_distractor_logprob": -22.949085235595703,
+      "source_gold_logprob": -26.838180541992188,
+      "source_margin": -3.8890953063964844,
+      "source_minus_target_margin": 7.121393203735352,
+      "status": "no_source_margin_advantage",
+      "target_alone_correct": false,
+      "target_distractor_logprob": -21.6237850189209,
+      "target_gold_logprob": -32.634273529052734,
+      "target_margin": -11.010488510131836,
+      "target_prediction": "1",
+      "teacher_correct": true,
+      "teacher_prediction": "julia played tag with 12 kids on monday and 14 kids on tuesday, so she played with a total of 12+14 = 26 kids. if she spent a total of 34 hours to play tag on both days, then she spent 34/26",
+      "text_to_text_correct": null,
+      "text_to_text_prediction": null
+    },
+    {
+      "distractor_answer": "2",
+      "example_id": "de1bf4d142544e5b",
+      "gold_answer": "57",
+      "index": 20,
+      "labels": [
+        "target_self_repair"
+      ],
+      "source_alone_correct": false,
+      "source_alone_prediction": "40",
+      "source_distractor_logprob": -20.447065353393555,
+      "source_gold_logprob": -21.77625846862793,
+      "source_margin": -1.329193115234375,
+      "source_minus_target_margin": 2.028656005859375,
+      "status": "no_source_margin_advantage",
+      "target_alone_correct": false,
+      "target_distractor_logprob": -23.61944580078125,
+      "target_gold_logprob": -26.977294921875,
+      "target_margin": -3.35784912109375,
+      "target_prediction": "2",
+      "teacher_correct": true,
+      "teacher_prediction": "if there were 97 alligators and 40 of them were hiding, then the number of alligators not hiding is 97 - 40 = 57 #### 57 the answer is: 57",
+      "text_to_text_correct": null,
+      "text_to_text_prediction": null
+    }
+  ],
+  "status": "no_source_margin_signal",
+  "summary": {
+    "clean_ids_scored": 6,
+    "mean_source_margin_clean": -1.4557908376057942,
+    "mean_source_minus_target_margin_clean": 2.1683486302693686,
+    "mean_target_margin_clean": -3.6241394678751626,
+    "source_final_clean_correct_count": 0,
+    "source_final_clean_correct_ids": [],
+    "source_final_clean_unknown_count": 0,
+    "source_margin_advantage_clean_count": 4,
+    "source_margin_advantage_clean_ids": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "6e9745b37ab6fc45"
+    ],
+    "source_margin_positive_advantage_clean_count": 1,
+    "source_margin_positive_advantage_clean_ids": [
+      "6e9745b37ab6fc45"
+    ],
+    "source_margin_positive_clean_count": 3,
+    "source_margin_positive_clean_ids": [
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "e3ab8666238a289e"
+    ],
+    "source_text_union_clean_correct_count": 0,
+    "source_text_union_clean_correct_ids": [],
+    "target_margin_positive_clean_count": 2,
+    "target_margin_positive_clean_ids": [
+      "aee922049c757331",
+      "e3ab8666238a289e"
+    ],
+    "target_self_ids_scored": 3,
+    "text_final_clean_correct_count": 0,
+    "text_final_clean_correct_ids": [],
+    "text_final_clean_unknown_count": 6
+  }
+}

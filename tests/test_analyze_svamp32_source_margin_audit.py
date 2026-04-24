@@ -43,6 +43,7 @@ def test_source_margin_summary_separates_final_answer_and_margin_signal() -> Non
     assert summary["clean_ids_scored"] == 2
     assert summary["target_self_ids_scored"] == 1
     assert summary["source_final_clean_correct_ids"] == ["clean_final_answer"]
+    assert summary["source_final_clean_unknown_count"] == 0
     assert summary["source_margin_positive_clean_ids"] == ["clean_source_margin"]
     assert summary["source_margin_advantage_clean_ids"] == [
         "clean_source_margin",
@@ -52,6 +53,31 @@ def test_source_margin_summary_separates_final_answer_and_margin_signal() -> Non
         "clean_source_margin"
     ]
     assert summary["mean_source_minus_target_margin_clean"] == 1.25
+
+
+def test_source_margin_summary_tracks_missing_final_answer_provenance() -> None:
+    rows = [
+        {
+            "example_id": "clean_unknown",
+            "source_alone_correct": None,
+            "text_to_text_correct": None,
+            "source_margin": 1.0,
+            "target_margin": 0.0,
+            "source_minus_target_margin": 1.0,
+        }
+    ]
+
+    summary = audit._summarize_rows(
+        rows,
+        clean_ids={"clean_unknown"},
+        target_self_ids=set(),
+        min_margin_delta=0.0,
+    )
+
+    assert summary["source_final_clean_correct_count"] == 0
+    assert summary["source_final_clean_unknown_count"] == 1
+    assert summary["text_final_clean_unknown_count"] == 1
+    assert summary["source_margin_positive_advantage_clean_ids"] == ["clean_unknown"]
 
 
 def test_method_records_accepts_c2c_alias_and_checks_methods(tmp_path) -> None:
@@ -80,3 +106,11 @@ def test_answer_continuation_requires_answer_placeholder() -> None:
         assert "must contain {answer}" in str(exc)
     else:
         raise AssertionError("missing placeholder should raise")
+
+
+def test_torch_dtype_maps_supported_names() -> None:
+    import torch
+
+    assert audit._torch_dtype("float32") is torch.float32
+    assert audit._torch_dtype("float16") is torch.float16
+    assert audit._torch_dtype("bfloat16") is torch.bfloat16
