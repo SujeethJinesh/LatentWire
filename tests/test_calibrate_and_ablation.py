@@ -2182,6 +2182,7 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_
             "--innovation-value-loss-weight",
             "0.25",
             "--innovation-conditional-target-memory",
+            "--innovation-conditional-delta-memory",
         ],
     )
     args = calibrate.parse_args()
@@ -2196,6 +2197,7 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_
     assert args.innovation_target_self_preserve_weight == 6
     assert args.innovation_value_loss_weight == 0.25
     assert args.innovation_conditional_target_memory is True
+    assert args.innovation_conditional_delta_memory is True
 
 
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_value_bank_module_replace(monkeypatch) -> None:

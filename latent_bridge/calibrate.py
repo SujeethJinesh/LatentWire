@@ -411,6 +411,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     p.add_argument(
+        "--innovation-conditional-delta-memory",
+        action="store_true",
+        help=(
+            "Append source-minus-target delta K/V rows to target-conditioned "
+            "query-innovation memory. Implies --innovation-conditional-target-memory."
+        ),
+    )
+    p.add_argument(
         "--innovation-control-weight",
         type=float,
         default=0.0,
@@ -3089,12 +3097,13 @@ def main() -> None:
             "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
         )
     if (
-        args.innovation_conditional_target_memory
+        (args.innovation_conditional_target_memory or args.innovation_conditional_delta_memory)
         and args.quantization_correction
         != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
     ):
         raise ValueError(
-            "--innovation-conditional-target-memory requires "
+            "--innovation-conditional-target-memory and "
+            "--innovation-conditional-delta-memory require "
             "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
         )
 
@@ -3385,7 +3394,11 @@ def main() -> None:
         innovation_control_mode=args.innovation_control_mode,
         innovation_contrastive_margin=args.innovation_contrastive_margin,
         innovation_value_loss_weight=args.innovation_value_loss_weight,
-        innovation_conditional_target_memory=args.innovation_conditional_target_memory,
+        innovation_conditional_target_memory=(
+            args.innovation_conditional_target_memory
+            or args.innovation_conditional_delta_memory
+        ),
+        innovation_conditional_delta_memory=args.innovation_conditional_delta_memory,
         learned_fusion_dropout=args.learned_fusion_dropout,
         seed=args.seed,
     )

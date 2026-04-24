@@ -3866,12 +3866,18 @@ def _build_rotalign_prefix_state(
             runtime_query_features=runtime_query_features,
             target_condition_k=(
                 K_t.to(device=device, dtype=torch.float32)
-                if translator.config.innovation_conditional_target_memory
+                if (
+                    translator.config.innovation_conditional_target_memory
+                    or translator.config.innovation_conditional_delta_memory
+                )
                 else None
             ),
             target_condition_v=(
                 V_t.to(device=device, dtype=torch.float32)
-                if translator.config.innovation_conditional_target_memory
+                if (
+                    translator.config.innovation_conditional_target_memory
+                    or translator.config.innovation_conditional_delta_memory
+                )
                 else None
             ),
         )
@@ -5489,6 +5495,23 @@ def parse_args() -> argparse.Namespace:
         help="Negative-control perturbation applied after translation into target KV space.",
     )
     p.add_argument(
+        "--innovation-memory-control",
+        choices=[
+            "checkpoint",
+            "combined",
+            "no_delta",
+            "source_only",
+            "target_only",
+            "delta_only",
+            "slots_only",
+        ],
+        default="checkpoint",
+        help=(
+            "Runtime memory mask for target/delta-conditioned query-innovation "
+            "checkpoints. Use checkpoint to keep the saved config."
+        ),
+    )
+    p.add_argument(
         "--fusion-rule",
         choices=[
             "static",
@@ -5961,6 +5984,25 @@ def main() -> None:
 
     print(f"Loading translator from {args.translator}")
     translator = RotAlignKVTranslator.load(args.translator, map_location=args.device)
+    innovation_memory_control = getattr(args, "innovation_memory_control", "checkpoint")
+    if innovation_memory_control != "checkpoint":
+        if (
+            innovation_memory_control == "target_only"
+            and not translator.config.innovation_conditional_target_memory
+        ):
+            raise ValueError(
+                "--innovation-memory-control target_only requires a "
+                "target-conditioned query-innovation checkpoint"
+            )
+        if (
+            innovation_memory_control == "delta_only"
+            and not translator.config.innovation_conditional_delta_memory
+        ):
+            raise ValueError(
+                "--innovation-memory-control delta_only requires a "
+                "delta-conditioned query-innovation checkpoint"
+            )
+        translator.config.innovation_memory_control = innovation_memory_control
     initial_gate_values = translator.gate_values()
     fixed_position_profiles = None
     fixed_head_profiles = None
@@ -6663,6 +6705,14 @@ def main() -> None:
                 "translator_quantization_correction": translator.config.quantization_correction,
                 "translator_quantization_correction_rank": translator.config.quantization_correction_rank,
                 "translator_bridge_bank_size": translator.config.bridge_bank_size,
+                "translator_innovation_conditional_target_memory": (
+                    translator.config.innovation_conditional_target_memory
+                ),
+                "translator_innovation_conditional_delta_memory": (
+                    translator.config.innovation_conditional_delta_memory
+                ),
+                "translator_innovation_memory_control": translator.config.innovation_memory_control,
+                "innovation_memory_control_arg": innovation_memory_control,
                 "source_model": args.source_model,
                 "target_model": args.target_model,
                 "eval_file": args.eval_file,

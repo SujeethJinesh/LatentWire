@@ -5206,6 +5206,144 @@ def test_innovation_conditional_target_memory_is_query_innovation_only() -> None
         )
 
 
+def test_innovation_conditional_delta_memory_implies_target_memory() -> None:
+    cfg = TranslatorConfig(
+        src_head_dim=2,
+        src_num_heads=2,
+        num_src_layers=1,
+        tgt_head_dim=2,
+        tgt_num_heads=2,
+        num_tgt_layers=1,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        innovation_conditional_delta_memory=True,
+    )
+
+    assert cfg.innovation_conditional_target_memory is True
+    assert cfg.innovation_conditional_delta_memory is True
+
+
+def test_delta_only_memory_control_requires_delta_memory() -> None:
+    with pytest.raises(ValueError, match="requires innovation_conditional_delta_memory"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+            innovation_conditional_target_memory=True,
+            innovation_memory_control="delta_only",
+        )
+
+
+@pytest.mark.parametrize(
+    "memory_control",
+    ["combined", "no_delta", "source_only", "target_only", "delta_only", "slots_only"],
+)
+def test_query_innovation_delta_memory_runtime_controls_are_finite(
+    monkeypatch,
+    memory_control,
+) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        quantization_correction_rank=1,
+        bridge_bank_size=1,
+        innovation_conditional_delta_memory=True,
+        innovation_memory_control=memory_control,
+    )
+
+    K_base = torch.tensor([[[[1.0, 0.0]], [[1.0, 0.0]]]], dtype=torch.float32)
+    V_base = torch.tensor([[[[2.0, 0.0]], [[2.0, 0.0]]]], dtype=torch.float32)
+    K_target = torch.tensor([[[[0.5, 0.0]], [[0.5, 0.0]]]], dtype=torch.float32)
+    V_target = torch.tensor([[[[1.5, 0.0]], [[1.5, 0.0]]]], dtype=torch.float32)
+
+    out_k, out_v = tr.translate_layer(
+        K_base,
+        V_base,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_query_features=torch.ones(1, 1, tr.d_t, dtype=torch.float32),
+        target_condition_k=K_target,
+        target_condition_v=V_target,
+    )
+
+    assert out_k.shape == K_base.shape
+    assert out_v.shape == V_base.shape
+    assert torch.isfinite(out_k).all()
+    assert torch.isfinite(out_v).all()
+
+
+@pytest.mark.parametrize(
+    ("memory_control", "expected_live_rows"),
+    [
+        ("combined", ("k_q", "k_pred", "v_q", "v_pred", "target_k", "target_v", "delta_k", "delta_v")),
+        ("no_delta", ("k_q", "k_pred", "v_q", "v_pred", "target_k", "target_v")),
+        ("source_only", ("k_q", "k_pred", "v_q", "v_pred")),
+        ("target_only", ("target_k", "target_v")),
+        ("delta_only", ("delta_k", "delta_v")),
+        ("slots_only", ()),
+    ],
+)
+def test_query_innovation_delta_memory_runtime_controls_select_expected_rows(
+    monkeypatch,
+    memory_control,
+    expected_live_rows,
+) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        quantization_correction_rank=1,
+        bridge_bank_size=1,
+        innovation_conditional_delta_memory=True,
+        innovation_memory_control=memory_control,
+    )
+
+    captured_memory: list[torch.Tensor] = []
+    original_einsum = torch.einsum
+
+    def spy_einsum(equation, *operands):
+        if equation == "...md,dr->...mr" and operands and operands[0].ndim == 4:
+            if not captured_memory:
+                captured_memory.append(operands[0].detach().clone())
+        return original_einsum(equation, *operands)
+
+    monkeypatch.setattr(translator_mod.torch, "einsum", spy_einsum)
+
+    K_base = torch.tensor([[[[1.0, 0.0]], [[1.0, 0.0]]]], dtype=torch.float32)
+    V_base = torch.tensor([[[[2.0, 0.0]], [[2.0, 0.0]]]], dtype=torch.float32)
+    K_target = torch.tensor([[[[0.5, 0.0]], [[0.5, 0.0]]]], dtype=torch.float32)
+    V_target = torch.tensor([[[[1.5, 0.0]], [[1.5, 0.0]]]], dtype=torch.float32)
+
+    tr.translate_layer(
+        K_base,
+        V_base,
+        tgt_layer_idx=0,
+        quantize=True,
+        runtime_query_features=torch.ones(1, 1, tr.d_t, dtype=torch.float32),
+        target_condition_k=K_target,
+        target_condition_v=V_target,
+    )
+
+    assert captured_memory
+    memory = captured_memory[0][0, 0]
+    row_values = {
+        "k_q": torch.tensor([1.0, 0.0, 1.0, 0.0]),
+        "k_pred": torch.tensor([1.0, 0.0, 1.0, 0.0]),
+        "v_q": torch.tensor([2.0, 0.0, 2.0, 0.0]),
+        "v_pred": torch.tensor([2.0, 0.0, 2.0, 0.0]),
+        "target_k": torch.tensor([0.5, 0.0, 0.5, 0.0]),
+        "target_v": torch.tensor([1.5, 0.0, 1.5, 0.0]),
+        "delta_k": torch.tensor([0.5, 0.0, 0.5, 0.0]),
+        "delta_v": torch.tensor([0.5, 0.0, 0.5, 0.0]),
+    }
+    expected_rows = [row_values[name] for name in expected_live_rows]
+    assert memory.shape[0] == len(expected_rows) + tr.config.bridge_bank_size
+    if expected_rows:
+        assert torch.allclose(memory[: len(expected_rows)], torch.stack(expected_rows))
+
+
 def test_dynalign_query_innovation_resampler_fuse_adds_bounded_residual(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,

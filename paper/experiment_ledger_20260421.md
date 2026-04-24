@@ -2705,3 +2705,97 @@ Next exact gate:
   `[source K/V, target-prior K/V, source-minus-target delta K/V, learned slots]`
 - run the same matched SVAMP32 exact-ID gate plus runtime memory-mask controls
   only if the combined row reaches `>=2/6` clean residual IDs
+
+## 2026-04-24 - SVAMP32 target-prior delta-memory query codec
+
+Question:
+
+- does adding explicit source-minus-target delta K/V memory rows recover clean
+  source-only residual IDs beyond target-prior memory and target self-repair?
+
+Decision:
+
+- branch failed the same-pair matched gate
+- did not run runtime memory-mask controls because the combined row did not
+  reach `>=2/6` clean residual IDs
+
+Code changes:
+
+- `latent_bridge/calibrate.py`
+  - added `--innovation-conditional-delta-memory`
+  - delta memory implies target-prior memory at calibration time
+- `latent_bridge/translator.py`
+  - added `TranslatorConfig.innovation_conditional_delta_memory`
+  - added `TranslatorConfig.innovation_memory_control`
+  - fit-time memory can include `source_predicted_k/v - target_prior_k/v`
+  - runtime controls select `combined`, `no_delta`, `source_only`,
+    `target_only`, `delta_only`, or `slots_only`
+- `latent_bridge/evaluate.py`
+  - added `--innovation-memory-control` checkpoint override for control sweeps
+  - forwards target K/V conditions for target-prior or delta-memory checkpoints
+- tests
+  - added CLI/config coverage and exact runtime memory row-selection coverage
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_translator_core.py \
+  tests/test_calibrate_and_ablation.py \
+  tests/test_evaluate_helpers.py -q
+```
+
+Result: `333 passed in 4.23s`
+
+Artifacts:
+
+- checkpoint:
+  - `.debug/svamp32_delta_memory_query_codec_20260424/checkpoints/qwen25_to_qwen3_svamp32_deltamem_konly_query_codec_r16_bank16_seed1.pt`
+  - sha256: `29ff93c6d7291fb9a4e00ac35a7ffa519c4d71c8bd4a38062c0d748baecf4ebb`
+- matched sweep:
+  - `.debug/svamp32_delta_memory_query_codec_20260424/preds/deltamem_konly_attention_gate_sweep.jsonl`
+  - sha256: `01b3524fc887ef46ad0dc0ce86aa5cd145ce6f962d852e748f8472d7f7afc93a`
+- readout:
+  - `results/svamp32_delta_memory_query_codec_20260424/deltamem_konly_attention_clean_targets.json`
+  - sha256: `8ab4d02b947369428bf49b74e658cd8aa9fd944eee916c0393d6e597a864158c`
+  - `results/svamp32_delta_memory_query_codec_20260424/deltamem_konly_attention_clean_targets.md`
+  - sha256: `9fed7cdbfb75bacc4bee0617ace866525ad9f96fc6e630246e3e93074d0fbde2`
+- memo:
+  - `paper/svamp32_delta_memory_query_codec_20260424.md`
+
+Evidence:
+
+- calibration matched all `6` clean residual prompts and all `3`
+  target-self-preserve prompts
+- dynamic token-mixture samples: `1411`
+- average fit quality: K cosine `0.951`, V cosine `0.734`
+- matched readout status: `no_matched_gate_candidate_for_controls`
+- best rows:
+  - `rotalign_kv_gate_0.17`: `9/32`, clean residual `0/6`
+  - `rotalign_kv_gate_0.15`: `9/32`, clean residual `0/6`
+- teacher-only recovered: `1`, ID `575d7e83d84c1e67`
+- target losses at best rows: `1`, ID `c042f0a2949ff8e6`
+- numeric extraction coverage: `32/32`
+- exact ordered ID parity: true
+- bytes: `397,923.75`
+- best latency: `7.807506` seconds/example
+
+Hypothesis update:
+
+- killed for now: this K-only target-prior delta-memory query-codec
+  configuration as a same-pair gate candidate
+- weakened: plain `source - target_prior` delta rows are enough to recover
+  clean source residual information
+- still alive: delta-memory infrastructure as a runtime control surface for a
+  stronger source-discriminative objective
+- saturated: scalar gate sweeps, K-only value-loss suppression, target-only
+  memory, and unregularized target-prior delta memory on SVAMP32 exact-ID
+
+Next exact gate:
+
+- add a source-discriminative objective/control before widening:
+  matched-vs-shuffled source contrast on the same residual target set, or a
+  verifier-gated repair selector that must preserve the `14/32` self-repair
+  floor
+- require `>=2/6` clean residual IDs on SVAMP32 exact-ID before larger slices,
+  seed repeats, or cross-family experiments

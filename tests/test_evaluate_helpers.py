@@ -509,6 +509,8 @@ def test_evaluate_parse_args_accepts_chat_template_and_thinking_flags(monkeypatc
             "false",
             "--target-enable-thinking",
             "false",
+            "--innovation-memory-control",
+            "delta_only",
         ],
     )
 
@@ -517,6 +519,7 @@ def test_evaluate_parse_args_accepts_chat_template_and_thinking_flags(monkeypatc
     assert args.target_use_chat_template is True
     assert args.source_enable_thinking == "false"
     assert args.target_enable_thinking == "false"
+    assert args.innovation_memory_control == "delta_only"
 
 
 def test_evaluate_parse_args_accepts_stratified_position_metric(monkeypatch) -> None:
@@ -1276,6 +1279,7 @@ def test_build_rotalign_prefix_state_conditional_query_memory_passes_target_cach
         "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
     )
     translator.config.innovation_conditional_target_memory = True
+    translator.config.innovation_conditional_delta_memory = True
 
     seen: list[tuple[int, torch.Tensor | None, torch.Tensor | None, torch.Tensor | None]] = []
 

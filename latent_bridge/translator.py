@@ -296,6 +296,8 @@ class TranslatorConfig:
     innovation_contrastive_margin: float = 0.0
     innovation_value_loss_weight: float = 1.0
     innovation_conditional_target_memory: bool = False
+    innovation_conditional_delta_memory: bool = False
+    innovation_memory_control: str = "combined"
 
     # Fusion rule for combining target and translated K/V. 'static' keeps the
     # checkpointed scalar gates as-is; cosine-based rules attenuate translated
@@ -371,6 +373,9 @@ class TranslatorConfig:
                 "innovation_value_loss_weight is only supported for "
                 "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
             )
+        self.innovation_conditional_delta_memory = bool(self.innovation_conditional_delta_memory)
+        if self.innovation_conditional_delta_memory:
+            self.innovation_conditional_target_memory = True
         self.innovation_conditional_target_memory = bool(self.innovation_conditional_target_memory)
         if (
             self.innovation_conditional_target_memory
@@ -381,6 +386,24 @@ class TranslatorConfig:
                 "innovation_conditional_target_memory is only supported for "
                 "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
             )
+        valid_innovation_memory_controls = {
+            "combined",
+            "no_delta",
+            "source_only",
+            "target_only",
+            "delta_only",
+            "slots_only",
+        }
+        if self.innovation_memory_control not in valid_innovation_memory_controls:
+            raise ValueError(
+                "innovation_memory_control must be one of "
+                f"{sorted(valid_innovation_memory_controls)}, got "
+                f"{self.innovation_memory_control!r}"
+            )
+        if self.innovation_memory_control == "delta_only" and not self.innovation_conditional_delta_memory:
+            raise ValueError("innovation_memory_control='delta_only' requires innovation_conditional_delta_memory")
+        if self.innovation_memory_control == "target_only" and not self.innovation_conditional_target_memory:
+            raise ValueError("innovation_memory_control='target_only' requires innovation_conditional_target_memory")
         valid_streams = {"kv", "k", "v"}
         if self.whitening_streams not in valid_streams:
             raise ValueError(f"Invalid whitening_streams: {self.whitening_streams}")
@@ -3081,6 +3104,10 @@ class RotAlignKVTranslator(nn.Module):
                         cond_v.to(device=mem_qk.device, dtype=mem_qk.dtype),
                     ]
                 )
+                if self.config.innovation_conditional_delta_memory:
+                    cond_k_live = cond_k.to(device=mem_qk.device, dtype=mem_qk.dtype)
+                    cond_v_live = cond_v.to(device=mem_qk.device, dtype=mem_qk.dtype)
+                    memory_rows.extend([mem_pk - cond_k_live, mem_pv - cond_v_live])
             live_memory = torch.stack(memory_rows, dim=1)
             slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
             memory = torch.cat([live_memory, slot_memory], dim=1)
@@ -4596,7 +4623,12 @@ class RotAlignKVTranslator(nn.Module):
                     raise ValueError(f"{self.config.quantization_correction} requires paired_input and paired_aux_input")
                 paired = paired_input.to(device=x.device, dtype=x.dtype)
                 paired_aux = paired_aux_input.to(device=x.device, dtype=x.dtype)
-                live_rows = [x, aux_input, paired, paired_aux]
+                k_q = x if kind == "K" else paired
+                k_pred = aux_input if kind == "K" else paired_aux
+                v_q = paired if kind == "K" else x
+                v_pred = paired_aux if kind == "K" else aux_input
+                source_rows = [k_q, k_pred, v_q, v_pred]
+                live_rows = source_rows
                 if self.config.innovation_conditional_target_memory:
                     if conditional_target_k is None or conditional_target_v is None:
                         raise ValueError(
@@ -4647,17 +4679,42 @@ class RotAlignKVTranslator(nn.Module):
 
                     cond_k = prepare_condition("conditional_target_k", conditional_target_k)
                     cond_v = prepare_condition("conditional_target_v", conditional_target_v)
-                    if kind == "K":
-                        live_rows = [x, aux_input, paired, paired_aux, cond_k, cond_v]
+                    target_rows = [cond_k, cond_v]
+                    delta_rows = [k_pred - cond_k, v_pred - cond_v]
+                    memory_control = self.config.innovation_memory_control
+                    if memory_control == "combined":
+                        live_rows = source_rows + target_rows
+                        if self.config.innovation_conditional_delta_memory:
+                            live_rows = live_rows + delta_rows
+                    elif memory_control == "no_delta":
+                        live_rows = source_rows + target_rows
+                    elif memory_control == "source_only":
+                        live_rows = source_rows
+                    elif memory_control == "target_only":
+                        live_rows = target_rows
+                    elif memory_control == "delta_only":
+                        if not self.config.innovation_conditional_delta_memory:
+                            raise ValueError(
+                                "innovation_memory_control='delta_only' requires "
+                                "innovation_conditional_delta_memory"
+                            )
+                        live_rows = delta_rows
+                    elif memory_control == "slots_only":
+                        live_rows = []
                     else:
-                        live_rows = [paired, paired_aux, x, aux_input, cond_k, cond_v]
-                live_memory = torch.stack(live_rows, dim=-2)
+                        raise ValueError(f"Unknown innovation_memory_control: {memory_control}")
                 slot_memory = module_slots.to(device=x.device, dtype=x.dtype)
                 if x.ndim == 3:
                     slot_memory = slot_memory.unsqueeze(0).unsqueeze(0).expand(x.shape[0], x.shape[1], -1, -1)
                 else:
                     slot_memory = slot_memory.unsqueeze(0).expand(x.shape[0], -1, -1)
-                memory = torch.cat([live_memory, slot_memory], dim=-2)
+                if live_rows:
+                    live_memory = torch.stack(live_rows, dim=-2)
+                    memory = torch.cat([live_memory, slot_memory], dim=-2)
+                else:
+                    if slot_memory.shape[-2] == 0:
+                        raise ValueError("innovation_memory_control='slots_only' requires bridge_bank_size > 0")
+                    memory = slot_memory
                 q_hidden = qfeat @ module_q.to(device=x.device, dtype=x.dtype)
                 key_hidden = torch.einsum("...md,dr->...mr", memory, module_k.to(device=x.device, dtype=x.dtype))
                 value_hidden = torch.einsum("...md,dr->...mr", memory, module_v.to(device=x.device, dtype=x.dtype))
