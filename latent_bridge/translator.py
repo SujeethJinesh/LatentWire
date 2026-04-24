@@ -295,6 +295,7 @@ class TranslatorConfig:
     innovation_control_mode: str = "none"
     innovation_contrastive_margin: float = 0.0
     innovation_value_loss_weight: float = 1.0
+    innovation_conditional_target_memory: bool = False
 
     # Fusion rule for combining target and translated K/V. 'static' keeps the
     # checkpointed scalar gates as-is; cosine-based rules attenuate translated
@@ -368,6 +369,16 @@ class TranslatorConfig:
         ):
             raise ValueError(
                 "innovation_value_loss_weight is only supported for "
+                "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+            )
+        self.innovation_conditional_target_memory = bool(self.innovation_conditional_target_memory)
+        if (
+            self.innovation_conditional_target_memory
+            and self.quantization_correction
+            != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        ):
+            raise ValueError(
+                "innovation_conditional_target_memory is only supported for "
                 "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
             )
         valid_streams = {"kv", "k", "v"}
@@ -2921,6 +2932,8 @@ class RotAlignKVTranslator(nn.Module):
         source_control_mode: str = "none",
         source_contrastive_margin: float = 0.0,
         value_loss_weight: float = 1.0,
+        conditional_target_k: torch.Tensor | None = None,
+        conditional_target_v: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, ...]:
         tensors = (
             quantized_k.float(),
@@ -3004,6 +3017,20 @@ class RotAlignKVTranslator(nn.Module):
         value_loss_weight_f = float(value_loss_weight)
         if not math.isfinite(value_loss_weight_f) or value_loss_weight_f < 0.0:
             raise ValueError("value_loss_weight must be finite and non-negative")
+        cond_k = None
+        cond_v = None
+        if conditional_target_k is not None or conditional_target_v is not None:
+            if conditional_target_k is None or conditional_target_v is None:
+                raise ValueError(
+                    "conditional_target_k and conditional_target_v must be provided together"
+                )
+            cond_k = conditional_target_k.float()
+            cond_v = conditional_target_v.float()
+            if tuple(cond_k.shape) != tuple(qk.shape) or tuple(cond_v.shape) != tuple(qk.shape):
+                raise ValueError(
+                    "conditional target tensors must align with calibration samples, "
+                    f"got K {tuple(cond_k.shape)}, V {tuple(cond_v.shape)}, expected {tuple(qk.shape)}"
+                )
         shuffle_idx = None
         needs_prompt_ids = (
             float(interaction_distill_weight) > 0.0
@@ -3046,7 +3073,15 @@ class RotAlignKVTranslator(nn.Module):
             mem_qv: torch.Tensor,
             mem_pv: torch.Tensor,
         ) -> tuple[torch.Tensor, torch.Tensor]:
-            live_memory = torch.stack([mem_qk, mem_pk, mem_qv, mem_pv], dim=1)
+            memory_rows = [mem_qk, mem_pk, mem_qv, mem_pv]
+            if cond_k is not None and cond_v is not None:
+                memory_rows.extend(
+                    [
+                        cond_k.to(device=mem_qk.device, dtype=mem_qk.dtype),
+                        cond_v.to(device=mem_qk.device, dtype=mem_qk.dtype),
+                    ]
+                )
+            live_memory = torch.stack(memory_rows, dim=1)
             slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
             memory = torch.cat([live_memory, slot_memory], dim=1)
             q_hidden = query @ q_proj
@@ -4254,6 +4289,8 @@ class RotAlignKVTranslator(nn.Module):
         aux_input: torch.Tensor | None = None,
         paired_input: torch.Tensor | None = None,
         paired_aux_input: torch.Tensor | None = None,
+        conditional_target_k: torch.Tensor | None = None,
+        conditional_target_v: torch.Tensor | None = None,
         runtime_profile: torch.Tensor | None = None,
         runtime_query_features: torch.Tensor | None = None,
     ) -> torch.Tensor:
@@ -4557,15 +4594,64 @@ class RotAlignKVTranslator(nn.Module):
             if self.config.quantization_correction in {"bridge_ridge_qk_module_adapter", "bridge_ridge_qk_module_replace", "bridge_ridge_qk_bytespan_module_replace", "bridge_ridge_qk_spanalign_module_replace", "bridge_ridge_qk_ctxalign_module_replace", "bridge_ridge_qk_dynalign_ctxonly_module_replace", "bridge_ridge_qk_dynalign_module_replace", "bridge_ridge_qk_dynalign_preserve_module_replace", "bridge_ridge_qk_dynalign_eigenspace_module_replace", "bridge_ridge_qk_dynalign_saliency_module_replace", "bridge_ridge_qk_dynalign_saliency_preserve_module_replace", "bridge_ridge_qk_dynalign_anchor_tail_module_replace", "bridge_ridge_qk_dynalign_v8_outlier_escrow_module_replace", "bridge_ridge_qk_dynalign_routed_module_replace", "bridge_ridge_qk_dynalign_value_routed_module_replace", "bridge_ridge_qk_dynalign_query_resampler_replace", "bridge_ridge_qk_dynalign_query_innovation_resampler_replace", "bridge_ridge_qk_dynalign_value_bank_module_replace", "bridge_ridge_qk_dynalign_value_query_bank_module_replace", "bridge_ridge_qk_dynalign_value_routed_bank_module_replace", "bridge_ridge_qk_dynalign_value_verifier_sidecar_module_replace", "bridge_ridge_qk_dynalign_dwakd_module_replace", "bridge_ridge_qk_dynalign_likelihood_module_replace", "bridge_ridge_qk_dynalign_spanalm_module_replace", "bridge_ridge_qk_dynalign_prefdist_module_replace", "bridge_ridge_qk_dynalign_dwainteract_module_replace", "bridge_ridge_qk_dynalign_interact_module_replace", "bridge_ridge_qk_dpalign_module_replace", "bridge_ridge_qk_tokenbasis_replace"}:
                 if paired_input is None or paired_aux_input is None:
                     raise ValueError(f"{self.config.quantization_correction} requires paired_input and paired_aux_input")
-                live_memory = torch.stack(
-                    [
-                        x,
-                        aux_input,
-                        paired_input.to(device=x.device, dtype=x.dtype),
-                        paired_aux_input.to(device=x.device, dtype=x.dtype),
-                    ],
-                    dim=-2,
-                )
+                paired = paired_input.to(device=x.device, dtype=x.dtype)
+                paired_aux = paired_aux_input.to(device=x.device, dtype=x.dtype)
+                live_rows = [x, aux_input, paired, paired_aux]
+                if self.config.innovation_conditional_target_memory:
+                    if conditional_target_k is None or conditional_target_v is None:
+                        raise ValueError(
+                            "innovation_conditional_target_memory requires "
+                            "conditional_target_k and conditional_target_v"
+                        )
+
+                    def prepare_condition(name: str, value: torch.Tensor) -> torch.Tensor:
+                        condition = value.to(device=x.device, dtype=x.dtype)
+                        if condition.ndim == 2 and x.ndim == 3:
+                            condition = condition.unsqueeze(0)
+                        if condition.ndim != x.ndim:
+                            raise ValueError(
+                                f"{name} must have rank {x.ndim} to match correction input, "
+                                f"got {tuple(condition.shape)} vs {tuple(x.shape)}"
+                            )
+                        if condition.shape[-1] != x.shape[-1]:
+                            raise ValueError(
+                                f"{name} width {condition.shape[-1]} does not match "
+                                f"target width {x.shape[-1]}"
+                            )
+                        if x.ndim == 2:
+                            if condition.shape[0] != x.shape[0]:
+                                raise ValueError(
+                                    f"{name} must align with calibration samples, "
+                                    f"got {tuple(condition.shape)} vs {tuple(x.shape)}"
+                                )
+                            return condition
+                        if condition.shape[0] == 1 and x.shape[0] != 1:
+                            condition = condition.expand(x.shape[0], -1, -1)
+                        if condition.shape[0] != x.shape[0]:
+                            raise ValueError(
+                                f"{name} batch must align with translated samples, "
+                                f"got {tuple(condition.shape)} vs {tuple(x.shape)}"
+                            )
+                        if condition.shape[1] > x.shape[1]:
+                            condition = condition[:, -x.shape[1] :, :]
+                        elif condition.shape[1] < x.shape[1]:
+                            pad = torch.zeros(
+                                condition.shape[0],
+                                x.shape[1] - condition.shape[1],
+                                condition.shape[2],
+                                dtype=condition.dtype,
+                                device=condition.device,
+                            )
+                            condition = torch.cat([pad, condition], dim=1)
+                        return condition
+
+                    cond_k = prepare_condition("conditional_target_k", conditional_target_k)
+                    cond_v = prepare_condition("conditional_target_v", conditional_target_v)
+                    if kind == "K":
+                        live_rows = [x, aux_input, paired, paired_aux, cond_k, cond_v]
+                    else:
+                        live_rows = [paired, paired_aux, x, aux_input, cond_k, cond_v]
+                live_memory = torch.stack(live_rows, dim=-2)
                 slot_memory = module_slots.to(device=x.device, dtype=x.dtype)
                 if x.ndim == 3:
                     slot_memory = slot_memory.unsqueeze(0).unsqueeze(0).expand(x.shape[0], x.shape[1], -1, -1)
@@ -4834,6 +4920,8 @@ class RotAlignKVTranslator(nn.Module):
         quantization_control: str = "real",
         runtime_attention_profile: torch.Tensor | None = None,
         runtime_query_features: torch.Tensor | None = None,
+        target_condition_k: torch.Tensor | None = None,
+        target_condition_v: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Translate one source layer's KV into the target's KV space.
 
@@ -4879,6 +4967,35 @@ class RotAlignKVTranslator(nn.Module):
         K_t_rot = K_t_rot @ self.pre_quant_filter_K[tgt_layer_idx]
         V_t_rot = V_t_rot @ self.pre_quant_filter_V[tgt_layer_idx]
 
+        target_cond_k_rot = None
+        target_cond_v_rot = None
+        if self.config.innovation_conditional_target_memory:
+            if target_condition_k is None or target_condition_v is None:
+                raise ValueError(
+                    "innovation_conditional_target_memory requires target_condition_k "
+                    "and target_condition_v at runtime"
+                )
+            target_cond_k_rot = self._rotate_and_flatten(
+                target_condition_k.to(device=K_s.device, dtype=K_s.dtype),
+                self.R_t,
+            )
+            target_cond_v_rot = self._rotate_and_flatten(
+                target_condition_v.to(device=V_s.device, dtype=V_s.dtype),
+                self.R_t,
+            )
+            if self._target_whitening_applies(tgt_layer_idx, "k"):
+                target_cond_k_rot = apply_whitening(
+                    target_cond_k_rot,
+                    self.whiten_K_tgt[tgt_layer_idx],
+                    self.whiten_K_tgt_mean[tgt_layer_idx],
+                )
+            if self._target_whitening_applies(tgt_layer_idx, "v"):
+                target_cond_v_rot = apply_whitening(
+                    target_cond_v_rot,
+                    self.whiten_V_tgt[tgt_layer_idx],
+                    self.whiten_V_tgt_mean[tgt_layer_idx],
+                )
+
         # 3) Optional: round-trip through Lloyd-Max quantizer. The output is
         #    the dequantized reconstruction — bit-accurate simulation of a
         #    compressed channel, but with a differentiable straight-through
@@ -4896,6 +5013,8 @@ class RotAlignKVTranslator(nn.Module):
                     aux_input=K_pred,
                     paired_input=V_q,
                     paired_aux_input=V_pred,
+                    conditional_target_k=target_cond_k_rot,
+                    conditional_target_v=target_cond_v_rot,
                     runtime_profile=runtime_attention_profile,
                     runtime_query_features=runtime_query_features,
                 )
@@ -4906,6 +5025,8 @@ class RotAlignKVTranslator(nn.Module):
                     aux_input=V_pred,
                     paired_input=K_q,
                     paired_aux_input=K_pred,
+                    conditional_target_k=target_cond_k_rot,
+                    conditional_target_v=target_cond_v_rot,
                     runtime_profile=runtime_attention_profile,
                     runtime_query_features=runtime_query_features,
                 )
@@ -4918,6 +5039,8 @@ class RotAlignKVTranslator(nn.Module):
                         aux_input=x,
                         paired_input=V_q if salt == 0 else K_q,
                         paired_aux_input=V_pred if salt == 0 else K_pred,
+                        conditional_target_k=target_cond_k_rot,
+                        conditional_target_v=target_cond_v_rot,
                         runtime_profile=runtime_attention_profile,
                         runtime_query_features=runtime_query_features,
                     )
@@ -5729,6 +5852,24 @@ class RotAlignKVTranslator(nn.Module):
                                         )
                                     target_k_fit = target_k_fit.masked_fill(zero_mask.view(-1, 1), 0.0)
                                     target_v_fit = target_v_fit.masked_fill(zero_mask.view(-1, 1), 0.0)
+                            conditional_target_k_fit = (
+                                Yk_fit
+                                if (
+                                    self.config.quantization_correction
+                                    == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+                                    and self.config.innovation_conditional_target_memory
+                                )
+                                else None
+                            )
+                            conditional_target_v_fit = (
+                                Yv_fit
+                                if (
+                                    self.config.quantization_correction
+                                    == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+                                    and self.config.innovation_conditional_target_memory
+                                )
+                                else None
+                            )
                             (
                                 module_slots,
                                 module_q,
@@ -5760,6 +5901,8 @@ class RotAlignKVTranslator(nn.Module):
                                 source_control_mode=self.config.innovation_control_mode if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else "none",
                                 source_contrastive_margin=self.config.innovation_contrastive_margin if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 0.0,
                                 value_loss_weight=self.config.innovation_value_loss_weight if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 1.0,
+                                conditional_target_k=conditional_target_k_fit,
+                                conditional_target_v=conditional_target_v_fit,
                             )
                             if self.config.quantization_correction in {
                                 "bridge_ridge_qk_dynalign_query_resampler_replace",
@@ -6662,6 +6805,8 @@ class RotAlignKVTranslator(nn.Module):
                 fit_runtime_query_features = self._bridge_sample_query_features[tgt_l].to(device=Xk.device).view(
                     K_quant.shape[0], 1, self.d_t
                 )
+            fit_conditional_target_k = Yk_fit if self.config.innovation_conditional_target_memory else None
+            fit_conditional_target_v = Yv_fit if self.config.innovation_conditional_target_memory else None
             K_runtime = K_quant if self.config.quantization_correction == "none" else self._apply_quantization_correction(
                 K_quant,
                 tgt_l,
@@ -6669,6 +6814,8 @@ class RotAlignKVTranslator(nn.Module):
                 aux_input=K_pred,
                 paired_input=V_quant,
                 paired_aux_input=V_pred,
+                conditional_target_k=fit_conditional_target_k,
+                conditional_target_v=fit_conditional_target_v,
                 runtime_query_features=fit_runtime_query_features,
             )
             V_runtime = V_quant if self.config.quantization_correction == "none" else self._apply_quantization_correction(
@@ -6678,6 +6825,8 @@ class RotAlignKVTranslator(nn.Module):
                 aux_input=V_pred,
                 paired_input=K_quant,
                 paired_aux_input=K_pred,
+                conditional_target_k=fit_conditional_target_k,
+                conditional_target_v=fit_conditional_target_v,
                 runtime_query_features=fit_runtime_query_features,
             )
             if self._target_whitening_applies(tgt_l, "k"):

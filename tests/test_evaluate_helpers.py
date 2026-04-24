@@ -1264,6 +1264,72 @@ def test_build_rotalign_prefix_state_query_resampler_collects_live_query_heads(
     assert all(feature is not None for feature in seen_query_features)
 
 
+def test_build_rotalign_prefix_state_conditional_query_memory_passes_target_cache(
+    monkeypatch,
+) -> None:
+    tok_s = FakeTokenizer()
+    tok_t = FakeTokenizer()
+    src = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    tgt = FakeCausalLM(preferred_token_id=4, n_layers=2)
+    translator = _make_identity_translator(monkeypatch, layers=2)
+    translator.config.quantization_correction = (
+        "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+    )
+    translator.config.innovation_conditional_target_memory = True
+
+    seen: list[tuple[int, torch.Tensor | None, torch.Tensor | None, torch.Tensor | None]] = []
+
+    def fake_last_token_query_heads(*args, **kwargs):
+        return [torch.ones(1, 1, dtype=torch.float32) for _ in range(2)]
+
+    def fake_translate_layer(
+        K_s,
+        V_s,
+        *,
+        tgt_layer_idx,
+        quantize=True,
+        quantization_control="real",
+        runtime_attention_profile=None,
+        runtime_query_features=None,
+        target_condition_k=None,
+        target_condition_v=None,
+    ):
+        del quantize, quantization_control, runtime_attention_profile
+        seen.append(
+            (
+                tgt_layer_idx,
+                None if target_condition_k is None else target_condition_k.detach().clone(),
+                None if target_condition_v is None else target_condition_v.detach().clone(),
+                None if runtime_query_features is None else runtime_query_features.detach().clone(),
+            )
+        )
+        return K_s.clone(), V_s.clone()
+
+    monkeypatch.setattr(evaluate, "_last_token_query_heads", fake_last_token_query_heads)
+    translator.translate_layer = fake_translate_layer  # type: ignore[method-assign]
+
+    evaluate._build_rotalign_prefix_state(
+        src,
+        tok_s,
+        tgt,
+        tok_t,
+        translator,
+        source_prompt="alpha beta gamma",
+        target_prompt="alpha beta gamma",
+        device="cpu",
+        quantize=True,
+        protocol="fused",
+    )
+
+    assert len(seen) == 2
+    for layer_idx, target_k, target_v, query_features in seen:
+        assert target_k is not None
+        assert target_v is not None
+        assert query_features is not None
+        assert torch.allclose(target_k, torch.full_like(target_k, float(layer_idx + 1)))
+        assert torch.allclose(target_v, torch.full_like(target_v, float(layer_idx + 101)))
+
+
 def test_build_rotalign_prefix_state_layer_knockout_removes_communication_bits(monkeypatch) -> None:
     tok_s = FakeTokenizer()
     tok_t = FakeTokenizer()

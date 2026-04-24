@@ -403,6 +403,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     p.add_argument(
+        "--innovation-conditional-target-memory",
+        action="store_true",
+        help=(
+            "Append target-prior K/V side-information rows to the query-innovation "
+            "module memory during fitting and runtime."
+        ),
+    )
+    p.add_argument(
         "--innovation-control-weight",
         type=float,
         default=0.0,
@@ -3080,6 +3088,15 @@ def main() -> None:
             "--innovation-value-loss-weight requires "
             "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
         )
+    if (
+        args.innovation_conditional_target_memory
+        and args.quantization_correction
+        != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+    ):
+        raise ValueError(
+            "--innovation-conditional-target-memory requires "
+            "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        )
 
     prompt_records = load_prompt_records(args.calibration_file)
     prompts = [prompt for prompt, _ in prompt_records]
@@ -3368,6 +3385,7 @@ def main() -> None:
         innovation_control_mode=args.innovation_control_mode,
         innovation_contrastive_margin=args.innovation_contrastive_margin,
         innovation_value_loss_weight=args.innovation_value_loss_weight,
+        innovation_conditional_target_memory=args.innovation_conditional_target_memory,
         learned_fusion_dropout=args.learned_fusion_dropout,
         seed=args.seed,
     )

@@ -1800,19 +1800,27 @@ def _translate_layer_with_optional_runtime_attention(
     quantization_control: str,
     runtime_attention_profile: torch.Tensor | None,
     runtime_query_features: torch.Tensor | None = None,
+    target_condition_k: torch.Tensor | None = None,
+    target_condition_v: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
+    translate_kwargs = {
+        "tgt_layer_idx": tgt_layer_idx,
+        "quantize": quantize,
+        "quantization_control": quantization_control,
+        "runtime_attention_profile": runtime_attention_profile,
+        "runtime_query_features": runtime_query_features,
+    }
+    if target_condition_k is not None or target_condition_v is not None:
+        translate_kwargs["target_condition_k"] = target_condition_k
+        translate_kwargs["target_condition_v"] = target_condition_v
     try:
-        return translator.translate_layer(
-            K_s,
-            V_s,
-            tgt_layer_idx=tgt_layer_idx,
-            quantize=quantize,
-            quantization_control=quantization_control,
-            runtime_attention_profile=runtime_attention_profile,
-            runtime_query_features=runtime_query_features,
-        )
+        return translator.translate_layer(K_s, V_s, **translate_kwargs)
     except TypeError as exc:
-        if "runtime_attention_profile" not in str(exc) and "runtime_query_features" not in str(exc):
+        if (
+            "runtime_attention_profile" not in str(exc)
+            and "runtime_query_features" not in str(exc)
+            and "target_condition" not in str(exc)
+        ):
             raise
         return translator.translate_layer(
             K_s,
@@ -3856,6 +3864,16 @@ def _build_rotalign_prefix_state(
             quantization_control=quantization_control,
             runtime_attention_profile=runtime_attention_profile,
             runtime_query_features=runtime_query_features,
+            target_condition_k=(
+                K_t.to(device=device, dtype=torch.float32)
+                if translator.config.innovation_conditional_target_memory
+                else None
+            ),
+            target_condition_v=(
+                V_t.to(device=device, dtype=torch.float32)
+                if translator.config.innovation_conditional_target_memory
+                else None
+            ),
         )
         K_hat, V_hat = _apply_translated_kv_control(
             K_hat,

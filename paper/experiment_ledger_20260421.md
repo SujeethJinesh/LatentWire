@@ -2585,3 +2585,123 @@ Next exact gate:
   `[source K/V, target-prior K/V, learned slots]`
 - rerun the same SVAMP32 matched gate and only spend controls if it reaches
   `>=2/6` clean residual IDs while preserving near-target-self accuracy
+
+## 2026-04-23: SVAMP32 Target-Memory K-Only Query Codec
+
+Current paper readiness:
+
+- not ICLR-ready
+- estimated distance: medium-high; the live method still has not cleared the
+  same-pair clean-residual gate
+
+Current paper story:
+
+- target self-repair remains the decoder-side floor at `14/32`
+- a positive method must add real source-conditioned residual signal on clean
+  C2C-only IDs, not just reproduce target-cache behavior
+
+Blocking gap:
+
+- no source-conditioned method has reached `>=2/6` clean residual recoveries
+  under exact-ID matched scoring
+
+Top moves considered:
+
+- opt-in target-prior query memory. This matters because prior Q-Former /
+  Perceiver-style side-information suggestions point to receiver-conditioned
+  bottlenecks. It might fail if the target prior dominates or the source signal
+  remains unseparated. Cost: code plus one calibration and matched gate. Helps
+  same-pair, interpretability, and reproducibility.
+- full target-prior delta-memory. This matters because it explicitly exposes
+  source-minus-target residual rows. It might fail by overfitting or by needing
+  target-only controls to disambiguate leakage. Cost: a second implementation
+  and matched gate. Helps same-pair and interpretability.
+- verifier/selector sidecar over existing rows. This matters for no-harm
+  preservation. It might fail because the existing rows do not contain enough
+  clean residual wins to clear the gate. Cost: low. Helps robustness only after
+  a stronger residual row exists.
+
+Decision:
+
+- implemented the bounded opt-in target-prior K/V memory path first
+- ran the frozen SVAMP32 exact-ID matched gate
+- did not run controls because no matched row reached `>=2/6` clean residual
+  IDs
+
+Code changes:
+
+- `latent_bridge/calibrate.py`
+  - added `--innovation-conditional-target-memory`
+  - validates that it is only used with
+    `bridge_ridge_qk_dynalign_query_innovation_resampler_replace`
+- `latent_bridge/translator.py`
+  - added `TranslatorConfig.innovation_conditional_target_memory`
+  - forwards target-prior K/V rows into query-module fit/runtime memory
+  - forwards conditional target memory through calibration-time diagnostics
+- `latent_bridge/evaluate.py`
+  - forwards target prompt K/V into `translate_layer` when the config flag is
+    enabled
+- tests added for CLI parsing, config validation, fit-time forwarding, and
+  evaluation-time target-cache forwarding
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_translator_core.py \
+  tests/test_calibrate_and_ablation.py \
+  tests/test_evaluate_helpers.py -q
+```
+
+Result: `319 passed`
+
+Artifacts:
+
+- checkpoint:
+  - `.debug/svamp32_targetmem_query_codec_20260423/checkpoints/qwen25_to_qwen3_svamp32_targetmem_konly_query_codec_r16_bank16_seed1.pt`
+  - sha256: `071fc28113d8a8b4829feb8fb5391cd4d158e2fcb623bd9ea773cf3142bf2d67`
+- matched sweep:
+  - `.debug/svamp32_targetmem_query_codec_20260423/preds/targetmem_konly_attention_gate_sweep.jsonl`
+  - sha256: `e16b0526ada85956a4842ba7abd9f783a50fae6c2985a57d4fddf01a3153547b`
+  - meta sha256: `e570934f84fcb9c6d773153a5c4dd4a11217d43ca79c82f7ac6235211e0d59cc`
+- readout:
+  - `results/svamp32_targetmem_query_codec_20260423/targetmem_konly_attention_clean_targets.json`
+  - sha256: `3baed26ad7dbc7a60c73cd49342759901539def40db1bd37a4681df617bc2f4a`
+  - `results/svamp32_targetmem_query_codec_20260423/targetmem_konly_attention_clean_targets.md`
+  - sha256: `2fb014905d46d342e650a21e6b3e5f1fc9a75218dbad0cf5e9aa06b1828d3da0`
+- memo:
+  - `paper/svamp32_targetmem_query_codec_20260423.md`
+
+Evidence:
+
+- calibration matched all `6` clean residual prompts and all `3`
+  target-self-preserve prompts
+- dynamic token-mixture samples: `1411`
+- average fit quality: K cosine `0.951`, V cosine `0.734`
+- matched readout status: `no_matched_gate_candidate_for_controls`
+- best row: `rotalign_kv_gate_0.20`, `9/32`
+- clean residual recovered: `0/6`
+- teacher-only recovered: `1`, ID `575d7e83d84c1e67`
+- target losses: `1`, ID `c042f0a2949ff8e6`
+- numeric extraction coverage: `32/32`
+- exact ordered ID parity: true
+- bytes: `397,923.75`
+- best latency: `8.662850` seconds/example
+
+Hypothesis update:
+
+- killed for now: bounded target-prior K-only memory as a same-pair gate
+  candidate
+- weakened: target side-information alone is sufficient without an explicit
+  source-minus-target residual/delta channel
+- still alive: full target-prior delta-memory branch with runtime source-only,
+  target-only, delta-only, and combined masks
+- saturated: scalar gate sweeps, K-only value-loss suppression, target no-op
+  preservation, and current query-innovation memory without a delta channel
+
+Next exact gate:
+
+- implement full target-prior delta-memory
+  `[source K/V, target-prior K/V, source-minus-target delta K/V, learned slots]`
+- run the same matched SVAMP32 exact-ID gate plus runtime memory-mask controls
+  only if the combined row reaches `>=2/6` clean residual IDs

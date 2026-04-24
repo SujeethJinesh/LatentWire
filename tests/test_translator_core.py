@@ -4829,6 +4829,89 @@ def test_fit_from_pairs_bridge_ridge_qk_dynalign_query_innovation_resampler_fits
     assert torch.allclose(captured["target_v"], expected_v)
 
 
+def test_fit_from_pairs_query_innovation_forwards_conditional_target_memory(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        quantization_correction_rank=1,
+        innovation_conditional_target_memory=True,
+    )
+    tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
+    tr.set_bridge_prediction_teacher(
+        torch.full((4, 3), -1.0, dtype=torch.float32),
+        torch.ones(4, 3, tr.d_t, dtype=torch.float32),
+    )
+
+    captured: dict[str, torch.Tensor] = {}
+
+    def fake_bridge_ridge(self, quantized, predicted, target, *, lam, sample_weights=None):
+        del quantized, predicted, target, lam, sample_weights
+        return (
+            torch.zeros(self.d_t, self.d_t, dtype=torch.float32),
+            torch.zeros(self.d_t, self.d_t, dtype=torch.float32),
+            torch.full((self.d_t,), 0.25, dtype=torch.float32),
+        )
+
+    def fake_fit(
+        self,
+        quantized_k,
+        predicted_k,
+        quantized_v,
+        predicted_v,
+        query_features,
+        target_k,
+        target_v,
+        *,
+        rank,
+        conditional_target_k=None,
+        conditional_target_v=None,
+        **kwargs,
+    ):
+        del quantized_k, predicted_k, quantized_v, predicted_v, query_features
+        del target_v, rank, kwargs
+        assert conditional_target_k is not None
+        assert conditional_target_v is not None
+        captured["target_k"] = target_k.detach().clone()
+        captured["conditional_target_k"] = conditional_target_k.detach().clone()
+        captured["conditional_target_v"] = conditional_target_v.detach().clone()
+        return (
+            torch.zeros(self.config.bridge_bank_size, self.d_t, dtype=target_k.dtype),
+            torch.zeros(self.d_t, 1, dtype=target_k.dtype),
+            torch.zeros(self.d_t, 1, dtype=target_k.dtype),
+            torch.zeros(self.d_t, 1, dtype=target_k.dtype),
+            torch.zeros(1, 1, dtype=target_k.dtype),
+            torch.zeros(1, self.d_t, dtype=target_k.dtype),
+            torch.zeros(1, self.d_t, dtype=target_k.dtype),
+        )
+
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_ridge_correction", fake_bridge_ridge)
+    monkeypatch.setattr(RotAlignKVTranslator, "_fit_bridge_query_module_replace", fake_fit)
+
+    base = torch.tensor(
+        [
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[0.5, 0.0], [0.0, 0.5]],
+            ],
+            [
+                [[2.0, 0.0], [0.0, 2.0]],
+                [[1.0, 0.0], [0.0, 1.0]],
+            ],
+        ],
+        dtype=torch.float32,
+    )
+    tgt_k = base * 1.5
+    tgt_v = base * 2.0
+
+    tr.fit_from_pairs([(base, base + 0.5)], [(tgt_k, tgt_v)])
+
+    expected_cond_k = tr._rotate_and_flatten(tgt_k, tr.R_t).reshape(-1, tr.d_t)
+    expected_cond_v = tr._rotate_and_flatten(tgt_v, tr.R_t).reshape(-1, tr.d_t)
+    assert torch.allclose(captured["conditional_target_k"], expected_cond_k)
+    assert torch.allclose(captured["conditional_target_v"], expected_cond_v)
+    assert torch.allclose(captured["target_k"], expected_cond_k - 0.25)
+
+
 def test_fit_from_pairs_bridge_ridge_qk_dynalign_query_innovation_resampler_forwards_sample_weights(monkeypatch) -> None:
     tr = _make_identity_translator(
         monkeypatch,
@@ -5106,6 +5189,20 @@ def test_innovation_source_controls_are_query_innovation_only() -> None:
             quantization_correction="bridge_ridge_qk_dynalign_query_resampler_replace",
             innovation_control_weight=0.5,
             innovation_control_mode="zero",
+        )
+
+
+def test_innovation_conditional_target_memory_is_query_innovation_only() -> None:
+    with pytest.raises(ValueError, match="only supported"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_module_replace",
+            innovation_conditional_target_memory=True,
         )
 
 
