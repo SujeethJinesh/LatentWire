@@ -58,6 +58,63 @@ class _FakeChatTokenizer(_FakeTokenizer):
         return f"chat::{enable_thinking}::{content}"
 
 
+class _DigitTokenizer:
+    def __call__(self, text, return_tensors="pt", add_special_tokens=False):
+        del return_tensors, add_special_tokens
+        ids = [int(ch) for ch in str(text) if ch.isdigit()]
+        return SimpleNamespace(input_ids=torch.tensor([ids], dtype=torch.long))
+
+
+def test_inject_answer_token_teacher_overrides_only_clean_prompt_samples() -> None:
+    teacher_log_probs = torch.zeros(3, 3, dtype=torch.float32)
+    teacher_rows = torch.arange(3 * 3 * 4, dtype=torch.float32).view(3, 3, 4)
+    output_weight = torch.arange(10 * 4, dtype=torch.float32).view(10, 4)
+
+    new_log_probs, new_rows, answer_prompts, answer_samples = (
+        calibrate.inject_answer_token_teacher(
+            teacher_log_probs,
+            teacher_rows,
+            output_weight=output_weight,
+            tokenizer=_DigitTokenizer(),
+            prompt_answers=[["42"], ["7"]],
+            prompt_example_ids=[{"clean"}, {"other"}],
+            sample_prompt_ids=torch.tensor([0, 0, 1], dtype=torch.long),
+            target_ids={"clean"},
+            answer_weight=0.8,
+            continuation_template=" answer={answer}",
+        )
+    )
+
+    assert answer_prompts == 1
+    assert answer_samples == 2
+    assert torch.allclose(new_rows[0, 0], output_weight[4])
+    assert torch.allclose(new_rows[0, 1], output_weight[2])
+    assert torch.allclose(torch.exp(new_log_probs[0])[:2], torch.tensor([0.4, 0.4]))
+    assert torch.allclose(new_rows[2], teacher_rows[2])
+    assert torch.allclose(new_log_probs[2], teacher_log_probs[2])
+
+
+def test_inject_answer_token_teacher_requires_answer_placeholder() -> None:
+    with torch.no_grad():
+        try:
+            calibrate.inject_answer_token_teacher(
+                torch.zeros(1, 2),
+                torch.zeros(1, 2, 4),
+                output_weight=torch.zeros(10, 4),
+                tokenizer=_DigitTokenizer(),
+                prompt_answers=[["42"]],
+                prompt_example_ids=[{"clean"}],
+                sample_prompt_ids=torch.tensor([0]),
+                target_ids={"clean"},
+                answer_weight=0.5,
+                continuation_template="answer:",
+            )
+        except ValueError as exc:
+            assert "contain {answer}" in str(exc)
+        else:
+            raise AssertionError("missing {answer} placeholder did not fail")
+
+
 class _FakeOffsetTokenizer(_FakeTokenizer):
     def __init__(self) -> None:
         super().__init__({})
@@ -2382,6 +2439,37 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_likelihood_module
 
     assert args.quantization_correction == "bridge_ridge_qk_dynalign_likelihood_module_replace"
     assert args.quantization_correction_rank == 8
+
+
+def test_calibrate_parse_args_accepts_innovation_answer_teacher_flags(monkeypatch) -> None:
+    monkeypatch.setattr(
+        calibrate.sys,
+        "argv",
+        [
+            "calibrate.py",
+            "--source-model",
+            "src",
+            "--target-model",
+            "tgt",
+            "--calibration-file",
+            "cal.txt",
+            "--output",
+            "out.pt",
+            "--quantization-correction",
+            "bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+            "--innovation-target-set-json",
+            "target_set.json",
+            "--innovation-answer-teacher-weight",
+            "0.8",
+            "--innovation-answer-teacher-template",
+            " answer={answer}",
+        ],
+    )
+
+    args = calibrate.parse_args()
+
+    assert args.innovation_answer_teacher_weight == 0.8
+    assert args.innovation_answer_teacher_template == " answer={answer}"
 
 
 def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_spanalm_module_replace(monkeypatch) -> None:

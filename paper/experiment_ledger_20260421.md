@@ -3202,3 +3202,105 @@ Next exact gate:
 - promote only if matched-only positive margins appear on at least `2/6` clean
   IDs and collapse under zero-source, shuffled-source, target-only, and
   slots-only controls
+
+## 2026-04-24 - SVAMP32 answer-teacher microfit
+
+Question:
+
+- can direct gold answer-token teacher supervision on the six clean SVAMP32
+  residual IDs make the current query-innovation Perceiver connector
+  source-dependent under the committed matched/control diagnostic?
+
+Decision:
+
+- implemented a default-off calibration microfit hook:
+  `--innovation-answer-teacher-weight`
+- injected gold answer continuation token teacher rows only for clean residual
+  prompt IDs
+- preserved target-self-repair IDs with the existing zero-residual mask
+- ran the teacher-forced diagnostic before greedy generation
+- killed this calibration-proxy microfit because matched source did not beat
+  source-destroying controls on any clean residual ID
+
+Implementation:
+
+- `latent_bridge/calibrate.py`
+  - added prompt answer record loading
+  - added `inject_answer_token_teacher(...)`
+  - added answer-teacher CLI validation and wiring for
+    `bridge_ridge_qk_dynalign_query_innovation_resampler_replace`
+- `tests/test_calibrate_and_ablation.py`
+  - added helper tests for clean-only teacher injection
+  - added parser coverage for answer-teacher flags
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_answer_teacher_microfit_20260424.md`
+- results manifest:
+  - `results/svamp32_answer_teacher_microfit_20260424/manifest.md`
+- diagnostic:
+  - `results/svamp32_answer_teacher_microfit_20260424/answer_teacher_w090_gate015_clean_self.json`
+  - sha256: `e9db6ffed6ba5c42a9b983e48154fde3eac98248c56b05c57900cd9870266f71`
+  - `results/svamp32_answer_teacher_microfit_20260424/answer_teacher_w090_gate015_clean_self.md`
+  - sha256: `324e123639f812030b3e5e3f8c1ab81127468010f0438c3ee5752ca166a1a6e2`
+- scratch checkpoint/logs:
+  - `.debug/svamp32_answer_teacher_microfit_20260424/checkpoints/qwen25_to_qwen3_svamp32_answer_teacher_w090_r16_q8_seed1.pt`
+  - sha256: `437b7eecf8f0b3704eb8e6260cefcd9d45ead2a31d02855c33655c06dd2de8fc`
+  - `.debug/svamp32_answer_teacher_microfit_20260424/logs/calibrate_answer_teacher_w090_r16_q8_seed1.log`
+  - sha256: `8cbfe57de7c83d86fbae9c46e134f08110938794a6b2f60606456cb9b4091d88`
+  - `.debug/svamp32_answer_teacher_microfit_20260424/logs/diagnostic_answer_teacher_w090_gate015_clean_self.log`
+  - sha256: `ada211e52f4d0b3189a5a5ce2d9487536367419d0db5705942fdb0c9302461a1`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_calibrate_and_ablation.py -q`
+- result: `98 passed in 0.24s`
+
+Evidence:
+
+- answer-teacher prompts injected: `6`
+- answer-teacher samples injected: `277`
+- clean residual IDs scored: `6`
+- target-self-repair IDs scored: `3`
+- matched-positive clean IDs: `2`
+- matched-only clean IDs: `0`
+- control-leak clean IDs: `2`
+- mean matched margin: `-3.834308`
+- mean best-control margin: `-2.637356`
+- mean matched-minus-control margin: `-1.196952`
+- the two matched-positive clean IDs still leaked:
+  - `aee922049c757331`: best control `slots_only`
+  - `e3ab8666238a289e`: best control `target_only`
+
+Subagent synthesis:
+
+- literature/internet agents recommended C2C-distilled Q-Former/Perceiver
+  fusers with source-destroying controls
+- ablation agent recommended no greedy sweep unless the teacher-forced gate
+  cleared
+- repo-audit agent recommended a future standalone differentiable
+  answer-margin sidecar if this calibration proxy failed
+- creative agent proposed a latent syndrome sidecar that transmits numeric
+  residues with target candidates as decoder side information
+
+Hypothesis update:
+
+- killed: answer-token teacher injection in the existing calibration objective
+  is enough to make the current query-innovation Perceiver connector
+  source-dependent
+- killed: greedy generation from this microfit is evidence-driven
+- weakened: this same-family Qwen pair exposes clean residual answer signal
+  through the current connector family
+- still alive: direct differentiable answer-margin sidecar
+- still alive: latent syndrome sidecar or source-informativeness gate
+- promoted: stop calibration-proxy tuning; next test source informativeness or
+  a direct margin/syndrome branch
+
+Next exact gate:
+
+- run a source-informativeness audit on the six clean residual IDs before more
+  same-pair connector tuning, or implement the standalone differentiable
+  answer-margin sidecar with the same `>=2/6` matched-only gate
+- do not widen benchmark scope until a live row clears the teacher-forced
+  source-necessity gate

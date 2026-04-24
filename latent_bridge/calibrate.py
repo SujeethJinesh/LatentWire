@@ -37,6 +37,7 @@ import json
 import math
 import pathlib
 import sys
+from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
 
 # Allow running from the repo root
@@ -394,6 +395,21 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     p.add_argument(
+        "--innovation-answer-teacher-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Default-off blend weight for replacing clean residual prompt "
+            "prediction-teacher rows with gold answer continuation token rows. "
+            "Requires query-innovation correction and --innovation-target-set-json."
+        ),
+    )
+    p.add_argument(
+        "--innovation-answer-teacher-template",
+        default=" {answer}",
+        help="Continuation template used when building gold answer token teacher rows.",
+    )
+    p.add_argument(
         "--innovation-value-loss-weight",
         type=float,
         default=1.0,
@@ -518,8 +534,23 @@ def _prompt_record_ids(obj: dict[str, Any], prompt: str) -> set[str]:
     return ids
 
 
-def load_prompt_records(path: str) -> list[tuple[str, set[str]]]:
-    records: list[tuple[str, set[str]]] = []
+def _prompt_record_answers(obj: dict[str, Any]) -> list[str]:
+    raw_answer = obj.get("answer_text", obj.get("answer", obj.get("target")))
+    if raw_answer is None:
+        return []
+    aliases = obj.get("aliases", [])
+    return [str(raw_answer), *[str(alias) for alias in aliases]]
+
+
+@dataclass(frozen=True)
+class PromptAnswerRecord:
+    prompt: str
+    ids: set[str]
+    answers: list[str]
+
+
+def load_prompt_answer_records(path: str) -> list[PromptAnswerRecord]:
+    records: list[PromptAnswerRecord] = []
     with open(path, "r", encoding="utf-8") as f:
         for raw_line in f:
             line = raw_line.strip()
@@ -530,10 +561,20 @@ def load_prompt_records(path: str) -> list[tuple[str, set[str]]]:
                 prompt = obj.get("prompt") or obj.get("question")
                 if prompt is None:
                     raise ValueError("JSONL calibration records require `prompt` or `question`")
-                records.append((str(prompt).strip(), _prompt_record_ids(obj, str(prompt))))
+                records.append(
+                    PromptAnswerRecord(
+                        prompt=str(prompt).strip(),
+                        ids=_prompt_record_ids(obj, str(prompt)),
+                        answers=_prompt_record_answers(obj),
+                    )
+                )
             else:
-                records.append((line, set()))
+                records.append(PromptAnswerRecord(prompt=line, ids=set(), answers=[]))
     return records
+
+
+def load_prompt_records(path: str) -> list[tuple[str, set[str]]]:
+    return [(record.prompt, record.ids) for record in load_prompt_answer_records(path)]
 
 
 def load_prompts(path: str) -> list[str]:
@@ -2960,6 +3001,108 @@ def collect_aligned_prediction_teacher(
     return torch.cat(sample_log_probs, dim=0).cpu(), torch.cat(sample_output_rows, dim=0).cpu()
 
 
+def _answer_continuation_token_ids(
+    tokenizer: AutoTokenizer,
+    answer: str,
+    template: str,
+) -> torch.Tensor:
+    if "{answer}" not in template:
+        raise ValueError("innovation answer teacher template must contain {answer}")
+    text = template.format(answer=answer)
+    encoded = tokenizer(text, return_tensors="pt", add_special_tokens=False).input_ids
+    ids = encoded.view(-1).detach().to("cpu", dtype=torch.long)
+    if ids.numel() == 0:
+        raise ValueError(f"Answer continuation tokenized to zero tokens: {text!r}")
+    return ids
+
+
+def inject_answer_token_teacher(
+    teacher_log_probs: torch.Tensor,
+    teacher_output_rows: torch.Tensor,
+    *,
+    output_weight: torch.Tensor,
+    tokenizer: AutoTokenizer,
+    prompt_answers: Sequence[Sequence[str]],
+    prompt_example_ids: Sequence[set[str]],
+    sample_prompt_ids: torch.Tensor,
+    target_ids: set[str],
+    answer_weight: float,
+    continuation_template: str = " {answer}",
+) -> tuple[torch.Tensor, torch.Tensor, int, int]:
+    if not 0.0 <= float(answer_weight) <= 1.0:
+        raise ValueError("answer_weight must be in [0, 1]")
+    if "{answer}" not in continuation_template:
+        raise ValueError("continuation_template must contain {answer}")
+    if teacher_log_probs.ndim != 2:
+        raise ValueError("teacher_log_probs must be rank-2")
+    if teacher_output_rows.ndim != 3:
+        raise ValueError("teacher_output_rows must be rank-3")
+    if teacher_output_rows.shape[:2] != teacher_log_probs.shape:
+        raise ValueError("teacher rows and logits must align")
+    if output_weight.ndim != 2 or output_weight.shape[1] != teacher_output_rows.shape[-1]:
+        raise ValueError("output_weight must be [vocab, d_t]")
+    prompt_ids = sample_prompt_ids.detach().to("cpu", dtype=torch.long).view(-1)
+    if prompt_ids.numel() != teacher_log_probs.shape[0]:
+        raise ValueError(
+            "sample_prompt_ids must align with teacher rows, "
+            f"got {int(prompt_ids.numel())} vs {int(teacher_log_probs.shape[0])}"
+        )
+    if len(prompt_answers) != len(prompt_example_ids):
+        raise ValueError("prompt_answers and prompt_example_ids must have matching lengths")
+
+    out_log_probs = teacher_log_probs.detach().to("cpu", dtype=torch.float32).clone()
+    out_rows = teacher_output_rows.detach().to("cpu", dtype=torch.float32).clone()
+    output_weight_cpu = output_weight.detach().to("cpu", dtype=torch.float32)
+    topk = int(out_log_probs.shape[1])
+    answer_mass = float(answer_weight)
+    base_mass = 1.0 - answer_mass
+
+    target_prompt_answer_ids: dict[int, torch.Tensor] = {}
+    for prompt_idx, (ids, answers) in enumerate(zip(prompt_example_ids, prompt_answers)):
+        if not (ids & target_ids):
+            continue
+        if not answers:
+            raise ValueError(f"Clean residual prompt {prompt_idx} has no answer field")
+        token_ids = _answer_continuation_token_ids(
+            tokenizer,
+            str(answers[0]),
+            continuation_template,
+        )
+        target_prompt_answer_ids[prompt_idx] = token_ids
+
+    replaced_samples = 0
+    for sample_idx, prompt_idx_t in enumerate(prompt_ids.tolist()):
+        prompt_idx = int(prompt_idx_t)
+        answer_ids = target_prompt_answer_ids.get(prompt_idx)
+        if answer_ids is None:
+            continue
+        clipped_answer_ids = answer_ids[:topk]
+        n_answer = int(clipped_answer_ids.numel())
+        remaining = max(topk - n_answer, 0)
+        rows = [output_weight_cpu.index_select(0, clipped_answer_ids)]
+        probs = [
+            torch.full(
+                (n_answer,),
+                1.0 / float(max(n_answer, 1)),
+                dtype=torch.float32,
+            )
+            * (answer_mass if remaining > 0 else 1.0)
+        ]
+        if remaining > 0:
+            base_probs = torch.softmax(out_log_probs[sample_idx], dim=-1)[:remaining]
+            base_probs = base_probs / base_probs.sum().clamp_min(1e-30)
+            rows.append(out_rows[sample_idx, :remaining])
+            probs.append(base_probs * base_mass)
+        row_tensor = torch.cat(rows, dim=0)
+        prob_tensor = torch.cat(probs, dim=0)
+        prob_tensor = prob_tensor / prob_tensor.sum().clamp_min(1e-30)
+        out_rows[sample_idx].copy_(row_tensor)
+        out_log_probs[sample_idx].copy_(torch.log(prob_tensor.clamp_min(1e-30)))
+        replaced_samples += 1
+
+    return out_log_probs, out_rows, len(target_prompt_answer_ids), replaced_samples
+
+
 @torch.no_grad()
 def collect_group_qk_retrieval_templates(
     model: AutoModelForCausalLM,
@@ -3088,6 +3231,30 @@ def main() -> None:
         )
     if args.innovation_target_self_preserve_weight < 0.0:
         raise ValueError("--innovation-target-self-preserve-weight must be non-negative")
+    if not 0.0 <= args.innovation_answer_teacher_weight <= 1.0:
+        raise ValueError("--innovation-answer-teacher-weight must be in [0, 1]")
+    if (
+        args.innovation_answer_teacher_weight > 0.0
+        and args.quantization_correction
+        != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+    ):
+        raise ValueError(
+            "--innovation-answer-teacher-weight requires "
+            "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        )
+    if (
+        args.innovation_answer_teacher_weight > 0.0
+        and args.innovation_target_set_json is None
+    ):
+        raise ValueError(
+            "--innovation-answer-teacher-weight requires "
+            "--innovation-target-set-json"
+        )
+    if (
+        args.innovation_answer_teacher_weight > 0.0
+        and "{answer}" not in args.innovation_answer_teacher_template
+    ):
+        raise ValueError("--innovation-answer-teacher-template must contain {answer}")
     if (
         args.innovation_target_self_preserve_weight > 0.0
         and args.innovation_target_set_json is None
@@ -3118,9 +3285,10 @@ def main() -> None:
             "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
         )
 
-    prompt_records = load_prompt_records(args.calibration_file)
-    prompts = [prompt for prompt, _ in prompt_records]
-    prompt_example_ids = [ids for _, ids in prompt_records]
+    prompt_records = load_prompt_answer_records(args.calibration_file)
+    prompts = [record.prompt for record in prompt_records]
+    prompt_example_ids = [record.ids for record in prompt_records]
+    prompt_answers = [record.answers for record in prompt_records]
     print(f"Loaded {len(prompts)} calibration prompts from {args.calibration_file}")
 
     print(f"\nLoading source model: {args.source_model}")
@@ -3663,6 +3831,7 @@ def main() -> None:
             )
 
     sample_prompt_ids = None
+    innovation_answer_target_ids: set[str] | None = None
     if aligned_lengths is not None:
         if any(length <= 0 for length in aligned_lengths):
             print("Skipping zero-length calibration prompts while building bridge prompt ids")
@@ -3689,6 +3858,7 @@ def main() -> None:
                 "--innovation-target-set-json requires aligned bridge sample prompt IDs"
             )
         target_ids, preserve_ids = load_innovation_target_sets(args.innovation_target_set_json)
+        innovation_answer_target_ids = target_ids
         if args.innovation_target_self_preserve_weight > 0.0 and not preserve_ids:
             raise ValueError(
                 f"{args.innovation_target_set_json} does not contain any "
@@ -3889,6 +4059,40 @@ def main() -> None:
             span_likelihood_weight=0.20 if args.quantization_correction == "bridge_ridge_qk_dynalign_spanalm_module_replace" else 0.0,
         )
         translator.set_bridge_prediction_teacher(teacher_log_probs, teacher_output_rows)
+        if args.innovation_answer_teacher_weight > 0.0:
+            if sample_prompt_ids is None or innovation_answer_target_ids is None:
+                raise ValueError(
+                    "--innovation-answer-teacher-weight requires sample prompt IDs "
+                    "and innovation target IDs"
+                )
+            output_embeddings = tgt.get_output_embeddings()
+            if output_embeddings is None or getattr(output_embeddings, "weight", None) is None:
+                raise ValueError(
+                    "Target model must expose output embeddings for answer-token teacher"
+                )
+            (
+                teacher_log_probs,
+                teacher_output_rows,
+                answer_prompts,
+                answer_samples,
+            ) = inject_answer_token_teacher(
+                teacher_log_probs,
+                teacher_output_rows,
+                output_weight=output_embeddings.weight,
+                tokenizer=tok_t,
+                prompt_answers=prompt_answers,
+                prompt_example_ids=prompt_example_ids,
+                sample_prompt_ids=sample_prompt_ids,
+                target_ids=innovation_answer_target_ids,
+                answer_weight=args.innovation_answer_teacher_weight,
+                continuation_template=args.innovation_answer_teacher_template,
+            )
+            translator.set_bridge_prediction_teacher(teacher_log_probs, teacher_output_rows)
+            print(
+                "Injected gold answer-token teacher rows: "
+                f"prompts={answer_prompts}, samples={answer_samples}, "
+                f"weight={args.innovation_answer_teacher_weight:.3f}"
+            )
         print(
             "Built aligned prediction teacher: "
             f"samples={int(teacher_log_probs.shape[0])}, topk={int(teacher_log_probs.shape[1])}"

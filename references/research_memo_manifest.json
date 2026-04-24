@@ -656,5 +656,12 @@
     "path": "references/450_lateral_connector_repair_refs.md",
     "status": "local_memo",
     "reason": "Focused memo covering the strongest remaining lateral inspirations: learned connectors, conditional repair, routed patch experts, and tiny bridge-style iterations."
+  },
+  {
+    "num": 451,
+    "slug": "answer_teacher_microfit_refs",
+    "path": "references/451_answer_teacher_microfit_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for answer-token microfit, source-control learned connectors, C2C residual distillation, information bottlenecks, and latent syndrome sidecars after the calibration proxy failed."
   }
 ]
