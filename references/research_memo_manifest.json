@@ -663,5 +663,12 @@
     "path": "references/451_answer_teacher_microfit_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for answer-token microfit, source-control learned connectors, C2C residual distillation, information bottlenecks, and latent syndrome sidecars after the calibration proxy failed."
+  },
+  {
+    "num": 452,
+    "slug": "syndrome_sidecar_refs",
+    "path": "references/452_syndrome_sidecar_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for C2C-derived latent syndrome sidecars using target candidate pools as decoder side information, with source-control residue gates."
   }
 ]

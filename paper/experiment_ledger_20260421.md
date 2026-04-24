@@ -3486,3 +3486,91 @@ Next exact gate:
 - require `>=2/6` clean residual IDs, matched source beating zero/shuffle/
   target-only/slots-only controls, and preservation of the `>=14/32`
   target-self/self-repair floor
+
+## 2026-04-24 - SVAMP32 syndrome sidecar probe
+
+Question:
+
+- do target-side candidate pools contain enough clean residual gold answers for
+  a compact C2C-derived syndrome to select them under strict source-destroying
+  controls?
+
+Decision:
+
+- implemented `scripts/analyze_svamp32_syndrome_sidecar_probe.py`
+- tested strict target-side candidate pools and an augmented source/text
+  sensitivity pool on the frozen SVAMP32 exact-ID rows
+- promoted latent syndrome sidecar as the next live branch, but only as a
+  bound: the current probe uses C2C numeric answers as proxy syndromes and is
+  not a deployable method
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_syndrome_sidecar_probe_20260424.md`
+- results manifest:
+  - `results/svamp32_syndrome_sidecar_probe_20260424/manifest.md`
+- strict target-pool probe:
+  - `results/svamp32_syndrome_sidecar_probe_20260424/targetpool_syndrome_probe.json`
+  - sha256: `48f94eb7f14081b7c2b662a207dfdc96a2b81e3df4cfd54e919a2e55e3891ffb`
+- augmented sensitivity probe:
+  - `results/svamp32_syndrome_sidecar_probe_20260424/augmentedpool_syndrome_probe.json`
+  - sha256: `aa108b5b3ffd2e78acc8010e2f39c45876c79497e7e4944a15f719eecd46dfd5`
+- references:
+  - `references/452_syndrome_sidecar_refs.md`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_syndrome_sidecar_probe.py -q`
+- result: `2 passed in 0.02s`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_syndrome_sidecar_probe.py`
+- result: pass
+- `./venv_arm64/bin/python -m pytest -q`
+- result: `662 passed in 25.98s`
+- JSON artifact validation
+- result: pass
+- `git diff --check`
+- result: pass
+
+Evidence:
+
+- strict target-side pool, `[2,3,5,7]` residues:
+  - syndrome bytes: `1`
+  - matched: `14/32`
+  - target-only fallback: `14/32`
+  - target-self matched: `3/3`
+  - clean gold in pool: `2/6`
+  - clean matched: `2/6`
+  - clean source-necessary: `2/6`
+  - control clean union: `0/6`
+  - source-necessary IDs: `1d50b408c8f5cd2c`, `aee922049c757331`
+- augmented sensitivity pool, `[2,3,5,7]` residues:
+  - matched: `15/32`
+  - clean source-necessary: `3/6`
+  - additional clean ID: `6e9745b37ab6fc45`
+
+Subagent synthesis:
+
+- repo/repro agent recommended reusing exact SVAMP32 target-set and existing
+  matched/zero/shuffle/target-only/slots-only controls before generation
+- ablation agent recommended the same source-necessity matrix and pass rule
+- literature/creative agent recommended a Wyner-Ziv/Slepian-Wolf style
+  candidate-pool syndrome sidecar with compact residues and strict controls
+
+Hypothesis update:
+
+- promoted: latent syndrome sidecar is now the next highest-value live branch
+- revived: low-rate interpretable communication may recover clean residual IDs
+  despite failed source-final and source-margin channels
+- weakened: training another dense connector before source-syndrome prediction
+  is lower value
+- saturated: source-final copying, stronger-source source-margin escalation,
+  and answer-teacher calibration proxy microfits
+
+Next exact gate:
+
+- train the smallest source-latent syndrome predictor on frozen source
+  hidden/cache features and target-side candidate pools
+- require `>=2/6` clean source-necessary IDs, matched `>=14/32`, target-self
+  `3/3`, zero/shuffle/target-only/slots-only controls `0/6` clean, exact ID
+  parity, and numeric coverage `>=31/32`
