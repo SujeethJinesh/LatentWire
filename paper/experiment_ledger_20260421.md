@@ -2903,3 +2903,99 @@ Next exact gate:
 - promote only if SVAMP32 exact-ID reaches `>=14/32`, `>=2/6` clean residual
   IDs, at most `1` target-correct loss, and clean wins vanish under source
   controls
+
+## 2026-04-24 - SVAMP32 contrastive delta-memory connector smoke
+
+Question:
+
+- does combining explicit target-prior delta memory with stronger
+  zero/shuffle source-control contrast recover clean source-necessary residual
+  IDs before implementing a deeper connector?
+
+Decision:
+
+- trained one combined source-control/delta-memory query-innovation checkpoint
+- ran only the matched SVAMP32 exact-ID gate sweep
+- did not run source-zero, source-shuffle, or memory-mask controls because the
+  matched row failed `>=2/6` clean residual IDs
+- logged the result as a branch-killing smoke, not a promoted method
+
+Implementation:
+
+- no code changes required; existing infrastructure already supports:
+  - `--innovation-conditional-delta-memory`
+  - `--innovation-control-mode zero_and_shuffle`
+  - `--innovation-memory-control`
+- new tracked memo:
+  - `paper/svamp32_contrastive_deltamem_connector_20260424.md`
+
+Artifacts:
+
+- clean-target readout:
+  - `results/svamp32_contrastive_deltamem_connector_20260424/combined_w050_m001_attention_clean_targets.json`
+  - sha256: `34d7086b75d0e034d5793b571fba459bd3c218849b9b3df0e5cd8586e7658d56`
+  - `results/svamp32_contrastive_deltamem_connector_20260424/combined_w050_m001_attention_clean_targets.md`
+  - sha256: `7127f373e67e9187745e8cdfc1bccc586394d66433d1923ec41fc4dda24293aa`
+- source/oracle cross-check:
+  - `results/svamp32_contrastive_deltamem_connector_20260424/source_oracle_bound_with_contrastive_deltamem.json`
+  - sha256: `cbf5b293238ded7e178afb893acc730c7a303f4c6ffea13babc8dedc135178f1`
+  - `results/svamp32_contrastive_deltamem_connector_20260424/source_oracle_bound_with_contrastive_deltamem.md`
+  - sha256: `214155c75285cf0c4131bae5812f9f0554a5fa411ddf473c2c8b5b3ed911ed6b`
+- scratch checkpoint/logs/preds:
+  - `.debug/svamp32_contrastive_deltamem_connector_20260424/checkpoints/qwen25_to_qwen3_svamp32_contrastive_deltamem_query_connector_w050_m001_r16_b16_seed1.pt`
+  - sha256: `6b22d1b62da5455134c4a7935252426617d6d556ad0317a8f98217409c607bb8`
+  - `.debug/svamp32_contrastive_deltamem_connector_20260424/preds/combined_attention_gate_sweep.jsonl`
+  - sha256: `d9b4735d64503f485a05fa300c78352f8c17b9ea018971dc9394cbbb71162fc4`
+
+Evidence:
+
+- calibration matched `6` clean residual prompts and `3` target-self-preserve
+  prompts
+- dynamic token-mixture samples: `1411`
+- average fit quality: K cosine `0.951`, V cosine `0.734`
+- matched readout status: `no_matched_gate_candidate_for_controls`
+- all tested gates (`0.125`, `0.15`, `0.175`, `0.20`) scored `8/32`
+- clean residual recovered: `0/6`
+- teacher-only recovered: `1`
+- delta vs target_self_repair: `-6`
+- target losses: `1`
+- oracle `target_self_repair + contrastive_deltamem_w050_gate020`: `15/32`
+- clean residual added to `target_self_repair`: `0`
+- bytes: `397,923.75`
+- best latency among tested gates: `7.430172` seconds/example
+
+Subagent synthesis:
+
+- literature, ablation, repo-audit, and internet-creative subagents converged
+  on source-control-contrastive learned-query transport
+- repo audit confirmed the current combined smoke is executable with existing
+  flags, but warned that the likely failure mode is target-prior leakage or
+  over-regularization
+- internet/literature synthesis promoted a true Q-Former/Perceiver-style
+  receiver-conditioned connector rather than further scalar tuning
+
+Hypothesis update:
+
+- killed for now: cheap scalar tuning of combined delta-memory plus
+  zero/shuffle source-control contrast under the current query-innovation module
+- weakened: explicit source-minus-target delta rows can expose clean residual
+  information when regularized for source specificity
+- weakened: source-control contrast alone is enough without a stronger
+  receiver-conditioned connector architecture
+- still alive: source-control contrast and target-prior/delta controls as
+  diagnostics for a deeper connector
+- promoted: implement a true receiver-conditioned Q-Former/Perceiver-style
+  connector with C2C residual distillation and source-destroying controls
+
+Next exact gate:
+
+- stop tuning this cheap connector family unless the architecture changes
+- implement a small receiver-conditioned learned-query connector:
+  - frozen source and target
+  - `8-16` learned connector queries
+  - query cross-attention over source K/V plus target-prior state
+  - C2C clean-residual distillation
+  - target-self-repair preservation
+  - matched-vs-zero/shuffled/target-only source controls
+- require `>=14/32`, `>=2/6` clean residual IDs, at most `1` target-correct
+  loss, exact ID parity, and source-control collapse before widening
