@@ -1,0 +1,4204 @@
+{
+  "artifacts": {
+    "candidates": [
+      {
+        "label": "target_self_repair",
+        "method": "target_self_repair",
+        "path": "results/svamp32_query_innovation_query_pool_transport_20260423/target_self_repair_exact32.jsonl"
+      },
+      {
+        "label": "selected_route_no_repair",
+        "method": "selected_route_no_repair",
+        "path": "results/svamp32_query_innovation_query_pool_transport_20260423/selected_route_no_repair_exact32.jsonl"
+      },
+      {
+        "label": "query_pool_gate010",
+        "method": "rotalign_kv",
+        "path": "results/svamp32_query_innovation_query_pool_transport_20260423/query_pool_transport_gate010_matched.jsonl"
+      },
+      {
+        "label": "idweighted_gate015",
+        "method": "rotalign_kv",
+        "path": "results/svamp32_idweighted_query_innovation_20260423/idweighted_query_innovation_gate015_matched.jsonl"
+      },
+      {
+        "label": "query_innovation_gate015",
+        "method": "rotalign_kv",
+        "path": "results/svamp32_query_innovation_resampler_gate015_20260423/query_innovation_gate015_matched.jsonl"
+      }
+    ],
+    "target": {
+      "label": "target_alone",
+      "method": "target_alone",
+      "path": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl"
+    },
+    "target_set_json": "results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json",
+    "teacher": {
+      "label": "c2c",
+      "method": "c2c_generate",
+      "path": "results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl"
+    }
+  },
+  "config": {
+    "fallback_label": "target_self_repair",
+    "min_clean_source_necessary": 2,
+    "min_correct": 14,
+    "min_numeric_coverage": 31,
+    "moduli": [
+      2,
+      3,
+      5,
+      7
+    ],
+    "ridge_lambda": 1.0,
+    "shuffle_offset": 1
+  },
+  "date": "2026-04-24",
+  "feature_metadata": [
+    {
+      "example_id": "013133cdef4f637c",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 89
+    },
+    {
+      "example_id": "d64f6e35083ffe8c",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 93
+    },
+    {
+      "example_id": "3e8a5691f5443495",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 85
+    },
+    {
+      "example_id": "316b525a4fcbfb89",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 69
+    },
+    {
+      "example_id": "e26bdbcab1449bbe",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 85
+    },
+    {
+      "example_id": "aee922049c757331",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 70
+    },
+    {
+      "example_id": "1d50b408c8f5cd2c",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 96
+    },
+    {
+      "example_id": "b0b71023ae4d233b",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 86
+    },
+    {
+      "example_id": "b1200c32546a34a5",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 86
+    },
+    {
+      "example_id": "14bfbfc94f2c2e7b",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 87
+    },
+    {
+      "example_id": "4c84ebf42812703b",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 92
+    },
+    {
+      "example_id": "4ef979ea2bf931df",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 95
+    },
+    {
+      "example_id": "13cb77b698eeadb5",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 72
+    },
+    {
+      "example_id": "e3ab8666238a289e",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 75
+    },
+    {
+      "example_id": "2de1549556000830",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 94
+    },
+    {
+      "example_id": "615f9d817cb5be59",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 91
+    },
+    {
+      "example_id": "2f80204fc9e0896f",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 75
+    },
+    {
+      "example_id": "137ad74218053f8a",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 95
+    },
+    {
+      "example_id": "4d780f825bb8541c",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 89
+    },
+    {
+      "example_id": "08d3dd8885ffb998",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 96
+    },
+    {
+      "example_id": "de1bf4d142544e5b",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 74
+    },
+    {
+      "example_id": "f367349ce0604296",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 84
+    },
+    {
+      "example_id": "a85be5ec651dac24",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 78
+    },
+    {
+      "example_id": "de2a795ab37694af",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 68
+    },
+    {
+      "example_id": "47464cc0b064f172",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 75
+    },
+    {
+      "example_id": "0d2b4f7681973e19",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 76
+    },
+    {
+      "example_id": "33836927fc9f1a8a",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 74
+    },
+    {
+      "example_id": "e7dd2efb5ec99a06",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 91
+    },
+    {
+      "example_id": "41cce6c6e6bb0058",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 97
+    },
+    {
+      "example_id": "6e9745b37ab6fc45",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 110
+    },
+    {
+      "example_id": "c042f0a2949ff8e6",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 70
+    },
+    {
+      "example_id": "575d7e83d84c1e67",
+      "feature_dim": 3584,
+      "feature_layers": [
+        12,
+        24
+      ],
+      "formatted_prompt_tokens": 74
+    }
+  ],
+  "interpretation": "This probe trains leave-one-out ridge classifiers from frozen source hidden summaries to C2C residue classes. It tests source-latent predictability of the previously cleared syndrome bound, but remains a small-slice diagnostic.",
+  "provenance": {
+    "candidate_numeric_coverage": {
+      "idweighted_gate015": 32,
+      "query_innovation_gate015": 32,
+      "query_pool_gate010": 32,
+      "selected_route_no_repair": 32,
+      "target_alone": 32,
+      "target_self_repair": 32
+    },
+    "exact_ordered_id_parity": true,
+    "issues": [],
+    "teacher_numeric_coverage": 32
+  },
+  "reference_n": 32,
+  "run": {
+    "candidate_pool_clean_gold_count": 2,
+    "candidate_pool_gold_count": 19,
+    "condition_summaries": {
+      "label_shuffled": {
+        "clean_correct_count": 0,
+        "clean_correct_ids": [],
+        "condition": "label_shuffled",
+        "correct_count": 13,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e26bdbcab1449bbe",
+          "e7dd2efb5ec99a06",
+          "f367349ce0604296"
+        ],
+        "target_self_correct_count": 3,
+        "target_self_correct_ids": [
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "de1bf4d142544e5b"
+        ],
+        "teacher_only_correct_count": 3,
+        "teacher_only_correct_ids": [
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "de1bf4d142544e5b"
+        ]
+      },
+      "matched": {
+        "clean_correct_count": 0,
+        "clean_correct_ids": [],
+        "condition": "matched",
+        "correct_count": 9,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e26bdbcab1449bbe"
+        ],
+        "target_self_correct_count": 3,
+        "target_self_correct_ids": [
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "de1bf4d142544e5b"
+        ],
+        "teacher_only_correct_count": 3,
+        "teacher_only_correct_ids": [
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "de1bf4d142544e5b"
+        ]
+      },
+      "shuffled_source": {
+        "clean_correct_count": 0,
+        "clean_correct_ids": [],
+        "condition": "shuffled_source",
+        "correct_count": 10,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e26bdbcab1449bbe",
+          "e7dd2efb5ec99a06",
+          "f367349ce0604296"
+        ],
+        "target_self_correct_count": 1,
+        "target_self_correct_ids": [
+          "de1bf4d142544e5b"
+        ],
+        "teacher_only_correct_count": 1,
+        "teacher_only_correct_ids": [
+          "de1bf4d142544e5b"
+        ]
+      },
+      "slots_only": {
+        "clean_correct_count": 0,
+        "clean_correct_ids": [],
+        "condition": "slots_only",
+        "correct_count": 8,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "de2a795ab37694af",
+          "f367349ce0604296"
+        ],
+        "target_self_correct_count": 0,
+        "target_self_correct_ids": [],
+        "teacher_only_correct_count": 0,
+        "teacher_only_correct_ids": []
+      },
+      "target_only": {
+        "clean_correct_count": 0,
+        "clean_correct_ids": [],
+        "condition": "target_only",
+        "correct_count": 14,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "a85be5ec651dac24",
+          "b1200c32546a34a5",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e26bdbcab1449bbe",
+          "e7dd2efb5ec99a06",
+          "f367349ce0604296"
+        ],
+        "target_self_correct_count": 3,
+        "target_self_correct_ids": [
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "de1bf4d142544e5b"
+        ],
+        "teacher_only_correct_count": 3,
+        "teacher_only_correct_ids": [
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "de1bf4d142544e5b"
+        ]
+      },
+      "zero_source": {
+        "clean_correct_count": 0,
+        "clean_correct_ids": [],
+        "condition": "zero_source",
+        "correct_count": 14,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0d2b4f7681973e19",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "a85be5ec651dac24",
+          "b1200c32546a34a5",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e26bdbcab1449bbe",
+          "e7dd2efb5ec99a06",
+          "f367349ce0604296"
+        ],
+        "target_self_correct_count": 3,
+        "target_self_correct_ids": [
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "de1bf4d142544e5b"
+        ],
+        "teacher_only_correct_count": 3,
+        "teacher_only_correct_ids": [
+          "4c84ebf42812703b",
+          "4d780f825bb8541c",
+          "de1bf4d142544e5b"
+        ]
+      }
+    },
+    "control_clean_union_ids": [],
+    "criteria": {
+      "control_clean_union_empty": true,
+      "min_clean_source_necessary": false,
+      "min_correct": false,
+      "preserve_fallback_floor": false
+    },
+    "failing_criteria": [
+      "min_correct",
+      "preserve_fallback_floor",
+      "min_clean_source_necessary"
+    ],
+    "moduli": [
+      2,
+      3,
+      5,
+      7
+    ],
+    "ridge_lambda": 1.0,
+    "rows": [
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "query_innovation_gate015",
+          "query_pool_gate010",
+          "selected_route_no_repair",
+          "target_alone",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "5",
+          "7",
+          "12",
+          "3"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "5"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "5"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "5"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "5"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "5"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "5"
+          }
+        },
+        "example_id": "013133cdef4f637c",
+        "fallback_prediction": "5",
+        "gold_answer": "5",
+        "index": 0,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "matched": [
+            0,
+            1,
+            0,
+            5
+          ],
+          "shuffled_source": [
+            0,
+            0,
+            1,
+            5
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "12"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 5,
+        "candidate_pool_values": [
+          "96",
+          "15",
+          "62",
+          "17",
+          "1"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "96"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          }
+        },
+        "example_id": "d64f6e35083ffe8c",
+        "fallback_prediction": "17",
+        "gold_answer": "2",
+        "index": 1,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            0,
+            4,
+            2
+          ],
+          "matched": [
+            1,
+            0,
+            3,
+            3
+          ],
+          "shuffled_source": [
+            1,
+            1,
+            2,
+            0
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "96"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "query_innovation_gate015",
+          "query_pool_gate010",
+          "selected_route_no_repair",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 5,
+        "candidate_pool_values": [
+          "3",
+          "4",
+          "7",
+          "1",
+          "2"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "7"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "7"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "7"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "3"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "7"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "7"
+          }
+        },
+        "example_id": "3e8a5691f5443495",
+        "fallback_prediction": "7",
+        "gold_answer": "1",
+        "index": 2,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            0,
+            4,
+            4
+          ],
+          "matched": [
+            0,
+            0,
+            1,
+            2
+          ],
+          "shuffled_source": [
+            1,
+            0,
+            3,
+            0
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "7"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "query_innovation_gate015",
+          "query_pool_gate010",
+          "selected_route_no_repair",
+          "target_alone",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "63",
+          "78",
+          "15",
+          "1"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "63"
+          },
+          "matched": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "63"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "63"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "63"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "63"
+          }
+        },
+        "example_id": "316b525a4fcbfb89",
+        "fallback_prediction": "63",
+        "gold_answer": "63",
+        "index": 3,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            0,
+            4,
+            1
+          ],
+          "matched": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "shuffled_source": [
+            1,
+            0,
+            4,
+            2
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "63"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "3",
+          "6",
+          "1",
+          "10"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "1"
+          },
+          "matched": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "1"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "1"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "3"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "1"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "1"
+          }
+        },
+        "example_id": "e26bdbcab1449bbe",
+        "fallback_prediction": "1",
+        "gold_answer": "1",
+        "index": 4,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            3,
+            6
+          ],
+          "matched": [
+            1,
+            1,
+            3,
+            6
+          ],
+          "shuffled_source": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "9"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 8,
+        "candidate_pool_values": [
+          "17",
+          "4",
+          "8",
+          "5",
+          "-9",
+          "9",
+          "1",
+          "13"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          },
+          "matched": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "4"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "17"
+          }
+        },
+        "example_id": "aee922049c757331",
+        "fallback_prediction": "17",
+        "gold_answer": "1",
+        "index": 5,
+        "labels": [
+          "teacher_only",
+          "clean_residual_targets"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            0,
+            3,
+            3
+          ],
+          "matched": [
+            1,
+            0,
+            2,
+            0
+          ],
+          "shuffled_source": [
+            1,
+            1,
+            4,
+            4
+          ],
+          "zero_source": [
+            0,
+            2,
+            2,
+            2
+          ]
+        },
+        "teacher_prediction": "1"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 6,
+        "candidate_pool_values": [
+          "1",
+          "703",
+          "246",
+          "25",
+          "949",
+          "2"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          }
+        },
+        "example_id": "1d50b408c8f5cd2c",
+        "fallback_prediction": "1",
+        "gold_answer": "949",
+        "index": 6,
+        "labels": [
+          "teacher_only",
+          "clean_residual_targets"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            2,
+            0
+          ],
+          "matched": [
+            1,
+            1,
+            1,
+            5
+          ],
+          "shuffled_source": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "949"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "selected_route_no_repair",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 7,
+        "candidate_pool_values": [
+          "1",
+          "5",
+          "7",
+          "4",
+          "2",
+          "12",
+          "3"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "4"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "4"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "4"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "5"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "4"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "4"
+          }
+        },
+        "example_id": "b0b71023ae4d233b",
+        "fallback_prediction": "4",
+        "gold_answer": "2",
+        "index": 7,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            0,
+            2,
+            2
+          ],
+          "matched": [
+            0,
+            0,
+            4,
+            5
+          ],
+          "shuffled_source": [
+            1,
+            2,
+            2,
+            3
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "1"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 7,
+        "candidate_pool_values": [
+          "178",
+          "142",
+          "356",
+          "47",
+          "2",
+          "1",
+          "498"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "matched": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "178"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          }
+        },
+        "example_id": "b1200c32546a34a5",
+        "fallback_prediction": "2",
+        "gold_answer": "2",
+        "index": 8,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "matched": [
+            0,
+            0,
+            4,
+            0
+          ],
+          "shuffled_source": [
+            0,
+            2,
+            4,
+            0
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "17"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 5,
+        "candidate_pool_values": [
+          "16",
+          "8",
+          "5",
+          "19",
+          "2"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "16"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "16"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "16"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "16"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "16"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "16"
+          }
+        },
+        "example_id": "14bfbfc94f2c2e7b",
+        "fallback_prediction": "16",
+        "gold_answer": "3",
+        "index": 9,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            0,
+            2,
+            5
+          ],
+          "matched": [
+            1,
+            2,
+            1,
+            6
+          ],
+          "shuffled_source": [
+            0,
+            1,
+            0,
+            3
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "14"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "2",
+          "12",
+          "10",
+          "5"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "10"
+          },
+          "matched": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "10"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015"
+            ],
+            "correct": false,
+            "prediction": "5"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "10"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "10"
+          }
+        },
+        "example_id": "4c84ebf42812703b",
+        "fallback_prediction": "10",
+        "gold_answer": "10",
+        "index": 10,
+        "labels": [
+          "teacher_only",
+          "target_self_repair"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            2,
+            1,
+            1
+          ],
+          "matched": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "shuffled_source": [
+            1,
+            2,
+            0,
+            5
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "10"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 6,
+        "candidate_pool_values": [
+          "52",
+          "46",
+          "50",
+          "21",
+          "5",
+          "2"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "52"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "52"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "52"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "52"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "52"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "52"
+          }
+        },
+        "example_id": "4ef979ea2bf931df",
+        "fallback_prediction": "52",
+        "gold_answer": "4",
+        "index": 11,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            2,
+            2,
+            0
+          ],
+          "matched": [
+            1,
+            1,
+            4,
+            3
+          ],
+          "shuffled_source": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "5"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 3,
+        "candidate_pool_values": [
+          "46",
+          "177",
+          "1"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "46"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "46"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "46"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "46"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "46"
+          }
+        },
+        "example_id": "13cb77b698eeadb5",
+        "fallback_prediction": "46",
+        "gold_answer": "8142",
+        "index": 12,
+        "labels": [
+          "teacher_only",
+          "clean_residual_targets"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            2,
+            3
+          ],
+          "matched": [
+            0,
+            2,
+            3,
+            6
+          ],
+          "shuffled_source": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "zero_source": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "teacher_prediction": "8142"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "4",
+          "3",
+          "2",
+          "5"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "5"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "5"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "5"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "4"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "5"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "5"
+          }
+        },
+        "example_id": "e3ab8666238a289e",
+        "fallback_prediction": "5",
+        "gold_answer": "1",
+        "index": 13,
+        "labels": [
+          "teacher_only",
+          "clean_residual_targets"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            3,
+            0
+          ],
+          "matched": [
+            1,
+            0,
+            3,
+            6
+          ],
+          "shuffled_source": [
+            1,
+            0,
+            4,
+            4
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "1"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 6,
+        "candidate_pool_values": [
+          "33",
+          "9",
+          "3",
+          "42",
+          "1",
+          "2"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "42"
+          },
+          "matched": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "42"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "42"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "33"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "42"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "42"
+          }
+        },
+        "example_id": "2de1549556000830",
+        "fallback_prediction": "42",
+        "gold_answer": "39",
+        "index": 14,
+        "labels": [
+          "teacher_only",
+          "clean_residual_targets"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            2,
+            1,
+            5
+          ],
+          "matched": [
+            1,
+            2,
+            1,
+            1
+          ],
+          "shuffled_source": [
+            0,
+            2,
+            3,
+            1
+          ],
+          "zero_source": [
+            0,
+            0,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "39"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 7,
+        "candidate_pool_values": [
+          "87",
+          "35",
+          "3",
+          "58",
+          "93",
+          "1",
+          "2"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "93"
+          },
+          "matched": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "93"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "93"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "87"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "93"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "93"
+          }
+        },
+        "example_id": "615f9d817cb5be59",
+        "fallback_prediction": "93",
+        "gold_answer": "32",
+        "index": 15,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            2,
+            6
+          ],
+          "matched": [
+            0,
+            0,
+            1,
+            5
+          ],
+          "shuffled_source": [
+            1,
+            1,
+            3,
+            6
+          ],
+          "zero_source": [
+            0,
+            0,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "8"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "query_innovation_gate015",
+          "query_pool_gate010",
+          "selected_route_no_repair",
+          "target_alone",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 5,
+        "candidate_pool_values": [
+          "13",
+          "4",
+          "5",
+          "8",
+          "2"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "13"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "13"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "13"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "13"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "13"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "13"
+          }
+        },
+        "example_id": "2f80204fc9e0896f",
+        "fallback_prediction": "13",
+        "gold_answer": "13",
+        "index": 16,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "matched": [
+            0,
+            0,
+            4,
+            2
+          ],
+          "shuffled_source": [
+            1,
+            1,
+            2,
+            0
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "13"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "8",
+          "7",
+          "10",
+          "1"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "8"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "8"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "8"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "8"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "8"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "8"
+          }
+        },
+        "example_id": "137ad74218053f8a",
+        "fallback_prediction": "8",
+        "gold_answer": "11",
+        "index": 17,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            2,
+            2,
+            1
+          ],
+          "matched": [
+            0,
+            0,
+            4,
+            5
+          ],
+          "shuffled_source": [
+            0,
+            2,
+            1,
+            5
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "7"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "selected_route_no_repair",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 7,
+        "candidate_pool_values": [
+          "1",
+          "12",
+          "14",
+          "34",
+          "26",
+          "2",
+          "4"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "26"
+          },
+          "matched": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "26"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "34"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "26"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "26"
+          }
+        },
+        "example_id": "4d780f825bb8541c",
+        "fallback_prediction": "26",
+        "gold_answer": "26",
+        "index": 18,
+        "labels": [
+          "teacher_only",
+          "target_self_repair"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            2,
+            4,
+            4
+          ],
+          "matched": [
+            0,
+            1,
+            4,
+            1
+          ],
+          "shuffled_source": [
+            0,
+            1,
+            4,
+            6
+          ],
+          "zero_source": [
+            0,
+            0,
+            2,
+            2
+          ]
+        },
+        "teacher_prediction": "26"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 5,
+        "candidate_pool_values": [
+          "415",
+          "309",
+          "356",
+          "41",
+          "1"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "41"
+          },
+          "matched": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "41"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "41"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "415"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "41"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "41"
+          }
+        },
+        "example_id": "08d3dd8885ffb998",
+        "fallback_prediction": "41",
+        "gold_answer": "266",
+        "index": 19,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            0,
+            2,
+            0
+          ],
+          "matched": [
+            1,
+            2,
+            2,
+            5
+          ],
+          "shuffled_source": [
+            1,
+            0,
+            2,
+            1
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "34"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 8,
+        "candidate_pool_values": [
+          "2",
+          "93",
+          "97",
+          "40",
+          "1",
+          "57",
+          "3",
+          "4"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "57"
+          },
+          "matched": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "57"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "57"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "57"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "57"
+          }
+        },
+        "example_id": "de1bf4d142544e5b",
+        "fallback_prediction": "57",
+        "gold_answer": "57",
+        "index": 20,
+        "labels": [
+          "teacher_only",
+          "target_self_repair"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            4,
+            4
+          ],
+          "matched": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "shuffled_source": [
+            0,
+            0,
+            1,
+            6
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "57"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "query_innovation_gate015",
+          "query_pool_gate010",
+          "selected_route_no_repair",
+          "target_alone",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "6",
+          "8",
+          "14",
+          "3"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "6"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "14"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "6"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "6"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "6"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "6"
+          }
+        },
+        "example_id": "f367349ce0604296",
+        "fallback_prediction": "6",
+        "gold_answer": "6",
+        "index": 21,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            1,
+            4,
+            1
+          ],
+          "matched": [
+            0,
+            2,
+            4,
+            0
+          ],
+          "shuffled_source": [
+            0,
+            1,
+            4,
+            4
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "6"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "query_innovation_gate015",
+          "query_pool_gate010",
+          "selected_route_no_repair",
+          "target_alone",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "4",
+          "20",
+          "5",
+          "2"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "4"
+          },
+          "matched": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "4"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "4"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "4"
+          }
+        },
+        "example_id": "a85be5ec651dac24",
+        "fallback_prediction": "4",
+        "gold_answer": "4",
+        "index": 22,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            0,
+            2,
+            5
+          ],
+          "matched": [
+            0,
+            2,
+            2,
+            2
+          ],
+          "shuffled_source": [
+            0,
+            2,
+            2,
+            2
+          ],
+          "zero_source": [
+            0,
+            0,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "4"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "query_innovation_gate015",
+          "query_pool_gate010",
+          "selected_route_no_repair",
+          "target_alone",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "2",
+          "11",
+          "22",
+          "3"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "2"
+          }
+        },
+        "example_id": "de2a795ab37694af",
+        "fallback_prediction": "2",
+        "gold_answer": "2",
+        "index": 23,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            0,
+            1,
+            5
+          ],
+          "matched": [
+            1,
+            2,
+            2,
+            0
+          ],
+          "shuffled_source": [
+            0,
+            0,
+            2,
+            5
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "2"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 6,
+        "candidate_pool_values": [
+          "2",
+          "12",
+          "14",
+          "10",
+          "1",
+          "4"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "matched": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          }
+        },
+        "example_id": "47464cc0b064f172",
+        "fallback_prediction": "2",
+        "gold_answer": "24",
+        "index": 24,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            0,
+            1,
+            5
+          ],
+          "matched": [
+            1,
+            2,
+            1,
+            4
+          ],
+          "shuffled_source": [
+            0,
+            2,
+            0,
+            1
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "12"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "query_innovation_gate015",
+          "query_pool_gate010",
+          "selected_route_no_repair",
+          "target_alone",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 6,
+        "candidate_pool_values": [
+          "204",
+          "154",
+          "50",
+          "5",
+          "2",
+          "90"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "204"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "204"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "204"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "204"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "204"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "204"
+          }
+        },
+        "example_id": "0d2b4f7681973e19",
+        "fallback_prediction": "204",
+        "gold_answer": "204",
+        "index": 25,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            1,
+            4
+          ],
+          "matched": [
+            1,
+            0,
+            2,
+            5
+          ],
+          "shuffled_source": [
+            0,
+            0,
+            1,
+            6
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "50"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 4,
+        "candidate_pool_values": [
+          "6",
+          "5",
+          "14",
+          "3"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          }
+        },
+        "example_id": "33836927fc9f1a8a",
+        "fallback_prediction": "6",
+        "gold_answer": "20",
+        "index": 26,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            1,
+            4
+          ],
+          "matched": [
+            1,
+            1,
+            3,
+            6
+          ],
+          "shuffled_source": [
+            1,
+            2,
+            4,
+            1
+          ],
+          "zero_source": [
+            0,
+            2,
+            2,
+            2
+          ]
+        },
+        "teacher_prediction": "6"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 8,
+        "candidate_pool_values": [
+          "1",
+          "89",
+          "60",
+          "31",
+          "29",
+          "2",
+          "-31",
+          "6"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "31"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "31"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "1"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "31"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "31"
+          }
+        },
+        "example_id": "e7dd2efb5ec99a06",
+        "fallback_prediction": "31",
+        "gold_answer": "31",
+        "index": 27,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            1,
+            2,
+            0
+          ],
+          "matched": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "shuffled_source": [
+            1,
+            0,
+            3,
+            3
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "29"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 5,
+        "candidate_pool_values": [
+          "3",
+          "9",
+          "6",
+          "13",
+          "1"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "3"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "3"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "3"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "3"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "3"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "3"
+          }
+        },
+        "example_id": "41cce6c6e6bb0058",
+        "fallback_prediction": "3",
+        "gold_answer": "10",
+        "index": 28,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            2,
+            1,
+            4
+          ],
+          "matched": [
+            0,
+            0,
+            1,
+            5
+          ],
+          "shuffled_source": [
+            1,
+            1,
+            1,
+            5
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "3"
+      },
+      {
+        "candidate_labels_for_gold": [],
+        "candidate_pool_contains_gold": false,
+        "candidate_pool_size": 5,
+        "candidate_pool_values": [
+          "600",
+          "39",
+          "661",
+          "6",
+          "1"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          },
+          "matched": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "600"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "6"
+          }
+        },
+        "example_id": "6e9745b37ab6fc45",
+        "fallback_prediction": "6",
+        "gold_answer": "61",
+        "index": 29,
+        "labels": [
+          "teacher_only",
+          "clean_residual_targets"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            0,
+            0,
+            2,
+            5
+          ],
+          "matched": [
+            1,
+            1,
+            4,
+            4
+          ],
+          "shuffled_source": [
+            1,
+            2,
+            1,
+            4
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "61"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "selected_route_no_repair",
+          "target_alone",
+          "target_self_repair"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 6,
+        "candidate_pool_values": [
+          "11",
+          "12",
+          "15",
+          "14",
+          "2",
+          "1"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "11"
+          },
+          "matched": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "12"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "2"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "11"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "11"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": true,
+            "prediction": "11"
+          }
+        },
+        "example_id": "c042f0a2949ff8e6",
+        "fallback_prediction": "11",
+        "gold_answer": "11",
+        "index": 30,
+        "labels": [],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            1,
+            4,
+            4
+          ],
+          "matched": [
+            0,
+            0,
+            2,
+            5
+          ],
+          "shuffled_source": [
+            0,
+            2,
+            2,
+            2
+          ],
+          "zero_source": [
+            0,
+            2,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "11"
+      },
+      {
+        "candidate_labels_for_gold": [
+          "idweighted_gate015",
+          "query_innovation_gate015",
+          "query_pool_gate010"
+        ],
+        "candidate_pool_contains_gold": true,
+        "candidate_pool_size": 5,
+        "candidate_pool_values": [
+          "24",
+          "72",
+          "3",
+          "6",
+          "2"
+        ],
+        "conditions": {
+          "label_shuffled": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "24"
+          },
+          "matched": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "24"
+          },
+          "shuffled_source": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "24"
+          },
+          "slots_only": {
+            "candidate_labels": [
+              "idweighted_gate015",
+              "query_innovation_gate015",
+              "query_pool_gate010",
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "3"
+          },
+          "target_only": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "24"
+          },
+          "zero_source": {
+            "candidate_labels": [
+              "selected_route_no_repair",
+              "target_alone",
+              "target_self_repair"
+            ],
+            "correct": false,
+            "prediction": "24"
+          }
+        },
+        "example_id": "575d7e83d84c1e67",
+        "fallback_prediction": "24",
+        "gold_answer": "2",
+        "index": 31,
+        "labels": [
+          "teacher_only"
+        ],
+        "predicted_residue_signatures": {
+          "label_shuffled": [
+            1,
+            2,
+            2,
+            3
+          ],
+          "matched": [
+            0,
+            1,
+            4,
+            4
+          ],
+          "shuffled_source": [
+            0,
+            0,
+            2,
+            5
+          ],
+          "zero_source": [
+            0,
+            0,
+            1,
+            2
+          ]
+        },
+        "teacher_prediction": "2"
+      }
+    ],
+    "source_necessary_clean_ids": [],
+    "status": "source_latent_syndrome_probe_fails_gate"
+  },
+  "status": "source_latent_syndrome_probe_fails_gate",
+  "target_ids": {
+    "clean_residual_targets": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "e3ab8666238a289e"
+    ],
+    "target_self_repair": [
+      "4c84ebf42812703b",
+      "4d780f825bb8541c",
+      "de1bf4d142544e5b"
+    ],
+    "teacher_only": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "4c84ebf42812703b",
+      "4d780f825bb8541c",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "de1bf4d142544e5b",
+      "e3ab8666238a289e"
+    ]
+  }
+}

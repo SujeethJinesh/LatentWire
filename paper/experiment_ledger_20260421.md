@@ -3574,3 +3574,99 @@ Next exact gate:
 - require `>=2/6` clean source-necessary IDs, matched `>=14/32`, target-self
   `3/3`, zero/shuffle/target-only/slots-only controls `0/6` clean, exact ID
   parity, and numeric coverage `>=31/32`
+
+## 2026-04-24 - SVAMP32 source-latent syndrome probe
+
+Gate:
+
+- replace the C2C oracle residue syndrome with a leave-one-ID-out predictor
+  from frozen source hidden summaries
+- keep the strict target-side candidate pool and require matched `>=14/32`,
+  target-self `3/3`, clean source-necessary `>=2/6`, exact ID parity, numeric
+  coverage `>=31/32`, and zero/shuffle/label-shuffle/target-only/slots-only
+  clean union `0/6`
+
+Decision:
+
+- implemented `scripts/analyze_svamp32_source_latent_syndrome_probe.py`
+- added focused tests in
+  `tests/test_analyze_svamp32_source_latent_syndrome_probe.py`
+- ran Qwen2.5-0.5B frozen source hidden summary probes with `last` and
+  `mid,last` feature layers
+- weakened the direct linear pooled-source-hidden syndrome branch; both
+  variants fail below the target-only floor and recover `0/6` clean
+  source-necessary IDs
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_source_latent_syndrome_probe_20260424.md`
+- results manifest:
+  - `results/svamp32_source_latent_syndrome_probe_20260424/manifest.md`
+- last-layer probe:
+  - `results/svamp32_source_latent_syndrome_probe_20260424/qwen25_05b_last_targetpool_probe.json`
+  - sha256: `afc769b2d3f56e450ba3e0d2a4f5df73975d4fceb564b80518fb6d653229410e`
+- mid+last probe:
+  - `results/svamp32_source_latent_syndrome_probe_20260424/qwen25_05b_mid_last_targetpool_probe.json`
+  - sha256: `2fe61a32c3cc872cc72887ae34a41716e27d887754dd627aff6807fc7e20e40f`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_latent_syndrome_probe.py -q`
+- result: `3 passed in 0.02s`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_latent_syndrome_probe.py`
+- result: pass
+
+Evidence:
+
+- last-layer source features:
+  - status: `source_latent_syndrome_probe_fails_gate`
+  - matched: `9/32`
+  - target-only fallback: `14/32`
+  - zero-source: `13/32`
+  - shuffled-source: `10/32`
+  - label-shuffled: `13/32`
+  - slots-only: `8/32`
+  - clean source-necessary: `0/6`
+  - target-self: `2/3`
+  - teacher numeric coverage: `32/32`
+- mid+last source features:
+  - status: `source_latent_syndrome_probe_fails_gate`
+  - matched: `9/32`
+  - target-only fallback: `14/32`
+  - zero-source: `14/32`
+  - shuffled-source: `10/32`
+  - label-shuffled: `13/32`
+  - slots-only: `8/32`
+  - clean source-necessary: `0/6`
+  - target-self: `3/3`
+  - teacher numeric coverage: `32/32`
+
+Subagent synthesis:
+
+- repo/repro agent recommended a standalone analyzer first, not editing
+  `translator.py`, to avoid mixing source, target, delta, and slot-memory
+  effects
+- ablation agent recommended the strict matched/zero/shuffle/label-shuffle/
+  target-only/slots-only matrix and a hard `0/6` clean-control union rule
+- creative/literature agent recommended a future Syndrome-Q variant with a
+  Q-Former/Perceiver-style query bottleneck, but only after this linear
+  readout gate was tested
+
+Hypothesis update:
+
+- weakened: pooled frozen Qwen2.5-0.5B source hidden summaries do not linearly
+  expose the C2C residue syndrome on frozen SVAMP32
+- still alive: target-candidate syndrome decoding as a bound
+- promoted next: cross-fitted learned query bottleneck or C2C-residual
+  distillation target with the same strict candidate-pool controls
+- killed for now: claiming a source-latent positive method from pooled hidden
+  summaries
+
+Next exact gate:
+
+- train or fit the smallest cross-fitted query-bottleneck/C2C-residual
+  syndrome predictor and decode through the same strict target candidate pool
+- require matched `>=14/32`, target-self `3/3`, clean source-necessary
+  `>=2/6`, numeric coverage `>=31/32`, exact ID parity, and all
+  source-destroying controls `0/6` clean
