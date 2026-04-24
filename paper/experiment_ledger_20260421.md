@@ -2799,3 +2799,107 @@ Next exact gate:
   floor
 - require `>=2/6` clean residual IDs on SVAMP32 exact-ID before larger slices,
   seed repeats, or cross-family experiments
+
+## 2026-04-24 - SVAMP32 source informativeness and oracle-bound diagnostic
+
+Question:
+
+- after target-memory and delta-memory failed, does the frozen SVAMP32 slice
+  contain exploitable source/complementarity headroom, and do any existing rows
+  expose enough clean source-necessary IDs to justify verifier-only selection?
+
+Decision:
+
+- added a reusable source/oracle-bound analyzer
+- ran it across source/text rows, target_self_repair, selected route, and the
+  strongest recent candidate rows
+- cross-checked the best ID-weighted row with the stricter source-sidecar-bound
+  analyzer
+- no method promoted; result is a diagnostic gate
+
+Code changes:
+
+- `scripts/analyze_svamp32_source_oracle_bound.py`
+  - preserves raw gate-sweep method labels before falling back to normalized
+    method names
+  - reports source correctness on teacher-only and clean residual IDs
+  - reports candidate clean residual recovery and per-clean-ID provenance
+  - computes oracle bounds for target/baseline rows against source and
+    candidate rows
+- `tests/test_analyze_svamp32_source_oracle_bound.py`
+  - synthetic exact-ID coverage for clean residual/source/oracle accounting
+
+Verification:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_oracle_bound.py -q
+```
+
+Result: `1 passed in 0.02s`
+
+Artifacts:
+
+- aggregate source/oracle readout:
+  - `results/svamp32_source_oracle_bound_20260424/source_oracle_bound.json`
+  - sha256: `806a3b9e64a3562b386a77d6b8573bc529f8524dcaab9fbd82fbdcbf97378966`
+  - `results/svamp32_source_oracle_bound_20260424/source_oracle_bound.md`
+  - sha256: `6de23b56930bca29c311a403b9ebd08be653a620a4f7d6b9b290cb3208c57557`
+- strict sidecar-bound cross-check:
+  - `results/svamp32_source_oracle_bound_20260424/idweighted_gate015_sidecar_bound.json`
+  - sha256: `678015b227017b2c679d2708ff89311fa749407814320c138be49789aeb3ad08`
+  - `results/svamp32_source_oracle_bound_20260424/idweighted_gate015_sidecar_bound.md`
+  - sha256: `2b4958c03166acd9e78b55e9c3f9a65647c8136606093acf9a94f14e06c87ed8`
+- memo:
+  - `paper/svamp32_source_oracle_bound_20260424.md`
+
+Evidence:
+
+- target-alone: `8/32`
+- C2C teacher: `16/32`
+- target_self_repair: `14/32`
+- source_alone: `5/32`
+- text_to_text: `2/32`
+- source/text union clean residual exact-correct: `0/6`
+- existing candidate union clean residual exact-correct: `1/6`
+- only current clean residual recovered by any candidate:
+  `aee922049c757331`, recovered by `idweighted_gate015`
+- best candidate-row oracle with target_self_repair:
+  `idweighted_gate015`, `17/32`, `+3`
+- strict source-control-clean sidecar bound for `idweighted_gate015`:
+  `15/32`, `+1`, `1` clean source-necessary ID
+- sidecar-bound failing criteria:
+  `min_correct`, `min_clean_source_necessary`
+
+Subagent synthesis:
+
+- literature/external, ablation, repo audit, and internet-creative side paths
+  converged on a source-control-contrastive Q-Former/Perceiver-style connector
+  as the next positive-method branch
+- verifier-only selection is weakened because existing rows expose only one
+  clean source-necessary residual ID under strict controls
+
+Hypothesis update:
+
+- promoted: C2C/cache-level source distillation, because C2C solves clean IDs
+  that source final text and text relay do not
+- promoted: learned query connector with matched-vs-zero/shuffled source
+  contrast as the next method gate
+- weakened: verifier-only repair/selection from existing rows as a positive
+  method
+- killed for now: additional direct target-memory or delta-memory variants
+  without a source-discriminative connector objective
+- saturated: source final-answer relay, text-to-text relay, current
+  query-pool/idweighted rows, and target_self_repair as a comparator
+
+Next exact gate:
+
+- implement the smallest source-control-contrastive learned query connector
+  smoke:
+  - frozen source and target
+  - `8` learned connector queries
+  - C2C clean-residual distillation
+  - target-correct/self-repair preservation
+  - matched-vs-zero/shuffled source contrast
+- promote only if SVAMP32 exact-ID reaches `>=14/32`, `>=2/6` clean residual
+  IDs, at most `1` target-correct loss, and clean wins vanish under source
+  controls
