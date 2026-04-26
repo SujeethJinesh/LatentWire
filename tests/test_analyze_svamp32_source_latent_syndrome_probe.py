@@ -74,6 +74,7 @@ def test_loocv_residue_predictions_returns_signatures() -> None:
     labels = {3: torch.tensor([0, 1, 0, 1])}
     predictions = probe._loocv_residue_predictions(
         features,
+        [{"example_id": str(idx), "feature_layers": [0]} for idx in range(4)],
         labels,
         config=probe.ProbeConfig(moduli=(3,), ridge_lambda=0.1),
     )
@@ -86,6 +87,39 @@ def test_loocv_residue_predictions_returns_signatures() -> None:
     ]
     assert len(predictions["matched"]) == 4
     assert all(len(signature) == 1 for signature in predictions["matched"])
+
+
+def test_query_bottleneck_predictions_returns_control_signatures() -> None:
+    features = torch.tensor(
+        [
+            [2.0, 0.0, 2.0, 0.0],
+            [0.0, 2.0, 0.0, 2.0],
+            [1.8, 0.1, 1.8, 0.1],
+            [0.1, 1.8, 0.1, 1.8],
+        ]
+    )
+    labels = {2: torch.tensor([0, 1, 0, 1])}
+    predictions = probe._loocv_residue_predictions(
+        features,
+        [{"example_id": str(idx), "feature_layers": [0, 1]} for idx in range(4)],
+        labels,
+        config=probe.ProbeConfig(
+            moduli=(2,),
+            probe_model="query_bottleneck",
+            query_slots=2,
+            query_epochs=2,
+            query_seed=7,
+        ),
+    )
+
+    assert sorted(predictions) == [
+        "label_shuffled",
+        "matched",
+        "shuffled_source",
+        "zero_source",
+    ]
+    assert len(predictions["matched"]) == 4
+    assert all(len(signature) == 1 for signature in predictions["zero_source"])
 
 
 def test_high_dimensional_ridge_uses_dual_unregularized_intercept() -> None:

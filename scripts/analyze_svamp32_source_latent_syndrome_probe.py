@@ -10,6 +10,7 @@ controls.
 from __future__ import annotations
 
 import argparse
+import math
 import json
 import pathlib
 import sys
@@ -35,10 +36,16 @@ from scripts import analyze_svamp32_syndrome_sidecar_probe as syndrome
 @dataclass(frozen=True)
 class ProbeConfig:
     moduli: tuple[int, ...]
+    probe_model: str = "ridge"
     ridge_lambda: float = 1.0
     shuffle_offset: int = 1
     min_correct: int = 14
     min_clean_source_necessary: int = 2
+    query_slots: int = 8
+    query_epochs: int = 80
+    query_lr: float = 1e-2
+    query_weight_decay: float = 1e-3
+    query_seed: int = 0
 
 
 def _resolve(path: str | pathlib.Path) -> pathlib.Path:
@@ -213,12 +220,163 @@ def _predict_with_weights(test_x: torch.Tensor, weights: torch.Tensor) -> int:
     return int(torch.argmax(scores).item())
 
 
-def _loocv_residue_predictions(
+class _QueryResidueProbe(torch.nn.Module):
+    def __init__(self, hidden_dim: int, slots: int, moduli: Sequence[int]) -> None:
+        super().__init__()
+        self.query = torch.nn.Parameter(torch.randn(slots, hidden_dim) * 0.02)
+        self.norm = torch.nn.LayerNorm(hidden_dim)
+        self.key = torch.nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.value = torch.nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.heads = torch.nn.ModuleDict(
+            {str(modulus): torch.nn.Linear(slots * hidden_dim, int(modulus)) for modulus in moduli}
+        )
+
+    def forward(self, tokens: torch.Tensor) -> dict[int, torch.Tensor]:
+        normalized = self.norm(tokens)
+        key = self.key(normalized)
+        value = self.value(normalized)
+        scores = torch.einsum("qh,bth->bqt", self.query, key) / math.sqrt(key.shape[-1])
+        pooled = torch.softmax(scores, dim=-1) @ value
+        flat = pooled.flatten(start_dim=1)
+        return {int(modulus): head(flat) for modulus, head in self.heads.items()}
+
+
+def _feature_summary_tokens(
     features: torch.Tensor,
+    feature_metadata: Sequence[dict[str, Any]],
+) -> torch.Tensor:
+    if not feature_metadata:
+        raise ValueError("feature metadata is empty")
+    token_count = len(feature_metadata[0]["feature_layers"]) * 2
+    if token_count <= 0 or features.shape[1] % token_count != 0:
+        raise ValueError("feature dimension cannot be reshaped into summary tokens")
+    hidden_dim = features.shape[1] // token_count
+    return features.reshape(features.shape[0], token_count, hidden_dim)
+
+
+def _standardize_token_views(
+    train_tokens: torch.Tensor,
+    *eval_tokens: torch.Tensor,
+) -> tuple[torch.Tensor, ...]:
+    mean = train_tokens.mean(dim=(0, 1), keepdim=True)
+    std = train_tokens.std(dim=(0, 1), unbiased=False, keepdim=True).clamp_min(1e-6)
+    return tuple((tokens - mean) / std for tokens in (train_tokens, *eval_tokens))
+
+
+def _train_query_residue_probe(
+    train_tokens: torch.Tensor,
+    labels_by_modulus: dict[int, torch.Tensor],
+    *,
+    config: ProbeConfig,
+    seed: int,
+) -> _QueryResidueProbe:
+    torch.manual_seed(int(seed))
+    model = _QueryResidueProbe(
+        hidden_dim=int(train_tokens.shape[-1]),
+        slots=int(config.query_slots),
+        moduli=config.moduli,
+    )
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=float(config.query_lr),
+        weight_decay=float(config.query_weight_decay),
+    )
+    for _ in range(int(config.query_epochs)):
+        optimizer.zero_grad()
+        logits = model(train_tokens)
+        loss = sum(
+            torch.nn.functional.cross_entropy(logits[int(modulus)], labels)
+            for modulus, labels in labels_by_modulus.items()
+        )
+        loss.backward()
+        optimizer.step()
+    return model.eval()
+
+
+@torch.no_grad()
+def _predict_query_signature(model: _QueryResidueProbe, tokens: torch.Tensor, moduli: Sequence[int]) -> tuple[int, ...]:
+    logits = model(tokens.unsqueeze(0))
+    return tuple(int(torch.argmax(logits[int(modulus)], dim=-1).item()) for modulus in moduli)
+
+
+def _loocv_query_bottleneck_predictions(
+    features: torch.Tensor,
+    feature_metadata: Sequence[dict[str, Any]],
     labels_by_modulus: dict[int, torch.Tensor],
     *,
     config: ProbeConfig,
 ) -> dict[str, list[tuple[int, ...]]]:
+    tokens = _feature_summary_tokens(features, feature_metadata).float().cpu()
+    n = int(tokens.shape[0])
+    matched: list[tuple[int, ...]] = []
+    zero_source: list[tuple[int, ...]] = []
+    shuffled_source: list[tuple[int, ...]] = []
+    label_shuffled: list[tuple[int, ...]] = []
+    for idx in range(n):
+        train_indices = [j for j in range(n) if j != idx]
+        train_tokens_raw = tokens[train_indices]
+        test_tokens_raw = tokens[idx : idx + 1]
+        zero_tokens_raw = torch.zeros_like(test_tokens_raw)
+        shuffled_idx = (idx + int(config.shuffle_offset)) % n
+        if shuffled_idx == idx:
+            shuffled_idx = (idx + 1) % n
+        shuffled_tokens_raw = tokens[shuffled_idx : shuffled_idx + 1]
+        train_tokens, test_tokens, zero_tokens, shuffled_tokens = _standardize_token_views(
+            train_tokens_raw,
+            test_tokens_raw,
+            zero_tokens_raw,
+            shuffled_tokens_raw,
+        )
+        train_labels = {
+            modulus: labels_by_modulus[modulus][train_indices]
+            for modulus in config.moduli
+        }
+        model = _train_query_residue_probe(
+            train_tokens,
+            train_labels,
+            config=config,
+            seed=int(config.query_seed) + idx,
+        )
+        matched.append(_predict_query_signature(model, test_tokens[0], config.moduli))
+        zero_source.append(_predict_query_signature(model, zero_tokens[0], config.moduli))
+        shuffled_source.append(_predict_query_signature(model, shuffled_tokens[0], config.moduli))
+
+        shuffled_labels = {
+            modulus: labels[torch.arange(labels.numel() - 1, -1, -1)]
+            for modulus, labels in train_labels.items()
+        }
+        label_model = _train_query_residue_probe(
+            train_tokens,
+            shuffled_labels,
+            config=config,
+            seed=int(config.query_seed) + 10000 + idx,
+        )
+        label_shuffled.append(_predict_query_signature(label_model, test_tokens[0], config.moduli))
+    return {
+        "matched": matched,
+        "zero_source": zero_source,
+        "shuffled_source": shuffled_source,
+        "label_shuffled": label_shuffled,
+    }
+
+
+def _loocv_residue_predictions(
+    features: torch.Tensor,
+    feature_metadata: Sequence[dict[str, Any]],
+    labels_by_modulus: dict[int, torch.Tensor],
+    *,
+    config: ProbeConfig,
+) -> dict[str, list[tuple[int, ...]]]:
+    if config.probe_model == "query_bottleneck":
+        return _loocv_query_bottleneck_predictions(
+            features,
+            feature_metadata,
+            labels_by_modulus,
+            config=config,
+        )
+    if config.probe_model != "ridge":
+        raise ValueError(f"Unsupported probe model: {config.probe_model!r}")
+
     n = int(features.shape[0])
     matched: list[tuple[int, ...]] = []
     zero_source: list[tuple[int, ...]] = []
@@ -552,6 +710,7 @@ def analyze_with_features(
     labels_by_modulus = _teacher_residue_labels(teacher_records, config.moduli)
     residue_predictions = _loocv_residue_predictions(
         features.float().cpu(),
+        feature_metadata,
         labels_by_modulus,
         config=config,
     )
@@ -571,15 +730,24 @@ def analyze_with_features(
         if not provenance_issues
         else "source_latent_syndrome_probe_fails_gate"
     )
+    if config.probe_model == "query_bottleneck":
+        interpretation = (
+            "This probe trains leave-one-out learned query bottlenecks over "
+            "source hidden summary tokens to predict C2C residue classes. It "
+            "tests source-latent predictability of the previously cleared "
+            "syndrome bound, but remains a small-slice diagnostic."
+        )
+    else:
+        interpretation = (
+            "This probe trains leave-one-out ridge classifiers from frozen "
+            "source hidden summaries to C2C residue classes. It tests "
+            "source-latent predictability of the previously cleared syndrome "
+            "bound, but remains a small-slice diagnostic."
+        )
     return {
         "date": run_date,
         "status": status,
-        "interpretation": (
-            "This probe trains leave-one-out ridge classifiers from frozen source "
-            "hidden summaries to C2C residue classes. It tests source-latent "
-            "predictability of the previously cleared syndrome bound, but remains "
-            "a small-slice diagnostic."
-        ),
+        "interpretation": interpretation,
         "artifacts": {
             "target": {
                 "label": target_spec.label,
@@ -603,12 +771,18 @@ def analyze_with_features(
         },
         "config": {
             "fallback_label": fallback_label,
+            "probe_model": config.probe_model,
             "moduli": list(config.moduli),
             "ridge_lambda": float(config.ridge_lambda),
             "shuffle_offset": int(config.shuffle_offset),
             "min_correct": int(config.min_correct),
             "min_clean_source_necessary": int(config.min_clean_source_necessary),
             "min_numeric_coverage": int(min_numeric_coverage),
+            "query_slots": int(config.query_slots),
+            "query_epochs": int(config.query_epochs),
+            "query_lr": float(config.query_lr),
+            "query_weight_decay": float(config.query_weight_decay),
+            "query_seed": int(config.query_seed),
         },
         "reference_n": len(reference_ids),
         "target_ids": {key: sorted(value) for key, value in target_ids.items()},
@@ -638,15 +812,30 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- status: `{payload['status']}`",
         f"- reference rows: `{payload['reference_n']}`",
         f"- moduli: `{','.join(str(value) for value in payload['config']['moduli'])}`",
+        f"- probe model: `{payload['config']['probe_model']}`",
         f"- ridge lambda: `{payload['config']['ridge_lambda']}`",
         f"- teacher numeric coverage: `{payload['provenance']['teacher_numeric_coverage']}/{payload['reference_n']}`",
         f"- provenance issues: `{len(payload['provenance']['issues'])}`",
-        "",
-        "## Summary",
-        "",
-        "| Condition | Correct | Clean Correct | Target-Self Correct |",
-        "|---|---:|---:|---:|",
     ]
+    if payload["config"]["probe_model"] == "query_bottleneck":
+        lines.extend(
+            [
+                f"- query slots: `{payload['config']['query_slots']}`",
+                f"- query epochs: `{payload['config']['query_epochs']}`",
+                f"- query lr: `{payload['config']['query_lr']}`",
+                f"- query weight decay: `{payload['config']['query_weight_decay']}`",
+                f"- query seed: `{payload['config']['query_seed']}`",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "## Summary",
+            "",
+            "| Condition | Correct | Clean Correct | Target-Self Correct |",
+            "|---|---:|---:|---:|",
+        ]
+    )
     for summary in (
         matched,
         zero_source,
@@ -695,11 +884,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--target-set-json", required=True)
     parser.add_argument("--fallback-label", default="target_self_repair")
     parser.add_argument("--moduli", default="2,3,5,7")
+    parser.add_argument("--probe-model", choices=["ridge", "query_bottleneck"], default="ridge")
     parser.add_argument("--ridge-lambda", type=float, default=1.0)
     parser.add_argument("--shuffle-offset", type=int, default=1)
     parser.add_argument("--min-correct", type=int, default=14)
     parser.add_argument("--min-clean-source-necessary", type=int, default=2)
     parser.add_argument("--min-numeric-coverage", type=int, default=31)
+    parser.add_argument("--query-slots", type=int, default=8)
+    parser.add_argument("--query-epochs", type=int, default=80)
+    parser.add_argument("--query-lr", type=float, default=1e-2)
+    parser.add_argument("--query-weight-decay", type=float, default=1e-3)
+    parser.add_argument("--query-seed", type=int, default=0)
     parser.add_argument("--source-reasoning-mode", default="brief_analysis")
     parser.add_argument("--source-use-chat-template", action="store_true")
     parser.add_argument("--source-enable-thinking", choices=["true", "false"], default=None)
@@ -718,10 +913,16 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     moduli = tuple(int(value) for value in str(args.moduli).split(",") if value.strip())
     config = ProbeConfig(
         moduli=moduli,
+        probe_model=str(args.probe_model),
         ridge_lambda=float(args.ridge_lambda),
         shuffle_offset=int(args.shuffle_offset),
         min_correct=int(args.min_correct),
         min_clean_source_necessary=int(args.min_clean_source_necessary),
+        query_slots=int(args.query_slots),
+        query_epochs=int(args.query_epochs),
+        query_lr=float(args.query_lr),
+        query_weight_decay=float(args.query_weight_decay),
+        query_seed=int(args.query_seed),
     )
 
     from transformers import AutoModelForCausalLM, AutoTokenizer

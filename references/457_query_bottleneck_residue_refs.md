@@ -74,8 +74,10 @@
 
 ## Next Gate
 
-Implement a cross-fitted query-bottleneck residue predictor on the frozen
-SVAMP32 candidate-pool surface:
+The first summary-token query-bottleneck smoke gate failed on SVAMP32 with
+matched `9/32`, target-self `2/3`, and clean source-necessary `0/6`. Do not
+scale that exact variant. The remaining literature-backed gate is a full
+token/layer or C2C-residual version:
 
 - input: source token/layer states, optionally anchor-relative features
 - output: residue factor queries or candidate-contrast queries

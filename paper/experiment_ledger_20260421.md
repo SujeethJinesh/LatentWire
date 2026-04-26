@@ -4326,3 +4326,72 @@ Next exact gate:
 - require matched `>=14/32`, target-self `3/3`, clean source-necessary
   `>=2/6`, numeric coverage `>=31/32`, exact ordered ID parity, and clean
   control union `0/6`
+
+## 2026-04-26 - SVAMP32 query-bottleneck residue smoke gate
+
+Cycle:
+
+- cycle number: `2026-04-26-query-bottleneck-residue-1`
+- live branch entering cycle: learned query-bottleneck residue predictor
+- scale-up rung: strict small exact-ID gate
+- ICLR readiness: not ready; still blocked on a deployable source-necessary
+  positive method
+
+Gate:
+
+- implemented `probe_model=query_bottleneck` in
+  `scripts/analyze_svamp32_source_latent_syndrome_probe.py`
+- trained leave-one-ID-out learned query slots over all-layer source summary
+  tokens
+- decoded through the same frozen SVAMP32 target candidate pool
+- controls: zero-source, shuffled-source, label-shuffle, target-only, and
+  slots-only
+- configuration: `8` query slots, `80` epochs, lr `0.01`, weight decay
+  `0.001`, query seed `0`
+
+Decision:
+
+- frozen SVAMP32 gate failed
+- matched `9/32`, below the `14/32` target-only floor
+- target-self preservation `2/3`
+- clean source-necessary `0/6`
+- control clean union `0/6`
+- weakened: query-bottleneck over layer-summary tokens
+- do not scale this summary-token query bottleneck upward
+
+Artifacts:
+
+- script:
+  - `scripts/analyze_svamp32_source_latent_syndrome_probe.py`
+- tests:
+  - `tests/test_analyze_svamp32_source_latent_syndrome_probe.py`
+- memo:
+  - `paper/svamp32_query_bottleneck_residue_20260426.md`
+- results manifest:
+  - `results/svamp32_query_bottleneck_residue_20260426/manifest.md`
+- result JSON:
+  - `results/svamp32_query_bottleneck_residue_20260426/qwen25_05b_all_layers_query_slots8_probe.json`
+  - sha256: `59964c426e13f61dc00805beb30574aaa376df70ba77377864d0eeb41bb9d7b3`
+- result markdown:
+  - `results/svamp32_query_bottleneck_residue_20260426/qwen25_05b_all_layers_query_slots8_probe.md`
+  - sha256: `9736a7e2558bfcab3e91ee316a858c25c54320c7abdca0e14b3d947d8a9170e8`
+- run log:
+  - `.debug/svamp32_query_bottleneck_residue_20260426/logs/qwen25_05b_all_layers_query_slots8_probe.log`
+  - sha256: `4c8a62cdde5629759edb83d874d0441616eac46c7bdfd1db2b1666d479e0183c`
+
+Hypothesis update:
+
+- weakened: learned querying over layer-summary tokens is enough to recover C2C
+  residue sidecars
+- strengthened: the source-signal bottleneck likely requires full token/layer
+  traces, token/layer C2C-residual targets, or a different source-derived
+  training signal rather than summary-token residue classification
+
+Next exact gate:
+
+- implement token/layer-level C2C-residual distillation or a full source-token
+  query bottleneck with a rate/slot curve
+- keep the same strict SVAMP32 target-candidate decoder and controls
+- require matched `>=14/32`, target-self `3/3`, clean source-necessary
+  `>=2/6`, numeric coverage `>=31/32`, exact ordered ID parity, and clean
+  control union `0/6`

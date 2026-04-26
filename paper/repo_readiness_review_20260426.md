@@ -129,6 +129,10 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
   features: all-layer Qwen2.5 features reach only `9/32`, underperform the
   `14/32` target-only floor, preserve only `2/3` target-self rows, and recover
   `0/6` clean source-necessary IDs.
+- The first learned query-bottleneck residue predictor over all-layer summary
+  tokens is also negative: it matches the all-layer ridge gate at `9/32`,
+  preserves only `2/3` target-self rows, and recovers `0/6` clean
+  source-necessary IDs.
 
 ## Main Gaps
 
@@ -153,12 +157,11 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 ## Highest-Priority Next Gate
 
-Pivot to a learned query-bottleneck residue predictor rather than raw source
-numeric answers, raw dynalign scale-up, or linear pooled source-hidden readout.
-The next branch should use source token/layer states with output queries,
+Pivot to token/layer-level C2C-residual distillation or a full source-token
+query bottleneck rather than raw source numeric answers, raw dynalign scale-up,
+linear pooled source-hidden readout, or summary-token query bottlenecks. The
+next branch should use source token/layer traces or C2C residual targets with
 cross-fitting, rate/slot ablations, and strict matched-vs-control separation.
-A future C2C-derived attempt still needs a crisper token/layer-level
-residual-coding hypothesis before more compute.
 
 Promotion rule:
 
