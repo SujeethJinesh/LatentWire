@@ -4548,3 +4548,86 @@ Next exact gate:
   and run a micro smoke with exact-ID parity, numeric coverage, source
   destruction, bytes/latency accounting, and comparison against target-only plus
   text/token relay before any larger slice
+
+## Cycle Checkpoint: 2026-04-26 Cross-Family Interface Proxy Gate
+
+- cycle number: `2026-04-26-cross-family-interface-proxy-1`
+- timestamp: `2026-04-26 02:09:00 PDT`
+- live branch entering cycle: quotient/GPA sparse dictionary plus
+  sequence-aligned byte sidecar, tested through the closest existing real-model
+  byte-span module-replace proxy
+- scale-up rung: micro smoke / strict-surface scout
+- ICLR readiness: not ready; no deployable source-derived positive method
+
+Start-of-cycle status:
+
+- current paper story: C2C and target repair expose headroom, process repair is
+  target-only, and toy sequence-aligned sidecars remain the strongest interface
+  clue
+- exact blocker: the sidecar/interface branch has no real benchmark row under
+  source controls
+- highest-priority gate: find a real cross-family surface with tokenizer
+  mismatch and enough target/text headroom to test source-derived transport
+
+Gate:
+
+- ran real tokenizer/interface scout on `data/gsm8k_gate_search_30.jsonl`
+- repeated the quotient/GPA sparse dictionary plus sequence-aligned sidecar toy
+  with seed `1`
+- repaired `latent_bridge` calibration/evaluation helpers for decoder-layer
+  targets, packed `qkv_proj`, and OPT projection-width mismatch
+- calibrated Qwen2.5 -> OPT-350m byte-span module-replace translator
+- evaluated matched GSM30 target/source/text/rotalign rows
+
+Decision:
+
+- killed: OPT-350m as a cross-family decision surface
+- matched rows:
+  - target-alone: `0/30`
+  - source-alone: `0/30`
+  - text-to-text: `3/30`
+  - byte-span rotalign proxy: `0/30`
+- byte-span proxy bytes: `525562.6` per example
+- tokenizer mismatch was present for OPT (`shared decoded = 0.9047`,
+  `boundary F1 = 0.9434`) but the target benchmark surface had no useful
+  headroom
+- kept alive: sequence-aligned sidecar as an interface component, because the
+  seed-1 toy repeat still has best shared-basis low-shot MSE around `0.036`
+
+Artifacts:
+
+- memo:
+  - `paper/cross_family_interface_proxy_20260426.md`
+- results manifest:
+  - `results/cross_family_interface_proxy_20260426/manifest.md`
+- matched prediction JSONL:
+  - `results/cross_family_interface_proxy_20260426/qwen25_to_opt350m_bytespan_gsm30_matched.jsonl`
+  - sha256: `49659e18aa35a0d9deabb3208ccd6160fc62cf82cfdc928615a780eb9b6d663e`
+- OPT translator checkpoint:
+  - `.debug/qwen25_phi3_bytespan_interface_20260426/qwen25_to_opt350m_bytespan_r4_cal64.pt`
+  - sha256: `3a6c0c2cf8aa46be91b58d5c36bab5477183111f66f2d08ef07699592554696c`
+- references:
+  - `references/459_cross_family_interface_proxy_refs.md`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_evaluate_helpers.py tests/test_calibrate_and_ablation.py -q`
+- result: `204 passed`
+
+Hypothesis update:
+
+- byte-span module replacement alone is not a promising real-method row
+- OPT is a bad target surface for this gate, so source controls would not be
+  discriminative
+- the branch should only continue on a surface where target/text baselines have
+  nonzero headroom
+- compatibility patches are useful for future cross-family targets and should
+  be kept
+
+Next exact gate:
+
+- preferred: repair or route around GQA/packed-QKV issues for Phi-3/TinyLlama
+  and run only if target/text baselines are nonzero on the exact-ID slice
+- fallback: same-family Qwen2.5 -> Qwen3 exact-ID SVAMP32/GSM32 with the
+  strongest output-aware transport plus an explicit sidecar component and full
+  source-destroying controls

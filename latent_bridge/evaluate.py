@@ -336,11 +336,38 @@ def _last_token_attention_scores(
 def _model_layers(model):
     if hasattr(model, "model") and hasattr(model.model, "layers"):
         return model.model.layers
+    if (
+        hasattr(model, "model")
+        and hasattr(model.model, "decoder")
+        and hasattr(model.model.decoder, "layers")
+    ):
+        return model.model.decoder.layers
     if hasattr(model, "transformer") and hasattr(model.transformer, "h"):
         return model.transformer.h
     if hasattr(model, "gpt_neox") and hasattr(model.gpt_neox, "layers"):
         return model.gpt_neox.layers
     raise ValueError("Unsupported model architecture for query extraction")
+
+
+def _query_projection(attn: Any, hidden: torch.Tensor, *, head_dim: int) -> torch.Tensor:
+    q_proj = getattr(attn, "q_proj", None)
+    if q_proj is not None:
+        return q_proj(hidden)
+    qkv_proj = getattr(attn, "qkv_proj", None)
+    if qkv_proj is not None:
+        qkv = qkv_proj(hidden)
+        num_heads = getattr(attn, "num_heads", None)
+        if num_heads is None:
+            num_heads = getattr(attn, "num_attention_heads", None)
+        if num_heads is None:
+            raise ValueError("qkv_proj query extraction requires num_heads metadata")
+        q_width = int(num_heads) * int(head_dim)
+        if qkv.shape[-1] < q_width:
+            raise ValueError(
+                f"qkv projection width {qkv.shape[-1]} is smaller than query width {q_width}"
+            )
+        return qkv[..., :q_width]
+    raise ValueError("Layer attention must expose q_proj or qkv_proj")
 
 
 @torch.no_grad()
@@ -371,11 +398,11 @@ def _last_token_query_heads(
         attn = getattr(layer, "self_attn", None)
         if attn is None:
             attn = getattr(layer, "attention", None)
-        if attn is None or not hasattr(attn, "q_proj"):
-            raise ValueError(f"Layer {layer_idx} does not expose a q_proj module")
+        if attn is None:
+            raise ValueError(f"Layer {layer_idx} does not expose an attention module")
         hidden = hidden_states[layer_idx][:, -1, :]
-        q = attn.q_proj(hidden).float()
         head_dim = int(getattr(attn, "head_dim", translator.config.tgt_head_dim))
+        q = _query_projection(attn, hidden, head_dim=head_dim).float()
         num_query_heads = getattr(attn, "num_heads", None)
         if num_query_heads is None:
             num_query_heads = getattr(attn, "num_attention_heads", None)

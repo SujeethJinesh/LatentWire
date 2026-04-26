@@ -2323,9 +2323,58 @@ def collect_group_key_signatures(
 def _model_layers(model: AutoModelForCausalLM):
     if hasattr(model, "model") and hasattr(model.model, "layers"):
         return model.model.layers
+    if (
+        hasattr(model, "model")
+        and hasattr(model.model, "decoder")
+        and hasattr(model.model.decoder, "layers")
+    ):
+        return model.model.decoder.layers
+    if hasattr(model, "transformer") and hasattr(model.transformer, "h"):
+        return model.transformer.h
+    if hasattr(model, "gpt_neox") and hasattr(model.gpt_neox, "layers"):
+        return model.gpt_neox.layers
     if hasattr(model, "layers"):
         return model.layers
     raise ValueError("Could not locate transformer layers for QK template extraction")
+
+
+def _attention_module(layer: Any) -> Any:
+    attn = getattr(layer, "self_attn", None)
+    if attn is None:
+        attn = getattr(layer, "attention", None)
+    if attn is None:
+        raise ValueError("Could not locate attention module for QK query extraction")
+    return attn
+
+
+def _query_projection(
+    attn_mod: Any,
+    hidden: torch.Tensor,
+    *,
+    head_dim: int | None = None,
+) -> torch.Tensor:
+    q_proj = getattr(attn_mod, "q_proj", None)
+    if q_proj is not None:
+        return q_proj(hidden)
+    qkv_proj = getattr(attn_mod, "qkv_proj", None)
+    if qkv_proj is not None:
+        qkv = qkv_proj(hidden)
+        num_heads = getattr(attn_mod, "num_heads", None)
+        if num_heads is None:
+            num_heads = getattr(attn_mod, "num_attention_heads", None)
+        if head_dim is None:
+            head_dim = getattr(attn_mod, "head_dim", None)
+        if num_heads is None or head_dim is None:
+            raise ValueError(
+                "self_attn.qkv_proj requires num_heads/num_attention_heads and head_dim metadata"
+            )
+        q_width = int(num_heads) * int(head_dim)
+        if qkv.shape[-1] < q_width:
+            raise ValueError(
+                f"qkv projection width {qkv.shape[-1]} is smaller than query width {q_width}"
+            )
+        return qkv[..., :q_width]
+    raise ValueError("Attention module must expose q_proj or qkv_proj for QK query extraction")
 
 
 def _resample_signed_profile(profile: torch.Tensor, bins: int) -> torch.Tensor:
@@ -2397,12 +2446,15 @@ def collect_group_qk_templates(
             if valid_len <= 1:
                 continue
             for layer_idx, layer_cache in enumerate(pkv):
-                attn_mod = layers[layer_idx].self_attn
-                q_proj = getattr(attn_mod, "q_proj", None)
-                if q_proj is None:
-                    raise ValueError("self_attn.q_proj is required for grouped QK templates")
+                attn_mod = _attention_module(layers[layer_idx])
                 hidden = hidden_states[layer_idx][batch_idx, valid_len - 1 : valid_len].to(device)
-                q_flat = q_proj(hidden).squeeze(0).squeeze(0).detach().to("cpu", dtype=torch.float32)
+                q_flat = (
+                    _query_projection(attn_mod, hidden, head_dim=layer_cache[0].shape[-1])
+                    .squeeze(0)
+                    .squeeze(0)
+                    .detach()
+                    .to("cpu", dtype=torch.float32)
+                )
                 keys = layer_cache[0][batch_idx, :, : valid_len - 1, :].detach().to("cpu", dtype=torch.float32)
                 num_q_heads = q_flat.numel() // keys.shape[-1]
                 if num_q_heads % kv_heads != 0:
@@ -2490,12 +2542,15 @@ def collect_group_qk_template_bank(
             if valid_len <= 1:
                 continue
             for layer_idx, layer_cache in enumerate(pkv):
-                attn_mod = layers[layer_idx].self_attn
-                q_proj = getattr(attn_mod, "q_proj", None)
-                if q_proj is None:
-                    raise ValueError("self_attn.q_proj is required for grouped QK template bank")
+                attn_mod = _attention_module(layers[layer_idx])
                 hidden = hidden_states[layer_idx][batch_idx, valid_len - 1 : valid_len].to(device)
-                q_flat = q_proj(hidden).squeeze(0).squeeze(0).detach().to("cpu", dtype=torch.float32)
+                q_flat = (
+                    _query_projection(attn_mod, hidden, head_dim=layer_cache[0].shape[-1])
+                    .squeeze(0)
+                    .squeeze(0)
+                    .detach()
+                    .to("cpu", dtype=torch.float32)
+                )
                 keys = layer_cache[0][batch_idx, :, : valid_len - 1, :].detach().to("cpu", dtype=torch.float32)
                 num_q_heads = q_flat.numel() // keys.shape[-1]
                 if num_q_heads % kv_heads != 0:
@@ -2587,12 +2642,15 @@ def collect_aligned_qk_position_weights(
                 if aligned_len <= 1:
                     layer_weights[layer_idx].append(torch.ones(aligned_len, dtype=torch.float32))
                     continue
-                attn_mod = layers[layer_idx].self_attn
-                q_proj = getattr(attn_mod, "q_proj", None)
-                if q_proj is None:
-                    raise ValueError("self_attn.q_proj is required for aligned QK position weights")
+                attn_mod = _attention_module(layers[layer_idx])
                 hidden = hidden_states[layer_idx][batch_idx, valid_len - 1 : valid_len].to(device)
-                q_flat = q_proj(hidden).squeeze(0).squeeze(0).detach().to("cpu", dtype=torch.float32)
+                q_flat = (
+                    _query_projection(attn_mod, hidden, head_dim=layer_cache[0].shape[-1])
+                    .squeeze(0)
+                    .squeeze(0)
+                    .detach()
+                    .to("cpu", dtype=torch.float32)
+                )
                 keys = layer_cache[0][batch_idx, :, : aligned_len - 1, :].detach().to("cpu", dtype=torch.float32)
                 num_q_heads = q_flat.numel() // keys.shape[-1]
                 if num_q_heads % kv_heads != 0:
@@ -2703,10 +2761,7 @@ def collect_aligned_query_features(
                 continue
             valid_len = int(mask_cpu[batch_idx].sum().item())
             for layer_idx in range(len(layer_features)):
-                attn_mod = layers[layer_idx].self_attn
-                q_proj = getattr(attn_mod, "q_proj", None)
-                if q_proj is None:
-                    raise ValueError("self_attn.q_proj is required for aligned query features")
+                attn_mod = _attention_module(layers[layer_idx])
                 hidden = hidden_states[layer_idx][batch_idx, :valid_len].to(device)
                 if aligned_position_mixtures is not None:
                     for _, tgt_positions, tgt_weights in position_mixtures:
@@ -2720,7 +2775,15 @@ def collect_aligned_query_features(
                         positions = torch.tensor([pos for pos, _ in valid_targets], dtype=torch.long, device=hidden.device)
                         weights = torch.tensor([weight for _, weight in valid_targets], dtype=torch.float32, device=hidden.device)
                         weights = weights / weights.sum().clamp_min(1e-8)
-                        q_flat = q_proj(hidden.index_select(0, positions)).detach().to("cpu", dtype=torch.float32)
+                        q_flat = (
+                            _query_projection(
+                                attn_mod,
+                                hidden.index_select(0, positions),
+                                head_dim=head_dim,
+                            )
+                            .detach()
+                            .to("cpu", dtype=torch.float32)
+                        )
                         num_query_heads = q_flat.shape[-1] // head_dim
                         if num_query_heads % kv_heads != 0:
                             raise ValueError(
@@ -2733,7 +2796,15 @@ def collect_aligned_query_features(
                         layer_features[layer_idx].append(q_weighted.reshape(1, kv_heads * head_dim))
                 else:
                     positions = positions_cpu.to(device=hidden.device)
-                    q_flat = q_proj(hidden.index_select(0, positions)).detach().to("cpu", dtype=torch.float32)
+                    q_flat = (
+                        _query_projection(
+                            attn_mod,
+                            hidden.index_select(0, positions),
+                            head_dim=head_dim,
+                        )
+                        .detach()
+                        .to("cpu", dtype=torch.float32)
+                    )
                     sample_len = int(q_flat.shape[0])
                     num_query_heads = q_flat.shape[-1] // head_dim
                     if num_query_heads % kv_heads != 0:
@@ -2770,6 +2841,7 @@ def collect_aligned_prediction_teacher(
     next_token_target_weight: float = 0.5,
     span_likelihood_window: int = 0,
     span_likelihood_weight: float = 0.0,
+    target_width: int | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     if aligned_position_pairs is not None and aligned_position_mixtures is not None:
         raise ValueError("Only one of aligned_position_pairs or aligned_position_mixtures may be provided")
@@ -2801,6 +2873,27 @@ def collect_aligned_prediction_teacher(
     if output_embeddings is None or getattr(output_embeddings, "weight", None) is None:
         raise ValueError("Model must expose output embeddings for prediction-teacher collection")
     output_weight = output_embeddings.weight.detach().to("cpu", dtype=torch.float32)
+    if target_width is not None and output_weight.shape[-1] != int(target_width):
+        project_out = (
+            getattr(getattr(getattr(model, "model", None), "decoder", None), "project_out", None)
+        )
+        if project_out is None or getattr(project_out, "weight", None) is None:
+            raise ValueError(
+                f"Output embedding width {output_weight.shape[-1]} does not match "
+                f"target width {target_width}, and model has no decoder.project_out"
+            )
+        project_weight = project_out.weight.detach().to("cpu", dtype=torch.float32)
+        if output_weight.shape[-1] != project_weight.shape[0]:
+            raise ValueError(
+                "decoder.project_out is incompatible with output embeddings: "
+                f"{tuple(project_weight.shape)} vs {tuple(output_weight.shape)}"
+            )
+        output_weight = output_weight @ project_weight
+        if output_weight.shape[-1] != int(target_width):
+            raise ValueError(
+                f"Projected output embedding width {output_weight.shape[-1]} "
+                f"does not match target width {target_width}"
+            )
 
     sample_log_probs: list[torch.Tensor] = []
     sample_output_rows: list[torch.Tensor] = []
@@ -3185,12 +3278,15 @@ def collect_group_qk_retrieval_templates(
             if valid_len <= 1:
                 continue
             for layer_idx, layer_cache in enumerate(pkv):
-                attn_mod = layers[layer_idx].self_attn
-                q_proj = getattr(attn_mod, "q_proj", None)
-                if q_proj is None:
-                    raise ValueError("self_attn.q_proj is required for grouped QK retrieval templates")
+                attn_mod = _attention_module(layers[layer_idx])
                 hidden = hidden_states[layer_idx][batch_idx, valid_len - 1 : valid_len].to(device)
-                q_flat = q_proj(hidden).squeeze(0).squeeze(0).detach().to("cpu", dtype=torch.float32)
+                q_flat = (
+                    _query_projection(attn_mod, hidden, head_dim=layer_cache[0].shape[-1])
+                    .squeeze(0)
+                    .squeeze(0)
+                    .detach()
+                    .to("cpu", dtype=torch.float32)
+                )
                 keys = layer_cache[0][batch_idx, :, : valid_len - 1, :].detach().to("cpu", dtype=torch.float32)
                 num_q_heads = q_flat.numel() // keys.shape[-1]
                 if num_q_heads % kv_heads != 0:
@@ -4119,6 +4215,7 @@ def main() -> None:
             next_token_target_weight=0.5,
             span_likelihood_window=3 if args.quantization_correction == "bridge_ridge_qk_dynalign_spanalm_module_replace" else 0,
             span_likelihood_weight=0.20 if args.quantization_correction == "bridge_ridge_qk_dynalign_spanalm_module_replace" else 0.0,
+            target_width=config.tgt_num_heads * config.tgt_head_dim,
         )
         translator.set_bridge_prediction_teacher(teacher_log_probs, teacher_output_rows)
         if args.innovation_answer_teacher_weight > 0.0:

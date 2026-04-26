@@ -1,0 +1,35 @@
+{
+  "config": {
+    "calibration_examples": 15,
+    "input_path": "data/gsm8k_gate_search_30.jsonl",
+    "limit": 30,
+    "pairs": [
+      {
+        "label": "qwen25_to_opt350m",
+        "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "target_model": "facebook/opt-350m"
+      }
+    ],
+    "remap_capacity": 24
+  },
+  "rows": [
+    {
+      "calibration_examples": 15,
+      "examples": 15,
+      "label": "qwen25_to_opt350m",
+      "mean_boundary_f1": 0.9433603303338989,
+      "mean_boundary_jaccard": 0.8934391725035323,
+      "mean_byte_span_remap_coverage": 0.05500646862096438,
+      "mean_bytes_per_example": 355.8666666666667,
+      "mean_fragmentation_delta": -0.0051621293206643715,
+      "mean_shared_decoded_token_rate": 0.9047340768795775,
+      "mean_source_fragmentation": 0.24140983428909618,
+      "mean_source_token_count": 85.86666666666666,
+      "mean_target_fragmentation": 0.2362477049684318,
+      "mean_target_token_count": 84.06666666666666,
+      "remap_table_size": 10,
+      "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "target_model": "facebook/opt-350m"
+    }
+  ]
+}

@@ -308,6 +308,131 @@ class _FakeAttentionModel:
         return SimpleNamespace(attentions=(attn,), past_key_values=_FakeCache(layers), hidden_states=(hidden, hidden + 0.1))
 
 
+class _FakeDecoderAttentionModel:
+    def __init__(self) -> None:
+        self.model = SimpleNamespace(
+            decoder=SimpleNamespace(
+                layers=[
+                    SimpleNamespace(
+                        self_attn=SimpleNamespace(
+                            q_proj=lambda hidden: hidden,
+                        )
+                    )
+                ]
+            )
+        )
+
+
+class _FakePackedQKVAttentionModel:
+    def __init__(self) -> None:
+        def qkv_proj(hidden):
+            return torch.cat([hidden, hidden + 10.0, hidden + 20.0], dim=-1)
+
+        self.model = SimpleNamespace(
+            layers=[
+                SimpleNamespace(
+                    self_attn=SimpleNamespace(
+                        qkv_proj=qkv_proj,
+                        num_heads=2,
+                        head_dim=2,
+                    )
+                )
+            ]
+        )
+
+    def __call__(self, **enc):
+        input_ids = enc["input_ids"]
+        batch, seq = input_ids.shape
+        keys = torch.zeros(batch, 2, seq, 2, dtype=torch.float32)
+        hidden = torch.zeros(batch, seq, 4, dtype=torch.float32)
+        for batch_idx in range(batch):
+            valid_len = int(enc["attention_mask"][batch_idx].sum().item())
+            positions = torch.arange(1, valid_len + 1, dtype=torch.float32)
+            keys[batch_idx, 0, :valid_len, 0] = positions
+            keys[batch_idx, 1, :valid_len, 1] = positions
+            hidden[batch_idx, :valid_len] = torch.tensor([1.0, 0.0, 0.0, 2.0])
+        return SimpleNamespace(
+            past_key_values=_FakeCache([(keys, keys + 0.5, None)]),
+            hidden_states=(hidden, hidden + 0.1),
+        )
+
+
+class _FakeProjectedOutputModel:
+    def __init__(self) -> None:
+        self.output_embeddings = SimpleNamespace(
+            weight=torch.tensor(
+                [
+                    [1.0, 0.0],
+                    [0.0, 1.0],
+                    [1.0, 1.0],
+                ],
+                dtype=torch.float32,
+            )
+        )
+        self.model = SimpleNamespace(
+            decoder=SimpleNamespace(
+                project_out=SimpleNamespace(
+                    weight=torch.tensor(
+                        [
+                            [1.0, 2.0, 3.0, 4.0],
+                            [5.0, 6.0, 7.0, 8.0],
+                        ],
+                        dtype=torch.float32,
+                    )
+                )
+            )
+        )
+
+    def get_output_embeddings(self):
+        return self.output_embeddings
+
+    def __call__(self, **enc):
+        input_ids = enc["input_ids"]
+        batch, seq = input_ids.shape
+        logits = torch.zeros(batch, seq, 3, dtype=torch.float32)
+        logits[..., 2] = 2.0
+        logits[..., 1] = 1.0
+        return SimpleNamespace(logits=logits)
+
+
+def test_model_layers_supports_decoder_container() -> None:
+    layers = calibrate._model_layers(_FakeDecoderAttentionModel())
+
+    assert len(layers) == 1
+    assert hasattr(layers[0], "self_attn")
+
+
+def test_query_projection_supports_packed_qkv_projection() -> None:
+    attn = _FakePackedQKVAttentionModel().model.layers[0].self_attn
+    hidden = torch.tensor([[[1.0, 2.0, 3.0, 4.0]]])
+
+    projected = calibrate._query_projection(attn, hidden, head_dim=2)
+
+    assert projected.shape == (1, 1, 4)
+    assert torch.equal(projected, hidden)
+
+
+def test_prediction_teacher_projects_output_rows_to_target_width() -> None:
+    model = _FakeProjectedOutputModel()
+    tokenizer = _FakeTokenizer({"a": 2})
+
+    log_probs, rows = calibrate.collect_aligned_prediction_teacher(
+        model,
+        tokenizer,
+        ["a"],
+        aligned_lengths=[2],
+        max_length=2,
+        batch_size=1,
+        device="cpu",
+        topk=2,
+        target_width=4,
+    )
+
+    assert log_probs.shape == (2, 2)
+    assert rows.shape == (2, 2, 4)
+    assert torch.equal(rows[0, 0], torch.tensor([6.0, 8.0, 10.0, 12.0]))
+
+
 def test_collect_kvs_masks_padding_tokens_and_concatenates_valid_positions() -> None:
     model = _FakeModel()
     tokenizer = _FakeTokenizer({"a": 4, "b": 2, "c": 1})

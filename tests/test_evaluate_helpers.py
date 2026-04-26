@@ -165,6 +165,33 @@ class FakeCausalLM(nn.Module):
         return torch.cat([input_ids, suffix], dim=1)
 
 
+def test_model_layers_supports_decoder_container_for_query_extraction() -> None:
+    model = SimpleNamespace(
+        model=SimpleNamespace(
+            decoder=SimpleNamespace(
+                layers=[SimpleNamespace(attention=SimpleNamespace(q_proj=nn.Identity()))]
+            )
+        )
+    )
+
+    layers = evaluate._model_layers(model)
+
+    assert len(layers) == 1
+    assert hasattr(layers[0], "attention")
+
+
+def test_query_projection_supports_packed_qkv_projection_for_query_extraction() -> None:
+    def qkv_proj(hidden):
+        return torch.cat([hidden, hidden + 10.0, hidden + 20.0], dim=-1)
+
+    attn = SimpleNamespace(qkv_proj=qkv_proj, num_heads=2)
+    hidden = torch.tensor([[1.0, 2.0, 3.0, 4.0]])
+
+    projected = evaluate._query_projection(attn, hidden, head_dim=2)
+
+    assert torch.equal(projected, hidden)
+
+
 class _TinyQuantizer:
     def __init__(self, bits: int = 4) -> None:
         self.bits = bits

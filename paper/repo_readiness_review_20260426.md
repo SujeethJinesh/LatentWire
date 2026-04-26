@@ -171,6 +171,16 @@ the strongest toy interface clue, quotient/GPA sparse dictionaries with
 sequence-aligned byte sidecars, into a real cross-family tokenizer/interface
 stress gate.
 
+Latest cycle update: the Qwen2.5 -> OPT-350m byte-span module-replace proxy is
+killed as a decision surface. It had tokenizer mismatch (`shared decoded =
+0.9047`, `boundary F1 = 0.9434`) and the harness now supports OPT-style decoder
+layers and projected output rows, but the GSM30 surface was too weak:
+target-alone `0/30`, source-alone `0/30`, text relay `3/30`, and byte-span
+rotalign proxy `0/30` at `525562.6` bytes/example. This is not a decisive kill
+of the sequence-aligned sidecar hypothesis; it is a surface failure. The next
+attempt must start from a target/text baseline with nonzero headroom before any
+source controls are worth running.
+
 Promotion rule:
 
 - matched `>=14/32`
