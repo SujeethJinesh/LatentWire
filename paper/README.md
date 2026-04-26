@@ -28,6 +28,10 @@
   calibrated source-only soft-prefix logprob gate; it recovers only `1/6`
   clean source-communication candidate IDs, has `4/6` clean control leaks, and
   is killed as a summary-prefix branch before generation.
+- `qwen25math_svamp32_source_cross_attention_logprob_20260426.md` records the
+  first token-local source cross-attention logprob gate; it recovers `0/6`
+  clean candidate IDs with `4/6` clean control leaks and is not worth scaling
+  as the current tiny prefix-emitting implementation.
 - `qwen25math_svamp32_source_contrastive_sidecar_20260426.md` records the
   first positive strict-small Qwen2.5-Math -> Qwen3 source-contrastive sidecar
   stack: target/text agreement preservation plus a 1-byte source residue

@@ -6444,3 +6444,81 @@ Next exact gate:
 - promotion rule: at least `2/6` matched-only clean candidate IDs, `0` clean
   control leaks, and positive mean matched-minus-best-control margin before
   generation
+
+## Cycle Checkpoint: 2026-04-26 SVAMP32 Source Cross-Attention Logprob Gate
+
+- cycle number: `2026-04-26-svamp32-source-cross-attention-logprob`
+- timestamp: `2026-04-26 10:07:00 PDT`
+- live branch entering cycle: token/layer-local gated cross-attention over
+  source states
+- scale-up rung: strict-small teacher-forced pre-generation smoke
+- ICLR readiness: not ready; the first tiny prefix-emitting cross-attention
+  implementation is also control-dominated
+
+Start-of-cycle status:
+
+- current paper story: C2C exposes clean headroom, but summary readouts and
+  summary soft-prefix connectors are not source-derived under controls
+- exact blocker: decide whether token-local target-query attention into source
+  states is enough to separate matched source from controls
+- highest-priority gate: recover at least `2/6` clean source-communication
+  candidate IDs with `0` clean control leaks
+
+Implementation:
+
+- added `scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+- added `tests/test_analyze_svamp32_source_cross_attention_logprob_probe.py`
+- reused numeric-only distractors, mean-token continuation logprob, fold-local
+  token standardization, and the same target/source-destroying controls
+
+Final smoke:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp32_source_cross_attention_logprob_probe.py --source-model Qwen/Qwen2.5-Math-1.5B --target-model Qwen/Qwen3-0.6B --eval-file results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/_artifacts/svamp_eval_70_32_32.jsonl --target-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl --teacher-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/c2c_generate.jsonl --target-set-json results/qwen25math_svamp32_c2c_headroom_20260426/c2c_headroom_target_set.json --source-use-chat-template --target-use-chat-template --source-enable-thinking false --target-enable-thinking false --feature-layers last --prefix-len 2 --hidden-dim 16 --epochs 1 --outer-folds 2 --length-normalize true --device mps --train-device mps --dtype float32 --output-json .debug/qwen25math_svamp32_source_cross_attention_20260426/smoke.json --output-md .debug/qwen25math_svamp32_source_cross_attention_20260426/smoke.md
+```
+
+Results:
+
+- clean IDs scored: `6`
+- matched-only clean IDs: `0/6`
+- matched-positive clean IDs: `4/6`
+- clean control leaks: `4/6`
+- mean matched-minus-best-control clean margin: `-0.410582`
+- target-preservation IDs scored: `8`
+- target-preservation matched-positive count: `5/8`
+
+Decision:
+
+- fail this first-rung token-local cross-attention implementation
+- do not scale this exact tiny prefix-emitting connector by epochs, folds, or
+  hidden width without a new mechanism reason
+- the next branch should move away from tiny learned prefix emitters on this
+  exact surface
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_source_cross_attention_logprob_20260426.md`
+- result manifest:
+  - `results/qwen25math_svamp32_source_cross_attention_logprob_20260426/manifest.md`
+- result JSON:
+  - `results/qwen25math_svamp32_source_cross_attention_logprob_20260426/smoke.json`
+  - sha256: `9f26c13ce205f8f7724b0c19eba17f192cfc204042760b2975acdf4408822f10`
+- readout:
+  - `results/qwen25math_svamp32_source_cross_attention_logprob_20260426/smoke.md`
+  - sha256: `2dd85d6dabe13ac4d57ea935242465ed72c09c15edcce4e2c72e0ceca5b3e3a2`
+- analyzer:
+  - `scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+  - sha256: `097ff46ef9f8679abf0ee4686a3a5316d02773a7dcd26ecd254eb73a0d930b6d`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_cross_attention_logprob_probe.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+
+Next exact gate:
+
+- switch to source-surface discovery or a discrete source-derived
+  candidate/routing stack
+- do not run another tiny prefix-emitter variant on this exact surface unless
+  new diagnostics explain the control dominance
