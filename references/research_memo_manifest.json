@@ -705,5 +705,12 @@
     "path": "references/457_query_bottleneck_residue_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for query-bottleneck residue prediction after pooled and all-layer source hidden syndrome probes failed the strict SVAMP32 source-control gate."
+  },
+  {
+    "num": 458,
+    "slug": "repair_verifier_source_control_refs",
+    "path": "references/458_repair_verifier_source_control_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for verifier-guided repair, target self-repair, self-consistency, tool-only repair, and source-control requirements after the SVAMP32 process-repair stack selected target-only candidates."
   }
 ]

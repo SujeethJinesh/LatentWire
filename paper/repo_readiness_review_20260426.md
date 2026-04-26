@@ -136,6 +136,11 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 - The full all-layer source-token learned syndrome probe is negative:
   matched `7/32`, target-only `14/32`, target-self `2/3`, and clean
   source-necessary `0/6`.
+- The process-repair / selector stack is negative on the strict SVAMP32
+  source-control surface: process repair selected route reaches only `10/32`
+  versus `14/32` target-self repair, recovers `1/6` clean residual IDs, loses
+  `2/3` target-self repair wins, and selects the target candidate on `32/32`
+  examples.
 
 ## Main Gaps
 
@@ -161,10 +166,10 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 ## Highest-Priority Next Gate
 
 Pivot to source-surface discovery rather than more SVAMP32 source-state
-residue predictors. The next branch should either test process-repair/selector
-stacks under source controls on a strict clean surface, or convert the strongest
-toy interface clue, quotient/GPA sparse dictionaries with sequence-aligned byte
-sidecars, into a real cross-family tokenizer/interface stress gate.
+residue predictors or repair-stack tuning. The next live branch is to convert
+the strongest toy interface clue, quotient/GPA sparse dictionaries with
+sequence-aligned byte sidecars, into a real cross-family tokenizer/interface
+stress gate.
 
 Promotion rule:
 

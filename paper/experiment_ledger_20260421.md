@@ -4480,3 +4480,71 @@ Next exact gate:
   no target-self losses, or convert the quotient/GPA sparse dictionary plus
   sequence-aligned byte sidecar toy into a real cross-family tokenizer/interface
   stress gate
+
+## Cycle Checkpoint: 2026-04-26 SVAMP32 Process Repair Source-Control Gate
+
+- cycle number: `2026-04-26-process-repair-source-control-1`
+- timestamp: `2026-04-26 00:13:02 PDT`
+- live branch entering cycle: process-repair / selector stack on SVAMP32 clean
+  residual surface
+- scale-up rung: strict small exact-ID gate
+- ICLR readiness: not ready; no deployable source-derived positive method
+
+Start-of-cycle status:
+
+- current paper story: C2C and target-side repair expose headroom, but no
+  LatentWire row is source-necessary under strict controls
+- exact blocker: process repair must recover clean residual IDs beyond
+  target-self repair without losing target-self wins
+- highest-priority gate: matched process repair on the frozen SVAMP32
+  query-pool transport surface
+
+Decision:
+
+- killed: process-repair / selector stack as a source-communication method on
+  this surface
+- process repair selected route: `10/32`
+- selected route, no repair: `8/32`
+- target alone: `8/32`
+- target-self repair comparator: `14/32`
+- clean residual recovered: `1/6`
+- target-self preservation: `1/3`
+- selected candidate source: `target` on `32/32`
+- zero-source and shuffled-source repair generations were not run because the
+  matched row selected target-only candidates and failed the target-self
+  comparator before source controls could matter
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_process_repair_source_controls_20260426.md`
+- results manifest:
+  - `results/svamp32_process_repair_source_controls_20260426/manifest.md`
+- matched process repair JSONL:
+  - `results/svamp32_process_repair_source_controls_20260426/matched_process_repair.jsonl`
+  - sha256: `a125ac97e1e4c54763739cdcc23e13c8633a8dceb431c3bfbed6c351e5219f6d`
+- matched process repair markdown:
+  - `results/svamp32_process_repair_source_controls_20260426/matched_process_repair.md`
+  - sha256: `98cf77da5299733d35f5618dd43815b6f90d3dc8904c561835351355b8797dfc`
+- raw run log:
+  - `.debug/svamp32_process_repair_source_controls_20260426/logs/matched_process_repair.log`
+  - sha256: `51e0f9286a25fce982dc6fd3de3ae2145bfd495fdc7c6f2018252da597ef1eb4`
+- references:
+  - `references/458_repair_verifier_source_control_refs.md`
+
+Hypothesis update:
+
+- process repair is useful as a control/baseline, not as a source-derived
+  communication row on this candidate surface
+- future repair stacks must be budget-matched against target-only
+  self-consistency, target self-repair, verifier/tool-only repair, and
+  source-identity/order-shuffle controls
+- promoted next: real cross-family tokenizer/interface stress using the
+  quotient/GPA sparse dictionary plus sequence-aligned byte sidecar direction
+
+Next exact gate:
+
+- find the smallest existing or near-existing real cross-family interface gate
+  and run a micro smoke with exact-ID parity, numeric coverage, source
+  destruction, bytes/latency accounting, and comparison against target-only plus
+  text/token relay before any larger slice
