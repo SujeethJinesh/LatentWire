@@ -46,6 +46,30 @@ surface:
 - control-leak clean: `4/10`
 - decision: kill this connector family until the objective changes
 
+The first objective-level rescue also fails on SVAMP32:
+
+- added training-time anti-memory controls against `target_only` and
+  `slots_only`
+- fixed gates `0.125`, `0.15`, `0.20`: matched-only clean residual IDs `0/6`
+- matched-positive clean IDs: `2/6`, but both are explained by zero-source or
+  slots-only controls
+- mean matched-control delta remains negative at all tested gates
+- decision: do not run generation; pivot away from receiver-conditioned
+  Perceiver/delta-memory signal formation unless a materially new objective or
+  architecture reason appears
+
+The simplest source-only sidecar/router is also negative:
+
+- source-generated numeric residue sidecar with target-side candidate-pool
+  decoding
+- source numeric coverage: `32/32`
+- matched: `4/32`
+- target-self preserve: `0/3`
+- clean source-necessary IDs: `0/6`
+- controls clean union: `0/6`
+- decision: kill raw source-generated numeric residue sidecars; the clean
+  issue is weak source signal, not target/control leakage
+
 The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 - GSM8K32 smoke: `4/32` vs target `2/32`
@@ -94,6 +118,10 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
   apparent clean-ID signal.
 - Scaling the same Perceiver answer-teacher connector to SVAMP70 also fails
   the teacher-forced pre-generation gate.
+- Adding anti-memory target-only/slots-only training controls to that Perceiver
+  branch also fails the SVAMP32 teacher-forced pre-generation gate.
+- Source-generated numeric residue sidecar/router is killed: it avoids control
+  leakage but has no clean source-necessary recovery.
 - Source final-answer copying and stronger-source source-margin escalation are
   killed for the current frozen SVAMP32 clean IDs.
 
@@ -120,12 +148,13 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 ## Highest-Priority Next Gate
 
-Change the objective before another connector run. The next branch must
-explicitly penalize target-only/slots-only recovery before answer-teacher
-supervision, train against token/layer-level C2C residual behavior with
-matched-vs-control separation, or remove target-only memory from source-signal
-formation entirely. A future C2C-derived attempt still needs a crisper
-token/layer-level residual-coding hypothesis before more compute.
+Pivot to stronger source-derived sidecars rather than raw source numeric
+answers. The anti-memory objective did not fix receiver/control leakage inside
+the Perceiver delta-memory path, and the simple source-generated numeric
+sidecar has insufficient signal. The next branch should use source latent/token
+features or token/layer-level C2C residual targets with strict matched-vs-control
+separation. A future C2C-derived attempt still needs a crisper token/layer-level
+residual-coding hypothesis before more compute.
 
 Promotion rule:
 

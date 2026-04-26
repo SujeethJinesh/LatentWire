@@ -1,0 +1,461 @@
+#!/usr/bin/env python3
+"""Gate a source-only numeric sidecar/router on frozen SVAMP32 rows.
+
+This is a deployability screen, not a final method. It uses only a source-side
+numeric prediction to form a compact residue sidecar, then lets the target-side
+candidate pool act as decoder side information. Target-only and slots-only
+controls never participate in source-signal formation.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+import pathlib
+import sys
+from datetime import date
+from typing import Any, Sequence
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts import analyze_svamp32_syndrome_sidecar_probe as syndrome
+
+
+def _select_by_signature(
+    *,
+    ordered_values: Sequence[str],
+    signature: tuple[int, ...] | None,
+    moduli: Sequence[int],
+    fallback: str | None,
+) -> str | None:
+    if signature is None:
+        return fallback
+    for value in ordered_values:
+        if syndrome._signature(value, moduli) == signature:
+            return value
+    return fallback
+
+
+def _noise_signature(example_id: str, moduli: Sequence[int], seed: int) -> tuple[int, ...]:
+    out: list[int] = []
+    for modulus in moduli:
+        digest = hashlib.sha256(f"{seed}:{example_id}:{modulus}".encode("utf-8")).digest()
+        out.append(int.from_bytes(digest[:8], byteorder="big") % int(modulus))
+    return tuple(out)
+
+
+def _evaluate_moduli(
+    *,
+    moduli: Sequence[int],
+    reference_ids: Sequence[str],
+    target_by_id: dict[str, dict[str, Any]],
+    source_by_id: dict[str, dict[str, Any]],
+    candidate_by_label: dict[str, dict[str, dict[str, Any]]],
+    target_label: str,
+    fallback_label: str,
+    target_ids: dict[str, set[str]],
+    shuffle_offset: int,
+    label_shuffle_offset: int,
+    noise_seed: int,
+    min_correct: int,
+    min_target_self: int,
+    min_clean_source_necessary: int,
+    max_control_clean_union: int,
+) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+    candidate_labels = list(candidate_by_label)
+    for index, example_id in enumerate(reference_ids):
+        rows_by_label = {
+            label: records[example_id] for label, records in candidate_by_label.items()
+        }
+        ordered_values, labels_by_value = syndrome._candidate_pool(rows_by_label, candidate_labels)
+        fallback = syndrome._fallback_prediction(
+            rows_by_label=rows_by_label,
+            fallback_label=fallback_label,
+            target_label=target_label,
+        )
+        shuffled_id = reference_ids[(index + shuffle_offset) % len(reference_ids)]
+        label_shuffled_id = reference_ids[(index + label_shuffle_offset) % len(reference_ids)]
+        gold = syndrome._gold_numeric(target_by_id[example_id])
+        source_numeric = syndrome._prediction_numeric(source_by_id[example_id])
+        shuffled_source_numeric = syndrome._prediction_numeric(source_by_id[shuffled_id])
+        label_shuffled_numeric = syndrome._prediction_numeric(source_by_id[label_shuffled_id])
+        selections = {
+            "matched": syndrome._select_by_syndrome(
+                ordered_values=ordered_values,
+                source_value=source_numeric,
+                moduli=moduli,
+                fallback=fallback,
+            ),
+            "zero_source": syndrome._select_by_syndrome(
+                ordered_values=ordered_values,
+                source_value="0",
+                moduli=moduli,
+                fallback=fallback,
+            ),
+            "shuffled_source": syndrome._select_by_syndrome(
+                ordered_values=ordered_values,
+                source_value=shuffled_source_numeric,
+                moduli=moduli,
+                fallback=fallback,
+            ),
+            "label_shuffle": syndrome._select_by_syndrome(
+                ordered_values=ordered_values,
+                source_value=label_shuffled_numeric,
+                moduli=moduli,
+                fallback=fallback,
+            ),
+            "same_norm_noise": _select_by_signature(
+                ordered_values=ordered_values,
+                signature=_noise_signature(example_id, moduli, noise_seed),
+                moduli=moduli,
+                fallback=fallback,
+            ),
+            "target_only": fallback,
+            "slots_only": syndrome._select_slots_only(
+                ordered_values=ordered_values,
+                labels_by_value=labels_by_value,
+                fallback=fallback,
+            ),
+        }
+        rows.append(
+            {
+                "index": index,
+                "example_id": example_id,
+                "labels": [
+                    label for label, ids in target_ids.items() if example_id in ids
+                ],
+                "gold_answer": gold,
+                "source_prediction": source_numeric,
+                "fallback_prediction": fallback,
+                "candidate_pool_size": len(ordered_values),
+                "candidate_pool_values": list(ordered_values),
+                "candidate_pool_contains_gold": gold in set(ordered_values),
+                "candidate_labels_for_gold": sorted(set(labels_by_value.get(gold, []))),
+                "conditions": {
+                    condition: {
+                        "prediction": prediction,
+                        "correct": prediction == gold,
+                        "candidate_labels": sorted(
+                            set(labels_by_value.get(str(prediction), []))
+                        )
+                        if prediction is not None
+                        else [],
+                    }
+                    for condition, prediction in selections.items()
+                },
+            }
+        )
+
+    clean_ids = target_ids["clean_residual_targets"]
+    target_self_ids = target_ids["target_self_repair"]
+    teacher_only_ids = target_ids["teacher_only"]
+    conditions = (
+        "matched",
+        "zero_source",
+        "shuffled_source",
+        "label_shuffle",
+        "same_norm_noise",
+        "target_only",
+        "slots_only",
+    )
+    condition_summaries = {
+        condition: syndrome._summarize_condition(
+            rows,
+            condition=condition,
+            clean_ids=clean_ids,
+            target_self_ids=target_self_ids,
+            teacher_only_ids=teacher_only_ids,
+        )
+        for condition in conditions
+    }
+    control_clean_union = set().union(
+        *[
+            set(condition_summaries[condition]["clean_correct_ids"])
+            for condition in conditions
+            if condition != "matched"
+        ]
+    )
+    matched_clean = set(condition_summaries["matched"]["clean_correct_ids"])
+    source_necessary_clean = matched_clean - control_clean_union
+    criteria = {
+        "min_correct": condition_summaries["matched"]["correct_count"] >= min_correct,
+        "min_target_self": (
+            condition_summaries["matched"]["target_self_correct_count"] >= min_target_self
+        ),
+        "min_clean_source_necessary": (
+            len(source_necessary_clean) >= min_clean_source_necessary
+        ),
+        "max_control_clean_union": len(control_clean_union) <= max_control_clean_union,
+    }
+    failing = [name for name, passed in criteria.items() if not passed]
+    status = "source_only_sidecar_router_clears_gate" if not failing else "source_only_sidecar_router_fails_gate"
+    return {
+        "moduli": list(moduli),
+        "syndrome_bits": syndrome._moduli_bits(moduli),
+        "syndrome_bytes": int(math.ceil(syndrome._moduli_bits(moduli) / 8.0)),
+        "status": status,
+        "criteria": criteria,
+        "failing_criteria": failing,
+        "candidate_pool_gold_count": sum(
+            int(bool(row["candidate_pool_contains_gold"])) for row in rows
+        ),
+        "candidate_pool_clean_gold_count": sum(
+            int(bool(row["candidate_pool_contains_gold"]))
+            for row in rows
+            if row["example_id"] in clean_ids
+        ),
+        "condition_summaries": condition_summaries,
+        "control_clean_union_ids": sorted(control_clean_union),
+        "source_necessary_clean_ids": sorted(source_necessary_clean),
+        "rows": rows,
+    }
+
+
+def analyze(
+    *,
+    target_spec: syndrome.RowSpec,
+    source_spec: syndrome.RowSpec,
+    candidate_specs: Sequence[syndrome.RowSpec],
+    target_set_path: pathlib.Path,
+    moduli_sets: Sequence[Sequence[int]],
+    fallback_label: str,
+    shuffle_offset: int,
+    label_shuffle_offset: int,
+    noise_seed: int,
+    min_correct: int,
+    min_target_self: int,
+    min_clean_source_necessary: int,
+    max_control_clean_union: int,
+    min_numeric_coverage: int,
+    run_date: str,
+) -> dict[str, Any]:
+    target_records = syndrome._records_for_method(target_spec)
+    reference_ids = [str(row["example_id"]) for row in target_records]
+    if len(reference_ids) != len(set(reference_ids)):
+        raise ValueError("target rows contain duplicate example_id values")
+    source_records = syndrome._subset_reference_order(
+        syndrome._records_for_method(source_spec),
+        reference_ids,
+    )
+    target_by_id = syndrome._by_id(target_records)
+    source_by_id = syndrome._by_id(source_records)
+    target_ids = syndrome._load_target_ids(target_set_path)
+
+    candidate_by_label: dict[str, dict[str, dict[str, Any]]] = {
+        target_spec.label: target_by_id,
+    }
+    for spec in candidate_specs:
+        if spec.label in candidate_by_label:
+            raise ValueError(f"Duplicate candidate label {spec.label!r}")
+        candidate_by_label[spec.label] = syndrome._by_id(
+            syndrome._subset_reference_order(
+                syndrome._records_for_method(spec),
+                reference_ids,
+            )
+        )
+    if fallback_label not in candidate_by_label:
+        raise ValueError(
+            f"fallback label {fallback_label!r} not in candidates: {sorted(candidate_by_label)}"
+        )
+
+    source_numeric_coverage = sum(
+        int(syndrome._prediction_numeric(row) is not None) for row in source_records
+    )
+    candidate_numeric_coverage = {
+        label: sum(
+            int(syndrome._prediction_numeric(records[example_id]) is not None)
+            for example_id in reference_ids
+        )
+        for label, records in candidate_by_label.items()
+    }
+    provenance_issues: list[str] = []
+    if source_numeric_coverage < min_numeric_coverage:
+        provenance_issues.append(
+            f"source_numeric_coverage={source_numeric_coverage} < {min_numeric_coverage}"
+        )
+    for label, coverage in candidate_numeric_coverage.items():
+        if coverage < min_numeric_coverage:
+            provenance_issues.append(
+                f"candidate.{label}.numeric_coverage={coverage} < {min_numeric_coverage}"
+            )
+
+    runs = [
+        _evaluate_moduli(
+            moduli=moduli,
+            reference_ids=reference_ids,
+            target_by_id=target_by_id,
+            source_by_id=source_by_id,
+            candidate_by_label=candidate_by_label,
+            target_label=target_spec.label,
+            fallback_label=fallback_label,
+            target_ids=target_ids,
+            shuffle_offset=shuffle_offset,
+            label_shuffle_offset=label_shuffle_offset,
+            noise_seed=noise_seed,
+            min_correct=min_correct,
+            min_target_self=min_target_self,
+            min_clean_source_necessary=min_clean_source_necessary,
+            max_control_clean_union=max_control_clean_union,
+        )
+        for moduli in moduli_sets
+    ]
+    clearing = [run for run in runs if run["status"] == "source_only_sidecar_router_clears_gate"]
+    status = (
+        "source_only_sidecar_router_clears_gate"
+        if clearing and not provenance_issues
+        else "source_only_sidecar_router_fails_gate"
+    )
+    return {
+        "date": run_date,
+        "status": status,
+        "interpretation": (
+            "This is a source-only sidecar/router screen. The source message is "
+            "formed from source-side numeric predictions only; target-side rows "
+            "are used only as decoder candidate pools and controls."
+        ),
+        "artifacts": {
+            "target": {
+                "label": target_spec.label,
+                "path": syndrome._display_path(target_spec.path),
+                "method": target_spec.method,
+            },
+            "source": {
+                "label": source_spec.label,
+                "path": syndrome._display_path(source_spec.path),
+                "method": source_spec.method,
+            },
+            "target_set_json": syndrome._display_path(target_set_path),
+            "candidates": [
+                {
+                    "label": spec.label,
+                    "path": syndrome._display_path(spec.path),
+                    "method": spec.method,
+                }
+                for spec in candidate_specs
+            ],
+        },
+        "config": {
+            "fallback_label": fallback_label,
+            "shuffle_offset": shuffle_offset,
+            "label_shuffle_offset": label_shuffle_offset,
+            "noise_seed": noise_seed,
+            "min_correct": min_correct,
+            "min_target_self": min_target_self,
+            "min_clean_source_necessary": min_clean_source_necessary,
+            "max_control_clean_union": max_control_clean_union,
+            "min_numeric_coverage": min_numeric_coverage,
+            "moduli_sets": [list(moduli) for moduli in moduli_sets],
+        },
+        "reference_n": len(reference_ids),
+        "reference_ids": reference_ids,
+        "target_ids": {key: sorted(value) for key, value in target_ids.items()},
+        "provenance": {
+            "exact_ordered_id_parity": True,
+            "source_numeric_coverage": source_numeric_coverage,
+            "candidate_numeric_coverage": candidate_numeric_coverage,
+            "issues": provenance_issues,
+        },
+        "runs": runs,
+    }
+
+
+def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
+    lines = [
+        "# SVAMP32 Source-Only Sidecar Router Gate",
+        "",
+        f"- date: `{payload['date']}`",
+        f"- status: `{payload['status']}`",
+        f"- reference rows: `{payload['reference_n']}`",
+        f"- fallback label: `{payload['config']['fallback_label']}`",
+        f"- source numeric coverage: `{payload['provenance']['source_numeric_coverage']}/{payload['reference_n']}`",
+        f"- provenance issues: `{len(payload['provenance']['issues'])}`",
+        "",
+        "## Moduli Sweep",
+        "",
+        "| Moduli | Bytes | Status | Matched | Target-Self | Clean Matched | Clean Necessary | Control Clean Union | Source-Necessary IDs | Failing Criteria |",
+        "|---|---:|---|---:|---:|---:|---:|---:|---|---|",
+    ]
+    for run in payload["runs"]:
+        matched = run["condition_summaries"]["matched"]
+        lines.append(
+            "| {moduli} | {bytes} | {status} | {matched} | {target_self} | {clean} | {necessary} | {control_clean} | {ids} | {failing} |".format(
+                moduli=",".join(str(value) for value in run["moduli"]),
+                bytes=run["syndrome_bytes"],
+                status=run["status"],
+                matched=matched["correct_count"],
+                target_self=matched["target_self_correct_count"],
+                clean=matched["clean_correct_count"],
+                necessary=len(run["source_necessary_clean_ids"]),
+                control_clean=len(run["control_clean_union_ids"]),
+                ids=", ".join(f"`{value}`" for value in run["source_necessary_clean_ids"]) or "none",
+                failing=", ".join(run["failing_criteria"]) or "none",
+            )
+        )
+    lines.extend(["", "## Interpretation", "", payload["interpretation"]])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--target", required=True, type=syndrome._parse_spec)
+    parser.add_argument("--source", required=True, type=syndrome._parse_spec)
+    parser.add_argument("--candidate", action="append", type=syndrome._parse_spec, default=[])
+    parser.add_argument("--target-set-json", required=True)
+    parser.add_argument("--fallback-label", default="target_self_repair")
+    parser.add_argument("--shuffle-offset", type=int, default=1)
+    parser.add_argument("--label-shuffle-offset", type=int, default=17)
+    parser.add_argument("--noise-seed", type=int, default=1)
+    parser.add_argument("--moduli-set", action="append", type=syndrome._parse_moduli_set)
+    parser.add_argument("--min-correct", type=int, default=14)
+    parser.add_argument("--min-target-self", type=int, default=3)
+    parser.add_argument("--min-clean-source-necessary", type=int, default=2)
+    parser.add_argument("--max-control-clean-union", type=int, default=0)
+    parser.add_argument("--min-numeric-coverage", type=int, default=31)
+    parser.add_argument("--date", default=date.today().isoformat())
+    parser.add_argument("--output-json", required=True)
+    parser.add_argument("--output-md", required=True)
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> dict[str, Any]:
+    args = parse_args(argv)
+    moduli_sets = args.moduli_set or [
+        [2, 3],
+        [2, 3, 5],
+        [2, 3, 5, 7],
+        [97],
+    ]
+    payload = analyze(
+        target_spec=args.target,
+        source_spec=args.source,
+        candidate_specs=args.candidate,
+        target_set_path=syndrome._resolve(args.target_set_json),
+        moduli_sets=moduli_sets,
+        fallback_label=args.fallback_label,
+        shuffle_offset=int(args.shuffle_offset),
+        label_shuffle_offset=int(args.label_shuffle_offset),
+        noise_seed=int(args.noise_seed),
+        min_correct=int(args.min_correct),
+        min_target_self=int(args.min_target_self),
+        min_clean_source_necessary=int(args.min_clean_source_necessary),
+        max_control_clean_union=int(args.max_control_clean_union),
+        min_numeric_coverage=int(args.min_numeric_coverage),
+        run_date=str(args.date),
+    )
+    output_json = syndrome._resolve(args.output_json)
+    output_md = syndrome._resolve(args.output_md)
+    output_json.parent.mkdir(parents=True, exist_ok=True)
+    output_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _write_markdown(output_md, payload)
+    print(json.dumps({"status": payload["status"], "output_json": syndrome._display_path(output_json)}, indent=2))
+    return payload
+
+
+if __name__ == "__main__":
+    main()

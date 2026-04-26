@@ -1,0 +1,747 @@
+{
+  "artifacts": {
+    "eval_file": "results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl",
+    "target_jsonl": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl",
+    "target_set_json": "results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json",
+    "teacher_jsonl": "results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl",
+    "translator": ".debug/svamp32_anti_memory_perceiver_20260426/checkpoints/qwen25_to_qwen3_svamp32_anti_memory_w080_ctrl050_am050_r16_b16_seed1.pt"
+  },
+  "config": {
+    "continuation_template": " {answer}",
+    "controls": [
+      {
+        "innovation_memory_control": null,
+        "name": "matched",
+        "random_salt": 0,
+        "source_kv_control": "real",
+        "source_prompt_control": "real"
+      },
+      {
+        "innovation_memory_control": null,
+        "name": "zero_source",
+        "random_salt": 0,
+        "source_kv_control": "zero",
+        "source_prompt_control": "real"
+      },
+      {
+        "innovation_memory_control": null,
+        "name": "shuffled_source",
+        "random_salt": 1,
+        "source_kv_control": "real",
+        "source_prompt_control": "shuffle_examples"
+      },
+      {
+        "innovation_memory_control": "target_only",
+        "name": "target_only",
+        "random_salt": 0,
+        "source_kv_control": "zero",
+        "source_prompt_control": "real"
+      },
+      {
+        "innovation_memory_control": "slots_only",
+        "name": "slots_only",
+        "random_salt": 0,
+        "source_kv_control": "zero",
+        "source_prompt_control": "real"
+      }
+    ],
+    "fixed_gate": 0.125,
+    "kv_transport": "k_only",
+    "min_margin_delta": 0.0,
+    "position_selection_metric": "attention",
+    "position_selection_ratio": 0.5,
+    "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "target_model": "Qwen/Qwen3-0.6B"
+  },
+  "date": "2026-04-25",
+  "ids": {
+    "clean_residual_targets": [
+      "13cb77b698eeadb5",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "e3ab8666238a289e"
+    ],
+    "target_self_repair": [
+      "4c84ebf42812703b",
+      "4d780f825bb8541c",
+      "de1bf4d142544e5b"
+    ]
+  },
+  "rows": [
+    {
+      "best_control": "shuffled_source",
+      "best_control_margin": -12.83602131519001,
+      "distractor_answer": "46",
+      "example_id": "13cb77b698eeadb5",
+      "gold_answer": "8142",
+      "index": 12,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "matched_margin": -12.976549093436915,
+      "matched_minus_best_control_margin": -0.14052777824690565,
+      "scores": {
+        "matched": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -27.730527217674535,
+          "gold_logprob": -40.70707631111145,
+          "innovation_memory_control": "combined",
+          "margin": -12.976549093436915,
+          "source_example_id": "13cb77b698eeadb5",
+          "source_kv_control": "real",
+          "source_prompt_control": "real"
+        },
+        "shuffled_source": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -28.421689618495293,
+          "gold_logprob": -41.2577109336853,
+          "innovation_memory_control": "combined",
+          "margin": -12.83602131519001,
+          "source_example_id": "2de1549556000830",
+          "source_kv_control": "real",
+          "source_prompt_control": "shuffle_examples"
+        },
+        "slots_only": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -28.088441962609068,
+          "gold_logprob": -41.22140312194824,
+          "innovation_memory_control": "slots_only",
+          "margin": -13.132961159339175,
+          "source_example_id": "13cb77b698eeadb5",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "target_only": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -27.82358209020458,
+          "gold_logprob": -40.73382616043091,
+          "innovation_memory_control": "target_only",
+          "margin": -12.910244070226327,
+          "source_example_id": "13cb77b698eeadb5",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "zero_source": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -27.73718862782698,
+          "gold_logprob": -40.93652844429016,
+          "innovation_memory_control": "combined",
+          "margin": -13.19933981646318,
+          "source_example_id": "13cb77b698eeadb5",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        }
+      },
+      "status": "control_or_negative",
+      "target_prediction": "46",
+      "teacher_prediction": "luke played 177 rounds of the trivia game, so he scored a total of 177 x 46 = 8142 points. to find out how many points he scored in the game, we need to add the points he gained in each round to the total points he scored in"
+    },
+    {
+      "best_control": "slots_only",
+      "best_control_margin": -11.406056374311447,
+      "distractor_answer": "1",
+      "example_id": "1d50b408c8f5cd2c",
+      "gold_answer": "949",
+      "index": 6,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "matched_margin": -11.593971312046051,
+      "matched_minus_best_control_margin": -0.18791493773460388,
+      "scores": {
+        "matched": {
+          "bits": 3936520.0,
+          "bytes": 492065.0,
+          "distractor_logprob": -19.850412786006927,
+          "gold_logprob": -31.44438409805298,
+          "innovation_memory_control": "combined",
+          "margin": -11.593971312046051,
+          "source_example_id": "1d50b408c8f5cd2c",
+          "source_kv_control": "real",
+          "source_prompt_control": "real"
+        },
+        "shuffled_source": {
+          "bits": 3936520.0,
+          "bytes": 492065.0,
+          "distractor_logprob": -19.60393315553665,
+          "gold_logprob": -31.274850606918335,
+          "innovation_memory_control": "combined",
+          "margin": -11.670917451381683,
+          "source_example_id": "b1200c32546a34a5",
+          "source_kv_control": "real",
+          "source_prompt_control": "shuffle_examples"
+        },
+        "slots_only": {
+          "bits": 3936520.0,
+          "bytes": 492065.0,
+          "distractor_logprob": -20.12185326218605,
+          "gold_logprob": -31.527909636497498,
+          "innovation_memory_control": "slots_only",
+          "margin": -11.406056374311447,
+          "source_example_id": "1d50b408c8f5cd2c",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "target_only": {
+          "bits": 3936520.0,
+          "bytes": 492065.0,
+          "distractor_logprob": -20.00606867671013,
+          "gold_logprob": -32.031089663505554,
+          "innovation_memory_control": "target_only",
+          "margin": -12.025020986795425,
+          "source_example_id": "1d50b408c8f5cd2c",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "zero_source": {
+          "bits": 3936520.0,
+          "bytes": 492065.0,
+          "distractor_logprob": -19.892713367938995,
+          "gold_logprob": -31.357977867126465,
+          "innovation_memory_control": "combined",
+          "margin": -11.46526449918747,
+          "source_example_id": "1d50b408c8f5cd2c",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        }
+      },
+      "status": "control_or_negative",
+      "target_prediction": "1",
+      "teacher_prediction": "on the previous day, there were 703 visitors. on the current day, there were 246 visitors. in total, there were 703 + 246 = 949 visitors. since there are 25 days in a year, there were 949"
+    },
+    {
+      "best_control": "slots_only",
+      "best_control_margin": -9.747859135270119,
+      "distractor_answer": "33",
+      "example_id": "2de1549556000830",
+      "gold_answer": "39",
+      "index": 14,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "matched_margin": -9.965589821338654,
+      "matched_minus_best_control_margin": -0.21773068606853485,
+      "scores": {
+        "matched": {
+          "bits": 3704960.0,
+          "bytes": 463120.0,
+          "distractor_logprob": -31.615505874156952,
+          "gold_logprob": -41.581095695495605,
+          "innovation_memory_control": "combined",
+          "margin": -9.965589821338654,
+          "source_example_id": "2de1549556000830",
+          "source_kv_control": "real",
+          "source_prompt_control": "real"
+        },
+        "shuffled_source": {
+          "bits": 3704960.0,
+          "bytes": 463120.0,
+          "distractor_logprob": -32.3111737370491,
+          "gold_logprob": -42.06510066986084,
+          "innovation_memory_control": "combined",
+          "margin": -9.753926932811737,
+          "source_example_id": "2f80204fc9e0896f",
+          "source_kv_control": "real",
+          "source_prompt_control": "shuffle_examples"
+        },
+        "slots_only": {
+          "bits": 3704960.0,
+          "bytes": 463120.0,
+          "distractor_logprob": -31.682463511824608,
+          "gold_logprob": -41.43032264709473,
+          "innovation_memory_control": "slots_only",
+          "margin": -9.747859135270119,
+          "source_example_id": "2de1549556000830",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "target_only": {
+          "bits": 3704960.0,
+          "bytes": 463120.0,
+          "distractor_logprob": -32.368359837681055,
+          "gold_logprob": -42.524319648742676,
+          "innovation_memory_control": "target_only",
+          "margin": -10.15595981106162,
+          "source_example_id": "2de1549556000830",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "zero_source": {
+          "bits": 3704960.0,
+          "bytes": 463120.0,
+          "distractor_logprob": -31.753228046000004,
+          "gold_logprob": -41.65832710266113,
+          "innovation_memory_control": "combined",
+          "margin": -9.905099056661129,
+          "source_example_id": "2de1549556000830",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        }
+      },
+      "status": "control_or_negative",
+      "target_prediction": "33",
+      "teacher_prediction": "the frog jumped 33 inches farther than the grasshopper, so the frog jumped 9 + 33 = 42 inches. the mouse jumped 3 inches lesser than the frog, so the mouse jumped 42 - 3 = 39 inches. #### 39 the answer"
+    },
+    {
+      "best_control": "shuffled_source",
+      "best_control_margin": -3.5494982302188873,
+      "distractor_answer": "600",
+      "example_id": "6e9745b37ab6fc45",
+      "gold_answer": "61",
+      "index": 29,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "matched_margin": -8.059460682561621,
+      "matched_minus_best_control_margin": -4.509962452342734,
+      "scores": {
+        "matched": {
+          "bits": 4631200.0,
+          "bytes": 578900.0,
+          "distractor_logprob": -26.559877353021875,
+          "gold_logprob": -34.619338035583496,
+          "innovation_memory_control": "combined",
+          "margin": -8.059460682561621,
+          "source_example_id": "6e9745b37ab6fc45",
+          "source_kv_control": "real",
+          "source_prompt_control": "real"
+        },
+        "shuffled_source": {
+          "bits": 4168080.0,
+          "bytes": 521010.0,
+          "distractor_logprob": -47.485588401556015,
+          "gold_logprob": -51.0350866317749,
+          "innovation_memory_control": "combined",
+          "margin": -3.5494982302188873,
+          "source_example_id": "575d7e83d84c1e67",
+          "source_kv_control": "real",
+          "source_prompt_control": "shuffle_examples"
+        },
+        "slots_only": {
+          "bits": 4631200.0,
+          "bytes": 578900.0,
+          "distractor_logprob": -27.014678778650705,
+          "gold_logprob": -35.10303735733032,
+          "innovation_memory_control": "slots_only",
+          "margin": -8.088358578679617,
+          "source_example_id": "6e9745b37ab6fc45",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "target_only": {
+          "bits": 4631200.0,
+          "bytes": 578900.0,
+          "distractor_logprob": -26.935353172186296,
+          "gold_logprob": -34.9787335395813,
+          "innovation_memory_control": "target_only",
+          "margin": -8.043380367395002,
+          "source_example_id": "6e9745b37ab6fc45",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "zero_source": {
+          "bits": 4631200.0,
+          "bytes": 578900.0,
+          "distractor_logprob": -26.511616412433796,
+          "gold_logprob": -34.6519660949707,
+          "innovation_memory_control": "combined",
+          "margin": -8.140349682536907,
+          "source_example_id": "6e9745b37ab6fc45",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        }
+      },
+      "status": "control_or_negative",
+      "target_prediction": "600",
+      "teacher_prediction": "if there were 600 visitors the previous day, and 661 visitors came to the buckingham palace on that day, then there were 661 - 600 = 61 more visitors than the previous day. #### 61 the answer is: 61"
+    },
+    {
+      "best_control": "zero_source",
+      "best_control_margin": 14.514388084411621,
+      "distractor_answer": "17",
+      "example_id": "aee922049c757331",
+      "gold_answer": "1",
+      "index": 5,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "matched_margin": 14.363924980163574,
+      "matched_minus_best_control_margin": -0.15046310424804688,
+      "scores": {
+        "matched": {
+          "bits": 2315040.0,
+          "bytes": 289380.0,
+          "distractor_logprob": -33.59926679730415,
+          "gold_logprob": -19.23534181714058,
+          "innovation_memory_control": "combined",
+          "margin": 14.363924980163574,
+          "source_example_id": "aee922049c757331",
+          "source_kv_control": "real",
+          "source_prompt_control": "real"
+        },
+        "shuffled_source": {
+          "bits": 2315040.0,
+          "bytes": 289380.0,
+          "distractor_logprob": -33.573003217577934,
+          "gold_logprob": -19.17497293651104,
+          "innovation_memory_control": "combined",
+          "margin": 14.398030281066895,
+          "source_example_id": "b0b71023ae4d233b",
+          "source_kv_control": "real",
+          "source_prompt_control": "shuffle_examples"
+        },
+        "slots_only": {
+          "bits": 2315040.0,
+          "bytes": 289380.0,
+          "distractor_logprob": -33.758175790309906,
+          "gold_logprob": -19.322607934474945,
+          "innovation_memory_control": "slots_only",
+          "margin": 14.435567855834961,
+          "source_example_id": "aee922049c757331",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "target_only": {
+          "bits": 2315040.0,
+          "bytes": 289380.0,
+          "distractor_logprob": -33.175564005970955,
+          "gold_logprob": -18.879814341664314,
+          "innovation_memory_control": "target_only",
+          "margin": 14.29574966430664,
+          "source_example_id": "aee922049c757331",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "zero_source": {
+          "bits": 2315040.0,
+          "bytes": 289380.0,
+          "distractor_logprob": -34.108157217502594,
+          "gold_logprob": -19.593769133090973,
+          "innovation_memory_control": "combined",
+          "margin": 14.514388084411621,
+          "source_example_id": "aee922049c757331",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        }
+      },
+      "status": "control_or_negative",
+      "target_prediction": "17",
+      "teacher_prediction": "dan has $ 4. he bought a candy bar for $ 8, so he has $ 4 - $ 8 = -$ 4 left. his friend gave him $ 5, so he now has $ -$ 4 + $ 5 = $ 1 left. #### 1 the"
+    },
+    {
+      "best_control": "slots_only",
+      "best_control_margin": 5.762862920761108,
+      "distractor_answer": "4",
+      "example_id": "e3ab8666238a289e",
+      "gold_answer": "1",
+      "index": 13,
+      "labels": [
+        "clean_c2c_residual_target"
+      ],
+      "matched_margin": 5.630485534667969,
+      "matched_minus_best_control_margin": -0.13237738609313965,
+      "scores": {
+        "matched": {
+          "bits": 2662296.0,
+          "bytes": 332787.0,
+          "distractor_logprob": -26.226110458374023,
+          "gold_logprob": -20.595624923706055,
+          "innovation_memory_control": "combined",
+          "margin": 5.630485534667969,
+          "source_example_id": "e3ab8666238a289e",
+          "source_kv_control": "real",
+          "source_prompt_control": "real"
+        },
+        "shuffled_source": {
+          "bits": 2662296.0,
+          "bytes": 332787.0,
+          "distractor_logprob": -26.32276725769043,
+          "gold_logprob": -20.98873496055603,
+          "innovation_memory_control": "combined",
+          "margin": 5.334032297134399,
+          "source_example_id": "615f9d817cb5be59",
+          "source_kv_control": "real",
+          "source_prompt_control": "shuffle_examples"
+        },
+        "slots_only": {
+          "bits": 2662296.0,
+          "bytes": 332787.0,
+          "distractor_logprob": -26.558055877685547,
+          "gold_logprob": -20.79519295692444,
+          "innovation_memory_control": "slots_only",
+          "margin": 5.762862920761108,
+          "source_example_id": "e3ab8666238a289e",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "target_only": {
+          "bits": 2662296.0,
+          "bytes": 332787.0,
+          "distractor_logprob": -26.240745544433594,
+          "gold_logprob": -20.711368560791016,
+          "innovation_memory_control": "target_only",
+          "margin": 5.529376983642578,
+          "source_example_id": "e3ab8666238a289e",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "zero_source": {
+          "bits": 2662296.0,
+          "bytes": 332787.0,
+          "distractor_logprob": -26.68696880340576,
+          "gold_logprob": -21.141329526901245,
+          "innovation_memory_control": "combined",
+          "margin": 5.545639276504517,
+          "source_example_id": "e3ab8666238a289e",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        }
+      },
+      "status": "control_or_negative",
+      "target_prediction": "4",
+      "teacher_prediction": "there were 3 birds and 4 storks sitting on the fence. after 2 more birds joined, there were a total of 3 + 2 = 5 birds sitting on the fence. there were 4 storks sitting on the fence. so, there are 5 - 4 = 1"
+    },
+    {
+      "best_control": "target_only",
+      "best_control_margin": -5.957246661186218,
+      "distractor_answer": "2",
+      "example_id": "4c84ebf42812703b",
+      "gold_answer": "10",
+      "index": 10,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": -6.106538772583008,
+      "matched_minus_best_control_margin": -0.14929211139678955,
+      "scores": {
+        "matched": {
+          "bits": 3704064.0,
+          "bytes": 463008.0,
+          "distractor_logprob": -23.19426727294922,
+          "gold_logprob": -29.300806045532227,
+          "innovation_memory_control": "combined",
+          "margin": -6.106538772583008,
+          "source_example_id": "4c84ebf42812703b",
+          "source_kv_control": "real",
+          "source_prompt_control": "real"
+        },
+        "shuffled_source": {
+          "bits": 3704064.0,
+          "bytes": 463008.0,
+          "distractor_logprob": -23.378255367279053,
+          "gold_logprob": -29.51155424118042,
+          "innovation_memory_control": "combined",
+          "margin": -6.133298873901367,
+          "source_example_id": "13cb77b698eeadb5",
+          "source_kv_control": "real",
+          "source_prompt_control": "shuffle_examples"
+        },
+        "slots_only": {
+          "bits": 3704064.0,
+          "bytes": 463008.0,
+          "distractor_logprob": -23.645312786102295,
+          "gold_logprob": -29.709158539772034,
+          "innovation_memory_control": "slots_only",
+          "margin": -6.063845753669739,
+          "source_example_id": "4c84ebf42812703b",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "target_only": {
+          "bits": 3704064.0,
+          "bytes": 463008.0,
+          "distractor_logprob": -23.21568727493286,
+          "gold_logprob": -29.17293393611908,
+          "innovation_memory_control": "target_only",
+          "margin": -5.957246661186218,
+          "source_example_id": "4c84ebf42812703b",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "zero_source": {
+          "bits": 3704064.0,
+          "bytes": 463008.0,
+          "distractor_logprob": -23.372641563415527,
+          "gold_logprob": -29.4660005569458,
+          "innovation_memory_control": "combined",
+          "margin": -6.093358993530273,
+          "source_example_id": "4c84ebf42812703b",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        }
+      },
+      "status": "control_or_negative",
+      "target_prediction": "2",
+      "teacher_prediction": "the recipe calls for 12 cups of flour and 5 cups of sugar. mary already put in some cups of flour, and she still needs 2 more cups of flour. so the total number of cups of flour she has put in is 12 - 2 = 10 cups. therefore"
+    },
+    {
+      "best_control": "zero_source",
+      "best_control_margin": -10.647663429379463,
+      "distractor_answer": "1",
+      "example_id": "4d780f825bb8541c",
+      "gold_answer": "26",
+      "index": 18,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": -10.630622923374176,
+      "matched_minus_best_control_margin": 0.01704050600528717,
+      "scores": {
+        "matched": {
+          "bits": 3472560.0,
+          "bytes": 434070.0,
+          "distractor_logprob": -21.034133851528168,
+          "gold_logprob": -31.664756774902344,
+          "innovation_memory_control": "combined",
+          "margin": -10.630622923374176,
+          "source_example_id": "4d780f825bb8541c",
+          "source_kv_control": "real",
+          "source_prompt_control": "real"
+        },
+        "shuffled_source": {
+          "bits": 3472560.0,
+          "bytes": 434070.0,
+          "distractor_logprob": -21.003855869174004,
+          "gold_logprob": -31.71701955795288,
+          "innovation_memory_control": "combined",
+          "margin": -10.713163688778877,
+          "source_example_id": "de1bf4d142544e5b",
+          "source_kv_control": "real",
+          "source_prompt_control": "shuffle_examples"
+        },
+        "slots_only": {
+          "bits": 3472560.0,
+          "bytes": 434070.0,
+          "distractor_logprob": -21.486071214079857,
+          "gold_logprob": -32.42136764526367,
+          "innovation_memory_control": "slots_only",
+          "margin": -10.935296431183815,
+          "source_example_id": "4d780f825bb8541c",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "target_only": {
+          "bits": 3472560.0,
+          "bytes": 434070.0,
+          "distractor_logprob": -21.112468004226685,
+          "gold_logprob": -32.17562198638916,
+          "innovation_memory_control": "target_only",
+          "margin": -11.063153982162476,
+          "source_example_id": "4d780f825bb8541c",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "zero_source": {
+          "bits": 3472560.0,
+          "bytes": 434070.0,
+          "distractor_logprob": -21.303553745150566,
+          "gold_logprob": -31.95121717453003,
+          "innovation_memory_control": "combined",
+          "margin": -10.647663429379463,
+          "source_example_id": "4d780f825bb8541c",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        }
+      },
+      "status": "control_or_negative",
+      "target_prediction": "1",
+      "teacher_prediction": "julia played tag with 12 kids on monday and 14 kids on tuesday, so she played with a total of 12+14 = 26 kids. if she spent a total of 34 hours to play tag on both days, then she spent 34/26"
+    },
+    {
+      "best_control": "shuffled_source",
+      "best_control_margin": -2.7495766282081604,
+      "distractor_answer": "2",
+      "example_id": "de1bf4d142544e5b",
+      "gold_answer": "57",
+      "index": 20,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": -2.572726249694824,
+      "matched_minus_best_control_margin": 0.17685037851333618,
+      "scores": {
+        "matched": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -23.177237033843994,
+          "gold_logprob": -25.74996328353882,
+          "innovation_memory_control": "combined",
+          "margin": -2.572726249694824,
+          "source_example_id": "de1bf4d142544e5b",
+          "source_kv_control": "real",
+          "source_prompt_control": "real"
+        },
+        "shuffled_source": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -23.372008800506592,
+          "gold_logprob": -26.121585428714752,
+          "innovation_memory_control": "combined",
+          "margin": -2.7495766282081604,
+          "source_example_id": "a85be5ec651dac24",
+          "source_kv_control": "real",
+          "source_prompt_control": "shuffle_examples"
+        },
+        "slots_only": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -23.576492309570312,
+          "gold_logprob": -26.498092353343964,
+          "innovation_memory_control": "slots_only",
+          "margin": -2.921600043773651,
+          "source_example_id": "de1bf4d142544e5b",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "target_only": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -22.99146270751953,
+          "gold_logprob": -25.814936637878418,
+          "innovation_memory_control": "target_only",
+          "margin": -2.8234739303588867,
+          "source_example_id": "de1bf4d142544e5b",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        },
+        "zero_source": {
+          "bits": 2546544.0,
+          "bytes": 318318.0,
+          "distractor_logprob": -23.423637866973877,
+          "gold_logprob": -26.681527018547058,
+          "innovation_memory_control": "combined",
+          "margin": -3.257889151573181,
+          "source_example_id": "de1bf4d142544e5b",
+          "source_kv_control": "zero",
+          "source_prompt_control": "real"
+        }
+      },
+      "status": "control_or_negative",
+      "target_prediction": "2",
+      "teacher_prediction": "if there were 97 alligators and 40 of them were hiding, then the number of alligators not hiding is 97 - 40 = 57 #### 57 the answer is: 57"
+    }
+  ],
+  "status": "no_teacher_forced_source_signal",
+  "summary": {
+    "clean_ids_scored": 6,
+    "control_leak_clean_count": 2,
+    "control_leak_clean_ids": [
+      "aee922049c757331",
+      "e3ab8666238a289e"
+    ],
+    "matched_only_clean_count": 0,
+    "matched_only_clean_ids": [],
+    "matched_positive_clean_count": 2,
+    "mean_best_control_margin_clean": -2.8770306749696224,
+    "mean_matched_margin_clean": -3.766860065758616,
+    "mean_matched_minus_best_control_clean": -0.8898293907889941,
+    "target_self_ids_scored": 3
+  }
+}

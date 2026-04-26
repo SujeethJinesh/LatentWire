@@ -691,5 +691,12 @@
     "path": "references/455_contrastive_perceiver_bottleneck_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for receiver-conditioned Perceiver/Q-Former bottlenecks, source-control contrast, information bottlenecks, and side-information coding after C2C mechanism summary probes failed."
+  },
+  {
+    "num": 456,
+    "slug": "conditional_debiasing_side_information_refs",
+    "path": "references/456_conditional_debiasing_side_information_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for conditional bottlenecks, target-prior debiasing, and side-information coding after anti-memory Perceiver controls failed to create source-necessary signal."
   }
 ]

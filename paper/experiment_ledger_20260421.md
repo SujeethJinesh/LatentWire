@@ -4060,3 +4060,167 @@ Next exact gate:
   recovery before any generation
 - do not run larger generations, seeds, cross-family, or long-context expansion
   for this connector family as currently formulated
+
+## 2026-04-26 - SVAMP32 anti-memory Perceiver objective pre-gate
+
+Cycle:
+
+- cycle number: `2026-04-26-svamp32-anti-memory-perceiver-1`
+- live branch entering cycle: objective-level rescue for the Perceiver/query
+  answer-teacher connector
+- scale-up rung: strict small teacher-forced pre-gate
+- ICLR readiness: not ready; still blocked on a deployable source-necessary
+  positive method
+- code commit: `8b3d7924`
+
+Gate:
+
+- add training-time anti-memory controls against `target_only` and `slots_only`
+  while keeping zero/shuffle source controls
+- train on the frozen SVAMP32 exact-ID surface
+- score teacher-forced clean residual and target-self IDs at fixed gates
+  `0.125`, `0.15`, and `0.20`
+- require matched-only positive margins on at least `2/6` clean IDs before any
+  generation
+
+Decision:
+
+- checkpoint trained successfully
+- all tested teacher-forced gates failed
+- generation was not run
+- killed/weakened: anti-memory penalties as a rescue for the current Perceiver
+  answer-teacher plus delta-memory branch
+- promoted next: source-only sidecar/router exact-ID gate on SVAMP32
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_anti_memory_perceiver_20260426.md`
+- results manifest:
+  - `results/svamp32_anti_memory_perceiver_20260426/manifest.md`
+- reference memo:
+  - `references/456_conditional_debiasing_side_information_refs.md`
+- checkpoint:
+  - `.debug/svamp32_anti_memory_perceiver_20260426/checkpoints/qwen25_to_qwen3_svamp32_anti_memory_w080_ctrl050_am050_r16_b16_seed1.pt`
+  - sha256: `6a3932946c6fcb580a1b136e1e5d710e555884a73c94def8ef1485fc613692ad`
+  - not tracked, size too large for git
+- calibration log:
+  - `.debug/svamp32_anti_memory_perceiver_20260426/logs/calibrate_w080_ctrl050_am050_seed1.log`
+  - sha256: `4e1d345a5c3c0ac671c3e244c446b49708f92302d88b8c6ea82b2d2928080318`
+- teacher-forced gates:
+  - `results/svamp32_anti_memory_perceiver_20260426/teacher_forced_gate0125.json`
+    - sha256: `0c45517529bc18ed73953d239543c40f70dfffe79582ea472ca0b3767496ff0d`
+  - `results/svamp32_anti_memory_perceiver_20260426/teacher_forced_gate015.json`
+    - sha256: `09b0a4ff220a5be7760eeebcf82ee53f9c9c8baf213aa66f473ac39dc6754f94`
+  - `results/svamp32_anti_memory_perceiver_20260426/teacher_forced_gate020.json`
+    - sha256: `53b0f3d718455ff26d711ecc51bd603032e16d24258eb12d5ba90947a9bfa1c2`
+
+Evidence:
+
+- calibration:
+  - prompts: `32`
+  - dynamic mixture samples: `1411`
+  - answer-teacher injected prompts: `6`
+  - answer-teacher injected samples: `277`
+  - average K alignment cosine: `0.951`
+  - average V alignment cosine: `0.734`
+- teacher-forced gates:
+  - gate `0.125`: matched-positive clean `2/6`, matched-only clean `0/6`,
+    control-leak clean `2/6`, mean matched-control delta `-0.8898`
+  - gate `0.150`: matched-positive clean `2/6`, matched-only clean `0/6`,
+    control-leak clean `2/6`, mean matched-control delta `-0.8921`
+  - gate `0.200`: matched-positive clean `2/6`, matched-only clean `0/6`,
+    control-leak clean `2/6`, mean matched-control delta `-0.8660`
+
+Hypothesis update:
+
+- weakened: target-only/slots-only zero-innovation and teacher-KL margin
+  penalties are enough to force source-necessary answer-teacher signal inside
+  the receiver-conditioned Perceiver delta-memory connector
+- strengthened: target/control leakage is structural in this branch, not just a
+  missing regularizer
+- revived/promoted: source-only sidecar/router, because source-signal formation
+  can be cleanly isolated from target-only and slots-only memory
+
+Next exact gate:
+
+- implement or run `svamp32_source_only_sidecar_router_gate`
+- use the frozen SVAMP32 clean source-necessary IDs plus target-self preserve
+  IDs
+- require matched `>=14/32`, target-self preserve `3/3`, clean
+  source-necessary `>=2/6`, numeric coverage `>=31/32`, exact ordered ID
+  parity, and zero clean union for source-destroying controls
+
+## 2026-04-26 - SVAMP32 source-only numeric sidecar/router gate
+
+Cycle:
+
+- cycle number: `2026-04-26-svamp32-source-only-router-1`
+- live branch entering cycle: source-only residue sidecar/router
+- scale-up rung: strict small exact-ID gate
+- ICLR readiness: not ready; still blocked on a deployable source-necessary
+  positive method
+
+Gate:
+
+- implement `scripts/analyze_svamp32_source_only_sidecar_router_gate.py`
+- form the transmitted sidecar only from source-side numeric predictions
+- decode against the existing target-side candidate pool
+- controls: zero-source, shuffled-source, label-shuffle, same-norm-noise
+  signature, target-only, and slots-only
+- promotion rule: matched `>=14/32`, target-self `3/3`, clean
+  source-necessary `>=2/6`, numeric coverage `>=31/32`, clean control union
+  `0/6`
+
+Decision:
+
+- script implemented and unit-tested
+- frozen SVAMP32 gate failed
+- killed: raw source-generated numeric residue sidecars
+- next branch: source latent/token-feature sidecar or token/layer-level C2C
+  residual distillation with matched-vs-control separation
+
+Artifacts:
+
+- script:
+  - `scripts/analyze_svamp32_source_only_sidecar_router_gate.py`
+- tests:
+  - `tests/test_analyze_svamp32_source_only_sidecar_router_gate.py`
+- memo:
+  - `paper/svamp32_source_only_sidecar_router_20260426.md`
+- results manifest:
+  - `results/svamp32_source_only_sidecar_router_20260426/manifest.md`
+- result JSON:
+  - `results/svamp32_source_only_sidecar_router_20260426/source_only_router_gate.json`
+  - sha256: `6f92482c8b2b500eb4cb3d29a228e0797dea59e5f2fa4c78935c739413addce2`
+- result markdown:
+  - `results/svamp32_source_only_sidecar_router_20260426/source_only_router_gate.md`
+  - sha256: `bbd7e47d55dbeee118b4812ef2b3ac5a305290eb7e947f3e663765510e755b95`
+- run log:
+  - `.debug/svamp32_anti_memory_perceiver_20260426/logs/source_only_sidecar_router_gate.log`
+  - sha256: `8f3645a99c1fde7e266e5a160e76b923a90fa0a39d4777d2507d9f706f06e5ee`
+
+Evidence:
+
+- source numeric coverage: `32/32`
+- moduli `2,3,5,7`: matched `4/32`, target-self `0/3`, clean matched `0/6`,
+  clean source-necessary `0/6`, clean control union `0/6`
+- moduli `97`: matched `4/32`, target-self `0/3`, clean matched `0/6`,
+  clean source-necessary `0/6`, clean control union `0/6`
+
+Hypothesis update:
+
+- killed: raw source generated answers contain enough signal for the clean C2C
+  source-only IDs
+- strengthened: target/control leakage is separable from source-signal
+  weakness; this branch has clean controls but no positive clean recovery
+- promoted next: learn a source latent/token-feature sidecar against C2C
+  residues or token/layer C2C behavior, with cross-fitting and label-shuffle
+  controls
+
+Next exact gate:
+
+- run a source-latent/token predictor or token/layer C2C residual distillation
+  gate on the same frozen SVAMP32 `6 + 3` IDs
+- require at least `2/6` clean source-necessary wins and `3/3` target-self
+  preservation before any medium confirmation
