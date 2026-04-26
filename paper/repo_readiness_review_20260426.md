@@ -242,6 +242,13 @@ further; the branch only remains live if the feature extractor changes to
 fold-local token/span sparse dictionaries or an existing real SAE-adapter lane
 is evaluated under the same clean target set and controls.
 
+Qwen2.5-Math source-token query-bottleneck update: the non-duplicative all-layer
+token bottleneck on the current Math SVAMP32 clean C2C-headroom surface also
+fails. It reaches matched `8/32`, exactly the target floor, recovers `0/6`
+clean C2C-headroom IDs, and a slots-only control recovers one clean ID. This
+kills shallow source-token/source-summary residue prediction on the current
+surface unless the feature extractor or objective changes materially.
+
 Qwen-Math token/layer local follow-up: the new C2C tail-token local residual
 query-bottleneck gate also fails. It records per-projector key/value `source`,
 `target`, `output`, and `delta` tail tensors, reshaped as `224` tokens of width

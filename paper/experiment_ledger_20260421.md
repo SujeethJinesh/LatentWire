@@ -5852,3 +5852,59 @@ Next exact gate:
   C2C-headroom target set
 - do not scale to SVAMP70 until the strict SVAMP32 gate recovers at least
   `2/6` clean source-necessary IDs with zero clean destructive-control recovery
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math SVAMP32 Source-Token Query-Bottleneck
+
+- cycle number: `2026-04-26-qwen25math-svamp32-source-token-qbottleneck`
+- timestamp: `2026-04-26 06:30:23 PDT`
+- live branch entering cycle: current SVAMP32 C2C-headroom surface after
+  sparse-anchor projection smoke failed
+- scale-up rung: strict-small real-model source-interface gate
+- ICLR readiness: not ready; current source-readout family fails clean recovery
+
+Start-of-cycle status:
+
+- current paper story: Qwen2.5-Math -> Qwen3 C2C has clean headroom, but
+  deployable source-derived interfaces do not recover it
+- exact blocker: test whether the stronger Math source plus all-layer
+  source-token query bottleneck predicts useful C2C residue signatures
+- highest-priority gate: at least `2/6` clean source-necessary IDs with zero
+  clean destructive-control recovery
+
+Results:
+
+- matched: `8/32`, clean `0/6`
+- zero-source: `8/32`, clean `0/6`
+- shuffled-source: `7/32`, clean `0/6`
+- label-shuffled: `7/32`, clean `0/6`
+- same-norm-noise: `8/32`, clean `0/6`
+- target-only: `8/32`, clean `0/6`
+- slots-only: `7/32`, clean `1/6`
+- candidate-pool clean gold coverage: `6/6`
+
+Decision:
+
+- fail and kill all-layer source-token query-bottleneck residue prediction on
+  the current Qwen2.5-Math SVAMP32 C2C-headroom surface
+- weakened: shallow source-token/source-summary residue prediction family
+- live next branch: materially different signal path, such as fold-local
+  token/span sparse dictionaries, a target-safe output-aware dynalign selector,
+  or a non-first-pass SAE/shared-code adapter under this same clean target set
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_source_token_qbottleneck_20260426.md`
+- probe:
+  - `results/qwen25math_svamp32_source_token_qbottleneck_20260426/probe.json`
+  - sha256: `abf23bb105ee05d98717d731414de15d4543419b3e96ffc571a54c54983c83d0`
+- readout:
+  - `results/qwen25math_svamp32_source_token_qbottleneck_20260426/probe.md`
+  - sha256: `5ec913320d7f3acf8c75202286910db5b8f7fba8e57130193c88ad5e490975f7`
+
+Next exact gate:
+
+- stop source-token query-bottleneck and sparse-anchor projection tuning
+- choose between fold-local token/span dictionary implementation and
+  target-safe output-aware dynalign selector/repair; require the same `>=2/6`
+  clean source-necessary recovery with zero clean destructive-control recovery
