@@ -5908,3 +5908,79 @@ Next exact gate:
 - choose between fold-local token/span dictionary implementation and
   target-safe output-aware dynalign selector/repair; require the same `>=2/6`
   clean source-necessary recovery with zero clean destructive-control recovery
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math SVAMP32 Token/Span Dictionary
+
+- cycle number: `2026-04-26-qwen25math-svamp32-token-span-dictionary`
+- timestamp: `2026-04-26 06:36:12 PDT`
+- live branch entering cycle: fold-local token/span sparse dictionary as the
+  stricter source-readout follow-up
+- scale-up rung: strict-small real-model source-interface gate
+- ICLR readiness: not ready; current sparse/source-readout family is killed on
+  this surface
+
+Start-of-cycle status:
+
+- current paper story: C2C exposes clean headroom on SVAMP32, but source-side
+  readouts have not recovered it
+- exact blocker: determine whether fold-local token/span sparse dictionaries
+  can recover clean C2C-headroom IDs after projection and query-bottleneck
+  variants failed
+- highest-priority gate: matched `>=10/32`, target floor preserved, clean
+  source-necessary `>=2/6`, clean control union `0/6`
+
+Implementation:
+
+- added `scripts/analyze_svamp32_token_span_dictionary_probe.py`
+- added `tests/test_analyze_svamp32_token_span_dictionary_probe.py`
+- features: fold-local sparse dictionary over source token states plus
+  source/target tokenizer-boundary sidecar
+- controls: zero-source, shuffled-source, label-shuffled, same-norm-noise,
+  boundary-only, target-only, and slots-only
+
+Results:
+
+- matched: `7/32`, clean `0/6`
+- zero-source: `7/32`, clean `0/6`
+- shuffled-source: `8/32`, clean `0/6`
+- label-shuffled: `6/32`, clean `0/6`
+- same-norm-noise: `8/32`, clean `0/6`
+- boundary-only: `7/32`, clean `0/6`
+- target-only: `8/32`, clean `0/6`
+- slots-only: `6/32`, clean `0/6`
+- candidate-pool clean gold coverage: `6/6`
+- mean dead atom rate: `0.0000`
+- mean codebook perplexity: `28.5363`
+- estimated sidecar bytes: `22`
+
+Decision:
+
+- fail and kill the current source-readout / sparse-dictionary family on the
+  Qwen2.5-Math SVAMP32 C2C-headroom surface
+- do not tune source-token readout, random projections, dictionary seed,
+  top-k, atom count, or byte budget further on this surface
+- next live branch: target-safe output-aware dynalign selector / repair
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_token_span_dictionary_20260426.md`
+- probe:
+  - `results/qwen25math_svamp32_token_span_dictionary_20260426/probe.json`
+  - sha256: `877a5970ccd244cdaf0731426934c8764e6b63d16f12bebc2102dafb46e7a64e`
+- readout:
+  - `results/qwen25math_svamp32_token_span_dictionary_20260426/probe.md`
+  - sha256: `478a14c702ab16ccba98fe5a9656892f4c8a06aef0ab92e4ba943b2013fce54c`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_token_span_dictionary_probe.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_token_span_dictionary_probe.py`
+
+Next exact gate:
+
+- design a target-safe accept/fallback or repair gate over output-aware
+  dynalign candidates on an exact-ID surface
+- require target-only, zero-source, shuffled-source, and selector-only controls
+- promote only if the gate recovers at least `2/6` clean source-necessary IDs
+  without target-floor regression

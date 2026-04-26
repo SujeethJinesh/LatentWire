@@ -249,6 +249,14 @@ clean C2C-headroom IDs, and a slots-only control recovers one clean ID. This
 kills shallow source-token/source-summary residue prediction on the current
 surface unless the feature extractor or objective changes materially.
 
+Fold-local token/span dictionary update: the stricter dictionary version also
+fails on the same surface. It has healthy codebook telemetry, with dead atom
+rate `0.0000` and mean perplexity `28.5363`, but reaches only `7/32`, below
+the `8/32` target floor, and recovers `0/6` clean C2C-headroom IDs. This kills
+the current source-readout / sparse-dictionary family on this surface. The next
+live branch should move to target-safe output-aware dynalign selector or repair,
+not more dictionary/top-k/byte-budget tuning.
+
 Qwen-Math token/layer local follow-up: the new C2C tail-token local residual
 query-bottleneck gate also fails. It records per-projector key/value `source`,
 `target`, `output`, and `delta` tail tensors, reshaped as `224` tokens of width
