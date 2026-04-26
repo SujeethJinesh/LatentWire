@@ -6483,7 +6483,7 @@ Results:
 - matched-only clean IDs: `0/6`
 - matched-positive clean IDs: `4/6`
 - clean control leaks: `4/6`
-- mean matched-minus-best-control clean margin: `-0.410582`
+- mean matched-minus-best-control clean margin: `-0.383649`
 - target-preservation IDs scored: `8`
 - target-preservation matched-positive count: `5/8`
 
@@ -6503,10 +6503,10 @@ Artifacts:
   - `results/qwen25math_svamp32_source_cross_attention_logprob_20260426/manifest.md`
 - result JSON:
   - `results/qwen25math_svamp32_source_cross_attention_logprob_20260426/smoke.json`
-  - sha256: `9f26c13ce205f8f7724b0c19eba17f192cfc204042760b2975acdf4408822f10`
+  - sha256: `ecc014ad50455c81a2f297275a0883d70b7f230d62ee73c48c3130d33eda138e`
 - readout:
   - `results/qwen25math_svamp32_source_cross_attention_logprob_20260426/smoke.md`
-  - sha256: `2dd85d6dabe13ac4d57ea935242465ed72c09c15edcce4e2c72e0ceca5b3e3a2`
+  - sha256: `b6f8a00ef164832be843f3a0daa440a62f8f919f3b2360ebf137f106aa68e2dc`
 - analyzer:
   - `scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
   - sha256: `097ff46ef9f8679abf0ee4686a3a5316d02773a7dcd26ecd254eb73a0d930b6d`

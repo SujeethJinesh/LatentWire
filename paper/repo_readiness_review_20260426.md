@@ -73,7 +73,7 @@ The first token-local cross-attention rescue also fails its first rung:
 - target-query cross-attention into standardized source token states
 - matched-only clean source-communication candidate IDs: `0/6`
 - clean control leaks: `4/6`
-- mean matched-minus-best-control clean margin: `-0.410582`
+- mean matched-minus-best-control clean margin: `-0.383649`
 - decision: do not scale this exact tiny prefix-emitting cross-attention
   connector by epochs or width without a new hypothesis
 

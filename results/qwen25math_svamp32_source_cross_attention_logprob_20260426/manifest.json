@@ -9,18 +9,18 @@
     "matched_only_clean_count": 0,
     "matched_positive_clean_count": 4,
     "control_leak_clean_count": 4,
-    "mean_matched_minus_best_control_clean": -0.4105819861094157,
+    "mean_matched_minus_best_control_clean": -0.3836486339569092,
     "target_self_ids_scored": 8,
     "target_self_matched_positive_count": 5
   },
   "artifacts": {
     "json": {
       "path": "results/qwen25math_svamp32_source_cross_attention_logprob_20260426/smoke.json",
-      "sha256": "9f26c13ce205f8f7724b0c19eba17f192cfc204042760b2975acdf4408822f10"
+      "sha256": "ecc014ad50455c81a2f297275a0883d70b7f230d62ee73c48c3130d33eda138e"
     },
     "markdown": {
       "path": "results/qwen25math_svamp32_source_cross_attention_logprob_20260426/smoke.md",
-      "sha256": "2dd85d6dabe13ac4d57ea935242465ed72c09c15edcce4e2c72e0ceca5b3e3a2"
+      "sha256": "b6f8a00ef164832be843f3a0daa440a62f8f919f3b2360ebf137f106aa68e2dc"
     }
   },
   "next_gate": "Switch away from tiny prefix emitters on this surface. Either discover a stronger source surface or test a discrete source-derived candidate/routing stack with attribution controls."

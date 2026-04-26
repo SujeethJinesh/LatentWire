@@ -11,7 +11,7 @@
 - matched-only clean IDs: `0/6`
 - matched-positive clean IDs: `4/6`
 - clean control leaks: `4/6`
-- mean matched-minus-best-control clean margin: `-0.410582`
+- mean matched-minus-best-control clean margin: `-0.383649`
 - target-preservation IDs scored: `8`
 - target-preservation matched-positive count: `5/8`
 

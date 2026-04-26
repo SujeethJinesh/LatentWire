@@ -20,7 +20,7 @@ source beats source-destroying and target-only controls on clean IDs.
 - matched-only clean IDs: `0/6`
 - matched-positive clean IDs: `4/6`
 - control-leak clean IDs: `4/6`
-- mean matched-minus-best-control clean margin: `-0.410582`
+- mean matched-minus-best-control clean margin: `-0.383649`
 - target-preservation IDs scored: `8`
 - target-preservation matched-positive count: `5/8`
 
@@ -28,10 +28,10 @@ Clean rows:
 
 | Example ID | Gold | Distractor | Matched Margin | Best Control | Best Control Margin | Delta |
 |---|---:|---:|---:|---|---:|---:|
-| `3e8a5691f5443495` | 1 | 3 | 0.654 | label_shuffled | 0.923 | -0.269 |
-| `1d50b408c8f5cd2c` | 949 | 1 | 2.491 | shuffled_source | 2.937 | -0.447 |
-| `de1bf4d142544e5b` | 57 | 2 | 2.196 | target_only_prefix | 3.141 | -0.944 |
-| `47464cc0b064f172` | 24 | 2 | 2.822 | target_only_prefix | 3.225 | -0.403 |
+| `3e8a5691f5443495` | 1 | 3 | 0.642 | label_shuffled | 0.907 | -0.265 |
+| `1d50b408c8f5cd2c` | 949 | 1 | 2.517 | shuffled_source | 2.941 | -0.424 |
+| `de1bf4d142544e5b` | 57 | 2 | 2.194 | target_only_prefix | 2.991 | -0.797 |
+| `47464cc0b064f172` | 24 | 2 | 2.798 | target_only_prefix | 3.214 | -0.416 |
 | `6e9745b37ab6fc45` | 61 | 600 | -4.122 | target_only_prefix | -3.900 | -0.222 |
 | `575d7e83d84c1e67` | 2 | 24 | -4.371 | label_shuffled | -4.193 | -0.178 |
 
