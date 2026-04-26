@@ -176,11 +176,18 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 ## Highest-Priority Next Gate
 
-Pivot to source-surface discovery rather than more SVAMP32 source-state
-residue predictors or repair-stack tuning. The next live branch is to convert
-the strongest toy interface clue, quotient/GPA sparse dictionaries with
-sequence-aligned byte sidecars, into a real cross-family tokenizer/interface
-stress gate.
+The current live branch is no longer adjacent source-surface scouting, shallow
+source-readout tuning, target-safe selector replay, or another Perceiver memory
+checkpoint. Those gates have now failed or become control-explained.
+
+The highest-priority next gate is a materially different learned communication
+interface: a target-query-conditioned source bottleneck that lets target
+queries attend directly into source states, with matched byte/query-budget
+controls for zero-source, shuffled-source, target-only learned-prefix,
+slots-only learned-prefix, and projected soft prompts. It must first clear the
+SVAMP32 Qwen2.5-Math -> Qwen3 C2C-headroom teacher-forced pre-generation gate
+by recovering at least `2/6` matched-only clean residual IDs and a positive
+matched-control mean delta.
 
 Latest cycle update: the Qwen2.5 -> OPT-350m byte-span module-replace proxy is
 killed as a decision surface. It had tokenizer mismatch (`shared decoded =
@@ -256,6 +263,18 @@ residual IDs. The next live branch should be a genuinely learned communication
 protocol, starting with a minimal target-conditioned soft-token or learned-query
 connector trained against the C2C-over-target_self residual surface with zero,
 shuffle, target-only, and slots-only controls from the start.
+
+Qwen2.5-Math learned-connector update: the first target-conditioned
+Perceiver/query-innovation checkpoint on the current Qwen2.5-Math -> Qwen3
+SVAMP32 C2C-headroom surface is also negative before generation. Calibration
+completed with answer-teacher and zero/shuffle plus target/slots anti-memory
+controls, but teacher-forced diagnostics at gates `0.125`, `0.15`, and `0.20`
+all recover `0/6` matched-only clean residual IDs. Two clean IDs have positive
+matched margins, but both are explained by shuffled-source controls. Do not
+tune fixed gate, positive weight, answer-teacher weight, or anti-memory weight
+on this exact Perceiver memory architecture. The next learned branch needs a
+materially different target-query-to-source bottleneck with target-only
+learned-prefix and slots-only prefix controls at matched byte/query budgets.
 
 Qwen2.5-Math source-token query-bottleneck update: the non-duplicative all-layer
 token bottleneck on the current Math SVAMP32 clean C2C-headroom surface also
@@ -355,7 +374,7 @@ current live branch should move from more same-pair surface scouting to the
 smallest stronger-interface smoke on an existing exact-ID SVAMP surface, or to
 a different source/target pair only if a cheap source/target/text scout clears.
 
-Current source-contrastive promotion rule:
+Historical source-contrastive promotion rule:
 
 - matched `>=9/32`
 - clean source-necessary `>=2/4`
@@ -364,10 +383,10 @@ Current source-contrastive promotion rule:
 - zero-source, shuffled-source, label-shuffle, same-norm noise, target-only,
   and slots-only controls have clean union `0/4`
 
-The branch cleared this strict-small source-control surface. Widen only to the
-medium SVAMP70 confirmation rung next; do not move to cross-family or
-long-context benchmarks until medium confirmation, paired uncertainty, and
-source-control replication are available.
+The branch cleared this strict-small source-control surface, but later medium
+and disjoint-surface gates showed that the row is unstable. Do not widen it to
+500 examples or cross-family benchmarks unless a stronger source surface or
+router changes the holdout behavior.
 
 ## Engineering Follow-Ups
 

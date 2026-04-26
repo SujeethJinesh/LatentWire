@@ -6115,3 +6115,86 @@ Next exact gate:
 - run the next source-surface scout on a different math/reasoning split and
   require source-only over target `>=6/70` plus clean source-only after text
   exclusion `>=4/70` before C2C spend
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math SVAMP32 Perceiver C2C-Residual Gate
+
+- cycle number: `2026-04-26-qwen25math-svamp32-perceiver-c2c-residual`
+- timestamp: `2026-04-26 07:15:11 PDT`
+- live branch entering cycle: genuinely learned communication protocol after
+  target-safe selector replay was killed
+- scale-up rung: strict small teacher-forced pre-generation gate
+- ICLR readiness: not ready; learned connector does not produce source-necessary
+  clean signal
+
+Start-of-cycle status:
+
+- current paper story: Qwen2.5-Math -> Qwen3 has real C2C headroom on SVAMP32,
+  but deployable source-derived interfaces have not recovered clean residual IDs
+- exact blocker: matched source must beat zero-source, shuffled-source,
+  target-only, and slots-only controls on at least `2/6` clean C2C residual IDs
+- highest-priority gate: train and score the smallest current Perceiver
+  query-innovation connector on the Qwen2.5-Math compatible target set
+
+Results:
+
+- first calibration attempt failed because
+  `results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json`
+  has no `ids.target_self_repair` entries
+- rerun with `--innovation-target-self-preserve-weight 0` completed
+- average K alignment cosine: `0.961`
+- average V alignment cosine: `0.799`
+- answer-teacher injected samples: `274`
+- teacher-forced gate `0.125`: matched-positive clean `2/6`,
+  matched-only clean `0/6`, control-leak clean `2/6`, mean delta `-0.4836`
+- teacher-forced gate `0.150`: matched-positive clean `2/6`,
+  matched-only clean `0/6`, control-leak clean `2/6`, mean delta `-0.4102`
+- teacher-forced gate `0.200`: matched-positive clean `2/6`,
+  matched-only clean `0/6`, control-leak clean `2/6`, mean delta `-0.1916`
+
+Decision:
+
+- kill this specific Qwen2.5-Math Perceiver/query-innovation checkpoint before
+  generation
+- do not tune fixed gate, positive weight, answer-teacher weight, or anti-memory
+  weight on the same Perceiver memory architecture without a materially
+  different target-query/source-conditioning path
+- promoted next branch: target-query-conditioned source bottleneck with
+  target-only learned-prefix, slots-only prefix, zero-source, shuffled-source,
+  and projected-soft-prompt controls at matched byte/query budgets
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_perceiver_c2c_residual_20260426.md`
+- result manifest:
+  - `results/qwen25math_svamp32_perceiver_c2c_residual_20260426/manifest.md`
+- checkpoint:
+  - `.debug/qwen25math_svamp32_perceiver_c2c_residual_20260426/checkpoints/qwen25math_to_qwen3_svamp32_perceiver_c2c_residual_w080_ctrl050_am050_r16_b16_seed1.pt`
+  - sha256: `d50b00fd0b9f5b5afcb09af8f9ae89b868e913b0a0610ef8132e66f20c726759`
+- calibration log:
+  - `.debug/qwen25math_svamp32_perceiver_c2c_residual_20260426/logs/calibrate_seed1_preserve0.log`
+  - sha256: `495a782080e78fc1b40f59452dc25ec936207f93cb1945dbce4063196002d156`
+- teacher-forced JSON:
+  - `results/qwen25math_svamp32_perceiver_c2c_residual_20260426/teacher_forced_gate0125.json`
+  - sha256: `c60c357ecf38a76479a94265296ec3a32905bd95d4b39787c83da84429c21503`
+  - `results/qwen25math_svamp32_perceiver_c2c_residual_20260426/teacher_forced_gate015.json`
+  - sha256: `caf7de8d67de8fd06defc1bc71d68fa4c636877b05508f533fd1fe913cce690c`
+  - `results/qwen25math_svamp32_perceiver_c2c_residual_20260426/teacher_forced_gate020.json`
+  - sha256: `97d64048334ddc523b1a7303fb7e8922d46828c6d3bf3ee97e59445a81fc8eca`
+- literature memo:
+  - `references/462_target_conditioned_side_information_query_bottleneck_refs.md`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_teacher_forced_connector_diagnostic.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_teacher_forced_connector_diagnostic.py`
+
+Next exact gate:
+
+- implement the smallest target-query-conditioned source bottleneck evaluator
+  rather than another Perceiver memory checkpoint
+- controls must include matched source, zero-source, shuffled-source,
+  target-only learned-prefix, slots-only learned-prefix, and projected-soft
+  prompt at matched byte/query budget
+- promote only if the pre-generation gate recovers at least `2/6` matched-only
+  clean residual IDs and positive matched-control mean delta

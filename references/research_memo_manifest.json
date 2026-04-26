@@ -733,5 +733,12 @@
     "path": "references/461_source_surface_blocker_interface_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for the source-surface blocker after SVAMP disjoint scouts, covering C2C, query/resampler connectors, relative representations, sparse cross-model concepts, DroidSpeak, and KV transform coding."
+  },
+  {
+    "num": 462,
+    "slug": "target_conditioned_side_information_query_bottleneck_refs",
+    "path": "references/462_target_conditioned_side_information_query_bottleneck_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for target-query-conditioned source bottlenecks, side-information coding, soft-prefix controls, and matched target/slots baselines after the Qwen2.5-Math Perceiver C2C-residual gate failed."
   }
 ]

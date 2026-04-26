@@ -18,6 +18,9 @@
   target-safe dynalign/query-pool oracle replay: even an oracle selector over
   existing candidates recovers only `1/6` clean residual IDs and is matched by
   the source-destroying control oracle.
+- `qwen25math_svamp32_perceiver_c2c_residual_20260426.md` records the
+  negative Qwen2.5-Math -> Qwen3 Perceiver/query-innovation C2C-residual gate:
+  all fixed gates recover `0/6` matched-only clean IDs before generation.
 - `qwen25math_svamp32_source_contrastive_sidecar_20260426.md` records the
   first positive strict-small Qwen2.5-Math -> Qwen3 source-contrastive sidecar
   stack: target/text agreement preservation plus a 1-byte source residue
