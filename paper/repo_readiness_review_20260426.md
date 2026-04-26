@@ -201,6 +201,13 @@ templates, the same pair reaches target `2/16`, source `4/16`, text `4/16`, and
 C2C `5/16`; C2C adds `4` target-missed IDs. Scale this to frozen SVAMP32 before
 any connector training.
 
+SVAMP32 confirms the Qwen2.5-Math surface: target `8/32`, source `6/32`, text
+relay `8/32`, and C2C `15/32`. C2C adds `9` target-missed IDs and the
+target/C2C oracle reaches `17/32`, versus target/text oracle `11/32`. This is
+now the next strict-small method surface; do not widen to larger slices until a
+deployable source-derived method recovers source-necessary C2C-only IDs here
+with full source-destroying controls.
+
 Same-family fallback update: a richer C2C prefill residual projection probe
 does not rescue the C2C-mechanism distillation branch. Signed residual
 projections reach matched `13/32`, but zero-source, label-shuffle, and

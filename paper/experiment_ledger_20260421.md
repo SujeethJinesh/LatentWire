@@ -4912,3 +4912,79 @@ Next exact gate:
   --no-enable-thinking \
   --continue-on-error
 ```
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math -> Qwen3 SVAMP32 Surface Confirmation
+
+- cycle number: `2026-04-26-surface-scout-qwen25math-qwen3-svamp32`
+- timestamp: `2026-04-26 02:42:32 PDT`
+- live branch entering cycle: Qwen2.5-Math -> Qwen3 C2C-comparable surface
+- scale-up rung: strict small surface confirmation
+- ICLR readiness: not ready; no deployable source-derived positive method yet
+
+Start-of-cycle status:
+
+- current paper story: the 16-ID chat-template smoke showed C2C beating target,
+  source, and text on a registered C2C math-source pair
+- exact blocker: verify that C2C headroom survives the frozen SVAMP32 surface
+- highest-priority gate: run target/source/text/C2C on identical SVAMP32 IDs
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --results-dir results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426 \
+  --source-model Qwen/Qwen2.5-Math-1.5B \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t c2c \
+  --limit 32 \
+  --device mps \
+  --max-new-tokens 64 \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Decision:
+
+- promoted: Qwen2.5-Math -> Qwen3 SVAMP32 as the next strict-small method
+  surface
+- target-alone: `8/32`
+- source-alone: `6/32`
+- text relay: `8/32`
+- C2C: `15/32`
+- C2C-only over target: `9`
+- target-only over C2C: `2`
+- target/C2C oracle: `17/32`
+- target/text oracle: `11/32`
+
+Artifacts:
+
+- memo:
+  - `paper/surface_scout_qwen25math_qwen3_svamp32_20260426.md`
+- results manifest:
+  - `results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/manifest.md`
+  - sha256: `291dc38614f4431d8cb37d7c53bc13ff95e84de826407c821fb0520437f756af`
+- results JSON:
+  - `results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/manifest.json`
+  - sha256: `27395a3e79ac5b02243e2b814a8167d65a838ec1e8faf21feaa06e9a22031b3d`
+- C2C predictions:
+  - `results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/c2c_generate.jsonl`
+  - sha256: `e7389fffe0dc73e1bf583106d130c098e9679ca7dfa35bc693c47b54a509542e`
+
+Hypothesis update:
+
+- strengthened: a C2C-supported math-source surface with meaningful
+  target-complementary headroom exists on frozen SVAMP32
+- weakened: source-final numeric sidecars alone, because source-alone is below
+  target and has only `26/32` numeric coverage
+- promoted next: build C2C-headroom target set and test a deployable
+  source-derived sidecar with source-destroying controls on this exact surface
+
+Next exact gate:
+
+- create a Qwen2.5-Math -> Qwen3 SVAMP32 C2C-headroom target set
+- run the cheapest method that can use source-derived signal without C2C answer
+  leakage
+- required controls: zero-source, shuffled-source, target-only, slots-only,
+  exact-ID parity, numeric coverage, target-self preservation
