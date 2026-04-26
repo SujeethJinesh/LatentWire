@@ -290,6 +290,14 @@ discovery, while the highest-value method branch after a surface clears is a
 rate-capped query/resampler or shared sparse source sidecar rather than another
 shallow decoded-feature router.
 
+GSM70 source-surface update: Qwen2.5-Math -> Qwen3 on `data/gsm8k_eval_70.jsonl`
+also fails the surface gate. Source is `3/70`, target is `4/70`, text relay is
+`6/70`, source-only over target is `3`, and clean source-only after text
+exclusion is only `2`. Do not spend C2C or sidecar compute on this slice. The
+current live branch should move from more same-pair surface scouting to the
+smallest stronger-interface smoke on an existing exact-ID SVAMP surface, or to
+a different source/target pair only if a cheap source/target/text scout clears.
+
 Current source-contrastive promotion rule:
 
 - matched `>=9/32`

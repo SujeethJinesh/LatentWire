@@ -5664,3 +5664,58 @@ Next exact gate:
   only
 - spend C2C only if GSM70 has source-only over target `>=6/70` and clean
   source-only after text exclusion `>=4/70`
+
+## Cycle Checkpoint: 2026-04-26 GSM70 Qwen2.5-Math Source Surface Scout
+
+- cycle number: `2026-04-26-qwen25math-qwen3-gsm70-scout`
+- timestamp: `2026-04-26 05:58:00 PDT`
+- live branch entering cycle: source-surface discovery after weak SVAMP
+  `chal-241..310`
+- scale-up rung: medium surface scout
+- ICLR readiness: not ready; source-surface discovery did not find a stable
+  decision surface
+
+Start-of-cycle status:
+
+- current paper story: source-sidecar methods need a stronger source-derived
+  signal or a better surface before C2C/sidecar spend
+- exact blocker: Qwen2.5-Math source signal is too sparse on disjoint SVAMP and
+  GSM surfaces
+- highest-priority gate: source/target/text GSM70 first, C2C only if raw
+  source-only and clean source-only thresholds clear
+
+Results:
+
+- source-alone: `3/70`, numeric coverage `63/70`
+- target-alone: `4/70`, numeric coverage `70/70`
+- text relay: `6/70`, numeric coverage `70/70`
+- source-only over target: `3`
+- clean source-only after text exclusion: `2`
+- target/source oracle: `7/70`
+
+Decision:
+
+- reject GSM70 as a source-sidecar decision surface
+- do not spend C2C compute on this slice for the current branch
+- weakened: continued same-pair source-surface scouting as the primary path
+- live next branch: stronger source-derived interface smoke on an existing
+  exact-ID surface, or a new source/target pair only after a cheap scout
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_gsm70_source_surface_20260426.md`
+- generation manifest:
+  - `results/qwen25math_qwen3_gsm70_source_surface_20260426/manifest.md`
+  - sha256: `01045e3628480a2c2ba47f925e76c267c8e63f8efdf26c37635f740323c54fe6`
+- source target set:
+  - `results/qwen25math_qwen3_gsm70_source_surface_20260426/source_contrastive_target_set.json`
+  - sha256: `ca8ed8e581c5aea1088071a0f69c19eb00c516cb8b7d2b0503b5f17aac65e061`
+
+Next exact gate:
+
+- run or implement the smallest real-model smoke for a rate-capped
+  source-derived query/resampler or shared sparse/anchor sidecar on an existing
+  exact-ID SVAMP surface
+- require source-destroying controls to collapse and at least `2` clean
+  source-necessary recoveries on SVAMP32 or `4` on SVAMP70
