@@ -275,6 +275,11 @@ same disjoint holdout (`6/70`, `0/2` clean source-necessary). This weakens
 shallow decoded-feature routers as a robust method and points the next live
 branch toward source-surface discovery or stronger source-derived signals.
 
+Surface scout update: SVAMP `chal-171` through `chal-240` is not a useful
+sidecar decision surface. Source is `8/70`, target is `22/70`, text relay is
+`24/70`, source-only over target is only `2`, and clean source-only after text
+exclusion is only `1`. Do not spend C2C on this slice for the current branch.
+
 Current source-contrastive promotion rule:
 
 - matched `>=9/32`

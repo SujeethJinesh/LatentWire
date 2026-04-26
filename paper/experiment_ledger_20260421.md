@@ -5547,3 +5547,54 @@ Next exact gate:
   first
 - spend C2C only if clean source-only IDs after text exclusion are high enough
   to support a meaningful sidecar test
+
+## Cycle Checkpoint: 2026-04-26 SVAMP70 Chal171-240 Source Surface Scout
+
+- cycle number: `2026-04-26-qwen25math-qwen3-svamp70-chal171-240-scout`
+- timestamp: `2026-04-26 05:24:00 PDT`
+- live branch entering cycle: source-surface discovery after CV-router holdout
+  failure
+- scale-up rung: medium surface scout
+- ICLR readiness: not ready; no stable positive source-sidecar surface yet
+
+Start-of-cycle status:
+
+- current paper story: decoded-feature sidecar routers work on the original
+  SVAMP70 slice but fail disjoint holdout
+- exact blocker: find a surface with enough clean source-only IDs to support a
+  source-derived sidecar test
+- highest-priority gate: materialize source/target/text first, avoid C2C spend
+  if source-only mass is too low
+
+Results:
+
+- source-alone: `8/70`, numeric coverage `64/70`
+- target-alone: `22/70`, numeric coverage `70/70`
+- text relay: `24/70`, numeric coverage `70/70`
+- source-only over target: `2`
+- clean source-only after text exclusion: `1`
+- target/source oracle: `24/70`
+
+Decision:
+
+- reject SVAMP `chal-171..240` as a source-sidecar decision surface
+- do not spend C2C on this slice for the current branch
+- strengthened: source-surface discovery is now the live next branch
+- weakened: continued router tuning on weak source-complementary slices
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_surface_scout_chal171_240_20260426.md`
+- generation manifest:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/manifest.md`
+  - sha256: `145f425cd135d08272efe9cd7d0d973fb6b7e52ab744d960a390251d72ea1fc7`
+- source target set:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/source_contrastive_target_set.json`
+  - sha256: `efe234a2e31ea60f4fa729b9493d48e7db736b2a95de25407f4902b1703f889e`
+
+Next exact gate:
+
+- search another Qwen2.5-Math -> Qwen3 SVAMP/GSM slice with source-only over
+  target `>=6/70` and clean source-only after text exclusion `>=4/70`
+- run C2C only after the source/text/target scout clears that surface gate
