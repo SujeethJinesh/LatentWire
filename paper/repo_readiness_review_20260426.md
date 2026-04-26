@@ -187,6 +187,13 @@ dead on SVAMP30 (`0/30` target, `0/30` text relay). Do not spend large compute
 on cross-family GQA repairs for these exact surfaces unless a stronger baseline
 slice is found first.
 
+DeepSeek-R1-Distill-Qwen-1.5B -> Qwen3-0.6B on frozen SVAMP32 is also weak as
+an immediate surface. Target-alone reaches `8/32`, while source-alone and text
+relay each reach only `5/32`; text adds `2` target-missed IDs, and the
+target/text oracle is only `10/32`. C2C is unavailable because no published C2C
+artifact is registered for this pair. Do not spend connector or source-control
+compute on this pair in the current loop.
+
 Same-family fallback update: a richer C2C prefill residual projection probe
 does not rescue the C2C-mechanism distillation branch. Signed residual
 projections reach matched `13/32`, but zero-source, label-shuffle, and

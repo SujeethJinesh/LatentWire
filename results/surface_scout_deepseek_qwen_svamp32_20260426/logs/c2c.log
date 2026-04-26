@@ -1,0 +1,25 @@
+$ /Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python /Users/sujeethjinesh/Desktop/LatentWire/scripts/run_c2c_eval.py --source-model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B --target-model Qwen/Qwen3-0.6B --eval-file /Users/sujeethjinesh/Desktop/LatentWire/results/surface_scout_deepseek_qwen_svamp32_20260426/_artifacts/svamp_eval_70_32_32.jsonl --device mps --max-new-tokens 64 --prediction-output /Users/sujeethjinesh/Desktop/LatentWire/results/surface_scout_deepseek_qwen_svamp32_20260426/.c2c_generate.jsonl.tmp.c2c.89485
+
+/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/lib/python3.11/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/Users/sujeethjinesh/Desktop/LatentWire/scripts/run_c2c_eval.py", line 40, in <module>
+    main()
+  File "/Users/sujeethjinesh/Desktop/LatentWire/scripts/run_c2c_eval.py", line 27, in main
+    payload = run_c2c_generation_eval(
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/c2c_eval.py", line 424, in run_c2c_generation_eval
+    model, tokenizer, artifact = load_c2c_model(
+                                 ^^^^^^^^^^^^^^^
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/c2c_eval.py", line 38, in load_c2c_model
+    artifact = C2CAdapter.prepare_published_artifact(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/baselines.py", line 121, in prepare_published_artifact
+    artifact = cls.published_artifact(source_model, target_model)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/baselines.py", line 99, in published_artifact
+    subdir = cls.published_subdir(source_model, target_model)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/baselines.py", line 88, in published_subdir
+    raise KeyError(f"No published C2C artifact registered for pair: {source_model} -> {target_model}")
+KeyError: 'No published C2C artifact registered for pair: deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B -> Qwen/Qwen3-0.6B'

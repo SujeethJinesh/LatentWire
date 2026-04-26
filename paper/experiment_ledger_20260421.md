@@ -4733,3 +4733,94 @@ Next exact gate:
 - do not scale C2C summary/projection features
 - choose between implementing a token/layer-local residual distillation gate or
   a same-family Qwen sidecar gate with full source-destroying controls
+
+## Cycle Checkpoint: 2026-04-26 DeepSeek -> Qwen SVAMP32 Surface Scout
+
+- cycle number: `2026-04-26-surface-scout-deepseek-qwen-svamp32`
+- timestamp: `2026-04-26 02:03:28 PDT`
+- live branch entering cycle: source-surface discovery after raw dynalign and
+  C2C summary/projection failures
+- scale-up rung: smoke
+- ICLR readiness: not ready; no deployable source-derived positive method
+
+Start-of-cycle status:
+
+- current paper story: C2C and target-side candidate pools expose headroom, but
+  raw dynalign is seed-fragile and no learned/source-derived connector clears
+  strict SVAMP32 source controls
+- exact blocker: find a surface where source communication can plausibly beat
+  target-alone, text relay, and C2C under strict controls
+- highest-priority gate: test whether a locally available stronger reasoning
+  source creates target-complementary SVAMP32 headroom
+
+Gate:
+
+- source: `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`
+- target: `Qwen/Qwen3-0.6B`
+- eval file:
+  `results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl`
+- command:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --results-dir results/surface_scout_deepseek_qwen_svamp32_20260426 \
+  --source-model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t c2c \
+  --limit 32 \
+  --device mps \
+  --max-new-tokens 64 \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Decision:
+
+- weaken this pair as an immediate method surface
+- target-alone: `8/32`
+- source-alone: `5/32`
+- text relay: `5/32`
+- source-only target-missed IDs: `1`
+- text-only target-missed IDs: `2`
+- target/text oracle: `10/32`
+- C2C failed before generation because no published C2C artifact is registered
+  for `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B -> Qwen/Qwen3-0.6B`
+
+Artifacts:
+
+- memo:
+  - `paper/surface_scout_deepseek_qwen_svamp32_20260426.md`
+- results manifest:
+  - `results/surface_scout_deepseek_qwen_svamp32_20260426/manifest.md`
+  - sha256: `433088e6dcaf1f642d06e6456736a646ec593c641c373548f49b222dbefb7b0a`
+- results JSON:
+  - `results/surface_scout_deepseek_qwen_svamp32_20260426/manifest.json`
+  - sha256: `015c0033bbaa7374899bba9297eb142a48630af99a5d0a10ebdf65885295d59a`
+- predictions:
+  - `results/surface_scout_deepseek_qwen_svamp32_20260426/source_alone.jsonl`
+  - sha256: `6ca901e94a10275967e6451f3e727f6791f698747ed53ba72a25b21cc3ab445d`
+  - `results/surface_scout_deepseek_qwen_svamp32_20260426/target_alone.jsonl`
+  - sha256: `202336cb3f516afff6633e39f3ecb069a39456f1ff894b47373f93e819e77304`
+  - `results/surface_scout_deepseek_qwen_svamp32_20260426/text_to_text.jsonl`
+  - sha256: `2a84e04fb897cb637589885911e2c79f74dcf0a02ef77c9a2bb4c15a43c99d95`
+- C2C failure log:
+  - `results/surface_scout_deepseek_qwen_svamp32_20260426/logs/c2c.log`
+  - sha256: `c82af7c0faf58e4d1316b10cd245f315aca6ecc46af3327ccd0cde323d81b30e`
+
+Hypothesis update:
+
+- weakened: DeepSeek-R1-Distill-Qwen-1.5B -> Qwen3-0.6B as an immediate
+  SVAMP32 communication surface
+- kept alive: surface discovery for sequence-aligned sidecars, but only on
+  pairs with stronger target-complementary headroom and a fair C2C/text
+  comparator
+- killed for now: spending connector/source-control compute on this exact pair
+
+Next exact gate:
+
+- either run a same-family Qwen sidecar/source-control gate on the existing
+  C2C-headroom SVAMP32 surface, or scout another already-local source/target
+  pair only if target/text/C2C can be evaluated on exact IDs with nontrivial
+  target-complementary headroom
