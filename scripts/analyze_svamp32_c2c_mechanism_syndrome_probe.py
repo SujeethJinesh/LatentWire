@@ -56,6 +56,7 @@ def extract_mechanism_features(
     eval_file: pathlib.Path,
     device: str,
     max_new_tokens: int,
+    residual_projection_dim: int,
 ) -> tuple[torch.Tensor, list[dict[str, Any]], dict[str, Any]]:
     examples = load_generation(str(eval_file))
     model, tokenizer, artifact = load_c2c_model(
@@ -73,6 +74,7 @@ def extract_mechanism_features(
             tokenizer,
             example.prompt,
             device=device,
+            residual_projection_dim=int(residual_projection_dim),
         )
         row_meta = dict(row_meta)
         row_meta["example_id"] = _generation_example_id(example)
@@ -85,6 +87,7 @@ def extract_mechanism_features(
         "eval_file": _display_path(eval_file),
         "device": device,
         "max_new_tokens": int(max_new_tokens),
+        "residual_projection_dim": int(residual_projection_dim),
         "published_repo_id": artifact.repo_id,
         "published_subdir": artifact.subdir,
         "published_config_path": artifact.config_path,
@@ -129,7 +132,11 @@ def analyze_with_c2c_features(
         "strict small-slice distillation diagnostic rather than a paper claim."
     )
     payload["c2c_run_config"] = dict(c2c_run_config)
-    payload["config"]["feature_family"] = "c2c_prefill_projector_residual_trace"
+    payload["config"]["feature_family"] = (
+        "c2c_prefill_projector_residual_trace"
+        if int(c2c_run_config.get("residual_projection_dim", 0)) <= 0
+        else "c2c_prefill_projector_residual_trace_with_signed_projections"
+    )
     feature_bytes = features.detach().cpu().contiguous().numpy().tobytes()
     payload["feature_provenance"] = {
         "shape": [int(dim) for dim in features.shape],
@@ -211,6 +218,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-numeric-coverage", type=int, default=31)
     parser.add_argument("--device", default="mps")
     parser.add_argument("--max-new-tokens", type=int, default=1)
+    parser.add_argument(
+        "--residual-projection-dim",
+        type=int,
+        default=0,
+        help="Optional deterministic signed projection width per C2C residual tensor.",
+    )
     parser.add_argument("--date", default=date.today().isoformat())
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
@@ -233,6 +246,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         eval_file=_resolve(args.eval_file),
         device=str(args.device),
         max_new_tokens=int(args.max_new_tokens),
+        residual_projection_dim=int(args.residual_projection_dim),
     )
     payload = analyze_with_c2c_features(
         features=features,

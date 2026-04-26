@@ -187,6 +187,13 @@ dead on SVAMP30 (`0/30` target, `0/30` text relay). Do not spend large compute
 on cross-family GQA repairs for these exact surfaces unless a stronger baseline
 slice is found first.
 
+Same-family fallback update: a richer C2C prefill residual projection probe
+does not rescue the C2C-mechanism distillation branch. Signed residual
+projections reach matched `13/32`, but zero-source, label-shuffle, and
+target-only controls reach `14/32`, and clean source-necessary recovery remains
+`0/6`. Do not scale C2C summary/projection features without a new token/layer
+local objective and anti-cache control.
+
 Promotion rule:
 
 - matched `>=14/32`

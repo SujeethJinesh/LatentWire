@@ -60,6 +60,39 @@ def test_summarize_c2c_projector_trace_schema() -> None:
     assert metadata[0]["value_gate_active"] is False
 
 
+def test_c2c_trace_residual_projection_schema_is_deterministic() -> None:
+    source = torch.zeros(1, 1, 3, 2)
+    target = torch.ones(1, 1, 3, 2)
+    output = torch.arange(6, dtype=torch.float32).view(1, 1, 3, 2)
+
+    first = c2c_eval._trace_tensor_stats(
+        source=source,
+        target=target,
+        output=output,
+        projection_dim=4,
+        projection_salt=7,
+    )
+    second = c2c_eval._trace_tensor_stats(
+        source=source,
+        target=target,
+        output=output,
+        projection_dim=4,
+        projection_salt=7,
+    )
+    features, _ = c2c_eval.summarize_c2c_projector_trace(
+        _Model(),
+        residual_projection_dim=4,
+    )
+    names = c2c_eval.c2c_trace_feature_names(1, residual_projection_dim=4)
+
+    assert first["delta_projection"] == second["delta_projection"]
+    assert len(first["delta_projection"]) == 4
+    assert len(first["tail_delta_projection"]) == 4
+    assert features.shape == (48,)
+    assert len(names) == 48
+    assert names[-1] == "projector_00.value_residual.tail_delta_projection_003"
+
+
 def test_c2c_mechanism_probe_relabels_status(tmp_path: pathlib.Path) -> None:
     target_path = tmp_path / "target.jsonl"
     teacher_path = tmp_path / "teacher.jsonl"

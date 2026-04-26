@@ -4658,3 +4658,78 @@ Decision update:
 - next branch should fall back to same-family Qwen2.5 -> Qwen3 sidecar or a new
   source-surface discovery pass unless a stronger cross-family target surface
   is found
+
+## Cycle Checkpoint: 2026-04-26 C2C Mechanism Projection Probe
+
+- cycle number: `2026-04-26-c2c-mechanism-projection-1`
+- timestamp: `2026-04-26 01:46:00 PDT`
+- live branch entering cycle: same-family Qwen2.5 -> Qwen3 C2C mechanism
+  distillation / source-surface discovery
+- scale-up rung: strict small diagnostic gate
+- ICLR readiness: not ready; no deployable source-derived positive method
+
+Start-of-cycle status:
+
+- current paper story: SVAMP32 has real C2C headroom (`16/32` vs target
+  `8/32`), but previous source-hidden and C2C summary probes recovered no clean
+  source-necessary IDs
+- exact blocker: C2C-mechanism features must recover clean C2C residual IDs
+  beyond zero-source, label-shuffle, target-only, and slots-only controls
+- highest-priority gate: test richer deterministic signed projections of C2C
+  prefill projector residuals
+
+Gate:
+
+- implemented optional `--residual-projection-dim` for
+  `scripts/analyze_svamp32_c2c_mechanism_syndrome_probe.py`
+- added deterministic signed bucket projections of full and tail C2C residual
+  deltas in `latent_bridge/c2c_eval.py`
+- ran projection dim `16` on the frozen SVAMP32 exact-ID surface
+
+Decision:
+
+- failed strict gate
+- matched: `13/32`
+- zero-source: `14/32`
+- shuffled-source: `11/32`
+- label-shuffled: `14/32`
+- target-only: `14/32`
+- slots-only: `8/32`
+- clean source-necessary: `0/6`
+- target-self preservation: `3/3`
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_c2c_mechanism_projection_probe_20260426.md`
+- results manifest:
+  - `results/svamp32_c2c_mechanism_projection_probe_20260426/manifest.md`
+- result JSON:
+  - `results/svamp32_c2c_mechanism_projection_probe_20260426/prefill_residual_projection16_targetpool_probe.json`
+  - sha256: `3fc5f51320dbe96de8940c28194becda9f81f6906ab84a06a87e414f22a4400f`
+- result markdown:
+  - `results/svamp32_c2c_mechanism_projection_probe_20260426/prefill_residual_projection16_targetpool_probe.md`
+  - sha256: `5ad4dfdbafc2f52127817b593e5d22be84a921ad42d73ffe770e99e16a9d03a9`
+- raw run log:
+  - `.debug/svamp32_c2c_mechanism_projection_probe_20260426/logs/prefill_residual_projection16_targetpool_probe.log`
+  - sha256: `f569d565b4f5f44db44ba725704d8f4f4f07c501ad996ac33f030b0efc473fea`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_c2c_mechanism_trace.py tests/test_c2c_eval.py -q`
+- `./venv_arm64/bin/python -m py_compile latent_bridge/c2c_eval.py scripts/analyze_svamp32_c2c_mechanism_syndrome_probe.py`
+
+Hypothesis update:
+
+- killed: C2C scalar/residual summary plus signed-projection features as a live
+  source-derived method on SVAMP32
+- weakened: more summary/projection tuning without a new anti-cache objective
+- promoted next: either token/layer-local C2C residual distillation with
+  held-out anti-cache controls, or same-family Qwen sidecar/source-surface
+  discovery using sequence-aligned sidecars as an explicit component
+
+Next exact gate:
+
+- do not scale C2C summary/projection features
+- choose between implementing a token/layer-local residual distillation gate or
+  a same-family Qwen sidecar gate with full source-destroying controls

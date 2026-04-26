@@ -84,7 +84,7 @@ def build_c2c_kv_cache_index(prompt_len: int, *, device: str | torch.device) -> 
     return [instruction_index, label_index]
 
 
-def c2c_trace_feature_names(projector_count: int) -> list[str]:
+def c2c_trace_feature_names(projector_count: int, *, residual_projection_dim: int = 0) -> list[str]:
     names: list[str] = []
     for idx in range(int(projector_count)):
         prefix = f"projector_{idx:02d}"
@@ -113,7 +113,29 @@ def c2c_trace_feature_names(projector_count: int) -> list[str]:
                 "tail_delta_to_target_ratio",
             ):
                 names.append(f"{prefix}.{tensor_name}.{stat}")
+            for proj_idx in range(int(residual_projection_dim)):
+                names.append(f"{prefix}.{tensor_name}.delta_projection_{proj_idx:03d}")
+            for proj_idx in range(int(residual_projection_dim)):
+                names.append(f"{prefix}.{tensor_name}.tail_delta_projection_{proj_idx:03d}")
     return names
+
+
+def _signed_bucket_projection(values: torch.Tensor, dim: int, *, salt: int) -> torch.Tensor:
+    flat = values.detach().float().reshape(-1)
+    if dim <= 0:
+        return torch.empty((0,), dtype=torch.float32, device=flat.device)
+    if flat.numel() == 0:
+        return torch.zeros((dim,), dtype=torch.float32, device=flat.device)
+    idx = torch.arange(flat.numel(), device=flat.device, dtype=torch.long)
+    buckets = (idx * 1103515245 + int(salt) * 12345) % int(dim)
+    signs = torch.where(
+        ((idx * 214013 + int(salt) * 2531011) & 1) == 0,
+        torch.ones_like(flat),
+        -torch.ones_like(flat),
+    )
+    out = torch.zeros((dim,), dtype=torch.float32, device=flat.device)
+    out.scatter_add_(0, buckets, flat * signs)
+    return out / float(flat.numel() ** 0.5)
 
 
 def _trace_tensor_stats(
@@ -121,7 +143,9 @@ def _trace_tensor_stats(
     source: torch.Tensor,
     target: torch.Tensor,
     output: torch.Tensor,
-) -> dict[str, float]:
+    projection_dim: int = 0,
+    projection_salt: int = 0,
+) -> dict[str, Any]:
     source_f = source.detach().float()
     target_f = target.detach().float()
     output_f = output.detach().float()
@@ -146,7 +170,7 @@ def _trace_tensor_stats(
     tail_target = target_f[:, :, -1:, :]
     tail_delta_l2 = float(torch.linalg.vector_norm(tail_delta).item())
     tail_target_l2 = float(torch.linalg.vector_norm(tail_target).item())
-    return {
+    stats: dict[str, Any] = {
         "source_l2": source_l2,
         "target_l2": target_l2,
         "delta_l2": delta_l2,
@@ -158,15 +182,50 @@ def _trace_tensor_stats(
         "tail_delta_l2": tail_delta_l2,
         "tail_delta_to_target_ratio": float(tail_delta_l2 / max(tail_target_l2, 1e-12)),
     }
+    if projection_dim > 0:
+        stats["delta_projection"] = [
+            float(value)
+            for value in _signed_bucket_projection(
+                delta_f,
+                int(projection_dim),
+                salt=int(projection_salt),
+            )
+            .detach()
+            .cpu()
+            .tolist()
+        ]
+        stats["tail_delta_projection"] = [
+            float(value)
+            for value in _signed_bucket_projection(
+                tail_delta,
+                int(projection_dim),
+                salt=int(projection_salt) + 1009,
+            )
+            .detach()
+            .cpu()
+            .tolist()
+        ]
+    return stats
 
 
-def install_c2c_projector_trace_hooks(model) -> None:
-    for projector in getattr(model, "projector_list", []):
-        if getattr(projector, "_latentwire_trace_wrapped", False):
+def install_c2c_projector_trace_hooks(model, *, residual_projection_dim: int = 0) -> None:
+    for projector_idx, projector in enumerate(getattr(model, "projector_list", [])):
+        if (
+            getattr(projector, "_latentwire_trace_wrapped", False)
+            and getattr(projector, "_latentwire_trace_projection_dim", 0) == int(residual_projection_dim)
+        ):
             continue
-        original_forward = projector.forward
+        original_forward = getattr(projector, "_latentwire_original_forward", projector.forward)
 
-        def traced_forward(source_kv, target_kv, *args, _original=original_forward, _projector=projector, **kwargs):
+        def traced_forward(
+            source_kv,
+            target_kv,
+            *args,
+            _original=original_forward,
+            _projector=projector,
+            _projector_idx=projector_idx,
+            **kwargs,
+        ):
             output_key, output_value = _original(source_kv, target_kv, *args, **kwargs)
             try:
                 source_key, source_value = source_kv
@@ -176,22 +235,32 @@ def install_c2c_projector_trace_hooks(model) -> None:
                         source=source_key,
                         target=target_key,
                         output=output_key,
+                        projection_dim=int(residual_projection_dim),
+                        projection_salt=int(_projector_idx) * 2,
                     ),
                     "value_residual": _trace_tensor_stats(
                         source=source_value,
                         target=target_value,
                         output=output_value,
+                        projection_dim=int(residual_projection_dim),
+                        projection_salt=int(_projector_idx) * 2 + 1,
                     ),
                 }
             except Exception:
                 _projector.last_latentwire_trace = {}
             return output_key, output_value
 
+        projector._latentwire_original_forward = original_forward
         projector.forward = traced_forward
         projector._latentwire_trace_wrapped = True
+        projector._latentwire_trace_projection_dim = int(residual_projection_dim)
 
 
-def summarize_c2c_projector_trace(model) -> tuple[torch.Tensor, list[dict[str, Any]]]:
+def summarize_c2c_projector_trace(
+    model,
+    *,
+    residual_projection_dim: int = 0,
+) -> tuple[torch.Tensor, list[dict[str, Any]]]:
     features: list[float] = []
     metadata: list[dict[str, Any]] = []
     for idx, projector in enumerate(getattr(model, "projector_list", [])):
@@ -248,6 +317,18 @@ def summarize_c2c_projector_trace(model) -> tuple[torch.Tensor, list[dict[str, A
                 "tail_delta_to_target_ratio",
             ):
                 features.append(float(stats.get(stat, 0.0)))
+            delta_projection = list(stats.get("delta_projection", []))[: int(residual_projection_dim)]
+            delta_projection.extend([0.0] * max(int(residual_projection_dim) - len(delta_projection), 0))
+            tail_delta_projection = list(stats.get("tail_delta_projection", []))[
+                : int(residual_projection_dim)
+            ]
+            tail_delta_projection.extend(
+                [0.0] * max(int(residual_projection_dim) - len(tail_delta_projection), 0)
+            )
+            for value in delta_projection:
+                features.append(float(value))
+            for value in tail_delta_projection:
+                features.append(float(value))
             projector_meta[name] = stats
         metadata.append(projector_meta)
     return torch.tensor(features, dtype=torch.float32), metadata
@@ -260,6 +341,7 @@ def extract_c2c_prefill_trace_features(
     prompt: str,
     *,
     device: str,
+    residual_projection_dim: int = 0,
 ) -> tuple[torch.Tensor, dict[str, Any]]:
     messages = build_c2c_messages(prompt)
     text = tokenizer.apply_chat_template(
@@ -270,18 +352,25 @@ def extract_c2c_prefill_trace_features(
     )
     inputs = tokenizer(text, return_tensors="pt").to(device)
     prompt_len = int(inputs["input_ids"].shape[1])
-    install_c2c_projector_trace_hooks(model)
+    install_c2c_projector_trace_hooks(model, residual_projection_dim=int(residual_projection_dim))
     model(
         **inputs,
         kv_cache_index=build_c2c_kv_cache_index(prompt_len, device=device),
         use_cache=True,
     )
-    features, projector_metadata = summarize_c2c_projector_trace(model)
+    features, projector_metadata = summarize_c2c_projector_trace(
+        model,
+        residual_projection_dim=int(residual_projection_dim),
+    )
     metadata = {
         "formatted_prompt_tokens": prompt_len,
         "feature_dim": int(features.numel()),
         "feature_family": "c2c_prefill_projector_residual_trace",
-        "feature_names": c2c_trace_feature_names(len(projector_metadata)),
+        "feature_names": c2c_trace_feature_names(
+            len(projector_metadata),
+            residual_projection_dim=int(residual_projection_dim),
+        ),
+        "residual_projection_dim": int(residual_projection_dim),
         "projectors": projector_metadata,
     }
     return features, metadata
