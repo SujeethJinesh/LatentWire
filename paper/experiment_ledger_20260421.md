@@ -7017,3 +7017,116 @@ Next exact gate:
 - next branch should be either a true target-side next-token-loss resampler
   with generation-time evaluation and a matched C2C-fuser baseline, or a new
   source/surface pair that first clears source/text/C2C headroom gates
+
+## Cycle Checkpoint: 2026-04-26 Target-CE Cross-Attention Generation Gate
+
+- cycle number: `2026-04-26-target-ce-cross-attention-generation`
+- timestamp: `2026-04-26 16:55:46 PDT`
+- live branch entering cycle: token-local source cross-attention prefix
+  connector trained with target-side continuation next-token CE
+- scale-up rung: strict-small logprob diagnostic plus 64-token clean-ID
+  generation
+- ICLR readiness: not ready; this kills a low-capacity method family rather
+  than producing a positive method
+
+Start-of-cycle status:
+
+- current paper story: C2C exposes real source-assisted headroom, but
+  deployable LatentWire rows are still explained by target priors, target-only
+  prefixes, source-destroying controls, or unstable seeds
+- exact blocker: no source-derived method beats target/text/C2C-relevant
+  baselines while surviving zero-source, shuffled-source, target-only, and
+  slots-only controls
+- live branch: target-side next-token-loss rescue of the previously failed
+  source cross-attention prefix connector
+- highest-priority gate: determine whether target-CE training plus generation
+  scoring fixes the control-dominance failure
+
+Implementation:
+
+- added `--training-objective target_ce` to
+  `scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+- added optional heldout greedy generation with learned prefixes
+- added clean-ID generation filtering so logprob can score all rows while
+  generation decodes only the six C2C-headroom IDs
+- added focused unit coverage for generation gate summaries
+
+Run:
+
+- command recorded in
+  `paper/qwen25math_svamp32_target_ce_generation_gate_20260426.md`
+- git commit before run: `8105d3ee7c7426931d71e9a2dd04a4a440f197b3`
+- seed: `1`
+- outer folds: `2`
+- source model: `Qwen/Qwen2.5-Math-1.5B`
+- target model: `Qwen/Qwen3-0.6B`
+- eval file:
+  `results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/_artifacts/svamp_eval_70_32_32.jsonl`
+- target JSONL:
+  `results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl`
+- teacher JSONL:
+  `results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/c2c_generate.jsonl`
+- clean generation IDs:
+  `3e8a5691f5443495`, `1d50b408c8f5cd2c`, `de1bf4d142544e5b`,
+  `47464cc0b064f172`, `6e9745b37ab6fc45`, `575d7e83d84c1e67`
+
+Result:
+
+- status: `source_cross_attention_logprob_fails_gate`
+- clean IDs scored in logprob: `6`
+- matched-only clean IDs: `0/6`
+- matched-positive clean IDs: `4/6`
+- clean control leaks: `4/6`
+- mean matched margin on clean IDs: `0.061688`
+- mean best-control margin on clean IDs: `0.256471`
+- mean matched-minus-control clean margin: `-0.194783`
+- 64-token generation on clean IDs:
+  - matched: `1/6`
+  - zero-source: `2/6`
+  - shuffled-source: `2/6`
+  - target-only prefix: `2/6`
+  - slots-only prefix: `2/6`
+
+Decision:
+
+- kill the low-capacity source-prefix-emitter family on this surface
+- do not tune prefix length, hidden width, contrastive weight, CE weight, or
+  generation decoding for this family without a new source-memory interface
+- process repair remains a target-side baseline only, not a source-
+  communication method
+- next highest-value branch: audit/implement the smallest true
+  `latent_bridge` query-innovation source-memory resampler that can train or
+  score with LM CE and generation, with matched C2C-fuser and target/slots
+  controls from the first gate
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_target_ce_generation_gate_20260426.md`
+- result manifest:
+  - `results/qwen25math_svamp32_target_ce_generation_gate_20260426/manifest.md`
+- result JSON:
+  - `results/qwen25math_svamp32_target_ce_generation_gate_20260426/smoke.json`
+  - sha256: `a8fda429e29ba9ed1ee06285706dc3f0fa95609be2f8829a508b379e689c9517`
+- readout:
+  - `results/qwen25math_svamp32_target_ce_generation_gate_20260426/smoke.md`
+  - sha256: `20be9a45f3be23453c75cd3b15d9a42953c5ae75cc59299e28ab2f19be3e22d9`
+- generations:
+  - `results/qwen25math_svamp32_target_ce_generation_gate_20260426/generations.jsonl`
+  - sha256: `f6cff21a9f981f6482f04b53ef9902cad6ea9ea079b05e5e57c88a03f998acad`
+- analyzer:
+  - `scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+  - sha256: `6c6b3fde3f4c2ecc12f071fb69e80c0f58b47559b1299ad4c2b740cbc4074a36`
+
+Tests:
+
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_cross_attention_logprob_probe.py -q`
+
+Next exact gate:
+
+- command:
+  `./venv_arm64/bin/python -m pytest tests/test_translator_core.py::test_query_innovation_perceiver_connector_fit_and_runtime_are_finite tests/test_translator_core.py::test_query_innovation_anti_memory_control_fit_is_finite tests/test_translator_core.py::test_fit_from_pairs_query_innovation_forwards_source_controls -q`
+- then inspect `latent_bridge/translator.py` query-innovation resampler hooks for
+  whether a true LM CE/generation scorer can be added without destabilizing
+  existing calibration

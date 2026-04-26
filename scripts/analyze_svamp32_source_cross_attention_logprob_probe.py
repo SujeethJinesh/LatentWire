@@ -15,6 +15,7 @@ import json
 import math
 import pathlib
 import sys
+import time
 from dataclasses import dataclass
 from datetime import date
 from typing import Any, Sequence
@@ -26,6 +27,7 @@ if str(ROOT) not in sys.path:
 import torch
 
 from latent_bridge.evaluate import _generation_example_id, load_generation
+from scripts import harness_common as harness
 from scripts import analyze_svamp32_learned_syndrome_probe as learned_probe
 from scripts import analyze_svamp32_source_latent_syndrome_probe as linear_probe
 from scripts import analyze_svamp32_source_soft_prefix_logprob_probe as soft_probe
@@ -45,6 +47,7 @@ class CrossAttentionConfig:
     min_matched_only_clean: int = 2
     min_margin_delta: float = 0.0
     length_normalize: bool = True
+    training_objective: str = "contrastive"
     source_control_contrastive_weight: float = 0.0
     source_control_contrastive_margin: float = 0.0
     source_control_contrastive_controls: tuple[str, ...] = ()
@@ -170,6 +173,16 @@ def _fit_connector(
     train_valid = source_tokens[train_indices][source_mask[train_indices]]
     train_mean_source = train_valid.mean(dim=0) if train_valid.numel() else None
 
+    def _gold_logprob_for_prefix(prefix: torch.Tensor, idx: int, gold_idx: int) -> torch.Tensor:
+        return soft_probe._continuation_logprob(
+            target_model=target_model,
+            embed_tokens=embed_tokens,
+            prefix=prefix,
+            prompt_ids=prompt_ids[idx],
+            continuation_ids=gold_ids[gold_idx],
+            length_normalize=config.length_normalize,
+        )
+
     def _margin_for_prefix(prefix: torch.Tensor, idx: int, gold_idx: int) -> torch.Tensor:
         gold_logprob = soft_probe._continuation_logprob(
             target_model=target_model,
@@ -199,7 +212,14 @@ def _fit_connector(
                 target_mask[idx].to(device),
             )
             matched_margin = _margin_for_prefix(prefix, idx, gold_idx)
-            total_loss = total_loss + torch.nn.functional.softplus(-matched_margin)
+            if config.training_objective == "target_ce":
+                matched_gold_logprob = _gold_logprob_for_prefix(prefix, idx, gold_idx)
+                total_loss = total_loss - matched_gold_logprob
+            elif config.training_objective == "contrastive":
+                matched_gold_logprob = None
+                total_loss = total_loss + torch.nn.functional.softplus(-matched_margin)
+            else:
+                raise ValueError(f"unsupported training objective: {config.training_objective!r}")
             if (
                 connector.use_source
                 and not label_shuffle
@@ -231,9 +251,18 @@ def _fit_connector(
                         target_tokens[idx].to(device),
                         target_mask[idx].to(device),
                     )
-                    control_margin = _margin_for_prefix(control_prefix, idx, gold_idx)
-                    total_loss = total_loss + float(config.source_control_contrastive_weight) * torch.nn.functional.softplus(
-                        control_margin - matched_margin + float(config.source_control_contrastive_margin)
+                    if config.training_objective == "target_ce":
+                        if matched_gold_logprob is None:
+                            raise AssertionError("matched gold logprob missing for target_ce")
+                        control_gold_logprob = _gold_logprob_for_prefix(control_prefix, idx, gold_idx)
+                        contrastive_term = control_gold_logprob - matched_gold_logprob
+                    else:
+                        control_margin = _margin_for_prefix(control_prefix, idx, gold_idx)
+                        contrastive_term = control_margin - matched_margin
+                    total_loss = total_loss + float(
+                        config.source_control_contrastive_weight
+                    ) * torch.nn.functional.softplus(
+                        contrastive_term + float(config.source_control_contrastive_margin)
                     )
         optimizer.zero_grad(set_to_none=True)
         total_loss.backward()
@@ -286,6 +315,117 @@ def _score_condition(
     }
 
 
+@torch.no_grad()
+def _greedy_generate_with_prefix(
+    *,
+    target_model: Any,
+    embed_tokens: Any,
+    tokenizer: Any,
+    prefix: torch.Tensor,
+    prompt_ids: torch.Tensor,
+    max_new_tokens: int,
+) -> dict[str, Any]:
+    prompt_embeds = embed_tokens(prompt_ids)
+    inputs = torch.cat([prefix, prompt_embeds], dim=0)
+    attention_mask = torch.ones((1, inputs.shape[0]), dtype=torch.long, device=inputs.device)
+    start = time.perf_counter()
+    out = target_model(inputs_embeds=inputs.unsqueeze(0), attention_mask=attention_mask, use_cache=True)
+    first_elapsed = time.perf_counter() - start
+    past = out.past_key_values
+    next_token = torch.argmax(out.logits[:, -1, :], dim=-1)
+    generated: list[int] = []
+    eos_ids = {int(token_id) for token_id in [tokenizer.eos_token_id, tokenizer.pad_token_id] if token_id is not None}
+    for _ in range(int(max_new_tokens)):
+        token_id = int(next_token.item())
+        if token_id in eos_ids:
+            break
+        generated.append(token_id)
+        step_input = next_token.view(1, 1)
+        attention_mask = torch.ones(
+            (1, int(inputs.shape[0]) + len(generated)),
+            dtype=torch.long,
+            device=inputs.device,
+        )
+        out = target_model(
+            input_ids=step_input,
+            attention_mask=attention_mask,
+            past_key_values=past,
+            use_cache=True,
+        )
+        past = out.past_key_values
+        next_token = torch.argmax(out.logits[:, -1, :], dim=-1)
+    elapsed = time.perf_counter() - start
+    return {
+        "prediction": tokenizer.decode(generated, skip_special_tokens=True),
+        "generated_tokens": len(generated),
+        "ttft_sec": float(first_elapsed),
+        "latency_sec": float(elapsed),
+    }
+
+
+def _generation_record(
+    *,
+    method: str,
+    example_id: str,
+    index: int,
+    generation: dict[str, Any],
+    answers: Sequence[str],
+) -> dict[str, Any]:
+    prediction = str(generation["prediction"])
+    normalized = harness._extract_prediction_numeric_answer(prediction)
+    return {
+        "method": method,
+        "example_id": example_id,
+        "index": int(index),
+        "prediction": prediction,
+        "normalized_prediction": normalized,
+        "correct": harness._generation_match(prediction, list(answers)),
+        "generated_tokens": int(generation["generated_tokens"]),
+        "ttft_sec": float(generation["ttft_sec"]),
+        "latency_sec": float(generation["latency_sec"]),
+    }
+
+
+def _summarize_generation(
+    records_by_condition: dict[str, list[dict[str, Any]]],
+    *,
+    clean_ids: set[str],
+    target_self_ids: set[str],
+) -> dict[str, Any]:
+    summary: dict[str, Any] = {}
+    correct_by_condition = {
+        condition: {str(row["example_id"]) for row in records if bool(row.get("correct"))}
+        for condition, records in records_by_condition.items()
+    }
+    for condition, records in records_by_condition.items():
+        correct_ids = correct_by_condition[condition]
+        summary[condition] = {
+            "n": len(records),
+            "correct_count": len(correct_ids),
+            "accuracy": float(len(correct_ids) / max(len(records), 1)),
+            "clean_correct_count": len(correct_ids & clean_ids),
+            "target_self_correct_count": len(correct_ids & target_self_ids),
+            "numeric_extraction_coverage": int(
+                sum(int(row.get("normalized_prediction") is not None) for row in records)
+            ),
+            "empty_predictions": int(sum(int(not str(row.get("prediction", "")).strip()) for row in records)),
+            "correct_ids": sorted(correct_ids),
+        }
+    matched_correct = correct_by_condition.get("matched", set())
+    control_correct = set().union(
+        *[ids for condition, ids in correct_by_condition.items() if condition != "matched"]
+    ) if len(correct_by_condition) > 1 else set()
+    matched_only_clean = (matched_correct - control_correct) & clean_ids
+    control_leak_clean = (control_correct - matched_correct) & clean_ids
+    summary["gate"] = {
+        "matched_only_clean_count": len(matched_only_clean),
+        "control_leak_clean_count": len(control_leak_clean),
+        "matched_only_clean_ids": sorted(matched_only_clean),
+        "control_leak_clean_ids": sorted(control_leak_clean),
+    }
+    return summary
+
+
 def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     summary = payload["summary"]
     lines = [
@@ -297,6 +437,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- prefix len: `{payload['config']['prefix_len']}`",
         f"- hidden dim: `{payload['config']['hidden_dim']}`",
         f"- epochs: `{payload['config']['epochs']}`",
+        f"- training objective: `{payload['config'].get('training_objective', 'contrastive')}`",
         f"- clean IDs scored: `{summary['clean_ids_scored']}`",
         f"- matched-only clean IDs: `{summary['matched_only_clean_count']}`",
         f"- control-leak clean IDs: `{summary['control_leak_clean_count']}`",
@@ -322,6 +463,34 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
                 status=row["status"],
             )
         )
+    generation_summary = payload.get("generation_summary") or {}
+    if generation_summary:
+        gate = generation_summary.get("gate", {})
+        lines.extend(
+            [
+                "",
+                "## Generation Gate",
+                "",
+                f"- matched-only clean IDs: `{gate.get('matched_only_clean_count', 0)}`",
+                f"- control-leak clean IDs: `{gate.get('control_leak_clean_count', 0)}`",
+                "",
+                "| Condition | Correct | Clean Correct | Target-Self Correct | Numeric Coverage | Empty |",
+                "|---|---:|---:|---:|---:|---:|",
+            ]
+        )
+        for condition, condition_summary in generation_summary.items():
+            if condition == "gate":
+                continue
+            lines.append(
+                "| {condition} | {correct} | {clean} | {target_self} | {numeric} | {empty} |".format(
+                    condition=condition,
+                    correct=condition_summary["correct_count"],
+                    clean=condition_summary["clean_correct_count"],
+                    target_self=condition_summary["target_self_correct_count"],
+                    numeric=condition_summary["numeric_extraction_coverage"],
+                    empty=condition_summary["empty_predictions"],
+                )
+            )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
@@ -352,6 +521,37 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-matched-only-clean", type=int, default=2)
     parser.add_argument("--min-margin-delta", type=float, default=0.0)
     parser.add_argument("--length-normalize", choices=["true", "false"], default="true")
+    parser.add_argument(
+        "--training-objective",
+        choices=["contrastive", "target_ce"],
+        default="contrastive",
+        help="Connector training loss. target_ce is true target-side continuation next-token NLL.",
+    )
+    parser.add_argument("--run-generation", action="store_true")
+    parser.add_argument("--generation-max-new-tokens", type=int, default=64)
+    parser.add_argument(
+        "--generation-example-id",
+        action="append",
+        default=[],
+        help="Restrict generation decoding to specific example IDs while still scoring logprob on all heldout rows.",
+    )
+    parser.add_argument(
+        "--generation-condition",
+        action="append",
+        choices=[
+            "matched",
+            "zero_source",
+            "shuffled_source",
+            "same_norm_noise",
+            "projected_soft_prompt",
+            "target_only_prefix",
+            "slots_only_prefix",
+            "label_shuffled",
+        ],
+        default=[],
+        help="Heldout condition to decode. Defaults to matched plus source/target-only controls when --run-generation is set.",
+    )
+    parser.add_argument("--generation-output-jsonl", default=None)
     parser.add_argument("--source-control-contrastive-weight", type=float, default=0.0)
     parser.add_argument("--source-control-contrastive-margin", type=float, default=0.0)
     parser.add_argument(
@@ -415,10 +615,18 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         min_matched_only_clean=int(args.min_matched_only_clean),
         min_margin_delta=float(args.min_margin_delta),
         length_normalize=soft_probe._bool_arg(args.length_normalize) is not False,
+        training_objective=str(args.training_objective),
         source_control_contrastive_weight=float(args.source_control_contrastive_weight),
         source_control_contrastive_margin=float(args.source_control_contrastive_margin),
         source_control_contrastive_controls=tuple(args.source_control_contrastive_control),
     )
+    generation_conditions = tuple(
+        args.generation_condition
+        or ["matched", "zero_source", "shuffled_source", "target_only_prefix", "slots_only_prefix"]
+    )
+    generation_example_ids = {str(example_id) for example_id in args.generation_example_id}
+    if args.run_generation and not args.generation_output_jsonl:
+        raise ValueError("--generation-output-jsonl is required when --run-generation is set")
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -508,6 +716,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     torch.manual_seed(int(args.seed))
     folds = learned_probe._make_outer_folds(len(examples), config.outer_folds)
     rows: list[dict[str, Any]] = []
+    generation_records_by_condition: dict[str, list[dict[str, Any]]] = {
+        condition: [] for condition in generation_conditions
+    }
     for fold_idx, heldout in enumerate(folds):
         heldout_set = set(heldout)
         train_indices = [idx for idx in range(len(examples)) if idx not in heldout_set]
@@ -705,6 +916,93 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
                 if name != "matched"
             }
             best_control, best_margin = max(controls.items(), key=lambda item: item[1])
+            generation_by_condition: dict[str, dict[str, Any]] = {}
+            if args.run_generation and (not generation_example_ids or reference_ids[idx] in generation_example_ids):
+                def _prefix_for_generation(condition: str) -> torch.Tensor:
+                    if condition == "matched":
+                        return matched(
+                            fold_source_tokens[idx].to(train_device),
+                            source_mask[idx].to(train_device),
+                            fold_target_tokens[idx].to(train_device),
+                            target_mask[idx].to(train_device),
+                        )
+                    if condition == "zero_source":
+                        return matched(
+                            torch.zeros_like(fold_source_tokens[idx]).to(train_device),
+                            source_mask[idx].to(train_device),
+                            fold_target_tokens[idx].to(train_device),
+                            target_mask[idx].to(train_device),
+                        )
+                    if condition == "shuffled_source":
+                        return matched(
+                            fold_source_tokens[shuffled_idx].to(train_device),
+                            source_mask[shuffled_idx].to(train_device),
+                            fold_target_tokens[idx].to(train_device),
+                            target_mask[idx].to(train_device),
+                        )
+                    if condition == "same_norm_noise":
+                        return matched(
+                            same_norm.to(train_device),
+                            source_mask[idx].to(train_device),
+                            fold_target_tokens[idx].to(train_device),
+                            target_mask[idx].to(train_device),
+                        )
+                    if condition == "projected_soft_prompt":
+                        return matched(
+                            projected.to(train_device),
+                            source_mask[idx].to(train_device),
+                            fold_target_tokens[idx].to(train_device),
+                            target_mask[idx].to(train_device),
+                        )
+                    if condition == "target_only_prefix":
+                        return target_only(
+                            torch.zeros_like(fold_source_tokens[idx]).to(train_device),
+                            source_mask[idx].to(train_device),
+                            fold_target_tokens[idx].to(train_device),
+                            target_mask[idx].to(train_device),
+                        )
+                    if condition == "slots_only_prefix":
+                        return slots_only(
+                            torch.zeros_like(fold_source_tokens[idx]).to(train_device),
+                            source_mask[idx].to(train_device),
+                            torch.zeros_like(fold_target_tokens[idx]).to(train_device),
+                            target_mask[idx].to(train_device),
+                        )
+                    if condition == "label_shuffled":
+                        return label_shuffled(
+                            fold_source_tokens[idx].to(train_device),
+                            source_mask[idx].to(train_device),
+                            fold_target_tokens[idx].to(train_device),
+                            target_mask[idx].to(train_device),
+                        )
+                    raise ValueError(f"unsupported generation condition: {condition!r}")
+
+                for condition in generation_conditions:
+                    prefix = _prefix_for_generation(condition)
+                    generated = _greedy_generate_with_prefix(
+                        target_model=target_model,
+                        embed_tokens=embed_tokens,
+                        tokenizer=target_tokenizer,
+                        prefix=prefix,
+                        prompt_ids=prompt_ids[idx],
+                        max_new_tokens=int(args.generation_max_new_tokens),
+                    )
+                    record = _generation_record(
+                        method=f"source_cross_attention_{config.training_objective}_{condition}",
+                        example_id=reference_ids[idx],
+                        index=idx,
+                        generation=generated,
+                        answers=examples[idx].answers,
+                    )
+                    generation_records_by_condition[condition].append(record)
+                    generation_by_condition[condition] = {
+                        "prediction": record["prediction"],
+                        "normalized_prediction": record["normalized_prediction"],
+                        "correct": record["correct"],
+                        "generated_tokens": record["generated_tokens"],
+                        "ttft_sec": record["ttft_sec"],
+                        "latency_sec": record["latency_sec"],
+                    }
             labels = []
             if reference_ids[idx] in clean_ids:
                 labels.append("clean_source_communication_candidate")
@@ -729,6 +1027,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
                         else "control_or_negative"
                     ),
                     "scores": condition_scores,
+                    "generation": generation_by_condition,
                 }
             )
             print(
@@ -743,11 +1042,27 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         target_self_ids=set(target_self_ids),
         min_margin_delta=config.min_margin_delta,
     )
+    generation_summary = (
+        _summarize_generation(
+            generation_records_by_condition,
+            clean_ids=set(clean_ids),
+            target_self_ids=set(target_self_ids),
+        )
+        if args.run_generation
+        else {}
+    )
     status = (
-        "source_cross_attention_logprob_candidate"
-        if summary["matched_only_clean_count"] >= config.min_matched_only_clean
-        and summary["control_leak_clean_count"] == 0
-        else "source_cross_attention_logprob_fails_gate"
+        "source_cross_attention_generation_candidate"
+        if args.run_generation
+        and generation_summary.get("gate", {}).get("matched_only_clean_count", 0)
+        >= config.min_matched_only_clean
+        and generation_summary.get("gate", {}).get("control_leak_clean_count", 0) == 0
+        else (
+            "source_cross_attention_logprob_candidate"
+            if summary["matched_only_clean_count"] >= config.min_matched_only_clean
+            and summary["control_leak_clean_count"] == 0
+            else "source_cross_attention_logprob_fails_gate"
+        )
     )
     payload = {
         "date": str(args.date),
@@ -759,6 +1074,11 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
             "target_jsonl": soft_probe._display(soft_probe._resolve(args.target_jsonl)),
             "teacher_jsonl": soft_probe._display(soft_probe._resolve(args.teacher_jsonl)),
             "target_set_json": soft_probe._display(soft_probe._resolve(args.target_set_json)),
+            "generation_output_jsonl": (
+                soft_probe._display(soft_probe._resolve(args.generation_output_jsonl))
+                if args.generation_output_jsonl
+                else None
+            ),
         },
         "config": {
             "source_model": args.source_model,
@@ -775,6 +1095,11 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
             "min_matched_only_clean": config.min_matched_only_clean,
             "min_margin_delta": config.min_margin_delta,
             "length_normalize": config.length_normalize,
+            "training_objective": config.training_objective,
+            "run_generation": bool(args.run_generation),
+            "generation_max_new_tokens": int(args.generation_max_new_tokens),
+            "generation_conditions": list(generation_conditions),
+            "generation_example_ids": sorted(generation_example_ids),
             "source_control_contrastive_weight": config.source_control_contrastive_weight,
             "source_control_contrastive_margin": config.source_control_contrastive_margin,
             "source_control_contrastive_controls": list(config.source_control_contrastive_controls),
@@ -784,12 +1109,20 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
             "target_self_or_target_correct": target_self_ids,
         },
         "summary": summary,
+        "generation_summary": generation_summary,
         "rows": rows,
     }
     output_json = soft_probe._resolve(args.output_json)
     output_md = soft_probe._resolve(args.output_md)
     output_json.parent.mkdir(parents=True, exist_ok=True)
     output_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if args.run_generation:
+        generation_output_jsonl = soft_probe._resolve(args.generation_output_jsonl)
+        generation_output_jsonl.parent.mkdir(parents=True, exist_ok=True)
+        with generation_output_jsonl.open("w", encoding="utf-8") as handle:
+            for condition in generation_conditions:
+                for record in generation_records_by_condition[condition]:
+                    handle.write(json.dumps(record, sort_keys=True) + "\n")
     _write_markdown(output_md, payload)
     print(json.dumps({"status": status, "output_json": soft_probe._display(output_json)}, indent=2), flush=True)
     return payload

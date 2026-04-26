@@ -1,0 +1,2233 @@
+{
+  "artifacts": {
+    "eval_file": "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/_artifacts/svamp_eval_70_32_32.jsonl",
+    "generation_output_jsonl": "results/qwen25math_svamp32_target_ce_generation_gate_20260426/generations.jsonl",
+    "target_jsonl": "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl",
+    "target_set_json": "results/qwen25math_svamp32_c2c_headroom_20260426/c2c_headroom_target_set.json",
+    "teacher_jsonl": "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/c2c_generate.jsonl"
+  },
+  "command": "scripts/analyze_svamp32_source_cross_attention_logprob_probe.py --source-model Qwen/Qwen2.5-Math-1.5B --target-model Qwen/Qwen3-0.6B --eval-file results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/_artifacts/svamp_eval_70_32_32.jsonl --target-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl --teacher-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/c2c_generate.jsonl --target-set-json results/qwen25math_svamp32_c2c_headroom_20260426/c2c_headroom_target_set.json --source-use-chat-template --target-use-chat-template --source-enable-thinking false --target-enable-thinking false --feature-layers last --prefix-len 2 --hidden-dim 16 --epochs 1 --outer-folds 2 --training-objective target_ce --source-control-contrastive-weight 0.5 --source-control-contrastive-margin 0.05 --source-control-contrastive-control zero_source --source-control-contrastive-control shuffled_source --length-normalize true --run-generation --generation-max-new-tokens 64 --generation-example-id 3e8a5691f5443495 --generation-example-id 1d50b408c8f5cd2c --generation-example-id de1bf4d142544e5b --generation-example-id 47464cc0b064f172 --generation-example-id 6e9745b37ab6fc45 --generation-example-id 575d7e83d84c1e67 --generation-condition matched --generation-condition zero_source --generation-condition shuffled_source --generation-condition target_only_prefix --generation-condition slots_only_prefix --device mps --train-device mps --dtype float32 --output-json results/qwen25math_svamp32_target_ce_generation_gate_20260426/smoke.json --output-md results/qwen25math_svamp32_target_ce_generation_gate_20260426/smoke.md --generation-output-jsonl results/qwen25math_svamp32_target_ce_generation_gate_20260426/generations.jsonl",
+  "config": {
+    "epochs": 1,
+    "feature_layers": "last",
+    "generation_conditions": [
+      "matched",
+      "zero_source",
+      "shuffled_source",
+      "target_only_prefix",
+      "slots_only_prefix"
+    ],
+    "generation_example_ids": [
+      "1d50b408c8f5cd2c",
+      "3e8a5691f5443495",
+      "47464cc0b064f172",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "de1bf4d142544e5b"
+    ],
+    "generation_max_new_tokens": 64,
+    "hidden_dim": 16,
+    "length_normalize": true,
+    "lr": 0.003,
+    "min_margin_delta": 0.0,
+    "min_matched_only_clean": 2,
+    "outer_folds": "2",
+    "prefix_len": 2,
+    "run_generation": true,
+    "seed": 1,
+    "shuffle_offset": 1,
+    "source_control_contrastive_controls": [
+      "zero_source",
+      "shuffled_source"
+    ],
+    "source_control_contrastive_margin": 0.05,
+    "source_control_contrastive_weight": 0.5,
+    "source_model": "Qwen/Qwen2.5-Math-1.5B",
+    "target_model": "Qwen/Qwen3-0.6B",
+    "training_objective": "target_ce",
+    "weight_decay": 0.001
+  },
+  "date": "2026-04-26",
+  "generation_summary": {
+    "gate": {
+      "control_leak_clean_count": 1,
+      "control_leak_clean_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "matched_only_clean_count": 0,
+      "matched_only_clean_ids": []
+    },
+    "matched": {
+      "accuracy": 0.16666666666666666,
+      "clean_correct_count": 1,
+      "correct_count": 1,
+      "correct_ids": [
+        "3e8a5691f5443495"
+      ],
+      "empty_predictions": 0,
+      "n": 6,
+      "numeric_extraction_coverage": 6,
+      "target_self_correct_count": 0
+    },
+    "shuffled_source": {
+      "accuracy": 0.3333333333333333,
+      "clean_correct_count": 2,
+      "correct_count": 2,
+      "correct_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67"
+      ],
+      "empty_predictions": 0,
+      "n": 6,
+      "numeric_extraction_coverage": 6,
+      "target_self_correct_count": 0
+    },
+    "slots_only_prefix": {
+      "accuracy": 0.3333333333333333,
+      "clean_correct_count": 2,
+      "correct_count": 2,
+      "correct_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67"
+      ],
+      "empty_predictions": 0,
+      "n": 6,
+      "numeric_extraction_coverage": 6,
+      "target_self_correct_count": 0
+    },
+    "target_only_prefix": {
+      "accuracy": 0.3333333333333333,
+      "clean_correct_count": 2,
+      "correct_count": 2,
+      "correct_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67"
+      ],
+      "empty_predictions": 0,
+      "n": 6,
+      "numeric_extraction_coverage": 6,
+      "target_self_correct_count": 0
+    },
+    "zero_source": {
+      "accuracy": 0.3333333333333333,
+      "clean_correct_count": 2,
+      "correct_count": 2,
+      "correct_ids": [
+        "3e8a5691f5443495",
+        "575d7e83d84c1e67"
+      ],
+      "empty_predictions": 0,
+      "n": 6,
+      "numeric_extraction_coverage": 6,
+      "target_self_correct_count": 0
+    }
+  },
+  "ids": {
+    "clean_source_communication_candidates": [
+      "1d50b408c8f5cd2c",
+      "3e8a5691f5443495",
+      "47464cc0b064f172",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "de1bf4d142544e5b"
+    ],
+    "target_self_or_target_correct": [
+      "013133cdef4f637c",
+      "316b525a4fcbfb89",
+      "2f80204fc9e0896f",
+      "f367349ce0604296",
+      "a85be5ec651dac24",
+      "de2a795ab37694af",
+      "0d2b4f7681973e19",
+      "c042f0a2949ff8e6"
+    ]
+  },
+  "reference_n": 32,
+  "rows": [
+    {
+      "best_control": "same_norm_noise",
+      "best_control_margin": -3.4041852951049805,
+      "distractor_answer": "12",
+      "example_id": "013133cdef4f637c",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "5",
+      "index": 0,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": -3.601292610168457,
+      "matched_minus_best_control_margin": -0.19710731506347656,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -8.79218864440918,
+          "gold_logprob": -12.772466659545898,
+          "margin": -3.9802780151367188
+        },
+        "matched": {
+          "distractor_logprob": -8.474095344543457,
+          "gold_logprob": -12.075387954711914,
+          "margin": -3.601292610168457
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -8.406607627868652,
+          "gold_logprob": -11.829371452331543,
+          "margin": -3.4227638244628906
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -8.391387939453125,
+          "gold_logprob": -11.795573234558105,
+          "margin": -3.4041852951049805
+        },
+        "shuffled_source": {
+          "distractor_logprob": -8.897160530090332,
+          "gold_logprob": -12.575634002685547,
+          "margin": -3.678473472595215
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -8.70241928100586,
+          "gold_logprob": -12.34432601928711,
+          "margin": -3.64190673828125
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -8.48921012878418,
+          "gold_logprob": -12.01673412322998,
+          "margin": -3.527523994445801
+        },
+        "zero_source": {
+          "distractor_logprob": -8.40664005279541,
+          "gold_logprob": -11.829401016235352,
+          "margin": -3.4227609634399414
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "shuffled_source",
+      "best_control_margin": -3.2389144897460938,
+      "distractor_answer": "96",
+      "example_id": "d64f6e35083ffe8c",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "2",
+      "index": 1,
+      "labels": [],
+      "matched_margin": -3.61197566986084,
+      "matched_minus_best_control_margin": -0.3730611801147461,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -8.859843254089355,
+          "gold_logprob": -12.661314964294434,
+          "margin": -3.801471710205078
+        },
+        "matched": {
+          "distractor_logprob": -8.26244831085205,
+          "gold_logprob": -11.87442398071289,
+          "margin": -3.61197566986084
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -8.172264099121094,
+          "gold_logprob": -11.924978256225586,
+          "margin": -3.752714157104492
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -8.179001808166504,
+          "gold_logprob": -11.96619701385498,
+          "margin": -3.7871952056884766
+        },
+        "shuffled_source": {
+          "distractor_logprob": -8.616690635681152,
+          "gold_logprob": -11.855605125427246,
+          "margin": -3.2389144897460938
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -9.872546195983887,
+          "gold_logprob": -13.774462699890137,
+          "margin": -3.90191650390625
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -10.035929679870605,
+          "gold_logprob": -14.435384750366211,
+          "margin": -4.3994550704956055
+        },
+        "zero_source": {
+          "distractor_logprob": -8.17226791381836,
+          "gold_logprob": -11.924982070922852,
+          "margin": -3.752714157104492
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "slots_only_prefix",
+      "best_control_margin": 0.8772974014282227,
+      "distractor_answer": "3",
+      "example_id": "3e8a5691f5443495",
+      "fold": 0,
+      "generation": {
+        "matched": {
+          "correct": true,
+          "generated_tokens": 64,
+          "latency_sec": 7.777411584276706,
+          "normalized_prediction": "1",
+          "prediction": "We are told:\n\n- Each basket has **4 red peaches** and **3 green peaches**.\n- The total number of peaches in all baskets is **7**.\n\nLet\u2019s solve this step by step.\n\n---\n\n### Step 1: Let the number of baskets be $ x $.\n\nEach basket has",
+          "ttft_sec": 0.10903429193422198
+        },
+        "shuffled_source": {
+          "correct": true,
+          "generated_tokens": 64,
+          "latency_sec": 7.248131167143583,
+          "normalized_prediction": "1",
+          "prediction": "We are told that:\n\n- Each basket has **4 red peaches** and **3 green peaches**.\n- The **total number of peaches in all baskets is 7**.\n\nLet\u2019s solve this step by step.\n\n---\n\n### Step 1: Let the number of baskets be $ x $.\n\nEach",
+          "ttft_sec": 0.0869338340125978
+        },
+        "slots_only_prefix": {
+          "correct": true,
+          "generated_tokens": 64,
+          "latency_sec": 6.905176667030901,
+          "normalized_prediction": "1",
+          "prediction": "We are told:\n\n- Each basket has **4 red peaches** and **3 green peaches**.\n- The total number of peaches in all baskets is **7**.\n\nLet\u2019s solve this step by step.\n\n---\n\n### Step 1: Let the number of baskets be $ x $.\n\nEach basket has",
+          "ttft_sec": 0.12931333389133215
+        },
+        "target_only_prefix": {
+          "correct": true,
+          "generated_tokens": 64,
+          "latency_sec": 6.860433541238308,
+          "normalized_prediction": "1",
+          "prediction": "We are told:\n\n- Each basket has **4 red peaches** and **3 green peaches**.\n- The **total number of peaches** in all baskets is **7**.\n\nLet\u2019s solve this step by step.\n\n---\n\n### Step 1: Determine the number of peaches per basket\n\nEach basket",
+          "ttft_sec": 0.09367170836776495
+        },
+        "zero_source": {
+          "correct": true,
+          "generated_tokens": 64,
+          "latency_sec": 6.230750833172351,
+          "normalized_prediction": "1",
+          "prediction": "We are told:\n\n- Each basket has **4 red peaches** and **3 green peaches**.\n- The **total number of peaches** in all baskets is **7**.\n\nLet\u2019s solve this step by step.\n\n---\n\n### Step 1: Let the number of baskets be $ x $.\n\nEach",
+          "ttft_sec": 0.09550541685894132
+        }
+      },
+      "gold_answer": "1",
+      "index": 2,
+      "labels": [
+        "clean_source_communication_candidate"
+      ],
+      "matched_margin": 0.6652908325195312,
+      "matched_minus_best_control_margin": -0.2120065689086914,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -11.859879493713379,
+          "gold_logprob": -11.10294246673584,
+          "margin": 0.7569370269775391
+        },
+        "matched": {
+          "distractor_logprob": -10.563871383666992,
+          "gold_logprob": -9.898580551147461,
+          "margin": 0.6652908325195312
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -9.561042785644531,
+          "gold_logprob": -9.105220794677734,
+          "margin": 0.4558219909667969
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -10.120141983032227,
+          "gold_logprob": -9.626564025878906,
+          "margin": 0.4935779571533203
+        },
+        "shuffled_source": {
+          "distractor_logprob": -9.54433822631836,
+          "gold_logprob": -9.03033447265625,
+          "margin": 0.5140037536621094
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -11.65936279296875,
+          "gold_logprob": -10.782065391540527,
+          "margin": 0.8772974014282227
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -12.321904182434082,
+          "gold_logprob": -11.51560115814209,
+          "margin": 0.8063030242919922
+        },
+        "zero_source": {
+          "distractor_logprob": -9.561044692993164,
+          "gold_logprob": -9.105216979980469,
+          "margin": 0.4558277130126953
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "target_only_prefix",
+      "best_control_margin": 4.973771095275879,
+      "distractor_answer": "0",
+      "example_id": "316b525a4fcbfb89",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "63",
+      "index": 3,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": 4.021956443786621,
+      "matched_minus_best_control_margin": -0.9518146514892578,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -12.030523300170898,
+          "gold_logprob": -8.290212631225586,
+          "margin": 3.7403106689453125
+        },
+        "matched": {
+          "distractor_logprob": -12.530555725097656,
+          "gold_logprob": -8.508599281311035,
+          "margin": 4.021956443786621
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -12.43796443939209,
+          "gold_logprob": -8.477746963500977,
+          "margin": 3.9602174758911133
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -12.288166046142578,
+          "gold_logprob": -8.414849281311035,
+          "margin": 3.873316764831543
+        },
+        "shuffled_source": {
+          "distractor_logprob": -12.197854995727539,
+          "gold_logprob": -8.3384370803833,
+          "margin": 3.8594179153442383
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -13.22472095489502,
+          "gold_logprob": -9.15017318725586,
+          "margin": 4.07454776763916
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -15.357135772705078,
+          "gold_logprob": -10.3833646774292,
+          "margin": 4.973771095275879
+        },
+        "zero_source": {
+          "distractor_logprob": -12.437956809997559,
+          "gold_logprob": -8.477747917175293,
+          "margin": 3.9602088928222656
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "label_shuffled",
+      "best_control_margin": 1.3205642700195312,
+      "distractor_answer": "3",
+      "example_id": "e26bdbcab1449bbe",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "1",
+      "index": 4,
+      "labels": [],
+      "matched_margin": 0.9117641448974609,
+      "matched_minus_best_control_margin": -0.4088001251220703,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -12.377272605895996,
+          "gold_logprob": -11.056708335876465,
+          "margin": 1.3205642700195312
+        },
+        "matched": {
+          "distractor_logprob": -11.003532409667969,
+          "gold_logprob": -10.091768264770508,
+          "margin": 0.9117641448974609
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -10.559213638305664,
+          "gold_logprob": -9.650273323059082,
+          "margin": 0.908940315246582
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -10.751890182495117,
+          "gold_logprob": -9.79642105102539,
+          "margin": 0.9554691314697266
+        },
+        "shuffled_source": {
+          "distractor_logprob": -10.998590469360352,
+          "gold_logprob": -10.105501174926758,
+          "margin": 0.8930892944335938
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -11.73634147644043,
+          "gold_logprob": -10.549077033996582,
+          "margin": 1.1872644424438477
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -12.429553031921387,
+          "gold_logprob": -11.308436393737793,
+          "margin": 1.1211166381835938
+        },
+        "zero_source": {
+          "distractor_logprob": -10.559216499328613,
+          "gold_logprob": -9.650278091430664,
+          "margin": 0.9089384078979492
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "slots_only_prefix",
+      "best_control_margin": 1.278996467590332,
+      "distractor_answer": "17",
+      "example_id": "aee922049c757331",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "1",
+      "index": 5,
+      "labels": [],
+      "matched_margin": 0.3525705337524414,
+      "matched_minus_best_control_margin": -0.9264259338378906,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -11.290295600891113,
+          "gold_logprob": -11.426351547241211,
+          "margin": -0.13605594635009766
+        },
+        "matched": {
+          "distractor_logprob": -11.42310619354248,
+          "gold_logprob": -11.070535659790039,
+          "margin": 0.3525705337524414
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -11.712515830993652,
+          "gold_logprob": -11.232316970825195,
+          "margin": 0.48019886016845703
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -11.598130226135254,
+          "gold_logprob": -11.241334915161133,
+          "margin": 0.3567953109741211
+        },
+        "shuffled_source": {
+          "distractor_logprob": -12.292269706726074,
+          "gold_logprob": -12.117408752441406,
+          "margin": 0.17486095428466797
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -11.365410804748535,
+          "gold_logprob": -10.086414337158203,
+          "margin": 1.278996467590332
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -11.869038581848145,
+          "gold_logprob": -11.742375373840332,
+          "margin": 0.1266632080078125
+        },
+        "zero_source": {
+          "distractor_logprob": -11.712519645690918,
+          "gold_logprob": -11.232329368591309,
+          "margin": 0.4801902770996094
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "same_norm_noise",
+      "best_control_margin": 2.8971028327941895,
+      "distractor_answer": "1",
+      "example_id": "1d50b408c8f5cd2c",
+      "fold": 0,
+      "generation": {
+        "matched": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.8097846251912415,
+          "normalized_prediction": "25",
+          "prediction": "After eating a hearty meal, Rachel went to the Buckingham Palace. On the previous day, there were 703 visitors. If there were 246 visitors on that day, we need to find out how many visitors visited the Buckingham Palace within 25 days.\n\n### Step-by-step:\n\n- On the",
+          "ttft_sec": 0.11579287517815828
+        },
+        "shuffled_source": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.626244500279427,
+          "normalized_prediction": "70",
+          "prediction": "After eating a hearty meal, Rachel went to the Buckingham Palace. On that day, 703 visitors came. If there were 246 visitors on that day, how many visitors visited the Buckingham Palace within 25 days?\n\n### Step-by-step:\n\n- On the **previous day**, 70",
+          "ttft_sec": 0.10738129122182727
+        },
+        "slots_only_prefix": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.684258583001792,
+          "normalized_prediction": "1",
+          "prediction": "We are told:\n\n- On the **previous day**, there were **703 visitors**.\n- On the **current day**, there were **246 visitors**.\n- We are to find the **total number of visitors** over **25 days**.\n\n### Step 1: Add the two days",
+          "ttft_sec": 0.09496520785614848
+        },
+        "target_only_prefix": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 7.016513584181666,
+          "normalized_prediction": "1",
+          "prediction": "We are told:\n\n- On the **previous day**, there were **703 visitors**.\n- On the **current day**, there were **246 visitors**.\n- We are to find the **total number of visitors** over **25 days**.\n\n### Step-by-step:\n\n1. Add the",
+          "ttft_sec": 0.08594866702333093
+        },
+        "zero_source": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.347308417316526,
+          "normalized_prediction": "1",
+          "prediction": "After eating a hearty meal, Rachel went to the Buckingham Palace. On the previous day, there were 703 visitors. On that day, there were 246 visitors. We are to find out how many visitors visited the Buckingham Palace within 25 days.\n\n### Step 1: Find the number",
+          "ttft_sec": 0.09069858305156231
+        }
+      },
+      "gold_answer": "949",
+      "index": 6,
+      "labels": [
+        "clean_source_communication_candidate"
+      ],
+      "matched_margin": 2.7202248573303223,
+      "matched_minus_best_control_margin": -0.1768779754638672,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -8.816400527954102,
+          "gold_logprob": -6.157808303833008,
+          "margin": 2.6585922241210938
+        },
+        "matched": {
+          "distractor_logprob": -8.948988914489746,
+          "gold_logprob": -6.228764057159424,
+          "margin": 2.7202248573303223
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -8.85827922821045,
+          "gold_logprob": -6.069240093231201,
+          "margin": 2.789039134979248
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -9.026359558105469,
+          "gold_logprob": -6.129256725311279,
+          "margin": 2.8971028327941895
+        },
+        "shuffled_source": {
+          "distractor_logprob": -9.06495475769043,
+          "gold_logprob": -6.1822285652160645,
+          "margin": 2.8827261924743652
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -9.432343482971191,
+          "gold_logprob": -6.630233287811279,
+          "margin": 2.802110195159912
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -9.481208801269531,
+          "gold_logprob": -6.710536003112793,
+          "margin": 2.7706727981567383
+        },
+        "zero_source": {
+          "distractor_logprob": -8.858293533325195,
+          "gold_logprob": -6.069248199462891,
+          "margin": 2.7890453338623047
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "label_shuffled",
+      "best_control_margin": -1.540013313293457,
+      "distractor_answer": "1",
+      "example_id": "b0b71023ae4d233b",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "2",
+      "index": 7,
+      "labels": [],
+      "matched_margin": -1.8321609497070312,
+      "matched_minus_best_control_margin": -0.2921476364135742,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -9.980700492858887,
+          "gold_logprob": -11.520713806152344,
+          "margin": -1.540013313293457
+        },
+        "matched": {
+          "distractor_logprob": -9.797201156616211,
+          "gold_logprob": -11.629362106323242,
+          "margin": -1.8321609497070312
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -9.419657707214355,
+          "gold_logprob": -11.803448677062988,
+          "margin": -2.383790969848633
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -9.405065536499023,
+          "gold_logprob": -11.73496150970459,
+          "margin": -2.3298959732055664
+        },
+        "shuffled_source": {
+          "distractor_logprob": -9.140867233276367,
+          "gold_logprob": -11.398828506469727,
+          "margin": -2.2579612731933594
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -9.063087463378906,
+          "gold_logprob": -12.544031143188477,
+          "margin": -3.4809436798095703
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -10.043030738830566,
+          "gold_logprob": -12.645349502563477,
+          "margin": -2.60231876373291
+        },
+        "zero_source": {
+          "distractor_logprob": -9.419644355773926,
+          "gold_logprob": -11.803439140319824,
+          "margin": -2.3837947845458984
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "projected_soft_prompt",
+      "best_control_margin": -3.7197628021240234,
+      "distractor_answer": "178",
+      "example_id": "b1200c32546a34a5",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "2",
+      "index": 8,
+      "labels": [],
+      "matched_margin": -4.076896667480469,
+      "matched_minus_best_control_margin": -0.3571338653564453,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -6.582430362701416,
+          "gold_logprob": -10.88874626159668,
+          "margin": -4.306315898895264
+        },
+        "matched": {
+          "distractor_logprob": -6.295446395874023,
+          "gold_logprob": -10.372343063354492,
+          "margin": -4.076896667480469
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -5.642234802246094,
+          "gold_logprob": -9.361997604370117,
+          "margin": -3.7197628021240234
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -5.846525192260742,
+          "gold_logprob": -9.72793960571289,
+          "margin": -3.8814144134521484
+        },
+        "shuffled_source": {
+          "distractor_logprob": -6.361373424530029,
+          "gold_logprob": -10.461973190307617,
+          "margin": -4.100599765777588
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -6.551032543182373,
+          "gold_logprob": -10.865884780883789,
+          "margin": -4.314852237701416
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -6.306778907775879,
+          "gold_logprob": -10.705791473388672,
+          "margin": -4.399012565612793
+        },
+        "zero_source": {
+          "distractor_logprob": -5.642238616943359,
+          "gold_logprob": -9.362003326416016,
+          "margin": -3.7197647094726562
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "label_shuffled",
+      "best_control_margin": -3.5341429710388184,
+      "distractor_answer": "16",
+      "example_id": "14bfbfc94f2c2e7b",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "3",
+      "index": 9,
+      "labels": [],
+      "matched_margin": -3.7231483459472656,
+      "matched_minus_best_control_margin": -0.18900537490844727,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -6.726494312286377,
+          "gold_logprob": -10.260637283325195,
+          "margin": -3.5341429710388184
+        },
+        "matched": {
+          "distractor_logprob": -7.917900085449219,
+          "gold_logprob": -11.641048431396484,
+          "margin": -3.7231483459472656
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -8.064833641052246,
+          "gold_logprob": -11.795120239257812,
+          "margin": -3.7302865982055664
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -8.145506858825684,
+          "gold_logprob": -11.86721134185791,
+          "margin": -3.7217044830322266
+        },
+        "shuffled_source": {
+          "distractor_logprob": -8.230961799621582,
+          "gold_logprob": -12.394878387451172,
+          "margin": -4.16391658782959
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -8.195958137512207,
+          "gold_logprob": -12.543451309204102,
+          "margin": -4.3474931716918945
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -7.828928470611572,
+          "gold_logprob": -12.390613555908203,
+          "margin": -4.561685085296631
+        },
+        "zero_source": {
+          "distractor_logprob": -8.064830780029297,
+          "gold_logprob": -11.795103073120117,
+          "margin": -3.7302722930908203
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "target_only_prefix",
+      "best_control_margin": 2.3046836853027344,
+      "distractor_answer": "2",
+      "example_id": "4c84ebf42812703b",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "10",
+      "index": 10,
+      "labels": [],
+      "matched_margin": 1.3917827606201172,
+      "matched_minus_best_control_margin": -0.9129009246826172,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -10.676570892333984,
+          "gold_logprob": -8.848456382751465,
+          "margin": 1.8281145095825195
+        },
+        "matched": {
+          "distractor_logprob": -9.950432777404785,
+          "gold_logprob": -8.558650016784668,
+          "margin": 1.3917827606201172
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -9.404834747314453,
+          "gold_logprob": -8.166751861572266,
+          "margin": 1.2380828857421875
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -9.410449981689453,
+          "gold_logprob": -8.170762062072754,
+          "margin": 1.2396879196166992
+        },
+        "shuffled_source": {
+          "distractor_logprob": -10.04300308227539,
+          "gold_logprob": -8.780844688415527,
+          "margin": 1.2621583938598633
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -10.544302940368652,
+          "gold_logprob": -8.902677536010742,
+          "margin": 1.6416254043579102
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -17.146804809570312,
+          "gold_logprob": -14.842121124267578,
+          "margin": 2.3046836853027344
+        },
+        "zero_source": {
+          "distractor_logprob": -9.404830932617188,
+          "gold_logprob": -8.16675090789795,
+          "margin": 1.2380800247192383
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "label_shuffled",
+      "best_control_margin": -1.8048763275146484,
+      "distractor_answer": "52",
+      "example_id": "4ef979ea2bf931df",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "4",
+      "index": 11,
+      "labels": [],
+      "matched_margin": -2.4162120819091797,
+      "matched_minus_best_control_margin": -0.6113357543945312,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -9.544320106506348,
+          "gold_logprob": -11.349196434020996,
+          "margin": -1.8048763275146484
+        },
+        "matched": {
+          "distractor_logprob": -9.782505989074707,
+          "gold_logprob": -12.198718070983887,
+          "margin": -2.4162120819091797
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -9.869319915771484,
+          "gold_logprob": -12.007633209228516,
+          "margin": -2.1383132934570312
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -9.69492244720459,
+          "gold_logprob": -12.029385566711426,
+          "margin": -2.334463119506836
+        },
+        "shuffled_source": {
+          "distractor_logprob": -9.458970069885254,
+          "gold_logprob": -11.641161918640137,
+          "margin": -2.182191848754883
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -10.241120338439941,
+          "gold_logprob": -13.066448211669922,
+          "margin": -2.8253278732299805
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -11.006569862365723,
+          "gold_logprob": -13.278770446777344,
+          "margin": -2.272200584411621
+        },
+        "zero_source": {
+          "distractor_logprob": -9.869338989257812,
+          "gold_logprob": -12.007654190063477,
+          "margin": -2.138315200805664
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "slots_only_prefix",
+      "best_control_margin": 1.2039122581481934,
+      "distractor_answer": "46",
+      "example_id": "13cb77b698eeadb5",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "8142",
+      "index": 12,
+      "labels": [],
+      "matched_margin": 0.9802041053771973,
+      "matched_minus_best_control_margin": -0.2237081527709961,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -8.219780921936035,
+          "gold_logprob": -7.358582496643066,
+          "margin": 0.8611984252929688
+        },
+        "matched": {
+          "distractor_logprob": -8.361957550048828,
+          "gold_logprob": -7.381753444671631,
+          "margin": 0.9802041053771973
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -8.19843578338623,
+          "gold_logprob": -7.315423011779785,
+          "margin": 0.8830127716064453
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -8.470932960510254,
+          "gold_logprob": -7.449900150299072,
+          "margin": 1.0210328102111816
+        },
+        "shuffled_source": {
+          "distractor_logprob": -8.523102760314941,
+          "gold_logprob": -7.3690619468688965,
+          "margin": 1.154040813446045
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -8.794525146484375,
+          "gold_logprob": -7.590612888336182,
+          "margin": 1.2039122581481934
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -7.609527587890625,
+          "gold_logprob": -7.0433197021484375,
+          "margin": 0.5662078857421875
+        },
+        "zero_source": {
+          "distractor_logprob": -8.198407173156738,
+          "gold_logprob": -7.3154120445251465,
+          "margin": 0.8829951286315918
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "slots_only_prefix",
+      "best_control_margin": 2.746114730834961,
+      "distractor_answer": "4",
+      "example_id": "e3ab8666238a289e",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "1",
+      "index": 13,
+      "labels": [],
+      "matched_margin": 1.6623973846435547,
+      "matched_minus_best_control_margin": -1.0837173461914062,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -13.038959503173828,
+          "gold_logprob": -12.020875930786133,
+          "margin": 1.0180835723876953
+        },
+        "matched": {
+          "distractor_logprob": -13.311569213867188,
+          "gold_logprob": -11.649171829223633,
+          "margin": 1.6623973846435547
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -12.92088794708252,
+          "gold_logprob": -11.481042861938477,
+          "margin": 1.439845085144043
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -13.082550048828125,
+          "gold_logprob": -11.613656044006348,
+          "margin": 1.4688940048217773
+        },
+        "shuffled_source": {
+          "distractor_logprob": -13.051761627197266,
+          "gold_logprob": -11.831437110900879,
+          "margin": 1.2203245162963867
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -13.348893165588379,
+          "gold_logprob": -10.602778434753418,
+          "margin": 2.746114730834961
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -12.915837287902832,
+          "gold_logprob": -11.620643615722656,
+          "margin": 1.2951936721801758
+        },
+        "zero_source": {
+          "distractor_logprob": -12.920906066894531,
+          "gold_logprob": -11.48105525970459,
+          "margin": 1.4398508071899414
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "shuffled_source",
+      "best_control_margin": -0.8535246849060059,
+      "distractor_answer": "33",
+      "example_id": "2de1549556000830",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "39",
+      "index": 14,
+      "labels": [],
+      "matched_margin": -1.8753457069396973,
+      "matched_minus_best_control_margin": -1.0218210220336914,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -8.674738883972168,
+          "gold_logprob": -10.829352378845215,
+          "margin": -2.154613494873047
+        },
+        "matched": {
+          "distractor_logprob": -7.66492223739624,
+          "gold_logprob": -9.540267944335938,
+          "margin": -1.8753457069396973
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -7.1794867515563965,
+          "gold_logprob": -8.120404243469238,
+          "margin": -0.9409174919128418
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -7.065255641937256,
+          "gold_logprob": -8.135865211486816,
+          "margin": -1.0706095695495605
+        },
+        "shuffled_source": {
+          "distractor_logprob": -7.504868984222412,
+          "gold_logprob": -8.358393669128418,
+          "margin": -0.8535246849060059
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -8.720242500305176,
+          "gold_logprob": -10.3905029296875,
+          "margin": -1.6702604293823242
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -8.330830574035645,
+          "gold_logprob": -10.800372123718262,
+          "margin": -2.469541549682617
+        },
+        "zero_source": {
+          "distractor_logprob": -7.179504871368408,
+          "gold_logprob": -8.120402336120605,
+          "margin": -0.9408974647521973
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "target_only_prefix",
+      "best_control_margin": 0.9718303680419922,
+      "distractor_answer": "87",
+      "example_id": "615f9d817cb5be59",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "32",
+      "index": 15,
+      "labels": [],
+      "matched_margin": -1.6017961502075195,
+      "matched_minus_best_control_margin": -2.5736265182495117,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -9.08302116394043,
+          "gold_logprob": -10.303946495056152,
+          "margin": -1.2209253311157227
+        },
+        "matched": {
+          "distractor_logprob": -9.674129486083984,
+          "gold_logprob": -11.275925636291504,
+          "margin": -1.6017961502075195
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -9.818951606750488,
+          "gold_logprob": -11.22984790802002,
+          "margin": -1.4108963012695312
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -9.699355125427246,
+          "gold_logprob": -11.115647315979004,
+          "margin": -1.4162921905517578
+        },
+        "shuffled_source": {
+          "distractor_logprob": -9.546778678894043,
+          "gold_logprob": -11.02993392944336,
+          "margin": -1.4831552505493164
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -10.240206718444824,
+          "gold_logprob": -12.563664436340332,
+          "margin": -2.323457717895508
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -14.627018928527832,
+          "gold_logprob": -13.65518856048584,
+          "margin": 0.9718303680419922
+        },
+        "zero_source": {
+          "distractor_logprob": -9.81893253326416,
+          "gold_logprob": -11.229832649230957,
+          "margin": -1.4109001159667969
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "label_shuffled",
+      "best_control_margin": 3.496922492980957,
+      "distractor_answer": "0",
+      "example_id": "2f80204fc9e0896f",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "13",
+      "index": 16,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": 3.009915351867676,
+      "matched_minus_best_control_margin": -0.48700714111328125,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -14.499300003051758,
+          "gold_logprob": -11.0023775100708,
+          "margin": 3.496922492980957
+        },
+        "matched": {
+          "distractor_logprob": -12.73488998413086,
+          "gold_logprob": -9.724974632263184,
+          "margin": 3.009915351867676
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -12.097186088562012,
+          "gold_logprob": -9.293869018554688,
+          "margin": 2.803317070007324
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -12.35858154296875,
+          "gold_logprob": -9.47558307647705,
+          "margin": 2.882998466491699
+        },
+        "shuffled_source": {
+          "distractor_logprob": -13.292078018188477,
+          "gold_logprob": -10.145113945007324,
+          "margin": 3.1469640731811523
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -13.599173545837402,
+          "gold_logprob": -10.395833969116211,
+          "margin": 3.2033395767211914
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -14.553875923156738,
+          "gold_logprob": -11.077681541442871,
+          "margin": 3.476194381713867
+        },
+        "zero_source": {
+          "distractor_logprob": -12.097190856933594,
+          "gold_logprob": -9.293874740600586,
+          "margin": 2.803316116333008
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "slots_only_prefix",
+      "best_control_margin": 2.122873306274414,
+      "distractor_answer": "8",
+      "example_id": "137ad74218053f8a",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "11",
+      "index": 17,
+      "labels": [],
+      "matched_margin": 1.5238227844238281,
+      "matched_minus_best_control_margin": -0.5990505218505859,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -10.439552307128906,
+          "gold_logprob": -9.335658073425293,
+          "margin": 1.1038942337036133
+        },
+        "matched": {
+          "distractor_logprob": -11.004829406738281,
+          "gold_logprob": -9.481006622314453,
+          "margin": 1.5238227844238281
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -11.027135848999023,
+          "gold_logprob": -9.397233009338379,
+          "margin": 1.6299028396606445
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -11.110862731933594,
+          "gold_logprob": -9.3900728225708,
+          "margin": 1.720789909362793
+        },
+        "shuffled_source": {
+          "distractor_logprob": -10.717864990234375,
+          "gold_logprob": -9.736048698425293,
+          "margin": 0.981816291809082
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -12.074591636657715,
+          "gold_logprob": -9.9517183303833,
+          "margin": 2.122873306274414
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -11.505638122558594,
+          "gold_logprob": -10.093121528625488,
+          "margin": 1.4125165939331055
+        },
+        "zero_source": {
+          "distractor_logprob": -11.027130126953125,
+          "gold_logprob": -9.397242546081543,
+          "margin": 1.629887580871582
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "slots_only_prefix",
+      "best_control_margin": 0.5977420806884766,
+      "distractor_answer": "1",
+      "example_id": "4d780f825bb8541c",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "26",
+      "index": 18,
+      "labels": [],
+      "matched_margin": 0.5372734069824219,
+      "matched_minus_best_control_margin": -0.06046867370605469,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -9.963090896606445,
+          "gold_logprob": -9.902836799621582,
+          "margin": 0.06025409698486328
+        },
+        "matched": {
+          "distractor_logprob": -9.916238784790039,
+          "gold_logprob": -9.378965377807617,
+          "margin": 0.5372734069824219
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -9.335136413574219,
+          "gold_logprob": -8.91445255279541,
+          "margin": 0.4206838607788086
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -9.509160041809082,
+          "gold_logprob": -9.066977500915527,
+          "margin": 0.4421825408935547
+        },
+        "shuffled_source": {
+          "distractor_logprob": -10.182901382446289,
+          "gold_logprob": -9.645867347717285,
+          "margin": 0.5370340347290039
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -10.140027046203613,
+          "gold_logprob": -9.542284965515137,
+          "margin": 0.5977420806884766
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -10.993914604187012,
+          "gold_logprob": -10.406847953796387,
+          "margin": 0.587066650390625
+        },
+        "zero_source": {
+          "distractor_logprob": -9.335138320922852,
+          "gold_logprob": -8.914446830749512,
+          "margin": 0.42069149017333984
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "target_only_prefix",
+      "best_control_margin": -1.2517833709716797,
+      "distractor_answer": "415",
+      "example_id": "08d3dd8885ffb998",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "266",
+      "index": 19,
+      "labels": [],
+      "matched_margin": -2.071186065673828,
+      "matched_minus_best_control_margin": -0.8194026947021484,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -6.14219331741333,
+          "gold_logprob": -8.118675231933594,
+          "margin": -1.9764819145202637
+        },
+        "matched": {
+          "distractor_logprob": -6.371549606323242,
+          "gold_logprob": -8.44273567199707,
+          "margin": -2.071186065673828
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -6.205723285675049,
+          "gold_logprob": -8.211907386779785,
+          "margin": -2.0061841011047363
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -6.125470161437988,
+          "gold_logprob": -8.057669639587402,
+          "margin": -1.932199478149414
+        },
+        "shuffled_source": {
+          "distractor_logprob": -6.15986442565918,
+          "gold_logprob": -8.04630184173584,
+          "margin": -1.8864374160766602
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -7.315605163574219,
+          "gold_logprob": -9.239343643188477,
+          "margin": -1.9237384796142578
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -10.48721694946289,
+          "gold_logprob": -11.73900032043457,
+          "margin": -1.2517833709716797
+        },
+        "zero_source": {
+          "distractor_logprob": -6.205737590789795,
+          "gold_logprob": -8.21192741394043,
+          "margin": -2.0061898231506348
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "target_only_prefix",
+      "best_control_margin": 2.76688289642334,
+      "distractor_answer": "2",
+      "example_id": "de1bf4d142544e5b",
+      "fold": 0,
+      "generation": {
+        "matched": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.442767624743283,
+          "normalized_prediction": "1",
+          "prediction": "We are given:\n\n- Total number of snakes = 93  \n- Total number of alligators = 97  \n- Number of alligators hiding = 40\n\nWe are asked to find the number of **alligators that were not hiding**.\n\n### Step 1: Subtract the number of hiding all",
+          "ttft_sec": 0.08036808390170336
+        },
+        "shuffled_source": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.189046415966004,
+          "normalized_prediction": "9",
+          "prediction": "We are given:\n\n- Number of **alligators** = 97  \n- Number of **hiding alligators** = 40\n\nWe are asked to find the number of **alligators that were **not hiding**.\n\n### Step-by-step:\n\n1. The total number of alligators is 9",
+          "ttft_sec": 0.09626737516373396
+        },
+        "slots_only_prefix": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.4092503329738975,
+          "normalized_prediction": "1",
+          "prediction": "We are given:\n\n- Total number of snakes: 93  \n- Total number of alligators: 97  \n- Number of alligators hiding: 40\n\nWe are asked to find the number of **alligators that are not hiding**.\n\n### Step 1: Add the number of snakes and",
+          "ttft_sec": 0.08543691597878933
+        },
+        "target_only_prefix": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.102466417010874,
+          "normalized_prediction": "1",
+          "prediction": "We are given:\n\n- Total number of snakes: 93  \n- Total number of alligators: 97  \n- Number of alligators hiding: 40\n\nWe are asked to find the number of **alligators that were not hiding**.\n\n### Step-by-step:\n\n1. **Total number of",
+          "ttft_sec": 0.09076941665261984
+        },
+        "zero_source": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.202759958803654,
+          "normalized_prediction": "1",
+          "prediction": "We are given:\n\n- Total number of snakes: 93  \n- Total number of alligators: 97  \n- Number of alligators hiding: 40\n\nWe are asked to find the number of **alligators that were not hiding**.\n\n### Step 1: Subtract the number of hiding all",
+          "ttft_sec": 0.08877270901575685
+        }
+      },
+      "gold_answer": "57",
+      "index": 20,
+      "labels": [
+        "clean_source_communication_candidate"
+      ],
+      "matched_margin": 2.0469775199890137,
+      "matched_minus_best_control_margin": -0.7199053764343262,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -11.390499114990234,
+          "gold_logprob": -8.957427024841309,
+          "margin": 2.433072090148926
+        },
+        "matched": {
+          "distractor_logprob": -9.35722827911377,
+          "gold_logprob": -7.310250759124756,
+          "margin": 2.0469775199890137
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -9.341324806213379,
+          "gold_logprob": -7.135324954986572,
+          "margin": 2.2059998512268066
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -9.075740814208984,
+          "gold_logprob": -6.909854412078857,
+          "margin": 2.165886402130127
+        },
+        "shuffled_source": {
+          "distractor_logprob": -9.388102531433105,
+          "gold_logprob": -7.106068134307861,
+          "margin": 2.282034397125244
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -10.517230033874512,
+          "gold_logprob": -8.18912410736084,
+          "margin": 2.328105926513672
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -11.326987266540527,
+          "gold_logprob": -8.560104370117188,
+          "margin": 2.76688289642334
+        },
+        "zero_source": {
+          "distractor_logprob": -9.341323852539062,
+          "gold_logprob": -7.1353302001953125,
+          "margin": 2.20599365234375
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "slots_only_prefix",
+      "best_control_margin": 0.006999969482421875,
+      "distractor_answer": "0",
+      "example_id": "f367349ce0604296",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "6",
+      "index": 21,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": -0.2526359558105469,
+      "matched_minus_best_control_margin": -0.25963592529296875,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -12.677753448486328,
+          "gold_logprob": -12.842714309692383,
+          "margin": -0.1649608612060547
+        },
+        "matched": {
+          "distractor_logprob": -13.352063179016113,
+          "gold_logprob": -13.60469913482666,
+          "margin": -0.2526359558105469
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -13.149496078491211,
+          "gold_logprob": -13.364706039428711,
+          "margin": -0.2152099609375
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -13.275620460510254,
+          "gold_logprob": -13.531603813171387,
+          "margin": -0.2559833526611328
+        },
+        "shuffled_source": {
+          "distractor_logprob": -12.439884185791016,
+          "gold_logprob": -12.961897850036621,
+          "margin": -0.5220136642456055
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -13.439523696899414,
+          "gold_logprob": -13.432523727416992,
+          "margin": 0.006999969482421875
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -12.047718048095703,
+          "gold_logprob": -13.163278579711914,
+          "margin": -1.115560531616211
+        },
+        "zero_source": {
+          "distractor_logprob": -13.149477005004883,
+          "gold_logprob": -13.364686012268066,
+          "margin": -0.2152090072631836
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "target_only_prefix",
+      "best_control_margin": 2.0989742279052734,
+      "distractor_answer": "0",
+      "example_id": "a85be5ec651dac24",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "4",
+      "index": 22,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": 1.9869403839111328,
+      "matched_minus_best_control_margin": -0.11203384399414062,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -13.597431182861328,
+          "gold_logprob": -11.632329940795898,
+          "margin": 1.9651012420654297
+        },
+        "matched": {
+          "distractor_logprob": -14.160650253295898,
+          "gold_logprob": -12.173709869384766,
+          "margin": 1.9869403839111328
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -12.664566040039062,
+          "gold_logprob": -10.908241271972656,
+          "margin": 1.7563247680664062
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -12.974309921264648,
+          "gold_logprob": -11.166182518005371,
+          "margin": 1.8081274032592773
+        },
+        "shuffled_source": {
+          "distractor_logprob": -12.962432861328125,
+          "gold_logprob": -11.082632064819336,
+          "margin": 1.879800796508789
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -13.582174301147461,
+          "gold_logprob": -11.664441108703613,
+          "margin": 1.9177331924438477
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -13.551759719848633,
+          "gold_logprob": -11.45278549194336,
+          "margin": 2.0989742279052734
+        },
+        "zero_source": {
+          "distractor_logprob": -12.664566040039062,
+          "gold_logprob": -10.908227920532227,
+          "margin": 1.756338119506836
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "same_norm_noise",
+      "best_control_margin": 2.3963565826416016,
+      "distractor_answer": "0",
+      "example_id": "de2a795ab37694af",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "2",
+      "index": 23,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": 2.4249696731567383,
+      "matched_minus_best_control_margin": 0.02861309051513672,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -13.386587142944336,
+          "gold_logprob": -11.177672386169434,
+          "margin": 2.2089147567749023
+        },
+        "matched": {
+          "distractor_logprob": -13.995353698730469,
+          "gold_logprob": -11.57038402557373,
+          "margin": 2.4249696731567383
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -14.095991134643555,
+          "gold_logprob": -11.811896324157715,
+          "margin": 2.28409481048584
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -13.987256050109863,
+          "gold_logprob": -11.590899467468262,
+          "margin": 2.3963565826416016
+        },
+        "shuffled_source": {
+          "distractor_logprob": -13.879158973693848,
+          "gold_logprob": -11.65040397644043,
+          "margin": 2.228754997253418
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -16.005212783813477,
+          "gold_logprob": -13.895185470581055,
+          "margin": 2.110027313232422
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -14.200674057006836,
+          "gold_logprob": -12.161581993103027,
+          "margin": 2.0390920639038086
+        },
+        "zero_source": {
+          "distractor_logprob": -14.095978736877441,
+          "gold_logprob": -11.811878204345703,
+          "margin": 2.2841005325317383
+        }
+      },
+      "status": "matched_only_positive"
+    },
+    {
+      "best_control": "target_only_prefix",
+      "best_control_margin": 3.200406074523926,
+      "distractor_answer": "2",
+      "example_id": "47464cc0b064f172",
+      "fold": 0,
+      "generation": {
+        "matched": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.253711625002325,
+          "normalized_prediction": "10",
+          "prediction": "Let's break down the problem step by step:\n\n- Initially, the waiter had **12 customers**.\n- Then **some left**, leaving him with **14 customers**.\n- Then he **got 10 new customers**.\n\nSo, the total number of customers after all these changes is:\n\n$$\n",
+          "ttft_sec": 0.1046573338098824
+        },
+        "shuffled_source": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.628885208629072,
+          "normalized_prediction": "10",
+          "prediction": "Let's solve the problem step by step:\n\n- Initially, the waiter had **12 customers**.\n- After some left, he had **14 customers**.\n- Then he got **10 new customers**.\n\nSo, the total number of customers now is:\n\n$$\n14 + 10 =",
+          "ttft_sec": 0.1963311666622758
+        },
+        "slots_only_prefix": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.34012204175815,
+          "normalized_prediction": "10",
+          "prediction": "Let's solve the problem step by step:\n\n- Initially, the waiter had **12 customers**.\n- After some left, he had **14 customers**.\n- Then he got **10 new customers**.\n\nSo, the total number of customers now is:\n\n$$\n14 + 10 =",
+          "ttft_sec": 0.08526779199019074
+        },
+        "target_only_prefix": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.423830957617611,
+          "normalized_prediction": "14",
+          "prediction": "Let's solve this step by step.\n\n---\n\n### Step 1: Start with the initial number of customers\n\n- The waiter had **12 customers**.\n\n---\n\n### Step 2: After some left, he still had **14 customers**\n\nSo, after some people left, he had 14 customers.\n\n",
+          "ttft_sec": 0.11489812470972538
+        },
+        "zero_source": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.859209999907762,
+          "normalized_prediction": "10",
+          "prediction": "Let's solve the problem step by step:\n\n- Initially, the waiter had **12 customers**.\n- After some left, he had **14 customers**.\n- Then he got **10 new customers**.\n\nSo, the total number of customers now is:\n\n$$\n14 + 10 =",
+          "ttft_sec": 0.08883304195478559
+        }
+      },
+      "gold_answer": "24",
+      "index": 24,
+      "labels": [
+        "clean_source_communication_candidate"
+      ],
+      "matched_margin": 2.620258331298828,
+      "matched_minus_best_control_margin": -0.5801477432250977,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -11.522445678710938,
+          "gold_logprob": -9.10252857208252,
+          "margin": 2.419917106628418
+        },
+        "matched": {
+          "distractor_logprob": -10.96292495727539,
+          "gold_logprob": -8.342666625976562,
+          "margin": 2.620258331298828
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -10.646116256713867,
+          "gold_logprob": -7.9692606925964355,
+          "margin": 2.6768555641174316
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -10.575031280517578,
+          "gold_logprob": -7.959661483764648,
+          "margin": 2.6153697967529297
+        },
+        "shuffled_source": {
+          "distractor_logprob": -10.775152206420898,
+          "gold_logprob": -7.869518280029297,
+          "margin": 2.9056339263916016
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -11.66998291015625,
+          "gold_logprob": -8.961411476135254,
+          "margin": 2.708571434020996
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -13.043194770812988,
+          "gold_logprob": -9.842788696289062,
+          "margin": 3.200406074523926
+        },
+        "zero_source": {
+          "distractor_logprob": -10.646116256713867,
+          "gold_logprob": -7.96925687789917,
+          "margin": 2.6768593788146973
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "projected_soft_prompt",
+      "best_control_margin": 6.147488594055176,
+      "distractor_answer": "0",
+      "example_id": "0d2b4f7681973e19",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "204",
+      "index": 25,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": 5.962786674499512,
+      "matched_minus_best_control_margin": -0.18470191955566406,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -12.274279594421387,
+          "gold_logprob": -6.226935863494873,
+          "margin": 6.047343730926514
+        },
+        "matched": {
+          "distractor_logprob": -12.245872497558594,
+          "gold_logprob": -6.283085823059082,
+          "margin": 5.962786674499512
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -12.431979179382324,
+          "gold_logprob": -6.284490585327148,
+          "margin": 6.147488594055176
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -12.322500228881836,
+          "gold_logprob": -6.258650779724121,
+          "margin": 6.063849449157715
+        },
+        "shuffled_source": {
+          "distractor_logprob": -12.044819831848145,
+          "gold_logprob": -6.196846961975098,
+          "margin": 5.847972869873047
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -12.0780029296875,
+          "gold_logprob": -6.024363994598389,
+          "margin": 6.053638935089111
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -12.564285278320312,
+          "gold_logprob": -6.4569315910339355,
+          "margin": 6.107353687286377
+        },
+        "zero_source": {
+          "distractor_logprob": -12.431978225708008,
+          "gold_logprob": -6.284502983093262,
+          "margin": 6.147475242614746
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "slots_only_prefix",
+      "best_control_margin": 4.133929252624512,
+      "distractor_answer": "6",
+      "example_id": "33836927fc9f1a8a",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "20",
+      "index": 26,
+      "labels": [],
+      "matched_margin": 3.4579153060913086,
+      "matched_minus_best_control_margin": -0.6760139465332031,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -13.614781379699707,
+          "gold_logprob": -9.619709968566895,
+          "margin": 3.9950714111328125
+        },
+        "matched": {
+          "distractor_logprob": -11.673675537109375,
+          "gold_logprob": -8.215760231018066,
+          "margin": 3.4579153060913086
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -11.625572204589844,
+          "gold_logprob": -8.111275672912598,
+          "margin": 3.514296531677246
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -11.601518630981445,
+          "gold_logprob": -8.09050464630127,
+          "margin": 3.511013984680176
+        },
+        "shuffled_source": {
+          "distractor_logprob": -12.316520690917969,
+          "gold_logprob": -8.689022064208984,
+          "margin": 3.6274986267089844
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -13.351261138916016,
+          "gold_logprob": -9.217331886291504,
+          "margin": 4.133929252624512
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -14.134004592895508,
+          "gold_logprob": -10.043682098388672,
+          "margin": 4.090322494506836
+        },
+        "zero_source": {
+          "distractor_logprob": -11.625556945800781,
+          "gold_logprob": -8.111262321472168,
+          "margin": 3.5142946243286133
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "same_norm_noise",
+      "best_control_margin": 0.6822290420532227,
+      "distractor_answer": "1",
+      "example_id": "e7dd2efb5ec99a06",
+      "fold": 1,
+      "generation": {},
+      "gold_answer": "31",
+      "index": 27,
+      "labels": [],
+      "matched_margin": 0.7441473007202148,
+      "matched_minus_best_control_margin": 0.06191825866699219,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -9.890432357788086,
+          "gold_logprob": -9.341553688049316,
+          "margin": 0.5488786697387695
+        },
+        "matched": {
+          "distractor_logprob": -10.250455856323242,
+          "gold_logprob": -9.506308555603027,
+          "margin": 0.7441473007202148
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -9.915265083312988,
+          "gold_logprob": -9.258774757385254,
+          "margin": 0.6564903259277344
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -10.00677490234375,
+          "gold_logprob": -9.324545860290527,
+          "margin": 0.6822290420532227
+        },
+        "shuffled_source": {
+          "distractor_logprob": -9.742507934570312,
+          "gold_logprob": -9.354033470153809,
+          "margin": 0.3884744644165039
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -10.131304740905762,
+          "gold_logprob": -10.358231544494629,
+          "margin": -0.2269268035888672
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -10.399170875549316,
+          "gold_logprob": -10.211593627929688,
+          "margin": 0.1875772476196289
+        },
+        "zero_source": {
+          "distractor_logprob": -9.915240287780762,
+          "gold_logprob": -9.258763313293457,
+          "margin": 0.6564769744873047
+        }
+      },
+      "status": "matched_only_positive"
+    },
+    {
+      "best_control": "slots_only_prefix",
+      "best_control_margin": 3.349461555480957,
+      "distractor_answer": "3",
+      "example_id": "41cce6c6e6bb0058",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "10",
+      "index": 28,
+      "labels": [],
+      "matched_margin": 2.9283199310302734,
+      "matched_minus_best_control_margin": -0.4211416244506836,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -12.453235626220703,
+          "gold_logprob": -9.378681182861328,
+          "margin": 3.074554443359375
+        },
+        "matched": {
+          "distractor_logprob": -12.047211647033691,
+          "gold_logprob": -9.118891716003418,
+          "margin": 2.9283199310302734
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -10.367583274841309,
+          "gold_logprob": -7.614329814910889,
+          "margin": 2.75325345993042
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -10.809709548950195,
+          "gold_logprob": -7.942659854888916,
+          "margin": 2.8670496940612793
+        },
+        "shuffled_source": {
+          "distractor_logprob": -11.648634910583496,
+          "gold_logprob": -8.545510292053223,
+          "margin": 3.1031246185302734
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -12.950014114379883,
+          "gold_logprob": -9.600552558898926,
+          "margin": 3.349461555480957
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -12.669609069824219,
+          "gold_logprob": -9.512027740478516,
+          "margin": 3.157581329345703
+        },
+        "zero_source": {
+          "distractor_logprob": -10.367574691772461,
+          "gold_logprob": -7.614320278167725,
+          "margin": 2.7532544136047363
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "shuffled_source",
+      "best_control_margin": -4.059072494506836,
+      "distractor_answer": "600",
+      "example_id": "6e9745b37ab6fc45",
+      "fold": 1,
+      "generation": {
+        "matched": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 7.252507790923119,
+          "normalized_prediction": "600",
+          "prediction": "After eating a hearty meal, Rachel went to the Buckingham Palace. The palace had 39 paintings. Rachel learned that 661 visitors came to the palace that day. If there were 600 visitors the previous day, how many more visitors visited the Buckingham palace on that day than on the previous day",
+          "ttft_sec": 0.31809949968010187
+        },
+        "shuffled_source": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 8.640404375270009,
+          "normalized_prediction": "1",
+          "prediction": "We are given:\n\n- The number of visitors on **previous day**: 600  \n- The number of visitors on **this day**: 661\n\nWe are asked to find how many **more visitors** visited the Buckingham palace on that day than on the previous day.\n\n### Step 1: Subtract",
+          "ttft_sec": 0.12362516717985272
+        },
+        "slots_only_prefix": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 8.20133054209873,
+          "normalized_prediction": "600",
+          "prediction": "We are given the following information:\n\n- There were **39 paintings** in the Buckingham palace.\n- **661 visitors** came to the Buckingham palace that day.\n- **600 visitors** came to the Buckingham palace **the previous day**.\n\nWe are asked: **How many more visitors visited the",
+          "ttft_sec": 0.10626045800745487
+        },
+        "target_only_prefix": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 7.61131487460807,
+          "normalized_prediction": "600",
+          "prediction": "We are given:\n\n- **Number of paintings in the Buckingham palace**: 39  \n- **Number of visitors on that day**: 661  \n- **Number of visitors the previous day**: 600  \n\nWe are asked: **How many more visitors visited the Buckingham palace on that day than on",
+          "ttft_sec": 0.10818545799702406
+        },
+        "zero_source": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 6.762077707797289,
+          "normalized_prediction": "1",
+          "prediction": "We are given:\n\n- The number of visitors on **previous day**: 600  \n- The number of visitors on **this day**: 661\n\nWe are asked to find how many **more visitors** visited the Buckingham palace on that day than on the previous day.\n\n### Step 1: Subtract",
+          "ttft_sec": 0.15681229066103697
+        }
+      },
+      "gold_answer": "61",
+      "index": 29,
+      "labels": [
+        "clean_source_communication_candidate"
+      ],
+      "matched_margin": -3.426079273223877,
+      "matched_minus_best_control_margin": 0.632993221282959,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -5.48016357421875,
+          "gold_logprob": -9.765153884887695,
+          "margin": -4.284990310668945
+        },
+        "matched": {
+          "distractor_logprob": -4.011817932128906,
+          "gold_logprob": -7.437897205352783,
+          "margin": -3.426079273223877
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -5.917827606201172,
+          "gold_logprob": -9.991990089416504,
+          "margin": -4.074162483215332
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -5.918083667755127,
+          "gold_logprob": -10.016932487487793,
+          "margin": -4.098848819732666
+        },
+        "shuffled_source": {
+          "distractor_logprob": -5.79318904876709,
+          "gold_logprob": -9.852261543273926,
+          "margin": -4.059072494506836
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -6.714276313781738,
+          "gold_logprob": -11.57805347442627,
+          "margin": -4.863777160644531
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -7.1024580001831055,
+          "gold_logprob": -12.110725402832031,
+          "margin": -5.008267402648926
+        },
+        "zero_source": {
+          "distractor_logprob": -5.917809963226318,
+          "gold_logprob": -9.991968154907227,
+          "margin": -4.074158191680908
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "same_norm_noise",
+      "best_control_margin": -1.7696270942687988,
+      "distractor_answer": "15",
+      "example_id": "c042f0a2949ff8e6",
+      "fold": 0,
+      "generation": {},
+      "gold_answer": "11",
+      "index": 30,
+      "labels": [
+        "target_self_repair"
+      ],
+      "matched_margin": -1.9613761901855469,
+      "matched_minus_best_control_margin": -0.19174909591674805,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -6.925388813018799,
+          "gold_logprob": -9.068434715270996,
+          "margin": -2.1430459022521973
+        },
+        "matched": {
+          "distractor_logprob": -6.088403701782227,
+          "gold_logprob": -8.049779891967773,
+          "margin": -1.9613761901855469
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -6.080954074859619,
+          "gold_logprob": -7.887251377105713,
+          "margin": -1.8062973022460938
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -6.264957904815674,
+          "gold_logprob": -8.034584999084473,
+          "margin": -1.7696270942687988
+        },
+        "shuffled_source": {
+          "distractor_logprob": -7.184576034545898,
+          "gold_logprob": -9.301637649536133,
+          "margin": -2.1170616149902344
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -6.938546657562256,
+          "gold_logprob": -9.021750450134277,
+          "margin": -2.0832037925720215
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -7.027271270751953,
+          "gold_logprob": -9.169411659240723,
+          "margin": -2.1421403884887695
+        },
+        "zero_source": {
+          "distractor_logprob": -6.080969333648682,
+          "gold_logprob": -7.887269496917725,
+          "margin": -1.806300163269043
+        }
+      },
+      "status": "control_or_negative"
+    },
+    {
+      "best_control": "label_shuffled",
+      "best_control_margin": -4.143793106079102,
+      "distractor_answer": "24",
+      "example_id": "575d7e83d84c1e67",
+      "fold": 1,
+      "generation": {
+        "matched": {
+          "correct": false,
+          "generated_tokens": 64,
+          "latency_sec": 7.581404416821897,
+          "normalized_prediction": "24",
+          "prediction": "Emily has 72 friends and each necklace requires 3 beads. Let's calculate how many necklaces she can make:\n\n$$\n\\frac{72 \\text{ beads}}{3 \\text{ beads per necklace}} = 24 \\text{ necklaces}\n$$\n\n**Answer: 24",
+          "ttft_sec": 0.09514216659590602
+        },
+        "shuffled_source": {
+          "correct": true,
+          "generated_tokens": 64,
+          "latency_sec": 6.829054125119001,
+          "normalized_prediction": "2",
+          "prediction": "Emily has 72 friends and each necklace requires 3 beads. To find out how many necklaces she can make, we divide the total number of friends by the number of beads per necklace:\n\n$$\n\\frac{72}{3} = 24\n$$\n\nSo, Emily can make **2",
+          "ttft_sec": 0.08433341700583696
+        },
+        "slots_only_prefix": {
+          "correct": true,
+          "generated_tokens": 61,
+          "latency_sec": 6.347830291837454,
+          "normalized_prediction": "2",
+          "prediction": "Emily has 6 beads and each necklace requires 3 beads. To find out how many necklaces she can make:\n\n$$\n\\frac{6 \\text{ beads}}{3 \\text{ beads per necklace}} = 2\n$$\n\nSo, Emily can make **2 necklaces**.",
+          "ttft_sec": 0.09960991702973843
+        },
+        "target_only_prefix": {
+          "correct": true,
+          "generated_tokens": 63,
+          "latency_sec": 6.900740541052073,
+          "normalized_prediction": "2",
+          "prediction": "Emily has 6 beads and each necklace takes 3 beads. To find how many necklaces can be made, we divide the total number of beads by the number of beads per necklace:\n\n$$\n\\frac{6}{3} = 2\n$$\n\n**Emily can make 2 necklaces.**",
+          "ttft_sec": 0.08923308318480849
+        },
+        "zero_source": {
+          "correct": true,
+          "generated_tokens": 64,
+          "latency_sec": 6.237676416989416,
+          "normalized_prediction": "2",
+          "prediction": "Emily has 72 friends and each necklace requires 3 beads. To find out how many necklaces she can make, we divide the total number of friends by the number of beads per necklace:\n\n$$\n\\frac{72}{3} = 24\n$$\n\nSo, Emily can make **2",
+          "ttft_sec": 0.12543404195457697
+        }
+      },
+      "gold_answer": "2",
+      "index": 31,
+      "labels": [
+        "clean_source_communication_candidate"
+      ],
+      "matched_margin": -4.256545066833496,
+      "matched_minus_best_control_margin": -0.11275196075439453,
+      "scores": {
+        "label_shuffled": {
+          "distractor_logprob": -9.107948303222656,
+          "gold_logprob": -13.251741409301758,
+          "margin": -4.143793106079102
+        },
+        "matched": {
+          "distractor_logprob": -9.903590202331543,
+          "gold_logprob": -14.160135269165039,
+          "margin": -4.256545066833496
+        },
+        "projected_soft_prompt": {
+          "distractor_logprob": -9.793481826782227,
+          "gold_logprob": -14.245234489440918,
+          "margin": -4.451752662658691
+        },
+        "same_norm_noise": {
+          "distractor_logprob": -9.774304389953613,
+          "gold_logprob": -14.213886260986328,
+          "margin": -4.439581871032715
+        },
+        "shuffled_source": {
+          "distractor_logprob": -10.578398704528809,
+          "gold_logprob": -15.321243286132812,
+          "margin": -4.742844581604004
+        },
+        "slots_only_prefix": {
+          "distractor_logprob": -10.830666542053223,
+          "gold_logprob": -15.899316787719727,
+          "margin": -5.068650245666504
+        },
+        "target_only_prefix": {
+          "distractor_logprob": -13.1749849319458,
+          "gold_logprob": -18.52462387084961,
+          "margin": -5.349638938903809
+        },
+        "zero_source": {
+          "distractor_logprob": -9.793465614318848,
+          "gold_logprob": -14.245211601257324,
+          "margin": -4.451745986938477
+        }
+      },
+      "status": "control_or_negative"
+    }
+  ],
+  "status": "source_cross_attention_logprob_fails_gate",
+  "summary": {
+    "clean_ids_scored": 6,
+    "control_leak_clean_count": 4,
+    "control_leak_clean_ids": [
+      "3e8a5691f5443495",
+      "1d50b408c8f5cd2c",
+      "de1bf4d142544e5b",
+      "47464cc0b064f172"
+    ],
+    "matched_only_clean_count": 0,
+    "matched_only_clean_ids": [],
+    "matched_positive_clean_count": 4,
+    "mean_best_control_margin_clean": 0.2564706007639567,
+    "mean_matched_margin_clean": 0.061687866846720375,
+    "mean_matched_minus_best_control_clean": -0.19478273391723633,
+    "target_self_ids_scored": 8,
+    "target_self_matched_positive_count": 5
+  }
+}

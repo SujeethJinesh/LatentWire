@@ -88,6 +88,19 @@ The source-control contrastive variant of that cross-attention gate also fails:
   prefix-emitting cross-attention architecture; do not tune this exact family
   further without a larger architectural change
 
+The target-side continuation-loss rescue of the same family also fails:
+
+- training objective changed from gold-vs-distractor margin to target
+  continuation next-token CE
+- heldout logprob on SVAMP32 clean C2C-headroom IDs: matched-only clean `0/6`,
+  clean control leaks `4/6`, mean matched-minus-control clean margin
+  `-0.194783`
+- 64-token generation on the six clean IDs: matched `1/6`, while zero-source,
+  shuffled-source, target-only prefix, and slots-only prefix each reach `2/6`
+- decision: kill the low-capacity prefix-emitter family on this surface; the
+  next learned-interface branch must expose a larger, rate-controlled source
+  memory or use a different source/surface pair
+
 The top-surface cross-attention rescue also fails:
 
 - after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`
@@ -494,6 +507,15 @@ next live method branch should be a true source-conditioned soft-prefix or
 gated cross-attention logprob objective with matched target-only-prefix,
 slots-only, projected-soft-prompt, zero-source, and shuffled-source controls
 before generation.
+
+Target-CE prefix-generation update: the proposed true continuation-loss rescue
+of that soft-prefix/cross-attention family has now been run and failed. On the
+SVAMP32 C2C-headroom surface it gives `0/6` matched-only clean IDs in logprob
+and matched generation is weaker than every decoded source-destroying or
+target-only control on the six clean IDs. Do not continue tiny prefix-emitter
+tuning. The next exact gate is a reusable `latent_bridge` query-innovation
+resampler audit for whether true LM CE and generation scoring can be attached
+to a larger source-memory interface without a high-risk translator refactor.
 
 Historical source-contrastive promotion rule:
 

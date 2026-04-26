@@ -747,5 +747,12 @@
     "path": "references/463_process_repair_source_control_followup_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for process-repair route controls, verifier-guided search baselines, target self-repair, self-consistency, debate/candidate-exchange, and leakage controls after old SVAMP70/GSM70 repair rows resurfaced as the highest-value candidate."
+  },
+  {
+    "num": 464,
+    "slug": "target_loss_resampler_branch_refs",
+    "path": "references/464_target_loss_resampler_branch_refs.md",
+    "status": "local_memo",
+    "reason": "Consolidated primary-source memo for the next target-side LM-loss resampler branch after tiny source-prefix emitters failed source controls and generation."
   }
 ]
