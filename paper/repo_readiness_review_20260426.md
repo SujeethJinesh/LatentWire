@@ -259,6 +259,15 @@ is `+0.0571` with bootstrap crossing zero; versus C2C it is `-0.0714`. This is
 the better systems branch because it removes text relay, but it needs
 replication because the length guard is brittle.
 
+Holdout replication update: the fixed length-ratio guard fails on a disjoint
+SVAMP70 slice (`chal-101` through `chal-170`). Baselines are source `8/70`,
+target `8/70`, text relay `18/70`, and C2C `37/70`. The parameterized
+`source_target_len_ratio <= 1.0` sidecar reaches only `10/70`, with clean
+source-necessary `0/2` and clean control union `2/2`. This weakens the fixed
+hand guard as a live method. Do not scale it directly to 500 examples; the next
+live branch must use a learned or cross-validated router, or first discover a
+source surface with more clean source-only IDs.
+
 Current source-contrastive promotion rule:
 
 - matched `>=9/32`

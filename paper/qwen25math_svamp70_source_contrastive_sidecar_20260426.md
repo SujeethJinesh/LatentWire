@@ -109,6 +109,32 @@ the text-relay preservation cost and improves the medium row from `25/70` to
 `26/70`, but still is not ICLR-ready because uncertainty versus text crosses
 zero and C2C remains stronger.
 
+## Holdout Replication
+
+Disjoint SVAMP holdout: `chal-101` through `chal-170`.
+
+Baselines:
+
+- source-alone: `8/70`
+- target-alone: `8/70`
+- text relay: `18/70`
+- C2C: `37/70`
+- clean source-only after excluding text relay: `2`
+
+Parameterized textless guard:
+
+- policy: `source_target_len_ratio <= 1.0`
+- matched: `10/70`
+- clean source-necessary: `0/2`
+- control clean union: `2/2`
+- paired delta vs target: `+0.0286`, bootstrap `[-0.0286, +0.0857]`
+- paired delta vs text: `-0.1143`, bootstrap `[-0.2286, +0.0000]`
+- paired delta vs C2C: `-0.3857`, bootstrap `[-0.5143, -0.2571]`
+
+Decision: weaken the fixed decoded-length guard. It should not be scaled
+directly; the next version needs a learned or cross-validated router, or a
+stronger source-complementary surface.
+
 ## Interpretation
 
 This is a real medium-scale source-derived signal: the matched rows beat target
@@ -118,7 +144,7 @@ do not recover clean IDs. It is not yet a paper headline because:
 - paired bootstrap intervals versus target/text cross zero;
 - it remains below C2C;
 - the best systems row uses a brittle decoded-output-length guard that needs
-  seed/surface replication;
+  seed/surface replication and failed the first disjoint holdout;
 - no seed/surface replication exists yet.
 
 ## Next Gate
@@ -169,6 +195,8 @@ Promotion to large frozen slice requires:
   - sha256: `a4a5be9476cf017712c906afdb04d1c1eabd5da3195a644d7da04ef0740dddef`
   - `results/qwen25math_qwen3_svamp70_source_surface_20260426/shorter_guard_paired_vs_c2c.md`
   - sha256: `124583b41ded0af0eda272bad4891442d379d5a6bff09ad700593adfc523505f`
+- disjoint holdout memo:
+  - `paper/qwen25math_svamp70_holdout_lenratio_guard_20260426.md`
 - C2C fallback composition:
   - `results/qwen25math_qwen3_svamp70_source_surface_20260426/source_sidecar_c2c_fallback_t2t_guard.json`
   - sha256: `17e4a88171e737f52d5b8a106de9f7156b83641fd41533e33b30543244a91e07`

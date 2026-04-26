@@ -395,6 +395,7 @@ def test_source_quality_len_ratio_threshold_is_parameterized(tmp_path):
         if line
     ]
     assert [record["example_id"] for record in records] == ["clean", "preserve"]
+    assert [record["index"] for record in records] == [0, 1]
     assert records[0]["method"] == "source_lenratio_sidecar"
     assert records[0]["correct"] is True
     assert records[0]["sidecar_moduli"] == [7]

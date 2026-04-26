@@ -613,6 +613,7 @@ def _write_prediction_jsonl(
             matched = row["conditions"]["matched"]
             prediction = matched["prediction"]
             record = {
+                "index": row["index"],
                 "example_id": row["example_id"],
                 "method": method,
                 "answer": row["gold_answer"],

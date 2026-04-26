@@ -5386,3 +5386,85 @@ Next exact gate:
   variant before widening to 500 examples
 - promotion requires paired CI clearly positive versus target/text or a stronger
   systems tradeoff at preserved accuracy
+
+## Cycle Checkpoint: 2026-04-26 SVAMP70 Holdout Length-Ratio Guard
+
+- cycle number: `2026-04-26-qwen25math-qwen3-svamp70-holdout-lenratio`
+- timestamp: `2026-04-26 04:42:00 PDT`
+- live branch entering cycle: textless source residue sidecar with decoded
+  source/target length-ratio preservation guard
+- scale-up rung: medium disjoint holdout falsification
+- ICLR readiness: not ready; the fixed hand guard failed to replicate
+
+Start-of-cycle status:
+
+- current paper story: source-sidecar communication can beat target/text on the
+  original SVAMP70 slice without text relay
+- exact blocker: determine whether the fixed `source_target_len_ratio <= 1.0`
+  guard generalizes to disjoint SVAMP IDs
+- highest-priority gate: SVAMP `chal-101` through `chal-170`, same
+  Qwen2.5-Math -> Qwen3 models, same source-destroying controls
+
+Baseline results:
+
+- source-alone: `8/70`, numeric coverage `64/70`
+- target-alone: `8/70`, numeric coverage `70/70`
+- text relay: `18/70`, numeric coverage `70/70`
+- C2C: `37/70`, numeric coverage `70/70`
+- source-only over target: `6`
+- clean source-only after text exclusion: `2`
+- target/source oracle: `14/70`
+
+Decision:
+
+- parameterized the guard as `--source-quality-score-field
+  source_target_len_ratio --source-quality-max-threshold 1.0`
+- added analyzer prediction JSONL export for paired comparisons
+- holdout sidecar result: `10/70`
+- clean source-necessary: `0/2`
+- control clean union: `2/2`
+- paired delta vs target: `+0.0286`, bootstrap `[-0.0286, +0.0857]`,
+  McNemar `0.6171`
+- paired delta vs text: `-0.1143`, bootstrap `[-0.2286, +0.0000]`,
+  McNemar `0.0801`
+- paired delta vs C2C: `-0.3857`, bootstrap `[-0.5143, -0.2571]`,
+  McNemar `0.0000`
+
+Hypothesis update:
+
+- weakened: fixed decoded length-ratio guard as a live paper method; the
+  disjoint holdout fails source-necessity controls
+- strengthened: C2C and text relay remain strong on this holdout, so the slice
+  has communication headroom even though source-alone is weak
+- still alive: broader source-sidecar family, but only with a learned or
+  cross-validated router and a stronger source-complementary surface
+- do not scale: fixed `source_target_len_ratio <= 1.0` guard to 500 examples
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_holdout_lenratio_guard_20260426.md`
+- generation manifest:
+  - `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/manifest.md`
+  - sha256: `2f3080cfa4cfdd2c9455585c30931671f39c4e908ddc419a003f735390394854`
+- source target set:
+  - `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json`
+  - sha256: `dd11d8f33b24757222d310342bbf12ce27c115cb091c2f44a8287c8d126721d3`
+- sidecar analysis:
+  - `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_lenratio_guard_sidecar.json`
+  - sha256: `cc5b5f2d64f3521b4ab11cd11ea96ac04c848d3c00b163f22823671bec1cfe81`
+- sidecar predictions:
+  - `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_lenratio_guard_predictions.jsonl`
+  - sha256: `0ddb79fdd203615c4978b5b7b9d47dbaf72166a65d44d6ddd51be5a5ad0ad267`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_only_sidecar_router_gate.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_only_sidecar_router_gate.py`
+
+Next exact gate:
+
+- implement or test a learned/cross-validated source router rather than a fixed
+  length threshold, evaluated on disjoint IDs with the same controls
+- alternatively run source-surface discovery for a Qwen2.5-Math -> Qwen3 slice
+  with enough clean source-only IDs to support a real sidecar gate
