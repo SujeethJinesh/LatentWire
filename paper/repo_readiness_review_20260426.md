@@ -181,6 +181,12 @@ of the sequence-aligned sidecar hypothesis; it is a surface failure. The next
 attempt must start from a target/text baseline with nonzero headroom before any
 source controls are worth running.
 
+Follow-up surface scout: Phi-3 has only weak headroom on GSM30 (`3/30` target,
+`1/30` text relay) and SVAMP30 (`5/30` target, `2/30` text relay). TinyLlama is
+dead on SVAMP30 (`0/30` target, `0/30` text relay). Do not spend large compute
+on cross-family GQA repairs for these exact surfaces unless a stronger baseline
+slice is found first.
+
 Promotion rule:
 
 - matched `>=14/32`

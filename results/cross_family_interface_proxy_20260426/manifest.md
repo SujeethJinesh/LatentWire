@@ -23,6 +23,12 @@
   - sha256: `efef504d4de37edce2580631b2be029318376d6c1b4dbfadc8d3a96c738da909`
 - `qwen25_to_opt350m_bytespan_gsm30_matched.jsonl`
   - sha256: `49659e18aa35a0d9deabb3208ccd6160fc62cf82cfdc928615a780eb9b6d663e`
+- `qwen25_phi3_gsm30_target_source_t2t.jsonl`
+  - sha256: `79ca67f7cb9259c46e132d3ff75e461bb066cfc3e6e4d7e29156d7dfc06fdfa4`
+- `qwen25_phi3_svamp30_target_source_t2t.jsonl`
+  - sha256: `5844c390496178e2312e52ee46b1a73a167e0ec195f542fdf548f61e39ccbb17`
+- `qwen25_tinyllama_svamp30_target_source_t2t.jsonl`
+  - sha256: `b7057406b5660d0dbaff95213575299bdaae50aacb6a18ffb2d8f092e215c7ef`
 
 ## Scratch Artifacts
 
@@ -39,6 +45,18 @@
   `.debug/qwen25_phi3_bytespan_interface_20260426/logs/evaluate_opt350m_matched_after_patch.log`
   - sha256:
     `a752bf7a46076dbe5c07921cbb2ddf2ccbbd18e6d2f9859fd5bc5632a6d49736`
+- Phi-3 GSM30 baseline log:
+  `.debug/cross_family_surface_baselines_20260426/logs/qwen25_phi3_gsm30_target_source_t2t.log`
+  - sha256:
+    `df26741eb0913382b89b48410d7f49a3fd5415e7f65f53edca3d3749ad4ccc0c`
+- Phi-3 SVAMP30 baseline log:
+  `.debug/cross_family_surface_baselines_20260426/logs/qwen25_phi3_svamp30_target_source_t2t.log`
+  - sha256:
+    `978e77827b1cb03b0738fc27d5a432893fa74ef550c63dac96f173e19203f533`
+- TinyLlama SVAMP30 baseline log:
+  `.debug/cross_family_surface_baselines_20260426/logs/qwen25_tinyllama_svamp30_target_source_t2t.log`
+  - sha256:
+    `b1f66b80c1574c162bdbd83a779ac3a28b8679d0ee0049c1e9a4a59a3884d14e`
 
 ## Decision
 
@@ -52,4 +70,15 @@ controls. Preferred targets are Phi-3 or TinyLlama after GQA/packed-QKV
 compatibility repairs if baseline target/text accuracy is nonzero; fallback is
 same-family Qwen2.5 -> Qwen3 with a real sidecar component and the full strict
 control matrix.
+
+Surface baseline update:
+
+| Surface | Target | Source | Text Relay | Decision |
+|---|---:|---:|---:|---|
+| Qwen2.5 -> Phi-3, GSM30 | 3/30 | 0/30 | 1/30 | weak headroom |
+| Qwen2.5 -> Phi-3, SVAMP30 | 5/30 | 1/30 | 2/30 | weak headroom |
+| Qwen2.5 -> TinyLlama, SVAMP30 | 0/30 | 1/30 | 0/30 | dead surface |
+
+Do not run a large GQA repair campaign on these exact surfaces unless a
+stronger target/text baseline is found first.
 

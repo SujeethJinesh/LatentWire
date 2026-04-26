@@ -160,6 +160,22 @@ more bytes than the text relay.
   enables a stronger target surface; otherwise move to same-family Qwen3 exact
   gate or source-surface discovery with C2C residual targets
 
+## Surface Baseline Scout
+
+After the OPT proxy failed, I ran target/source/text-only baselines before any
+more cross-family transport work.
+
+| Surface | Target | Source | Text Relay | Decision |
+|---|---:|---:|---:|---|
+| Qwen2.5 -> Phi-3, GSM30 | 3/30 | 0/30 | 1/30 | weak headroom |
+| Qwen2.5 -> Phi-3, SVAMP30 | 5/30 | 1/30 | 2/30 | weak headroom |
+| Qwen2.5 -> TinyLlama, SVAMP30 | 0/30 | 1/30 | 0/30 | dead surface |
+
+Decision update: do not spend large compute on cross-family GQA repairs until
+there is a stronger exact-ID surface. Phi-3 is the only non-dead cross-family
+target checked here, but its target/text headroom is too low for a decisive
+ICLR gate. TinyLlama and OPT should be pruned as decision surfaces.
+
 ## Next Exact Gate
 
 Run a strict small gate on a target surface with nonzero target/text headroom:
@@ -180,4 +196,3 @@ Promotion rule remains:
 - exact ordered ID parity
 - zero-source, shuffled-source, label-shuffle, target-only, and slots-only
   controls have clean union `0/6`
-

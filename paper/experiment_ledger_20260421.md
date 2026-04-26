@@ -4631,3 +4631,30 @@ Next exact gate:
 - fallback: same-family Qwen2.5 -> Qwen3 exact-ID SVAMP32/GSM32 with the
   strongest output-aware transport plus an explicit sidecar component and full
   source-destroying controls
+
+### Surface Baseline Follow-Up
+
+Ran target/source/text-only baselines before more cross-family transport work:
+
+- Qwen2.5 -> Phi-3 on GSM30:
+  - target-alone `3/30`
+  - source-alone `0/30`
+  - text-to-text `1/30`
+- Qwen2.5 -> Phi-3 on SVAMP30:
+  - target-alone `5/30`
+  - source-alone `1/30`
+  - text-to-text `2/30`
+- Qwen2.5 -> TinyLlama on SVAMP30:
+  - target-alone `0/30`
+  - source-alone `1/30`
+  - text-to-text `0/30`
+
+Decision update:
+
+- killed: TinyLlama as a decision surface
+- pruned: OPT and TinyLlama for current cross-family strict gates
+- weakened: Phi-3 as an immediate transport target; it has nonzero but low
+  headroom
+- next branch should fall back to same-family Qwen2.5 -> Qwen3 sidecar or a new
+  source-surface discovery pass unless a stronger cross-family target surface
+  is found
