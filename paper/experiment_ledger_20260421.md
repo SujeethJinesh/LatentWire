@@ -5719,3 +5719,68 @@ Next exact gate:
   exact-ID SVAMP surface
 - require source-destroying controls to collapse and at least `2` clean
   source-necessary recoveries on SVAMP32 or `4` on SVAMP70
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math-Instruct SVAMP32 Source Surface Scout
+
+- cycle number: `2026-04-26-qwen25math-instruct-qwen3-svamp32-scout`
+- timestamp: `2026-04-26 06:15:01 PDT`
+- live branch entering cycle: stronger source/source-interface discovery after
+  weak same-pair GSM70 and disjoint SVAMP surface scouts
+- scale-up rung: strict-small source-surface scout
+- ICLR readiness: not ready; no deployable positive source-derived method yet
+
+Start-of-cycle status:
+
+- current paper story: C2C exposes headroom on SVAMP32/SVAMP70, but source-only
+  signal is too sparse for deployable sidecars
+- exact blocker: determine whether a cached instruct Math source provides a
+  better clean source-only surface before spending C2C/sidecar compute
+- highest-priority gate: source/target/text only; promote to C2C only if
+  source-only over target `>=4/32` and clean source-only after text exclusion
+  `>=2/32`
+
+Results:
+
+- source-alone: `3/32`, numeric coverage `32/32`
+- target-alone: `8/32`, numeric coverage `32/32`
+- text relay: `4/32`, numeric coverage `32/32`
+- source-only over target: `2`
+- clean source-only after text exclusion: `2`
+- target/source oracle: `10/32`
+
+Decision:
+
+- reject `Qwen/Qwen2.5-Math-1.5B-Instruct -> Qwen/Qwen3-0.6B` as the next
+  SVAMP32 source-surface branch
+- do not spend C2C or sidecar compute on this pair/slice
+- weakened: adjacent stronger-source prompting/model variants as the immediate
+  path
+- keep live: materially different source-derived interfaces, especially
+  rate-capped sequence-aligned sparse/anchor sidecars inspired by the
+  quotient/GPA toy results
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_instruct_svamp32_surface_scout_20260426.md`
+- generation manifest:
+  - `results/surface_scout_qwen25math_instruct_qwen3_svamp32_20260426/manifest.json`
+  - sha256: `5a032574d92589f092ea6fc0270adfbfbaa3faa7a3cd90a59d4957eeeb1dc297`
+- source target set:
+  - `results/surface_scout_qwen25math_instruct_qwen3_svamp32_20260426/source_contrastive_target_set.json`
+  - sha256: `d2249cfff9c498c19f6374cb669a14bd7ea066640cc5a18aed01eeea21181312`
+
+Tests:
+
+- no code changes in this cycle
+- artifact validation was performed by
+  `scripts/materialize_generation_baselines.py` and
+  `scripts/build_source_contrastive_target_set.py`
+
+Next exact gate:
+
+- inspect existing quotient/GPA, sparse dictionary, rotalign, and
+  `latent_bridge` code paths for the smallest real-model sequence-aligned
+  sparse/anchor sidecar smoke
+- require explicit source-destroying controls and at least `2` clean
+  source-necessary recoveries on SVAMP32 before any scale-up

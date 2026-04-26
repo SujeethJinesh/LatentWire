@@ -141,6 +141,11 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
   versus `14/32` target-self repair, recovers `1/6` clean residual IDs, loses
   `2/3` target-self repair wins, and selects the target candidate on `32/32`
   examples.
+- The cached Qwen2.5-Math-Instruct source variant is also not a rescue surface:
+  on frozen SVAMP32 it reaches source `3/32`, target `8/32`, text relay
+  `4/32`, source-only over target `2`, and clean source-only after text
+  exclusion `2`. This fails the pre-C2C source-surface gate and should not be
+  scaled.
 
 ## Main Gaps
 
@@ -217,6 +222,15 @@ projections reach matched `13/32`, but zero-source, label-shuffle, and
 target-only controls reach `14/32`, and clean source-necessary recovery remains
 `0/6`. Do not scale C2C summary/projection features without a new token/layer
 local objective and anti-cache control.
+
+Latest source-surface update: `Qwen/Qwen2.5-Math-1.5B-Instruct ->
+Qwen/Qwen3-0.6B` is weaker than the non-instruct Math source on the frozen
+SVAMP32 exact-ID slice. It has only `2` source-only-over-target IDs and should
+not receive C2C/sidecar spend. The next gate should not be another adjacent
+prompt/source variant; it should be a materially different rate-capped source
+interface, such as the smallest real-model sequence-aligned sparse/anchor
+sidecar smoke inspired by the quotient/GPA toy results, with zero-source,
+shuffle, target-only, and slots-only controls from the start.
 
 Qwen-Math token/layer local follow-up: the new C2C tail-token local residual
 query-bottleneck gate also fails. It records per-projector key/value `source`,
