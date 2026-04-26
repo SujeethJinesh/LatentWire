@@ -2234,6 +2234,12 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_
             "zero_and_shuffle",
             "--innovation-contrastive-margin",
             "0.01",
+            "--innovation-anti-memory-control-weight",
+            "0.5",
+            "--innovation-anti-memory-control-mode",
+            "target_and_slots",
+            "--innovation-anti-memory-contrastive-margin",
+            "0.001",
             "--innovation-target-self-preserve-weight",
             "6",
             "--innovation-value-loss-weight",
@@ -2253,6 +2259,9 @@ def test_calibrate_parse_args_accepts_bridge_ridge_qk_dynalign_query_innovation_
     assert args.innovation_control_weight == 0.5
     assert args.innovation_control_mode == "zero_and_shuffle"
     assert args.innovation_contrastive_margin == 0.01
+    assert args.innovation_anti_memory_control_weight == 0.5
+    assert args.innovation_anti_memory_control_mode == "target_and_slots"
+    assert args.innovation_anti_memory_contrastive_margin == 0.001
     assert args.innovation_target_self_preserve_weight == 6
     assert args.innovation_value_loss_weight == 0.25
     assert args.innovation_connector_mode == "perceiver_queries"

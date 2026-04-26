@@ -5076,6 +5076,10 @@ def test_fit_from_pairs_query_innovation_forwards_source_controls(monkeypatch) -
         innovation_control_weight=0.5,
         innovation_control_mode="zero_and_shuffle",
         innovation_contrastive_margin=0.01,
+        innovation_anti_memory_control_weight=0.75,
+        innovation_anti_memory_control_mode="target_and_slots",
+        innovation_anti_memory_contrastive_margin=0.02,
+        innovation_conditional_target_memory=True,
     )
     tr.set_bridge_sample_query_features([torch.ones(4, tr.d_t, dtype=torch.float32)])
     tr.set_bridge_prediction_teacher(
@@ -5110,6 +5114,9 @@ def test_fit_from_pairs_query_innovation_forwards_source_controls(monkeypatch) -
         source_control_weight=0.0,
         source_control_mode="none",
         source_contrastive_margin=0.0,
+        anti_memory_control_weight=0.0,
+        anti_memory_control_mode="none",
+        anti_memory_contrastive_margin=0.0,
         **kwargs,
     ):
         del quantized_k, predicted_k, quantized_v, predicted_v, query_features
@@ -5118,6 +5125,9 @@ def test_fit_from_pairs_query_innovation_forwards_source_controls(monkeypatch) -
         captured["source_control_weight"] = source_control_weight
         captured["source_control_mode"] = source_control_mode
         captured["source_contrastive_margin"] = source_contrastive_margin
+        captured["anti_memory_control_weight"] = anti_memory_control_weight
+        captured["anti_memory_control_mode"] = anti_memory_control_mode
+        captured["anti_memory_contrastive_margin"] = anti_memory_contrastive_margin
         return (
             torch.zeros(self.config.bridge_bank_size, self.d_t, dtype=torch.float32),
             torch.zeros(self.d_t, rank, dtype=torch.float32),
@@ -5151,6 +5161,9 @@ def test_fit_from_pairs_query_innovation_forwards_source_controls(monkeypatch) -
     assert captured["source_control_weight"] == 0.5
     assert captured["source_control_mode"] == "zero_and_shuffle"
     assert captured["source_contrastive_margin"] == 0.01
+    assert captured["anti_memory_control_weight"] == 0.75
+    assert captured["anti_memory_control_mode"] == "target_and_slots"
+    assert captured["anti_memory_contrastive_margin"] == 0.02
 
 
 def test_query_innovation_shuffled_source_controls_require_prompt_ids(monkeypatch) -> None:
@@ -5189,6 +5202,66 @@ def test_innovation_source_controls_are_query_innovation_only() -> None:
             quantization_correction="bridge_ridge_qk_dynalign_query_resampler_replace",
             innovation_control_weight=0.5,
             innovation_control_mode="zero",
+        )
+
+
+def test_innovation_anti_memory_controls_are_query_innovation_only() -> None:
+    with pytest.raises(ValueError, match="only supported"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_dynalign_query_resampler_replace",
+            innovation_anti_memory_control_weight=0.5,
+            innovation_anti_memory_control_mode="slots_only",
+        )
+
+
+def test_innovation_anti_memory_target_controls_require_target_memory() -> None:
+    with pytest.raises(ValueError, match="require innovation_conditional_target_memory"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+            innovation_anti_memory_control_weight=0.5,
+            innovation_anti_memory_control_mode="target_only",
+        )
+
+
+def test_innovation_anti_memory_slot_controls_require_slots() -> None:
+    with pytest.raises(ValueError, match="require bridge_bank_size > 0"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+            bridge_bank_size=0,
+            innovation_anti_memory_control_weight=0.5,
+            innovation_anti_memory_control_mode="slots_only",
+        )
+
+
+def test_innovation_anti_memory_weight_requires_mode() -> None:
+    with pytest.raises(ValueError, match="requires innovation_anti_memory_control_mode"):
+        TranslatorConfig(
+            src_head_dim=2,
+            src_num_heads=2,
+            num_src_layers=1,
+            tgt_head_dim=2,
+            tgt_num_heads=2,
+            num_tgt_layers=1,
+            quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+            innovation_anti_memory_control_weight=0.5,
         )
 
 
@@ -5345,6 +5418,54 @@ def test_query_innovation_perceiver_connector_fit_and_runtime_are_finite(monkeyp
     assert torch.isfinite(out_k).all()
     assert torch.isfinite(out_v).all()
     assert "qr,...mr->...qm" in equations
+
+
+def test_query_innovation_anti_memory_control_fit_is_finite(monkeypatch) -> None:
+    tr = _make_identity_translator(
+        monkeypatch,
+        quantization_correction="bridge_ridge_qk_dynalign_query_innovation_resampler_replace",
+        quantization_correction_rank=1,
+        bridge_bank_size=2,
+        innovation_connector_mode="perceiver_queries",
+        innovation_conditional_target_memory=True,
+    )
+
+    base = torch.tensor(
+        [
+            [1.0, 0.0, 0.0, 1.0],
+            [0.5, 0.5, 1.0, 0.0],
+            [1.5, 0.0, 0.5, 0.5],
+        ],
+        dtype=torch.float32,
+    )
+    teacher_log_probs = torch.log_softmax(
+        torch.tensor([[1.0, 0.0], [0.5, 0.25], [0.0, 1.0]], dtype=torch.float32),
+        dim=-1,
+    )
+    teacher_rows = torch.stack([base, base + 0.25], dim=1)
+
+    fitted = tr._fit_bridge_query_module_replace(
+        base,
+        base + 0.1,
+        base + 0.2,
+        base + 0.3,
+        torch.ones_like(base),
+        base + 0.4,
+        base + 0.5,
+        rank=1,
+        steps=2,
+        prediction_distill_weight=0.25,
+        teacher_topk_log_probs=teacher_log_probs,
+        teacher_topk_output_rows=teacher_rows,
+        anti_memory_control_weight=0.5,
+        anti_memory_control_mode="target_and_slots",
+        anti_memory_contrastive_margin=0.001,
+        conditional_target_k=base + 0.4,
+        conditional_target_v=base + 0.5,
+    )
+
+    assert fitted[0].shape == (2, tr.d_t)
+    assert all(torch.isfinite(tensor).all().item() for tensor in fitted)
 
 
 @pytest.mark.parametrize(

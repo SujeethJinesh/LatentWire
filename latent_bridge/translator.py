@@ -295,6 +295,9 @@ class TranslatorConfig:
     innovation_control_mode: str = "none"
     innovation_contrastive_margin: float = 0.0
     innovation_value_loss_weight: float = 1.0
+    innovation_anti_memory_control_weight: float = 0.0
+    innovation_anti_memory_control_mode: str = "none"
+    innovation_anti_memory_contrastive_margin: float = 0.0
     innovation_conditional_target_memory: bool = False
     innovation_conditional_delta_memory: bool = False
     innovation_memory_control: str = "combined"
@@ -351,18 +354,61 @@ class TranslatorConfig:
             raise ValueError(
                 "innovation_control_weight > 0 requires innovation_control_mode != 'none'"
             )
+        valid_anti_memory_control_modes = {"none", "target_only", "slots_only", "target_and_slots"}
+        if self.innovation_anti_memory_control_mode not in valid_anti_memory_control_modes:
+            raise ValueError(
+                "innovation_anti_memory_control_mode must be one of "
+                f"{sorted(valid_anti_memory_control_modes)}, got "
+                f"{self.innovation_anti_memory_control_mode!r}"
+            )
+        self.innovation_anti_memory_control_weight = float(self.innovation_anti_memory_control_weight)
+        if self.innovation_anti_memory_control_weight < 0.0:
+            raise ValueError(
+                "innovation_anti_memory_control_weight must be non-negative, "
+                f"got {self.innovation_anti_memory_control_weight}"
+            )
+        self.innovation_anti_memory_contrastive_margin = float(
+            self.innovation_anti_memory_contrastive_margin
+        )
+        if self.innovation_anti_memory_contrastive_margin < 0.0:
+            raise ValueError(
+                "innovation_anti_memory_contrastive_margin must be non-negative, "
+                f"got {self.innovation_anti_memory_contrastive_margin}"
+            )
+        if self.innovation_anti_memory_control_weight == 0.0 and (
+            self.innovation_anti_memory_control_mode != "none"
+            or self.innovation_anti_memory_contrastive_margin > 0.0
+        ):
+            raise ValueError(
+                "innovation_anti_memory_control_mode and "
+                "innovation_anti_memory_contrastive_margin require "
+                "innovation_anti_memory_control_weight > 0"
+            )
+        if (
+            self.innovation_anti_memory_control_weight > 0.0
+            and self.innovation_anti_memory_control_mode == "none"
+        ):
+            raise ValueError(
+                "innovation_anti_memory_control_weight > 0 requires "
+                "innovation_anti_memory_control_mode != 'none'"
+            )
         innovation_controls_enabled = (
             self.innovation_control_weight > 0.0
             or self.innovation_control_mode != "none"
             or self.innovation_contrastive_margin > 0.0
         )
+        anti_memory_controls_enabled = (
+            self.innovation_anti_memory_control_weight > 0.0
+            or self.innovation_anti_memory_control_mode != "none"
+            or self.innovation_anti_memory_contrastive_margin > 0.0
+        )
         if (
-            innovation_controls_enabled
+            (innovation_controls_enabled or anti_memory_controls_enabled)
             and self.quantization_correction
             != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
         ):
             raise ValueError(
-                "innovation source controls are only supported for "
+                "innovation source and anti-memory controls are only supported for "
                 "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
             )
         if (
@@ -405,6 +451,15 @@ class TranslatorConfig:
             raise ValueError("innovation_memory_control='delta_only' requires innovation_conditional_delta_memory")
         if self.innovation_memory_control == "target_only" and not self.innovation_conditional_target_memory:
             raise ValueError("innovation_memory_control='target_only' requires innovation_conditional_target_memory")
+        if self.innovation_anti_memory_control_mode in {"target_only", "target_and_slots"} and not self.innovation_conditional_target_memory:
+            raise ValueError(
+                "innovation_anti_memory_control_mode target controls require "
+                "innovation_conditional_target_memory"
+            )
+        if self.innovation_anti_memory_control_mode in {"slots_only", "target_and_slots"} and self.bridge_bank_size <= 0:
+            raise ValueError(
+                "innovation_anti_memory_control_mode slot controls require bridge_bank_size > 0"
+            )
         valid_innovation_connector_modes = {"single_query", "perceiver_queries"}
         if self.innovation_connector_mode not in valid_innovation_connector_modes:
             raise ValueError(
@@ -2976,6 +3031,9 @@ class RotAlignKVTranslator(nn.Module):
         source_control_mode: str = "none",
         source_contrastive_margin: float = 0.0,
         value_loss_weight: float = 1.0,
+        anti_memory_control_weight: float = 0.0,
+        anti_memory_control_mode: str = "none",
+        anti_memory_contrastive_margin: float = 0.0,
         conditional_target_k: torch.Tensor | None = None,
         conditional_target_v: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, ...]:
@@ -3058,6 +3116,28 @@ class RotAlignKVTranslator(nn.Module):
             raise ValueError("source_control_weight must be non-negative")
         if float(source_contrastive_margin) < 0.0:
             raise ValueError("source_contrastive_margin must be non-negative")
+        anti_memory_control_mode = str(anti_memory_control_mode)
+        valid_anti_memory_control_modes = {"none", "target_only", "slots_only", "target_and_slots"}
+        if anti_memory_control_mode not in valid_anti_memory_control_modes:
+            raise ValueError(
+                "anti_memory_control_mode must be one of "
+                f"{sorted(valid_anti_memory_control_modes)}, got {anti_memory_control_mode!r}"
+            )
+        if float(anti_memory_control_weight) < 0.0:
+            raise ValueError("anti_memory_control_weight must be non-negative")
+        if float(anti_memory_contrastive_margin) < 0.0:
+            raise ValueError("anti_memory_contrastive_margin must be non-negative")
+        if float(anti_memory_control_weight) == 0.0 and (
+            anti_memory_control_mode != "none" or float(anti_memory_contrastive_margin) > 0.0
+        ):
+            raise ValueError(
+                "anti_memory_control_mode and anti_memory_contrastive_margin require "
+                "anti_memory_control_weight > 0"
+            )
+        if float(anti_memory_control_weight) > 0.0 and anti_memory_control_mode == "none":
+            raise ValueError(
+                "anti_memory_control_weight > 0 requires anti_memory_control_mode != 'none'"
+            )
         value_loss_weight_f = float(value_loss_weight)
         if not math.isfinite(value_loss_weight_f) or value_loss_weight_f < 0.0:
             raise ValueError("value_loss_weight must be finite and non-negative")
@@ -3075,6 +3155,12 @@ class RotAlignKVTranslator(nn.Module):
                     "conditional target tensors must align with calibration samples, "
                     f"got K {tuple(cond_k.shape)}, V {tuple(cond_v.shape)}, expected {tuple(qk.shape)}"
                 )
+        if anti_memory_control_mode in {"target_only", "target_and_slots"} and (
+            cond_k is None or cond_v is None
+        ):
+            raise ValueError("target anti-memory controls require conditional target tensors")
+        if anti_memory_control_mode in {"slots_only", "target_and_slots"} and num_slots <= 0:
+            raise ValueError("slot anti-memory controls require bridge_bank_size > 0")
         shuffle_idx = None
         needs_prompt_ids = (
             float(interaction_distill_weight) > 0.0
@@ -3118,22 +3204,37 @@ class RotAlignKVTranslator(nn.Module):
             mem_pk: torch.Tensor,
             mem_qv: torch.Tensor,
             mem_pv: torch.Tensor,
+            *,
+            memory_control_override: str = "combined",
         ) -> tuple[torch.Tensor, torch.Tensor]:
-            memory_rows = [mem_qk, mem_pk, mem_qv, mem_pv]
+            control_mode = str(memory_control_override)
+            if control_mode not in {"combined", "target_only", "slots_only"}:
+                raise ValueError(f"Unknown module memory control override: {control_mode}")
+            source_rows = [mem_qk, mem_pk, mem_qv, mem_pv]
+            target_rows: list[torch.Tensor] = []
+            delta_rows: list[torch.Tensor] = []
             if cond_k is not None and cond_v is not None:
-                memory_rows.extend(
-                    [
-                        cond_k.to(device=mem_qk.device, dtype=mem_qk.dtype),
-                        cond_v.to(device=mem_qk.device, dtype=mem_qk.dtype),
-                    ]
-                )
+                cond_k_live = cond_k.to(device=mem_qk.device, dtype=mem_qk.dtype)
+                cond_v_live = cond_v.to(device=mem_qk.device, dtype=mem_qk.dtype)
+                target_rows = [cond_k_live, cond_v_live]
                 if self.config.innovation_conditional_delta_memory:
-                    cond_k_live = cond_k.to(device=mem_qk.device, dtype=mem_qk.dtype)
-                    cond_v_live = cond_v.to(device=mem_qk.device, dtype=mem_qk.dtype)
-                    memory_rows.extend([mem_pk - cond_k_live, mem_pv - cond_v_live])
-            live_memory = torch.stack(memory_rows, dim=1)
+                    delta_rows = [mem_pk - cond_k_live, mem_pv - cond_v_live]
+            if control_mode == "combined":
+                memory_rows = source_rows + target_rows + delta_rows
+            elif control_mode == "target_only":
+                memory_rows = target_rows
+            else:
+                memory_rows = []
             q_hidden = query @ q_proj
             if use_perceiver_queries:
+                if memory_rows:
+                    live_memory = torch.stack(memory_rows, dim=1)
+                else:
+                    live_memory = torch.zeros(
+                        (mem_qk.shape[0], 1, mem_qk.shape[-1]),
+                        dtype=mem_qk.dtype,
+                        device=mem_qk.device,
+                    )
                 key_hidden = torch.einsum("nmd,dr->nmr", live_memory, k_proj)
                 value_hidden = torch.einsum("nmd,dr->nmr", live_memory, v_proj)
                 connector_queries = slot_tokens @ q_proj
@@ -3156,8 +3257,15 @@ class RotAlignKVTranslator(nn.Module):
                 readout_attn = torch.softmax(readout_logits, dim=-1)
                 context = torch.einsum("nq,nqr->nr", readout_attn, connector_context)
             else:
-                slot_memory = slot_tokens.unsqueeze(0).expand(live_memory.shape[0], -1, -1)
-                memory = torch.cat([live_memory, slot_memory], dim=1)
+                slot_memory = slot_tokens.unsqueeze(0).expand(mem_qk.shape[0], -1, -1)
+                memory_blocks = []
+                if memory_rows:
+                    memory_blocks.append(torch.stack(memory_rows, dim=1))
+                if control_mode in {"combined", "target_only", "slots_only"}:
+                    memory_blocks.append(slot_memory)
+                if not memory_blocks:
+                    raise ValueError("slots_only memory control requires bridge_bank_size > 0")
+                memory = torch.cat(memory_blocks, dim=1)
                 key_hidden = torch.einsum("nmd,dr->nmr", memory, k_proj)
                 value_hidden = torch.einsum("nmd,dr->nmr", memory, v_proj)
                 attn_logits = torch.einsum("nr,nmr->nm", q_hidden, key_hidden) / math.sqrt(float(rank))
@@ -3231,6 +3339,41 @@ class RotAlignKVTranslator(nn.Module):
                         loss = loss + float(source_control_weight) * torch.stack(control_losses).mean()
                     if margin_losses:
                         loss = loss + float(source_control_weight) * torch.stack(margin_losses).mean()
+                anti_memory_outputs: list[tuple[str, torch.Tensor, torch.Tensor]] = []
+                if float(anti_memory_control_weight) > 0.0 and anti_memory_control_mode != "none":
+                    if anti_memory_control_mode in {"target_only", "target_and_slots"}:
+                        anti_memory_outputs.append(
+                            (
+                                "target_only",
+                                *module_forward(
+                                    qk,
+                                    pk,
+                                    qv,
+                                    pv,
+                                    memory_control_override="target_only",
+                                ),
+                            )
+                        )
+                    if anti_memory_control_mode in {"slots_only", "target_and_slots"}:
+                        anti_memory_outputs.append(
+                            (
+                                "slots_only",
+                                *module_forward(
+                                    qk,
+                                    pk,
+                                    qv,
+                                    pv,
+                                    memory_control_override="slots_only",
+                                ),
+                            )
+                        )
+                    if anti_memory_outputs:
+                        zero_losses = [
+                            weighted_mean(ctrl_k.pow(2))
+                            + value_loss_weight_f * weighted_mean(ctrl_v.pow(2))
+                            for _, ctrl_k, ctrl_v in anti_memory_outputs
+                        ]
+                        loss = loss + float(anti_memory_control_weight) * torch.stack(zero_losses).mean()
                 logit_pred_k = (pred_k * query).sum(dim=-1)
                 logit_tgt_k = (yk * query).sum(dim=-1)
                 logit_pred_v = (pred_v * query).sum(dim=-1)
@@ -3264,6 +3407,37 @@ class RotAlignKVTranslator(nn.Module):
                         teacher_probs * (teacher_logits - student_log_probs),
                         dim=-1,
                     )
+                    if anti_memory_outputs:
+                        anti_margin_losses: list[torch.Tensor] = []
+                        for _, ctrl_k, ctrl_v in anti_memory_outputs:
+                            control_hidden = (
+                                (ctrl_k * query) + value_loss_weight_f * (ctrl_v * query)
+                            ) / hidden_denom
+                            control_logits = torch.einsum(
+                                "nd,nkd->nk",
+                                control_hidden,
+                                teacher_rows,
+                            ) / math.sqrt(float(self.d_t))
+                            control_log_probs = torch.log_softmax(control_logits, dim=-1)
+                            control_kl = torch.sum(
+                                teacher_probs * (teacher_logits - control_log_probs),
+                                dim=-1,
+                            )
+                            anti_margin_losses.append(
+                                weighted_mean(
+                                    F.relu(
+                                        float(anti_memory_contrastive_margin)
+                                        + per_sample_kl
+                                        - control_kl
+                                    )
+                                )
+                            )
+                        if anti_margin_losses:
+                            loss = (
+                                loss
+                                + float(anti_memory_control_weight)
+                                * torch.stack(anti_margin_losses).mean()
+                            )
                     if float(prediction_distill_weight) > 0.0:
                         if sample_w is None:
                             loss = loss + float(prediction_distill_weight) * per_sample_kl.mean()
@@ -6046,6 +6220,9 @@ class RotAlignKVTranslator(nn.Module):
                                 source_control_mode=self.config.innovation_control_mode if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else "none",
                                 source_contrastive_margin=self.config.innovation_contrastive_margin if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 0.0,
                                 value_loss_weight=self.config.innovation_value_loss_weight if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 1.0,
+                                anti_memory_control_weight=self.config.innovation_anti_memory_control_weight if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 0.0,
+                                anti_memory_control_mode=self.config.innovation_anti_memory_control_mode if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else "none",
+                                anti_memory_contrastive_margin=self.config.innovation_anti_memory_contrastive_margin if self.config.quantization_correction == "bridge_ridge_qk_dynalign_query_innovation_resampler_replace" else 0.0,
                                 conditional_target_k=conditional_target_k_fit,
                                 conditional_target_v=conditional_target_v_fit,
                             )

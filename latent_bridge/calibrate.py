@@ -467,6 +467,28 @@ def parse_args() -> argparse.Namespace:
         help="Optional margin separating matched-source innovation norm from control-source norm.",
     )
     p.add_argument(
+        "--innovation-anti-memory-control-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Default-off target/slot memory-control loss weight for query-innovation "
+            "training. Controls are trained toward zero innovation and, when teacher "
+            "rows are available, worse teacher fit than matched source."
+        ),
+    )
+    p.add_argument(
+        "--innovation-anti-memory-control-mode",
+        choices=["none", "target_only", "slots_only", "target_and_slots"],
+        default="none",
+        help="Target-prior/slot control type for query-innovation resampler training.",
+    )
+    p.add_argument(
+        "--innovation-anti-memory-contrastive-margin",
+        type=float,
+        default=0.0,
+        help="Optional teacher-KL margin separating matched source from target/slot controls.",
+    )
+    p.add_argument(
         "--source-reasoning-mode",
         choices=["plain", "brief_analysis", "cot", "scratchpad"],
         default="plain",
@@ -3208,6 +3230,11 @@ def main() -> None:
         or args.innovation_control_mode != "none"
         or args.innovation_contrastive_margin > 0.0
     )
+    anti_memory_controls_enabled = (
+        args.innovation_anti_memory_control_weight > 0.0
+        or args.innovation_anti_memory_control_mode != "none"
+        or args.innovation_anti_memory_contrastive_margin > 0.0
+    )
     if args.innovation_control_weight == 0.0 and (
         args.innovation_control_mode != "none"
         or args.innovation_contrastive_margin > 0.0
@@ -3220,13 +3247,30 @@ def main() -> None:
         raise ValueError(
             "--innovation-control-weight > 0 requires --innovation-control-mode != none"
         )
+    if args.innovation_anti_memory_control_weight == 0.0 and (
+        args.innovation_anti_memory_control_mode != "none"
+        or args.innovation_anti_memory_contrastive_margin > 0.0
+    ):
+        raise ValueError(
+            "--innovation-anti-memory-control-mode and "
+            "--innovation-anti-memory-contrastive-margin require "
+            "--innovation-anti-memory-control-weight > 0"
+        )
     if (
-        innovation_controls_enabled
+        args.innovation_anti_memory_control_weight > 0.0
+        and args.innovation_anti_memory_control_mode == "none"
+    ):
+        raise ValueError(
+            "--innovation-anti-memory-control-weight > 0 requires "
+            "--innovation-anti-memory-control-mode != none"
+        )
+    if (
+        (innovation_controls_enabled or anti_memory_controls_enabled)
         and args.quantization_correction
         != "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
     ):
         raise ValueError(
-            "innovation source-control flags require "
+            "innovation source-control and anti-memory-control flags require "
             "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
         )
     if args.innovation_target_self_preserve_weight < 0.0:
@@ -3283,6 +3327,21 @@ def main() -> None:
             "--innovation-conditional-target-memory and "
             "--innovation-conditional-delta-memory require "
             "bridge_ridge_qk_dynalign_query_innovation_resampler_replace"
+        )
+    if (
+        args.innovation_anti_memory_control_mode in {"target_only", "target_and_slots"}
+        and not (args.innovation_conditional_target_memory or args.innovation_conditional_delta_memory)
+    ):
+        raise ValueError(
+            "--innovation-anti-memory-control-mode target controls require "
+            "--innovation-conditional-target-memory or --innovation-conditional-delta-memory"
+        )
+    if (
+        args.innovation_anti_memory_control_mode in {"slots_only", "target_and_slots"}
+        and args.bridge_bank_size <= 0
+    ):
+        raise ValueError(
+            "--innovation-anti-memory-control-mode slot controls require --bridge-bank-size > 0"
         )
 
     prompt_records = load_prompt_answer_records(args.calibration_file)
@@ -3573,6 +3632,9 @@ def main() -> None:
         innovation_control_mode=args.innovation_control_mode,
         innovation_contrastive_margin=args.innovation_contrastive_margin,
         innovation_value_loss_weight=args.innovation_value_loss_weight,
+        innovation_anti_memory_control_weight=args.innovation_anti_memory_control_weight,
+        innovation_anti_memory_control_mode=args.innovation_anti_memory_control_mode,
+        innovation_anti_memory_contrastive_margin=args.innovation_anti_memory_contrastive_margin,
         innovation_conditional_target_memory=(
             args.innovation_conditional_target_memory
             or args.innovation_conditional_delta_memory
