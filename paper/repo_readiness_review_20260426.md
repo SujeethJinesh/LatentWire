@@ -37,6 +37,15 @@ The first Perceiver answer-teacher contrastive connector is also negative:
   target-only, or slots-only controls
 - decision: do not run generation for this checkpoint
 
+The same branch also fails on the stronger SVAMP70 C2C-vs-process-repair
+surface:
+
+- clean C2C source-only IDs after excluding process-repair: `10`
+- teacher-forced gate `0.15`: matched-positive clean `4/10`
+- matched-only clean: `0/10`
+- control-leak clean: `4/10`
+- decision: kill this connector family until the objective changes
+
 The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 - GSM8K32 smoke: `4/32` vs target `2/32`
@@ -83,6 +92,8 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 - Perceiver-query answer-teacher plus source-control contrast fails the
   teacher-forced pre-generation gate; target/control memory still explains the
   apparent clean-ID signal.
+- Scaling the same Perceiver answer-teacher connector to SVAMP70 also fails
+  the teacher-forced pre-generation gate.
 - Source final-answer copying and stronger-source source-margin escalation are
   killed for the current frozen SVAMP32 clean IDs.
 
@@ -109,12 +120,12 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 ## Highest-Priority Next Gate
 
-Move the live method search to a surface with stronger measured clean
-source-only headroom before another connector variant. The materialized SVAMP70
-C2C-vs-process-repair target set has `10` clean C2C source-only IDs after
-excluding the process-repair baseline, strict ID parity, and full numeric
-coverage. A future C2C-derived attempt still needs a crisper token/layer-level
-residual-coding hypothesis before more compute.
+Change the objective before another connector run. The next branch must
+explicitly penalize target-only/slots-only recovery before answer-teacher
+supervision, train against token/layer-level C2C residual behavior with
+matched-vs-control separation, or remove target-only memory from source-signal
+formation entirely. A future C2C-derived attempt still needs a crisper
+token/layer-level residual-coding hypothesis before more compute.
 
 Promotion rule:
 

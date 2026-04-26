@@ -14,6 +14,8 @@
 - `svamp32_perceiver_answer_teacher_contrastive_20260426.md` records the
   negative teacher-forced pre-gate for the Perceiver answer-teacher plus
   source-control contrastive connector.
+- `svamp70_perceiver_answer_teacher_contrastive_20260426.md` records the
+  negative SVAMP70 headroom-surface pre-gate for the same connector family.
 - `matched_competitor_matrix_20260421.md` is the explicit GSM70 comparison
   matrix with missing competitor rows preserved.
 - `gsm8k_contract_artifact_manifest_20260422.md` is the tracked provenance

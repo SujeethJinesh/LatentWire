@@ -3978,3 +3978,85 @@ Next exact gate:
   IDs, or add a stricter target-only/slots-only penalty on SVAMP32 before any
   answer-teacher blend
 - require teacher-forced matched-only clean recovery before generation
+
+## 2026-04-26 - SVAMP70 Perceiver answer-teacher contrastive pre-gate
+
+Cycle:
+
+- cycle number: `2026-04-26-svamp70-perceiver-answer-teacher-1`
+- live branch entering cycle: same Perceiver/query answer-teacher connector on
+  the stronger SVAMP70 C2C-vs-process-repair source-headroom surface
+- scale-up rung: medium/headroom surface teacher-forced pre-gate
+- ICLR readiness: not ready; still blocked on source-necessary positive method
+
+Gate:
+
+- use the materialized SVAMP70 C2C-vs-process-repair target set with `10`
+  clean C2C source-only IDs after excluding the process-repair baseline
+- train the same Perceiver/query answer-teacher source-control connector on
+  `data/svamp_eval_70.jsonl`
+- run a clean-only teacher-forced diagnostic at fixed gate `0.15`
+- require matched-only positive margins on clean IDs before generation
+
+Decision:
+
+- checkpoint trained successfully
+- clean-only teacher-forced gate failed
+- generation and preservation-row scoring were not run
+- killed the current Perceiver answer-teacher plus contrastive delta-memory
+  branch until the objective changes
+
+Artifacts:
+
+- memo:
+  - `paper/svamp70_perceiver_answer_teacher_contrastive_20260426.md`
+- results manifest:
+  - `results/svamp70_perceiver_answer_teacher_contrastive_20260426/manifest.md`
+- target set:
+  - `results/source_contrastive_target_sets_20260426/svamp70_c2c_vs_process_repair_target_set.json`
+  - sha256: `e2f3a4da9848519f009260cb681f378dc2767d1f3ba0bc67ce3bff94747287c5`
+- checkpoint:
+  - `.debug/svamp70_perceiver_answer_teacher_contrastive_20260426/checkpoints/qwen25_to_qwen3_svamp70_perceiver_answer_teacher_w080_ctrl050_r16_b16_seed1.pt`
+  - sha256: `a7221d6d0ee81b99573bf1893b66570ec682f22faee1ffcc6bf7e9fc1f36df6a`
+  - not tracked, size `1.8G`
+- calibration log:
+  - `.debug/svamp70_perceiver_answer_teacher_contrastive_20260426/logs/calibrate_w080_ctrl050_seed1.log`
+  - sha256: `5701b20b25d2dffa1bacbfd5ff65e9b6cbbbd8f8bb591754636c3ab6bffba73f`
+- teacher-forced clean-only gate:
+  - `results/svamp70_perceiver_answer_teacher_contrastive_20260426/teacher_forced_gate015_clean_only.json`
+  - sha256: `d57eae6555fbce396e077d63eebcb99b75cfd7bd50bf69363dec488e92b99960`
+
+Evidence:
+
+- calibration:
+  - prompts: `70`
+  - dynamic mixture samples: `2948`
+  - answer-teacher injected prompts: `10`
+  - answer-teacher injected samples: `446`
+  - average K alignment cosine: `0.949`
+  - average V alignment cosine: `0.718`
+- teacher-forced gate `0.15`:
+  - status: `no_teacher_forced_source_signal`
+  - clean IDs scored: `10`
+  - matched-positive clean IDs: `4/10`
+  - matched-only clean IDs: `0/10`
+  - control-leak clean IDs: `4/10`
+  - mean matched-control delta: `-0.7158`
+
+Hypothesis update:
+
+- killed for now: Perceiver answer-teacher plus contrastive delta-memory as the
+  main method family
+- weakened: simply moving to a headroom-richer surface fixes target/control
+  leakage
+- promoted next: objective-level change that penalizes target-only/slots-only
+  recovery before answer-teacher supervision, token/layer-level C2C residual
+  behavior with matched-vs-control separation, or a source-only sidecar/router
+  whose source-signal formation cannot access target-only memory
+
+Next exact gate:
+
+- implement one objective-level change and run teacher-forced matched-only clean
+  recovery before any generation
+- do not run larger generations, seeds, cross-family, or long-context expansion
+  for this connector family as currently formulated
