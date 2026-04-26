@@ -93,6 +93,32 @@ def test_c2c_trace_residual_projection_schema_is_deterministic() -> None:
     assert names[-1] == "projector_00.value_residual.tail_delta_projection_003"
 
 
+def test_c2c_local_tail_tokens_are_query_probe_compatible() -> None:
+    source = torch.zeros(1, 2, 3, 4)
+    target = torch.ones(1, 2, 3, 4)
+    output = torch.arange(24, dtype=torch.float32).view(1, 2, 3, 4)
+    projector = _Projector()
+    projector.last_latentwire_local_tokens = {
+        "key": c2c_eval._tail_local_tokens(source=source, target=target, output=output),
+        "value": c2c_eval._tail_local_tokens(source=source + 1, target=target, output=output),
+    }
+    model = _Model()
+    model.projector_list = [projector]
+
+    features, metadata = c2c_eval.summarize_c2c_projector_local_tokens(model)
+    tokens = source_probe._feature_summary_tokens(
+        features.unsqueeze(0),
+        [{"feature_token_shape": metadata["feature_token_shape"]}],
+    )
+
+    assert metadata["feature_family"] == "c2c_prefill_token_layer_tail_residual"
+    assert metadata["feature_token_shape"] == [8, 8]
+    assert features.shape == (64,)
+    assert tokens.shape == (1, 8, 8)
+    assert metadata["token_names"][0] == "projector_00.key.source.tail"
+    assert metadata["token_names"][-1] == "projector_00.value.delta.tail"
+
+
 def test_c2c_mechanism_probe_relabels_status(tmp_path: pathlib.Path) -> None:
     target_path = tmp_path / "target.jsonl"
     teacher_path = tmp_path / "teacher.jsonl"

@@ -208,6 +208,28 @@ def _trace_tensor_stats(
     return stats
 
 
+def _tail_local_tokens(
+    *,
+    source: torch.Tensor,
+    target: torch.Tensor,
+    output: torch.Tensor,
+) -> dict[str, torch.Tensor]:
+    source_f = source.detach().float()
+    target_f = target.detach().float()
+    output_f = output.detach().float()
+    delta_f = output_f - target_f
+    tensors = {
+        "source": source_f,
+        "target": target_f,
+        "output": output_f,
+        "delta": delta_f,
+    }
+    return {
+        name: tensor[:, :, -1, :].reshape(-1).detach().cpu()
+        for name, tensor in tensors.items()
+    }
+
+
 def install_c2c_projector_trace_hooks(model, *, residual_projection_dim: int = 0) -> None:
     for projector_idx, projector in enumerate(getattr(model, "projector_list", [])):
         if (
@@ -246,8 +268,21 @@ def install_c2c_projector_trace_hooks(model, *, residual_projection_dim: int = 0
                         projection_salt=int(_projector_idx) * 2 + 1,
                     ),
                 }
+                _projector.last_latentwire_local_tokens = {
+                    "key": _tail_local_tokens(
+                        source=source_key,
+                        target=target_key,
+                        output=output_key,
+                    ),
+                    "value": _tail_local_tokens(
+                        source=source_value,
+                        target=target_value,
+                        output=output_value,
+                    ),
+                }
             except Exception:
                 _projector.last_latentwire_trace = {}
+                _projector.last_latentwire_local_tokens = {}
             return output_key, output_value
 
         projector._latentwire_original_forward = original_forward
@@ -334,6 +369,44 @@ def summarize_c2c_projector_trace(
     return torch.tensor(features, dtype=torch.float32), metadata
 
 
+def summarize_c2c_projector_local_tokens(model) -> tuple[torch.Tensor, dict[str, Any]]:
+    raw_tokens: list[torch.Tensor] = []
+    token_names: list[str] = []
+    raw_hidden_dims: list[int] = []
+    for idx, projector in enumerate(getattr(model, "projector_list", [])):
+        local_trace = getattr(projector, "last_latentwire_local_tokens", {}) or {}
+        for stream_name in ("key", "value"):
+            stream_tokens = local_trace.get(stream_name, {}) or {}
+            for tensor_name in ("source", "target", "output", "delta"):
+                token = stream_tokens.get(tensor_name)
+                if token is None:
+                    continue
+                token = token.detach().float().reshape(-1).cpu()
+                raw_tokens.append(token)
+                raw_hidden_dims.append(int(token.numel()))
+                token_names.append(f"projector_{idx:02d}.{stream_name}.{tensor_name}.tail")
+    if not raw_tokens:
+        raise ValueError("No C2C local token traces were recorded")
+    hidden_dim = max(raw_hidden_dims)
+    tokens = [
+        torch.nn.functional.pad(token, (0, int(hidden_dim) - int(token.numel())))
+        if int(token.numel()) < int(hidden_dim)
+        else token
+        for token in raw_tokens
+    ]
+    stacked = torch.stack(tokens, dim=0).contiguous()
+    metadata = {
+        "feature_family": "c2c_prefill_token_layer_tail_residual",
+        "feature_token_shape": [int(stacked.shape[0]), int(stacked.shape[1])],
+        "token_names": token_names,
+        "raw_hidden_dims": raw_hidden_dims,
+        "padded_hidden_dim": int(hidden_dim),
+        "token_count": int(stacked.shape[0]),
+        "hidden_dim": int(stacked.shape[1]),
+    }
+    return stacked.reshape(-1), metadata
+
+
 @torch.no_grad()
 def extract_c2c_prefill_trace_features(
     model,
@@ -342,6 +415,7 @@ def extract_c2c_prefill_trace_features(
     *,
     device: str,
     residual_projection_dim: int = 0,
+    feature_family: str = "summary_trace",
 ) -> tuple[torch.Tensor, dict[str, Any]]:
     messages = build_c2c_messages(prompt)
     text = tokenizer.apply_chat_template(
@@ -358,6 +432,17 @@ def extract_c2c_prefill_trace_features(
         kv_cache_index=build_c2c_kv_cache_index(prompt_len, device=device),
         use_cache=True,
     )
+    if feature_family == "token_layer_tail_residual":
+        features, token_metadata = summarize_c2c_projector_local_tokens(model)
+        metadata = {
+            "formatted_prompt_tokens": prompt_len,
+            "feature_dim": int(features.numel()),
+            "residual_projection_dim": int(residual_projection_dim),
+            **token_metadata,
+        }
+        return features, metadata
+    if feature_family != "summary_trace":
+        raise ValueError(f"Unsupported C2C feature family: {feature_family!r}")
     features, projector_metadata = summarize_c2c_projector_trace(
         model,
         residual_projection_dim=int(residual_projection_dim),

@@ -719,5 +719,12 @@
     "path": "references/459_cross_family_interface_proxy_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for tokenizer/interface proxy work, byte-level cross-tokenizer distillation, sequence alignment, and KV/sidecar compression after the OPT cross-family surface failed."
+  },
+  {
+    "num": 460,
+    "slug": "token_local_c2c_residual_refs",
+    "path": "references/460_token_local_c2c_residual_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for token-local C2C residual failures, TurboQuant/QJL residual-coding inspiration, and query-bottleneck connector implications."
   }
 ]

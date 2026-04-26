@@ -11,6 +11,9 @@
 - `qwen25math_svamp32_headroom_and_source_probes_20260426.md` records the new
   Qwen2.5-Math -> Qwen3 SVAMP32 C2C-headroom target set and the negative
   source-only numeric sidecar / source-hidden ridge screens on that surface.
+- `qwen25math_svamp32_token_layer_c2c_residual_20260426.md` records the
+  negative token/layer-local C2C residual query-bottleneck diagnostic on the
+  Qwen2.5-Math -> Qwen3 SVAMP32 surface.
 - `svamp32_c2c_mechanism_syndrome_probe_20260426.md` records the negative
   strict small-gate C2C prefill scalar/residual trace syndrome-distillation
   probe.

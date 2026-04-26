@@ -247,6 +247,17 @@ def _feature_summary_tokens(
 ) -> torch.Tensor:
     if not feature_metadata:
         raise ValueError("feature metadata is empty")
+    token_shape = feature_metadata[0].get("feature_token_shape")
+    if token_shape is not None:
+        if len(token_shape) != 2:
+            raise ValueError("feature_token_shape must have [token_count, hidden_dim]")
+        token_count = int(token_shape[0])
+        hidden_dim = int(token_shape[1])
+        if token_count <= 0 or hidden_dim <= 0:
+            raise ValueError("feature_token_shape dimensions must be positive")
+        if features.shape[1] != token_count * hidden_dim:
+            raise ValueError("feature dimension does not match feature_token_shape")
+        return features.reshape(features.shape[0], token_count, hidden_dim)
     token_count = len(feature_metadata[0]["feature_layers"]) * 2
     if token_count <= 0 or features.shape[1] % token_count != 0:
         raise ValueError("feature dimension cannot be reshaped into summary tokens")

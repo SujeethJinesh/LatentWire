@@ -5074,3 +5074,86 @@ PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp32_c2c_mechanism
   --output-json results/qwen25math_svamp32_c2c_mechanism_probe_20260426/prefill_projection16_probe.json \
   --output-md results/qwen25math_svamp32_c2c_mechanism_probe_20260426/prefill_projection16_probe.md
 ```
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math -> Qwen3 Token-Layer C2C Residual Probe
+
+- cycle number: `2026-04-26-qwen25math-qwen3-token-layer-c2c-residual`
+- timestamp: `2026-04-26 03:07:53 PDT`
+- live branch entering cycle: C2C mechanism distillation diagnostic on the
+  Qwen2.5-Math -> Qwen3 SVAMP32 surface
+- scale-up rung: strict small diagnostic gate
+- ICLR readiness: not ready; no deployable source-derived positive method
+
+Start-of-cycle status:
+
+- current paper story: Qwen2.5-Math -> Qwen3 has six clean C2C-only IDs, but
+  source-only sidecars and source-hidden summaries recover `0/6`
+- exact blocker: test whether C2C local projector residual tensors carry a
+  readable residue signal that could motivate source-side distillation
+- highest-priority gate: token/layer-local C2C residual query-bottleneck with
+  target-only, zero-source, shuffled-source, label-shuffle, and slots-only
+  controls
+
+Implementation:
+
+- added token-local C2C trace extraction in `latent_bridge/c2c_eval.py`
+- added `--feature-family token_layer_tail_residual` and `--probe-model
+  query_bottleneck` support to
+  `scripts/analyze_svamp32_c2c_mechanism_syndrome_probe.py`
+- taught the shared source-latent evaluator to reshape arbitrary
+  metadata-backed `feature_token_shape` tensors
+
+Decision:
+
+- failed strict gate
+- matched: `8/32`
+- target-only: `8/32`
+- zero-source: `8/32`
+- shuffled-source: `8/32`
+- label-shuffled: `8/32`
+- slots-only: `7/32`
+- clean source-necessary: `0/6`
+- control clean union: `1/6`
+- feature shape: `[32, 229376]`
+- token shape: `[224, 1024]`
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_token_layer_c2c_residual_20260426.md`
+- results manifest:
+  - `results/qwen25math_svamp32_token_layer_c2c_residual_20260426/manifest.md`
+- result JSON:
+  - `results/qwen25math_svamp32_token_layer_c2c_residual_20260426/probe.json`
+  - sha256: `b2bfb8605b07c7a9f9d98d31fb35091e06457b42580e884f440be1684fba0b6e`
+- result markdown:
+  - `results/qwen25math_svamp32_token_layer_c2c_residual_20260426/probe.md`
+  - sha256: `83ba897e191dd62b51706c2859a443cf2760a6fd6230a8ea7998d374c6c5b440`
+- raw run log:
+  - `.debug/qwen25math_svamp32_token_layer_c2c_residual_20260426/logs/probe_rerun.log`
+  - sha256: `4fa03704c7c5a83ce60124bd99d0b8e54e5ebb003646522ba32d8b3c6c97bd98`
+- references:
+  - `references/460_token_local_c2c_residual_refs.md`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_c2c_mechanism_trace.py tests/test_analyze_svamp32_source_latent_syndrome_probe.py -q`
+- `./venv_arm64/bin/python -m py_compile latent_bridge/c2c_eval.py scripts/analyze_svamp32_c2c_mechanism_syndrome_probe.py scripts/analyze_svamp32_source_latent_syndrome_probe.py`
+
+Hypothesis update:
+
+- killed: C2C scalar summaries, signed projections, and tail-token local
+  residual query-bottleneck readouts as live C2C-mechanism distillation
+  branches on this surface
+- strengthened: the blocker is not just over-compressed C2C trace summaries;
+  the clean C2C gains are not linearly/query-readably exposed by these
+  projector traces
+- promoted next: select a deployable source-side branch or a new surface rather
+  than another C2C trace readout
+
+Next exact gate:
+
+- audit existing runnable branches and choose the next source-derived gate after
+  C2C trace readouts are killed
+- do not widen to medium/large until a deployable method clears the current
+  strict small source-control surface

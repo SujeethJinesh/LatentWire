@@ -218,6 +218,14 @@ target-only controls reach `14/32`, and clean source-necessary recovery remains
 `0/6`. Do not scale C2C summary/projection features without a new token/layer
 local objective and anti-cache control.
 
+Qwen-Math token/layer local follow-up: the new C2C tail-token local residual
+query-bottleneck gate also fails. It records per-projector key/value `source`,
+`target`, `output`, and `delta` tail tensors, reshaped as `224` tokens of width
+`1024`, but matched remains `8/32`, target-only is `8/32`, clean
+source-necessary recovery is `0/6`, and slots-only controls recover one clean
+ID. This kills C2C summary/projection/tail-local mechanism readouts as a live
+branch on this surface unless the supervision objective changes.
+
 Promotion rule:
 
 - matched `>=14/32`

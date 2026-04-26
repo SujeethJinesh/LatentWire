@@ -1,0 +1,21 @@
+{
+  "artifacts": {
+    "probe.json": "b2bfb8605b07c7a9f9d98d31fb35091e06457b42580e884f440be1684fba0b6e",
+    "probe.md": "83ba897e191dd62b51706c2859a443cf2760a6fd6230a8ea7998d374c6c5b440"
+  },
+  "date": "2026-04-26",
+  "feature_family": "c2c_prefill_token_layer_tail_residual",
+  "git_commit": "5bc3d04fc2950888d22be1ec8f98a68096fbe80d",
+  "probe_model": "query_bottleneck",
+  "status": "c2c_mechanism_syndrome_probe_fails_gate",
+  "summary": {
+    "clean_source_necessary": 0,
+    "control_clean_union": 1,
+    "feature_shape": [32, 229376],
+    "matched": 8,
+    "target_only": 8,
+    "token_shape": [224, 1024],
+    "total": 32
+  }
+}
+

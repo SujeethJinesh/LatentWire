@@ -57,6 +57,7 @@ def extract_mechanism_features(
     device: str,
     max_new_tokens: int,
     residual_projection_dim: int,
+    feature_family: str,
 ) -> tuple[torch.Tensor, list[dict[str, Any]], dict[str, Any]]:
     examples = load_generation(str(eval_file))
     model, tokenizer, artifact = load_c2c_model(
@@ -75,6 +76,7 @@ def extract_mechanism_features(
             example.prompt,
             device=device,
             residual_projection_dim=int(residual_projection_dim),
+            feature_family=str(feature_family),
         )
         row_meta = dict(row_meta)
         row_meta["example_id"] = _generation_example_id(example)
@@ -88,6 +90,7 @@ def extract_mechanism_features(
         "device": device,
         "max_new_tokens": int(max_new_tokens),
         "residual_projection_dim": int(residual_projection_dim),
+        "feature_family": str(feature_family),
         "published_repo_id": artifact.repo_id,
         "published_subdir": artifact.subdir,
         "published_config_path": artifact.config_path,
@@ -125,18 +128,22 @@ def analyze_with_c2c_features(
     )
     payload["status"] = _rewrite_status(str(payload["status"]))
     payload["interpretation"] = (
-        "This probe trains leave-one-out ridge classifiers from C2C prefill "
-        "projector scalar/gate traces to the compact C2C residue syndrome. "
+        "This probe trains leave-one-out classifiers from C2C prefill "
+        "projector traces to the compact C2C residue syndrome. "
         "The feature extractor does not decode or parse C2C final answers; "
         "labels still come from C2C final numeric residues, so this remains a "
         "strict small-slice distillation diagnostic rather than a paper claim."
     )
     payload["c2c_run_config"] = dict(c2c_run_config)
-    payload["config"]["feature_family"] = (
-        "c2c_prefill_projector_residual_trace"
-        if int(c2c_run_config.get("residual_projection_dim", 0)) <= 0
-        else "c2c_prefill_projector_residual_trace_with_signed_projections"
-    )
+    requested_family = str(c2c_run_config.get("feature_family", "summary_trace"))
+    if requested_family == "token_layer_tail_residual":
+        payload["config"]["feature_family"] = "c2c_prefill_token_layer_tail_residual"
+    else:
+        payload["config"]["feature_family"] = (
+            "c2c_prefill_projector_residual_trace"
+            if int(c2c_run_config.get("residual_projection_dim", 0)) <= 0
+            else "c2c_prefill_projector_residual_trace_with_signed_projections"
+        )
     feature_bytes = features.detach().cpu().contiguous().numpy().tobytes()
     payload["feature_provenance"] = {
         "shape": [int(dim) for dim in features.shape],
@@ -212,12 +219,23 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--fallback-label", default="target_self_repair")
     parser.add_argument("--moduli", default="2,3,5,7")
     parser.add_argument("--ridge-lambda", type=float, default=1.0)
+    parser.add_argument("--probe-model", choices=["ridge", "query_bottleneck"], default="ridge")
+    parser.add_argument(
+        "--feature-family",
+        choices=["summary_trace", "token_layer_tail_residual"],
+        default="summary_trace",
+    )
     parser.add_argument("--shuffle-offset", type=int, default=1)
     parser.add_argument("--min-correct", type=int, default=14)
     parser.add_argument("--min-clean-source-necessary", type=int, default=2)
     parser.add_argument("--min-numeric-coverage", type=int, default=31)
     parser.add_argument("--device", default="mps")
     parser.add_argument("--max-new-tokens", type=int, default=1)
+    parser.add_argument("--query-slots", type=int, default=8)
+    parser.add_argument("--query-epochs", type=int, default=80)
+    parser.add_argument("--query-lr", type=float, default=1e-2)
+    parser.add_argument("--query-weight-decay", type=float, default=1e-3)
+    parser.add_argument("--query-seed", type=int, default=0)
     parser.add_argument(
         "--residual-projection-dim",
         type=int,
@@ -235,10 +253,16 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     moduli = tuple(int(value) for value in str(args.moduli).split(",") if value.strip())
     config = source_probe.ProbeConfig(
         moduli=moduli,
+        probe_model=str(args.probe_model),
         ridge_lambda=float(args.ridge_lambda),
         shuffle_offset=int(args.shuffle_offset),
         min_correct=int(args.min_correct),
         min_clean_source_necessary=int(args.min_clean_source_necessary),
+        query_slots=int(args.query_slots),
+        query_epochs=int(args.query_epochs),
+        query_lr=float(args.query_lr),
+        query_weight_decay=float(args.query_weight_decay),
+        query_seed=int(args.query_seed),
     )
     features, feature_metadata, c2c_run_config = extract_mechanism_features(
         source_model=str(args.source_model),
@@ -247,6 +271,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         device=str(args.device),
         max_new_tokens=int(args.max_new_tokens),
         residual_projection_dim=int(args.residual_projection_dim),
+        feature_family=str(args.feature_family),
     )
     payload = analyze_with_c2c_features(
         features=features,
