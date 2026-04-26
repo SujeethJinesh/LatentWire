@@ -97,3 +97,75 @@ def test_source_only_sidecar_router_can_clear_synthetic_gate(tmp_path):
     assert payload["status"] == "source_only_sidecar_router_clears_gate"
     assert run["condition_summaries"]["matched"]["correct_count"] == 2
     assert run["source_necessary_clean_ids"] == ["clean"]
+
+
+def test_preserve_on_agreement_guard_blocks_source_harm(tmp_path):
+    target_path = tmp_path / "target.jsonl"
+    source_path = tmp_path / "source.jsonl"
+    text_path = tmp_path / "text.jsonl"
+    target_set_path = tmp_path / "target_set.json"
+
+    ids = ["clean", "preserve"]
+    _write_jsonl(
+        target_path,
+        [
+            _row("clean", "target", "5", "0"),
+            _row("preserve", "target", "8", "8"),
+        ],
+    )
+    _write_jsonl(
+        source_path,
+        [
+            _row("clean", "source", "5", "5"),
+            _row("preserve", "source", "8", "1"),
+        ],
+    )
+    _write_jsonl(
+        text_path,
+        [
+            _row("clean", "text", "5", "2"),
+            _row("preserve", "text", "8", "8"),
+        ],
+    )
+    target_set_path.write_text(
+        json.dumps(
+            {
+                "ids": {
+                    "teacher_only": ["clean"],
+                    "clean_residual_targets": ["clean"],
+                    "target_self_repair": ["preserve"],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = gate.analyze(
+        target_spec=syndrome.RowSpec("target", target_path, "target"),
+        source_spec=syndrome.RowSpec("source", source_path, "source"),
+        candidate_specs=[
+            syndrome.RowSpec("source", source_path, "source"),
+            syndrome.RowSpec("text", text_path, "text"),
+        ],
+        target_set_path=target_set_path,
+        moduli_sets=[[7]],
+        fallback_label="target",
+        shuffle_offset=1,
+        label_shuffle_offset=1,
+        noise_seed=1,
+        min_correct=2,
+        min_target_self=1,
+        min_clean_source_necessary=1,
+        max_control_clean_union=0,
+        min_numeric_coverage=2,
+        preserve_on_agreement_label="text",
+        run_date="2026-04-26",
+    )
+
+    run = payload["runs"][0]
+    assert payload["status"] == "source_only_sidecar_router_clears_gate"
+    assert run["condition_summaries"]["matched"]["correct_count"] == 2
+    assert run["source_necessary_clean_ids"] == ["clean"]
+    preserve_row = [row for row in run["rows"] if row["example_id"] == "preserve"][0]
+    assert preserve_row["agreement_guard_active"] is True
+    assert preserve_row["conditions"]["matched"]["prediction"] == "8"

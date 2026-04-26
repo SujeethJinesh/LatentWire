@@ -5157,3 +5157,87 @@ Next exact gate:
   C2C trace readouts are killed
 - do not widen to medium/large until a deployable method clears the current
   strict small source-control surface
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math -> Qwen3 Source-Contrastive Sidecar
+
+- cycle number: `2026-04-26-qwen25math-qwen3-source-contrastive-sidecar`
+- timestamp: `2026-04-26 03:14:11 PDT`
+- live branch entering cycle: source-derived method search after C2C trace
+  readouts failed
+- scale-up rung: strict small gate
+- ICLR readiness: not ready; first positive strict-small source-derived row
+  needs medium confirmation, uncertainty, systems accounting, and C2C
+  comparison
+
+Start-of-cycle status:
+
+- current paper story: Qwen2.5-Math -> Qwen3 has C2C headroom, but C2C-only
+  target sets did not yield a deployable source method
+- exact blocker: find a source-derived decision surface where source adds clean
+  target-complementary wins under controls
+- highest-priority gate: build a source-contrastive target set and test a
+  target-preserving source residue sidecar stack
+
+Decision:
+
+- source-contrastive target set: ready
+- target-alone: `8/32`
+- source-alone: `6/32`
+- text relay: `8/32`
+- source-only over target: `5`
+- clean source-only after text exclusion: `4`
+- target-or-source oracle: `13/32`
+- guarded source sidecar best row: `11/32`
+- source sidecar bytes: `1`
+- clean source-necessary recovered: `3/4`
+- control clean union: `0/4`
+- zero-source/shuffled-source/label-shuffle/same-norm noise: at or below
+  `8/32` with `0` clean control IDs
+- promoted: source-contrastive sidecar stack to SVAMP70 medium confirmation
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_source_contrastive_sidecar_20260426.md`
+- results manifest:
+  - `results/qwen25math_svamp32_source_contrastive_sidecar_20260426/manifest.md`
+- target set:
+  - `results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json`
+  - sha256: `088f0e1651f95ea04a89ec0931276a943ff104a355fe69f434182f68e778ea96`
+- guarded sidecar:
+  - `results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_only_sidecar_router_t2t_guard.json`
+  - sha256: `c5434aeead9e55f5494ca583533fe863f36ee719e8a5bb75ae6fdb2f6f373306`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_only_sidecar_router_gate.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_only_sidecar_router_gate.py`
+
+Hypothesis update:
+
+- strengthened: source-derived numeric residues can add clean target-complementary
+  wins on the Qwen-Math surface when paired with a preservation guard
+- weakened: C2C-only target sets as the sole method gate; they were useful for
+  headroom but did not expose deployable source signal
+- caveat: the preservation guard uses text relay, so systems claims must count
+  text-relay generation plus the sidecar
+
+Next exact gate:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --results-dir results/qwen25math_qwen3_svamp70_source_surface_20260426 \
+  --source-model Qwen/Qwen2.5-Math-1.5B \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t c2c \
+  --limit 70 \
+  --device mps \
+  --max-new-tokens 64 \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Then build the SVAMP70 source-contrastive set and rerun the guarded sidecar with
+full controls.

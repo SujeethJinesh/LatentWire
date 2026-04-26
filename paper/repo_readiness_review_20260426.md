@@ -226,18 +226,31 @@ source-necessary recovery is `0/6`, and slots-only controls recover one clean
 ID. This kills C2C summary/projection/tail-local mechanism readouts as a live
 branch on this surface unless the supervision objective changes.
 
-Promotion rule:
+Positive strict-small update: switching from C2C-only targets to
+source-contrastive targets produces the first live positive source-derived row.
+Qwen2.5-Math source-alone has `5` source-only wins over target and `4` clean
+source-only wins after excluding text relay. A target/text agreement guard plus
+1-byte source residue sidecar reaches `11/32` versus target `8/32`, text relay
+`8/32`, and source-alone `6/32`, with `3/4` clean source-necessary recoveries
+and `0/4` clean control leakage under zero-source, shuffled-source,
+label-shuffle, same-norm noise, target-only, and slots-only controls. This is
+not ICLR-ready: it is one 32-example slice, uses text relay as a preservation
+guard, lacks paired uncertainty/seed stability, and remains below C2C `15/32`.
+Promote to SVAMP70 medium confirmation before any broader claims.
 
-- matched `>=14/32`
-- target-self `3/3`
-- clean source-necessary `>=2/6`
-- numeric coverage `>=31/32`
+Current source-contrastive promotion rule:
+
+- matched `>=9/32`
+- clean source-necessary `>=2/4`
+- source numeric coverage `>=26/32`
 - exact ordered ID parity
-- zero-source, shuffled-source, label-shuffle, target-only, and slots-only
-  controls have clean union `0/6`
+- zero-source, shuffled-source, label-shuffle, same-norm noise, target-only,
+  and slots-only controls have clean union `0/4`
 
-Do not widen to medium, cross-family, or long-context benchmarks until the new
-branch clears the same strict small-gate source-control surface.
+The branch cleared this strict-small source-control surface. Widen only to the
+medium SVAMP70 confirmation rung next; do not move to cross-family or
+long-context benchmarks until medium confirmation, paired uncertainty, and
+source-control replication are available.
 
 ## Engineering Follow-Ups
 

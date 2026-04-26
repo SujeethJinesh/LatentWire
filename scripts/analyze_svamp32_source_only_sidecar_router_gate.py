@@ -48,6 +48,28 @@ def _noise_signature(example_id: str, moduli: Sequence[int], seed: int) -> tuple
     return tuple(out)
 
 
+def _prediction_for_label(
+    rows_by_label: dict[str, dict[str, Any]],
+    label: str | None,
+) -> str | None:
+    if not label:
+        return None
+    if label not in rows_by_label:
+        raise ValueError(f"Agreement guard label {label!r} missing from candidate labels")
+    return syndrome._prediction_numeric(rows_by_label[label])
+
+
+def _apply_agreement_guard(
+    *,
+    candidate: str | None,
+    fallback: str | None,
+    agreement_prediction: str | None,
+) -> str | None:
+    if agreement_prediction is not None and fallback is not None and agreement_prediction == fallback:
+        return fallback
+    return candidate
+
+
 def _evaluate_moduli(
     *,
     moduli: Sequence[int],
@@ -65,6 +87,7 @@ def _evaluate_moduli(
     min_target_self: int,
     min_clean_source_necessary: int,
     max_control_clean_union: int,
+    preserve_on_agreement_label: str | None,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     candidate_labels = list(candidate_by_label)
@@ -78,13 +101,14 @@ def _evaluate_moduli(
             fallback_label=fallback_label,
             target_label=target_label,
         )
+        agreement_prediction = _prediction_for_label(rows_by_label, preserve_on_agreement_label)
         shuffled_id = reference_ids[(index + shuffle_offset) % len(reference_ids)]
         label_shuffled_id = reference_ids[(index + label_shuffle_offset) % len(reference_ids)]
         gold = syndrome._gold_numeric(target_by_id[example_id])
         source_numeric = syndrome._prediction_numeric(source_by_id[example_id])
         shuffled_source_numeric = syndrome._prediction_numeric(source_by_id[shuffled_id])
         label_shuffled_numeric = syndrome._prediction_numeric(source_by_id[label_shuffled_id])
-        selections = {
+        raw_selections = {
             "matched": syndrome._select_by_syndrome(
                 ordered_values=ordered_values,
                 source_value=source_numeric,
@@ -122,6 +146,16 @@ def _evaluate_moduli(
                 fallback=fallback,
             ),
         }
+        selections = {
+            condition: _apply_agreement_guard(
+                candidate=prediction,
+                fallback=fallback,
+                agreement_prediction=agreement_prediction,
+            )
+            if condition not in ("target_only", "slots_only")
+            else prediction
+            for condition, prediction in raw_selections.items()
+        }
         rows.append(
             {
                 "index": index,
@@ -132,6 +166,14 @@ def _evaluate_moduli(
                 "gold_answer": gold,
                 "source_prediction": source_numeric,
                 "fallback_prediction": fallback,
+                "agreement_guard_label": preserve_on_agreement_label,
+                "agreement_guard_prediction": agreement_prediction,
+                "agreement_guard_active": bool(
+                    preserve_on_agreement_label
+                    and agreement_prediction is not None
+                    and fallback is not None
+                    and agreement_prediction == fallback
+                ),
                 "candidate_pool_size": len(ordered_values),
                 "candidate_pool_values": list(ordered_values),
                 "candidate_pool_contains_gold": gold in set(ordered_values),
@@ -233,6 +275,7 @@ def analyze(
     max_control_clean_union: int,
     min_numeric_coverage: int,
     run_date: str,
+    preserve_on_agreement_label: str | None = None,
 ) -> dict[str, Any]:
     target_records = syndrome._records_for_method(target_spec)
     reference_ids = [str(row["example_id"]) for row in target_records]
@@ -261,6 +304,11 @@ def analyze(
     if fallback_label not in candidate_by_label:
         raise ValueError(
             f"fallback label {fallback_label!r} not in candidates: {sorted(candidate_by_label)}"
+        )
+    if preserve_on_agreement_label and preserve_on_agreement_label not in candidate_by_label:
+        raise ValueError(
+            f"preserve-on-agreement label {preserve_on_agreement_label!r} not in candidates: "
+            f"{sorted(candidate_by_label)}"
         )
 
     source_numeric_coverage = sum(
@@ -301,6 +349,7 @@ def analyze(
             min_target_self=min_target_self,
             min_clean_source_necessary=min_clean_source_necessary,
             max_control_clean_union=max_control_clean_union,
+            preserve_on_agreement_label=preserve_on_agreement_label,
         )
         for moduli in moduli_sets
     ]
@@ -349,6 +398,7 @@ def analyze(
             "min_clean_source_necessary": min_clean_source_necessary,
             "max_control_clean_union": max_control_clean_union,
             "min_numeric_coverage": min_numeric_coverage,
+            "preserve_on_agreement_label": preserve_on_agreement_label,
             "moduli_sets": [list(moduli) for moduli in moduli_sets],
         },
         "reference_n": len(reference_ids),
@@ -372,6 +422,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- status: `{payload['status']}`",
         f"- reference rows: `{payload['reference_n']}`",
         f"- fallback label: `{payload['config']['fallback_label']}`",
+        f"- preserve-on-agreement label: `{payload['config']['preserve_on_agreement_label'] or 'none'}`",
         f"- source numeric coverage: `{payload['provenance']['source_numeric_coverage']}/{payload['reference_n']}`",
         f"- provenance issues: `{len(payload['provenance']['issues'])}`",
         "",
@@ -417,6 +468,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-clean-source-necessary", type=int, default=2)
     parser.add_argument("--max-control-clean-union", type=int, default=0)
     parser.add_argument("--min-numeric-coverage", type=int, default=31)
+    parser.add_argument(
+        "--preserve-on-agreement-label",
+        default=None,
+        help=(
+            "If this candidate label's numeric prediction equals the fallback "
+            "numeric prediction, keep fallback instead of applying source/control sidecars."
+        ),
+    )
     parser.add_argument("--date", default=date.today().isoformat())
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
@@ -446,6 +505,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         min_clean_source_necessary=int(args.min_clean_source_necessary),
         max_control_clean_union=int(args.max_control_clean_union),
         min_numeric_coverage=int(args.min_numeric_coverage),
+        preserve_on_agreement_label=args.preserve_on_agreement_label,
         run_date=str(args.date),
     )
     output_json = syndrome._resolve(args.output_json)

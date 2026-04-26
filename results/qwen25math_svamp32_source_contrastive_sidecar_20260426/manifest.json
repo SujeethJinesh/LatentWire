@@ -1,0 +1,24 @@
+{
+  "artifacts": {
+    "source_contrastive_target_set.json": "088f0e1651f95ea04a89ec0931276a943ff104a355fe69f434182f68e778ea96",
+    "source_contrastive_target_set.md": "22cea2201a3b60491c6e38b30e3173582d14c51f583730c92ee3092a67568919",
+    "source_only_sidecar_router_t2t_guard.json": "c5434aeead9e55f5494ca583533fe863f36ee719e8a5bb75ae6fdb2f6f373306",
+    "source_only_sidecar_router_t2t_guard.md": "8cb94c6b0ba5d07c428cebcbf54e2b6a0b9b21e2475a9a9413601acdb46e9831"
+  },
+  "date": "2026-04-26",
+  "git_commit": "b3c589361812037390e1b2d5829db2537257572e",
+  "method": "target_text_agreement_guard_plus_source_residue_sidecar",
+  "status": "source_only_sidecar_router_clears_gate",
+  "summary": {
+    "best_clean_source_necessary": 3,
+    "best_control_clean_union": 0,
+    "best_matched": 11,
+    "clean_source_only_targets": 4,
+    "source_alone": 6,
+    "source_numeric_coverage": 26,
+    "target_alone": 8,
+    "text_relay": 8,
+    "total": 32
+  }
+}
+
