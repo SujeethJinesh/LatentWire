@@ -169,3 +169,141 @@ def test_preserve_on_agreement_guard_blocks_source_harm(tmp_path):
     preserve_row = [row for row in run["rows"] if row["example_id"] == "preserve"][0]
     assert preserve_row["agreement_guard_active"] is True
     assert preserve_row["conditions"]["matched"]["prediction"] == "8"
+
+
+def test_source_quality_guard_blocks_low_quality_source_switch(tmp_path):
+    target_path = tmp_path / "target.jsonl"
+    source_path = tmp_path / "source.jsonl"
+    target_set_path = tmp_path / "target_set.json"
+
+    _write_jsonl(
+        target_path,
+        [
+            _row("clean", "target", "5", "0"),
+            _row("preserve", "target", "8", "8"),
+        ],
+    )
+    _write_jsonl(
+        source_path,
+        [
+            {
+                **_row("clean", "source", "5", "5"),
+                "prediction": "Step-by-step explanation: 2 + 3 = 5. Answer: 5",
+            },
+            {
+                **_row("preserve", "source", "8", "1"),
+                "prediction": "8 and 1 and 2 and 3 and 4 and 5 and 6 and 7",
+            },
+        ],
+    )
+    target_set_path.write_text(
+        json.dumps(
+            {
+                "ids": {
+                    "teacher_only": ["clean"],
+                    "clean_residual_targets": ["clean"],
+                    "target_self_repair": ["preserve"],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = gate.analyze(
+        target_spec=syndrome.RowSpec("target", target_path, "target"),
+        source_spec=syndrome.RowSpec("source", source_path, "source"),
+        candidate_specs=[syndrome.RowSpec("source", source_path, "source")],
+        target_set_path=target_set_path,
+        moduli_sets=[[7]],
+        fallback_label="target",
+        shuffle_offset=1,
+        label_shuffle_offset=1,
+        noise_seed=1,
+        min_correct=2,
+        min_target_self=1,
+        min_clean_source_necessary=0,
+        max_control_clean_union=1,
+        min_numeric_coverage=2,
+        source_quality_guard="finalish_short_numeric",
+        run_date="2026-04-26",
+    )
+
+    run = payload["runs"][0]
+    assert payload["status"] == "source_only_sidecar_router_clears_gate"
+    assert run["condition_summaries"]["matched"]["correct_count"] == 2
+    preserve_row = [row for row in run["rows"] if row["example_id"] == "preserve"][0]
+    assert preserve_row["source_quality_passed"] is False
+    assert preserve_row["conditions"]["matched"]["prediction"] == "8"
+
+
+def test_shorter_than_target_numeric_guard_uses_source_and_target_lengths(tmp_path):
+    target_path = tmp_path / "target.jsonl"
+    source_path = tmp_path / "source.jsonl"
+    target_set_path = tmp_path / "target_set.json"
+
+    _write_jsonl(
+        target_path,
+        [
+            {
+                **_row("clean", "target", "5", "0"),
+                "prediction": "A long wrong target explanation ending in 0",
+            },
+            {
+                **_row("preserve", "target", "8", "8"),
+                "prediction": "8",
+            },
+        ],
+    )
+    _write_jsonl(
+        source_path,
+        [
+            {
+                **_row("clean", "source", "5", "5"),
+                "prediction": "5",
+            },
+            {
+                **_row("preserve", "source", "8", "1"),
+                "prediction": "A longer wrong source answer with 1",
+            },
+        ],
+    )
+    target_set_path.write_text(
+        json.dumps(
+            {
+                "ids": {
+                    "teacher_only": ["clean"],
+                    "clean_residual_targets": ["clean"],
+                    "target_self_repair": ["preserve"],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = gate.analyze(
+        target_spec=syndrome.RowSpec("target", target_path, "target"),
+        source_spec=syndrome.RowSpec("source", source_path, "source"),
+        candidate_specs=[syndrome.RowSpec("source", source_path, "source")],
+        target_set_path=target_set_path,
+        moduli_sets=[[7]],
+        fallback_label="target",
+        shuffle_offset=1,
+        label_shuffle_offset=1,
+        noise_seed=1,
+        min_correct=2,
+        min_target_self=1,
+        min_clean_source_necessary=1,
+        max_control_clean_union=1,
+        min_numeric_coverage=2,
+        source_quality_guard="shorter_than_target_numeric",
+        run_date="2026-04-26",
+    )
+
+    run = payload["runs"][0]
+    assert payload["status"] == "source_only_sidecar_router_clears_gate"
+    assert run["condition_summaries"]["matched"]["correct_count"] == 2
+    clean_row = [row for row in run["rows"] if row["example_id"] == "clean"][0]
+    preserve_row = [row for row in run["rows"] if row["example_id"] == "preserve"][0]
+    assert clean_row["source_quality_passed"] is True
+    assert preserve_row["source_quality_passed"] is False
+    assert preserve_row["conditions"]["matched"]["prediction"] == "8"

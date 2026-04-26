@@ -14,6 +14,7 @@ import hashlib
 import json
 import math
 import pathlib
+import re
 import sys
 from datetime import date
 from typing import Any, Sequence
@@ -70,6 +71,58 @@ def _apply_agreement_guard(
     return candidate
 
 
+def _source_quality_passes(row: dict[str, Any] | None, guard: str | None) -> bool:
+    if not guard:
+        return True
+    if row is None:
+        return False
+    text = str(row.get("prediction", ""))
+    lower = text.lower()
+    numeric_count = len(re.findall(r"[-+]?\d+(?:\.\d+)?", text))
+    if guard == "finalish_short_numeric":
+        finalish = any(
+            marker in lower
+            for marker in (
+                "final answer",
+                "answer",
+                "therefore",
+                "so,",
+                "step-by-step explanation",
+            )
+        )
+        return finalish and len(text) < 240 and numeric_count <= 6
+    if guard == "shorter_than_target_numeric":
+        raise ValueError("shorter_than_target_numeric requires target row context")
+    raise ValueError(f"Unsupported source quality guard: {guard!r}")
+
+
+def _source_target_quality_passes(
+    source_row: dict[str, Any] | None,
+    target_row: dict[str, Any],
+    guard: str | None,
+) -> bool:
+    if guard != "shorter_than_target_numeric":
+        return _source_quality_passes(source_row, guard)
+    if source_row is None or syndrome._prediction_numeric(source_row) is None:
+        return False
+    return len(str(source_row.get("prediction", "") or "")) < len(
+        str(target_row.get("prediction", "") or "")
+    )
+
+
+def _apply_source_quality_guard(
+    *,
+    candidate: str | None,
+    fallback: str | None,
+    source_row: dict[str, Any] | None,
+    target_row: dict[str, Any],
+    guard: str | None,
+) -> str | None:
+    if _source_target_quality_passes(source_row, target_row, guard):
+        return candidate
+    return fallback
+
+
 def _evaluate_moduli(
     *,
     moduli: Sequence[int],
@@ -88,6 +141,7 @@ def _evaluate_moduli(
     min_clean_source_necessary: int,
     max_control_clean_union: int,
     preserve_on_agreement_label: str | None,
+    source_quality_guard: str | None,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     candidate_labels = list(candidate_by_label)
@@ -108,6 +162,13 @@ def _evaluate_moduli(
         source_numeric = syndrome._prediction_numeric(source_by_id[example_id])
         shuffled_source_numeric = syndrome._prediction_numeric(source_by_id[shuffled_id])
         label_shuffled_numeric = syndrome._prediction_numeric(source_by_id[label_shuffled_id])
+        source_rows_by_condition = {
+            "matched": source_by_id[example_id],
+            "zero_source": None,
+            "shuffled_source": source_by_id[shuffled_id],
+            "label_shuffle": source_by_id[label_shuffled_id],
+            "same_norm_noise": None,
+        }
         raw_selections = {
             "matched": syndrome._select_by_syndrome(
                 ordered_values=ordered_values,
@@ -147,13 +208,21 @@ def _evaluate_moduli(
             ),
         }
         selections = {
-            condition: _apply_agreement_guard(
-                candidate=prediction,
-                fallback=fallback,
-                agreement_prediction=agreement_prediction,
+            condition: (
+                _apply_agreement_guard(
+                    candidate=_apply_source_quality_guard(
+                        candidate=prediction,
+                        fallback=fallback,
+                        source_row=source_rows_by_condition.get(condition),
+                        target_row=target_by_id[example_id],
+                        guard=source_quality_guard,
+                    ),
+                    fallback=fallback,
+                    agreement_prediction=agreement_prediction,
+                )
+                if condition not in ("target_only", "slots_only")
+                else prediction
             )
-            if condition not in ("target_only", "slots_only")
-            else prediction
             for condition, prediction in raw_selections.items()
         }
         rows.append(
@@ -173,6 +242,14 @@ def _evaluate_moduli(
                     and agreement_prediction is not None
                     and fallback is not None
                     and agreement_prediction == fallback
+                ),
+                "source_quality_guard": source_quality_guard,
+                "source_quality_passed": bool(
+                    _source_target_quality_passes(
+                        source_by_id[example_id],
+                        target_by_id[example_id],
+                        source_quality_guard,
+                    )
                 ),
                 "candidate_pool_size": len(ordered_values),
                 "candidate_pool_values": list(ordered_values),
@@ -276,6 +353,7 @@ def analyze(
     min_numeric_coverage: int,
     run_date: str,
     preserve_on_agreement_label: str | None = None,
+    source_quality_guard: str | None = None,
 ) -> dict[str, Any]:
     target_records = syndrome._records_for_method(target_spec)
     reference_ids = [str(row["example_id"]) for row in target_records]
@@ -350,6 +428,7 @@ def analyze(
             min_clean_source_necessary=min_clean_source_necessary,
             max_control_clean_union=max_control_clean_union,
             preserve_on_agreement_label=preserve_on_agreement_label,
+            source_quality_guard=source_quality_guard,
         )
         for moduli in moduli_sets
     ]
@@ -399,6 +478,7 @@ def analyze(
             "max_control_clean_union": max_control_clean_union,
             "min_numeric_coverage": min_numeric_coverage,
             "preserve_on_agreement_label": preserve_on_agreement_label,
+            "source_quality_guard": source_quality_guard,
             "moduli_sets": [list(moduli) for moduli in moduli_sets],
         },
         "reference_n": len(reference_ids),
@@ -423,6 +503,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- reference rows: `{payload['reference_n']}`",
         f"- fallback label: `{payload['config']['fallback_label']}`",
         f"- preserve-on-agreement label: `{payload['config']['preserve_on_agreement_label'] or 'none'}`",
+        f"- source quality guard: `{payload['config']['source_quality_guard'] or 'none'}`",
         f"- source numeric coverage: `{payload['provenance']['source_numeric_coverage']}/{payload['reference_n']}`",
         f"- provenance issues: `{len(payload['provenance']['issues'])}`",
         "",
@@ -476,6 +557,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "numeric prediction, keep fallback instead of applying source/control sidecars."
         ),
     )
+    parser.add_argument(
+        "--source-quality-guard",
+        choices=["finalish_short_numeric", "shorter_than_target_numeric"],
+        default=None,
+        help="Optional text-local source quality guard before applying a source/control sidecar.",
+    )
     parser.add_argument("--date", default=date.today().isoformat())
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
@@ -506,6 +593,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         max_control_clean_union=int(args.max_control_clean_union),
         min_numeric_coverage=int(args.min_numeric_coverage),
         preserve_on_agreement_label=args.preserve_on_agreement_label,
+        source_quality_guard=args.source_quality_guard,
         run_date=str(args.date),
     )
     output_json = syndrome._resolve(args.output_json)

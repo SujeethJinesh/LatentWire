@@ -4,7 +4,10 @@
 - status: medium positive versus target/text, not C2C
 - source model: `Qwen/Qwen2.5-Math-1.5B`
 - target model: `Qwen/Qwen3-0.6B`
-- method: target/text agreement guard plus 1-byte source residue sidecar
+- methods:
+  - target/text agreement guard plus 1-byte source residue sidecar
+  - textless shorter-than-target source-quality guard plus 1-byte source
+    residue sidecar
 
 ## Summary
 
@@ -12,7 +15,8 @@
 - source-alone: `13/70`
 - text relay: `22/70`
 - C2C: `31/70`
-- guarded sidecar: `25/70`
+- text-guarded sidecar: `25/70`
+- textless shorter-than-target sidecar: `26/70`
 - clean source-necessary: `4/6`
 - control clean union: `0/6`
 - sidecar vs target paired delta: `+0.0571`, bootstrap
@@ -21,6 +25,12 @@
   `[-0.0571, +0.1429]`
 - sidecar vs C2C paired delta: `-0.0857`, bootstrap
   `[-0.2143, +0.0571]`
+- textless sidecar vs target paired delta: `+0.0714`, bootstrap
+  `[+0.0000, +0.1429]`
+- textless sidecar vs text paired delta: `+0.0571`, bootstrap
+  `[-0.0714, +0.1857]`
+- textless sidecar vs C2C paired delta: `-0.0714`, bootstrap
+  `[-0.2143, +0.0714]`
 
 ## Artifacts
 
@@ -35,4 +45,8 @@
 | `results/qwen25math_qwen3_svamp70_source_surface_20260426/paired_vs_text.md` | `eb4c8eb66b6882fcb97eb7fc094555cd47ed0a83d87cf6a829f51bad559de38d` |
 | `results/qwen25math_qwen3_svamp70_source_surface_20260426/paired_vs_c2c.md` | `2de7635ecec14de137db4e178d62940a9e6485cd8975f235f9a8c170166d2037` |
 | `results/qwen25math_qwen3_svamp70_source_surface_20260426/source_sidecar_c2c_fallback_t2t_guard.json` | `17e4a88171e737f52d5b8a106de9f7156b83641fd41533e33b30543244a91e07` |
-
+| `results/qwen25math_qwen3_svamp70_source_surface_20260426/source_shorter_than_target_guard_sidecar.json` | `19e5ec627968ea943c1483b2d6b19fffc8f642d51242c389ed1b341c0034cb81` |
+| `results/qwen25math_qwen3_svamp70_source_surface_20260426/source_shorter_than_target_guard_predictions.jsonl` | `6b56da11c6846d4a86f8d12d5eb18ad3653ed1bd82fbe14212014b096bd85778` |
+| `results/qwen25math_qwen3_svamp70_source_surface_20260426/shorter_guard_paired_vs_target.md` | `23e647976d95d23c20151d537f33425002c780f7f5c802a350d265a9485ba558` |
+| `results/qwen25math_qwen3_svamp70_source_surface_20260426/shorter_guard_paired_vs_text.md` | `a4a5be9476cf017712c906afdb04d1c1eabd5da3195a644d7da04ef0740dddef` |
+| `results/qwen25math_qwen3_svamp70_source_surface_20260426/shorter_guard_paired_vs_c2c.md` | `124583b41ded0af0eda272bad4891442d379d5a6bff09ad700593adfc523505f` |

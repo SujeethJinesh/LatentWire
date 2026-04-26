@@ -5316,3 +5316,73 @@ Next exact gate:
 - implement or test a cheaper preservation guard that does not require text
   relay, or a source-derived router that preserves target-correct rows better
   while keeping clean control leakage at zero
+
+## Cycle Checkpoint: 2026-04-26 SVAMP70 Textless Source-Quality Guard
+
+- cycle number: `2026-04-26-qwen25math-qwen3-svamp70-textless-quality-guard`
+- timestamp: `2026-04-26 03:59:12 PDT`
+- live branch entering cycle: source-contrastive sidecar stack after SVAMP70
+  target/text-positive result
+- scale-up rung: medium method-improvement gate
+- ICLR readiness: not ready; textless row is promising but below C2C and needs
+  replication
+
+Start-of-cycle status:
+
+- current paper story: text-guarded source sidecar reaches `25/70`, but uses
+  text relay as preservation guard
+- exact blocker: remove text relay from the guard/candidate pool while
+  preserving source-necessary wins and zero clean control leakage
+- highest-priority gate: source/target-only quality guard using decoded output
+  length plus numeric source availability
+
+Decision:
+
+- implemented `--source-quality-guard shorter_than_target_numeric`
+- no text relay used in the candidate pool or guard
+- target-alone: `21/70`
+- text relay baseline: `22/70`
+- C2C: `31/70`
+- textless source sidecar: `26/70`
+- clean source-necessary: `4/6`
+- control clean union: `0/6`
+- paired delta vs target: `+0.0714`, bootstrap `[+0.0000, +0.1429]`,
+  McNemar `0.1306`
+- paired delta vs text: `+0.0571`, bootstrap `[-0.0714, +0.1857]`,
+  McNemar `0.5023`
+- paired delta vs C2C: `-0.0714`, bootstrap `[-0.2143, +0.0714]`,
+  McNemar `0.4414`
+
+Artifacts:
+
+- updated memo:
+  - `paper/qwen25math_svamp70_source_contrastive_sidecar_20260426.md`
+- textless sidecar:
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/source_shorter_than_target_guard_sidecar.json`
+  - sha256: `19e5ec627968ea943c1483b2d6b19fffc8f642d51242c389ed1b341c0034cb81`
+- textless predictions:
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/source_shorter_than_target_guard_predictions.jsonl`
+  - sha256: `6b56da11c6846d4a86f8d12d5eb18ad3653ed1bd82fbe14212014b096bd85778`
+- paired comparisons:
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/shorter_guard_paired_vs_target.md`
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/shorter_guard_paired_vs_text.md`
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/shorter_guard_paired_vs_c2c.md`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_only_sidecar_router_gate.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_only_sidecar_router_gate.py`
+
+Hypothesis update:
+
+- strengthened: source-sidecar communication can beat target/text without text
+  relay in the guard, giving a plausible systems branch
+- weakened: the guard is decoded-output heuristic and may be slice-specific
+- still blocked: C2C remains stronger and no seed/surface replication exists
+
+Next exact gate:
+
+- rerun the textless sidecar on another exact frozen surface or seed/prompt
+  variant before widening to 500 examples
+- promotion requires paired CI clearly positive versus target/text or a stronger
+  systems tradeoff at preserved accuracy

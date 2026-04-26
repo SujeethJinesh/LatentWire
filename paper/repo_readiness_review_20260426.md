@@ -249,6 +249,16 @@ control leakage). Do not widen this row to 500 examples until the method either
 gets closer to C2C or replaces the text-relay guard with a cheaper preservation
 signal that creates a clear systems tradeoff.
 
+Textless guard update: replacing the text-relay agreement guard with a
+source/target-only decoded-length guard improves the medium row to `26/70`:
+apply the 1-byte source residue sidecar only when the source produces a numeric
+prediction and its decoded output is shorter than the target output. This keeps
+`4/6` clean source-necessary IDs and `0/6` clean control leakage. Paired delta
+versus target is `+0.0714` with bootstrap `[+0.0000, +0.1429]`; versus text it
+is `+0.0571` with bootstrap crossing zero; versus C2C it is `-0.0714`. This is
+the better systems branch because it removes text relay, but it needs
+replication because the length guard is brittle.
+
 Current source-contrastive promotion rule:
 
 - matched `>=9/32`
