@@ -6056,3 +6056,62 @@ Next exact gate:
   shuffled-source, target-only, and slots-only controls
 - promote only if it recovers at least `2/6` clean source-necessary IDs with no
   target-self regression
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math SVAMP70 Chal241 Sidecar Gate
+
+- cycle number: `2026-04-26-qwen25math-svamp70-chal241-sidecar-gate`
+- timestamp: `2026-04-26 07:35:00 PDT`
+- live branch entering cycle: Qwen2.5-Math source-contrastive sidecar surface
+  discovery after original SVAMP70 positive and holdout failure
+- scale-up rung: strict small / surface-pruning gate
+- ICLR readiness: not ready; source-sidecar branch is positive on one slice
+  but unstable across disjoint surfaces
+
+Start-of-cycle status:
+
+- current paper story: the 1-byte source residue sidecar can recover clean
+  source-only IDs on the original SVAMP70 surface, but shallow guards failed a
+  disjoint holdout
+- exact blocker: determine whether the weak clean `chal241-310` source surface
+  should receive C2C or connector spend
+- highest-priority gate: run the cheap sidecar analyzer before generating new
+  expensive C2C rows
+
+Results:
+
+- surface: source `5/70`, target `10/70`, text `14/70`
+- clean source-only target set: `4`
+- t2t-agreement guard: best matched `9/70`, clean source-necessary up to
+  `3/4`, clean control union `1/4` to `2/4`
+- textless shorter-than-target guard: best matched `11/70`, clean
+  source-necessary `1/4`, clean control union `1/4`
+
+Decision:
+
+- reject `chal241-310` as a sidecar/router decision surface
+- do not spend C2C generation or connector training on this slice
+- weakened: adjacent SVAMP range scouting as the main path unless a stronger
+  source encoder changes source-alone mass
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_chal241_sidecar_gate_20260426.md`
+- t2t-guard JSON:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_only_sidecar_router_t2t_guard.json`
+  - sha256: `904942cceea20bc2e3e5f654c80532c19b5ce86b3e7fb998216c7ff0196f4ae8`
+- textless guard JSON:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_shorter_than_target_guard_sidecar.json`
+  - sha256: `34f6b87c2d25a67862f62b247cf2c2e69ace865ec452072e04273c9d0efc5b93`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_only_sidecar_router_gate.py -q`
+
+Next exact gate:
+
+- stop adjacent SVAMP range scouting unless a stronger source encoder changes
+  the source-only mass
+- run the next source-surface scout on a different math/reasoning split and
+  require source-only over target `>=6/70` plus clean source-only after text
+  exclusion `>=4/70` before C2C spend

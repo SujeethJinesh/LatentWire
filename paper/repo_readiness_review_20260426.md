@@ -339,10 +339,13 @@ clean source mass but still does not clear the predefined surface gate. Source
 is `5/70`, target is `10/70`, text relay is `14/70`, source-only over target is
 `4`, and clean source-only after text exclusion is `4`. Because raw source-only
 is below the `>=6/70` gate and text is much stronger than source, do not spend
-C2C or sidecar compute here. The next live gate is GSM70 Math source-surface
-discovery, while the highest-value method branch after a surface clears is a
-rate-capped query/resampler or shared sparse source sidecar rather than another
-shallow decoded-feature router.
+C2C here. The cheap sidecar gate now confirms the rejection: the text-relay
+agreement guard reaches only `9/70` with clean control leakage, and the
+textless shorter-than-target guard reaches only `11/70` with `1/4` clean
+source-necessary and `1/4` clean control leakage. The next live gate is GSM70
+Math source-surface discovery, while the highest-value method branch after a
+surface clears is a rate-capped query/resampler or shared sparse source sidecar
+rather than another shallow decoded-feature router.
 
 GSM70 source-surface update: Qwen2.5-Math -> Qwen3 on `data/gsm8k_eval_70.jsonl`
 also fails the surface gate. Source is `3/70`, target is `4/70`, text relay is

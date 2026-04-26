@@ -25,6 +25,10 @@
 - `qwen25math_svamp70_source_contrastive_sidecar_20260426.md` records the
   medium SVAMP70 confirmation: the sidecar beats target/text but remains below
   C2C and has bootstrap intervals crossing zero.
+- `qwen25math_svamp70_chal241_sidecar_gate_20260426.md` records the
+  `chal241-310` source-sidecar pruning gate: the sidecar touches clean
+  source-only IDs, but total accuracy stays too low and controls leak clean
+  IDs, so the slice should not receive C2C or connector spend.
 - `svamp32_c2c_mechanism_syndrome_probe_20260426.md` records the negative
   strict small-gate C2C prefill scalar/residual trace syndrome-distillation
   probe.
