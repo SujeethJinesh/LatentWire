@@ -5468,3 +5468,82 @@ Next exact gate:
   length threshold, evaluated on disjoint IDs with the same controls
 - alternatively run source-surface discovery for a Qwen2.5-Math -> Qwen3 slice
   with enough clean source-only IDs to support a real sidecar gate
+
+## Cycle Checkpoint: 2026-04-26 SVAMP70 CV Router
+
+- cycle number: `2026-04-26-qwen25math-qwen3-svamp70-cv-router`
+- timestamp: `2026-04-26 04:58:00 PDT`
+- live branch entering cycle: source-residue sidecar with brittle textless
+  preservation guard
+- scale-up rung: medium router replacement gate
+- ICLR readiness: not ready; CV router passes original slice but fails holdout
+
+Start-of-cycle status:
+
+- current paper story: the fixed length-ratio guard fails disjoint holdout
+- exact blocker: replace the hand threshold with an auditable router that does
+  not train on held-out rows
+- highest-priority gate: 5-fold decision-stump router over existing source and
+  target JSONL features
+
+Implementation:
+
+- added `scripts/analyze_svamp_source_sidecar_cv_router_gate.py`
+- added `tests/test_analyze_svamp_source_sidecar_cv_router_gate.py`
+- router features: source prediction length, source/target length ratio,
+  source numeric count, source generated tokens, source final marker
+- fold split: deterministic `sha256(example_id) % 5`
+- selected rule per fold maximizes `help - harm - penalty * accept_count`
+- source controls reuse the matched fold rule without refitting
+
+Original SVAMP70 result with accept penalty `0.10`:
+
+- matched: `25/70`
+- clean source-necessary: `4/6`
+- control clean union: `0/6`
+- accepted harm: `1`
+- paired delta vs target: `+0.0571`, bootstrap `[-0.0143, +0.1286]`
+- paired delta vs text: `+0.0429`, bootstrap `[-0.0857, +0.1714]`
+- paired delta vs C2C: `-0.0857`, bootstrap `[-0.2286, +0.0429]`
+
+Disjoint holdout result with the same router family:
+
+- matched: `6/70`
+- clean source-necessary: `0/2`
+- control clean union: `0/2`
+- accepted harm: `2`
+- paired delta vs target: `-0.0286`, bootstrap `[-0.0714, +0.0000]`
+- paired delta vs text: `-0.1714`, bootstrap `[-0.2714, -0.0571]`
+- paired delta vs C2C: `-0.4429`, bootstrap `[-0.5571, -0.3143]`
+
+Hypothesis update:
+
+- weakened: router over shallow decoded features as a robust method; it can
+  reproduce the original slice but does not transfer
+- strengthened: the limiting factor is source-surface stability and source
+  signal, not just a single bad fixed threshold
+- live next branch: source-surface discovery or a stronger source encoder before
+  additional router tuning
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_cv_router_20260426.md`
+- original CV router:
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/source_cv_router_penalty010_sidecar.json`
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/source_cv_router_penalty010_predictions.jsonl`
+- holdout CV router:
+  - `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_cv_router_penalty010_sidecar.json`
+  - `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_cv_router_penalty010_predictions.jsonl`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp_source_sidecar_cv_router_gate.py tests/test_analyze_svamp32_source_only_sidecar_router_gate.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp_source_sidecar_cv_router_gate.py scripts/analyze_svamp32_source_only_sidecar_router_gate.py`
+
+Next exact gate:
+
+- finish the SVAMP `chal-171..240` source-surface scout using source/target/text
+  first
+- spend C2C only if clean source-only IDs after text exclusion are high enough
+  to support a meaningful sidecar test

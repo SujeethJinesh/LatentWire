@@ -268,6 +268,13 @@ hand guard as a live method. Do not scale it directly to 500 examples; the next
 live branch must use a learned or cross-validated router, or first discover a
 source surface with more clean source-only IDs.
 
+CV router update: a 5-fold decision-stump router over existing source/target
+JSONL features can reproduce the original SVAMP70 sidecar row (`25/70`,
+`4/6` clean source-necessary, `0/6` clean control union), but it fails the
+same disjoint holdout (`6/70`, `0/2` clean source-necessary). This weakens
+shallow decoded-feature routers as a robust method and points the next live
+branch toward source-surface discovery or stronger source-derived signals.
+
 Current source-contrastive promotion rule:
 
 - matched `>=9/32`
