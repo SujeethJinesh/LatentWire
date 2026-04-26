@@ -66,6 +66,10 @@
   `chal241-310` source-sidecar pruning gate: the sidecar touches clean
   source-only IDs, but total accuracy stays too low and controls leak clean
   IDs, so the slice should not receive C2C or connector spend.
+- `qwen25math_svamp70_surface_scout_chal311_380_20260426.md` records the third
+  adjacent SVAMP70 source-surface scout rejection: source-only over target is
+  only `3/70`, clean source-only after text exclusion is only `2/70`, and the
+  slice should not receive C2C or connector spend.
 - `svamp70_process_repair_source_controls_20260426.md` records the
   source-control falsification of the old SVAMP70 process-repair row: matched
   repair beats target self-repair by `3/70`, but zero/shuffled-source controls

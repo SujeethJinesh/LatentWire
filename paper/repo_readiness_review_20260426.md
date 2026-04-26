@@ -462,6 +462,14 @@ current live branch should move from more same-pair surface scouting to the
 smallest stronger-interface smoke on an existing exact-ID SVAMP surface, or to
 a different source/target pair only if a cheap source/target/text scout clears.
 
+Third adjacent SVAMP surface scout update: SVAMP `chal-311` through `chal-380`
+also fails the surface gate. Source is `8/70`, target is `21/70`, text relay is
+`19/70`, source-only over target is only `3`, and clean source-only after text
+exclusion is only `2`. This makes three adjacent same-pair SVAMP70 scouts with
+insufficient clean source mass (`chal171-240`, `chal241-310`, and
+`chal311-380`). Stop adjacent SVAMP range scouting for Qwen2.5-Math -> Qwen3
+unless a new source encoder or prompting hypothesis changes the surface.
+
 Process-repair source-control update: old held-out process-repair rows were
 re-audited because they were the strongest historical positive-looking result.
 On SVAMP70, matched process repair reaches `38/70`, target self-repair reaches

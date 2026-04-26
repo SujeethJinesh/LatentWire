@@ -6873,3 +6873,72 @@ Next exact gate:
 - materialize SVAMP `chal311-380`, run source/target/text only, build a
   contrastive target set, and reject unless the source surface reaches `>=6/70`
   source-only over target and `>=4/70` clean source-only after text exclusion
+
+## Cycle Checkpoint: 2026-04-26 SVAMP70 Chal311-380 Source Surface Scout
+
+- cycle number: `2026-04-26-svamp70-chal311-380-source-scout`
+- timestamp: `2026-04-26 14:38:00 PDT`
+- live branch entering cycle: disjoint Qwen2.5-Math -> Qwen3 source-surface
+  scouting after confidence-router pruning
+- scale-up rung: medium source-surface scout
+- ICLR readiness: not ready; this is a surface selection result, not a method
+
+Start-of-cycle status:
+
+- current paper story: source-sidecar and confidence-router signals do not
+  generalize from the original SVAMP70 live surface to disjoint holdout slices
+- exact blocker: find enough clean source-only mass to justify C2C or learned
+  connector compute
+- highest-priority gate: source-only over target at least `6/70` and clean
+  source-only after text exclusion at least `4/70`
+
+Result:
+
+- source-alone: `8/70`, numeric coverage `63/70`
+- target-alone: `21/70`, numeric coverage `70/70`
+- text relay: `19/70`, numeric coverage `70/70`
+- target/source oracle: `24/70`
+- source-only over target: `3`
+- clean source-only after excluding text relay: `2`
+
+Decision:
+
+- reject `chal311-380` as a source-sidecar decision surface
+- do not spend C2C or connector compute on this slice
+- weaken adjacent SVAMP range scouting for this same source/target pair: three
+  adjacent scouts now fail to provide enough clean source mass
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_surface_scout_chal311_380_20260426.md`
+- eval slice:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/_artifacts/svamp_chal311_380.jsonl`
+  - sha256: `f503455a810222bbc5652a58824c5f5090d6a9d7d80973eab2caac5d51612227`
+- source predictions:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/source_alone.jsonl`
+  - sha256: `d40cb67ce378477d4c9ad1d13a8a8c610e5b4291f20b8db4b51369a58900a7b7`
+- target predictions:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/target_alone.jsonl`
+  - sha256: `6859d28388aa329036f767fe034e7de25eb7aa8f0c636e6b075a5e8ad638691d`
+- text-relay predictions:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/text_to_text.jsonl`
+  - sha256: `c17ef7746601f3c5357a4acd2354a909f97c78623d67f30805832eaef4a9d2cb`
+- source-contrastive target set:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/source_contrastive_target_set.json`
+  - sha256: `f1bdc7e775075a2b40b7ed0c96cf039795185868a1722afba9047b70c6bd67dc`
+- consolidated surface scan:
+  - `results/source_headroom_surface_scan_20260426/scan_with_chal311.json`
+  - sha256: `5f5034f7de04ffbf48b1dcc7dcac737fea736f17b8e9b0d7f6e8e70246bd10b4`
+
+Tests:
+
+- no code changes in this cycle
+- `git diff --check`
+
+Next exact gate:
+
+- stop adjacent SVAMP range scouting for Qwen2.5-Math -> Qwen3 unless a new
+  source encoder or prompting hypothesis changes the source surface
+- comb historical `rotalign`, `latent_bridge`, and result-folder memos before
+  selecting the next live branch
