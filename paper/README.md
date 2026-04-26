@@ -43,6 +43,10 @@
   source-trace self-consistency router falsification: live CV recovers only
   `1` clean source-necessary ID with `2` accepted harms, and the single
   holdout clean win survives equation-result permutation.
+- `source_generation_diagnostics_artifact_20260426.md` records the tooling
+  smoke for source-internal generation confidence artifacts: source-only greedy
+  logprob, entropy, top-1 probability, and top-1/top-2 margin are now
+  collectable in a sidecar JSONL without mutating baseline prediction files.
 - `qwen25math_svamp32_source_contrastive_sidecar_20260426.md` records the
   first positive strict-small Qwen2.5-Math -> Qwen3 source-contrastive sidecar
   stack: target/text agreement preservation plus a 1-byte source residue

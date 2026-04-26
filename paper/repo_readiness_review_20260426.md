@@ -423,6 +423,12 @@ clean source-necessary ID and `2` accepted harms; frozen holdout reaches
 equation-result permutation. This prunes shallow source-text quality features
 as the next rescue for the sidecar branch.
 
+Source-internal diagnostics update: a new sidecar collector can rerun source
+generation only and record greedy-generation confidence features, including
+chosen-token logprob, entropy, top-1 probability, and top-1/top-2 logit margin.
+The two-example MPS smoke passed outside the sandbox with offline caches. This
+is the next router feature family to test before another decoded-text guard.
+
 Surface scout update: SVAMP `chal-171` through `chal-240` is not a useful
 sidecar decision surface. Source is `8/70`, target is `22/70`, text relay is
 `24/70`, source-only over target is only `2`, and clean source-only after text

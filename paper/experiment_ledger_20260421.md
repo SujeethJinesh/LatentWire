@@ -6759,3 +6759,52 @@ Next exact gate:
   target/text examples, or add generation-time source confidence/logit
   artifacts so the next router uses model-internal source evidence rather than
   shallow source text
+
+## Cycle Checkpoint: 2026-04-26 Source Generation Diagnostics Artifact
+
+- cycle number: `2026-04-26-source-generation-diagnostics-artifact`
+- timestamp: `2026-04-26 11:35:00 PDT`
+- live branch entering cycle: source-internal confidence/logit artifact for
+  future source routers
+- scale-up rung: micro tooling smoke
+- ICLR readiness: not ready; this is tooling for the next router feature
+  family, not a positive method
+
+Start-of-cycle status:
+
+- current paper story: source sidecars have source-complementary pockets, but
+  shallow decoded-text guards and trace routers fail holdout or source-control
+  attribution
+- exact blocker: collect source-internal confidence features so the next router
+  is not based only on decoded text surface properties
+- highest-priority gate: add a sidecar diagnostics collector and prove it works
+  on a two-example MPS smoke without mutating existing baselines
+
+Result:
+
+- added `scripts/collect_source_generation_diagnostics.py`
+- added focused unit tests for logprob/entropy/margin extraction
+- two-example Qwen2.5-Math SVAMP32 smoke passed with offline cache settings and
+  approved MPS escalation
+- smoke output: `.debug/source_generation_diagnostics_smoke/source_diagnostics.jsonl`
+- smoke JSONL sha256:
+  `016e669f76de07666e9d13212e1c2fcc50565daa01e120916665c08f8f2f456f`
+
+Decision:
+
+- promote source-internal confidence diagnostics to the next router feature
+  family to test
+- do not call this a method result; it is instrumentation for the next gate
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_collect_source_generation_diagnostics.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/collect_source_generation_diagnostics.py`
+
+Next exact gate:
+
+- run diagnostics on `svamp70_live`, then test whether source logprob,
+  entropy, top-1 probability, and top-1/top-2 margin separate clean source-only
+  wins from source/text failures
+- if not, switch to the disjoint `chal311-380` source-surface scout before any
+  C2C or connector spend
