@@ -76,6 +76,8 @@ def test_build_source_contrastive_target_set_excludes_controls_and_baselines(
     assert payload["status"] == "source_contrastive_target_set_ready"
     assert payload["ids"]["source_only"] == ["a", "b", "c"]
     assert payload["ids"]["clean_source_only"] == ["c"]
+    assert payload["ids"]["clean_residual_targets"] == ["c"]
+    assert payload["ids"]["target_self_repair"] == ["b"]
     assert payload["counts"]["target_or_source_oracle"] == 4
     assert payload["provenance"]["exact_ordered_id_parity"] is True
 

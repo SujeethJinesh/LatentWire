@@ -231,9 +231,11 @@ def build_target_set(
         "ids": {
             "source_only": sorted(source_only),
             "clean_source_only": sorted(clean_source_only),
+            "clean_residual_targets": sorted(clean_source_only),
             "target_only": sorted(target_only),
             "control_union": sorted(control_union),
             "baseline_union": sorted(baseline_union),
+            "target_self_repair": sorted(baseline_union),
         },
         "counts": {
             "target_correct": len(target_correct),
