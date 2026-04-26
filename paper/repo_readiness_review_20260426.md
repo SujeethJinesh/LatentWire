@@ -238,6 +238,17 @@ not ICLR-ready: it is one 32-example slice, uses text relay as a preservation
 guard, lacks paired uncertainty/seed stability, and remains below C2C `15/32`.
 Promote to SVAMP70 medium confirmation before any broader claims.
 
+SVAMP70 medium update: the same source-contrastive sidecar stack remains
+positive against target/text but is not a headline result. Baselines are target
+`21/70`, text relay `22/70`, source-alone `13/70`, and C2C `31/70`. The
+guarded sidecar reaches `25/70`, recovers `4/6` clean source-only IDs, and has
+`0/6` clean control leakage. Paired deltas are `+0.0571` versus target and
+`+0.0429` versus text, but both bootstrap intervals cross zero; versus C2C it
+is `-0.0857`. A naive C2C-fallback stack fails (`23/70` with `4/6` clean
+control leakage). Do not widen this row to 500 examples until the method either
+gets closer to C2C or replaces the text-relay guard with a cheaper preservation
+signal that creates a clear systems tradeoff.
+
 Current source-contrastive promotion rule:
 
 - matched `>=9/32`

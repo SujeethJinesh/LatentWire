@@ -1,0 +1,606 @@
+{
+  "artifacts": {
+    "baselines": [
+      {
+        "label": "t2t",
+        "method": "text_to_text",
+        "path": "results/qwen25math_qwen3_svamp70_source_surface_20260426/text_to_text.jsonl"
+      }
+    ],
+    "controls": [],
+    "source": {
+      "label": "source",
+      "method": "source_alone",
+      "path": "results/qwen25math_qwen3_svamp70_source_surface_20260426/source_alone.jsonl"
+    },
+    "target": {
+      "label": "target",
+      "method": "target_alone",
+      "path": "results/qwen25math_qwen3_svamp70_source_surface_20260426/target_alone.jsonl"
+    }
+  },
+  "config": {
+    "min_source_only": 5
+  },
+  "counts": {
+    "clean_source_only": 6,
+    "source_correct": 13,
+    "source_only": 9,
+    "target_correct": 21,
+    "target_only": 17,
+    "target_or_source_oracle": 30
+  },
+  "date": "2026-04-26",
+  "ids": {
+    "baseline_union": [
+      "0cb1c44bf2f1e4ee",
+      "0d2b4f7681973e19",
+      "1b2e3688fc626dd9",
+      "1c17a9040076c971",
+      "1c5c29b5cc939ce1",
+      "316b525a4fcbfb89",
+      "3c5aeb08941dbb6d",
+      "47f7e80c8941a2de",
+      "4ef979ea2bf931df",
+      "6d802b471769dc7c",
+      "791c1a5058e25494",
+      "7b90a3514e78da0a",
+      "7c403d68fecd651c",
+      "844689d8c32ffb51",
+      "a85be5ec651dac24",
+      "aee922049c757331",
+      "b1200c32546a34a5",
+      "cdcd5f785f38123c",
+      "cfc46d556ee67fd8",
+      "de2a795ab37694af",
+      "f14e46b70758e167",
+      "f367349ce0604296"
+    ],
+    "clean_residual_targets": [
+      "14bfbfc94f2c2e7b",
+      "2de1549556000830",
+      "41cce6c6e6bb0058",
+      "4d780f825bb8541c",
+      "bd9d8da923981d69",
+      "ce08a3a269bf0151"
+    ],
+    "clean_source_only": [
+      "14bfbfc94f2c2e7b",
+      "2de1549556000830",
+      "41cce6c6e6bb0058",
+      "4d780f825bb8541c",
+      "bd9d8da923981d69",
+      "ce08a3a269bf0151"
+    ],
+    "control_union": [],
+    "source_only": [
+      "14bfbfc94f2c2e7b",
+      "1c5c29b5cc939ce1",
+      "2de1549556000830",
+      "41cce6c6e6bb0058",
+      "4d780f825bb8541c",
+      "844689d8c32ffb51",
+      "aee922049c757331",
+      "bd9d8da923981d69",
+      "ce08a3a269bf0151"
+    ],
+    "target_only": [
+      "0cb1c44bf2f1e4ee",
+      "0d2b4f7681973e19",
+      "18942c5af04fd665",
+      "1c17a9040076c971",
+      "2b9428270f2ea5be",
+      "2f80204fc9e0896f",
+      "316b525a4fcbfb89",
+      "6d802b471769dc7c",
+      "791c1a5058e25494",
+      "7b90a3514e78da0a",
+      "a85be5ec651dac24",
+      "c042f0a2949ff8e6",
+      "cdcd5f785f38123c",
+      "de2a795ab37694af",
+      "ec60549891847aed",
+      "f14e46b70758e167",
+      "f367349ce0604296"
+    ],
+    "target_self_repair": [
+      "0cb1c44bf2f1e4ee",
+      "0d2b4f7681973e19",
+      "1b2e3688fc626dd9",
+      "1c17a9040076c971",
+      "1c5c29b5cc939ce1",
+      "316b525a4fcbfb89",
+      "3c5aeb08941dbb6d",
+      "47f7e80c8941a2de",
+      "4ef979ea2bf931df",
+      "6d802b471769dc7c",
+      "791c1a5058e25494",
+      "7b90a3514e78da0a",
+      "7c403d68fecd651c",
+      "844689d8c32ffb51",
+      "a85be5ec651dac24",
+      "aee922049c757331",
+      "b1200c32546a34a5",
+      "cdcd5f785f38123c",
+      "cfc46d556ee67fd8",
+      "de2a795ab37694af",
+      "f14e46b70758e167",
+      "f367349ce0604296"
+    ]
+  },
+  "provenance": {
+    "baseline_numeric_coverage": {
+      "t2t": 70
+    },
+    "control_numeric_coverage": {},
+    "exact_ordered_id_parity": true,
+    "source_numeric_coverage": 61,
+    "target_numeric_coverage": 70
+  },
+  "reference_ids": [
+    "013133cdef4f637c",
+    "d64f6e35083ffe8c",
+    "3e8a5691f5443495",
+    "316b525a4fcbfb89",
+    "e26bdbcab1449bbe",
+    "aee922049c757331",
+    "1d50b408c8f5cd2c",
+    "b0b71023ae4d233b",
+    "b1200c32546a34a5",
+    "14bfbfc94f2c2e7b",
+    "4c84ebf42812703b",
+    "4ef979ea2bf931df",
+    "13cb77b698eeadb5",
+    "e3ab8666238a289e",
+    "2de1549556000830",
+    "615f9d817cb5be59",
+    "2f80204fc9e0896f",
+    "137ad74218053f8a",
+    "4d780f825bb8541c",
+    "08d3dd8885ffb998",
+    "de1bf4d142544e5b",
+    "f367349ce0604296",
+    "a85be5ec651dac24",
+    "de2a795ab37694af",
+    "47464cc0b064f172",
+    "0d2b4f7681973e19",
+    "33836927fc9f1a8a",
+    "e7dd2efb5ec99a06",
+    "41cce6c6e6bb0058",
+    "6e9745b37ab6fc45",
+    "c042f0a2949ff8e6",
+    "575d7e83d84c1e67",
+    "a07cd6cc8f1c832e",
+    "18942c5af04fd665",
+    "3c5aeb08941dbb6d",
+    "f3781a1b2b3f54a8",
+    "df572ff22cb4436e",
+    "6d802b471769dc7c",
+    "791c1a5058e25494",
+    "6859c69dbfdc7138",
+    "ec685daac1f1d117",
+    "7c403d68fecd651c",
+    "cfc46d556ee67fd8",
+    "c0d7c44c5705de9c",
+    "cab16f9a19d2d607",
+    "0cb1c44bf2f1e4ee",
+    "1c17a9040076c971",
+    "e9e7a2bd85684f12",
+    "ce08a3a269bf0151",
+    "2cd1858c0d8e1d22",
+    "39774feac1f5db05",
+    "e099e405e8d1a66b",
+    "9325c4efa96bdbca",
+    "31b55c9ec19126d4",
+    "cdcd5f785f38123c",
+    "7b90a3514e78da0a",
+    "08c1ad64868793df",
+    "1c5c29b5cc939ce1",
+    "ec60549891847aed",
+    "bd9d8da923981d69",
+    "463aefda98c19443",
+    "dcf26d3b6ad06c6c",
+    "2b9428270f2ea5be",
+    "f14e46b70758e167",
+    "a4e792e50d68217b",
+    "dead78178c35082b",
+    "1b2e3688fc626dd9",
+    "b1a93835dda950f4",
+    "844689d8c32ffb51",
+    "47f7e80c8941a2de"
+  ],
+  "reference_n": 70,
+  "rows": [
+    {
+      "example_id": "013133cdef4f637c",
+      "labels": []
+    },
+    {
+      "example_id": "d64f6e35083ffe8c",
+      "labels": []
+    },
+    {
+      "example_id": "3e8a5691f5443495",
+      "labels": []
+    },
+    {
+      "example_id": "316b525a4fcbfb89",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "e26bdbcab1449bbe",
+      "labels": []
+    },
+    {
+      "example_id": "aee922049c757331",
+      "labels": [
+        "source_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "1d50b408c8f5cd2c",
+      "labels": []
+    },
+    {
+      "example_id": "b0b71023ae4d233b",
+      "labels": []
+    },
+    {
+      "example_id": "b1200c32546a34a5",
+      "labels": [
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "14bfbfc94f2c2e7b",
+      "labels": [
+        "source_only",
+        "clean_source_only"
+      ]
+    },
+    {
+      "example_id": "4c84ebf42812703b",
+      "labels": []
+    },
+    {
+      "example_id": "4ef979ea2bf931df",
+      "labels": [
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "13cb77b698eeadb5",
+      "labels": []
+    },
+    {
+      "example_id": "e3ab8666238a289e",
+      "labels": []
+    },
+    {
+      "example_id": "2de1549556000830",
+      "labels": [
+        "source_only",
+        "clean_source_only"
+      ]
+    },
+    {
+      "example_id": "615f9d817cb5be59",
+      "labels": []
+    },
+    {
+      "example_id": "2f80204fc9e0896f",
+      "labels": [
+        "target_only"
+      ]
+    },
+    {
+      "example_id": "137ad74218053f8a",
+      "labels": []
+    },
+    {
+      "example_id": "4d780f825bb8541c",
+      "labels": [
+        "source_only",
+        "clean_source_only"
+      ]
+    },
+    {
+      "example_id": "08d3dd8885ffb998",
+      "labels": []
+    },
+    {
+      "example_id": "de1bf4d142544e5b",
+      "labels": []
+    },
+    {
+      "example_id": "f367349ce0604296",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "a85be5ec651dac24",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "de2a795ab37694af",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "47464cc0b064f172",
+      "labels": []
+    },
+    {
+      "example_id": "0d2b4f7681973e19",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "33836927fc9f1a8a",
+      "labels": []
+    },
+    {
+      "example_id": "e7dd2efb5ec99a06",
+      "labels": []
+    },
+    {
+      "example_id": "41cce6c6e6bb0058",
+      "labels": [
+        "source_only",
+        "clean_source_only"
+      ]
+    },
+    {
+      "example_id": "6e9745b37ab6fc45",
+      "labels": []
+    },
+    {
+      "example_id": "c042f0a2949ff8e6",
+      "labels": [
+        "target_only"
+      ]
+    },
+    {
+      "example_id": "575d7e83d84c1e67",
+      "labels": []
+    },
+    {
+      "example_id": "a07cd6cc8f1c832e",
+      "labels": []
+    },
+    {
+      "example_id": "18942c5af04fd665",
+      "labels": [
+        "target_only"
+      ]
+    },
+    {
+      "example_id": "3c5aeb08941dbb6d",
+      "labels": [
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "f3781a1b2b3f54a8",
+      "labels": []
+    },
+    {
+      "example_id": "df572ff22cb4436e",
+      "labels": []
+    },
+    {
+      "example_id": "6d802b471769dc7c",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "791c1a5058e25494",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "6859c69dbfdc7138",
+      "labels": []
+    },
+    {
+      "example_id": "ec685daac1f1d117",
+      "labels": []
+    },
+    {
+      "example_id": "7c403d68fecd651c",
+      "labels": [
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "cfc46d556ee67fd8",
+      "labels": [
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "c0d7c44c5705de9c",
+      "labels": []
+    },
+    {
+      "example_id": "cab16f9a19d2d607",
+      "labels": []
+    },
+    {
+      "example_id": "0cb1c44bf2f1e4ee",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "1c17a9040076c971",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "e9e7a2bd85684f12",
+      "labels": []
+    },
+    {
+      "example_id": "ce08a3a269bf0151",
+      "labels": [
+        "source_only",
+        "clean_source_only"
+      ]
+    },
+    {
+      "example_id": "2cd1858c0d8e1d22",
+      "labels": []
+    },
+    {
+      "example_id": "39774feac1f5db05",
+      "labels": []
+    },
+    {
+      "example_id": "e099e405e8d1a66b",
+      "labels": []
+    },
+    {
+      "example_id": "9325c4efa96bdbca",
+      "labels": []
+    },
+    {
+      "example_id": "31b55c9ec19126d4",
+      "labels": []
+    },
+    {
+      "example_id": "cdcd5f785f38123c",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "7b90a3514e78da0a",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "08c1ad64868793df",
+      "labels": []
+    },
+    {
+      "example_id": "1c5c29b5cc939ce1",
+      "labels": [
+        "source_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "ec60549891847aed",
+      "labels": [
+        "target_only"
+      ]
+    },
+    {
+      "example_id": "bd9d8da923981d69",
+      "labels": [
+        "source_only",
+        "clean_source_only"
+      ]
+    },
+    {
+      "example_id": "463aefda98c19443",
+      "labels": []
+    },
+    {
+      "example_id": "dcf26d3b6ad06c6c",
+      "labels": []
+    },
+    {
+      "example_id": "2b9428270f2ea5be",
+      "labels": [
+        "target_only"
+      ]
+    },
+    {
+      "example_id": "f14e46b70758e167",
+      "labels": [
+        "target_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "a4e792e50d68217b",
+      "labels": []
+    },
+    {
+      "example_id": "dead78178c35082b",
+      "labels": []
+    },
+    {
+      "example_id": "1b2e3688fc626dd9",
+      "labels": [
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "b1a93835dda950f4",
+      "labels": []
+    },
+    {
+      "example_id": "844689d8c32ffb51",
+      "labels": [
+        "source_only",
+        "baseline:t2t"
+      ]
+    },
+    {
+      "example_id": "47f7e80c8941a2de",
+      "labels": [
+        "baseline:t2t"
+      ]
+    }
+  ],
+  "status": "source_contrastive_target_set_ready",
+  "summaries": {
+    "baselines": {
+      "t2t": {
+        "correct": 22,
+        "label": "t2t",
+        "n": 70,
+        "numeric_coverage": 70
+      }
+    },
+    "controls": {},
+    "source": {
+      "correct": 13,
+      "label": "source",
+      "n": 70,
+      "numeric_coverage": 61
+    },
+    "target": {
+      "correct": 21,
+      "label": "target",
+      "n": 70,
+      "numeric_coverage": 70
+    }
+  }
+}

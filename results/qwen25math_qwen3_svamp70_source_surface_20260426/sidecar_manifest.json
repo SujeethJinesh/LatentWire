@@ -1,0 +1,36 @@
+{
+  "date": "2026-04-26",
+  "method": "target_text_agreement_guard_plus_source_residue_sidecar",
+  "status": "medium_positive_vs_target_text_not_c2c",
+  "summary": {
+    "c2c": 31,
+    "clean_source_necessary": 4,
+    "control_clean_union": 0,
+    "sidecar": 25,
+    "source": 13,
+    "target": 21,
+    "text": 22,
+    "total": 70
+  },
+  "paired": {
+    "vs_target": {
+      "delta": 0.0571,
+      "bootstrap_delta_low": -0.0286,
+      "bootstrap_delta_high": 0.1429,
+      "mcnemar_p": 0.3428
+    },
+    "vs_text": {
+      "delta": 0.0429,
+      "bootstrap_delta_low": -0.0571,
+      "bootstrap_delta_high": 0.1429,
+      "mcnemar_p": 0.6056
+    },
+    "vs_c2c": {
+      "delta": -0.0857,
+      "bootstrap_delta_low": -0.2143,
+      "bootstrap_delta_high": 0.0571,
+      "mcnemar_p": 0.3074
+    }
+  }
+}
+

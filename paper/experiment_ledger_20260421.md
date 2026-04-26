@@ -5241,3 +5241,78 @@ PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baseli
 
 Then build the SVAMP70 source-contrastive set and rerun the guarded sidecar with
 full controls.
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math -> Qwen3 SVAMP70 Source-Contrastive Sidecar
+
+- cycle number: `2026-04-26-qwen25math-qwen3-svamp70-source-sidecar`
+- timestamp: `2026-04-26 03:49:00 PDT`
+- live branch entering cycle: source-contrastive sidecar stack after SVAMP32
+  strict-small pass
+- scale-up rung: medium confirmation
+- ICLR readiness: not ready; medium result beats target/text but not C2C and
+  uncertainty crosses zero
+
+Start-of-cycle status:
+
+- current paper story: target/text agreement guard plus 1-byte source residue
+  sidecar cleared SVAMP32 with clean source-control wins
+- exact blocker: confirm the signal on SVAMP70 and compare against C2C
+- highest-priority gate: materialize source/target/text/C2C on SVAMP70, build
+  source-contrastive IDs, rerun guarded sidecar, and compute paired uncertainty
+
+Decision:
+
+- target-alone: `21/70`
+- source-alone: `13/70`
+- text relay: `22/70`
+- C2C: `31/70`
+- source-only over target: `9`
+- clean source-only after text exclusion: `6`
+- guarded sidecar: `25/70`
+- clean source-necessary: `4/6`
+- control clean union: `0/6`
+- paired delta vs target: `+0.0571`, bootstrap `[-0.0286, +0.1429]`,
+  McNemar `0.3428`
+- paired delta vs text: `+0.0429`, bootstrap `[-0.0571, +0.1429]`,
+  McNemar `0.6056`
+- paired delta vs C2C: `-0.0857`, bootstrap `[-0.2143, +0.0571]`,
+  McNemar `0.3074`
+- C2C fallback stack: failed, matched `23/70`, clean source-necessary `1/6`,
+  control clean union `4/6`
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_source_contrastive_sidecar_20260426.md`
+- sidecar manifest:
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/sidecar_manifest.md`
+- generation manifest:
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/manifest.md`
+  - sha256: `1155f7f1eee547d0d36e6d62fb6305d9c01cf7042758e19e3cd293383033b0fa`
+- guarded sidecar:
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/source_only_sidecar_router_t2t_guard.json`
+  - sha256: `0d5971c8152650b31e2fda9ccf0b1263061f6adc045e488ed5feb92841e8389d`
+- paired comparisons:
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/paired_vs_target.md`
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/paired_vs_text.md`
+  - `results/qwen25math_qwen3_svamp70_source_surface_20260426/paired_vs_c2c.md`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_only_sidecar_router_gate.py tests/test_build_source_contrastive_target_set.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_only_sidecar_router_gate.py scripts/build_source_contrastive_target_set.py`
+
+Hypothesis update:
+
+- strengthened: source residues carry real target-complementary information on
+  both SVAMP32 and SVAMP70 under source-destroying controls
+- weakened: current text-guarded sidecar as a headline ICLR method, because it
+  is below C2C and uncertainty versus target/text is not decisive
+- killed: naive C2C-fallback composition with the same sidecar
+
+Next exact gate:
+
+- do not scale to 500 examples yet
+- implement or test a cheaper preservation guard that does not require text
+  relay, or a source-derived router that preserves target-correct rows better
+  while keeping clean control leakage at zero

@@ -18,6 +18,9 @@
   first positive strict-small Qwen2.5-Math -> Qwen3 source-contrastive sidecar
   stack: target/text agreement preservation plus a 1-byte source residue
   sidecar.
+- `qwen25math_svamp70_source_contrastive_sidecar_20260426.md` records the
+  medium SVAMP70 confirmation: the sidecar beats target/text but remains below
+  C2C and has bootstrap intervals crossing zero.
 - `svamp32_c2c_mechanism_syndrome_probe_20260426.md` records the negative
   strict small-gate C2C prefill scalar/residual trace syndrome-distillation
   probe.

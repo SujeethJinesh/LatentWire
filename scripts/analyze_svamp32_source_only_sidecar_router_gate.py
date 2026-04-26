@@ -416,7 +416,7 @@ def analyze(
 
 def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     lines = [
-        "# SVAMP32 Source-Only Sidecar Router Gate",
+        "# Source-Only Sidecar Router Gate",
         "",
         f"- date: `{payload['date']}`",
         f"- status: `{payload['status']}`",
