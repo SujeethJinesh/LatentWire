@@ -133,6 +133,9 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
   tokens is also negative: it matches the all-layer ridge gate at `9/32`,
   preserves only `2/3` target-self rows, and recovers `0/6` clean
   source-necessary IDs.
+- The full all-layer source-token learned syndrome probe is negative:
+  matched `7/32`, target-only `14/32`, target-self `2/3`, and clean
+  source-necessary `0/6`.
 
 ## Main Gaps
 
@@ -157,11 +160,11 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 ## Highest-Priority Next Gate
 
-Pivot to token/layer-level C2C-residual distillation or a full source-token
-query bottleneck rather than raw source numeric answers, raw dynalign scale-up,
-linear pooled source-hidden readout, or summary-token query bottlenecks. The
-next branch should use source token/layer traces or C2C residual targets with
-cross-fitting, rate/slot ablations, and strict matched-vs-control separation.
+Pivot to source-surface discovery rather than more SVAMP32 source-state
+residue predictors. The next branch should either test process-repair/selector
+stacks under source controls on a strict clean surface, or convert the strongest
+toy interface clue, quotient/GPA sparse dictionaries with sequence-aligned byte
+sidecars, into a real cross-family tokenizer/interface stress gate.
 
 Promotion rule:
 

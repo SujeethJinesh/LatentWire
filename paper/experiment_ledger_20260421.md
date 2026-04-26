@@ -4395,3 +4395,88 @@ Next exact gate:
 - require matched `>=14/32`, target-self `3/3`, clean source-necessary
   `>=2/6`, numeric coverage `>=31/32`, exact ordered ID parity, and clean
   control union `0/6`
+
+## 2026-04-26 - Remaining MD/results audit and source-token all-layer bottleneck gate
+
+Cycle:
+
+- cycle number: `2026-04-26-source-token-all-layer-1`
+- timestamp: `2026-04-26 00:03:07 PDT`
+- live branch entering cycle: full source-token query-bottleneck residue
+  predictor
+- scale-up rung: strict small exact-ID gate
+- ICLR readiness: not ready; no deployable source-derived positive method
+
+Start-of-cycle status:
+
+- current paper story: C2C/syndrome bounds show headroom, but source-state
+  residue predictors and raw dynalign are failing source-control or stability
+  gates
+- exact blocker: no source-derived signal recovers clean C2C-only IDs beyond
+  target-self controls
+- highest-priority gate: finish combing older MD/results and run the one
+  remaining crisp source-token query-bottleneck falsification
+
+Audit synthesis:
+
+- no overlooked real benchmark-positive branch was found
+- strongest toy-only interface clue: quotient/GPA/sparse dictionary plus
+  sequence-aligned byte sidecar under tokenizer-like corruption
+- strongest selector/repair clue: GSM30 process repair selected route
+  `0.2333` vs target `0.0667`, but not source-control-clean
+- strongest oracle/selector headroom: random route target-or-seed oracle
+  `0.3000` with McNemar p `0.0233`, still only candidate-set headroom
+- SVAMP32 source oracle bound remains useful, but idweighted sidecar bound
+  adds only `1` clean source-necessary ID beyond target self-repair
+- GSM70 dynalign is not source-specific under later runtime controls and is
+  seed-fragile
+
+Gate:
+
+- ran `scripts/analyze_svamp32_learned_syndrome_probe.py` with all source
+  hidden layers, `q=4`, `h=16`, `8` outer folds, `80` epochs, seed `2`
+- controls: zero-source, shuffled-source, label-shuffled, same-norm-noise,
+  target-only, and slots-only
+
+Decision:
+
+- frozen SVAMP32 gate failed
+- matched `7/32`, below target-only `14/32`
+- target-self preservation `2/3`
+- clean source-necessary `0/6`
+- control clean union `0/6`
+- killed: source-token query-bottleneck residue prediction on the current
+  SVAMP32 syndrome surface
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_source_token_all_layers_bottleneck_20260426.md`
+- results manifest:
+  - `results/svamp32_source_token_all_layers_bottleneck_20260426/manifest.md`
+- result JSON:
+  - `results/svamp32_source_token_all_layers_bottleneck_20260426/qbottleneck_q4_h16_f8_seed2_all_layers_targetpool_probe.json`
+  - sha256: `c09874826af09a957a7c467ee5afd54fa36ec2122e62b2455cd553eaf7064e6a`
+- result markdown:
+  - `results/svamp32_source_token_all_layers_bottleneck_20260426/qbottleneck_q4_h16_f8_seed2_all_layers_targetpool_probe.md`
+  - sha256: `dee99f9ac14137e1f8c1da8fdebceee4182f3ff32cdf463f8c5cbccb6dd6ffa8`
+- run log:
+  - `.debug/svamp32_source_token_all_layers_bottleneck_20260426/logs/qbottleneck_q4_h16_f8_seed2_all_layers_targetpool_probe.log`
+  - sha256: `dcd00fe42f1c137f64110882bde470aa259489ecb747b8a2a73045fbd3043de6`
+
+Hypothesis update:
+
+- killed: source-token query bottlenecks over Qwen2.5-0.5B source states as a
+  direct C2C residue predictor on this surface
+- weakened: more SVAMP32 source-state residue tuning without a new source
+  signal
+- promoted next: source-surface discovery rather than further tuning dead
+  residue predictors
+
+Next exact gate:
+
+- either run a process-repair/selector source-control diagnostic on a strict
+  clean surface, requiring at least `2` clean IDs beyond target self-repair and
+  no target-self losses, or convert the quotient/GPA sparse dictionary plus
+  sequence-aligned byte sidecar toy into a real cross-family tokenizer/interface
+  stress gate
