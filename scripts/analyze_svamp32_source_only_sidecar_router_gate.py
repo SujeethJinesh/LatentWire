@@ -110,6 +110,56 @@ def _source_target_quality_passes(
     )
 
 
+def _source_quality_score(
+    source_row: dict[str, Any] | None,
+    target_row: dict[str, Any],
+    score_field: str | None,
+) -> float | None:
+    if not score_field:
+        return None
+    if source_row is None:
+        return None
+    source_text = str(source_row.get("prediction", "") or "")
+    target_text = str(target_row.get("prediction", "") or "")
+    if score_field == "source_prediction_char_count":
+        return float(len(source_text))
+    if score_field == "target_prediction_char_count":
+        return float(len(target_text))
+    if score_field == "source_target_len_ratio":
+        denominator = max(len(target_text), 1)
+        return float(len(source_text) / denominator)
+    if score_field == "source_numeric_count":
+        return float(len(re.findall(r"[-+]?\d+(?:\.\d+)?", source_text)))
+    if score_field == "source_generated_tokens":
+        value = source_row.get("generated_tokens")
+        if isinstance(value, (int, float)):
+            return float(value)
+        return None
+    raise ValueError(f"Unsupported source quality score field: {score_field!r}")
+
+
+def _source_quality_threshold_passes(
+    *,
+    source_row: dict[str, Any] | None,
+    target_row: dict[str, Any],
+    score_field: str | None,
+    min_threshold: float | None,
+    max_threshold: float | None,
+) -> bool:
+    if not score_field:
+        return True
+    if source_row is None or syndrome._prediction_numeric(source_row) is None:
+        return False
+    score = _source_quality_score(source_row, target_row, score_field)
+    if score is None:
+        return False
+    if min_threshold is not None and score < min_threshold:
+        return False
+    if max_threshold is not None and score > max_threshold:
+        return False
+    return True
+
+
 def _apply_source_quality_guard(
     *,
     candidate: str | None,
@@ -117,8 +167,19 @@ def _apply_source_quality_guard(
     source_row: dict[str, Any] | None,
     target_row: dict[str, Any],
     guard: str | None,
+    score_field: str | None,
+    min_threshold: float | None,
+    max_threshold: float | None,
 ) -> str | None:
-    if _source_target_quality_passes(source_row, target_row, guard):
+    if _source_target_quality_passes(
+        source_row, target_row, guard
+    ) and _source_quality_threshold_passes(
+        source_row=source_row,
+        target_row=target_row,
+        score_field=score_field,
+        min_threshold=min_threshold,
+        max_threshold=max_threshold,
+    ):
         return candidate
     return fallback
 
@@ -142,6 +203,9 @@ def _evaluate_moduli(
     max_control_clean_union: int,
     preserve_on_agreement_label: str | None,
     source_quality_guard: str | None,
+    source_quality_score_field: str | None,
+    source_quality_min_threshold: float | None,
+    source_quality_max_threshold: float | None,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     candidate_labels = list(candidate_by_label)
@@ -216,6 +280,9 @@ def _evaluate_moduli(
                         source_row=source_rows_by_condition.get(condition),
                         target_row=target_by_id[example_id],
                         guard=source_quality_guard,
+                        score_field=source_quality_score_field,
+                        min_threshold=source_quality_min_threshold,
+                        max_threshold=source_quality_max_threshold,
                     ),
                     fallback=fallback,
                     agreement_prediction=agreement_prediction,
@@ -250,6 +317,19 @@ def _evaluate_moduli(
                         target_by_id[example_id],
                         source_quality_guard,
                     )
+                    and _source_quality_threshold_passes(
+                        source_row=source_by_id[example_id],
+                        target_row=target_by_id[example_id],
+                        score_field=source_quality_score_field,
+                        min_threshold=source_quality_min_threshold,
+                        max_threshold=source_quality_max_threshold,
+                    )
+                ),
+                "source_quality_score_field": source_quality_score_field,
+                "source_quality_score": _source_quality_score(
+                    source_by_id[example_id],
+                    target_by_id[example_id],
+                    source_quality_score_field,
                 ),
                 "candidate_pool_size": len(ordered_values),
                 "candidate_pool_values": list(ordered_values),
@@ -354,6 +434,9 @@ def analyze(
     run_date: str,
     preserve_on_agreement_label: str | None = None,
     source_quality_guard: str | None = None,
+    source_quality_score_field: str | None = None,
+    source_quality_min_threshold: float | None = None,
+    source_quality_max_threshold: float | None = None,
 ) -> dict[str, Any]:
     target_records = syndrome._records_for_method(target_spec)
     reference_ids = [str(row["example_id"]) for row in target_records]
@@ -429,6 +512,9 @@ def analyze(
             max_control_clean_union=max_control_clean_union,
             preserve_on_agreement_label=preserve_on_agreement_label,
             source_quality_guard=source_quality_guard,
+            source_quality_score_field=source_quality_score_field,
+            source_quality_min_threshold=source_quality_min_threshold,
+            source_quality_max_threshold=source_quality_max_threshold,
         )
         for moduli in moduli_sets
     ]
@@ -479,6 +565,9 @@ def analyze(
             "min_numeric_coverage": min_numeric_coverage,
             "preserve_on_agreement_label": preserve_on_agreement_label,
             "source_quality_guard": source_quality_guard,
+            "source_quality_score_field": source_quality_score_field,
+            "source_quality_min_threshold": source_quality_min_threshold,
+            "source_quality_max_threshold": source_quality_max_threshold,
             "moduli_sets": [list(moduli) for moduli in moduli_sets],
         },
         "reference_n": len(reference_ids),
@@ -494,6 +583,59 @@ def analyze(
     }
 
 
+def _selected_run(payload: dict[str, Any]) -> dict[str, Any]:
+    clearing = [
+        run
+        for run in payload["runs"]
+        if run["status"] == "source_only_sidecar_router_clears_gate"
+    ]
+    candidates = clearing or list(payload["runs"])
+    return sorted(
+        candidates,
+        key=lambda run: (
+            -int(run["condition_summaries"]["matched"]["correct_count"]),
+            int(run["syndrome_bytes"]),
+            len(run["moduli"]),
+        ),
+    )[0]
+
+
+def _write_prediction_jsonl(
+    path: pathlib.Path,
+    payload: dict[str, Any],
+    *,
+    method: str,
+) -> None:
+    run = _selected_run(payload)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        for row in run["rows"]:
+            matched = row["conditions"]["matched"]
+            prediction = matched["prediction"]
+            record = {
+                "example_id": row["example_id"],
+                "method": method,
+                "answer": row["gold_answer"],
+                "prediction": "" if prediction is None else str(prediction),
+                "normalized_prediction": "" if prediction is None else str(prediction),
+                "correct": bool(matched["correct"]),
+                "accepted_source_sidecar": bool(
+                    prediction is not None
+                    and row.get("fallback_prediction") is not None
+                    and str(prediction) != str(row.get("fallback_prediction"))
+                ),
+                "fallback_prediction": row.get("fallback_prediction"),
+                "source_prediction": row.get("source_prediction"),
+                "source_quality_guard": row.get("source_quality_guard"),
+                "source_quality_score_field": row.get("source_quality_score_field"),
+                "source_quality_score": row.get("source_quality_score"),
+                "source_quality_passed": row.get("source_quality_passed"),
+                "sidecar_moduli": run["moduli"],
+                "sidecar_bytes": run["syndrome_bytes"],
+            }
+            handle.write(json.dumps(record, ensure_ascii=True, sort_keys=True) + "\n")
+
+
 def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     lines = [
         "# Source-Only Sidecar Router Gate",
@@ -504,6 +646,9 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- fallback label: `{payload['config']['fallback_label']}`",
         f"- preserve-on-agreement label: `{payload['config']['preserve_on_agreement_label'] or 'none'}`",
         f"- source quality guard: `{payload['config']['source_quality_guard'] or 'none'}`",
+        f"- source quality score field: `{payload['config']['source_quality_score_field'] or 'none'}`",
+        f"- source quality min threshold: `{payload['config']['source_quality_min_threshold']}`",
+        f"- source quality max threshold: `{payload['config']['source_quality_max_threshold']}`",
         f"- source numeric coverage: `{payload['provenance']['source_numeric_coverage']}/{payload['reference_n']}`",
         f"- provenance issues: `{len(payload['provenance']['issues'])}`",
         "",
@@ -563,9 +708,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Optional text-local source quality guard before applying a source/control sidecar.",
     )
+    parser.add_argument(
+        "--source-quality-score-field",
+        choices=[
+            "source_prediction_char_count",
+            "target_prediction_char_count",
+            "source_target_len_ratio",
+            "source_numeric_count",
+            "source_generated_tokens",
+        ],
+        default=None,
+        help="Optional source/target-derived quality score to threshold before applying a sidecar.",
+    )
+    parser.add_argument("--source-quality-min-threshold", type=float)
+    parser.add_argument("--source-quality-max-threshold", type=float)
     parser.add_argument("--date", default=date.today().isoformat())
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
+    parser.add_argument("--output-predictions-jsonl")
+    parser.add_argument("--prediction-method", default="source_sidecar")
     return parser.parse_args(argv)
 
 
@@ -594,6 +755,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         min_numeric_coverage=int(args.min_numeric_coverage),
         preserve_on_agreement_label=args.preserve_on_agreement_label,
         source_quality_guard=args.source_quality_guard,
+        source_quality_score_field=args.source_quality_score_field,
+        source_quality_min_threshold=args.source_quality_min_threshold,
+        source_quality_max_threshold=args.source_quality_max_threshold,
         run_date=str(args.date),
     )
     output_json = syndrome._resolve(args.output_json)
@@ -601,6 +765,12 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     output_json.parent.mkdir(parents=True, exist_ok=True)
     output_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     _write_markdown(output_md, payload)
+    if args.output_predictions_jsonl:
+        _write_prediction_jsonl(
+            syndrome._resolve(args.output_predictions_jsonl),
+            payload,
+            method=str(args.prediction_method),
+        )
     print(json.dumps({"status": payload["status"], "output_json": syndrome._display_path(output_json)}, indent=2))
     return payload
 

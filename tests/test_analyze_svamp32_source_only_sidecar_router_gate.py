@@ -307,3 +307,95 @@ def test_shorter_than_target_numeric_guard_uses_source_and_target_lengths(tmp_pa
     assert clean_row["source_quality_passed"] is True
     assert preserve_row["source_quality_passed"] is False
     assert preserve_row["conditions"]["matched"]["prediction"] == "8"
+
+
+def test_source_quality_len_ratio_threshold_is_parameterized(tmp_path):
+    target_path = tmp_path / "target.jsonl"
+    source_path = tmp_path / "source.jsonl"
+    target_set_path = tmp_path / "target_set.json"
+
+    _write_jsonl(
+        target_path,
+        [
+            {
+                **_row("clean", "target", "5", "0"),
+                "prediction": "A long wrong target explanation ending in 0",
+            },
+            {
+                **_row("preserve", "target", "8", "8"),
+                "prediction": "8",
+            },
+        ],
+    )
+    _write_jsonl(
+        source_path,
+        [
+            {
+                **_row("clean", "source", "5", "5"),
+                "prediction": "5",
+            },
+            {
+                **_row("preserve", "source", "8", "1"),
+                "prediction": "A longer wrong source answer with 1",
+            },
+        ],
+    )
+    target_set_path.write_text(
+        json.dumps(
+            {
+                "ids": {
+                    "teacher_only": ["clean"],
+                    "clean_residual_targets": ["clean"],
+                    "target_self_repair": ["preserve"],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = gate.analyze(
+        target_spec=syndrome.RowSpec("target", target_path, "target"),
+        source_spec=syndrome.RowSpec("source", source_path, "source"),
+        candidate_specs=[syndrome.RowSpec("source", source_path, "source")],
+        target_set_path=target_set_path,
+        moduli_sets=[[7]],
+        fallback_label="target",
+        shuffle_offset=1,
+        label_shuffle_offset=1,
+        noise_seed=1,
+        min_correct=2,
+        min_target_self=1,
+        min_clean_source_necessary=1,
+        max_control_clean_union=1,
+        min_numeric_coverage=2,
+        source_quality_score_field="source_target_len_ratio",
+        source_quality_max_threshold=1.0,
+        run_date="2026-04-26",
+    )
+
+    run = payload["runs"][0]
+    assert payload["status"] == "source_only_sidecar_router_clears_gate"
+    clean_row = [row for row in run["rows"] if row["example_id"] == "clean"][0]
+    preserve_row = [row for row in run["rows"] if row["example_id"] == "preserve"][0]
+    assert clean_row["source_quality_passed"] is True
+    assert clean_row["source_quality_score"] < 1.0
+    assert preserve_row["source_quality_passed"] is False
+    assert preserve_row["source_quality_score"] > 1.0
+    assert preserve_row["conditions"]["matched"]["prediction"] == "8"
+
+    prediction_path = tmp_path / "predictions.jsonl"
+    gate._write_prediction_jsonl(
+        prediction_path,
+        payload,
+        method="source_lenratio_sidecar",
+    )
+    records = [
+        json.loads(line)
+        for line in prediction_path.read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    assert [record["example_id"] for record in records] == ["clean", "preserve"]
+    assert records[0]["method"] == "source_lenratio_sidecar"
+    assert records[0]["correct"] is True
+    assert records[0]["sidecar_moduli"] == [7]
+    assert records[1]["accepted_source_sidecar"] is False
