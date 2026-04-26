@@ -677,5 +677,12 @@
     "path": "references/453_learned_syndrome_probe_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for cross-fitted learned query-bottleneck syndrome predictors, source-token controls, and verifier-gated repair followups after pooled hidden readout failed."
+  },
+  {
+    "num": 454,
+    "slug": "c2c_mechanism_syndrome_refs",
+    "path": "references/454_c2c_mechanism_syndrome_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for C2C prefill projector/residual tracing, cache-compression inspirations, and the next decision rule after source-hidden syndrome probes failed."
   }
 ]

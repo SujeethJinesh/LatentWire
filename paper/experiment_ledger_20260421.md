@@ -3771,3 +3771,105 @@ Next exact gate:
 - require matched `>=14/32`, target-self `3/3`, clean source-necessary
   `>=2/6`, numeric coverage `>=31/32`, exact ID parity, and all
   source-destroying controls `0/6` clean
+
+## 2026-04-26 - SVAMP32 C2C mechanism syndrome probe
+
+Cycle:
+
+- cycle number: `2026-04-26-c2c-mechanism-1`
+- live branch entering cycle: C2C-mechanism/source-cache syndrome distillation
+- scale-up rung: strict small gate
+- ICLR readiness: not ready; still blocked on a deployable positive method
+
+Gate:
+
+- test whether C2C prefill projector traces can predict the compact SVAMP32
+  C2C residue syndrome without parsing C2C final answers
+- keep the strict target candidate pool and source-destroying controls
+- require matched `>=14/32`, target-self `3/3`, clean source-necessary
+  `>=2/6`, numeric coverage `>=31/32`, exact ID parity, and control clean
+  union `0/6`
+
+Decision:
+
+- implemented C2C prefill trace extraction in `latent_bridge/c2c_eval.py`
+- added `scripts/analyze_svamp32_c2c_mechanism_syndrome_probe.py`
+- added focused tests in `tests/test_c2c_mechanism_trace.py`
+- weakened the C2C summary-feature syndrome-distillation branch; both scalar
+  and residual summaries fail the strict small gate
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_c2c_mechanism_syndrome_probe_20260426.md`
+- results manifest:
+  - `results/svamp32_c2c_mechanism_syndrome_probe_20260426/manifest.md`
+- scalar trace probe:
+  - `results/svamp32_c2c_mechanism_syndrome_probe_20260426/prefill_scalar_trace_targetpool_probe.json`
+  - sha256: `0220017a3a76dff54056fa8caeefde244b61a87cde27bfcbcab93c67f081c902`
+- residual trace probe:
+  - `results/svamp32_c2c_mechanism_syndrome_probe_20260426/prefill_residual_trace_targetpool_probe.json`
+  - sha256: `685d76e3640b17084b25544c970ec8a95efe1555e5d36469fb49ba88325176f7`
+  - feature tensor sha256:
+    `75ad00f84a99ae632ec5641fa53e66e987188ba693858079dfae319381de7e73`
+- references:
+  - `references/454_c2c_mechanism_syndrome_refs.md`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_c2c_mechanism_trace.py tests/test_analyze_svamp32_source_latent_syndrome_probe.py -q`
+- result: `5 passed in 0.04s`
+- `./venv_arm64/bin/python -m py_compile latent_bridge/c2c_eval.py scripts/analyze_svamp32_c2c_mechanism_syndrome_probe.py`
+- result: pass
+
+Evidence:
+
+- scalar trace, feature dim `336`:
+  - status: `c2c_mechanism_syndrome_probe_fails_gate`
+  - matched: `11/32`
+  - target-only: `14/32`
+  - zero-source: `14/32`
+  - shuffled-source: `9/32`
+  - label-shuffle: `14/32`
+  - slots-only: `8/32`
+  - clean source-necessary: `0/6`
+- residual trace, feature dim `896`:
+  - status: `c2c_mechanism_syndrome_probe_fails_gate`
+  - matched: `12/32`
+  - target-only: `14/32`
+  - zero-source: `13/32`
+  - shuffled-source: `9/32`
+  - label-shuffle: `14/32`
+  - slots-only: `8/32`
+  - clean source-necessary: `0/6`
+  - teacher numeric coverage: `32/32`
+  - exact ordered ID parity: true
+
+Subagent synthesis:
+
+- artifact audit found that existing C2C JSONLs contain final predictions only,
+  while the vendored C2C model exposes projector scalar/gate and residual
+  computation points
+- harness audit recommended a sibling analyzer that reuses the strict SVAMP32
+  syndrome decoder and source-destroying controls
+- stack audit ranked C2C-residual syndrome distillation as the highest-value
+  next stack before this gate; this result weakens that stack
+
+Hypothesis update:
+
+- weakened: C2C prefill scalar/residual summary features linearly expose the
+  compact C2C residue syndrome on frozen SVAMP32
+- still alive as a bound: C2C-derived syndrome sidecar with target candidate
+  pools
+- promoted next: source-control contrastive innovation bottleneck on a surface
+  with measured source headroom
+- do not scale: C2C summary-feature syndrome distillation to SVAMP70/GSM70
+
+Next exact gate:
+
+- implement the cheapest source-control contrastive innovation bottleneck with
+  matched-source positives and zero/shuffled/wrong-source penalties
+- run on an exact-ID small surface with target-safe fallback and the same clean
+  source-necessary accounting
+- require target-only floor preservation, clean source-necessary recovery, full
+  numeric coverage, and source-destroying controls before medium scale-up
