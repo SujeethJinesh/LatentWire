@@ -3873,3 +3873,108 @@ Next exact gate:
   source-necessary accounting
 - require target-only floor preservation, clean source-necessary recovery, full
   numeric coverage, and source-destroying controls before medium scale-up
+
+## 2026-04-26 - SVAMP32 Perceiver answer-teacher contrastive pre-gate
+
+Cycle:
+
+- cycle number: `2026-04-26-perceiver-answer-teacher-1`
+- live branch entering cycle: receiver-conditioned Perceiver/query bottleneck
+  with answer-teacher supervision and source-control contrast
+- scale-up rung: strict small teacher-forced pre-gate
+- ICLR readiness: not ready; still blocked on a deployable positive method
+
+Gate:
+
+- train the existing `bridge_ridge_qk_dynalign_query_innovation_resampler_replace`
+  path with `perceiver_queries`, answer-token teacher blend, target-self
+  preservation, conditional delta memory, and zero/shuffle source-control loss
+- run teacher-forced matched-vs-control diagnostics on six clean C2C residual
+  IDs plus three target-self IDs before generation
+- require at least `2/6` clean IDs with matched-source positive margin over
+  every source-destroying/target-only/slots-only control before generation
+
+Decision:
+
+- checkpoint trained successfully
+- teacher-forced gate failed at fixed gates `0.125`, `0.15`, and `0.20`
+- generation was not run
+- weakened this Perceiver answer-teacher plus contrastive delta-memory variant
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_perceiver_answer_teacher_contrastive_20260426.md`
+- results manifest:
+  - `results/svamp32_perceiver_answer_teacher_contrastive_20260426/manifest.md`
+- checkpoint:
+  - `.debug/svamp32_perceiver_answer_teacher_contrastive_20260426/checkpoints/qwen25_to_qwen3_svamp32_perceiver_answer_teacher_w080_ctrl050_r16_b16_seed1.pt`
+  - sha256: `65aea1fc6db7e96d5a0df5e3d98380fe44549a3a2eb35dff4bc7c09a1d89a485`
+  - not tracked, size `1.8G`
+- calibration log:
+  - `.debug/svamp32_perceiver_answer_teacher_contrastive_20260426/logs/calibrate_w080_ctrl050_seed1.log`
+  - sha256: `dcee16b600a8918fc7fadcd433baf27dabe8ad9ef89586146daaeb6bce737101`
+- teacher-forced gates:
+  - `results/svamp32_perceiver_answer_teacher_contrastive_20260426/teacher_forced_gate0125.json`
+    - sha256: `db0641fb41a2e49106fd7a63c72b2c09f97d3946969c03df3598c201cb49435f`
+  - `results/svamp32_perceiver_answer_teacher_contrastive_20260426/teacher_forced_gate015.json`
+    - sha256: `7ce7a255e8f847c43caccfd98ed5f37131a515e023c6660d93b14b1b485f82c5`
+  - `results/svamp32_perceiver_answer_teacher_contrastive_20260426/teacher_forced_gate020.json`
+    - sha256: `9aed1c804d854e4193281b0e24df71407f465dd1fc647c044e79a8f0db6a8802`
+- source/headroom target set for next surface:
+  - `results/source_contrastive_target_sets_20260426/svamp70_c2c_vs_process_repair_target_set.json`
+  - sha256: `fbfa638927307e76de507dff1d15b65ed5a9eb985f0d80f9c6a1a8f235b1ef9c`
+- references:
+  - `references/455_contrastive_perceiver_bottleneck_refs.md`
+
+Verification:
+
+- `./venv_arm64/bin/python -m pytest tests/test_build_source_contrastive_target_set.py -q`
+- result: `2 passed in 0.02s`
+- `./venv_arm64/bin/python -m py_compile scripts/build_source_contrastive_target_set.py`
+- result: pass
+
+Evidence:
+
+- calibration:
+  - prompts: `32`
+  - dynamic mixture samples: `1411`
+  - answer-teacher injected prompts: `6`
+  - answer-teacher injected samples: `277`
+  - average K alignment cosine: `0.951`
+  - average V alignment cosine: `0.734`
+- teacher-forced gates:
+  - gate `0.125`: matched-positive clean `2/6`, matched-only clean `0/6`,
+    control-leak clean `2/6`, mean matched-control delta `-1.1011`
+  - gate `0.150`: matched-positive clean `2/6`, matched-only clean `0/6`,
+    control-leak clean `2/6`, mean matched-control delta `-1.1543`
+  - gate `0.200`: matched-positive clean `2/6`, matched-only clean `0/6`,
+    control-leak clean `2/6`, mean matched-control delta `-1.2968`
+
+Subagent synthesis:
+
+- artifact audit recommended staying on SVAMP32 exact IDs for this gate because
+  exact target-self/C2C/source/text artifacts and clean residual IDs already
+  exist
+- code audit identified the existing Perceiver/query-innovation path as the
+  smallest implementation route
+- literature audit recommended treating contrastive loss as a constraint around
+  a receiver-conditioned connector, not as the full method
+
+Hypothesis update:
+
+- weakened: Perceiver-query answer-teacher supervision plus zero/shuffle
+  source-control contrast is enough to produce source-necessary clean margins
+  on SVAMP32
+- weakened: target/delta memory can be safely used without stronger
+  target-only leakage penalties
+- promoted next: move to a headroom-richer exact surface, or introduce an
+  explicit target-only penalty before answer-teacher supervision
+- do not scale: this checkpoint to generation, SVAMP70, GSM70, or cross-family
+
+Next exact gate:
+
+- use the SVAMP70 C2C-vs-process-repair target set with `10` clean source-only
+  IDs, or add a stricter target-only/slots-only penalty on SVAMP32 before any
+  answer-teacher blend
+- require teacher-forced matched-only clean recovery before generation

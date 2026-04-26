@@ -30,6 +30,13 @@ The first C2C-mechanism distillation attempt is now negative:
 - decision: do not scale summary-feature C2C syndrome distillation without a
   new token/layer-level mechanism reason
 
+The first Perceiver answer-teacher contrastive connector is also negative:
+
+- fixed gates `0.125`, `0.15`, `0.20`: matched-only clean residual IDs `0/6`
+- matched-positive clean IDs: `2/6`, but both are explained by shuffled-source,
+  target-only, or slots-only controls
+- decision: do not run generation for this checkpoint
+
 The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 - GSM8K32 smoke: `4/32` vs target `2/32`
@@ -73,6 +80,9 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
   probes all fail the source-derived clean gate.
 - C2C prefill scalar/residual summary syndrome probes fail the strict SVAMP32
   gate and remain below the target-only decoder floor.
+- Perceiver-query answer-teacher plus source-control contrast fails the
+  teacher-forced pre-generation gate; target/control memory still explains the
+  apparent clean-ID signal.
 - Source final-answer copying and stronger-source source-margin escalation are
   killed for the current frozen SVAMP32 clean IDs.
 
@@ -99,9 +109,11 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 ## Highest-Priority Next Gate
 
-Shift from C2C summary-feature syndrome distillation to the next highest-value
-source-control contrastive innovation bottleneck on a surface with measured
-source headroom. A future C2C-derived attempt needs a crisper token/layer-level
+Move the live method search to a surface with stronger measured clean
+source-only headroom before another connector variant. The materialized SVAMP70
+C2C-vs-process-repair target set has `10` clean C2C source-only IDs after
+excluding the process-repair baseline, strict ID parity, and full numeric
+coverage. A future C2C-derived attempt still needs a crisper token/layer-level
 residual-coding hypothesis before more compute.
 
 Promotion rule:

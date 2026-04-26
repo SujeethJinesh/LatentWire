@@ -11,6 +11,9 @@
 - `svamp32_c2c_mechanism_syndrome_probe_20260426.md` records the negative
   strict small-gate C2C prefill scalar/residual trace syndrome-distillation
   probe.
+- `svamp32_perceiver_answer_teacher_contrastive_20260426.md` records the
+  negative teacher-forced pre-gate for the Perceiver answer-teacher plus
+  source-control contrastive connector.
 - `matched_competitor_matrix_20260421.md` is the explicit GSM70 comparison
   matrix with missing competitor rows preserved.
 - `gsm8k_contract_artifact_manifest_20260422.md` is the tracked provenance
