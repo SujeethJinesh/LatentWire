@@ -236,14 +236,17 @@ def _expected_sidecar_config(
     if method == "c2c":
         config["baseline"] = "c2c"
     else:
+        thinking_value = "true" if bool(args.enable_thinking) else "false"
+        if not bool(args.use_chat_template):
+            thinking_value = "auto"
         config.update(
             {
                 "translator": _resolve(args.translator),
                 "source_reasoning_mode": args.source_reasoning_mode,
                 "source_use_chat_template": bool(args.use_chat_template),
                 "target_use_chat_template": bool(args.use_chat_template),
-                "source_enable_thinking": "true" if bool(args.enable_thinking) else "false",
-                "target_enable_thinking": "true" if bool(args.enable_thinking) else "false",
+                "source_enable_thinking": thinking_value,
+                "target_enable_thinking": thinking_value,
                 "methods": [method],
             }
         )

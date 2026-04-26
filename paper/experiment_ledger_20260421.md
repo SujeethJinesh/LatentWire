@@ -4824,3 +4824,91 @@ Next exact gate:
   C2C-headroom SVAMP32 surface, or scout another already-local source/target
   pair only if target/text/C2C can be evaluated on exact IDs with nontrivial
   target-complementary headroom
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math -> Qwen3 SVAMP16 Surface Scout
+
+- cycle number: `2026-04-26-surface-scout-qwen25math-qwen3-svamp16`
+- timestamp: `2026-04-26 02:26:20 PDT`
+- live branch entering cycle: C2C-comparable source-surface discovery
+- scale-up rung: smoke
+- ICLR readiness: not ready; this is a surface scout, not a method result
+
+Start-of-cycle status:
+
+- current paper story: previous DeepSeek -> Qwen scout was weak and had no
+  registered C2C comparator
+- exact blocker: find a pair with source/text/C2C target-complementary headroom
+  before training another connector
+- highest-priority gate: test a registered C2C math-source pair on frozen
+  SVAMP IDs
+
+Tooling fix:
+
+- fixed `scripts/materialize_generation_baselines.py` so no-chat-template
+  sidecar validation expects `source_enable_thinking=auto` and
+  `target_enable_thinking=auto`
+- added regression test in `tests/test_materialize_generation_baselines.py`
+- test: `./venv_arm64/bin/python -m pytest tests/test_materialize_generation_baselines.py -q`
+- result: `5 passed`
+
+No-chat probe:
+
+- source: `Qwen/Qwen2.5-Math-1.5B`
+- target: `Qwen/Qwen3-0.6B`
+- eval: first 16 IDs from
+  `results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl`
+- target: `0/16`
+- source: `1/16`
+- text relay: `5/16`
+- C2C: `5/16`
+- decision: do not use no-chat results for claims; target floor is a
+  prompt-template artifact risk
+
+Chat-template probe:
+
+- target: `2/16`
+- source: `4/16`
+- text relay: `4/16`
+- C2C: `5/16`
+- C2C method-only over target: `4`
+- text method-only over target: `3`
+- source method-only over target: `3`
+- target-only against C2C: `1`
+
+Decision:
+
+- promote Qwen2.5-Math-1.5B -> Qwen3-0.6B chat-template prompting one rung to
+  frozen SVAMP32 surface confirmation
+- do not train a connector yet
+- monitor source numeric coverage (`12/16`) and target-self preservation
+
+Artifacts:
+
+- memo:
+  - `paper/surface_scout_qwen25math_qwen3_svamp16_20260426.md`
+- no-chat manifest:
+  - `results/surface_scout_qwen25math_qwen3_svamp16_20260426/manifest.json`
+  - sha256: `bda00aadd8b2ac109a5fb522fcff409045acf64ff644e7c724f6470e3ede0bcc`
+- chat manifest:
+  - `results/surface_scout_qwen25math_qwen3_svamp16_chat_20260426/manifest.json`
+  - sha256: `834a60d9a2a4762f26ac4110e3e0503f73c9235256f3607fa4510b241a727060`
+- chat C2C predictions:
+  - `results/surface_scout_qwen25math_qwen3_svamp16_chat_20260426/c2c_generate.jsonl`
+  - sha256: `0d00f1b1a6cbb569384de21a3ded03eb9e0edd1cd8e39af5281c64cb3afb410b`
+
+Next exact gate:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --results-dir results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426 \
+  --source-model Qwen/Qwen2.5-Math-1.5B \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t c2c \
+  --limit 32 \
+  --device mps \
+  --max-new-tokens 64 \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```

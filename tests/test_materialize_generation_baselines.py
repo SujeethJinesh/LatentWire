@@ -57,14 +57,17 @@ def _write_sidecar(
     if method == "c2c":
         run_config["baseline"] = "c2c"
     else:
+        thinking_value = "true" if parsed_args.enable_thinking else "false"
+        if not parsed_args.use_chat_template:
+            thinking_value = "auto"
         run_config.update(
             {
                 "translator": str(materializer._resolve(parsed_args.translator)),
                 "source_reasoning_mode": parsed_args.source_reasoning_mode,
                 "source_use_chat_template": bool(parsed_args.use_chat_template),
                 "target_use_chat_template": bool(parsed_args.use_chat_template),
-                "source_enable_thinking": "true" if parsed_args.enable_thinking else "false",
-                "target_enable_thinking": "true" if parsed_args.enable_thinking else "false",
+                "source_enable_thinking": thinking_value,
+                "target_enable_thinking": thinking_value,
                 "methods": [method],
             }
         )
@@ -281,3 +284,59 @@ def test_generation_eval_command_uses_single_method_output(tmp_path: pathlib.Pat
     assert pathlib.Path(command[output_index + 1]).name == "target.jsonl"
     assert "--source-use-chat-template" in command
     assert "--target-enable-thinking" in command
+
+
+def test_no_chat_template_sidecar_validation_expects_auto_thinking(tmp_path: pathlib.Path) -> None:
+    eval_file = _toy_eval_file(tmp_path / "eval.jsonl")
+    results_dir = tmp_path / "results"
+    materialized = results_dir / "_artifacts" / "eval_1.jsonl"
+    materializer.harness.materialize_slice(eval_file, materialized, 1)
+    parsed_args = materializer._parse_args(
+        [
+            "--eval-file",
+            str(eval_file),
+            "--results-dir",
+            str(results_dir),
+            "--limit",
+            "1",
+            "--methods",
+            "source",
+            "--no-use-chat-template",
+            "--no-enable-thinking",
+        ]
+    )
+    expected_ids = [
+        str(example["example_id"])
+        for example in materializer.harness.load_generation(str(materialized))
+    ]
+    source_output = results_dir / materializer.METHOD_OUTPUTS["source"]
+    _write_jsonl(
+        source_output,
+        [
+            _prediction_record(
+                example_id=expected_ids[0],
+                method="source_alone",
+                correct=True,
+                index=0,
+            )
+        ],
+    )
+    _write_sidecar(
+        source_output,
+        method="source",
+        materialized_eval_file=materialized,
+        parsed_args=parsed_args,
+    )
+
+    valid, reason, summary = materializer._validate_record_file(
+        method="source",
+        path=source_output,
+        expected_ids=expected_ids,
+        materialized_eval_file=materialized,
+        args=parsed_args,
+    )
+
+    assert valid is True
+    assert reason == "ok"
+    assert summary is not None
+    assert summary["sidecar_config_validation"] == "ok"

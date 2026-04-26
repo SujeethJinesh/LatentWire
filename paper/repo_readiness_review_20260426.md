@@ -194,6 +194,13 @@ target/text oracle is only `10/32`. C2C is unavailable because no published C2C
 artifact is registered for this pair. Do not spend connector or source-control
 compute on this pair in the current loop.
 
+Qwen2.5-Math-1.5B -> Qwen3-0.6B is now the most promising surface-scout branch,
+but only with chat-template prompting. A no-chat SVAMP16 probe produced an
+artificially weak target floor (`0/16`), so it is not claim-worthy. With chat
+templates, the same pair reaches target `2/16`, source `4/16`, text `4/16`, and
+C2C `5/16`; C2C adds `4` target-missed IDs. Scale this to frozen SVAMP32 before
+any connector training.
+
 Same-family fallback update: a richer C2C prefill residual projection probe
 does not rescue the C2C-mechanism distillation branch. Signed residual
 projections reach matched `13/32`, but zero-source, label-shuffle, and
