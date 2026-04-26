@@ -196,6 +196,10 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 - Fixed source-quality guarded sidecars are also killed by holdout controls:
   the finalish-short-numeric guard reaches `9/70` with clean source-necessary
   `0/2` and clean control union `2/2`.
+- Source-trace self-consistency routing is also killed as the next fixed
+  sidecar rescue: live CV reaches only `1` clean source-necessary ID with `2`
+  accepted harms, and the single holdout clean win survives equation-result
+  permutation.
 
 ## Main Gaps
 
@@ -410,6 +414,14 @@ JSONL features can reproduce the original SVAMP70 sidecar row (`25/70`,
 same disjoint holdout (`6/70`, `0/2` clean source-necessary). This weakens
 shallow decoded-feature routers as a robust method and points the next live
 branch toward source-surface discovery or stronger source-derived signals.
+
+Source-trace router update: the richer live-CV source-trace router over valid
+equations, prompt-number coverage, and source-answer reuse also fails. It has
+no standard clean-control leakage, but live CV reaches only `20/70` with `1`
+clean source-necessary ID and `2` accepted harms; frozen holdout reaches
+`10/70` with `1` clean source-necessary ID, and that ID survives
+equation-result permutation. This prunes shallow source-text quality features
+as the next rescue for the sidecar branch.
 
 Surface scout update: SVAMP `chal-171` through `chal-240` is not a useful
 sidecar decision surface. Source is `8/70`, target is `22/70`, text relay is

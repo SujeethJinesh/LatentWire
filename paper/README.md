@@ -39,6 +39,10 @@
 - `qwen25math_svamp70_holdout_finalish_guard_20260426.md` records the holdout
   falsification of the fixed `finalish_short_numeric` source-sidecar guard:
   `0/2` clean source-necessary IDs with `2/2` control leakage.
+- `qwen25math_svamp70_source_trace_router_20260426.md` records the
+  source-trace self-consistency router falsification: live CV recovers only
+  `1` clean source-necessary ID with `2` accepted harms, and the single
+  holdout clean win survives equation-result permutation.
 - `qwen25math_svamp32_source_contrastive_sidecar_20260426.md` records the
   first positive strict-small Qwen2.5-Math -> Qwen3 source-contrastive sidecar
   stack: target/text agreement preservation plus a 1-byte source residue

@@ -6689,3 +6689,73 @@ Next exact gate:
   live/holdout attribution controls, or materialize a stronger source surface
 - do not spend more compute on tiny learned prefix emitters until a new
   diagnostic changes the hypothesis
+
+## Cycle Checkpoint: 2026-04-26 SVAMP70 Source-Trace Router
+
+- cycle number: `2026-04-26-svamp70-source-trace-router`
+- timestamp: `2026-04-26 11:05:00 PDT`
+- live branch entering cycle: cross-validated source-trace self-consistency
+  router over the Qwen2.5-Math -> Qwen3 SVAMP70 source-sidecar surface
+- scale-up rung: medium live-CV plus frozen holdout falsification
+- ICLR readiness: not ready; shallow text-level source routers are now
+  weakened/killed
+
+Start-of-cycle status:
+
+- current paper story: source-sidecar and source-only surfaces show headroom,
+  but fixed guards and learned prefix emitters fail controls or holdout
+- exact blocker: decide whether richer source trace features can rescue the
+  1-byte sidecar without target/cache/control artifacts
+- highest-priority gate: train a small live-CV router on source trace features,
+  freeze the full-live rule, and apply once to the disjoint holdout with an
+  equation-result permutation control
+
+Result:
+
+- frozen full-live feature: `source_answer_reused_in_trace >= 0.5`
+- live CV matched correct: `20/70`
+- live CV clean source-necessary: `1`
+- live CV clean control union: `0`
+- live CV accepted harm: `2`
+- holdout matched correct: `10/70`
+- holdout clean source-necessary: `1`
+- holdout clean control union: `0`
+- holdout accepted harm: `0`
+- holdout equation-permuted retained source-necessary: `1`
+
+Decision:
+
+- fail and prune the source-trace self-consistency router as the next
+  source-sidecar rescue
+- the zero standard-control leakage is useful, but the signal is too weak and
+  the holdout clean win survives equation-result permutation
+- next branch should be source-surface discovery or source internal-confidence
+  artifact capture, not another fixed shallow source-text guard
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_source_trace_router_20260426.md`
+- result manifest:
+  - `results/qwen25math_svamp70_source_trace_router_20260426/manifest.md`
+- result JSON:
+  - `results/qwen25math_svamp70_source_trace_router_20260426/trace_router.json`
+  - sha256: `e4e5600e139efbf7bc068ff2117e172cba9f87055e9477f51839a90175c54c03`
+- readout:
+  - `results/qwen25math_svamp70_source_trace_router_20260426/trace_router.md`
+  - sha256: `e439be6bf00ec99ccf9f63aa72ca0b3a47f423d4a950155846d7417322e99a6c`
+- analyzer:
+  - `scripts/analyze_svamp_source_trace_router_gate.py`
+  - sha256: `92828099f0ccc3188fb49f8171f1e0d0ce4260a27e1780459a8789a3f31e03e5`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp_source_trace_router_gate.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp_source_trace_router_gate.py`
+
+Next exact gate:
+
+- run a new source-surface discovery pass for stronger source-only over
+  target/text examples, or add generation-time source confidence/logit
+  artifacts so the next router uses model-internal source evidence rather than
+  shallow source text
