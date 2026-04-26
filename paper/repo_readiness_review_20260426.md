@@ -141,6 +141,12 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
   versus `14/32` target-self repair, recovers `1/6` clean residual IDs, loses
   `2/3` target-self repair wins, and selects the target candidate on `32/32`
   examples.
+- The target-safe output-aware dynalign selector/repair branch over existing
+  SVAMP32 candidates is now killed by an oracle replay. Even an oracle over
+  target_self_repair, dynalign salt 1, dynalign salt 2, and query-pool transport
+  reaches only `1/6` clean residual IDs, while the matching zero/shuffle control
+  oracle also reaches `18/32` and recovers `1/6` clean residual IDs. Another
+  selector over these rows is not worth running.
 - The cached Qwen2.5-Math-Instruct source variant is also not a rescue surface:
   on frozen SVAMP32 it reaches source `3/32`, target `8/32`, text relay
   `4/32`, source-only over target `2`, and clean source-only after text
@@ -241,6 +247,15 @@ clean recoveries. Do not tune this exact projection/top-k implementation
 further; the branch only remains live if the feature extractor changes to
 fold-local token/span sparse dictionaries or an existing real SAE-adapter lane
 is evaluated under the same clean target set and controls.
+
+Target-safe selector update: the dynalign/query-pool selector branch is now
+killed on the strict SVAMP32 gate. The target-safe candidate oracle reaches
+`18/32` but only `1/6` clean residual IDs, below the required `2/6`, and the
+matching source-destroying control oracle also reaches `18/32` with `1/6` clean
+residual IDs. The next live branch should be a genuinely learned communication
+protocol, starting with a minimal target-conditioned soft-token or learned-query
+connector trained against the C2C-over-target_self residual surface with zero,
+shuffle, target-only, and slots-only controls from the start.
 
 Qwen2.5-Math source-token query-bottleneck update: the non-duplicative all-layer
 token bottleneck on the current Math SVAMP32 clean C2C-headroom surface also

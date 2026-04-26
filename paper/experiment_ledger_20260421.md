@@ -5984,3 +5984,75 @@ Next exact gate:
 - require target-only, zero-source, shuffled-source, and selector-only controls
 - promote only if the gate recovers at least `2/6` clean source-necessary IDs
   without target-floor regression
+
+## Cycle Checkpoint: 2026-04-26 SVAMP32 Target-Safe Oracle Replay
+
+- cycle number: `2026-04-26-svamp32-target-safe-oracle-replay`
+- timestamp: `2026-04-26 07:15:00 PDT`
+- live branch entering cycle: target-safe output-aware dynalign selector /
+  repair over existing SVAMP32 dynalign/query-pool candidates
+- scale-up rung: strict small exact-ID gate
+- ICLR readiness: not ready; no deployable positive method survives clean
+  source controls
+
+Start-of-cycle status:
+
+- current paper story: C2C and target-self repair expose real SVAMP32 headroom,
+  but existing source-readout, sparse-dictionary, and selector/repair branches
+  fail clean source-necessary controls
+- exact blocker: determine whether another target-safe selector over existing
+  dynalign/query-pool rows can recover at least `2/6` clean C2C residual IDs
+- highest-priority gate: oracle upper bound over matched candidates versus the
+  matching source-destroying control oracle
+
+Implementation:
+
+- added `scripts/analyze_svamp32_target_safe_oracle.py`
+- added `tests/test_analyze_svamp32_target_safe_oracle.py`
+- replayed target_self_repair fallback with dynalign salt 1, dynalign salt 2,
+  and query-pool candidates
+- controls included the matching zero-source and shuffled-source rows
+
+Results:
+
+- target_self_repair: `14/32`, C2C-only `3/10`, clean residual `0/6`
+- target-safe candidate oracle: `18/32`, C2C-only `5/10`, clean residual `1/6`
+- target-safe control oracle: `18/32`, C2C-only `5/10`, clean residual `1/6`
+- clean source-necessary after subtracting controls: `1/6`
+- required clean source-necessary threshold: `2/6`
+
+Decision:
+
+- kill target-safe output-aware dynalign selector/repair over these saturated
+  candidates
+- do not spend GPU on another selector or repair pass over the same SVAMP32
+  dynalign/query-pool rows
+- promoted next branch: a genuinely learned communication protocol, not a
+  replay selector, starting with a minimal target-conditioned soft-token /
+  learned-query connector trained against the C2C-over-target_self residual
+  surface with source-destroying controls from the start
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_target_safe_oracle_replay_20260426.md`
+- replay JSON:
+  - `results/svamp32_target_safe_oracle_replay_20260426/oracle.json`
+  - sha256: `1cb42394749c7bd1b80439bccc65441b63aba3b59ad9733994f080c337400746`
+- replay markdown:
+  - `results/svamp32_target_safe_oracle_replay_20260426/oracle.md`
+  - sha256: `06f2126b891af93c102c7482b9cacf3e39154ff0c583e8dd6e814ff3c2d638b2`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_target_safe_oracle.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_target_safe_oracle.py`
+
+Next exact gate:
+
+- implement or locate the smallest target-conditioned soft-token /
+  learned-query connector that trains on frozen source and target traces
+- run it on the SVAMP32 clean residual target set with matched, zero-source,
+  shuffled-source, target-only, and slots-only controls
+- promote only if it recovers at least `2/6` clean source-necessary IDs with no
+  target-self regression

@@ -14,6 +14,10 @@
 - `qwen25math_svamp32_token_layer_c2c_residual_20260426.md` records the
   negative token/layer-local C2C residual query-bottleneck diagnostic on the
   Qwen2.5-Math -> Qwen3 SVAMP32 surface.
+- `svamp32_target_safe_oracle_replay_20260426.md` records the negative
+  target-safe dynalign/query-pool oracle replay: even an oracle selector over
+  existing candidates recovers only `1/6` clean residual IDs and is matched by
+  the source-destroying control oracle.
 - `qwen25math_svamp32_source_contrastive_sidecar_20260426.md` records the
   first positive strict-small Qwen2.5-Math -> Qwen3 source-contrastive sidecar
   stack: target/text agreement preservation plus a 1-byte source residue
