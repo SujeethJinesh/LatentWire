@@ -47,6 +47,10 @@
   smoke for source-internal generation confidence artifacts: source-only greedy
   logprob, entropy, top-1 probability, and top-1/top-2 margin are now
   collectable in a sidecar JSONL without mutating baseline prediction files.
+- `qwen25math_svamp70_source_confidence_router_20260426.md` records the
+  source-internal confidence-router falsification: live CV is clean but weak
+  (`24/70`, `2` clean source-necessary), and frozen holdout drops to `7/70`
+  with zero clean source-necessary IDs.
 - `qwen25math_svamp32_source_contrastive_sidecar_20260426.md` records the
   first positive strict-small Qwen2.5-Math -> Qwen3 source-contrastive sidecar
   stack: target/text agreement preservation plus a 1-byte source residue

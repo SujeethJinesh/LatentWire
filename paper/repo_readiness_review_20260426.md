@@ -429,6 +429,13 @@ chosen-token logprob, entropy, top-1 probability, and top-1/top-2 logit margin.
 The two-example MPS smoke passed outside the sandbox with offline caches. This
 is the next router feature family to test before another decoded-text guard.
 
+Source-internal confidence router update: live SVAMP70 confidence routing is
+clean but too weak (`24/70`, `2` clean source-necessary, `0` clean control
+union), and the frozen full-live rule fails the disjoint holdout (`7/70`, `0`
+clean source-necessary, `1` accepted harm). This prunes the current confidence
+router on the old source-sidecar surface; the next gate is disjoint source
+surface discovery, not multi-feature tuning on this slice.
+
 Surface scout update: SVAMP `chal-171` through `chal-240` is not a useful
 sidecar decision surface. Source is `8/70`, target is `22/70`, text relay is
 `24/70`, source-only over target is only `2`, and clean source-only after text

@@ -16,6 +16,9 @@ without mutating existing `source_alone.jsonl` baselines.
 
 Added `scripts/collect_source_generation_diagnostics.py`, which reruns source
 generation only and writes a sidecar JSONL keyed by exact `example_id`.
+By default the collector uses direct prompts so its outputs align with existing
+`source_alone` baselines; `--prompt-mode source_reasoning` is available for
+text-relay/source-hint diagnostics.
 
 Recorded fields include:
 

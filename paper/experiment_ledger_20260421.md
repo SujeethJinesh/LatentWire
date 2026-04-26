@@ -6808,3 +6808,68 @@ Next exact gate:
   wins from source/text failures
 - if not, switch to the disjoint `chal311-380` source-surface scout before any
   C2C or connector spend
+
+## Cycle Checkpoint: 2026-04-26 SVAMP70 Source Confidence Router
+
+- cycle number: `2026-04-26-svamp70-source-confidence-router`
+- timestamp: `2026-04-26 12:12:00 PDT`
+- live branch entering cycle: source-internal confidence router over direct
+  source-only greedy-generation diagnostics
+- scale-up rung: medium live-CV plus frozen holdout falsification
+- ICLR readiness: not ready; confidence routing is instrumentation, not a live
+  positive method
+
+Start-of-cycle status:
+
+- current paper story: decoded source-text guards, trace routers, and tiny
+  prefix emitters fail holdout/control gates despite source/C2C headroom
+- exact blocker: determine whether source-internal confidence features recover
+  clean source-only wins without decoded-text leakage
+- highest-priority gate: collect direct-prompt source diagnostics for live and
+  holdout, train a one-feature live-CV router, and freeze once to holdout
+
+Result:
+
+- live diagnostics match source-alone: `13/70`
+- holdout diagnostics match source-alone: `8/70`
+- frozen rule: `min_top1_prob >= 0.1639411821961403`
+- live CV: matched `24/70`, clean source-necessary `2`, clean control union
+  `0`, accepted harm `0`
+- frozen holdout: matched `7/70`, clean source-necessary `0`, clean control
+  union `0`, accepted harm `1`
+
+Decision:
+
+- fail and prune source-internal confidence routing on this old SVAMP70
+  sidecar surface
+- the feature family is useful for instrumentation, but not promotable here
+- next branch: disjoint `chal311-380` source-surface scout with source/target
+  and text relay only; require `>=6/70` source-only over target and `>=4/70`
+  clean source-only after text exclusion before C2C or connector spend
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_source_confidence_router_20260426.md`
+- manifest:
+  - `results/qwen25math_svamp70_source_generation_diagnostics_20260426/manifest.md`
+- live diagnostics:
+  - `results/qwen25math_svamp70_source_generation_diagnostics_20260426/source_diagnostics.jsonl`
+  - sha256: `b17755be3db764f6130830cc516b18b6e4fadce7a78de36d20f10dd8c84c69b2`
+- holdout diagnostics:
+  - `results/qwen25math_svamp70_source_generation_diagnostics_20260426/holdout_source_diagnostics.jsonl`
+  - sha256: `2fc5226940ea4fc743324534bb51c938829910810619040f78afea2c905ecb0e`
+- confidence router:
+  - `results/qwen25math_svamp70_source_generation_diagnostics_20260426/confidence_router.json`
+  - sha256: `291ee7015a7b28f41f7c5e1b397e18b29da1b0781ae0f30c7c528ac3e860b4a8`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_collect_source_generation_diagnostics.py tests/test_analyze_source_confidence_router_gate.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/collect_source_generation_diagnostics.py scripts/analyze_source_confidence_router_gate.py`
+
+Next exact gate:
+
+- materialize SVAMP `chal311-380`, run source/target/text only, build a
+  contrastive target set, and reject unless the source surface reaches `>=6/70`
+  source-only over target and `>=4/70` clean source-only after text exclusion

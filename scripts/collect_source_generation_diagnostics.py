@@ -212,7 +212,11 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
     ).to(args.device).eval()
     records: list[dict[str, Any]] = []
     for idx, example in enumerate(examples):
-        prompt = evaluate._source_reasoning_prompt(example.prompt, args.source_reasoning_mode)
+        prompt = (
+            evaluate._source_reasoning_prompt(example.prompt, args.source_reasoning_mode)
+            if args.prompt_mode == "source_reasoning"
+            else example.prompt
+        )
         diagnostics = _generate_with_diagnostics(
             model,
             tokenizer,
@@ -229,6 +233,7 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
                 "example_id": evaluate._generation_example_id(example),
                 "method": "source_generation_diagnostics",
                 "source_model": args.source_model,
+                "prompt_mode": args.prompt_mode,
                 "source_reasoning_mode": args.source_reasoning_mode,
                 "prediction": diagnostics["prediction"],
                 "answer": example.answers,
@@ -256,6 +261,7 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
         "output_jsonl": _display_path(output_jsonl),
         "output_jsonl_sha256": _sha256_file(output_jsonl),
         "source_model": args.source_model,
+        "prompt_mode": args.prompt_mode,
         "source_reasoning_mode": args.source_reasoning_mode,
         "n": len(records),
         "correct": correct,
@@ -276,6 +282,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- date: `{payload['date']}`",
         f"- status: `{payload['status']}`",
         f"- source model: `{payload['source_model']}`",
+        f"- prompt mode: `{payload['prompt_mode']}`",
         f"- eval file: `{payload['eval_file']}`",
         f"- output JSONL: `{payload['output_jsonl']}`",
         f"- output JSONL sha256: `{payload['output_jsonl_sha256']}`",
@@ -303,6 +310,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--source-reasoning-mode",
         choices=["plain", "brief_analysis", "cot", "scratchpad"],
         default="brief_analysis",
+    )
+    parser.add_argument(
+        "--prompt-mode",
+        choices=["direct", "source_reasoning"],
+        default="direct",
+        help=(
+            "Use direct example prompts to match source_alone baselines, or wrap "
+            "with --source-reasoning-mode for text-relay/source-hint diagnostics."
+        ),
     )
     parser.add_argument("--source-use-chat-template", action="store_true")
     parser.add_argument("--source-enable-thinking", type=_optional_bool, default=None)
