@@ -6198,3 +6198,85 @@ Next exact gate:
   prompt at matched byte/query budget
 - promote only if the pre-generation gate recovers at least `2/6` matched-only
   clean residual IDs and positive matched-control mean delta
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math SVAMP32 Target-Query Source Bottleneck
+
+- cycle number: `2026-04-26-qwen25math-svamp32-target-query-source-bottleneck`
+- timestamp: `2026-04-26 07:15:11 PDT`
+- live branch entering cycle: target-query-conditioned source bottleneck after
+  the Perceiver memory checkpoint failed
+- scale-up rung: strict small pre-generation residue/readout gate
+- ICLR readiness: not ready; the implemented next branch also fails the clean
+  source-necessary gate
+
+Start-of-cycle status:
+
+- current paper story: C2C exposes clean target-missed headroom, but
+  source-derived learned readouts are not recovering the residual IDs
+- exact blocker: test whether target prompt states querying source token states
+  can recover at least `2/6` clean C2C residual IDs
+- highest-priority gate: cross-fitted target-query/source bottleneck with
+  target-only-prefix and projected-soft-prompt controls
+
+Implementation:
+
+- added `scripts/analyze_svamp32_target_query_source_bottleneck_probe.py`
+- added `tests/test_analyze_svamp32_target_query_source_bottleneck_probe.py`
+- model: target prompt summary plus learned queries attend over source token
+  states; output predicts C2C residue signatures over moduli `2,3,5,7`
+- controls: zero-source, shuffled-source, label-shuffled, same-norm-noise,
+  target-only-prefix, projected-soft-prompt, target-only, slots-only
+
+Results:
+
+- matched: `7/32`, clean `0/6`
+- zero-source: `8/32`, clean `0/6`
+- shuffled-source: `6/32`, clean `0/6`
+- label-shuffled: `6/32`, clean `0/6`
+- same-norm-noise: `7/32`, clean `0/6`
+- target-only-prefix: `8/32`, clean `0/6`
+- projected-soft-prompt: `8/32`, clean `0/6`
+- target-only: `8/32`, clean `0/6`
+- slots-only: `6/32`, clean `0/6`
+- clean source-necessary: `0/6`
+- control clean union: `0/6`
+
+Decision:
+
+- fail and kill target-query-conditioned residue-classifier/readout variants
+  on this surface
+- do not tune query count, hidden dim, epochs, moduli, or layer selection on
+  this exact classifier branch without a new signal source
+- next branch, if pursued: true source-conditioned soft-prefix or gated
+  cross-attention trained directly on gold-vs-distractor logprob with matched
+  target-only learned-prefix, slots-only learned-prefix, projected-soft-prompt,
+  zero-source, and shuffled-source controls
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_target_query_source_bottleneck_20260426.md`
+- result manifest:
+  - `results/qwen25math_svamp32_target_query_source_bottleneck_20260426/manifest.md`
+- analyzer:
+  - `scripts/analyze_svamp32_target_query_source_bottleneck_probe.py`
+  - sha256: `7fcaa9901ea5a78e23e7d4af8a64f513c0cf9da40ab1697fc0ea88c719143203`
+- result JSON:
+  - `results/qwen25math_svamp32_target_query_source_bottleneck_20260426/probe.json`
+  - sha256: `06141d71be5fc57230aa7346525731618f554b023d7230c794ab681c34b05280`
+- readout:
+  - `results/qwen25math_svamp32_target_query_source_bottleneck_20260426/probe.md`
+  - sha256: `482a661d22065e93a83a0d9b2fb5cd5fb5c343d4d051a4eba70fc305bd7be9aa`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_target_query_source_bottleneck_probe.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_target_query_source_bottleneck_probe.py`
+
+Next exact gate:
+
+- stop residue-classifier/readout variants on this surface
+- either implement a true source-conditioned soft-prefix/gated cross-attention
+  logprob objective with source-destroying and target-only prefix controls, or
+  declare the current exact-ID SVAMP32 C2C-residual surface saturated and move
+  to a new source-surface discovery branch

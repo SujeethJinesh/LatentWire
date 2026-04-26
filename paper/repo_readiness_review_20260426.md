@@ -276,6 +276,18 @@ on this exact Perceiver memory architecture. The next learned branch needs a
 materially different target-query-to-source bottleneck with target-only
 learned-prefix and slots-only prefix controls at matched byte/query budgets.
 
+Target-query source-bottleneck update: the first implemented version of that
+materially different branch is also negative. The cross-fitted diagnostic uses
+target prompt states as queries over source token states and adds zero-source,
+shuffled-source, label-shuffle, same-norm-noise, target-only-prefix,
+projected-soft-prompt, target-only, and slots-only controls. It reaches only
+matched `7/32` versus target-only `8/32`, recovers `0/6` clean residual IDs,
+and has no clean source-necessary wins. This kills residue-classifier/readout
+variants on the current SVAMP32 C2C-headroom surface. A future learned branch
+must train a true source-conditioned soft-prefix or gated cross-attention
+objective directly on gold-vs-distractor logprob, not another residue
+classifier.
+
 Qwen2.5-Math source-token query-bottleneck update: the non-duplicative all-layer
 token bottleneck on the current Math SVAMP32 clean C2C-headroom surface also
 fails. It reaches matched `8/32`, exactly the target floor, recovers `0/6`
