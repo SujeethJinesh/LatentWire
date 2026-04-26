@@ -726,5 +726,12 @@
     "path": "references/460_token_local_c2c_residual_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for token-local C2C residual failures, TurboQuant/QJL residual-coding inspiration, and query-bottleneck connector implications."
+  },
+  {
+    "num": 461,
+    "slug": "source_surface_blocker_interface_refs",
+    "path": "references/461_source_surface_blocker_interface_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for the source-surface blocker after SVAMP disjoint scouts, covering C2C, query/resampler connectors, relative representations, sparse cross-model concepts, DroidSpeak, and KV transform coding."
   }
 ]

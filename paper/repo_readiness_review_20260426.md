@@ -280,6 +280,16 @@ sidecar decision surface. Source is `8/70`, target is `22/70`, text relay is
 `24/70`, source-only over target is only `2`, and clean source-only after text
 exclusion is only `1`. Do not spend C2C on this slice for the current branch.
 
+Second surface scout update: SVAMP `chal-241` through `chal-310` has nonzero
+clean source mass but still does not clear the predefined surface gate. Source
+is `5/70`, target is `10/70`, text relay is `14/70`, source-only over target is
+`4`, and clean source-only after text exclusion is `4`. Because raw source-only
+is below the `>=6/70` gate and text is much stronger than source, do not spend
+C2C or sidecar compute here. The next live gate is GSM70 Math source-surface
+discovery, while the highest-value method branch after a surface clears is a
+rate-capped query/resampler or shared sparse source sidecar rather than another
+shallow decoded-feature router.
+
 Current source-contrastive promotion rule:
 
 - matched `>=9/32`

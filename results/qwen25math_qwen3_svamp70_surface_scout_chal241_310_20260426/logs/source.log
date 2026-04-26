@@ -1,0 +1,17 @@
+$ /Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python /Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/evaluate.py --translator /Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt --source-model Qwen/Qwen2.5-Math-1.5B --target-model Qwen/Qwen3-0.6B --eval-file /Users/sujeethjinesh/Desktop/LatentWire/results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/_artifacts/svamp_chal241_310_70.jsonl --task-type generation --device mps --max-new-tokens 64 --source-reasoning-mode brief_analysis --methods source --prediction-output /Users/sujeethjinesh/Desktop/LatentWire/results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/.source_alone.jsonl.tmp.source.41197 --source-use-chat-template --target-use-chat-template --source-enable-thinking false --target-enable-thinking false
+
+/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/lib/python3.11/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Loaded 70 generation examples from /Users/sujeethjinesh/Desktop/LatentWire/results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/_artifacts/svamp_chal241_310_70.jsonl
+
+Loading source: Qwen/Qwen2.5-Math-1.5B
+Sliding Window Attention is enabled but not implemented for `sdpa`; unexpected results may be encountered.
+Loading target: Qwen/Qwen3-0.6B
+Loading translator from /Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt
+
+=== Summary ===
+                source_alone: 0.071429
+       source_alone_ttft_sec: 0.229808
+  source_alone_tokens_per_sec: 13.533136
+  source_alone_examples_per_sec: 0.218882
+    source_alone_latency_sec: 4.568680

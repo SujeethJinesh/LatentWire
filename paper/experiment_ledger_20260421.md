@@ -5598,3 +5598,69 @@ Next exact gate:
 - search another Qwen2.5-Math -> Qwen3 SVAMP/GSM slice with source-only over
   target `>=6/70` and clean source-only after text exclusion `>=4/70`
 - run C2C only after the source/text/target scout clears that surface gate
+
+## Cycle Checkpoint: 2026-04-26 SVAMP70 Chal241-310 Source Surface Scout
+
+- cycle number: `2026-04-26-qwen25math-qwen3-svamp70-chal241-310-scout`
+- timestamp: `2026-04-26 05:36:00 PDT`
+- live branch entering cycle: source-surface discovery after weak
+  `chal-171..240`
+- scale-up rung: medium surface scout
+- ICLR readiness: not ready; no stable positive source-sidecar surface yet
+
+Start-of-cycle status:
+
+- current paper story: original SVAMP70 source-sidecar signal is promising but
+  disjoint surfaces remain unstable
+- exact blocker: find enough clean source-only mass before spending C2C or
+  stronger connector compute
+- highest-priority gate: source/target/text first, C2C only if source-only
+  over target `>=6/70` and clean source-only after text exclusion `>=4/70`
+
+Results:
+
+- source-alone: `5/70`, numeric coverage `63/70`
+- target-alone: `10/70`, numeric coverage `70/70`
+- text relay: `14/70`, numeric coverage `70/70`
+- source-only over target: `4`
+- clean source-only after text exclusion: `4`
+- target/source oracle: `14/70`
+
+Decision:
+
+- classify SVAMP `chal-241..310` as weak, not promotable to C2C/sidecar spend
+- do not call this a method result; it is only a surface scout
+- weakened: repeated adjacent SVAMP range scouting as the main path
+- strengthened: move next to GSM70 Math source-surface discovery and stronger
+  source-interface branches only after a surface clears
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_surface_scout_chal241_310_20260426.md`
+- range materializer:
+  - `scripts/materialize_jsonl_range.py`
+  - `tests/test_materialize_jsonl_range.py`
+- generation manifest:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/manifest.md`
+  - sha256: `1d158272963d5b9b0e32d4c4eba13c68b18dc0c3e2dae8a175992af5cde64cf7`
+- source target set:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_contrastive_target_set.json`
+  - sha256: `9aa4a45892bce32b566232340f450749b9a074a8ce2c817c6de8901be15b1b08`
+- surface scan:
+  - `results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_headroom_surfaces.json`
+  - sha256: `258512e9b3529bb5312cebd66097aee107c0ee5374376b56ba5715d520fc7e2b`
+- reference memo:
+  - `references/461_source_surface_blocker_interface_refs.md`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_materialize_jsonl_range.py tests/test_analyze_svamp_source_sidecar_cv_router_gate.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/materialize_jsonl_range.py`
+
+Next exact gate:
+
+- run Qwen2.5-Math -> Qwen3 GSM70 source-surface scout with source/target/text
+  only
+- spend C2C only if GSM70 has source-only over target `>=6/70` and clean
+  source-only after text exclusion `>=4/70`
