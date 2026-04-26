@@ -6445,6 +6445,94 @@ Next exact gate:
   control leaks, and positive mean matched-minus-best-control margin before
   generation
 
+## Cycle Checkpoint: 2026-04-26 Source Surface Scan and Finalish Guard Holdout
+
+- cycle number: `2026-04-26-source-surface-scan-finalish-holdout`
+- timestamp: `2026-04-26 10:18:00 PDT`
+- live branch entering cycle: fixed source-quality guarded 1-byte source
+  sidecar on the SVAMP70 source surface
+- scale-up rung: medium holdout falsification
+- ICLR readiness: not ready; fixed source-quality guarded sidecars are pruned
+  as the live method family
+
+Start-of-cycle status:
+
+- current paper story: C2C and source sidecars show headroom, but learned
+  summary/prefix/cross-attention connectors fail source controls on SVAMP32
+- exact blocker: decide whether the previous SVAMP70 source-sidecar positive
+  can be rescued by the `finalish_short_numeric` source-quality guard on a
+  disjoint holdout
+- highest-priority gate: holdout-test the fixed finalish source guard with the
+  same source-destroying controls
+
+Surface scan:
+
+- ran `scripts/analyze_source_headroom_surfaces.py` over existing SVAMP/GSM
+  target/source rows
+- top surface: `qwen25math_qwen3_svamp70`
+  - target `21/70`
+  - source `13/70`
+  - source-only over target `9`
+  - target/source oracle `30/70`
+- disjoint holdout surface:
+  - target `8/70`
+  - source `8/70`
+  - source-only over target `6`
+  - target/source oracle `14/70`
+
+Finalish holdout command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_svamp32_source_only_sidecar_router_gate.py --target target=path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/target_alone.jsonl,method=target_alone --source source=path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_alone.jsonl,method=source_alone --candidate source=path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_alone.jsonl,method=source_alone --target-set-json results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json --fallback-label target --source-quality-guard finalish_short_numeric --min-correct 10 --min-target-self 0 --min-clean-source-necessary 1 --max-control-clean-union 0 --min-numeric-coverage 64 --output-json results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_finalish_guard_sidecar.json --output-md results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_finalish_guard_sidecar.md --output-predictions-jsonl results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_finalish_guard_predictions.jsonl --prediction-method source_finalish_guard_sidecar
+```
+
+Results:
+
+- best finalish row: `9/70`
+- clean matched: `1/2`
+- clean source-necessary: `0/2`
+- clean control union: `2/2`
+- source-destroying/control clean IDs:
+  `ab1e71e8928661d0`, `daea537474de16ac`
+
+Decision:
+
+- fail and prune fixed source-quality guarded sidecars as the live method
+  family
+- do not tune thresholds or moduli on this family without a new router feature
+  family and a frozen holdout gate
+- next live branch: either source-surface discovery for a stronger/stabler
+  source-complementary slice, or a genuinely new cross-validated source router
+  with features beyond shallow length/numeric guards
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp70_holdout_finalish_guard_20260426.md`
+- surface scan:
+  - `results/source_headroom_surface_scan_20260426/scan.json`
+  - sha256: `9611574620e91181a029e1b60165555bba8234ebbb02fcb78748d7ced52b4a6b`
+  - `results/source_headroom_surface_scan_20260426/scan.md`
+  - sha256: `421f4bdf2a90c636e41da4f90f05c5aac0fa49bea5a5c21f28ceac0c64755afd`
+- finalish holdout:
+  - `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_finalish_guard_sidecar.json`
+  - sha256: `dc5b99e4500e414dae02241e7472734ee9aef51772cd55d9de9149c6c4dd9c1d`
+  - `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_finalish_guard_sidecar.md`
+  - sha256: `d5b9c88a414ae71d796d8f742724d14ba5ce22ab92d0b0869af9676fcbc5fcd4`
+  - `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_finalish_guard_predictions.jsonl`
+  - sha256: `a0b7d2336c515b38c1e053fea09d94fb39e6fc224390e2500bf067928652e45a`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_only_sidecar_router_gate.py tests/test_analyze_svamp_source_sidecar_cv_router_gate.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_only_sidecar_router_gate.py scripts/analyze_source_headroom_surfaces.py`
+
+Next exact gate:
+
+- freeze a new router feature family before looking at holdout labels, or move
+  to source-surface discovery; do not keep tuning fixed decoded-length/finalish
+  guards
+
 ## Cycle Checkpoint: 2026-04-26 SVAMP32 Source Cross-Attention Logprob Gate
 
 - cycle number: `2026-04-26-svamp32-source-cross-attention-logprob`
@@ -6522,3 +6610,82 @@ Next exact gate:
   candidate/routing stack
 - do not run another tiny prefix-emitter variant on this exact surface unless
   new diagnostics explain the control dominance
+
+## Cycle Checkpoint: 2026-04-26 Source Reselection And SVAMP70 Cross-Attention Rescue
+
+- cycle number: `2026-04-26-source-reselection-svamp70-cross-attention`
+- timestamp: `2026-04-26 10:22:00 PDT`
+- live branch entering cycle: source-surface reselection after learned-prefix
+  failures
+- scale-up rung: surface reselection plus top-surface teacher-forced smoke
+- ICLR readiness: not ready; no learned prefix emitter remains live
+
+Start-of-cycle status:
+
+- current paper story: C2C and source-only baselines expose headroom, but
+  global summary readouts, summary prefixes, process repair, and SVAMP32
+  token-local cross-attention are not source-communication methods under
+  controls
+- exact blocker: decide whether the learned-prefix failure is specific to
+  SVAMP32 or also appears on the strongest source-complementary surface
+- highest-priority gate: rerank source surfaces, then run the same
+  cross-attention gate on the top surface if it has enough clean source-only
+  IDs
+
+Surface reselection:
+
+- `svamp70_live`: strong source-complementary surface, source-only `9`,
+  target/source oracle `30/70`
+- `svamp70_holdout`: strong source-complementary surface, source-only `6`,
+  target/source oracle `14/70`
+- `svamp32_qwen25math`: weak source-complementary surface, source-only `5`,
+  target/source oracle `13/32`
+- GSM70, DeepSeek SVAMP32, and Qwen2.5-Math-Instruct SVAMP32 remain weak
+  immediate surfaces
+
+SVAMP70 live cross-attention rescue:
+
+- clean IDs scored: `6`
+- matched-only clean IDs: `0/6`
+- matched-positive clean IDs: `3/6`
+- clean control leaks: `3/6`
+- mean matched-minus-best-control clean margin: `-0.443233`
+- target-preservation IDs scored: `22`
+- target-preservation matched-positive count: `13/22`
+
+Decision:
+
+- fail learned prefix emitters as the current live branch
+- do not tune epochs, hidden width, folds, or prefix length for this connector
+  family without a new mechanism reason
+- next branch should be a discrete source-derived candidate/routing stack on
+  `svamp70_live` with immediate `svamp70_holdout` validation, or broader
+  source-surface discovery
+
+Artifacts:
+
+- memo:
+  - `paper/source_surface_reselection_and_svamp70_cross_attention_20260426.md`
+- surface reselection:
+  - `results/source_surface_reselection_20260426/source_headroom_surfaces.json`
+  - sha256: `23de7bba13b3a1879e986edf930874957cf5a6e8badee808437e73c50874e640`
+  - `results/source_surface_reselection_20260426/source_headroom_surfaces.md`
+  - sha256: `60f62abb94e9e85f8720b6d91c7acbe41b749becdc326d67040846a9820daefc`
+- SVAMP70 live cross-attention gate:
+  - `results/qwen25math_svamp70_source_cross_attention_logprob_20260426/live_smoke.json`
+  - sha256: `013f9d0501bdb2c87a96fc46d3415c42f7e57c3be81b9d285c264ca770863c2d`
+  - `results/qwen25math_svamp70_source_cross_attention_logprob_20260426/live_smoke.md`
+  - sha256: `f02dbf4ab4e452d24af764b0c151fabd7bc88f5d5f8344f34ad99173fe2eed82`
+
+Tests:
+
+- reused validated cross-attention harness:
+  - `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_cross_attention_logprob_probe.py -q`
+  - `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+
+Next exact gate:
+
+- either implement a discrete source-derived candidate/routing stack with
+  live/holdout attribution controls, or materialize a stronger source surface
+- do not spend more compute on tiny learned prefix emitters until a new
+  diagnostic changes the hypothesis

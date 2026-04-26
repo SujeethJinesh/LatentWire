@@ -77,6 +77,16 @@ The first token-local cross-attention rescue also fails its first rung:
 - decision: do not scale this exact tiny prefix-emitting cross-attention
   connector by epochs or width without a new hypothesis
 
+The top-surface cross-attention rescue also fails:
+
+- after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`
+  are the strongest source-complementary surfaces
+- rerunning the same cross-attention gate on `svamp70_live` gives matched-only
+  clean IDs `0/6`, clean control leaks `3/6`, and mean matched-control clean
+  margin `-0.443233`
+- decision: tiny learned prefix emitters are not the live branch unless a new
+  mechanism directly addresses control dominance
+
 The simplest source-only sidecar/router is also negative:
 
 - source-generated numeric residue sidecar with target-side candidate-pool
@@ -179,6 +189,13 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 - The first token-local source cross-attention prefix branch is also negative:
   it recovers `0/6` clean IDs, has `4/6` clean control leaks, and remains
   dominated by label-shuffled, shuffled-source, and target-only controls.
+- Surface reselection after these failures ranks `svamp70_live` and
+  `svamp70_holdout` highest, but the same cross-attention prefix gate also
+  fails on `svamp70_live` with `0/6` matched-only clean IDs and `3/6` clean
+  control leaks.
+- Fixed source-quality guarded sidecars are also killed by holdout controls:
+  the finalish-short-numeric guard reaches `9/70` with clean source-necessary
+  `0/2` and clean control union `2/2`.
 
 ## Main Gaps
 
@@ -207,13 +224,14 @@ The current live branch is no longer adjacent source-surface scouting, shallow
 source-readout tuning, target-safe selector replay, or another Perceiver memory
 checkpoint. Those gates have now failed or become control-explained.
 
-The highest-priority next gate is now no longer another tiny learned prefix
-emitter on the same SVAMP32 surface. Global summary readouts, summary prefixes,
-and the first token-local cross-attention prefix have all failed source
-controls. The next branch should either discover a stronger same-family source
-surface, or test a discrete source-derived candidate/routing stack with strict
-source attribution controls and process repair only as a target-side baseline
-and confound.
+The highest-priority next gate is now no longer a tiny learned prefix emitter.
+Global summary readouts, summary prefixes, token-local cross-attention on
+SVAMP32, and token-local cross-attention on the top-ranked SVAMP70 live surface
+have all failed source controls. The next branch should either discover a
+stronger same-family source surface, or test a discrete source-derived
+candidate/routing stack on `svamp70_live` with immediate `svamp70_holdout`
+validation. Process repair should be used only as a target-side baseline and
+confound unless a separate source-derived route signal exists.
 
 Latest cycle update: the Qwen2.5 -> OPT-350m byte-span module-replace proxy is
 killed as a decision surface. It had tokenizer mismatch (`shared decoded =
@@ -378,6 +396,13 @@ source-necessary `0/2` and clean control union `2/2`. This weakens the fixed
 hand guard as a live method. Do not scale it directly to 500 examples; the next
 live branch must use a learned or cross-validated router, or first discover a
 source surface with more clean source-only IDs.
+
+Finalish guard holdout update: the alternative fixed source-quality guard
+`finalish_short_numeric` also fails on the same disjoint holdout. Its best
+1-byte sidecar row reaches only `9/70`, with clean source-necessary `0/2` and
+clean control union `2/2`. This prunes fixed source-quality guarded source
+sidecars as the live method family; do not tune thresholds or moduli without a
+new router feature family and a frozen holdout gate.
 
 CV router update: a 5-fold decision-stump router over existing source/target
 JSONL features can reproduce the original SVAMP70 sidecar row (`25/70`,

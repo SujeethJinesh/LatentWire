@@ -1,0 +1,30 @@
+{
+  "date": "2026-04-26",
+  "git_base_commit": "e5a7be224d2ce53bfca747a5106add17a4f74b03",
+  "status": "svamp70_live_and_holdout_rank_highest",
+  "top_surfaces": [
+    {
+      "label": "svamp70_live",
+      "status": "strong_source_complementary_surface",
+      "source_only": 9,
+      "oracle": "30/70"
+    },
+    {
+      "label": "svamp70_holdout",
+      "status": "strong_source_complementary_surface",
+      "source_only": 6,
+      "oracle": "14/70"
+    }
+  ],
+  "artifacts": {
+    "json": {
+      "path": "results/source_surface_reselection_20260426/source_headroom_surfaces.json",
+      "sha256": "23de7bba13b3a1879e986edf930874957cf5a6e8badee808437e73c50874e640"
+    },
+    "markdown": {
+      "path": "results/source_surface_reselection_20260426/source_headroom_surfaces.md",
+      "sha256": "60f62abb94e9e85f8720b6d91c7acbe41b749becdc326d67040846a9820daefc"
+    }
+  },
+  "next_gate": "Do not tune more tiny prefix emitters; test a discrete source-derived candidate/routing stack on SVAMP70 live and verify immediately on SVAMP70 holdout, or materialize a new stronger source surface."
+}

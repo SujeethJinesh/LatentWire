@@ -32,6 +32,13 @@
   first token-local source cross-attention logprob gate; it recovers `0/6`
   clean candidate IDs with `4/6` clean control leaks and is not worth scaling
   as the current tiny prefix-emitting implementation.
+- `source_surface_reselection_and_svamp70_cross_attention_20260426.md` records
+  the consolidated surface reselection after the SVAMP32 connector failures and
+  the negative SVAMP70 live cross-attention rescue: `0/6` matched-only clean
+  IDs with `3/6` clean control leaks.
+- `qwen25math_svamp70_holdout_finalish_guard_20260426.md` records the holdout
+  falsification of the fixed `finalish_short_numeric` source-sidecar guard:
+  `0/2` clean source-necessary IDs with `2/2` control leakage.
 - `qwen25math_svamp32_source_contrastive_sidecar_20260426.md` records the
   first positive strict-small Qwen2.5-Math -> Qwen3 source-contrastive sidecar
   stack: target/text agreement preservation plus a 1-byte source residue
@@ -39,6 +46,10 @@
 - `qwen25math_svamp70_source_contrastive_sidecar_20260426.md` records the
   medium SVAMP70 confirmation: the sidecar beats target/text but remains below
   C2C and has bootstrap intervals crossing zero.
+- `qwen25math_svamp70_holdout_finalish_guard_20260426.md` records the holdout
+  failure of the `finalish_short_numeric` source-quality guard: best row
+  `9/70`, clean source-necessary `0/2`, and control clean union `2/2`,
+  pruning fixed source-quality guarded sidecars.
 - `qwen25math_svamp70_chal241_sidecar_gate_20260426.md` records the
   `chal241-310` source-sidecar pruning gate: the sidecar touches clean
   source-only IDs, but total accuracy stays too low and controls leak clean

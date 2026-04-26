@@ -1,0 +1,25 @@
+{
+  "date": "2026-04-26",
+  "decision": "fixed finalish-short-numeric source guard fails disjoint SVAMP70 holdout; prune fixed source-quality guard family",
+  "files": {
+    "predictions": {
+      "path": "results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_finalish_guard_predictions.jsonl",
+      "sha256": "a0b7d2336c515b38c1e053fea09d94fb39e6fc224390e2500bf067928652e45a"
+    },
+    "readout_md": {
+      "path": "results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_finalish_guard_sidecar.md",
+      "sha256": "d5b9c88a414ae71d796d8f742724d14ba5ce22ab92d0b0869af9676fcbc5fcd4"
+    },
+    "result_json": {
+      "path": "results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_finalish_guard_sidecar.json",
+      "sha256": "dc5b99e4500e414dae02241e7472734ee9aef51772cd55d9de9149c6c4dd9c1d"
+    }
+  },
+  "metrics": {
+    "best_correct": 9,
+    "clean_control_union": 2,
+    "clean_source_necessary": 0,
+    "total": 70
+  },
+  "status": "source_finalish_guard_fails_holdout_gate"
+}

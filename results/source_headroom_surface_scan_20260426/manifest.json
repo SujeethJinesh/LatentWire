@@ -1,0 +1,23 @@
+{
+  "date": "2026-04-26",
+  "decision": "Use the SVAMP70 source surface only with new router features and frozen holdout validation; fixed source-quality guards are pruned.",
+  "files": {
+    "scan_json": {
+      "path": "results/source_headroom_surface_scan_20260426/scan.json",
+      "sha256": "9611574620e91181a029e1b60165555bba8234ebbb02fcb78748d7ced52b4a6b"
+    },
+    "scan_md": {
+      "path": "results/source_headroom_surface_scan_20260426/scan.md",
+      "sha256": "421f4bdf2a90c636e41da4f90f05c5aac0fa49bea5a5c21f28ceac0c64755afd"
+    }
+  },
+  "status": "surface_scan_completed",
+  "top_surface": {
+    "label": "qwen25math_qwen3_svamp70",
+    "source_correct": 13,
+    "source_only_over_target": 9,
+    "target_correct": 21,
+    "target_source_oracle": 30,
+    "total": 70
+  }
+}
