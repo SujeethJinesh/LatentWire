@@ -1,0 +1,142 @@
+{
+  "config": {
+    "candidate_labels": [],
+    "control_labels": [],
+    "min_clean_teacher_only": 2,
+    "min_teacher_only": 5,
+    "source_labels": [
+      "source",
+      "t2t"
+    ]
+  },
+  "date": "2026-04-26",
+  "ids": {
+    "candidate_explained": [],
+    "clean_teacher_only": [
+      "1d50b408c8f5cd2c",
+      "3e8a5691f5443495",
+      "47464cc0b064f172",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "de1bf4d142544e5b"
+    ],
+    "control_explained": [],
+    "source_explained": [
+      "14bfbfc94f2c2e7b",
+      "2de1549556000830",
+      "4d780f825bb8541c"
+    ],
+    "teacher_only": [
+      "14bfbfc94f2c2e7b",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "3e8a5691f5443495",
+      "47464cc0b064f172",
+      "4d780f825bb8541c",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "de1bf4d142544e5b"
+    ]
+  },
+  "status": "clean_headroom_available",
+  "summary": {
+    "candidate_explained_teacher_only_count": 0,
+    "clean_teacher_only_count": 6,
+    "control_explained_teacher_only_count": 0,
+    "reference_n": 32,
+    "source_explained_teacher_only_count": 3,
+    "target_correct": 8,
+    "target_only_vs_teacher_count": 2,
+    "teacher_correct": 15,
+    "teacher_only_count": 9
+  },
+  "teacher_only_rows": [
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "14bfbfc94f2c2e7b",
+      "labels": [
+        "source_or_text"
+      ],
+      "source_correct_labels": [
+        "source"
+      ]
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "1d50b408c8f5cd2c",
+      "labels": [
+        "clean_c2c_headroom_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "2de1549556000830",
+      "labels": [
+        "source_or_text"
+      ],
+      "source_correct_labels": [
+        "source"
+      ]
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "3e8a5691f5443495",
+      "labels": [
+        "clean_c2c_headroom_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "47464cc0b064f172",
+      "labels": [
+        "clean_c2c_headroom_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "4d780f825bb8541c",
+      "labels": [
+        "source_or_text"
+      ],
+      "source_correct_labels": [
+        "source"
+      ]
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "575d7e83d84c1e67",
+      "labels": [
+        "clean_c2c_headroom_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "6e9745b37ab6fc45",
+      "labels": [
+        "clean_c2c_headroom_target"
+      ],
+      "source_correct_labels": []
+    },
+    {
+      "candidate_correct_labels": [],
+      "control_correct_labels": [],
+      "example_id": "de1bf4d142544e5b",
+      "labels": [
+        "clean_c2c_headroom_target"
+      ],
+      "source_correct_labels": []
+    }
+  ]
+}

@@ -1,0 +1,564 @@
+{
+  "candidate_control_overlap": {},
+  "candidates": [],
+  "controls": [],
+  "date": "2026-04-26",
+  "gate": {
+    "candidate_statuses": {},
+    "notes": [
+      "No candidate rows were provided.",
+      "No controls were provided, so source-specificity cannot be claimed."
+    ],
+    "status": "no_candidates"
+  },
+  "min_teacher_only": 5,
+  "reference_n": 32,
+  "sources": [
+    {
+      "accuracy": 0.1875,
+      "artifact_contains_reference_ids": true,
+      "artifact_n": 32,
+      "artifact_prefix_id_parity": true,
+      "correct": 6,
+      "empty_predictions": 0,
+      "exact_ordered_id_parity": true,
+      "label": "source",
+      "losses_vs_target_count": 7,
+      "losses_vs_target_ids": [
+        "0d2b4f7681973e19",
+        "2f80204fc9e0896f",
+        "316b525a4fcbfb89",
+        "a85be5ec651dac24",
+        "c042f0a2949ff8e6",
+        "de2a795ab37694af",
+        "f367349ce0604296"
+      ],
+      "method": "source_alone",
+      "n": 32,
+      "non_teacher_wins_vs_target_count": 2,
+      "non_teacher_wins_vs_target_ids": [
+        "41cce6c6e6bb0058",
+        "aee922049c757331"
+      ],
+      "numeric_extraction_coverage": 26,
+      "path": "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/source_alone.jsonl",
+      "teacher_only_recovered_count": 3,
+      "teacher_only_recovered_ids": [
+        "14bfbfc94f2c2e7b",
+        "2de1549556000830",
+        "4d780f825bb8541c"
+      ],
+      "teacher_overlap_correct_count": 3,
+      "wins_vs_target_count": 5,
+      "wins_vs_target_ids": [
+        "14bfbfc94f2c2e7b",
+        "2de1549556000830",
+        "41cce6c6e6bb0058",
+        "4d780f825bb8541c",
+        "aee922049c757331"
+      ]
+    },
+    {
+      "accuracy": 0.25,
+      "artifact_contains_reference_ids": true,
+      "artifact_n": 32,
+      "artifact_prefix_id_parity": true,
+      "correct": 8,
+      "empty_predictions": 0,
+      "exact_ordered_id_parity": true,
+      "label": "t2t",
+      "losses_vs_target_count": 3,
+      "losses_vs_target_ids": [
+        "013133cdef4f637c",
+        "2f80204fc9e0896f",
+        "c042f0a2949ff8e6"
+      ],
+      "method": "text_to_text",
+      "n": 32,
+      "non_teacher_wins_vs_target_count": 3,
+      "non_teacher_wins_vs_target_ids": [
+        "4ef979ea2bf931df",
+        "aee922049c757331",
+        "b1200c32546a34a5"
+      ],
+      "numeric_extraction_coverage": 32,
+      "path": "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/text_to_text.jsonl",
+      "teacher_only_recovered_count": 0,
+      "teacher_only_recovered_ids": [],
+      "teacher_overlap_correct_count": 5,
+      "wins_vs_target_count": 3,
+      "wins_vs_target_ids": [
+        "4ef979ea2bf931df",
+        "aee922049c757331",
+        "b1200c32546a34a5"
+      ]
+    }
+  ],
+  "target_summary": {
+    "accuracy": 0.25,
+    "artifact_contains_reference_ids": true,
+    "artifact_n": 32,
+    "artifact_prefix_id_parity": true,
+    "correct": 8,
+    "empty_predictions": 0,
+    "exact_ordered_id_parity": true,
+    "label": "target",
+    "losses_vs_target_count": 0,
+    "losses_vs_target_ids": [],
+    "method": "target_alone",
+    "n": 32,
+    "non_teacher_wins_vs_target_count": 0,
+    "non_teacher_wins_vs_target_ids": [],
+    "numeric_extraction_coverage": 32,
+    "path": "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl",
+    "teacher_only_recovered_count": 0,
+    "teacher_only_recovered_ids": [],
+    "teacher_overlap_correct_count": 6,
+    "wins_vs_target_count": 0,
+    "wins_vs_target_ids": []
+  },
+  "teacher_only_count": 9,
+  "teacher_only_ids": [
+    "14bfbfc94f2c2e7b",
+    "1d50b408c8f5cd2c",
+    "2de1549556000830",
+    "3e8a5691f5443495",
+    "47464cc0b064f172",
+    "4d780f825bb8541c",
+    "575d7e83d84c1e67",
+    "6e9745b37ab6fc45",
+    "de1bf4d142544e5b"
+  ],
+  "teacher_only_provenance": [
+    {
+      "candidate_correct_labels": [],
+      "candidates": {},
+      "control_correct_labels": [],
+      "controls": {},
+      "example_id": "14bfbfc94f2c2e7b",
+      "source_correct_labels": [
+        "source"
+      ],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": true,
+          "normalized_prediction": "3",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "1",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "16",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "you have read 19 movies and watched 16 books. to find out how many more movies you have read than books, you need to subtract the number of books you have read from the number of movies you have read. so, you have read 19 - 16 = 3 more movies",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {},
+      "control_correct_labels": [],
+      "controls": {},
+      "example_id": "1d50b408c8f5cd2c",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "25",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "1",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "1",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "on the previous day, there were 703 visitors. on the current day, there were 246 visitors. in total, there were 703 + 246 = 949 visitors in total. if there were 25 days, then there were 949",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {},
+      "control_correct_labels": [],
+      "controls": {},
+      "example_id": "2de1549556000830",
+      "source_correct_labels": [
+        "source"
+      ],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": true,
+          "normalized_prediction": "39",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "1",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "33",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "the frog jumped 33 inches farther than the grasshopper, so the frog jumped 9 + 33 = 42 inches. the mouse jumped 3 inches lesser than the frog, so the mouse jumped 42 - 3 = 39 inches. #### 39 the answer",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {},
+      "control_correct_labels": [],
+      "controls": {},
+      "example_id": "3e8a5691f5443495",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "7",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "7",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "3",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "if each basket has 4 red peaches and 3 green peaches, then each basket has a total of 4+3=7 peaches. if there are a total of 7 peaches in all baskets, then there must be 1 basket of peaches. #### 1 the answer is",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {},
+      "control_correct_labels": [],
+      "controls": {},
+      "example_id": "47464cc0b064f172",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "10",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "14",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "2",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "the waiter had 14 customers initially. after some left, he still had 14 customers. then he got 10 new customers, so he now has 14 + 10 = 24 customers. #### 24 the answer is: 24",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {},
+      "control_correct_labels": [],
+      "controls": {},
+      "example_id": "4d780f825bb8541c",
+      "source_correct_labels": [
+        "source"
+      ],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": true,
+          "normalized_prediction": "26",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "34",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "1",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "julia played tag with 12 kids on monday and 14 kids on tuesday, so she played with a total of 12+14=26 kids. if she spent a total of 34 hours to play tag on both days, then she spent 34/26=",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {},
+      "control_correct_labels": [],
+      "controls": {},
+      "example_id": "575d7e83d84c1e67",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "24",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "24",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "24",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "emily has 6 beads and each necklace takes 3 beads, so she can make 6/3 = 2 necklaces. #### 2 the answer is: 2",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {},
+      "control_correct_labels": [],
+      "controls": {},
+      "example_id": "6e9745b37ab6fc45",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "600",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "39",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "600",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "if there were 600 visitors the previous day, and 661 visitors came to the buckingham palace on that day, then the difference in the number of visitors is 661 - 600 = 61 visitors. therefore, 61 more visitors visited the buckingham palace on that",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    },
+    {
+      "candidate_correct_labels": [],
+      "candidates": {},
+      "control_correct_labels": [],
+      "controls": {},
+      "example_id": "de1bf4d142544e5b",
+      "source_correct_labels": [],
+      "sources": {
+        "source": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "40",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        },
+        "t2t": {
+          "candidate_source": null,
+          "correct": false,
+          "normalized_prediction": "1",
+          "present": true,
+          "repair_changed_answer": null,
+          "selected_candidate_source": null
+        }
+      },
+      "target": {
+        "candidate_source": null,
+        "correct": false,
+        "normalized_prediction": "2",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      },
+      "teacher": {
+        "candidate_source": null,
+        "correct": true,
+        "normalized_prediction": "if 40 alligators were hiding, then there are 97 - 40 = 57 alligators that were not hiding. #### 57 the answer is: 57",
+        "present": true,
+        "repair_changed_answer": null,
+        "selected_candidate_source": null
+      }
+    }
+  ],
+  "teacher_summary": {
+    "accuracy": 0.46875,
+    "artifact_contains_reference_ids": true,
+    "artifact_n": 32,
+    "artifact_prefix_id_parity": true,
+    "correct": 15,
+    "empty_predictions": 0,
+    "exact_ordered_id_parity": true,
+    "label": "c2c",
+    "losses_vs_target_count": 2,
+    "losses_vs_target_ids": [
+      "013133cdef4f637c",
+      "c042f0a2949ff8e6"
+    ],
+    "method": "c2c_generate",
+    "n": 32,
+    "non_teacher_wins_vs_target_count": 0,
+    "non_teacher_wins_vs_target_ids": [],
+    "numeric_extraction_coverage": 32,
+    "path": "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/c2c_generate.jsonl",
+    "teacher_only_recovered_count": 9,
+    "teacher_only_recovered_ids": [
+      "14bfbfc94f2c2e7b",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "3e8a5691f5443495",
+      "47464cc0b064f172",
+      "4d780f825bb8541c",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "de1bf4d142544e5b"
+    ],
+    "teacher_overlap_correct_count": 15,
+    "wins_vs_target_count": 9,
+    "wins_vs_target_ids": [
+      "14bfbfc94f2c2e7b",
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "3e8a5691f5443495",
+      "47464cc0b064f172",
+      "4d780f825bb8541c",
+      "575d7e83d84c1e67",
+      "6e9745b37ab6fc45",
+      "de1bf4d142544e5b"
+    ]
+  }
+}

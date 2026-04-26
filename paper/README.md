@@ -8,6 +8,9 @@
 - `repo_readiness_review_20260426.md` is the latest repo-wide ICLR readiness
   audit: what has been tried, what is saturated, what remains live, and the next
   exact gate.
+- `qwen25math_svamp32_headroom_and_source_probes_20260426.md` records the new
+  Qwen2.5-Math -> Qwen3 SVAMP32 C2C-headroom target set and the negative
+  source-only numeric sidecar / source-hidden ridge screens on that surface.
 - `svamp32_c2c_mechanism_syndrome_probe_20260426.md` records the negative
   strict small-gate C2C prefill scalar/residual trace syndrome-distillation
   probe.

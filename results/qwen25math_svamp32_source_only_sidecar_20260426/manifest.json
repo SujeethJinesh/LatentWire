@@ -1,0 +1,17 @@
+{
+  "artifacts": {
+    "source_only_sidecar_router.json": "457b74ce65e2e1dffc5b0b8b53f40a078d9534d7f90bbde7ed1a328e3d96385b",
+    "source_only_sidecar_router.md": "2b05ecffab478a573175fd984bf9dbf859d05d0c44d4b56129a2f054b9e74f0f"
+  },
+  "date": "2026-04-26",
+  "git_commit": "ecd8b0946956636073875186add64d16c68af7a6",
+  "status": "source_only_sidecar_router_fails_gate",
+  "summary": {
+    "best_control_clean_union": 3,
+    "best_matched": 8,
+    "clean_source_necessary": 0,
+    "source_numeric_coverage": 26,
+    "total": 32
+  }
+}
+

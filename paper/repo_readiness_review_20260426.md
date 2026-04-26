@@ -194,19 +194,22 @@ target/text oracle is only `10/32`. C2C is unavailable because no published C2C
 artifact is registered for this pair. Do not spend connector or source-control
 compute on this pair in the current loop.
 
-Qwen2.5-Math-1.5B -> Qwen3-0.6B is now the most promising surface-scout branch,
-but only with chat-template prompting. A no-chat SVAMP16 probe produced an
-artificially weak target floor (`0/16`), so it is not claim-worthy. With chat
-templates, the same pair reaches target `2/16`, source `4/16`, text `4/16`, and
-C2C `5/16`; C2C adds `4` target-missed IDs. Scale this to frozen SVAMP32 before
-any connector training.
+Qwen2.5-Math-1.5B -> Qwen3-0.6B is now the strongest same-family decision
+surface, but only with chat-template prompting. A no-chat SVAMP16 probe
+produced an artificially weak target floor (`0/16`), so it is not
+claim-worthy. With chat templates, frozen SVAMP32 reaches target `8/32`, source
+`6/32`, text relay `8/32`, and C2C `15/32`. C2C adds `9` target-missed IDs and
+the target/C2C oracle reaches `17/32`, versus target/text oracle `11/32`.
 
-SVAMP32 confirms the Qwen2.5-Math surface: target `8/32`, source `6/32`, text
-relay `8/32`, and C2C `15/32`. C2C adds `9` target-missed IDs and the
-target/C2C oracle reaches `17/32`, versus target/text oracle `11/32`. This is
-now the next strict-small method surface; do not widen to larger slices until a
-deployable source-derived method recovers source-necessary C2C-only IDs here
-with full source-destroying controls.
+The clean C2C-headroom target set is now explicit: source-alone explains `3`
+of the `9` C2C-only wins, text relay explains `0`, leaving `6` clean
+C2C-headroom targets and `2` target-only-vs-C2C rows to preserve. This is the
+current strict-small decision surface. The first deployable probes are
+negative: source-only numeric sidecars recover `0/6` clean IDs with only
+`26/32` source numeric coverage, and source-hidden ridge probes over last-layer
+or all-layer summaries also recover `0/6` clean IDs. Do not widen to larger
+slices until a deployable source-derived method clears this exact surface with
+full source-destroying controls.
 
 Same-family fallback update: a richer C2C prefill residual projection probe
 does not rescue the C2C-mechanism distillation branch. Signed residual

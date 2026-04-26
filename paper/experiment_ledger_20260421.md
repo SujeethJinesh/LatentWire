@@ -4988,3 +4988,89 @@ Next exact gate:
   leakage
 - required controls: zero-source, shuffled-source, target-only, slots-only,
   exact-ID parity, numeric coverage, target-self preservation
+
+## Cycle Checkpoint: 2026-04-26 Qwen2.5-Math -> Qwen3 C2C Headroom And Source Probes
+
+- cycle number: `2026-04-26-qwen25math-qwen3-headroom-source-probes`
+- timestamp: `2026-04-26 02:51:29 PDT`
+- live branch entering cycle: Qwen2.5-Math -> Qwen3 SVAMP32 C2C-headroom
+  surface
+- scale-up rung: strict small gate
+- ICLR readiness: not ready; no deployable source-derived positive method
+
+Start-of-cycle status:
+
+- current paper story: Qwen2.5-Math -> Qwen3 with chat templates exposes target
+  `8/32`, source `6/32`, text relay `8/32`, and C2C `15/32`
+- exact blocker: turn C2C-only headroom into a deployable source-derived method
+  that survives source-destroying controls
+- highest-priority gate: build the clean C2C-headroom target set, then test the
+  cheapest deployable source-derived sidecar/readout probes
+
+Decision:
+
+- target set status: `clean_headroom_available`
+- C2C-only over target: `9`
+- source/text explained C2C-only IDs: `3`
+- clean C2C-headroom targets: `6`
+- target-only vs C2C IDs to preserve: `2`
+- source-only numeric sidecar: failed, best matched `8/32`, clean
+  source-necessary `0/6`, source numeric coverage `26/32`
+- source-hidden ridge probes: failed, last-layer and all-layer both matched
+  `8/32` with clean source-necessary `0/6`
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_headroom_and_source_probes_20260426.md`
+- C2C-headroom manifest:
+  - `results/qwen25math_svamp32_c2c_headroom_20260426/manifest.md`
+- C2C-headroom JSON:
+  - `results/qwen25math_svamp32_c2c_headroom_20260426/c2c_headroom_target_set.json`
+  - sha256: `021b8b098c5fbc5a2b62193393bcf8da6bdba6c4eda2b1a411e32b94b6e81c32`
+- source-only sidecar result:
+  - `results/qwen25math_svamp32_source_only_sidecar_20260426/source_only_sidecar_router.json`
+  - sha256: `457b74ce65e2e1dffc5b0b8b53f40a078d9534d7f90bbde7ed1a328e3d96385b`
+- source-latent all-layer result:
+  - `results/qwen25math_svamp32_source_latent_probe_20260426/all_layers_ridge_probe.json`
+  - sha256: `d643ac24b6ec1f0ee9a66073f192ab873443e736e5497cde9029147d7b66c90a`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_build_c2c_headroom_target_set.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/build_c2c_headroom_target_set.py`
+
+Hypothesis update:
+
+- strengthened: the Qwen2.5-Math -> Qwen3 C2C-headroom surface is reusable and
+  has six clean target-complementary C2C IDs
+- killed: raw source-generated numeric residue sidecars on this surface
+- killed: summary-level source-hidden ridge residue readout on this surface
+- promoted next: run a Qwen-Math C2C prefill mechanism projection diagnostic or
+  implement a token/layer-local source-derived objective with anti-cache
+  controls
+
+Next exact gate:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp32_c2c_mechanism_syndrome_probe.py \
+  --source-model Qwen/Qwen2.5-Math-1.5B \
+  --target-model Qwen/Qwen3-0.6B \
+  --eval-file results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/_artifacts/svamp_eval_70_32_32.jsonl \
+  --target target=path=results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl,method=target_alone \
+  --teacher c2c=path=results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/c2c_generate.jsonl,method=c2c_generate \
+  --candidate c2c=path=results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/c2c_generate.jsonl,method=c2c_generate \
+  --target-set-json results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json \
+  --fallback-label target \
+  --moduli 2,3,5,7 \
+  --ridge-lambda 1.0 \
+  --shuffle-offset 1 \
+  --min-correct 9 \
+  --min-clean-source-necessary 2 \
+  --min-numeric-coverage 26 \
+  --device mps \
+  --max-new-tokens 1 \
+  --residual-projection-dim 16 \
+  --output-json results/qwen25math_svamp32_c2c_mechanism_probe_20260426/prefill_projection16_probe.json \
+  --output-md results/qwen25math_svamp32_c2c_mechanism_probe_20260426/prefill_projection16_probe.md
+```

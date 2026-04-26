@@ -1,0 +1,19 @@
+{
+  "artifacts": {
+    "all_layers_ridge_probe.json": "d643ac24b6ec1f0ee9a66073f192ab873443e736e5497cde9029147d7b66c90a",
+    "all_layers_ridge_probe.md": "f0c441c534ec0a14a1eaba98dee9cd7d195ca4de941be2d170f9093a70fe0392",
+    "last_layer_ridge_probe.json": "82b9690cb6c993312ec92044cd7de03f534eaefbabb8bbee6a964b3c5a9101ae",
+    "last_layer_ridge_probe.md": "ecdcbf1246b28bbb966cc8d49fb4af79b270f3a2fc60f647070d4a2f3ea0566c"
+  },
+  "date": "2026-04-26",
+  "git_commit": "ecd8b0946956636073875186add64d16c68af7a6",
+  "status": "source_latent_syndrome_probe_fails_gate",
+  "summary": {
+    "all_layers_clean_source_necessary": 0,
+    "all_layers_matched": 8,
+    "last_layer_clean_source_necessary": 0,
+    "last_layer_matched": 8,
+    "total": 32
+  }
+}
+
