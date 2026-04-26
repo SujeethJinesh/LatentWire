@@ -1,0 +1,42 @@
+{
+  "date": "2026-04-26",
+  "status": "process_repair_source_controls_do_not_clear_gate",
+  "decision": "kill_process_repair_selected_routes_as_source_communication_on_svamp70",
+  "matched": {
+    "path": "results/process_repair_holdout_20260421/qwen_svamp70_process_repair_controls_strict_selector_telemetry.jsonl",
+    "process_repair_correct": "38/70",
+    "target_alone_correct": "21/70",
+    "target_self_repair_correct": "35/70",
+    "matched_only_vs_target_self": 3
+  },
+  "controls": {
+    "zero_source_kv": {
+      "process_repair_correct": "35/70",
+      "matched_only_overlap_vs_target_self": 1,
+      "summary": "results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_summary.md",
+      "telemetry": "results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl"
+    },
+    "shuffled_source_prompt": {
+      "process_repair_correct": "37/70",
+      "matched_only_overlap_vs_target_self": 3,
+      "summary": "results/process_repair_source_controls_20260426/qwen_svamp70_shuffled_source_prompt_process_repair_controls_summary.md",
+      "telemetry": "results/process_repair_source_controls_20260426/qwen_svamp70_shuffled_source_prompt_process_repair_controls_telemetry.jsonl"
+    }
+  },
+  "source_specific_matched_only_after_controls": 0,
+  "key_artifacts": {
+    "combined_source_control_gate_md": {
+      "path": "results/process_repair_source_controls_20260426/svamp70_zero_and_shuffled_source_control_gate.md",
+      "sha256": "05e7c38e73f012e47345f7430fac2e93d9177a51e6505cae62cffaefd919ca72"
+    },
+    "combined_attribution_md": {
+      "path": "results/process_repair_source_controls_20260426/svamp70_zero_and_shuffled_source_attribution.md",
+      "sha256": "a7b9d3594392721b29d1db3c0036c6750aabb98209c43a7b78dc9b377e946875"
+    },
+    "sha256_manifest": {
+      "path": "results/process_repair_source_controls_20260426/sha256.txt",
+      "sha256": "d9ab6be581a1e863ac5007385d85dda47ddf0c97c24811269aa11c5e194d9b96"
+    }
+  },
+  "next_gate": "true_source_conditioned_soft_prefix_or_gated_cross_attention_logprob_teacher_forced_gate_with_source_destroying_and_target_only_prefix_controls"
+}

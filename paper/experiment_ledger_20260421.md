@@ -6280,3 +6280,84 @@ Next exact gate:
   logprob objective with source-destroying and target-only prefix controls, or
   declare the current exact-ID SVAMP32 C2C-residual surface saturated and move
   to a new source-surface discovery branch
+
+## Cycle Checkpoint: 2026-04-26 SVAMP70 Process-Repair Source Controls
+
+- cycle number: `2026-04-26-svamp70-process-repair-source-controls`
+- timestamp: `2026-04-26 09:35:55 PDT`
+- live branch entering cycle: old process-repair selected-route row, reopened
+  after the broader MD/results comb
+- scale-up rung: medium source-control falsification
+- ICLR readiness: not ready; the strongest repair row is killed as a
+  source-communication method
+
+Start-of-cycle status:
+
+- current paper story: C2C and repair rows expose headroom, but no deployable
+  source-derived method has survived controls
+- exact blocker: decide whether process-repair selected routes transfer source
+  information or merely exploit target-side repair/candidate diversity
+- highest-priority gate: rerun process repair with zero-source K/V and
+  shuffled-source prompt controls, preserving the same three-salt route-pool
+  and target self-repair controls
+
+Implementation:
+
+- added `scripts/analyze_process_repair_source_controls.py`
+- added `tests/test_analyze_process_repair_source_controls.py`
+- added `references/463_process_repair_source_control_followup_refs.md`
+- ran source-destroying controls with:
+  - `.debug/run_svamp70_process_repair_zero_kv_control_20260426.sh`
+  - `.debug/run_svamp70_process_repair_shuffled_source_control_20260426.sh`
+
+Results:
+
+- matched process repair: `38/70`
+- target-alone: `21/70`
+- target self-repair: `35/70`
+- matched-only vs target self-repair: `3` IDs
+- zero-source K/V process repair: `35/70`; overlaps `1/3` matched-only IDs
+- shuffled-source prompt process repair: `37/70`; overlaps `3/3` matched-only
+  IDs
+- source-specific matched-only IDs after both controls: `0`
+
+Decision:
+
+- fail and kill process-repair selected routes as a source-communication method
+  on SVAMP70
+- do not tune verifier/repair-only policies unless a new source-derived route
+  signal exists first
+- keep process repair as a baseline and confound for future source methods
+
+Artifacts:
+
+- memo:
+  - `paper/svamp70_process_repair_source_controls_20260426.md`
+- result manifest:
+  - `results/process_repair_source_controls_20260426/manifest.md`
+- combined source-control gate:
+  - `results/process_repair_source_controls_20260426/svamp70_zero_and_shuffled_source_control_gate.md`
+  - sha256: `05e7c38e73f012e47345f7430fac2e93d9177a51e6505cae62cffaefd919ca72`
+- combined attribution:
+  - `results/process_repair_source_controls_20260426/svamp70_zero_and_shuffled_source_attribution.md`
+  - sha256: `a7b9d3594392721b29d1db3c0036c6750aabb98209c43a7b78dc9b377e946875`
+- full artifact hashes:
+  - `results/process_repair_source_controls_20260426/sha256.txt`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_process_repair_source_controls.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_process_repair_source_controls.py`
+- `./venv_arm64/bin/python -m json.tool references/research_memo_manifest.json >/dev/null`
+
+Next exact gate:
+
+- implement the true source-conditioned soft-prefix/gated cross-attention
+  teacher-forced logprob gate, not another residue classifier or repair-only
+  policy
+- required controls: matched source, zero-source, shuffled-source, target-only
+  learned prefix, slots-only learned prefix, projected soft prompt, and
+  label-shuffled training
+- promotion rule: at least `2/6` matched-only clean residual IDs with positive
+  matched-minus-best-control margin and target-self preservation before any
+  generation run

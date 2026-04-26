@@ -386,6 +386,20 @@ current live branch should move from more same-pair surface scouting to the
 smallest stronger-interface smoke on an existing exact-ID SVAMP surface, or to
 a different source/target pair only if a cheap source/target/text scout clears.
 
+Process-repair source-control update: old held-out process-repair rows were
+re-audited because they were the strongest historical positive-looking result.
+On SVAMP70, matched process repair reaches `38/70`, target self-repair reaches
+`35/70`, and matched has `3` wins over target self-repair. The zero-source K/V
+control reaches `35/70` and overlaps `1/3` of those matched-only IDs. The
+shuffled-source prompt control reaches `37/70` and overlaps `3/3`. The combined
+gate therefore has `0` source-specific matched-only IDs after controls. Kill
+process-repair selected routes as a source-communication method on this
+surface; keep it only as a target-side repair/candidate-diversity baseline. The
+next live method branch should be a true source-conditioned soft-prefix or
+gated cross-attention logprob objective with matched target-only-prefix,
+slots-only, projected-soft-prompt, zero-source, and shuffled-source controls
+before generation.
+
 Historical source-contrastive promotion rule:
 
 - matched `>=9/32`

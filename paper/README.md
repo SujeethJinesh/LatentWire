@@ -35,6 +35,10 @@
   `chal241-310` source-sidecar pruning gate: the sidecar touches clean
   source-only IDs, but total accuracy stays too low and controls leak clean
   IDs, so the slice should not receive C2C or connector spend.
+- `svamp70_process_repair_source_controls_20260426.md` records the
+  source-control falsification of the old SVAMP70 process-repair row: matched
+  repair beats target self-repair by `3/70`, but zero/shuffled-source controls
+  recover all route-specific wins, killing it as a communication method.
 - `svamp32_c2c_mechanism_syndrome_probe_20260426.md` records the negative
   strict small-gate C2C prefill scalar/residual trace syndrome-distillation
   probe.
