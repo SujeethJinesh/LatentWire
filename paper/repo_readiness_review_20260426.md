@@ -232,6 +232,16 @@ interface, such as the smallest real-model sequence-aligned sparse/anchor
 sidecar smoke inspired by the quotient/GPA toy results, with zero-source,
 shuffle, target-only, and slots-only controls from the start.
 
+Sparse-anchor sidecar update: the first real-model smoke for that branch is
+negative. A random sparse anchor projection plus tokenizer-boundary sidecar
+reaches `9/32` with `0/6` clean C2C-headroom IDs and one slots-only clean
+control hit at an estimated `34` bytes/example. A constrained `14`
+bytes/example variant reaches only `7/32`, below the target floor, with `0/6`
+clean recoveries. Do not tune this exact projection/top-k implementation
+further; the branch only remains live if the feature extractor changes to
+fold-local token/span sparse dictionaries or an existing real SAE-adapter lane
+is evaluated under the same clean target set and controls.
+
 Qwen-Math token/layer local follow-up: the new C2C tail-token local residual
 query-bottleneck gate also fails. It records per-projector key/value `source`,
 `target`, `output`, and `delta` tail tensors, reshaped as `224` tokens of width

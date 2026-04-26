@@ -5784,3 +5784,71 @@ Next exact gate:
   sparse/anchor sidecar smoke
 - require explicit source-destroying controls and at least `2` clean
   source-necessary recoveries on SVAMP32 before any scale-up
+
+## Cycle Checkpoint: 2026-04-26 SVAMP32 Sparse-Anchor Sidecar Smoke
+
+- cycle number: `2026-04-26-svamp32-sparse-anchor-sidecar-smoke`
+- timestamp: `2026-04-26 06:22:41 PDT`
+- live branch entering cycle: materially different source-derived sparse /
+  anchor sidecar after source-surface scouts failed
+- scale-up rung: strict-small real-model smoke
+- ICLR readiness: not ready; no deployable source-derived method clears clean
+  controls
+
+Start-of-cycle status:
+
+- current paper story: C2C headroom is real on SVAMP32, but previous source
+  hidden, query-bottleneck, and source-numeric interfaces fail clean C2C IDs
+- exact blocker: test whether sparse anchor plus tokenizer-boundary sidecar
+  features recover clean C2C-residue targets
+- highest-priority gate: at least `2/6` clean source-necessary recoveries,
+  no clean destructive-control recovery, and target floor preservation
+
+Implementation:
+
+- added `scripts/analyze_svamp32_sparse_anchor_sidecar_probe.py`
+- added `tests/test_analyze_svamp32_sparse_anchor_sidecar_probe.py`
+- features: source hidden summary sparse anchor projection plus
+  source/target tokenizer-boundary alignment sidecar
+- controls: zero-source, shuffled-source, label-shuffled, target-only, and
+  slots-only
+
+Results:
+
+- `probe`: `9/32` matched, `0/6` clean matched, target-only `8/32`,
+  slots-only clean control `1/6`, estimated `34` bytes/example
+- `probe_budget16_seed3`: `7/32` matched, `0/6` clean matched, target-only
+  `8/32`, control clean union `0/6`, estimated `14` bytes/example
+
+Decision:
+
+- fail and weaken the current sparse-anchor implementation
+- do not tune projection seed/top-k/byte budget further without a materially
+  different feature extractor
+- broader quotient/GPA sparse-dictionary branch remains alive only as a
+  stricter token/span dictionary implementation or a real SAE-adapter gate
+
+Artifacts:
+
+- memo:
+  - `paper/svamp32_sparse_anchor_sidecar_20260426.md`
+- first run:
+  - `results/svamp32_sparse_anchor_sidecar_20260426/probe.json`
+  - sha256: `a9945e7a3679e382aa83f98a7c486c8091bceee0005ec799dcac5cca4cb81896`
+- constrained run:
+  - `results/svamp32_sparse_anchor_sidecar_20260426/probe_budget16_seed3.json`
+  - sha256: `b27aacd16907a933a271183542003a9e8450617b9394389e3cdeaa6d992ad26e`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_sparse_anchor_sidecar_probe.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_sparse_anchor_sidecar_probe.py`
+
+Next exact gate:
+
+- either implement fold-local token/span sparse dictionary controls in the
+  sparse-anchor analyzer, including same-norm-noise and boundary-only controls;
+  or evaluate the existing SAE adapter lane on the same SVAMP32 clean
+  C2C-headroom target set
+- do not scale to SVAMP70 until the strict SVAMP32 gate recovers at least
+  `2/6` clean source-necessary IDs with zero clean destructive-control recovery
