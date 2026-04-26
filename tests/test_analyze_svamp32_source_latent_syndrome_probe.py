@@ -88,6 +88,38 @@ def test_loocv_residue_predictions_returns_signatures() -> None:
     assert all(len(signature) == 1 for signature in predictions["matched"])
 
 
+def test_high_dimensional_ridge_uses_dual_unregularized_intercept() -> None:
+    train_x = torch.tensor(
+        [
+            [1.0, 0.0, 2.0, 0.0, 1.0],
+            [0.0, 1.0, 0.0, 2.0, 1.0],
+            [1.0, 1.0, 1.0, 1.0, 0.0],
+        ]
+    )
+    train_y = torch.tensor([0, 1, 2])
+    weights = probe._fit_ridge_classifier(
+        train_x,
+        train_y,
+        num_classes=3,
+        ridge_lambda=0.5,
+    )
+
+    y = torch.nn.functional.one_hot(train_y, num_classes=3).float()
+    mean_x = train_x.mean(dim=0, keepdim=True)
+    mean_y = y.mean(dim=0, keepdim=True)
+    x_centered = train_x - mean_x
+    y_centered = y - mean_y
+    primal = torch.linalg.solve(
+        x_centered.T @ x_centered + 0.5 * torch.eye(train_x.shape[1]),
+        x_centered.T @ y_centered,
+    )
+    bias = mean_y - mean_x @ primal
+    expected = torch.cat([primal, bias], dim=0)
+
+    assert train_x.shape[1] > train_x.shape[0]
+    assert torch.allclose(weights, expected, atol=1e-5)
+
+
 def test_analyze_with_features_validates_feature_order(tmp_path: pathlib.Path) -> None:
     target_path = tmp_path / "target.jsonl"
     teacher_path = tmp_path / "teacher.jsonl"

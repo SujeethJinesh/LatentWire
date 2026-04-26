@@ -184,6 +184,21 @@ def _fit_ridge_classifier(
     num_classes: int,
     ridge_lambda: float,
 ) -> torch.Tensor:
+    if train_x.shape[1] > train_x.shape[0]:
+        # Equivalent to an unregularized-intercept ridge fit, but solves the
+        # n x n dual system instead of a huge feature_dim x feature_dim system.
+        y = torch.nn.functional.one_hot(train_y, num_classes=num_classes).float()
+        mean_x = train_x.mean(dim=0, keepdim=True)
+        mean_y = y.mean(dim=0, keepdim=True)
+        x_centered = train_x - mean_x
+        y_centered = y - mean_y
+        gram = x_centered @ x_centered.T
+        reg = torch.eye(gram.shape[0], dtype=train_x.dtype) * float(ridge_lambda)
+        alpha = torch.linalg.solve(gram + reg, y_centered)
+        weights = x_centered.T @ alpha
+        bias = mean_y - mean_x @ weights
+        return torch.cat([weights, bias], dim=0)
+
     x = torch.cat([train_x, torch.ones((train_x.shape[0], 1), dtype=train_x.dtype)], dim=1)
     y = torch.nn.functional.one_hot(train_y, num_classes=num_classes).float()
     xtx = x.T @ x

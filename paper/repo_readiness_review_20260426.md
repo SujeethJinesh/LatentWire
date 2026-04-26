@@ -76,8 +76,9 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 - GSM8K70 seed 0: `8/70` vs target `4/70`
 - seed-0 source controls: zero/shuffle with target fallback retain `0/6` live
   wins
-- blocker: seed stability fails; seed 3 is `2/70`, and seeds 1/2 hit nonfinite
-  checkpoint failures
+- blocker: seed stability fails; seed 3 is `2/70`, seed 4 is finite but only
+  `4/70` with paired `3W/3L/64T`, and seeds 1/2 hit nonfinite checkpoint
+  failures
 
 ## What Is Done
 
@@ -124,6 +125,10 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
   leakage but has no clean source-necessary recovery.
 - Source final-answer copying and stronger-source source-margin escalation are
   killed for the current frozen SVAMP32 clean IDs.
+- Direct source-hidden syndrome readout is killed, including all-layer pooled
+  features: all-layer Qwen2.5 features reach only `9/32`, underperform the
+  `14/32` target-only floor, preserve only `2/3` target-self rows, and recover
+  `0/6` clean source-necessary IDs.
 
 ## Main Gaps
 
@@ -148,12 +153,11 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 
 ## Highest-Priority Next Gate
 
-Pivot to stronger source-derived sidecars rather than raw source numeric
-answers. The anti-memory objective did not fix receiver/control leakage inside
-the Perceiver delta-memory path, and the simple source-generated numeric
-sidecar has insufficient signal. The next branch should use source latent/token
-features or token/layer-level C2C residual targets with strict matched-vs-control
-separation. A future C2C-derived attempt still needs a crisper token/layer-level
+Pivot to a learned query-bottleneck residue predictor rather than raw source
+numeric answers, raw dynalign scale-up, or linear pooled source-hidden readout.
+The next branch should use source token/layer states with output queries,
+cross-fitting, rate/slot ablations, and strict matched-vs-control separation.
+A future C2C-derived attempt still needs a crisper token/layer-level
 residual-coding hypothesis before more compute.
 
 Promotion rule:

@@ -4224,3 +4224,105 @@ Next exact gate:
   gate on the same frozen SVAMP32 `6 + 3` IDs
 - require at least `2/6` clean source-necessary wins and `3/3` target-self
   preservation before any medium confirmation
+
+## 2026-04-26 - Recovered-branch audit: GSM70 seed4 and SVAMP32 all-layer source-latent gates
+
+Cycle:
+
+- cycle number: `2026-04-26-recovered-branches-1`
+- timestamp: `2026-04-25 23:48:50 PDT`
+- live branch entering cycle: recovered GSM70
+  `dynalign_module_replace_residrank16`
+- scale-up rung: strict small same-family seed/source-control gate, then strict
+  SVAMP32 exact-ID source-latent gate
+- ICLR readiness: not ready; still blocked on a deployable source-necessary
+  positive method
+
+Start-of-cycle status:
+
+- current paper story: C2C/cache and syndrome bounds show headroom; GSM70
+  seed0 dynalign was the strongest older source-dependent clue
+- exact blocker: seed stability and source-control separation under fresh
+  finite seeds
+- highest-priority gate: rerun the recovered GSM70 dynalign branch before
+  spending compute on new methods
+
+Gate 1 decision:
+
+- ran GSM70 `dynalign_module_replace_residrank16` seed4 from scratch with
+  checkpoint health and integrated source controls enabled
+- checkpoint was finite, exact IDs matched, numeric coverage was `70/70`
+- live row failed to beat target: `4/70`, paired `3W/3L/64T`
+- source controls correctly did not run because the live gate failed
+- killed: raw GSM70 dynalign scale-up as the current live method branch
+
+Gate 2 decision:
+
+- patched `scripts/analyze_svamp32_source_latent_syndrome_probe.py` so
+  high-dimensional feature probes use a dual ridge solve when feature dimension
+  exceeds sample count
+- ran the strict SVAMP32 source-latent syndrome gate with all source hidden
+  layers
+- all-layer feature dimension: `44800`
+- matched: `9/32`
+- target-only: `14/32`
+- zero-source: `14/32`
+- label-shuffle: `14/32`
+- target-self: `2/3`
+- clean source-necessary: `0/6`
+- killed: direct linear source-hidden syndrome readout, including all-layer
+  pooled summaries
+
+Artifacts:
+
+- GSM memo:
+  - `paper/gsm8k70_seed4_dynalign_source_controls_20260426.md`
+- GSM manifest:
+  - `results/gsm8k70_seed4_dynalign_source_controls_20260426/manifest.md`
+- GSM result JSON:
+  - `results/gsm8k70_seed4_dynalign_source_controls_20260426/seed4_residual_sweep.json`
+  - sha256: `324d2b84ff5f47c920e6352534adb183526b7aecd070c4f4d6394e4f743ffcbc`
+- GSM prediction JSONL:
+  - `results/gsm8k70_seed4_dynalign_source_controls_20260426/dynalign_module_replace_residrank16_seed4.jsonl`
+  - sha256: `0a442c7aa43708e2aa8301a6ceb8e986f53d3523edca881ce2904b858c58589c`
+- GSM checkpoint tensor, not tracked:
+  - `checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat_seed4.pt`
+  - sha256: `1d9e667fe90a7fbe4b06d982796d09f58398f18144780bb20f4950e774a0d26e`
+- SVAMP memo:
+  - `paper/svamp32_source_latent_all_layers_20260426.md`
+- SVAMP manifest:
+  - `results/svamp32_source_latent_all_layers_20260426/manifest.md`
+- SVAMP result JSON:
+  - `results/svamp32_source_latent_all_layers_20260426/qwen25_05b_all_layers_targetpool_probe.json`
+  - sha256: `5d37613d648392c58f7b28a7274ba8dadffd3b76cd09cd75dd517df64990bce9`
+- SVAMP result markdown:
+  - `results/svamp32_source_latent_all_layers_20260426/qwen25_05b_all_layers_targetpool_probe.md`
+  - sha256: `6dcce69bde942ff9e7616b8bfc446ff3df942399b241e37f27069ac6ce4900c2`
+- reference memo:
+  - `references/457_query_bottleneck_residue_refs.md`
+
+Literature update:
+
+- primary-source scan supports a learned query-bottleneck residue predictor,
+  not more pooled source summaries
+- useful mechanisms: Q-Former-style queries, Perceiver/Perceiver-Resampler
+  slots, anchor-relative features, variational rate control, and
+  cross-tokenizer distillation for later cross-family falsification
+
+Hypothesis update:
+
+- killed: raw GSM70 dynalign scale-up as a stable positive method
+- killed: direct linear source-hidden syndrome prediction, including all-layer
+  hidden summaries
+- promoted next: cross-fitted learned query-bottleneck residue predictor with
+  output queries and explicit rate/slot ablations
+
+Next exact gate:
+
+- implement a SVAMP32 query-bottleneck residue predictor on the same frozen
+  target-candidate decoder
+- controls: matched, zero-source, shuffled-source, label-shuffle, target-only,
+  and slots-only
+- require matched `>=14/32`, target-self `3/3`, clean source-necessary
+  `>=2/6`, numeric coverage `>=31/32`, exact ordered ID parity, and clean
+  control union `0/6`

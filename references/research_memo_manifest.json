@@ -698,5 +698,12 @@
     "path": "references/456_conditional_debiasing_side_information_refs.md",
     "status": "local_memo",
     "reason": "Focused memo for conditional bottlenecks, target-prior debiasing, and side-information coding after anti-memory Perceiver controls failed to create source-necessary signal."
+  },
+  {
+    "num": 457,
+    "slug": "query_bottleneck_residue_refs",
+    "path": "references/457_query_bottleneck_residue_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for query-bottleneck residue prediction after pooled and all-layer source hidden syndrome probes failed the strict SVAMP32 source-control gate."
   }
 ]
