@@ -6361,3 +6361,86 @@ Next exact gate:
 - promotion rule: at least `2/6` matched-only clean residual IDs with positive
   matched-minus-best-control margin and target-self preservation before any
   generation run
+
+## Cycle Checkpoint: 2026-04-26 SVAMP32 Source Soft-Prefix Logprob Gate
+
+- cycle number: `2026-04-26-svamp32-source-soft-prefix-logprob`
+- timestamp: `2026-04-26 09:57:00 PDT`
+- live branch entering cycle: true source-conditioned summary soft-prefix
+  logprob gate
+- scale-up rung: strict-small teacher-forced pre-generation smoke
+- ICLR readiness: not ready; summary soft-prefix communication is killed on
+  the current strongest same-family surface
+
+Start-of-cycle status:
+
+- current paper story: C2C exposes clean headroom on Qwen2.5-Math -> Qwen3
+  SVAMP32, but prior sidecars, repair routes, and residue classifiers were
+  control-explained or too weak
+- exact blocker: decide whether a deployable source-conditioned soft prefix
+  can beat target-only/source-destroying controls on clean C2C-headroom IDs
+- highest-priority gate: recover at least `2/6` clean source-communication
+  candidate IDs with `0` clean control leaks before any generation
+
+Implementation:
+
+- added `scripts/analyze_svamp32_source_soft_prefix_logprob_probe.py`
+- added `tests/test_analyze_svamp32_source_soft_prefix_logprob_probe.py`
+- added fold-local feature standardization
+- calibrated the final run to source-only matched prefixes, numeric-only
+  distractors, and mean-token continuation logprob
+
+Final calibrated run:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp32_source_soft_prefix_logprob_probe.py --source-model Qwen/Qwen2.5-Math-1.5B --target-model Qwen/Qwen3-0.6B --eval-file results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/_artifacts/svamp_eval_70_32_32.jsonl --target-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl --teacher-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/c2c_generate.jsonl --target-set-json results/qwen25math_svamp32_c2c_headroom_20260426/c2c_headroom_target_set.json --source-use-chat-template --target-use-chat-template --source-enable-thinking false --target-enable-thinking false --feature-layers last --prefix-len 2 --hidden-dim 16 --epochs 1 --outer-folds 2 --matched-use-target false --length-normalize true --device mps --train-device mps --dtype float32 --output-json .debug/qwen25math_svamp32_source_soft_prefix_20260426/source_only_numeric_meanlogprob_smoke.json --output-md .debug/qwen25math_svamp32_source_soft_prefix_20260426/source_only_numeric_meanlogprob_smoke.md
+```
+
+Results:
+
+- clean IDs scored: `6`
+- matched-only clean IDs: `1/6`
+- matched-positive clean IDs: `5/6`
+- clean control leaks: `4/6`
+- mean matched-minus-best-control clean margin: `-0.771126`
+- target-preservation IDs scored: `8`
+- target-preservation matched-positive count: `6/8`
+
+Decision:
+
+- fail and kill global summary soft-prefix connectors on this surface
+- do not scale this branch by epochs, hidden dimension, folds, or generation
+  unless the source interface changes
+- next live branch: token/layer-local gated cross-attention over source states
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_source_soft_prefix_logprob_20260426.md`
+- result manifest:
+  - `results/qwen25math_svamp32_source_soft_prefix_logprob_20260426/manifest.md`
+- result JSON:
+  - `results/qwen25math_svamp32_source_soft_prefix_logprob_20260426/source_only_numeric_meanlogprob_smoke.json`
+  - sha256: `f89c0a8759a94574de9e5a52eb50af800fab352c13550efdf1660f85d33778c9`
+- readout:
+  - `results/qwen25math_svamp32_source_soft_prefix_logprob_20260426/source_only_numeric_meanlogprob_smoke.md`
+  - sha256: `cd67391b2c87a449a2096fb04942a8232cc7f8035bcbb3aa989b4e1aeae94169`
+- analyzer:
+  - `scripts/analyze_svamp32_source_soft_prefix_logprob_probe.py`
+  - sha256: `913a0a8f4ae971d90fe47c9ed49f8a05ff83080e64eea4fb7b7ebe8c24bfc573`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_soft_prefix_logprob_probe.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_soft_prefix_logprob_probe.py`
+
+Next exact gate:
+
+- implement a token/layer-local gated cross-attention logprob gate on the same
+  frozen SVAMP32 IDs
+- keep controls: zero-source, shuffled-source, same-norm, projected soft prompt,
+  target-only learned prefix, slots-only learned prefix, and label-shuffled
+  training
+- promotion rule: at least `2/6` matched-only clean candidate IDs, `0` clean
+  control leaks, and positive mean matched-minus-best-control margin before
+  generation

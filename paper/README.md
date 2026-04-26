@@ -24,6 +24,10 @@
 - `qwen25math_svamp32_target_query_source_bottleneck_20260426.md` records the
   implemented target-query-conditioned source bottleneck gate; it reaches only
   `7/32` with `0/6` clean residual IDs and is killed before generation.
+- `qwen25math_svamp32_source_soft_prefix_logprob_20260426.md` records the
+  calibrated source-only soft-prefix logprob gate; it recovers only `1/6`
+  clean source-communication candidate IDs, has `4/6` clean control leaks, and
+  is killed as a summary-prefix branch before generation.
 - `qwen25math_svamp32_source_contrastive_sidecar_20260426.md` records the
   first positive strict-small Qwen2.5-Math -> Qwen3 source-contrastive sidecar
   stack: target/text agreement preservation plus a 1-byte source residue

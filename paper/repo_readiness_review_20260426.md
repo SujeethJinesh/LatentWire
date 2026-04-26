@@ -58,6 +58,16 @@ The first objective-level rescue also fails on SVAMP32:
   Perceiver/delta-memory signal formation unless a materially new objective or
   architecture reason appears
 
+The first true source-conditioned soft-prefix logprob gate is also negative:
+
+- source-only matched connector with fold-local feature standardization,
+  numeric-only distractors, and mean-token continuation logprob
+- matched-only clean source-communication candidate IDs: `1/6`
+- clean control leaks: `4/6`
+- mean matched-minus-best-control clean margin: `-0.771126`
+- decision: kill global summary soft-prefix connectors on this surface before
+  generation
+
 The simplest source-only sidecar/router is also negative:
 
 - source-generated numeric residue sidecar with target-side candidate-pool
@@ -152,6 +162,11 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
   `4/32`, source-only over target `2`, and clean source-only after text
   exclusion `2`. This fails the pre-C2C source-surface gate and should not be
   scaled.
+- The source-conditioned summary soft-prefix branch is now killed on the
+  Qwen2.5-Math -> Qwen3 SVAMP32 C2C-headroom surface. After calibration to
+  source-only matched prefixes, numeric-only distractors, length-normalized
+  continuation logprob, and fold-local standardization, it recovers only `1/6`
+  clean IDs and has `4/6` clean control leaks.
 
 ## Main Gaps
 
@@ -180,14 +195,16 @@ The current live branch is no longer adjacent source-surface scouting, shallow
 source-readout tuning, target-safe selector replay, or another Perceiver memory
 checkpoint. Those gates have now failed or become control-explained.
 
-The highest-priority next gate is a materially different learned communication
-interface: a target-query-conditioned source bottleneck that lets target
-queries attend directly into source states, with matched byte/query-budget
-controls for zero-source, shuffled-source, target-only learned-prefix,
-slots-only learned-prefix, and projected soft prompts. It must first clear the
-SVAMP32 Qwen2.5-Math -> Qwen3 C2C-headroom teacher-forced pre-generation gate
-by recovering at least `2/6` matched-only clean residual IDs and a positive
-matched-control mean delta.
+The highest-priority next gate is now a materially different learned
+communication interface: token/layer-local gated cross-attention from target
+queries into source states. Global summary readouts and global summary prefixes
+have both failed. The next branch must keep matched byte/query-budget controls
+for zero-source, shuffled-source, target-only learned-prefix, slots-only
+learned-prefix, same-norm noise, projected soft prompts, and label-shuffled
+training. It must first clear the SVAMP32 Qwen2.5-Math -> Qwen3 C2C-headroom
+teacher-forced pre-generation gate by recovering at least `2/6` matched-only
+clean candidate IDs, `0` clean control leaks, and a positive matched-control
+mean delta.
 
 Latest cycle update: the Qwen2.5 -> OPT-350m byte-span module-replace proxy is
 killed as a decision surface. It had tokenizer mismatch (`shared decoded =
