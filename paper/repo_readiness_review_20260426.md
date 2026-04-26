@@ -77,6 +77,17 @@ The first token-local cross-attention rescue also fails its first rung:
 - decision: do not scale this exact tiny prefix-emitting cross-attention
   connector by epochs or width without a new hypothesis
 
+The source-control contrastive variant of that cross-attention gate also fails:
+
+- training penalizes zero-source, shuffled-source, same-norm-noise, and
+  projected-source controls when they match or beat the real-source margin
+- matched-only clean source-communication candidate IDs: `0/6`
+- clean control leaks: `4/6`
+- mean matched-minus-best-control clean margin: `-0.382854`
+- decision: objective-level control penalties do not rescue this tiny
+  prefix-emitting cross-attention architecture; do not tune this exact family
+  further without a larger architectural change
+
 The top-surface cross-attention rescue also fails:
 
 - after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`

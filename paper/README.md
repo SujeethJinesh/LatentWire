@@ -77,6 +77,10 @@
 - `svamp32_c2c_mechanism_syndrome_probe_20260426.md` records the negative
   strict small-gate C2C prefill scalar/residual trace syndrome-distillation
   probe.
+- `qwen25math_svamp32_source_cross_attention_contrastive_20260426.md` records
+  the negative source-control contrastive variant of the token-local
+  cross-attention logprob gate: `0/6` matched-only clean IDs and `4/6` clean
+  control leaks.
 - `svamp32_perceiver_answer_teacher_contrastive_20260426.md` records the
   negative teacher-forced pre-gate for the Perceiver answer-teacher plus
   source-control contrastive connector.

@@ -6942,3 +6942,78 @@ Next exact gate:
   source encoder or prompting hypothesis changes the source surface
 - comb historical `rotalign`, `latent_bridge`, and result-folder memos before
   selecting the next live branch
+
+## Cycle Checkpoint: 2026-04-26 Source-Control Contrastive Cross-Attention
+
+- cycle number: `2026-04-26-source-control-contrastive-cross-attention`
+- timestamp: `2026-04-26 16:18:00 PDT`
+- live branch entering cycle: token-local cross-attention prefix connector with
+  training-time source-control penalties
+- scale-up rung: strict-small pre-generation diagnostic
+- ICLR readiness: not ready; this is a branch-pruning diagnostic, not a
+  positive method
+
+Start-of-cycle status:
+
+- current paper story: C2C exposes useful target-missed headroom, but source
+  readouts, decoded sidecars, selectors, and tiny prefix emitters have not
+  beaten source-destroying controls
+- exact blocker: the previous cross-attention connector was dominated by
+  target-only, label-shuffled, shuffled-source, and same-norm controls
+- highest-priority gate: add training-time penalties against those controls and
+  rerun the same SVAMP32 clean C2C-headroom logprob gate
+
+Implementation:
+
+- extended `scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+  with optional source-control contrastive training
+- controls used in the smoke: zero-source, shuffled-source, same-norm-noise,
+  projected-soft-prompt
+- contrastive weight: `0.25`
+- contrastive margin: `0.25`
+
+Result:
+
+- status: `source_cross_attention_logprob_fails_gate`
+- clean IDs scored: `6`
+- matched-only clean IDs: `0/6`
+- matched-positive clean IDs: `4/6`
+- clean control leaks: `4/6`
+- mean matched margin on clean IDs: `0.070074`
+- mean best-control margin on clean IDs: `0.452928`
+- mean matched-minus-control clean margin: `-0.382854`
+
+Decision:
+
+- fail and prune this source-control contrastive variant
+- do not tune contrastive weight, margin, epochs, or hidden width on this exact
+  tiny prefix-emitting cross-attention architecture
+- next live method branch needs a larger architecture change, not another
+  objective tweak on this family
+
+Artifacts:
+
+- memo:
+  - `paper/qwen25math_svamp32_source_cross_attention_contrastive_20260426.md`
+- result JSON:
+  - `results/qwen25math_svamp32_source_cross_attention_contrastive_20260426/smoke.json`
+  - sha256: `2f6e2a38f6b1685b7a571f30f53dd1587fa03532560aa7fe04f4f515a15cb4a1`
+- readout:
+  - `results/qwen25math_svamp32_source_cross_attention_contrastive_20260426/smoke.md`
+  - sha256: `e009da82d298ade4e65aa0c76709f67f77066654485170fe05a27ca3e9918637`
+- analyzer:
+  - `scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+  - sha256: `884005c8b61e41fb908eed6759fe484b90cc8060ef42850a515a2b8327be7d75`
+
+Tests:
+
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_cross_attention_logprob_probe.py`
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_cross_attention_logprob_probe.py -q`
+
+Next exact gate:
+
+- do not continue tiny prefix-emitter tuning on the current SVAMP32/SVAMP70
+  surfaces
+- next branch should be either a true target-side next-token-loss resampler
+  with generation-time evaluation and a matched C2C-fuser baseline, or a new
+  source/surface pair that first clears source/text/C2C headroom gates

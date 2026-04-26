@@ -45,6 +45,9 @@ class CrossAttentionConfig:
     min_matched_only_clean: int = 2
     min_margin_delta: float = 0.0
     length_normalize: bool = True
+    source_control_contrastive_weight: float = 0.0
+    source_control_contrastive_margin: float = 0.0
+    source_control_contrastive_controls: tuple[str, ...] = ()
 
 
 class SourceCrossAttentionPrefixConnector(torch.nn.Module):
@@ -164,6 +167,28 @@ def _fit_connector(
     )
     train_order = list(train_indices)
     shuffled_gold = list(train_order[::-1]) if label_shuffle else list(train_order)
+    train_valid = source_tokens[train_indices][source_mask[train_indices]]
+    train_mean_source = train_valid.mean(dim=0) if train_valid.numel() else None
+
+    def _margin_for_prefix(prefix: torch.Tensor, idx: int, gold_idx: int) -> torch.Tensor:
+        gold_logprob = soft_probe._continuation_logprob(
+            target_model=target_model,
+            embed_tokens=embed_tokens,
+            prefix=prefix,
+            prompt_ids=prompt_ids[idx],
+            continuation_ids=gold_ids[gold_idx],
+            length_normalize=config.length_normalize,
+        )
+        distractor_logprob = soft_probe._continuation_logprob(
+            target_model=target_model,
+            embed_tokens=embed_tokens,
+            prefix=prefix,
+            prompt_ids=prompt_ids[idx],
+            continuation_ids=distractor_ids[idx],
+            length_normalize=config.length_normalize,
+        )
+        return gold_logprob - distractor_logprob
+
     for _ in range(int(config.epochs)):
         total_loss = torch.zeros((), device=device)
         for idx, gold_idx in zip(train_order, shuffled_gold):
@@ -173,25 +198,43 @@ def _fit_connector(
                 target_tokens[idx].to(device),
                 target_mask[idx].to(device),
             )
-            gold_logprob = soft_probe._continuation_logprob(
-                target_model=target_model,
-                embed_tokens=embed_tokens,
-                prefix=prefix,
-                prompt_ids=prompt_ids[idx],
-                continuation_ids=gold_ids[gold_idx],
-                length_normalize=config.length_normalize,
-            )
-            distractor_logprob = soft_probe._continuation_logprob(
-                target_model=target_model,
-                embed_tokens=embed_tokens,
-                prefix=prefix,
-                prompt_ids=prompt_ids[idx],
-                continuation_ids=distractor_ids[idx],
-                length_normalize=config.length_normalize,
-            )
-            total_loss = total_loss + torch.nn.functional.softplus(
-                -(gold_logprob - distractor_logprob)
-            )
+            matched_margin = _margin_for_prefix(prefix, idx, gold_idx)
+            total_loss = total_loss + torch.nn.functional.softplus(-matched_margin)
+            if (
+                connector.use_source
+                and not label_shuffle
+                and config.source_control_contrastive_weight > 0.0
+                and config.source_control_contrastive_controls
+            ):
+                controls: list[tuple[torch.Tensor, torch.Tensor]] = []
+                for control in config.source_control_contrastive_controls:
+                    if control == "zero_source":
+                        controls.append((torch.zeros_like(source_tokens[idx]), source_mask[idx]))
+                    elif control == "shuffled_source":
+                        shuffled_idx = (idx + int(config.shuffle_offset)) % len(source_tokens)
+                        controls.append((source_tokens[shuffled_idx], source_mask[shuffled_idx]))
+                    elif control == "same_norm_noise":
+                        noise = torch.randn_like(source_tokens[idx])
+                        noise = noise / noise.norm().clamp_min(1e-6) * source_tokens[idx].norm().clamp_min(1e-6)
+                        controls.append((noise, source_mask[idx]))
+                    elif control == "projected_soft_prompt":
+                        if train_mean_source is None:
+                            continue
+                        projected = train_mean_source[None, :].repeat(source_tokens[idx].shape[0], 1)
+                        controls.append((projected, source_mask[idx]))
+                    else:
+                        raise ValueError(f"unsupported source control contrastive control: {control!r}")
+                for control_tokens, control_mask in controls:
+                    control_prefix = connector(
+                        control_tokens.to(device),
+                        control_mask.to(device),
+                        target_tokens[idx].to(device),
+                        target_mask[idx].to(device),
+                    )
+                    control_margin = _margin_for_prefix(control_prefix, idx, gold_idx)
+                    total_loss = total_loss + float(config.source_control_contrastive_weight) * torch.nn.functional.softplus(
+                        control_margin - matched_margin + float(config.source_control_contrastive_margin)
+                    )
         optimizer.zero_grad(set_to_none=True)
         total_loss.backward()
         optimizer.step()
@@ -309,6 +352,19 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-matched-only-clean", type=int, default=2)
     parser.add_argument("--min-margin-delta", type=float, default=0.0)
     parser.add_argument("--length-normalize", choices=["true", "false"], default="true")
+    parser.add_argument("--source-control-contrastive-weight", type=float, default=0.0)
+    parser.add_argument("--source-control-contrastive-margin", type=float, default=0.0)
+    parser.add_argument(
+        "--source-control-contrastive-control",
+        action="append",
+        choices=["zero_source", "shuffled_source", "same_norm_noise", "projected_soft_prompt"],
+        default=[],
+        help=(
+            "Matched-source training penalty control. The matched connector is "
+            "penalized when this source-destroying condition matches or beats "
+            "the real source margin."
+        ),
+    )
     parser.add_argument("--device", default="mps")
     parser.add_argument("--train-device", default=None)
     parser.add_argument("--dtype", choices=["float32", "float16", "bfloat16"], default="float32")
@@ -359,6 +415,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         min_matched_only_clean=int(args.min_matched_only_clean),
         min_margin_delta=float(args.min_margin_delta),
         length_normalize=soft_probe._bool_arg(args.length_normalize) is not False,
+        source_control_contrastive_weight=float(args.source_control_contrastive_weight),
+        source_control_contrastive_margin=float(args.source_control_contrastive_margin),
+        source_control_contrastive_controls=tuple(args.source_control_contrastive_control),
     )
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -716,6 +775,9 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
             "min_matched_only_clean": config.min_matched_only_clean,
             "min_margin_delta": config.min_margin_delta,
             "length_normalize": config.length_normalize,
+            "source_control_contrastive_weight": config.source_control_contrastive_weight,
+            "source_control_contrastive_margin": config.source_control_contrastive_margin,
+            "source_control_contrastive_controls": list(config.source_control_contrastive_controls),
         },
         "ids": {
             "clean_source_communication_candidates": clean_ids,
