@@ -245,6 +245,15 @@ with clean `0`, and holdout remains `8/70` with clean `0`; a holdout threshold
 sweep also finds no clean source-necessary recovery. The next CPU-feasible
 answer-null branch is a more structured predicate syndrome, not text-overlap
 process scoring.
+
+Update `2026-04-27 05:10 PDT`: the structured answer-null predicate syndrome is
+also negative. It excludes candidate values, candidate IDs, source final
+numbers, verified answer numbers, and residue hashes, but live has clean `0`
+with accepted harm `12`, and holdout's one clean recovery is also recovered by
+random/shuffled controls. Threshold sweeps remove all clean recovery. No stored
+CPU artifact now supports a useful next positive-method gate; the hard blocker
+is the orphaned MPS process PID `31103`, still in `STAT=UE`, because fresh
+same-family surface generation is the next required action.
 - strict target-mentioned oracle headroom is small on the current canonical
   surface: live target `21/70` can only reach `23/70`; holdout target `8/70`
   can only reach `12/70`

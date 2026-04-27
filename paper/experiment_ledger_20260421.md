@@ -10494,3 +10494,95 @@ Next exact gate:
 Implement this as a CPU-only smoke. The sidecar must exclude candidate IDs,
 candidate values, source final numbers, verified answer numbers, and residue
 hashes.
+
+## 2026-04-27 Cycle 6 - Answer-Null Predicate Syndrome Smoke
+
+Cycle start:
+
+1. ICLR readiness: not ready; answer-null communication remains unsolved.
+2. Current paper story: direct candidate/value sidecars are pruned; simple
+   masked process overlap is too weak; structured predicate syndromes are the
+   last cheap CPU branch over stored artifacts.
+3. Exact blocker: show any non-answer source predicate signal can select clean
+   target-side candidates without control leakage or target harm.
+4. Live branch: answer-null predicate syndrome.
+5. Highest-priority gate: live/holdout CPU smoke with shuffled-source,
+   random-syndrome, target-only, and slots-only controls.
+6. Scale-up rung: smoke.
+
+Implemented:
+
+- `scripts/analyze_answer_null_predicate_syndrome.py`
+- `tests/test_analyze_answer_null_predicate_syndrome.py`
+- memo: `paper/answer_null_predicate_syndrome_20260427.md`
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_answer_null_predicate_syndrome.py \
+  --target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --min-confidence 0.0 \
+  --min-source-necessary-clean 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json results/answer_null_predicate_syndrome_20260427/live_predicate_syndrome.json \
+  --output-md results/answer_null_predicate_syndrome_20260427/live_predicate_syndrome.md
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_answer_null_predicate_syndrome.py \
+  --target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --min-confidence 0.0 \
+  --min-source-necessary-clean 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json results/answer_null_predicate_syndrome_20260427/holdout_predicate_syndrome.json \
+  --output-md results/answer_null_predicate_syndrome_20260427/holdout_predicate_syndrome.md
+```
+
+Result summary:
+
+- live: matched `16/70`, accepted `45`, clean `0`, accepted harm `12`, control
+  clean union `0`
+- holdout: matched `13/70`, accepted `46`, clean `1`, accepted harm `5`,
+  control clean union `1`
+- holdout clean recovery `ab1e71e8928661d0` is explained by random and shuffled
+  controls.
+- threshold sweeps at `0.1`, `0.5`, and `1.0` on both live and holdout recover
+  no source-necessary clean IDs.
+
+Decision:
+
+- killed: structured answer-null predicate syndrome over stored surfaces.
+- current live branch: none among CPU-only stored-artifact branches.
+- hard blocker: fresh same-family surface generation is now required, but PID
+  `31103` remains an orphaned MPS process in `STAT=UE`.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_answer_null_predicate_syndrome.py -q
+./venv_arm64/bin/python -m py_compile scripts/analyze_answer_null_predicate_syndrome.py
+```
+
+Result: `2 passed`; compile passed.
+
+Hashes:
+
+- `results/answer_null_predicate_syndrome_20260427/live_predicate_syndrome.json`:
+  `70f093a89fb99d485ce86b038fe327ec2cdbbdd9c847a65e04261cb089c562fe`
+- `results/answer_null_predicate_syndrome_20260427/holdout_predicate_syndrome.json`:
+  `a5d6bf035c641f301d2f497f6b33219687ce76ca894ab45e4abb279417737f00`
+
+Resume command:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` is gone, the next exact gate is fresh strict-small same-family
+surface generation with source-final masking built in from the first run. If it
+persists, OS/session-level cleanup is required before progress on the next
+evidence-bearing gate.
