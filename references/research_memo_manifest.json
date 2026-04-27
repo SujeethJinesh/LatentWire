@@ -796,5 +796,12 @@
     "path": "references/470_kv_cache_latent_communication_baselines_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo and local tooling smoke for C2C/KVComm/vector-translation baselines after source-hidden query-bottleneck diagnostics failed and MPS remained blocked."
+  },
+  {
+    "num": 471,
+    "slug": "byte_efficient_source_sideinfo_refs",
+    "path": "references/471_byte_efficient_source_sideinfo_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for byte-efficient source side-information after historical sparse-K, RotAlign/DynAlign, sidecar, and KVComm audits selected learned syndrome/innovation sidecars as the next high-value branch."
   }
 ]

@@ -1050,3 +1050,56 @@ Next exact gate:
 ```bash
 ps -p 31103 -o pid,ppid,stat,etime,command
 ```
+
+## 2026-04-27 Byte-Efficient Side-Information Audit
+
+Readiness remains not ICLR-ready. Current live branch: none.
+
+The latest historical/result audit demotes several positive-looking rows to
+mechanism clues:
+
+- Sparse K-only and cosine transport showed narrow GSM positives but failed
+  later seed stability.
+- Raw RotAlign/DynAlign remains killed as a method because seed stability and
+  nonfinite checkpoint issues persist.
+- Source-contrastive sidecar and candidate-pool syndrome probes remain the best
+  low-byte clues, but the old guards/residues are not deployable source
+  methods.
+- Perceiver/query-memory, shallow source-likelihood, semantic-predicate, and
+  numeric hash-syndrome variants are killed on current surfaces.
+
+Updated top branch:
+
+- Learned source-derived syndrome/innovation sidecar decoded against target
+  candidate/cache side information.
+
+Required baselines/controls:
+
+- target-alone, source-alone, text/token relay, C2C, KVComm, Q-KVComm-style
+  quantized KV where feasible, DroidSpeak-style same-architecture cache reuse
+  as a threat model, and target self-repair.
+- zero-source, shuffled-source, random same-byte sidecar, target-only,
+  slots-only, source-answer-overlap checks, exact-ID parity, numeric coverage,
+  paired uncertainty, bytes, latency, generated tokens, and TTFT where
+  practical.
+
+New memos:
+
+- `paper/byte_efficient_sideinfo_branch_audit_20260427.md`
+- `references/471_byte_efficient_source_sideinfo_refs.md`
+
+Hard blocker:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+PID `31103` still remains present as a `STAT=UE`, `PPID=1` MPS
+`scripts/calibrate.py` process even after user-side kill attempts. Do not start
+MPS runs until it clears.
+
+Next exact gate after PID clears: run the stronger-source MPS surface scout
+recorded in `paper/postkill_historical_cpu_audit_20260427.md`; only build the
+learned syndrome/innovation sidecar if that scout has ordered ID parity, high
+numeric coverage, source-only over target by at least `6/70`, and
+target-or-source oracle at least target plus `6/70`.

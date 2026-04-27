@@ -9190,3 +9190,68 @@ Tests:
 ```
 
 Results: `16 passed`, compile passed.
+
+### Cycle Addendum 2026-04-27 01:08 PDT - Byte-Efficient Side-Information Audit
+
+Cycle header:
+
+1. ICLR readiness: not ready; no live positive method survives controls,
+   target-self preservation, seed stability, systems accounting, and
+   cross-family falsification.
+2. Paper story: source-derived side information remains the most plausible
+   story, but historical sparse-K, RotAlign/DynAlign, Perceiver, and shallow
+   predicate results are mechanism clues rather than claims.
+3. Exact blocker: missing positive method plus persistent MPS blocker PID
+   `31103`.
+4. Live branch: none. Top candidates are learned source-derived
+   syndrome/innovation sidecars and target-safe sparse/dictionary sidecars.
+5. Highest-priority gate: preserve the historical/reference audit and define
+   the next exact gate.
+6. Scale-up rung: post-kill branch selection / next smoke.
+
+MPS blocker recheck:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: PID `31103` remains present with `PPID=1`, `STAT=UE`, still running
+the old MPS `scripts/calibrate.py ... --device mps --dtype float32 ...` job.
+
+Audit decision:
+
+- Promote learned source-derived syndrome/innovation sidecar as the next
+  highest-value branch once MPS clears and a stronger source surface is found.
+- Keep KVComm/Q-KVComm/C2C/DroidSpeak as required systems baselines.
+- Revive RotAlign/DynAlign only as target-safe conditional innovation or
+  sparse/dictionary side information.
+- Kill shallow source likelihood, semantic-predicate/router, Perceiver
+  answer-teacher, and numeric hash-syndrome variants on current evidence.
+
+Focused memo:
+
+- `paper/byte_efficient_sideinfo_branch_audit_20260427.md`
+
+Reference memo:
+
+- `references/471_byte_efficient_source_sideinfo_refs.md`
+
+Durable file hashes:
+
+- `paper/byte_efficient_sideinfo_branch_audit_20260427.md`:
+  `0c0ea759c7d8854b5cad9a3ecdfc0042e5f44eebbfa893eb3e77316c0f576549`
+- `references/471_byte_efficient_source_sideinfo_refs.md`:
+  `4cd4c2cd7651662dfe3ae5d7affe4f9a6fb55be6952c3a9de307db1d2a72298f`
+- `references/research_memo_manifest.json`:
+  `1f01d34dcfde4e7fd59e28f286aab537f5d3a13c3342978db7e51da3b06c960e`
+
+Next exact gate remains:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID clears, run the stronger-source MPS surface scout from
+`paper/postkill_historical_cpu_audit_20260427.md`; only implement the learned
+syndrome/innovation sidecar if that scout clears source-mass, exact-ID, and
+numeric-coverage thresholds.
