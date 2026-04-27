@@ -23,6 +23,15 @@ target-preserving query bottlenecks after the MPS blocker clears. The blocker
 persisted after both `kill -9` and `sudo kill -9`, so the next action is
 OS/session-level cleanup before any MPS experiment.
 
+Update `2026-04-27 00:50 PDT`: KVComm is now harness-ready for strict
+source-control evaluation, but it remains baseline/tooling evidence rather than
+a positive method. The wrapper supports matched, zero-source, shuffled-source,
+and target-only final modes under one matched-only layer selection. A CPU smoke
+over two examples verifies provenance and fixed-layer reuse, with all modes at
+`0/2` and shuffled-source using nonmatching source IDs. The live branch remains
+`none`; the highest-priority executable gate after MPS clears is the
+`kvcomm_svamp32_controls_smoke_20260427` command recorded in the ledger.
+
 The strongest bound is the SVAMP32 C2C-derived syndrome sidecar:
 
 - strict target-side pool: `14/32`
@@ -378,6 +387,12 @@ The current live branch is no longer adjacent source-surface scouting, shallow
 source-readout tuning, target-safe selector replay, tiny learned prefix
 emitters, or another Perceiver/query-memory checkpoint. Those gates have now
 failed or become control-explained.
+
+Latest gate update: KVComm/C2C-style cache communication is now the top
+baseline branch because it has a strict source-control harness. It is not a
+promoted method branch until matched-source performance on a real decision
+slice beats zero-source, shuffled-source, and target-only controls or gives a
+clear systems tradeoff at comparable accuracy.
 
 The highest-priority next gate is a source-interface reset on the only
 remaining strong reusable surface, or a new source/target scout after the stuck

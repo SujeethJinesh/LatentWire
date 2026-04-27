@@ -114,6 +114,46 @@ Verified:
 ./venv_arm64/bin/python -m py_compile latent_bridge/kvcomm_eval.py
 ```
 
+## KVComm Source-Control Harness Smoke
+
+Command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python -m latent_bridge.kvcomm_eval \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --calibration-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --device cpu \
+  --dtype float32 \
+  --max-new-tokens 4 \
+  --source-reasoning-mode brief_analysis \
+  --top-layers-grid 0.25 \
+  --calibration-limit 1 \
+  --eval-limit 2 \
+  --source-control-modes all \
+  --prediction-output .debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_cpu_smoke_predictions.jsonl
+```
+
+Result: source-control harness smoke passed, method quality not evaluated.
+
+- Matched, zero-source, shuffled-source, and target-only final modes all reused
+  the same matched-selected layers: `[1, 6, 2, 8, 7, 5, 4]`.
+- Accuracy is `0/2` for every mode at `max_new_tokens=4`, so this is only a
+  provenance/tooling check.
+- Shuffled-source records correctly use nonmatching source IDs on the two-row
+  smoke.
+- Target-only bypasses KVComm generation; zero-source zeroes the matched source
+  cache while preserving source-cache shape/device/dtype.
+- MPS remained blocked by orphaned PID `31103`; this run was CPU-only.
+
+Artifact hashes:
+
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_cpu_smoke_predictions.jsonl`:
+  `ce1dd54cb3e96056e821cc9397b61151ebe054e345c8bb8ba1347d45cd519ea6`
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_cpu_smoke_predictions.jsonl.meta.json`:
+  `0ae7d5a9f6f38a8fa51a36dca7de9828fbc4ff2881bf1c1b60b0b0f8187238d4`
+
 ## Literature Update
 
 Added `references/470_kv_cache_latent_communication_baselines_refs.md`.
@@ -127,10 +167,11 @@ Primary-source update:
 
 ## Decision
 
-Do not promote direct source-hidden query bottlenecks. Promote fixed-budget
-KV/cache communication as the next executable baseline once MPS clears. A new
-zero-init gated latent side-information method should only be run after this
-baseline contract is in place.
+Do not promote direct source-hidden query bottlenecks. Fixed-budget KV/cache
+communication now has a source-control harness contract, but only CPU smoke
+evidence. A new zero-init gated latent side-information method should only be
+run after this baseline contract is exercised on a real decision slice or a
+stronger source surface is available.
 
 ## Next Exact Gate
 

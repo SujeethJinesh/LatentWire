@@ -27,6 +27,8 @@ from latent_bridge.evaluate import (
     write_prediction_sidecar,
 )
 
+SOURCE_CONTROLS = ("matched", "zero_source", "shuffled_source", "target_only")
+
 
 def _ensure_kvcomm_repo_on_path() -> pathlib.Path:
     repo_root = pathlib.Path("references/repos/KVComm").resolve()
@@ -84,6 +86,74 @@ def _build_prompts(example, source_reasoning_mode: str) -> tuple[str, str]:
     return source_prompt, target_prompt
 
 
+def _normalize_shuffle_offset(offset: int, total: int) -> int:
+    if total <= 1:
+        raise ValueError("shuffled_source requires at least two examples")
+    normalized = int(offset) % int(total)
+    return normalized if normalized != 0 else 1
+
+
+def _parse_source_control_modes(raw: str) -> list[str]:
+    modes = [chunk.strip() for chunk in raw.split(",") if chunk.strip()]
+    if not modes:
+        raise ValueError("At least one source control mode is required")
+    expanded: list[str] = []
+    for mode in modes:
+        if mode == "all":
+            expanded.extend(SOURCE_CONTROLS)
+            continue
+        if mode not in SOURCE_CONTROLS:
+            raise ValueError(f"Unsupported KVComm source control: {mode!r}")
+        expanded.append(mode)
+    deduped: list[str] = []
+    for mode in expanded:
+        if mode not in deduped:
+            deduped.append(mode)
+    return deduped
+
+
+def _kvcomm_method_name(source_control: str) -> str:
+    if source_control == "target_only":
+        return "target_only"
+    return f"kvcomm_{source_control}"
+
+
+def _zero_past_key_values(past_key_values):
+    if isinstance(past_key_values, torch.Tensor):
+        return torch.zeros_like(past_key_values)
+    if isinstance(past_key_values, tuple):
+        return tuple(_zero_past_key_values(item) for item in past_key_values)
+    if isinstance(past_key_values, list):
+        return [_zero_past_key_values(item) for item in past_key_values]
+    return past_key_values
+
+
+def _controlled_source_prompt(
+    examples: list[Any],
+    index: int,
+    *,
+    source_reasoning_mode: str,
+    source_control: str,
+    shuffle_offset: int,
+) -> tuple[str, str, int | None]:
+    if source_control not in SOURCE_CONTROLS:
+        raise ValueError(f"Unsupported KVComm source control: {source_control!r}")
+    example = examples[index]
+    if source_control == "target_only":
+        return str(example.prompt), _generation_example_id(example), int(index)
+
+    source_index = int(index)
+    if source_control == "shuffled_source":
+        source_index = (int(index) + _normalize_shuffle_offset(shuffle_offset, len(examples))) % len(examples)
+    source_example = examples[source_index]
+    source_base = getattr(source_example, "source_question", "") or source_example.prompt
+    return (
+        _source_reasoning_prompt(source_base, source_reasoning_mode),
+        _generation_example_id(source_example),
+        source_index,
+    )
+
+
 def _resolve_selected_layers(layer_ranking: list[int], top_layers_fraction: float) -> list[int]:
     if not layer_ranking:
         return []
@@ -126,6 +196,8 @@ def rank_layers_from_calibration(
     calibration_examples: list[Any],
     device: str,
     source_reasoning_mode: str,
+    source_control: str = "matched",
+    source_control_shuffle_offset: int = 1,
 ) -> list[int]:
     _ensure_kvcomm_repo_on_path()
     from layer_importance import calc_layer_importance, get_layer_ranking  # type: ignore
@@ -147,8 +219,15 @@ def rank_layers_from_calibration(
     ).to(device)
 
     layer_importance_total: dict[int, list[float]] = defaultdict(list)
-    for ex in calibration_examples:
-        source_prompt, target_prompt = _build_prompts(ex, source_reasoning_mode)
+    for idx, ex in enumerate(calibration_examples):
+        source_prompt, _, _ = _controlled_source_prompt(
+            calibration_examples,
+            idx,
+            source_reasoning_mode=source_reasoning_mode,
+            source_control=source_control,
+            shuffle_offset=source_control_shuffle_offset,
+        )
+        _, target_prompt = _build_prompts(ex, source_reasoning_mode)
         input_ids_A = _chat_input_ids(tokenizer, source_prompt, device)
         input_ids_B = _chat_input_ids(tokenizer, target_prompt, device)
         out_A = model_A(
@@ -187,10 +266,13 @@ def evaluate_kvcomm_generation(
     max_new_tokens: int,
     selected_layers: list[int],
     source_reasoning_mode: str,
+    source_control: str = "matched",
+    source_control_shuffle_offset: int = 1,
 ) -> dict[str, Any]:
     _ensure_kvcomm_repo_on_path()
     from models import CVCommunicator  # type: ignore
 
+    method_name = _kvcomm_method_name(source_control)
     communicator = CVCommunicator(
         model_A,
         model_B,
@@ -208,25 +290,44 @@ def evaluate_kvcomm_generation(
     total_ttft_sec = 0.0
 
     for idx, ex in enumerate(examples):
-        source_prompt, target_prompt = _build_prompts(ex, source_reasoning_mode)
-        input_ids_A = _chat_input_ids(tokenizer, source_prompt, device)
+        source_prompt, source_example_id, source_index = _controlled_source_prompt(
+            examples,
+            idx,
+            source_reasoning_mode=source_reasoning_mode,
+            source_control=source_control,
+            shuffle_offset=source_control_shuffle_offset,
+        )
+        _, target_prompt = _build_prompts(ex, source_reasoning_mode)
         input_ids_B = _chat_input_ids(tokenizer, target_prompt, device)
 
-        out_A = model_A(
-            input_ids=input_ids_A,
-            attention_mask=torch.ones_like(input_ids_A),
-            use_cache=True,
-            return_dict=True,
-        )
         start = time.perf_counter()
-        output = communicator.generate(
-            input_ids_B,
-            attention_mask=torch.ones_like(input_ids_B),
-            out_A_past_key_values=out_A.past_key_values,
-            do_sample=False,
-            max_new_tokens=max_new_tokens,
-            pad_token_id=tokenizer.eos_token_id,
-        )[0]
+        if source_control == "target_only":
+            output = model_B.generate(
+                input_ids=input_ids_B,
+                attention_mask=torch.ones_like(input_ids_B),
+                do_sample=False,
+                max_new_tokens=max_new_tokens,
+                pad_token_id=tokenizer.eos_token_id,
+            )[0]
+        else:
+            input_ids_A = _chat_input_ids(tokenizer, source_prompt, device)
+            out_A = model_A(
+                input_ids=input_ids_A,
+                attention_mask=torch.ones_like(input_ids_A),
+                use_cache=True,
+                return_dict=True,
+            )
+            past_key_values = out_A.past_key_values
+            if source_control == "zero_source":
+                past_key_values = _zero_past_key_values(past_key_values)
+            output = communicator.generate(
+                input_ids_B,
+                attention_mask=torch.ones_like(input_ids_B),
+                out_A_past_key_values=past_key_values,
+                do_sample=False,
+                max_new_tokens=max_new_tokens,
+                pad_token_id=tokenizer.eos_token_id,
+            )[0]
         elapsed = time.perf_counter() - start
         context_length = int(input_ids_B.shape[-1])
         prediction = tokenizer.decode(output[context_length:], skip_special_tokens=True).strip()
@@ -241,7 +342,11 @@ def evaluate_kvcomm_generation(
             {
                 "index": idx,
                 "example_id": _generation_example_id(ex),
-                "method": "kvcomm",
+                "method": method_name,
+                "source_control": source_control,
+                "source_control_source_example_id": source_example_id,
+                "source_control_source_index": source_index,
+                "source_control_source_matches_target": source_example_id == _generation_example_id(ex),
                 "prediction": prediction,
                 "answer": ex.answers,
                 "correct": bool(is_correct),
@@ -261,7 +366,7 @@ def evaluate_kvcomm_generation(
     )
     return {
         "records": records,
-        "metrics": {f"kvcomm_{k}": v for k, v in metrics.items()},
+        "metrics": {f"{method_name}_{k}": v for k, v in metrics.items()},
     }
 
 
@@ -276,6 +381,10 @@ def run_kvcomm_generation_eval(
     max_new_tokens: int,
     source_reasoning_mode: str,
     top_layers_grid: list[float],
+    calibration_source_control: str = "matched",
+    eval_source_control: str = "matched",
+    source_control_modes: list[str] | None = None,
+    source_control_shuffle_offset: int = 1,
     calibration_limit: int | None = None,
     eval_limit: int | None = None,
     prediction_output: str | None = None,
@@ -287,6 +396,10 @@ def run_kvcomm_generation_eval(
         calibration_examples = calibration_examples[: max(int(calibration_limit), 0)]
     if eval_limit is not None:
         eval_examples = eval_examples[: max(int(eval_limit), 0)]
+    final_source_controls = list(source_control_modes) if source_control_modes is not None else [eval_source_control]
+    for mode in [calibration_source_control, *final_source_controls]:
+        if mode not in SOURCE_CONTROLS:
+            raise ValueError(f"Unsupported KVComm source control: {mode!r}")
     model_A, model_B, tokenizer = load_kvcomm_models(
         source_model=source_model,
         target_model=target_model,
@@ -300,6 +413,8 @@ def run_kvcomm_generation_eval(
         calibration_examples=calibration_examples,
         device=device,
         source_reasoning_mode=source_reasoning_mode,
+        source_control=calibration_source_control,
+        source_control_shuffle_offset=source_control_shuffle_offset,
     )
 
     sweep: list[dict[str, Any]] = []
@@ -316,8 +431,11 @@ def run_kvcomm_generation_eval(
             max_new_tokens=max_new_tokens,
             selected_layers=selected_layers,
             source_reasoning_mode=source_reasoning_mode,
+            source_control=calibration_source_control,
+            source_control_shuffle_offset=source_control_shuffle_offset,
         )
-        accuracy = float(result["metrics"]["kvcomm_accuracy"])
+        metric_prefix = _kvcomm_method_name(calibration_source_control)
+        accuracy = float(result["metrics"][f"{metric_prefix}_accuracy"])
         sweep.append(
             {
                 "top_layers_fraction": float(fraction),
@@ -331,16 +449,23 @@ def run_kvcomm_generation_eval(
             best_fraction = fraction
 
     selected_layers = _resolve_selected_layers(layer_ranking, best_fraction)
-    held_out = evaluate_kvcomm_generation(
-        model_A=model_A,
-        model_B=model_B,
-        tokenizer=tokenizer,
-        examples=eval_examples,
-        device=device,
-        max_new_tokens=max_new_tokens,
-        selected_layers=selected_layers,
-        source_reasoning_mode=source_reasoning_mode,
-    )
+    held_out_records: list[dict[str, Any]] = []
+    held_out_metrics: dict[str, Any] = {}
+    for source_control in final_source_controls:
+        held_out = evaluate_kvcomm_generation(
+            model_A=model_A,
+            model_B=model_B,
+            tokenizer=tokenizer,
+            examples=eval_examples,
+            device=device,
+            max_new_tokens=max_new_tokens,
+            selected_layers=selected_layers,
+            source_reasoning_mode=source_reasoning_mode,
+            source_control=source_control,
+            source_control_shuffle_offset=source_control_shuffle_offset,
+        )
+        held_out_records.extend(held_out["records"])
+        held_out_metrics.update(held_out["metrics"])
     run_config = {
         "baseline": "kvcomm",
         "source_model": source_model,
@@ -351,6 +476,10 @@ def run_kvcomm_generation_eval(
         "dtype": dtype,
         "max_new_tokens": int(max_new_tokens),
         "source_reasoning_mode": source_reasoning_mode,
+        "calibration_source_control": calibration_source_control,
+        "eval_source_control": eval_source_control,
+        "source_control_modes": final_source_controls,
+        "source_control_shuffle_offset": int(source_control_shuffle_offset),
         "top_layers_grid": [float(x) for x in top_layers_grid],
         "calibration_limit": calibration_limit,
         "eval_limit": eval_limit,
@@ -360,11 +489,11 @@ def run_kvcomm_generation_eval(
         "calibration_sweep": sweep,
     }
     if prediction_output:
-        write_prediction_records(prediction_output, held_out["records"])
-        write_prediction_sidecar(prediction_output, held_out["records"], held_out["metrics"], run_config)
+        write_prediction_records(prediction_output, held_out_records)
+        write_prediction_sidecar(prediction_output, held_out_records, held_out_metrics, run_config)
     return {
-        "records": held_out["records"],
-        "metrics": held_out["metrics"],
+        "records": held_out_records,
+        "metrics": held_out_metrics,
         "run_config": run_config,
     }
 
@@ -386,6 +515,14 @@ def main() -> None:
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--source-reasoning-mode", default="brief_analysis")
     parser.add_argument("--top-layers-grid", default="0.25,0.5,0.75,1.0")
+    parser.add_argument("--calibration-source-control", choices=SOURCE_CONTROLS, default="matched")
+    parser.add_argument("--eval-source-control", choices=SOURCE_CONTROLS, default="matched")
+    parser.add_argument(
+        "--source-control-modes",
+        default=None,
+        help="Comma-separated final eval controls; use 'all' for matched,zero_source,shuffled_source,target_only.",
+    )
+    parser.add_argument("--source-control-shuffle-offset", type=int, default=1)
     parser.add_argument("--calibration-limit", type=int, default=None)
     parser.add_argument("--eval-limit", type=int, default=None)
     parser.add_argument("--prediction-output", required=True)
@@ -401,6 +538,14 @@ def main() -> None:
         max_new_tokens=args.max_new_tokens,
         source_reasoning_mode=args.source_reasoning_mode,
         top_layers_grid=_parse_grid(args.top_layers_grid),
+        calibration_source_control=args.calibration_source_control,
+        eval_source_control=args.eval_source_control,
+        source_control_modes=(
+            _parse_source_control_modes(args.source_control_modes)
+            if args.source_control_modes is not None
+            else None
+        ),
+        source_control_shuffle_offset=args.source_control_shuffle_offset,
         calibration_limit=args.calibration_limit,
         eval_limit=args.eval_limit,
         prediction_output=args.prediction_output,

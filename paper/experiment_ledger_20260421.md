@@ -8942,3 +8942,114 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 If PID clears, run a one-example MPS KVComm smoke or the stronger-source MPS
 scout from `paper/postkill_historical_cpu_audit_20260427.md`, then scale only
 if exact ID/numeric coverage and source controls are preserved.
+
+## Cycle 2026-04-27 00:50 PDT - KVComm Source-Control Harness Smoke
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; still missing one
+   deployable positive method that survives source controls, seeds, systems
+   baselines, and cross-family falsification.
+2. Current paper story: durable source headroom exists on `svamp70_live`, but
+   direct source-hidden latent readouts fail. KV/cache communication remains a
+   necessary strong baseline and possible systems-compression lane, not yet a
+   positive method.
+3. Exact blocker to submission: no matched-source KV/cache row has yet been
+   tested against zero-source, shuffled-source, and target-only controls on a
+   decision slice; MPS PID `31103` remains stuck in `STAT=UE`.
+4. Current live branch or top candidates: `none`; top branch is
+   fixed-budget KVComm/C2C-style cache communication with strict source
+   controls, followed by a zero-init gated source bottleneck only after the
+   baseline contract is exercised.
+5. Highest-priority gate for this cycle: add and smoke-test KVComm
+   source-destroying controls without using MPS.
+6. Scale-up rung: smoke / harness preparation.
+
+Code changes:
+
+- `latent_bridge/kvcomm_eval.py` now supports final
+  `--source-control-modes`, including `all` expanding to matched, zero-source,
+  shuffled-source, and target-only.
+- Layer ranking and top-layer selection remain matched-calibration only; final
+  controls reuse the selected layers.
+- `zero_source` zeroes matched source past-key-values while preserving tensor
+  shape/device/dtype.
+- `target_only` bypasses KVComm and calls target generation directly.
+- Prediction records now include control provenance and method-specific metrics.
+
+CPU smoke command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python -m latent_bridge.kvcomm_eval \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --calibration-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --device cpu \
+  --dtype float32 \
+  --max-new-tokens 4 \
+  --source-reasoning-mode brief_analysis \
+  --top-layers-grid 0.25 \
+  --calibration-limit 1 \
+  --eval-limit 2 \
+  --source-control-modes all \
+  --prediction-output .debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_cpu_smoke_predictions.jsonl
+```
+
+Result:
+
+- Harness smoke passed; this is not positive method evidence.
+- `kvcomm_matched`, `kvcomm_zero_source`, `kvcomm_shuffled_source`, and
+  `target_only` all reached `0/2` at `max_new_tokens=4`.
+- All final modes reused selected layers `[1, 6, 2, 8, 7, 5, 4]`.
+- Shuffled-source records had nonmatching source IDs.
+
+Artifact hashes:
+
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_cpu_smoke_predictions.jsonl`:
+  `ce1dd54cb3e96056e821cc9397b61151ebe054e345c8bb8ba1347d45cd519ea6`
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_cpu_smoke_predictions.jsonl.meta.json`:
+  `0ae7d5a9f6f38a8fa51a36dca7de9828fbc4ff2881bf1c1b60b0b0f8187238d4`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_kvcomm_eval_controls.py -q
+./venv_arm64/bin/python -m py_compile latent_bridge/kvcomm_eval.py
+./venv_arm64/bin/python latent_bridge/kvcomm_eval.py --help
+./venv_arm64/bin/python -m pytest tests/test_kvcomm_eval.py tests/test_kvcomm_eval_controls.py -q
+```
+
+Results: `9 passed`, compile passed, help passed, then `12 passed`.
+
+Decision: promote KVComm from tooling-only to harness-ready baseline. Do not
+promote method evidence; the next gate must run the same source-control contract
+on a real decision slice after MPS clears, or on a CPU-feasible tiny slice only
+for additional plumbing checks.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` clears, run:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python -m latent_bridge.kvcomm_eval \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --calibration-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 32 \
+  --source-reasoning-mode brief_analysis \
+  --top-layers-grid 0.25,0.5 \
+  --calibration-limit 8 \
+  --eval-limit 8 \
+  --source-control-modes all \
+  --prediction-output results/kvcomm_svamp32_controls_smoke_20260427/kvcomm_controls_predictions.jsonl
+```
+
+If PID remains, continue CPU-only artifact audit and literature/code work.
