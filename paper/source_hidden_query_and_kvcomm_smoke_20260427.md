@@ -188,6 +188,42 @@ Artifact hashes:
 - `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_hashshuffle_cpu_smoke_predictions.jsonl.meta.json`:
   `fa5230f6be1fa9235428dc202060b29e8b6e771176b6cb349dded57f3a752922`
 
+Second follow-up hardening: KVComm run configs now request paired sidecar
+breakdowns against `target_only`, `kvcomm_zero_source`, and
+`kvcomm_shuffled_source`, instead of relying on the default `target_alone`
+baseline. Re-run:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python -m latent_bridge.kvcomm_eval \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --calibration-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --device cpu \
+  --dtype float32 \
+  --max-new-tokens 4 \
+  --source-reasoning-mode brief_analysis \
+  --top-layers-grid 0.25 \
+  --calibration-limit 1 \
+  --eval-limit 2 \
+  --source-control-modes all \
+  --prediction-output .debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_paired_cpu_smoke_predictions.jsonl
+```
+
+Paired-sidecar result:
+
+- All modes remain `0/2`, still tooling-only.
+- The sidecar now includes `kvcomm_matched_vs_target_only`,
+  `kvcomm_matched_vs_kvcomm_zero_source`, and
+  `kvcomm_matched_vs_kvcomm_shuffled_source`.
+
+Artifact hashes:
+
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_paired_cpu_smoke_predictions.jsonl`:
+  `ffd45b5fc252c638bbc51d078bd77f9c77f01bb1680cfc66bc20f7037c26bd30`
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_paired_cpu_smoke_predictions.jsonl.meta.json`:
+  `8a62ca420d878c198883aa528fd3dfb15758de7adb3010879023010145cd8c12`
+
 ## Literature Update
 
 Added `references/470_kv_cache_latent_communication_baselines_refs.md`.

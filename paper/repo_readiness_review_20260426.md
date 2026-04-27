@@ -34,6 +34,9 @@ over two examples verifies provenance and fixed-layer reuse, with all modes at
 Follow-up hardening replaced fixed-offset shuffled-source with deterministic
 hash-based non-self pairing and answer-overlap logging; the CPU smoke still
 passes as tooling-only evidence.
+Second follow-up hardening added configured paired sidecar baselines so KVComm
+artifacts now report matched-vs-target-only, matched-vs-zero-source, and
+matched-vs-shuffled-source flip tables.
 
 The strongest bound is the SVAMP32 C2C-derived syndrome sidecar:
 

@@ -496,6 +496,11 @@ def run_kvcomm_generation_eval(
         held_out_metrics.update(held_out["metrics"])
     run_config = {
         "baseline": "kvcomm",
+        "paired_baseline_methods": [
+            "target_only",
+            "kvcomm_zero_source",
+            "kvcomm_shuffled_source",
+        ],
         "source_model": source_model,
         "target_model": target_model,
         "calibration_file": calibration_file,

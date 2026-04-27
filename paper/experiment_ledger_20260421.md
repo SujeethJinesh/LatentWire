@@ -9097,3 +9097,49 @@ Tests:
 ```
 
 Results: `13 passed`, compile passed.
+
+### Cycle Addendum 2026-04-27 00:58 PDT - KVComm Paired Sidecar Controls
+
+The generic prediction sidecar now supports configured paired baselines via
+`run_config["paired_baseline_methods"]`, while preserving the legacy
+`target_alone` default. KVComm sets paired baselines to `target_only`,
+`kvcomm_zero_source`, and `kvcomm_shuffled_source`.
+
+CPU smoke:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python -m latent_bridge.kvcomm_eval \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --calibration-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --device cpu \
+  --dtype float32 \
+  --max-new-tokens 4 \
+  --source-reasoning-mode brief_analysis \
+  --top-layers-grid 0.25 \
+  --calibration-limit 1 \
+  --eval-limit 2 \
+  --source-control-modes all \
+  --prediction-output .debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_paired_cpu_smoke_predictions.jsonl
+```
+
+Result: tooling smoke still passes. All modes are `0/2`, and the sidecar now
+contains `kvcomm_matched_vs_target_only`, `kvcomm_matched_vs_kvcomm_zero_source`,
+and `kvcomm_matched_vs_kvcomm_shuffled_source` flip tables.
+
+Artifact hashes:
+
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_paired_cpu_smoke_predictions.jsonl`:
+  `ffd45b5fc252c638bbc51d078bd77f9c77f01bb1680cfc66bc20f7037c26bd30`
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_paired_cpu_smoke_predictions.jsonl.meta.json`:
+  `8a62ca420d878c198883aa528fd3dfb15758de7adb3010879023010145cd8c12`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_evaluate_helpers.py::test_write_prediction_sidecar_uses_configured_paired_baselines tests/test_evaluate_helpers.py::test_write_prediction_sidecar_writes_run_and_method_summary tests/test_kvcomm_eval.py tests/test_kvcomm_eval_controls.py -q
+./venv_arm64/bin/python -m py_compile latent_bridge/evaluate.py latent_bridge/kvcomm_eval.py
+```
+
+Results: `15 passed`, compile passed.

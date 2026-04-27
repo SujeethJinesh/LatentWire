@@ -3300,6 +3300,31 @@ def test_write_prediction_sidecar_writes_run_and_method_summary(tmp_path) -> Non
     assert pair["examples"][0]["random_salt"] == 7
 
 
+def test_write_prediction_sidecar_uses_configured_paired_baselines(tmp_path) -> None:
+    pred_path = tmp_path / "kvcomm.jsonl"
+    records = [
+        {"index": 0, "method": "target_only", "prediction": "1", "answer": ["2"], "correct": False},
+        {"index": 0, "method": "kvcomm_zero_source", "prediction": "1", "answer": ["2"], "correct": False},
+        {"index": 0, "method": "kvcomm_shuffled_source", "prediction": "1", "answer": ["2"], "correct": False},
+        {"index": 0, "method": "kvcomm_matched", "prediction": "2", "answer": ["2"], "correct": True},
+    ]
+
+    evaluate.write_prediction_sidecar(
+        str(pred_path),
+        records,
+        {},
+        {"paired_baseline_methods": ["target_only", "kvcomm_zero_source", "kvcomm_shuffled_source"]},
+    )
+
+    payload = json.loads((tmp_path / "kvcomm.jsonl.meta.json").read_text())
+    assert "kvcomm_matched_vs_target_only" in payload["paired_examples"]
+    assert "kvcomm_matched_vs_kvcomm_zero_source" in payload["paired_examples"]
+    assert "kvcomm_matched_vs_kvcomm_shuffled_source" in payload["paired_examples"]
+    assert "kvcomm_matched_vs_target_alone" not in payload["paired_examples"]
+    pair = payload["paired_examples"]["kvcomm_matched_vs_target_only"]
+    assert pair["examples"][0]["flip"] == "method_only"
+
+
 def test_append_prediction_record_preserves_stable_example_id() -> None:
     records: list[dict[str, object]] = []
     example = evaluate.GenerationExample(prompt="p", answers=["1"])

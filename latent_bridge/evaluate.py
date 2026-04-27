@@ -2598,6 +2598,19 @@ def paired_prediction_breakdown(records: list[dict[str, Any]], baseline: str = "
     return breakdown
 
 
+def _paired_baselines_from_run_config(run_config: dict[str, Any]) -> list[str]:
+    raw = run_config.get("paired_baseline_methods", run_config.get("paired_baseline_method", "target_alone"))
+    if isinstance(raw, str):
+        candidates = [raw]
+    else:
+        candidates = [str(item) for item in raw]
+    baselines: list[str] = []
+    for baseline in candidates:
+        if baseline and baseline not in baselines:
+            baselines.append(baseline)
+    return baselines or ["target_alone"]
+
+
 def write_prediction_sidecar(
     path: str,
     records: list[dict[str, Any]],
@@ -2606,6 +2619,9 @@ def write_prediction_sidecar(
 ) -> None:
     output_path = pathlib.Path(path)
     sidecar_path = output_path.with_suffix(output_path.suffix + ".meta.json")
+    paired_examples: dict[str, Any] = {}
+    for baseline in _paired_baselines_from_run_config(run_config):
+        paired_examples.update(paired_prediction_breakdown(records, baseline=baseline))
     payload = {
         "run_config": run_config,
         "method_summary": prediction_record_summary(records),
@@ -2614,7 +2630,7 @@ def write_prediction_sidecar(
             for key, value in results.items()
             if key.startswith("paired_")
         },
-        "paired_examples": paired_prediction_breakdown(records),
+        "paired_examples": paired_examples,
         "metric_summary": {
             key: value
             for key, value in results.items()
