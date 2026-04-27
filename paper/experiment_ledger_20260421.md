@@ -7601,3 +7601,80 @@ PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_source_likelihood_ske
 
 Then run the holdout collection and analyzer commands recorded in
 `paper/svamp70_source_likelihood_sketch_20260427.md`.
+
+## 2026-04-27 Cycle - Historical positive branch audit
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; no positive method has
+   yet survived live/holdout controls with uncertainty, seed stability, and
+   systems accounting.
+2. Current paper story: the old RotAlign/latent_bridge/results folders contain
+   real source-complementary and systems clues, but the method rows either fail
+   seed stability, source controls, holdout, or are only oracle bounds.
+3. Exact blocker to submission: no deployable source-derived communication
+   method has cleared strict controls on a disjoint validation surface.
+4. Live branch: `source_likelihood_sketch` on SVAMP70 live/holdout.
+5. Highest-priority gate: clear PID `31103`, then run the source-likelihood
+   sketch collector/analyzer commands.
+6. Scale-up rung: strict-small branch-selection and tooling; scientific run
+   blocked by MPS.
+
+Historical audit summary:
+
+- best historical source-derived clue:
+  `qwen25math_svamp32/source_contrastive_sidecar` and its SVAMP70 medium
+  follow-up
+  - SVAMP32: matched `11/32`, target/text `8/32`, clean source-necessary
+    `3/4`, control clean union `0/4`
+  - SVAMP70 live: textless sidecar `26/70`, target `21/70`, text `22/70`,
+    C2C `31/70`, clean source-necessary `4/6`, control clean union `0/6`
+  - holdout falsification: matched `10/70`, clean source-necessary `0/2`,
+    control clean union `2/2`
+- best old RotAlign clue:
+  GSM70 `dynalign_module_replace_residrank16`
+  - seed0 `8/70` vs target `4/70`, zero/shuffle controls retained `0/6`
+    live wins with target fallback
+  - seed3 `2/70`, seed4 `4/70`; raw dynalign killed as a live method
+- best oracle/bound:
+  SVAMP32 syndrome sidecar
+  - strict target-side pool matched `14/32`, clean source-necessary `2/6`,
+    control clean union `0/6`, one-byte syndrome
+  - not a method because the syndrome used C2C-derived numeric residues
+- query-memory/Perceiver family:
+  - one 4-ID Qwen2.5-Math pass existed, but clean6 expansion failed
+  - keep only as architecture inspiration, not a live branch
+- `idweighted_query_innovation` clue:
+  - best controlled row `10/32`, clean residual/source-necessary `1/6`
+  - clean ID `aee922049c757331` was not retained by translated-KV-zero
+  - still below target self-repair `14/32` and below the `>=2/6` clean gate;
+    revive only as an innovation-bottleneck design clue, not as-is
+- process repair:
+  - remains target-side baseline/confound; source controls recover all
+    route-specific wins
+
+Decision:
+
+- Keep `source_likelihood_sketch` as the live branch because it is the most
+  direct non-duplicative successor to the source-contrastive sidecar and
+  syndrome-bound clues.
+- Do not revive raw dynalign, fixed decoded guards, process repair, or
+  Perceiver/query-memory tuning without a new conditional innovation objective
+  and predictor/shuffle controls.
+
+New memo:
+
+- `paper/historical_positive_branch_audit_20260427.md`
+
+Hard blocker:
+
+- PID `31103` remains the MPS blocker; no new model runs were launched.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Then, if clear, run the three source likelihood sketch commands in
+`paper/svamp70_source_likelihood_sketch_20260427.md`.

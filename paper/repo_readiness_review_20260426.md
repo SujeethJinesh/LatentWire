@@ -653,3 +653,25 @@ Next exact gate:
 - promote only if live CV and frozen holdout both clear the predefined pass
   rule; otherwise weaken or kill the branch and move to the next source-surface
   or stronger-interface candidate
+
+## 2026-04-27 Historical Positive Audit Update
+
+The old `rotalign`, `latent_bridge`, and results-folder positives were
+re-audited before changing branch priority. The audit is recorded in
+`paper/historical_positive_branch_audit_20260427.md`.
+
+Conclusion:
+
+- raw GSM70 dynalign remains a real mechanism clue but is killed as the live
+  method because finite repeat seeds do not preserve the seed0 lift
+- query-memory and Perceiver target-memory checkpoints stay killed because the
+  clean-ID answer-likelihood expansion fails against source-destroying and
+  target/slots controls
+- process repair remains a target-side baseline/confound, not communication
+- the strongest historical direction is the side-information family:
+  source-contrastive sidecar plus the C2C-derived syndrome bound
+
+This audit supports keeping `source_likelihood_sketch` as the top branch. It
+is the smallest non-duplicative test of whether a source-derived, rate-capped
+candidate preference can keep the SVAMP70 live signal while avoiding the
+holdout leakage that killed fixed decoded guards.
