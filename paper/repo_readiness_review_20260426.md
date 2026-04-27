@@ -45,6 +45,18 @@ target-only `14/32`, clean source-necessary `0`. The live branch remains
 `none`; do not spend on another receiver/connector unless a Math-7B or selected
 fresh surface first exposes answer-unexplained target-pool headroom.
 
+Update `2026-04-27`: the selected-disagreement
+`Qwen/Qwen2.5-Math-7B-Instruct -> Qwen/Qwen3-0.6B` scout is now a sharper
+negative. On the 12-ID disagreement slice, target was `0/12`, source `5/12`,
+and text relay `1/12`, with exact ID parity and full numeric coverage. The
+answer-masking audit found `5` clean source-only IDs, `3` clean IDs in the
+target-side pool, and `answer_unexplained_clean_in_pool = 0`. The model is now
+cached locally after retrying with `HF_HUB_DISABLE_XET=1`, so a full SVAMP70
+Math-7B scout is executable, but the live branch remains `none`. JEPA/LeJEPA/
+V-JEPA guidance is still anti-collapse harness design only: answer-masked dual
+views, frozen target latent/KV targets, matched-source margins over controls,
+target preservation, and variance/effective-rank/covariance telemetry.
+
 Update `2026-04-27 00:50 PDT`: KVComm is now harness-ready for strict
 source-control evaluation, but it remains baseline/tooling evidence rather than
 a positive method. The wrapper supports matched, zero-source, shuffled-source,

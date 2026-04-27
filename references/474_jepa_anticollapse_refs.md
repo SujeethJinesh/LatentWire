@@ -114,3 +114,28 @@ branch should wait until a discovery surface has `answer_unexplained_clean_in_po
 - explicit byte/rate reporting
 
 Until then, JEPA is a harness/design constraint, not a headline method.
+
+## 2026-04-27 Committee Addendum
+
+The follow-up JEPA committee readout keeps the same decision boundary after the
+Math-7B selected-disagreement scout:
+
+1. Blocker helped: representation collapse is secondary to answer leakage. JEPA
+   mechanisms help only if they make the side information source-destroyable and
+   answer-masked.
+2. Mechanism/design idea: use dual answer-masked source views, predict frozen
+   target latent/KV summaries, and train only the source innovation over the
+   target baseline rather than reconstructing the entire target state.
+3. Next experiment change: no full connector training on the current selected
+   surface; matched source still needs a non-leaky target in the candidate pool.
+4. Role: inspiration, ablation, anti-collapse diagnostics, and paper framing.
+
+Cheap collapse telemetry to attach to any future JEPA-style sidecar:
+
+- finite score coverage
+- per-dimension variance min/mean and variance floor pass rate
+- effective rank
+- covariance off-diagonal mean absolute value
+- route/label entropy and zero-margin rate
+- matched-vs-answer-only cosine
+- matched-vs-control paired margin distribution

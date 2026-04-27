@@ -11301,3 +11301,98 @@ Next exact gate:
   acceptable cost.
 - Promotion requires `answer_unexplained_clean_in_pool > 0`; otherwise reject
   before any receiver, connector, or JEPA objective spend.
+
+## 2026-04-27 Cycle 14 - Math-7B Selected Disagreement Surface
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; no source-derived positive method
+   survives answer masking and source controls.
+2. Current paper story: stronger sources expose raw source/target disagreement,
+   but useful-looking rows keep collapsing to source final-answer relay or
+   target-side artifacts.
+3. Exact blocker: no source surface has
+   `answer_unexplained_clean_in_pool > 0`.
+4. Current live branch: `none`; top candidates are Math-7B source-surface
+   discovery and JEPA-style answer-masked latent prediction only after non-leaky
+   headroom exists.
+5. Highest-priority gate: selected-disagreement Math-7B source-surface smoke.
+6. Scale-up rung: selected micro discovery.
+
+Subagent updates:
+
+- JEPA/LeJEPA/V-JEPA committee: use answer-masked dual source views, frozen
+  target latent/KV targets, matched-source margins over source-destroying
+  controls, target-preservation loss, and variance/effective-rank/covariance
+  collapse telemetry. This is design guidance, not positive evidence.
+- Experiment planner: preferred full SVAMP70 Math-7B now that cached 7B and
+  answer-free query-bottleneck gates failed. I ran the selected-12 gate first
+  to validate the model path and immediate non-leaky headroom.
+
+Model-fetch note:
+
+- first attempt stalled at Hugging Face `Fetching 4 files: 0%`.
+- retry with `HF_HUB_DISABLE_XET=1` completed and cached
+  `Qwen/Qwen2.5-Math-7B-Instruct` under repo-local `.hf_home/hub`.
+
+Command:
+
+```bash
+HF_HUB_DISABLE_XET=1 PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file results/mps_qwen25_7b_disagreement12_discovery_20260427/disagreement12_eval.jsonl \
+  --results-dir results/qwen25math7b_disagreement12_surface_scout_20260427 \
+  --translator checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt \
+  --source-model Qwen/Qwen2.5-Math-7B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t \
+  --limit 12 \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Result:
+
+- target: `0/12`
+- source: `5/12`
+- text relay: `1/12`
+- exact ID parity: true for all methods
+- numeric coverage: `12/12` for all methods
+- source-only over target: `5`
+- clean source-only after text relay: `5`
+- target/source oracle: `5/12`
+
+Answer-masking audit:
+
+- clean in target-side pool: `3`
+- answer-unexplained clean in target-side pool: `0`
+- clean in-pool IDs: `561daa750422c0e4`, `ab1e71e8928661d0`,
+  `daea537474de16ac`
+
+Decision: fail for promotion. Math-7B creates a stronger selected disagreement
+surface, but every reachable clean target-pool answer is still explained by the
+source final/verified numeric answer. Do not train a learned receiver or JEPA
+connector on this selected surface.
+
+Artifacts:
+
+- `results/qwen25math7b_disagreement12_surface_scout_20260427/manifest.md`
+- `results/qwen25math7b_disagreement12_surface_scout_20260427/manifest.json`
+- `results/qwen25math7b_disagreement12_surface_scout_20260427/source_alone.jsonl`
+- `results/qwen25math7b_disagreement12_surface_scout_20260427/target_alone.jsonl`
+- `results/qwen25math7b_disagreement12_surface_scout_20260427/text_to_text.jsonl`
+- `results/qwen25math7b_disagreement12_surface_scout_20260427/source_contrastive_target_set.md`
+- `results/qwen25math7b_disagreement12_surface_scout_20260427/answer_masking_audit.md`
+- `paper/qwen25math7b_disagreement12_surface_scout_20260427.md`
+
+Next exact gate:
+
+- Full SVAMP70 Math-7B scout now that the model is local, if we accept the MPS
+  time. Pass requires exact ID parity, numeric coverage `>=69/70`, source-only
+  over target `>=6`, clean source-only after text relay `>=3`, clean in pool
+  `>=1`, and `answer_unexplained_clean_in_pool > 0`.
+- If full SVAMP70 also has `answer_unexplained_clean_in_pool = 0`, stop
+  source-scorer/receiver variants and switch to a new candidate-pool generator.
