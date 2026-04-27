@@ -31,6 +31,9 @@ over two examples verifies provenance and fixed-layer reuse, with all modes at
 `0/2` and shuffled-source using nonmatching source IDs. The live branch remains
 `none`; the highest-priority executable gate after MPS clears is the
 `kvcomm_svamp32_controls_smoke_20260427` command recorded in the ledger.
+Follow-up hardening replaced fixed-offset shuffled-source with deterministic
+hash-based non-self pairing and answer-overlap logging; the CPU smoke still
+passes as tooling-only evidence.
 
 The strongest bound is the SVAMP32 C2C-derived syndrome sidecar:
 

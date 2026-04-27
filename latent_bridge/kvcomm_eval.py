@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import pathlib
 import subprocess
 import sys
@@ -93,6 +94,28 @@ def _normalize_shuffle_offset(offset: int, total: int) -> int:
     return normalized if normalized != 0 else 1
 
 
+def _answers_overlap(left: Any, right: Any) -> bool:
+    left_set = {str(item).strip().lower() for item in left}
+    right_set = {str(item).strip().lower() for item in right}
+    return bool(left_set & right_set)
+
+
+def _deterministic_shuffled_source_index(examples: list[Any], index: int, shuffle_offset: int) -> int:
+    if len(examples) <= 1:
+        raise ValueError("shuffled_source requires at least two examples")
+    target_id = _generation_example_id(examples[index])
+    candidates: list[tuple[str, int]] = []
+    for candidate_index, candidate in enumerate(examples):
+        if candidate_index == index:
+            continue
+        candidate_id = _generation_example_id(candidate)
+        digest = hashlib.sha1(
+            f"{target_id}:{candidate_id}:{int(shuffle_offset)}".encode("utf-8")
+        ).hexdigest()
+        candidates.append((digest, candidate_index))
+    return min(candidates)[1]
+
+
 def _parse_source_control_modes(raw: str) -> list[str]:
     modes = [chunk.strip() for chunk in raw.split(",") if chunk.strip()]
     if not modes:
@@ -144,7 +167,7 @@ def _controlled_source_prompt(
 
     source_index = int(index)
     if source_control == "shuffled_source":
-        source_index = (int(index) + _normalize_shuffle_offset(shuffle_offset, len(examples))) % len(examples)
+        source_index = _deterministic_shuffled_source_index(examples, index, shuffle_offset)
     source_example = examples[source_index]
     source_base = getattr(source_example, "source_question", "") or source_example.prompt
     return (
@@ -347,6 +370,11 @@ def evaluate_kvcomm_generation(
                 "source_control_source_example_id": source_example_id,
                 "source_control_source_index": source_index,
                 "source_control_source_matches_target": source_example_id == _generation_example_id(ex),
+                "source_control_source_answers_overlap_target": (
+                    _answers_overlap(examples[source_index].answers, ex.answers)
+                    if source_index is not None
+                    else False
+                ),
                 "prediction": prediction,
                 "answer": ex.answers,
                 "correct": bool(is_correct),

@@ -81,9 +81,10 @@ def test_controlled_source_prompt_shuffled_source_uses_different_example_when_po
         shuffle_offset=3,
     )
 
-    assert "source 1" in prompt
-    assert source_id == _generation_example_id(examples[1])
-    assert source_index == 1
+    assert source_index in {1, 2}
+    assert source_id == _generation_example_id(examples[source_index])
+    assert source_id != _generation_example_id(examples[0])
+    assert f"source {source_index}" in prompt
 
 
 def test_controlled_source_prompt_shuffled_source_requires_multiple_examples() -> None:
@@ -132,3 +133,8 @@ def test_zero_past_key_values_preserves_shape_dtype_and_input() -> None:
     assert zeroed[0][0].dtype == key.dtype
     assert torch.equal(zeroed[0][0], torch.zeros_like(key))
     assert torch.equal(zeroed[0][1], torch.zeros_like(value))
+
+
+def test_answers_overlap_normalizes_string_answers() -> None:
+    assert kvcomm_eval._answers_overlap([" 5.0 ", "#### 5"], ["5.0"])
+    assert not kvcomm_eval._answers_overlap(["5"], ["6"])
