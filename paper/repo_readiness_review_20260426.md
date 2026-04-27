@@ -175,6 +175,21 @@ The learned semantic-predicate CPU decoder is now also negative on holdout:
   prune generated-source-trace semantic predicate decoding on current
   Qwen2.5-Math -> Qwen3 SVAMP artifacts
 
+The CPU target-likelihood receiver follow-up is also negative on live:
+
+- scorer: `Qwen/Qwen3-0.6B` on CPU over target/text/source normalized answer
+  candidates
+- target-alone/text/source candidate correctness: `21/70`, `22/70`, `13/70`
+- top-likelihood selection: `14/70`, with source selected on `64/70`
+  examples
+- accept-all source-top recovers all `6` clean live source-only IDs, but harms
+  `16` target-correct examples
+- simple no-harm live thresholds recover at most `1` clean source-only ID and
+  remain around `22-23/70`, below the `25/70` live gate
+- decision: prune this target-likelihood receiver variant before holdout; a
+  future receiver-gate claim needs true condition-specific rescored controls
+  rather than sketch shuffling or forced target fallback
+
 The top-surface cross-attention rescue also fails:
 
 - after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`

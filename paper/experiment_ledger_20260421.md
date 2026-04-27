@@ -8441,3 +8441,94 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 If PID `31103` is absent, run the stronger-source scout recorded in
 `paper/postkill_historical_cpu_audit_20260427.md`. If it remains present, the
 hard blocker is OS/session-level cleanup or reboot before MPS experiments.
+
+## 2026-04-27 Cycle - Qwen3 target-likelihood receiver live prune
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; still missing a stable
+   positive method plus medium/large controls, seed stability, systems metrics,
+   and cross-family falsification.
+2. Current paper story: source candidates contain real live headroom, but
+   target-safe deployable decoders have not transferred and receiver gates have
+   not separated useful source information from harmful source answers.
+3. Exact blocker to submission: no method recovers clean source-necessary IDs
+   on both live and holdout while preserving target-correct examples under
+   source-destroying controls; MPS remains blocked by PID `31103` in `STAT=UE`.
+4. Current live branch: none. Candidate tested here: target-side likelihood
+   receiver over target/text/source candidate answers.
+5. Highest-priority gate: CPU-only live smoke to see whether receiver
+   likelihood can support a no-harm accept rule before spending holdout/control
+   compute.
+6. Scale-up rung: smoke / branch discovery.
+
+Command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_source_likelihood_sketch.py \
+  --source-model Qwen/Qwen3-0.6B \
+  --eval-file results/qwen25math_qwen3_svamp70_source_surface_20260426/_artifacts/svamp_eval_70_70.jsonl \
+  --candidate target=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/target_alone.jsonl,method=target_alone \
+  --candidate text=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/text_to_text.jsonl,method=text_to_text \
+  --candidate source=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_alone.jsonl,method=source_alone \
+  --reference-label target \
+  --candidate-text-field normalized_prediction \
+  --continuation-template 'Answer: {text}' \
+  --resume \
+  --device cpu \
+  --dtype float32 \
+  --prompt-mode direct \
+  --source-use-chat-template \
+  --source-enable-thinking false \
+  --date 2026-04-27 \
+  --output-jsonl results/qwen3_target_likelihood_receiver_20260427/live_target_model_normpred_answer_template.jsonl \
+  --output-md results/qwen3_target_likelihood_receiver_20260427/live_target_model_normpred_answer_template.md
+```
+
+Result:
+
+- Status: `fails_live_prune`.
+- Rows: `70`.
+- Target/text/source candidate correctness: `21/70`, `22/70`, `13/70`.
+- Top-likelihood selection: `14/70`.
+- Top labels: source `64`, text `6`, target `0`.
+- Accept-all source-top clean live source-only IDs: `6`.
+- Accept-all source-top target-correct harms: `16`.
+- Best simple no-harm live thresholds recover at most `1` clean source-only ID
+  and remain around `22-23/70`, below the `25/70` live gate.
+
+Artifact hashes:
+
+- `results/qwen3_target_likelihood_receiver_20260427/live_target_model_normpred_answer_template.jsonl`:
+  `104ceba6676c752c2863347a2b201faa48f23f3964fee3cdcd22430b461e3ca0`
+- `results/qwen3_target_likelihood_receiver_20260427/live_target_model_normpred_answer_template.md`:
+  `10fd305e89940ddb0c86b3a855524d4e24261629cd5f9cfd8893d23209c94f75`
+- ordered example IDs sha256:
+  `0292230b41840995d6c178c72b571f4f4441e631a6e7f1535a03106717010506`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_collect_source_likelihood_sketch.py tests/test_analyze_svamp70_source_likelihood_sketch_gate.py -q
+```
+
+Result: `9 passed in 0.09s`.
+
+Decision:
+
+- Pruned: this target-likelihood receiver variant on current SVAMP70 artifacts.
+- Weakened: target-likelihood receiver gates without stronger source surfaces
+  or true condition-specific rescored controls.
+- Still live only as infrastructure: a fair receiver harness should accept
+  separate rescored sketches for matched, zero-source, shuffled-source,
+  target-only, and slots-only candidate pools.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` is absent, resume MPS source-surface/interface reset work. If it
+remains present, continue CPU-only with a canonical exact-ID overlap audit
+across the SVAMP70 live/holdout surfaces rather than another threshold sweep.
