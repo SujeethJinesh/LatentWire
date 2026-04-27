@@ -7318,3 +7318,180 @@ Next exact gate:
   that supports `--innovation-memory-control target_only`
 - rerun the same answer-likelihood analyzer on at least GSM8K32/SVAMP32 with
   matched, zero-source, shuffled-source, target-only, and slots-only controls
+
+## Cycle Checkpoint: 2026-04-26 Query-Memory Answer-Likelihood CPU Sweeps
+
+- cycle number: `2026-04-26-query-memory-answer-likelihood-cpu-sweeps`
+- timestamp: `2026-04-26 21:22:00 PDT`
+- live branch entering cycle: target-conditioned query-memory / Perceiver
+  rescue after the non-target-conditioned query-innovation checkpoint failed
+- scale-up rung reached: CPU micro smoke plus strict-small clean-ID expansion
+- result summary: fail; one 4-clean-ID Qwen2.5-Math Perceiver answer-likelihood
+  pass did not survive all six clean IDs
+
+Start-of-cycle status:
+
+- ICLR readiness: not ready; no deployable source-derived method survives
+  source-destroying and memory-null controls
+- current paper story: RotAlign/query-resampler/sidecar artifacts show useful
+  source-complementary and C2C headroom, but repeated deployable rows are
+  explained by target priors, slots-only memory, shuffled-source controls, weak
+  source surfaces, or brittle guards
+- exact blocker: decide whether target-conditioned query-memory checkpoints
+  hide answer-likelihood signal that teacher-forced/generation gates missed
+- current live candidates:
+  - SVAMP32 target-conditioned delta-memory query codec
+  - SVAMP70 Perceiver answer-teacher contrastive checkpoint
+  - Qwen2.5-Math SVAMP32 Perceiver C2C-residual checkpoint
+- highest-priority gate: matched-vs-zero/shuffle/target-only/slots-only
+  answer-likelihood controls on CPU while MPS remains blocked by PID `31103`
+
+Runs:
+
+- SVAMP32 delta-memory:
+  - result directory:
+    `results/svamp32_deltamem_answer_likelihood_cpu_smoke_20260426/`
+  - checkpoint:
+    `.debug/svamp32_delta_memory_query_codec_20260424/checkpoints/qwen25_to_qwen3_svamp32_deltamem_konly_query_codec_r16_bank16_seed1.pt`
+  - checkpoint sha256:
+    `29ff93c6d7291fb9a4e00ac35a7ffa519c4d71c8bd4a38062c0d748baecf4ebb`
+  - analyzer status: `answer_likelihood_controls_fail`
+  - matched mean answer logprob: `-7.673776`
+  - zero-source mean: `-7.568559`
+  - shuffled-source mean: `-7.683792`
+  - target-only mean: `-8.072149`
+  - slots-only mean: `-8.071200`
+  - best-control wins/losses/ties: `0/4/0`
+  - mean live-best delta: `-0.141012`
+- SVAMP70 Perceiver answer-teacher:
+  - result directory:
+    `results/svamp70_perceiver_answer_likelihood_cpu_smoke_20260426/`
+  - checkpoint:
+    `.debug/svamp70_perceiver_answer_teacher_contrastive_20260426/checkpoints/qwen25_to_qwen3_svamp70_perceiver_answer_teacher_w080_ctrl050_r16_b16_seed1.pt`
+  - checkpoint sha256:
+    `a7221d6d0ee81b99573bf1893b66570ec682f22faee1ffcc6bf7e9fc1f36df6a`
+  - analyzer status: `answer_likelihood_controls_fail`
+  - matched mean answer logprob: `-7.261671`
+  - zero-source mean: `-7.262390`
+  - shuffled-source mean: `-7.220054`
+  - target-only mean: `-7.232674`
+  - slots-only mean: `-7.241025`
+  - best-control wins/losses/ties: `0/4/0`
+  - mean live-best delta: `-0.112360`
+- Qwen2.5-Math SVAMP32 Perceiver 4-clean-ID smoke:
+  - result directory:
+    `results/qwen25math_svamp32_perceiver_answer_likelihood_cpu_smoke_20260426/`
+  - checkpoint:
+    `.debug/qwen25math_svamp32_perceiver_c2c_residual_20260426/checkpoints/qwen25math_to_qwen3_svamp32_perceiver_c2c_residual_w080_ctrl050_am050_r16_b16_seed1.pt`
+  - checkpoint sha256:
+    `d50b00fd0b9f5b5afcb09af8f9ae89b868e913b0a0610ef8132e66f20c726759`
+  - analyzer status: `answer_likelihood_controls_pass`
+  - matched mean answer logprob: `-7.989116`
+  - zero-source mean: `-8.250677`
+  - shuffled-source mean: `-8.131923`
+  - target-only mean: `-8.162249`
+  - slots-only mean: `-8.118848`
+  - best-control wins/losses/ties: `3/1/0`
+  - mean live-best delta: `+0.080362`
+- Qwen2.5-Math SVAMP32 Perceiver clean6 expansion:
+  - result directory:
+    `results/qwen25math_svamp32_perceiver_answer_likelihood_clean6_cpu_20260426/`
+  - checkpoint:
+    `.debug/qwen25math_svamp32_perceiver_c2c_residual_20260426/checkpoints/qwen25math_to_qwen3_svamp32_perceiver_c2c_residual_w080_ctrl050_am050_r16_b16_seed1.pt`
+  - checkpoint sha256:
+    `d50b00fd0b9f5b5afcb09af8f9ae89b868e913b0a0610ef8132e66f20c726759`
+  - analyzer status: `answer_likelihood_controls_fail`
+  - matched mean answer logprob: `-8.195434`
+  - zero-source mean: `-8.387585`
+  - shuffled-source mean: `-8.190414`
+  - target-only mean: `-8.192871`
+  - slots-only mean: `-8.191226`
+  - best-control wins/losses/ties: `4/2/0`
+  - mean live-best delta: `-0.090384`
+
+Decision:
+
+- kill the target-conditioned query-memory / Perceiver checkpoint family as the
+  current live positive-method branch
+- record the 4-ID Qwen2.5-Math pass as a useful partial mechanism clue only;
+  it is not promotable because the all-clean-ID expansion fails mean
+  matched-minus-control deltas against shuffled-source, target-only, and
+  slots-only controls
+- do not tune fixed gate, answer-teacher weight, anti-memory weight, query
+  count, bridge rank, or another Perceiver memory checkpoint on these exact
+  surfaces without a new source-interface hypothesis
+- current live method branch: none
+- next highest-value branch: source-surface/interface reset after the hard MPS
+  blocker is cleared
+
+Artifacts:
+
+- focused memo:
+  - `paper/query_memory_answer_likelihood_cpu_sweeps_20260426.md`
+- manifests:
+  - `results/svamp32_deltamem_answer_likelihood_cpu_smoke_20260426/manifest.md`
+  - `results/svamp70_perceiver_answer_likelihood_cpu_smoke_20260426/manifest.md`
+  - `results/qwen25math_svamp32_perceiver_answer_likelihood_cpu_smoke_20260426/manifest.md`
+  - `results/qwen25math_svamp32_perceiver_answer_likelihood_clean6_cpu_20260426/manifest.md`
+- analysis JSON/readouts:
+  - `results/svamp32_deltamem_answer_likelihood_cpu_smoke_20260426/answer_likelihood_controls.json`
+    sha256: `a0d39d36ac0cd3b4bc1c4a25d211e2b48554f5c716722188147b4e8c20122615`
+  - `results/svamp70_perceiver_answer_likelihood_cpu_smoke_20260426/answer_likelihood_controls.json`
+    sha256: `6b8778bde08cba1be3af04f8529a0c5e54d54507c4a9212e4977052b0e16f856`
+  - `results/qwen25math_svamp32_perceiver_answer_likelihood_cpu_smoke_20260426/answer_likelihood_controls.json`
+    sha256: `a834edac89d7721a2c54968c3007bca22d24e18eec248d99af2b2ffde1ddcfc9`
+  - `results/qwen25math_svamp32_perceiver_answer_likelihood_clean6_cpu_20260426/answer_likelihood_controls.json`
+    sha256: `ad731dfa93c08bfb6cd27999a53a11c2f273599722d2d1224ef8df55f94cb0bd`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_answer_likelihood_controls.py -q`
+- `./venv_arm64/bin/python -m py_compile scripts/analyze_answer_likelihood_controls.py`
+
+Hard blocker:
+
+- PID `31103` remains orphaned under launchd with `STAT=UE`:
+  `/Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python /Users/sujeethjinesh/Desktop/LatentWire/scripts/calibrate.py ... --device mps --dtype float32 --seed 1`
+- `SIGTERM` and `SIGKILL` have not terminated it
+- exact next action from the user/environment: restart the machine or otherwise
+  clear PID `31103`; do not start additional MPS jobs while it remains stuck
+
+Existing-artifact surface reset:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_source_headroom_surfaces.py \
+  --surface svamp70_live_source=target_path=results/qwen25math_qwen3_svamp70_source_surface_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_live_source \
+  --surface svamp70_holdout_source=target_path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_holdout_source \
+  --surface svamp70_chal171_source=target_path=results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_chal171_240_source \
+  --surface svamp70_chal241_source=target_path=results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_chal241_310_source \
+  --surface svamp70_chal311_source=target_path=results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_chal311_380_source \
+  --surface gsm70_math_source=target_path=results/qwen25math_qwen3_gsm70_source_surface_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_gsm70_source_surface_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_gsm70_source \
+  --surface svamp32_math_chat_source=target_path=results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl,source_path=results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp32_chat_source \
+  --min-source-only 6 \
+  --output-json results/source_headroom_surface_scan_20260426/scan_after_query_memory_prune.json \
+  --output-md results/source_headroom_surface_scan_20260426/scan_after_query_memory_prune.md
+```
+
+- result:
+  - `svamp70_live_source`: strong, target `21/70`, source `13/70`,
+    source-only `9`, oracle `30/70`
+  - `svamp70_holdout_source`: strong, target `8/70`, source `8/70`,
+    source-only `6`, oracle `14/70`
+  - all adjacent SVAMP70 scouts, GSM70, and SVAMP32 remain below the
+    `>=6/70` source-only threshold
+- output hashes:
+  - `results/source_headroom_surface_scan_20260426/scan_after_query_memory_prune.json`
+    sha256: `3ebd8aff86b732ca6b4137fb11a9306ba3b92b2e9be5a4a9d531dfefb7875b0b`
+  - `results/source_headroom_surface_scan_20260426/scan_after_query_memory_prune.md`
+    sha256: `0738cfe945fa4925983334801eedaa7ba24e7330e25c32bbbc6dd1c80b1c2f54`
+
+Next exact gate after clearing PID `31103`:
+
+- keep `svamp70_live_source` as the live surface and
+  `svamp70_holdout_source` as the immediate validation surface
+- do not reuse fixed decoded guards, shallow source-text routers, tiny prefix
+  emitters, source-token residue readouts, or Perceiver target-memory
+  checkpoints
+- implement only a materially different rate-capped source interface on this
+  live/holdout surface, or scout a new source/target pair if a cached stronger
+  source is available

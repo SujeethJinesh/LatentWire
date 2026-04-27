@@ -122,6 +122,25 @@ The current live branch is now the query-innovation/source-memory resampler:
   in `STAT=UE` and ignores `SIGKILL`; do not start more MPS runs until it is
   cleared
 
+The target-conditioned query-memory follow-up is now also negative:
+
+- SVAMP32 delta-memory CPU answer-likelihood smoke fails because matched source
+  loses to zero-source on mean answer likelihood and wins `0/4` against the
+  best runnable control
+- SVAMP70 Perceiver answer-teacher CPU answer-likelihood smoke fails with
+  best-control wins `0/4` and mean matched-minus-best-control delta
+  `-0.112360`
+- Qwen2.5-Math SVAMP32 Perceiver has one partial positive clue on four clean
+  IDs: matched beats every control with best-control wins `3/4` and mean
+  live-best delta `+0.080362`
+- the required six-clean-ID expansion fails: matched still beats zero-source,
+  but loses on mean to shuffled-source, target-only, and slots-only controls;
+  mean matched-minus-best-control delta is `-0.090384`
+- decision: kill target-memory/query-memory Perceiver checkpoints as the
+  current live positive-method branch; no method is live until a source
+  surface/interface reset selects the next branch
+- current blocker remains PID `31103`, the stuck MPS calibration process
+
 The top-surface cross-attention rescue also fails:
 
 - after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`
@@ -270,17 +289,46 @@ The strongest GSM mechanism clue is `dynalign_module_replace_residrank16`:
 ## Highest-Priority Next Gate
 
 The current live branch is no longer adjacent source-surface scouting, shallow
-source-readout tuning, target-safe selector replay, or another Perceiver memory
-checkpoint. Those gates have now failed or become control-explained.
+source-readout tuning, target-safe selector replay, tiny learned prefix
+emitters, or another Perceiver/query-memory checkpoint. Those gates have now
+failed or become control-explained.
 
-The highest-priority next gate is now no longer a tiny learned prefix emitter.
-Global summary readouts, summary prefixes, token-local cross-attention on
-SVAMP32, and token-local cross-attention on the top-ranked SVAMP70 live surface
-have all failed source controls. The next branch should either discover a
-stronger same-family source surface, or test a discrete source-derived
-candidate/routing stack on `svamp70_live` with immediate `svamp70_holdout`
-validation. Process repair should be used only as a target-side baseline and
-confound unless a separate source-derived route signal exists.
+The highest-priority next gate is a source-interface reset on the only
+remaining strong reusable surface, or a new source/target scout after the stuck
+MPS process is cleared. The existing-artifact re-scan ranks:
+
+- `svamp70_live_source`: target `21/70`, source `13/70`, source-only `9`,
+  oracle `30/70`
+- `svamp70_holdout_source`: target `8/70`, source `8/70`, source-only `6`,
+  oracle `14/70`
+- adjacent SVAMP70 scouts, GSM70, and SVAMP32 remain below threshold
+
+Do not spend more compute on fixed decoded guards, shallow source-text routers,
+tiny prefix emitters, source-token residue readouts, or Perceiver target-memory
+checkpoints. The next method branch must be a materially different rate-capped
+source interface on `svamp70_live_source` with immediate
+`svamp70_holdout_source` validation, or a fresh source/target scout if a
+stronger cached source is available. Process repair should remain a target-side
+baseline and confound unless a separate source-derived route signal exists.
+
+Current hard blocker: PID `31103` is an orphaned MPS calibration process in
+`STAT=UE` and ignores `SIGKILL`. Do not start more MPS jobs until it is cleared.
+The source-surface re-scan command that produced the current branch selection
+was:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_source_headroom_surfaces.py \
+  --surface svamp70_live_source=target_path=results/qwen25math_qwen3_svamp70_source_surface_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_live_source \
+  --surface svamp70_holdout_source=target_path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_holdout_source \
+  --surface svamp70_chal171_source=target_path=results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_chal171_240_source \
+  --surface svamp70_chal241_source=target_path=results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_chal241_310_source \
+  --surface svamp70_chal311_source=target_path=results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp70_chal311_380_source \
+  --surface gsm70_math_source=target_path=results/qwen25math_qwen3_gsm70_source_surface_20260426/target_alone.jsonl,source_path=results/qwen25math_qwen3_gsm70_source_surface_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_gsm70_source \
+  --surface svamp32_math_chat_source=target_path=results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl,source_path=results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/source_alone.jsonl,target_method=target_alone,source_method=source_alone,note=qwen25math_qwen3_svamp32_chat_source \
+  --min-source-only 6 \
+  --output-json results/source_headroom_surface_scan_20260426/scan_after_query_memory_prune.json \
+  --output-md results/source_headroom_surface_scan_20260426/scan_after_query_memory_prune.md
+```
 
 Latest cycle update: the Qwen2.5 -> OPT-350m byte-span module-replace proxy is
 killed as a decision surface. It had tokenizer mismatch (`shared decoded =

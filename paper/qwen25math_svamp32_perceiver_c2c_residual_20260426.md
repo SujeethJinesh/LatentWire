@@ -140,3 +140,39 @@ bottleneck rather than another receiver-conditioned memory variant:
 - treat target cache/candidate pool as decoder side information and optimize
   only source innovation
 - require at least `2/6` matched-only clean IDs before generation
+
+## CPU Answer-Likelihood Follow-Up
+
+The eval-only gold-answer continuation likelihood diagnostic found a small
+positive clue, then killed the checkpoint on the full clean-ID gate.
+
+Four-clean-ID smoke:
+
+- result directory:
+  `results/qwen25math_svamp32_perceiver_answer_likelihood_cpu_smoke_20260426/`
+- status: `answer_likelihood_controls_pass`
+- matched mean answer logprob: `-7.989116`
+- zero-source: `-8.250677`
+- shuffled-source: `-8.131923`
+- target-only: `-8.162249`
+- slots-only: `-8.118848`
+- best-control wins/losses/ties: `3/1/0`
+- mean live-best delta: `+0.080362`
+
+Six-clean-ID expansion:
+
+- result directory:
+  `results/qwen25math_svamp32_perceiver_answer_likelihood_clean6_cpu_20260426/`
+- status: `answer_likelihood_controls_fail`
+- matched mean answer logprob: `-8.195434`
+- zero-source: `-8.387585`
+- shuffled-source: `-8.190414`
+- target-only: `-8.192871`
+- slots-only: `-8.191226`
+- best-control wins/losses/ties: `4/2/0`
+- mean live-best delta: `-0.090384`
+
+Decision update: the 4-ID pass is only a partial mechanism clue. The checkpoint
+is killed as a strict positive method candidate because the clean6 expansion
+fails against shuffled-source, target-only, and slots-only controls on mean
+answer likelihood.
