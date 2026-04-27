@@ -9860,3 +9860,131 @@ rg -n "stochastic|target_self_repair|process_repair|candidate_scores|route" \
 Use that to select the cheapest existing target-side candidate generator and
 materialize a no-source candidate surface with exact IDs, bytes/tokens, and
 source-destroying controls.
+
+## 2026-04-27 Cycle 1 - No-Source Candidate Surface And Target Sampling
+
+Cycle start:
+
+1. ICLR readiness: not ready; no source-dependent positive method has survived
+   the canonical frozen controls.
+2. Current paper story: source/headroom exists, but canonical SVAMP70
+   target-side pools do not contain clean source-only wins.
+3. Exact blocker: find a no-source target candidate surface that contains clean
+   source-necessary gold answers before testing a source-derived selector.
+4. Live branches: target-side candidate-surface generation first; source
+   side-information decoder second.
+5. Highest-priority gate: materialize existing no-source zero-KV stochastic
+   candidates, then audit target-side pool headroom.
+6. Scale-up rung: smoke / source-surface discovery.
+
+Implemented:
+
+- `scripts/materialize_no_source_candidate_surface.py`
+- `scripts/sample_target_candidate_surface.py`
+- `tests/test_materialize_no_source_candidate_surface.py`
+- `tests/test_sample_target_candidate_surface.py`
+
+Artifact commands:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_no_source_candidate_surface.py \
+  --base-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --candidate target_self_repair=path=results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl,method=target_self_repair \
+  --candidate selected_route_no_repair=path=results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl,method=selected_route_no_repair \
+  --candidate process_repair=path=results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl,method=process_repair_selected_route \
+  --expand-candidate-scores zero_source_pool=path=results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl,method=selected_route_no_repair \
+  --min-source-only 0 \
+  --date 2026-04-27 \
+  --output-dir results/no_source_candidate_surface_20260427
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_target_side_candidate_headroom.py \
+  --target-set zero_source_candidate_surface=path=results/no_source_candidate_surface_20260427/source_contrastive_target_set.json,role=no_source_target_pool,note=target+t2t+target_self+process_repair+zero_source_seed_pool \
+  --target-set canonical_live=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json,role=canonical,note=target+t2t_only \
+  --target-set target_self_surface=path=results/target_self_repair_candidate_surface_20260427/live_target_self_repair_target_set.json,role=target_self_only,note=target+t2t+target_self_repair \
+  --date 2026-04-27 \
+  --output-json results/no_source_candidate_surface_20260427/target_side_candidate_headroom.json \
+  --output-md results/no_source_candidate_surface_20260427/target_side_candidate_headroom.md
+```
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/sample_target_candidate_surface.py \
+  --eval-file results/target_only_sampling_clean3_20260427/clean_source_only_eval.jsonl \
+  --model Qwen/Qwen3-0.6B \
+  --samples 8 \
+  --temperature 0.9 \
+  --top-p 0.95 \
+  --seed 11 \
+  --device cpu \
+  --dtype float32 \
+  --max-new-tokens 96 \
+  --use-chat-template \
+  --enable-thinking false \
+  --output-jsonl results/target_only_sampling_clean3_20260427/target_only_samples.jsonl \
+  --output-json results/target_only_sampling_clean3_20260427/target_only_samples.json \
+  --output-md results/target_only_sampling_clean3_20260427/target_only_samples.md
+```
+
+Result summary:
+
+- zero-source candidate surface: target `21/70`, source `13/70`,
+  target-side oracle `48/70`, oracle gain `27`, clean in pool `0/3`
+- target-self-only surface: target-side oracle `47/70`, clean in pool `0/3`
+- canonical live: target-side oracle `33/70`, clean in pool `0/6`
+- target-only CPU sampling on the remaining three clean IDs: oracle `1/3`,
+  recovered `14bfbfc94f2c2e7b`
+
+Decision:
+
+- killed/weakened: source selector over the existing zero-source candidate
+  surface; it has no clean source-necessary gold answer in the pool.
+- revived: target-only sampled candidate surface plus source-derived selector,
+  because stochastic target sampling recovered one of the three remaining IDs
+  without source leakage.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_materialize_no_source_candidate_surface.py tests/test_sample_target_candidate_surface.py tests/test_analyze_target_side_candidate_headroom.py tests/test_build_source_contrastive_target_set.py -q
+./venv_arm64/bin/python -m py_compile scripts/materialize_no_source_candidate_surface.py scripts/sample_target_candidate_surface.py scripts/analyze_target_side_candidate_headroom.py scripts/build_source_contrastive_target_set.py
+```
+
+Result: `5 passed`; compile passed.
+
+Hashes:
+
+- `results/no_source_candidate_surface_20260427/source_contrastive_target_set.json`:
+  `fb615786f89643c6208909534f59896c2f7d8987b29043842941a769e52e26aa`
+- `results/no_source_candidate_surface_20260427/target_side_candidate_headroom.json`:
+  `4ebf19932e36de5deaf1f463667b4c1dfb096743140f0779b3afe334722969b9`
+- `results/target_only_sampling_clean3_20260427/clean_source_only_eval.jsonl`:
+  `a84668c43d47dd72be58daa1a608295bdc42c261c83777ab2eaa33f78c48946b`
+- `results/target_only_sampling_clean3_20260427/target_only_samples.jsonl`:
+  `f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908`
+- `results/target_only_sampling_clean3_20260427/target_only_samples.json`:
+  `fccf83e7e0b61c023b85b80d524f6bc6ecf9becf852b69702fa115076113de0f`
+
+MPS blocker:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+PID `31103` was still present at cycle start, so all new generation was CPU-only.
+
+Next exact gate:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_exact_id_slice.py \
+  --reference-jsonl <clean3_reference_with_example_ids.jsonl> \
+  --source-jsonl results/target_only_sampling_clean3_20260427/target_only_samples.jsonl \
+  --source-method target_sample_s1 \
+  --output-jsonl results/target_only_sampling_clean3_20260427/target_sample_s1_exact3.jsonl
+```
+
+Materialize all `target_sample_s*` rows into a clean3 target set, then run
+`scripts/materialize_svamp_source_candidate_sidecars.py` and
+`scripts/analyze_svamp_source_semantic_predicate_decoder.py` on that sampled
+pool. Promote only if matched source selects `14bfbfc94f2c2e7b` and all
+source-destroying or same-byte controls miss it.

@@ -1205,6 +1205,43 @@ New memo:
 Next exact gate remains the MPS-blocker check, then the stronger-source scout
 from `paper/postkill_historical_cpu_audit_20260427.md`.
 
+## 2026-04-27 No-Source Candidate Surface Gate
+
+Readiness remains not ICLR-ready. Current live branch: target-only sampled
+candidate surface plus source-derived selector.
+
+The existing no-source process-repair/zero-source-KV surface is now audited as a
+candidate pool rather than a communication method:
+
+- zero-source candidate surface target-side oracle: `48/70`
+- target baseline: `21/70`
+- source baseline: `13/70`
+- clean source-only IDs after no-source baselines: `3`
+- clean source-only IDs whose gold answer is in the no-source pool: `0/3`
+
+Decision: kill source-derived selection over the existing zero-source candidate
+surface. There is no clean source-necessary target for a selector to recover.
+
+A CPU target-only sampling smoke on those remaining three IDs recovered one
+ID:
+
+- recovered clean ID: `14bfbfc94f2c2e7b`
+- target-only sampled candidate oracle: `1/3`
+- artifact: `results/target_only_sampling_clean3_20260427/target_only_samples.md`
+
+This is not positive source-communication evidence. It only revives the next
+bounded branch: sampled target-only candidate generation followed by a
+source-derived selector with zero/shuffled/random/target-only/slots-only
+controls.
+
+New memo:
+
+- `paper/no_source_candidate_surface_and_target_sampling_20260427.md`
+
+Next exact gate: materialize the sampled clean3 target-set rows and run the
+source candidate sidecar controls on that sampled pool. Promote only if matched
+source selects `14bfbfc94f2c2e7b` and all source-destroying controls miss it.
+
 ## 2026-04-27 Target-Pool Sidecar Hardening
 
 Readiness remains not ICLR-ready. Current live branch: none.

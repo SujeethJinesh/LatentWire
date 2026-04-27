@@ -1,0 +1,72 @@
+{
+  "command": "scripts/sample_target_candidate_surface.py --eval-file results/target_only_sampling_clean3_20260427/clean_source_only_eval.jsonl --model Qwen/Qwen3-0.6B --samples 8 --temperature 0.9 --top-p 0.95 --seed 11 --device cpu --dtype float32 --max-new-tokens 96 --use-chat-template --enable-thinking false --output-jsonl results/target_only_sampling_clean3_20260427/target_only_samples.jsonl --output-json results/target_only_sampling_clean3_20260427/target_only_samples.json --output-md results/target_only_sampling_clean3_20260427/target_only_samples.md",
+  "config": {
+    "device": "cpu",
+    "dtype": "float32",
+    "enable_thinking": false,
+    "max_new_tokens": 96,
+    "samples": 8,
+    "seed": 11,
+    "temperature": 0.9,
+    "top_p": 0.95,
+    "use_chat_template": true
+  },
+  "date": "2026-04-27",
+  "eval_file": "results/target_only_sampling_clean3_20260427/clean_source_only_eval.jsonl",
+  "eval_file_sha256": "a84668c43d47dd72be58daa1a608295bdc42c261c83777ab2eaa33f78c48946b",
+  "git_commit": "76abab281d43ec30e509d58e750c3232f2adcb0e",
+  "model": "Qwen/Qwen3-0.6B",
+  "output_jsonl": "results/target_only_sampling_clean3_20260427/target_only_samples.jsonl",
+  "output_jsonl_sha256": "f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908",
+  "status": "target_only_candidates_sampled",
+  "summary": {
+    "candidate_oracle_correct": 1,
+    "candidate_oracle_ids": [
+      "14bfbfc94f2c2e7b"
+    ],
+    "example_n": 3,
+    "methods": {
+      "target_sample_s0": {
+        "correct": 0,
+        "n": 3,
+        "numeric_coverage": 3
+      },
+      "target_sample_s1": {
+        "correct": 1,
+        "n": 3,
+        "numeric_coverage": 3
+      },
+      "target_sample_s2": {
+        "correct": 1,
+        "n": 3,
+        "numeric_coverage": 3
+      },
+      "target_sample_s3": {
+        "correct": 0,
+        "n": 3,
+        "numeric_coverage": 3
+      },
+      "target_sample_s4": {
+        "correct": 1,
+        "n": 3,
+        "numeric_coverage": 3
+      },
+      "target_sample_s5": {
+        "correct": 0,
+        "n": 3,
+        "numeric_coverage": 3
+      },
+      "target_sample_s6": {
+        "correct": 0,
+        "n": 3,
+        "numeric_coverage": 3
+      },
+      "target_sample_s7": {
+        "correct": 0,
+        "n": 3,
+        "numeric_coverage": 3
+      }
+    },
+    "sample_n": 8
+  }
+}

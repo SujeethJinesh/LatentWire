@@ -1,0 +1,83 @@
+{
+  "base_target_set": "results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json",
+  "candidate_summaries": [
+    {
+      "correct": 35,
+      "expanded_from_candidate_scores": false,
+      "label": "target_self_repair",
+      "method": "target_self_repair",
+      "path": "results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl",
+      "rows": 70,
+      "sha256": "3d268956c22d8d88e6107535cb59a2013ce06769c5f08f92e6c07b73fd345596"
+    },
+    {
+      "correct": 22,
+      "expanded_from_candidate_scores": false,
+      "label": "selected_route_no_repair",
+      "method": "selected_route_no_repair",
+      "path": "results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl",
+      "rows": 70,
+      "sha256": "3d268956c22d8d88e6107535cb59a2013ce06769c5f08f92e6c07b73fd345596"
+    },
+    {
+      "correct": 35,
+      "expanded_from_candidate_scores": false,
+      "label": "process_repair",
+      "method": "process_repair_selected_route",
+      "path": "results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl",
+      "rows": 70,
+      "sha256": "3d268956c22d8d88e6107535cb59a2013ce06769c5f08f92e6c07b73fd345596"
+    },
+    {
+      "correct": 23,
+      "expanded_from_candidate_scores": true,
+      "label": "zero_source_pool_seed_0",
+      "method": "zero_source_pool_seed_0",
+      "path": "results/no_source_candidate_surface_20260427/zero_source_pool_seed_0.jsonl",
+      "rows": 70,
+      "sha256": "b9cd888e95303db3cf1a36120b70c984ff8196f08f29a08e54b576afcf33baf3",
+      "source_artifact": "results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl",
+      "source_method": "selected_route_no_repair"
+    },
+    {
+      "correct": 17,
+      "expanded_from_candidate_scores": true,
+      "label": "zero_source_pool_seed_1",
+      "method": "zero_source_pool_seed_1",
+      "path": "results/no_source_candidate_surface_20260427/zero_source_pool_seed_1.jsonl",
+      "rows": 70,
+      "sha256": "077dfa9f4a2c1b13a2895e14e0335eb51db36c9457e050cf13a8bfd049671137",
+      "source_artifact": "results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl",
+      "source_method": "selected_route_no_repair"
+    },
+    {
+      "correct": 16,
+      "expanded_from_candidate_scores": true,
+      "label": "zero_source_pool_seed_2",
+      "method": "zero_source_pool_seed_2",
+      "path": "results/no_source_candidate_surface_20260427/zero_source_pool_seed_2.jsonl",
+      "rows": 70,
+      "sha256": "7e1436b427297deaa2086e62ea747191c89df698f3b7a0d13d39b9bdc0b6a535",
+      "source_artifact": "results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl",
+      "source_method": "selected_route_no_repair"
+    }
+  ],
+  "command": "scripts/materialize_no_source_candidate_surface.py --base-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json --candidate target_self_repair=path=results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl,method=target_self_repair --candidate selected_route_no_repair=path=results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl,method=selected_route_no_repair --candidate process_repair=path=results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl,method=process_repair_selected_route --expand-candidate-scores zero_source_pool=path=results/process_repair_source_controls_20260426/qwen_svamp70_zero_source_kv_process_repair_controls_telemetry.jsonl,method=selected_route_no_repair --min-source-only 0 --date 2026-04-27 --output-dir results/no_source_candidate_surface_20260427",
+  "date": "2026-04-27",
+  "git_commit": "76abab281d43ec30e509d58e750c3232f2adcb0e",
+  "outputs": {
+    "target_set_json": "results/no_source_candidate_surface_20260427/source_contrastive_target_set.json",
+    "target_set_md": "results/no_source_candidate_surface_20260427/source_contrastive_target_set.md",
+    "target_set_sha256": "fb615786f89643c6208909534f59896c2f7d8987b29043842941a769e52e26aa"
+  },
+  "reference_n": 70,
+  "status": "no_source_candidate_surface_materialized",
+  "target_set_counts": {
+    "clean_source_only": 3,
+    "source_correct": 13,
+    "source_only": 9,
+    "target_correct": 21,
+    "target_only": 17,
+    "target_or_source_oracle": 30
+  }
+}
