@@ -138,3 +138,24 @@ def test_zero_past_key_values_preserves_shape_dtype_and_input() -> None:
 def test_answers_overlap_normalizes_string_answers() -> None:
     assert kvcomm_eval._answers_overlap([" 5.0 ", "#### 5"], ["5.0"])
     assert not kvcomm_eval._answers_overlap(["5"], ["6"])
+
+
+def test_past_key_values_nbytes_counts_selected_layers() -> None:
+    layer0 = (torch.zeros(1, 2, dtype=torch.float32), torch.zeros(1, 2, dtype=torch.float32))
+    layer1 = (torch.zeros(1, 3, dtype=torch.float32), torch.zeros(1, 3, dtype=torch.float32))
+    past_key_values = (layer0, layer1)
+
+    assert kvcomm_eval._past_key_values_nbytes(past_key_values) == 40
+    assert kvcomm_eval._past_key_values_nbytes(past_key_values, [1]) == 24
+    assert kvcomm_eval._past_key_values_nbytes(past_key_values, [99]) == 0
+
+
+def test_past_key_values_nbytes_supports_cache_objects() -> None:
+    layer0 = (torch.zeros(1, 2, dtype=torch.float32), torch.zeros(1, 2, dtype=torch.float32))
+    layer1 = (torch.zeros(1, 3, dtype=torch.float32), torch.zeros(1, 3, dtype=torch.float32))
+
+    class Cache:
+        def to_legacy_cache(self):
+            return (layer0, layer1)
+
+    assert kvcomm_eval._past_key_values_nbytes(Cache(), [0]) == 16

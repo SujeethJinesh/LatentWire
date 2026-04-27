@@ -151,6 +151,34 @@ def _zero_past_key_values(past_key_values):
     return past_key_values
 
 
+def _tensor_tree_nbytes(value: Any) -> int:
+    if isinstance(value, torch.Tensor):
+        return int(value.numel() * value.element_size())
+    if hasattr(value, "to_legacy_cache"):
+        return _tensor_tree_nbytes(value.to_legacy_cache())
+    if hasattr(value, "key_cache") and hasattr(value, "value_cache"):
+        return _tensor_tree_nbytes(list(value.key_cache)) + _tensor_tree_nbytes(list(value.value_cache))
+    if hasattr(value, "layers"):
+        return _tensor_tree_nbytes(list(value.layers))
+    if isinstance(value, tuple | list):
+        return sum(_tensor_tree_nbytes(item) for item in value)
+    return 0
+
+
+def _past_key_values_nbytes(past_key_values: Any, layer_indices: list[int] | None = None) -> int:
+    if hasattr(past_key_values, "to_legacy_cache"):
+        past_key_values = past_key_values.to_legacy_cache()
+    if layer_indices is None:
+        return _tensor_tree_nbytes(past_key_values)
+    if not isinstance(past_key_values, tuple | list):
+        return _tensor_tree_nbytes(past_key_values)
+    total = 0
+    for layer_index in layer_indices:
+        if 0 <= int(layer_index) < len(past_key_values):
+            total += _tensor_tree_nbytes(past_key_values[int(layer_index)])
+    return int(total)
+
+
 def _controlled_source_prompt(
     examples: list[Any],
     index: int,
@@ -324,6 +352,8 @@ def evaluate_kvcomm_generation(
         input_ids_B = _chat_input_ids(tokenizer, target_prompt, device)
 
         start = time.perf_counter()
+        source_cache_bytes = 0
+        communicated_cache_bytes = 0
         if source_control == "target_only":
             output = model_B.generate(
                 input_ids=input_ids_B,
@@ -341,6 +371,8 @@ def evaluate_kvcomm_generation(
                 return_dict=True,
             )
             past_key_values = out_A.past_key_values
+            source_cache_bytes = _past_key_values_nbytes(past_key_values)
+            communicated_cache_bytes = _past_key_values_nbytes(past_key_values, selected_layers)
             if source_control == "zero_source":
                 past_key_values = _zero_past_key_values(past_key_values)
             output = communicator.generate(
@@ -382,6 +414,12 @@ def evaluate_kvcomm_generation(
                 "latency_sec": float(elapsed),
                 "normalized_prediction": _normalize_generation_text(prediction),
                 "selected_layers": list(selected_layers),
+                "selected_layer_count": len(selected_layers),
+                "source_cache_bytes": int(source_cache_bytes),
+                "communicated_cache_bytes": int(communicated_cache_bytes),
+                "bytes": float(communicated_cache_bytes),
+                "bits": float(communicated_cache_bytes * 8),
+                "payload_bits": float(communicated_cache_bytes * 8),
             }
         )
 

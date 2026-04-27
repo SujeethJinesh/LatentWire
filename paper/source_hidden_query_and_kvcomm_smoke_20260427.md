@@ -224,6 +224,43 @@ Artifact hashes:
 - `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_paired_cpu_smoke_predictions.jsonl.meta.json`:
   `8a62ca420d878c198883aa528fd3dfb15758de7adb3010879023010145cd8c12`
 
+Third follow-up hardening: KVComm records now include cache-derived systems
+telemetry (`bits`, `bytes`, `payload_bits`, `source_cache_bytes`,
+`communicated_cache_bytes`). The first byte smoke exposed that modern HF cache
+objects are not always plain tuples; the counter now handles
+`to_legacy_cache()`/cache-list objects. Corrected re-run:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python -m latent_bridge.kvcomm_eval \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --calibration-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --device cpu \
+  --dtype float32 \
+  --max-new-tokens 4 \
+  --source-reasoning-mode brief_analysis \
+  --top-layers-grid 0.25 \
+  --calibration-limit 1 \
+  --eval-limit 2 \
+  --source-control-modes all \
+  --prediction-output .debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_bytes_fixed_cpu_smoke_predictions.jsonl
+```
+
+Corrected byte result:
+
+- All modes remain `0/2`, still tooling-only.
+- `kvcomm_matched`, `kvcomm_zero_source`, and `kvcomm_shuffled_source` average
+  `530432` communicated bytes/example for the selected layers.
+- `target_only` averages `0` communicated bytes/example.
+
+Artifact hashes:
+
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_bytes_fixed_cpu_smoke_predictions.jsonl`:
+  `f11d3de75f968b806423ca539603bab5560644827b02adfbbd0f595d2745c96b`
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_bytes_fixed_cpu_smoke_predictions.jsonl.meta.json`:
+  `d963aadbfe19b0f543fe887514afbdf363120790f247a4064504765fc720dab1`
+
 ## Literature Update
 
 Added `references/470_kv_cache_latent_communication_baselines_refs.md`.

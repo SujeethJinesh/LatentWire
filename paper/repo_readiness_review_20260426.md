@@ -37,6 +37,9 @@ passes as tooling-only evidence.
 Second follow-up hardening added configured paired sidecar baselines so KVComm
 artifacts now report matched-vs-target-only, matched-vs-zero-source, and
 matched-vs-shuffled-source flip tables.
+Third follow-up hardening added cache-derived byte telemetry. On the CPU smoke,
+selected-layer KVComm controls average `530432` communicated bytes/example,
+while target-only is `0`; this is systems telemetry only, not method evidence.
 
 The strongest bound is the SVAMP32 C2C-derived syndrome sidecar:
 

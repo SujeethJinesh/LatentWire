@@ -9143,3 +9143,50 @@ Tests:
 ```
 
 Results: `15 passed`, compile passed.
+
+### Cycle Addendum 2026-04-27 01:03 PDT - KVComm Byte Telemetry
+
+KVComm prediction records now include cache-derived systems telemetry:
+`bits`, `bytes`, `payload_bits`, `source_cache_bytes`, and
+`communicated_cache_bytes`. The first byte smoke exposed zero-byte telemetry
+because HF cache objects were not always plain tuples; the counter now handles
+`to_legacy_cache()`/cache-list objects.
+
+Corrected CPU smoke:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python -m latent_bridge.kvcomm_eval \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --calibration-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --device cpu \
+  --dtype float32 \
+  --max-new-tokens 4 \
+  --source-reasoning-mode brief_analysis \
+  --top-layers-grid 0.25 \
+  --calibration-limit 1 \
+  --eval-limit 2 \
+  --source-control-modes all \
+  --prediction-output .debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_bytes_fixed_cpu_smoke_predictions.jsonl
+```
+
+Result: tooling smoke still passes. All modes are `0/2`. Matched, zero-source,
+and shuffled-source average `530432` communicated bytes/example; target-only
+averages `0`.
+
+Artifact hashes:
+
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_bytes_fixed_cpu_smoke_predictions.jsonl`:
+  `f11d3de75f968b806423ca539603bab5560644827b02adfbbd0f595d2745c96b`
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_all_controls_bytes_fixed_cpu_smoke_predictions.jsonl.meta.json`:
+  `d963aadbfe19b0f543fe887514afbdf363120790f247a4064504765fc720dab1`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_kvcomm_eval.py tests/test_kvcomm_eval_controls.py tests/test_evaluate_helpers.py::test_write_prediction_sidecar_uses_configured_paired_baselines -q
+./venv_arm64/bin/python -m py_compile latent_bridge/kvcomm_eval.py
+```
+
+Results: `16 passed`, compile passed.
