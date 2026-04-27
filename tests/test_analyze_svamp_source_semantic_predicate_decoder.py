@@ -59,7 +59,7 @@ def test_decode_abstains_without_source_quality(tmp_path):
 
 def test_synthetic_surface_can_recover_source_with_controls(tmp_path):
     target_rows = [
-        _row("a", "target_alone", "Target says 7", "7", "12"),
+        _row("a", "target_alone", "Target considers 12 but says 7", "7", "12"),
         _row("b", "target_alone", "Target says 5", "5", "5"),
         _row("c", "target_alone", "Target says 8", "8", "8"),
         _row("d", "target_alone", "Target says 9", "9", "9"),
@@ -113,7 +113,7 @@ def test_synthetic_surface_can_recover_source_with_controls(tmp_path):
 
 def test_hash_shuffle_and_random_sidecar_are_nonself_controls(tmp_path):
     target_rows = [
-        _row("a", "target_alone", "Target says 7", "7", "12"),
+        _row("a", "target_alone", "Target considers 12 but says 7", "7", "12"),
         _row("b", "target_alone", "Target says 5", "5", "5"),
         _row("c", "target_alone", "Target says 8", "8", "8"),
     ]
@@ -163,9 +163,93 @@ def test_hash_shuffle_and_random_sidecar_are_nonself_controls(tmp_path):
     assert random_sidecar["sidecar_bytes"] >= 1
 
 
-def test_candidate_score_sidecar_can_drive_target_safe_recovery(tmp_path):
+def test_target_only_candidate_pool_excludes_source_only_values(tmp_path):
     target_rows = [
         _row("a", "target_alone", "Target says 7", "7", "12"),
+        _row("b", "target_alone", "Target says 5", "5", "5"),
+    ]
+    source_rows = [
+        _row("a", "source_alone", "source final 12", "12", "12"),
+        _row("b", "source_alone", "source final 5", "5", "5"),
+    ]
+    _write_jsonl(tmp_path / "target.jsonl", target_rows)
+    _write_jsonl(tmp_path / "source.jsonl", source_rows)
+    target_set = {
+        "artifacts": {
+            "target": {"path": str(tmp_path / "target.jsonl"), "method": "target_alone"},
+            "source": {"path": str(tmp_path / "source.jsonl"), "method": "source_alone"},
+            "baselines": [],
+            "controls": [],
+        },
+        "ids": {"clean_source_only": ["a"], "target_self_repair": ["b"]},
+        "reference_ids": ["a", "b"],
+    }
+    target_set_path = tmp_path / "target_set.json"
+    target_set_path.write_text(json.dumps(target_set), encoding="utf-8")
+    surface = decoder._load_surface("toy", target_set_path)
+
+    pool = decoder._candidate_pool(surface, "a")
+    source_exposed_pool = decoder._candidate_pool(surface, "a", include_source=True)
+
+    assert "12" not in {candidate.value for candidate in pool}
+    assert "12" in {candidate.value for candidate in source_exposed_pool}
+
+
+def test_sidecar_loader_rejects_duplicate_and_missing_ids(tmp_path):
+    target_rows = [
+        _row("a", "target_alone", "Target says 7", "7", "7"),
+        _row("b", "target_alone", "Target says 5", "5", "5"),
+    ]
+    source_rows = [
+        _row("a", "source_alone", "source final 7", "7", "7"),
+        _row("b", "source_alone", "source final 5", "5", "5"),
+    ]
+    _write_jsonl(tmp_path / "target.jsonl", target_rows)
+    _write_jsonl(tmp_path / "source.jsonl", source_rows)
+    target_set = {
+        "artifacts": {
+            "target": {"path": str(tmp_path / "target.jsonl"), "method": "target_alone"},
+            "source": {"path": str(tmp_path / "source.jsonl"), "method": "source_alone"},
+            "baselines": [],
+            "controls": [],
+        },
+        "ids": {"clean_source_only": [], "target_self_repair": ["a", "b"]},
+        "reference_ids": ["a", "b"],
+    }
+    target_set_path = tmp_path / "target_set.json"
+    target_set_path.write_text(json.dumps(target_set), encoding="utf-8")
+
+    duplicate_sidecar = tmp_path / "duplicate_sidecar.jsonl"
+    _write_jsonl(
+        duplicate_sidecar,
+        [
+            {"example_id": "a", "candidate_scores": [{"label": "target", "score": 1.0}]},
+            {"example_id": "a", "candidate_scores": [{"label": "target", "score": 0.0}]},
+        ],
+    )
+    try:
+        decoder._load_surface("toy", target_set_path, sidecar_path=duplicate_sidecar)
+    except ValueError as exc:
+        assert "Duplicate sidecar row" in str(exc)
+    else:
+        raise AssertionError("duplicate sidecar IDs should fail")
+
+    missing_sidecar = tmp_path / "missing_sidecar.jsonl"
+    _write_jsonl(
+        missing_sidecar,
+        [{"example_id": "a", "candidate_scores": [{"label": "target", "score": 1.0}]}],
+    )
+    try:
+        decoder._load_surface("toy", target_set_path, sidecar_path=missing_sidecar)
+    except ValueError as exc:
+        assert "Sidecar IDs do not match" in str(exc)
+    else:
+        raise AssertionError("missing sidecar IDs should fail")
+
+
+def test_candidate_score_sidecar_can_drive_target_safe_recovery(tmp_path):
+    target_rows = [
+        _row("a", "target_alone", "Target considers 12 but says 7", "7", "12"),
         _row("b", "target_alone", "Target says 5", "5", "5"),
         _row("c", "target_alone", "Target says 8", "8", "8"),
         _row("d", "target_alone", "Target says 9", "9", "9"),
@@ -180,22 +264,22 @@ def test_candidate_score_sidecar_can_drive_target_safe_recovery(tmp_path):
         {
             "example_id": "a",
             "candidate_scores": [
-                {"label": "target", "score": 0.0},
-                {"label": "source", "score": 3.0},
+                {"label": "target", "value": "7", "score": 0.0},
+                {"label": "target", "value": "12", "score": 3.0},
             ],
             "confidence": 3.0,
-            "sidecar_bits": 8,
+            "sidecar_bits": 32,
         }
     ]
     sidecar_rows.extend(
         {
             "example_id": example_id,
             "candidate_scores": [
-                {"label": "target", "score": 3.0},
+                {"label": "target", "value": target_rows[ord(example_id) - ord("a")]["answer"][0], "score": 3.0},
                 {"label": "source", "score": 0.0},
             ],
             "confidence": 3.0,
-            "sidecar_bits": 8,
+            "sidecar_bits": 32,
         }
         for example_id in ("b", "c", "d")
     )
@@ -242,9 +326,11 @@ def test_candidate_score_sidecar_can_drive_target_safe_recovery(tmp_path):
         ]
     )
     matched = payload["surfaces"][0]["summaries"]["matched"]
+    random_sidecar = payload["surfaces"][0]["summaries"]["random_sidecar"]
     zero = payload["surfaces"][0]["summaries"]["zero_source"]
     assert payload["status"] == "semantic_predicate_decoder_passes_smoke"
     assert matched["clean_source_necessary_count"] == 1
     assert matched["accepted_harm_count"] == 0
-    assert matched["mean_sidecar_bytes"] == 1
+    assert matched["mean_sidecar_bytes"] == 4
+    assert random_sidecar["mean_sidecar_bytes"] == 4
     assert zero["clean_source_necessary_count"] == 0

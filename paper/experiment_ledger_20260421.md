@@ -9332,3 +9332,81 @@ Tests:
 ```
 
 Result: `5 passed`, compile passed.
+
+### Cycle Addendum 2026-04-27 01:28 PDT - Target-Pool Sidecar Hardening
+
+Cycle header:
+
+1. ICLR readiness: not ready; no controlled positive method yet.
+2. Paper story: byte-efficient source side-information remains the top branch,
+   but the decoder must not expose source-only answers to target-side controls.
+3. Exact blocker: no frozen learned sidecar has cleared a target-side candidate
+   gate, and MPS remains blocked by PID `31103`.
+4. Live branch: none. Top candidate is learned source-derived
+   syndrome/innovation sidecar.
+5. Highest-priority gate: close candidate-pool and sidecar-control leakage
+   holes in the harness.
+6. Scale-up rung: CPU smoke / harness hardening.
+
+Code change:
+
+- `_candidate_pool()` in
+  `scripts/analyze_svamp_source_semantic_predicate_decoder.py` is target-side
+  by default and excludes `source`.
+- Candidate-score sidecars map explicit `value`/`candidate_value` fields only
+  if the value is already in the target-side pool.
+- `random_sidecar` preserves the declared same-byte budget for learned
+  sidecars.
+- Sidecar loading rejects duplicate IDs and mismatched sidecar/reference IDs.
+- Summaries now report accepted help, accepted clean help, fallback-correct
+  count, and sidecar present/missing counts.
+
+CPU replay command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp_source_semantic_predicate_decoder.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --mode learned_logodds \
+  --outer-folds 5 \
+  --accept-penalty 0.75 \
+  --harm-weight 20.0 \
+  --min-live-correct 25 \
+  --min-live-clean-source-necessary 2 \
+  --min-holdout-correct 10 \
+  --min-holdout-clean-source-necessary 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-dir .debug/semantic_predicate_decoder_targetpool_20260427 \
+  --output-predictions-jsonl .debug/semantic_predicate_decoder_targetpool_20260427/predictions.jsonl
+```
+
+Result: `semantic_predicate_decoder_fails_smoke`.
+
+- Live matched: `24/70`, clean `3`, accepted clean help `3`, accepted harm `1`.
+- Live random same-byte sidecar: `16/70`, clean `0`, accepted harm `9`.
+- Holdout matched: `9/70`, clean `0`, accepted harm `0`.
+- Control clean union: `0`.
+
+Decision: old semantic-predicate branch is killed more cleanly. Removing
+source-only values from target-side candidate pools drops the live row below
+the accuracy/harm gate. Keep the harness for future frozen learned sidecars.
+
+Artifact hashes:
+
+- `.debug/semantic_predicate_decoder_targetpool_20260427/semantic_predicate_decoder.json`:
+  `55a1e73e061f03c51733d16009e7d1f6766d2d2f8807ad725df1d0cd47020d5f`
+- `.debug/semantic_predicate_decoder_targetpool_20260427/semantic_predicate_decoder.md`:
+  `7d5882c76b0d9e6e5dbae90084bd731945a8d72cfa9b948843dc290a502365bb`
+- `.debug/semantic_predicate_decoder_targetpool_20260427/predictions.jsonl`:
+  `48ba362b0f8f557ceb5c1eedd4674d097af1a464f4ea9cdfe1bdf2475fb7fdd8`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_svamp_source_semantic_predicate_decoder.py -q
+./venv_arm64/bin/python -m py_compile scripts/analyze_svamp_source_semantic_predicate_decoder.py tests/test_analyze_svamp_source_semantic_predicate_decoder.py
+```
+
+Result: `7 passed`, compile passed.

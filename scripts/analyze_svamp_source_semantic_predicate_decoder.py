@@ -96,6 +96,8 @@ def _load_sidecars(path: pathlib.Path | None) -> dict[str, dict[str, Any]]:
             example_id = str(row.get("example_id", ""))
             if not example_id:
                 raise ValueError(f"Sidecar row in {path} is missing example_id")
+            if example_id in out:
+                raise ValueError(f"Duplicate sidecar row for example_id={example_id!r} in {path}")
             out[example_id] = row
     return out
 
@@ -134,13 +136,25 @@ def _load_surface(
     sidecar_path: pathlib.Path | None = None,
 ) -> Surface:
     raw = _read_json(path)
+    reference_ids = [str(example_id) for example_id in raw["reference_ids"]]
+    sidecars = _load_sidecars(sidecar_path)
+    if sidecar_path is not None:
+        expected = set(reference_ids)
+        observed = set(sidecars)
+        missing = sorted(expected - observed)
+        extra = sorted(observed - expected)
+        if missing or extra:
+            raise ValueError(
+                f"Sidecar IDs do not match {path}: "
+                f"missing={missing[:5]}, extra={extra[:5]}"
+            )
     return Surface(
         label=label,
         target_set_path=path,
         target_set=raw,
         records_by_label=_load_records(raw),
-        reference_ids=[str(example_id) for example_id in raw["reference_ids"]],
-        sidecars_by_id=_load_sidecars(sidecar_path),
+        reference_ids=reference_ids,
+        sidecars_by_id=sidecars,
     )
 
 
@@ -307,10 +321,20 @@ def _append_value(
     labels_by_value[normalized].append(label)
 
 
-def _candidate_pool(surface: Surface, example_id: str) -> list[Candidate]:
+SOURCE_ONLY_LABELS = {"source"}
+
+
+def _candidate_pool(
+    surface: Surface,
+    example_id: str,
+    *,
+    include_source: bool = False,
+) -> list[Candidate]:
     ordered: list[str] = []
     labels_by_value: dict[str, list[str]] = {}
     for label, rows in surface.records_by_label.items():
+        if not include_source and label in SOURCE_ONLY_LABELS:
+            continue
         row = rows.get(example_id)
         if row is None:
             continue
@@ -374,7 +398,45 @@ def _random_profile(
     index: int,
     candidates: Sequence[Candidate],
 ) -> dict[str, Any]:
-    rng = random.Random(f"{surface.label}:{surface.reference_ids[index]}:random_sidecar")
+    example_id = surface.reference_ids[index]
+    rng = random.Random(f"{surface.label}:{example_id}:random_sidecar")
+    matched_sidecar = surface.sidecars_by_id.get(example_id)
+    if matched_sidecar and candidates:
+        raw_scores = matched_sidecar.get("candidate_scores", [])
+        labels = [
+            str(item.get("label", ""))
+            for item in raw_scores
+            if isinstance(item, dict) and str(item.get("label", ""))
+        ]
+        candidate = rng.choice(list(candidates))
+        label = rng.choice(labels or list(candidate.labels) or ["random"])
+        score = rng.random() * 2.0
+        margin = rng.random() * 2.0
+        confidence = rng.random() * 2.0
+        return {
+            "features": {
+                "source_has_final_numeric",
+                "sidecar_present",
+                f"sidecar_top_label:{label}",
+                _score_bucket(abs(score), prefix="sidecar_top_score"),
+                _score_bucket(abs(margin), prefix="sidecar_margin"),
+                _score_bucket(abs(confidence), prefix="sidecar_confidence"),
+                "sidecar_top_maps_to_candidate",
+            },
+            "final": candidate.value,
+            "mentions": [candidate.value],
+            "mention_set": {candidate.value},
+            "last": [candidate.value],
+            "verified": set(),
+            "pair": set(),
+            "quality": True,
+            "sidecar_bits": _sidecar_bits_value(matched_sidecar) or 8,
+            "sidecar_top_label": label,
+            "sidecar_margin": margin,
+            "sidecar_confidence": confidence,
+            "sidecar_present": True,
+            "random_sidecar": True,
+        }
     final = rng.choice([candidate.value for candidate in candidates]) if candidates else None
     features = {"source_has_final_numeric", "source_has_final_marker"}
     features.add(rng.choice(["op_add", "op_sub", "op_mul", "op_div"]))
@@ -382,6 +444,7 @@ def _random_profile(
         features.add("source_has_verified_equation")
     mentions = [final] if final is not None else []
     verified = {final} if final is not None and "source_has_verified_equation" in features else set()
+    sidecar_bits = _sidecar_bits_value(matched_sidecar)
     return {
         "features": features,
         "final": final,
@@ -391,6 +454,8 @@ def _random_profile(
         "verified": verified,
         "pair": set(),
         "quality": final is not None,
+        "sidecar_bits": sidecar_bits if sidecar_bits is not None else len(features) + 8,
+        "sidecar_present": False,
     }
 
 
@@ -423,13 +488,15 @@ def _sidecar_profile(
         if not isinstance(item, dict):
             continue
         label = str(item.get("label", ""))
+        raw_value = item.get("value", item.get("candidate_value"))
+        value = _normal(raw_value) if raw_value is not None else None
         if not label:
             continue
         try:
             score = float(item.get("score", 0.0))
         except (TypeError, ValueError):
             score = 0.0
-        scored.append({"label": label, "score": score})
+        scored.append({"label": label, "score": score, "value": value})
     if not scored:
         return _source_profile(None)
     scored.sort(key=lambda item: (-float(item["score"]), item["label"]))
@@ -443,10 +510,14 @@ def _sidecar_profile(
         confidence_value = margin
 
     top_value: str | None = None
-    for candidate in candidates:
-        if top["label"] in candidate.labels:
-            top_value = candidate.value
-            break
+    candidate_values = {candidate.value for candidate in candidates}
+    if top.get("value") is not None and str(top["value"]) in candidate_values:
+        top_value = str(top["value"])
+    else:
+        for candidate in candidates:
+            if top["label"] in candidate.labels:
+                top_value = candidate.value
+                break
     features = {
         "source_has_final_numeric",
         "sidecar_present",
@@ -458,10 +529,8 @@ def _sidecar_profile(
     if top_value is not None:
         features.add("sidecar_top_maps_to_candidate")
     mentions = [top_value] if top_value is not None else []
-    sidecar_bits = sidecar.get("sidecar_bits", sidecar.get("bits", 8))
-    try:
-        sidecar_bits_value = int(sidecar_bits)
-    except (TypeError, ValueError):
+    sidecar_bits_value = _sidecar_bits_value(sidecar)
+    if sidecar_bits_value is None:
         sidecar_bits_value = 8
     return {
         "features": features,
@@ -476,7 +545,18 @@ def _sidecar_profile(
         "sidecar_top_label": top["label"],
         "sidecar_margin": margin,
         "sidecar_confidence": confidence_value,
+        "sidecar_present": True,
     }
+
+
+def _sidecar_bits_value(sidecar: dict[str, Any] | None) -> int | None:
+    if not sidecar:
+        return None
+    raw = sidecar.get("sidecar_bits", sidecar.get("bits", 8))
+    try:
+        return max(1, int(raw))
+    except (TypeError, ValueError):
+        return 8
 
 
 def _condition_source_profile(
@@ -597,7 +677,12 @@ def _decode_example(
 ) -> dict[str, Any]:
     example_id = surface.reference_ids[index]
     fallback = _prediction_numeric(surface.records_by_label["target"].get(example_id))
-    candidates = _candidate_pool(surface, example_id)
+    candidates = _candidate_pool(
+        surface,
+        example_id,
+        include_source=condition in {"matched", "shuffled_source", "label_shuffle"}
+        and not surface.sidecars_by_id,
+    )
     profile, condition_source_id = _condition_source_profile(
         surface=surface,
         index=index,
@@ -639,6 +724,7 @@ def _decode_example(
         "best_candidate": best,
         "best_margin": margin,
         "source_quality": bool(profile["quality"]),
+        "sidecar_present": bool(profile.get("sidecar_present", False)),
         "condition_source_example_id": condition_source_id,
         "condition_source_final": source_final,
         "source_control_source_answers_overlap_target": bool(
@@ -795,6 +881,11 @@ def _summarize(
 ) -> dict[str, Any]:
     correct_ids = {row["example_id"] for row in rows if row["correct"]}
     accepted = [row for row in rows if row["accepted_source_sidecar"]]
+    accepted_help = [
+        row["example_id"]
+        for row in accepted
+        if row["prediction"] == row["gold_answer"] and row["fallback_prediction"] != row["gold_answer"]
+    ]
     accepted_harm = [
         row["example_id"]
         for row in accepted
@@ -808,10 +899,19 @@ def _summarize(
         "n": len(rows),
         "correct": len(correct_ids),
         "accepted": len(accepted),
+        "fallback_correct_count": sum(
+            row["fallback_prediction"] == row["gold_answer"] for row in rows
+        ),
+        "accepted_help_count": len(accepted_help),
+        "accepted_help_ids": sorted(accepted_help),
         "accepted_harm_count": len(accepted_harm),
         "accepted_harm_ids": sorted(accepted_harm),
+        "sidecar_present_count": sum(bool(row.get("sidecar_present")) for row in rows),
+        "sidecar_missing_count": sum(not bool(row.get("sidecar_present")) for row in rows),
         "clean_source_necessary_count": len(clean_source),
         "clean_source_necessary_ids": clean_source,
+        "accepted_clean_source_help_count": len(set(accepted_help) & clean_ids),
+        "accepted_clean_source_help_ids": sorted(set(accepted_help) & clean_ids),
         "target_self_harm_count": len(target_self_harm),
         "target_self_harm_ids": target_self_harm,
         "mean_sidecar_bytes": (

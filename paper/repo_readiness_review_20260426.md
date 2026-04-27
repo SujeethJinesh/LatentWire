@@ -1134,3 +1134,33 @@ New memo:
 
 Next exact gate remains the MPS-blocker check, then the stronger-source scout
 from `paper/postkill_historical_cpu_audit_20260427.md`.
+
+## 2026-04-27 Target-Pool Sidecar Hardening
+
+Readiness remains not ICLR-ready. Current live branch: none.
+
+The sidecar harness now prevents a major control leak: target-side candidate
+pools exclude source-only values by default. Candidate-score sidecars may only
+map explicit values that already appear in the target-side pool, unless a
+future method explicitly accounts for transmitting the value as payload bytes.
+
+Additional hardening:
+
+- random same-byte controls preserve declared learned-sidecar bit budgets
+- sidecar JSONL rejects duplicate IDs
+- supplied sidecars must exactly cover target-set reference IDs
+- summaries report accepted help and accepted clean-source help
+
+Replay on existing SVAMP70 live/holdout artifacts is a stronger kill:
+
+- live matched: `24/70`, clean `3`, accepted harm `1`
+- live random same-byte sidecar: `16/70`, clean `0`, accepted harm `9`
+- holdout matched: `9/70`, clean `0`
+- control clean union: `0`
+
+New memo:
+
+- `paper/semantic_sidecar_target_pool_hardening_20260427.md`
+
+Next exact gate remains the MPS-blocker check, then the stronger-source scout
+from `paper/postkill_historical_cpu_audit_20260427.md`.
