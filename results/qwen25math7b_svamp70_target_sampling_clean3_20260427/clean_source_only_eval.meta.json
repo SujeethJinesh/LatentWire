@@ -1,0 +1,16 @@
+{
+  "date": "2026-04-27",
+  "eval_file": "data/svamp_eval_70.jsonl",
+  "eval_file_sha256": "bc9178d043bc05f2d1d1dd4aa2c6ec1ed024643b1a2886dfd243c4b1eca3e131",
+  "id_source": {
+    "type": "ids"
+  },
+  "output_jsonl": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/clean_source_only_eval.jsonl",
+  "output_n": 3,
+  "output_sha256": "664ba3b58e02a732e7775ec5cadf50f7d85976d81cb8870140a6fd4c6e301196",
+  "selected_ids": [
+    "14bfbfc94f2c2e7b",
+    "a07cd6cc8f1c832e",
+    "d64f6e35083ffe8c"
+  ]
+}

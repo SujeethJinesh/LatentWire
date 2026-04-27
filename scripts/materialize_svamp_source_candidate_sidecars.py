@@ -93,11 +93,64 @@ def _candidate_score(
     return float(score)
 
 
+def _answer_values(profile: dict[str, Any]) -> set[str]:
+    values = {str(value) for value in profile.get("verified", set())}
+    if profile.get("final") is not None:
+        values.add(str(profile["final"]))
+    return values
+
+
+def _profile_for_mode(profile: dict[str, Any], mode: str) -> dict[str, Any]:
+    if mode == "full":
+        return profile
+    answer_values = _answer_values(profile)
+    if mode == "answer_only":
+        mentions = [value for value in profile.get("mentions", []) if str(value) in answer_values]
+        return {
+            **profile,
+            "features": {
+                name
+                for name in profile.get("features", set())
+                if name in {"source_has_final_marker", "source_has_final_numeric", "source_has_verified_equation"}
+            },
+            "mentions": mentions,
+            "mention_set": set(mentions),
+            "last": mentions[-3:],
+            "pair": set(),
+            "quality": bool(answer_values),
+        }
+    if mode == "answer_masked":
+        mentions = [value for value in profile.get("mentions", []) if str(value) not in answer_values]
+        return {
+            **profile,
+            "features": {
+                name
+                for name in profile.get("features", set())
+                if name
+                not in {
+                    "source_has_final_marker",
+                    "source_has_final_numeric",
+                    "source_has_verified_equation",
+                    "source_repeats_final_window",
+                }
+            },
+            "final": None,
+            "mentions": mentions,
+            "mention_set": set(mentions),
+            "last": mentions[-3:],
+            "verified": set(),
+            "pair": decoder._pair_results(mentions),
+            "quality": False,
+        }
+    raise ValueError(f"Unknown profile mode: {mode}")
+
+
 def _materialize(
     *,
     target_set_path: pathlib.Path,
     sidecar_bits: int,
     label_prior: float,
+    profile_mode: str,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     surface = decoder._load_surface("surface", target_set_path)
     rows: list[dict[str, Any]] = []
@@ -114,7 +167,8 @@ def _materialize(
         source_row = surface.records_by_label.get("source", {}).get(example_id)
         if source_row is None:
             missing_source += 1
-        profile = decoder._source_profile(source_row)
+        raw_profile = decoder._source_profile(source_row)
+        profile = _profile_for_mode(raw_profile, profile_mode)
         fallback = decoder._prediction_numeric(surface.records_by_label["target"].get(example_id))
         candidate_scores: list[dict[str, Any]] = []
         for candidate in candidates:
@@ -152,12 +206,13 @@ def _materialize(
                 "confidence": float(margin),
                 "sidecar_bits": int(sidecar_bits),
                 "source_final_in_target_pool": bool(
-                    profile["final"] is not None
-                    and any(item["value"] == profile["final"] for item in candidate_scores)
+                    raw_profile["final"] is not None
+                    and any(item["value"] == raw_profile["final"] for item in candidate_scores)
                 ),
                 "source_mentioned_target_pool_hit": bool(
                     any(item["value"] in mentioned for item in candidate_scores)
                 ),
+                "profile_mode": profile_mode,
             }
         )
 
@@ -166,6 +221,7 @@ def _materialize(
         "n": len(surface.reference_ids),
         "sidecar_bits": int(sidecar_bits),
         "sidecar_bytes": max(1, (int(sidecar_bits) + 7) // 8),
+        "profile_mode": profile_mode,
         "missing_source": int(missing_source),
         "empty_pool": int(empty_pool),
         "source_final_in_pool": int(source_final_in_pool),
@@ -198,6 +254,7 @@ def _write_md(path: pathlib.Path, payload: dict[str, Any]) -> None:
                 f"- target set: `{summary['target_set']}`",
                 f"- n: `{summary['n']}`",
                 f"- sidecar bytes: `{summary['sidecar_bytes']}`",
+                f"- profile mode: `{summary['profile_mode']}`",
                 f"- source final in target pool: `{summary['source_final_in_pool']}`",
                 f"- source-mentioned target-pool hits: `{summary['source_mentioned_pool_hits']}`",
                 f"- top label counts: `{summary['top_label_counts']}`",
@@ -229,6 +286,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--sidecar-bits", type=int, default=8)
     parser.add_argument("--label-prior", type=float, default=0.0)
+    parser.add_argument("--profile-mode", choices=["full", "answer_masked", "answer_only"], default="full")
     parser.add_argument("--date", default=date.today().isoformat())
     args = parser.parse_args(argv)
     raw_argv = sys.argv if argv is None else ["scripts/materialize_svamp_source_candidate_sidecars.py", *argv]
@@ -243,6 +301,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
         "config": {
             "sidecar_bits": int(args.sidecar_bits),
             "label_prior": float(args.label_prior),
+            "profile_mode": args.profile_mode,
             "live_target_set": _display_path(_resolve(args.live_target_set)),
             "holdout_target_set": _display_path(_resolve(args.holdout_target_set)) if args.holdout_target_set else None,
             "candidate_pool": "target_side_only",
@@ -256,6 +315,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
         target_set_path=_resolve(args.live_target_set),
         sidecar_bits=int(args.sidecar_bits),
         label_prior=float(args.label_prior),
+        profile_mode=str(args.profile_mode),
     )
     live_path = output_dir / "live_candidate_sidecars.jsonl"
     _write_jsonl(live_path, live_rows)
@@ -268,6 +328,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
             target_set_path=_resolve(args.holdout_target_set),
             sidecar_bits=int(args.sidecar_bits),
             label_prior=float(args.label_prior),
+            profile_mode=str(args.profile_mode),
         )
         holdout_path = output_dir / "holdout_candidate_sidecars.jsonl"
         _write_jsonl(holdout_path, holdout_rows)

@@ -57,6 +57,17 @@ V-JEPA guidance is still anti-collapse harness design only: answer-masked dual
 views, frozen target latent/KV targets, matched-source margins over controls,
 target preservation, and variance/effective-rank/covariance telemetry.
 
+Update `2026-04-27`: the full SVAMP70 Math-7B scout fails the source-surface
+gate. Target is `21/70`, source `5/70`, text relay `8/70`, clean source-only
+after text relay is `3`, clean in target-side pool is `1`, and
+`answer_unexplained_clean_in_pool = 0`. A follow-up target-only sampling smoke
+on the three residual clean IDs raises combined no-source target-pool
+reachability to `2/3`, but the source selector is pruned: `full` and
+`answer_only` sidecars both recover `2/3`, while `answer_masked` recovers
+`0/3`. The live branch is no longer source-surface/receiver tuning; it is
+target-only/no-source candidate-pool generation followed by strictly
+answer-masked source selection controls.
+
 Update `2026-04-27 00:50 PDT`: KVComm is now harness-ready for strict
 source-control evaluation, but it remains baseline/tooling evidence rather than
 a positive method. The wrapper supports matched, zero-source, shuffled-source,

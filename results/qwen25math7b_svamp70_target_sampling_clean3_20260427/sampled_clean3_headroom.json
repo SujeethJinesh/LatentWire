@@ -1,0 +1,86 @@
+{
+  "command": "scripts/analyze_target_side_candidate_headroom.py --target-set sampled_clean3=path=results/qwen25math7b_svamp70_target_sampling_clean3_20260427/sampled_clean3_target_set.json,role=sampled_target_pool,note=math7b_svamp70_residual_clean3_target_only_samples16 --date 2026-04-27 --output-json results/qwen25math7b_svamp70_target_sampling_clean3_20260427/sampled_clean3_headroom.json --output-md results/qwen25math7b_svamp70_target_sampling_clean3_20260427/sampled_clean3_headroom.md",
+  "date": "2026-04-27",
+  "git_commit": "6a09be6d62e3804af408cad178b8274b965b7da6",
+  "next_gate": "Use `sampled_clean3` only if the next method can target 2 clean IDs already present in the target-side pool; otherwise switch to a new candidate-surface generator.",
+  "status": "target_side_candidate_headroom_ranked",
+  "surfaces": [
+    {
+      "clean_gold_in_target_side_pool": 2,
+      "clean_gold_in_target_side_pool_ids": [
+        "14bfbfc94f2c2e7b",
+        "a07cd6cc8f1c832e"
+      ],
+      "clean_oracle_gain_ids": [
+        "14bfbfc94f2c2e7b",
+        "a07cd6cc8f1c832e"
+      ],
+      "clean_source_only_count": 3,
+      "label": "sampled_clean3",
+      "n": 3,
+      "note": "math7b_svamp70_residual_clean3_target_only_samples16",
+      "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/sampled_clean3_target_set.json",
+      "path_sha256": "08a758593ad220407892c7a39998cb0d5c26c1905949ccc8657e21eb5e2d6f27",
+      "role": "sampled_target_pool",
+      "rows": [
+        {
+          "clean_source_only": true,
+          "example_id": "d64f6e35083ffe8c",
+          "gold": "2",
+          "pool_has_gold": false,
+          "source_correct": true,
+          "target_correct": false,
+          "target_self_repair": false,
+          "target_side_pool_values": [
+            "1",
+            "15",
+            "17",
+            "62",
+            "96"
+          ]
+        },
+        {
+          "clean_source_only": true,
+          "example_id": "14bfbfc94f2c2e7b",
+          "gold": "3",
+          "pool_has_gold": true,
+          "source_correct": true,
+          "target_correct": false,
+          "target_self_repair": false,
+          "target_side_pool_values": [
+            "1",
+            "11",
+            "16",
+            "19",
+            "2",
+            "3",
+            "5",
+            "8"
+          ]
+        },
+        {
+          "clean_source_only": true,
+          "example_id": "a07cd6cc8f1c832e",
+          "gold": "2",
+          "pool_has_gold": true,
+          "source_correct": true,
+          "target_correct": false,
+          "target_self_repair": false,
+          "target_side_pool_values": [
+            "1",
+            "2",
+            "26",
+            "3",
+            "52"
+          ]
+        }
+      ],
+      "source_correct": 3,
+      "target_correct": 0,
+      "target_self_count": 0,
+      "target_self_gold_in_target_side_pool": 0,
+      "target_side_oracle_correct": 2,
+      "target_side_oracle_gain": 2
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "artifacts": {
+    "baselines": [
+      {
+        "label": "target_sample_s0",
+        "method": "target_sample_s0",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s1",
+        "method": "target_sample_s1",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s2",
+        "method": "target_sample_s2",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s3",
+        "method": "target_sample_s3",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s4",
+        "method": "target_sample_s4",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s5",
+        "method": "target_sample_s5",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s6",
+        "method": "target_sample_s6",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s7",
+        "method": "target_sample_s7",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s8",
+        "method": "target_sample_s8",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s9",
+        "method": "target_sample_s9",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s10",
+        "method": "target_sample_s10",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s11",
+        "method": "target_sample_s11",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s12",
+        "method": "target_sample_s12",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s13",
+        "method": "target_sample_s13",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s14",
+        "method": "target_sample_s14",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      },
+      {
+        "label": "target_sample_s15",
+        "method": "target_sample_s15",
+        "path": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl"
+      }
+    ],
+    "controls": [
+      {
+        "label": "text",
+        "method": "text_to_text",
+        "path": "results/qwen25math7b_qwen3_svamp70_surface_scout_20260427/text_to_text.jsonl"
+      }
+    ],
+    "source": {
+      "label": "source",
+      "method": "source_alone",
+      "path": "results/qwen25math7b_qwen3_svamp70_surface_scout_20260427/source_alone.jsonl"
+    },
+    "target": {
+      "label": "target",
+      "method": "target_alone",
+      "path": "results/qwen25math7b_qwen3_svamp70_surface_scout_20260427/target_alone.jsonl"
+    }
+  },
+  "candidate_extension": {
+    "base_target_set": "results/qwen25math7b_qwen3_svamp70_surface_scout_20260427/source_contrastive_target_set.json",
+    "candidate_labels": [
+      "target_sample_s0",
+      "target_sample_s1",
+      "target_sample_s2",
+      "target_sample_s3",
+      "target_sample_s4",
+      "target_sample_s5",
+      "target_sample_s6",
+      "target_sample_s7",
+      "target_sample_s8",
+      "target_sample_s9",
+      "target_sample_s10",
+      "target_sample_s11",
+      "target_sample_s12",
+      "target_sample_s13",
+      "target_sample_s14",
+      "target_sample_s15"
+    ],
+    "id_fields": [
+      "clean_source_only"
+    ]
+  },
+  "config": {
+    "min_source_only": 1
+  },
+  "counts": {
+    "clean_source_only": 3,
+    "source_correct": 5,
+    "source_only": 3,
+    "target_correct": 21,
+    "target_only": 19,
+    "target_or_source_oracle": 24
+  },
+  "date": "2026-04-27",
+  "extension_preserves_clean_ids": true,
+  "ids": {
+    "baseline_union": [],
+    "clean_residual_targets": [
+      "14bfbfc94f2c2e7b",
+      "a07cd6cc8f1c832e",
+      "d64f6e35083ffe8c"
+    ],
+    "clean_source_only": [
+      "14bfbfc94f2c2e7b",
+      "a07cd6cc8f1c832e",
+      "d64f6e35083ffe8c"
+    ],
+    "control_union": [],
+    "source_only": [
+      "14bfbfc94f2c2e7b",
+      "a07cd6cc8f1c832e",
+      "d64f6e35083ffe8c"
+    ],
+    "target_only": [],
+    "target_self_repair": []
+  },
+  "provenance": {
+    "baseline_numeric_coverage": {},
+    "control_numeric_coverage": {
+      "text": 70
+    },
+    "exact_ordered_id_parity": true,
+    "source_numeric_coverage": 70,
+    "target_numeric_coverage": 70
+  },
+  "reference_ids": [
+    "d64f6e35083ffe8c",
+    "14bfbfc94f2c2e7b",
+    "a07cd6cc8f1c832e"
+  ],
+  "reference_n": 3,
+  "rows": [
+    {
+      "example_id": "d64f6e35083ffe8c",
+      "labels": [
+        "source_only",
+        "clean_source_only"
+      ]
+    },
+    {
+      "example_id": "14bfbfc94f2c2e7b",
+      "labels": [
+        "source_only",
+        "clean_source_only"
+      ]
+    },
+    {
+      "example_id": "a07cd6cc8f1c832e",
+      "labels": [
+        "source_only",
+        "clean_source_only"
+      ]
+    }
+  ],
+  "status": "source_contrastive_target_set_ready",
+  "summaries": {
+    "baselines": {},
+    "controls": {
+      "text": {
+        "correct": 8,
+        "label": "text",
+        "n": 70,
+        "numeric_coverage": 70
+      }
+    },
+    "source": {
+      "correct": 5,
+      "label": "source",
+      "n": 70,
+      "numeric_coverage": 70
+    },
+    "target": {
+      "correct": 21,
+      "label": "target",
+      "n": 70,
+      "numeric_coverage": 70
+    }
+  }
+}

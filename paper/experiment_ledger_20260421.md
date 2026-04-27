@@ -11396,3 +11396,134 @@ Next exact gate:
   `>=1`, and `answer_unexplained_clean_in_pool > 0`.
 - If full SVAMP70 also has `answer_unexplained_clean_in_pool = 0`, stop
   source-scorer/receiver variants and switch to a new candidate-pool generator.
+
+## 2026-04-27 Cycle 15 - Full Math-7B SVAMP70 And Target-Only Pool Smoke
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; no source-derived positive method
+   survives answer masking and source controls.
+2. Current paper story: stronger sources can expose selected-slice
+   disagreement, but full frozen surfaces still do not produce non-leaky
+   target-pool headroom.
+3. Exact blocker: `answer_unexplained_clean_in_pool` remains `0`.
+4. Current live branch: target-only/no-source candidate-pool generation on
+   residual clean IDs; source selectors are not live unless answer-masked source
+   evidence survives controls.
+5. Highest-priority gate: full SVAMP70 Math-7B scout, then target-only sampling
+   if the source surface fails.
+6. Scale-up rung: medium surface discovery plus micro candidate-pool smoke.
+
+Full Math-7B SVAMP70 command:
+
+```bash
+HF_HUB_DISABLE_XET=1 PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --results-dir results/qwen25math7b_qwen3_svamp70_surface_scout_20260427 \
+  --translator checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt \
+  --source-model Qwen/Qwen2.5-Math-7B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t \
+  --limit 70 \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Result:
+
+- target: `21/70`
+- source: `5/70`
+- text relay: `8/70`
+- exact ID parity: true for all methods
+- numeric coverage: `70/70` for all methods
+- source-only over target: `3`
+- clean source-only after text relay: `3`
+- target/source oracle: `24/70`
+
+Answer-masking audit:
+
+- clean in target-side pool: `1`
+- answer-unexplained clean in target-side pool: `0`
+- clean in-pool ID: `a07cd6cc8f1c832e`
+
+Decision: fail. Full SVAMP70 Math-7B is weaker than target-alone and does not
+clear the non-leaky source-surface gate. Stop source-scorer/receiver variants on
+this surface.
+
+Candidate-pool generator smoke:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_id_subset.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --ids 14bfbfc94f2c2e7b a07cd6cc8f1c832e d64f6e35083ffe8c \
+  --output-jsonl results/qwen25math7b_svamp70_target_sampling_clean3_20260427/clean_source_only_eval.jsonl \
+  --output-meta-json results/qwen25math7b_svamp70_target_sampling_clean3_20260427/clean_source_only_eval.meta.json
+
+HF_HUB_DISABLE_XET=1 PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/sample_target_candidate_surface.py \
+  --eval-file results/qwen25math7b_svamp70_target_sampling_clean3_20260427/clean_source_only_eval.jsonl \
+  --model Qwen/Qwen3-0.6B \
+  --samples 16 \
+  --temperature 0.9 \
+  --top-p 0.95 \
+  --seed 17 \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --use-chat-template \
+  --enable-thinking false \
+  --output-jsonl results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.jsonl \
+  --output-json results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.json \
+  --output-md results/qwen25math7b_svamp70_target_sampling_clean3_20260427/target_only_samples.md
+```
+
+Result:
+
+- target-only samples oracle: `1/3`
+- combined sampled target-side oracle: `2/3`
+- clean IDs in combined target-side pool: `14bfbfc94f2c2e7b`,
+  `a07cd6cc8f1c832e`
+
+Harness update:
+
+- `scripts/materialize_svamp_source_candidate_sidecars.py`
+  - added `--profile-mode full|answer_only|answer_masked`
+  - default `full` preserves prior behavior
+  - `answer_only` isolates source final/verified answer evidence
+  - `answer_masked` removes final/verified answer values before candidate
+    scoring
+- tests: `tests/test_materialize_svamp_source_candidate_sidecars.py`
+
+Selector controls on the sampled clean3 pool:
+
+| Profile Mode | Matched Clean Correct | Source-Necessary Clean | Decision |
+|---|---:|---:|---|
+| `full` | 2/3 | 2 | answer relay |
+| `answer_only` | 2/3 | 2 | answer relay |
+| `answer_masked` | 0/3 | 0 | fails |
+
+Decision: generator-positive, selector-pruned. Target-only/no-source sampling
+improves candidate reachability, but the current source-candidate selector is
+fully explained by final/verified source answers.
+
+Artifacts:
+
+- `results/qwen25math7b_qwen3_svamp70_surface_scout_20260427/manifest.md`
+- `results/qwen25math7b_qwen3_svamp70_surface_scout_20260427/source_contrastive_target_set.md`
+- `results/qwen25math7b_qwen3_svamp70_surface_scout_20260427/answer_masking_audit.md`
+- `results/qwen25math7b_svamp70_target_sampling_clean3_20260427/manifest.md`
+- `results/qwen25math7b_svamp70_target_sampling_clean3_20260427/sampled_clean3_headroom.md`
+- `results/qwen25math7b_svamp70_target_sampling_clean3_20260427/top_selector_full.md`
+- `results/qwen25math7b_svamp70_target_sampling_clean3_20260427/top_selector_answer_only.md`
+- `results/qwen25math7b_svamp70_target_sampling_clean3_20260427/top_selector_answer_masked.md`
+- `paper/qwen25math7b_svamp70_surface_and_sampling_20260427.md`
+
+Next exact gate:
+
+- Build a larger target-only/no-source sampled candidate pool on a strict small
+  slice (`SVAMP32` or all target-wrong/source-disagreement IDs), then test only
+  answer-masked source signals against answer-only, shuffled-source,
+  random-sidecar, target-only, and slots-only controls.

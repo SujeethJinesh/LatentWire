@@ -97,3 +97,58 @@ def test_materializer_does_not_add_source_only_answer(tmp_path):
 
     assert {item["value"] for item in row["candidate_scores"]} == {"7"}
     assert row["source_final_in_target_pool"] is False
+
+
+def test_materializer_answer_masked_profile_removes_final_answer_scores(tmp_path):
+    target_rows = [_row("a", "target_alone", "Target says 7", "7", "12")]
+    source_rows = [
+        _row("a", "source_alone", "We tried 7, then 4 x 3 = 12. Answer: 12", "12", "12")
+    ]
+    sample_rows = [_row("a", "target_sample_s0", "Sample says 12", "12", "12")]
+    _write_jsonl(tmp_path / "target.jsonl", target_rows)
+    _write_jsonl(tmp_path / "source.jsonl", source_rows)
+    _write_jsonl(tmp_path / "sample.jsonl", sample_rows)
+    target_set = {
+        "artifacts": {
+            "target": {"path": str(tmp_path / "target.jsonl"), "method": "target_alone"},
+            "source": {"path": str(tmp_path / "source.jsonl"), "method": "source_alone"},
+            "baselines": [
+                {"label": "target_sample_s0", "path": str(tmp_path / "sample.jsonl"), "method": "target_sample_s0"}
+            ],
+            "controls": [],
+        },
+        "ids": {"clean_source_only": ["a"], "target_self_repair": []},
+        "reference_ids": ["a"],
+    }
+    target_set_path = tmp_path / "target_set.json"
+    target_set_path.write_text(json.dumps(target_set), encoding="utf-8")
+
+    materializer.main(
+        [
+            "--live-target-set",
+            str(target_set_path),
+            "--output-dir",
+            str(tmp_path / "full"),
+            "--profile-mode",
+            "full",
+        ]
+    )
+    materializer.main(
+        [
+            "--live-target-set",
+            str(target_set_path),
+            "--output-dir",
+            str(tmp_path / "masked"),
+            "--profile-mode",
+            "answer_masked",
+        ]
+    )
+    full = json.loads((tmp_path / "full" / "live_candidate_sidecars.jsonl").read_text())
+    masked = json.loads((tmp_path / "masked" / "live_candidate_sidecars.jsonl").read_text())
+    full_by_value = {item["value"]: item["score"] for item in full["candidate_scores"]}
+    masked_by_value = {item["value"]: item["score"] for item in masked["candidate_scores"]}
+
+    assert full_by_value["12"] > full_by_value["7"]
+    assert masked_by_value["12"] < full_by_value["12"]
+    assert masked_by_value["12"] < masked_by_value["7"]
+    assert masked["profile_mode"] == "answer_masked"

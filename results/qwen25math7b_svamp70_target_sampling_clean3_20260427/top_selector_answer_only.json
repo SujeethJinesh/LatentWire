@@ -1,0 +1,331 @@
+{
+  "command": "scripts/analyze_candidate_score_sidecar_top_select.py --target-set results/qwen25math7b_svamp70_target_sampling_clean3_20260427/sampled_clean3_target_set.json --sidecar-jsonl results/qwen25math7b_svamp70_target_sampling_clean3_20260427/source_candidate_sidecars_answer_only/live_candidate_sidecars.jsonl --min-confidence 2.0 --min-source-necessary-clean 1 --max-control-clean-union 0 --max-accepted-harm 0 --date 2026-04-27 --output-json results/qwen25math7b_svamp70_target_sampling_clean3_20260427/top_selector_answer_only.json --output-md results/qwen25math7b_svamp70_target_sampling_clean3_20260427/top_selector_answer_only.md",
+  "date": "2026-04-27",
+  "git_commit": "6a09be6d62e3804af408cad178b8274b965b7da6",
+  "pass_rule": {
+    "max_accepted_harm": true,
+    "max_control_clean_union": true,
+    "min_source_necessary_clean": true
+  },
+  "result": {
+    "clean_ids": [
+      "14bfbfc94f2c2e7b",
+      "a07cd6cc8f1c832e",
+      "d64f6e35083ffe8c"
+    ],
+    "min_confidence": 2.0,
+    "n": 3,
+    "rows": [
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.25,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": "96"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.25,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": "62"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 5.25,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": "2"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": null
+          }
+        },
+        "example_id": "d64f6e35083ffe8c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": true,
+            "condition": "matched",
+            "confidence": 5.25,
+            "correct": true,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "3",
+            "top_value": "3"
+          },
+          "random_sidecar": {
+            "accepted": true,
+            "condition": "random_sidecar",
+            "confidence": 5.25,
+            "correct": false,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.25,
+            "correct": false,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "16",
+            "top_value": "96"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "16",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "16",
+            "top_value": null
+          }
+        },
+        "example_id": "14bfbfc94f2c2e7b"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": true,
+            "condition": "matched",
+            "confidence": 5.25,
+            "correct": true,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "2"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 5.25,
+            "correct": false,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "26",
+            "top_value": "26"
+          },
+          "shuffled_source": {
+            "accepted": true,
+            "condition": "shuffled_source",
+            "confidence": 5.25,
+            "correct": false,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "3",
+            "top_value": "3"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "26",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "26",
+            "top_value": null
+          }
+        },
+        "example_id": "a07cd6cc8f1c832e"
+      }
+    ],
+    "sidecar_jsonl": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/source_candidate_sidecars_answer_only/live_candidate_sidecars.jsonl",
+    "sidecar_jsonl_sha256": "86c66af82a4282601323bde0404ae801eda4b0bfee47cc44db41ff187ac0685f",
+    "summaries": {
+      "control_clean_union_ids": [],
+      "matched": {
+        "accepted": 2,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [
+          "14bfbfc94f2c2e7b",
+          "a07cd6cc8f1c832e"
+        ],
+        "clean_correct": 2,
+        "clean_correct_ids": [
+          "14bfbfc94f2c2e7b",
+          "a07cd6cc8f1c832e"
+        ],
+        "correct": 2,
+        "correct_ids": [
+          "14bfbfc94f2c2e7b",
+          "a07cd6cc8f1c832e"
+        ]
+      },
+      "random_sidecar": {
+        "accepted": 1,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [
+          "14bfbfc94f2c2e7b"
+        ],
+        "clean_correct": 0,
+        "clean_correct_ids": [],
+        "correct": 0,
+        "correct_ids": []
+      },
+      "shuffled_source": {
+        "accepted": 1,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [
+          "a07cd6cc8f1c832e"
+        ],
+        "clean_correct": 0,
+        "clean_correct_ids": [],
+        "correct": 0,
+        "correct_ids": []
+      },
+      "slots_only": {
+        "accepted": 0,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [],
+        "clean_correct": 0,
+        "clean_correct_ids": [],
+        "correct": 0,
+        "correct_ids": []
+      },
+      "source_necessary_clean_ids": [
+        "14bfbfc94f2c2e7b",
+        "a07cd6cc8f1c832e"
+      ],
+      "target_only": {
+        "accepted": 0,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [],
+        "clean_correct": 0,
+        "clean_correct_ids": [],
+        "correct": 0,
+        "correct_ids": []
+      }
+    },
+    "target_set": "results/qwen25math7b_svamp70_target_sampling_clean3_20260427/sampled_clean3_target_set.json",
+    "target_set_sha256": "08a758593ad220407892c7a39998cb0d5c26c1905949ccc8657e21eb5e2d6f27"
+  },
+  "status": "top_sidecar_selector_passes_smoke",
+  "summaries": {
+    "control_clean_union_ids": [],
+    "matched": {
+      "accepted": 2,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [
+        "14bfbfc94f2c2e7b",
+        "a07cd6cc8f1c832e"
+      ],
+      "clean_correct": 2,
+      "clean_correct_ids": [
+        "14bfbfc94f2c2e7b",
+        "a07cd6cc8f1c832e"
+      ],
+      "correct": 2,
+      "correct_ids": [
+        "14bfbfc94f2c2e7b",
+        "a07cd6cc8f1c832e"
+      ]
+    },
+    "random_sidecar": {
+      "accepted": 1,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [
+        "14bfbfc94f2c2e7b"
+      ],
+      "clean_correct": 0,
+      "clean_correct_ids": [],
+      "correct": 0,
+      "correct_ids": []
+    },
+    "shuffled_source": {
+      "accepted": 1,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [
+        "a07cd6cc8f1c832e"
+      ],
+      "clean_correct": 0,
+      "clean_correct_ids": [],
+      "correct": 0,
+      "correct_ids": []
+    },
+    "slots_only": {
+      "accepted": 0,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [],
+      "clean_correct": 0,
+      "clean_correct_ids": [],
+      "correct": 0,
+      "correct_ids": []
+    },
+    "source_necessary_clean_ids": [
+      "14bfbfc94f2c2e7b",
+      "a07cd6cc8f1c832e"
+    ],
+    "target_only": {
+      "accepted": 0,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [],
+      "clean_correct": 0,
+      "clean_correct_ids": [],
+      "correct": 0,
+      "correct_ids": []
+    }
+  }
+}
