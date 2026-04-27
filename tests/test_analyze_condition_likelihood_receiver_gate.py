@@ -120,6 +120,45 @@ def test_control_clean_union_removes_recovered_control_ids(tmp_path):
     assert result["source_necessary_clean_ids"] == []
 
 
+def test_duplicate_answer_not_counted_source_necessary(tmp_path):
+    matched = tmp_path / "matched.jsonl"
+    target_set = tmp_path / "target_set.json"
+    _write_jsonl(
+        matched,
+        [
+            {
+                "example_id": "clean",
+                "candidate_scores": [
+                    {"label": "target", "score": 0.0, "candidate_raw_text": "5", "candidate_correct": False},
+                    {"label": "source", "score": 3.0, "candidate_raw_text": "5", "candidate_correct": True},
+                ],
+            }
+        ],
+    )
+    target_set.write_text(
+        json.dumps({"ids": {"clean_residual_targets": ["clean"], "clean_source_only": ["clean"], "target_self_repair": []}}),
+        encoding="utf-8",
+    )
+    rows, ids, conditions = gate._prepare_rows(
+        paths={"matched": matched},
+        target_set_path=target_set,
+        fallback_label="target",
+        outer_folds=2,
+        max_sidecar_bits=8,
+    )
+
+    result = gate._evaluate(
+        rows=rows,
+        target_ids=ids,
+        conditions=conditions,
+        global_rule={"feature": "margin", "threshold": 1.0, "direction": "ge"},
+    )
+
+    assert result["condition_summaries"]["matched"]["duplicate_answer_ids"] == ["clean"]
+    assert result["duplicate_answer_clean_ids"] == ["clean"]
+    assert result["source_necessary_clean_ids"] == []
+
+
 def test_condition_sketch_ids_must_match(tmp_path):
     matched = tmp_path / "matched.jsonl"
     shuffled = tmp_path / "shuffled.jsonl"

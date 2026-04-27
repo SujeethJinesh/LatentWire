@@ -8643,3 +8643,84 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 If PID `31103` remains, collect receiver sketches on CPU only and run
 `scripts/analyze_condition_likelihood_receiver_gate.py`. If it clears, MPS can
 be used for source-surface/interface reset or faster sketch collection.
+
+## 2026-04-27 Cycle - Condition likelihood receiver live feasibility kill
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; still missing a stable
+   positive method plus strict controls, seed stability, systems metrics, and
+   cross-family falsification.
+2. Current paper story: receiver likelihood is infrastructure, but current
+   Qwen3 target-side likelihood does not preserve target-correct examples while
+   selecting useful source candidates.
+3. Exact blocker to submission: the condition-specific receiver branch fails
+   matched live feasibility before controls or holdout.
+4. Current live branch: condition-specific target-likelihood receiver on
+   canonical SVAMP70.
+5. Highest-priority gate: matched-only live CV early stop.
+6. Scale-up rung: smoke / branch kill.
+
+Implementation updates:
+
+- Added `scripts/build_condition_likelihood_candidate_pools.py`.
+- Updated `scripts/analyze_condition_likelihood_receiver_gate.py` to subtract
+  canonical duplicate-answer clean IDs from source-necessary counts.
+- Added/updated focused tests for condition pool building and duplicate-answer
+  de-duplication.
+
+Control pool definitions:
+
+- `matched`: target/text/source unchanged.
+- `zero_source`: target/text unchanged, source blanked.
+- `shuffled_source`: target/text unchanged, source replaced by deterministic
+  off-example source answer with correctness recomputed.
+- `label_shuffle`: labels permuted before scoring.
+- `target_only`: same three slots, with non-target slots filled by target
+  output.
+- `slots_only`: target retained, non-target slots blanked.
+
+Result:
+
+- Status: `condition_likelihood_receiver_live_matched_feasibility_fails`.
+- Matched correct: `15/70`.
+- Matched accepted: `14`.
+- Clean source-necessary IDs: `4d780f825bb8541c`.
+- Duplicate-answer clean IDs: none.
+- Accepted target-correct harm: `7`.
+- Failing criteria: `min_correct`, `min_clean_source_necessary`,
+  `max_accepted_harm`.
+
+Artifact hashes:
+
+- `results/condition_likelihood_receiver_live_feasibility_20260427/live_matched_feasibility.json`:
+  `06dafa60c62724f440965d90d22af799dfacb4f3f8704904202c2984bf7b7fe7`
+- `results/condition_likelihood_receiver_live_feasibility_20260427/live_matched_feasibility.md`:
+  `dfa9b37a27ebd5ce2154c8440b98128e83a9f43478040c4d7e03d2e47afc623a`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_build_condition_likelihood_candidate_pools.py tests/test_analyze_condition_likelihood_receiver_gate.py tests/test_analyze_svamp70_source_likelihood_sketch_gate.py tests/test_collect_source_likelihood_sketch.py -q
+./venv_arm64/bin/python -m py_compile scripts/build_condition_likelihood_candidate_pools.py scripts/analyze_condition_likelihood_receiver_gate.py
+```
+
+Result: `14 passed in 0.12s`; compile passed.
+
+Decision:
+
+- Kill/prune: condition-specific target-likelihood receiver on current
+  canonical SVAMP70 artifacts.
+- Keep: the condition-specific receiver harness as infrastructure for a future
+  stronger source candidate surface.
+- Do not collect remaining live controls or holdout for this killed branch.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` clears, resume MPS source-surface/interface reset. If it remains
+blocked, use CPU-only literature/artifact work or apply the new harness only to
+a stronger source surface, not this killed receiver branch.

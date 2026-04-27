@@ -216,6 +216,17 @@ The condition-specific receiver-control harness is now implemented and tested:
 - status: harness-ready, not evidence; next gate is CPU collection of
   condition-specific sketches if MPS remains blocked
 
+The condition-specific target-likelihood receiver is now killed on the current
+SVAMP70 surface before control collection:
+
+- matched-only live CV reaches only `15/70`
+- clean source-necessary IDs: `1`
+- accepted target-correct harm: `7`
+- duplicate-answer clean IDs: `0`
+- decision: do not collect remaining controls or holdout for this branch; keep
+  the candidate-pool builder and duplicate-answer de-dup harness for a stronger
+  source surface
+
 The top-surface cross-attention rescue also fails:
 
 - after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`

@@ -1,0 +1,152 @@
+{
+  "condition_output_sha256": {
+    "label_shuffle": {
+      "source": "51cd339076c7fb3b9416b8fe5b7cc634f49e062c6c11d068c6187451737aef25",
+      "target": "1cfad3da900d1f7d28bd11d44d7d8adfae9e4908ccea1b5751d624ee32e6342f",
+      "text": "a6c6e20c10e0c45923831b3593684a82570a5ac02b9bd6986987714bed5c60e9"
+    },
+    "matched": {
+      "source": "85aa90764246f8fc63218be8768263521ab7ad033cc07aa2c55cef5e37cbddb4",
+      "target": "ed01c3546594a9b0c578c03bdb0f0e271eba87046e9b0c9f2b7b562500570724",
+      "text": "6725218bd5bc02bfb6e0d7ae4326984acc51ed0a44e854aa8579324661c1dad7"
+    },
+    "shuffled_source": {
+      "source": "aa2cdfd0fbf8695f9984fb12680d0fec15d14c8d8284ff69ad19b15beac187b7",
+      "target": "5c361568333a6957ac18ba5a0e26a7ba2af7c45968a91a475438b46768c9c075",
+      "text": "7e1727c162743fffbf301f92de2821b9c2b72609bd3ac7c21c8e7094b40b4226"
+    },
+    "slots_only": {
+      "source": "83f5a3b8f358ce8b51e9b031eb179bbca7d2b95133a737eb8c58c3458707caa8",
+      "target": "e4cff4ad99580c20870f3ea24f1d0cc8a391f4bf74fdcb64a6862b19f5011126",
+      "text": "286cdbcf9cad70d484d4b45b67abad935b06974e7be9da2fc310c65b86a0ec85"
+    },
+    "target_only": {
+      "source": "6b6c62811c5dcea75135527e111f9ca7fee7cb9aaf5783699c58ab2198661321",
+      "target": "2f85557f605cf576604a8d4bb2dd1d92256c011453effb5ae7897485e0b1108e",
+      "text": "39e9560d8d80ea9ed3c74179ddf436bf5d674cad922f25c7f5d785149ce0f8ad"
+    },
+    "zero_source": {
+      "source": "678e8e96a14f67eeed138d24af54eb292fafe933a28dea6b474ae57d58c683e1",
+      "target": "50293adb02af8a6ebfdd851ee0d7c361364340e7da060b86c633ca5e486e3a3a",
+      "text": "f1aec661357f81ac30089d76cd18ec2e70537d20098db48ee946d7e06df26f15"
+    }
+  },
+  "condition_outputs": {
+    "label_shuffle": {
+      "source": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/label_shuffle/source.jsonl",
+      "target": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/label_shuffle/target.jsonl",
+      "text": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/label_shuffle/text.jsonl"
+    },
+    "matched": {
+      "source": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/matched/source.jsonl",
+      "target": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/matched/target.jsonl",
+      "text": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/matched/text.jsonl"
+    },
+    "shuffled_source": {
+      "source": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/shuffled_source/source.jsonl",
+      "target": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/shuffled_source/target.jsonl",
+      "text": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/shuffled_source/text.jsonl"
+    },
+    "slots_only": {
+      "source": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/slots_only/source.jsonl",
+      "target": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/slots_only/target.jsonl",
+      "text": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/slots_only/text.jsonl"
+    },
+    "target_only": {
+      "source": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/target_only/source.jsonl",
+      "target": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/target_only/target.jsonl",
+      "text": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/target_only/text.jsonl"
+    },
+    "zero_source": {
+      "source": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/zero_source/source.jsonl",
+      "target": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/zero_source/target.jsonl",
+      "text": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates/zero_source/text.jsonl"
+    }
+  },
+  "date": "2026-04-27",
+  "git_commit": "2479a1898d6bd1ccd21166acb5bcf400f77556ad",
+  "label_shuffle_offset": 17,
+  "output_dir": "results/qwen3_condition_likelihood_receiver_20260427/holdout_candidates",
+  "reference_ids": [
+    "08eefd813f9360ba",
+    "1a6ca61fc9f500bf",
+    "35348056fbd92d9e",
+    "cf7dfef51e2d09e2",
+    "51c35344f90d73fc",
+    "0b8764bfd2d65612",
+    "dd66ace507c5974d",
+    "dc213265661b4585",
+    "dc062e3839cc279b",
+    "0c08680fd07ea24d",
+    "67d366ecf8f6afc9",
+    "b55d13e52fff2a95",
+    "06c2aa0093dc3cdb",
+    "aeed2cd9c823d933",
+    "25fb066721cb11c8",
+    "ca95e919d24c6fbe",
+    "e0adb3f5a202d9e3",
+    "36279628ec3bf470",
+    "4871b24ece0354cf",
+    "ec5f35b86f98b017",
+    "bb900bae0b2e4f47",
+    "adb15ad2b24acf99",
+    "ab1e71e8928661d0",
+    "ae49c1a85b60e238",
+    "71da6f80db6de164",
+    "e8bb4e1c7a6a0995",
+    "abf6eb1789b02fa5",
+    "ab65172c196d46d4",
+    "4c911a645bc5a25d",
+    "daea537474de16ac",
+    "ee95030e3b494092",
+    "bf5cc47b017e0e97",
+    "f544db781bd00964",
+    "8d0e8074e9e1847a",
+    "23507f207cb6e770",
+    "63485033abb61c94",
+    "afc58e458d848b87",
+    "dd045f80c17da994",
+    "3c97556be16e6aff",
+    "c4640847379127f9",
+    "07123f5cbf5222eb",
+    "c6f9037fb5fe417a",
+    "a32299e222c479d4",
+    "5b9bd95348a0937a",
+    "68ccae2d494d32a4",
+    "fee9ca77fcaa3ef7",
+    "b747fd437c4b311c",
+    "85ca275b8a8df368",
+    "e6e336bf011e36db",
+    "e3353e5d3e1da8cd",
+    "e3277925304b4913",
+    "c5eb92fdc7e87928",
+    "1b42e4b0f57e9611",
+    "9c7bef53ba9d3044",
+    "c7fd9e5ac9492755",
+    "754796091130bde3",
+    "7f2eaf4b9a30319d",
+    "6c9946f0cf8fba98",
+    "46e35e7390460444",
+    "f2d36a9342e0a80f",
+    "807bd6321bc03874",
+    "331dc29dd9a1ae6c",
+    "735be7019581cbcf",
+    "8eb72cb2a6afb45b",
+    "be57a2e06ba775e3",
+    "6384c2d6c34ef589",
+    "fae09e1987ba24ef",
+    "5e9312dcddad7424",
+    "e77681731513188b",
+    "6d7c0e5460df2ca8"
+  ],
+  "reference_ids_sha256": "dac748af85e2a7336a41cb0ee13d2702b803fbf960c69482508483b6f5043911",
+  "reference_n": 70,
+  "shuffle_offset": 1,
+  "source_jsonl": "results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_alone.jsonl",
+  "source_jsonl_sha256": "85aa90764246f8fc63218be8768263521ab7ad033cc07aa2c55cef5e37cbddb4",
+  "status": "condition_candidate_pools_built",
+  "target_jsonl": "results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/target_alone.jsonl",
+  "target_jsonl_sha256": "ed01c3546594a9b0c578c03bdb0f0e271eba87046e9b0c9f2b7b562500570724",
+  "text_jsonl": "results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/text_to_text.jsonl",
+  "text_jsonl_sha256": "6725218bd5bc02bfb6e0d7ae4326984acc51ed0a44e854aa8579324661c1dad7"
+}

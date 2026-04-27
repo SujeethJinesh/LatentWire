@@ -1,0 +1,71 @@
+{
+  "accepted_harm": 7,
+  "clean_source_necessary_ids": [
+    "4d780f825bb8541c"
+  ],
+  "date": "2026-04-27",
+  "duplicate_answer_clean_ids": [],
+  "failing_criteria": [
+    "min_correct",
+    "min_clean_source_necessary",
+    "max_accepted_harm"
+  ],
+  "fold_rules": [
+    {
+      "direction": "le",
+      "feature": "margin",
+      "fold": 0,
+      "threshold": 0.8928908631205559,
+      "train_accept": 16,
+      "train_harm": 2,
+      "train_help": 6,
+      "train_score": 2.4
+    },
+    {
+      "direction": "ge",
+      "feature": "quantized_margin",
+      "fold": 1,
+      "threshold": 60.5,
+      "train_accept": 3,
+      "train_harm": 0,
+      "train_help": 1,
+      "train_score": 0.7
+    },
+    {
+      "direction": "le",
+      "feature": "top_score",
+      "fold": 2,
+      "threshold": -4.3170206239447,
+      "train_accept": 3,
+      "train_harm": 0,
+      "train_help": 1,
+      "train_score": 0.7
+    },
+    {
+      "direction": "le",
+      "feature": "top_score",
+      "fold": 3,
+      "threshold": -2.9309350326657295,
+      "train_accept": 19,
+      "train_harm": 1,
+      "train_help": 6,
+      "train_score": 3.0999999999999996
+    },
+    {
+      "direction": "ge",
+      "feature": "quantized_margin",
+      "fold": 4,
+      "threshold": 60.5,
+      "train_accept": 3,
+      "train_harm": 0,
+      "train_help": 1,
+      "train_score": 0.7
+    }
+  ],
+  "git_commit": "2479a1898d6bd1ccd21166acb5bcf400f77556ad",
+  "input_sketch": "results/qwen3_target_likelihood_receiver_20260427/live_target_model_normpred_answer_template.jsonl",
+  "live_status": "fails",
+  "matched_accepted": 14,
+  "matched_correct": 15,
+  "status": "condition_likelihood_receiver_live_matched_feasibility_fails"
+}

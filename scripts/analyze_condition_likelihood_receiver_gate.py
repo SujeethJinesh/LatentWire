@@ -24,6 +24,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts import analyze_svamp70_source_likelihood_sketch_gate as base
+from scripts import harness_common as harness
 
 
 CONDITIONS = ("matched", "zero_source", "shuffled_source", "label_shuffle", "target_only", "slots_only")
@@ -112,6 +113,34 @@ def _candidate_prediction(item: dict[str, Any]) -> str:
         if item.get(key) is not None:
             return str(item[key])
     return ""
+
+
+def _canonical_answer_value(item: dict[str, Any]) -> str:
+    for key in ("candidate_raw_text", "prediction", "candidate_text"):
+        value = item.get(key)
+        if value is None:
+            continue
+        numeric = harness._extract_prediction_numeric_answer(str(value))
+        if numeric is not None:
+            return f"num:{numeric}"
+        text = " ".join(str(value).strip().lower().split())
+        if text:
+            return f"text:{text}"
+    return ""
+
+
+def _duplicates_non_source_answer(sketch: dict[str, Any] | None, label: str, item: dict[str, Any]) -> bool:
+    if sketch is None:
+        return False
+    selected = _canonical_answer_value(item)
+    if not selected:
+        return False
+    for other_label, other_item in _candidate_items(sketch).items():
+        if other_label == label:
+            continue
+        if _canonical_answer_value(other_item) == selected:
+            return True
+    return False
 
 
 def _sketches_by_id(path: pathlib.Path, *, max_sidecar_bits: int) -> tuple[list[str], dict[str, dict[str, Any]]]:
@@ -206,6 +235,7 @@ def _apply_rule(row: dict[str, Any], condition: str, rule: dict[str, Any]) -> di
         "correct": _candidate_correct(item),
         "accepted_sidecar": bool(accepted),
         "sidecar_bits": int(sketch.get("sidecar_bits", 0)) if sketch else 0,
+        "duplicates_non_source_answer": _duplicates_non_source_answer(sketch, label, item),
     }
 
 
@@ -268,6 +298,13 @@ def _fit_stump(rows: Sequence[dict[str, Any]], *, train_folds: set[int] | None, 
 def _summarize_condition(rows: Sequence[dict[str, Any]], condition: str, ids: dict[str, set[str]]) -> dict[str, Any]:
     correct_ids = {str(row["example_id"]) for row in rows if bool(row["conditions"][condition]["correct"])}
     accepted_ids = {str(row["example_id"]) for row in rows if bool(row["conditions"][condition]["accepted_sidecar"])}
+    duplicate_answer_ids = {
+        str(row["example_id"])
+        for row in rows
+        if row["conditions"][condition]["correct"]
+        and row["conditions"][condition]["accepted_sidecar"]
+        and row["conditions"][condition].get("duplicates_non_source_answer")
+    }
     accepted_harm_ids = {
         str(row["example_id"])
         for row in rows
@@ -285,6 +322,8 @@ def _summarize_condition(rows: Sequence[dict[str, Any]], condition: str, ids: di
         "target_self_correct_ids": sorted(correct_ids & ids["target_self_repair"]),
         "accepted_harm_ids": sorted(accepted_harm_ids),
         "accepted_harm_count": len(accepted_harm_ids),
+        "duplicate_answer_ids": sorted(duplicate_answer_ids),
+        "duplicate_answer_count": len(duplicate_answer_ids),
     }
 
 
@@ -314,12 +353,14 @@ def _evaluate(
         *[set(summaries[condition]["clean_correct_ids"]) for condition in conditions if condition != "matched"]
     )
     matched_clean = set(summaries["matched"]["clean_correct_ids"])
+    duplicate_clean = set(summaries["matched"]["duplicate_answer_ids"]) & target_ids["clean_residual_targets"]
     accepted_harm = summaries["matched"]["accepted_harm_count"]
     mean_sidecar_bits = sum(row["conditions"]["matched"]["sidecar_bits"] for row in routed) / max(len(routed), 1)
     return {
         "condition_summaries": summaries,
         "control_clean_union_ids": sorted(control_union),
-        "source_necessary_clean_ids": sorted(matched_clean - control_union),
+        "duplicate_answer_clean_ids": sorted(duplicate_clean),
+        "source_necessary_clean_ids": sorted(matched_clean - control_union - duplicate_clean),
         "accepted_harm": int(accepted_harm),
         "mean_sidecar_bits": float(mean_sidecar_bits),
         "rows": routed,
@@ -477,6 +518,7 @@ def _summary_lines(label: str, result: dict[str, Any]) -> list[str]:
         f"- matched accepted: `{matched['accepted_count']}`",
         f"- clean source-necessary: `{len(result['source_necessary_clean_ids'])}`",
         f"- clean control union: `{len(result['control_clean_union_ids'])}`",
+        f"- duplicate-answer clean IDs: `{len(result.get('duplicate_answer_clean_ids', []))}`",
         f"- accepted harm: `{result['accepted_harm']}`",
         f"- mean sidecar bits: `{result['mean_sidecar_bits']:.3f}`",
         f"- source-necessary IDs: {', '.join(f'`{item}`' for item in result['source_necessary_clean_ids']) or 'none'}",
