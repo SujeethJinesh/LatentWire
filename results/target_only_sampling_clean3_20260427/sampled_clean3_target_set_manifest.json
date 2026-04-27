@@ -1,0 +1,91 @@
+{
+  "base_target_set": "results/no_source_candidate_surface_20260427/source_contrastive_target_set.json",
+  "base_target_set_sha256": "fb615786f89643c6208909534f59896c2f7d8987b29043842941a769e52e26aa",
+  "candidate_summaries": [
+    {
+      "correct": 0,
+      "label": "target_sample_s0",
+      "method": "target_sample_s0",
+      "n": 3,
+      "numeric_coverage": 3,
+      "path": "results/target_only_sampling_clean3_20260427/target_only_samples.jsonl",
+      "sha256": "f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908"
+    },
+    {
+      "correct": 1,
+      "label": "target_sample_s1",
+      "method": "target_sample_s1",
+      "n": 3,
+      "numeric_coverage": 3,
+      "path": "results/target_only_sampling_clean3_20260427/target_only_samples.jsonl",
+      "sha256": "f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908"
+    },
+    {
+      "correct": 1,
+      "label": "target_sample_s2",
+      "method": "target_sample_s2",
+      "n": 3,
+      "numeric_coverage": 3,
+      "path": "results/target_only_sampling_clean3_20260427/target_only_samples.jsonl",
+      "sha256": "f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908"
+    },
+    {
+      "correct": 0,
+      "label": "target_sample_s3",
+      "method": "target_sample_s3",
+      "n": 3,
+      "numeric_coverage": 3,
+      "path": "results/target_only_sampling_clean3_20260427/target_only_samples.jsonl",
+      "sha256": "f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908"
+    },
+    {
+      "correct": 1,
+      "label": "target_sample_s4",
+      "method": "target_sample_s4",
+      "n": 3,
+      "numeric_coverage": 3,
+      "path": "results/target_only_sampling_clean3_20260427/target_only_samples.jsonl",
+      "sha256": "f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908"
+    },
+    {
+      "correct": 0,
+      "label": "target_sample_s5",
+      "method": "target_sample_s5",
+      "n": 3,
+      "numeric_coverage": 3,
+      "path": "results/target_only_sampling_clean3_20260427/target_only_samples.jsonl",
+      "sha256": "f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908"
+    },
+    {
+      "correct": 0,
+      "label": "target_sample_s6",
+      "method": "target_sample_s6",
+      "n": 3,
+      "numeric_coverage": 3,
+      "path": "results/target_only_sampling_clean3_20260427/target_only_samples.jsonl",
+      "sha256": "f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908"
+    },
+    {
+      "correct": 0,
+      "label": "target_sample_s7",
+      "method": "target_sample_s7",
+      "n": 3,
+      "numeric_coverage": 3,
+      "path": "results/target_only_sampling_clean3_20260427/target_only_samples.jsonl",
+      "sha256": "f40a89d736afc5da7b28a4b4e01bfdb12650a97dbb67b84b94104674ac427908"
+    }
+  ],
+  "command": "scripts/extend_target_set_candidate_labels.py --base-target-set results/no_source_candidate_surface_20260427/source_contrastive_target_set.json --id-fields clean_source_only --candidate target_sample_s0=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s0 --candidate target_sample_s1=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s1 --candidate target_sample_s2=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s2 --candidate target_sample_s3=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s3 --candidate target_sample_s4=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s4 --candidate target_sample_s5=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s5 --candidate target_sample_s6=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s6 --candidate target_sample_s7=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s7 --date 2026-04-27 --output-json results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json --output-md results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.md --manifest-json results/target_only_sampling_clean3_20260427/sampled_clean3_target_set_manifest.json",
+  "date": "2026-04-27",
+  "git_commit": "afbf022b1e7e1e96c1bd76f72c28e6f538f73abf",
+  "output_json": "results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json",
+  "output_json_sha256": "786bc1a4c336483633e74a64d3d309602d0bcb79d758b8fc0190f311832d52ff",
+  "output_md": "results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.md",
+  "reference_n": 3,
+  "selected_ids": [
+    "14bfbfc94f2c2e7b",
+    "2de1549556000830",
+    "41cce6c6e6bb0058"
+  ],
+  "status": "target_set_candidate_labels_extended"
+}

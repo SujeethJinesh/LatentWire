@@ -1,0 +1,84 @@
+{
+  "command": "scripts/analyze_target_side_candidate_headroom.py --target-set sampled_clean3=path=results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json,role=sampled_target_pool,note=zero_source_pool_plus_target_samples_clean3 --date 2026-04-27 --output-json results/target_only_sampling_clean3_20260427/sampled_clean3_headroom.json --output-md results/target_only_sampling_clean3_20260427/sampled_clean3_headroom.md",
+  "date": "2026-04-27",
+  "git_commit": "afbf022b1e7e1e96c1bd76f72c28e6f538f73abf",
+  "next_gate": "Use `sampled_clean3` only if the next method can target 1 clean IDs already present in the target-side pool; otherwise switch to a new candidate-surface generator.",
+  "status": "target_side_candidate_headroom_ranked",
+  "surfaces": [
+    {
+      "clean_gold_in_target_side_pool": 1,
+      "clean_gold_in_target_side_pool_ids": [
+        "14bfbfc94f2c2e7b"
+      ],
+      "clean_oracle_gain_ids": [
+        "14bfbfc94f2c2e7b"
+      ],
+      "clean_source_only_count": 3,
+      "label": "sampled_clean3",
+      "n": 3,
+      "note": "zero_source_pool_plus_target_samples_clean3",
+      "path": "results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json",
+      "path_sha256": "786bc1a4c336483633e74a64d3d309602d0bcb79d758b8fc0190f311832d52ff",
+      "role": "sampled_target_pool",
+      "rows": [
+        {
+          "clean_source_only": true,
+          "example_id": "14bfbfc94f2c2e7b",
+          "gold": "3",
+          "pool_has_gold": true,
+          "source_correct": true,
+          "target_correct": false,
+          "target_self_repair": false,
+          "target_side_pool_values": [
+            "1",
+            "16",
+            "19",
+            "2",
+            "3",
+            "5",
+            "8"
+          ]
+        },
+        {
+          "clean_source_only": true,
+          "example_id": "2de1549556000830",
+          "gold": "39",
+          "pool_has_gold": false,
+          "source_correct": true,
+          "target_correct": false,
+          "target_self_repair": false,
+          "target_side_pool_values": [
+            "1",
+            "2",
+            "3",
+            "33",
+            "42",
+            "9"
+          ]
+        },
+        {
+          "clean_source_only": true,
+          "example_id": "41cce6c6e6bb0058",
+          "gold": "10",
+          "pool_has_gold": false,
+          "source_correct": true,
+          "target_correct": false,
+          "target_self_repair": false,
+          "target_side_pool_values": [
+            "1",
+            "13",
+            "3",
+            "6",
+            "9"
+          ]
+        }
+      ],
+      "source_correct": 3,
+      "target_correct": 0,
+      "target_self_count": 0,
+      "target_self_gold_in_target_side_pool": 0,
+      "target_side_oracle_correct": 1,
+      "target_side_oracle_gain": 1
+    }
+  ]
+}

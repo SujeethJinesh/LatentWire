@@ -218,6 +218,25 @@ The frozen CPU source-candidate sidecar materializer is also negative:
   at `21/70`, clean source-necessary `0`, accepted harm `0`
 - holdout reaches `11/70`, accepted `7`, clean source-necessary `0`, accepted
   harm `1`
+
+Update `2026-04-27 04:35 PDT`: the sampled clean3 target-pool sidecar briefly
+passed smoke but was killed by source-answer ablation. Target-only sampling made
+one remaining clean source-only ID reachable, and a full source candidate-score
+sidecar selected it with controls clean-empty. However, masking source-final and
+verified-answer numeric values removed the win, while a source-final-only
+sidecar recovered the same ID. The live branch is no longer the clean3
+candidate-score selector. The next highest-value branch is source-surface
+discovery over existing artifacts, looking for target-side candidate pools that
+contain source-necessary answers not explainable by direct source-final numeric
+evidence; if none exist, MPS cleanup is required before richer same-family
+surface generation.
+
+Update `2026-04-27 04:45 PDT`: the source-surface answer-masking audit found no
+stored surface that can support the stricter gate. Across `12` loaded surfaces
+with clean IDs, every clean in-pool answer was explained by source final or
+verified numeric answers; answer-unexplained clean-in-pool count was `0` for all
+surfaces. Current live branch is therefore answer-masked source-interface
+design and fresh surface generation after the orphaned MPS process clears.
 - strict target-mentioned oracle headroom is small on the current canonical
   surface: live target `21/70` can only reach `23/70`; holdout target `8/70`
   can only reach `12/70`

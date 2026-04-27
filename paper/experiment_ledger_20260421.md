@@ -9988,3 +9988,396 @@ Materialize all `target_sample_s*` rows into a clean3 target set, then run
 `scripts/analyze_svamp_source_semantic_predicate_decoder.py` on that sampled
 pool. Promote only if matched source selects `14bfbfc94f2c2e7b` and all
 source-destroying or same-byte controls miss it.
+
+## 2026-04-27 Cycle 2 - Target-only sampled pool source sidecar smoke
+
+Cycle start:
+
+1. ICLR readiness: not ready; estimated distance is still one strict
+   same-family positive method, seed repeats, source-control survival, systems
+   accounting, and cross-family falsification.
+2. Current paper story: target-only/no-source candidate pools can create a
+   receiver-side decision surface, and a compact source sidecar may select the
+   right candidate only when source content is matched.
+3. Exact blocker: prove the selector is source-derived rather than target-pool,
+   random sidecar, shuffled-source, or slots-only leakage.
+4. Live branch: sampled target candidate pool plus compact source-derived
+   candidate-score sidecar; secondary branch is learned semantic predicates.
+5. Highest-priority gate: clean3 smoke with full source-destroying controls.
+6. Scale-up rung: smoke.
+
+Implemented:
+
+- `scripts/extend_target_set_candidate_labels.py`
+- `scripts/analyze_candidate_score_sidecar_top_select.py`
+- `tests/test_extend_target_set_candidate_labels.py`
+- `tests/test_analyze_candidate_score_sidecar_top_select.py`
+- memo: `paper/target_only_sampling_source_sidecar_smoke_20260427.md`
+
+Important harness fix:
+
+- the first random-sidecar control shuffled `candidate_scores` but the decoder
+  sorted by score afterward, accidentally preserving the matched top candidate.
+- fixed it to preserve the same score distribution while destroying the
+  candidate-value mapping.
+
+Artifact commands:
+
+```bash
+./venv_arm64/bin/python scripts/extend_target_set_candidate_labels.py \
+  --base-target-set results/no_source_candidate_surface_20260427/source_contrastive_target_set.json \
+  --id-fields clean_source_only \
+  --candidate target_sample_s0=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s0 \
+  --candidate target_sample_s1=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s1 \
+  --candidate target_sample_s2=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s2 \
+  --candidate target_sample_s3=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s3 \
+  --candidate target_sample_s4=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s4 \
+  --candidate target_sample_s5=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s5 \
+  --candidate target_sample_s6=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s6 \
+  --candidate target_sample_s7=path=results/target_only_sampling_clean3_20260427/target_only_samples.jsonl,method=target_sample_s7 \
+  --date 2026-04-27 \
+  --output-json results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --output-md results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.md \
+  --manifest-json results/target_only_sampling_clean3_20260427/sampled_clean3_target_set_manifest.json
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_target_side_candidate_headroom.py \
+  --target-set sampled_clean3=path=results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json,role=sampled_target_pool,note=zero_source_pool_plus_target_samples_clean3 \
+  --date 2026-04-27 \
+  --output-json results/target_only_sampling_clean3_20260427/sampled_clean3_headroom.json \
+  --output-md results/target_only_sampling_clean3_20260427/sampled_clean3_headroom.md
+```
+
+```bash
+./venv_arm64/bin/python scripts/materialize_svamp_source_candidate_sidecars.py \
+  --live-target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --output-dir results/target_only_sampling_clean3_20260427/source_candidate_sidecars \
+  --sidecar-bits 8 \
+  --label-prior 0.0 \
+  --date 2026-04-27
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_svamp_source_semantic_predicate_decoder.py \
+  --live-target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --holdout-target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --live-sidecar-jsonl results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl \
+  --holdout-sidecar-jsonl results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl \
+  --outer-folds 3 \
+  --accept-penalty 0.05 \
+  --harm-weight 4.0 \
+  --min-live-correct 1 \
+  --min-live-clean-source-necessary 1 \
+  --min-holdout-correct 1 \
+  --min-holdout-clean-source-necessary 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-dir results/target_only_sampling_clean3_20260427/source_sidecar_decoder_smoke \
+  --output-predictions-jsonl results/target_only_sampling_clean3_20260427/source_sidecar_decoder_smoke/predictions.jsonl
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_candidate_score_sidecar_top_select.py \
+  --target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --sidecar-jsonl results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl \
+  --min-confidence 2.0 \
+  --min-source-necessary-clean 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json results/target_only_sampling_clean3_20260427/top_sidecar_selector.json \
+  --output-md results/target_only_sampling_clean3_20260427/top_sidecar_selector.md
+```
+
+Result summary:
+
+- sampled clean3 target pool: target `0/3`, source `3/3`,
+  target-side oracle `1/3`, clean in pool `1/3`
+- learned semantic-predicate decoder: matched correct `0/3`, accepted `0`,
+  clean source-necessary `0`
+- top source sidecar selector: matched correct `1/3`, accepted `1`,
+  clean source-necessary `1`, accepted harm `0`
+- controls: shuffled-source clean `0`, randomized same-byte sidecar clean `0`,
+  target-only clean `0`, slots-only clean `0`, control clean union `0`
+- recovered source-necessary clean ID: `14bfbfc94f2c2e7b`
+
+Decision:
+
+- promoted: sampled target-pool + compact source sidecar from source-surface
+  discovery to smoke-positive.
+- weakened: learned semantic-predicate erasure decoder on this tiny surface; it
+  is target-safe but too conservative.
+- not promoted to paper evidence: the positive row is one clean ID on a
+  three-example slice and uses a handwritten top selector.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_candidate_score_sidecar_top_select.py -q
+```
+
+Result: `3 passed`.
+
+Hashes:
+
+- `results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json`:
+  `786bc1a4c336483633e74a64d3d309602d0bcb79d758b8fc0190f311832d52ff`
+- `results/target_only_sampling_clean3_20260427/sampled_clean3_headroom.json`:
+  `22ccec02fa0ee77d990511743ac3dd766b04f033695cb2865e0235fdb19e62fb`
+- `results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl`:
+  `003adb88d1424f8b7b444d0972c85141d2cc889f29e27a0487ba48605ea7e66f`
+- `results/target_only_sampling_clean3_20260427/source_candidate_sidecars/manifest.json`:
+  `b51345d0b2efab9d7bfb4a91ba032790aeacfbcb2040220f5593add014f0b050`
+- `results/target_only_sampling_clean3_20260427/source_sidecar_decoder_smoke/semantic_predicate_decoder.json`:
+  `dd42726fb336d7df8423a5158eb0e5e5f392865f95a98d9d961b363939b9faa5`
+- `results/target_only_sampling_clean3_20260427/top_sidecar_selector.json`:
+  `58c79810a3a8bb19c2431f0a19f973af3a46a05d1094ee2172de62a915879aeb`
+
+MPS blocker:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+PID `31103` remains present with `STAT=UE`; no MPS jobs were started.
+
+Next exact gate:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_candidate_score_sidecar_top_select.py \
+  --target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --sidecar-jsonl results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl \
+  --min-confidence 2.0 \
+  --min-source-necessary-clean 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json results/target_only_sampling_clean3_20260427/top_sidecar_selector_repeated_random.json \
+  --output-md results/target_only_sampling_clean3_20260427/top_sidecar_selector_repeated_random.md
+```
+
+Before trusting the smoke row, add repeated random-sidecar salts or an exact
+enumeration over candidate-score permutations. Promote only if matched remains
+source-necessary clean and same-byte/random controls have clean union `0`.
+
+## 2026-04-27 Cycle 3 - Clean3 Source-Answer Ablation Gate
+
+Cycle start:
+
+1. ICLR readiness: not ready; estimated distance remains a stable positive
+   method plus strict controls, seed repeats, systems accounting, and
+   cross-family falsification.
+2. Current paper story: the clean3 smoke might be source-derived candidate
+   selection, but it may also be direct source-answer copying into a lucky
+   target-only sampled pool.
+3. Exact blocker: distinguish richer source communication from source-final or
+   verified numeric answer evidence.
+4. Live branch: sampled target candidate pool plus candidate-score sidecar.
+5. Highest-priority gate: source-answer masking and source-final-only baseline.
+6. Scale-up rung: smoke falsification.
+
+Implemented:
+
+- `scripts/materialize_sidecar_counterfactuals.py`
+- `tests/test_materialize_sidecar_counterfactuals.py`
+- memo: `paper/clean3_source_answer_ablation_gate_20260427.md`
+- manifest update:
+  `results/target_only_sampling_clean3_20260427/source_candidate_sidecars/manifest.md`
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_candidate_score_sidecar_top_select.py \
+  --target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --sidecar-jsonl results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl \
+  --min-confidence 2.0 \
+  --min-source-necessary-clean 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json .debug/clean3_sidecar_counterfactuals_20260427/full_top_selector_rerun.json \
+  --output-md .debug/clean3_sidecar_counterfactuals_20260427/full_top_selector_rerun.md
+```
+
+```bash
+./venv_arm64/bin/python scripts/materialize_sidecar_counterfactuals.py \
+  --target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --sidecar-jsonl results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl \
+  --mode source_answer_masked \
+  --date 2026-04-27 \
+  --output-jsonl .debug/clean3_sidecar_counterfactuals_20260427/source_answer_masked_sidecar.jsonl \
+  --output-json .debug/clean3_sidecar_counterfactuals_20260427/source_answer_masked_sidecar.json \
+  --output-md .debug/clean3_sidecar_counterfactuals_20260427/source_answer_masked_sidecar.md
+```
+
+```bash
+./venv_arm64/bin/python scripts/materialize_sidecar_counterfactuals.py \
+  --target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --sidecar-jsonl results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl \
+  --mode source_final_only \
+  --date 2026-04-27 \
+  --output-jsonl .debug/clean3_sidecar_counterfactuals_20260427/source_final_only_sidecar.jsonl \
+  --output-json .debug/clean3_sidecar_counterfactuals_20260427/source_final_only_sidecar.json \
+  --output-md .debug/clean3_sidecar_counterfactuals_20260427/source_final_only_sidecar.md
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_candidate_score_sidecar_top_select.py \
+  --target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --sidecar-jsonl .debug/clean3_sidecar_counterfactuals_20260427/source_answer_masked_sidecar.jsonl \
+  --min-confidence 2.0 \
+  --min-source-necessary-clean 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json .debug/clean3_sidecar_counterfactuals_20260427/source_answer_masked_top_selector.json \
+  --output-md .debug/clean3_sidecar_counterfactuals_20260427/source_answer_masked_top_selector.md
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_candidate_score_sidecar_top_select.py \
+  --target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json \
+  --sidecar-jsonl .debug/clean3_sidecar_counterfactuals_20260427/source_final_only_sidecar.jsonl \
+  --min-confidence 2.0 \
+  --min-source-necessary-clean 0 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json .debug/clean3_sidecar_counterfactuals_20260427/source_final_only_top_selector.json \
+  --output-md .debug/clean3_sidecar_counterfactuals_20260427/source_final_only_top_selector.md
+```
+
+Result summary:
+
+- full sidecar: passes smoke, source-necessary clean
+  `['14bfbfc94f2c2e7b']`, control clean union `[]`, accepted harm `0`
+- source-answer masked: fails smoke, source-necessary clean `[]`, control
+  clean union `[]`, accepted harm `0`
+- source-final-only: passes smoke, source-necessary clean
+  `['14bfbfc94f2c2e7b']`, control clean union `[]`, accepted harm `0`
+
+Decision:
+
+- killed: clean3 candidate-score sidecar as a positive-method branch. The win is
+  explained by source-final numeric evidence over a target-only sampled pool.
+- promoted as a diagnostic only: target-only sampling can expose receiver-side
+  headroom that source signals can select, but future sidecars must pass
+  source-answer masking.
+- next live branch: source-surface discovery over existing artifacts for
+  target-side pools with source-necessary answers not explained by direct
+  source-final numeric evidence.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_materialize_sidecar_counterfactuals.py \
+  tests/test_analyze_candidate_score_sidecar_top_select.py -q
+```
+
+Result: `5 passed`.
+
+Hashes:
+
+- `.debug/clean3_sidecar_counterfactuals_20260427/source_answer_masked_sidecar.jsonl`:
+  `d8fcde23ea05c1f989974925467c769565f11cdfa5fda61c3de852667fb4a7a2`
+- `.debug/clean3_sidecar_counterfactuals_20260427/source_final_only_sidecar.jsonl`:
+  `e1fe88457fdd74defd94008fd22178aa355a2d54278fac44671d5e9817b655c3`
+
+MPS blocker:
+
+PID `31103` remains present with `STAT=UE`; no MPS jobs were started.
+
+Next exact gate:
+
+```bash
+./venv_arm64/bin/python scripts/audit_source_surface_answer_masking.py \
+  --results-root results \
+  --date 2026-04-27 \
+  --output-json results/source_surface_answer_masking_audit_20260427/audit.json \
+  --output-md results/source_surface_answer_masking_audit_20260427/audit.md
+```
+
+Implement a CPU-only artifact audit that ranks existing target-side candidate
+surfaces by clean source-necessary IDs whose gold appears in the receiver pool
+without being explained by the source final/verified numeric answer. If the
+audit finds none, the next action is MPS/session cleanup before richer surface
+generation.
+
+## 2026-04-27 Cycle 4 - Source-Surface Answer-Masking Audit
+
+Cycle start:
+
+1. ICLR readiness: not ready; no current positive method survives
+   source-answer masking.
+2. Current paper story: candidate-pool headroom exists, but source-sidecar wins
+   are not communication evidence if explained by final numeric answer copying.
+3. Exact blocker: find an existing target-side surface with clean source-needed
+   answers in the receiver pool that are not explained by source final or
+   verified numeric answers.
+4. Live branch: source-surface discovery over stored artifacts.
+5. Highest-priority gate: CPU-only artifact-wide answer-masking audit.
+6. Scale-up rung: source-surface discovery.
+
+Implemented:
+
+- `scripts/audit_source_surface_answer_masking.py`
+- `tests/test_audit_source_surface_answer_masking.py`
+- memo: `paper/source_surface_answer_masking_audit_20260427.md`
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/audit_source_surface_answer_masking.py \
+  --results-root results \
+  --date 2026-04-27 \
+  --output-json results/source_surface_answer_masking_audit_20260427/audit.json \
+  --output-md results/source_surface_answer_masking_audit_20260427/audit.md
+```
+
+Result summary:
+
+- candidate target-set paths: `15`
+- loaded surfaces with clean IDs: `12`
+- skipped non-loadable candidate JSONs: `3`
+- top clean-in-pool surface:
+  `results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json`
+  with clean `2`, clean in pool `2`, answer-unexplained clean in pool `0`
+- all loaded surfaces: answer-unexplained clean in pool `0`
+
+Decision:
+
+- killed: tuning source candidate-score sidecars on existing stored surfaces
+  under the stricter answer-masking threat model.
+- live branch: answer-masked source-interface design plus fresh surface
+  generation when MPS clears.
+- hard constraint: PID `31103` remains stuck, so no MPS generation should start.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_audit_source_surface_answer_masking.py \
+  tests/test_materialize_sidecar_counterfactuals.py \
+  tests/test_analyze_candidate_score_sidecar_top_select.py -q
+```
+
+Result: `7 passed`.
+
+Hash:
+
+- `results/source_surface_answer_masking_audit_20260427/audit.json`:
+  `7e6a3acf0cda9e0fb033695d0ab09496d83c0e9ca9f9f4b6013fbd10aeb6e816`
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` is gone, generate a fresh strict small same-family source
+surface with final-answer masking built into source sidecar formation. If PID
+`31103` remains, continue CPU-only literature/harness design for answer-masked
+communication interfaces.

@@ -1,0 +1,3974 @@
+{
+  "config": {
+    "accept_penalty": 0.05,
+    "date": "2026-04-27",
+    "harm_weight": 4.0,
+    "holdout_sidecar_jsonl": "results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl",
+    "holdout_target_set": "results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json",
+    "live_sidecar_jsonl": "results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl",
+    "live_target_set": "results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json",
+    "max_accepted_harm": 0,
+    "max_control_clean_union": 0,
+    "min_holdout_clean_source_necessary": 1,
+    "min_holdout_correct": 1,
+    "min_live_clean_source_necessary": 1,
+    "min_live_correct": 1,
+    "mode": "learned_logodds",
+    "outer_folds": 3,
+    "output_dir": "results/target_only_sampling_clean3_20260427/source_sidecar_decoder_smoke",
+    "output_predictions_jsonl": "results/target_only_sampling_clean3_20260427/source_sidecar_decoder_smoke/predictions.jsonl",
+    "sidecar_format": "candidate_scores"
+  },
+  "control_clean_union_ids": [],
+  "date": "2026-04-27",
+  "decision": "Do not promote this semantic-predicate decoder on current artifacts. If revived, it needs stronger source surfaces or model-collected target-side likelihood/uncertainty features.",
+  "pass_rule": {
+    "max_accepted_harm": true,
+    "max_control_clean_union": true,
+    "min_holdout_clean_source_necessary": false,
+    "min_holdout_correct": false,
+    "min_live_clean_source_necessary": false,
+    "min_live_correct": false
+  },
+  "status": "semantic_predicate_decoder_fails_smoke",
+  "surfaces": [
+    {
+      "control_clean_union_ids": [],
+      "fold_models": {
+        "0": {
+          "rule": {
+            "min_margin": 8.62956746273609,
+            "min_score": -3.639588047437795,
+            "train_accept": 1,
+            "train_harm": 0,
+            "train_help": 1,
+            "train_score": 0.95
+          },
+          "top_negative_weights": [
+            [
+              "candidate_label:target_sample_s6",
+              -0.9873866535578855
+            ],
+            [
+              "candidate_label:target_sample_s5",
+              -0.9267620317414506
+            ],
+            [
+              "candidate_label:target_sample_s0",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:target_sample_s3",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:process_repair",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:target_self_repair",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:t2t",
+              -0.7932306391169278
+            ],
+            [
+              "candidate_label:target_sample_s7",
+              -0.7191226669632061
+            ],
+            [
+              "candidate_label:target",
+              -0.6390799592896695
+            ],
+            [
+              "candidate_label:selected_route_no_repair",
+              -0.6390799592896695
+            ],
+            [
+              "source_has_final_numeric",
+              -0.3513978868378886
+            ],
+            [
+              "bias",
+              -0.3513978868378886
+            ]
+          ],
+          "top_positive_weights": [
+            [
+              "candidate_in_last2_source_numbers",
+              1.4403615823901663
+            ],
+            [
+              "candidate_is_last_source_number",
+              1.4403615823901663
+            ],
+            [
+              "candidate_eq_sidecar_top",
+              1.4403615823901663
+            ],
+            [
+              "candidate_mentioned_by_source",
+              1.4403615823901663
+            ],
+            [
+              "candidate_eq_source_final",
+              1.4403615823901663
+            ],
+            [
+              "sidecar_margin:ge200",
+              0.5930637220029628
+            ],
+            [
+              "sidecar_confidence:ge200",
+              0.5930637220029628
+            ],
+            [
+              "sidecar_top_label:target_sample_s1",
+              0.5930637220029628
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_0",
+              0.45953232937844013
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_2",
+              0.45953232937844013
+            ],
+            [
+              "candidate_is_fallback",
+              0.45953232937844013
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_1",
+              0.45953232937844013
+            ]
+          ]
+        },
+        "1": {
+          "rule": {
+            "min_margin": 8.62956746273609,
+            "min_score": -3.639588047437795,
+            "train_accept": 1,
+            "train_harm": 0,
+            "train_help": 1,
+            "train_score": 0.95
+          },
+          "top_negative_weights": [
+            [
+              "candidate_label:target_sample_s6",
+              -0.9873866535578855
+            ],
+            [
+              "candidate_label:target_sample_s5",
+              -0.9267620317414506
+            ],
+            [
+              "candidate_label:target_sample_s0",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:target_sample_s3",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:process_repair",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:target_self_repair",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:t2t",
+              -0.7932306391169278
+            ],
+            [
+              "candidate_label:target_sample_s7",
+              -0.7191226669632061
+            ],
+            [
+              "candidate_label:target",
+              -0.6390799592896695
+            ],
+            [
+              "candidate_label:selected_route_no_repair",
+              -0.6390799592896695
+            ],
+            [
+              "source_has_final_numeric",
+              -0.3513978868378886
+            ],
+            [
+              "bias",
+              -0.3513978868378886
+            ]
+          ],
+          "top_positive_weights": [
+            [
+              "candidate_in_last2_source_numbers",
+              1.4403615823901663
+            ],
+            [
+              "candidate_is_last_source_number",
+              1.4403615823901663
+            ],
+            [
+              "candidate_eq_sidecar_top",
+              1.4403615823901663
+            ],
+            [
+              "candidate_mentioned_by_source",
+              1.4403615823901663
+            ],
+            [
+              "candidate_eq_source_final",
+              1.4403615823901663
+            ],
+            [
+              "sidecar_margin:ge200",
+              0.5930637220029628
+            ],
+            [
+              "sidecar_confidence:ge200",
+              0.5930637220029628
+            ],
+            [
+              "sidecar_top_label:target_sample_s1",
+              0.5930637220029628
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_0",
+              0.45953232937844013
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_2",
+              0.45953232937844013
+            ],
+            [
+              "candidate_is_fallback",
+              0.45953232937844013
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_1",
+              0.45953232937844013
+            ]
+          ]
+        },
+        "2": {
+          "rule": {
+            "min_margin": Infinity,
+            "min_score": Infinity,
+            "train_accept": 0,
+            "train_harm": 0,
+            "train_help": 0,
+            "train_score": 0.0
+          },
+          "top_negative_weights": [],
+          "top_positive_weights": []
+        }
+      },
+      "label": "live",
+      "rows_by_condition": {
+        "label_shuffle": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_self_repair",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "label_shuffle",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "16",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_self_repair",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s1",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "label_shuffle",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s1",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_self_repair",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "label_shuffle",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_self_repair",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "matched": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s1",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "matched",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s1",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_self_repair",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "matched",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "42",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_self_repair",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt050",
+                "sidecar_margin:lt050",
+                "sidecar_present",
+                "sidecar_top_label:target",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:lt200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "matched",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:lt050",
+              "sidecar_margin:lt050",
+              "sidecar_present",
+              "sidecar_top_label:target",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:lt200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "random_sidecar": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt100",
+                "sidecar_margin:lt025",
+                "sidecar_present",
+                "sidecar_top_label:t2t",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:lt100",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "random_sidecar",
+            "condition_source_example_id": null,
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:lt100",
+              "sidecar_margin:lt025",
+              "sidecar_present",
+              "sidecar_top_label:t2t",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:lt100",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt100",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:lt200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "random_sidecar",
+            "condition_source_example_id": null,
+            "condition_source_final": "33",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:lt100",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:lt200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s0",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:lt100",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "random_sidecar",
+            "condition_source_example_id": null,
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s0",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:lt100",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "shuffled_source": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_self_repair",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "shuffled_source",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "16",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_self_repair",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s1",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "shuffled_source",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s1",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s1",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "shuffled_source",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s1",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "slots_only": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_eq_source_final",
+                "candidate_in_last2_source_numbers",
+                "candidate_is_last_source_number",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "candidate_mentioned_by_source",
+                "op_add",
+                "op_mul",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "1",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "op_add",
+              "op_mul",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_eq_source_final",
+                "candidate_in_last2_source_numbers",
+                "candidate_is_last_source_number",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small",
+                "candidate_mentioned_by_source",
+                "op_mul",
+                "op_sub",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "1",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "op_mul",
+              "op_sub",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "op_add",
+                "op_mul",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "op_add",
+              "op_mul",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          }
+        ],
+        "slots_only_sidecar": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_eq_sidecar_top",
+                "candidate_eq_source_final",
+                "candidate_in_last2_source_numbers",
+                "candidate_is_last_source_number",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "candidate_mentioned_by_source",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:slots",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only_sidecar",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "1",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:slots",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_eq_sidecar_top",
+                "candidate_eq_source_final",
+                "candidate_in_last2_source_numbers",
+                "candidate_is_last_source_number",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small",
+                "candidate_mentioned_by_source",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:slots",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only_sidecar",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "1",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:slots",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:slots",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only_sidecar",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:slots",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "target_only": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "op_add",
+                "op_mul",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "16",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "op_add",
+              "op_mul",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small",
+                "op_mul",
+                "op_sub",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "33",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "op_mul",
+              "op_sub",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "op_add",
+                "op_mul",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "op_add",
+              "op_mul",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          }
+        ],
+        "target_only_sidecar": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only_sidecar",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "16",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only_sidecar",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "33",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only_sidecar",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "zero_source": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "zero_source",
+            "condition_source_example_id": null,
+            "condition_source_final": null,
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "zero_source",
+            "condition_source_example_id": null,
+            "condition_source_final": null,
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "zero_source",
+            "condition_source_example_id": null,
+            "condition_source_final": null,
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          }
+        ]
+      },
+      "summaries": {
+        "label_shuffle": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "matched": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "random_sidecar": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "shuffled_source": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "slots_only": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 2.0,
+          "n": 3,
+          "sidecar_missing_count": 3,
+          "sidecar_present_count": 0,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "slots_only_sidecar": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "target_only": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 2.0,
+          "n": 3,
+          "sidecar_missing_count": 3,
+          "sidecar_present_count": 0,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "target_only_sidecar": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "zero_source": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 3,
+          "sidecar_present_count": 0,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        }
+      },
+      "target_set": "results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json"
+    },
+    {
+      "control_clean_union_ids": [],
+      "fold_models": {
+        "0": {
+          "rule": {
+            "min_margin": 8.62956746273609,
+            "min_score": -3.639588047437795,
+            "train_accept": 1,
+            "train_harm": 0,
+            "train_help": 1,
+            "train_score": 0.95
+          },
+          "top_negative_weights": [
+            [
+              "candidate_label:target_sample_s6",
+              -0.9873866535578855
+            ],
+            [
+              "candidate_label:target_sample_s5",
+              -0.9267620317414506
+            ],
+            [
+              "candidate_label:target_sample_s0",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:target_sample_s3",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:process_repair",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:target_self_repair",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:t2t",
+              -0.7932306391169278
+            ],
+            [
+              "candidate_label:target_sample_s7",
+              -0.7191226669632061
+            ],
+            [
+              "candidate_label:target",
+              -0.6390799592896695
+            ],
+            [
+              "candidate_label:selected_route_no_repair",
+              -0.6390799592896695
+            ],
+            [
+              "source_has_final_numeric",
+              -0.3513978868378886
+            ],
+            [
+              "bias",
+              -0.3513978868378886
+            ]
+          ],
+          "top_positive_weights": [
+            [
+              "candidate_in_last2_source_numbers",
+              1.4403615823901663
+            ],
+            [
+              "candidate_is_last_source_number",
+              1.4403615823901663
+            ],
+            [
+              "candidate_eq_sidecar_top",
+              1.4403615823901663
+            ],
+            [
+              "candidate_mentioned_by_source",
+              1.4403615823901663
+            ],
+            [
+              "candidate_eq_source_final",
+              1.4403615823901663
+            ],
+            [
+              "sidecar_margin:ge200",
+              0.5930637220029628
+            ],
+            [
+              "sidecar_confidence:ge200",
+              0.5930637220029628
+            ],
+            [
+              "sidecar_top_label:target_sample_s1",
+              0.5930637220029628
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_0",
+              0.45953232937844013
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_2",
+              0.45953232937844013
+            ],
+            [
+              "candidate_is_fallback",
+              0.45953232937844013
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_1",
+              0.45953232937844013
+            ]
+          ]
+        },
+        "1": {
+          "rule": {
+            "min_margin": 8.62956746273609,
+            "min_score": -3.639588047437795,
+            "train_accept": 1,
+            "train_harm": 0,
+            "train_help": 1,
+            "train_score": 0.95
+          },
+          "top_negative_weights": [
+            [
+              "candidate_label:target_sample_s6",
+              -0.9873866535578855
+            ],
+            [
+              "candidate_label:target_sample_s5",
+              -0.9267620317414506
+            ],
+            [
+              "candidate_label:target_sample_s0",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:target_sample_s3",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:process_repair",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:target_self_repair",
+              -0.8622235106038795
+            ],
+            [
+              "candidate_label:t2t",
+              -0.7932306391169278
+            ],
+            [
+              "candidate_label:target_sample_s7",
+              -0.7191226669632061
+            ],
+            [
+              "candidate_label:target",
+              -0.6390799592896695
+            ],
+            [
+              "candidate_label:selected_route_no_repair",
+              -0.6390799592896695
+            ],
+            [
+              "source_has_final_numeric",
+              -0.3513978868378886
+            ],
+            [
+              "bias",
+              -0.3513978868378886
+            ]
+          ],
+          "top_positive_weights": [
+            [
+              "candidate_in_last2_source_numbers",
+              1.4403615823901663
+            ],
+            [
+              "candidate_is_last_source_number",
+              1.4403615823901663
+            ],
+            [
+              "candidate_eq_sidecar_top",
+              1.4403615823901663
+            ],
+            [
+              "candidate_mentioned_by_source",
+              1.4403615823901663
+            ],
+            [
+              "candidate_eq_source_final",
+              1.4403615823901663
+            ],
+            [
+              "sidecar_margin:ge200",
+              0.5930637220029628
+            ],
+            [
+              "sidecar_confidence:ge200",
+              0.5930637220029628
+            ],
+            [
+              "sidecar_top_label:target_sample_s1",
+              0.5930637220029628
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_0",
+              0.45953232937844013
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_2",
+              0.45953232937844013
+            ],
+            [
+              "candidate_is_fallback",
+              0.45953232937844013
+            ],
+            [
+              "candidate_label:zero_source_pool_seed_1",
+              0.45953232937844013
+            ]
+          ]
+        },
+        "2": {
+          "rule": {
+            "min_margin": Infinity,
+            "min_score": Infinity,
+            "train_accept": 0,
+            "train_harm": 0,
+            "train_help": 0,
+            "train_score": 0.0
+          },
+          "top_negative_weights": [],
+          "top_positive_weights": []
+        }
+      },
+      "label": "holdout",
+      "rows_by_condition": {
+        "label_shuffle": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_self_repair",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "label_shuffle",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "16",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_self_repair",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s1",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "label_shuffle",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s1",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_self_repair",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "label_shuffle",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_self_repair",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "matched": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s1",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "matched",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s1",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_self_repair",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "matched",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "42",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_self_repair",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt050",
+                "sidecar_margin:lt050",
+                "sidecar_present",
+                "sidecar_top_label:target",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:lt200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "matched",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:lt050",
+              "sidecar_margin:lt050",
+              "sidecar_present",
+              "sidecar_top_label:target",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:lt200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "random_sidecar": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_eq_sidecar_top",
+                "candidate_eq_source_final",
+                "candidate_in_last2_source_numbers",
+                "candidate_is_last_source_number",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "candidate_mentioned_by_source",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s1",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:lt025",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "random_sidecar",
+            "condition_source_example_id": null,
+            "condition_source_final": "1",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s1",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:lt025",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt025",
+                "sidecar_margin:lt100",
+                "sidecar_present",
+                "sidecar_top_label:t2t",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:lt050",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "random_sidecar",
+            "condition_source_example_id": null,
+            "condition_source_final": "42",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:lt025",
+              "sidecar_margin:lt100",
+              "sidecar_present",
+              "sidecar_top_label:t2t",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:lt050",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt100",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s0",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:lt100",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "random_sidecar",
+            "condition_source_example_id": null,
+            "condition_source_final": "9",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt100",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s0",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:lt100",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "shuffled_source": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:lt200",
+                "sidecar_margin:lt200",
+                "sidecar_present",
+                "sidecar_top_label:target_self_repair",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "shuffled_source",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "16",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:lt200",
+              "sidecar_margin:lt200",
+              "sidecar_present",
+              "sidecar_top_label:target_self_repair",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s1",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "shuffled_source",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s1",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label_eq_sidecar_top",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target_sample_s1",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "shuffled_source",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target_sample_s1",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "slots_only": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_eq_source_final",
+                "candidate_in_last2_source_numbers",
+                "candidate_is_last_source_number",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "candidate_mentioned_by_source",
+                "op_add",
+                "op_mul",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "1",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "op_add",
+              "op_mul",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_eq_source_final",
+                "candidate_in_last2_source_numbers",
+                "candidate_is_last_source_number",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small",
+                "candidate_mentioned_by_source",
+                "op_mul",
+                "op_sub",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "1",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "op_mul",
+              "op_sub",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "op_add",
+                "op_mul",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "op_add",
+              "op_mul",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          }
+        ],
+        "slots_only_sidecar": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_eq_sidecar_top",
+                "candidate_eq_source_final",
+                "candidate_in_last2_source_numbers",
+                "candidate_is_last_source_number",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "candidate_mentioned_by_source",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:slots",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only_sidecar",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "1",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:slots",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_eq_sidecar_top",
+                "candidate_eq_source_final",
+                "candidate_in_last2_source_numbers",
+                "candidate_is_last_source_number",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small",
+                "candidate_mentioned_by_source",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:slots",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only_sidecar",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "1",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:slots",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:slots",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "slots_only_sidecar",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:slots",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "target_only": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "op_add",
+                "op_mul",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "16",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "op_add",
+              "op_mul",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small",
+                "op_mul",
+                "op_sub",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "33",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "op_mul",
+              "op_sub",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "op_add",
+                "op_mul",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "op_add",
+              "op_mul",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 2,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          }
+        ],
+        "target_only_sidecar": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only_sidecar",
+            "condition_source_example_id": "14bfbfc94f2c2e7b",
+            "condition_source_final": "16",
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only_sidecar",
+            "condition_source_example_id": "2de1549556000830",
+            "condition_source_final": "33",
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small",
+                "sidecar_confidence:ge200",
+                "sidecar_margin:ge200",
+                "sidecar_present",
+                "sidecar_top_label:target",
+                "sidecar_top_maps_to_candidate",
+                "sidecar_top_score:ge200",
+                "source_has_final_numeric"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "target_only_sidecar",
+            "condition_source_example_id": "41cce6c6e6bb0058",
+            "condition_source_final": "3",
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [
+              "sidecar_confidence:ge200",
+              "sidecar_margin:ge200",
+              "sidecar_present",
+              "sidecar_top_label:target",
+              "sidecar_top_maps_to_candidate",
+              "sidecar_top_score:ge200",
+              "source_has_final_numeric"
+            ],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": true,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": true
+          }
+        ],
+        "zero_source": [
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_sample_s1",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "zero_source",
+            "condition_source_example_id": null,
+            "condition_source_final": null,
+            "correct": false,
+            "example_id": "14bfbfc94f2c2e7b",
+            "fallback_prediction": "16",
+            "gold_answer": "3",
+            "predicate_names": [],
+            "prediction": "16",
+            "sidecar_bytes": 1,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:process_repair",
+                "candidate_label:t2t",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s4",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_label:target_sample_s7",
+                "candidate_label:target_self_repair",
+                "candidate_magnitude:small"
+              ],
+              "labels": [
+                "t2t",
+                "t2t",
+                "target_self_repair",
+                "process_repair",
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s4",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s7"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "zero_source",
+            "condition_source_example_id": null,
+            "condition_source_final": null,
+            "correct": false,
+            "example_id": "2de1549556000830",
+            "fallback_prediction": "33",
+            "gold_answer": "39",
+            "predicate_names": [],
+            "prediction": "33",
+            "sidecar_bytes": 1,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          },
+          {
+            "accepted_source_sidecar": false,
+            "best_candidate": {
+              "features": [
+                "bias",
+                "candidate_label:target_sample_s0",
+                "candidate_label:target_sample_s1",
+                "candidate_label:target_sample_s2",
+                "candidate_label:target_sample_s3",
+                "candidate_label:target_sample_s5",
+                "candidate_label:target_sample_s6",
+                "candidate_magnitude:small"
+              ],
+              "labels": [
+                "target_sample_s0",
+                "target_sample_s1",
+                "target_sample_s2",
+                "target_sample_s2",
+                "target_sample_s3",
+                "target_sample_s3",
+                "target_sample_s5",
+                "target_sample_s5",
+                "target_sample_s6",
+                "target_sample_s6"
+              ],
+              "score": 0.0,
+              "value": "1"
+            },
+            "best_margin": 0.0,
+            "condition": "zero_source",
+            "condition_source_example_id": null,
+            "condition_source_final": null,
+            "correct": false,
+            "example_id": "41cce6c6e6bb0058",
+            "fallback_prediction": "3",
+            "gold_answer": "10",
+            "predicate_names": [],
+            "prediction": "3",
+            "sidecar_bytes": 1,
+            "sidecar_present": false,
+            "source_control_source_answers_overlap_target": false,
+            "source_quality": false
+          }
+        ]
+      },
+      "summaries": {
+        "label_shuffle": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "matched": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "random_sidecar": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "shuffled_source": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "slots_only": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 2.0,
+          "n": 3,
+          "sidecar_missing_count": 3,
+          "sidecar_present_count": 0,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "slots_only_sidecar": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "target_only": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 2.0,
+          "n": 3,
+          "sidecar_missing_count": 3,
+          "sidecar_present_count": 0,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "target_only_sidecar": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 0,
+          "sidecar_present_count": 3,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        },
+        "zero_source": {
+          "accepted": 0,
+          "accepted_clean_source_help_count": 0,
+          "accepted_clean_source_help_ids": [],
+          "accepted_harm_count": 0,
+          "accepted_harm_ids": [],
+          "accepted_help_count": 0,
+          "accepted_help_ids": [],
+          "clean_source_necessary_count": 0,
+          "clean_source_necessary_ids": [],
+          "correct": 0,
+          "fallback_correct_count": 0,
+          "mean_sidecar_bytes": 1.0,
+          "n": 3,
+          "sidecar_missing_count": 3,
+          "sidecar_present_count": 0,
+          "target_self_harm_count": 0,
+          "target_self_harm_ids": []
+        }
+      },
+      "target_set": "results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json"
+    }
+  ]
+}

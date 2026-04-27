@@ -1,0 +1,38 @@
+{
+  "command": "scripts/materialize_svamp_source_candidate_sidecars.py --live-target-set results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json --output-dir results/target_only_sampling_clean3_20260427/source_candidate_sidecars --sidecar-bits 8 --label-prior 0.0 --date 2026-04-27",
+  "config": {
+    "candidate_pool": "target_side_only",
+    "holdout_target_set": null,
+    "label_prior": 0.0,
+    "live_target_set": "results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json",
+    "sidecar_bits": 8
+  },
+  "date": "2026-04-27",
+  "git_commit": "afbf022b1e7e1e96c1bd76f72c28e6f538f73abf",
+  "hashes": {
+    "live_sidecar_sha256": "003adb88d1424f8b7b444d0972c85141d2cc889f29e27a0487ba48605ea7e66f"
+  },
+  "outputs": {
+    "live_sidecar": "results/target_only_sampling_clean3_20260427/source_candidate_sidecars/live_candidate_sidecars.jsonl",
+    "manifest_json": "results/target_only_sampling_clean3_20260427/source_candidate_sidecars/manifest.json",
+    "manifest_md": "results/target_only_sampling_clean3_20260427/source_candidate_sidecars/manifest.md"
+  },
+  "status": "source_candidate_sidecars_materialized",
+  "summaries": {
+    "live": {
+      "empty_pool": 0,
+      "missing_source": 0,
+      "n": 3,
+      "sidecar_bits": 8,
+      "sidecar_bytes": 1,
+      "source_final_in_pool": 1,
+      "source_mentioned_pool_hits": 3,
+      "target_set": "results/target_only_sampling_clean3_20260427/sampled_clean3_target_set.json",
+      "top_label_counts": {
+        "target": 1,
+        "target_sample_s1": 1,
+        "target_self_repair": 1
+      }
+    }
+  }
+}
