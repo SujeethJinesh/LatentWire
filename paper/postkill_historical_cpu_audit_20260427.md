@@ -174,3 +174,16 @@ End state reached for the current loop segment: hard blocker. The current live
 branch is none; the previous live branch is decisively killed, historical
 branches are pruned to mechanism clues, and no CPU-only next command remains
 that can produce a promotable result.
+
+## 2026-04-27 Blocker Recheck
+
+The blocker was rechecked after the checkpoint commit:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+kill -9 31103 2>/dev/null || true; sleep 3; ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: PID `31103` remained present with `PPID=1` and `STAT=UE`, still running
+`scripts/calibrate.py ... --device mps`. This confirms the blocker requires
+OS/session-level cleanup before MPS experiments can resume.

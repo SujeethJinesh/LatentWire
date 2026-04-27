@@ -8066,3 +8066,42 @@ PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baseli
   --no-enable-thinking \
   --continue-on-error
 ```
+
+## 2026-04-27 Cycle - MPS blocker recheck
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; no deployable positive
+   source-communication method has cleared live/holdout controls.
+2. Current paper story: historical `rotalign`, `latent_bridge`, and
+   side-information positives remain mechanism clues, but the current method
+   branch is killed.
+3. Exact blocker to submission: no live branch remains, and MPS is blocked by
+   orphaned PID `31103`.
+4. Live branch: none.
+5. Highest-priority gate: verify whether the MPS blocker has cleared before
+   starting the recorded stronger-source scout.
+6. Scale-up rung: hard-blocker checkpoint.
+
+Result:
+
+- `ps -p 31103 -o pid,ppid,stat,etime,command` still reports PID `31103`,
+  `PPID=1`, `STAT=UE`, running `scripts/calibrate.py ... --device mps`.
+- A bounded `kill -9 31103` retry did not clear the process; it remained in
+  `STAT=UE` after a short wait.
+- No MPS jobs were started.
+
+Decision:
+
+- Hard blocker persists. The next action is still OS/session-level cleanup or
+  reboot to clear PID `31103`; do not start MPS work from this session while it
+  remains present.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` is absent, run the stronger-source scout recorded in
+`paper/postkill_historical_cpu_audit_20260427.md`.
