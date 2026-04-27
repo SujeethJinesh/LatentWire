@@ -1,0 +1,29 @@
+{
+  "command": "scripts/materialize_masked_process_verifier_sidecars.py --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json --output-dir results/masked_process_verifier_sidecars_20260427 --date 2026-04-27",
+  "date": "2026-04-27",
+  "git_commit": "44c2a4af0b4d75033ebbcaf5b26dbf50f0d98d8a",
+  "result": {
+    "surfaces": {
+      "holdout": {
+        "answer_excluded_top": 62,
+        "clean_n": 2,
+        "empty_pool": 0,
+        "n": 70,
+        "output_jsonl": "results/masked_process_verifier_sidecars_20260427/holdout_masked_process_sidecars.jsonl",
+        "output_jsonl_sha256": "99d8f7fe9821125c2321a1e0f6ae6bbd354ef54016af7f36c1e2f72f7f3868a3",
+        "target_set": "results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json",
+        "target_set_sha256": "dd11d8f33b24757222d310342bbf12ce27c115cb091c2f44a8287c8d126721d3"
+      },
+      "live": {
+        "answer_excluded_top": 55,
+        "clean_n": 6,
+        "empty_pool": 0,
+        "n": 70,
+        "output_jsonl": "results/masked_process_verifier_sidecars_20260427/live_masked_process_sidecars.jsonl",
+        "output_jsonl_sha256": "03047945d55036b8269331ed2286b09ac9a83e1dae06d264ab32c5bc96d2a0d6",
+        "target_set": "results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json",
+        "target_set_sha256": "fc5eb4ca577ca33e01a9b23f427ff5d45346e1d2435392a7ce01ca25631fc729"
+      }
+    }
+  }
+}

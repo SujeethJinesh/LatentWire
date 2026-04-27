@@ -237,6 +237,14 @@ with clean IDs, every clean in-pool answer was explained by source final or
 verified numeric answers; answer-unexplained clean-in-pool count was `0` for all
 surfaces. Current live branch is therefore answer-masked source-interface
 design and fresh surface generation after the orphaned MPS process clears.
+
+Update `2026-04-27 04:58 PDT`: the first answer-masked process-verifier sidecar
+is negative. It masks source final and verified numeric answers before
+operation/equation/lexical process-overlap scoring, but live remains `21/70`
+with clean `0`, and holdout remains `8/70` with clean `0`; a holdout threshold
+sweep also finds no clean source-necessary recovery. The next CPU-feasible
+answer-null branch is a more structured predicate syndrome, not text-overlap
+process scoring.
 - strict target-mentioned oracle headroom is small on the current canonical
   surface: live target `21/70` can only reach `23/70`; holdout target `8/70`
   can only reach `12/70`

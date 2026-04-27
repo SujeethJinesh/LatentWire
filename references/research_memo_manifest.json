@@ -803,5 +803,12 @@
     "path": "references/471_byte_efficient_source_sideinfo_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for byte-efficient source side-information after historical sparse-K, RotAlign/DynAlign, sidecar, and KVComm audits selected learned syndrome/innovation sidecars as the next high-value branch."
+  },
+  {
+    "num": 472,
+    "slug": "answer_null_sideinfo_refs",
+    "path": "references/472_answer_null_sideinfo_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for answer-null side-information after source-answer ablation killed candidate-score sidecars, motivating masked process verifiers, predicate syndromes, contrastive error tags, erasure gates, and zero-init query bottlenecks."
   }
 ]

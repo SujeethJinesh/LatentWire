@@ -10381,3 +10381,116 @@ If PID `31103` is gone, generate a fresh strict small same-family source
 surface with final-answer masking built into source sidecar formation. If PID
 `31103` remains, continue CPU-only literature/harness design for answer-masked
 communication interfaces.
+
+## 2026-04-27 Cycle 5 - Masked Process-Verifier Sidecar Smoke
+
+Cycle start:
+
+1. ICLR readiness: not ready; the active blocker is answer-null source
+   communication.
+2. Current paper story: candidate sidecars are only useful if they communicate
+   reasoning/process information rather than direct final numeric answers.
+3. Exact blocker: source-answer masking killed the prior sidecar, and stored
+   surfaces have no answer-unexplained clean in-pool IDs.
+4. Live branches: masked process-verifier sidecar; predicate syndrome as the
+   next branch if process-overlap fails.
+5. Highest-priority gate: CPU-only live/holdout masked process sidecar smoke.
+6. Scale-up rung: smoke.
+
+Implemented:
+
+- `scripts/materialize_masked_process_verifier_sidecars.py`
+- `tests/test_materialize_masked_process_verifier_sidecars.py`
+- memo: `paper/masked_process_verifier_sidecar_20260427.md`
+- reference memo: `references/472_answer_null_sideinfo_refs.md`
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_masked_process_verifier_sidecars.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --output-dir results/masked_process_verifier_sidecars_20260427 \
+  --date 2026-04-27
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_candidate_score_sidecar_top_select.py \
+  --target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --sidecar-jsonl results/masked_process_verifier_sidecars_20260427/live_masked_process_sidecars.jsonl \
+  --min-confidence 0.5 \
+  --min-source-necessary-clean 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json results/masked_process_verifier_sidecars_20260427/live_top_selector.json \
+  --output-md results/masked_process_verifier_sidecars_20260427/live_top_selector.md
+```
+
+```bash
+./venv_arm64/bin/python scripts/analyze_candidate_score_sidecar_top_select.py \
+  --target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --sidecar-jsonl results/masked_process_verifier_sidecars_20260427/holdout_masked_process_sidecars.jsonl \
+  --min-confidence 0.5 \
+  --min-source-necessary-clean 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json results/masked_process_verifier_sidecars_20260427/holdout_top_selector.json \
+  --output-md results/masked_process_verifier_sidecars_20260427/holdout_top_selector.md
+```
+
+Result summary:
+
+- live materialization: `70` examples, clean `6`, answer-excluded top `55`
+- holdout materialization: `70` examples, clean `2`, answer-excluded top `62`
+- live top selector: matched `21/70`, accepted `0`, clean `0`, accepted harm
+  `0`, control clean union `0`
+- holdout top selector: matched `8/70`, accepted `0`, clean `0`, accepted harm
+  `0`, control clean union `0`
+- holdout threshold sweep at `0`, `0.1`, `0.25`, `0.5`, `1.0`: no
+  source-necessary clean IDs
+
+Decision:
+
+- killed: heuristic masked process-overlap sidecar. After answer masking, simple
+  operation/equation/lexical overlap is too weak to select useful candidates.
+- next branch: structured answer-null predicate syndrome over operation
+  sequence, quantity roles, equation-shape buckets, unit relation, and
+  sign/order relation.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_materialize_masked_process_verifier_sidecars.py -q
+./venv_arm64/bin/python -m py_compile scripts/materialize_masked_process_verifier_sidecars.py
+```
+
+Result: `3 passed`; compile passed.
+
+Hashes:
+
+- `results/masked_process_verifier_sidecars_20260427/manifest.json`:
+  `d7ff1fd198fcd0a2fc3200d0fc332c234f372d06133c6827e316823c1f3a10d3`
+- `results/masked_process_verifier_sidecars_20260427/live_masked_process_sidecars.jsonl`:
+  `03047945d55036b8269331ed2286b09ac9a83e1dae06d264ab32c5bc96d2a0d6`
+- `results/masked_process_verifier_sidecars_20260427/holdout_masked_process_sidecars.jsonl`:
+  `99d8f7fe9821125c2321a1e0f6ae6bbd354ef54016af7f36c1e2f72f7f3868a3`
+- `results/masked_process_verifier_sidecars_20260427/live_top_selector.json`:
+  `f132337726df48abd7f4f6051b7c56e07085edb94dad0410a975416fc398ef64`
+- `results/masked_process_verifier_sidecars_20260427/holdout_top_selector.json`:
+  `01967b1885a2536b29f573b7ae4e12c55d57f49293ef91551d4c73e48b1fc8cf`
+
+Next exact gate:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_answer_null_predicate_syndrome.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --output-dir results/answer_null_predicate_syndrome_20260427 \
+  --date 2026-04-27
+```
+
+Implement this as a CPU-only smoke. The sidecar must exclude candidate IDs,
+candidate values, source final numbers, verified answer numbers, and residue
+hashes.

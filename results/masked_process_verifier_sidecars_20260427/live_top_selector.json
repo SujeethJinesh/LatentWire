@@ -1,0 +1,4207 @@
+{
+  "command": "scripts/analyze_candidate_score_sidecar_top_select.py --target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json --sidecar-jsonl results/masked_process_verifier_sidecars_20260427/live_masked_process_sidecars.jsonl --min-confidence 0.5 --min-source-necessary-clean 1 --max-control-clean-union 0 --max-accepted-harm 0 --date 2026-04-27 --output-json results/masked_process_verifier_sidecars_20260427/live_top_selector.json --output-md results/masked_process_verifier_sidecars_20260427/live_top_selector.md",
+  "date": "2026-04-27",
+  "git_commit": "44c2a4af0b4d75033ebbcaf5b26dbf50f0d98d8a",
+  "pass_rule": {
+    "max_accepted_harm": true,
+    "max_control_clean_union": true,
+    "min_source_necessary_clean": false
+  },
+  "result": {
+    "clean_ids": [
+      "14bfbfc94f2c2e7b",
+      "2de1549556000830",
+      "41cce6c6e6bb0058",
+      "4d780f825bb8541c",
+      "bd9d8da923981d69",
+      "ce08a3a269bf0151"
+    ],
+    "min_confidence": 0.5,
+    "n": 70,
+    "rows": [
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.07692307692307665,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": "5"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.07692307692307665,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": "5"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.017281105990783807,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": "10"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": null
+          }
+        },
+        "example_id": "013133cdef4f637c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": "15"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": "15"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": "13"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "96",
+            "gold": "2",
+            "prediction": "96",
+            "top_value": null
+          }
+        },
+        "example_id": "d64f6e35083ffe8c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": "3"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": "3"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.15740740740740833,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": "17"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": null
+          }
+        },
+        "example_id": "3e8a5691f5443495"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "63",
+            "gold": "63",
+            "prediction": "63",
+            "top_value": "15"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "63",
+            "gold": "63",
+            "prediction": "63",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "63",
+            "gold": "63",
+            "prediction": "63",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "63",
+            "gold": "63",
+            "prediction": "63",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "63",
+            "gold": "63",
+            "prediction": "63",
+            "top_value": null
+          }
+        },
+        "example_id": "316b525a4fcbfb89"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.017281105990783807,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": "10"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.017281105990783807,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": "3"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": "20"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "1",
+            "prediction": "3",
+            "top_value": null
+          }
+        },
+        "example_id": "e26bdbcab1449bbe"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "17",
+            "gold": "1",
+            "prediction": "17",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "17",
+            "gold": "1",
+            "prediction": "17",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.06138107416879812,
+            "correct": false,
+            "fallback_prediction": "17",
+            "gold": "1",
+            "prediction": "17",
+            "top_value": "15"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "17",
+            "gold": "1",
+            "prediction": "17",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "17",
+            "gold": "1",
+            "prediction": "17",
+            "top_value": null
+          }
+        },
+        "example_id": "aee922049c757331"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "949",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "949",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "949",
+            "prediction": "1",
+            "top_value": "54"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "949",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "949",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "1d50b408c8f5cd2c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.002962962962962834,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "2",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.002962962962962834,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "2",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "2",
+            "prediction": "1",
+            "top_value": "185"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "2",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "2",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "b0b71023ae4d233b"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "178",
+            "gold": "2",
+            "prediction": "178",
+            "top_value": "178"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "178",
+            "gold": "2",
+            "prediction": "178",
+            "top_value": "142"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "178",
+            "gold": "2",
+            "prediction": "178",
+            "top_value": "20"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "178",
+            "gold": "2",
+            "prediction": "178",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "178",
+            "gold": "2",
+            "prediction": "178",
+            "top_value": null
+          }
+        },
+        "example_id": "b1200c32546a34a5"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "16",
+            "top_value": "16"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "16",
+            "top_value": "16"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "16",
+            "top_value": "13"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "16",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "16",
+            "gold": "3",
+            "prediction": "16",
+            "top_value": null
+          }
+        },
+        "example_id": "14bfbfc94f2c2e7b"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "10",
+            "prediction": "2",
+            "top_value": "12"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "10",
+            "prediction": "2",
+            "top_value": "12"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "10",
+            "prediction": "2",
+            "top_value": "13"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "10",
+            "prediction": "2",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "10",
+            "prediction": "2",
+            "top_value": null
+          }
+        },
+        "example_id": "4c84ebf42812703b"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.03668478260869579,
+            "correct": false,
+            "fallback_prediction": "52",
+            "gold": "4",
+            "prediction": "52",
+            "top_value": "4"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.03668478260869579,
+            "correct": false,
+            "fallback_prediction": "52",
+            "gold": "4",
+            "prediction": "52",
+            "top_value": "46"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.09210526315789469,
+            "correct": false,
+            "fallback_prediction": "52",
+            "gold": "4",
+            "prediction": "52",
+            "top_value": "7"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "52",
+            "gold": "4",
+            "prediction": "52",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "52",
+            "gold": "4",
+            "prediction": "52",
+            "top_value": null
+          }
+        },
+        "example_id": "4ef979ea2bf931df"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "46",
+            "gold": "8142",
+            "prediction": "46",
+            "top_value": "177"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "46",
+            "gold": "8142",
+            "prediction": "46",
+            "top_value": "177"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.002962962962962834,
+            "correct": false,
+            "fallback_prediction": "46",
+            "gold": "8142",
+            "prediction": "46",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "46",
+            "gold": "8142",
+            "prediction": "46",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "46",
+            "gold": "8142",
+            "prediction": "46",
+            "top_value": null
+          }
+        },
+        "example_id": "13cb77b698eeadb5"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "4",
+            "gold": "1",
+            "prediction": "4",
+            "top_value": "2"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "4",
+            "gold": "1",
+            "prediction": "4",
+            "top_value": "2"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.09705882352941231,
+            "correct": false,
+            "fallback_prediction": "4",
+            "gold": "1",
+            "prediction": "4",
+            "top_value": "8"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "4",
+            "gold": "1",
+            "prediction": "4",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "4",
+            "gold": "1",
+            "prediction": "4",
+            "top_value": null
+          }
+        },
+        "example_id": "e3ab8666238a289e"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.03525641025640969,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "39",
+            "prediction": "33",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.03525641025640969,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "39",
+            "prediction": "33",
+            "top_value": "3"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "39",
+            "prediction": "33",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "39",
+            "prediction": "33",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "39",
+            "prediction": "33",
+            "top_value": null
+          }
+        },
+        "example_id": "2de1549556000830"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.03571428571428559,
+            "correct": false,
+            "fallback_prediction": "87",
+            "gold": "32",
+            "prediction": "87",
+            "top_value": "87"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.03571428571428559,
+            "correct": false,
+            "fallback_prediction": "87",
+            "gold": "32",
+            "prediction": "87",
+            "top_value": "2"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "87",
+            "gold": "32",
+            "prediction": "87",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "87",
+            "gold": "32",
+            "prediction": "87",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "87",
+            "gold": "32",
+            "prediction": "87",
+            "top_value": null
+          }
+        },
+        "example_id": "615f9d817cb5be59"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "13",
+            "gold": "13",
+            "prediction": "13",
+            "top_value": "13"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "13",
+            "gold": "13",
+            "prediction": "13",
+            "top_value": "13"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "13",
+            "gold": "13",
+            "prediction": "13",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "13",
+            "gold": "13",
+            "prediction": "13",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "13",
+            "gold": "13",
+            "prediction": "13",
+            "top_value": null
+          }
+        },
+        "example_id": "2f80204fc9e0896f"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "8",
+            "gold": "11",
+            "prediction": "8",
+            "top_value": "10"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "8",
+            "gold": "11",
+            "prediction": "8",
+            "top_value": "2"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.09705882352941231,
+            "correct": false,
+            "fallback_prediction": "8",
+            "gold": "11",
+            "prediction": "8",
+            "top_value": "8"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "8",
+            "gold": "11",
+            "prediction": "8",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "8",
+            "gold": "11",
+            "prediction": "8",
+            "top_value": null
+          }
+        },
+        "example_id": "137ad74218053f8a"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.09090909090909083,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "26",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.09090909090909083,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "26",
+            "prediction": "1",
+            "top_value": "12"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "26",
+            "prediction": "1",
+            "top_value": "15"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "26",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "26",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "4d780f825bb8541c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "415",
+            "gold": "266",
+            "prediction": "415",
+            "top_value": "309"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "415",
+            "gold": "266",
+            "prediction": "415",
+            "top_value": "309"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.03525641025640969,
+            "correct": false,
+            "fallback_prediction": "415",
+            "gold": "266",
+            "prediction": "415",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "415",
+            "gold": "266",
+            "prediction": "415",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "415",
+            "gold": "266",
+            "prediction": "415",
+            "top_value": null
+          }
+        },
+        "example_id": "08d3dd8885ffb998"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.015151515151515138,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "57",
+            "prediction": "2",
+            "top_value": "2"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.015151515151515138,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "57",
+            "prediction": "2",
+            "top_value": "2"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "57",
+            "prediction": "2",
+            "top_value": "4"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "57",
+            "prediction": "2",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "57",
+            "prediction": "2",
+            "top_value": null
+          }
+        },
+        "example_id": "de1bf4d142544e5b"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "6",
+            "gold": "6",
+            "prediction": "6",
+            "top_value": "14"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "6",
+            "gold": "6",
+            "prediction": "6",
+            "top_value": "14"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.09210526315789469,
+            "correct": true,
+            "fallback_prediction": "6",
+            "gold": "6",
+            "prediction": "6",
+            "top_value": "7"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "6",
+            "gold": "6",
+            "prediction": "6",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "6",
+            "gold": "6",
+            "prediction": "6",
+            "top_value": null
+          }
+        },
+        "example_id": "f367349ce0604296"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "4",
+            "gold": "4",
+            "prediction": "4",
+            "top_value": "20"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "4",
+            "gold": "4",
+            "prediction": "4",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "4",
+            "gold": "4",
+            "prediction": "4",
+            "top_value": "17"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "4",
+            "gold": "4",
+            "prediction": "4",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "4",
+            "gold": "4",
+            "prediction": "4",
+            "top_value": null
+          }
+        },
+        "example_id": "a85be5ec651dac24"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "11"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "11"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": null
+          }
+        },
+        "example_id": "de2a795ab37694af"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.05128205128205199,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "24",
+            "prediction": "2",
+            "top_value": "10"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.05128205128205199,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "24",
+            "prediction": "2",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.32142857142857206,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "24",
+            "prediction": "2",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "24",
+            "prediction": "2",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "24",
+            "prediction": "2",
+            "top_value": null
+          }
+        },
+        "example_id": "47464cc0b064f172"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "204",
+            "gold": "204",
+            "prediction": "204",
+            "top_value": "154"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "204",
+            "gold": "204",
+            "prediction": "204",
+            "top_value": "154"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "204",
+            "gold": "204",
+            "prediction": "204",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "204",
+            "gold": "204",
+            "prediction": "204",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "204",
+            "gold": "204",
+            "prediction": "204",
+            "top_value": null
+          }
+        },
+        "example_id": "0d2b4f7681973e19"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.06138107416879812,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "20",
+            "prediction": "6",
+            "top_value": "15"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.06138107416879812,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "20",
+            "prediction": "6",
+            "top_value": "5"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "20",
+            "prediction": "6",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "20",
+            "prediction": "6",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "20",
+            "prediction": "6",
+            "top_value": null
+          }
+        },
+        "example_id": "33836927fc9f1a8a"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "31",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "31",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "31",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "31",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "31",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "e7dd2efb5ec99a06"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "10",
+            "prediction": "3",
+            "top_value": "13"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "10",
+            "prediction": "3",
+            "top_value": "13"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "10",
+            "prediction": "3",
+            "top_value": "54"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "10",
+            "prediction": "3",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "10",
+            "prediction": "3",
+            "top_value": null
+          }
+        },
+        "example_id": "41cce6c6e6bb0058"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "600",
+            "gold": "61",
+            "prediction": "600",
+            "top_value": "39"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "600",
+            "gold": "61",
+            "prediction": "600",
+            "top_value": "39"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "600",
+            "gold": "61",
+            "prediction": "600",
+            "top_value": "2"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "600",
+            "gold": "61",
+            "prediction": "600",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "600",
+            "gold": "61",
+            "prediction": "600",
+            "top_value": null
+          }
+        },
+        "example_id": "6e9745b37ab6fc45"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "11",
+            "gold": "11",
+            "prediction": "11",
+            "top_value": "11"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "11",
+            "gold": "11",
+            "prediction": "11",
+            "top_value": "11"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "11",
+            "gold": "11",
+            "prediction": "11",
+            "top_value": "16"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "11",
+            "gold": "11",
+            "prediction": "11",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "11",
+            "gold": "11",
+            "prediction": "11",
+            "top_value": null
+          }
+        },
+        "example_id": "c042f0a2949ff8e6"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "24",
+            "gold": "2",
+            "prediction": "24",
+            "top_value": "24"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "24",
+            "gold": "2",
+            "prediction": "24",
+            "top_value": "24"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.09090909090909083,
+            "correct": false,
+            "fallback_prediction": "24",
+            "gold": "2",
+            "prediction": "24",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "24",
+            "gold": "2",
+            "prediction": "24",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "24",
+            "gold": "2",
+            "prediction": "24",
+            "top_value": null
+          }
+        },
+        "example_id": "575d7e83d84c1e67"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.32142857142857206,
+            "correct": false,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "26",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.32142857142857206,
+            "correct": false,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "26",
+            "top_value": "12"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "26",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "26",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "26",
+            "gold": "2",
+            "prediction": "26",
+            "top_value": null
+          }
+        },
+        "example_id": "a07cd6cc8f1c832e"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.002849002849003135,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "9"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.002849002849003135,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "9"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "20"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": null
+          }
+        },
+        "example_id": "18942c5af04fd665"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "13",
+            "gold": "139",
+            "prediction": "13",
+            "top_value": "13"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "13",
+            "gold": "139",
+            "prediction": "13",
+            "top_value": "139"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "13",
+            "gold": "139",
+            "prediction": "13",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "13",
+            "gold": "139",
+            "prediction": "13",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "13",
+            "gold": "139",
+            "prediction": "13",
+            "top_value": null
+          }
+        },
+        "example_id": "3c5aeb08941dbb6d"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "3",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "3",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "3",
+            "prediction": "1",
+            "top_value": "185"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "3",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "3",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "f3781a1b2b3f54a8"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4",
+            "prediction": "1",
+            "top_value": "18"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "df572ff22cb4436e"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": "15"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": "3"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.08319185059422729,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": "73"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": null
+          }
+        },
+        "example_id": "6d802b471769dc7c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": "11"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": "11"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": "4"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": null
+          }
+        },
+        "example_id": "791c1a5058e25494"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "111",
+            "prediction": "33",
+            "top_value": "33"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "111",
+            "prediction": "33",
+            "top_value": "33"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "111",
+            "prediction": "33",
+            "top_value": "4"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "111",
+            "prediction": "33",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "33",
+            "gold": "111",
+            "prediction": "33",
+            "top_value": null
+          }
+        },
+        "example_id": "6859c69dbfdc7138"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.08319185059422729,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "22090603",
+            "prediction": "1",
+            "top_value": "73"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.08319185059422729,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "22090603",
+            "prediction": "1",
+            "top_value": "223"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "22090603",
+            "prediction": "1",
+            "top_value": "13"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "22090603",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "22090603",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "ec685daac1f1d117"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "185",
+            "gold": "125",
+            "prediction": "185",
+            "top_value": "185"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "185",
+            "gold": "125",
+            "prediction": "185",
+            "top_value": "125"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "185",
+            "gold": "125",
+            "prediction": "185",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "185",
+            "gold": "125",
+            "prediction": "185",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "185",
+            "gold": "125",
+            "prediction": "185",
+            "top_value": null
+          }
+        },
+        "example_id": "7c403d68fecd651c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "54",
+            "gold": "8",
+            "prediction": "54",
+            "top_value": "54"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "54",
+            "gold": "8",
+            "prediction": "54",
+            "top_value": "3"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.015151515151515138,
+            "correct": false,
+            "fallback_prediction": "54",
+            "gold": "8",
+            "prediction": "54",
+            "top_value": "2"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "54",
+            "gold": "8",
+            "prediction": "54",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "54",
+            "gold": "8",
+            "prediction": "54",
+            "top_value": null
+          }
+        },
+        "example_id": "cfc46d556ee67fd8"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "37",
+            "gold": "75",
+            "prediction": "37",
+            "top_value": "2"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "37",
+            "gold": "75",
+            "prediction": "37",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "37",
+            "gold": "75",
+            "prediction": "37",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "37",
+            "gold": "75",
+            "prediction": "37",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "37",
+            "gold": "75",
+            "prediction": "37",
+            "top_value": null
+          }
+        },
+        "example_id": "c0d7c44c5705de9c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "569",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "569",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "569",
+            "prediction": "1",
+            "top_value": "10"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "569",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "569",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "cab16f9a19d2d607"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2173",
+            "gold": "2173",
+            "prediction": "2173",
+            "top_value": "2173"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2173",
+            "gold": "2173",
+            "prediction": "2173",
+            "top_value": "2173"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2173",
+            "gold": "2173",
+            "prediction": "2173",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2173",
+            "gold": "2173",
+            "prediction": "2173",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2173",
+            "gold": "2173",
+            "prediction": "2173",
+            "top_value": null
+          }
+        },
+        "example_id": "0cb1c44bf2f1e4ee"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "2"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "2"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.09210526315789469,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": "7"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "2",
+            "gold": "2",
+            "prediction": "2",
+            "top_value": null
+          }
+        },
+        "example_id": "1c17a9040076c971"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.09705882352941231,
+            "correct": true,
+            "fallback_prediction": "8",
+            "gold": "8",
+            "prediction": "8",
+            "top_value": "8"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.09705882352941231,
+            "correct": true,
+            "fallback_prediction": "8",
+            "gold": "8",
+            "prediction": "8",
+            "top_value": "5"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "8",
+            "gold": "8",
+            "prediction": "8",
+            "top_value": "2"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "8",
+            "gold": "8",
+            "prediction": "8",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "8",
+            "gold": "8",
+            "prediction": "8",
+            "top_value": null
+          }
+        },
+        "example_id": "e9e7a2bd85684f12"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "9",
+            "gold": "2",
+            "prediction": "9",
+            "top_value": "11"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "9",
+            "gold": "2",
+            "prediction": "9",
+            "top_value": "11"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "9",
+            "gold": "2",
+            "prediction": "9",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "9",
+            "gold": "2",
+            "prediction": "9",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "9",
+            "gold": "2",
+            "prediction": "9",
+            "top_value": null
+          }
+        },
+        "example_id": "ce08a3a269bf0151"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4300",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4300",
+            "prediction": "1",
+            "top_value": "20"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4300",
+            "prediction": "1",
+            "top_value": "15"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4300",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "4300",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "2cd1858c0d8e1d22"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "12",
+            "gold": "24",
+            "prediction": "12",
+            "top_value": "12"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "12",
+            "gold": "24",
+            "prediction": "12",
+            "top_value": "12"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.08319185059422729,
+            "correct": false,
+            "fallback_prediction": "12",
+            "gold": "24",
+            "prediction": "12",
+            "top_value": "73"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "12",
+            "gold": "24",
+            "prediction": "12",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "12",
+            "gold": "24",
+            "prediction": "12",
+            "top_value": null
+          }
+        },
+        "example_id": "39774feac1f5db05"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "14",
+            "gold": "7",
+            "prediction": "14",
+            "top_value": "14"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "14",
+            "gold": "7",
+            "prediction": "14",
+            "top_value": "14"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.017281105990783807,
+            "correct": false,
+            "fallback_prediction": "14",
+            "gold": "7",
+            "prediction": "14",
+            "top_value": "10"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "14",
+            "gold": "7",
+            "prediction": "14",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "14",
+            "gold": "7",
+            "prediction": "14",
+            "top_value": null
+          }
+        },
+        "example_id": "e099e405e8d1a66b"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "2",
+            "prediction": "6",
+            "top_value": "4"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "2",
+            "prediction": "6",
+            "top_value": "4"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "2",
+            "prediction": "6",
+            "top_value": "13"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "2",
+            "prediction": "6",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "6",
+            "gold": "2",
+            "prediction": "6",
+            "top_value": null
+          }
+        },
+        "example_id": "9325c4efa96bdbca"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "632",
+            "gold": "687",
+            "prediction": "632",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "632",
+            "gold": "687",
+            "prediction": "632",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.022246941045606317,
+            "correct": false,
+            "fallback_prediction": "632",
+            "gold": "687",
+            "prediction": "632",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "632",
+            "gold": "687",
+            "prediction": "632",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "632",
+            "gold": "687",
+            "prediction": "632",
+            "top_value": null
+          }
+        },
+        "example_id": "31b55c9ec19126d4"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "20",
+            "gold": "20",
+            "prediction": "20",
+            "top_value": "20"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "20",
+            "gold": "20",
+            "prediction": "20",
+            "top_value": "20"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.03525641025640969,
+            "correct": true,
+            "fallback_prediction": "20",
+            "gold": "20",
+            "prediction": "20",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "20",
+            "gold": "20",
+            "prediction": "20",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "20",
+            "gold": "20",
+            "prediction": "20",
+            "top_value": null
+          }
+        },
+        "example_id": "cdcd5f785f38123c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "30",
+            "gold": "30",
+            "prediction": "30",
+            "top_value": "20"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "30",
+            "gold": "30",
+            "prediction": "30",
+            "top_value": "20"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "30",
+            "gold": "30",
+            "prediction": "30",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "30",
+            "gold": "30",
+            "prediction": "30",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "30",
+            "gold": "30",
+            "prediction": "30",
+            "top_value": null
+          }
+        },
+        "example_id": "7b90a3514e78da0a"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.01149425287356376,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": null
+          }
+        },
+        "example_id": "08c1ad64868793df"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.15740740740740833,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "17",
+            "prediction": "3",
+            "top_value": "17"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.15740740740740833,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "17",
+            "prediction": "3",
+            "top_value": "3"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.03668478260869579,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "17",
+            "prediction": "3",
+            "top_value": "4"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "17",
+            "prediction": "3",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "3",
+            "gold": "17",
+            "prediction": "3",
+            "top_value": null
+          }
+        },
+        "example_id": "1c5c29b5cc939ce1"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": "12"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": "12"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.09090909090909083,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "5",
+            "gold": "5",
+            "prediction": "5",
+            "top_value": null
+          }
+        },
+        "example_id": "ec60549891847aed"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.01149425287356376,
+            "correct": false,
+            "fallback_prediction": "317",
+            "gold": "22",
+            "prediction": "317",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.01149425287356376,
+            "correct": false,
+            "fallback_prediction": "317",
+            "gold": "22",
+            "prediction": "317",
+            "top_value": "317"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "317",
+            "gold": "22",
+            "prediction": "317",
+            "top_value": "2"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "317",
+            "gold": "22",
+            "prediction": "317",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "317",
+            "gold": "22",
+            "prediction": "317",
+            "top_value": null
+          }
+        },
+        "example_id": "bd9d8da923981d69"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": "2"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": "10"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "463aefda98c19443"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.022246941045606317,
+            "correct": false,
+            "fallback_prediction": "408",
+            "gold": "366",
+            "prediction": "408",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.022246941045606317,
+            "correct": false,
+            "fallback_prediction": "408",
+            "gold": "366",
+            "prediction": "408",
+            "top_value": "42"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "408",
+            "gold": "366",
+            "prediction": "408",
+            "top_value": "20"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "408",
+            "gold": "366",
+            "prediction": "408",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "408",
+            "gold": "366",
+            "prediction": "408",
+            "top_value": null
+          }
+        },
+        "example_id": "dcf26d3b6ad06c6c"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": "13"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "22",
+            "gold": "22",
+            "prediction": "22",
+            "top_value": null
+          }
+        },
+        "example_id": "2b9428270f2ea5be"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": "2"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "1",
+            "gold": "1",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "f14e46b70758e167"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "38",
+            "gold": "1",
+            "prediction": "38",
+            "top_value": "18"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "38",
+            "gold": "1",
+            "prediction": "38",
+            "top_value": "18"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "38",
+            "gold": "1",
+            "prediction": "38",
+            "top_value": "13"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "38",
+            "gold": "1",
+            "prediction": "38",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "38",
+            "gold": "1",
+            "prediction": "38",
+            "top_value": null
+          }
+        },
+        "example_id": "a4e792e50d68217b"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": "2"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": "5"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": "12"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "2",
+            "gold": "1",
+            "prediction": "2",
+            "top_value": null
+          }
+        },
+        "example_id": "dead78178c35082b"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "12",
+            "prediction": "1",
+            "top_value": "17"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "12",
+            "prediction": "1",
+            "top_value": "12"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.05128205128205199,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "12",
+            "prediction": "1",
+            "top_value": "10"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "12",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "12",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "1b2e3688fc626dd9"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "30",
+            "prediction": "1",
+            "top_value": "10"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "30",
+            "prediction": "1",
+            "top_value": "19"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.017281105990783807,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "30",
+            "prediction": "1",
+            "top_value": "10"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "30",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "30",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "b1a93835dda950f4"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.09210526315789469,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "7",
+            "prediction": "1",
+            "top_value": "7"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.09210526315789469,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "7",
+            "prediction": "1",
+            "top_value": "112"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "7",
+            "prediction": "1",
+            "top_value": "1"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "7",
+            "prediction": "1",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": false,
+            "fallback_prediction": "1",
+            "gold": "7",
+            "prediction": "1",
+            "top_value": null
+          }
+        },
+        "example_id": "844689d8c32ffb51"
+      },
+      {
+        "conditions": {
+          "matched": {
+            "accepted": false,
+            "condition": "matched",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "15",
+            "gold": "15",
+            "prediction": "15",
+            "top_value": "15"
+          },
+          "random_sidecar": {
+            "accepted": false,
+            "condition": "random_sidecar",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "15",
+            "gold": "15",
+            "prediction": "15",
+            "top_value": "15"
+          },
+          "shuffled_source": {
+            "accepted": false,
+            "condition": "shuffled_source",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "15",
+            "gold": "15",
+            "prediction": "15",
+            "top_value": "13"
+          },
+          "slots_only": {
+            "accepted": false,
+            "condition": "slots_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "15",
+            "gold": "15",
+            "prediction": "15",
+            "top_value": null
+          },
+          "target_only": {
+            "accepted": false,
+            "condition": "target_only",
+            "confidence": 0.0,
+            "correct": true,
+            "fallback_prediction": "15",
+            "gold": "15",
+            "prediction": "15",
+            "top_value": null
+          }
+        },
+        "example_id": "47f7e80c8941a2de"
+      }
+    ],
+    "sidecar_jsonl": "results/masked_process_verifier_sidecars_20260427/live_masked_process_sidecars.jsonl",
+    "sidecar_jsonl_sha256": "03047945d55036b8269331ed2286b09ac9a83e1dae06d264ab32c5bc96d2a0d6",
+    "summaries": {
+      "control_clean_union_ids": [],
+      "matched": {
+        "accepted": 0,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [],
+        "clean_correct": 0,
+        "clean_correct_ids": [],
+        "correct": 21,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0cb1c44bf2f1e4ee",
+          "0d2b4f7681973e19",
+          "18942c5af04fd665",
+          "1c17a9040076c971",
+          "2b9428270f2ea5be",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "463aefda98c19443",
+          "47f7e80c8941a2de",
+          "6d802b471769dc7c",
+          "791c1a5058e25494",
+          "7b90a3514e78da0a",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "cdcd5f785f38123c",
+          "de2a795ab37694af",
+          "e9e7a2bd85684f12",
+          "ec60549891847aed",
+          "f14e46b70758e167",
+          "f367349ce0604296"
+        ]
+      },
+      "random_sidecar": {
+        "accepted": 0,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [],
+        "clean_correct": 0,
+        "clean_correct_ids": [],
+        "correct": 21,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0cb1c44bf2f1e4ee",
+          "0d2b4f7681973e19",
+          "18942c5af04fd665",
+          "1c17a9040076c971",
+          "2b9428270f2ea5be",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "463aefda98c19443",
+          "47f7e80c8941a2de",
+          "6d802b471769dc7c",
+          "791c1a5058e25494",
+          "7b90a3514e78da0a",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "cdcd5f785f38123c",
+          "de2a795ab37694af",
+          "e9e7a2bd85684f12",
+          "ec60549891847aed",
+          "f14e46b70758e167",
+          "f367349ce0604296"
+        ]
+      },
+      "shuffled_source": {
+        "accepted": 0,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [],
+        "clean_correct": 0,
+        "clean_correct_ids": [],
+        "correct": 21,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0cb1c44bf2f1e4ee",
+          "0d2b4f7681973e19",
+          "18942c5af04fd665",
+          "1c17a9040076c971",
+          "2b9428270f2ea5be",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "463aefda98c19443",
+          "47f7e80c8941a2de",
+          "6d802b471769dc7c",
+          "791c1a5058e25494",
+          "7b90a3514e78da0a",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "cdcd5f785f38123c",
+          "de2a795ab37694af",
+          "e9e7a2bd85684f12",
+          "ec60549891847aed",
+          "f14e46b70758e167",
+          "f367349ce0604296"
+        ]
+      },
+      "slots_only": {
+        "accepted": 0,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [],
+        "clean_correct": 0,
+        "clean_correct_ids": [],
+        "correct": 21,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0cb1c44bf2f1e4ee",
+          "0d2b4f7681973e19",
+          "18942c5af04fd665",
+          "1c17a9040076c971",
+          "2b9428270f2ea5be",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "463aefda98c19443",
+          "47f7e80c8941a2de",
+          "6d802b471769dc7c",
+          "791c1a5058e25494",
+          "7b90a3514e78da0a",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "cdcd5f785f38123c",
+          "de2a795ab37694af",
+          "e9e7a2bd85684f12",
+          "ec60549891847aed",
+          "f14e46b70758e167",
+          "f367349ce0604296"
+        ]
+      },
+      "source_necessary_clean_ids": [],
+      "target_only": {
+        "accepted": 0,
+        "accepted_harm": 0,
+        "accepted_harm_ids": [],
+        "accepted_ids": [],
+        "clean_correct": 0,
+        "clean_correct_ids": [],
+        "correct": 21,
+        "correct_ids": [
+          "013133cdef4f637c",
+          "0cb1c44bf2f1e4ee",
+          "0d2b4f7681973e19",
+          "18942c5af04fd665",
+          "1c17a9040076c971",
+          "2b9428270f2ea5be",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "463aefda98c19443",
+          "47f7e80c8941a2de",
+          "6d802b471769dc7c",
+          "791c1a5058e25494",
+          "7b90a3514e78da0a",
+          "a85be5ec651dac24",
+          "c042f0a2949ff8e6",
+          "cdcd5f785f38123c",
+          "de2a795ab37694af",
+          "e9e7a2bd85684f12",
+          "ec60549891847aed",
+          "f14e46b70758e167",
+          "f367349ce0604296"
+        ]
+      }
+    },
+    "target_set": "results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json",
+    "target_set_sha256": "fc5eb4ca577ca33e01a9b23f427ff5d45346e1d2435392a7ce01ca25631fc729"
+  },
+  "status": "top_sidecar_selector_fails_smoke",
+  "summaries": {
+    "control_clean_union_ids": [],
+    "matched": {
+      "accepted": 0,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [],
+      "clean_correct": 0,
+      "clean_correct_ids": [],
+      "correct": 21,
+      "correct_ids": [
+        "013133cdef4f637c",
+        "0cb1c44bf2f1e4ee",
+        "0d2b4f7681973e19",
+        "18942c5af04fd665",
+        "1c17a9040076c971",
+        "2b9428270f2ea5be",
+        "2f80204fc9e0896f",
+        "316b525a4fcbfb89",
+        "463aefda98c19443",
+        "47f7e80c8941a2de",
+        "6d802b471769dc7c",
+        "791c1a5058e25494",
+        "7b90a3514e78da0a",
+        "a85be5ec651dac24",
+        "c042f0a2949ff8e6",
+        "cdcd5f785f38123c",
+        "de2a795ab37694af",
+        "e9e7a2bd85684f12",
+        "ec60549891847aed",
+        "f14e46b70758e167",
+        "f367349ce0604296"
+      ]
+    },
+    "random_sidecar": {
+      "accepted": 0,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [],
+      "clean_correct": 0,
+      "clean_correct_ids": [],
+      "correct": 21,
+      "correct_ids": [
+        "013133cdef4f637c",
+        "0cb1c44bf2f1e4ee",
+        "0d2b4f7681973e19",
+        "18942c5af04fd665",
+        "1c17a9040076c971",
+        "2b9428270f2ea5be",
+        "2f80204fc9e0896f",
+        "316b525a4fcbfb89",
+        "463aefda98c19443",
+        "47f7e80c8941a2de",
+        "6d802b471769dc7c",
+        "791c1a5058e25494",
+        "7b90a3514e78da0a",
+        "a85be5ec651dac24",
+        "c042f0a2949ff8e6",
+        "cdcd5f785f38123c",
+        "de2a795ab37694af",
+        "e9e7a2bd85684f12",
+        "ec60549891847aed",
+        "f14e46b70758e167",
+        "f367349ce0604296"
+      ]
+    },
+    "shuffled_source": {
+      "accepted": 0,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [],
+      "clean_correct": 0,
+      "clean_correct_ids": [],
+      "correct": 21,
+      "correct_ids": [
+        "013133cdef4f637c",
+        "0cb1c44bf2f1e4ee",
+        "0d2b4f7681973e19",
+        "18942c5af04fd665",
+        "1c17a9040076c971",
+        "2b9428270f2ea5be",
+        "2f80204fc9e0896f",
+        "316b525a4fcbfb89",
+        "463aefda98c19443",
+        "47f7e80c8941a2de",
+        "6d802b471769dc7c",
+        "791c1a5058e25494",
+        "7b90a3514e78da0a",
+        "a85be5ec651dac24",
+        "c042f0a2949ff8e6",
+        "cdcd5f785f38123c",
+        "de2a795ab37694af",
+        "e9e7a2bd85684f12",
+        "ec60549891847aed",
+        "f14e46b70758e167",
+        "f367349ce0604296"
+      ]
+    },
+    "slots_only": {
+      "accepted": 0,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [],
+      "clean_correct": 0,
+      "clean_correct_ids": [],
+      "correct": 21,
+      "correct_ids": [
+        "013133cdef4f637c",
+        "0cb1c44bf2f1e4ee",
+        "0d2b4f7681973e19",
+        "18942c5af04fd665",
+        "1c17a9040076c971",
+        "2b9428270f2ea5be",
+        "2f80204fc9e0896f",
+        "316b525a4fcbfb89",
+        "463aefda98c19443",
+        "47f7e80c8941a2de",
+        "6d802b471769dc7c",
+        "791c1a5058e25494",
+        "7b90a3514e78da0a",
+        "a85be5ec651dac24",
+        "c042f0a2949ff8e6",
+        "cdcd5f785f38123c",
+        "de2a795ab37694af",
+        "e9e7a2bd85684f12",
+        "ec60549891847aed",
+        "f14e46b70758e167",
+        "f367349ce0604296"
+      ]
+    },
+    "source_necessary_clean_ids": [],
+    "target_only": {
+      "accepted": 0,
+      "accepted_harm": 0,
+      "accepted_harm_ids": [],
+      "accepted_ids": [],
+      "clean_correct": 0,
+      "clean_correct_ids": [],
+      "correct": 21,
+      "correct_ids": [
+        "013133cdef4f637c",
+        "0cb1c44bf2f1e4ee",
+        "0d2b4f7681973e19",
+        "18942c5af04fd665",
+        "1c17a9040076c971",
+        "2b9428270f2ea5be",
+        "2f80204fc9e0896f",
+        "316b525a4fcbfb89",
+        "463aefda98c19443",
+        "47f7e80c8941a2de",
+        "6d802b471769dc7c",
+        "791c1a5058e25494",
+        "7b90a3514e78da0a",
+        "a85be5ec651dac24",
+        "c042f0a2949ff8e6",
+        "cdcd5f785f38123c",
+        "de2a795ab37694af",
+        "e9e7a2bd85684f12",
+        "ec60549891847aed",
+        "f14e46b70758e167",
+        "f367349ce0604296"
+      ]
+    }
+  }
+}
