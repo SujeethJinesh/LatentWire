@@ -13,6 +13,16 @@ shows real cache-level headroom, and LatentWire has a mature evaluation harness.
 What is missing is a deployable LatentWire method whose improvement is both
 source-derived and stable under source-destroying controls.
 
+Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
+decoding on current artifacts. A 4-bit candidate syndrome still has source
+specificity on holdout (`4` clean source-necessary IDs, control clean union
+`0`) but harms `14` target-self examples. Stronger abstention removes harms but
+also removes clean gains. The live branch remains `none`; next viable branches
+are learned semantic predicates with erasure-aware abstention and zero-init
+target-preserving query bottlenecks after the MPS blocker clears. The blocker
+persisted after both `kill -9` and `sudo kill -9`, so the next action is
+OS/session-level cleanup before any MPS experiment.
+
 The strongest bound is the SVAMP32 C2C-derived syndrome sidecar:
 
 - strict target-side pool: `14/32`
@@ -140,6 +150,19 @@ The target-conditioned query-memory follow-up is now also negative:
   current live positive-method branch; no method is live until a source
   surface/interface reset selects the next branch
 - current blocker remains PID `31103`, the stuck MPS calibration process
+
+The subsequent no-harm source-predicate replay is also negative:
+
+- candidate syndrome bits4: live clean source-necessary `1` with `16`
+  target-self harms; holdout clean source-necessary `4` with `14` target-self
+  harms; control clean union `0`
+- source predicate router with stronger no-harm pressure: best rows reach only
+  `23/70`, clean `3`, accepted harm `1`, and fail the matched-correct gate
+- source likelihood no-harm gate: accepted harm `0`, control clean union `0`,
+  but clean source-necessary `0` on both live and holdout
+- decision: prune shallow numeric/hash syndrome and source-text predicate
+  routers on current artifacts; revive only learned semantic predicates with
+  erasure-aware abstention or stronger source surfaces
 
 The top-surface cross-attention rescue also fails:
 
