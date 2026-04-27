@@ -10586,3 +10586,94 @@ If PID `31103` is gone, the next exact gate is fresh strict-small same-family
 surface generation with source-final masking built in from the first run. If it
 persists, OS/session-level cleanup is required before progress on the next
 evidence-bearing gate.
+
+## 2026-04-27 Cycle 7 - Fresh CPU SVAMP Surface Scout
+
+Cycle start:
+
+1. ICLR readiness: not ready; no positive method or source surface currently
+   survives answer-masking/source-control gates.
+2. Current paper story: CPU-only stored artifacts are exhausted, but a tiny
+   fresh CPU source-surface scout might find new clean source-needed IDs while
+   MPS is blocked.
+3. Exact blocker: PID `31103` remains in `STAT=UE`, preventing MPS scale-up and
+   fresh MPS generation.
+4. Live branch: CPU fresh surface discovery, with MPS fresh same-family scout as
+   the next real branch after cleanup.
+5. Highest-priority gate: two adjacent SVAMP8 CPU baseline scouts with exact ID
+   parity, text-relay control, and answer-masking audit.
+6. Scale-up rung: smoke / source-surface discovery.
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_jsonl_range.py \
+  --source data/svamp_1000.jsonl \
+  --output results/fresh_cpu_svamp8_answernull_20260427/svamp_rows381_388.jsonl \
+  --start-index 381 \
+  --count 8 \
+  --manifest-json results/fresh_cpu_svamp8_answernull_20260427/svamp_rows381_388.manifest.json \
+  --manifest-md results/fresh_cpu_svamp8_answernull_20260427/svamp_rows381_388.manifest.md \
+  --run-date 2026-04-27
+```
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file results/fresh_cpu_svamp8_answernull_20260427/svamp_rows381_388.jsonl \
+  --results-dir results/fresh_cpu_svamp8_answernull_20260427/baselines \
+  --methods source target t2t \
+  --limit 8 \
+  --device cpu \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Repeated with rows `389..396` under
+`results/fresh_cpu_svamp8b_answernull_20260427/`.
+
+Result summary:
+
+| Range | Target | Source | Text Relay | Source-Only | Clean Source-Only | Answer-Unexplained Clean In Pool |
+|---|---:|---:|---:|---:|---:|---:|
+| SVAMP rows 381-388 | `1/8` | `1/8` | `4/8` | `1` | `0` | `0` |
+| SVAMP rows 389-396 | `2/8` | `1/8` | `3/8` | `0` | `0` | `0` |
+
+Decision:
+
+- killed: fresh CPU SVAMP8 scouts as a useful next source surface.
+- current live branch: none that can progress to evidence-bearing gates while
+  PID `31103` remains stuck.
+- hard blocker: OS/session-level cleanup of orphaned MPS process PID `31103`.
+
+Hashes:
+
+- `results/fresh_cpu_svamp8_answernull_20260427/svamp_rows381_388.jsonl`:
+  `7cc0e9d8388778fca31b7dde69293d5400e0c645f03c21ec5c677a482c50daf1`
+- `results/fresh_cpu_svamp8_answernull_20260427/baselines/manifest.json`:
+  `e7c755be971dbcbd8b29b0c28296d10edd934911b0b3f5ce30bd496de4d32e32`
+- `results/fresh_cpu_svamp8_answernull_20260427/source_contrastive_target_set.json`:
+  `bc74b715e6f6fef21aee644fa1bfe3ec925764031d7a0c6f46ac96dcb9cbfacc`
+- `results/fresh_cpu_svamp8_answernull_20260427/answer_masking_audit.json`:
+  `ce20056a6ca59b27f08ee9ed02c2494d997344c4f7e58ce2d16fc5638c03ed5c`
+- `results/fresh_cpu_svamp8b_answernull_20260427/svamp_rows389_396.jsonl`:
+  `753b2778348768e3ff6b72cd0c070454ce5baf52a142f8fc0ed3a0db78138280`
+- `results/fresh_cpu_svamp8b_answernull_20260427/baselines/manifest.json`:
+  `ebb82ae03a766c35bb5f47dfad8bdd742e436cafadc0f0b2c553a504baee5f18`
+- `results/fresh_cpu_svamp8b_answernull_20260427/source_contrastive_target_set.json`:
+  `f1ab04c2313fd70c452b41076a881f1f1066c20a3ebc6aad8f9473cb3943cf23`
+- `results/fresh_cpu_svamp8b_answernull_20260427/answer_masking_audit.json`:
+  `843885e38e760b2951e9260e6ee6d9e6112835cc590c0b471de21d465afb29fe`
+
+Resume command:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` is gone, run the stronger-source SVAMP70 scout or KVComm strict
+source-control MPS smoke recorded earlier in the ledger. If it remains in
+`STAT=UE`, OS/session-level cleanup is required before the next
+evidence-bearing gate.

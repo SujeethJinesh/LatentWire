@@ -1,0 +1,46 @@
+{
+  "command": "scripts/audit_source_surface_answer_masking.py --results-root results/fresh_cpu_svamp8_answernull_20260427 --date 2026-04-27 --output-json results/fresh_cpu_svamp8_answernull_20260427/answer_masking_audit.json --output-md results/fresh_cpu_svamp8_answernull_20260427/answer_masking_audit.md",
+  "date": "2026-04-27",
+  "git_commit": "3b562ce79d5415c1b8cf8394089a37e55617bd5e",
+  "result": {
+    "candidate_paths": 1,
+    "loaded_with_clean_ids": 1,
+    "results_root": "results/fresh_cpu_svamp8_answernull_20260427",
+    "skipped": [],
+    "surfaces": [
+      {
+        "answer_explained_clean_in_pool": 1,
+        "answer_explained_clean_in_pool_ids": [
+          "e38cfdf451eb3fd5"
+        ],
+        "answer_unexplained_clean_in_pool": 0,
+        "answer_unexplained_clean_in_pool_ids": [],
+        "clean_field": "source_only",
+        "clean_in_pool": 1,
+        "clean_in_pool_ids": [
+          "e38cfdf451eb3fd5"
+        ],
+        "clean_n": 1,
+        "n": 8,
+        "path": "results/fresh_cpu_svamp8_answernull_20260427/source_contrastive_target_set.json",
+        "rows": [
+          {
+            "candidate_values": [
+              "21",
+              "3",
+              "7"
+            ],
+            "example_id": "e38cfdf451eb3fd5",
+            "explained_by_source_answer": true,
+            "gold": "3",
+            "gold_in_target_side_pool": true,
+            "source_final": "3",
+            "source_verified": [],
+            "target_correct": false
+          }
+        ],
+        "sha256": "bc74b715e6f6fef21aee644fa1bfe3ec925764031d7a0c6f46ac96dcb9cbfacc"
+      }
+    ]
+  }
+}

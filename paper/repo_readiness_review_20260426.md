@@ -254,6 +254,15 @@ random/shuffled controls. Threshold sweeps remove all clean recovery. No stored
 CPU artifact now supports a useful next positive-method gate; the hard blocker
 is the orphaned MPS process PID `31103`, still in `STAT=UE`, because fresh
 same-family surface generation is the next required action.
+
+Update `2026-04-27 05:32 PDT`: two fresh CPU-only SVAMP8 scouts over rows
+`381..388` and `389..396` also fail as source-surface discovery. The first has
+source-only `1` but clean source-only `0` after text relay and answer-masking;
+the second has source-only `0`. CPU generation is feasible at about `3.3`
+minutes per eight-example source/target/text scout, but brute-force CPU range
+scanning is low expected value. The hard blocker remains PID `31103`; after
+OS/session cleanup the next evidence-bearing gate is fresh strict-small
+same-family surface generation or KVComm source-control MPS smoke.
 - strict target-mentioned oracle headroom is small on the current canonical
   surface: live target `21/70` can only reach `23/70`; holdout target `8/70`
   can only reach `12/70`
