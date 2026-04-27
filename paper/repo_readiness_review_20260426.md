@@ -33,6 +33,18 @@ new surface first shows answer-unexplained target-pool headroom. The live branch
 remains `none`; the top next move is upstream source-surface discovery or a
 JEPA-style answer-masked trace/latent objective only after such headroom exists.
 
+Update `2026-04-27`: after MPS cleared, a cached
+`Qwen/Qwen2.5-7B-Instruct -> Qwen/Qwen3-0.6B` SVAMP70 scout produced stronger
+raw source headroom but still failed the answer-masked promotion gate. Target
+was `21/70`, source `15/70`, text relay `12/70`, clean source-only after text
+relay `7`, and target/source oracle `29/70`; however only `3` clean IDs were in
+the target-side pool and all were source-final/verified-answer explained
+(`answer_unexplained_clean_in_pool = 0`). A CPU answer-free
+query-bottleneck syndrome probe on SVAMP32 also failed: matched `10/32`,
+target-only `14/32`, clean source-necessary `0`. The live branch remains
+`none`; do not spend on another receiver/connector unless a Math-7B or selected
+fresh surface first exposes answer-unexplained target-pool headroom.
+
 Update `2026-04-27 00:50 PDT`: KVComm is now harness-ready for strict
 source-control evaluation, but it remains baseline/tooling evidence rather than
 a positive method. The wrapper supports matched, zero-source, shuffled-source,

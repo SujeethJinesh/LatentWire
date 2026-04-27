@@ -1,0 +1,144 @@
+{
+  "command": "scripts/audit_source_surface_answer_masking.py --results-root results/qwen25_7b_qwen3_svamp70_surface_scout_20260427 --date 2026-04-27 --output-json results/qwen25_7b_qwen3_svamp70_surface_scout_20260427/answer_masking_audit.json --output-md results/qwen25_7b_qwen3_svamp70_surface_scout_20260427/answer_masking_audit.md",
+  "date": "2026-04-27",
+  "git_commit": "d5299139948b7c5ef594f7846d7f7ae75f9f0139",
+  "result": {
+    "candidate_paths": 1,
+    "loaded_with_clean_ids": 1,
+    "results_root": "results/qwen25_7b_qwen3_svamp70_surface_scout_20260427",
+    "skipped": [],
+    "surfaces": [
+      {
+        "answer_explained_clean_in_pool": 3,
+        "answer_explained_clean_in_pool_ids": [
+          "4c84ebf42812703b",
+          "d64f6e35083ffe8c",
+          "de1bf4d142544e5b"
+        ],
+        "answer_unexplained_clean_in_pool": 0,
+        "answer_unexplained_clean_in_pool_ids": [],
+        "clean_field": "clean_source_only",
+        "clean_in_pool": 3,
+        "clean_in_pool_ids": [
+          "4c84ebf42812703b",
+          "d64f6e35083ffe8c",
+          "de1bf4d142544e5b"
+        ],
+        "clean_n": 7,
+        "n": 70,
+        "path": "results/qwen25_7b_qwen3_svamp70_surface_scout_20260427/source_contrastive_target_set.json",
+        "rows": [
+          {
+            "candidate_values": [
+              "1",
+              "14",
+              "5",
+              "6"
+            ],
+            "example_id": "33836927fc9f1a8a",
+            "explained_by_source_answer": true,
+            "gold": "20",
+            "gold_in_target_side_pool": false,
+            "source_final": "20",
+            "source_verified": [],
+            "target_correct": false
+          },
+          {
+            "candidate_values": [
+              "10",
+              "13",
+              "149",
+              "90",
+              "91"
+            ],
+            "example_id": "3c5aeb08941dbb6d",
+            "explained_by_source_answer": true,
+            "gold": "139",
+            "gold_in_target_side_pool": false,
+            "source_final": "139",
+            "source_verified": [
+              "139"
+            ],
+            "target_correct": false
+          },
+          {
+            "candidate_values": [
+              "10",
+              "12",
+              "2"
+            ],
+            "example_id": "4c84ebf42812703b",
+            "explained_by_source_answer": true,
+            "gold": "10",
+            "gold_in_target_side_pool": true,
+            "source_final": "10",
+            "source_verified": [],
+            "target_correct": false
+          },
+          {
+            "candidate_values": [
+              "11",
+              "8",
+              "9"
+            ],
+            "example_id": "ce08a3a269bf0151",
+            "explained_by_source_answer": true,
+            "gold": "2",
+            "gold_in_target_side_pool": false,
+            "source_final": "2",
+            "source_verified": [],
+            "target_correct": false
+          },
+          {
+            "candidate_values": [
+              "15",
+              "17",
+              "2",
+              "62",
+              "96"
+            ],
+            "example_id": "d64f6e35083ffe8c",
+            "explained_by_source_answer": true,
+            "gold": "2",
+            "gold_in_target_side_pool": true,
+            "source_final": "2",
+            "source_verified": [],
+            "target_correct": false
+          },
+          {
+            "candidate_values": [
+              "1",
+              "2",
+              "40",
+              "57",
+              "93",
+              "97"
+            ],
+            "example_id": "de1bf4d142544e5b",
+            "explained_by_source_answer": true,
+            "gold": "57",
+            "gold_in_target_side_pool": true,
+            "source_final": "57",
+            "source_verified": [],
+            "target_correct": false
+          },
+          {
+            "candidate_values": [
+              "1",
+              "14",
+              "2"
+            ],
+            "example_id": "e099e405e8d1a66b",
+            "explained_by_source_answer": true,
+            "gold": "7",
+            "gold_in_target_side_pool": false,
+            "source_final": "7",
+            "source_verified": [],
+            "target_correct": false
+          }
+        ],
+        "sha256": "b064ef84b71ff17f59dc16aa3088e97ed1b21bf21a728044cf72f77730071d31"
+      }
+    ]
+  }
+}

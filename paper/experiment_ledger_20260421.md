@@ -11168,3 +11168,136 @@ Decision:
   surface unless a new source surface has `answer_unexplained_clean_in_pool >
   0`; move upstream to source-surface discovery or to an answer-masked
   trace/latent JEPA objective with frozen target latents and preservation loss.
+
+## 2026-04-27 - Cached 7B SVAMP70 surface and answer-free query-bottleneck syndrome smoke
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; no source-derived method survives
+   answer-only/source-destroying controls.
+2. Current paper story: receiver-likelihood on the latest 7B disagreement
+   slice is pruned; JEPA/LeJEPA/V-JEPA remain design constraints only.
+3. Exact blocker: find answer-unexplained source headroom in a target-side pool
+   or show answer-free source latents can predict useful side information.
+4. Top branches: fresh stronger-source surface discovery; answer-free
+   query-bottleneck syndrome diagnostic.
+5. Highest-priority gate: run the cheapest MPS-clear stronger-source scout,
+   then the CPU latent diagnostic if the surface still fails.
+6. Scale-up rung: smoke.
+
+MPS preflight:
+
+```bash
+./venv_arm64/bin/python scripts/check_mps_blocker.py --json
+```
+
+Result: PID `31103` absent; MPS clear.
+
+Cached-7B surface scout command:
+
+```bash
+TRANSFORMERS_OFFLINE=1 HF_HUB_OFFLINE=1 PYTHONUNBUFFERED=1 \
+./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --results-dir results/qwen25_7b_qwen3_svamp70_surface_scout_20260427 \
+  --translator checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt \
+  --source-model Qwen/Qwen2.5-7B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods target source t2t \
+  --limit 70 \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+I used cached `Qwen/Qwen2.5-7B-Instruct`; `Qwen/Qwen2.5-Math-7B-Instruct` was
+not locally cached.
+
+Surface result:
+
+- target: `21/70`
+- source: `15/70`
+- text relay: `12/70`
+- exact ID parity: true for all methods
+- numeric coverage: `70/70` for all methods
+- source-only over target: `8`
+- clean source-only after text relay: `7`
+- target/source oracle: `29/70`
+
+Answer-masking audit:
+
+- clean in target-side pool: `3`
+- answer-unexplained clean in target-side pool: `0`
+- clean in-pool IDs: `4c84ebf42812703b`, `d64f6e35083ffe8c`,
+  `de1bf4d142544e5b`
+
+Decision: fail for positive-method promotion. The fresh cached-7B surface has
+more raw source headroom than prior selected 7B slices, but every reachable
+clean target-pool answer is explained by source final or verified numeric
+answers.
+
+Answer-free latent diagnostic command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp32_source_latent_syndrome_probe.py \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --target target_alone=path=results/svamp_exactid_baselines32_20260423/target_alone.jsonl,method=target_alone \
+  --teacher c2c=path=results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl,method=c2c_generate \
+  --candidate target_self_repair=path=results/svamp32_query_innovation_query_pool_transport_20260423/target_self_repair_exact32.jsonl,method=target_self_repair \
+  --candidate selected_route_no_repair=path=results/svamp32_query_innovation_query_pool_transport_20260423/selected_route_no_repair_exact32.jsonl,method=selected_route_no_repair \
+  --candidate query_pool_gate010=path=results/svamp32_query_innovation_query_pool_transport_20260423/query_pool_transport_gate010_matched.jsonl,method=rotalign_kv \
+  --candidate idweighted_gate015=path=results/svamp32_idweighted_query_innovation_20260423/idweighted_query_innovation_gate015_matched.jsonl,method=rotalign_kv \
+  --candidate query_innovation_gate015=path=results/svamp32_query_innovation_resampler_gate015_20260423/query_innovation_gate015_matched.jsonl,method=rotalign_kv \
+  --target-set-json results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json \
+  --fallback-label target_self_repair \
+  --moduli 2,3,5,7 \
+  --probe-model query_bottleneck \
+  --query-slots 8 \
+  --query-epochs 80 \
+  --query-lr 0.01 \
+  --query-weight-decay 0.001 \
+  --query-seed 0 \
+  --shuffle-offset 1 \
+  --min-correct 14 \
+  --min-clean-source-necessary 2 \
+  --min-numeric-coverage 31 \
+  --source-reasoning-mode brief_analysis \
+  --source-use-chat-template \
+  --source-enable-thinking false \
+  --feature-layers mid,last \
+  --device cpu \
+  --dtype float32 \
+  --date 2026-04-27 \
+  --output-json results/svamp32_query_bottleneck_syndrome_jepa_smoke_20260427/query_bottleneck_mid_last.json \
+  --output-md results/svamp32_query_bottleneck_syndrome_jepa_smoke_20260427/query_bottleneck_mid_last.md
+```
+
+Result:
+
+- status: `source_latent_syndrome_probe_fails_gate`
+- matched: `10/32`
+- zero-source: `13/32`
+- shuffled-source: `10/32`
+- label-shuffled: `12/32`
+- target-only: `14/32`
+- slots-only: `8/32`
+- clean source-necessary IDs: `0`
+- control clean union: `0`
+- teacher numeric coverage: `32/32`
+- candidate-pool clean-gold count: `2`
+
+Decision: fail. Answer-free prompt hidden states with an 8-query bottleneck do
+not recover the C2C candidate-syndrome bound; matched is below the target-only
+floor and has no clean source-necessary IDs.
+
+Next exact gate:
+
+- Run the originally recorded Math-7B source-surface scout only after the model
+  is local, or run a selected-disagreement Math-7B slice if download time is an
+  acceptable cost.
+- Promotion requires `answer_unexplained_clean_in_pool > 0`; otherwise reject
+  before any receiver, connector, or JEPA objective spend.
