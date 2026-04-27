@@ -7814,3 +7814,80 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 If clear, run the MPS `--limit 2` smoke in
 `paper/svamp70_source_likelihood_sketch_20260427.md`, then full live and
 holdout collection with `--resume`, then the frozen analyzer.
+
+## 2026-04-27 Cycle - Kill source likelihood sketch
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; no deployable positive
+   method has cleared live/holdout source controls.
+2. Current paper story: historical source sidecars still motivate
+   side-information decoding, but source likelihood over candidate answers is
+   not a reliable communicator on the frozen SVAMP70 live surface.
+3. Exact blocker to submission: the live branch failed strict-small gates;
+   MPS remains blocked by PID `31103`.
+4. Live branch: `source_likelihood_sketch`, now killed on this surface.
+5. Highest-priority gate: switch to a richer source-controlled syndrome
+   predictor or source-surface discovery branch.
+6. Scale-up rung: strict-small kill decision.
+
+What changed:
+
+- Added `--continuation-template` to
+  `scripts/collect_source_likelihood_sketch.py` so answer-only sketches can use
+  canonical continuations such as `Answer: {text}`.
+- Added collector tests for continuation templates.
+- Ran normalized-answer and formatted-answer sketch variants on CPU because the
+  continuations are short enough to avoid the MPS blocker.
+- Ran the existing `source_trace_router` harness as the next selected
+  source-surface branch.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_collect_source_likelihood_sketch.py tests/test_analyze_svamp70_source_likelihood_sketch_gate.py -q
+./venv_arm64/bin/python -m py_compile scripts/collect_source_likelihood_sketch.py scripts/analyze_svamp70_source_likelihood_sketch_gate.py
+git diff --check
+```
+
+Result:
+
+- `9 passed in 0.13s`
+- py-compile passed
+- diff check passed
+
+Result summary:
+
+- normalized answer mean logprob: live `21/70`, clean source-necessary `0`;
+  holdout `8/70`, clean source-necessary `0`
+- normalized answer sum logprob: live `20/70`, clean source-necessary `0`;
+  holdout `8/70`, clean source-necessary `0`
+- formatted `Answer: {text}` mean logprob: live `20/70`, clean
+  source-necessary `0`, control union `1`; holdout `10/70`, clean
+  source-necessary `2`, control union `0`
+- formatted `Answer: {text}` sum logprob: live `19/70`, clean
+  source-necessary `0`; holdout `8/70`, clean source-necessary `0`
+- source-trace router scout: live `20/70`, clean source-necessary `1`,
+  accepted harm `2`; holdout `10/70`, clean source-necessary `1`, but the
+  holdout clean ID survives equation permutation
+
+Decision:
+
+- Kill `source_likelihood_sketch` as the current live branch. Four adjacent
+  variants fail live and do not recover clean source-necessary IDs.
+- Do not promote `source_trace_router`; it is a diagnostic clue only.
+- Select the next branch as a richer source-controlled syndrome predictor,
+  using the target-candidate decoder but changing the source signal.
+
+Focused memo:
+
+- `paper/source_likelihood_sketch_kill_20260427.md`
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+After PID `31103` is cleared, implement/run a source-controlled syndrome
+predictor rather than another source-likelihood sketch.

@@ -71,3 +71,26 @@ smoke was run as a tooling check:
 - elapsed: `96.06s`
 - git commit:
   `154430a33d0d649e30b877d7b4d38015a229ac9a`
+
+## Kill Results
+
+The live branch is killed on this surface. Durable readout:
+
+- `paper/source_likelihood_sketch_kill_20260427.md`
+
+Key artifacts:
+
+- `live_normpred_sketch_cpu.jsonl`
+  - sha256: `b08b0f5eab854dd7da9f4099238e5f300a2c2508a66341f58ae40d0adaa91254`
+- `holdout_normpred_sketch_cpu.jsonl`
+  - sha256: `932e5449d5174c1f484f1535575e5b06763bc797fd83b8fec804471d300d5f15`
+- `normpred_cpu_sketch_gate.json`
+  - sha256: `431844070c012be613b98d64c1effa1b88a14a542d37cc8c2bdf6320942fca55`
+- `normpred_sumlogprob_cpu_sketch_gate.json`
+  - sha256: `51893cebe1a2cbcb1e91788fbf98d8b721fbbdf858ead6787e63e9efe0ff2e3e`
+- `normpred_answer_template_cpu_sketch_gate.json`
+  - sha256: `b14d22ceda15c5d83104becbe0645d078c5d47a3c9872bb98d4c0217ec3a92b1`
+- `normpred_answer_template_sumlogprob_cpu_sketch_gate.json`
+  - sha256: `ad33fd03dac92f5f85c6fcfc24562b6a19c6ba065fb0f5e6c98ed1c2cee9724f`
+- `source_trace_router_after_sketch_kill.json`
+  - sha256: `e4e5600e139efbf7bc068ff2117e172cba9f87055e9477f51839a90175c54c03`

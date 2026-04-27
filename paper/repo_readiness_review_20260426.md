@@ -711,3 +711,22 @@ Readiness impact:
   score continuations, append JSONL rows, and emit provenance/hashes.
 - Scientific readiness is unchanged. This is only a micro smoke, and the full
   live/holdout gate still needs MPS after PID `31103` is cleared.
+
+## 2026-04-27 Source Likelihood Sketch Kill
+
+Readiness remains not ICLR-ready.
+
+The `source_likelihood_sketch` live branch is killed on the Qwen2.5-Math ->
+Qwen3 SVAMP70 live/holdout surface:
+
+- bare normalized answer mean/sum variants fail live and holdout
+- formatted `Answer: {text}` mean logprob has an interesting holdout pass
+  (`10/70`, clean source-necessary `2`, control union `0`) but fails live CV
+  (`20/70`, clean source-necessary `0`, control union `1`)
+- formatted sum-logprob fails live and holdout
+
+The next selected branch is not another likelihood sketch. Move to a richer
+source-controlled syndrome predictor or source-surface discovery gate using
+the same target-candidate decoder and strict source-destroying controls.
+
+The source-trace router scout also failed and should not be promoted.

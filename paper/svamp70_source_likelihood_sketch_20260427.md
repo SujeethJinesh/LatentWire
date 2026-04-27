@@ -253,3 +253,25 @@ PID 31103, PPID 1, STAT UE, scripts/calibrate.py ... --device mps --dtype float3
 Earlier `SIGTERM` and `SIGKILL` did not terminate it. The exact next action is
 to restart the machine or otherwise clear PID `31103`; do not launch additional
 MPS jobs while it remains stuck.
+
+## Final Branch Decision
+
+After the CPU answer-only runs, `source_likelihood_sketch` is killed as the
+current live branch on this surface.
+
+See:
+
+- `paper/source_likelihood_sketch_kill_20260427.md`
+
+Summary:
+
+- bare normalized answer mean/sum variants fail live and holdout
+- formatted `Answer: {text}` mean logprob passes holdout but fails live CV, so
+  it cannot be promoted
+- formatted sum-logprob fails live and holdout
+- source-trace router was selected as the next source-surface scout and also
+  failed the strict gate
+
+Next branch should change the source signal, not tune likelihood sketch
+thresholds: a richer source-controlled syndrome predictor is the next
+highest-value direction.
