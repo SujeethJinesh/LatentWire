@@ -1,0 +1,95 @@
+{
+  "base_target_set": "results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json",
+  "candidate_summaries": [
+    {
+      "correct": 6,
+      "expanded_from_candidate_scores": false,
+      "label": "target_sample_s0",
+      "method": "target_sample_s0",
+      "path": "results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl",
+      "rows": 32,
+      "sha256": "650c19fb283d908b1e11af54f19dd0ec8a48e204d38bdd359120d6e4bbd354e5"
+    },
+    {
+      "correct": 7,
+      "expanded_from_candidate_scores": false,
+      "label": "target_sample_s1",
+      "method": "target_sample_s1",
+      "path": "results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl",
+      "rows": 32,
+      "sha256": "650c19fb283d908b1e11af54f19dd0ec8a48e204d38bdd359120d6e4bbd354e5"
+    },
+    {
+      "correct": 7,
+      "expanded_from_candidate_scores": false,
+      "label": "target_sample_s2",
+      "method": "target_sample_s2",
+      "path": "results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl",
+      "rows": 32,
+      "sha256": "650c19fb283d908b1e11af54f19dd0ec8a48e204d38bdd359120d6e4bbd354e5"
+    },
+    {
+      "correct": 10,
+      "expanded_from_candidate_scores": false,
+      "label": "target_sample_s3",
+      "method": "target_sample_s3",
+      "path": "results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl",
+      "rows": 32,
+      "sha256": "650c19fb283d908b1e11af54f19dd0ec8a48e204d38bdd359120d6e4bbd354e5"
+    },
+    {
+      "correct": 5,
+      "expanded_from_candidate_scores": false,
+      "label": "target_sample_s4",
+      "method": "target_sample_s4",
+      "path": "results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl",
+      "rows": 32,
+      "sha256": "650c19fb283d908b1e11af54f19dd0ec8a48e204d38bdd359120d6e4bbd354e5"
+    },
+    {
+      "correct": 9,
+      "expanded_from_candidate_scores": false,
+      "label": "target_sample_s5",
+      "method": "target_sample_s5",
+      "path": "results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl",
+      "rows": 32,
+      "sha256": "650c19fb283d908b1e11af54f19dd0ec8a48e204d38bdd359120d6e4bbd354e5"
+    },
+    {
+      "correct": 4,
+      "expanded_from_candidate_scores": false,
+      "label": "target_sample_s6",
+      "method": "target_sample_s6",
+      "path": "results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl",
+      "rows": 32,
+      "sha256": "650c19fb283d908b1e11af54f19dd0ec8a48e204d38bdd359120d6e4bbd354e5"
+    },
+    {
+      "correct": 7,
+      "expanded_from_candidate_scores": false,
+      "label": "target_sample_s7",
+      "method": "target_sample_s7",
+      "path": "results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl",
+      "rows": 32,
+      "sha256": "650c19fb283d908b1e11af54f19dd0ec8a48e204d38bdd359120d6e4bbd354e5"
+    }
+  ],
+  "command": "scripts/materialize_no_source_candidate_surface.py --base-target-set results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json --candidate target_sample_s0=path=results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl,method=target_sample_s0 --candidate target_sample_s1=path=results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl,method=target_sample_s1 --candidate target_sample_s2=path=results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl,method=target_sample_s2 --candidate target_sample_s3=path=results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl,method=target_sample_s3 --candidate target_sample_s4=path=results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl,method=target_sample_s4 --candidate target_sample_s5=path=results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl,method=target_sample_s5 --candidate target_sample_s6=path=results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl,method=target_sample_s6 --candidate target_sample_s7=path=results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.jsonl,method=target_sample_s7 --min-source-only 0 --date 2026-04-27 --output-dir results/svamp32_target_sampling_full32_s8_20260427/no_source_surface",
+  "date": "2026-04-27",
+  "git_commit": "5feb0e05568c65cc44ff1aadec4973f52b0ccf82",
+  "outputs": {
+    "target_set_json": "results/svamp32_target_sampling_full32_s8_20260427/no_source_surface/source_contrastive_target_set.json",
+    "target_set_md": "results/svamp32_target_sampling_full32_s8_20260427/no_source_surface/source_contrastive_target_set.md",
+    "target_set_sha256": "647725e7fb079e5c544e1556cab051c124d40982c86b927dd0b639f8a561aaa8"
+  },
+  "reference_n": 32,
+  "status": "no_source_candidate_surface_materialized",
+  "target_set_counts": {
+    "clean_source_only": 2,
+    "source_correct": 6,
+    "source_only": 5,
+    "target_correct": 8,
+    "target_only": 7,
+    "target_or_source_oracle": 13
+  }
+}

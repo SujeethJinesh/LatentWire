@@ -1458,3 +1458,44 @@ New memo:
 
 Next exact gate remains the MPS-blocker check, then the stronger-source scout
 from `paper/postkill_historical_cpu_audit_20260427.md`.
+
+## 2026-04-27 SVAMP32 Full32 Target Sampling Reachability
+
+Readiness remains not ICLR-ready. The current story is now sharper: broad
+target/no-source sampling creates a large receiver-side candidate pool, but it
+does not by itself create new clean C2C residual communication surface.
+
+New evidence:
+
+- `results/svamp32_target_sampling_full32_s8_20260427/target_only_samples.md`
+  reports raw target/no-source candidate oracle `14/32` with full numeric
+  coverage (`256/256`).
+- `results/svamp32_target_sampling_full32_s8_20260427/reachability.md` reports
+  raw sample oracle gain `7`, C2C clean residual in pool `2/6`, C2C
+  teacher-only in pool `4/9`, and duplicate nonempty row fraction `0.582`.
+- `results/svamp32_target_sampling_full32_s8_20260427/headroom.md` reports the
+  merged target-side oracle with text relay plus samples as `18/32`, but the
+  remaining clean source-only IDs have gold in target-side pool `0/2`.
+
+Decision:
+
+- target/no-source candidate-pool discovery passes as a receiver-headroom
+  diagnostic.
+- the selector surface is not expanded, because the only C2C-clean residual IDs
+  reached are still `3e8a5691f5443495` and `575d7e83d84c1e67`, already reached
+  by the clean6 `s16` gate.
+- do not spend another cycle on deterministic numeric/process selectors for
+  this pool.
+
+Current live branch:
+
+- bounded learned source-conditioned candidate generator or frozen-latent,
+  rate-capped connector with JEPA/LeJEPA/V-JEPA-style anti-collapse telemetry.
+
+Next exact gate:
+
+- run the smallest learned connector/generator smoke that can use the full32
+  no-source pool as a target-prior baseline. Promote only if matched source
+  recovers at least `1` C2C-clean source-necessary ID while zero-source,
+  shuffled-source, target-only/slots-only, and random same-byte controls recover
+  `0`, with no target-correct harm and byte/latency accounting.

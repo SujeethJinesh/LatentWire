@@ -158,3 +158,22 @@ the promotion status:
    controls.
 4. Role: inspiration, anti-collapse diagnostics, ablation design, and paper
    framing. Still not method evidence.
+
+## 2026-04-27 Full32 Reachability Addendum
+
+The SVAMP32 full32 target-only sampling gate keeps JEPA/LeJEPA/V-JEPA as design
+guidance, not positive evidence:
+
+1. Blocker helped: broader target/no-source sampling reaches `14/32` raw sample
+   oracle and `18/32` merged target-side oracle, but it does not expand C2C-clean
+   residual reachability beyond the same two clean IDs from the clean6 gate.
+2. Mechanism/design idea: a JEPA-style connector should predict source
+   innovation over a frozen target-prior candidate pool, not reconstruct all
+   target states or rank target-prior samples by latent similarity alone.
+3. Next experiment change: use the full32 no-source pool as the target-prior
+   baseline. Train or evaluate only a bounded source-conditioned generator or
+   frozen-latent/rate-capped connector with matched-source margins over
+   zero-source, shuffled-source, target-only/slots-only, and random same-byte
+   controls.
+4. Role: inspiration, anti-collapse diagnostics, ablation design, and paper
+   framing. The full32 target-only gate is not communication evidence.
