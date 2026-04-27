@@ -1,0 +1,48 @@
+{
+  "artifacts": {
+    "decision_surface_json": {
+      "path": "results/svamp32_source_sample_selector_newclean2_20260427/decision_surface.json",
+      "sha256": "8f98b76d3f27661fde755e7d213af93893cfe35d5a28dc74e8ee4c4571ad5e4d"
+    },
+    "top_select_answer_masked_json": {
+      "path": "results/svamp32_source_sample_selector_newclean2_20260427/top_select_answer_masked.json",
+      "sha256": "16d75be53ad13dc1f87db20b4c0f11f362a4be9ae6d4d7d5caffe9a6b6005c35"
+    },
+    "top_select_answer_only_json": {
+      "path": "results/svamp32_source_sample_selector_newclean2_20260427/top_select_answer_only.json",
+      "sha256": "ce0c3915c04392210e1b085112dda4328a6e7ff4287f41d12c794bcc1e37f6e3"
+    },
+    "top_select_full_json": {
+      "path": "results/svamp32_source_sample_selector_newclean2_20260427/top_select_full.json",
+      "sha256": "05a6fb576d293044776e4d486d9e9cce087096959446a22c198dfbea5ae47751"
+    }
+  },
+  "clean_ids": [
+    "6e9745b37ab6fc45",
+    "de1bf4d142544e5b"
+  ],
+  "date": "2026-04-27",
+  "decision": "Fail: no source-necessary clean recovery and multiple target-correct harms.",
+  "metrics": {
+    "answer_masked": {
+      "accepted_harm": 6,
+      "control_clean_union": 0,
+      "matched_clean_correct": 0,
+      "matched_correct": 2
+    },
+    "answer_only": {
+      "accepted_harm": 5,
+      "control_clean_union": 0,
+      "matched_clean_correct": 0,
+      "matched_correct": 6
+    },
+    "full": {
+      "accepted_harm": 5,
+      "control_clean_union": 0,
+      "matched_clean_correct": 0,
+      "matched_correct": 6
+    }
+  },
+  "scale_rung": "smoke",
+  "status": "selector_fails_no_clean_recovery"
+}

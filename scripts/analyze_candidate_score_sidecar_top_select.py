@@ -22,7 +22,7 @@ if str(ROOT) not in sys.path:
 from scripts import analyze_svamp_source_semantic_predicate_decoder as decoder
 
 
-CONDITIONS = ("matched", "shuffled_source", "random_sidecar", "target_only", "slots_only")
+CONDITIONS = ("matched", "zero_source", "shuffled_source", "random_sidecar", "target_only", "slots_only")
 
 
 def _resolve(path: str | pathlib.Path) -> pathlib.Path:
@@ -98,6 +98,8 @@ def _condition_sidecar(
     example_id = surface.reference_ids[index]
     if condition == "matched":
         return sidecars.get(example_id)
+    if condition == "zero_source":
+        return None
     if condition == "shuffled_source":
         other_index = decoder._hash_nonself_index(surface, index, salt="top_select_shuffle")
         return sidecars.get(surface.reference_ids[other_index])

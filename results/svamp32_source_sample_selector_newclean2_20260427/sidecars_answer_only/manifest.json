@@ -1,0 +1,43 @@
+{
+  "command": "scripts/materialize_svamp_source_candidate_sidecars.py --live-target-set results/svamp32_source_sample_selector_newclean2_20260427/decision_surface.json --output-dir results/svamp32_source_sample_selector_newclean2_20260427/sidecars_answer_only --sidecar-bits 8 --label-prior 0.0 --profile-mode answer_only --date 2026-04-27",
+  "config": {
+    "candidate_pool": "target_side_only",
+    "holdout_target_set": null,
+    "label_prior": 0.0,
+    "live_target_set": "results/svamp32_source_sample_selector_newclean2_20260427/decision_surface.json",
+    "profile_mode": "answer_only",
+    "sidecar_bits": 8
+  },
+  "date": "2026-04-27",
+  "git_commit": "ef4886ed050f7ee21c8746a42e673a86c5fc1fe1",
+  "hashes": {
+    "live_sidecar_sha256": "10ae039a1c0ef6c6960f2624650ccb02b2abf0ac952e5eed6dca050d11024ff5"
+  },
+  "outputs": {
+    "live_sidecar": "results/svamp32_source_sample_selector_newclean2_20260427/sidecars_answer_only/live_candidate_sidecars.jsonl",
+    "manifest_json": "results/svamp32_source_sample_selector_newclean2_20260427/sidecars_answer_only/manifest.json",
+    "manifest_md": "results/svamp32_source_sample_selector_newclean2_20260427/sidecars_answer_only/manifest.md"
+  },
+  "status": "source_candidate_sidecars_materialized",
+  "summaries": {
+    "live": {
+      "empty_pool": 0,
+      "missing_source": 0,
+      "n": 32,
+      "profile_mode": "answer_only",
+      "sidecar_bits": 8,
+      "sidecar_bytes": 1,
+      "source_final_in_pool": 21,
+      "source_mentioned_pool_hits": 22,
+      "target_set": "results/svamp32_source_sample_selector_newclean2_20260427/decision_surface.json",
+      "top_label_counts": {
+        "source_sample_s1": 1,
+        "t2t": 3,
+        "target": 25,
+        "target_sample_s2": 1,
+        "target_sample_s4": 1,
+        "target_sample_s5": 1
+      }
+    }
+  }
+}

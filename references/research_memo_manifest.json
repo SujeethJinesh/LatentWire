@@ -824,5 +824,12 @@
     "path": "references/474_jepa_anticollapse_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo translating JEPA, I-JEPA, V-JEPA, LeJEPA, LLM-JEPA, VL-JEPA, M3-JEPA, VICReg, and Barlow Twins into answer-masked anti-collapse objectives and diagnostics for source-to-target communication."
+  },
+  {
+    "num": 475,
+    "slug": "crossfield_source_innovation_controls_refs",
+    "path": "references/475_crossfield_source_innovation_controls_refs.md",
+    "status": "local_memo",
+    "reason": "Cross-field primary-source memo translating distributed source coding, Kalman/predictive coding, one-bit sketches, and compressed sensing into compact source-innovation sidecars and source-destroying controls after the SVAMP32 source-sampling replay exposed prompt-wrapper reachability."
   }
 ]

@@ -11943,3 +11943,161 @@ Next exact gate:
 - pass only if matched source uniquely recovers at least one of
   `6e9745b37ab6fc45` or `de1bf4d142544e5b`, control clean union is `0`,
   target-correct harm is `0`, and bytes plus collapse telemetry are reported
+
+## 2026-04-27 Cycle 20 - SVAMP32 Source-Sample Selector And S16 Replay
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; no source-derived positive method has
+   survived strict controls.
+2. Current paper story: source sampling exposed two C2C-clean residual
+   candidates, but it needed attribution before any connector training.
+3. Exact blocker: prove matched source selects or generates those candidates
+   beyond target-only, prompt-wrapper, and source-destroying controls.
+4. Current live branches: source-sampled selector surface; JEPA-style
+   source-innovation connector only if the surface survives controls.
+5. Highest-priority gate: strict selector over the two-ID candidate pool,
+   followed by a source-vs-target prompt-wrapper replay.
+6. Scale-up rung: smoke.
+
+Subagents:
+
+- artifact audit: identified exact source-sample rows and warned that raw
+  source rows still carry inherited `target_sample_s*` method names
+- experiment planner: recommended a two-ID `s16` replay before any connector
+  training
+- reviewer: required target prompt-wrapper controls and cautioned that even a
+  clean `2/2` would be only attribution evidence
+- JEPA/anti-collapse: kept Query-JEPA/source-innovation as a future connector
+  design only after the surface survives controls
+- cross-field scout: proposed compact conditional-innovation sidecars from
+  distributed source coding, Kalman/predictive coding, and one-bit sketches
+
+Harness update:
+
+- added `scripts/build_candidate_pool_decision_surface.py`
+  - clones an existing target set
+  - appends extra candidate rows with distinct labels
+  - overrides clean decision IDs for a bounded attribution surface
+- added `zero_source` to
+  `scripts/analyze_candidate_score_sidecar_top_select.py`
+- added `tests/test_build_candidate_pool_decision_surface.py`
+
+Gate 1 commands:
+
+```bash
+./venv_arm64/bin/python scripts/build_candidate_pool_decision_surface.py \
+  --base-target-set results/svamp32_target_sampling_full32_s8_20260427/no_source_surface/source_contrastive_target_set.json \
+  --extra-candidate label=source_sample_s0,path=results/svamp32_source_sampling_full32_s4_20260427/source_samples.jsonl,method=target_sample_s0 \
+  --extra-candidate label=source_sample_s1,path=results/svamp32_source_sampling_full32_s4_20260427/source_samples.jsonl,method=target_sample_s1 \
+  --extra-candidate label=source_sample_s2,path=results/svamp32_source_sampling_full32_s4_20260427/source_samples.jsonl,method=target_sample_s2 \
+  --extra-candidate label=source_sample_s3,path=results/svamp32_source_sampling_full32_s4_20260427/source_samples.jsonl,method=target_sample_s3 \
+  --clean-id 6e9745b37ab6fc45 \
+  --clean-id de1bf4d142544e5b \
+  --date 2026-04-27 \
+  --output-json results/svamp32_source_sample_selector_newclean2_20260427/decision_surface.json \
+  --output-md results/svamp32_source_sample_selector_newclean2_20260427/decision_surface.md
+
+for mode in full answer_only answer_masked; do
+  ./venv_arm64/bin/python scripts/materialize_svamp_source_candidate_sidecars.py \
+    --live-target-set results/svamp32_source_sample_selector_newclean2_20260427/decision_surface.json \
+    --output-dir results/svamp32_source_sample_selector_newclean2_20260427/sidecars_${mode} \
+    --sidecar-bits 8 \
+    --label-prior 0.0 \
+    --profile-mode ${mode} \
+    --date 2026-04-27
+  ./venv_arm64/bin/python scripts/analyze_candidate_score_sidecar_top_select.py \
+    --target-set results/svamp32_source_sample_selector_newclean2_20260427/decision_surface.json \
+    --sidecar-jsonl results/svamp32_source_sample_selector_newclean2_20260427/sidecars_${mode}/live_candidate_sidecars.jsonl \
+    --min-confidence 0.0 \
+    --min-source-necessary-clean 1 \
+    --max-control-clean-union 0 \
+    --max-accepted-harm 0 \
+    --date 2026-04-27 \
+    --output-json results/svamp32_source_sample_selector_newclean2_20260427/top_select_${mode}.json \
+    --output-md results/svamp32_source_sample_selector_newclean2_20260427/top_select_${mode}.md
+done
+```
+
+Gate 1 results:
+
+| Profile | matched correct | matched clean | control clean union | accepted harm |
+|---|---:|---:|---:|---:|
+| `full` | `6/32` | `0` | `0` | `5` |
+| `answer_only` | `6/32` | `0` | `0` | `5` |
+| `answer_masked` | `2/32` | `0` | `0` | `6` |
+
+Gate 1 decision:
+
+- fail
+- the deterministic source-candidate score sidecar does not select either new
+  clean candidate, even when the source-sampled gold values are present in the
+  candidate pool
+- do not tune this selector family on the same surface
+
+Gate 2 commands:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_id_subset.py \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --ids 6e9745b37ab6fc45 de1bf4d142544e5b \
+  --output-jsonl results/svamp32_source_sampling_newclean2_s16_20260427/newclean2_eval.jsonl \
+  --output-meta-json results/svamp32_source_sampling_newclean2_s16_20260427/newclean2_eval.meta.json
+
+HF_HUB_DISABLE_XET=1 PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/sample_target_candidate_surface.py \
+  --eval-file results/svamp32_source_sampling_newclean2_s16_20260427/newclean2_eval.jsonl \
+  --model Qwen/Qwen2.5-Math-1.5B \
+  --samples 16 \
+  --method-prefix source_sample \
+  --temperature 0.9 \
+  --top-p 0.95 \
+  --seed 171 \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --prompt-mode source_reasoning \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --enable-thinking false \
+  --output-jsonl results/svamp32_source_sampling_newclean2_s16_20260427/source_samples.jsonl \
+  --output-json results/svamp32_source_sampling_newclean2_s16_20260427/source_samples.json \
+  --output-md results/svamp32_source_sampling_newclean2_s16_20260427/source_samples.md
+```
+
+The same command shape was repeated for:
+
+- `Qwen/Qwen3-0.6B`, direct prompt, `target_direct_sample`
+- `Qwen/Qwen3-0.6B`, source-reasoning prompt, `target_brief_sample`
+- `Qwen/Qwen2.5-Math-1.5B`, direct prompt, `source_direct_sample`
+
+Gate 2 results:
+
+| Condition | Model | Prompt mode | Oracle |
+|---|---|---|---:|
+| `source_sample` | `Qwen/Qwen2.5-Math-1.5B` | `source_reasoning` | `2/2` |
+| `target_direct_sample` | `Qwen/Qwen3-0.6B` | `direct` | `0/2` |
+| `target_brief_sample` | `Qwen/Qwen3-0.6B` | `source_reasoning` | `2/2` |
+| `source_direct_sample` | `Qwen/Qwen2.5-Math-1.5B` | `direct` | `1/2` |
+
+Gate 2 decision:
+
+- hard fail for source-specific attribution
+- the matched source replay is stable, but the target model with the same
+  brief-analysis/source-reasoning wrapper also reaches `2/2`
+- the two-ID source-sampled surface is prompt-wrapper reachable; do not train a
+  connector on it
+
+Artifacts:
+
+- `results/svamp32_source_sample_selector_newclean2_20260427/manifest.md`
+- `results/svamp32_source_sampling_newclean2_s16_20260427/manifest.md`
+- `paper/svamp32_source_sample_selector_and_replay_20260427.md`
+- `references/475_crossfield_source_innovation_controls_refs.md`
+
+Next exact gate:
+
+- promote target brief-wrapper sampling to a target-prior baseline/control
+- rerun source-surface discovery only if matched source adds clean residual IDs
+  beyond target direct, target brief-wrapper, zero-source, shuffled-source,
+  answer-only, answer-masked, and random same-byte controls
+  before any connector training

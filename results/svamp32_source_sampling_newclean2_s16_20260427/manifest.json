@@ -1,0 +1,35 @@
+{
+  "artifacts": {
+    "source_direct_samples_jsonl": {
+      "path": "results/svamp32_source_sampling_newclean2_s16_20260427/source_direct_samples.jsonl",
+      "sha256": "ef73630d4f92658cdfb7bbd9724ddf5acd8272c118ad72506ed424e1e80cfe46"
+    },
+    "source_samples_jsonl": {
+      "path": "results/svamp32_source_sampling_newclean2_s16_20260427/source_samples.jsonl",
+      "sha256": "75a2fe0f73be8374bc8cf335e6e55804a184ee398545264803f4330379a97223"
+    },
+    "target_brief_samples_jsonl": {
+      "path": "results/svamp32_source_sampling_newclean2_s16_20260427/target_brief_samples.jsonl",
+      "sha256": "1b38026af2d075b003dd18405100072848810a39c9fa69b3cc932e4d39d4115a"
+    },
+    "target_direct_samples_jsonl": {
+      "path": "results/svamp32_source_sampling_newclean2_s16_20260427/target_direct_samples.jsonl",
+      "sha256": "c016712c72a2c8b4615aec515e4ff1b66e776f236f0ea019eb5a134f60f1a884"
+    }
+  },
+  "clean_ids": [
+    "6e9745b37ab6fc45",
+    "de1bf4d142544e5b"
+  ],
+  "date": "2026-04-27",
+  "decision": "Fail as source-specific surface: target brief-wrapper control reaches 2/2.",
+  "metrics": {
+    "source_direct_oracle": 1,
+    "source_reasoning_oracle": 2,
+    "target_brief_oracle": 2,
+    "target_direct_oracle": 0,
+    "total": 2
+  },
+  "scale_rung": "smoke",
+  "status": "prompt_wrapper_control_explains_surface"
+}

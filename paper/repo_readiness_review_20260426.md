@@ -78,6 +78,16 @@ selector or JEPA-style rate-capped connector on those two IDs. Promotion
 requires matched-only recovery, control clean union `0`, no target-correct harm,
 and bytes plus collapse telemetry.
 
+Update `2026-04-27`: the two-ID source-sampled branch is pruned as a
+source-specific connector surface. A strict candidate selector over the appended
+source-sampled candidates fails under full, answer-only, and answer-masked
+source profiles (`0` matched clean recoveries, `5-6` accepted harms). A 16-sample
+replay keeps matched source at `2/2`, but the target model with the same
+brief-analysis wrapper also reaches `2/2`; target direct remains `0/2`, and
+source direct is `1/2`. The live branch is no longer the two-ID source-sampled
+surface. The prompt wrapper must become a target-prior baseline/control before
+any future source-communication claim.
+
 Update `2026-04-27`: the stricter SVAMP32 clean C2C residual target-only
 sampling gate separates generator headroom from communication. No-source target
 sampling reaches gold on `2/6` clean residual IDs with full numeric coverage,
