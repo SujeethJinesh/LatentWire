@@ -53,3 +53,21 @@ Then run the three commands in
 
 The full collection commands now use `--resume`; the memo also includes a
 two-example `.debug/` smoke using `--limit 2` before the full live/holdout run.
+
+## CPU Fallback Smoke
+
+While PID `31103` continued blocking MPS, a CPU-only two-example collector
+smoke was run as a tooling check:
+
+- JSONL:
+  `.debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.jsonl`
+- JSONL sha256:
+  `863254ecc5110eab3e62efb65ddb31e9472be42513bce6ce1ab44842e1057e9d`
+- markdown:
+  `.debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.md`
+- markdown sha256:
+  `cd12db13419021f248c311776e9c3b148d60faa69297c31b6a8d272fc863d0f9`
+- rows: `2`
+- elapsed: `96.06s`
+- git commit:
+  `154430a33d0d649e30b877d7b4d38015a229ac9a`

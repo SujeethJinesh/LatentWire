@@ -691,3 +691,23 @@ Next gate after PID `31103` is cleared:
 
 This does not change readiness: still not ICLR-ready until the scientific
 live/holdout gate clears.
+
+## 2026-04-27 CPU Smoke Under MPS Blocker
+
+The `source_likelihood_sketch` collector passed a CPU-only two-example smoke
+while PID `31103` continued blocking MPS:
+
+- output JSONL:
+  `.debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.jsonl`
+- output JSONL sha256:
+  `863254ecc5110eab3e62efb65ddb31e9472be42513bce6ce1ab44842e1057e9d`
+- rows: `2`
+- elapsed: `96.06s`
+- top labels: `text`, `text`
+
+Readiness impact:
+
+- Tooling risk is lower because the collector can load the source model,
+  score continuations, append JSONL rows, and emit provenance/hashes.
+- Scientific readiness is unchanged. This is only a micro smoke, and the full
+  live/holdout gate still needs MPS after PID `31103` is cleared.

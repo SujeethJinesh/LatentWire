@@ -7736,3 +7736,81 @@ If cleared, first run the `--limit 2` smoke in
 `paper/svamp70_source_likelihood_sketch_20260427.md`; if the smoke produces
 finite scores and the readout hashes, run the full live and holdout collection
 commands with `--resume`, then the frozen analyzer.
+
+## 2026-04-27 Cycle - CPU source likelihood smoke under MPS blocker
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; the live method still
+   lacks full live/holdout source-control evidence.
+2. Current paper story: `source_likelihood_sketch` remains the top branch
+   because historical positive rows point to source-derived side-information,
+   but fixed decoded guards and query-memory branches are not reliable enough.
+3. Exact blocker to submission: full SVAMP70 live/holdout sketch collection
+   cannot run safely on MPS while orphaned PID `31103` remains in `STAT=UE`.
+4. Live branch: `source_likelihood_sketch`.
+5. Highest-priority gate: validate the collector path with a bounded CPU smoke
+   while waiting for MPS to be cleared.
+6. Scale-up rung: micro smoke for tooling only; strict-small scientific gate is
+   still blocked.
+
+Command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_source_likelihood_sketch.py \
+  --source-model Qwen/Qwen2.5-Math-1.5B \
+  --eval-file results/qwen25math_qwen3_svamp70_source_surface_20260426/_artifacts/svamp_eval_70_70.jsonl \
+  --candidate target=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/target_alone.jsonl,method=target_alone \
+  --candidate text=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/text_to_text.jsonl,method=text_to_text \
+  --candidate source=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_alone.jsonl,method=source_alone \
+  --reference-label target \
+  --candidate-text-field prediction \
+  --prompt-mode direct \
+  --source-use-chat-template \
+  --source-enable-thinking false \
+  --device cpu \
+  --dtype float32 \
+  --limit 2 \
+  --output-jsonl .debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.jsonl \
+  --output-md .debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.md
+```
+
+Result:
+
+- Passed as a collector/provenance smoke: `2` rows, finite continuation scores,
+  append-only JSONL output, markdown readout, command capture, input hashes,
+  ordered-ID hash, and output hash.
+- Elapsed time: `96.06s` on CPU, too slow for the full live/holdout gate.
+- Top labels on the two smoke examples: `text`, `text`; this is not a
+  scientific pass or fail for the method.
+
+Artifacts:
+
+- JSONL: `.debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.jsonl`
+- JSONL sha256:
+  `863254ecc5110eab3e62efb65ddb31e9472be42513bce6ce1ab44842e1057e9d`
+- markdown: `.debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.md`
+- markdown sha256:
+  `cd12db13419021f248c311776e9c3b148d60faa69297c31b6a8d272fc863d0f9`
+- ordered IDs: `013133cdef4f637c`, `d64f6e35083ffe8c`
+- ordered-ID sha256:
+  `06403406633be53c4d2db3f0064af1afe2078ee67fc2dd748f91aa3d82ea530b`
+- git commit used for the run:
+  `154430a33d0d649e30b877d7b4d38015a229ac9a`
+
+Decision:
+
+- Promote only the collector tooling, not the scientific method.
+- Keep the live branch unchanged.
+- Stop MPS execution until PID `31103` is cleared; CPU is acceptable only for
+  tiny smoke/debug work.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If clear, run the MPS `--limit 2` smoke in
+`paper/svamp70_source_likelihood_sketch_20260427.md`, then full live and
+holdout collection with `--resume`, then the frozen analyzer.

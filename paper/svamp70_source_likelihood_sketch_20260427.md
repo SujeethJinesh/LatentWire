@@ -189,6 +189,59 @@ Latest focused result after adding collector resume/provenance support:
 
 - `7 passed in 0.08s`
 
+## CPU Fallback Smoke
+
+Because PID `31103` still blocks safe MPS execution, I ran the same two-example
+collector smoke on CPU as a tooling/provenance check only:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_source_likelihood_sketch.py \
+  --source-model Qwen/Qwen2.5-Math-1.5B \
+  --eval-file results/qwen25math_qwen3_svamp70_source_surface_20260426/_artifacts/svamp_eval_70_70.jsonl \
+  --candidate target=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/target_alone.jsonl,method=target_alone \
+  --candidate text=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/text_to_text.jsonl,method=text_to_text \
+  --candidate source=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_alone.jsonl,method=source_alone \
+  --reference-label target \
+  --candidate-text-field prediction \
+  --prompt-mode direct \
+  --source-use-chat-template \
+  --source-enable-thinking false \
+  --device cpu \
+  --dtype float32 \
+  --limit 2 \
+  --output-jsonl .debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.jsonl \
+  --output-md .debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.md
+```
+
+Result:
+
+- status: `source_likelihood_sketch_collected`
+- rows: `2`
+- elapsed: `96.06s`
+- git commit: `154430a33d0d649e30b877d7b4d38015a229ac9a`
+- ordered IDs: `013133cdef4f637c`, `d64f6e35083ffe8c`
+- ordered-ID hash:
+  `06403406633be53c4d2db3f0064af1afe2078ee67fc2dd748f91aa3d82ea530b`
+- JSONL artifact:
+  `.debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.jsonl`
+- JSONL sha256:
+  `863254ecc5110eab3e62efb65ddb31e9472be42513bce6ce1ab44842e1057e9d`
+- markdown artifact:
+  `.debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke_cpu.md`
+- markdown sha256:
+  `cd12db13419021f248c311776e9c3b148d60faa69297c31b6a8d272fc863d0f9`
+
+Interpretation:
+
+- This passes the collector smoke: model loading, chat-template prompting,
+  continuation scoring, JSONL append, readout generation, command capture, and
+  hashing all worked outside MPS.
+- It is not scientific evidence for the method. On both smoke examples the
+  top source-likelihood label was `text`; full live/holdout evaluation and
+  source-destroying controls remain required.
+- CPU speed is too slow for the full SVAMP70 live/holdout gate. Use MPS after
+  PID `31103` is cleared.
+
 ## Current Stop Condition
 
 Scientific execution is blocked by the orphaned MPS process:
