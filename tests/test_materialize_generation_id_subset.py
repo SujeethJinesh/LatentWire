@@ -58,4 +58,63 @@ def test_materialize_generation_id_subset_preserves_requested_order(tmp_path) ->
     assert [row["answer"] for row in materialized] == ["3", "1", "2"]
     meta = json.loads((tmp_path / "subset.jsonl.meta.json").read_text(encoding="utf-8"))
     assert meta["selected_ids"] == [ids[2], ids[0], ids[1]]
+    assert meta["id_source"]["type"] == "target_set"
     assert meta["output_n"] == 3
+
+
+def test_materialize_generation_id_subset_accepts_explicit_ids_file(tmp_path) -> None:
+    eval_path = tmp_path / "eval.jsonl"
+    ids_file = tmp_path / "ids.txt"
+    output = tmp_path / "subset.jsonl"
+    rows = [
+        _stable_row("A has 1 apple. How many apples?", "1"),
+        _stable_row("B has 2 apples. How many apples?", "2"),
+        _stable_row("C has 3 apples. How many apples?", "3"),
+    ]
+    eval_path.write_text(
+        "\n".join(json.dumps(row) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+    examples = subset.load_generation(str(eval_path))
+    ids = [subset._generation_example_id(example) for example in examples]
+    ids_file.write_text(
+        f"# comment\n{ids[1]}\n\n{ids[2]}\n{ids[1]}\n",
+        encoding="utf-8",
+    )
+
+    subset.main(
+        [
+            "--eval-file",
+            str(eval_path),
+            "--ids-file",
+            str(ids_file),
+            "--output-jsonl",
+            str(output),
+        ]
+    )
+
+    materialized = [
+        json.loads(line)
+        for line in output.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert [row["answer"] for row in materialized] == ["2", "3"]
+    meta = json.loads((tmp_path / "subset.jsonl.meta.json").read_text(encoding="utf-8"))
+    assert meta["selected_ids"] == [ids[1], ids[2]]
+    assert meta["id_source"]["type"] == "ids_file"
+
+
+def test_materialize_generation_id_subset_requires_one_id_source(tmp_path) -> None:
+    try:
+        subset.parse_args(
+            [
+                "--eval-file",
+                str(tmp_path / "eval.jsonl"),
+                "--output-jsonl",
+                str(tmp_path / "subset.jsonl"),
+            ]
+        )
+    except SystemExit as exc:
+        assert exc.code == 2
+    else:
+        raise AssertionError("parse_args should reject missing ID source")

@@ -1,0 +1,21 @@
+{
+  "date": "2026-04-27",
+  "eval_file": "data/svamp_eval_70.jsonl",
+  "eval_file_sha256": "bc9178d043bc05f2d1d1dd4aa2c6ec1ed024643b1a2886dfd243c4b1eca3e131",
+  "id_fields": [
+    "clean_source_only"
+  ],
+  "output_jsonl": "results/mps_qwen25_7b_historical_clean6_discovery_20260427/clean6_eval.jsonl",
+  "output_n": 6,
+  "output_sha256": "aacad9b5abf46adad6217f90f491e1082e4a024421ff25ad66d610e3ce93df2c",
+  "selected_ids": [
+    "14bfbfc94f2c2e7b",
+    "2de1549556000830",
+    "41cce6c6e6bb0058",
+    "4d780f825bb8541c",
+    "bd9d8da923981d69",
+    "ce08a3a269bf0151"
+  ],
+  "target_set_json": "results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json",
+  "target_set_sha256": "fc5eb4ca577ca33e01a9b23f427ff5d45346e1d2435392a7ce01ca25631fc729"
+}

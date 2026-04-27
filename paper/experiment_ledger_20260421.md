@@ -10921,3 +10921,117 @@ Run a different answer-masked discovery surface rather than scaling these exact
 first-eight IDs. Prefer a bounded 7B or Math-7B slice selected for
 source/target disagreement; promote only if `answer_unexplained_clean_in_pool >
 0` and the clean IDs survive text relay plus source-destroying controls.
+
+## 2026-04-27 Cycle 11 - Disagreement Surface And JEPA Anti-Collapse
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; no positive branch survives strict
+   source controls.
+2. Current paper story: MPS generation works again and 7B sources create some
+   disagreement, but answer-masking still blocks promotion.
+3. Exact blocker: source-only target-pool headroom must be answer-unexplained.
+4. Current live candidates: selected 7B disagreement discovery; JEPA-inspired
+   latent prediction only after a clean non-leaky surface exists.
+5. Highest-priority gate: selected 6-ID and 12-ID disagreement audits plus
+   JEPA anti-collapse branch synthesis.
+6. Scale-up rung: selected micro discovery.
+
+Harness update:
+
+- `scripts/materialize_generation_id_subset.py` now accepts exactly one of
+  `--target-set-json`, `--ids`, or `--ids-file`, so selected discovery slices can
+  be reproduced without fabricating target-set JSON.
+- focused tests: `tests/test_materialize_generation_id_subset.py`.
+
+Clean6 command:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_id_subset.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --target-set-json results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --id-fields clean_source_only \
+  --output-jsonl results/mps_qwen25_7b_historical_clean6_discovery_20260427/clean6_eval.jsonl \
+  --output-meta-json results/mps_qwen25_7b_historical_clean6_discovery_20260427/clean6_eval.meta.json
+```
+
+Then:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file results/mps_qwen25_7b_historical_clean6_discovery_20260427/clean6_eval.jsonl \
+  --results-dir results/mps_qwen25_7b_historical_clean6_discovery_20260427 \
+  --translator checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt \
+  --source-model Qwen/Qwen2.5-7B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t \
+  --limit 6 \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Clean6 result: target `0/6`, source `1/6`, text relay `1/6`, clean source-only
+`1`, answer-unexplained clean in pool `0`.
+
+Disagreement12 command:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_id_subset.py \
+  --eval-file data/svamp_1000.jsonl \
+  --ids 14bfbfc94f2c2e7b 2de1549556000830 41cce6c6e6bb0058 4d780f825bb8541c bd9d8da923981d69 ce08a3a269bf0151 0ee313c160b638a9 561daa750422c0e4 cd5623c80cf95da9 e90d2681e386fb04 ab1e71e8928661d0 daea537474de16ac \
+  --output-jsonl results/mps_qwen25_7b_disagreement12_discovery_20260427/disagreement12_eval.jsonl \
+  --output-meta-json results/mps_qwen25_7b_disagreement12_discovery_20260427/disagreement12_eval.meta.json
+
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file results/mps_qwen25_7b_disagreement12_discovery_20260427/disagreement12_eval.jsonl \
+  --results-dir results/mps_qwen25_7b_disagreement12_discovery_20260427 \
+  --translator checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt \
+  --source-model Qwen/Qwen2.5-7B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t \
+  --limit 12 \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Disagreement12 result:
+
+- target `0/12`, source `4/12`, text relay `4/12`
+- exact ID parity true for all methods
+- numeric coverage `12/12` for all methods
+- clean source-only after text relay: `2`
+- clean in target-side pool: `1`
+- answer-unexplained clean in pool: `0`
+
+Decision:
+
+- failed: selected 6-ID and 12-ID disagreement probes still do not expose
+  answer-unexplained target-pool headroom.
+- not promoted: no learned sidecar, latent connector, or KV transport claim.
+- updated next-branch design: JEPA/LeJEPA/V-JEPA literature suggests
+  answer-masked latent prediction with frozen target latents, source-destroying
+  margins, target-preservation loss, and explicit variance/covariance/effective
+  rank telemetry to avoid representation collapse.
+
+Reference update:
+
+- `references/474_jepa_anticollapse_refs.md`
+- manifest: `references/research_memo_manifest.json`
+
+New memo:
+
+- `paper/mps_disagreement_surface_and_jepa_anticollapse_20260427.md`
+
+Next exact gate:
+
+Implement CPU-only `answer_masked_source` / `answer_only` diagnostics and
+collapse telemetry, then run answer-likelihood smoke on live and holdout source
+surfaces before another MPS generation sweep.

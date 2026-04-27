@@ -1,0 +1,42 @@
+{
+  "command": "scripts/audit_source_surface_answer_masking.py --results-root results/mps_qwen25_7b_historical_clean6_discovery_20260427 --date 2026-04-27 --output-json results/mps_qwen25_7b_historical_clean6_discovery_20260427/answer_masking_audit.json --output-md results/mps_qwen25_7b_historical_clean6_discovery_20260427/answer_masking_audit.md",
+  "date": "2026-04-27",
+  "git_commit": "5375f1e3da628994ea51e79660e79c99297de92f",
+  "result": {
+    "candidate_paths": 1,
+    "loaded_with_clean_ids": 1,
+    "results_root": "results/mps_qwen25_7b_historical_clean6_discovery_20260427",
+    "skipped": [],
+    "surfaces": [
+      {
+        "answer_explained_clean_in_pool": 0,
+        "answer_explained_clean_in_pool_ids": [],
+        "answer_unexplained_clean_in_pool": 0,
+        "answer_unexplained_clean_in_pool_ids": [],
+        "clean_field": "clean_source_only",
+        "clean_in_pool": 0,
+        "clean_in_pool_ids": [],
+        "clean_n": 1,
+        "n": 6,
+        "path": "results/mps_qwen25_7b_historical_clean6_discovery_20260427/source_contrastive_target_set.json",
+        "rows": [
+          {
+            "candidate_values": [
+              "11",
+              "8",
+              "9"
+            ],
+            "example_id": "ce08a3a269bf0151",
+            "explained_by_source_answer": true,
+            "gold": "2",
+            "gold_in_target_side_pool": false,
+            "source_final": "2",
+            "source_verified": [],
+            "target_correct": false
+          }
+        ],
+        "sha256": "fe4f7da6e07cba781f44704bf4cfdf6cc9be74a9e6a277b4ae2f23d214d11ad0"
+      }
+    ]
+  }
+}

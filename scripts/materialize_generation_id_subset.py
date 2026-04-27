@@ -75,6 +75,17 @@ def _ids_from_target_set(path: pathlib.Path, fields: Sequence[str]) -> list[str]
     return _ordered_unique(values)
 
 
+def _ids_from_file(path: pathlib.Path) -> list[str]:
+    values: list[str] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            values.append(stripped)
+    return _ordered_unique(values)
+
+
 def materialize_subset(
     *,
     eval_path: pathlib.Path,
@@ -102,33 +113,61 @@ def materialize_subset(
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--eval-file", required=True)
-    parser.add_argument("--target-set-json", required=True)
-    parser.add_argument("--id-fields", nargs="+", required=True)
+    parser.add_argument("--target-set-json")
+    parser.add_argument("--id-fields", nargs="+")
+    parser.add_argument("--ids", nargs="+")
+    parser.add_argument("--ids-file")
     parser.add_argument("--output-jsonl", required=True)
     parser.add_argument("--output-meta-json")
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    sources = [
+        bool(args.target_set_json),
+        bool(args.ids),
+        bool(args.ids_file),
+    ]
+    if sum(int(source) for source in sources) != 1:
+        parser.error("provide exactly one of --target-set-json, --ids, or --ids-file")
+    if bool(args.target_set_json) != bool(args.id_fields):
+        parser.error("--target-set-json requires --id-fields, and --id-fields requires --target-set-json")
+    return args
 
 
 def main(argv: list[str] | None = None) -> dict[str, Any]:
     args = parse_args(argv)
     eval_path = _resolve(args.eval_file)
-    target_set_path = _resolve(args.target_set_json)
+    target_set_path = _resolve(args.target_set_json) if args.target_set_json else None
+    ids_file_path = _resolve(args.ids_file) if args.ids_file else None
     output_path = _resolve(args.output_jsonl)
     output_meta_path = (
         _resolve(args.output_meta_json)
         if args.output_meta_json
         else output_path.with_suffix(output_path.suffix + ".meta.json")
     )
-    selected_ids = _ids_from_target_set(target_set_path, args.id_fields)
+    if target_set_path is not None:
+        selected_ids = _ids_from_target_set(target_set_path, args.id_fields)
+        id_source: dict[str, Any] = {
+            "type": "target_set",
+            "target_set_json": _display_path(target_set_path),
+            "target_set_sha256": _sha256(target_set_path),
+            "id_fields": list(args.id_fields),
+        }
+    elif ids_file_path is not None:
+        selected_ids = _ids_from_file(ids_file_path)
+        id_source = {
+            "type": "ids_file",
+            "ids_file": _display_path(ids_file_path),
+            "ids_file_sha256": _sha256(ids_file_path),
+        }
+    else:
+        selected_ids = _ordered_unique([str(value) for value in args.ids])
+        id_source = {"type": "ids"}
     rows, ordered_ids = materialize_subset(eval_path=eval_path, selected_ids=selected_ids)
     _write_jsonl(output_path, rows)
     meta = {
         "date": str(date.today()),
         "eval_file": _display_path(eval_path),
         "eval_file_sha256": _sha256(eval_path),
-        "target_set_json": _display_path(target_set_path),
-        "target_set_sha256": _sha256(target_set_path),
-        "id_fields": list(args.id_fields),
+        "id_source": id_source,
         "selected_ids": ordered_ids,
         "output_jsonl": _display_path(output_path),
         "output_sha256": _sha256(output_path),

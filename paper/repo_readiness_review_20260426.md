@@ -1294,6 +1294,33 @@ Next exact gate: run a bounded 7B or Math-7B discovery slice chosen for
 source/target disagreement and reject unless `answer_unexplained_clean_in_pool`
 is nonzero under exact ID parity, text relay, and source-destroying controls.
 
+## 2026-04-27 Disagreement Surface And JEPA Anti-Collapse
+
+Readiness remains not ICLR-ready. The selected 7B disagreement surfaces improved
+diagnostic sharpness but did not unlock a positive branch:
+
+- clean6 selected from historical SVAMP70 clean source-only IDs:
+  target `0/6`, source `1/6`, text relay `1/6`, answer-unexplained clean in pool
+  `0`.
+- disagreement12 union from live/chal/holdout historical clean IDs:
+  target `0/12`, source `4/12`, text relay `4/12`, clean source-only `2`,
+  answer-unexplained clean in pool `0`.
+
+Decision: do not promote a learned sidecar or latent connector. The useful
+source rows are still explained by final numeric answers or are outside the
+target-side candidate pool.
+
+JEPA/LeJEPA/V-JEPA literature was added as design guidance, not evidence:
+future connector training should use answer-masked dual source views, frozen
+target latent targets, matched-source margin over zero/shuffled/target-only/
+slots-only controls, target-preservation loss, and collapse telemetry
+(`std_min`, effective rank, covariance off-diagonal, Barlow-style
+cross-correlation).
+
+Current live branch: CPU-only answer-masked source/answer-only diagnostics and
+collapse telemetry. Next exact gate is an answer-likelihood smoke on live and
+holdout source surfaces before any more MPS generation.
+
 ## 2026-04-27 No-Source Candidate Surface Gate
 
 Readiness remains not ICLR-ready. Current live branch: target-only sampled

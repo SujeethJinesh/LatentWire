@@ -1,0 +1,25 @@
+{
+  "date": "2026-04-27",
+  "eval_file": "data/svamp_1000.jsonl",
+  "eval_file_sha256": "c56db9096c1dc61f132b135256ffe50849faf42ff9a5752811801bb90353bdce",
+  "id_source": {
+    "type": "ids"
+  },
+  "output_jsonl": "results/mps_qwen25_7b_disagreement12_discovery_20260427/disagreement12_eval.jsonl",
+  "output_n": 12,
+  "output_sha256": "1bfbb11cb8ea958e73d1eb8260f1152dadb7f4c27c1c1dce0392ccafb08f4b14",
+  "selected_ids": [
+    "14bfbfc94f2c2e7b",
+    "2de1549556000830",
+    "41cce6c6e6bb0058",
+    "4d780f825bb8541c",
+    "bd9d8da923981d69",
+    "ce08a3a269bf0151",
+    "0ee313c160b638a9",
+    "561daa750422c0e4",
+    "cd5623c80cf95da9",
+    "e90d2681e386fb04",
+    "ab1e71e8928661d0",
+    "daea537474de16ac"
+  ]
+}
