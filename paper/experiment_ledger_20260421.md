@@ -7222,3 +7222,99 @@ Next exact gate:
   - `shuffled_source_salt1.jsonl`
   - `target_only.jsonl`
   - `slots_only.jsonl`
+
+## Cycle Checkpoint: 2026-04-26 Query-Innovation CPU Answer-Likelihood Smoke
+
+- cycle number: `2026-04-26-query-innovation-cpu-answer-likelihood-smoke`
+- timestamp: `2026-04-26 20:07:00 PDT`
+- live branch: finite query-innovation/source-memory checkpoint,
+  `dynalign_query_innovation_resampler_replace`, gate `0.15`
+- scale-up rung reached: CPU micro smoke
+- result summary: fail; matched source does not beat source-destroyed controls
+  and ties slots-only exactly
+
+Start-of-cycle status:
+
+- ICLR readiness: not ready; current work is still branch selection/pruning
+- current paper story: old RotAlign/sidecar/query-resampler results reveal
+  headroom, but deployable methods keep failing source-control attribution
+- exact blocker: no query-innovation row has shown matched-source answer
+  likelihood that survives zero-source, shuffled-source, and memory-null
+  controls
+- highest-priority gate: use the new eval-only answer-likelihood fields on a
+  CPU micro slice while MPS remains blocked by PID `31103`
+
+Run:
+
+- result directory:
+  `results/gsm8k32_query_innovation_answer_likelihood_cpu_smoke_20260426/`
+- eval file:
+  `results/gsm8k32_query_innovation_answer_likelihood_cpu_smoke_20260426/gsm8k_eval_4.jsonl`
+- checkpoint:
+  `.debug/checkpoints_gsm8k32_query_innovation_resampler_seed1_20260423/dynalign_query_innovation_resampler_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_innovation_resampler_replace_cal64_chat_bank16_seed1.pt`
+- device/dtype: `cpu` / `float32`
+- methods/controls:
+  - matched
+  - zero source
+  - shuffled source, salt `1`
+  - slots-only memory
+  - target-only attempted but unavailable for this checkpoint
+
+Result:
+
+- analyzer status: `answer_likelihood_controls_fail`
+- matched: `0/4`, mean answer logprob `-7.025400`
+- zero-source: `0/4`, mean answer logprob `-6.925437`
+- shuffled-source: `0/4`, mean answer logprob `-7.048394`
+- slots-only: `0/4`, mean answer logprob `-7.025400`
+- matched-minus-zero mean delta: `-0.099963`
+- matched-minus-shuffled mean delta: `+0.022994`
+- matched-minus-slots mean delta: `0.000000`
+- matched-minus-best-control mean delta: `-0.115530`
+- matched best-control wins/losses/ties: `0/4/0`
+- target-only error:
+  `ValueError: --innovation-memory-control target_only requires a target-conditioned query-innovation checkpoint`
+
+Decision:
+
+- kill the current finite query-innovation checkpoint as a live
+  source-communication row
+- weaken the non-target-conditioned query-innovation/source-memory family:
+  it can be finite, but current evidence says its apparent signal is
+  source-destroyed or slots-only reproducible
+- next highest-value branch: target-conditioned query-innovation/source-memory
+  connector whose first gate includes matched, zero-source, shuffled-source,
+  `target_only`, and `slots_only`
+- hard blocker remains: MPS process PID `31103` is stuck in uninterruptible
+  `STAT=UE`, so new connector implementation/testing that requires MPS must
+  wait until that process is cleared
+
+Artifacts:
+
+- manifest:
+  - `results/gsm8k32_query_innovation_answer_likelihood_cpu_smoke_20260426/manifest.md`
+- analyzer:
+  - `scripts/analyze_answer_likelihood_controls.py`
+  - sha256: `5cb2249e869581a2654196057a1ff032dc9b4ca3bef4dc0063fa100d94262056`
+- analyzer test:
+  - `tests/test_analyze_answer_likelihood_controls.py`
+  - sha256: `405237f126053f126f1d53d6f7dbb7224eae1b5137d3870988d2422212ecd965`
+- analysis JSON:
+  - `results/gsm8k32_query_innovation_answer_likelihood_cpu_smoke_20260426/answer_likelihood_controls.json`
+  - sha256: `4848427ad10a3092169424f63b408afbf95a463c8137a46fdfdf866a155723a3`
+- analysis MD:
+  - `results/gsm8k32_query_innovation_answer_likelihood_cpu_smoke_20260426/answer_likelihood_controls.md`
+  - sha256: `54872322ab10b95c13f28206b0fb78c17a830d57e301fdb0be7cde3bdbc862db`
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest tests/test_analyze_answer_likelihood_controls.py -q`
+  - `2 passed`
+
+Next exact gate:
+
+- clear PID `31103`
+- implement or materialize a target-conditioned query-innovation checkpoint
+  that supports `--innovation-memory-control target_only`
+- rerun the same answer-likelihood analyzer on at least GSM8K32/SVAMP32 with
+  matched, zero-source, shuffled-source, target-only, and slots-only controls

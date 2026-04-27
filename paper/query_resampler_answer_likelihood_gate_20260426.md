@@ -166,3 +166,44 @@ The query-innovation branch is still the live branch, but this cycle ends at a
 hard tooling blocker rather than a scientific pass/fail. Do not start another
 MPS run until PID `31103` is gone. Once cleared, the answer-likelihood gate
 above is the next highest-value command.
+
+## CPU Micro-Smoke Follow-Up
+
+After the initial blocker note, a CPU-only four-example smoke was run using the
+existing finite query-innovation checkpoint. This was intended as a cheap
+tooling/scientific discriminator while MPS remains blocked.
+
+Artifacts:
+
+- manifest:
+  `results/gsm8k32_query_innovation_answer_likelihood_cpu_smoke_20260426/manifest.md`
+- analysis:
+  `results/gsm8k32_query_innovation_answer_likelihood_cpu_smoke_20260426/answer_likelihood_controls.json`
+  - sha256: `4848427ad10a3092169424f63b408afbf95a463c8137a46fdfdf866a155723a3`
+- readout:
+  `results/gsm8k32_query_innovation_answer_likelihood_cpu_smoke_20260426/answer_likelihood_controls.md`
+  - sha256: `54872322ab10b95c13f28206b0fb78c17a830d57e301fdb0be7cde3bdbc862db`
+
+Result:
+
+- status: `answer_likelihood_controls_fail`
+- matched mean answer logprob: `-7.025400`
+- zero-source mean answer logprob: `-6.925437`
+- shuffled-source mean answer logprob: `-7.048394`
+- slots-only mean answer logprob: `-7.025400`
+- matched-minus-best-control mean delta: `-0.115530`
+- matched best-control wins/losses/ties: `0/4/0`
+- `target_only` is unavailable for this checkpoint because it is not a
+  target-conditioned query-innovation checkpoint
+
+Decision update:
+
+- kill the current finite query-innovation checkpoint as a live
+  source-communication row
+- do not scale this checkpoint to GSM32/GSM70 or cross-family
+- next highest-value branch: target-conditioned query-innovation/source-memory
+  connector that can run `target_only` and `slots_only` controls from the first
+  gate
+- remaining hard blocker: MPS process PID `31103` is still stuck in `STAT=UE`,
+  so implementation/testing of the next branch requires clearing that process
+  first

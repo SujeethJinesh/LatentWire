@@ -110,11 +110,17 @@ The current live branch is now the query-innovation/source-memory resampler:
   `latent_bridge/evaluate.py`, so the next gate can compare matched source
   against zero-source, shuffled-source, target-only, and slots-only controls on
   the same generated-answer surface
+- CPU micro-smoke on four GSM8K examples fails: matched mean answer logprob
+  `-7.025400`, zero-source `-6.925437`, shuffled-source `-7.048394`,
+  slots-only `-7.025400`, matched-best-control delta `-0.115530`, and
+  matched best-control wins/losses/ties `0/4/0`
+- decision: kill the current finite non-target-conditioned query-innovation
+  checkpoint as a live source-communication row
+- next branch: target-conditioned query-innovation/source-memory connector
+  that supports `target_only` and `slots_only` controls from the first gate
 - current blocker: an orphaned MPS calibration process, PID `31103`, is stuck
   in `STAT=UE` and ignores `SIGKILL`; do not start more MPS runs until it is
   cleared
-- next exact command block is recorded in
-  `paper/query_resampler_answer_likelihood_gate_20260426.md`
 
 The top-surface cross-attention rescue also fails:
 

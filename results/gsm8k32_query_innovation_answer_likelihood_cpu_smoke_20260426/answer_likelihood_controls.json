@@ -1,0 +1,139 @@
+{
+  "best_control": {
+    "deltas": [
+      -0.17254702001810074,
+      -0.004377841949462891,
+      -0.04002845883369455,
+      -0.24516566252956817
+    ],
+    "losses": 4,
+    "mean_delta_live_minus_best_control": -0.11552974583270659,
+    "ties": 0,
+    "wins": 0
+  },
+  "control_summaries": {
+    "shuffled_source_salt1": {
+      "correct": 0,
+      "finite_scores": 4,
+      "max_score": -3.4519612699747086,
+      "mean_score": -7.048394019561238,
+      "min_score": -11.506006002426147,
+      "n": 4
+    },
+    "slots_only": {
+      "correct": 0,
+      "finite_scores": 4,
+      "max_score": -3.4251600824296475,
+      "mean_score": -7.025400154206243,
+      "min_score": -11.51038384437561,
+      "n": 4
+    },
+    "zero_source": {
+      "correct": 0,
+      "finite_scores": 4,
+      "max_score": -3.385131623595953,
+      "mean_score": -6.925436817007721,
+      "min_score": -11.56827163696289,
+      "n": 4
+    }
+  },
+  "gate": {
+    "checks": [
+      {
+        "detail": {
+          "live_n": 4,
+          "shuffled_source_salt1": 4,
+          "slots_only": 4,
+          "zero_source": 4
+        },
+        "name": "row_count_parity",
+        "pass": true
+      },
+      {
+        "detail": {
+          "live": 4,
+          "shuffled_source_salt1": 4,
+          "slots_only": 4,
+          "zero_source": 4
+        },
+        "name": "finite_scores",
+        "pass": true
+      },
+      {
+        "detail": {
+          "shuffled_source_salt1": 0.02299386535499548,
+          "slots_only": 0.0,
+          "zero_source": -0.0999633371985208
+        },
+        "name": "mean_delta_vs_each_control",
+        "pass": false
+      },
+      {
+        "detail": {
+          "losses": 4,
+          "required_wins": 3,
+          "ties": 0,
+          "wins": 0
+        },
+        "name": "per_example_best_control_wins",
+        "pass": false
+      }
+    ],
+    "min_best_control_wins": 3,
+    "min_mean_delta": 0.05,
+    "score_field": "answer_mean_logprob",
+    "status": "answer_likelihood_controls_fail",
+    "unavailable_controls": [
+      "target_only"
+    ]
+  },
+  "live_summary": {
+    "correct": 0,
+    "finite_scores": 4,
+    "max_score": -3.4251600824296475,
+    "mean_score": -7.025400154206243,
+    "min_score": -11.51038384437561,
+    "n": 4
+  },
+  "paired_controls": {
+    "shuffled_source_salt1": {
+      "deltas": [
+        0.0387779101729393,
+        -0.004377841949462891,
+        0.02680118754506111,
+        0.030774205651444397
+      ],
+      "losses": 1,
+      "mean_delta_live_minus_control": 0.02299386535499548,
+      "pass_min_mean_delta": false,
+      "ties": 0,
+      "wins": 3
+    },
+    "slots_only": {
+      "deltas": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "losses": 0,
+      "mean_delta_live_minus_control": 0.0,
+      "pass_min_mean_delta": false,
+      "ties": 4,
+      "wins": 0
+    },
+    "zero_source": {
+      "deltas": [
+        -0.17254702001810074,
+        0.05788779258728027,
+        -0.04002845883369455,
+        -0.24516566252956817
+      ],
+      "losses": 3,
+      "mean_delta_live_minus_control": -0.0999633371985208,
+      "pass_min_mean_delta": false,
+      "ties": 0,
+      "wins": 1
+    }
+  }
+}
