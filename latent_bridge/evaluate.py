@@ -2022,6 +2022,55 @@ def _score_mcq_with_prefix_state(model, tokenizer, prefix_state: PrefixState, ch
     return _logprob_tokens_from_prefix_state(model, prefix_state, continuation_ids, device)
 
 
+def _generation_answer_candidates(answer: str) -> list[str]:
+    stripped = str(answer).strip()
+    candidates: list[str] = []
+    for candidate in (str(answer), stripped, f" {stripped}" if stripped else ""):
+        if candidate and candidate not in candidates:
+            candidates.append(candidate)
+    return candidates
+
+
+def _score_generation_answers_from_prefix_state(
+    model,
+    tokenizer,
+    prefix_state: PrefixState,
+    answers: list[str],
+    device: str,
+) -> dict[str, Any]:
+    best: dict[str, Any] | None = None
+    for answer in answers:
+        for candidate in _generation_answer_candidates(answer):
+            continuation_ids = tokenizer(candidate, return_tensors="pt").input_ids.to(device)
+            token_count = int(continuation_ids.shape[1])
+            if token_count <= 0:
+                continue
+            logprob = _logprob_tokens_from_prefix_state(model, prefix_state, continuation_ids, device)
+            mean_logprob = logprob / float(token_count)
+            scored = {
+                "answer_logprob": float(logprob),
+                "answer_nll": float(-logprob),
+                "answer_mean_logprob": float(mean_logprob),
+                "answer_mean_nll": float(-mean_logprob),
+                "answer_tokens": token_count,
+                "answer_scored_text": candidate,
+                "answer_reference": answer,
+            }
+            if best is None or scored["answer_mean_logprob"] > best["answer_mean_logprob"]:
+                best = scored
+    if best is None:
+        return {
+            "answer_logprob": None,
+            "answer_nll": None,
+            "answer_mean_logprob": None,
+            "answer_mean_nll": None,
+            "answer_tokens": 0,
+            "answer_scored_text": None,
+            "answer_reference": None,
+        }
+    return best
+
+
 _NUMERIC_TOKEN_RE = re.compile(r"[-+]?\$?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
 _EXPLICIT_NUMERIC_PATTERNS = (
     re.compile(r"####\s*([-+]?\$?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)", re.IGNORECASE),
@@ -5302,6 +5351,8 @@ def _eval_generation_rotalign_with_stats(
     total_tokens = 0
     total_ttft = 0.0
     total_elapsed = 0.0
+    total_answer_mean_logprob = 0.0
+    scored_answer_count = 0
     for idx, ex in enumerate(examples):
         example_started = time.perf_counter()
         source_idx = _source_control_index(idx, len(examples), source_prompt_control, random_salt)
@@ -5375,6 +5426,13 @@ def _eval_generation_rotalign_with_stats(
             device,
             max_new_tokens,
         )
+        answer_scores = _score_generation_answers_from_prefix_state(
+            target_model,
+            target_tokenizer,
+            prefix_state,
+            ex.answers,
+            device,
+        )
         example_elapsed = time.perf_counter() - example_started
         is_correct = _generation_match(trace.text, ex.answers)
         correct += int(is_correct)
@@ -5418,6 +5476,7 @@ def _eval_generation_rotalign_with_stats(
                 "selector_bits": stats.get("selector_bits"),
                 "metadata_bits": stats.get("metadata_bits"),
                 "generated_tokens": trace.num_generated_tokens,
+                **answer_scores,
                 "normalized_prediction": _extract_prediction_numeric_answer(trace.text),
                 "selected_target_layers": stats.get("selected_target_layers"),
                 "selector_trace": stats.get("selector_trace"),
@@ -5442,6 +5501,9 @@ def _eval_generation_rotalign_with_stats(
         total_tokens += trace.num_generated_tokens
         total_ttft += example_elapsed - trace.elapsed_sec + trace.ttft_sec
         total_elapsed += example_elapsed
+        if answer_scores["answer_mean_logprob"] is not None:
+            total_answer_mean_logprob += float(answer_scores["answer_mean_logprob"])
+            scored_answer_count += 1
     metrics = _generation_metrics(
         correct=correct,
         num_examples=len(examples),
@@ -5451,6 +5513,9 @@ def _eval_generation_rotalign_with_stats(
     )
     metrics["bits"] = total_bits / max(len(examples), 1)
     metrics["bytes"] = metrics["bits"] / 8.0
+    if scored_answer_count > 0:
+        metrics["answer_mean_logprob"] = total_answer_mean_logprob / float(scored_answer_count)
+        metrics["answer_mean_nll"] = -metrics["answer_mean_logprob"]
     return metrics
 
 
@@ -6719,6 +6784,9 @@ def main() -> None:
                 results[f"{metric_key}_tokens_per_sec"] = rotalign_stats["tokens_per_sec"]
                 results[f"{metric_key}_examples_per_sec"] = rotalign_stats["examples_per_sec"]
                 results[f"{metric_key}_latency_sec"] = rotalign_stats["latency_sec"]
+                if "answer_mean_logprob" in rotalign_stats:
+                    results[f"{metric_key}_answer_mean_logprob"] = rotalign_stats["answer_mean_logprob"]
+                    results[f"{metric_key}_answer_mean_nll"] = rotalign_stats["answer_mean_nll"]
 
     if prediction_records is not None:
         add_paired_prediction_summary(results, prediction_records)

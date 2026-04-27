@@ -101,6 +101,21 @@ The target-side continuation-loss rescue of the same family also fails:
   next learned-interface branch must expose a larger, rate-controlled source
   memory or use a different source/surface pair
 
+The current live branch is now the query-innovation/source-memory resampler:
+
+- historical GSM8K32 query-innovation rows are finite and target-safe enough to
+  probe, but their small accuracy gains were retained under zero/shuffled
+  source controls
+- this cycle added eval-only gold-answer continuation scoring to
+  `latent_bridge/evaluate.py`, so the next gate can compare matched source
+  against zero-source, shuffled-source, target-only, and slots-only controls on
+  the same generated-answer surface
+- current blocker: an orphaned MPS calibration process, PID `31103`, is stuck
+  in `STAT=UE` and ignores `SIGKILL`; do not start more MPS runs until it is
+  cleared
+- next exact command block is recorded in
+  `paper/query_resampler_answer_likelihood_gate_20260426.md`
+
 The top-surface cross-attention rescue also fails:
 
 - after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`

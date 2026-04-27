@@ -3122,6 +3122,7 @@ def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
 
     monkeypatch.setattr(evaluate, "_build_rotalign_prefix_state", fake_build_rotalign_prefix_state)
     examples = [evaluate.GenerationExample(prompt="solve this", answers=["A"])]
+    rotalign_records: list[dict] = []
 
     target_stats = evaluate._eval_generation_target_alone_with_stats(
         tgt,
@@ -3142,6 +3143,7 @@ def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
         quantize=False,
         protocol="fused",
         source_reasoning_mode="plain",
+        records=rotalign_records,
     )
 
     assert target_stats["accuracy"] == 1.0
@@ -3158,6 +3160,11 @@ def test_generation_stats_helpers_report_system_metrics(monkeypatch) -> None:
     assert rotalign_stats["tokens_per_sec"] > 0.0
     assert rotalign_stats["examples_per_sec"] > 0.0
     assert rotalign_stats["latency_sec"] >= 0.0
+    assert rotalign_stats["answer_mean_logprob"] > -1e-4
+    assert rotalign_stats["answer_mean_nll"] < 1e-4
+    assert rotalign_records[0]["answer_reference"] == "A"
+    assert rotalign_records[0]["answer_tokens"] == 1
+    assert rotalign_records[0]["answer_mean_logprob"] > -1e-4
 
 
 def test_generation_text_to_text_passes_attention_mask_to_source_generate() -> None:

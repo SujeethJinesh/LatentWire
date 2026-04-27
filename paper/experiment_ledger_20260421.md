@@ -7130,3 +7130,95 @@ Next exact gate:
 - then inspect `latent_bridge/translator.py` query-innovation resampler hooks for
   whether a true LM CE/generation scorer can be added without destabilizing
   existing calibration
+
+## Cycle Checkpoint: 2026-04-26 Query-Resampler Answer-Likelihood Gate Blocker
+
+- cycle number: `2026-04-26-query-resampler-answer-likelihood`
+- timestamp: `2026-04-26 19:32:37 PDT`
+- live branch: `latent_bridge` query-innovation/source-memory resampler
+- scale-up rung reached: smoke/strict-small harness gate
+- ICLR readiness: not ready; no positive-method evidence was produced in this
+  cycle because MPS execution is blocked by an unkillable orphaned calibration
+  process
+
+Start-of-cycle status:
+
+- current paper story: historical RotAlign/sidecar/query-resampler results show
+  source-complementary headroom and useful architecture clues, but deployable
+  rows still fail source controls, seed stability, holdout guards, or C2C
+  competitiveness
+- exact blocker: no source-derived method beats target/text baselines while
+  surviving zero-source, shuffled-source, target-only, and slots-only controls
+- current live branch: query-innovation/source-memory resampler with eval-only
+  answer-likelihood scoring
+- highest-priority gate: matched-vs-source-destroyed gold-answer continuation
+  logprob on the existing finite query-innovation checkpoint
+
+What changed:
+
+- audited the other MD/results paths requested by the user, including
+  `rotalign`, `latent_bridge`, sidecar, query-resampler, query-innovation,
+  SVAMP70 holdout, and GSM residual memos/results
+- selected query-innovation/source-memory resampler as the next live branch;
+  fixed sidecar guards are now treated as surface/headroom evidence rather than
+  the live method
+- added eval-only generation answer scoring to `latent_bridge/evaluate.py`
+  without changing decoding, training, checkpoint format, or translator
+  behavior
+- added focused unit coverage in `tests/test_evaluate_helpers.py`
+
+Blocker:
+
+- a redundant MPS capacity sweep was started in `.debug/`
+- parent sweep was stopped, but child calibration PID `31103` remained orphaned
+  under launchd with `STAT=UE`
+- exact process:
+  `/Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python /Users/sujeethjinesh/Desktop/LatentWire/scripts/calibrate.py ... --device mps --dtype float32 --seed 1`
+- `SIGTERM` and `SIGKILL` did not terminate it
+- no checkpoint was materialized; only
+  `.debug/gsm8k32_query_resampler_bank16_seed1_20260426/_artifacts/gsm8k_eval_32.jsonl`
+  exists from that aborted run
+
+Decision:
+
+- hard tooling blocker for further MPS-backed experiments
+- live scientific branch is not killed; next gate is blocked on clearing PID
+  `31103`
+- exact next action: restart the machine or otherwise clear PID `31103`, then
+  run the matched/zero/shuffle/target-only/slots-only answer-likelihood commands
+  recorded in `paper/query_resampler_answer_likelihood_gate_20260426.md`
+
+Artifacts and hashes:
+
+- memo:
+  - `paper/query_resampler_answer_likelihood_gate_20260426.md`
+- finite query-innovation checkpoint for resume:
+  - `.debug/checkpoints_gsm8k32_query_innovation_resampler_seed1_20260423/dynalign_query_innovation_resampler_replace/qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_innovation_resampler_replace_cal64_chat_bank16_seed1.pt`
+  - sha256: `b1f0cfa62c67ffcbdbce631c6cfd80df3240e132e252b0775aef355940a557b8`
+- GSM8K32 eval slice for resume:
+  - `.debug/gsm8k32_query_innovation_resampler_seed1_20260423/_artifacts/gsm8k_eval_32.jsonl`
+  - sha256: `04d3006a6b37aa691347f290d442279bca23bbe119cf9a9b86002263fded20e1`
+- `latent_bridge/evaluate.py`
+  - sha256: `f143d4c301f783a607e2647fbc2f1efc9e0097d590d37ed28ea6964e1d7268b7`
+- `tests/test_evaluate_helpers.py`
+  - sha256: `5c2c03120642487cd2b1ec96e98f4ff91e12732b4ffa6dcc4c2069d82a28e3ea`
+
+Tests:
+
+- `./venv_arm64/bin/python -m py_compile latent_bridge/evaluate.py`
+- `./venv_arm64/bin/python -m pytest tests/test_evaluate_helpers.py -q`
+  - `103 passed`
+- `./venv_arm64/bin/python -m pytest tests/test_translator_core.py::test_query_innovation_perceiver_connector_fit_and_runtime_are_finite tests/test_translator_core.py::test_query_innovation_anti_memory_control_fit_is_finite tests/test_translator_core.py::test_fit_from_pairs_query_innovation_forwards_source_controls -q`
+  - `3 passed`
+
+Next exact gate:
+
+- first clear PID `31103`
+- then run the command block in
+  `paper/query_resampler_answer_likelihood_gate_20260426.md`
+  to produce:
+  - `results/gsm8k32_query_innovation_answer_likelihood_20260426/matched.jsonl`
+  - `zero_source.jsonl`
+  - `shuffled_source_salt1.jsonl`
+  - `target_only.jsonl`
+  - `slots_only.jsonl`
