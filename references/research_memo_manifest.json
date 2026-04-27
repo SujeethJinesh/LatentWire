@@ -789,5 +789,12 @@
     "path": "references/469_recent_latent_agent_communication_refs.md",
     "status": "local_memo",
     "reason": "Recent primary-source memo for latent/activation agent communication baselines and target-preserving zero-init latent side-information requirements after durable source-surface ranking selected SVAMP70 live as the next primary gate."
+  },
+  {
+    "num": 470,
+    "slug": "kv_cache_latent_communication_baselines_refs",
+    "path": "references/470_kv_cache_latent_communication_baselines_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo and local tooling smoke for C2C/KVComm/vector-translation baselines after source-hidden query-bottleneck diagnostics failed and MPS remained blocked."
   }
 ]

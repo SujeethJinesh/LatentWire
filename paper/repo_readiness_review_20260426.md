@@ -870,6 +870,48 @@ clean source-only IDs and target/source oracle gain of at least six, run a
 zero-init gated latent side-information smoke on `svamp70_live` with
 source-destroying controls and activation/latent baselines.
 
+## 2026-04-27 Source-Hidden Query And KVComm Smoke
+
+Readiness remains not ICLR-ready. Current live method branch: none.
+
+CPU evidence weakened direct source-hidden query bottlenecks:
+
+- Command: `scripts/analyze_svamp32_source_latent_syndrome_probe.py` with
+  `--probe-model query_bottleneck`, `--query-epochs 2`, `--query-slots 4`,
+  `--feature-layers last`, and `--device cpu`.
+- Result: `source_latent_syndrome_probe_fails_gate`.
+- Matched: `11/32`.
+- Zero-source/shuffled-source/label-shuffled/target-only: `14/32`.
+- Clean source-necessary IDs: `0`.
+
+CPU tooling smoke for KVComm passed via module invocation:
+
+- Command form: `./venv_arm64/bin/python -m latent_bridge.kvcomm_eval ...`
+- One-example CPU smoke wrote `.debug/kvcomm_cpu_smoke_20260427/`.
+- Direct script invocation fails with `ModuleNotFoundError`; use `-m`.
+
+Reference update:
+
+- Added `references/470_kv_cache_latent_communication_baselines_refs.md`.
+- C2C/KVComm now define the next baseline contract for fixed-budget,
+  target-preserving cache communication.
+
+Readiness impact:
+
+- Weakened: direct source-hidden query-bottleneck syndrome readouts.
+- Promoted: fixed-budget KV/cache communication baseline as the next executable
+  MPS branch after PID `31103` clears.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If clear, run a one-example MPS KVComm smoke or the stronger-source MPS scout,
+then scale only if exact ID parity, numeric coverage, and source-destroying
+controls are preserved.
+
 If clear, do not run the old `chal311_380` scout recorded in
 `paper/svamp70_syndrome_bounds_after_sketch_kill_20260427.md`; those artifacts
 already exist and fail the surface gate.

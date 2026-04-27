@@ -8818,3 +8818,118 @@ If PID `31103` clears, run the stronger-source scout recorded in
 `paper/postkill_historical_cpu_audit_20260427.md`, then apply the zero-init
 gated latent side-information smoke only if the scout has at least six clean
 source-only IDs and target/source oracle gain of at least six.
+
+## 2026-04-27 Cycle - Source-hidden query smoke and KVComm tooling smoke
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; no deployable method
+   has cleared live/holdout controls, seed stability, systems metrics, and
+   cross-family falsification.
+2. Current paper story: source-derived side information remains plausible, but
+   direct source-hidden readouts and shallow routers are not robust enough.
+3. Exact blocker to submission: MPS remains blocked by orphaned PID `31103`,
+   and no offline activation tensor artifacts exist for a full latent-injection
+   smoke.
+4. Current live branch: none. Top next executable branch after MPS clears is
+   fixed-budget KV/cache communication baseline.
+5. Highest-priority gate: run the cheapest CPU latent-sideinfo diagnostic and
+   verify KVComm tooling.
+6. Scale-up rung: smoke / branch preparation.
+
+Source-hidden query smoke:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp32_source_latent_syndrome_probe.py \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --target target_alone=path=results/svamp_exactid_baselines32_20260423/target_alone.jsonl,method=target_alone \
+  --teacher c2c=path=results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl,method=c2c_generate \
+  --candidate target_self_repair=path=results/svamp32_query_innovation_query_pool_transport_20260423/target_self_repair_exact32.jsonl,method=target_self_repair \
+  --target-set-json results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json \
+  --fallback-label target_self_repair \
+  --probe-model query_bottleneck \
+  --query-epochs 2 \
+  --query-slots 4 \
+  --moduli 2,3,5,7 \
+  --feature-layers last \
+  --device cpu \
+  --dtype float32 \
+  --min-numeric-coverage 31 \
+  --output-json .debug/zero_init_latent_sideinfo_audit/source_hidden_query_smoke.json \
+  --output-md .debug/zero_init_latent_sideinfo_audit/source_hidden_query_smoke.md
+```
+
+Result:
+
+- Status: `source_latent_syndrome_probe_fails_gate`.
+- Matched: `11/32`.
+- Zero-source/shuffled-source/label-shuffled/target-only: `14/32`.
+- Clean source-necessary IDs: `0`.
+- Decision: direct source-hidden query-bottleneck syndrome readout is weakened
+  again; do not scale it.
+
+Scratch artifact hashes:
+
+- `.debug/zero_init_latent_sideinfo_audit/source_hidden_query_smoke.json`:
+  `033c9cff44bba273dc71a1fff39e626afdb8da8be05a118317f3264576db881c`
+- `.debug/zero_init_latent_sideinfo_audit/source_hidden_query_smoke.md`:
+  `7ecdb0140d00d84d398a838c782325d50905e208439edde4fc0d4777dbaa4575`
+
+KVComm tooling smoke:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python -m latent_bridge.kvcomm_eval \
+  --source-model Qwen/Qwen2.5-0.5B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --calibration-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --device cpu \
+  --dtype float32 \
+  --max-new-tokens 8 \
+  --source-reasoning-mode brief_analysis \
+  --top-layers-grid 0.25 \
+  --calibration-limit 1 \
+  --eval-limit 1 \
+  --prediction-output .debug/kvcomm_cpu_smoke_20260427/kvcomm_cpu_smoke_predictions.jsonl
+```
+
+Result:
+
+- Tooling smoke passed via module invocation.
+- Accuracy: `0/1` (not a method gate).
+- CPU latency: `0.9505s`.
+- Selected layers: `[1, 6, 2, 8, 7, 5, 4]`.
+- Direct script invocation failed with `ModuleNotFoundError`; use
+  `python -m latent_bridge.kvcomm_eval`.
+
+Scratch artifact hashes:
+
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_cpu_smoke_predictions.jsonl`:
+  `ddfa80b562ebcda86e0e2578e33d7d010f18cb003b9f1bb326e0c6f9940eb64e`
+- `.debug/kvcomm_cpu_smoke_20260427/kvcomm_cpu_smoke_predictions.jsonl.meta.json`:
+  `b051921a3089b8af7f8f2c3ef89aed8ffaf6c6edb3b563313374ce3e75abed40`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_latent_syndrome_probe.py tests/test_analyze_svamp32_syndrome_sidecar_probe.py tests/test_analyze_svamp32_source_only_sidecar_router_gate.py tests/test_analyze_condition_likelihood_receiver_gate.py tests/test_build_condition_likelihood_candidate_pools.py -q
+```
+
+Result: `17 passed in 0.67s`.
+
+Literature/reference update:
+
+- Added `references/470_kv_cache_latent_communication_baselines_refs.md`.
+- Hypothesis update: run C2C/KVComm-style receiver-cache-preserving baselines
+  before adding a new latent connector.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID clears, run a one-example MPS KVComm smoke or the stronger-source MPS
+scout from `paper/postkill_historical_cpu_audit_20260427.md`, then scale only
+if exact ID/numeric coverage and source controls are preserved.
