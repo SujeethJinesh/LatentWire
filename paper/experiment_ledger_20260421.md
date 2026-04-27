@@ -10754,3 +10754,63 @@ If PID `31103` clears, regenerate future condition candidate pools with this
 patch before any receiver scoring. Then run stronger-source answer-masked
 surface discovery; spend learned-syndrome or zero-init query-bottleneck compute
 only if the surface has answer-unexplained clean target-pool headroom.
+
+## 2026-04-27 Cycle 9 - MPS Blocker Preflight
+
+Cycle start:
+
+1. ICLR readiness: not ready; no live method branch survives strict controls.
+2. Current paper story: stronger-source answer-masked side information remains
+   the highest-value next scientific rung, but it is MPS-gated.
+3. Exact blocker: PID `31103` is still orphaned under PID `1` in `STAT=UE`.
+4. Current live branch: none while the blocker persists.
+5. Highest-priority gate: make the MPS blocker check executable and
+   machine-readable.
+6. Scale-up rung: operational hard-blocker preflight.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/check_mps_blocker.py --json
+```
+
+Result:
+
+```json
+{
+  "blocked": true,
+  "next_action": "use_cpu_only_or_clear_os_session",
+  "pid": 31103,
+  "present": true
+}
+```
+
+Implemented:
+
+- `scripts/check_mps_blocker.py`
+- `tests/test_check_mps_blocker.py`
+- memo: `paper/mps_blocker_preflight_20260427.md`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_check_mps_blocker.py -q
+./venv_arm64/bin/python -m py_compile scripts/check_mps_blocker.py
+```
+
+Result: `3 passed`; compile passed.
+
+Decision:
+
+- no positive method branch is live while the blocker persists.
+- no MPS jobs were launched.
+- hard blocker remains OS/session-level cleanup of PID `31103`.
+
+Next exact gate:
+
+```bash
+./venv_arm64/bin/python scripts/check_mps_blocker.py --json
+```
+
+Proceed to stronger-source answer-masked surface discovery only when it reports
+`"blocked": false`.

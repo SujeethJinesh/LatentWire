@@ -271,6 +271,12 @@ donors even when offsets are zero or wrap to self. This does not revive the
 killed condition-likelihood receiver, but it removes a provenance weakness
 before future receiver scoring. Focused tests passed: `18` candidate/receiver/
 KVComm-control tests plus `py_compile`.
+
+Update `2026-04-27 11:10 PDT`: PID `31103` remains present after more than
+`17` hours in `STAT=UE`. Added `scripts/check_mps_blocker.py` and tests so the
+MPS blocker check is now executable and machine-readable:
+`./venv_arm64/bin/python scripts/check_mps_blocker.py --json`. It currently
+reports `"blocked": true`; no MPS work should start until it reports false.
 - strict target-mentioned oracle headroom is small on the current canonical
   surface: live target `21/70` can only reach `23/70`; holdout target `8/70`
   can only reach `12/70`
