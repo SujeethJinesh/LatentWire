@@ -8588,3 +8588,58 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 
 If PID `31103` remains, implement/test the condition-specific receiver-control
 analyzer. If it clears, resume MPS source-surface/interface reset.
+
+## 2026-04-27 Cycle - Condition-specific receiver-control harness
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; still missing one
+   positive method plus strict controls, seed stability, systems metrics, and
+   cross-family falsification.
+2. Current paper story: target-likelihood receiver gates are only plausible if
+   source-destroying controls are rescored under the same receiver model.
+3. Exact blocker to submission: the older likelihood sketch analyzer cannot
+   fairly distinguish real source-candidate communication from sketch-shuffle or
+   target-fallback artifacts.
+4. Current live branch: none. Next branch selected here: condition-specific
+   likelihood receiver harness.
+5. Highest-priority gate: implement and test the smallest fair analyzer before
+   collecting more receiver likelihood sketches.
+6. Scale-up rung: harness / smoke preparation.
+
+Implementation:
+
+- Added `scripts/analyze_condition_likelihood_receiver_gate.py`.
+- Added `tests/test_analyze_condition_likelihood_receiver_gate.py`.
+
+The new analyzer requires separate receiver-scored sketches per condition:
+`matched`, `zero_source`, `shuffled_source`, `label_shuffle`, `target_only`,
+and `slots_only`. It fits a live matched receiver rule, applies the same frozen
+rule to all controls and holdout, and subtracts the control clean union before
+counting source-necessary IDs.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_condition_likelihood_receiver_gate.py tests/test_analyze_svamp70_source_likelihood_sketch_gate.py tests/test_collect_source_likelihood_sketch.py -q
+./venv_arm64/bin/python -m py_compile scripts/analyze_condition_likelihood_receiver_gate.py
+```
+
+Result: `12 passed in 0.12s`; compile passed.
+
+Decision:
+
+- Next branch is implemented as harness, not promoted as a method.
+- Do not claim target-likelihood receiver evidence until condition-specific
+  matched/control/holdout sketches are collected and this analyzer clears the
+  live and holdout gates.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` remains, collect receiver sketches on CPU only and run
+`scripts/analyze_condition_likelihood_receiver_gate.py`. If it clears, MPS can
+be used for source-surface/interface reset or faster sketch collection.

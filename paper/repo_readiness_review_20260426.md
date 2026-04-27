@@ -206,6 +206,16 @@ current canonical surface:
   CPU work should be a true condition-specific receiver-control harness, while
   source-surface/interface reset waits for the MPS blocker to clear
 
+The condition-specific receiver-control harness is now implemented and tested:
+
+- new analyzer: `scripts/analyze_condition_likelihood_receiver_gate.py`
+- focused tests: `tests/test_analyze_condition_likelihood_receiver_gate.py`
+- verification: `12` likelihood/receiver tests passed; py_compile passed
+- purpose: evaluate target-likelihood receiver gates only when each control has
+  its own receiver-scored candidate pool
+- status: harness-ready, not evidence; next gate is CPU collection of
+  condition-specific sketches if MPS remains blocked
+
 The top-surface cross-attention rescue also fails:
 
 - after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`
