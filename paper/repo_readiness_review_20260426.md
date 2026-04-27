@@ -79,6 +79,17 @@ candidate is a JEPA-style answer-masked process/latent ranking smoke on the two
 reachable clean IDs with frozen target/candidate latents, source-destroying
 controls, no-harm accounting, and collapse telemetry.
 
+Update `2026-04-27`: the first answer-masked process-trace ranking smoke also
+fails. A deterministic TF-IDF/process-text sidecar over the SVAMP32 clean6
+target-only pool gives matched clean correct `0/6` across all variants. The
+best diagnostic variant, prediction-only with `t2t` excluded, accepts two
+matched IDs but both are wrong, while a random-sidecar control recovers the only
+clean correct ID. Collapse telemetry is healthy enough (`effective_rank
+31.27`, zero vectors `0`), so this is not low-rank representation collapse; it
+is lack of source-necessary process signal and residual source-number leakage
+(`5/6` selected values appear among unmasked source numbers). Hand-built
+numeric and process sidecars are now pruned on this slice.
+
 Update `2026-04-27 00:50 PDT`: KVComm is now harness-ready for strict
 source-control evaluation, but it remains baseline/tooling evidence rather than
 a positive method. The wrapper supports matched, zero-source, shuffled-source,

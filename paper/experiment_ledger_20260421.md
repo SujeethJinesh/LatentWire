@@ -11629,3 +11629,100 @@ Next exact gate:
   union `0`, accepted harm `0`, no selected candidate appearing unmasked in the
   source trace, and variance/effective-rank/covariance/Barlow telemetry that
   rules out representation collapse.
+
+## 2026-04-27 Cycle 17 - SVAMP32 Process-Trace Sidecar Smoke
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; no deployable source-derived method
+   survives answer masking and source-destroying controls.
+2. Current paper story: target/no-source sampling creates reachable target-side
+   candidates, but both numeric and process-text source sidecars fail to select
+   those candidates under controls.
+3. Exact blocker: source-derived non-answer information must select reachable
+   target candidates without final-answer leakage, target priors, random-sidecar
+   wins, or representation collapse.
+4. Current live branches: process/latent ranking is weakened; broader
+   target/no-source candidate-pool discovery or a trained frozen-latent
+   connector is higher value than more hand-built sidecars.
+5. Highest-priority gate: CPU process-trace similarity sidecar on the SVAMP32
+   clean6 target-only pool.
+6. Scale-up rung: smoke.
+
+Harness update:
+
+- added `scripts/materialize_svamp_process_trace_sidecars.py`
+  - masks numerals in source and candidate reasoning traces
+  - scores answer-masked source process text against target-side candidate
+    process text
+  - supports sampled-label preference, `--exclude-label`, and
+    `--prediction-only`
+  - reports feature variance, effective rank, zero vectors, zero margins,
+    top-label counts, and selected-value source-number overlap
+- tests: `tests/test_materialize_svamp_process_trace_sidecars.py`
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_svamp_process_trace_sidecars.py \
+  --target-set results/svamp32_target_sampling_clean6_20260427/sampled_clean6_target_set.json \
+  --output-dir results/svamp32_process_trace_sidecar_clean6_20260427/process_trace_sidecars_predonly_no_t2t \
+  --sidecar-bits 256 \
+  --max-ngram 2 \
+  --exclude-label t2t \
+  --prediction-only \
+  --date 2026-04-27
+
+./venv_arm64/bin/python scripts/analyze_candidate_score_sidecar_top_select.py \
+  --target-set results/svamp32_target_sampling_clean6_20260427/sampled_clean6_target_set.json \
+  --sidecar-jsonl results/svamp32_process_trace_sidecar_clean6_20260427/process_trace_sidecars_predonly_no_t2t/live_candidate_sidecars.jsonl \
+  --min-confidence 0.01 \
+  --min-source-necessary-clean 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-json results/svamp32_process_trace_sidecar_clean6_20260427/top_selector_process_trace_predonly_no_t2t.json \
+  --output-md results/svamp32_process_trace_sidecar_clean6_20260427/top_selector_process_trace_predonly_no_t2t.md
+```
+
+Results:
+
+| Variant | Matched Correct | Matched Accepted | Control Clean Union | Source-Necessary Clean | Decision |
+|---|---:|---:|---:|---:|---|
+| `process_trace` | 0/6 | 0 | 0 | 0 | fail; target-label zero-margin collapse |
+| `process_trace_sample_pref` | 0/6 | 0 | 1 | 0 | fail; control recovers clean ID |
+| `process_trace_predonly_no_t2t` | 0/6 | 2 | 1 | 0 | fail; matched wrong, random clean |
+
+Best diagnostic variant (`prediction-only`, no `t2t`):
+
+- matched accepted IDs: `1d50b408c8f5cd2c`, `3e8a5691f5443495`
+- matched clean correct: `0/6`
+- random-sidecar clean correct: `575d7e83d84c1e67`
+- selected value in unmasked source numbers: `5/6`
+- effective rank: `31.270460`
+- zero vectors: `0`
+
+Decision:
+
+- fail and prune deterministic hand-built process-trace similarity sidecars on
+  this slice
+- the failure is not low-rank collapse; it is lack of source-necessary candidate
+  selection after answer masking and controls
+- do not tune TF-IDF/process-text similarity further
+
+Artifacts:
+
+- `results/svamp32_process_trace_sidecar_clean6_20260427/manifest.md`
+- `results/svamp32_process_trace_sidecar_clean6_20260427/process_trace_sidecars/manifest.md`
+- `results/svamp32_process_trace_sidecar_clean6_20260427/process_trace_sidecars_sample_pref/manifest.md`
+- `results/svamp32_process_trace_sidecar_clean6_20260427/process_trace_sidecars_no_t2t/manifest.md`
+- `results/svamp32_process_trace_sidecar_clean6_20260427/process_trace_sidecars_predonly_no_t2t/manifest.md`
+- `results/svamp32_process_trace_sidecar_clean6_20260427/top_selector_process_trace_predonly_no_t2t.md`
+- `paper/svamp32_process_trace_sidecar_20260427.md`
+
+Next exact gate:
+
+- Stop hand-built sidecar tuning. Either widen target/no-source candidate-pool
+  discovery to produce a larger reachable clean selector surface, or run a
+  trained frozen-latent/rate-capped connector smoke with the same controls and
+  collapse telemetry.
