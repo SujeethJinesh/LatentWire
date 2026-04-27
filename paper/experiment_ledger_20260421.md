@@ -8900,8 +8900,8 @@ Result:
 - Accuracy: `0/1` (not a method gate).
 - CPU latency: `0.9505s`.
 - Selected layers: `[1, 6, 2, 8, 7, 5, 4]`.
-- Direct script invocation failed with `ModuleNotFoundError`; use
-  `python -m latent_bridge.kvcomm_eval`.
+- Direct script invocation initially failed with `ModuleNotFoundError`; fixed
+  `latent_bridge/kvcomm_eval.py` to add the repo root to `sys.path`.
 
 Scratch artifact hashes:
 
@@ -8917,6 +8917,15 @@ Tests:
 ```
 
 Result: `17 passed in 0.67s`.
+
+Focused compile/help checks:
+
+```bash
+./venv_arm64/bin/python -m py_compile latent_bridge/kvcomm_eval.py
+./venv_arm64/bin/python latent_bridge/kvcomm_eval.py --help
+```
+
+Result: both passed.
 
 Literature/reference update:
 

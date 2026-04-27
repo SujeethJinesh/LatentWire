@@ -106,8 +106,9 @@ Result:
   `b051921a3089b8af7f8f2c3ef89aed8ffaf6c6edb3b563313374ce3e75abed40`
 
 Direct invocation as `./venv_arm64/bin/python latent_bridge/kvcomm_eval.py`
-failed with `ModuleNotFoundError: No module named 'latent_bridge'`; use module
-invocation from the repo root.
+initially failed with `ModuleNotFoundError: No module named 'latent_bridge'`.
+The wrapper now bootstraps the repo root onto `sys.path`, and direct `--help`
+plus `py_compile` pass.
 
 ## Decision
 

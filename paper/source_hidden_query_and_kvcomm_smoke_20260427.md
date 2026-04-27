@@ -99,16 +99,19 @@ Artifact hashes:
 - `.debug/kvcomm_cpu_smoke_20260427/kvcomm_cpu_smoke_predictions.jsonl.meta.json`:
   `b051921a3089b8af7f8f2c3ef89aed8ffaf6c6edb3b563313374ce3e75abed40`
 
-Direct script invocation failed with:
+Direct script invocation initially failed with:
 
 ```text
 ModuleNotFoundError: No module named 'latent_bridge'
 ```
 
-Use module invocation from repo root:
+Fix: `latent_bridge/kvcomm_eval.py` now bootstraps the repo root onto
+`sys.path`, so both direct script invocation and module invocation work.
+Verified:
 
 ```bash
-./venv_arm64/bin/python -m latent_bridge.kvcomm_eval ...
+./venv_arm64/bin/python latent_bridge/kvcomm_eval.py --help
+./venv_arm64/bin/python -m py_compile latent_bridge/kvcomm_eval.py
 ```
 
 ## Literature Update

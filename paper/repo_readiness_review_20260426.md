@@ -888,7 +888,8 @@ CPU tooling smoke for KVComm passed via module invocation:
 
 - Command form: `./venv_arm64/bin/python -m latent_bridge.kvcomm_eval ...`
 - One-example CPU smoke wrote `.debug/kvcomm_cpu_smoke_20260427/`.
-- Direct script invocation fails with `ModuleNotFoundError`; use `-m`.
+- Direct script invocation initially failed with `ModuleNotFoundError`; fixed
+  `latent_bridge/kvcomm_eval.py` to bootstrap the repo root onto `sys.path`.
 
 Reference update:
 
