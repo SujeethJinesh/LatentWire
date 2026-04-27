@@ -1147,6 +1147,8 @@ future method explicitly accounts for transmitting the value as payload bytes.
 Additional hardening:
 
 - random same-byte controls preserve declared learned-sidecar bit budgets
+- sidecar-shaped `target_only_sidecar` and `slots_only_sidecar` controls are
+  now first-class conditions
 - sidecar JSONL rejects duplicate IDs
 - supplied sidecars must exactly cover target-set reference IDs
 - summaries report accepted help and accepted clean-source help
@@ -1155,6 +1157,8 @@ Replay on existing SVAMP70 live/holdout artifacts is a stronger kill:
 
 - live matched: `24/70`, clean `3`, accepted harm `1`
 - live random same-byte sidecar: `16/70`, clean `0`, accepted harm `9`
+- live target-only sidecar: `21/70`, clean `0`, accepted harm `0`
+- live slots-only sidecar: `21/70`, clean `0`, accepted harm `0`
 - holdout matched: `9/70`, clean `0`
 - control clean union: `0`
 

@@ -32,6 +32,8 @@ Code changes:
   that value already appears in the target-side candidate pool.
 - `random_sidecar` now preserves declared `sidecar_bits` and uses candidate-
   score-style features when learned sidecar JSONL is present.
+- `target_only_sidecar` and `slots_only_sidecar` now test sidecar-shaped
+  target/slot controls at the same byte scale.
 - Sidecar JSONL loading now rejects duplicate IDs and fails if supplied sidecar
   IDs do not exactly match the target-set `reference_ids`.
 - Summaries now include accepted help, fallback-correct count, accepted clean
@@ -73,6 +75,8 @@ Live:
 
 - matched: `24/70`, clean `3`, accepted clean help `3`, accepted harm `1`
 - random same-byte sidecar: `16/70`, clean `0`, accepted harm `9`
+- target-only sidecar: `21/70`, clean `0`, accepted harm `0`
+- slots-only sidecar: `21/70`, clean `0`, accepted harm `0`
 - zero-source: `21/70`, clean `0`
 - shuffled-source: `21/70`, clean `0`
 - target-only: `21/70`, clean `0`
@@ -83,6 +87,8 @@ Holdout:
 
 - matched: `9/70`, clean `0`, accepted harm `0`
 - random same-byte sidecar: `12/70`, clean `0`, accepted harm `0`
+- target-only sidecar: `8/70`, clean `0`, accepted harm `0`
+- slots-only sidecar: `11/70`, clean `0`, accepted harm `0`
 - zero-source: `8/70`, clean `0`
 - shuffled-source: `8/70`, clean `0`
 - target-only: `8/70`, clean `0`
@@ -96,6 +102,15 @@ Artifact hashes:
 - `.debug/semantic_predicate_decoder_targetpool_20260427/semantic_predicate_decoder.md`:
   `7d5882c76b0d9e6e5dbae90084bd731945a8d72cfa9b948843dc290a502365bb`
 - `.debug/semantic_predicate_decoder_targetpool_20260427/predictions.jsonl`:
+  `48ba362b0f8f557ceb5c1eedd4674d097af1a464f4ea9cdfe1bdf2475fb7fdd8`
+
+Updated sidecar-shaped control replay:
+
+- `.debug/semantic_predicate_decoder_sidecar_controls_20260427/semantic_predicate_decoder.json`:
+  `f1529702d17ae53eb9e5b1ad40e2d274a0c3724d0158c70c6c5c1408353691a2`
+- `.debug/semantic_predicate_decoder_sidecar_controls_20260427/semantic_predicate_decoder.md`:
+  `7d5882c76b0d9e6e5dbae90084bd731945a8d72cfa9b948843dc290a502365bb`
+- `.debug/semantic_predicate_decoder_sidecar_controls_20260427/predictions.jsonl`:
   `48ba362b0f8f557ceb5c1eedd4674d097af1a464f4ea9cdfe1bdf2475fb7fdd8`
 
 ## Decision

@@ -37,7 +37,9 @@ CONDITIONS = (
     "random_sidecar",
     "label_shuffle",
     "target_only",
+    "target_only_sidecar",
     "slots_only",
+    "slots_only_sidecar",
 )
 OP_RE = re.compile(
     r"([-+]?\d+(?:\.\d+)?)\s*([+\-*/x×])\s*([-+]?\d+(?:\.\d+)?)\s*=\s*([-+]?\d+(?:\.\d+)?)"
@@ -381,7 +383,11 @@ def _condition_source_row_and_id(
         return surface.records_by_label["source"].get(other_id), other_id
     if condition == "target_only":
         return surface.records_by_label["target"].get(example_id), example_id
+    if condition == "target_only_sidecar":
+        return surface.records_by_label["target"].get(example_id), example_id
     if condition == "slots_only":
+        return surface.records_by_label.get("t2t", {}).get(example_id), example_id
+    if condition == "slots_only_sidecar":
         return surface.records_by_label.get("t2t", {}).get(example_id), example_id
     if condition == "random_sidecar":
         return None, None
@@ -559,6 +565,50 @@ def _sidecar_bits_value(sidecar: dict[str, Any] | None) -> int | None:
         return 8
 
 
+def _proxy_sidecar_profile(
+    *,
+    row: dict[str, Any] | None,
+    label: str,
+    matched_sidecar: dict[str, Any] | None,
+    candidates: Sequence[Candidate],
+) -> dict[str, Any]:
+    if row is None:
+        profile = _source_profile(None)
+        profile["sidecar_bits"] = _sidecar_bits_value(matched_sidecar) or len(profile["features"]) + 8
+        return profile
+    top_value = _prediction_numeric(row)
+    candidate_values = {candidate.value for candidate in candidates}
+    if top_value not in candidate_values:
+        top_value = None
+    sidecar_bits = _sidecar_bits_value(matched_sidecar)
+    features = {
+        "source_has_final_numeric",
+        "sidecar_present",
+        f"sidecar_top_label:{label}",
+        "sidecar_top_score:ge200",
+        "sidecar_margin:ge200",
+        "sidecar_confidence:ge200",
+    }
+    if top_value is not None:
+        features.add("sidecar_top_maps_to_candidate")
+    mentions = [top_value] if top_value is not None else []
+    return {
+        "features": features,
+        "final": top_value,
+        "mentions": mentions,
+        "mention_set": set(mentions),
+        "last": mentions,
+        "verified": set(),
+        "pair": set(),
+        "quality": top_value is not None,
+        "sidecar_bits": sidecar_bits if sidecar_bits is not None else len(features) + 8,
+        "sidecar_top_label": label,
+        "sidecar_margin": 2.0,
+        "sidecar_confidence": 2.0,
+        "sidecar_present": True,
+    }
+
+
 def _condition_source_profile(
     *,
     surface: Surface,
@@ -569,6 +619,20 @@ def _condition_source_profile(
     if condition == "random_sidecar":
         return _random_profile(surface=surface, index=index, candidates=candidates), None
     row, source_id = _condition_source_row_and_id(surface, index, condition)
+    if condition == "target_only_sidecar":
+        return _proxy_sidecar_profile(
+            row=row,
+            label="target",
+            matched_sidecar=surface.sidecars_by_id.get(surface.reference_ids[index]),
+            candidates=candidates,
+        ), source_id
+    if condition == "slots_only_sidecar":
+        return _proxy_sidecar_profile(
+            row=row,
+            label="slots",
+            matched_sidecar=surface.sidecars_by_id.get(surface.reference_ids[index]),
+            candidates=candidates,
+        ), source_id
     if surface.sidecars_by_id and condition in {"matched", "shuffled_source", "label_shuffle"}:
         return _sidecar_profile(
             sidecar=surface.sidecars_by_id.get(str(source_id)),

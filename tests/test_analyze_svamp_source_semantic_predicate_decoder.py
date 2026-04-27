@@ -109,6 +109,8 @@ def test_synthetic_surface_can_recover_source_with_controls(tmp_path):
     assert payload["surfaces"][0]["summaries"]["matched"]["clean_source_necessary_count"] >= 1
     assert payload["surfaces"][0]["summaries"]["matched"]["accepted_harm_count"] == 0
     assert "random_sidecar" in payload["surfaces"][0]["summaries"]
+    assert "target_only_sidecar" in payload["surfaces"][0]["summaries"]
+    assert "slots_only_sidecar" in payload["surfaces"][0]["summaries"]
 
 
 def test_hash_shuffle_and_random_sidecar_are_nonself_controls(tmp_path):
@@ -327,10 +329,13 @@ def test_candidate_score_sidecar_can_drive_target_safe_recovery(tmp_path):
     )
     matched = payload["surfaces"][0]["summaries"]["matched"]
     random_sidecar = payload["surfaces"][0]["summaries"]["random_sidecar"]
+    target_sidecar = payload["surfaces"][0]["summaries"]["target_only_sidecar"]
     zero = payload["surfaces"][0]["summaries"]["zero_source"]
     assert payload["status"] == "semantic_predicate_decoder_passes_smoke"
     assert matched["clean_source_necessary_count"] == 1
     assert matched["accepted_harm_count"] == 0
     assert matched["mean_sidecar_bytes"] == 4
     assert random_sidecar["mean_sidecar_bytes"] == 4
+    assert target_sidecar["clean_source_necessary_count"] == 0
+    assert target_sidecar["mean_sidecar_bytes"] == 4
     assert zero["clean_source_necessary_count"] == 0

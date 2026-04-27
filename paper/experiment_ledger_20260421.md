@@ -9357,6 +9357,8 @@ Code change:
   if the value is already in the target-side pool.
 - `random_sidecar` preserves the declared same-byte budget for learned
   sidecars.
+- `target_only_sidecar` and `slots_only_sidecar` now test sidecar-shaped
+  target/slot controls at the same byte scale.
 - Sidecar loading rejects duplicate IDs and mismatched sidecar/reference IDs.
 - Summaries now report accepted help, accepted clean help, fallback-correct
   count, and sidecar present/missing counts.
@@ -9386,7 +9388,11 @@ Result: `semantic_predicate_decoder_fails_smoke`.
 
 - Live matched: `24/70`, clean `3`, accepted clean help `3`, accepted harm `1`.
 - Live random same-byte sidecar: `16/70`, clean `0`, accepted harm `9`.
+- Live target-only sidecar: `21/70`, clean `0`, accepted harm `0`.
+- Live slots-only sidecar: `21/70`, clean `0`, accepted harm `0`.
 - Holdout matched: `9/70`, clean `0`, accepted harm `0`.
+- Holdout target-only sidecar: `8/70`, clean `0`, accepted harm `0`.
+- Holdout slots-only sidecar: `11/70`, clean `0`, accepted harm `0`.
 - Control clean union: `0`.
 
 Decision: old semantic-predicate branch is killed more cleanly. Removing
@@ -9410,3 +9416,36 @@ Tests:
 ```
 
 Result: `7 passed`, compile passed.
+
+Updated sidecar-shaped control replay:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp_source_semantic_predicate_decoder.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --mode learned_logodds \
+  --outer-folds 5 \
+  --accept-penalty 0.75 \
+  --harm-weight 20.0 \
+  --min-live-correct 25 \
+  --min-live-clean-source-necessary 2 \
+  --min-holdout-correct 10 \
+  --min-holdout-clean-source-necessary 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-dir .debug/semantic_predicate_decoder_sidecar_controls_20260427 \
+  --output-predictions-jsonl .debug/semantic_predicate_decoder_sidecar_controls_20260427/predictions.jsonl
+```
+
+Status remains `semantic_predicate_decoder_fails_smoke`; sidecar-shaped
+target/slot controls recover no clean source IDs.
+
+Hashes:
+
+- `.debug/semantic_predicate_decoder_sidecar_controls_20260427/semantic_predicate_decoder.json`:
+  `f1529702d17ae53eb9e5b1ad40e2d274a0c3724d0158c70c6c5c1408353691a2`
+- `.debug/semantic_predicate_decoder_sidecar_controls_20260427/semantic_predicate_decoder.md`:
+  `7d5882c76b0d9e6e5dbae90084bd731945a8d72cfa9b948843dc290a502365bb`
+- `.debug/semantic_predicate_decoder_sidecar_controls_20260427/predictions.jsonl`:
+  `48ba362b0f8f557ceb5c1eedd4674d097af1a464f4ea9cdfe1bdf2475fb7fdd8`
