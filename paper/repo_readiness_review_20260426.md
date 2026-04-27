@@ -164,6 +164,17 @@ The subsequent no-harm source-predicate replay is also negative:
   routers on current artifacts; revive only learned semantic predicates with
   erasure-aware abstention or stronger source surfaces
 
+The learned semantic-predicate CPU decoder is now also negative on holdout:
+
+- new analyzer: `scripts/analyze_svamp_source_semantic_predicate_decoder.py`
+- strict harm20 gate: live `25/70`, clean source-necessary `3`, accepted harm
+  `0`, control clean union `0`
+- holdout: `9/70`, clean source-necessary `0`, accepted harm `0`, control
+  clean union `0`
+- decision: target-safe live recovery is possible, but it does not transfer;
+  prune generated-source-trace semantic predicate decoding on current
+  Qwen2.5-Math -> Qwen3 SVAMP artifacts
+
 The top-surface cross-attention rescue also fails:
 
 - after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`

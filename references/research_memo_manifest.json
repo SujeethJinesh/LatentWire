@@ -775,5 +775,12 @@
     "path": "references/467_crossfield_noharm_predicate_refs.md",
     "status": "local_memo",
     "reason": "Cross-field committee memo after no-harm CPU pruning, focusing on learned semantic predicates, erasure-aware side-information decoding, zero-init target-preserving receivers, source-fault detection, and fair C2C comparison."
+  },
+  {
+    "num": 468,
+    "slug": "target_preserving_receiver_gate_refs",
+    "path": "references/468_target_preserving_receiver_gate_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for target-preserving receiver gates after semantic-predicate decoding, covering speculative acceptance, decoder-side information, constrained final-answer selection, conformal abstention, and self-consistency diagnostics."
   }
 ]

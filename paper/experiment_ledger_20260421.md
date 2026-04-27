@@ -8343,3 +8343,101 @@ If PID `31103` is absent, run the stronger-source scout recorded in
 hard blocker is OS/session-level cleanup or reboot before MPS experiments;
 normal and sudo `SIGKILL` attempts have not cleared the uninterruptible
 `STAT=UE` process.
+
+## 2026-04-27 Cycle - Semantic predicate decoder CPU smoke
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; still missing one
+   stable positive method plus medium/large controls, seed stability, C2C/text
+   comparisons, systems metrics, and cross-family falsification.
+2. Current paper story: source-side side information can be source-specific,
+   but the current deployable decoders either damage target-correct examples or
+   fail holdout transfer.
+3. Exact blocker to submission: no target-preserving method recovers clean
+   source-necessary IDs on both live and holdout; MPS is still blocked by PID
+   `31103` in `STAT=UE`.
+4. Current live branch: none. Candidate branch tested here: learned semantic
+   predicates over target/source/text candidate pools with erasure-aware
+   abstention.
+5. Highest-priority gate: CPU-only live/holdout smoke with source-destroying
+   controls and zero accepted harm.
+6. Scale-up rung: smoke / branch falsification.
+
+Implementation:
+
+- Added `scripts/analyze_svamp_source_semantic_predicate_decoder.py`.
+- Added focused tests in
+  `tests/test_analyze_svamp_source_semantic_predicate_decoder.py`.
+- Added reference memo
+  `references/468_target_preserving_receiver_gate_refs.md`.
+
+Main command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_svamp_source_semantic_predicate_decoder.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --mode learned_logodds \
+  --outer-folds 5 \
+  --accept-penalty 0.75 \
+  --harm-weight 20.0 \
+  --min-live-correct 25 \
+  --min-live-clean-source-necessary 2 \
+  --min-holdout-correct 10 \
+  --min-holdout-clean-source-necessary 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-dir results/svamp_source_semantic_predicate_decoder_strict_harm20_20260427 \
+  --output-predictions-jsonl results/svamp_source_semantic_predicate_decoder_strict_harm20_20260427/predictions.jsonl
+```
+
+Result:
+
+- Status: `semantic_predicate_decoder_fails_smoke`.
+- Live: `25/70` correct, `5` accepted source sidecars, `3` clean
+  source-necessary IDs, accepted harm `0`, control clean union `0`.
+- Holdout: `9/70` correct, `2` accepted source sidecars, `0` clean
+  source-necessary IDs, accepted harm `0`, control clean union `0`.
+- Live clean IDs recovered:
+  `2de1549556000830`, `41cce6c6e6bb0058`, `4d780f825bb8541c`.
+
+Auxiliary CPU target-likelihood smoke:
+
+- Ran `Qwen/Qwen3-0.6B` on CPU for 8 live examples using
+  `scripts/collect_source_likelihood_sketch.py`.
+- C2C as an internal candidate contaminated the receiver gate because long C2C
+  text received high continuation likelihood even when wrong.
+- Without C2C, target scoring was feasible but often preferred wrong source
+  candidates on this tiny slice.
+- Decision: keep C2C as an external baseline, not an internal candidate for
+  this method.
+
+Artifact hashes:
+
+- `results/svamp_source_semantic_predicate_decoder_strict_harm20_20260427/semantic_predicate_decoder.json`:
+  `97a8cd1ba95c1239f0055a82a8bc461c99070bb8aba744bbc47f6b5d2567b53f`
+- `results/svamp_source_semantic_predicate_decoder_strict_harm20_20260427/semantic_predicate_decoder.md`:
+  `c57a791fa9a137d96ea4a951e76883610cba257076f041b6b73ba86ef16ce46a`
+- `results/svamp_source_semantic_predicate_decoder_strict_harm20_20260427/predictions.jsonl`:
+  `2fa404726a3cb654ec2de6cba75cfceac3e20fccf7ca2b5b873a687020aa6aed`
+
+Decision:
+
+- Kill/prune generated-source-trace semantic predicate decoding on current
+  Qwen2.5-Math -> Qwen3 SVAMP artifacts.
+- Weaken but do not fully kill target-preserving receiver gates: they need a
+  stronger source surface or model-collected target-side likelihood /
+  uncertainty features.
+- No additional CPU artifact mining is promoted from this branch.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` is absent, run the stronger-source scout recorded in
+`paper/postkill_historical_cpu_audit_20260427.md`. If it remains present, the
+hard blocker is OS/session-level cleanup or reboot before MPS experiments.
