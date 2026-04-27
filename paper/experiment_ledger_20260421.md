@@ -8105,3 +8105,95 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 
 If PID `31103` is absent, run the stronger-source scout recorded in
 `paper/postkill_historical_cpu_audit_20260427.md`.
+
+## 2026-04-27 Cycle - Creative reference synthesis and PDF conversion
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; no live positive method
+   survives target-alone/text/C2C/self-repair baselines, source-destroying
+   controls, seed stability, and cross-family falsification.
+2. Current paper story: historical `rotalign` and `latent_bridge` results are
+   mechanism clues only. The next paper story must show target-side
+   side-information decoding from a real source-derived code.
+3. Exact blocker to submission: no branch currently recovers source-necessary
+   wins beyond target/cache/formatting artifacts; local MPS remains blocked by
+   orphaned PID `31103`.
+4. Live branch: none. Top candidates: candidate-syndrome decoding and
+   zero-init gated query bottlenecks, with anchor-relative sparse difference
+   atoms as the geometry revival path.
+5. Highest-priority gate: implement a CPU-first candidate-syndrome decoder on
+   existing SVAMP70 artifacts before any new MPS work.
+6. Scale-up rung: source-surface/new-branch discovery, pre-smoke.
+
+Result:
+
+- Converted 172 local reference PDFs into markdown extracts under
+  `references/pdf_markdown/`.
+- Conversion status after the promoted regeneration pass: 172 normal
+  extractions, 0 unresolved failures.
+- Added `references/466_creative_method_synthesis_after_pdf_conversion_refs.md`
+  and `paper/creative_reference_synthesis_20260427.md`.
+- New top branch: candidate-syndrome decoder, reframing the sidecar as a
+  tiny source-derived code over target candidate pools with random-syndrome,
+  shuffled-source, zero-source, target-only, slots-only, and matched-byte
+  controls.
+
+Decisions:
+
+- Promoted: candidate-syndrome decoder as the next CPU-feasible branch.
+- Promoted: zero-init gated query bottleneck as the next learned branch once
+  MPS clears.
+- Revived with constraints: RotAlign/latent-bridge only through
+  anchor-relative sparse difference atoms and source-difference zeroing.
+- Deferred: protected-tail quantized residuals until a positive branch exists
+  to compress.
+- Weakened: shallow source-likelihood sketches and generic Perceiver memories.
+
+Candidate-syndrome CPU artifact gate:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_candidate_syndrome_decoder.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_contrastive_target_set.json \
+  --output-dir results/candidate_syndrome_decoder_20260427 \
+  --controls zero_source shuffled_source random_syndrome target_only slots_only \
+  --run-date 2026-04-27
+```
+
+Outcome:
+
+- Status: `candidate_syndrome_decoder_fails_smoke`.
+- Live: matched correct `11/70`, clean source-necessary `1`, target-self
+  harms `17`, control clean union `0`.
+- Holdout: matched correct `5/70`, clean source-necessary `4`, target-self
+  harms `14`, control clean union `0`.
+- Random/shuffled/zero/target/slots controls did not recover clean source-only
+  IDs, but the matched syndrome destroys too many target-self repairs and the
+  live surface lacks the minimum clean recovery.
+- Decision: do not promote the numeric hash-syndrome artifact probe. The
+  candidate-syndrome family only remains alive with learned source predicates
+  or a stronger source surface.
+
+Artifacts:
+
+- `results/candidate_syndrome_decoder_20260427/candidate_syndrome_decoder_probe.json`
+  - sha256:
+    `2ae78c4f3c31cf674f334fe5f755d6f80a8ccf3c66e777a49d4daed01c25cc81`
+- `results/candidate_syndrome_decoder_20260427/candidate_syndrome_decoder_probe.md`
+  - sha256:
+    `719990b7b4dff43278920cbbdbc807e4bdf2c359accc80dc81bf38bcf2f5a4f5`
+- `references/pdf_markdown/conversion_manifest.json`
+  - sha256:
+    `380b5f0f4dbdd0486a5b3eefa08dc1760c254219a7cdf5e715a8be3bec31f468`
+
+Next branch:
+
+- Zero-init gated query bottleneck, only after MPS is cleared or a CPU-only
+  feature prototype is scoped to frozen artifacts.
+
+Before any MPS command:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```

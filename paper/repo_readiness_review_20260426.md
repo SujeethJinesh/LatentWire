@@ -807,3 +807,53 @@ PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baseli
 Only run C2C or learned connector work if that scout has ordered ID parity,
 high numeric coverage, source-only over target at least `6/70`, and
 target-or-source oracle at least target plus `6/70`.
+
+## 2026-04-27 Creative Reference Synthesis
+
+Readiness remains not ICLR-ready. Current live branch: none.
+
+The reference corpus was converted to markdown under
+`references/pdf_markdown/` so subagents can inspect the PDF library directly.
+The literature sweep changes the next branch priority:
+
+- Candidate-syndrome decoding is promoted as the top CPU-feasible branch:
+  source emits a tiny code over target-side candidates, and the target decodes
+  against its own side information.
+- Zero-init gated query bottlenecks are promoted as the next learned branch
+  after MPS clears, because target-self preservation must be built into the
+  interface.
+- RotAlign/latent-bridge ideas are revived only under anchor-relative sparse
+  difference atoms with explicit source-difference zeroing controls.
+- Protected-tail quantized residuals are deferred until there is a real
+  source-necessary signal worth compressing.
+
+Exact blocker remains a missing positive method plus the local MPS blocker
+PID `31103`.
+
+CPU gate result:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_candidate_syndrome_decoder.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_contrastive_target_set.json \
+  --output-dir results/candidate_syndrome_decoder_20260427 \
+  --controls zero_source shuffled_source random_syndrome target_only slots_only \
+  --run-date 2026-04-27
+```
+
+Status: `candidate_syndrome_decoder_fails_smoke`.
+
+- Live matched clean source-necessary `1`, target-self harms `17`, control
+  clean union `0`.
+- Holdout matched clean source-necessary `4`, target-self harms `14`, control
+  clean union `0`.
+
+Decision: do not promote the numeric hash-syndrome artifact probe. The next
+highest-value branch is zero-init gated query bottlenecks, gated by MPS cleanup
+and/or a stronger source surface.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```

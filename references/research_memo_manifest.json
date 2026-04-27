@@ -761,5 +761,12 @@
     "path": "references/465_source_likelihood_syndrome_sidecar_refs.md",
     "status": "local_memo",
     "reason": "Focused primary-source memo for the SVAMP70 source likelihood sketch branch, treating the next method as a rate-capped syndrome-like sidecar conditioned on target-side candidate context."
+  },
+  {
+    "num": 466,
+    "slug": "creative_method_synthesis_after_pdf_conversion_refs",
+    "path": "references/466_creative_method_synthesis_after_pdf_conversion_refs.md",
+    "status": "local_memo",
+    "reason": "Creative post-kill literature synthesis after converting PDFs to markdown, selecting candidate-syndrome decoding, zero-init gated query bottlenecks, anchor-relative sparse difference atoms, and protected-tail quantized residuals as next bounded branches."
   }
 ]

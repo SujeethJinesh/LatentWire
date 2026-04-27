@@ -9,6 +9,15 @@ This folder contains the papers requested for `latent_bridge`, numbered to match
 
 The search-only items were resolved to concrete paper links before download, so the folder should be complete.
 
+## PDF Markdown Corpus
+
+`references/pdf_markdown/` contains markdown text extracts for 172 local PDF
+references so subagents can read the corpus without repeatedly parsing binary
+PDFs. `references/pdf_markdown/conversion_manifest.json` records the source PDF,
+source SHA256, page count, extracted character count, status, and output path.
+The conversion used `pypdf==6.10.2` inside `./venv_arm64`; all 172 PDFs
+extracted successfully in the promoted regeneration pass.
+
 ## Math Grounding Addendum
 
 Files `42_` through `75_` were added after the initial live validation runs. They cover representation similarity, CCA/CKA diagnostics, structured random/Fourier/Hadamard transforms, product quantization, incoherence processing, randomized linear algebra, control-theoretic gating, source coding, predictive-coding style residual transmission, model stitching, and representation-alignment theory. These are intended to ground the next RotAlign-KV ablations:

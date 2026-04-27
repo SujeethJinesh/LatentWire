@@ -1,0 +1,1552 @@
+{
+  "files": [
+    {
+      "chars": 89645,
+      "errors": [],
+      "output_md": "references/pdf_markdown/01_cache_to_cache_c2c.md",
+      "pages": 29,
+      "source_pdf": "references/01_cache_to_cache_c2c.pdf",
+      "source_sha256": "8846282656963fc48f72596f2d26c5f9f59bd6cc30c0d832b9fbe03904a34990",
+      "status": "ok"
+    },
+    {
+      "chars": 87906,
+      "errors": [],
+      "output_md": "references/pdf_markdown/02_kvcomm.md",
+      "pages": 28,
+      "source_pdf": "references/02_kvcomm.pdf",
+      "source_sha256": "48b9ee8f1b46e58d729140666243f24f211ea7c55aa85ad9f767cf24cd9f5e9a",
+      "status": "ok"
+    },
+    {
+      "chars": 47924,
+      "errors": [],
+      "output_md": "references/pdf_markdown/03_latent_space_communication_via_kv_cache_alignment.md",
+      "pages": 15,
+      "source_pdf": "references/03_latent_space_communication_via_kv_cache_alignment.pdf",
+      "source_sha256": "9b6306f2d02767a34f73799a800f23192bb4eb136260c0c0a620e94c02e260d8",
+      "status": "ok"
+    },
+    {
+      "chars": 68065,
+      "errors": [],
+      "output_md": "references/pdf_markdown/04_communicating_activations_between_language_model_agents.md",
+      "pages": 23,
+      "source_pdf": "references/04_communicating_activations_between_language_model_agents.pdf",
+      "source_sha256": "7f63140e08634b72c64c4960bbb3a8b0dbbee1ce8dbe252462f000885ec529bb",
+      "status": "ok"
+    },
+    {
+      "chars": 84586,
+      "errors": [],
+      "output_md": "references/pdf_markdown/05_interlat.md",
+      "pages": 28,
+      "source_pdf": "references/05_interlat.pdf",
+      "source_sha256": "2497b9e067cbabfa473521baefed8369bf46d12a230b478edd8d6a26b6e712db",
+      "status": "ok"
+    },
+    {
+      "chars": 91653,
+      "errors": [],
+      "output_md": "references/pdf_markdown/06_latentmas.md",
+      "pages": 33,
+      "source_pdf": "references/06_latentmas.pdf",
+      "source_sha256": "329d1281cf4dd933123901514cd8d689e201f3c16e2c26dcce0303d90480b3d8",
+      "status": "ok"
+    },
+    {
+      "chars": 48959,
+      "errors": [],
+      "output_md": "references/pdf_markdown/07_semalign_beyond_neural_incompatibility.md",
+      "pages": 14,
+      "source_pdf": "references/07_semalign_beyond_neural_incompatibility.pdf",
+      "source_sha256": "01509d3dc30c3861342ae23b8c65ada8b56efc39e0795c356f38405466748c47",
+      "status": "ok"
+    },
+    {
+      "chars": 25084,
+      "errors": [],
+      "output_md": "references/pdf_markdown/08_direct_semantic_communication_via_vector_translation.md",
+      "pages": 9,
+      "source_pdf": "references/08_direct_semantic_communication_via_vector_translation.pdf",
+      "source_sha256": "e85dd826639adb0b65e6911dc0626f43ac48f543f26546ba6fbdbe1e80b9ad02",
+      "status": "ok"
+    },
+    {
+      "chars": 78742,
+      "errors": [],
+      "output_md": "references/pdf_markdown/09_state_delta_encoding_sde.md",
+      "pages": 22,
+      "source_pdf": "references/09_state_delta_encoding_sde.pdf",
+      "source_sha256": "f8a920504a5f91272dbe56036fa9fd28d72703f42ea037bfe4290785354f896f",
+      "status": "ok"
+    },
+    {
+      "chars": 62465,
+      "errors": [],
+      "output_md": "references/pdf_markdown/100_expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution.md",
+      "pages": 19,
+      "source_pdf": "references/100_expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution.pdf",
+      "source_sha256": "645adc0ccd3ad137e25bf0e502f78fae9690bfa217add2be6dcf3cffe9f8e8a7",
+      "status": "ok"
+    },
+    {
+      "chars": 46737,
+      "errors": [],
+      "output_md": "references/pdf_markdown/101_q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression.md",
+      "pages": 14,
+      "source_pdf": "references/101_q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression.pdf",
+      "source_sha256": "4e1cf3ffcf02d6256ab2413272a7b02a611d44fb7ce09b2f089b57634e04cd54",
+      "status": "ok"
+    },
+    {
+      "chars": 70926,
+      "errors": [],
+      "output_md": "references/pdf_markdown/102_kv_compress_paged_kv_cache_compression_with_variable_compression_rates_per_attention_head.md",
+      "pages": 19,
+      "source_pdf": "references/102_kv_compress_paged_kv_cache_compression_with_variable_compression_rates_per_attention_head.pdf",
+      "source_sha256": "051e5c2e157461fd5a11d524307c8d1cb4ac30121944628129d417fd10a50b6f",
+      "status": "ok"
+    },
+    {
+      "chars": 46549,
+      "errors": [],
+      "output_md": "references/pdf_markdown/103_recalkv_low_rank_kv_cache_compression_via_head_reordering_and_offline_calibration.md",
+      "pages": 12,
+      "source_pdf": "references/103_recalkv_low_rank_kv_cache_compression_via_head_reordering_and_offline_calibration.pdf",
+      "source_sha256": "361723a320f8e4243602b5abf3748071ab3f495dd2b5f68ecbd1588d0ba10f39",
+      "status": "ok"
+    },
+    {
+      "chars": 65055,
+      "errors": [],
+      "output_md": "references/pdf_markdown/104_dbudgetkv_dynamic_budget_in_kv_cache_compression_for_ensuring_optimal_performance.md",
+      "pages": 16,
+      "source_pdf": "references/104_dbudgetkv_dynamic_budget_in_kv_cache_compression_for_ensuring_optimal_performance.pdf",
+      "source_sha256": "24261d5f7cda56c3b3dbbc1696266119a599b6b5431b476fb185a67fcab4042e",
+      "status": "ok"
+    },
+    {
+      "chars": 56617,
+      "errors": [],
+      "output_md": "references/pdf_markdown/105_atp_enabling_fast_llm_serving_via_attention_on_top_principal_keys.md",
+      "pages": 16,
+      "source_pdf": "references/105_atp_enabling_fast_llm_serving_via_attention_on_top_principal_keys.pdf",
+      "source_sha256": "f9f150a0097bb446fa58f10a3e0276cfd920c4433572e1c9b5caa0340e6555d9",
+      "status": "ok"
+    },
+    {
+      "chars": 112499,
+      "errors": [],
+      "output_md": "references/pdf_markdown/106_atp_star_an_efficient_and_scalable_method_for_localizing_llm_behaviour_to_components.md",
+      "pages": 46,
+      "source_pdf": "references/106_atp_star_an_efficient_and_scalable_method_for_localizing_llm_behaviour_to_components.pdf",
+      "source_sha256": "5901032cdd20d347602bfb9ce1fa2641c30ae20f5f3f4567828d1b272c2624f8",
+      "status": "ok"
+    },
+    {
+      "chars": 94673,
+      "errors": [],
+      "output_md": "references/pdf_markdown/107_headinfer_memory_efficient_llm_inference_by_head_wise_offloading.md",
+      "pages": 24,
+      "source_pdf": "references/107_headinfer_memory_efficient_llm_inference_by_head_wise_offloading.pdf",
+      "source_sha256": "bc4e86f80713266783e8b3895bcbcb9fa0d6a8439571a057ccf8278dc5344bbc",
+      "status": "ok"
+    },
+    {
+      "chars": 48684,
+      "errors": [],
+      "output_md": "references/pdf_markdown/108_fier_fine_grained_and_efficient_kv_cache_retrieval_for_long_context_llm_inference.md",
+      "pages": 12,
+      "source_pdf": "references/108_fier_fine_grained_and_efficient_kv_cache_retrieval_for_long_context_llm_inference.pdf",
+      "source_sha256": "4add463d859a76cf37650d0a2993ae70ac8580b8c31502b0a2317300f0fcc758",
+      "status": "ok"
+    },
+    {
+      "chars": 93905,
+      "errors": [],
+      "output_md": "references/pdf_markdown/109_more_for_keys_less_for_values_adaptive_kv_cache_quantization.md",
+      "pages": 29,
+      "source_pdf": "references/109_more_for_keys_less_for_values_adaptive_kv_cache_quantization.pdf",
+      "source_sha256": "c185cd6b0d5ba622dd0c12a1422a621a4fba2328a6ba25df15aad9b04e2c0b97",
+      "status": "ok"
+    },
+    {
+      "chars": 91463,
+      "errors": [],
+      "output_md": "references/pdf_markdown/10_let_models_speak_ciphers.md",
+      "pages": 30,
+      "source_pdf": "references/10_let_models_speak_ciphers.pdf",
+      "source_sha256": "73f2b92dbc12a9697e8f2815b80f1a68a1e540ab025f8af978946b7869ffc044",
+      "status": "ok"
+    },
+    {
+      "chars": 87125,
+      "errors": [],
+      "output_md": "references/pdf_markdown/114_lava_layer_wise_dynamic_budget_allocation_for_kv_cache_compression.md",
+      "pages": 21,
+      "source_pdf": "references/114_lava_layer_wise_dynamic_budget_allocation_for_kv_cache_compression.pdf",
+      "source_sha256": "007d4c56da18e8066396d03cd03d655a8f77b7b25a1a6a9cdf3954a404179c0d",
+      "status": "ok"
+    },
+    {
+      "chars": 38496,
+      "errors": [],
+      "output_md": "references/pdf_markdown/115_are_sixteen_heads_really_better_than_one.md",
+      "pages": 13,
+      "source_pdf": "references/115_are_sixteen_heads_really_better_than_one.pdf",
+      "source_sha256": "f47955ececb443ded32e995d82a9e3fd936f7e85815e7831d4dfcb0cae46d10c",
+      "status": "ok"
+    },
+    {
+      "chars": 57830,
+      "errors": [],
+      "output_md": "references/pdf_markdown/116_attention_is_not_explanation.md",
+      "pages": 14,
+      "source_pdf": "references/116_attention_is_not_explanation.pdf",
+      "source_sha256": "3750735a8bfd5f7d960a7cdb1bbdf6e16ac34cf0d449cf5c4bc45e3c3549e607",
+      "status": "ok"
+    },
+    {
+      "chars": 56044,
+      "errors": [],
+      "output_md": "references/pdf_markdown/117_learning_what_to_remember_adaptive_probabilistic_memory_retention_for_memory_efficient_language_models.md",
+      "pages": 13,
+      "source_pdf": "references/117_learning_what_to_remember_adaptive_probabilistic_memory_retention_for_memory_efficient_language_models.pdf",
+      "source_sha256": "ae08443d73be1714b395b7c2e7b9d3275e98b65eb74ddb33db491a55872ac5e3",
+      "status": "ok"
+    },
+    {
+      "chars": 57590,
+      "errors": [],
+      "output_md": "references/pdf_markdown/118_mixture_of_weight_shared_heterogeneous_group_attention_experts_for_dynamic_token_wise_kv_optimization.md",
+      "pages": 14,
+      "source_pdf": "references/118_mixture_of_weight_shared_heterogeneous_group_attention_experts_for_dynamic_token_wise_kv_optimization.pdf",
+      "source_sha256": "305628d2ee93cbaad4cf83a63284abd234023544d234f68048776dafd268bf85",
+      "status": "ok"
+    },
+    {
+      "chars": 86851,
+      "errors": [],
+      "output_md": "references/pdf_markdown/119_evolkv_evolutionary_kv_cache_compression_for_llm_inference.md",
+      "pages": 17,
+      "source_pdf": "references/119_evolkv_evolutionary_kv_cache_compression_for_llm_inference.pdf",
+      "source_sha256": "512a1f234988bad87fe0fed5aa3b2bc82da30c9e46b0132a5641d036d5a2e0a8",
+      "status": "ok"
+    },
+    {
+      "chars": 189072,
+      "errors": [],
+      "output_md": "references/pdf_markdown/11_platonic_representation_hypothesis.md",
+      "pages": 27,
+      "source_pdf": "references/11_platonic_representation_hypothesis.pdf",
+      "source_sha256": "fa9b7cc99c1e852960733b2ac89069bf448b2451bd198b4fc2d93aedb533e858",
+      "status": "ok"
+    },
+    {
+      "chars": 74254,
+      "errors": [],
+      "output_md": "references/pdf_markdown/120_duoattention_efficient_long_context_llm_inference_with_retrieval_and_streaming_heads.md",
+      "pages": 20,
+      "source_pdf": "references/120_duoattention_efficient_long_context_llm_inference_with_retrieval_and_streaming_heads.pdf",
+      "source_sha256": "0c121d19e509201937378f711e236ce1453728670e8184c81b237702eea825b2",
+      "status": "ok"
+    },
+    {
+      "chars": 72492,
+      "errors": [],
+      "output_md": "references/pdf_markdown/121_streamingllm_efficient_streaming_language_models_with_attention_sinks.md",
+      "pages": 21,
+      "source_pdf": "references/121_streamingllm_efficient_streaming_language_models_with_attention_sinks.pdf",
+      "source_sha256": "e8a7de67c7c57642648362651b4cf64fd852467e18865a298916a36098314819",
+      "status": "ok"
+    },
+    {
+      "chars": 99117,
+      "errors": [],
+      "output_md": "references/pdf_markdown/122_entropy_meets_importance_unified_head_importance_entropy_score_for_stable_efficient_transformer_pruning.md",
+      "pages": 38,
+      "source_pdf": "references/122_entropy_meets_importance_unified_head_importance_entropy_score_for_stable_efficient_transformer_pruning.pdf",
+      "source_sha256": "5d2f3afda46b9df042c8038f70e9078c178517a95ddf13f401f6f35415e3fde7",
+      "status": "ok"
+    },
+    {
+      "chars": 78128,
+      "errors": [],
+      "output_md": "references/pdf_markdown/123_causal_head_gating_framework_for_interpreting_roles_of_attention_heads_in_transformers.md",
+      "pages": 23,
+      "source_pdf": "references/123_causal_head_gating_framework_for_interpreting_roles_of_attention_heads_in_transformers.pdf",
+      "source_sha256": "4f75d953ae5c764160e5317b92f37372c049b36e24489e0c4881fbad54fc0d59",
+      "status": "ok"
+    },
+    {
+      "chars": 52823,
+      "errors": [],
+      "output_md": "references/pdf_markdown/124_eigen_attention_attention_in_low_rank_space_for_kv_cache_compression.md",
+      "pages": 13,
+      "source_pdf": "references/124_eigen_attention_attention_in_low_rank_space_for_kv_cache_compression.pdf",
+      "source_sha256": "2cf49eb3e478a7d24b79a0ee2fd006cf0e84b542b378911ac56ca5105a0bd3e2",
+      "status": "ok"
+    },
+    {
+      "chars": 36863,
+      "errors": [],
+      "output_md": "references/pdf_markdown/125_retrieval_head_mechanistically_explains_long_context_factuality.md",
+      "pages": 10,
+      "source_pdf": "references/125_retrieval_head_mechanistically_explains_long_context_factuality.pdf",
+      "source_sha256": "4b8e8c3a76339fc608d0a73c24216bcebf51094be7d45111b5498efd028d46fd",
+      "status": "ok"
+    },
+    {
+      "chars": 81382,
+      "errors": [],
+      "output_md": "references/pdf_markdown/126_nonlinear_shrinkage_estimation_of_large_dimensional_covariance_matrices.md",
+      "pages": 38,
+      "source_pdf": "references/126_nonlinear_shrinkage_estimation_of_large_dimensional_covariance_matrices.pdf",
+      "source_sha256": "9a5744f59fa588f016bf9e70e91fa2c32cc1b1d730cf3eed027537993d12e268",
+      "status": "ok"
+    },
+    {
+      "chars": 41659,
+      "errors": [],
+      "output_md": "references/pdf_markdown/127_rate_distortion_for_model_compression_from_theory_to_practice.md",
+      "pages": 10,
+      "source_pdf": "references/127_rate_distortion_for_model_compression_from_theory_to_practice.pdf",
+      "source_sha256": "a4b9a4cd85af01bce58eee65bde4412cb854ad471180139ee40213ced0e0300a",
+      "status": "ok"
+    },
+    {
+      "chars": 54431,
+      "errors": [],
+      "output_md": "references/pdf_markdown/128_compresskv_semantic_retrieval_heads_know_what_tokens_are_not_important_before_generation.md",
+      "pages": 15,
+      "source_pdf": "references/128_compresskv_semantic_retrieval_heads_know_what_tokens_are_not_important_before_generation.pdf",
+      "source_sha256": "2892bb8d326f33786e7f086c261fee4c2083dd80bd22ed264bd7e9606dd83eb5",
+      "status": "ok"
+    },
+    {
+      "chars": 58682,
+      "errors": [],
+      "output_md": "references/pdf_markdown/129_kvsharer_efficient_inference_via_layer_wise_dissimilar_kv_cache_sharing.md",
+      "pages": 16,
+      "source_pdf": "references/129_kvsharer_efficient_inference_via_layer_wise_dissimilar_kv_cache_sharing.pdf",
+      "source_sha256": "049a2529a0396e6d4dc480116d1eece8ce37b3f550c63ee7c6af8d19dac4a2ca",
+      "status": "ok"
+    },
+    {
+      "chars": 63868,
+      "errors": [],
+      "output_md": "references/pdf_markdown/12_vec2vec_universal_geometry_of_embeddings.md",
+      "pages": 18,
+      "source_pdf": "references/12_vec2vec_universal_geometry_of_embeddings.pdf",
+      "source_sha256": "c545946573295e7f804dd59e3b763184d96e1b82da293d6a485d8b3a993bb696",
+      "status": "ok"
+    },
+    {
+      "chars": 49992,
+      "errors": [],
+      "output_md": "references/pdf_markdown/130_efficient_reasoning_at_fixed_test_time_cost_via_length_aware_attention_priors_and_gain_aware_training.md",
+      "pages": 19,
+      "source_pdf": "references/130_efficient_reasoning_at_fixed_test_time_cost_via_length_aware_attention_priors_and_gain_aware_training.pdf",
+      "source_sha256": "8470785b1f1392db1856a2f41c699e1990f732e1f21a8695e1e5c6d148ff16fb",
+      "status": "ok"
+    },
+    {
+      "chars": 56870,
+      "errors": [],
+      "output_md": "references/pdf_markdown/131_query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking.md",
+      "pages": 15,
+      "source_pdf": "references/131_query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking.pdf",
+      "source_sha256": "81b001b07e9ce7d3d507581c30a7599790abf805abd0ef04b1f655c49f85eee0",
+      "status": "ok"
+    },
+    {
+      "chars": 57983,
+      "errors": [],
+      "output_md": "references/pdf_markdown/132_retrieval_heads_are_dynamic.md",
+      "pages": 18,
+      "source_pdf": "references/132_retrieval_heads_are_dynamic.pdf",
+      "source_sha256": "85076eeebe6500e990e8955e285af7cc7011b8109209a577f4f52ec8597f07a9",
+      "status": "ok"
+    },
+    {
+      "chars": 64691,
+      "errors": [],
+      "output_md": "references/pdf_markdown/133_greedy_attention_logit_interpolation.md",
+      "pages": 20,
+      "source_pdf": "references/133_greedy_attention_logit_interpolation.pdf",
+      "source_sha256": "bb5fdb36034de51caf833fc75a58b43468346a864af21b9d50a1fafc830f122c",
+      "status": "ok"
+    },
+    {
+      "chars": 46264,
+      "errors": [],
+      "output_md": "references/pdf_markdown/134_learnable_permutation_for_structured_sparsity_on_transformer_models.md",
+      "pages": 9,
+      "source_pdf": "references/134_learnable_permutation_for_structured_sparsity_on_transformer_models.pdf",
+      "source_sha256": "9585bc3d9923979e38a418bc06d046643f61ed4be76dbee3b7148c451609f219",
+      "status": "ok"
+    },
+    {
+      "chars": 59469,
+      "errors": [],
+      "output_md": "references/pdf_markdown/135_query_focused_and_memory_aware_reranker_for_long_context_processing.md",
+      "pages": 14,
+      "source_pdf": "references/135_query_focused_and_memory_aware_reranker_for_long_context_processing.pdf",
+      "source_sha256": "96aab824ecec0c79305a592977cb4bc9e94bb8e0a6d592176642a8750e9de26a",
+      "status": "ok"
+    },
+    {
+      "chars": 54192,
+      "errors": [],
+      "output_md": "references/pdf_markdown/136_contributions_of_transformer_attention_heads_in_multi_and_cross_lingual_tasks.md",
+      "pages": 11,
+      "source_pdf": "references/136_contributions_of_transformer_attention_heads_in_multi_and_cross_lingual_tasks.pdf",
+      "source_sha256": "5f9c1132b088c221a1ab070297045ecd6465d13dd84073646bf4792385b5d984",
+      "status": "ok"
+    },
+    {
+      "chars": 64557,
+      "errors": [],
+      "output_md": "references/pdf_markdown/138_alignment_attention_by_matching_key_and_query_distributions.md",
+      "pages": 17,
+      "source_pdf": "references/138_alignment_attention_by_matching_key_and_query_distributions.pdf",
+      "source_sha256": "957ccf419efe5a7eaacf92ff36016a7f84c5fbc5e26aea7f6fee121d1cd25687",
+      "status": "ok"
+    },
+    {
+      "chars": 46737,
+      "errors": [],
+      "output_md": "references/pdf_markdown/139_q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression.md",
+      "pages": 14,
+      "source_pdf": "references/139_q_filters_leveraging_qk_geometry_for_efficient_kv_cache_compression.pdf",
+      "source_sha256": "4e1cf3ffcf02d6256ab2413272a7b02a611d44fb7ce09b2f089b57634e04cd54",
+      "status": "ok"
+    },
+    {
+      "chars": 79462,
+      "errors": [],
+      "output_md": "references/pdf_markdown/13_relative_representations_enable_zero_shot_latent_space_communication.md",
+      "pages": 26,
+      "source_pdf": "references/13_relative_representations_enable_zero_shot_latent_space_communication.pdf",
+      "source_sha256": "6839e3aca87074db62cff6e1735d0defc01977ba2733c4ad76ce2c6032c109ed",
+      "status": "ok"
+    },
+    {
+      "chars": 48826,
+      "errors": [],
+      "output_md": "references/pdf_markdown/140_graph_optimal_transport_for_cross_domain_alignment.md",
+      "pages": 12,
+      "source_pdf": "references/140_graph_optimal_transport_for_cross_domain_alignment.pdf",
+      "source_sha256": "7da789d87554869940cb43dffb278fbbf8ec1db26614de1f2f96de0c135b9e59",
+      "status": "ok"
+    },
+    {
+      "chars": 59548,
+      "errors": [],
+      "output_md": "references/pdf_markdown/141_linear_shrinkage_estimation_of_covariance_matrices_using_low_complexity_cross_validation.md",
+      "pages": 12,
+      "source_pdf": "references/141_linear_shrinkage_estimation_of_covariance_matrices_using_low_complexity_cross_validation.pdf",
+      "source_sha256": "6c9f7ea0b035add47e222e32326fa4eb69c9ce37a985d0a8f1bcc0d2cde4ba6d",
+      "status": "ok"
+    },
+    {
+      "chars": 62465,
+      "errors": [],
+      "output_md": "references/pdf_markdown/142_expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution.md",
+      "pages": 19,
+      "source_pdf": "references/142_expected_attention_kv_cache_compression_by_estimating_attention_from_future_queries_distribution.pdf",
+      "source_sha256": "645adc0ccd3ad137e25bf0e502f78fae9690bfa217add2be6dcf3cffe9f8e8a7",
+      "status": "ok"
+    },
+    {
+      "chars": 43939,
+      "errors": [],
+      "output_md": "references/pdf_markdown/143_kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity.md",
+      "pages": 12,
+      "source_pdf": "references/143_kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity.pdf",
+      "source_sha256": "34c66eac0fe576061c56e65a6560fcca03cc3490cc1662dd963a6c95bd5408e6",
+      "status": "ok"
+    },
+    {
+      "chars": 65477,
+      "errors": [],
+      "output_md": "references/pdf_markdown/144_transformer_fusion_with_optimal_transport.md",
+      "pages": 24,
+      "source_pdf": "references/144_transformer_fusion_with_optimal_transport.pdf",
+      "source_sha256": "8819771cee0f313a66f074039763262075650858fd9d955a2bd3b46d5a0bed7d",
+      "status": "ok"
+    },
+    {
+      "chars": 112467,
+      "errors": [],
+      "output_md": "references/pdf_markdown/145_selective_induction_heads_how_transformers_select_causal_structures_in_context.md",
+      "pages": 36,
+      "source_pdf": "references/145_selective_induction_heads_how_transformers_select_causal_structures_in_context.pdf",
+      "source_sha256": "c9f87e2f92cf3fff4b3c6a5962bc66d0c0eadfbbeedd5730a995ed90c43b1c9f",
+      "status": "ok"
+    },
+    {
+      "chars": 41965,
+      "errors": [],
+      "output_md": "references/pdf_markdown/146_unsupervised_alignment_of_embeddings_with_wasserstein_procrustes.md",
+      "pages": 11,
+      "source_pdf": "references/146_unsupervised_alignment_of_embeddings_with_wasserstein_procrustes.pdf",
+      "source_sha256": "685206af18f773ff15aabb53c84a4305c15463378b02b471a8402cc266d42789",
+      "status": "ok"
+    },
+    {
+      "chars": 43045,
+      "errors": [],
+      "output_md": "references/pdf_markdown/147_quantized_wasserstein_procrustes_alignment_of_word_embedding_spaces.md",
+      "pages": 15,
+      "source_pdf": "references/147_quantized_wasserstein_procrustes_alignment_of_word_embedding_spaces.pdf",
+      "source_sha256": "6338f307b45968f98c27365bd2f166cf7c98f31c23789df7e24f70314f73c843",
+      "status": "ok"
+    },
+    {
+      "chars": 23584,
+      "errors": [],
+      "output_md": "references/pdf_markdown/148_sage_kv_self_attention_guided_kv_cache_eviction_for_llms.md",
+      "pages": 7,
+      "source_pdf": "references/148_sage_kv_self_attention_guided_kv_cache_eviction_for_llms.pdf",
+      "source_sha256": "713ff45a5e53fd046b5418a8e36085a4546c3da9fb7f407ab3412e4c9951a0c7",
+      "status": "ok"
+    },
+    {
+      "chars": 43930,
+      "errors": [],
+      "output_md": "references/pdf_markdown/149_thin_keys_full_values_reducing_kv_cache_via_low_dimensional_attention_selection.md",
+      "pages": 18,
+      "source_pdf": "references/149_thin_keys_full_values_reducing_kv_cache_via_low_dimensional_attention_selection.pdf",
+      "source_sha256": "15bdc495e2657e420a4fd1e99adbb2643317765c033f0ef3a9bf30b048dd169e",
+      "status": "ok"
+    },
+    {
+      "chars": 74579,
+      "errors": [],
+      "output_md": "references/pdf_markdown/14_cross_model_transferability_on_platonic_representations_of_concepts.md",
+      "pages": 19,
+      "source_pdf": "references/14_cross_model_transferability_on_platonic_representations_of_concepts.pdf",
+      "source_sha256": "05da03b2d52583644e77549bf8e519f799118114af5ac024cbd45556531b6404",
+      "status": "ok"
+    },
+    {
+      "chars": 42736,
+      "errors": [],
+      "output_md": "references/pdf_markdown/150_crystal_kv_efficient_kv_cache_management_for_chain_of_thought_llms_via_answer_first_principle.md",
+      "pages": 8,
+      "source_pdf": "references/150_crystal_kv_efficient_kv_cache_management_for_chain_of_thought_llms_via_answer_first_principle.pdf",
+      "source_sha256": "e3afd903cf5a5452a2ffc3f1382b777fb04e1edc18aa0e76165698ed5b401603",
+      "status": "ok"
+    },
+    {
+      "chars": 111067,
+      "errors": [],
+      "output_md": "references/pdf_markdown/151_low_rank_key_value_attention.md",
+      "pages": 29,
+      "source_pdf": "references/151_low_rank_key_value_attention.pdf",
+      "source_sha256": "da14a8fe8a1ec475372e1cc757b5a5d4ffd360e281df1bbe7ebb35e0d5cdacf6",
+      "status": "ok"
+    },
+    {
+      "chars": 46264,
+      "errors": [],
+      "output_md": "references/pdf_markdown/152_learnable_permutation_for_structured_sparsity_on_transformer_models.md",
+      "pages": 9,
+      "source_pdf": "references/152_learnable_permutation_for_structured_sparsity_on_transformer_models.pdf",
+      "source_sha256": "9585bc3d9923979e38a418bc06d046643f61ed4be76dbee3b7148c451609f219",
+      "status": "ok"
+    },
+    {
+      "chars": 62433,
+      "errors": [],
+      "output_md": "references/pdf_markdown/153_permllm_learnable_channel_permutation_for_nm_sparse_large_language_models.md",
+      "pages": 16,
+      "source_pdf": "references/153_permllm_learnable_channel_permutation_for_nm_sparse_large_language_models.pdf",
+      "source_sha256": "1a28eb0349d96c6569fb5b83ebd3aefef6a02d31ee5e3f525971497c36a86384",
+      "status": "ok"
+    },
+    {
+      "chars": 92433,
+      "errors": [],
+      "output_md": "references/pdf_markdown/154_task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads.md",
+      "pages": 12,
+      "source_pdf": "references/154_task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads.pdf",
+      "source_sha256": "611621071f36d46456232520978285bd45ba0ba344c9ae54f47eee180cb7dcfc",
+      "status": "ok"
+    },
+    {
+      "chars": 49381,
+      "errors": [],
+      "output_md": "references/pdf_markdown/155_kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction.md",
+      "pages": 14,
+      "source_pdf": "references/155_kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction.pdf",
+      "source_sha256": "2f60e46a3154b7d118aae4cb7c45a680cdf2677812cd748cfb6110257035b6e3",
+      "status": "ok"
+    },
+    {
+      "chars": 71754,
+      "errors": [],
+      "output_md": "references/pdf_markdown/157_transport_and_merge_cross_architecture_merging_for_large_language_models.md",
+      "pages": 18,
+      "source_pdf": "references/157_transport_and_merge_cross_architecture_merging_for_large_language_models.pdf",
+      "source_sha256": "59f909c6337b8ef646f7575bd97cb13b920d6c47d25e7077ad1fbee0b86cf8c6",
+      "status": "ok"
+    },
+    {
+      "chars": 99822,
+      "errors": [],
+      "output_md": "references/pdf_markdown/158_flashsinkhorn_io_aware_entropic_optimal_transport.md",
+      "pages": 42,
+      "source_pdf": "references/158_flashsinkhorn_io_aware_entropic_optimal_transport.pdf",
+      "source_sha256": "d05541649c1a8a5288ebd75d15c146e78ffc057a32845857aba9ca224a33701d",
+      "status": "ok"
+    },
+    {
+      "chars": 65184,
+      "errors": [],
+      "output_md": "references/pdf_markdown/15_turboquant.md",
+      "pages": 25,
+      "source_pdf": "references/15_turboquant.pdf",
+      "source_sha256": "431eb13926e10491f5fbd0bebd0813c51bd6c1e884426a1500c5db640b2997ab",
+      "status": "ok"
+    },
+    {
+      "chars": 60391,
+      "errors": [],
+      "output_md": "references/pdf_markdown/162_using_optimal_transport_as_alignment_objective_for_finetuning_multilingual_contextualized_embeddings.md",
+      "pages": 16,
+      "source_pdf": "references/162_using_optimal_transport_as_alignment_objective_for_finetuning_multilingual_contextualized_embeddings.pdf",
+      "source_sha256": "3ad216cb16c22998ee746f3276d4531ae7c3178f46afc133e64d04c36cb830be",
+      "status": "ok"
+    },
+    {
+      "chars": 51476,
+      "errors": [],
+      "output_md": "references/pdf_markdown/163_efficient_multi_adapter_llm_serving_via_cross_model_kv_cache_reuse_with_activated_lora.md",
+      "pages": 14,
+      "source_pdf": "references/163_efficient_multi_adapter_llm_serving_via_cross_model_kv_cache_reuse_with_activated_lora.pdf",
+      "source_sha256": "7b8dada4cae7d76cc49ddfb1cb4b2b6cc345c78d5a2dd3a5d48fde3069f87806",
+      "status": "ok"
+    },
+    {
+      "chars": 78286,
+      "errors": [],
+      "output_md": "references/pdf_markdown/164_lragent_efficient_kv_cache_sharing_for_multi_lora_llm_agents.md",
+      "pages": 23,
+      "source_pdf": "references/164_lragent_efficient_kv_cache_sharing_for_multi_lora_llm_agents.pdf",
+      "source_sha256": "8ab1f5100fa181ef4d5cbc7d11e0b7f4853838a9f385e932dbbad428619aee87",
+      "status": "ok"
+    },
+    {
+      "chars": 84086,
+      "errors": [],
+      "output_md": "references/pdf_markdown/165_forkkv_scaling_multi_lora_agent_serving_via_copy_on_write_disaggregated_kv_cache.md",
+      "pages": 14,
+      "source_pdf": "references/165_forkkv_scaling_multi_lora_agent_serving_via_copy_on_write_disaggregated_kv_cache.pdf",
+      "source_sha256": "e8cd019463b2acad1adcbbd04e04ba03a39c7dbcb5ee3c744d44d45162be4d49",
+      "status": "ok"
+    },
+    {
+      "chars": 18532,
+      "errors": [],
+      "output_md": "references/pdf_markdown/166_decomposing_llm_self_correction.md",
+      "pages": 9,
+      "source_pdf": "references/166_decomposing_llm_self_correction.pdf",
+      "source_sha256": "ef5b26861ba6dc912710cc8bc8c12ea9a76862bcab47e48a46874469259abbd2",
+      "status": "ok"
+    },
+    {
+      "chars": 24253,
+      "errors": [],
+      "output_md": "references/pdf_markdown/168_yoco_plus_plus_enhancing_yoco_with_kv_residual_connections_for_efficient_llm_inference.md",
+      "pages": 6,
+      "source_pdf": "references/168_yoco_plus_plus_enhancing_yoco_with_kv_residual_connections_for_efficient_llm_inference.pdf",
+      "source_sha256": "6de2ebbc7ddc28010a14969471fc983448875d59731c7068f29e21143ae834d2",
+      "status": "ok"
+    },
+    {
+      "chars": 41931,
+      "errors": [],
+      "output_md": "references/pdf_markdown/169_kv_car_kv_cache_compression_using_autoencoders_and_kv_reuse_in_large_language_models.md",
+      "pages": 9,
+      "source_pdf": "references/169_kv_car_kv_cache_compression_using_autoencoders_and_kv_reuse_in_large_language_models.pdf",
+      "source_sha256": "2798c118ede0d0f9e2dfdb2fd5369a1b12bc7674984e82802604a0aa6f67da8d",
+      "status": "ok"
+    },
+    {
+      "chars": 79675,
+      "errors": [],
+      "output_md": "references/pdf_markdown/16_quip_sharp.md",
+      "pages": 27,
+      "source_pdf": "references/16_quip_sharp.pdf",
+      "source_sha256": "2a5c4c103ba31f4a889344d95059c40e96841761e725500829f00b5a16c3d825",
+      "status": "ok"
+    },
+    {
+      "chars": 74872,
+      "errors": [],
+      "output_md": "references/pdf_markdown/170_cross_model_transferability_among_large_language_models_on_the_platonic_representations_of_concepts.md",
+      "pages": 19,
+      "source_pdf": "references/170_cross_model_transferability_among_large_language_models_on_the_platonic_representations_of_concepts.pdf",
+      "source_sha256": "ce525aa7eb2d601b41297d65dde8940b6dd55296f56a02cd88a557f5cd020900",
+      "status": "ok"
+    },
+    {
+      "chars": 120197,
+      "errors": [],
+      "output_md": "references/pdf_markdown/171_kvcomm_online_cross_context_kv_cache_communication_for_efficient_llm_based_multi_agent_systems.md",
+      "pages": 40,
+      "source_pdf": "references/171_kvcomm_online_cross_context_kv_cache_communication_for_efficient_llm_based_multi_agent_systems.pdf",
+      "source_sha256": "3acffcc4468b17cf5193a64ec998c6517af42acb247fc230171da92f0f9eb8df",
+      "status": "ok"
+    },
+    {
+      "chars": 56870,
+      "errors": [],
+      "output_md": "references/pdf_markdown/172_query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking.md",
+      "pages": 15,
+      "source_pdf": "references/172_query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking.pdf",
+      "source_sha256": "81b001b07e9ce7d3d507581c30a7599790abf805abd0ef04b1f655c49f85eee0",
+      "status": "ok"
+    },
+    {
+      "chars": 65216,
+      "errors": [],
+      "output_md": "references/pdf_markdown/173_prac_principal_random_subspace_for_llm_activation_compression_and_memory_efficient_training.md",
+      "pages": 26,
+      "source_pdf": "references/173_prac_principal_random_subspace_for_llm_activation_compression_and_memory_efficient_training.pdf",
+      "source_sha256": "be9b1d7aed1f8027510ba72d2f14ec2d31a27f14394f45b5819c2400016fb3aa",
+      "status": "ok"
+    },
+    {
+      "chars": 42246,
+      "errors": [],
+      "output_md": "references/pdf_markdown/175_scalpel_fine_grained_alignment_of_attention_activation_manifolds_via_mixture_gaussian_bridges_to_mitigate_multimodal_hallucination.md",
+      "pages": 10,
+      "source_pdf": "references/175_scalpel_fine_grained_alignment_of_attention_activation_manifolds_via_mixture_gaussian_bridges_to_mitigate_multimodal_hallucination.pdf",
+      "source_sha256": "9c3c95db7d80fc84e6de24b93ba4f8dc1b87816a0135c49c8681d8ecf09541f2",
+      "status": "ok"
+    },
+    {
+      "chars": 75433,
+      "errors": [],
+      "output_md": "references/pdf_markdown/176_reconstructing_kv_caches_with_cross_layer_fusion_for_enhanced_transformers.md",
+      "pages": 24,
+      "source_pdf": "references/176_reconstructing_kv_caches_with_cross_layer_fusion_for_enhanced_transformers.pdf",
+      "source_sha256": "b1e8f627349e34eafeb434a6d67513477bbafc0a6e5d4ca60b94bf296626ef32",
+      "status": "ok"
+    },
+    {
+      "chars": 112782,
+      "errors": [],
+      "output_md": "references/pdf_markdown/177_skipv1former_improving_model_representation_and_reducing_kv_cache_via_skip_connections_with_first_value_heads.md",
+      "pages": 37,
+      "source_pdf": "references/177_skipv1former_improving_model_representation_and_reducing_kv_cache_via_skip_connections_with_first_value_heads.pdf",
+      "source_sha256": "c5ad3d71984f70dda266f9ecfaf09ed80bbc8f33875c43668dfc4f46cd7cf5ef",
+      "status": "ok"
+    },
+    {
+      "chars": 58481,
+      "errors": [],
+      "output_md": "references/pdf_markdown/178_the_residual_stream_is_all_you_need_on_the_redundancy_of_the_kv_cache_in_transformer_inference.md",
+      "pages": 14,
+      "source_pdf": "references/178_the_residual_stream_is_all_you_need_on_the_redundancy_of_the_kv_cache_in_transformer_inference.pdf",
+      "source_sha256": "c1528346525604a46f68f67354f8ee8262a11cd01624b0330591387ca75895cf",
+      "status": "ok"
+    },
+    {
+      "chars": 46321,
+      "errors": [],
+      "output_md": "references/pdf_markdown/179_probabilistic_geometric_alignment_via_bayesian_latent_transport_for_domain_adaptive_foundation_models.md",
+      "pages": 11,
+      "source_pdf": "references/179_probabilistic_geometric_alignment_via_bayesian_latent_transport_for_domain_adaptive_foundation_models.pdf",
+      "source_sha256": "31fff2526ac1e53bf9bcc54221fec1e22149d7e2f9f785b9bc4b4f940f471ffb",
+      "status": "ok"
+    },
+    {
+      "chars": 138518,
+      "errors": [],
+      "output_md": "references/pdf_markdown/17_kv_cache_transform_coding_kvtc.md",
+      "pages": 48,
+      "source_pdf": "references/17_kv_cache_transform_coding_kvtc.pdf",
+      "source_sha256": "770542c24a9aa762ef341b85ca5eb29ed652d33abecd33f9321368a72688975b",
+      "status": "ok"
+    },
+    {
+      "chars": 48696,
+      "errors": [],
+      "output_md": "references/pdf_markdown/180_constrained_gaussian_wasserstein_optimal_transport_with_commutative_covariance_matrices.md",
+      "pages": 12,
+      "source_pdf": "references/180_constrained_gaussian_wasserstein_optimal_transport_with_commutative_covariance_matrices.pdf",
+      "source_sha256": "9d5ab90b04bc8b89d26413af745eebc36af07dbe331c32b129a68fa3caea3ee5",
+      "status": "ok"
+    },
+    {
+      "chars": 49381,
+      "errors": [],
+      "output_md": "references/pdf_markdown/185_kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction.md",
+      "pages": 14,
+      "source_pdf": "references/185_kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction.pdf",
+      "source_sha256": "2f60e46a3154b7d118aae4cb7c45a680cdf2677812cd748cfb6110257035b6e3",
+      "status": "ok"
+    },
+    {
+      "chars": 39096,
+      "errors": [],
+      "output_md": "references/pdf_markdown/18_qjl_quantized_johnson_lindenstrauss.md",
+      "pages": 13,
+      "source_pdf": "references/18_qjl_quantized_johnson_lindenstrauss.pdf",
+      "source_sha256": "bbc5455824ed9fa38e6a3cfeb805f6c406249e315bad8744db53366e6d6761bd",
+      "status": "ok"
+    },
+    {
+      "chars": 77398,
+      "errors": [],
+      "output_md": "references/pdf_markdown/19_spinquant.md",
+      "pages": 24,
+      "source_pdf": "references/19_spinquant.pdf",
+      "source_sha256": "fe437770d7c981eae9e028eacaa5c772ed0add900ed9dec54c10cfce6dfd86c3",
+      "status": "ok"
+    },
+    {
+      "chars": 77085,
+      "errors": [],
+      "output_md": "references/pdf_markdown/20_droidspeak.md",
+      "pages": 18,
+      "source_pdf": "references/20_droidspeak.pdf",
+      "source_sha256": "483670c3756e062605f27ab4ff2bb084938d86da5308e0e48f425a47542f0c77",
+      "status": "ok"
+    },
+    {
+      "chars": 81876,
+      "errors": [],
+      "output_md": "references/pdf_markdown/21_lmcache.md",
+      "pages": 19,
+      "source_pdf": "references/21_lmcache.pdf",
+      "source_sha256": "a1b6a90258c7e9091f24603ca4cff85f9f47410be10f5de89b7f902a2d3f6417",
+      "status": "ok"
+    },
+    {
+      "chars": 75576,
+      "errors": [],
+      "output_md": "references/pdf_markdown/22_cacheblend.md",
+      "pages": 16,
+      "source_pdf": "references/22_cacheblend.pdf",
+      "source_sha256": "034b9f230930f20ed23fc7dc17bbdf3fee0a9ff11c928563904bce34ec2e98e6",
+      "status": "ok"
+    },
+    {
+      "chars": 113675,
+      "errors": [],
+      "output_md": "references/pdf_markdown/23_cachegen.md",
+      "pages": 19,
+      "source_pdf": "references/23_cachegen.pdf",
+      "source_sha256": "3bbadb232c66d89dd1a68ecea65d76edc5e67074a97072e4a401ca7a6335a8de",
+      "status": "ok"
+    },
+    {
+      "chars": 63626,
+      "errors": [],
+      "output_md": "references/pdf_markdown/24_deliberation_in_latent_space_via_differentiable_cache_augmentation.md",
+      "pages": 14,
+      "source_pdf": "references/24_deliberation_in_latent_space_via_differentiable_cache_augmentation.pdf",
+      "source_sha256": "b545a242edf5f257ed12d8ddb6e80950c2cdf83db53d1eef41e93acf274c272e",
+      "status": "ok"
+    },
+    {
+      "chars": 45785,
+      "errors": [],
+      "output_md": "references/pdf_markdown/25_cross_lora.md",
+      "pages": 11,
+      "source_pdf": "references/25_cross_lora.pdf",
+      "source_sha256": "e2f35afb9c176d8600acfce2cf29d9fecfafa37758aa26f0b3ec242edd3941f1",
+      "status": "ok"
+    },
+    {
+      "chars": 71754,
+      "errors": [],
+      "output_md": "references/pdf_markdown/26_transport_and_merge.md",
+      "pages": 18,
+      "source_pdf": "references/26_transport_and_merge.pdf",
+      "source_sha256": "59f909c6337b8ef646f7575bd97cb13b920d6c47d25e7077ad1fbee0b86cf8c6",
+      "status": "ok"
+    },
+    {
+      "chars": 48619,
+      "errors": [],
+      "output_md": "references/pdf_markdown/27_trans_lora.md",
+      "pages": 14,
+      "source_pdf": "references/27_trans_lora.pdf",
+      "source_sha256": "3d4fc16e73b3bd8a75952819d28765ab88532e934a7b8b37ce92a61e244a2871",
+      "status": "ok"
+    },
+    {
+      "chars": 57111,
+      "errors": [],
+      "output_md": "references/pdf_markdown/28_coconut_chain_of_continuous_thought.md",
+      "pages": 18,
+      "source_pdf": "references/28_coconut_chain_of_continuous_thought.pdf",
+      "source_sha256": "6eb32c71eaa571b727ee95bce20396243fd70dc1ee8a37f91a7de717790d5b46",
+      "status": "ok"
+    },
+    {
+      "chars": 55965,
+      "errors": [],
+      "output_md": "references/pdf_markdown/29_soft_thinking.md",
+      "pages": 16,
+      "source_pdf": "references/29_soft_thinking.pdf",
+      "source_sha256": "2866f00377257788a36badffae92f41d54478be4f0fa6ba0a4e6e616a3c8f623",
+      "status": "ok"
+    },
+    {
+      "chars": 71516,
+      "errors": [],
+      "output_md": "references/pdf_markdown/30_soft_tokens_hard_truths.md",
+      "pages": 24,
+      "source_pdf": "references/30_soft_tokens_hard_truths.pdf",
+      "source_sha256": "0c84040049145a1f234eb9f2124c514d44e8f95344ef10414377e5f8ad736674",
+      "status": "ok"
+    },
+    {
+      "chars": 75248,
+      "errors": [],
+      "output_md": "references/pdf_markdown/31_reasoning_by_superposition.md",
+      "pages": 26,
+      "source_pdf": "references/31_reasoning_by_superposition.pdf",
+      "source_sha256": "539a1f13117c35b81e5d4094024393ff83f2998e6c876b3dc7908489dc38a155",
+      "status": "ok"
+    },
+    {
+      "chars": 78662,
+      "errors": [],
+      "output_md": "references/pdf_markdown/32_xbridge_language_on_demand_knowledge_at_core.md",
+      "pages": 23,
+      "source_pdf": "references/32_xbridge_language_on_demand_knowledge_at_core.pdf",
+      "source_sha256": "ce9b719114b4f0473a473867e6c7441e03cefde49d69d6410372b70cfa80de16",
+      "status": "ok"
+    },
+    {
+      "chars": 27775,
+      "errors": [],
+      "output_md": "references/pdf_markdown/33_mosecrot.md",
+      "pages": 7,
+      "source_pdf": "references/33_mosecrot.pdf",
+      "source_sha256": "7c0e7ef99a9b33aba71071faf5d3a17fa203b7b3246d2c2b27ec244d7f7258d2",
+      "status": "ok"
+    },
+    {
+      "chars": 41738,
+      "errors": [],
+      "output_md": "references/pdf_markdown/34_gromov_wasserstein_alignment_of_word_embedding_spaces.md",
+      "pages": 10,
+      "source_pdf": "references/34_gromov_wasserstein_alignment_of_word_embedding_spaces.pdf",
+      "source_sha256": "8fa1fe59c389dd233a64b21e17bdd913a0ccb31009d1456c44c2ebb601486af9",
+      "status": "ok"
+    },
+    {
+      "chars": 76846,
+      "errors": [],
+      "output_md": "references/pdf_markdown/35_linear_representation_hypothesis.md",
+      "pages": 24,
+      "source_pdf": "references/35_linear_representation_hypothesis.pdf",
+      "source_sha256": "a3d1be055237f65e7573e519845ba213f39bc67bef9b30441fd450983f6ef136",
+      "status": "ok"
+    },
+    {
+      "chars": 142564,
+      "errors": [],
+      "output_md": "references/pdf_markdown/36_function_vectors_in_large_language_models.md",
+      "pages": 52,
+      "source_pdf": "references/36_function_vectors_in_large_language_models.pdf",
+      "source_sha256": "ebf5f9730e782766bb0f9ecb5188dd89d599a6ce8b1619eebbd2e24dde142346",
+      "status": "ok"
+    },
+    {
+      "chars": 179501,
+      "errors": [],
+      "output_md": "references/pdf_markdown/37_representation_engineering.md",
+      "pages": 56,
+      "source_pdf": "references/37_representation_engineering.pdf",
+      "source_sha256": "5cd54799f795433bd6652231e0d113dead887f21c798148619fc0ce6f0fd589f",
+      "status": "ok"
+    },
+    {
+      "chars": 96369,
+      "errors": [],
+      "output_md": "references/pdf_markdown/39_debate.md",
+      "pages": 27,
+      "source_pdf": "references/39_debate.pdf",
+      "source_sha256": "b302ff15202dc3cda03f40ea1ac92b29e1519978540b345af92991f6d3e619b4",
+      "status": "ok"
+    },
+    {
+      "chars": 49339,
+      "errors": [],
+      "output_md": "references/pdf_markdown/40_mixture_of_agents.md",
+      "pages": 15,
+      "source_pdf": "references/40_mixture_of_agents.pdf",
+      "source_sha256": "b7bc82e95971e60f1ad54c8accd2d2fa101e8b43adb887511bf52c7e98e83a7d",
+      "status": "ok"
+    },
+    {
+      "chars": 157873,
+      "errors": [],
+      "output_md": "references/pdf_markdown/41_autogen.md",
+      "pages": 43,
+      "source_pdf": "references/41_autogen.pdf",
+      "source_sha256": "fcf8b1acae6b1bd6f14c92463caa9726828bf998234ba9f10c2411087897c96b",
+      "status": "ok"
+    },
+    {
+      "chars": 64609,
+      "errors": [],
+      "output_md": "references/pdf_markdown/42_cka_similarity_of_neural_network_representations_revisited.md",
+      "pages": 20,
+      "source_pdf": "references/42_cka_similarity_of_neural_network_representations_revisited.pdf",
+      "source_sha256": "ed7da67c8a73d90966d91f0d4e9c006e9113d113fe16d77fbde1022a90c38bea",
+      "status": "ok"
+    },
+    {
+      "chars": 47992,
+      "errors": [],
+      "output_md": "references/pdf_markdown/43_svcca_singular_vector_canonical_correlation_analysis.md",
+      "pages": 17,
+      "source_pdf": "references/43_svcca_singular_vector_canonical_correlation_analysis.pdf",
+      "source_sha256": "9e243daf1ca56bba04721ee129f92cf5f5faa25d0a0dba88b76a76d82ec01f0a",
+      "status": "ok"
+    },
+    {
+      "chars": 53062,
+      "errors": [],
+      "output_md": "references/pdf_markdown/44_pwcca_insights_on_representational_similarity.md",
+      "pages": 17,
+      "source_pdf": "references/44_pwcca_insights_on_representational_similarity.pdf",
+      "source_sha256": "691cb63e48f8b350a0fdb562b35f1b887871ea345437ca06b3d4b50a86293b64",
+      "status": "ok"
+    },
+    {
+      "chars": 44584,
+      "errors": [],
+      "output_md": "references/pdf_markdown/45_orthogonal_random_features.md",
+      "pages": 18,
+      "source_pdf": "references/45_orthogonal_random_features.pdf",
+      "source_sha256": "7dcd48008355d1e0b48d00df668944578ee15182e03774da4bb9584be573c781",
+      "status": "ok"
+    },
+    {
+      "chars": 75402,
+      "errors": [],
+      "output_md": "references/pdf_markdown/46_fastfood_approximate_kernel_expansions.md",
+      "pages": 29,
+      "source_pdf": "references/46_fastfood_approximate_kernel_expansions.pdf",
+      "source_sha256": "c47435d7658b5e6041ddd444f2a1267ed7b62301d4a813a8db50511c65cb4b55",
+      "status": "ok"
+    },
+    {
+      "chars": 69389,
+      "errors": [],
+      "output_md": "references/pdf_markdown/47_fnet_mixing_tokens_with_fourier_transforms.md",
+      "pages": 18,
+      "source_pdf": "references/47_fnet_mixing_tokens_with_fourier_transforms.pdf",
+      "source_sha256": "9398d77fa8160cf5884a2fe2ba5fcd502044b6eafb1e84c5e0c5ee14b1171f0b",
+      "status": "ok"
+    },
+    {
+      "chars": 52854,
+      "errors": [],
+      "output_md": "references/pdf_markdown/48_butterfly_transform_fft_based_neural_architecture.md",
+      "pages": 12,
+      "source_pdf": "references/48_butterfly_transform_fft_based_neural_architecture.pdf",
+      "source_sha256": "d775125ec916a4e68dc76e34a55d5c097d4f12c35ba4f3e1b3ee17dede3db9d0",
+      "status": "ok"
+    },
+    {
+      "chars": 35833,
+      "errors": [],
+      "output_md": "references/pdf_markdown/49_optimized_product_quantization.md",
+      "pages": 8,
+      "source_pdf": "references/49_optimized_product_quantization.pdf",
+      "source_sha256": "f117890bc03758d6e5bec677264889a14a7c3843386fcd921b8cdd85ad37ac02",
+      "status": "ok"
+    },
+    {
+      "chars": 62384,
+      "errors": [],
+      "output_md": "references/pdf_markdown/50_quarot_outlier_free_4bit_inference_rotated_llms.md",
+      "pages": 21,
+      "source_pdf": "references/50_quarot_outlier_free_4bit_inference_rotated_llms.pdf",
+      "source_sha256": "f611888c63ef63a5c0232e2c8416619f0c9ace08d0e05692731da82791202e3e",
+      "status": "ok"
+    },
+    {
+      "chars": 78532,
+      "errors": [],
+      "output_md": "references/pdf_markdown/51_qtip_quantization_with_trellises_and_incoherence_processing.md",
+      "pages": 25,
+      "source_pdf": "references/51_qtip_quantization_with_trellises_and_incoherence_processing.pdf",
+      "source_sha256": "ba94913ba62f355e0427a33556970dcf8abaab2b2f11c97614d672fc86cd5a8d",
+      "status": "ok"
+    },
+    {
+      "chars": 208543,
+      "errors": [],
+      "output_md": "references/pdf_markdown/52_finding_structure_with_randomness.md",
+      "pages": 74,
+      "source_pdf": "references/52_finding_structure_with_randomness.pdf",
+      "source_sha256": "d5d99d95b3d9657de6413f4c26d635238103ef9cf1a28ff1b7fde531cf11f6be",
+      "status": "ok"
+    },
+    {
+      "chars": 58189,
+      "errors": [],
+      "output_md": "references/pdf_markdown/53_smoothquant.md",
+      "pages": 13,
+      "source_pdf": "references/53_smoothquant.pdf",
+      "source_sha256": "d17856490ff664a99f8d08fe76eabd83219ed048cd1bc18ce3d0571e71056ff8",
+      "status": "ok"
+    },
+    {
+      "chars": 97121,
+      "errors": [],
+      "output_md": "references/pdf_markdown/54_flatquant.md",
+      "pages": 27,
+      "source_pdf": "references/54_flatquant.pdf",
+      "source_sha256": "06a3ac8f82c56c55c86b3fe8800bbab08a68058fb088fffc05d78efa03da9a68",
+      "status": "ok"
+    },
+    {
+      "chars": 81911,
+      "errors": [],
+      "output_md": "references/pdf_markdown/55_kalmannet_neural_network_aided_kalman_filtering.md",
+      "pages": 15,
+      "source_pdf": "references/55_kalmannet_neural_network_aided_kalman_filtering.pdf",
+      "source_sha256": "627610ac00bc70b03477c2be5ee348606d3309df28ad75c6d6ef0ffee7a037dd",
+      "status": "ok"
+    },
+    {
+      "chars": 44449,
+      "errors": [],
+      "output_md": "references/pdf_markdown/56_adaptive_computation_time.md",
+      "pages": 19,
+      "source_pdf": "references/56_adaptive_computation_time.pdf",
+      "source_sha256": "34e793f2e1908c510b4fbe24afcf418978fa87d11396d0e24e132da0f7042e82",
+      "status": "ok"
+    },
+    {
+      "chars": 50533,
+      "errors": [],
+      "output_md": "references/pdf_markdown/57_improving_normalization_with_the_james_stein_estimator.md",
+      "pages": 11,
+      "source_pdf": "references/57_improving_normalization_with_the_james_stein_estimator.pdf",
+      "source_sha256": "eddf8287aecab042d4795f3b5149ca5387222f222087afd6156242e106144483",
+      "status": "ok"
+    },
+    {
+      "chars": 54617,
+      "errors": [],
+      "output_md": "references/pdf_markdown/58_xkv_cross_layer_svd_for_kv_cache_compression.md",
+      "pages": 16,
+      "source_pdf": "references/58_xkv_cross_layer_svd_for_kv_cache_compression.pdf",
+      "source_sha256": "dbf6223a109770ea07d65628e9c3688f1a01b4acfb8a0296c3b3959103ef2e37",
+      "status": "ok"
+    },
+    {
+      "chars": 85196,
+      "errors": [],
+      "output_md": "references/pdf_markdown/59_moh_multi_head_attention_as_mixture_of_head_attention.md",
+      "pages": 23,
+      "source_pdf": "references/59_moh_multi_head_attention_as_mixture_of_head_attention.pdf",
+      "source_sha256": "6649272a23a624a4a0ec721f60cfe049cdf67d7e48853765872eb50fb313e846",
+      "status": "ok"
+    },
+    {
+      "chars": 78128,
+      "errors": [],
+      "output_md": "references/pdf_markdown/60_causal_head_gating_a_framework_for_interpreting_roles_of_attention_heads_in_transformers.md",
+      "pages": 23,
+      "source_pdf": "references/60_causal_head_gating_a_framework_for_interpreting_roles_of_attention_heads_in_transformers.pdf",
+      "source_sha256": "4f75d953ae5c764160e5317b92f37372c049b36e24489e0c4881fbad54fc0d59",
+      "status": "ok"
+    },
+    {
+      "chars": 49721,
+      "errors": [],
+      "output_md": "references/pdf_markdown/61_zipcache_accurate_and_efficient_kv_cache_quantization_with_salient_token_identification.md",
+      "pages": 15,
+      "source_pdf": "references/61_zipcache_accurate_and_efficient_kv_cache_quantization_with_salient_token_identification.pdf",
+      "source_sha256": "8765c59681a203fc1fd34d1908e7195699b2e1118e2aca0791449c306f4eebf2",
+      "status": "ok"
+    },
+    {
+      "chars": 49381,
+      "errors": [],
+      "output_md": "references/pdf_markdown/62_kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction.md",
+      "pages": 14,
+      "source_pdf": "references/62_kvlinc_kv_cache_quantization_with_hadamard_rotation_and_linear_correction.pdf",
+      "source_sha256": "2f60e46a3154b7d118aae4cb7c45a680cdf2677812cd748cfb6110257035b6e3",
+      "status": "ok"
+    },
+    {
+      "chars": 45766,
+      "errors": [],
+      "output_md": "references/pdf_markdown/63_rotatekv_accurate_and_robust_2_bit_kv_cache_quantization_for_llms_via_outlier_aware_adaptive_rotations.md",
+      "pages": 9,
+      "source_pdf": "references/63_rotatekv_accurate_and_robust_2_bit_kv_cache_quantization_for_llms_via_outlier_aware_adaptive_rotations.pdf",
+      "source_sha256": "05b28584f61626e9e6d989cab82d10a83fe9c4b7d68393c67a838250ab796687",
+      "status": "ok"
+    },
+    {
+      "chars": 54212,
+      "errors": [],
+      "output_md": "references/pdf_markdown/64_kivi_a_tuning_free_asymmetric_2bit_quantization_for_kv_cache.md",
+      "pages": 15,
+      "source_pdf": "references/64_kivi_a_tuning_free_asymmetric_2bit_quantization_for_kv_cache.pdf",
+      "source_sha256": "df31ef32d71bfb280c533c5db8220cadf5ef42076bf45d82ba4c8da8e50ea5f4",
+      "status": "ok"
+    },
+    {
+      "chars": 77770,
+      "errors": [],
+      "output_md": "references/pdf_markdown/65_palu_compressing_kv_cache_with_low_rank_projection.md",
+      "pages": 23,
+      "source_pdf": "references/65_palu_compressing_kv_cache_with_low_rank_projection.pdf",
+      "source_sha256": "676754dec64711c3407a56b58c037505133dec341b78333b238df48b36c792a1",
+      "status": "ok"
+    },
+    {
+      "chars": 71760,
+      "errors": [],
+      "output_md": "references/pdf_markdown/66_matryoshkakv_adaptive_kv_compression_via_trainable_orthogonal_projection.md",
+      "pages": 22,
+      "source_pdf": "references/66_matryoshkakv_adaptive_kv_compression_via_trainable_orthogonal_projection.pdf",
+      "source_sha256": "fce6ac4e71a14bcfed4ef4fd8cb732d1ee9c45c025bd0ac99f7cfa1577d2f6fe",
+      "status": "ok"
+    },
+    {
+      "chars": 25562,
+      "errors": [],
+      "output_md": "references/pdf_markdown/67_distributed_indirect_source_coding_with_decoder_side_information.md",
+      "pages": 6,
+      "source_pdf": "references/67_distributed_indirect_source_coding_with_decoder_side_information.pdf",
+      "source_sha256": "d4f9e77728b5f51b743ec0aa6e3c7affe1f13a28fd11fce47eeb7d85d4fb661e",
+      "status": "ok"
+    },
+    {
+      "chars": 45559,
+      "errors": [],
+      "output_md": "references/pdf_markdown/68_adaptive_gating_in_mixture_of_experts_based_language_models.md",
+      "pages": 11,
+      "source_pdf": "references/68_adaptive_gating_in_mixture_of_experts_based_language_models.pdf",
+      "source_sha256": "cf962dd518f2a777a71db134459fd7e5caa85dd8a5871aaad73a8c7c7ab62d4a",
+      "status": "ok"
+    },
+    {
+      "chars": 53718,
+      "errors": [],
+      "output_md": "references/pdf_markdown/69_event_triggered_state_estimation_through_confidence_level.md",
+      "pages": 13,
+      "source_pdf": "references/69_event_triggered_state_estimation_through_confidence_level.pdf",
+      "source_sha256": "f96a2037e0de73dcaf51c523b2bed4e37058280b9f64c003edadd6f8ca22c7ce",
+      "status": "ok"
+    },
+    {
+      "chars": 57832,
+      "errors": [],
+      "output_md": "references/pdf_markdown/70_rate_distortion_for_model_compression_from_theory_to_practice.md",
+      "pages": 23,
+      "source_pdf": "references/70_rate_distortion_for_model_compression_from_theory_to_practice.pdf",
+      "source_sha256": "5e962ab7006a97e2991c5bf21f060bb79f4395cd1ecce6363414450b602ec74f",
+      "status": "ok"
+    },
+    {
+      "chars": 43204,
+      "errors": [],
+      "output_md": "references/pdf_markdown/71_predictive_coding_towards_a_future_of_deep_learning_beyond_backpropagation.md",
+      "pages": 10,
+      "source_pdf": "references/71_predictive_coding_towards_a_future_of_deep_learning_beyond_backpropagation.pdf",
+      "source_sha256": "8ee096650cb381d185bad9ef309058915ee7a2cdf5a096a5fcb3cd70287f1a46",
+      "status": "ok"
+    },
+    {
+      "chars": 79733,
+      "errors": [],
+      "output_md": "references/pdf_markdown/72_transferring_linear_features_across_language_models_with_model_stitching.md",
+      "pages": 26,
+      "source_pdf": "references/72_transferring_linear_features_across_language_models_with_model_stitching.pdf",
+      "source_sha256": "14fe841ac5d586ffc254ebf04696ac44e5cbe2a83dc72a8242445c28f325dfda",
+      "status": "ok"
+    },
+    {
+      "chars": 45689,
+      "errors": [],
+      "output_md": "references/pdf_markdown/73_towards_a_learning_theory_of_representation_alignment.md",
+      "pages": 21,
+      "source_pdf": "references/73_towards_a_learning_theory_of_representation_alignment.pdf",
+      "source_sha256": "736efc5c3a1401151e2efe9ec8b52f862e0544a3785306575cad91bbb82354a5",
+      "status": "ok"
+    },
+    {
+      "chars": 64030,
+      "errors": [],
+      "output_md": "references/pdf_markdown/74_fouriercompress_layer_aware_spectral_activation_compression.md",
+      "pages": 12,
+      "source_pdf": "references/74_fouriercompress_layer_aware_spectral_activation_compression.pdf",
+      "source_sha256": "a23eee48b75491840525a04923f353e106c7fd43fad675abe257ecae6f05b013",
+      "status": "ok"
+    },
+    {
+      "chars": 44309,
+      "errors": [],
+      "output_md": "references/pdf_markdown/76_asymkv_layer_wise_asymmetric_quantization_configurations.md",
+      "pages": 13,
+      "source_pdf": "references/76_asymkv_layer_wise_asymmetric_quantization_configurations.pdf",
+      "source_sha256": "7573ba424f4cdf9056459e85b4aaa2e9324db086467204276bc19875c35fdf81",
+      "status": "ok"
+    },
+    {
+      "chars": 52416,
+      "errors": [],
+      "output_md": "references/pdf_markdown/77_razorattention_efficient_kv_cache_compression_through_retrieval_heads.md",
+      "pages": 15,
+      "source_pdf": "references/77_razorattention_efficient_kv_cache_compression_through_retrieval_heads.pdf",
+      "source_sha256": "a4106b6aaab44e2df480ddb293cc45beefc250d093f762a21a844d9b0224aec3",
+      "status": "ok"
+    },
+    {
+      "chars": 76695,
+      "errors": [],
+      "output_md": "references/pdf_markdown/78_headkv_not_all_heads_matter.md",
+      "pages": 22,
+      "source_pdf": "references/78_headkv_not_all_heads_matter.pdf",
+      "source_sha256": "200799694546373d1220b0ba59bc577497fcc24e174215f58a58e1fb655ecca4",
+      "status": "ok"
+    },
+    {
+      "chars": 66852,
+      "errors": [],
+      "output_md": "references/pdf_markdown/79_keyformer_kv_cache_reduction_through_key_tokens_selection.md",
+      "pages": 14,
+      "source_pdf": "references/79_keyformer_kv_cache_reduction_through_key_tokens_selection.pdf",
+      "source_sha256": "ded975b571c4f4e93a6e5d95fbb52043befe09794a5f639d9947ed3a3951f0a9",
+      "status": "ok"
+    },
+    {
+      "chars": 74813,
+      "errors": [],
+      "output_md": "references/pdf_markdown/80_snapkv_llm_knows_what_you_are_looking_for_before_generation.md",
+      "pages": 24,
+      "source_pdf": "references/80_snapkv_llm_knows_what_you_are_looking_for_before_generation.pdf",
+      "source_sha256": "0e7a0770cd8875dc5d7573bf0f8d0e7050be49fc164563c75efc9739c26b7218",
+      "status": "ok"
+    },
+    {
+      "chars": 144528,
+      "errors": [],
+      "output_md": "references/pdf_markdown/81_h2o_heavy_hitter_oracle_for_efficient_generative_inference_of_large_language_models.md",
+      "pages": 50,
+      "source_pdf": "references/81_h2o_heavy_hitter_oracle_for_efficient_generative_inference_of_large_language_models.pdf",
+      "source_sha256": "ff4ba98e426219871231e0950dd644e6d1887231b4305950aa6a3a863e5213fd",
+      "status": "ok"
+    },
+    {
+      "chars": 121257,
+      "errors": [],
+      "output_md": "references/pdf_markdown/82_scbench_kv_cache_centric_analysis_of_long_context_methods.md",
+      "pages": 31,
+      "source_pdf": "references/82_scbench_kv_cache_centric_analysis_of_long_context_methods.pdf",
+      "source_sha256": "a82e8cab7e0002308ea7e1f06177496084274d6db7692e9f04e2a35a3e3f8f33",
+      "status": "ok"
+    },
+    {
+      "chars": 56999,
+      "errors": [],
+      "output_md": "references/pdf_markdown/83_dynamickv_task_aware_adaptive_kv_cache_compression_for_long_context_llms.md",
+      "pages": 16,
+      "source_pdf": "references/83_dynamickv_task_aware_adaptive_kv_cache_compression_for_long_context_llms.pdf",
+      "source_sha256": "ce5f66722366cef43176ed03d4ba6bebceafda86fec6a34f77ea1802c17a3e7c",
+      "status": "ok"
+    },
+    {
+      "chars": 70813,
+      "errors": [],
+      "output_md": "references/pdf_markdown/84_r_kv_redundancy_aware_kv_cache_compression_for_training_free_reasoning_models_acceleration.md",
+      "pages": 19,
+      "source_pdf": "references/84_r_kv_redundancy_aware_kv_cache_compression_for_training_free_reasoning_models_acceleration.pdf",
+      "source_sha256": "5ebd557a63d1fbccaf25eb772bfee84e603b8e0b422ef39220695e4a434477ef",
+      "status": "ok"
+    },
+    {
+      "chars": 93905,
+      "errors": [],
+      "output_md": "references/pdf_markdown/85_more_for_keys_less_for_values_adaptive_kv_cache_quantization.md",
+      "pages": 29,
+      "source_pdf": "references/85_more_for_keys_less_for_values_adaptive_kv_cache_quantization.pdf",
+      "source_sha256": "c185cd6b0d5ba622dd0c12a1422a621a4fba2328a6ba25df15aad9b04e2c0b97",
+      "status": "ok"
+    },
+    {
+      "chars": 72418,
+      "errors": [],
+      "output_md": "references/pdf_markdown/86_homogeneous_keys_heterogeneous_values_exploiting_local_kv_cache_asymmetry_for_long_context_llms.md",
+      "pages": 23,
+      "source_pdf": "references/86_homogeneous_keys_heterogeneous_values_exploiting_local_kv_cache_asymmetry_for_long_context_llms.pdf",
+      "source_sha256": "30a999decb1abb98970de36d87e2fddd45465a013ff813cbff00970e997936dc",
+      "status": "ok"
+    },
+    {
+      "chars": 43939,
+      "errors": [],
+      "output_md": "references/pdf_markdown/87_kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity.md",
+      "pages": 12,
+      "source_pdf": "references/87_kq_svd_compressing_the_kv_cache_with_provable_guarantees_on_attention_fidelity.pdf",
+      "source_sha256": "34c66eac0fe576061c56e65a6560fcca03cc3490cc1662dd963a6c95bd5408e6",
+      "status": "ok"
+    },
+    {
+      "chars": 65029,
+      "errors": [],
+      "output_md": "references/pdf_markdown/88_keepkv_achieving_periodic_lossless_kv_cache_compression_for_efficient_llm_inference.md",
+      "pages": 14,
+      "source_pdf": "references/88_keepkv_achieving_periodic_lossless_kv_cache_compression_for_efficient_llm_inference.pdf",
+      "source_sha256": "7a940b58af6d92ba2e72b93a14077b865fdfdf7a7307f5c15d8ff23e1616585d",
+      "status": "ok"
+    },
+    {
+      "chars": 73611,
+      "errors": [],
+      "output_md": "references/pdf_markdown/89_tokenselect_efficient_long_context_inference_and_length_extrapolation_for_llms_via_dynamic_token_level_kv_cache_selection.md",
+      "pages": 18,
+      "source_pdf": "references/89_tokenselect_efficient_long_context_inference_and_length_extrapolation_for_llms_via_dynamic_token_level_kv_cache_selection.pdf",
+      "source_sha256": "f38d0866640e796c37b3f594de3e5fb8bc4ec637a378920d349a27199c6e0e11",
+      "status": "ok"
+    },
+    {
+      "chars": 43560,
+      "errors": [],
+      "output_md": "references/pdf_markdown/90_quest_query_aware_sparsity_for_efficient_long_context_llm_inference.md",
+      "pages": 11,
+      "source_pdf": "references/90_quest_query_aware_sparsity_for_efficient_long_context_llm_inference.pdf",
+      "source_sha256": "93cda144859b4e38d595c42dbc578e4e0c8d436fa0891e3dfeb74716bacc4ce8",
+      "status": "ok"
+    },
+    {
+      "chars": 23136,
+      "errors": [],
+      "output_md": "references/pdf_markdown/91_weightedkv_attention_scores_weighted_key_value_cache_merging_for_large_language_models.md",
+      "pages": 5,
+      "source_pdf": "references/91_weightedkv_attention_scores_weighted_key_value_cache_merging_for_large_language_models.pdf",
+      "source_sha256": "c1d715984132613566917e21353b43bb64ee51b69235ef1f34fc7719d6afc2cc",
+      "status": "ok"
+    },
+    {
+      "chars": 52771,
+      "errors": [],
+      "output_md": "references/pdf_markdown/92_eigen_attention_attention_in_low_rank_space_for_kv_cache_compression.md",
+      "pages": 13,
+      "source_pdf": "references/92_eigen_attention_attention_in_low_rank_space_for_kv_cache_compression.pdf",
+      "source_sha256": "38299f273112aee7caeb330cf9d700e01f8347961c6dd082cab078be412c068a",
+      "status": "ok"
+    },
+    {
+      "chars": 20056,
+      "errors": [],
+      "output_md": "references/pdf_markdown/93_qcfuse_query_centric_cache_fusion_for_efficient_rag_inference.md",
+      "pages": 4,
+      "source_pdf": "references/93_qcfuse_query_centric_cache_fusion_for_efficient_rag_inference.pdf",
+      "source_sha256": "c293bb3ce2e6a8cdcbc55faf2f967804084e32a9b8f1b7c5d0b5fbdbebffdfca",
+      "status": "ok"
+    },
+    {
+      "chars": 23584,
+      "errors": [],
+      "output_md": "references/pdf_markdown/94_llms_know_what_to_drop_self_attention_guided_kv_cache_eviction_for_efficient_long_context_inference.md",
+      "pages": 7,
+      "source_pdf": "references/94_llms_know_what_to_drop_self_attention_guided_kv_cache_eviction_for_efficient_long_context_inference.pdf",
+      "source_sha256": "713ff45a5e53fd046b5418a8e36085a4546c3da9fb7f407ab3412e4c9951a0c7",
+      "status": "ok"
+    },
+    {
+      "chars": 92433,
+      "errors": [],
+      "output_md": "references/pdf_markdown/95_task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads.md",
+      "pages": 12,
+      "source_pdf": "references/95_task_kv_task_aware_kv_cache_optimization_via_semantic_differentiation_of_attention_heads.pdf",
+      "source_sha256": "611621071f36d46456232520978285bd45ba0ba344c9ae54f47eee180cb7dcfc",
+      "status": "ok"
+    },
+    {
+      "chars": 69121,
+      "errors": [],
+      "output_md": "references/pdf_markdown/96_kvzip_query_agnostic_kv_cache_compression_with_context_reconstruction.md",
+      "pages": 22,
+      "source_pdf": "references/96_kvzip_query_agnostic_kv_cache_compression_with_context_reconstruction.pdf",
+      "source_sha256": "d8d7e51973ef234d66c9925fa3aa2e65a8e61a17d84ada17afc6a61c9117aa1d",
+      "status": "ok"
+    },
+    {
+      "chars": 36863,
+      "errors": [],
+      "output_md": "references/pdf_markdown/97_retrieval_head_mechanistically_explains_long_context_factuality.md",
+      "pages": 10,
+      "source_pdf": "references/97_retrieval_head_mechanistically_explains_long_context_factuality.pdf",
+      "source_sha256": "4b8e8c3a76339fc608d0a73c24216bcebf51094be7d45111b5498efd028d46fd",
+      "status": "ok"
+    },
+    {
+      "chars": 56870,
+      "errors": [],
+      "output_md": "references/pdf_markdown/98_query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking.md",
+      "pages": 15,
+      "source_pdf": "references/98_query_focused_retrieval_heads_improve_long_context_reasoning_and_re_ranking.pdf",
+      "source_sha256": "81b001b07e9ce7d3d507581c30a7599790abf805abd0ef04b1f655c49f85eee0",
+      "status": "ok"
+    },
+    {
+      "chars": 65698,
+      "errors": [],
+      "output_md": "references/pdf_markdown/99_a_simple_and_effective_l2_norm_based_strategy_for_kv_cache_compression.md",
+      "pages": 24,
+      "source_pdf": "references/99_a_simple_and_effective_l2_norm_based_strategy_for_kv_cache_compression.pdf",
+      "source_sha256": "0bbc2e7c6471f330e104750aa1ab2fd9dc89a11a7e9dd4ee6dc39c6aa0dd87a9",
+      "status": "ok"
+    },
+    {
+      "chars": 43520,
+      "errors": [],
+      "output_md": "references/pdf_markdown/repos__Quest__assets__quest_paper.md",
+      "pages": 11,
+      "source_pdf": "references/repos/Quest/assets/quest_paper.pdf",
+      "source_sha256": "4859cab1a09b204d7327122f41c195329e38d2aa8bddd73e38b172e3687e7beb",
+      "status": "ok"
+    },
+    {
+      "chars": 13789,
+      "errors": [],
+      "output_md": "references/pdf_markdown/repos__Quest__assets__quest_poster.md",
+      "pages": 1,
+      "source_pdf": "references/repos/Quest/assets/quest_poster.pdf",
+      "source_sha256": "dba0d7e786eabf5c4700dcbf1acaa477eb7057b22cc0768fa5e5763488a9b2e1",
+      "status": "ok"
+    },
+    {
+      "chars": 8532,
+      "errors": [],
+      "output_md": "references/pdf_markdown/repos__Quest__assets__quest_slides.md",
+      "pages": 17,
+      "source_pdf": "references/repos/Quest/assets/quest_slides.pdf",
+      "source_sha256": "201867bdf585b1a0b70dcb7c7c8f4e3c2a0335c08ee8cfc28a81659afdd8f564",
+      "status": "ok"
+    },
+    {
+      "chars": 6774,
+      "errors": [],
+      "output_md": "references/pdf_markdown/repos__StreamingLLM__assets__StreamingLLM.md",
+      "pages": 22,
+      "source_pdf": "references/repos/StreamingLLM/assets/StreamingLLM.pdf",
+      "source_sha256": "29f0bc5dcb1f815fa62520ecd4adbb97b06aed6e30500e9fd46e3f9441f557a0",
+      "status": "ok"
+    }
+  ]
+}

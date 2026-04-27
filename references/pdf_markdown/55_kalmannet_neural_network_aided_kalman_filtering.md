@@ -1,0 +1,1935 @@
+# references/55_kalmannet_neural_network_aided_kalman_filtering.pdf
+
+<!-- page 1 -->
+
+KalmanNet: Neural Network Aided Kalman
+Filtering for Partially Known Dynamics
+Guy Revach, Nir Shlezinger, Xiaoyong Ni, Adri `a L ´opez Escoriza, Ruud J. G. van Sloun, and Yonina C. Eldar
+Abstract—State estimation of dynamical systems in real-time
+is a fundamental task in signal processing. For systems that are
+well-represented by a fully known linear Gaussian state space
+(SS) model, the celebrated Kalman ﬁlter (KF) is a low complexity
+optimal solution. However, both linearity of the underlying SS
+model and accurate knowledge of it are often not encountered in
+practice. Here, we present KalmanNet, a real-time state estimator
+that learns from data to carry out Kalman ﬁltering under non-
+linear dynamics with partial information. By incorporating the
+structural SS model with a dedicated recurrent neural network
+module in the ﬂow of the KF, we retain data efﬁciency and
+interpretability of the classic algorithm while implicitly learn-
+ing complex dynamics from data. We demonstrate numerically
+that KalmanNet overcomes non-linearities and model mismatch,
+outperforming classic ﬁltering methods operating with both
+mismatched and accurate domain knowledge.
+I. I NTRODUCTION
+Estimating the hidden state of a dynamical system from
+noisy observations in real-time is one of the most fundamental
+tasks in signal processing and control, with applications in
+localization, tracking, and navigation [2]. In a pioneering work
+from the early 1960s [3]–[5], based on work by Wiener from
+1949 [6], Rudolf Kalman introduced the Kalman ﬁlter (KF),
+a minimum mean-squared error (MMSE) estimator that is
+applicable to time-varying systems in discrete-time, which
+are characterized by a linear state space (SS) model with
+additive white Gaussian noise (AWGN). The low-complexity
+implementation of the KF, combined with its sound theoretical
+basis, resulted in it quickly becoming the leading workhorse
+of state estimation in systems that are well described by SS
+models in discrete-time. The KF has been applied to problems
+such as radar target tracking [7], trajectory estimation of
+ballistic missiles [8], and estimating the position and velocity
+of a space vehicle in the Apollo program [9].
+While the original KF assumes linear SS models, many
+problems encountered in practice are governed by non-linear
+dynamical equations. Therefore, shortly after the introduction
+of the original KF, non-linear variations of it were proposed,
+such as the extended Kalman ﬁlter (EKF) [7], [8] and the
+Parts of this work focusing on linear Gaussian state space models
+were presented at the IEEE International Conference on Acoustics, Speech,
+and Signal Processing (ICASSP) 2021 [1]. G. Revach, X. Ni and A.
+L. Escoriza are with the Institute for Signal and Information Process-
+ing (ISI), D-ITET, ETH Z ¨urich, Switzerland, (e-mail: grevach@ethz.ch;
+xiaoni@student.ethz.ch; alopez@student.ethz.ch). N. Shlezinger is with the
+School of ECE, Ben-Gurion University of the Negev, Beer Sheva, Israel
+(e-mail: nirshl@bgu.ac.il). R. J. G. van Sloun is with the EE Dpt., Eind-
+hoven University of Technology, and with Phillips Research, Eindhoven, The
+Netherlands (e-mail: r.j.g.v.sloun@tue.nl). Y . C. Eldar is with the Faculty
+of Math and CS, Weizmann Institute of Science, Rehovot, Israel (e-mail:
+yonina.eldar@weizmann.ac.il).
+unscented Kalman ﬁlter (UKF) [10]. Methods based on se-
+quential Monte-Carlo (MC) sampling, such as the family
+of particle ﬁlters (PFs) [11]–[13], were introduced for state
+estimation in non-linear, non-Gaussian SS models. To date,
+the KF and its non-linear variants are still widely used for
+online ﬁltering in numerous real world applications involving
+tracking and localization [14].
+The common thread among these aforementioned ﬁlters
+is that they are model-based (MB) algorithms; namely, they
+rely on accurate knowledge and modeling of the underlying
+dynamics as a fully characterized SS model. As such, the
+performance of these MB methods critically depends on the
+validity of the domain knowledge and model assumptions.
+MB ﬁltering algorithms designed to cope with some level
+of uncertainty in the SS models, e.g., [15]–[17], are rarely
+capable of achieving the performance of MB ﬁltering with
+full domain knowledge, and rely on some knowledge of how
+much their postulated model deviates from the true one. In
+many practical use cases the underlying dynamics of the
+system is non-linear, complex, and difﬁcult to accurately
+characterize as a tractable SS model, in which case degradation
+in performance of the MB state estimators is expected.
+Recent years have witnessed remarkable empirical success
+of deep neural networks (DNNs) in real-life applications.
+These data-driven (DD) parametric models were shown to
+be able to catch the subtleties of complex processes and
+replace the need to explicitly characterize the domain of
+interest [18], [19]. Therefore, an alternative strategy to imple-
+ment state estimation—without requiring explicit and accurate
+knowledge of the SS model—is to learn this task from data
+using deep learning. DNNs such as recurrent neural networks
+(RNNs)—i.e., long short-term memory (LSTM) [20] and gated
+recurrent units (GRUs) [21]—and attention mechanisms [22]
+have been shown to perform very well for time series related
+tasks mostly in intractable environments, by training these
+networks in an end-to-end, model-agnostic manner from a
+large quantity of data. Nonetheless, DNNs do not incorpo-
+rate domain knowledge such as structured SS models in a
+principled manner. Consequently, these DD approaches require
+many trainable parameters and large data sets even for simple
+sequences [23] and lack the interpretability of MB methods.
+These constraints limit the use of highly parametrized DNNs
+for real-time state estimation in applications embedded in
+hardware-limited mobile devices such as drones and vehicular
+systems.
+The limitations of MB Kalman ﬁltering and DD state
+estimation motivate a hybrid approach that exploits the best
+of both worlds; i.e., the soundness and low complexity of the
+1
+arXiv:2107.10043v3  [eess.SP]  11 Mar 2022
+
+<!-- page 2 -->
+
+classic KF, and the model-agnostic nature of DNNs. Therefore,
+we build upon the success of our previous work in MB
+deep learning for signal processing and digital communication
+applications [24]–[27] to propose a hybrid MB/DD online
+recursive ﬁlter, coined KalmanNet. In particular, we focus on
+real-time state estimation for continuous-value SS models for
+which the KF and its variants are designed. We assume that
+the noise statistics are unknown and the underlying SS model
+is partially known or approximated from a physical model
+of the system dynamics. To design KalmanNet, we identify
+the Kalman gain (KG) computation of the KF as a critical
+component encapsulating the dependency on noise statistics
+and domain knowledge, and replace it with a compact RNN
+of limited complexity that is integrated into the KF ﬂow. The
+resulting system uses labeled data to learn to carry out Kalman
+ﬁltering in a supervised manner.
+Our main contributions are summarized as follows:
+1) We design KalmanNet, which is an interpretable, low
+complexity, and data-efﬁcient DNN-aided real-time state
+estimator. KalmanNet builds upon the ﬂow and theoret-
+ical principles of the KF, incorporating partial domain
+knowledge of the underlying SS model in its operation.
+2) By learning the KG, KalmanNet circumvents the depen-
+dency of the KF on knowledge of the underlying noise
+statistics, thus bypassing numerically problematic matrix
+inversions involved in the KF equations and overcoming
+the need for tailored solutions for non-linear systems; e.g.,
+approximations to handle non-linearities as in the EKF.
+3) We show that KalmanNet learns to carry out Kalman
+ﬁltering from data in a manner that is invariant to the
+sequence length. Speciﬁcally, we present an efﬁcient
+supervised training scheme that enables KalmanNet to
+operate with arbitrary long trajectories while only training
+using short trajectories.
+4) We evaluate KalmanNet in various SS models. The
+experimental scenarios include synthetic setups, tracking
+the chaotic Lorenz system, and localization using the
+Michigan NCLT data set [28]. KalmanNet is shown to
+converge much faster compared with purely DD systems,
+while outperforming the MB EKF, UKF, and PF, when
+facing model mismatch and dominant non-linearities.
+The proposed KalmanNet leverages data and partial domain
+knowledge to learn the ﬁltering operation , rather than using
+data to explicitly estimate the missing SS model parameters.
+Although there is a large body of work that combines SS
+models with DNNs, e.g., [29]–[35], these approaches are
+sometimes used for different SS related tasks (e.g., smoothing,
+imputation); with a different focus, e.g., incorporating high-
+dimensional visual observations to a KF; or under different
+assumptions, as we discuss in detail below.
+The rest of this paper is organized as follows: Section II
+reviews the SS model and its associated tasks, and discusses
+related works. Section III details the proposed KalmanNet.
+Section IV presents the numerical study. Section V provides
+concluding remarks and future work.
+Throughout the paper, we use boldface lower-case letters
+for vectors and boldface upper-case letters for matrices. The
+transpose,ℓ2 norm, and stochastic expectation are denoted by
+{·}⊤,∥·∥, and E [·], respectively. The Gaussian distribution
+with meanµ and covariance Σ is denoted byN (µ, Σ). Finally,
+R and Z are the sets of real and integer numbers, respectively.
+II. S YSTEM MODEL AND PRELIMINARIES
+A. State Space Model
+We consider dynamical systems characterized by a SS
+model in discrete-time [36]. We focus on (possibly) non-linear,
+Gaussian, and continuous SS models, which for each t∈ Z
+are represented via
+xt = f (xt−1) + wt, wt∼N (0, Q), xt∈ Rm, (1a)
+yt = h (xt) + vt, vt∼N (0, R), yt∈ Rn. (1b)
+In (1a), xt is the latent state vector of the system at time t,
+which evolves from the previous state xt−1, by a (possibly)
+non-linear, state-evolution function f (·) and by an AWGN
+wt with covariance matrix Q. In (1b), yt is the vector of
+observations at time t, which is generated from the current
+latent state vector by a (possibly) non-linear observation (emis-
+sion) mapping h (·) corrupted byAWGN vt with covariance
+R. For the special case where the evolution or the observation
+transformations are linear, there exist matrices F, H such that
+f (xt−1) = F· xt−1, h (xt) = H· xt. (2)
+In practice, the state-evolution model (1a) is determined by
+the complex dynamics of the underlying system, while the
+observation model (1b) is dictated by the type and quality of
+the observations. For instance, xt can determine the location,
+velocity, and acceleration of a vehicle, while yt are measure-
+ments obtained from several sensors. The parameters of these
+models may be unknown and often require the introduction
+of dedicated mechanisms for their estimation in real-time
+[37], [38]. In some scenarios, one is likely to have access
+to an approximated or mismatched characterization of the
+underlying dynamics.
+SS models are studied in the context of several differ-
+ent tasks; these tasks are different in their nature, and can
+be roughly classiﬁed into two main categories: observation
+approximation and hidden state recovery. The ﬁrst category
+deals with approximating parts of the observed signal yt.
+This can correspond, for example, to the prediction of future
+observations given past observations; the generation of missing
+observations in a given block via imputation; and the denoising
+of the observations. The second category considers the recov-
+ery of a hidden state vector xt. This family of state recovery
+tasks includes ofﬂine recovery, also referred to as smoothing,
+where one must recover a block of hidden state vectors, given
+a block of observations, e.g., [35]. The focus of this paper is
+ﬁltering; i.e., online recovery of xt from past and current noisy
+observations{yτ}t
+τ=1. For a given x0, ﬁltering involves the
+design of a mapping from yt to ˆxt,∀t∈{ 1, 2,...,T } ≜T ,
+where T is the time horizon.
+B. Data-Aided Filtering Problem Formulation
+The ﬁltering problem is at the core of real-time tracking.
+Here, one must provide an instantaneous estimate of the state
+2
+
+<!-- page 3 -->
+
+xt based on each incoming observationyt in an online manner.
+Our main focus is on scenarios where one has partial knowl-
+edge of the SS model that describes the underlying dynamics.
+Namely, we know (or have an approximation of) the state-
+evolution (transition) function f (·) and the state-observation
+(emission) function h (·). For real world applications, this
+knowledge is derived from our understating of the system
+dynamics, its physical design, and the model of the sensors. As
+opposed to the classical assumptions in KF, the noise statistics
+Q and R are not known. More speciﬁcally, we assume:
+• Knowledge of the distribution of the noise signals wt and
+vt is not available.
+• The functions f (·) and h (·) may constitute an approxi-
+mation of the true underlying dynamics. Such approxima-
+tions can correspond, for instance, to the representation
+of continuous time dynamics in discrete time, acquisition
+using misaligned sensors, and other forms of mismatches.
+While we focus on ﬁltering in partially known SS models,
+we assume that we have access to a labeled data set containing
+a sequence of observations and their corresponding ground
+truth states. In various scenarios of interest, one can assume
+access to some ground truth measurements in the design stage.
+For example, in ﬁeld experiments it is possible to add extra
+sensors both internally or externally to collect the ground truth
+needed for training. It is also possible to compute the ground
+truth data using ofﬂine and more computationally intensive
+algorithms. Finally, the inference complexity of the learned
+ﬁlter should be of the same order (and preferably smaller) as
+that of MB ﬁlters, such as the EKF.
+C. Related Work
+A key ingredient in recursive Bayesian ﬁltering is theupdate
+operation; namely, the need to update the prior estimate using
+new observed information. For linear Gaussian SS using the
+KF, this boils down to computing the KG. While the KF
+assumes linear SS models, many problems encountered in
+practice are governed by non-linear dynamics, for which one
+should resort to approximations. Several extensions of the
+KF were proposed to deal with non-linearities. The EKF
+[7], [8] is a quasi-linear algorithm based on an analytical
+linearization of the SS model. More recent non-linear vari-
+ations are based on numerical integration: UKF [10], the
+Gauss-Hermite Quadrature [39], and the Cubature KF [40].
+For more complex SS models, and when the noise cannot
+be modeled as Gaussian, multiple variants of the PF were
+proposed that are based on sequential MC [11]–[13], [41]–
+[45]. These MC algorithms are considered to be asymptotically
+exact but relatively computationally heavy when compared
+to Kalman-based algorithms. These MB algorithms require
+accurate knowledge of the SS model, and their performance
+is typically degrades in the presence of model mismatch.
+The combination of machine learning and SS models, and
+speciﬁcally Kalman-based algorithms, is the focus of growing
+research attention. To frame the current work in the context of
+existing literature, we focus on the approaches that preserve
+the general structure of the SS model. The conventional
+approach to deal with partially known SS models is to im-
+pose a parametric model and then estimate its parameters.
+This can be achieved by jointly learning the parameters and
+state sequence using expectation maximization [46]–[48] and
+Bayesian probabilistic algorithms [37], [38], or by selecting
+from a set of a priori known models [49]. When training
+data is available, it is commonly used to tune the missing
+parameters in advance, in a supervised or an unsupervised
+manner, as done in [50]–[52]. The main drawback of these
+strategies is that they are restricted to an imposed parametric
+model on the underlying dynamics (e.g., Gaussian noises).
+When one can bound the uncertainty in the SS model in
+advance, an alternative approach to learning is to minimize
+the worst-case estimation error among all expected SS models.
+Such robust variations were proposed for various state estima-
+tion algorithms, including Kalman variants [15]–[17], [53] and
+particle ﬁlters [54], [55]. The fact that these approaches aim
+to design the ﬁlter to be suitable for multiple different SS
+models typically results in degraded performance compared
+to operating with known dynamics.
+When the underlying system’s dynamics are complex and
+only partially known or the emission model is intractable and
+cannot be captured in a closed form—e.g., visual observations
+as in a computer vision task [56]—one can resort to approxi-
+mations and to the use of DNNs. Variational inference [57]–
+[59] is commonly used in connection with SS models, as in
+[29]–[31], [33], [34], by casting the Bayesian inference task
+to optimization of a parameterized posterior and maximizing
+an objective. Such approaches cannot typically be applied
+directly to state recovery in real-time, as we consider here,
+and the learning procedure tends to be complex and prone to
+approximation errors.
+A common strategy when using DNNs is to encode the
+observations into some latent space that is assumed to obey a
+simple SS model, typically a linear Gaussian one, and track
+the state in the latent domain as in [56], [60], [61], or to
+use DNNs to estimate the parameters of the SS model as in
+[62], [63]. Tracking in the latent space can also be extended by
+applying a DNN decoder to the estimated state to return to the
+observations domain, while training the overall system end-to-
+end [31], [64]. The latter allows to design trainable systems
+for recovering missing observations and predicting future ones
+by assuming that the temporal relationship can be captured
+as an SS model in the latent space. This form of DNN-
+aided systems is typically designed for unknown or highly
+complex SS models, while we focus in this work on setups
+with partial domain knowledge, as detailed in Subsection II-B.
+Another approach is to combine RNNs [65], or variational
+inference [32], [66] with MC based sampling. Also related is
+the work [35], which used learned models in parallel with MBs
+algorithms operating with full knowledge of the SS model,
+applying a graph neural network in parallel to the Kalman
+smoother to improve its accuracy via neural augmentation.
+Estimation was performed by an iterative message passing
+over the entire time horizon. This approach is suitable for the
+smoothing task and is computationally intensive, and so may
+not be suitable for real-time ﬁltering [67].
+3
+
+<!-- page 4 -->
+
+D. Model-Based Kalman Filtering
+Our proposed KalmanNet, detailed in the following section,
+is based on the MB KF, which is a linear recursive estimator.
+In every time step t, the KF produces a new estimate xt using
+only the previous estimate ˆxt−1 as a sufﬁcient statistic and the
+new observation yt. As a result, the computational complexity
+of the KF does not grow in time. We ﬁrst describe the original
+algorithm for linear SS models, as in (2), and then discuss how
+it is extended into the EKF for non-linear SS models.
+The KF can be described by a two-step procedure: predic-
+tion and update, where in each time step t∈T , it computes
+the ﬁrst- and second-order statistical moments.
+1) The ﬁrst step predicts the current a priori statistical
+moments based on the previous a posteriori estimates.
+Speciﬁcally, the moments of x are computed using the
+knowledge of the evolution matrix F as
+ˆxt|t−1 = F· ˆxt−1|t−1, (3a)
+Σt|t−1 = F· Σt−1|t−1· F⊤ + Q (3b)
+and the moments of the observations y are computed
+based on the knowledge of the observation matrix H as
+ˆyt|t−1 = H· ˆxt|t−1 (4a)
+St|t−1 = H· Σt|t−1· H⊤ + R. (4b)
+2) In the update step, the a posteriori state moments are
+computed based on the a priori moments as
+ˆxt|t = ˆxt|t−1 + Kt· ∆yt (5a)
+Σt|t = Σt|t−1− Kt· St|t−1· K⊤
+t . (5b)
+Here, Kt is the KG, and it is given by
+Kt = Σt|t−1· H⊤· S−1
+t|t−1. (6)
+The term ∆yt is the innovation; i.e., the difference
+between the predicted observation and the observed value,
+and it is the only term that depends on the observed data
+∆yt = yt− ˆyt|t−1. (7)
+The EKF extends the KF for non-linear f (·) and/or h (·), as
+in (1). Here, the ﬁrst-order statistical moments (3a) and (4a)
+are replaced with
+ˆxt|t−1 = f (ˆxt−1), (8a)
+ˆyt|t−1 = h
+(ˆxt|t−1
+)
+, (8b)
+respectively. The second-order moments, though, cannot be
+propagated through the non-linearity, and must thus be ap-
+proximated. The EKF linearizes the differentiable f (·) and
+h (·) in a time-dependent manner using their partial derivative
+matrices, also known as Jacobians, evaluated at ˆxt−1|t−1 and
+ˆxt|t−1 . Namely,
+ˆFt =Jf
+(ˆxt−1|t−1
+)
+(9a)
+ˆHt =Jh
+(ˆxt|t−1
+)
+, (9b)
+where ˆFt is plugged into (3b) and ˆHt is used in (4b) and (6).
+When the SS model is linear, the EKF coincides with the KF,
+which achieves the MMSE for linear Gaussian SS models.
+f h•
+ˆxt|t−1 +
+−ˆyt|t−1
++
+×
+Kalman Gain
+ˆΣ t|t−1·ˆH·ˆS−1
+t|t−1
++ •
+ˆxt
+Kt
+∆y t
+yt
+Z−1
+x0
+t = 0
+t > 0
+ˆ xt
+ˆF·{}·ˆF⊤+ ˆQ ˆH·{}·ˆH⊤+ ˆR Kt·{}·K⊤
+t +
+ˆΣ t|t−1
+−
++
+ˆΣ t
+•
+Kt
+•
+ˆSt|t−1
+ˆSt|t−1 {·}−1
+ˆS−1
+t|t−1
+•
+ˆΣ t|t−1
+ˆΣ t|t−1
+Z−1
+Σ 0
+t = 0
+t > 0
+ˆΣ t
+ˆΣ t−1
+Fig. 1: EKF block diagram. Here, Z−1 is the unit delay.
+An illustration of the EKF is depicted in Fig. 1. The
+resulting ﬁlter admits an efﬁcient linear recursive structure.
+However, it requires full knowledge of the underlying model
+and notably degrades in the presence of model mismatch.
+When the model is highly non-linear, the local linearity ap-
+proximation may not hold, and the EKF can result in degraded
+performance. This motivates the augmentation of the EKF into
+the deep learning-aided KalmanNet, detailed next.
+III. K ALMAN NET
+Here, we present KalmanNet; a hybrid, interpretable, data
+efﬁcient architecture for real-time state estimation in non-
+linear dynamical systems with partial domain knowledge.
+KalmanNet combines MB Kalman ﬁltering with an RNN to
+cope with model mismatch and non-linearities. To introduce
+KalmanNet, we begin by explaining its high level operation in
+Subsection III-A. Then we present the features processed by
+its internal RNN and the speciﬁc architectures considered for
+implementing and training KalmanNet in Subsections III-B-
+III-D. Finally, we provide a discussion in Subsection III-E.
+A. High Level Architecture
+We formulate KalmanNet by identifying the speciﬁc compu-
+tations of the EKF that are based on unavailable knowledge.
+As detailed in Subsection II-B, the functions f (·) and h (·)
+are known (though perhaps inaccurately); yet the covariance
+matrices Q and R are unavailable. These missing statistical
+moments are used in MB Kalman ﬁltering only for computing
+the KG (see Fig. 1). Thus, we design KalmanNet to learn the
+KG from data, and combine the learned KG in the overall KF
+ﬂow. This high level architecture is illustrated in Fig. 2.
+In each time instance t ∈ T, similarly to the EKF,
+KalmanNet estimates ˆxt in two steps; prediction and update.
+1) The prediction step is the same as in the MB EKF, except
+that only the ﬁrst-order statistical moments are predicted.
+In particular, a prior estimate for the current state ˆxt|t−1
+is computed from the previous posterior ˆxt−1 via (8a).
+Then, a prior estimate for the current observation ˆyt|t−1
+is computed from ˆxt|t−1 via (8b). As opposed to its MB
+counterparts, KalmanNet does not rely on the knowledge
+of noise distribution and does not maintain an explicit
+estimate of the second-order statistical moments.
+4
+
+<!-- page 5 -->
+
+f h•
+ˆxt|t−1
++ˆyt|t−1
+×
+Recurrent Neural Network
++ •
+ˆxt|t
+Kt
+Kalman Gain
+∆y t•
+•
+ˆxt−1
+Z−1
+Z−1
++ ∆ˆ xt−1
+yt
+∆y t
+x0
+t = 0
+t > 0
+ˆ xt|t
++
+−
+−
++
+Fig. 2: KalmanNet block diagram.
+2) In the update step, KalmanNet uses the new observation
+yt to compute the current state posterior ˆxt from the
+previously computed prior ˆxt|t−1 in a similar manner to
+the MB KF as in (5a), i.e., using the innovation term
+∆yt computed via (7) and the KG Kt. As opposed to
+the MB EKF, here the computation of the KG is not
+given explicitly; rather, it is learned from data using
+an RNN, as illustrated in Fig. 2. The inherent memory
+of RNNs allows to implicitly track the second-order
+statistical moments without requiring knowledge of the
+underlying noise statistics.
+Designing an RNN to learn how to compute the KG as part
+of an overall KF ﬂow requires answers to three key questions:
+1) From which input features (signals) will the network learn
+the KG?
+2) What should be the architecture of the internal RNN?
+3) How will this network be trained from data?
+In the following sections we address these questions.
+B. Input Features
+The MB KF and its variants compute the KG from knowl-
+edge of the underlying statistics. To implement such compu-
+tations in a learned fashion, one must provide input (features)
+that capture the knowledge needed to evaluate the KG to a
+neural network. The dependence of Kt on the statistics of
+the observations and the state process indicates that in order
+to track it, in every time step t ∈ T, the RNN should be
+provided with input containing statistical information of the
+observations yt and the state-estimate ˆxt−1. Therefore, the
+following quantities that are related to the unknown statistical
+relationship of the SS model can be used as input features to
+the RNN:
+F1 The observation difference ∆˜yt = yt− yt−1.
+F2 The innovation difference ∆yt = yt− ˆyt|t−1 .
+F3 The forward evolution difference∆˜xt = ˆxt|t− ˆxt−1|t−1 .
+This quantity represents the difference between two con-
+secutive posterior state estimates, where for time instance
+t, the available feature is ∆˜xt−1.
+F4 The forward update difference ∆ˆxt = ˆxt|t− ˆxt|t−1 , i.e.,
+the difference between the posterior state estimate and
+the prior state estimate, where again for time instance t
+we use ∆ˆxt−1.
+Features F1 and F3 encapsulate information about the state-
+evolution process, while features F2 and F4 encapsulate the
+∆ˆ xt−1∈Rm
+∆yt∈Rn Kt∈Rm×n
+Fully connected
+linear output layer
+Kt
+•
+σWZ
+tanhWσWM
+×
++
+-1
+×
+× zt ˆhtrt
+ht−1 ht
+GRU
+Fully connected
+linear input layer
+ht
+∆ˆ xt−1
+∆yt
+Z−1
+t= 0
+h0
+ht−1
+ht
+•
+t >0
+Fig. 3: KalmanNet RNN block diagram (architecture #1).
+The architecture comprises a fully connected input layer,
+followed by a GRU layer (whose internal division into gates
+is illustrated [21]) and an output fully connected layer. Here,
+the input features are F2 and F4.
+uncertainty of our state estimate. The difference operation
+removes the predictable components, and thus the time series
+of differences is mostly affected by the noise statistics that
+we wish to learn. The RNN described in Fig. 2 can use all
+the features, although extensive empirical evaluation suggests
+that the speciﬁc choice of combination of features depends on
+the problem at hand. Our empirical observations indicate that
+good combinations are {F1, F2, F4} and{F1, F3, F4}.
+C. Neural Network Architecture
+The internal DNN of KalmanNet uses the features discussed
+in the previous section to compute the KG. It follows from
+(6) that computing the KG Kt involves tracking the second-
+order statistical moments Σt. The recursive nature of the KG
+computation indicates that its learned module should involve
+an internal memory element as an RNN to track it.
+We consider two architectures for the KG computing RNN.
+The ﬁrst, illustrated in Fig. 3, aims at using the internal
+memory of RNNs to jointly track the underlying second-
+order statistical moments required for computing the KG in an
+implicit manner. To that aim, we use GRU cells [21] whose
+hidden state is of the size of some integer product of m2 +n2,
+which is the joint dimensionality of the tracked moments
+ˆΣt|t−1 in (3b), and ˆSt in (4b). In particular, we ﬁrst use a
+fully connected (FC) input layer whose output is the input
+to the GRU. The GRU state vector ht is mapped into the
+estimated KG Kt ∈ Rm×n using an output FC layer with
+m·n neurons. While the illustration in Fig. 3 uses a single
+GRU layer, one can also utilize multiple layers to increase
+the capacity and abstractness of the network, as we do in the
+numerical study reported in Subsection IV-E. The proposed
+architecture does not directly design the hidden state of the
+GRU to correspond to the unknown second-order statistical
+moments that are tracked by the MB KF. As such, it uses
+a relatively large number of state variables that are expected
+to provide the required tracking capacity. For example, in the
+5
+
+<!-- page 6 -->
+
+GRU 1
+ˆQ
+GRU 2
+ˆΣ
+GRU 3
+ˆS
+t > 0
+t = 0
+t > 0
+t = 0
+ˆΣ t|t
+∆ ˆxt = ˆxt|t − ˆxt|t−1
+∆ ˜xt = ˆxt|t − ˆxt−1|t−1
+∆ yt = yt − ˆyt|t−1
+∆ ˜yt = yt − yt−1
+∆ ˜xt−1
+∆ yt
+∆ ˜yt
+Z −1
+Z −1
+∆ ˆxt−1
+Kt
+t > 0
+t = 0ˆR0
+Z −1
+ˆΣ 0
+ˆQ0
+ˆΣ t|t−1
+ˆSt
+Qt
+Fig. 4: KalmanNet RNN block diagram (architecture #2). The
+input features are used to update three GRUs with dedicated
+FC layers, and the overall interconnection between the blocks
+is based on the ﬂow of the KG computation in the MB KF.
+numerical study in Section IV we set the dimensionality of ht
+to be 10· (m2 +n2). This often results in substantial over-
+parameterization, as the number of GRU parameters grows
+quadratically with the number of state variables [68].
+The second architecture uses separate GRU cells for each
+of the tracked second-order statistical moments. The division
+of the architecture into separate GRU cells and FC layers and
+their interconnection is illustrated in Fig. 4. As shown in the
+ﬁgure, the network composes three GRU layers, connected in
+a cascade with dedicated input and output FC layers. The ﬁrst
+GRU layer tracks the unknown state noise covariance Q, thus
+tracking m2 variables. Similarly, the second and third GRUs
+track the predicted moments ˆΣt|t−1 (3b) and ˆSt (4b), thus
+having m2 and n2 hidden state variables, respectively. The
+GRUs are interconnected such that the learned Q is used to
+compute ˆΣt|t−1, which in turn is used to obtain ˆSt, while both
+ˆΣt|t−1 and ˆSt are involved in producing Kt (6). This archi-
+tecture, which is composed of a non-standard interconnection
+between GRUs and FC layers, is more directly tailored towards
+the formulation of the SS model and the operation of the
+MB KF compared with the simpler ﬁrst architecture. As such,
+it provides lesser abstraction; i.e., it is expected to be more
+constrained in the family of mappings it can learn compared
+with the ﬁrst architecture, while as a result also requiring
+less trainable parameters. For instance, in the numerical study
+reported in Subsection IV-D, utilizing the ﬁrst architecture
+requires the order of 5· 105 trainable parameters, while the
+second architecture utilizes merely 2.5· 104 parameters.
+D. Training Algorithm
+KalmanNet is trained using the available labeled data set
+in a supervised manner. While we use a neural network for
+computing the KG rather than for directly producing the
+estimate ˆxt|t, we train KalmanNet end-to-end. Namely, we
+compute the loss function L based on the state estimate ˆxt,
+which is not the output of the internal RNN. Since this vector
+takes values in a continuous set Rm, we use the squared-error
+loss,
+L =
+xt− ˆxt|t
+2
+(10)
+which is also used to evaluate the MB KF. By doing so,
+we build upon the ability to backpropagate the loss to the
+computation of the KG. One can obtain the loss gradient with
+respect to the KG from the output of KalmanNet since
+∂L
+∂Kt
+= ∂∥Kt∆yt− ∆xt∥2
+∂Kt
+= 2· (Kt· ∆yt− ∆xt)· ∆y⊤
+t , (11)
+where ∆xt ≜ xt− ˆxt|t−1. The gradient computation in (11)
+indicates that one can learn the computation of the KG by
+training KalmanNet end-to-end using the squared-error loss.
+In particular, this allows to train the overall ﬁltering system
+without having to externally provide ground truth values of
+the KG for training purposes.
+The data set used for training comprises N trajectories that
+can be of varying lengths. Namely, by letting Ti be the length
+of the ith training trajectory, the data set is given by D =
+{(Yi, Xi)}N
+1 , where
+Yi =
+[
+y(i)
+1 ,..., y(i)
+Ti
+]
+, Xi =
+[
+x(i)
+0 , x(i)
+1 ,..., x(i)
+Ti
+]
+. (12)
+By letting Θ denote the trainable parameters of the RNN,
+and γ be a regularization coefﬁcient, we then construct an ℓ2
+regularized mean-squared error (MSE) loss measure
+ℓi (Θ) = 1
+Ti
+Ti∑
+t=1
+ˆxt
+(
+y(i)
+t ; Θ
+)
+−x(i)
+t
+
+2
++γ·∥ Θ∥2. (13)
+To optimize Θ, we use a variant of mini-batch stochastic
+gradient descent in which for every batch indexed by k, we
+chooseM <N trajectories indexed byik
+1,...,i k
+M , computing
+the mini-batch loss as
+Lk (Θ) = 1
+M
+M∑
+j=1
+ℓik
+j
+(Θ). (14)
+Since KalmanNet is a recursive architecture with both
+an external recurrence and an internal RNN, we use the
+backpropagation through time (BPTT) algorithm [69] to train
+it. Speciﬁcally, we unfold KalmanNet across time with shared
+network parameters, and then compute a forward and back-
+ward gradient estimation pass through the network. We con-
+sider three different variations of applying the BPTT algorithm
+for training KalmanNet:
+V1 Direct application of BPTT, where for each training itera-
+tion the gradients are computed over the entire trajectory.
+V2 An application of the truncated BPTT algorithm [70].
+Here, given a data set of long trajectories (e.g., T = 3000
+time steps), each long trajectory is divided into multiple
+short trajectories (e.g., T = 100 time steps), which are
+shufﬂed and used during training.
+V3 An alternative application of truncated BPTT, where we
+6
+
+<!-- page 7 -->
+
+truncate each trajectory to a ﬁxed (and relatively short)
+length, and train using these short trajectories.
+Overall, directly applying BPTT via V1 may be computa-
+tionally expensive and unstable. Therefore, a favored approach
+is to ﬁrst use the truncated BPTT as in V2 as a warm-up
+phase (train ﬁrst on short trajectories) in order to stabilize
+its learning process, after which KalmanNet is tuned using
+V1. The procedure in V3 is most suitable for systems that
+are known to be likely to quickly converge to a steady state
+(e.g., linear SS models). In our numerical study, reported in
+Section IV, we utilize all three approaches.
+E. Discussion
+KalmanNet is designed to operate in a hybrid DD/MB
+manner, combining deep learning with the classical EKF
+procedure. By identifying the speciﬁc noise-model-dependent
+computations of the EKF and replacing them with a dedicated
+RNN integrated in the EKF ﬂow, KalmanNet beneﬁts from
+the individual strengths of both DD and MB approaches. The
+augmentation of the EKF with dedicated deep learning mod-
+ules results in several core differences between KalmanNet
+and its MB counterpart. Unlike the MB EKF, KalmanNet does
+not attempt to linearize the SS model, and does not impose a
+statistical model on the noise signals. In addition, KalmanNet
+ﬁlters in a non-linear manner, as its KG matrix depends on the
+input yt. Due to these differences, compared to MB Kalman
+ﬁltering, KalmanNet is more robust to model mismatch and
+can infer more efﬁciently, as demonstrated in Section IV. In
+particular, the MB EKF is sensitive to inaccuracies in the
+underlying SS model, e.g., in f (·) and h (·), while KalmanNet
+can overcome such uncertainty by learning an alternative KG
+that yields accurate estimation.
+Furthermore, KalmanNet is derived for SS models when
+noise statistics are not speciﬁed explicitly. A MB approach
+to tackle this without relying on data employs the robust
+Kalman ﬁlter [15]–[17], which designs the ﬁlter to minimize
+the maximal MSE within some range of assumed SS models,
+at the cost of performance loss, compared to knowing the true
+model. When one has access to data, the direct strategy to
+implement the EKF in such setups is to use the data to estimate
+Q and R, either directly from the data or by backpropagating
+through the operation of the EKF as in [51], and utilize these
+estimates to compute the KG. As covariance estimation can
+be a challenging task when dealing with high-dimensional
+signals, KalmanNet bypasses this need by directly learning
+the KG, and by doing so approaches the MSE of MB Kalman
+ﬁltering with full knowledge of the SS model, as demonstrated
+in Section IV. Finally, the computation complexity for each
+time stept∈T is also linear in the RNN dimensions and does
+not involve matrix inversion. This implies that KalmanNet is a
+good candidate to apply for high dimensional SS models and
+on computationally limited devices.
+Compared to purely DD state estimation, KalmanNet ben-
+eﬁts from its model awareness and the fact that its operation
+follows the ﬂow of MB Kalman ﬁltering rather than being
+utilized as a black box. As numerically observed in Section IV,
+KalmanNet achieves improved MSE compared to utilizing
+RNNs for end-to-end state estimation, and also approaches
+the MMSE performance achieved by the MB KF in linear
+Gaussian SS models. Furthermore, the fact that KalmanNet
+preserves the ﬂow of the EKF implies that the intermediate
+features exchanged between its modules have a speciﬁc oper-
+ation meaning, providing interpretability that is often scarce
+in end-to-end, deep learning systems. Finally, the fact that
+KalmanNet learns to compute the KG indicates the possibility
+of providing not only estimates of the state xt, but also a
+measure of conﬁdence in this estimate, as the KG can be
+related to the covariance of the estimate, as initially explored
+in [71].
+These combined gains of KalmanNet over purely MB
+and DD approaches were recently observed in [72], which
+utilized an early version of KalmanNet for real-time velocity
+estimation in an autonomous racing car. In such a setup, a non-
+linear, MB mixed KF was traditionally used, and suffered from
+performance degradation due to inherent mismatches in the
+formulation of the SS model describing the problem. Nonethe-
+less, previously proposed DD techniques relying on RNNs for
+end-to-end state estimation were not operable in the desired
+frequencies on the hardware limited vehicle control unit. It
+was shown in [72] that the application of KalmanNet allowed
+to achieve improved real-time velocity tracking compared to
+MB techniques while being deployed on the control unit of
+the vehicle.
+Our design of KalmanNet gives rise to many interesting
+future extensions. Since we focus here on SS models where the
+mappings f (·) and h (·) are known up to some approximation
+errors, a natural extension of KalmanNet is to use the data
+to pre-estimate them, as demonstrated brieﬂy in the numerical
+study. Another alternative to cope with these approximation
+errors is to utilize dedicated neural networks to learn these
+mappings while training the entire model in an end-to-end
+fashion. Doing so is expected to allow KalmanNet to be
+utilized in scenarios with analytically intractable SS models, as
+often arises when tracking based on unstructured observations,
+e.g., visual observations as in [56].
+While we train KalmanNet in a supervised manner using
+labeled data, the fact that it preserves the operation of the
+MB EKF that produces a prediction of the next observation
+ˆyt|t−1 for each time instance indicates the possibility of using
+this intermediate feature for unsupervised training. One can
+thus envision KalmanNet being trained ofﬂine in a supervised
+manner, while tracking variations in the underlying SS model
+at run-time by online self supervision, following a similar
+rationale to that used in [24], [25] for deep symbol detection
+in time-varying communication channels.
+Finally, we note that while we focus here on ﬁltering
+tasks, SS models are used to represent additional related
+problems such as smoothing and prediction, as discussed in
+Subsection II-A. The fact that KalmanNet does not explicitly
+estimate the SS model implies that it cannot simply substitute
+these parameters into an alternative algorithm capable of
+carrying out tasks other than ﬁltering. Nonetheless, one can
+still design DNN-aided algorithms for these tasks operating
+with partially known SS models as extensions of KalmanNet,
+in the same manner as many MB algorithms build upon the
+7
+
+<!-- page 8 -->
+
+KF. For instance, as the MB KF constitutes the ﬁrst part of the
+Rauch-Tung-Striebel smoother [73], one can extend Kalman-
+Net to implement high-performance smoothing in partially
+known SS models, as we have recently began investigating
+in [67]. Nonetheless, we leave the exploration of extensions
+of KalmanNet to alternative tasks associated with SS models
+for future work.
+IV. E XPERIMENTS AND RESULTS
+In this section we present an extensive numerical study of
+KalmanNet1, evaluating its performance in multiple setups and
+comparing it to various benchmark algorithms:
+(a) In our ﬁrst experimental study, we consider multiple
+linear SS models, and compare KalmanNet to the MB
+KF which is known to minimize the MSE in such a setup.
+We also conﬁrm our design and architectural choices by
+comparing KalmanNet with alternative RNN based end-
+to-end state estimators.
+(b) We next consider two non-linear SS models, a sinusoidal
+model, and the chaotic Lorenz attractor. We compare
+KalmanNet with the common non-linear MB bench-
+marks; namely, the EKF, UKF, and PF.
+(c) In our last study we consider a localization use case based
+on the Michigan NCLT data set [28]. Here, we compare
+KalmanNet with MB KF that assumes a linear Wiener
+kinematic model [36] and with a vanilla RNN based
+end-to-end state estimator, and demonstrate the ability
+of KalmanNet to track real world dynamics that was not
+synthetically generated from an underlying SS model.
+A. Experimental Setting
+Throughout the numerical study and unless stated otherwise,
+in the experiments involving synthetic data, the SS model is
+generated using diagonal noise covariance matrices; i.e.,
+Q = q2· I, R = r2· I, ν ≜ q2
+r2. (15)
+By (15), setting ν to be 0 dB implies that both the state
+noise and the observation noise have the same variance.
+For consistency, we use the term full information for cases
+where the SS model available to KalmanNet and its MB
+counterparts accurately represents the underlying dynamics.
+More speciﬁcally, KalmanNet operates with full knowledge
+of f (·) and h (·), and without access to the noise covariance
+matrices, while its MB counterparts operate with an accurate
+knowledge of Q and R. The term partial information refers
+to the case where KalmanNet and its MB counterparts operate
+with some level of model mismatch, where the SS model
+design parameters do not represent the underlying dynamics
+accurately (i.e., are not equal to the SS parameters from
+which the data was generated). Unless stated otherwise, the
+metric used to evaluate the performance is the MSE on a [dB]
+scale. In the ﬁgures we depict the MSE in [dB] versus the
+inverse observation noise level, i.e., 1
+r2 , also on a [dB] scale.
+1The source code used in our numerical study along with the complete set
+of hyperparameters used in each numerical evaluation can be found online at
+https://github.com/KalmanNet/KalmanNet TSP.
+In some of our experiments, we evaluate both the MSE and
+its standard deviation, where we denote these measures by ˆµ
+and ˆσ, respectively.
+1) KalmanNet Setting: In Section III we present several
+architectures and training mechanisms that can be used when
+implementing KalmanNet. In our experimental study we con-
+sider three different conﬁgurations of KalmanNet:
+C1 KalmanNet architecture #1 with input features {F2, F4}
+and with training algorithm V3.
+C2 KalmanNet architecture #1 with input features {F2, F4}
+and with training algorithm V1.
+C3 KalmanNet architecture #1 with input features {F1, F3,
+F4} and with training algorithm V2.
+C4 KalmanNet architecture #2 with all input features and
+with training algorithm V1.
+In all our experiments KalmanNet was trained using the Adam
+optimizer [74].
+2) Model-Based Filters: In the following experimental
+study we compare KalmanNet with several MB ﬁlters. For
+the UKF we used the software package [75], while the PF
+is implemented based on [76] using 100 particles and with-
+out parallelization. During our numerical study, when model
+uncertainty was introduced, we optimized the performance of
+the MB algorithms by carefully tuning the covariance matrices,
+usually via a grid search. For long trajectories (e.g.,T >1500)
+it was sometimes necessary to tune these matrices, even in
+the case of full information, to compensate for inaccurate
+uncertainty propagation due to non-linear approximations and
+to avoid divergence.
+B. Linear State Space Model
+Our ﬁrst experimental study compares KalmanNet to the
+MB KF for different forms of synthetically generated linear
+system dynamics. Unless stated otherwise, here F takes the
+controllable canonical form.
+1) Full Information: We start by comparing KalmanNet of
+setting C1 to the MB KF for the case of full information,
+where the latter is known to minimize the MSE. Here, we
+set H to take the inverse canonical form, and ν = 0 [dB]. To
+demonstrate the applicability of KalmanNet to various linear
+systems, we experimented with systems of different dimen-
+sions; namely, m×n∈{ 2× 2, 5× 5, 10× 1}, and with tra-
+jectories of different lengths; namely,T∈{ 50, 100, 150, 200}.
+In Fig. 5a we can clearly observe that KalmanNet achieves the
+MMSE of the MB KF. Moreover, to further evaluate the gains
+of the hybrid architecture of KalmanNet, we check that its
+learning is transferable. Namely, in some of the experiments,
+we test KalmanNet on longer trajectories then those it was
+trained on, and with different initial conditions. The fact that
+KalmanNet achieves the MMSE lower bound also for these
+cases indicates that it indeed learns to implement Kalman
+ﬁltering, and it is not tailored to the trajectories presented
+during training, with dependency only on the SS model.
+2) Neural Model Selection: Next, we evaluate and conﬁrm
+our design and architectural choices by considering a 2× 2
+8
+
+<!-- page 9 -->
+
+-10 -5 0 5 10 15 20 25 30 35 40
+-40
+-30
+-20
+-10
+0
+10
+20
+30
+40
+MSE [dB]
+-0.5 -0.4 -0.3 -0.2 -0.1 0 0.1 0.2 0.3 0.4 0.5
+2
+2.2
+2.4
+2.6
+2.8
+3
+3.2
+3.4
+3.6
+3.8
+4
+(a) KalmanNet converges to MMSE.
+0 100 200 300 400 500 600 700 800 900 1000
+-22
+-20
+-18
+-16
+-14
+-12
+-10
+-8
+-6
+-4
+-2
+0
+MSE [dB]
+0 20 40 60 80 100 120
+-22.5
+-22
+-21.5
+-21
+-20.5
+-20
+-19.5
+-19
+-18.5
+-18
+-17.5
+-17 (b) Learning curves for DD state estimation.
+Fig. 5: Linear SS model with full information.
+setup (similar to the previous one), and by comparing Kalman-
+Net with setting C1 to two RNN based architectures of similar
+capacity applied for end-to-end state estimation:
+• Vanilla RNN directly maps the observed yt to an estimate
+of the state ˆxt.
+• MB RNN imitates the Kalman ﬁltering operation by ﬁrst
+recovering ˆxt|t−1 using domain knowledge, i.e., via (3a),
+and then uses the RNN to estimate an increment ∆ˆxt
+from the prior to posterior.
+All RNNs utilize the same architecture as in KalmanNet with
+a single GRU layer and the same learning hyperparameters. In
+this experiment we test the trained models on trajectories with
+the same length as they were trained on, namely T = 20. We
+can clearly observe how each of the key design considerations
+of KalmanNet affect the learning curves depicted in Fig. 5b:
+• The incorporation of the known SS model allows the
+MB RNN to outperform the vanilla RNN, although both
+converge slowly and fail to achieve the MMSE.
+• Using the sequences of differences as input notably
+improves the convergence rate of the MB RNN, indi-
+cating the beneﬁts of using the differences as features, as
+discussed in Subsection III-B.
+• Learning is further improved by using the RNN for
+recovering the KG as part of the KF ﬂow, as done by
+KalmanNet, rather than for directly estimating xt.
+To further evaluate the gains of KalmanNet over end-to-end
+RNNs, we compare the pre-trained models using trajectories
+with different initial conditions and a longer time horizon
+(T = 200) than the one on which they were trained ( T = 20).
+The results, summarized in Table I, show that KalmanNet
+maintains achieving the MMSE, as already observed in Fig. 5a.
+The MB RNN and vanilla RNN are more than 50 [dB] from
+the MMSE, implying that their learning is not transferable and
+that they do not learn to implement Kalman ﬁltering. However,
+when provided with the difference features as we proposed in
+Subsection III-B, the DD systems are shown to be applicable
+in longer trajectories, with KalmanNet achieving MSE within
+a minor gap of that achieved by the MB KF. The results of this
+study validate the considerations used in designing KalmanNet
+for the DD ﬁltering problem discussed in Subsection II-B.
+TABLE I: Test MSE in [dB] when trained using T = 20.
+TestT Vanilla RNN MB RNN MB RNN, diff. KalmanNet KF
+20 -20.98 -21.53 -21.92 -21.92 -21.97
+200 58.14 36.8 -21.88 -21.90 -21.91
+3) Partial Information: To conclude our study on linear
+models, we next evaluate the robustness of KalmanNet to
+model mismatch as a result of partial model information. We
+simulate a 2×2 SS model with mismatches in either the state-
+evolution model (F) or in the state-observation model ( H).
+State-Evolution Mismatch: Here, we set T = 20 and ν =
+0 [dB] and use a rotated evolution matrix Fα◦,α∈{ 10◦, 20◦}
+for data generation. The state-evolution matrix available to
+the ﬁlters, denoted F0, is again set to take the controllable
+canonical form. The mismatched design matrix F0 is related
+to true Fα◦ via
+Fα◦ = Rxy
+α◦· F0, Rxy
+α◦ =
+(
+cosα − sinα
+sinα cosα
+)
+. (16)
+Such scenarios represent a setup in which the analytical
+approximation of the SS model differs from the true generative
+model. The resulting MSE curves depicted in Fig. 6a demon-
+strate that KalmanNet (with setting C2) achieves a 3 [dB] gain
+over the MB KF. In particular, despite the fact that KalmanNet
+implements the KF with an inaccurate state-evolution model,
+it learns to apply an alternative KG, resulting in MSE within
+a minor gap from the MMSE; i.e., from the KF with the true
+Fα◦ plugged in.
+State-Observation Mismatch: Next, we simulate a setup
+with state-observation mismatch while setting T = 100 and
+ν =−20 [dB]. The model mismatch is achieved by using a
+rotated observation matrix Hα=10◦ for data generation, while
+using H = I as the observation design matrix. Such scenarios
+represent a setup in which a slight misalignment (≈ 5%) of the
+sensors exists. The resulting achieved MSE depicted in Fig. 6b
+demonstrates that KalmanNet (with setting C2) converges to
+within a minor gap from the MMSE. Here, we performed an
+additional experiment, ﬁrst estimating the observation matrix
+from data, and then KalmanNet used the estimate matrix
+denoted ˆHα. In this case it is observed in Fig. 6b that
+KalmanNet achieves the MMSE lower bound. These results
+imply that KalmanNet converges also in distribution to the
+9
+
+<!-- page 10 -->
+
+TABLE II: Non-linear toy problem parameters.
+α β φ δ a b c
+Full 0.9 1.1 0.1π 0.01 1 1 0
+Partial 1 1 0 0 1 1 0
+KF.
+C. Synthetic Non-Linear Model
+Next, we consider a non-linear SS model, where the state-
+evolution model takes a sinusoidal form, while the state-
+observation model is a second order polynomial. The resulting
+SS model is given by
+f (x) =α· sin (β· x +φ) +δ, x∈ R2, (17a)
+h (x) =a· (b· x +c)2, y∈ R2. (17b)
+In the following we generate trajectories ofT = 100 time steps
+from the noisy SS model in (1), with ν =−20 [dB], while
+using f (·) and h (·) as in (17) computed in a component-wise
+manner, with parameters as in Table II. KalmanNet is used
+with setting C4.
+The MSE values for different levels of observation noise
+achieved by KalmanNet compared with the MB EKF are
+depicted in Fig. 7 for both full and partial model information.
+The full evaluation with the MB EKF, UKF, and PF is given
+in Table III for the case of full information, and in Table IV for
+the case of partial information. We ﬁrst observe that the EKF
+achieves the lowest MSE values among the MB ﬁlters, there-
+fore serving as our main MB benchmark in our experimental
+studies. For full information and in the low noise regime, EKF
+achieves the lowest MSE values due to its ability to approach
+the MMSE in such setups, and KalmanNet achieves similar
+performance. For higher noise levels; i.e., for 1
+r2 =−12.04
+[dB], the MB EKF suffers from degraded performance due
+to a non-linear effect. Nonetheless, by learning to compute
+the KG from data, KalmanNet manages to overcome this and
+achieves superior MSE.
+In the presence of partial model information, the state-
+evolution parameters used by the ﬁlters differs slightly from
+the true model, resulting in a notable degradation in the
+performance of the MB ﬁlters due to the model mismatch.
+In all experiments, KalmanNet overcomes such mismatches,
+and its performance is within a small gap of that achieved
+when using full information for such setups. We thus conclude
+that in the presence of harsh non-linearities as well as model
+uncertainty due to inaccurate approximation of the underlying
+dynamics, where MB variations of the KF fail, KalmanNet
+learns to approach the MMSE while maintaining the real-time
+operation and low complexity of the KF.
+D. Lorenz Attractor
+The Lorenz attractor is a three-dimensional chaotic so-
+lution to the Lorenz system of ordinary differential equa-
+tions in continuous-time. This synthetically generated system
+demonstrates the task of online tracking a highly non-linear
+trajectory and a real world practical challenge of handling
+mismatches due to sampling a continuous-time signal into
+discrete-time [77].
+TABLE III: MSE [dB] – Synthetic non-linear SS model; full
+information.
+1/r2 [dB] −12.04 −6.02 0 20 40
+EKF ˆµ -6.23 -13.41 -19.58 -39.78 -59.67
+ˆσ ±0.89 ±0.53 ±0.47 ±0.43 ±0.44
+UKF ˆµ -6.48 -13.14 -18.43 -27.24 -37.27
+ˆσ ±0.69 ±0.49 ±0.50 ±0.55 ±0.31
+PF ˆµ -6.59 -13.33 -18.78 -26.70 -30.98
+ˆσ ±0.74 ±0.48 ±0.39 ±0.07 ±0.02
+KalmanNet ˆµ -7.25 -13.19 -19.22 -39.13 -59.10
+ˆσ ±0.49 ±0.52 ±0.55 ±0.49 ±0.53
+TABLE IV: MSE[dB] – Synthetic non-linear SS model; partial
+information.
+1/r2 [dB] −12.04 −6.02 0 20 40
+EKF ˆµ -2.99 -5.07 -7.57 -22.67 -36.55
+ˆσ ±0.63 ±0.89 ±0.45 ±0.42 ±0.3
+UKF ˆµ -0.91 -1.54 -5.18 -24.06 -37.96
+ˆσ ±0.60 ±0.23 ±0.29 ±0.43 ±2.21
+PF ˆµ -2.32 -3.29 -4.83 -23.66 -33.13
+ˆσ ±0.89 ±0.53 ±0.64 ±0.48 ±0.45
+KalmanNet ˆµ -6.62 -11.60 -15.83 -34.23 -45.29
+ˆσ ±0.46 ±0.45 ±0.44 ±0.58 ±0.64
+In particular, the noiseless state-evolution of the continuous-
+time process xτ with τ∈ R+ is given by
+∂
+∂τ xτ =A (xτ)·xτ, A (xτ)=
+
+
+−10 10 0
+28 −1 −x1,τ
+0 x1,τ − 8
+3
+
+. (18)
+To get a discrete-time, state-evolution model, we repeat the
+steps used in [35]. First, we sample the noiseless process with
+sampling interval ∆τ and assume that A (xτ) can be kept
+constant in a small neighborhood of xτ ; i.e.,
+A (xτ)≈ A (xτ+∆τ).
+Then, the continuous-time solution of the differential system
+(18), which is valid in the neighborhood of xτ for a short time
+interval ∆τ, is
+xτ+∆τ = exp (A (xτ)· ∆τ)· xτ. (19)
+Finally, we take the Taylor series expansion of (19) and a ﬁnite
+series approximation (with J coefﬁcients), which results in
+F (xτ) ≜ exp (A (xτ)· ∆τ)≈ I+
+J∑
+j=1
+(A (xτ)· ∆τ)j
+j! . (20)
+The resulting discrete-time evolution process is given by
+xt+1 = f (xt) = F (xt)· xt. (21)
+The discrete-time state-evolution model in (21), with addi-
+tional process noise, is used for generating the simulated
+Lorenz attractor data. Unless stated otherwise the data was
+generated with J = 5 Taylor order and ∆τ = 0.02 sampling
+interval. In the following experiments, KalmanNet is consis-
+tently invariant of the distribution of the noise signals, with the
+models it uses for f (·) and h (·) varying between the different
+studies, as discussed in the sequel.
+1) Full Information: We ﬁrst compare KalmanNet to the
+MB ﬁlter when using the state-evolution matrix F computed
+via (20) with J = 5.
+10
+
+<!-- page 11 -->
+
+-10 -5 0 5 10 15 20 25 30 35 40
+-40
+-30
+-20
+-10
+0
+10
+20
+MSE [dB]
+-0.5 -0.4 -0.3 -0.2 -0.1 0 0.1 0.2 0.3 0.4 0.5
+-3
+-2.5
+-2
+-1.5
+-1
+-0.5
+0
+0.5
+1
+1.5
+2
+(a) State-evolution mismatch.
+-10 -5 0 5 10 15 20 25 30
+-35
+-30
+-25
+-20
+-15
+-10
+-5
+0
+5
+10
+MSE [dB]
+9.75 9.8 9.85 9.9 9.95 10 10.05 10.1 10.15 10.2 10.25
+-17
+-16
+-15
+-14
+-13
+-12
+-11
+-10
+-9 (b) State-observation mismatch.
+Fig. 6: Linear SS model, partial information.
+-10 -5 0 5 10 15 20 25 30 35 40
+-60
+-50
+-40
+-30
+-20
+-10
+0
+10
+20
+MSE [dB]
+-12 -11.9 -11.8 -11.7 -11.6 -11.5 -11.4 -11.3 -11.2 -11.1 -11
+-8
+-7
+-6
+-5
+-4
+-3
+-2
+Fig. 7: Non-linear SS model. KalmanNet outperforms EKF.
+TABLE V: MSE [dB] – Lorenz attractor with noisy state
+observations.
+1/r2 [dB] 0 10 20 30 40
+EKF -10.45 -20.37 -30.40 -40.39 -49.89
+UKF -5.62 -12.04 -20.45 -30.05 -40.00
+PF -9.78 -18.13 -23.54 -30.16 -33.95
+KalmanNet -9.79 -19.75 -29.37 -39.68 -48.99
+Noisy state observations : Here, we set h (·) to be the
+identity transformation, such that the observations are noisy
+versions of the true state. Further, we set ν =−20 [dB] and
+T = 2000 . As observed in Fig. 8a, despite being trained
+on short trajectories T = 100, KalmanNet (with setting C3)
+achieves excellent MSE performance—namely, comparable to
+EKF—and outperforms the UKF and PF. The full details of
+the experiment are given in Table V. All the MB algorithms
+were optimized for performance; e.g., applying the EKF with
+full model information achieves an unstable state tracking
+performance, with MSE values surpassing 30 [dB]. To stabilize
+the EKF, we had to perform a grid search using the available
+data set to optimize the process noise Q used by the ﬁlter.
+Noisy non-linear observations: Next, we consider the case
+where the observations are given by a non-linear function of
+the current state, setting h to take the form of a transformation
+from a cartesian coordinate system to spherical coordinates.
+We further set T = 20 and ν = 0 [ dB]. From the results
+depicted in Fig. 8b and reported in Table VI we observe that
+TABLE VI: MSE [dB] – Lorenz attractor with non-linear
+observations
+1/r2 [dB] −10 0 10 20 30
+EKF 26.38 21.78 14.50 4.84 -4.02
+UKF nan nan nan nan nan
+PF 24.85 20.91 14.23 11.93 4.35
+KalmanNet 14.55 6.77 -1.77 -10.57 -15.24
+in such non-linear setups, the sub-optimal MB approaches op-
+erating with full information of the SS model are substantially
+outperformed by KalmanNet (with setting C4).
+2) Partial Information: W proceed to evaluate KalmanNet
+and compare it to its MB counterparts under partial model
+information. We consider three possible sources of model
+mismatch arising in the Lorenz attractor setup:
+• State-evolution mismatch due to use of a Taylor series
+approximation of insufﬁcient order.
+• State-observation mismatch as a result of misalignment
+due to rotation.
+• State-observation mismatch as a result of sampling from
+continuous-time to discrete-time.
+Since the EKF produced the best results in the full information
+case among all non-linear MB ﬁltering algorithms, we use it
+as a baseline for the MSE lower bound.
+State-evolution mismatch : In this study, both KalmanNet
+and the MB algorithms operate with a crude approximation
+of the evolution dynamics obtained by computing (20) with
+J = 2, while the data is generated with an order J = 5 Taylor
+series expansion. We again set h to be the identity mapping,
+T = 2000, and ν =−20 [dB]. The results, depicted in Fig. 9a
+and reported in Table VII, demonstrate that KalmanNet (with
+setting C4) learns to partially overcome this model mismatch,
+outperforming its MB counterparts operating with the same
+level of partial information.
+State-observation rotation mismatch : Here, the presence
+of mismatch in the observations model is simulated by using
+data generated by an identity matrix rotated by merely θ = 1◦.
+This rotation is equivalent to sensor misalignment of≈ 0.55%.
+The results depicted in Figure. 9b and reported in Table VIII
+clearly demonstrate that this seemingly minor rotation can
+11
+
+<!-- page 12 -->
+
+0 5 10 15 20 25 30 35 40
+-50
+-45
+-40
+-35
+-30
+-25
+-20
+-15
+-10
+-5
+0
+MSE [dB]
+9.5 9.6 9.7 9.8 9.9 10 10.1 10.2 10.3 10.4 10.5
+-20
+-18
+-16
+-14
+-12
+-10
+(a) T = 2000, ν = −20 [dB], h (·) = I.
+-10 -5 0 5 10 15 20 25 30
+-15
+-10
+-5
+0
+5
+10
+15
+20
+25MSE [dB]
+-0.3 -0.2 -0.1 0 0.1 0.2 0.3
+6
+8
+10
+12
+14
+16
+18
+20
+22 (b) T = 20, ν = 0 [dB], h (·) non-linear.
+Fig. 8: Lorenz attractor, full information.
+TABLE VII: MSE [dB] - Lorenz attractor with state-evolution
+mismatch J = 2.
+1/r2 [dB] 10 20 30 40
+EKF ˆµ -20.37 -30.40 -40.39 -49.89
+J = 5 ˆσ ±0.25 ±0.24 ±0.24 ±0.20
+EKF ˆµ -19.47 -23.63 -33.51 -41.15
+J = 2 ˆσ ±0.25 ±0.11 ±0.18 ±0.12
+UKF ˆµ -11.95 -20.45 -30.05 -39.98
+J = 2 ˆσ ±0.87 ±0.27 ±0.09 ±0.09
+PF ˆµ -17.95 -23.47 -30.11 -33.81
+J = 2 ˆσ ±0.18 ±0.09 ±0.10 ±0.13
+KalmanNet ˆµ -19.71 -27.07 -35.41 -41.74
+J = 2 ˆσ ±0.29 ±0.18 ±0.20 ±0.11
+TABLE VIII: MSE [dB] - Lorenz attractor with observation
+rotation.
+1/r2 [dB] 0 10 20 30
+EKF ˆµ -10.40 -20.41 -30.50 -40.45
+θ = 0 ◦ ˆσ ±0.35 ±0.37 ±0.34 ±0.34
+EKF ˆµ -9.80 -16.50 -18.19 -18.57
+θ = 1 ◦ ˆσ ±0.54 ±6.51 ±0.22 ±0.21
+UKF ˆµ -2.08 -6.92 -7.89 -8.09
+θ = 1 ◦ ˆσ ±1.73 ±0.53 ±0.59 ±0.62
+PF ˆµ -8.48 -0.18 15.24 19.87
+θ = 1 ◦ ˆσ ±3 ±8.21 ±3.50 ±0.80
+KalmanNet ˆµ -9.63 -18.17 -27.32 -34.04
+θ = 1 ◦ ˆσ ±0.53 ±0.42 ±0.67 ±0.77
+cause a severe performance degradation for the MB ﬁlters,
+while KalmanNet (with setting C3) is able to learn from data to
+overcome such mismatches and to notably outperform its MB
+counterparts, which are sensitive to model uncertainty. Here,
+we trained KalmanNet on short trajectories with T = 100
+time steps, tested it on longer trajectories with T = 1000 time
+steps, and set ν =−20 [dB]. This again demonstrates that the
+learning of KalmanNet is transferable.
+State-observations sampling mismatch : We conclude our
+experimental study of the Lorenz attractor setup with an eval-
+uation of KalmanNet in the presence of sampling mismatch.
+Here, we generate data from the Lorenz attractor SS model
+with an approximate continuous-time evolution process using
+a dense sampling rate, set to ∆τ = 10−5. We then sub-sample
+the noiseless observations from the evolution process by a ratio
+TABLE IX: Lorenz attractor with sampling mismatch.
+Metric EKF UKF PF KalmanNet MB-RNN
+MSE [dB] -6.432 -5.683 -5.337 -11.284 17.355
+ˆσ ±0.093 ±0.166 ±0.190 ±0.301 ±0.527
+Run-time [sec] 5.440 6.072 62.946 4.699 2.291
+of 1
+2000 and get a decimated process with ∆τd = 0.02. This
+procedure results in an inherent mismatch in the SS model due
+to representing an (approximately) continuous-time process
+using a discrete-time sequence. In this experiment, no process
+noise was applied, and the observations are again obtained
+with h set to identity and T = 3000.
+The resulting MSE values for 1
+r2 = 0 [dB] of KalmanNet
+with conﬁguration C4 compared with the MB ﬁlters and with
+the end-to-end neural network termed MB-RNN (see Subsec-
+tion IV-B) are reported in Table IX. The results demonstrate
+that KalmanNet overcomes the mismatch induced by repre-
+senting a continuous-time SS model in discrete-time, achieving
+a substantial processing gain over the MB alternatives due
+to its learning capabilities. The results also demonstrate that
+KalmanNet signiﬁcantly outperforms a straightforward com-
+bination of domain knowledge; i.e. a state-transition function
+f (·), with end-to-end RNNs. A fully model-agnostic RNN
+was shown to diverge when trained for this task. In Fig. 10
+we visualize how this gain is translated into clearly improved
+tracking of a single trajectory. To show that these gains of
+KalmanNet do not come at the cost of computationally slow
+inference, we detail the average inference time for all ﬁlters
+(without parallelism). The stopwatch timings were measured
+on the same platform – Google Colab with CPU: Intel(R)
+Xeon(R) CPU @ 2.20GHz, GPU: Tesla P100-PCIE-16GB. We
+see that KalmanNet infers faster than the classical methods,
+thanks to the highly efﬁcient neural network computations
+and the fact that, unlike the MB ﬁlters, it does not involve
+linearization and matrix inversions for each time step.
+E. Real World Dynamics: Michigan NCLT Data Set
+In our ﬁnal experiment we evaluate KalmanNet on the
+Michigan NCLT data set [28]. This data set comprises different
+labeled trajectories, with each one containing noisy sensor
+12
+
+<!-- page 13 -->
+
+10 15 20 25 30 35 40
+-50
+-45
+-40
+-35
+-30
+-25
+-20
+-15
+-10MSE [dB]
+19.5 19.6 19.7 19.8 19.9 20 20.1 20.2 20.3 20.4 20.5
+-30
+-28
+-26
+-24
+-22
+-20
+(a) State-evolution mismatch, identity h, T = 2000.
+0 5 10 15 20 25 30
+-40
+-35
+-30
+-25
+-20
+-15
+-10
+-5
+0
+MSE [dB]
+19.5 19.6 19.7 19.8 19.9 20 20.1 20.2 20.3 20.4 20.5
+-30
+-28
+-26
+-24
+-22
+-20
+-18 (b) Observation mismatch - ∆θ = 1◦, T = 1000.
+Fig. 9: Lorenz attractor, partial information.
+readings (e.g., GPS and odometer) and the ground truth loca-
+tions of a moving Segway robot. Given these noisy readings,
+the goal of the tracking algorithm is to localize the Segway
+from the raw measurements at any given time.
+To tackle this problem we model the Segway kinematics (in
+each axis separately) using the linear Wiener velocity model,
+where the acceleration is modeled as a white Gaussian noise
+process wτ with variance q2 [36]:
+xτ = (p,v )⊤∈ R2, ∂
+∂τ xτ =
+(
+0 1
+0 0
+)
+· xτ +
+(
+0
+wτ
+)
+. (22)
+Here, p and v are the position and velocity, respectively.
+The discrete-time state-evolution with sampling interval ∆τ
+is approximated as a linear SS model in which the evolution
+matrix F and noise covariance Q are given by
+F =
+(1 ∆ τ
+0 1
+)
+, Q = q2·
+(1
+3· (∆τ)3 1
+2· (∆τ)2
+1
+2· (∆τ)2 ∆τ
+)
+. (23)
+Since KalmanNet does not rely on knowledge of the noise
+covariance matrices, Q is given here for the use of the MB
+KF and for completeness.
+The goal is to track the underlying state vector in both axes
+solely using odometry data; i.e., the observations are given by
+noisy velocity readings. In this case the observations obey a
+noisy linear model:
+y∈ R, H = (0, 1). (24)
+Such settings where one does not have access to direct
+measurements for positioning are very challenging yet prac-
+tical and typical for many applications where positioning
+technologies are not available indoors, and one must rely on
+noisy odometer readings for self-localization. Odometry-based
+estimated positions typically start drifting away at some point.
+In the assumed model, the x-axis (in cartesian coordinates)
+are decoupled from the y-axis, and the linear SS model used
+TABLE X: Numerical MSE [dB] for the NCLT experiment.
+Baseline EKF KalmanNet Vanilla RNN
+25.47 25.385 22.2 40.21
+for Kalman ﬁltering is given by
+˜F =
+(F 0
+0 F
+)
+∈ R4×4, ˜Q =
+(Q 0
+0 Q
+)
+∈ R4×4, (25a)
+˜H =
+(H 0
+0 H
+)
+∈ R2×4, ˜R =
+(r2 0
+0 r 2
+)
+∈ R2×2. (25b)
+This model is equivalent to applying two independent KFs
+in parallel. Unlike the MB KF, KalmanNet does not rely on
+noise modeling, and can thus accommodate dependency in its
+learned KG.
+We arbitrarily use the session with date 2012-01-22 that
+consists of a single trajectory. Sampling at 1[Hz] results in
+5, 850 time steps. We removed unstable readings and were
+left with 5,556 time steps. The trajectory was split into three
+sections: 85% for training ( 23 sequences of length T = 200),
+10% for validation (2 sequences,T = 200), and 5% for testing
+(1 sequence, T = 277). We compare KalmanNet with setting
+C1 to end-to-end vanilla RNN and the MB KF, where for the
+latter the matrices Q and R were optimized through a grid
+search.
+Fig. 11 and Table X demonstrate the superiority of Kalman-
+Net for such scenarios. KF blindly follows the odometer tra-
+jectory and is incapable of accounting for the drift, producing
+a very similar or even worse estimation than the integrated
+velocity. The vanilla RNN, which is agnostic of the motion
+model, fails to localize. KalmanNet overcomes the errors
+induced by the noisy odometer observations, and provides
+the most accurate real-time locations, demonstrating the gains
+of combining MB KF-based inference with integrated DD
+modules for real world applications.
+V. C ONCLUSIONS
+In this work we presented KalmanNet, a hybrid combination
+of deep learning with the classic MB EKF. Our design iden-
+tiﬁes the SS-model-dependent computations of the MB EKF,
+replacing them with a dedicated RNN operating on speciﬁc
+13
+
+<!-- page 14 -->
+
+Ground Truth
+Decimated Observations
+Noisy Observations
+KalmanNet
+EKF
+UKF
+MB-RNN
+PF
+Fig. 10: Lorenz attractor with sampling mismatch (decimation), T = 3000.
+Fig. 11: NCLT data set: ground truth vs. integrated velocity,
+trajectory from session with date 2012-01-22 sampled at 1 Hz.
+features encapsulating the information needed for its operation.
+Our numerical study shows that doing so enables KalmanNet
+to carry out real-time state estimation in the same manner
+as MB Kalman ﬁltering, while learning to overcome model
+mismatches and non-linearities. KalmanNet uses a relatively
+compact RNN that can be trained with a relatively small
+data set and infers a reduced complexity, making it applicable
+for high dimensional SS models and computationally limited
+devices.
+ACKNOWLEDGEMENTS
+We would like to thank Prof. Hans-Andrea Loeliger for his
+helpful comments and discussions, and Jonas E. Mehr for his
+assistance with the numerical study.
+REFERENCES
+[1] G. Revach, N. Shlezinger, R. J. G. van Sloun, and Y . C. Eldar,
+“KalmanNet: Data-driven Kalman ﬁltering,” in Proc. IEEE ICASSP ,
+2021, pp. 3905–3909.
+[2] J. Durbin and S. J. Koopman, Time series analysis by state space
+methods. Oxford University Press, 2012.
+[3] R. E. Kalman, “A new approach to linear ﬁltering and prediction
+problems,” Journal of Basic Engineering , vol. 82, no. 1, pp. 35–45,
+1960.
+[4] R. E. Kalman and R. S. Bucy, “New results in linear ﬁltering and
+prediction theory,” 1961.
+[5] R. E. Kalman, “New methods in Wiener ﬁltering theory,” 1963.
+[6] N. Wiener, Extrapolation, interpolation, and smoothing of stationary
+time series: With engineering applications . MIT Press Cambridge,
+MA, 1949, vol. 8.
+[7] M. Gruber, “An approach to target tracking,” MIT Lexington Lincoln
+Lab, Tech. Rep., 1967.
+[8] R. E. Larson, R. M. Dressler, and R. S. Ratner, “Application of
+the Extended Kalman ﬁlter to ballistic trajectory estimation,” Stanford
+Research Institute, Tech. Rep., 1967.
+[9] J. D. McLean, S. F. Schmidt, and L. A. McGee, Optimal ﬁltering
+and linear prediction applied to a midcourse navigation system for the
+circumlunar mission. National Aeronautics and Space Administration,
+1962.
+[10] S. J. Julier and J. K. Uhlmann, “New extension of the Kalman ﬁlter to
+nonlinear systems,” in Signal Processing, Sensor Fusion, and Target
+Recognition VI , vol. 3068. International Society for Optics and
+Photonics, 1997, pp. 182–193.
+[11] N. J. Gordon, D. J. Salmond, and A. F. Smith, “Novel approach to
+nonlinear/non-Gaussian Bayesian state estimation,” in IEE proceedings
+F (radar and signal processing) , vol. 140, no. 2. IET, 1993, pp. 107–
+113.
+[12] P. Del Moral, “Nonlinear ﬁltering: Interacting particle resolution,”
+Comptes Rendus de l’Acad ´emie des Sciences-Series I-Mathematics , vol.
+325, no. 6, pp. 653–658, 1997.
+[13] J. S. Liu and R. Chen, “Sequential Monte Carlo methods for dynamic
+systems,” Journal of the American Statistical Association , vol. 93, no.
+443, pp. 1032–1044, 1998.
+[14] F. Auger, M. Hilairet, J. M. Guerrero, E. Monmasson, T. Orlowska-
+Kowalska, and S. Katsura, “Industrial applications of the Kalman ﬁlter:
+A review,” IEEE Trans. Ind. Electron. , vol. 60, no. 12, pp. 5458–5471,
+2013.
+[15] M. Zorzi, “Robust Kalman ﬁltering under model perturbations,” IEEE
+Trans. Autom. Control, vol. 62, no. 6, pp. 2902–2907, 2016.
+[16] ——, “On the robustness of the Bayes and Wiener estimators under
+model uncertainty,” Automatica, vol. 83, pp. 133–140, 2017.
+[17] A. Longhini, M. Perbellini, S. Gottardi, S. Yi, H. Liu, and M. Zorzi,
+“Learning the tuned liquid damper dynamics by means of a robust EKF,”
+arXiv preprint arXiv:2103.03520 , 2021.
+[18] Y . LeCun, Y . Bengio, and G. Hinton, “Deep learning,” Nature, vol. 521,
+no. 7553, p. 436, 2015.
+[19] Y . Bengio, “Learning deep architectures for AI,” Foundations and
+Trends® in Machine Learning , vol. 2, no. 1, pp. 1–127, 2009.
+[20] S. Hochreiter and J. Schmidhuber, “Long short-term memory,” Neural
+Computation, vol. 9, no. 8, pp. 1735–1780, 1997.
+[21] J. Chung, C. Gulcehre, K. Cho, and Y . Bengio, “Empirical evaluation of
+gated recurrent neural networks on sequence modeling,” arXiv preprint
+arXiv:1412.3555, 2014.
+[22] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez,
+L. Kaiser, and I. Polosukhin, “Attention is all you need,” arXiv preprint
+arXiv:1706.03762, 2017.
+[23] M. Zaheer, A. Ahmed, and A. J. Smola, “Latent LSTM allocation:
+Joint clustering and non-linear dynamic modeling of sequence data,” in
+International Conference on Machine Learning , 2017, pp. 3967–3976.
+[24] N. Shlezinger, N. Farsad, Y . C. Eldar, and A. J. Goldsmith, “ViterbiNet:
+A deep learning based Viterbi algorithm for symbol detection,” IEEE
+Trans. Wireless Commun., vol. 19, no. 5, pp. 3319–3331, 2020.
+[25] N. Shlezinger, R. Fu, and Y . C. Eldar, “DeepSIC: Deep soft interference
+cancellation for multiuser MIMO detection,” IEEE Trans. Wireless
+Commun., vol. 20, no. 2, pp. 1349–1362, 2021.
+[26] N. Shlezinger, N. Farsad, Y . C. Eldar, and A. J. Goldsmith, “Learned
+factor graphs for inference from stationary time sequences,” IEEE Trans.
+Signal Process., early access, 2022.
+[27] N. Shlezinger, J. Whang, Y . C. Eldar, and A. G. Dimakis, “Model-based
+deep learning,” arXiv preprint arXiv:2012.08405 , 2020.
+[28] N. Carlevaris-Bianco, A. K. Ushani, and R. M. Eustice, “University
+of Michigan North Campus long-term vision and LiDAR dataset,” The
+International Journal of Robotics Research , vol. 35, no. 9, pp. 1023–
+1035, 2016.
+[29] R. G. Krishnan, U. Shalit, and D. Sontag, “Deep Kalman ﬁlters,” arXiv
+preprint arXiv:1511.05121, 2015.
+[30] M. Karl, M. Soelch, J. Bayer, and P. Van der Smagt, “Deep variational
+Bayes ﬁlters: Unsupervised learning of state space models from raw
+data,” arXiv preprint arXiv:1605.06432 , 2016.
+[31] M. Fraccaro, S. D. Kamronn, U. Paquet, and O. Winther, “A disentangled
+recognition and nonlinear dynamics model for unsupervised learning,”
+in Advances in Neural Information Processing Systems , 2017.
+[32] C. Naesseth, S. Linderman, R. Ranganath, and D. Blei, “Variational
+sequential Monte Carlo,” in International Conference on Artiﬁcial In-
+telligence and Statistics . PMLR, 2018, pp. 968–977.
+14
+
+<!-- page 15 -->
+
+[33] E. Archer, I. M. Park, L. Buesing, J. Cunningham, and L. Paninski,
+“Black box variational inference for state space models,” arXiv preprint
+arXiv:1511.07367, 2015.
+[34] R. Krishnan, U. Shalit, and D. Sontag, “Structured inference networks
+for nonlinear state space models,” in Proceedings of the AAAI Confer-
+ence on Artiﬁcial Intelligence , vol. 31, no. 1, 2017.
+[35] V . G. Satorras, Z. Akata, and M. Welling, “Combining generative and
+discriminative models for hybrid inference,” in Advances in Neural
+Information Processing Systems , 2019, pp. 13 802–13 812.
+[36] Y . Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with applica-
+tions to tracking and navigation: Theory algorithms and software. John
+Wiley & Sons, 2004.
+[37] K.-V . Yuen and S.-C. Kuok, “Online updating and uncertainty quantiﬁca-
+tion using nonstationary output-only measurement,” Mechanical Systems
+and Signal Processing , vol. 66, pp. 62–77, 2016.
+[38] H.-Q. Mu, S.-C. Kuok, and K.-V . Yuen, “Stable robust Extended Kalman
+ﬁlter,” Journal of Aerospace Engineering , vol. 30, no. 2, p. B4016010,
+2017.
+[39] I. Arasaratnam, S. Haykin, and R. J. Elliott, “Discrete-time nonlinear ﬁl-
+tering algorithms using Gauss–Hermite quadrature,”Proc. IEEE, vol. 95,
+no. 5, pp. 953–977, 2007.
+[40] I. Arasaratnam and S. Haykin, “Cubature Kalman ﬁlters,” IEEE Trans.
+Autom. Control, vol. 54, no. 6, pp. 1254–1269, 2009.
+[41] M. S. Arulampalam, S. Maskell, N. Gordon, and T. Clapp, “A tutorial
+on particle ﬁlters for online nonlinear/non-Gaussian Bayesian tracking,”
+IEEE Trans. Signal Process. , vol. 50, no. 2, pp. 174–188, 2002.
+[42] N. Chopin, P. E. Jacob, and O. Papaspiliopoulos, “SMC2: An efﬁcient
+algorithm for sequential analysis of state space models,” Journal of the
+Royal Statistical Society: Series B (Statistical Methodology) , vol. 75,
+no. 3, pp. 397–426, 2013.
+[43] L. Martino, V . Elvira, and G. Camps-Valls, “Distributed particle
+metropolis-Hastings schemes,” in IEEE Statistical Signal Processing
+Workshop (SSP), 2018, pp. 553–557.
+[44] C. Andrieu, A. Doucet, and R. Holenstein, “Particle Markov chain
+Monte Carlo methods,” Journal of the Royal Statistical Society: Series
+B (Statistical Methodology) , vol. 72, no. 3, pp. 269–342, 2010.
+[45] J. Elfring, E. Torta, and R. van de Molengraft, “Particle ﬁlters: A hands-
+on tutorial,” Sensors, vol. 21, no. 2, p. 438, 2021.
+[46] R. H. Shumway and D. S. Stoffer, “An approach to time series smoothing
+and forecasting using the EM algorithm,” Journal of Time Series
+Analysis, vol. 3, no. 4, pp. 253–264, 1982.
+[47] Z. Ghahramani and G. E. Hinton, “Parameter estimation for linear
+dynamical systems,” 1996.
+[48] J. Dauwels, A. Eckford, S. Korl, and H.-A. Loeliger, “Expectation max-
+imization as message passing-part I: Principles and Gaussian messages,”
+arXiv preprint arXiv:0910.2832 , 2009.
+[49] L. Martino, J. Read, V . Elvira, and F. Louzada, “Cooperative parallel
+particle ﬁlters for online model selection and applications to urban
+mobility,” Digital Signal Processing , vol. 60, pp. 172–185, 2017.
+[50] P. Abbeel, A. Coates, M. Montemerlo, A. Y . Ng, and S. Thrun,
+“Discriminative training of Kalman ﬁlters.” in Robotics: Science and
+Systems, vol. 2, 2005, p. 1.
+[51] L. Xu and R. Niu, “EKFNet: Learning system noise statistics from
+measurement data,” in Proc. IEEE ICASSP , 2021, pp. 4560–4564.
+[52] S. T. Barratt and S. P. Boyd, “Fitting a Kalman smoother to data,” in
+IEEE American Control Conference (ACC) , 2020, pp. 1526–1531.
+[53] L. Xie, Y . C. Soh, and C. E. De Souza, “Robust Kalman ﬁltering for
+uncertain discrete-time systems,” IEEE Trans. Autom. Control , vol. 39,
+no. 6, pp. 1310–1314, 1994.
+[54] C. M. Carvalho, M. S. Johannes, H. F. Lopes, and N. G. Polson, “Particle
+learning and smoothing,” Statistical Science, vol. 25, no. 1, pp. 88–106,
+2010.
+[55] I. Urteaga, M. F. Bugallo, and P. M. Djuri ´c, “Sequential Monte Carlo
+methods under model uncertainty,” in IEEE Statistical Signal Processing
+Workshop (SSP), 2016, pp. 1–5.
+[56] L. Zhou, Z. Luo, T. Shen, J. Zhang, M. Zhen, Y . Yao, T. Fang,
+and L. Quan, “KFNet: Learning temporal camera relocalization using
+Kalman ﬁltering,” in Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition , 2020, pp. 4919–4928.
+[57] D. P. Kingma and M. Welling, “Auto-encoding variational Bayes,” arXiv
+preprint arXiv:1312.6114, 2013.
+[58] D. J. Rezende, S. Mohamed, and D. Wierstra, “Stochastic backprop-
+agation and approximate inference in deep generative models,” in
+International conference on machine learning. PMLR, 2014, pp. 1278–
+1286.
+[59] D. M. Blei, A. Kucukelbir, and J. D. McAuliffe, “Variational inference:
+A review for statisticians,” Journal of the American Statistical Associa-
+tion, vol. 112, no. 518, pp. 859–877, 2017.
+[60] T. Haarnoja, A. Ajay, S. Levine, and P. Abbeel, “Backprop kf: Learning
+discriminative deterministic state estimators,” in Advances in Neural
+Information Processing Systems , 2016, pp. 4376–4384.
+[61] B. Laufer-Goldshtein, R. Talmon, and S. Gannot, “A hybrid approach for
+speaker tracking based on TDOA and data-driven models,” IEEE/ACM
+Trans. Audio, Speech, Language Process. , vol. 26, no. 4, pp. 725–735,
+2018.
+[62] H. Coskun, F. Achilles, R. DiPietro, N. Navab, and F. Tombari, “Long
+short-term memory Kalman ﬁlters: Recurrent neural estimators for pose
+regularization,” in Proceedings of the IEEE International Conference on
+Computer Vision, 2017, pp. 5524–5532.
+[63] S. S. Rangapuram, M. W. Seeger, J. Gasthaus, L. Stella, Y . Wang, and
+T. Januschowski, “Deep state space models for time series forecasting,”
+in Advances in Neural Information Processing Systems, 2018, pp. 7785–
+7794.
+[64] P. Becker, H. Pandya, G. Gebhardt, C. Zhao, C. J. Taylor, and
+G. Neumann, “Recurrent Kalman networks: Factorized inference in
+high-dimensional deep feature spaces,” in International Conference on
+Machine Learning. PMLR, 2019, pp. 544–552.
+[65] X. Zheng, M. Zaheer, A. Ahmed, Y . Wang, E. P. Xing, and A. J.
+Smola, “State space LSTM models with particle MCMC inference,”
+arXiv preprint arXiv:1711.11179 , 2017.
+[66] T. Salimans, D. Kingma, and M. Welling, “Markov chain Monte Carlo
+and variational inference: Bridging the gap,” in International Conference
+on Machine Learning . PMLR, 2015, pp. 1218–1226.
+[67] X. Ni, G. Revach, N. Shlezinger, R. J. van Sloun, and Y . C. Eldar,
+“RTSNET: Deep learning aided Kalman smoothing,” in Proc. IEEE
+ICASSP, 2022.
+[68] R. Dey and F. M. Salem, “Gate-variants of gated recurrent unit (GRU)
+neural networks,” in Proc. IEEE MWSCAS , 2017, pp. 1597–1600.
+[69] P. J. Werbos, “Backpropagation through time: What it does and how to
+do it,” Proc. IEEE, vol. 78, no. 10, pp. 1550–1560, 1990.
+[70] I. Sutskever, Training recurrent neural networks. University of Toronto
+Toronto, Canada, 2013.
+[71] I. Klein, G. Revach, N. Shlezinger, J. E. Mehr, R. J. van Sloun, and
+Y . Eldar, “Uncertainty in data-driven Kalman ﬁltering for partially
+known state-space models,” in Proc. IEEE ICASSP , 2022.
+[72] A. L ´opez Escoriza, G. Revach, N. Shlezinger, and R. J. G. van Sloun,
+“Data-driven Kalman-based velocity estimation for autonomous racing,”
+in Proc. IEEE ICAS , 2021.
+[73] H. E. Rauch, F. Tung, and C. T. Striebel, “Maximum likelihood estimates
+of linear dynamic systems,” AIAA Journal, vol. 3, no. 8, pp. 1445–1450,
+1965.
+[74] D. P. Kingma and J. Ba, “Adam: A method for stochastic optimization,”
+arXiv preprint arXiv:1412.6980 , 2014.
+[75] Labbe, Roger, FilterPy - Kalman and Bayesian Filters in Python , 2020.
+[Online]. Available: https://ﬁlterpy.readthedocs.io/en/latest/
+[76] Jerker Nordh, pyParticleEst - Particle based methods in Python , 2015.
+[Online]. Available: https://pyparticleest.readthedocs.io/en/latest/index.
+html
+[77] W. Gilpin, “Chaos as an interpretable benchmark for forecasting and
+data-driven modelling,” arXiv preprint arXiv:2110.05266 , 2021.
+15
