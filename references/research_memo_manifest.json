@@ -754,5 +754,12 @@
     "path": "references/464_target_loss_resampler_branch_refs.md",
     "status": "local_memo",
     "reason": "Consolidated primary-source memo for the next target-side LM-loss resampler branch after tiny source-prefix emitters failed source controls and generation."
+  },
+  {
+    "num": 465,
+    "slug": "source_likelihood_syndrome_sidecar_refs",
+    "path": "references/465_source_likelihood_syndrome_sidecar_refs.md",
+    "status": "local_memo",
+    "reason": "Focused primary-source memo for the SVAMP70 source likelihood sketch branch, treating the next method as a rate-capped syndrome-like sidecar conditioned on target-side candidate context."
   }
 ]

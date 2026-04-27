@@ -619,3 +619,37 @@ router changes the holdout behavior.
 - Experiment artifacts under `results/`, `checkpoints/`, and `.debug/`
 - Reference state under `references/`
 - Three folder-level subagent audits: paper/story, code/eval, and artifacts
+
+## 2026-04-27 Readiness Update
+
+Current readiness: not ICLR-ready. Estimated distance remains substantial:
+the project has headroom surfaces and strong negative controls, but still no
+positive communication method that survives disjoint source-destroying controls.
+
+Current live branch: `source_likelihood_sketch` on
+`svamp70_live_source` with `svamp70_holdout_source` as frozen validation.
+
+Why this branch is live:
+
+- it is materially different from the killed decoded-feature routers,
+  process-repair rows, tiny source-prefix emitters, query-memory rows, and
+  Perceiver target-memory rows
+- it treats the target candidate pool as decoder side information and sends
+  only a rate-capped source-model likelihood preference
+- it has a crisp source-control gate: zero-source, shuffled-source,
+  label-shuffle, target-only, and slots-only controls must recover zero clean
+  source-only IDs
+
+Submission blocker:
+
+- no scientific result yet for this branch because the machine still has an
+  orphaned MPS `scripts/calibrate.py` process, PID `31103`, with `STAT=UE`
+- do not launch more MPS work until PID `31103` is cleared
+
+Next exact gate:
+
+- run the live and holdout sketch collection plus frozen analyzer commands in
+  `paper/svamp70_source_likelihood_sketch_20260427.md`
+- promote only if live CV and frozen holdout both clear the predefined pass
+  rule; otherwise weaken or kill the branch and move to the next source-surface
+  or stronger-interface candidate

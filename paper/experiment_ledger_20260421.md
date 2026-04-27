@@ -7504,3 +7504,100 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 
 Proceed only if PID `31103` is gone or no longer a `scripts/calibrate.py`
 process using `--device mps`.
+
+## 2026-04-27 Cycle - SVAMP70 source likelihood sketch branch
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; the project still lacks
+   a positive method that survives disjoint source-destroying controls.
+2. Current paper story: Qwen2.5-Math -> Qwen3 has real source/C2C headroom on
+   SVAMP70 live and holdout surfaces, but decoded guards, process repair,
+   prefix emitters, query-memory, and Perceiver-style target-memory rows have
+   failed strict controls or holdout validation.
+3. Exact blocker to submission: no source-derived communication method beats
+   target/text while preserving target-correct examples and proving dependence
+   on real source information.
+4. Live branch: source likelihood sketch, a rate-capped syndrome-like sidecar
+   over the existing target/text/source candidate pool.
+5. Highest-priority gate: collect source-model continuation likelihoods on
+   live and holdout, fit the acceptance rule on live CV, and evaluate frozen
+   holdout once.
+6. Scale-up rung: strict-small tooling/gate implementation; scientific MPS run
+   blocked.
+
+What changed:
+
+- Added `scripts/collect_source_likelihood_sketch.py` to score candidate
+  predictions under the source model and write source-likelihood sketch JSONL.
+- Added `scripts/analyze_svamp70_source_likelihood_sketch_gate.py` to quantize
+  the source sketch, fit live-CV decision stumps, evaluate source-destroying
+  controls, and freeze the live rule for holdout.
+- Added focused tests:
+  - `tests/test_collect_source_likelihood_sketch.py`
+  - `tests/test_analyze_svamp70_source_likelihood_sketch_gate.py`
+- Added focused memo:
+  - `paper/svamp70_source_likelihood_sketch_20260427.md`
+- Added reference memo:
+  - `references/465_source_likelihood_syndrome_sidecar_refs.md`
+- Added planned artifact manifest:
+  - `results/qwen25math_svamp70_source_likelihood_sketch_20260427/manifest.md`
+
+Evidence and decision:
+
+- No new scientific score was produced because PID `31103` is still stuck as
+  an orphaned MPS `scripts/calibrate.py` process.
+- The branch is selected and harnessed as the next highest-value method because
+  it is materially different from prior shallow routers: the source model
+  communicates only a compact likelihood preference over target-side candidate
+  context.
+- This branch is not promoted. It remains a strict-small gate awaiting the MPS
+  reset.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_svamp70_source_likelihood_sketch_gate.py tests/test_collect_source_likelihood_sketch.py -q
+./venv_arm64/bin/python -m py_compile scripts/analyze_svamp70_source_likelihood_sketch_gate.py scripts/collect_source_likelihood_sketch.py
+```
+
+Result:
+
+- `6 passed in 0.03s`
+- py-compile passed
+
+Hard blocker:
+
+- PID `31103` remains under launchd with `STAT=UE`:
+  `/Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python /Users/sujeethjinesh/Desktop/LatentWire/scripts/calibrate.py ... --device mps --dtype float32 --seed 1`
+- Earlier `SIGTERM` and `SIGKILL` did not clear it.
+- Do not launch further MPS jobs until it is gone.
+
+Immediate resume check:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Next exact gate after that process is cleared:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_source_likelihood_sketch.py \
+  --source-model Qwen/Qwen2.5-Math-1.5B \
+  --eval-file results/qwen25math_qwen3_svamp70_source_surface_20260426/_artifacts/svamp_eval_70_70.jsonl \
+  --candidate target=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/target_alone.jsonl,method=target_alone \
+  --candidate text=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/text_to_text.jsonl,method=text_to_text \
+  --candidate source=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_alone.jsonl,method=source_alone \
+  --reference-label target \
+  --candidate-text-field prediction \
+  --prompt-mode direct \
+  --source-use-chat-template \
+  --source-enable-thinking false \
+  --device mps \
+  --dtype float32 \
+  --output-jsonl results/qwen25math_svamp70_source_likelihood_sketch_20260427/live_sketch.jsonl \
+  --output-md results/qwen25math_svamp70_source_likelihood_sketch_20260427/live_sketch.md
+```
+
+Then run the holdout collection and analyzer commands recorded in
+`paper/svamp70_source_likelihood_sketch_20260427.md`.
