@@ -675,3 +675,19 @@ This audit supports keeping `source_likelihood_sketch` as the top branch. It
 is the smallest non-duplicative test of whether a source-derived, rate-capped
 candidate preference can keep the SVAMP70 live signal while avoiding the
 holdout leakage that killed fixed decoded guards.
+
+## 2026-04-27 Collector Hardening Update
+
+The `source_likelihood_sketch` branch remains the live branch. The collector
+now supports `--limit` and `--resume` and records command, commit, input
+hashes, ordered IDs, ordered-ID hash, and output hash in its markdown readout.
+
+Next gate after PID `31103` is cleared:
+
+1. run the two-example `--limit 2` smoke in
+   `paper/svamp70_source_likelihood_sketch_20260427.md`
+2. if finite, run the full live and holdout collection commands with `--resume`
+3. run the frozen live-to-holdout analyzer
+
+This does not change readiness: still not ICLR-ready until the scientific
+live/holdout gate clears.

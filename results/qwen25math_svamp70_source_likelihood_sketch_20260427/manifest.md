@@ -50,3 +50,6 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 
 Then run the three commands in
 `paper/svamp70_source_likelihood_sketch_20260427.md`.
+
+The full collection commands now use `--resume`; the memo also includes a
+two-example `.debug/` smoke using `--limit 2` before the full live/holdout run.

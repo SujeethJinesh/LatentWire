@@ -46,6 +46,10 @@ Added:
     source prompt
   - writes `candidate_scores` JSONL rows with source-model mean logprob,
     token count, and candidate correctness
+  - supports `--limit` for micro smokes and `--resume` for append-safe
+    long-running collection
+  - records command, git commit, candidate input hashes, ordered IDs, and
+    output hash in the markdown readout
 - `scripts/analyze_svamp70_source_likelihood_sketch_gate.py`
   - converts candidate scores into a top-label plus quantized-margin sketch
   - fits a live-CV decision stump with an acceptance penalty
@@ -103,8 +107,30 @@ PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_source_likelihood_ske
   --source-enable-thinking false \
   --device mps \
   --dtype float32 \
+  --resume \
   --output-jsonl results/qwen25math_svamp70_source_likelihood_sketch_20260427/live_sketch.jsonl \
   --output-md results/qwen25math_svamp70_source_likelihood_sketch_20260427/live_sketch.md
+```
+
+Optional micro smoke before the full live collection:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_source_likelihood_sketch.py \
+  --source-model Qwen/Qwen2.5-Math-1.5B \
+  --eval-file results/qwen25math_qwen3_svamp70_source_surface_20260426/_artifacts/svamp_eval_70_70.jsonl \
+  --candidate target=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/target_alone.jsonl,method=target_alone \
+  --candidate text=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/text_to_text.jsonl,method=text_to_text \
+  --candidate source=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_alone.jsonl,method=source_alone \
+  --reference-label target \
+  --candidate-text-field prediction \
+  --prompt-mode direct \
+  --source-use-chat-template \
+  --source-enable-thinking false \
+  --device mps \
+  --dtype float32 \
+  --limit 2 \
+  --output-jsonl .debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke.jsonl \
+  --output-md .debug/qwen25math_svamp70_source_likelihood_sketch_20260427/live_smoke.md
 ```
 
 Collect holdout sketches:
@@ -123,6 +149,7 @@ PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_source_likelihood_ske
   --source-enable-thinking false \
   --device mps \
   --dtype float32 \
+  --resume \
   --output-jsonl results/qwen25math_svamp70_source_likelihood_sketch_20260427/holdout_sketch.jsonl \
   --output-md results/qwen25math_svamp70_source_likelihood_sketch_20260427/holdout_sketch.md
 ```
@@ -157,6 +184,10 @@ Passed:
 ./venv_arm64/bin/python -m pytest tests/test_analyze_svamp70_source_likelihood_sketch_gate.py tests/test_collect_source_likelihood_sketch.py -q
 ./venv_arm64/bin/python -m py_compile scripts/analyze_svamp70_source_likelihood_sketch_gate.py scripts/collect_source_likelihood_sketch.py
 ```
+
+Latest focused result after adding collector resume/provenance support:
+
+- `7 passed in 0.08s`
 
 ## Current Stop Condition
 

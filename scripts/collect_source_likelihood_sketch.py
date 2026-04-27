@@ -7,6 +7,8 @@ import argparse
 import hashlib
 import json
 import pathlib
+import shlex
+import subprocess
 import sys
 import time
 from datetime import date
@@ -41,6 +43,24 @@ def _sha256_file(path: pathlib.Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _git_commit() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return result.stdout.strip()
 
 
 def _torch_dtype(name: str) -> torch.dtype:
@@ -120,6 +140,18 @@ def _load_examples_by_id(eval_file: pathlib.Path) -> dict[str, evaluate.Generati
     return {evaluate._generation_example_id(example): example for example in examples}
 
 
+def _read_jsonl_if_exists(path: pathlib.Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    with path.open("r", encoding="utf-8") as handle:
+        return [json.loads(line) for line in handle if line.strip()]
+
+
+def _ordered_rows_by_id(path: pathlib.Path, ordered_ids: Sequence[str]) -> list[dict[str, Any]]:
+    by_id = _by_id(_read_jsonl_if_exists(path))
+    return [by_id[example_id] for example_id in ordered_ids if example_id in by_id]
+
+
 def _prompt_for_example(
     example: evaluate.GenerationExample,
     *,
@@ -144,6 +176,8 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
     if reference_label not in candidate_records:
         raise ValueError(f"reference label {reference_label!r} not found")
     reference_ids = list(candidate_records[reference_label])
+    if args.limit is not None:
+        reference_ids = reference_ids[: int(args.limit)]
     for label, rows in candidate_records.items():
         missing = [example_id for example_id in reference_ids if example_id not in rows]
         if missing:
@@ -152,6 +186,14 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
     missing_examples = [example_id for example_id in reference_ids if example_id not in examples_by_id]
     if missing_examples:
         raise ValueError(f"eval file missing candidate IDs: {missing_examples[:5]}")
+
+    output_jsonl.parent.mkdir(parents=True, exist_ok=True)
+    existing_by_id: dict[str, dict[str, Any]] = {}
+    if args.resume:
+        existing_by_id = _by_id(_read_jsonl_if_exists(output_jsonl))
+    else:
+        output_jsonl.write_text("", encoding="utf-8")
+    completed_existing = [example_id for example_id in reference_ids if example_id in existing_by_id]
 
     tokenizer = AutoTokenizer.from_pretrained(args.source_model, trust_remote_code=True)
     if tokenizer.pad_token_id is None:
@@ -162,9 +204,10 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
         trust_remote_code=True,
     ).to(args.device).eval()
 
-    rows: list[dict[str, Any]] = []
     started = time.perf_counter()
     for index, example_id in enumerate(reference_ids):
+        if example_id in existing_by_id:
+            continue
         example = examples_by_id[example_id]
         prompt = _prompt_for_example(
             example,
@@ -202,35 +245,49 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
                 }
             )
         ranked = sorted(candidate_scores, key=lambda item: (-float(item["score"]), item["label"]))
-        rows.append(
-            {
-                "index": index,
-                "example_id": example_id,
-                "method": "source_likelihood_sketch",
-                "source_model": args.source_model,
-                "prompt_mode": args.prompt_mode,
-                "candidate_text_field": args.candidate_text_field,
-                "top_label": ranked[0]["label"] if ranked else None,
-                "candidate_scores": candidate_scores,
-            }
-        )
-    output_jsonl.parent.mkdir(parents=True, exist_ok=True)
-    with output_jsonl.open("w", encoding="utf-8") as handle:
-        for row in rows:
+        row = {
+            "index": index,
+            "example_id": example_id,
+            "method": "source_likelihood_sketch",
+            "source_model": args.source_model,
+            "prompt_mode": args.prompt_mode,
+            "candidate_text_field": args.candidate_text_field,
+            "top_label": ranked[0]["label"] if ranked else None,
+            "candidate_scores": candidate_scores,
+        }
+        with output_jsonl.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row, sort_keys=True) + "\n")
+            handle.flush()
+    rows = _ordered_rows_by_id(output_jsonl, reference_ids)
+    if len(rows) != len(reference_ids):
+        present = {str(row["example_id"]) for row in rows}
+        missing_output = sorted(set(reference_ids) - present)
+        raise RuntimeError(f"output JSONL incomplete; missing IDs: {missing_output[:5]}")
+    ordered_ids_text = "\n".join(reference_ids) + "\n"
     payload = {
         "date": str(args.date),
         "status": "source_likelihood_sketch_collected",
+        "command": getattr(args, "command", None),
+        "git_commit": _git_commit(),
         "eval_file": _display_path(eval_file),
         "eval_file_sha256": _sha256_file(eval_file),
         "source_model": args.source_model,
         "candidate_specs": [
-            {"label": spec.label, "path": _display_path(spec.path), "method": spec.method}
+            {
+                "label": spec.label,
+                "path": _display_path(spec.path),
+                "path_sha256": _sha256_file(spec.path),
+                "method": spec.method,
+            }
             for spec in candidate_specs
         ],
         "output_jsonl": _display_path(output_jsonl),
         "output_jsonl_sha256": _sha256_file(output_jsonl),
         "n": len(rows),
+        "ordered_example_ids": reference_ids,
+        "ordered_example_ids_sha256": _sha256_text(ordered_ids_text),
+        "resume": bool(args.resume),
+        "skipped_existing": len(completed_existing),
         "elapsed_sec": float(time.perf_counter() - started),
         "device": args.device,
         "dtype": args.dtype,
@@ -247,17 +304,45 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- date: `{payload['date']}`",
         f"- status: `{payload['status']}`",
         f"- source model: `{payload['source_model']}`",
+        f"- git commit: `{payload['git_commit'] or 'unknown'}`",
         f"- eval file: `{payload['eval_file']}`",
+        f"- eval file sha256: `{payload['eval_file_sha256']}`",
         f"- output JSONL: `{payload['output_jsonl']}`",
         f"- output JSONL sha256: `{payload['output_jsonl_sha256']}`",
         f"- rows: `{payload['n']}`",
+        f"- ordered IDs sha256: `{payload['ordered_example_ids_sha256']}`",
+        f"- resume: `{payload['resume']}`",
+        f"- skipped existing: `{payload['skipped_existing']}`",
         f"- device: `{payload['device']}`",
         f"- dtype: `{payload['dtype']}`",
+        "",
+        "## Command",
+        "",
+        "```bash",
+        str(payload.get("command") or "unknown"),
+        "```",
+        "",
+        "## Candidate Inputs",
+        "",
+    ]
+    for spec in payload["candidate_specs"]:
+        lines.append(
+            f"- `{spec['label']}`: `{spec['path']}` method `{spec['method']}` sha256 `{spec['path_sha256']}`"
+        )
+    lines.extend(
+        [
+            "",
+            "## Ordered Example IDs",
+            "",
+        ]
+    )
+    lines.extend(f"- `{example_id}`" for example_id in payload["ordered_example_ids"])
+    lines.extend([
         "",
         "The JSONL contains source-model continuation likelihoods over the "
         "candidate answer pool. The downstream gate transmits only a quantized "
         "top-label/margin sketch and compares it to source-destroyed controls.",
-    ]
+    ])
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
@@ -269,6 +354,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--candidate", action="append", required=True)
     parser.add_argument("--reference-label")
     parser.add_argument("--candidate-text-field", default="prediction")
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--resume", action="store_true")
     parser.add_argument("--device", default=evaluate.default_device())
     parser.add_argument("--dtype", choices=["float32", "float16", "bfloat16"], default="float32")
     parser.add_argument(
@@ -290,7 +377,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> dict[str, Any]:
-    return collect(parse_args(argv))
+    args = parse_args(argv)
+    raw_argv = sys.argv if argv is None else ["scripts/collect_source_likelihood_sketch.py", *argv]
+    args.command = shlex.join(raw_argv)
+    return collect(args)
 
 
 if __name__ == "__main__":

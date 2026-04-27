@@ -7678,3 +7678,61 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 
 Then, if clear, run the three source likelihood sketch commands in
 `paper/svamp70_source_likelihood_sketch_20260427.md`.
+
+## 2026-04-27 Cycle - Source likelihood collector hardening
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; no positive method has
+   yet cleared live/holdout controls with the required reproducibility and
+   systems package.
+2. Current paper story: historical audit keeps the side-information/source
+   sidecar family as the most defensible branch, with `source_likelihood_sketch`
+   as the current live method gate.
+3. Exact blocker to submission: the branch still needs a scientific live and
+   holdout run; local MPS remains blocked by PID `31103`.
+4. Live branch: `source_likelihood_sketch` on SVAMP70 live/holdout.
+5. Highest-priority gate: make the next collector command resumable and
+   artifact-complete, then run it after PID `31103` is cleared.
+6. Scale-up rung: strict-small tooling hardening; scientific MPS run blocked.
+
+What changed:
+
+- Hardened `scripts/collect_source_likelihood_sketch.py`:
+  - added `--limit` for micro smoke collection
+  - added `--resume` for append-safe recovery from interrupted long runs
+  - records command, git commit, eval/candidate hashes, ordered example IDs,
+    ordered-ID hash, resume status, skipped-existing count, and output hash in
+    the markdown readout
+- Expanded `tests/test_collect_source_likelihood_sketch.py` to cover
+  `--limit` and `--resume`.
+- Updated `paper/svamp70_source_likelihood_sketch_20260427.md` so the next
+  run uses `--resume` and includes a two-example smoke command.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_collect_source_likelihood_sketch.py tests/test_analyze_svamp70_source_likelihood_sketch_gate.py -q
+./venv_arm64/bin/python -m py_compile scripts/collect_source_likelihood_sketch.py scripts/analyze_svamp70_source_likelihood_sketch_gate.py
+```
+
+Result:
+
+- `7 passed in 0.08s`
+- py-compile passed
+
+Hard blocker:
+
+- PID `31103` remains the stuck MPS `scripts/calibrate.py` process in
+  `STAT=UE`; no model run was launched.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If cleared, first run the `--limit 2` smoke in
+`paper/svamp70_source_likelihood_sketch_20260427.md`; if the smoke produces
+finite scores and the readout hashes, run the full live and holdout collection
+commands with `--resume`, then the frozen analyzer.
