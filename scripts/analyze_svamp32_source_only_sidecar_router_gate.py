@@ -49,6 +49,20 @@ def _noise_signature(example_id: str, moduli: Sequence[int], seed: int) -> tuple
     return tuple(out)
 
 
+def _hash_nonself_index(reference_ids: Sequence[str], index: int, *, salt: str) -> int:
+    if len(reference_ids) <= 1:
+        return index
+    example_id = str(reference_ids[index])
+    ranked: list[tuple[bytes, int]] = []
+    for other_index, other_id in enumerate(reference_ids):
+        if other_index == index:
+            continue
+        digest = hashlib.sha256(f"{salt}:{example_id}:{other_id}".encode("utf-8")).digest()
+        ranked.append((digest, other_index))
+    ranked.sort(key=lambda item: item[0])
+    return ranked[0][1]
+
+
 def _prediction_for_label(
     rows_by_label: dict[str, dict[str, Any]],
     label: str | None,
@@ -206,6 +220,7 @@ def _evaluate_moduli(
     source_quality_score_field: str | None,
     source_quality_min_threshold: float | None,
     source_quality_max_threshold: float | None,
+    shuffle_mode: str,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     candidate_labels = list(candidate_by_label)
@@ -220,8 +235,16 @@ def _evaluate_moduli(
             target_label=target_label,
         )
         agreement_prediction = _prediction_for_label(rows_by_label, preserve_on_agreement_label)
-        shuffled_id = reference_ids[(index + shuffle_offset) % len(reference_ids)]
-        label_shuffled_id = reference_ids[(index + label_shuffle_offset) % len(reference_ids)]
+        if shuffle_mode == "hash":
+            shuffled_index = _hash_nonself_index(reference_ids, index, salt="source_only_sidecar_shuffled")
+            label_shuffled_index = _hash_nonself_index(reference_ids, index, salt="source_only_sidecar_label_shuffle")
+        elif shuffle_mode == "fixed_offset":
+            shuffled_index = (index + shuffle_offset) % len(reference_ids)
+            label_shuffled_index = (index + label_shuffle_offset) % len(reference_ids)
+        else:
+            raise ValueError(f"Unsupported shuffle_mode: {shuffle_mode!r}")
+        shuffled_id = reference_ids[shuffled_index]
+        label_shuffled_id = reference_ids[label_shuffled_index]
         gold = syndrome._gold_numeric(target_by_id[example_id])
         source_numeric = syndrome._prediction_numeric(source_by_id[example_id])
         shuffled_source_numeric = syndrome._prediction_numeric(source_by_id[shuffled_id])
@@ -301,6 +324,8 @@ def _evaluate_moduli(
                 ],
                 "gold_answer": gold,
                 "source_prediction": source_numeric,
+                "shuffled_source_id": shuffled_id,
+                "label_shuffled_source_id": label_shuffled_id,
                 "fallback_prediction": fallback,
                 "agreement_guard_label": preserve_on_agreement_label,
                 "agreement_guard_prediction": agreement_prediction,
@@ -437,6 +462,7 @@ def analyze(
     source_quality_score_field: str | None = None,
     source_quality_min_threshold: float | None = None,
     source_quality_max_threshold: float | None = None,
+    shuffle_mode: str = "fixed_offset",
 ) -> dict[str, Any]:
     target_records = syndrome._records_for_method(target_spec)
     reference_ids = [str(row["example_id"]) for row in target_records]
@@ -515,6 +541,7 @@ def analyze(
             source_quality_score_field=source_quality_score_field,
             source_quality_min_threshold=source_quality_min_threshold,
             source_quality_max_threshold=source_quality_max_threshold,
+            shuffle_mode=shuffle_mode,
         )
         for moduli in moduli_sets
     ]
@@ -557,6 +584,7 @@ def analyze(
             "fallback_label": fallback_label,
             "shuffle_offset": shuffle_offset,
             "label_shuffle_offset": label_shuffle_offset,
+            "shuffle_mode": shuffle_mode,
             "noise_seed": noise_seed,
             "min_correct": min_correct,
             "min_target_self": min_target_self,
@@ -650,6 +678,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- source quality score field: `{payload['config']['source_quality_score_field'] or 'none'}`",
         f"- source quality min threshold: `{payload['config']['source_quality_min_threshold']}`",
         f"- source quality max threshold: `{payload['config']['source_quality_max_threshold']}`",
+        f"- shuffle mode: `{payload['config']['shuffle_mode']}`",
         f"- source numeric coverage: `{payload['provenance']['source_numeric_coverage']}/{payload['reference_n']}`",
         f"- provenance issues: `{len(payload['provenance']['issues'])}`",
         "",
@@ -688,6 +717,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--fallback-label", default="target_self_repair")
     parser.add_argument("--shuffle-offset", type=int, default=1)
     parser.add_argument("--label-shuffle-offset", type=int, default=17)
+    parser.add_argument("--shuffle-mode", choices=["fixed_offset", "hash"], default="fixed_offset")
     parser.add_argument("--noise-seed", type=int, default=1)
     parser.add_argument("--moduli-set", action="append", type=syndrome._parse_moduli_set)
     parser.add_argument("--min-correct", type=int, default=14)
@@ -759,6 +789,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         source_quality_score_field=args.source_quality_score_field,
         source_quality_min_threshold=args.source_quality_min_threshold,
         source_quality_max_threshold=args.source_quality_max_threshold,
+        shuffle_mode=args.shuffle_mode,
         run_date=str(args.date),
     )
     output_json = syndrome._resolve(args.output_json)

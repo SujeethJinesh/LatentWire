@@ -9677,3 +9677,186 @@ rg -n "status:.*pass|matched.*clean|clean source|source-necessary|wins|candidate
 Use that audit to select a source-surface discovery gate or a qualitatively
 larger controlled candidate surface. If no overlooked positive branch appears,
 switch away from canonical SVAMP70 target-side sidecars.
+
+## Cycle 2026-04-27 02:20 PDT - Source-only residue sidecar strict replay
+
+Start state:
+
+1. current ICLR readiness: not ready; no source-derived method has survived
+   live and holdout controls
+2. current paper story: source-side information and candidate-pool decoding
+   have headroom, but shallow sidecars and repair rows fail controls
+3. exact blocker: the strongest prior source-residue sidecar may have used
+   source values in the decoder candidate pool
+4. live branch / candidates: source-only residue sidecar first; source-surface
+   discovery second
+5. highest-priority gate: replay the prior live-positive source-only sidecar
+   with target-side candidate pool only and hash-based source controls
+6. scale-up rung: strict small live/holdout replay
+
+Implemented:
+
+- `scripts/analyze_svamp32_source_only_sidecar_router_gate.py` now supports
+  `--shuffle-mode hash`, using deterministic hash-based non-self source
+  controls for shuffled-source and label-shuffle conditions.
+- `tests/test_analyze_svamp32_source_only_sidecar_router_gate.py` now verifies
+  hash controls never select the same source ID.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_svamp32_source_only_sidecar_router_gate.py -q
+./venv_arm64/bin/python -m py_compile scripts/analyze_svamp32_source_only_sidecar_router_gate.py tests/test_analyze_svamp32_source_only_sidecar_router_gate.py
+```
+
+Result: `6 passed`; compile passed.
+
+Old-row audit:
+
+- prior textless SVAMP70 live sidecar used `source_alone.jsonl` as a decoder
+  candidate artifact, so source-only values could enter the candidate pool
+- this is not acceptable as a target-side side-information decoder claim
+
+Live strict replay command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp32_source_only_sidecar_router_gate.py \
+  --target target=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/target_alone.jsonl,method=target_alone \
+  --source source=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_alone.jsonl,method=source_alone \
+  --candidate t2t=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/text_to_text.jsonl,method=text_to_text \
+  --target-set-json results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --fallback-label target \
+  --source-quality-guard shorter_than_target_numeric \
+  --shuffle-mode hash \
+  --min-correct 26 \
+  --min-target-self 0 \
+  --min-clean-source-necessary 4 \
+  --max-control-clean-union 0 \
+  --min-numeric-coverage 61 \
+  --date 2026-04-27 \
+  --output-json results/source_only_sidecar_hash_controls_20260427/live_shorter_guard_hash_controls.json \
+  --output-md results/source_only_sidecar_hash_controls_20260427/live_shorter_guard_hash_controls.md \
+  --output-predictions-jsonl results/source_only_sidecar_hash_controls_20260427/live_shorter_guard_hash_predictions.jsonl \
+  --prediction-method source_shorter_than_target_guard_sidecar_live_hash
+```
+
+Result: `source_only_sidecar_router_fails_gate`.
+
+- best matched: `22/70`
+- clean matched: `0/6`
+- clean source-necessary: `0/6`
+- control clean union: `0`
+
+Holdout strict replay command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp32_source_only_sidecar_router_gate.py \
+  --target target=path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/target_alone.jsonl,method=target_alone \
+  --source source=path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_alone.jsonl,method=source_alone \
+  --candidate t2t=path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/text_to_text.jsonl,method=text_to_text \
+  --target-set-json results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --fallback-label target \
+  --source-quality-guard shorter_than_target_numeric \
+  --shuffle-mode hash \
+  --min-correct 10 \
+  --min-target-self 0 \
+  --min-clean-source-necessary 1 \
+  --max-control-clean-union 0 \
+  --min-numeric-coverage 64 \
+  --date 2026-04-27 \
+  --output-json results/source_only_sidecar_hash_controls_20260427/holdout_shorter_guard_hash_controls.json \
+  --output-md results/source_only_sidecar_hash_controls_20260427/holdout_shorter_guard_hash_controls.md \
+  --output-predictions-jsonl results/source_only_sidecar_hash_controls_20260427/holdout_shorter_guard_hash_predictions.jsonl \
+  --prediction-method source_shorter_than_target_guard_sidecar_holdout_hash
+```
+
+Result: holdout passes weakly with `11/70`, clean source-necessary `1`,
+control clean union `0`; clean ID `daea537474de16ac`.
+
+Artifact hashes are recorded in
+`results/source_only_sidecar_hash_controls_20260427/manifest.md`.
+
+Decision: kill the old source-only residue sidecar as a paper method. Its
+prior live-positive row depended on source-value candidate-pool leakage. The
+remaining holdout-only one-ID signal is insufficient.
+
+Next exact gate:
+
+```bash
+./venv_arm64/bin/python scripts/rank_source_contrastive_target_sets.py \
+  --target-set svamp70_live=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json,role=old_live,note=canonical_sidecar_saturated \
+  --target-set svamp70_holdout=path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json,role=old_holdout,note=weak_one_id_signal \
+  --target-set svamp70_chal241_310=path=results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_contrastive_target_set.json,role=next_candidate,note=adjacent_clean_surface \
+  --min-clean-source-only 4 \
+  --date 2026-04-27 \
+  --output-json results/source_surface_after_sidecar_pruning_20260427/source_surface_ranking.json \
+  --output-md results/source_surface_after_sidecar_pruning_20260427/source_surface_ranking.md
+```
+
+If no surface with target-side candidate headroom survives, stop tuning numeric
+sidecars and move to a new candidate-surface generator with explicit source
+destroying controls.
+
+Follow-up target-side candidate-pool headroom audit:
+
+Implemented:
+
+- `scripts/analyze_target_side_candidate_headroom.py`
+- `tests/test_analyze_target_side_candidate_headroom.py`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_target_side_candidate_headroom.py tests/test_analyze_svamp32_source_only_sidecar_router_gate.py -q
+./venv_arm64/bin/python -m py_compile scripts/analyze_target_side_candidate_headroom.py scripts/analyze_svamp32_source_only_sidecar_router_gate.py tests/test_analyze_target_side_candidate_headroom.py
+```
+
+Result: `7 passed`; compile passed.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_target_side_candidate_headroom.py \
+  --target-set svamp70_live=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json,role=old_live,note=canonical_sidecar_saturated \
+  --target-set svamp70_holdout=path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json,role=old_holdout,note=weak_one_id_signal \
+  --target-set svamp70_chal241_310=path=results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_contrastive_target_set.json,role=next_candidate,note=adjacent_clean_surface \
+  --target-set svamp70_chal311_380=path=results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/source_contrastive_target_set.json,role=next_candidate,note=adjacent_weak_surface \
+  --target-set svamp70_chal171_240=path=results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/source_contrastive_target_set.json,role=next_candidate,note=adjacent_weak_surface \
+  --target-set gsm70_qwen25math=path=results/qwen25math_qwen3_gsm70_source_surface_20260426/source_contrastive_target_set.json,role=next_candidate,note=gsm_surface \
+  --date 2026-04-27 \
+  --output-json results/target_side_candidate_headroom_20260427/target_side_candidate_headroom.json \
+  --output-md results/target_side_candidate_headroom_20260427/target_side_candidate_headroom.md
+```
+
+Result: `target_side_candidate_headroom_ranked`.
+
+- `svamp70_live`: target-side oracle `33/70`, oracle gain `12`, clean gold in
+  target-side pool `0/6`
+- `svamp70_holdout`: target-side oracle `28/70`, oracle gain `20`, clean gold
+  in target-side pool `2/2`
+- `svamp70_chal171_240`: target-side oracle `39/70`, clean gold in pool `1/1`
+- `svamp70_chal241_310`: target-side oracle `23/70`, clean gold in pool `1/4`
+
+Hashes:
+
+- `results/target_side_candidate_headroom_20260427/target_side_candidate_headroom.json`:
+  `30f92ea80c55c330a96bc9771bef54f2b66532706366fb9af9342a43e1facf1d`
+- `results/target_side_candidate_headroom_20260427/target_side_candidate_headroom.md`:
+  `c2a729773f3d487224997924226a3be2b2b1651a39bbb17e691d674983e88237`
+
+Decision: canonical `svamp70_live` is saturated for target-side
+side-information decoders. The next branch is candidate-surface generation:
+build non-source target-side candidate pools from target self-repair,
+stochastic target routes, or target-only candidate decoders, then run the
+target-side headroom audit before any new source sidecar.
+
+Next exact gate:
+
+```bash
+rg -n "stochastic|target_self_repair|process_repair|candidate_scores|route" \
+  scripts results -g '*.py' -g '*.md'
+```
+
+Use that to select the cheapest existing target-side candidate generator and
+materialize a no-source candidate surface with exact IDs, bytes/tokens, and
+source-destroying controls.

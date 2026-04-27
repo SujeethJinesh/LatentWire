@@ -245,6 +245,39 @@ live:
   controlled candidate surface, not another shallow sidecar over the same
   canonical SVAMP70 target pool
 
+The prior source-only residue sidecar positive is now pruned under stricter
+candidate-pool controls:
+
+- old textless live row reached `26/70`, clean source-necessary `4/6`, but it
+  included `source_alone.jsonl` as a decoder candidate artifact
+- new replay excludes `source_alone` from the candidate pool and uses
+  hash-based non-self shuffled-source/label-shuffle controls
+- live target-side-only replay fails: best `22/70`, clean source-necessary
+  `0/6`, control clean union `0`
+- holdout target-side-only replay still has one clean source-necessary ID
+  (`daea537474de16ac`) at `11/70`, but live failure blocks promotion
+- decision: kill the old source-only residue sidecar as a paper method; treat
+  the old live row as source-value candidate-pool leakage rather than clean
+  communication
+- next branch: source-surface discovery or a new target-side candidate surface
+  that exposes enough alternatives without source-only values
+
+Target-side candidate-pool headroom audit explains the repeated canonical live
+failures:
+
+- new audit: `scripts/analyze_target_side_candidate_headroom.py`
+- canonical `svamp70_live`: target-side oracle `33/70`, but clean gold in
+  target-side pool is `0/6`
+- canonical holdout: target-side oracle `28/70`, clean gold in target-side pool
+  `2/2`
+- adjacent `chal171_240`: target-side oracle `39/70`, clean gold in pool `1/1`
+- adjacent `chal241_310`: target-side oracle `23/70`, clean gold in pool `1/4`
+- decision: stop tuning sidecars on canonical live until a new candidate-surface
+  generator exposes target-side alternatives without source-only value leakage
+- current next branch: candidate-surface generation from target self-repair,
+  stochastic target routes, or non-source candidate decoders, followed by the
+  target-side headroom audit before any source sidecar
+
 The SVAMP70 exact-ID overlap audit rules out another threshold sweep on the
 current canonical surface:
 

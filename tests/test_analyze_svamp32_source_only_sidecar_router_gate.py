@@ -400,3 +400,60 @@ def test_source_quality_len_ratio_threshold_is_parameterized(tmp_path):
     assert records[0]["correct"] is True
     assert records[0]["sidecar_moduli"] == [7]
     assert records[1]["accepted_source_sidecar"] is False
+
+
+def test_hash_shuffle_controls_use_nonself_source_ids(tmp_path):
+    target_path = tmp_path / "target.jsonl"
+    source_path = tmp_path / "source.jsonl"
+    target_set_path = tmp_path / "target_set.json"
+    ids = ["a", "b", "c"]
+
+    _write_jsonl(
+        target_path,
+        [_row(example_id, "target", "9", "0") for example_id in ids],
+    )
+    _write_jsonl(
+        source_path,
+        [
+            _row("a", "source", "9", "1"),
+            _row("b", "source", "9", "2"),
+            _row("c", "source", "9", "3"),
+        ],
+    )
+    target_set_path.write_text(
+        json.dumps(
+            {
+                "ids": {
+                    "teacher_only": ["a"],
+                    "clean_residual_targets": ["a"],
+                    "target_self_repair": [],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = gate.analyze(
+        target_spec=syndrome.RowSpec("target", target_path, "target"),
+        source_spec=syndrome.RowSpec("source", source_path, "source"),
+        candidate_specs=[syndrome.RowSpec("source", source_path, "source")],
+        target_set_path=target_set_path,
+        moduli_sets=[[7]],
+        fallback_label="target",
+        shuffle_offset=0,
+        label_shuffle_offset=0,
+        noise_seed=1,
+        min_correct=0,
+        min_target_self=0,
+        min_clean_source_necessary=0,
+        max_control_clean_union=3,
+        min_numeric_coverage=3,
+        shuffle_mode="hash",
+        run_date="2026-04-27",
+    )
+
+    rows = payload["runs"][0]["rows"]
+    for row in rows:
+        assert row["shuffled_source_id"] != row["example_id"]
+        assert row["label_shuffled_source_id"] != row["example_id"]
+    assert payload["config"]["shuffle_mode"] == "hash"
