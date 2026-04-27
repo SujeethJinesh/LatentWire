@@ -1,0 +1,599 @@
+{
+  "base_target_set": "results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json",
+  "base_target_set_sha256": "088f0e1651f95ea04a89ec0931276a943ff104a355fe69f434182f68e778ea96",
+  "c2c_clean_residual_in_pool": 3,
+  "c2c_clean_residual_in_pool_ids": [
+    "3e8a5691f5443495",
+    "6e9745b37ab6fc45",
+    "de1bf4d142544e5b"
+  ],
+  "c2c_clean_residual_total": 6,
+  "c2c_headroom_json": "results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json",
+  "c2c_headroom_sha256": "dfa26e421aca995fcf03f2eb9cf807d62de17e8b1601c85b4277328bd129d154",
+  "c2c_teacher_only_in_pool": 4,
+  "c2c_teacher_only_in_pool_ids": [
+    "14bfbfc94f2c2e7b",
+    "3e8a5691f5443495",
+    "6e9745b37ab6fc45",
+    "de1bf4d142544e5b"
+  ],
+  "c2c_teacher_only_total": 9,
+  "command": "scripts/analyze_target_sampling_reachability.py --samples-jsonl results/svamp32_source_sampling_full32_s4_20260427/source_samples.jsonl --base-target-set results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json --c2c-headroom-json results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json --date 2026-04-27 --output-json results/svamp32_source_sampling_full32_s4_20260427/reachability.json --output-md results/svamp32_source_sampling_full32_s4_20260427/reachability.md",
+  "covered_ids": 32,
+  "date": "2026-04-27",
+  "decision": "Strong pass: C2C clean residual target reachability is large enough to justify a strict source-derived selector or connector gate.",
+  "diversity": {
+    "duplicate_nonempty_fraction": 0.1484375,
+    "duplicate_nonempty_rows": 19,
+    "max_unique_answers_per_id": 4,
+    "mean_unique_answers_per_id": 3.40625,
+    "median_unique_answers_per_id": 3.5,
+    "min_unique_answers_per_id": 2,
+    "unique_answer_counts_by_id": {
+      "013133cdef4f637c": 3,
+      "08d3dd8885ffb998": 3,
+      "0d2b4f7681973e19": 3,
+      "137ad74218053f8a": 4,
+      "13cb77b698eeadb5": 4,
+      "14bfbfc94f2c2e7b": 4,
+      "1d50b408c8f5cd2c": 4,
+      "2de1549556000830": 2,
+      "2f80204fc9e0896f": 3,
+      "316b525a4fcbfb89": 3,
+      "33836927fc9f1a8a": 3,
+      "3e8a5691f5443495": 3,
+      "41cce6c6e6bb0058": 4,
+      "47464cc0b064f172": 4,
+      "4c84ebf42812703b": 4,
+      "4d780f825bb8541c": 4,
+      "4ef979ea2bf931df": 3,
+      "575d7e83d84c1e67": 3,
+      "615f9d817cb5be59": 4,
+      "6e9745b37ab6fc45": 4,
+      "a85be5ec651dac24": 2,
+      "aee922049c757331": 4,
+      "b0b71023ae4d233b": 3,
+      "b1200c32546a34a5": 3,
+      "c042f0a2949ff8e6": 4,
+      "d64f6e35083ffe8c": 4,
+      "de1bf4d142544e5b": 3,
+      "de2a795ab37694af": 4,
+      "e26bdbcab1449bbe": 4,
+      "e3ab8666238a289e": 3,
+      "e7dd2efb5ec99a06": 4,
+      "f367349ce0604296": 2
+    }
+  },
+  "git_commit": "7fa3f2b35a3dacd1bb789f7a3b2c563e5bb6d45a",
+  "numeric_covered_ids": 32,
+  "reference_n": 32,
+  "rows": [
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "013133cdef4f637c",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": true,
+      "target_correct": true,
+      "unique_sample_values": [
+        "12",
+        "19",
+        "7"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "d64f6e35083ffe8c",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "15",
+        "3",
+        "Please reason step by step, and put your final answer within \\boxed{}.\u6e0e\n\u84abot\n\u84abot\n\u84abot\n\u84abot\n\u84abot\n\u84abot\n\u84abot\n\u84abot\n\u84abot\n\u84abot\n\u84abot\n\u84abot",
+        "The problem involves finding the difference between the original number of roses and the current number of roses, and between the original number of orchids and the current number of orchids. The number of roses cut can be found by subtracting the original number of roses from the current number of roses.\n\nLet's break it down:"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "3e8a5691f5443495",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "3",
+        "7"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "316b525a4fcbfb89",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "1",
+        "15",
+        "78"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "e26bdbcab1449bbe",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "3",
+        "6",
+        "Briefly explain your reasoning:#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################\n#############################################################",
+        "Clearly, the problem is very simple and can be solved by subtracting the number of emails that Jack received in the morning and the evening from the number of emails he received in the day. Let's represent the number of emails Jack received in the evening as x.\nSo, we can set up the equation: x +"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "aee922049c757331",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "2",
+        "5",
+        "8"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "1d50b408c8f5cd2c",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "2",
+        "246",
+        "Please reason step by step, and put your final answer within \\boxed{}.\u0e2d\u0e2d\u91aa\n\u8490\u84a1\u84a2\u84a1\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2\u84a2",
+        "Please reason step by step, and put your final answer within \\boxed{}.\u6297\u6c27\u5316ator\n\u84abator\n\u84abator\n\u84abator\n\u84abator\n\u84abator\n\u84abator\n\u84abator\n\u84abator\n\u84abator\n\u84abator\n\u84abator\n\u84ab"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "b0b71023ae4d233b",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "4",
+        "70"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "b1200c32546a34a5",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "17",
+        "178",
+        "2"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": true,
+      "example_id": "14bfbfc94f2c2e7b",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": true,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "2",
+        "3",
+        "8"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "4c84ebf42812703b",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "10",
+        "12",
+        "8"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "4ef979ea2bf931df",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "46",
+        "50",
+        "Please complete the table below. For each row, show how many bottle caps danny found at the park, the number of wrappers he found at the park, and the number of bottle caps he has now.\n|  | Bottle Caps | Wrappers |\n|---|---|---|\n| Initial | | |\n|"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "13cb77b698eeadb5",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "-14",
+        "28",
+        "Calculate:.GetText\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz\n Platz",
+        "Solve the problem by reasoning:\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator\n u\u017cytkinator"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "e3ab8666238a289e",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "2",
+        "3",
+        "Birds are sitting on the fence, and storks are sitting on the fence. Please calculate how many birds and how many storks are sitting on the fence, and then find the difference between them. Please give your answer in a sentence. Please put your final answer within \\boxed{}. \u200b\u200b\n\u200b\n\nAssistant:"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": true,
+      "example_id": "2de1549556000830",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": true,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "3",
+        "33"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "615f9d817cb5be59",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "12",
+        "35",
+        "38",
+        "u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytkful\n u\u017cytk"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "2f80204fc9e0896f",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "13",
+        "2",
+        "8"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "137ad74218053f8a",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "2",
+        "7",
+        "8",
+        "Please answer in a single sentence, and box it with \\boxed{}.\u6297\u6c27\u5316\n\u6297\u6c27\u5316: Please put your final answer within \\boxed{.\u6297\u6c27\u5316\n\u6297\u6c27\u5316\n\nAssistant:\u6297\u6c27\u5316\n\u6297\u6c27\u5316:\n\u6297\u6c27\u5316: Please put your final answer within \\boxed{.\u6297\u6c27\u5316\n\u6297\u6c27\u5316:\n\u6297\u6c27\u5316:\n\u6297\u6c27\u5316:\n\u6297\u6c27\u5316:\n\u6297\u6c27\u5316:\n\u6297\u6c27\u5316:"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": true,
+      "example_id": "4d780f825bb8541c",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": true,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "14",
+        "17",
+        "2",
+        "34"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "08d3dd8885ffb998",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "309",
+        "356",
+        "415"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "de1bf4d142544e5b",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "3",
+        "57"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "f367349ce0604296",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "6",
+        "8"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "a85be5ec651dac24",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "20",
+        "5"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "de2a795ab37694af",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "11",
+        "22",
+        "Explanation:\u5403\u60ca\u7684",
+        "Please write your answer below as a comment on this post:\naign\naign"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "47464cc0b064f172",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "10",
+        "14",
+        "22",
+        "```\n\nThis code creates a table with two columns: one for the names and one for the values. The `align` option is used to center the values. The `valign` option is used to center the columns. The `extrarowheight` option is used to add extra vertical space between the rows"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "0d2b4f7681973e19",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "2",
+        "50",
+        "Please type your answer and explanation below.\n ]); document.getElementById(\"number\").innerHTML = answer ===> // This is a simplified version\n```"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "33836927fc9f1a8a",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "2",
+        "3",
+        "6"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "e7dd2efb5ec99a06",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "2",
+        "39",
+        "60"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "41cce6c6e6bb0058",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": true,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "3",
+        "6",
+        "9"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "6e9745b37ab6fc45",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "61",
+        "How many more visitors visited the Buckingham palace on that day than on the previous day?\nWrite your answer as an integer:\naigns\naigns\naigns\naigns\naigns\naigns\naigns\naigns\naigns\naigns\naigns\naigns\naigns\naign",
+        "How many visitors came to the Buckingham palace on the day when they had dinner?\nPlease type your answer here :\n u\u017cytku\nHow many more visitors visited the Buckingham palace that day than the previous day?\nPlease type your answer here :\n u\u017cytku\nLet's break down the problem and solve it step-by-step using Python.",
+        "Solve this problem on paper and then type your answer into the text box. Please reason step by step. Put your final answer within \\boxed{}.\u6ee2\n\u6ee2\nIf you want to explain your answer in a paragraph, type it out below.\u6ee2\n\u6ee2\n\u6ee2\n\u6ee2\n\u6ee2\n\u6ee2\n\u6ee2"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "c042f0a2949ff8e6",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "1",
+        "11",
+        "14",
+        "5"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "575d7e83d84c1e67",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "12",
+        "3"
+      ]
+    }
+  ],
+  "sample_oracle_correct": 10,
+  "sample_oracle_gain_ids": [
+    "14bfbfc94f2c2e7b",
+    "3e8a5691f5443495",
+    "4c84ebf42812703b",
+    "6e9745b37ab6fc45",
+    "aee922049c757331",
+    "b1200c32546a34a5",
+    "de1bf4d142544e5b"
+  ],
+  "sample_oracle_gain_vs_target": 7,
+  "sample_oracle_ids": [
+    "14bfbfc94f2c2e7b",
+    "2f80204fc9e0896f",
+    "3e8a5691f5443495",
+    "4c84ebf42812703b",
+    "6e9745b37ab6fc45",
+    "aee922049c757331",
+    "b1200c32546a34a5",
+    "c042f0a2949ff8e6",
+    "de1bf4d142544e5b",
+    "f367349ce0604296"
+  ],
+  "sample_rows": 128,
+  "sample_rows_sha256": "3520951745cd92b53ff8bbe01d3b4b9d47d5985027ab3b5abc4e9d0b247fb18b",
+  "samples_jsonl": "results/svamp32_source_sampling_full32_s4_20260427/source_samples.jsonl",
+  "source_contrastive_clean_in_pool": 1,
+  "source_contrastive_clean_in_pool_ids": [
+    "14bfbfc94f2c2e7b"
+  ],
+  "source_contrastive_clean_total": 4,
+  "source_correct": 6,
+  "status": "target_sampling_reachability_audited",
+  "target_correct": 8
+}

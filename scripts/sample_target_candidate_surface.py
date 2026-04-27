@@ -106,7 +106,7 @@ def summarize(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
 
 def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     lines = [
-        "# Target-Only Candidate Sampling",
+        "# Candidate Surface Sampling",
         "",
         f"- date: `{payload['date']}`",
         f"- status: `{payload['status']}`",
@@ -155,13 +155,18 @@ def sample_records(args: argparse.Namespace) -> list[dict[str, Any]]:
 
     rows: list[dict[str, Any]] = []
     for sample_index in range(int(args.samples)):
-        method = f"target_sample_s{sample_index}"
+        method = f"{args.method_prefix}_s{sample_index}"
         for index, example in enumerate(examples):
             seed = int(args.seed) + sample_index * 1009 + index
             torch.manual_seed(seed)
+            raw_prompt = (
+                evaluate._source_reasoning_prompt(example.prompt, args.source_reasoning_mode)
+                if args.prompt_mode == "source_reasoning"
+                else example.prompt
+            )
             prompt = evaluate._format_prompt_for_tokenizer(
                 tokenizer,
-                example.prompt,
+                raw_prompt,
                 use_chat_template=bool(args.use_chat_template),
                 enable_thinking=args.enable_thinking,
             )
@@ -191,8 +196,10 @@ def sample_records(args: argparse.Namespace) -> list[dict[str, Any]]:
                     "prediction": text,
                     "sample_index": int(sample_index),
                     "sample_seed": int(seed),
+                    "prompt_mode": args.prompt_mode,
+                    "source_reasoning_mode": args.source_reasoning_mode,
                     **evaluate._prompt_token_telemetry(
-                        example.prompt,
+                        raw_prompt,
                         target_tokenizer=tokenizer,
                         target_use_chat_template=bool(args.use_chat_template),
                         target_enable_thinking=args.enable_thinking,
@@ -207,12 +214,19 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--eval-file", required=True)
     parser.add_argument("--model", default="Qwen/Qwen3-0.6B")
     parser.add_argument("--samples", type=int, default=8)
+    parser.add_argument("--method-prefix", default="target_sample")
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--top-p", type=float, default=0.95)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--dtype", default="float32", choices=["float32", "float16", "bfloat16", "auto"])
     parser.add_argument("--max-new-tokens", type=int, default=96)
+    parser.add_argument("--prompt-mode", choices=["direct", "source_reasoning"], default="direct")
+    parser.add_argument(
+        "--source-reasoning-mode",
+        choices=["plain", "brief_analysis", "cot", "scratchpad"],
+        default="brief_analysis",
+    )
     parser.add_argument("--use-chat-template", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--enable-thinking", type=_optional_bool, default=False)
     parser.add_argument("--output-jsonl", required=True)
@@ -231,7 +245,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     _write_jsonl(output_jsonl, rows)
     payload = {
         "date": str(date.today()),
-        "status": "target_only_candidates_sampled",
+        "status": "candidate_surface_sampled",
         "command": shlex.join(raw_argv),
         "git_commit": _git_commit(),
         "eval_file": _display_path(_resolve(args.eval_file)),
@@ -239,12 +253,15 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         "model": args.model,
         "config": {
             "samples": int(args.samples),
+            "method_prefix": args.method_prefix,
             "temperature": float(args.temperature),
             "top_p": float(args.top_p),
             "seed": int(args.seed),
             "device": args.device,
             "dtype": args.dtype,
             "max_new_tokens": int(args.max_new_tokens),
+            "prompt_mode": args.prompt_mode,
+            "source_reasoning_mode": args.source_reasoning_mode,
             "use_chat_template": bool(args.use_chat_template),
             "enable_thinking": args.enable_thinking,
         },

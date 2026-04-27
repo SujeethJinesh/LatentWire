@@ -68,6 +68,16 @@ reachability to `2/3`, but the source selector is pruned: `full` and
 target-only/no-source candidate-pool generation followed by strictly
 answer-masked source selection controls.
 
+Update `2026-04-27`: the SVAMP32 source-sampling smoke creates a new discovery
+surface but not a positive method. `Qwen/Qwen2.5-Math-1.5B` source-reasoning
+sampling reaches only `10/32` oracle versus the target/no-source full32 S8 pool
+at `14/32`, so there is no accuracy claim. It does, however, add two C2C-clean
+residual IDs beyond the target/no-source pool (`6e9745b37ab6fc45`,
+`de1bf4d142544e5b`). The live branch is now a strict source-conditioned
+selector or JEPA-style rate-capped connector on those two IDs. Promotion
+requires matched-only recovery, control clean union `0`, no target-correct harm,
+and bytes plus collapse telemetry.
+
 Update `2026-04-27`: the stricter SVAMP32 clean C2C residual target-only
 sampling gate separates generator headroom from communication. No-source target
 sampling reaches gold on `2/6` clean residual IDs with full numeric coverage,

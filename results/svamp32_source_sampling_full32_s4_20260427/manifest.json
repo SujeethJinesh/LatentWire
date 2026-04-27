@@ -1,0 +1,44 @@
+{
+  "artifacts": {
+    "reachability_json": {
+      "path": "results/svamp32_source_sampling_full32_s4_20260427/reachability.json",
+      "sha256": "299d6e67c41b953f6ef18782c557164aff9216ca73cff10589d650ed1d05a716"
+    },
+    "source_samples_json": {
+      "path": "results/svamp32_source_sampling_full32_s4_20260427/source_samples.json",
+      "sha256": "47c3dccdf754c98866d4304c7901ac1e2f59171ac3383339401a49210ed6a47a"
+    },
+    "source_samples_jsonl": {
+      "path": "results/svamp32_source_sampling_full32_s4_20260427/source_samples.jsonl",
+      "sha256": "3520951745cd92b53ff8bbe01d3b4b9d47d5985027ab3b5abc4e9d0b247fb18b"
+    },
+    "source_vs_target_reachability_json": {
+      "path": "results/svamp32_source_sampling_full32_s4_20260427/source_vs_target_reachability.json",
+      "sha256": "f72aa8052e57b0f86f1b603399720d1a67b055c1551be64a9ef3d705997a57dd"
+    }
+  },
+  "date": "2026-04-27",
+  "decision": "Pass as source-surface discovery only; not positive communication evidence.",
+  "git_commit_at_run_time": "7fa3f2b35a3dacd1bb789f7a3b2c563e5bb6d45a",
+  "metrics": {
+    "candidate_c2c_clean_residual_in_pool": 3,
+    "candidate_c2c_clean_residual_total": 6,
+    "candidate_minus_target_no_source_oracle": -4,
+    "candidate_oracle": 10,
+    "candidate_reference_n": 32,
+    "duplicate_nonempty_fraction": 0.1484375,
+    "mean_unique_sampled_answers_per_id": 3.40625,
+    "new_c2c_clean_residual_ids": [
+      "6e9745b37ab6fc45",
+      "de1bf4d142544e5b"
+    ],
+    "new_c2c_clean_residual_ids_count": 2,
+    "new_oracle_ids_count": 5,
+    "target_no_source_oracle": 14
+  },
+  "model": "Qwen/Qwen2.5-Math-1.5B",
+  "prompt_mode": "source_reasoning",
+  "scale_rung": "smoke",
+  "source_reasoning_mode": "brief_analysis",
+  "status": "source_reachability_pass_total_oracle_regression"
+}

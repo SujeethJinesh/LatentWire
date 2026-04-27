@@ -177,3 +177,24 @@ guidance, not positive evidence:
    controls.
 4. Role: inspiration, anti-collapse diagnostics, ablation design, and paper
    framing. The full32 target-only gate is not communication evidence.
+
+## 2026-04-27 Source Sampling Reachability Addendum
+
+The SVAMP32 source-sampling smoke changes the next JEPA-style connector target
+but still does not create a method claim:
+
+1. Blocker helped: source sampling reaches two C2C-clean residual IDs beyond the
+   target/no-source full32 pool (`6e9745b37ab6fc45`,
+   `de1bf4d142544e5b`), giving a sharper surface for a matched-source selector
+   or connector.
+2. Mechanism/design idea: train a Query-JEPA-style source innovation encoder
+   over the source-sampled candidate surface, not a full target-state
+   reconstructor. Predict only the residual signal that separates matched
+   answer-masked source from zero, shuffled, target-only/slots-only,
+   answer-only, answer-masked, and random same-byte controls.
+3. Next experiment change: restrict the next smoke to the two new source-only
+   C2C-clean residual IDs and require matched-only recovery before any broader
+   connector training.
+4. Role: inspiration, anti-collapse diagnostics, ablation design, and paper
+   framing. The source-sampling gate is discovery evidence, not communication
+   evidence.

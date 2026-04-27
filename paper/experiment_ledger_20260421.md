@@ -11830,3 +11830,116 @@ Next exact gate:
   `1` C2C-clean source-necessary recovery beyond target/text/no-source controls,
   zero source-destroying control clean recovery, no target-correct harm, byte
   and latency accounting, and JEPA/LeJEPA/V-JEPA-style collapse telemetry.
+
+## 2026-04-27 Cycle 19 - SVAMP32 Full32 Source Sampling Reachability
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; no deployable source-derived method
+   survives text relay, source-destroying controls, and seed/rung confirmation.
+2. Current paper story: target/no-source candidate sampling gives receiver-side
+   headroom, but prior numeric/process sidecars and connector probes have not
+   turned that headroom into communication.
+3. Exact blocker: find a source-derived candidate surface or selector signal
+   that recovers C2C-clean residual IDs beyond target-only priors and source
+   controls.
+4. Current live branches: source-conditioned candidate generation; JEPA-style
+   anti-collapse connector only after a non-leaky reachable surface exists.
+5. Highest-priority gate: source-model sampling over SVAMP32 full32, compared
+   directly with the full32 target/no-source pool.
+6. Scale-up rung: smoke.
+
+Harness update:
+
+- `scripts/sample_target_candidate_surface.py`
+  - added `--prompt-mode {direct,source_reasoning}`
+  - added `--source-reasoning-mode`
+  - added `--method-prefix`
+  - now records prompt-mode metadata for each row and summary artifact
+- added `scripts/compare_candidate_pool_reachability.py`
+  - compares candidate-pool reachability audits
+  - reports total oracle delta, new/lost oracle IDs, and new C2C-clean residual
+    IDs
+- added `tests/test_compare_candidate_pool_reachability.py`
+- extended `tests/test_sample_target_candidate_surface.py`
+
+Commands:
+
+```bash
+HF_HUB_DISABLE_XET=1 PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/sample_target_candidate_surface.py \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --model Qwen/Qwen2.5-Math-1.5B \
+  --samples 4 \
+  --temperature 0.9 \
+  --top-p 0.95 \
+  --seed 71 \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --prompt-mode source_reasoning \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --enable-thinking false \
+  --output-jsonl results/svamp32_source_sampling_full32_s4_20260427/source_samples.jsonl \
+  --output-json results/svamp32_source_sampling_full32_s4_20260427/source_samples.json \
+  --output-md results/svamp32_source_sampling_full32_s4_20260427/source_samples.md
+
+./venv_arm64/bin/python scripts/analyze_target_sampling_reachability.py \
+  --samples-jsonl results/svamp32_source_sampling_full32_s4_20260427/source_samples.jsonl \
+  --base-target-set results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json \
+  --c2c-headroom-json results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json \
+  --date 2026-04-27 \
+  --output-json results/svamp32_source_sampling_full32_s4_20260427/reachability.json \
+  --output-md results/svamp32_source_sampling_full32_s4_20260427/reachability.md
+
+./venv_arm64/bin/python scripts/compare_candidate_pool_reachability.py \
+  --baseline-reachability results/svamp32_target_sampling_full32_s8_20260427/reachability.json \
+  --candidate-reachability results/svamp32_source_sampling_full32_s4_20260427/reachability.json \
+  --date 2026-04-27 \
+  --output-json results/svamp32_source_sampling_full32_s4_20260427/source_vs_target_reachability.json \
+  --output-md results/svamp32_source_sampling_full32_s4_20260427/source_vs_target_reachability.md
+```
+
+Results:
+
+- source-sampled candidate oracle: `10/32`
+- target/no-source full32 S8 baseline oracle: `14/32`
+- source minus target/no-source oracle: `-4`
+- new source oracle IDs beyond target/no-source: `5`
+- lost target/no-source oracle IDs: `9`
+- C2C clean residual in source pool: `3/6`
+- new C2C-clean residual IDs beyond target/no-source: `2`
+  - `6e9745b37ab6fc45`
+  - `de1bf4d142544e5b`
+- C2C teacher-only IDs in source pool: `4/9`
+- source-contrastive clean IDs in source pool: `1/4`
+- mean unique sampled answers per ID: `3.406`
+- duplicate nonempty row fraction: `0.148`
+
+Decision:
+
+- pass as source-surface discovery only
+- fail as a method claim because total oracle reachability is below the
+  target/no-source full32 pool and no receiver selected source-derived
+  information yet
+- the two new C2C-clean residual IDs form the next strict smoke surface for a
+  source-conditioned selector or JEPA-style rate-capped connector
+
+Artifacts:
+
+- `results/svamp32_source_sampling_full32_s4_20260427/manifest.md`
+- `results/svamp32_source_sampling_full32_s4_20260427/source_samples.md`
+- `results/svamp32_source_sampling_full32_s4_20260427/reachability.md`
+- `results/svamp32_source_sampling_full32_s4_20260427/source_vs_target_reachability.md`
+- `paper/svamp32_source_sampling_reachability_20260427.md`
+
+Next exact gate:
+
+- build a combined target/no-source plus source-sampled candidate target set for
+  the two new source-only C2C-clean residual IDs
+- run a strict matched-source selector or connector gate with zero-source,
+  shuffled-source, target-only/slots-only, random same-byte, answer-only, and
+  answer-masked controls
+- pass only if matched source uniquely recovers at least one of
+  `6e9745b37ab6fc45` or `de1bf4d142544e5b`, control clean union is `0`,
+  target-correct harm is `0`, and bytes plus collapse telemetry are reported
