@@ -8532,3 +8532,59 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 If PID `31103` is absent, resume MPS source-surface/interface reset work. If it
 remains present, continue CPU-only with a canonical exact-ID overlap audit
 across the SVAMP70 live/holdout surfaces rather than another threshold sweep.
+
+## 2026-04-27 Cycle - SVAMP70 exact-ID overlap audit
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; still missing a stable
+   positive method plus strict controls, seed stability, systems metrics, and
+   cross-family falsification.
+2. Current paper story: source candidates have real example-level headroom, but
+   current methods recover it through live-only or harmful routes.
+3. Exact blocker to submission: no reusable canonical live+holdout clean ID
+   structure under target preservation.
+4. Current live branch: none. Candidate decision tested here: whether to keep
+   sweeping thresholds on current canonical SVAMP70 artifacts.
+5. Highest-priority gate: CPU-only overlap audit across recent branch
+   recoveries and exact source-only ID sets.
+6. Scale-up rung: smoke / branch selection.
+
+Result:
+
+- Status: `exact_id_overlap_audit_complete`.
+- Canonical live clean source-only IDs: `6`; all have been recovered by at
+  least one audited branch, but not by a branch that passes holdout and target
+  preservation.
+- Canonical holdout clean source-only IDs: `2`.
+- Canonical holdout recovered ID: only `daea537474de16ac`, and only through
+  trace-router branches that fail the full gate.
+- `ab1e71e8928661d0` remains unrecovered by audited canonical-branch
+  decoders.
+- Adjacent scout syndrome recoveries are not canonical holdout evidence and
+  include target-self harm.
+
+Artifact hashes:
+
+- `results/svamp70_exact_id_overlap_audit_20260427/exact_id_overlap_audit.json`:
+  `358cb6b6db2a76dcea074df91e8e755d03d8114649cce78e019ed4f5626c4f5c`
+- `results/svamp70_exact_id_overlap_audit_20260427/exact_id_overlap_audit.md`:
+  `92b688053c8948331b7df070538f645dfaa2746a456ada6c53347cc665bd9ec0`
+
+Decision:
+
+- Kill/prune: another CPU threshold/router sweep on current canonical SVAMP70
+  artifacts.
+- Keep: canonical live/holdout exact IDs as future falsification surfaces.
+- Next CPU branch if MPS remains blocked: implement a fair condition-specific
+  receiver-control analyzer before collecting more target-likelihood sketches.
+- Next MPS branch when available: source-surface/interface reset.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` remains, implement/test the condition-specific receiver-control
+analyzer. If it clears, resume MPS source-surface/interface reset.

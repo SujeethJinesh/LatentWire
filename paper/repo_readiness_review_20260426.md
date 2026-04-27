@@ -190,6 +190,22 @@ The CPU target-likelihood receiver follow-up is also negative on live:
   future receiver-gate claim needs true condition-specific rescored controls
   rather than sketch shuffling or forced target fallback
 
+The SVAMP70 exact-ID overlap audit rules out another threshold sweep on the
+current canonical surface:
+
+- canonical live has `6` clean source-only IDs, and all have been recovered by
+  at least one audited branch, but the reusable recoveries cluster on a few
+  live examples and come from branches that either fail holdout or harm
+  target-correct cases
+- canonical holdout has only `2` clean source-only IDs; only
+  `daea537474de16ac` is recovered, and only by the trace-router family that
+  fails the full gate
+- adjacent scout positives are not canonical holdout evidence and usually come
+  with target-self harm
+- decision: stop CPU threshold/router sweeps on current SVAMP70 artifacts; next
+  CPU work should be a true condition-specific receiver-control harness, while
+  source-surface/interface reset waits for the MPS blocker to clear
+
 The top-surface cross-attention rescue also fails:
 
 - after consolidated surface reselection, `svamp70_live` and `svamp70_holdout`
