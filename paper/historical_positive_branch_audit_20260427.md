@@ -13,11 +13,11 @@ Date: 2026-04-27
    win, or only an oracle/bound.
 3. Exact blocker to submission: no source-derived communication method has yet
    cleared strict controls on a disjoint validation surface.
-4. Current live branch: `source_likelihood_sketch` on SVAMP70 live/holdout,
-   with source-likelihood side information over target/text/source candidates.
-5. Highest-priority gate: clear the stuck MPS process and run the live/holdout
-   sketch gate recorded in `paper/svamp70_source_likelihood_sketch_20260427.md`.
-6. Scale-up rung: strict-small implementation; scientific run blocked by MPS.
+4. Current live branch: none after the `source_likelihood_sketch` and
+   post-sketch syndrome-bound kills.
+5. Highest-priority gate: clear the stuck MPS process and start a genuinely new
+   source-surface scout before implementing another learned method.
+6. Scale-up rung: post-kill branch selection; scientific run blocked by MPS.
 
 ## Audit Scope
 
@@ -327,14 +327,12 @@ toward the same formulation:
 - controls must destroy source identity without preserving clean wins
 - raw dense/static KV alignment and decoded guard tuning are saturated
 
-Therefore the current branch remains:
-
-`source_likelihood_sketch` on `svamp70_live_source` with frozen validation on
-`svamp70_holdout_source`.
+Therefore no historical branch is currently live.
 
 The next exact scientific command is still blocked by PID `31103`; after it is
-cleared, run the collector/analyzer commands in
-`paper/svamp70_source_likelihood_sketch_20260427.md`.
+cleared, run a new stronger-source scout rather than another decoded guard,
+query-memory, Perceiver, raw DynAlign, or adjacent Qwen2.5-Math-1.5B -> Qwen3
+SVAMP slice.
 
 ## Pruning Rules From The Audit
 
@@ -361,3 +359,15 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 
 Proceed only if PID `31103` is absent or no longer a stuck
 `scripts/calibrate.py --device mps` process.
+
+## Post-Kill Update
+
+After this audit, `source_likelihood_sketch` was killed on the SVAMP70
+live/holdout surface, and post-sketch syndrome-bound replays also failed to
+justify a richer predictor on that exact surface. A post-kill chal241-310
+source-sidecar CV router then failed with best matched `10/70` and only `1`
+clean source-necessary ID. A consolidated CPU-only surface scan showed
+`chal311_380` already exists and is weak (`source-only=3`).
+
+Current live branch: none. Historical positives are pruned to mechanism clues
+until a new source surface clears the source-mass gate.

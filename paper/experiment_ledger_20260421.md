@@ -7968,6 +7968,101 @@ Next exact gate:
 ps -p 31103 -o pid,ppid,stat,etime,command
 ```
 
-After PID `31103` is cleared, run the `chal311_380` MPS surface scout command
-recorded in `paper/svamp70_syndrome_bounds_after_sketch_kill_20260427.md`,
-then replay syndrome bounds before coding another predictor.
+After PID `31103` is cleared, run a new stronger-source surface scout rather
+than the previously recorded `chal311_380` adjacent SVAMP scout; existing
+`chal311_380` artifacts already fail the source-mass threshold.
+
+## 2026-04-27 Cycle - Post-kill historical and CPU audit
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; no deployable positive
+   source-communication method has cleared live/holdout controls.
+2. Current paper story: source side-information has real headroom and useful
+   bounds, but deployable rows are control-explained, target-self destructive,
+   seed-unstable, or too weak.
+3. Exact blocker to submission: no live branch remains, and MPS remains
+   blocked by orphaned PID `31103` in `STAT=UE`.
+4. Live branch: none.
+5. Highest-priority gate: exhaust CPU-only existing-artifact branch selection
+   before spending the next clear MPS window.
+6. Scale-up rung: post-kill branch selection / hard-blocker checkpoint.
+
+What changed:
+
+- Re-read the historical positive MD/results trail for `rotalign`,
+  `latent_bridge`, and result folders.
+- Ran a post-kill chal241-310 source-sidecar CV router gate.
+- Ran a consolidated CPU-only source-headroom scan including `chal311_380`.
+- Added focused memo:
+  `paper/postkill_historical_cpu_audit_20260427.md`.
+
+Result summary:
+
+- `chal241-310` CV router fails: best row matches `10/70`, recovers only
+  `1` clean source-necessary ID, control clean union `0`, accepted harm `1`.
+- Existing-surface scan: `svamp70_live` and `svamp70_holdout` have headroom but
+  are already consumed and killed by controls; `chal171-240`, `chal241-310`,
+  and `chal311-380` are weak with source-only `2`, `4`, and `3` respectively.
+- Historical positives remain mechanism clues only:
+  `dynalign_module_replace_residrank16` is seed-unstable, ID-weighted
+  query-innovation recovers only one clean ID, and Perceiver/query-memory
+  checkpoints fail six-clean-ID controls.
+
+Decision:
+
+- Existing-artifact CPU mining is exhausted.
+- Do not run the old `chal311_380` MPS scout after the blocker clears; those
+  artifacts already exist and fail the surface threshold.
+- End this segment as a hard blocker: useful MPS work is unsafe until PID
+  `31103` is cleared.
+
+Artifacts:
+
+- `results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_cv_router_penalty010_postkill_sidecar.json`
+  - sha256:
+    `99a742cd10efaf43136be8d3d666b1bfc3fcb73507c66289d58cec5c1654e51b`
+- `results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_cv_router_penalty010_postkill_sidecar.md`
+  - sha256:
+    `672fc1e882b01908d227ab814c8359ecca30e107e2e376437f943abd086f74f1`
+- `results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_cv_router_penalty010_postkill_predictions.jsonl`
+  - sha256:
+    `24dbd297d4c18cabe79f141e34df858df6437419d54e6913b0fff9e0770e7a88`
+- `.debug/cpu_only_next_gate_20260427/source_headroom_surfaces_with_chal311.json`
+  - sha256:
+    `181df1b5b0f71c6bde86cccc7d72cddea77c61bbe54c2f762f8fb07952e885eb`
+- `.debug/cpu_only_next_gate_20260427/source_headroom_surfaces_with_chal311.md`
+  - sha256:
+    `0bbf961578eaf80db54ed99bcb3c82b1bafbd31b884f0544d58dd42068fc3981`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_baselines.py --help
+git diff --check
+```
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If the PID is absent, run:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --results-dir results/qwen25math7b_qwen3_svamp70_surface_scout_20260427 \
+  --translator checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt \
+  --source-model Qwen/Qwen2.5-Math-7B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods target source t2t \
+  --limit 70 \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```

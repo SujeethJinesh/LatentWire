@@ -146,25 +146,11 @@ generation or forward passes. MPS remains blocked by orphaned PID `31103`:
 ps -p 31103 -o pid,ppid,stat,etime,command
 ```
 
-Next exact action after that process is cleared:
+Superseding update: the `chal311_380` artifacts were later found already
+materialized and weak (`source-only=3/70`). The older adjacent-slice command is
+therefore obsolete and should not be run as the next MPS action. It also
+referenced a non-existent `scripts/run_baselines.py` helper; the correct
+surface materializer in this repo is `scripts/materialize_generation_baselines.py`.
 
-```bash
-PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_baselines.py \
-  --dataset svamp \
-  --device mps \
-  --dtype float32 \
-  --source-model Qwen/Qwen2.5-Math-1.5B-Instruct \
-  --target-model Qwen/Qwen3-0.6B \
-  --limit 70 \
-  --offset 310 \
-  --output-dir results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260427 \
-  --methods target_alone,source_alone,text_to_text,c2c_generate \
-  --source-use-chat-template \
-  --target-use-chat-template \
-  --source-enable-thinking false \
-  --target-enable-thinking false
-```
-
-If the generated surface has source/C2C headroom, run the existing
-`analyze_svamp32_syndrome_sidecar_probe.py` bound replay before implementing
-another learned source predictor.
+After PID `31103` is cleared, follow the next gate recorded in
+`paper/postkill_historical_cpu_audit_20260427.md`.

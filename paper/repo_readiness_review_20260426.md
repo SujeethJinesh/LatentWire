@@ -744,6 +744,66 @@ Next exact gate:
 ps -p 31103 -o pid,ppid,stat,etime,command
 ```
 
-If clear, run the `chal311_380` source-surface scout recorded in
-`paper/svamp70_syndrome_bounds_after_sketch_kill_20260427.md`, then replay
-syndrome bounds before implementing another predictor.
+If clear, do not run the old `chal311_380` scout recorded in
+`paper/svamp70_syndrome_bounds_after_sketch_kill_20260427.md`; those artifacts
+already exist and fail the surface gate.
+
+## 2026-04-27 Post-Kill Historical And CPU Audit
+
+Readiness remains not ICLR-ready. Current live branch: none.
+
+The historical positive audit was extended after the `source_likelihood_sketch`
+and post-sketch syndrome-bound kills:
+
+- `dynalign_module_replace_residrank16` remains a mechanism clue only; seed
+  stability fails and finite repeats do not preserve the seed-0 lift.
+- ID-weighted query innovation remains a useful single-ID clue, but still
+  recovers only `1/6` clean IDs and does not preserve target-self repair.
+- Perceiver/query-memory checkpoints remain killed after six-clean-ID source
+  controls.
+- Source-contrastive sidecar remains the best historical formulation clue, but
+  shallow source-text feature routing does not rescue weak adjacent surfaces.
+
+New CPU-only evidence:
+
+- chal241-310 post-kill source-sidecar CV router fails: best row matches
+  `10/70`, clean source-necessary `1`, control clean union `0`, accepted harm
+  `1`.
+- consolidated existing-surface scan shows `chal311_380` is already available
+  and weak: target `21/70`, source `8/70`, source-only `3`, oracle `24/70`.
+- existing-artifact CPU mining is exhausted; no remaining CPU-only command can
+  promote a positive method.
+
+Focused memo:
+
+- `paper/postkill_historical_cpu_audit_20260427.md`
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` is absent, the next MPS command should be a genuinely new
+stronger-source scout:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --results-dir results/qwen25math7b_qwen3_svamp70_surface_scout_20260427 \
+  --translator checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt \
+  --source-model Qwen/Qwen2.5-Math-7B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods target source t2t \
+  --limit 70 \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Only run C2C or learned connector work if that scout has ordered ID parity,
+high numeric coverage, source-only over target at least `6/70`, and
+target-or-source oracle at least target plus `6/70`.
