@@ -139,3 +139,22 @@ Cheap collapse telemetry to attach to any future JEPA-style sidecar:
 - route/label entropy and zero-margin rate
 - matched-vs-answer-only cosine
 - matched-vs-control paired margin distribution
+
+## 2026-04-27 Clean6 Gate Addendum
+
+The SVAMP32 clean6 target-only sampling gate changes the next experiment but not
+the promotion status:
+
+1. Blocker helped: target/no-source generation now has strict-small reachable
+   headroom (`2/6` clean IDs), but numeric source sidecars select no clean
+   correct candidates.
+2. Mechanism/design idea: use JEPA as an answer-masked process/latent ranking
+   objective over the reachable candidate pool, not as another decoded-number
+   sidecar.
+3. Next experiment change: restrict the next smoke to the two reachable clean
+   IDs, predict frozen target/candidate latent or KV summaries from dual
+   answer-masked source views, and require matched source to beat answer-only,
+   zero-source, shuffled-source, target-only, slots-only, and random same-byte
+   controls.
+4. Role: inspiration, anti-collapse diagnostics, ablation design, and paper
+   framing. Still not method evidence.

@@ -11527,3 +11527,105 @@ Next exact gate:
   slice (`SVAMP32` or all target-wrong/source-disagreement IDs), then test only
   answer-masked source signals against answer-only, shuffled-source,
   random-sidecar, target-only, and slots-only controls.
+
+## 2026-04-27 Cycle 16 - SVAMP32 Target-Only Clean6 Sampling Gate
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; no source-derived positive method
+   survives answer masking and source-destroying controls.
+2. Current paper story: target/no-source sampling can create target-side
+   candidate reachability, but current source selectors either relay final
+   answers or collapse to no accepted signal after answer masking.
+3. Exact blocker: source-derived non-answer information must select newly
+   reachable target candidates without source final/verified-answer leakage.
+4. Current live branches: target-only/no-source candidate pools with strict
+   source controls; JEPA-style latent/process ranking only as a follow-up design
+   branch.
+5. Highest-priority gate: SVAMP32 clean C2C residual IDs with target-only
+   sampled candidates and full/answer-only/answer-masked selector controls.
+6. Scale-up rung: strict small gate.
+
+Harness update:
+
+- `scripts/extend_target_set_candidate_labels.py`
+  - added explicit `--ids` and `--ids-file` selectors, matching the subset
+    materializer contract
+  - added `--override-clean-residual-ids` so C2C clean residual slices can reuse
+    decoder-compatible source/target surfaces without schema hand edits
+- tests: `tests/test_extend_target_set_candidate_labels.py`
+
+Strict-small gate:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_id_subset.py \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --target-set-json results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json \
+  --id-fields clean_residual_targets \
+  --output-jsonl results/svamp32_target_sampling_clean6_20260427/clean6_eval.jsonl \
+  --output-meta-json results/svamp32_target_sampling_clean6_20260427/clean6_eval.meta.json
+
+HF_HUB_DISABLE_XET=1 PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/sample_target_candidate_surface.py \
+  --eval-file results/svamp32_target_sampling_clean6_20260427/clean6_eval.jsonl \
+  --model Qwen/Qwen3-0.6B \
+  --samples 16 \
+  --temperature 0.9 \
+  --top-p 0.95 \
+  --seed 31 \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --use-chat-template \
+  --enable-thinking false \
+  --output-jsonl results/svamp32_target_sampling_clean6_20260427/target_only_samples.jsonl \
+  --output-json results/svamp32_target_sampling_clean6_20260427/target_only_samples.json \
+  --output-md results/svamp32_target_sampling_clean6_20260427/target_only_samples.md
+```
+
+Target/no-source generator result:
+
+- clean residual IDs: `6`
+- target-only samples per ID: `16`
+- numeric coverage: `96/96`
+- candidate oracle: `2/6`
+- reachable clean IDs: `3e8a5691f5443495`, `575d7e83d84c1e67`
+
+Selector controls:
+
+| Profile Mode | Matched Correct | Matched Accepted | Clean Correct | Source-Necessary Clean | Decision |
+|---|---:|---:|---:|---:|---|
+| `full` | 0/6 | 4 | 0 | 0 | fail |
+| `answer_only` | 0/6 | 4 | 0 | 0 | fail |
+| `answer_masked` | 0/6 | 0 | 0 | 0 | fail |
+
+JEPA/LeJEPA/V-JEPA update:
+
+- references remain in `references/474_jepa_anticollapse_refs.md`
+- committee decision: use JEPA only as an answer-masked process/latent ranking
+  design with frozen target/candidate latent targets and collapse telemetry
+- local JEPA smoke remains negative: matched `10/32`, target-only `14/32`,
+  clean source-necessary `0`
+
+Decision:
+
+- target/no-source generator passes the strict-small headroom floor
+- current numeric source-candidate sidecar fails as communication
+- do not tune this selector family further
+
+Artifacts:
+
+- `results/svamp32_target_sampling_clean6_20260427/manifest.md`
+- `results/svamp32_target_sampling_clean6_20260427/target_only_samples.md`
+- `results/svamp32_target_sampling_clean6_20260427/sampled_clean6_target_set.md`
+- `results/svamp32_target_sampling_clean6_20260427/top_selector_full.md`
+- `results/svamp32_target_sampling_clean6_20260427/top_selector_answer_only.md`
+- `results/svamp32_target_sampling_clean6_20260427/top_selector_answer_masked.md`
+- `paper/svamp32_target_sampling_clean6_gate_20260427.md`
+
+Next exact gate:
+
+- Build an answer-masked process/latent ranking smoke only over the two reachable
+  clean IDs. Pass requires `>=1` source-necessary clean selection, control clean
+  union `0`, accepted harm `0`, no selected candidate appearing unmasked in the
+  source trace, and variance/effective-rank/covariance/Barlow telemetry that
+  rules out representation collapse.

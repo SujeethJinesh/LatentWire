@@ -68,6 +68,17 @@ reachability to `2/3`, but the source selector is pruned: `full` and
 target-only/no-source candidate-pool generation followed by strictly
 answer-masked source selection controls.
 
+Update `2026-04-27`: the stricter SVAMP32 clean C2C residual target-only
+sampling gate separates generator headroom from communication. No-source target
+sampling reaches gold on `2/6` clean residual IDs with full numeric coverage,
+but the source selector fails: `full` and `answer_only` both select `0/6`
+correct clean IDs, and `answer_masked` accepts nothing. This preserves
+target/no-source candidate-pool generation as reusable headroom, but kills the
+current numeric source-candidate sidecar as a positive method. The next live
+candidate is a JEPA-style answer-masked process/latent ranking smoke on the two
+reachable clean IDs with frozen target/candidate latents, source-destroying
+controls, no-harm accounting, and collapse telemetry.
+
 Update `2026-04-27 00:50 PDT`: KVComm is now harness-ready for strict
 source-control evaluation, but it remains baseline/tooling evidence rather than
 a positive method. The wrapper supports matched, zero-source, shuffled-source,

@@ -1,0 +1,113 @@
+{
+  "command": "scripts/sample_target_candidate_surface.py --eval-file results/svamp32_target_sampling_clean6_20260427/clean6_eval.jsonl --model Qwen/Qwen3-0.6B --samples 16 --temperature 0.9 --top-p 0.95 --seed 31 --device mps --dtype float32 --max-new-tokens 64 --use-chat-template --enable-thinking false --output-jsonl results/svamp32_target_sampling_clean6_20260427/target_only_samples.jsonl --output-json results/svamp32_target_sampling_clean6_20260427/target_only_samples.json --output-md results/svamp32_target_sampling_clean6_20260427/target_only_samples.md",
+  "config": {
+    "device": "mps",
+    "dtype": "float32",
+    "enable_thinking": false,
+    "max_new_tokens": 64,
+    "samples": 16,
+    "seed": 31,
+    "temperature": 0.9,
+    "top_p": 0.95,
+    "use_chat_template": true
+  },
+  "date": "2026-04-27",
+  "eval_file": "results/svamp32_target_sampling_clean6_20260427/clean6_eval.jsonl",
+  "eval_file_sha256": "1cec9046a9684cf8a0486791a10308dd223e414d8c965eec0375cc1ed52f4a65",
+  "git_commit": "614f2a2d5482b3d5007b005b4f7df86c23c5479d",
+  "model": "Qwen/Qwen3-0.6B",
+  "output_jsonl": "results/svamp32_target_sampling_clean6_20260427/target_only_samples.jsonl",
+  "output_jsonl_sha256": "e04886fbee06ecba9976e778b3b2a2f3b7508deb13e0f1b130d411557c72561b",
+  "status": "target_only_candidates_sampled",
+  "summary": {
+    "candidate_oracle_correct": 2,
+    "candidate_oracle_ids": [
+      "3e8a5691f5443495",
+      "575d7e83d84c1e67"
+    ],
+    "example_n": 6,
+    "methods": {
+      "target_sample_s0": {
+        "correct": 0,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s1": {
+        "correct": 0,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s10": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s11": {
+        "correct": 0,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s12": {
+        "correct": 0,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s13": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s14": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s15": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s2": {
+        "correct": 0,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s3": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s4": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s5": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s6": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s7": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s8": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      },
+      "target_sample_s9": {
+        "correct": 1,
+        "n": 6,
+        "numeric_coverage": 6
+      }
+    },
+    "sample_n": 16
+  }
+}

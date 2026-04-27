@@ -83,6 +83,17 @@ def _selected_ids(payload: dict[str, Any], fields: Sequence[str]) -> list[str]:
     return _ordered_unique(values)
 
 
+def _ids_from_file(path: pathlib.Path) -> list[str]:
+    values: list[str] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            values.append(stripped)
+    return _ordered_unique(values)
+
+
 def _filter_payload(payload: dict[str, Any], selected_ids: Sequence[str]) -> dict[str, Any]:
     selected = set(selected_ids)
     out = json.loads(json.dumps(payload))
@@ -138,21 +149,56 @@ def _write_md(path: pathlib.Path, manifest: dict[str, Any]) -> None:
 def main(argv: list[str] | None = None) -> dict[str, Any]:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-target-set", required=True)
-    parser.add_argument("--id-fields", nargs="+", required=True)
+    parser.add_argument("--id-fields", nargs="+")
+    parser.add_argument("--ids", nargs="+")
+    parser.add_argument("--ids-file")
+    parser.add_argument(
+        "--override-clean-residual-ids",
+        nargs="+",
+        help="Replace ids.clean_residual_targets after filtering; values must be in the selected ID set.",
+    )
     parser.add_argument("--candidate", action="append", type=_parse_spec, default=[])
     parser.add_argument("--date", default=date.today().isoformat())
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--output-md", required=True)
     parser.add_argument("--manifest-json")
     args = parser.parse_args(argv)
+    id_sources = [bool(args.id_fields), bool(args.ids), bool(args.ids_file)]
+    if sum(int(source) for source in id_sources) != 1:
+        parser.error("provide exactly one of --id-fields, --ids, or --ids-file")
     raw_argv = sys.argv if argv is None else ["scripts/extend_target_set_candidate_labels.py", *argv]
 
     base_path = _resolve(args.base_target_set)
     payload = _read_json(base_path)
-    selected = _selected_ids(payload, args.id_fields)
+    if args.id_fields:
+        selected = _selected_ids(payload, args.id_fields)
+        id_source: dict[str, Any] = {"type": "id_fields", "id_fields": list(args.id_fields)}
+    elif args.ids_file:
+        ids_file = _resolve(args.ids_file)
+        selected = _ids_from_file(ids_file)
+        id_source = {
+            "type": "ids_file",
+            "ids_file": _display_path(ids_file),
+            "ids_file_sha256": _sha256(ids_file),
+        }
+    else:
+        selected = _ordered_unique([str(value) for value in args.ids])
+        id_source = {"type": "ids"}
     if not selected:
-        raise ValueError(f"No IDs selected from {base_path} via fields {args.id_fields}")
+        raise ValueError(f"No IDs selected from {base_path} via {id_source['type']}")
     out_payload = _filter_payload(payload, selected)
+    if args.override_clean_residual_ids:
+        override_clean = _ordered_unique([str(value) for value in args.override_clean_residual_ids])
+        selected_set = set(out_payload["reference_ids"])
+        missing_override = [example_id for example_id in override_clean if example_id not in selected_set]
+        if missing_override:
+            raise ValueError(f"override clean residual IDs are not selected: {missing_override}")
+        out_payload.setdefault("ids", {})["clean_residual_targets"] = override_clean
+        for row in out_payload.get("rows", []):
+            labels = list(row.get("labels", []))
+            if str(row.get("example_id")) in override_clean and "clean_residual_target_override" not in labels:
+                labels.append("clean_residual_target_override")
+            row["labels"] = labels
     baselines = list(out_payload.setdefault("artifacts", {}).setdefault("baselines", []))
     candidate_summaries: list[dict[str, Any]] = []
     for spec in args.candidate:
@@ -161,7 +207,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     out_payload["artifacts"]["baselines"] = baselines
     out_payload["candidate_extension"] = {
         "base_target_set": _display_path(base_path),
-        "id_fields": list(args.id_fields),
+        "id_source": id_source,
+        "override_clean_residual_ids": list(args.override_clean_residual_ids or []),
         "candidate_labels": [spec.label for spec in args.candidate],
     }
 
@@ -176,6 +223,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         "git_commit": _git_commit(),
         "base_target_set": _display_path(base_path),
         "base_target_set_sha256": _sha256(base_path),
+        "id_source": id_source,
         "output_json": _display_path(output_json),
         "output_json_sha256": _sha256(output_json),
         "output_md": _display_path(output_md),

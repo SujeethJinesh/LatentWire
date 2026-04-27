@@ -1,0 +1,24 @@
+{
+  "date": "2026-04-27",
+  "eval_file": "results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl",
+  "eval_file_sha256": "90093683765363baf86c5402d66d7b4641ef22e4957c0de80ff6768da3968b64",
+  "id_source": {
+    "id_fields": [
+      "clean_residual_targets"
+    ],
+    "target_set_json": "results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json",
+    "target_set_sha256": "dfa26e421aca995fcf03f2eb9cf807d62de17e8b1601c85b4277328bd129d154",
+    "type": "target_set"
+  },
+  "output_jsonl": "results/svamp32_target_sampling_clean6_20260427/clean6_eval.jsonl",
+  "output_n": 6,
+  "output_sha256": "1cec9046a9684cf8a0486791a10308dd223e414d8c965eec0375cc1ed52f4a65",
+  "selected_ids": [
+    "1d50b408c8f5cd2c",
+    "3e8a5691f5443495",
+    "47464cc0b064f172",
+    "575d7e83d84c1e67",
+    "6e9745b37ab6fc45",
+    "de1bf4d142544e5b"
+  ]
+}
