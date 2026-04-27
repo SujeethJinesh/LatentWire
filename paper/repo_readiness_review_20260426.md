@@ -1103,3 +1103,34 @@ recorded in `paper/postkill_historical_cpu_audit_20260427.md`; only build the
 learned syndrome/innovation sidecar if that scout has ordered ID parity, high
 numeric coverage, source-only over target by at least `6/70`, and
 target-or-source oracle at least target plus `6/70`.
+
+## 2026-04-27 Semantic Predicate Sidecar Harness
+
+Readiness remains not ICLR-ready. Current live branch: none.
+
+The semantic-predicate decoder has been hardened into the reusable learned
+sidecar gate:
+
+- optional candidate-score sidecar JSONL inputs
+- random same-byte sidecar control
+- hash-derived non-self shuffled controls
+- source-control provenance fields
+- tests for target-safe synthetic sidecar recovery
+
+Replay on the existing SVAMP70 live/holdout surfaces remains a method failure:
+
+- live matched: `25/70`, clean source-necessary `3`, accepted harm `0`
+- live random same-byte sidecar: `17/70`, clean source-necessary `1`,
+  accepted harm `7`
+- holdout matched: `9/70`, clean source-necessary `0`, accepted harm `0`
+
+Decision: old semantic-predicate branch is killed more decisively. Keep the
+hardened harness only for a genuinely new frozen learned sidecar after a
+stronger source surface clears.
+
+New memo:
+
+- `paper/semantic_predicate_sidecar_harness_20260427.md`
+
+Next exact gate remains the MPS-blocker check, then the stronger-source scout
+from `paper/postkill_historical_cpu_audit_20260427.md`.

@@ -14,6 +14,7 @@ import hashlib
 import json
 import math
 import pathlib
+import random
 import re
 import sys
 from collections import Counter
@@ -33,6 +34,7 @@ CONDITIONS = (
     "matched",
     "zero_source",
     "shuffled_source",
+    "random_sidecar",
     "label_shuffle",
     "target_only",
     "slots_only",
@@ -49,6 +51,7 @@ class Surface:
     target_set: dict[str, Any]
     records_by_label: dict[str, dict[str, dict[str, Any]]]
     reference_ids: list[str]
+    sidecars_by_id: dict[str, dict[str, Any]]
 
 
 @dataclass(frozen=True)
@@ -81,6 +84,22 @@ def _write_jsonl(path: pathlib.Path, rows: Sequence[dict[str, Any]]) -> None:
             handle.write(json.dumps(row, sort_keys=True) + "\n")
 
 
+def _load_sidecars(path: pathlib.Path | None) -> dict[str, dict[str, Any]]:
+    if path is None:
+        return {}
+    out: dict[str, dict[str, Any]] = {}
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            example_id = str(row.get("example_id", ""))
+            if not example_id:
+                raise ValueError(f"Sidecar row in {path} is missing example_id")
+            out[example_id] = row
+    return out
+
+
 def _record_spec(label: str, raw: dict[str, Any]) -> syndrome.RowSpec:
     return syndrome.RowSpec(
         label=label,
@@ -108,7 +127,12 @@ def _load_records(raw: dict[str, Any]) -> dict[str, dict[str, dict[str, Any]]]:
     return records
 
 
-def _load_surface(label: str, path: pathlib.Path) -> Surface:
+def _load_surface(
+    label: str,
+    path: pathlib.Path,
+    *,
+    sidecar_path: pathlib.Path | None = None,
+) -> Surface:
     raw = _read_json(path)
     return Surface(
         label=label,
@@ -116,6 +140,7 @@ def _load_surface(label: str, path: pathlib.Path) -> Surface:
         target_set=raw,
         records_by_label=_load_records(raw),
         reference_ids=[str(example_id) for example_id in raw["reference_ids"]],
+        sidecars_by_id=_load_sidecars(sidecar_path),
     )
 
 
@@ -298,23 +323,178 @@ def _candidate_pool(surface: Surface, example_id: str) -> list[Candidate]:
     ]
 
 
-def _condition_source_row(surface: Surface, index: int, condition: str) -> dict[str, Any] | None:
+def _hash_nonself_index(surface: Surface, index: int, *, salt: str) -> int:
+    if len(surface.reference_ids) <= 1:
+        return index
+    example_id = surface.reference_ids[index]
+    ranked: list[tuple[bytes, int]] = []
+    for other_index, other_id in enumerate(surface.reference_ids):
+        if other_index == index:
+            continue
+        digest = hashlib.sha256(f"{salt}:{example_id}:{other_id}".encode("utf-8")).digest()
+        ranked.append((digest, other_index))
+    ranked.sort(key=lambda item: item[0])
+    return ranked[0][1]
+
+
+def _condition_source_row_and_id(
+    surface: Surface,
+    index: int,
+    condition: str,
+) -> tuple[dict[str, Any] | None, str | None]:
     example_id = surface.reference_ids[index]
     if condition == "matched":
-        return surface.records_by_label["source"].get(example_id)
+        return surface.records_by_label["source"].get(example_id), example_id
     if condition == "zero_source":
-        return None
+        return None, None
     if condition == "shuffled_source":
-        other_id = surface.reference_ids[(index + 1) % len(surface.reference_ids)]
-        return surface.records_by_label["source"].get(other_id)
+        other_index = _hash_nonself_index(surface, index, salt="shuffled_source")
+        other_id = surface.reference_ids[other_index]
+        return surface.records_by_label["source"].get(other_id), other_id
     if condition == "label_shuffle":
-        other_id = surface.reference_ids[(index + 7) % len(surface.reference_ids)]
-        return surface.records_by_label["source"].get(other_id)
+        other_index = _hash_nonself_index(surface, index, salt="label_shuffle")
+        other_id = surface.reference_ids[other_index]
+        return surface.records_by_label["source"].get(other_id), other_id
     if condition == "target_only":
-        return surface.records_by_label["target"].get(example_id)
+        return surface.records_by_label["target"].get(example_id), example_id
     if condition == "slots_only":
-        return surface.records_by_label.get("t2t", {}).get(example_id)
+        return surface.records_by_label.get("t2t", {}).get(example_id), example_id
+    if condition == "random_sidecar":
+        return None, None
     raise ValueError(f"Unsupported condition: {condition!r}")
+
+
+def _condition_source_row(surface: Surface, index: int, condition: str) -> dict[str, Any] | None:
+    return _condition_source_row_and_id(surface, index, condition)[0]
+
+
+def _random_profile(
+    *,
+    surface: Surface,
+    index: int,
+    candidates: Sequence[Candidate],
+) -> dict[str, Any]:
+    rng = random.Random(f"{surface.label}:{surface.reference_ids[index]}:random_sidecar")
+    final = rng.choice([candidate.value for candidate in candidates]) if candidates else None
+    features = {"source_has_final_numeric", "source_has_final_marker"}
+    features.add(rng.choice(["op_add", "op_sub", "op_mul", "op_div"]))
+    if rng.random() < 0.5:
+        features.add("source_has_verified_equation")
+    mentions = [final] if final is not None else []
+    verified = {final} if final is not None and "source_has_verified_equation" in features else set()
+    return {
+        "features": features,
+        "final": final,
+        "mentions": mentions,
+        "mention_set": set(mentions),
+        "last": mentions,
+        "verified": verified,
+        "pair": set(),
+        "quality": final is not None,
+    }
+
+
+def _score_bucket(value: float, *, prefix: str) -> str:
+    if value < 0.25:
+        bucket = "lt025"
+    elif value < 0.5:
+        bucket = "lt050"
+    elif value < 1.0:
+        bucket = "lt100"
+    elif value < 2.0:
+        bucket = "lt200"
+    else:
+        bucket = "ge200"
+    return f"{prefix}:{bucket}"
+
+
+def _sidecar_profile(
+    *,
+    sidecar: dict[str, Any] | None,
+    candidates: Sequence[Candidate],
+) -> dict[str, Any]:
+    if not sidecar:
+        return _source_profile(None)
+    raw_scores = sidecar.get("candidate_scores", [])
+    if not isinstance(raw_scores, list) or not raw_scores:
+        return _source_profile(None)
+    scored: list[dict[str, Any]] = []
+    for item in raw_scores:
+        if not isinstance(item, dict):
+            continue
+        label = str(item.get("label", ""))
+        if not label:
+            continue
+        try:
+            score = float(item.get("score", 0.0))
+        except (TypeError, ValueError):
+            score = 0.0
+        scored.append({"label": label, "score": score})
+    if not scored:
+        return _source_profile(None)
+    scored.sort(key=lambda item: (-float(item["score"]), item["label"]))
+    top = scored[0]
+    second_score = float(scored[1]["score"]) if len(scored) > 1 else float("-inf")
+    margin = float(top["score"]) - second_score if math.isfinite(second_score) else float(top["score"])
+    confidence = sidecar.get("confidence", margin)
+    try:
+        confidence_value = float(confidence)
+    except (TypeError, ValueError):
+        confidence_value = margin
+
+    top_value: str | None = None
+    for candidate in candidates:
+        if top["label"] in candidate.labels:
+            top_value = candidate.value
+            break
+    features = {
+        "source_has_final_numeric",
+        "sidecar_present",
+        f"sidecar_top_label:{top['label']}",
+        _score_bucket(abs(float(top["score"])), prefix="sidecar_top_score"),
+        _score_bucket(abs(float(margin)), prefix="sidecar_margin"),
+        _score_bucket(abs(float(confidence_value)), prefix="sidecar_confidence"),
+    }
+    if top_value is not None:
+        features.add("sidecar_top_maps_to_candidate")
+    mentions = [top_value] if top_value is not None else []
+    sidecar_bits = sidecar.get("sidecar_bits", sidecar.get("bits", 8))
+    try:
+        sidecar_bits_value = int(sidecar_bits)
+    except (TypeError, ValueError):
+        sidecar_bits_value = 8
+    return {
+        "features": features,
+        "final": top_value,
+        "mentions": mentions,
+        "mention_set": set(mentions),
+        "last": mentions,
+        "verified": set(),
+        "pair": set(),
+        "quality": top_value is not None,
+        "sidecar_bits": max(1, sidecar_bits_value),
+        "sidecar_top_label": top["label"],
+        "sidecar_margin": margin,
+        "sidecar_confidence": confidence_value,
+    }
+
+
+def _condition_source_profile(
+    *,
+    surface: Surface,
+    index: int,
+    condition: str,
+    candidates: Sequence[Candidate],
+) -> tuple[dict[str, Any], str | None]:
+    if condition == "random_sidecar":
+        return _random_profile(surface=surface, index=index, candidates=candidates), None
+    row, source_id = _condition_source_row_and_id(surface, index, condition)
+    if surface.sidecars_by_id and condition in {"matched", "shuffled_source", "label_shuffle"}:
+        return _sidecar_profile(
+            sidecar=surface.sidecars_by_id.get(str(source_id)),
+            candidates=candidates,
+        ), source_id
+    return _source_profile(row), source_id
 
 
 def _features_for_candidate(candidate: Candidate, profile: dict[str, Any], fallback: str | None) -> set[str]:
@@ -326,6 +506,11 @@ def _features_for_candidate(candidate: Candidate, profile: dict[str, Any], fallb
         features.add("candidate_is_fallback")
     if profile["final"] is not None and value == profile["final"]:
         features.add("candidate_eq_source_final")
+    if profile.get("sidecar_top_label") is not None:
+        if value == profile.get("final"):
+            features.add("candidate_eq_sidecar_top")
+        if str(profile["sidecar_top_label"]) in candidate.labels:
+            features.add("candidate_label_eq_sidecar_top")
     if value in profile["verified"]:
         features.add("candidate_in_verified_equation")
     if value in profile["mention_set"]:
@@ -359,11 +544,16 @@ def _candidate_training_rows(
     for index, example_id in enumerate(surface.reference_ids):
         if _fold_for_id(example_id, folds) not in train_folds:
             continue
-        source_row = _condition_source_row(surface, index, "matched")
-        profile = _source_profile(source_row)
         fallback = _prediction_numeric(surface.records_by_label["target"].get(example_id))
         gold = _gold_numeric(surface, example_id)
-        for candidate in _candidate_pool(surface, example_id):
+        candidates = _candidate_pool(surface, example_id)
+        profile, _ = _condition_source_profile(
+            surface=surface,
+            index=index,
+            condition="matched",
+            candidates=candidates,
+        )
+        for candidate in candidates:
             rows.append((_features_for_candidate(candidate, profile, fallback), candidate.value == gold))
     return rows
 
@@ -407,9 +597,13 @@ def _decode_example(
 ) -> dict[str, Any]:
     example_id = surface.reference_ids[index]
     fallback = _prediction_numeric(surface.records_by_label["target"].get(example_id))
-    source_row = _condition_source_row(surface, index, condition)
-    profile = _source_profile(source_row)
     candidates = _candidate_pool(surface, example_id)
+    profile, condition_source_id = _condition_source_profile(
+        surface=surface,
+        index=index,
+        condition=condition,
+        candidates=candidates,
+    )
     scored: list[dict[str, Any]] = []
     for candidate in candidates:
         features = _features_for_candidate(candidate, profile, fallback)
@@ -433,8 +627,10 @@ def _decode_example(
     )
     prediction = str(best["value"]) if accepted else fallback
     gold = _gold_numeric(surface, example_id)
+    source_final = profile["final"]
     return {
         "example_id": example_id,
+        "condition": condition,
         "prediction": prediction,
         "fallback_prediction": fallback,
         "gold_answer": gold,
@@ -443,8 +639,21 @@ def _decode_example(
         "best_candidate": best,
         "best_margin": margin,
         "source_quality": bool(profile["quality"]),
+        "condition_source_example_id": condition_source_id,
+        "condition_source_final": source_final,
+        "source_control_source_answers_overlap_target": bool(
+            condition_source_id is not None
+            and condition_source_id != example_id
+            and source_final is not None
+            and source_final == gold
+        ),
         "predicate_names": sorted(profile["features"]),
-        "sidecar_bytes": max(1, math.ceil((len(profile["features"]) + 8) / 8)),
+        "sidecar_bytes": max(
+            1,
+            math.ceil(
+                int(profile.get("sidecar_bits", len(profile["features"]) + 8)) / 8
+            ),
+        ),
     }
 
 
@@ -671,6 +880,9 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--live-target-set", required=True)
     parser.add_argument("--holdout-target-set", required=True)
+    parser.add_argument("--live-sidecar-jsonl")
+    parser.add_argument("--holdout-sidecar-jsonl")
+    parser.add_argument("--sidecar-format", choices=["candidate_scores"], default="candidate_scores")
     parser.add_argument("--mode", choices=["learned_logodds"], default="learned_logodds")
     parser.add_argument("--outer-folds", type=int, default=5)
     parser.add_argument("--accept-penalty", type=float, default=0.25)
@@ -690,13 +902,21 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     surfaces = [
         _analyze_surface(
-            surface=_load_surface("live", _resolve(args.live_target_set)),
+            surface=_load_surface(
+                "live",
+                _resolve(args.live_target_set),
+                sidecar_path=_resolve(args.live_sidecar_jsonl) if args.live_sidecar_jsonl else None,
+            ),
             outer_folds=args.outer_folds,
             accept_penalty=args.accept_penalty,
             harm_weight=args.harm_weight,
         ),
         _analyze_surface(
-            surface=_load_surface("holdout", _resolve(args.holdout_target_set)),
+            surface=_load_surface(
+                "holdout",
+                _resolve(args.holdout_target_set),
+                sidecar_path=_resolve(args.holdout_sidecar_jsonl) if args.holdout_sidecar_jsonl else None,
+            ),
             outer_folds=args.outer_folds,
             accept_penalty=args.accept_penalty,
             harm_weight=args.harm_weight,

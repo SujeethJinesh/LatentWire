@@ -9255,3 +9255,80 @@ If PID clears, run the stronger-source MPS surface scout from
 `paper/postkill_historical_cpu_audit_20260427.md`; only implement the learned
 syndrome/innovation sidecar if that scout clears source-mass, exact-ID, and
 numeric-coverage thresholds.
+
+### Cycle Addendum 2026-04-27 01:18 PDT - Sidecar Harness Hardening
+
+Cycle header:
+
+1. ICLR readiness: not ready; no positive method has passed controls,
+   target-self preservation, holdout, seed stability, systems accounting, and
+   cross-family falsification.
+2. Paper story: byte-efficient source side information remains the top branch,
+   but current SVAMP semantic predicates are falsification/tooling evidence.
+3. Exact blocker: missing learned source-derived sidecar plus persistent MPS
+   blocker PID `31103`.
+4. Live branch: none. Top candidate is learned source-derived
+   syndrome/innovation sidecar.
+5. Highest-priority gate: make the sidecar gate executable and harden controls
+   while MPS is blocked.
+6. Scale-up rung: CPU smoke / harness preparation.
+
+Code change:
+
+- `scripts/analyze_svamp_source_semantic_predicate_decoder.py` now supports
+  hash-derived non-self shuffled controls, `random_sidecar`, source-control
+  provenance fields, and optional learned sidecar JSONL inputs via
+  `--live-sidecar-jsonl` / `--holdout-sidecar-jsonl`.
+- `tests/test_analyze_svamp_source_semantic_predicate_decoder.py` now covers
+  random-sidecar/non-self controls and a synthetic candidate-score sidecar that
+  recovers one clean ID while preserving target-correct IDs.
+
+CPU replay command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp_source_semantic_predicate_decoder.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --mode learned_logodds \
+  --outer-folds 5 \
+  --accept-penalty 0.75 \
+  --harm-weight 20.0 \
+  --min-live-correct 25 \
+  --min-live-clean-source-necessary 2 \
+  --min-holdout-correct 10 \
+  --min-holdout-clean-source-necessary 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-dir .debug/semantic_predicate_decoder_sidecar_harness_20260427 \
+  --output-predictions-jsonl .debug/semantic_predicate_decoder_sidecar_harness_20260427/predictions.jsonl
+```
+
+Result: `semantic_predicate_decoder_fails_smoke`.
+
+- Live matched: `25/70`, clean `3`, accepted harm `0`.
+- Live random same-byte sidecar: `17/70`, clean `1`, accepted harm `7`.
+- Holdout matched: `9/70`, clean `0`, accepted harm `0`.
+- Holdout random same-byte sidecar: `9/70`, clean `0`, accepted harm `1`.
+
+Decision: old semantic-predicate branch is more decisively killed. The
+hardened harness is retained for future learned sidecars from a stronger
+surface or frozen out-of-fold source-side predictor.
+
+Artifact hashes:
+
+- `.debug/semantic_predicate_decoder_sidecar_harness_20260427/semantic_predicate_decoder.json`:
+  `9cc4804426b6eb1b0f47f7f3fb091cb9185b763379e9fc7c94d08ee936591ed0`
+- `.debug/semantic_predicate_decoder_sidecar_harness_20260427/semantic_predicate_decoder.md`:
+  `ee8210a6d6029bf2de2594de2b70db6a48aa6e0075eb4d58214274b1e10e9144`
+- `.debug/semantic_predicate_decoder_sidecar_harness_20260427/predictions.jsonl`:
+  `2fa404726a3cb654ec2de6cba75cfceac3e20fccf7ca2b5b873a687020aa6aed`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_analyze_svamp_source_semantic_predicate_decoder.py -q
+./venv_arm64/bin/python -m py_compile scripts/analyze_svamp_source_semantic_predicate_decoder.py tests/test_analyze_svamp_source_semantic_predicate_decoder.py
+```
+
+Result: `5 passed`, compile passed.

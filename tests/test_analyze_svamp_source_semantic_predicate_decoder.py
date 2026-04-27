@@ -108,3 +108,143 @@ def test_synthetic_surface_can_recover_source_with_controls(tmp_path):
     )
     assert payload["surfaces"][0]["summaries"]["matched"]["clean_source_necessary_count"] >= 1
     assert payload["surfaces"][0]["summaries"]["matched"]["accepted_harm_count"] == 0
+    assert "random_sidecar" in payload["surfaces"][0]["summaries"]
+
+
+def test_hash_shuffle_and_random_sidecar_are_nonself_controls(tmp_path):
+    target_rows = [
+        _row("a", "target_alone", "Target says 7", "7", "12"),
+        _row("b", "target_alone", "Target says 5", "5", "5"),
+        _row("c", "target_alone", "Target says 8", "8", "8"),
+    ]
+    source_rows = [
+        _row("a", "source_alone", "We compute 4 x 3 = 12. Answer: 12", "12", "12"),
+        _row("b", "source_alone", "We compute 2 + 3 = 5. Answer: 5", "5", "5"),
+        _row("c", "source_alone", "We compute 4 + 4 = 8. Answer: 8", "8", "8"),
+    ]
+    _write_jsonl(tmp_path / "target.jsonl", target_rows)
+    _write_jsonl(tmp_path / "source.jsonl", source_rows)
+    target_set = {
+        "artifacts": {
+            "target": {"path": str(tmp_path / "target.jsonl"), "method": "target_alone"},
+            "source": {"path": str(tmp_path / "source.jsonl"), "method": "source_alone"},
+            "baselines": [],
+            "controls": [],
+        },
+        "ids": {"clean_source_only": ["a"], "target_self_repair": ["b", "c"]},
+        "reference_ids": ["a", "b", "c"],
+    }
+    target_set_path = tmp_path / "target_set.json"
+    target_set_path.write_text(json.dumps(target_set), encoding="utf-8")
+    surface = decoder._load_surface("toy", target_set_path)
+    weights = {"__prior__": 0.0, "candidate_eq_source_final": 10.0}
+    rule = {"min_score": -1.0, "min_margin": -1.0}
+
+    shuffled = decoder._decode_example(
+        surface=surface,
+        index=0,
+        condition="shuffled_source",
+        weights=weights,
+        rule=rule,
+    )
+    random_sidecar = decoder._decode_example(
+        surface=surface,
+        index=0,
+        condition="random_sidecar",
+        weights=weights,
+        rule=rule,
+    )
+
+    assert shuffled["condition_source_example_id"] != "a"
+    assert shuffled["condition_source_final"] in {"5", "8"}
+    assert shuffled["source_control_source_answers_overlap_target"] is False
+    assert random_sidecar["condition_source_example_id"] is None
+    assert random_sidecar["source_quality"] is True
+    assert random_sidecar["sidecar_bytes"] >= 1
+
+
+def test_candidate_score_sidecar_can_drive_target_safe_recovery(tmp_path):
+    target_rows = [
+        _row("a", "target_alone", "Target says 7", "7", "12"),
+        _row("b", "target_alone", "Target says 5", "5", "5"),
+        _row("c", "target_alone", "Target says 8", "8", "8"),
+        _row("d", "target_alone", "Target says 9", "9", "9"),
+    ]
+    source_rows = [
+        _row("a", "source_alone", "source final 12", "12", "12"),
+        _row("b", "source_alone", "source final 5", "5", "5"),
+        _row("c", "source_alone", "source final 8", "8", "8"),
+        _row("d", "source_alone", "source final 9", "9", "9"),
+    ]
+    sidecar_rows = [
+        {
+            "example_id": "a",
+            "candidate_scores": [
+                {"label": "target", "score": 0.0},
+                {"label": "source", "score": 3.0},
+            ],
+            "confidence": 3.0,
+            "sidecar_bits": 8,
+        }
+    ]
+    sidecar_rows.extend(
+        {
+            "example_id": example_id,
+            "candidate_scores": [
+                {"label": "target", "score": 3.0},
+                {"label": "source", "score": 0.0},
+            ],
+            "confidence": 3.0,
+            "sidecar_bits": 8,
+        }
+        for example_id in ("b", "c", "d")
+    )
+    _write_jsonl(tmp_path / "target.jsonl", target_rows)
+    _write_jsonl(tmp_path / "source.jsonl", source_rows)
+    _write_jsonl(tmp_path / "sidecar.jsonl", sidecar_rows)
+    target_set = {
+        "artifacts": {
+            "target": {"path": str(tmp_path / "target.jsonl"), "method": "target_alone"},
+            "source": {"path": str(tmp_path / "source.jsonl"), "method": "source_alone"},
+            "baselines": [],
+            "controls": [],
+        },
+        "ids": {"clean_source_only": ["a"], "target_self_repair": ["b", "c", "d"]},
+        "reference_ids": ["a", "b", "c", "d"],
+    }
+    target_set_path = tmp_path / "target_set.json"
+    target_set_path.write_text(json.dumps(target_set), encoding="utf-8")
+
+    payload = decoder.main(
+        [
+            "--live-target-set",
+            str(target_set_path),
+            "--holdout-target-set",
+            str(target_set_path),
+            "--live-sidecar-jsonl",
+            str(tmp_path / "sidecar.jsonl"),
+            "--holdout-sidecar-jsonl",
+            str(tmp_path / "sidecar.jsonl"),
+            "--outer-folds",
+            "1",
+            "--min-live-correct",
+            "4",
+            "--min-live-clean-source-necessary",
+            "1",
+            "--min-holdout-correct",
+            "4",
+            "--min-holdout-clean-source-necessary",
+            "1",
+            "--max-accepted-harm",
+            "0",
+            "--output-dir",
+            str(tmp_path / "out"),
+        ]
+    )
+    matched = payload["surfaces"][0]["summaries"]["matched"]
+    zero = payload["surfaces"][0]["summaries"]["zero_source"]
+    assert payload["status"] == "semantic_predicate_decoder_passes_smoke"
+    assert matched["clean_source_necessary_count"] == 1
+    assert matched["accepted_harm_count"] == 0
+    assert matched["mean_sidecar_bytes"] == 1
+    assert zero["clean_source_necessary_count"] == 0
