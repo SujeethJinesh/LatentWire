@@ -102,3 +102,12 @@ not reuse fixed decoded guards, shallow source-text routers, tiny prefix
 emitters, or Perceiver target-memory checkpoints. The next method branch must
 be a materially different rate-capped source interface on this live/holdout
 surface, or a new source/target scout once MPS is clear.
+
+Immediate resume command before any new MPS work:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Proceed only if PID `31103` is gone or no longer the stuck
+`scripts/calibrate.py --device mps` process.

@@ -7495,3 +7495,12 @@ Next exact gate after clearing PID `31103`:
 - implement only a materially different rate-capped source interface on this
   live/holdout surface, or scout a new source/target pair if a cached stronger
   source is available
+
+Immediate resume command before any new MPS work:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Proceed only if PID `31103` is gone or no longer a `scripts/calibrate.py`
+process using `--device mps`.
