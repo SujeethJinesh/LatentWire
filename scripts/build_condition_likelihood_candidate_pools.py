@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -18,9 +19,19 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts import harness_common as harness
+from scripts import analyze_svamp_source_semantic_predicate_decoder as decoder
 
 
-CONDITIONS = ("matched", "zero_source", "shuffled_source", "label_shuffle", "target_only", "slots_only")
+CONDITIONS = (
+    "matched",
+    "zero_source",
+    "shuffled_source",
+    "label_shuffle",
+    "target_only",
+    "slots_only",
+    "answer_only",
+    "answer_masked_source",
+)
 
 
 def _resolve(path: str | pathlib.Path) -> pathlib.Path:
@@ -130,6 +141,78 @@ def _blank_candidate(*, current: dict[str, Any], method: str, condition: str) ->
     return row
 
 
+def _source_answer_values(row: dict[str, Any]) -> list[str]:
+    values: set[str] = set()
+    profile = decoder._source_profile(row)
+    if profile.get("final") is not None:
+        values.add(str(profile["final"]))
+    values |= {str(value) for value in profile.get("verified", [])}
+    normalized = row.get("normalized_prediction")
+    if normalized is not None and str(normalized).strip():
+        values.add(str(normalized).strip())
+    numeric = harness._extract_prediction_numeric_answer(str(row.get("prediction", "")))
+    if numeric is not None:
+        values.add(str(numeric))
+    return sorted(values, key=lambda value: (-len(value), value))
+
+
+def _mask_answer_values(text: str, values: Sequence[str]) -> tuple[str, int]:
+    masked = str(text)
+    hits = 0
+    for value in values:
+        if not value:
+            continue
+        pattern = re.compile(rf"(?<![A-Za-z0-9_.-]){re.escape(str(value))}(?![A-Za-z0-9_.-])")
+        masked, count = pattern.subn("[MASK]", masked)
+        hits += int(count)
+    return masked, hits
+
+
+def _answer_only_candidate(*, current: dict[str, Any], donor: dict[str, Any], method: str, condition: str) -> dict[str, Any]:
+    values = _source_answer_values(donor)
+    value = values[0] if values else ""
+    row = dict(current)
+    row.update(
+        {
+            "method": method,
+            "prediction": value,
+            "normalized_prediction": value,
+            "correct": _is_correct_for_current_answer(value, current) if value else False,
+            "control_condition": condition,
+            "source_answer_values": values,
+            "control_donor_example_id": str(donor.get("example_id", current.get("example_id"))),
+        }
+    )
+    return row
+
+
+def _answer_masked_source_candidate(
+    *,
+    current: dict[str, Any],
+    donor: dict[str, Any],
+    method: str,
+    condition: str,
+) -> dict[str, Any]:
+    values = _source_answer_values(donor)
+    prediction, mask_hits = _mask_answer_values(str(donor.get("prediction", "")), values)
+    normalized = str(donor.get("normalized_prediction", "") or "")
+    normalized_prediction = "" if normalized in set(values) else normalized
+    row = dict(current)
+    row.update(
+        {
+            "method": method,
+            "prediction": prediction,
+            "normalized_prediction": normalized_prediction,
+            "correct": _is_correct_for_current_answer(normalized_prediction, current) if normalized_prediction else False,
+            "control_condition": condition,
+            "source_answer_values": values,
+            "source_answer_mask_hits": int(mask_hits),
+            "control_donor_example_id": str(donor.get("example_id", current.get("example_id"))),
+        }
+    )
+    return row
+
+
 def _ordered(rows_by_id: dict[str, dict[str, Any]], reference_ids: Sequence[str]) -> list[dict[str, Any]]:
     missing = [example_id for example_id in reference_ids if example_id not in rows_by_id]
     if missing:
@@ -229,6 +312,40 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             ],
             "source": [
                 _blank_candidate(current=target_by_id[example_id], method="slots_only_source_candidate", condition="slots_only")
+                for example_id in reference_ids
+            ],
+        },
+    )
+
+    write_condition(
+        "answer_only",
+        {
+            "target": [dict(row, control_condition="answer_only") for row in target_rows],
+            "text": [dict(row, control_condition="answer_only") for row in text_ordered],
+            "source": [
+                _answer_only_candidate(
+                    current=target_by_id[example_id],
+                    donor=source_by_id[example_id],
+                    method="answer_only_source_candidate",
+                    condition="answer_only",
+                )
+                for example_id in reference_ids
+            ],
+        },
+    )
+
+    write_condition(
+        "answer_masked_source",
+        {
+            "target": [dict(row, control_condition="answer_masked_source") for row in target_rows],
+            "text": [dict(row, control_condition="answer_masked_source") for row in text_ordered],
+            "source": [
+                _answer_masked_source_candidate(
+                    current=target_by_id[example_id],
+                    donor=source_by_id[example_id],
+                    method="answer_masked_source_candidate",
+                    condition="answer_masked_source",
+                )
                 for example_id in reference_ids
             ],
         },

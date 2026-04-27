@@ -104,3 +104,58 @@ MPS generation sweep:
 3. Run an answer-likelihood smoke on the live and holdout source surfaces,
    requiring matched source to beat zero/shuffled/target-only/slots-only and
    answer-only controls with no target-preservation harm.
+
+## CPU Answer-Likelihood Smoke
+
+- artifact: `results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/`
+- scorer: `Qwen/Qwen3-0.6B`
+- device: CPU
+- rows: `12`
+- candidate field: `normalized_prediction`
+- continuation template: `Answer: {text}`
+- conditions: matched, target-only, slots-only, shuffled-source, answer-only,
+  answer-masked-source
+
+Harness change:
+
+- `answer_only` materializes the source slot as only the source final/verified
+  numeric answer and recomputes correctness against the current row.
+- `answer_masked_source` masks source final/verified numeric values and clears
+  the normalized source answer slot.
+- the receiver gate now records finite score coverage, score variance, margin
+  zero-rate, effective rank, covariance off-diagonal mass, top-label histogram,
+  and Barlow-style matched-vs-control score-matrix telemetry.
+
+Pre-scoring artifact audit:
+
+- matched source slot correct: `4/12`
+- answer-only source slot correct: `4/12`
+- answer-masked-source slot correct: `0/12`
+- shuffled-source source slot correct: `1/12`
+
+Gate result:
+
+- status: `condition_likelihood_receiver_fails_gate`
+- live/CV clean source-necessary IDs: `0`
+- holdout/frozen clean source-necessary IDs: `0`
+- live/CV clean control union: `1` ID, `ab1e71e8928661d0`
+- holdout/frozen clean control union: `2` IDs,
+  `ab1e71e8928661d0`, `ce08a3a269bf0151`
+- matched and answer-only sketches have identical JSONL SHA256:
+  `fbc34d474466922f3678f0615e2fab8a88e3f1ee90723279f1d3626267e891a7`
+- answer-masked-source recovers no clean IDs.
+
+Collapse/readout telemetry:
+
+- matched finite score coverage: `1.0`
+- matched effective rank: `2.8769699003054123`
+- matched top-label histogram: `source: 12`
+- matched-vs-answer-only Barlow diagonal mean: `1.0000000000000002`
+- matched-vs-answer-only Barlow off-diagonal mean abs: `0.20256745943585644`
+
+Decision: fail and prune receiver-likelihood variants on this disagreement
+surface. Under the normalized-answer interface, the matched receiver sketch is
+exactly answer-only. This is not cross-model communication; it is source final
+answer relay. The next gate should move upstream to source-surface discovery or
+to a JEPA-style answer-masked trace/latent objective only after a surface has
+answer-unexplained target-pool headroom.

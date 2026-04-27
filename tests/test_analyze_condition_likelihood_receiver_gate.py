@@ -120,6 +120,38 @@ def test_control_clean_union_removes_recovered_control_ids(tmp_path):
     assert result["source_necessary_clean_ids"] == []
 
 
+def test_answer_only_control_removes_recovered_answer_leakage(tmp_path):
+    matched = tmp_path / "matched.jsonl"
+    answer_only = tmp_path / "answer_only.jsonl"
+    answer_masked = tmp_path / "answer_masked.jsonl"
+    target_set = tmp_path / "target_set.json"
+    _write_jsonl(matched, [_score_row("clean", target_correct=False, source_correct=True, margin=3.0)])
+    _write_jsonl(answer_only, [_score_row("clean", target_correct=False, source_correct=True, margin=3.0)])
+    _write_jsonl(answer_masked, [_score_row("clean", target_correct=False, source_correct=False, margin=3.0)])
+    target_set.write_text(
+        json.dumps({"ids": {"clean_residual_targets": ["clean"], "clean_source_only": ["clean"], "target_self_repair": []}}),
+        encoding="utf-8",
+    )
+    rows, ids, conditions = gate._prepare_rows(
+        paths={"matched": matched, "answer_only": answer_only, "answer_masked_source": answer_masked},
+        target_set_path=target_set,
+        fallback_label="target",
+        outer_folds=2,
+        max_sidecar_bits=8,
+    )
+
+    result = gate._evaluate(
+        rows=rows,
+        target_ids=ids,
+        conditions=conditions,
+        global_rule={"feature": "margin", "threshold": 1.0, "direction": "ge"},
+    )
+
+    assert result["control_clean_union_ids"] == ["clean"]
+    assert result["condition_summaries"]["answer_masked_source"]["correct_count"] == 0
+    assert result["source_necessary_clean_ids"] == []
+
+
 def test_duplicate_answer_not_counted_source_necessary(tmp_path):
     matched = tmp_path / "matched.jsonl"
     target_set = tmp_path / "target_set.json"
@@ -157,6 +189,41 @@ def test_duplicate_answer_not_counted_source_necessary(tmp_path):
     assert result["condition_summaries"]["matched"]["duplicate_answer_ids"] == ["clean"]
     assert result["duplicate_answer_clean_ids"] == ["clean"]
     assert result["source_necessary_clean_ids"] == []
+
+
+def test_collapse_telemetry_flags_constant_scores(tmp_path):
+    matched = tmp_path / "matched.jsonl"
+    target_set = tmp_path / "target_set.json"
+    _write_jsonl(
+        matched,
+        [
+            _score_row("a", target_correct=False, source_correct=False, top_label="target", margin=0.0),
+            _score_row("b", target_correct=False, source_correct=False, top_label="target", margin=0.0),
+        ],
+    )
+    target_set.write_text(
+        json.dumps({"ids": {"clean_residual_targets": [], "clean_source_only": [], "target_self_repair": []}}),
+        encoding="utf-8",
+    )
+    rows, ids, conditions = gate._prepare_rows(
+        paths={"matched": matched},
+        target_set_path=target_set,
+        fallback_label="target",
+        outer_folds=2,
+        max_sidecar_bits=8,
+    )
+
+    result = gate._evaluate(
+        rows=rows,
+        target_ids=ids,
+        conditions=conditions,
+        global_rule={"feature": "margin", "threshold": 1.0, "direction": "ge"},
+    )
+
+    telemetry = result["collapse_telemetry"]["per_condition"]["matched"]
+    assert telemetry["finite_score_coverage"] == 1.0
+    assert telemetry["effective_rank"] == 0.0
+    assert telemetry["margin_zero_rate"] == 1.0
 
 
 def test_condition_sketch_ids_must_match(tmp_path):

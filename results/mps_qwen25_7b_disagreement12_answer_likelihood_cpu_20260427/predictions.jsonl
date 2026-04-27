@@ -1,0 +1,12 @@
+{"accepted_sidecar": false, "correct": false, "example_id": "14bfbfc94f2c2e7b", "index": 0, "method": "condition_likelihood_receiver", "prediction": "16", "selected_label": "target"}
+{"accepted_sidecar": false, "correct": false, "example_id": "2de1549556000830", "index": 1, "method": "condition_likelihood_receiver", "prediction": "33", "selected_label": "target"}
+{"accepted_sidecar": false, "correct": false, "example_id": "41cce6c6e6bb0058", "index": 2, "method": "condition_likelihood_receiver", "prediction": "3", "selected_label": "target"}
+{"accepted_sidecar": false, "correct": false, "example_id": "4d780f825bb8541c", "index": 3, "method": "condition_likelihood_receiver", "prediction": "1", "selected_label": "target"}
+{"accepted_sidecar": true, "correct": false, "example_id": "bd9d8da923981d69", "index": 4, "method": "condition_likelihood_receiver", "prediction": "295", "selected_label": "source"}
+{"accepted_sidecar": true, "correct": true, "example_id": "ce08a3a269bf0151", "index": 5, "method": "condition_likelihood_receiver", "prediction": "2", "selected_label": "source"}
+{"accepted_sidecar": true, "correct": true, "example_id": "0ee313c160b638a9", "index": 6, "method": "condition_likelihood_receiver", "prediction": "5", "selected_label": "source"}
+{"accepted_sidecar": true, "correct": true, "example_id": "561daa750422c0e4", "index": 7, "method": "condition_likelihood_receiver", "prediction": "3", "selected_label": "source"}
+{"accepted_sidecar": true, "correct": false, "example_id": "cd5623c80cf95da9", "index": 8, "method": "condition_likelihood_receiver", "prediction": "2", "selected_label": "source"}
+{"accepted_sidecar": true, "correct": false, "example_id": "e90d2681e386fb04", "index": 9, "method": "condition_likelihood_receiver", "prediction": "4", "selected_label": "source"}
+{"accepted_sidecar": true, "correct": true, "example_id": "ab1e71e8928661d0", "index": 10, "method": "condition_likelihood_receiver", "prediction": "4", "selected_label": "source"}
+{"accepted_sidecar": true, "correct": false, "example_id": "daea537474de16ac", "index": 11, "method": "condition_likelihood_receiver", "prediction": "14", "selected_label": "source"}

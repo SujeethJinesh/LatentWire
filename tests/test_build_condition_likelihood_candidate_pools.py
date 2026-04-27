@@ -59,6 +59,23 @@ def test_builds_condition_pools_and_recomputes_shuffled_correctness(tmp_path):
     assert zero[0]["prediction"] == ""
     assert zero[0]["correct"] is False
 
+    answer_only = [
+        json.loads(line)
+        for line in (out / "answer_only" / "source.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert answer_only[0]["prediction"] == "5"
+    assert answer_only[0]["normalized_prediction"] == "5"
+    assert answer_only[0]["correct"] is True
+    assert answer_only[1]["correct"] is False
+
+    masked = [
+        json.loads(line)
+        for line in (out / "answer_masked_source" / "source.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert masked[0]["normalized_prediction"] == ""
+    assert masked[0]["source_answer_mask_hits"] >= 1
+    assert masked[0]["correct"] is False
+
     target_only_files = sorted(path.name for path in (out / "target_only").iterdir())
     assert target_only_files == ["source.jsonl", "target.jsonl", "text.jsonl"]
     target_only_source = [

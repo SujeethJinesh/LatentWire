@@ -23,6 +23,16 @@ target-preserving query bottlenecks after the MPS blocker clears. The blocker
 persisted after both `kill -9` and `sudo kill -9`, so the next action is
 OS/session-level cleanup before any MPS experiment.
 
+Update `2026-04-27`: the 12-row 7B disagreement answer-likelihood smoke kills
+normalized-answer receiver-likelihood variants on that surface. The harness now
+has explicit `answer_only` and `answer_masked_source` candidate-pool controls
+plus score-matrix collapse telemetry. Matched and answer-only sketches are
+byte-identical, answer-masked-source recovers no clean IDs, and the gate reports
+`0` clean source-necessary IDs after controls. This branch is pruned unless a
+new surface first shows answer-unexplained target-pool headroom. The live branch
+remains `none`; the top next move is upstream source-surface discovery or a
+JEPA-style answer-masked trace/latent objective only after such headroom exists.
+
 Update `2026-04-27 00:50 PDT`: KVComm is now harness-ready for strict
 source-control evaluation, but it remains baseline/tooling evidence rather than
 a positive method. The wrapper supports matched, zero-source, shuffled-source,

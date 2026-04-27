@@ -19,6 +19,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any, Sequence
 
+import numpy as np
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -27,7 +29,16 @@ from scripts import analyze_svamp70_source_likelihood_sketch_gate as base
 from scripts import harness_common as harness
 
 
-CONDITIONS = ("matched", "zero_source", "shuffled_source", "label_shuffle", "target_only", "slots_only")
+CONDITIONS = (
+    "matched",
+    "zero_source",
+    "shuffled_source",
+    "label_shuffle",
+    "target_only",
+    "slots_only",
+    "answer_only",
+    "answer_masked_source",
+)
 FEATURES = base.FEATURES
 
 
@@ -327,6 +338,125 @@ def _summarize_condition(rows: Sequence[dict[str, Any]], condition: str, ids: di
     }
 
 
+def _score_matrix(rows: Sequence[dict[str, Any]], condition: str) -> tuple[list[str], np.ndarray]:
+    labels = sorted(
+        {
+            str(item["label"])
+            for row in rows
+            for item in _candidate_items(row["condition_sketches"][condition]).values()
+        }
+    )
+    matrix = np.full((len(rows), len(labels)), np.nan, dtype=float)
+    label_index = {label: idx for idx, label in enumerate(labels)}
+    for row_index, row in enumerate(rows):
+        for label, item in _candidate_items(row["condition_sketches"][condition]).items():
+            score = item.get("score")
+            if score is None:
+                continue
+            try:
+                matrix[row_index, label_index[label]] = float(score)
+            except (TypeError, ValueError):
+                continue
+    return labels, matrix
+
+
+def _fill_finite(matrix: np.ndarray) -> np.ndarray:
+    if matrix.size == 0:
+        return matrix.copy()
+    filled = matrix.copy()
+    finite = np.isfinite(filled)
+    if not finite.any():
+        return np.zeros_like(filled)
+    col_means = np.nanmean(np.where(finite, filled, np.nan), axis=0)
+    global_mean = float(np.nanmean(filled))
+    col_means = np.where(np.isfinite(col_means), col_means, global_mean)
+    missing_rows, missing_cols = np.where(~finite)
+    filled[missing_rows, missing_cols] = col_means[missing_cols]
+    return filled
+
+
+def _effective_rank(matrix: np.ndarray) -> float:
+    if min(matrix.shape or (0, 0)) == 0:
+        return 0.0
+    centered = matrix - matrix.mean(axis=0, keepdims=True)
+    singular_values = np.linalg.svd(centered, compute_uv=False)
+    total = float(singular_values.sum())
+    if total <= 0.0:
+        return 0.0
+    probs = singular_values / total
+    entropy = -float(np.sum(probs * np.log(probs + 1e-12)))
+    return float(np.exp(entropy))
+
+
+def _offdiag_mean_abs(matrix: np.ndarray) -> float:
+    if matrix.shape[1] <= 1 or matrix.shape[0] <= 1:
+        return 0.0
+    cov = np.cov(matrix, rowvar=False)
+    if cov.ndim == 0:
+        return 0.0
+    mask = ~np.eye(cov.shape[0], dtype=bool)
+    if not mask.any():
+        return 0.0
+    return float(np.mean(np.abs(cov[mask])))
+
+
+def _standardize(matrix: np.ndarray) -> np.ndarray:
+    centered = matrix - matrix.mean(axis=0, keepdims=True)
+    scale = matrix.std(axis=0, keepdims=True)
+    return centered / np.where(scale > 1e-12, scale, 1.0)
+
+
+def _barlow_pair(left: np.ndarray, right: np.ndarray) -> dict[str, float]:
+    if left.shape != right.shape or left.size == 0:
+        return {"diag_mean": 0.0, "offdiag_mean_abs": 0.0}
+    cross = (_standardize(left).T @ _standardize(right)) / max(left.shape[0], 1)
+    diag = np.diag(cross) if cross.ndim == 2 else np.array([])
+    mask = ~np.eye(cross.shape[0], dtype=bool) if cross.ndim == 2 else np.array([], dtype=bool)
+    return {
+        "diag_mean": float(np.mean(diag)) if diag.size else 0.0,
+        "offdiag_mean_abs": float(np.mean(np.abs(cross[mask]))) if mask.any() else 0.0,
+    }
+
+
+def _collapse_telemetry(rows: Sequence[dict[str, Any]], conditions: Sequence[str]) -> dict[str, Any]:
+    matrices: dict[str, np.ndarray] = {}
+    per_condition: dict[str, Any] = {}
+    for condition in conditions:
+        labels, matrix = _score_matrix(rows, condition)
+        filled = _fill_finite(matrix)
+        matrices[condition] = filled
+        margins = [
+            float(row["condition_sketches"][condition].get("margin", 0.0) or 0.0)
+            for row in rows
+        ]
+        histogram: dict[str, int] = {}
+        for row in rows:
+            label = str(row["condition_sketches"][condition].get("top_label"))
+            histogram[label] = histogram.get(label, 0) + 1
+        per_condition[condition] = {
+            "labels": labels,
+            "finite_score_coverage": float(np.isfinite(matrix).sum() / max(matrix.size, 1)),
+            "score_std": float(np.std(filled)) if filled.size else 0.0,
+            "row_std_mean": float(np.mean(np.std(filled, axis=1))) if filled.size else 0.0,
+            "mean_margin": float(np.mean(margins)) if margins else 0.0,
+            "margin_zero_rate": float(sum(abs(value) <= 1e-12 for value in margins) / max(len(margins), 1)),
+            "effective_rank": _effective_rank(filled),
+            "covariance_offdiag_mean_abs": _offdiag_mean_abs(filled),
+            "top_label_histogram": histogram,
+        }
+    barlow_against_matched: dict[str, Any] = {}
+    matched = matrices.get("matched")
+    if matched is not None:
+        for condition, matrix in matrices.items():
+            if condition == "matched":
+                continue
+            barlow_against_matched[condition] = _barlow_pair(matched, matrix)
+    return {
+        "per_condition": per_condition,
+        "barlow_against_matched": barlow_against_matched,
+    }
+
+
 def _evaluate(
     *,
     rows: Sequence[dict[str, Any]],
@@ -358,6 +488,7 @@ def _evaluate(
     mean_sidecar_bits = sum(row["conditions"]["matched"]["sidecar_bits"] for row in routed) / max(len(routed), 1)
     return {
         "condition_summaries": summaries,
+        "collapse_telemetry": _collapse_telemetry(rows, conditions),
         "control_clean_union_ids": sorted(control_union),
         "duplicate_answer_clean_ids": sorted(duplicate_clean),
         "source_necessary_clean_ids": sorted(matched_clean - control_union - duplicate_clean),

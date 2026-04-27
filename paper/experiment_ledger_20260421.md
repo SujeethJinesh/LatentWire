@@ -11035,3 +11035,136 @@ Next exact gate:
 Implement CPU-only `answer_masked_source` / `answer_only` diagnostics and
 collapse telemetry, then run answer-likelihood smoke on live and holdout source
 surfaces before another MPS generation sweep.
+
+## 2026-04-27 - CPU answer-likelihood smoke with answer-only and answer-masked controls
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; still missing a source-derived positive
+   method that survives answer-leakage and source-destroying controls.
+2. Current paper story: MPS and 7B disagreement surfaces are useful falsifiers,
+   but clean rows remain final-answer relay or outside the target-side pool.
+3. Exact blocker: answer-masked source information must remain useful after
+   answer-only, shuffled-source, target-only, slots-only, and collapse controls.
+4. Live branch: CPU answer-masked receiver diagnostics; JEPA-style connector is
+   design-only until non-leaky headroom exists.
+5. Highest-priority gate: add/run `answer_only` and `answer_masked_source`
+   condition controls with collapse telemetry.
+6. Scale-up rung: smoke.
+
+Code/harness update:
+
+- `scripts/build_condition_likelihood_candidate_pools.py`
+  - added conditions: `answer_only`, `answer_masked_source`
+  - `answer_only` emits only the source final/verified numeric answer in the
+    source slot and recomputes correctness for the current example.
+  - `answer_masked_source` masks source final/verified numeric values and clears
+    the normalized source answer slot.
+- `scripts/analyze_condition_likelihood_receiver_gate.py`
+  - added both conditions to strict condition parsing.
+  - added collapse telemetry over candidate score matrices: finite coverage,
+    score/std metrics, effective rank, covariance off-diagonal mass,
+    top-label histograms, and Barlow-style matched-vs-control score telemetry.
+
+Focused tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_build_condition_likelihood_candidate_pools.py \
+  tests/test_analyze_condition_likelihood_receiver_gate.py \
+  tests/test_collect_source_likelihood_sketch.py -q
+```
+
+Result: `13 passed`.
+
+Artifact:
+
+- `results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/`
+
+Candidate pool command:
+
+```bash
+./venv_arm64/bin/python scripts/build_condition_likelihood_candidate_pools.py \
+  --target-jsonl results/mps_qwen25_7b_disagreement12_discovery_20260427/target_alone.jsonl \
+  --text-jsonl results/mps_qwen25_7b_disagreement12_discovery_20260427/text_to_text.jsonl \
+  --source-jsonl results/mps_qwen25_7b_disagreement12_discovery_20260427/source_alone.jsonl \
+  --output-dir results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/candidate_pools \
+  --shuffle-offset 1 \
+  --label-shuffle-offset 5 \
+  --force
+```
+
+Pre-scoring audit:
+
+- matched source slot correct: `4/12`
+- answer-only source slot correct: `4/12`
+- answer-masked-source slot correct: `0/12`
+- target-only source slot correct: `0/12`
+- shuffled-source source slot correct: `1/12`
+- slots-only source slot correct: `0/12`
+
+Scoring:
+
+- model: `Qwen/Qwen3-0.6B`
+- device/dtype: CPU / float32
+- field/template: `normalized_prediction`, `Answer: {text}`
+- conditions scored: matched, target-only, slots-only, shuffled-source,
+  answer-only, answer-masked-source
+- exact row parity: `12/12` for all conditions
+
+Gate command:
+
+```bash
+./venv_arm64/bin/python scripts/analyze_condition_likelihood_receiver_gate.py \
+  --live-condition-sketch matched=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/matched.jsonl \
+  --live-condition-sketch target_only=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/target_only.jsonl \
+  --live-condition-sketch slots_only=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/slots_only.jsonl \
+  --live-condition-sketch shuffled_source=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/shuffled_source.jsonl \
+  --live-condition-sketch answer_only=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/answer_only.jsonl \
+  --live-condition-sketch answer_masked_source=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/answer_masked_source.jsonl \
+  --live-target-set-json results/mps_qwen25_7b_disagreement12_discovery_20260427/source_contrastive_target_set.json \
+  --holdout-condition-sketch matched=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/matched.jsonl \
+  --holdout-condition-sketch target_only=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/target_only.jsonl \
+  --holdout-condition-sketch slots_only=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/slots_only.jsonl \
+  --holdout-condition-sketch shuffled_source=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/shuffled_source.jsonl \
+  --holdout-condition-sketch answer_only=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/answer_only.jsonl \
+  --holdout-condition-sketch answer_masked_source=results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/sketches/answer_masked_source.jsonl \
+  --holdout-target-set-json results/mps_qwen25_7b_disagreement12_discovery_20260427/source_contrastive_target_set.json \
+  --fallback-label target \
+  --outer-folds 3 \
+  --min-live-correct 1 \
+  --min-live-clean-source-necessary 1 \
+  --min-holdout-correct 1 \
+  --min-holdout-clean-source-necessary 1 \
+  --max-clean-control-union 0 \
+  --max-accepted-harm 0 \
+  --output-json results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/gate.json \
+  --output-md results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/gate.md \
+  --output-predictions-jsonl results/mps_qwen25_7b_disagreement12_answer_likelihood_cpu_20260427/predictions.jsonl
+```
+
+Gate result:
+
+- status: `condition_likelihood_receiver_fails_gate`
+- live/CV clean source-necessary IDs: `0`
+- holdout/frozen clean source-necessary IDs: `0`
+- live/CV clean control union: `1` ID, `ab1e71e8928661d0`
+- holdout/frozen clean control union: `2` IDs,
+  `ab1e71e8928661d0`, `ce08a3a269bf0151`
+- matched and answer-only sketches are byte-identical by SHA256:
+  `fbc34d474466922f3678f0615e2fab8a88e3f1ee90723279f1d3626267e891a7`
+- answer-masked-source recovers no clean IDs.
+- matched top-label histogram: `source: 12`
+- matched effective rank: `2.8769699003054123`
+- matched-vs-answer-only Barlow diagonal mean: `1.0000000000000002`
+
+Decision:
+
+- failed/pruned: normalized-answer receiver-likelihood variants on the latest
+  7B disagreement surface.
+- reason: matched equals answer-only, so the apparent source signal is final
+  answer relay rather than nontrivial communication.
+- next exact gate: do not run another receiver-likelihood variant on this
+  surface unless a new source surface has `answer_unexplained_clean_in_pool >
+  0`; move upstream to source-surface discovery or to an answer-masked
+  trace/latent JEPA objective with frozen target latents and preservation loss.
