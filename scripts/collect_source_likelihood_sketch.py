@@ -101,6 +101,10 @@ def _candidate_text(row: dict[str, Any], field: str) -> str:
     return str(value).strip()
 
 
+def _format_continuation(text: str, template: str) -> str:
+    return template.format(text=text).strip()
+
+
 @torch.no_grad()
 def _score_continuation(
     *,
@@ -225,7 +229,8 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
         candidate_scores: list[dict[str, Any]] = []
         for label, by_id in candidate_records.items():
             candidate = by_id[example_id]
-            text = _candidate_text(candidate, args.candidate_text_field)
+            raw_text = _candidate_text(candidate, args.candidate_text_field)
+            text = _format_continuation(raw_text, args.continuation_template)
             score = _score_continuation(
                 model=model,
                 tokenizer=tokenizer,
@@ -241,6 +246,7 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
                     "mean_logprob": score["mean_logprob"],
                     "tokens": score["tokens"],
                     "candidate_text": text,
+                    "candidate_raw_text": raw_text,
                     "candidate_correct": bool(candidate.get("correct")),
                 }
             )
@@ -252,6 +258,7 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
             "source_model": args.source_model,
             "prompt_mode": args.prompt_mode,
             "candidate_text_field": args.candidate_text_field,
+            "continuation_template": args.continuation_template,
             "top_label": ranked[0]["label"] if ranked else None,
             "candidate_scores": candidate_scores,
         }
@@ -272,6 +279,8 @@ def collect(args: argparse.Namespace) -> dict[str, Any]:
         "eval_file": _display_path(eval_file),
         "eval_file_sha256": _sha256_file(eval_file),
         "source_model": args.source_model,
+        "candidate_text_field": args.candidate_text_field,
+        "continuation_template": args.continuation_template,
         "candidate_specs": [
             {
                 "label": spec.label,
@@ -304,6 +313,8 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- date: `{payload['date']}`",
         f"- status: `{payload['status']}`",
         f"- source model: `{payload['source_model']}`",
+        f"- candidate text field: `{payload['candidate_text_field']}`",
+        f"- continuation template: `{payload['continuation_template']}`",
         f"- git commit: `{payload['git_commit'] or 'unknown'}`",
         f"- eval file: `{payload['eval_file']}`",
         f"- eval file sha256: `{payload['eval_file_sha256']}`",
@@ -354,6 +365,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--candidate", action="append", required=True)
     parser.add_argument("--reference-label")
     parser.add_argument("--candidate-text-field", default="prediction")
+    parser.add_argument("--continuation-template", default="{text}")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--device", default=evaluate.default_device())
