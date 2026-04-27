@@ -1,0 +1,48 @@
+{
+  "command": "scripts/audit_source_surface_answer_masking.py --results-root results/mps_micro_qwen25_7b_qwen3_svamp8_surface_20260427 --date 2026-04-27 --output-json results/mps_micro_qwen25_7b_qwen3_svamp8_surface_20260427/answer_masking_audit.json --output-md results/mps_micro_qwen25_7b_qwen3_svamp8_surface_20260427/answer_masking_audit.md",
+  "date": "2026-04-27",
+  "git_commit": "1e63d3b8a3cc914cceed712d9bc3100f26e172a0",
+  "result": {
+    "candidate_paths": 1,
+    "loaded_with_clean_ids": 1,
+    "results_root": "results/mps_micro_qwen25_7b_qwen3_svamp8_surface_20260427",
+    "skipped": [],
+    "surfaces": [
+      {
+        "answer_explained_clean_in_pool": 1,
+        "answer_explained_clean_in_pool_ids": [
+          "d64f6e35083ffe8c"
+        ],
+        "answer_unexplained_clean_in_pool": 0,
+        "answer_unexplained_clean_in_pool_ids": [],
+        "clean_field": "clean_source_only",
+        "clean_in_pool": 1,
+        "clean_in_pool_ids": [
+          "d64f6e35083ffe8c"
+        ],
+        "clean_n": 1,
+        "n": 8,
+        "path": "results/mps_micro_qwen25_7b_qwen3_svamp8_surface_20260427/source_contrastive_target_set.json",
+        "rows": [
+          {
+            "candidate_values": [
+              "15",
+              "17",
+              "2",
+              "62",
+              "96"
+            ],
+            "example_id": "d64f6e35083ffe8c",
+            "explained_by_source_answer": true,
+            "gold": "2",
+            "gold_in_target_side_pool": true,
+            "source_final": "2",
+            "source_verified": [],
+            "target_correct": false
+          }
+        ],
+        "sha256": "b9cf1660e92992d6e255f8a8399f15520457e4097c59b7d6260188a781a547a5"
+      }
+    ]
+  }
+}

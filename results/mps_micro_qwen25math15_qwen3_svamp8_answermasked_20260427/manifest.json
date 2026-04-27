@@ -1,0 +1,267 @@
+{
+  "claim_policy": "dev-smoke when --limit is below the frozen decision size; paper-eligible only after rerunning the frozen gate with seed/control protocol",
+  "date": "2026-04-27",
+  "device": "mps",
+  "dry_run": false,
+  "eval_file": "data/svamp_eval_70.jsonl",
+  "eval_file_sha256": "bc9178d043bc05f2d1d1dd4aa2c6ec1ed024643b1a2886dfd243c4b1eca3e131",
+  "limit": 8,
+  "materialized_eval_file": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/_artifacts/svamp_eval_70_8.jsonl",
+  "materialized_eval_file_sha256": "7c49f3c2a227bf0c9c3258d9aa051ce94d29e56519d166f25c27a767dd9014da",
+  "max_new_tokens": 64,
+  "method_summaries": {
+    "source": {
+      "accuracy": 0.25,
+      "correct": 2,
+      "correct_ids": [
+        "013133cdef4f637c",
+        "aee922049c757331"
+      ],
+      "empty_predictions": 0,
+      "exact_id_parity": true,
+      "method": "source",
+      "n": 8,
+      "numeric_extraction_coverage": 7,
+      "ordered_example_ids": [
+        "013133cdef4f637c",
+        "d64f6e35083ffe8c",
+        "3e8a5691f5443495",
+        "316b525a4fcbfb89",
+        "e26bdbcab1449bbe",
+        "aee922049c757331",
+        "1d50b408c8f5cd2c",
+        "b0b71023ae4d233b"
+      ],
+      "path": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/source_alone.jsonl",
+      "record_method": "source_alone",
+      "set_id_parity": true,
+      "sidecar_config_validation": "ok",
+      "unique_example_ids": true
+    },
+    "t2t": {
+      "accuracy": 0.25,
+      "correct": 2,
+      "correct_ids": [
+        "316b525a4fcbfb89",
+        "aee922049c757331"
+      ],
+      "empty_predictions": 0,
+      "exact_id_parity": true,
+      "method": "t2t",
+      "n": 8,
+      "numeric_extraction_coverage": 8,
+      "ordered_example_ids": [
+        "013133cdef4f637c",
+        "d64f6e35083ffe8c",
+        "3e8a5691f5443495",
+        "316b525a4fcbfb89",
+        "e26bdbcab1449bbe",
+        "aee922049c757331",
+        "1d50b408c8f5cd2c",
+        "b0b71023ae4d233b"
+      ],
+      "path": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/text_to_text.jsonl",
+      "record_method": "text_to_text",
+      "set_id_parity": true,
+      "sidecar_config_validation": "ok",
+      "unique_example_ids": true
+    },
+    "target": {
+      "accuracy": 0.25,
+      "correct": 2,
+      "correct_ids": [
+        "013133cdef4f637c",
+        "316b525a4fcbfb89"
+      ],
+      "empty_predictions": 0,
+      "exact_id_parity": true,
+      "method": "target",
+      "n": 8,
+      "numeric_extraction_coverage": 8,
+      "ordered_example_ids": [
+        "013133cdef4f637c",
+        "d64f6e35083ffe8c",
+        "3e8a5691f5443495",
+        "316b525a4fcbfb89",
+        "e26bdbcab1449bbe",
+        "aee922049c757331",
+        "1d50b408c8f5cd2c",
+        "b0b71023ae4d233b"
+      ],
+      "path": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/target_alone.jsonl",
+      "record_method": "target_alone",
+      "set_id_parity": true,
+      "sidecar_config_validation": "ok",
+      "unique_example_ids": true
+    }
+  },
+  "methods": [
+    "source",
+    "target",
+    "t2t"
+  ],
+  "pairwise_vs_target": [
+    {
+      "both_correct_count": 1,
+      "method": "source",
+      "method_only_count": 1,
+      "method_only_ids": [
+        "aee922049c757331"
+      ],
+      "n": 8,
+      "oracle_accuracy": 0.375,
+      "oracle_count": 3,
+      "target_method": "target",
+      "target_only_count": 1,
+      "target_only_ids": [
+        "316b525a4fcbfb89"
+      ]
+    },
+    {
+      "both_correct_count": 1,
+      "method": "t2t",
+      "method_only_count": 1,
+      "method_only_ids": [
+        "aee922049c757331"
+      ],
+      "n": 8,
+      "oracle_accuracy": 0.375,
+      "oracle_count": 3,
+      "target_method": "target",
+      "target_only_count": 1,
+      "target_only_ids": [
+        "013133cdef4f637c"
+      ]
+    }
+  ],
+  "results_dir": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427",
+  "runs": [
+    {
+      "command": [
+        "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+        "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/evaluate.py",
+        "--translator",
+        "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt",
+        "--source-model",
+        "Qwen/Qwen2.5-Math-1.5B",
+        "--target-model",
+        "Qwen/Qwen3-0.6B",
+        "--eval-file",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/_artifacts/svamp_eval_70_8.jsonl",
+        "--task-type",
+        "generation",
+        "--device",
+        "mps",
+        "--max-new-tokens",
+        "64",
+        "--source-reasoning-mode",
+        "brief_analysis",
+        "--methods",
+        "source",
+        "--prediction-output",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/.source_alone.jsonl.tmp.source.11351",
+        "--source-use-chat-template",
+        "--target-use-chat-template",
+        "--source-enable-thinking",
+        "false",
+        "--target-enable-thinking",
+        "false"
+      ],
+      "command_prediction_output": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/.source_alone.jsonl.tmp.source.11351",
+      "elapsed_sec": 53.612895666999975,
+      "existing_output_validation": "missing",
+      "log": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/logs/source.log",
+      "method": "source",
+      "prediction_output": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/source_alone.jsonl",
+      "returncode": 0,
+      "status": "ran",
+      "temp_output_validation": "ok"
+    },
+    {
+      "command": [
+        "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+        "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/evaluate.py",
+        "--translator",
+        "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt",
+        "--source-model",
+        "Qwen/Qwen2.5-Math-1.5B",
+        "--target-model",
+        "Qwen/Qwen3-0.6B",
+        "--eval-file",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/_artifacts/svamp_eval_70_8.jsonl",
+        "--task-type",
+        "generation",
+        "--device",
+        "mps",
+        "--max-new-tokens",
+        "64",
+        "--source-reasoning-mode",
+        "brief_analysis",
+        "--methods",
+        "target",
+        "--prediction-output",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/.target_alone.jsonl.tmp.target.11351",
+        "--source-use-chat-template",
+        "--target-use-chat-template",
+        "--source-enable-thinking",
+        "false",
+        "--target-enable-thinking",
+        "false"
+      ],
+      "command_prediction_output": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/.target_alone.jsonl.tmp.target.11351",
+      "elapsed_sec": 55.87495612500015,
+      "existing_output_validation": "missing",
+      "log": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/logs/target.log",
+      "method": "target",
+      "prediction_output": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/target_alone.jsonl",
+      "returncode": 0,
+      "status": "ran",
+      "temp_output_validation": "ok"
+    },
+    {
+      "command": [
+        "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+        "/Users/sujeethjinesh/Desktop/LatentWire/latent_bridge/evaluate.py",
+        "--translator",
+        "/Users/sujeethjinesh/Desktop/LatentWire/checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt",
+        "--source-model",
+        "Qwen/Qwen2.5-Math-1.5B",
+        "--target-model",
+        "Qwen/Qwen3-0.6B",
+        "--eval-file",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/_artifacts/svamp_eval_70_8.jsonl",
+        "--task-type",
+        "generation",
+        "--device",
+        "mps",
+        "--max-new-tokens",
+        "64",
+        "--source-reasoning-mode",
+        "brief_analysis",
+        "--methods",
+        "t2t",
+        "--prediction-output",
+        "/Users/sujeethjinesh/Desktop/LatentWire/results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/.text_to_text.jsonl.tmp.t2t.11351",
+        "--source-use-chat-template",
+        "--target-use-chat-template",
+        "--source-enable-thinking",
+        "false",
+        "--target-enable-thinking",
+        "false"
+      ],
+      "command_prediction_output": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/.text_to_text.jsonl.tmp.t2t.11351",
+      "elapsed_sec": 102.28421770799991,
+      "existing_output_validation": "missing",
+      "log": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/logs/t2t.log",
+      "method": "t2t",
+      "prediction_output": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/text_to_text.jsonl",
+      "returncode": 0,
+      "status": "ran",
+      "temp_output_validation": "ok"
+    }
+  ],
+  "source_model": "Qwen/Qwen2.5-Math-1.5B",
+  "target_model": "Qwen/Qwen3-0.6B",
+  "translator": "checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt",
+  "translator_sha256": "893dc7d97bc57360452a4c7bcfcd10fa56c5f728834afffe8288bdd8ee835ae6"
+}

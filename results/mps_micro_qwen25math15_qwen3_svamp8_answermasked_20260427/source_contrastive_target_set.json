@@ -1,0 +1,134 @@
+{
+  "artifacts": {
+    "baselines": [],
+    "controls": [
+      {
+        "label": "t2t",
+        "method": "text_to_text",
+        "path": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/text_to_text.jsonl"
+      }
+    ],
+    "source": {
+      "label": "source",
+      "method": "source_alone",
+      "path": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/source_alone.jsonl"
+    },
+    "target": {
+      "label": "target",
+      "method": "target_alone",
+      "path": "results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/target_alone.jsonl"
+    }
+  },
+  "config": {
+    "min_source_only": 1
+  },
+  "counts": {
+    "clean_source_only": 0,
+    "source_correct": 2,
+    "source_only": 1,
+    "target_correct": 2,
+    "target_only": 1,
+    "target_or_source_oracle": 3
+  },
+  "date": "2026-04-27",
+  "ids": {
+    "baseline_union": [],
+    "clean_residual_targets": [],
+    "clean_source_only": [],
+    "control_union": [
+      "316b525a4fcbfb89",
+      "aee922049c757331"
+    ],
+    "source_only": [
+      "aee922049c757331"
+    ],
+    "target_only": [
+      "316b525a4fcbfb89"
+    ],
+    "target_self_repair": []
+  },
+  "provenance": {
+    "baseline_numeric_coverage": {},
+    "control_numeric_coverage": {
+      "t2t": 8
+    },
+    "exact_ordered_id_parity": true,
+    "source_numeric_coverage": 7,
+    "target_numeric_coverage": 8
+  },
+  "reference_ids": [
+    "013133cdef4f637c",
+    "d64f6e35083ffe8c",
+    "3e8a5691f5443495",
+    "316b525a4fcbfb89",
+    "e26bdbcab1449bbe",
+    "aee922049c757331",
+    "1d50b408c8f5cd2c",
+    "b0b71023ae4d233b"
+  ],
+  "reference_n": 8,
+  "rows": [
+    {
+      "example_id": "013133cdef4f637c",
+      "labels": []
+    },
+    {
+      "example_id": "d64f6e35083ffe8c",
+      "labels": []
+    },
+    {
+      "example_id": "3e8a5691f5443495",
+      "labels": []
+    },
+    {
+      "example_id": "316b525a4fcbfb89",
+      "labels": [
+        "target_only",
+        "control:t2t"
+      ]
+    },
+    {
+      "example_id": "e26bdbcab1449bbe",
+      "labels": []
+    },
+    {
+      "example_id": "aee922049c757331",
+      "labels": [
+        "source_only",
+        "control:t2t"
+      ]
+    },
+    {
+      "example_id": "1d50b408c8f5cd2c",
+      "labels": []
+    },
+    {
+      "example_id": "b0b71023ae4d233b",
+      "labels": []
+    }
+  ],
+  "status": "insufficient_clean_source_only_ids",
+  "summaries": {
+    "baselines": {},
+    "controls": {
+      "t2t": {
+        "correct": 2,
+        "label": "t2t",
+        "n": 8,
+        "numeric_coverage": 8
+      }
+    },
+    "source": {
+      "correct": 2,
+      "label": "source",
+      "n": 8,
+      "numeric_coverage": 7
+    },
+    "target": {
+      "correct": 2,
+      "label": "target",
+      "n": 8,
+      "numeric_coverage": 8
+    }
+  }
+}

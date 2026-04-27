@@ -1264,6 +1264,36 @@ New memo:
 Next exact gate remains the MPS-blocker check, then the stronger-source scout
 from `paper/postkill_historical_cpu_audit_20260427.md`.
 
+## 2026-04-27 MPS Micro Stronger-Source Surface Gate
+
+Readiness remains not ICLR-ready. The hard MPS blocker has cleared:
+
+```bash
+./venv_arm64/bin/python scripts/check_mps_blocker.py --json
+```
+
+Result: `blocked=false`, PID `31103` absent.
+
+The first MPS micro scouts were operationally clean but scientifically negative:
+
+- `Qwen/Qwen2.5-7B-Instruct -> Qwen/Qwen3-0.6B`, SVAMP8:
+  source `2/8`, target `2/8`, text relay `1/8`, clean source-only `1`,
+  answer-unexplained clean in pool `0`.
+- `Qwen/Qwen2.5-Math-1.5B -> Qwen/Qwen3-0.6B`, SVAMP8:
+  source `2/8`, target `2/8`, text relay `2/8`, clean source-only `0`,
+  answer-unexplained clean in pool `0`.
+
+Decision: MPS generation is usable again, but these micro rows do not support a
+positive communication claim. The 7B row has one clean source-only ID after text
+relay, but it is explained by the source final answer.
+
+Current live branch: stronger-source answer-masked surface discovery on a
+different slice/model, not a learned sidecar yet.
+
+Next exact gate: run a bounded 7B or Math-7B discovery slice chosen for
+source/target disagreement and reject unless `answer_unexplained_clean_in_pool`
+is nonzero under exact ID parity, text relay, and source-destroying controls.
+
 ## 2026-04-27 No-Source Candidate Surface Gate
 
 Readiness remains not ICLR-ready. Current live branch: target-only sampled

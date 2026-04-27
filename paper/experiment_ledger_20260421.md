@@ -10814,3 +10814,110 @@ Next exact gate:
 
 Proceed to stronger-source answer-masked surface discovery only when it reports
 `"blocked": false`.
+
+## 2026-04-27 Cycle 10 - MPS Micro Stronger-Source Surface Gate
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; no branch has positive evidence beyond
+   strict source controls.
+2. Current paper story: CPU sidecars and existing surfaces are pruned; with MPS
+   now clear, the highest-value live branch is stronger-source answer-masked
+   surface discovery.
+3. Exact blocker: find source-only target-pool headroom that is not explained by
+   the source final/verified numeric answer.
+4. Current live candidates: `Qwen2.5-7B-Instruct -> Qwen3-0.6B` discovery; the
+   compatible `Qwen2.5-Math-1.5B -> Qwen3-0.6B` canary only as an operational
+   fallback.
+5. Highest-priority gate: micro MPS smoke with exact ID parity, text relay, and
+   answer-masking audit.
+6. Scale-up rung: micro smoke.
+
+MPS preflight:
+
+```bash
+./venv_arm64/bin/python scripts/check_mps_blocker.py --json
+```
+
+Result: `blocked=false`, PID `31103` absent.
+
+7B stronger-source command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --results-dir results/mps_micro_qwen25_7b_qwen3_svamp8_surface_20260427 \
+  --translator checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt \
+  --source-model Qwen/Qwen2.5-7B-Instruct \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t \
+  --limit 8 \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Result:
+
+- source `2/8`, target `2/8`, text relay `1/8`
+- exact ID parity: true for all three methods
+- numeric coverage: source `8/8`, target `8/8`, text relay `8/8`
+- clean source-only after text relay: `1` ID, `d64f6e35083ffe8c`
+- answer-masking audit: `answer_unexplained_clean_in_pool=0`; the clean ID is
+  explained by source final answer `2`
+
+Compatibility canary:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_generation_baselines.py \
+  --eval-file data/svamp_eval_70.jsonl \
+  --results-dir results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427 \
+  --translator checkpoints/qwen25_to_qwen3_headhalf_lowrank_ridgecorr_20260419.pt \
+  --source-model Qwen/Qwen2.5-Math-1.5B \
+  --target-model Qwen/Qwen3-0.6B \
+  --methods source target t2t \
+  --limit 8 \
+  --device mps \
+  --max-new-tokens 64 \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --no-enable-thinking \
+  --continue-on-error
+```
+
+Result:
+
+- source `2/8`, target `2/8`, text relay `2/8`
+- exact ID parity: true for all three methods
+- numeric coverage: source `7/8`, target `8/8`, text relay `8/8`
+- clean source-only after text relay: `0`
+- answer-masking audit: `answer_unexplained_clean_in_pool=0`
+
+Artifacts:
+
+- `results/mps_micro_qwen25_7b_qwen3_svamp8_surface_20260427/manifest.json`
+- `results/mps_micro_qwen25_7b_qwen3_svamp8_surface_20260427/source_contrastive_target_set.json`
+- `results/mps_micro_qwen25_7b_qwen3_svamp8_surface_20260427/answer_masking_audit.json`
+- `results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/manifest.json`
+- `results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/source_contrastive_target_set.json`
+- `results/mps_micro_qwen25math15_qwen3_svamp8_answermasked_20260427/answer_masking_audit.json`
+- memo: `paper/mps_micro_stronger_source_surface_20260427.md`
+
+Decision:
+
+- passed: MPS is usable again; generation artifacts preserve exact ID parity,
+  high numeric coverage, and sidecar validation.
+- failed: neither micro surface contains answer-unexplained clean target-pool
+  headroom.
+- not promoted: no learned syndrome/semantic sidecar, zero-init connector, or
+  KV transport claim should use these rows as communication evidence.
+
+Next exact gate:
+
+Run a different answer-masked discovery surface rather than scaling these exact
+first-eight IDs. Prefer a bounded 7B or Math-7B slice selected for
+source/target disagreement; promote only if `answer_unexplained_clean_in_pool >
+0` and the clean IDs survive text relay plus source-destroying controls.
