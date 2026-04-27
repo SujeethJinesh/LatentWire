@@ -208,6 +208,43 @@ The CPU target-likelihood receiver follow-up is also negative on live:
   future receiver-gate claim needs true condition-specific rescored controls
   rather than sketch shuffling or forced target fallback
 
+The frozen CPU source-candidate sidecar materializer is also negative:
+
+- new materializer: `scripts/materialize_svamp_source_candidate_sidecars.py`
+- emits 1-byte `candidate_scores` sidecars over target-side candidate values
+  only; source-only values are not added to the receiver pool
+- live materialization has source final in target pool `43/70` and
+  source-mentioned target-pool hits `59/70`, but the hardened decoder remains
+  at `21/70`, clean source-necessary `0`, accepted harm `0`
+- holdout reaches `11/70`, accepted `7`, clean source-necessary `0`, accepted
+  harm `1`
+- strict target-mentioned oracle headroom is small on the current canonical
+  surface: live target `21/70` can only reach `23/70`; holdout target `8/70`
+  can only reach `12/70`
+- decision: kill this heuristic materializer as a method branch; keep it as
+  no-leak sidecar tooling
+- next branch: frozen model-scored source sidecar over target-side candidates,
+  with source-destroying controls and same-byte sidecar controls from the first
+  gate
+
+The frozen model-scored target-side candidate sidecar is now also negative on
+live:
+
+- new collector: `scripts/collect_svamp_frozen_candidate_score_sidecar.py`
+- scores only target-side candidate values and emits no gold/correctness fields
+  or source-only values
+- two-example CPU plumbing smoke passed schema/ID-parity, but accepted `0`
+  sidecar rows and is not scientific evidence
+- full live CPU collection over `70` examples took `351.12s`; top labels were
+  `target=44`, `t2t=26`
+- hardened decoder with the live sidecar: `21/70`, accepted `1`, clean
+  source-necessary `0`, accepted harm `0`, control clean union `0`
+- decision: kill this producer on canonical SVAMP70 live; do not spend another
+  holdout pass or threshold sweep on this exact target-side candidate pool
+- current next move: source-surface discovery or a qualitatively larger but
+  controlled candidate surface, not another shallow sidecar over the same
+  canonical SVAMP70 target pool
+
 The SVAMP70 exact-ID overlap audit rules out another threshold sweep on the
 current canonical surface:
 

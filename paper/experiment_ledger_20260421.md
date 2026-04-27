@@ -9449,3 +9449,231 @@ Hashes:
   `7d5882c76b0d9e6e5dbae90084bd731945a8d72cfa9b948843dc290a502365bb`
 - `.debug/semantic_predicate_decoder_sidecar_controls_20260427/predictions.jsonl`:
   `48ba362b0f8f557ceb5c1eedd4674d097af1a464f4ea9cdfe1bdf2475fb7fdd8`
+
+## Cycle 2026-04-27 01:38 PDT - CPU frozen source-candidate sidecar smoke
+
+Start state:
+
+1. current ICLR readiness: not ready; still missing a deployable positive
+   source-communication method with seed stability and source controls
+2. current paper story: side-information communication is the strongest
+   remaining story, but current positives are bounds/tooling rather than a
+   frozen method
+3. exact blocker: no source-derived low-rate sidecar producer survives
+   live/holdout controls; MPS remains blocked by orphaned PID `31103`
+4. live branch / candidates: learned/frozen syndrome-style sidecar first;
+   sparse/dictionary sidecar second
+5. highest-priority gate: materialize a no-leak source-candidate sidecar and
+   replay it through the hardened semantic decoder
+6. scale-up rung: smoke / strict-small preparation
+
+MPS check:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: PID `31103` still exists with `PPID=1`, `STAT=UE`, elapsed over
+`08:35`, running the old MPS `scripts/calibrate.py` job. No MPS jobs were
+started.
+
+Implemented:
+
+- `scripts/materialize_svamp_source_candidate_sidecars.py`
+- `tests/test_materialize_svamp_source_candidate_sidecars.py`
+- memo: `paper/source_candidate_sidecar_materializer_20260427.md`
+
+The materializer emits source-derived `candidate_scores` JSONL sidecars over
+target-side candidate values only. It does not add source-only answers to the
+receiver pool.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_materialize_svamp_source_candidate_sidecars.py tests/test_analyze_svamp_source_semantic_predicate_decoder.py -q
+./venv_arm64/bin/python -m py_compile scripts/materialize_svamp_source_candidate_sidecars.py scripts/analyze_svamp_source_semantic_predicate_decoder.py tests/test_materialize_svamp_source_candidate_sidecars.py
+```
+
+Result: `9 passed`; compile passed.
+
+Materialization command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/materialize_svamp_source_candidate_sidecars.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --output-dir .debug/source_candidate_sidecars_20260427 \
+  --sidecar-bits 8 \
+  --date 2026-04-27
+```
+
+Gate command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp_source_semantic_predicate_decoder.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --live-sidecar-jsonl .debug/source_candidate_sidecars_20260427/live_candidate_sidecars.jsonl \
+  --holdout-sidecar-jsonl .debug/source_candidate_sidecars_20260427/holdout_candidate_sidecars.jsonl \
+  --mode learned_logodds \
+  --outer-folds 5 \
+  --accept-penalty 0.75 \
+  --harm-weight 20.0 \
+  --min-live-correct 25 \
+  --min-live-clean-source-necessary 2 \
+  --min-holdout-correct 10 \
+  --min-holdout-clean-source-necessary 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-dir .debug/source_candidate_sidecar_gate_20260427 \
+  --output-predictions-jsonl .debug/source_candidate_sidecar_gate_20260427/predictions.jsonl
+```
+
+Result: `semantic_predicate_decoder_fails_smoke`.
+
+- live matched: `21/70`, accepted `0`, clean source-necessary `0`, accepted
+  harm `0`, control clean union `0`
+- holdout matched: `11/70`, accepted `7`, clean source-necessary `0`,
+  accepted harm `1`, control clean union `0`
+- sidecar bytes: `1` per example
+
+Artifact audit:
+
+- strict target-mentioned live headroom is only `+2`, from `21/70` to `23/70`
+- strict target-mentioned holdout headroom is `+4`, from `8/70` to `12/70`
+- broader text-to-text/C2C candidate artifacts have larger oracle headroom but
+  require a frozen source-derived sidecar and full controls before they can be
+  counted as communication evidence
+
+Artifact hashes:
+
+- `.debug/source_candidate_sidecars_20260427/manifest.json`:
+  `47c58449496b4983923879dbe466effe83e996ef5a13019be342c21e548dd722`
+- `.debug/source_candidate_sidecars_20260427/manifest.md`:
+  `d936d08113654d1dbae76ab4d944f4a0f0316ec4a1f68bda45eb1a38173e5150`
+- `.debug/source_candidate_sidecars_20260427/live_candidate_sidecars.jsonl`:
+  `0378c86287b88edacfe2ae1fd61418d24e10180d99d562b57fb8b2a1574f06dd`
+- `.debug/source_candidate_sidecars_20260427/holdout_candidate_sidecars.jsonl`:
+  `267abcfd7efa67dd702e9a362a2fdae357084e03b308d3496548141d4ce54b83`
+- `.debug/source_candidate_sidecar_gate_20260427/semantic_predicate_decoder.json`:
+  `ac5e5e2a9ac60453504fac7c9139fcc788e7e53d8704f4eb7f476b08d072a792`
+- `.debug/source_candidate_sidecar_gate_20260427/semantic_predicate_decoder.md`:
+  `ec4d14f179c671db63a6f0d8f888c68ab58813301cb81f9c9404156c92b436e2`
+- `.debug/source_candidate_sidecar_gate_20260427/predictions.jsonl`:
+  `43b4824e0d82a40b2a77e8833dce7943ec9f929e934d0e9ba4479eec6ffec30a`
+
+Decision: kill the heuristic source-candidate materializer as a method branch.
+Promote only the no-leak sidecar schema/tooling.
+
+Follow-up strict frozen producer:
+
+- implemented `scripts/collect_svamp_frozen_candidate_score_sidecar.py`
+- added `tests/test_collect_svamp_frozen_candidate_score_sidecar.py`
+- fake-model tests verify next-token scoring, no gold/correctness leakage,
+  source-only candidate exclusion, and target-side-only candidate pools
+
+Two-example CPU plumbing smoke:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_svamp_frozen_candidate_score_sidecar.py \
+  --scorer-model Qwen/Qwen2.5-Math-1.5B \
+  --target-set-json results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --eval-file results/qwen25math_qwen3_svamp70_source_surface_20260426/_artifacts/svamp_eval_70_70.jsonl \
+  --continuation-template 'Answer: {text}' \
+  --limit 2 \
+  --device cpu \
+  --dtype float32 \
+  --sidecar-bits 32 \
+  --scorer-use-chat-template \
+  --scorer-enable-thinking false \
+  --date 2026-04-27 \
+  --output-jsonl .debug/frozen_candidate_score_sidecar_smoke_20260427/live_limit2.jsonl \
+  --output-md .debug/frozen_candidate_score_sidecar_smoke_20260427/live_limit2.md
+```
+
+Result: `2` rows, elapsed `10.42s`; JSONL hash
+`15227350a56e5bf9d26143c108fcae598b5cdffa78a07301f44f6c6ed852ce7c`.
+Two-ID decoder schema smoke passed only as plumbing evidence, with accepted
+sidecar rows `0`.
+
+Full live CPU collection:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/collect_svamp_frozen_candidate_score_sidecar.py \
+  --scorer-model Qwen/Qwen2.5-Math-1.5B \
+  --target-set-json results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --eval-file results/qwen25math_qwen3_svamp70_source_surface_20260426/_artifacts/svamp_eval_70_70.jsonl \
+  --continuation-template 'Answer: {text}' \
+  --device cpu \
+  --dtype float32 \
+  --sidecar-bits 32 \
+  --scorer-use-chat-template \
+  --scorer-enable-thinking false \
+  --resume \
+  --date 2026-04-27 \
+  --output-jsonl results/frozen_candidate_score_sidecar_20260427/live_candidate_score_sidecar_cpu.jsonl \
+  --output-md results/frozen_candidate_score_sidecar_20260427/live_candidate_score_sidecar_cpu.md
+```
+
+Result: `70` rows, elapsed `351.12s`, top labels `target=44`, `t2t=26`.
+
+Live decoder gate:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/analyze_svamp_source_semantic_predicate_decoder.py \
+  --live-target-set results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json \
+  --holdout-target-set results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json \
+  --live-sidecar-jsonl results/frozen_candidate_score_sidecar_20260427/live_candidate_score_sidecar_cpu.jsonl \
+  --mode learned_logodds \
+  --outer-folds 5 \
+  --accept-penalty 0.75 \
+  --harm-weight 20.0 \
+  --min-live-correct 25 \
+  --min-live-clean-source-necessary 2 \
+  --min-holdout-correct 10 \
+  --min-holdout-clean-source-necessary 1 \
+  --max-control-clean-union 0 \
+  --max-accepted-harm 0 \
+  --date 2026-04-27 \
+  --output-dir results/frozen_candidate_score_sidecar_20260427/live_only_decoder_gate \
+  --output-predictions-jsonl results/frozen_candidate_score_sidecar_20260427/live_only_decoder_gate/predictions.jsonl
+```
+
+Result: `semantic_predicate_decoder_fails_smoke`.
+
+- live matched: `21/70`
+- accepted: `1`
+- clean source-necessary: `0`
+- accepted harm: `0`
+- control clean union: `0`
+
+Hashes:
+
+- `results/frozen_candidate_score_sidecar_20260427/live_candidate_score_sidecar_cpu.jsonl`:
+  `3734e4884c87bc14d3bc74317a47c195bbac85253927ae799e3eaa717cf2e771`
+- `results/frozen_candidate_score_sidecar_20260427/live_candidate_score_sidecar_cpu.md`:
+  `4bff722fcda7579918d95b01f4b01471e52aae53f3b06236b786913054202cdc`
+- `results/frozen_candidate_score_sidecar_20260427/live_only_decoder_gate/semantic_predicate_decoder.json`:
+  `7491d8c4e6e63d088ae208e1e01496b8712855940a7c5df8fccd246e3fbcd498`
+- `results/frozen_candidate_score_sidecar_20260427/live_only_decoder_gate/semantic_predicate_decoder.md`:
+  `0a56cd0c02c7ad1a54dbf68e1fdf1d0d791b7a2c587b0916b87ba529d29bf28d`
+- `results/frozen_candidate_score_sidecar_20260427/live_only_decoder_gate/predictions.jsonl`:
+  `90421fa78c019d7b2fa927bce3f3719bd083792383b585c0a571186107ac521c`
+
+Decision: kill the frozen model-scored target-side candidate sidecar producer
+on canonical SVAMP70 live. Do not spend a holdout CPU pass or another threshold
+sweep on this exact candidate pool.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+rg -n "status:.*pass|matched.*clean|clean source|source-necessary|wins|candidate" \
+  paper results rotalign latent_bridge -g '*.md'
+```
+
+Use that audit to select a source-surface discovery gate or a qualitatively
+larger controlled candidate surface. If no overlooked positive branch appears,
+switch away from canonical SVAMP70 target-side sidecars.
