@@ -725,8 +725,25 @@ Qwen3 SVAMP70 live/holdout surface:
   (`20/70`, clean source-necessary `0`, control union `1`)
 - formatted sum-logprob fails live and holdout
 
-The next selected branch is not another likelihood sketch. Move to a richer
-source-controlled syndrome predictor or source-surface discovery gate using
-the same target-candidate decoder and strict source-destroying controls.
+The next selected branch is not another likelihood sketch. Post-kill syndrome
+bound replays now show that a richer predictor is not justified on this exact
+SVAMP70 live/holdout surface: C2C-teacher residues have live headroom but fail
+holdout controls, while source-teacher residues recover live clean IDs only by
+destroying target-self preservation.
 
 The source-trace router scout also failed and should not be promoted.
+
+Current live branch: none. The next branch is source-surface discovery for a
+stronger surface, followed by a bound replay before implementing another
+predictor. Stop MPS execution until PID `31103` is cleared; CPU is acceptable
+only for tiny smoke/debug work.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If clear, run the `chal311_380` source-surface scout recorded in
+`paper/svamp70_syndrome_bounds_after_sketch_kill_20260427.md`, then replay
+syndrome bounds before implementing another predictor.

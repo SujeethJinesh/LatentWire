@@ -2,7 +2,7 @@
 
 Date: 2026-04-27
 
-Status: `harness_ready_run_blocked_by_mps_pid_31103`
+Status: `source_likelihood_and_post_sketch_syndrome_killed`
 
 ## Branch
 
@@ -94,3 +94,32 @@ Key artifacts:
   - sha256: `ad33fd03dac92f5f85c6fcfc24562b6a19c6ba065fb0f5e6c98ed1c2cee9724f`
 - `source_trace_router_after_sketch_kill.json`
   - sha256: `e4e5600e139efbf7bc068ff2117e172cba9f87055e9477f51839a90175c54c03`
+
+## Post-Kill Syndrome Bounds
+
+Focused readout:
+
+- `paper/svamp70_syndrome_bounds_after_sketch_kill_20260427.md`
+
+Decision: do not implement a richer learned source-syndrome predictor on this
+exact SVAMP70 live/holdout surface. The bounds themselves fail either
+target-self preservation or holdout controls.
+
+Artifacts:
+
+- `svamp70_live_c2c_syndrome_bound_after_sketch_kill.json`
+  - sha256: `662534e42454526872e760d3ca622daa25b04c84a82bf8600111533770b0d857`
+- `svamp70_live_c2c_syndrome_bound_after_sketch_kill.md`
+  - sha256: `1278aa33c3f89601b027eb130dcb6ffbc8cd3bc3545c6510f3e7cd8182c92614`
+- `svamp70_holdout_c2c_syndrome_bound_after_sketch_kill.json`
+  - sha256: `a1125332f34e4585cb3efbc5d6e5b4ad7a4059695d03347881f1fde0000a9d29`
+- `svamp70_holdout_c2c_syndrome_bound_after_sketch_kill.md`
+  - sha256: `1044c8ec73575892d77f83f0705ade14328b8ec7525311e074f5184447c64a9a`
+- `svamp70_live_source_syndrome_bound_after_sketch_kill.json`
+  - sha256: `3369b5590c7ea36c732ca8b03904bffe4af18d8067e2c4624e4798a6ce9fcb0a`
+- `svamp70_live_source_syndrome_bound_after_sketch_kill.md`
+  - sha256: `d9b5ad34397d5d9fffa0f27829b7039573213e84af3b15e6d55e3141a054de35`
+- `svamp70_holdout_source_syndrome_bound_after_sketch_kill.json`
+  - sha256: `e6fd0ea71815835dc9a9026b8e3d75751c22830fe40b905f2ae1c533b672001f`
+- `svamp70_holdout_source_syndrome_bound_after_sketch_kill.md`
+  - sha256: `e9aa9e145fa86f3bc37a87500b0b6bdbccbbcd653899a4f4b222413185f7682f`

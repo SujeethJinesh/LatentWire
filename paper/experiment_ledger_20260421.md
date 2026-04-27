@@ -7891,3 +7891,83 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 
 After PID `31103` is cleared, implement/run a source-controlled syndrome
 predictor rather than another source-likelihood sketch.
+
+## 2026-04-27 Cycle - Post-sketch syndrome bounds
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; no deployable
+   source-derived positive method has cleared live/holdout controls.
+2. Current paper story: source sidecars and syndrome decoders remain useful as
+   diagnostics, but the SVAMP70 live/holdout surface does not support a
+   promotable syndrome method after the likelihood-sketch kill.
+3. Exact blocker to submission: the current live branch is killed, post-kill
+   syndrome bounds fail, and MPS is blocked by orphaned PID `31103`.
+4. Live branch: none after this cycle.
+5. Highest-priority gate: replay C2C-teacher and source-teacher syndrome bounds
+   on frozen SVAMP70 live/holdout artifacts.
+6. Scale-up rung: strict small/medium kill check.
+
+What changed:
+
+- Ran the artifact-only `scripts/analyze_svamp32_syndrome_sidecar_probe.py`
+  on SVAMP70 live/holdout with C2C-derived residues.
+- Ran the same replay with source-answer residues to test whether source
+  numeric side information has enough target-safe headroom to justify a richer
+  predictor.
+- Added focused memo:
+  `paper/svamp70_syndrome_bounds_after_sketch_kill_20260427.md`.
+
+Result summary:
+
+- C2C teacher live: best `24/70` vs target `21/70`, clean source-necessary
+  `4/6`, control union `0/6`, but below the `25/70` gate and with one
+  provenance issue.
+- C2C teacher holdout: best `17/70` vs target `8/70`, but clean
+  source-necessary `0/2` and control clean union `2/2`.
+- Source teacher live: `15/70` vs target `21/70`, clean source-necessary
+  `6/6`, control union `0/6`, target-self matched only `4`; it recovers
+  source-only IDs by destroying target-correct preservation.
+- Source teacher holdout: `9/70` vs target `8/70`, clean source-necessary
+  `1/2`, control clean union `1/2`.
+
+Decision:
+
+- Kill the post-sketch syndrome continuation on this SVAMP70 surface.
+- Do not implement a richer learned source-syndrome predictor on this exact
+  live/holdout slice until a bound first clears target-self preservation and
+  source controls.
+- Select source-surface discovery as the next branch, but it is blocked on MPS
+  because new C2C/source-feature artifacts require model generation or forward
+  passes.
+
+Artifacts:
+
+- `results/qwen25math_svamp70_source_likelihood_sketch_20260427/svamp70_live_c2c_syndrome_bound_after_sketch_kill.json`
+  - sha256:
+    `662534e42454526872e760d3ca622daa25b04c84a82bf8600111533770b0d857`
+- `results/qwen25math_svamp70_source_likelihood_sketch_20260427/svamp70_holdout_c2c_syndrome_bound_after_sketch_kill.json`
+  - sha256:
+    `a1125332f34e4585cb3efbc5d6e5b4ad7a4059695d03347881f1fde0000a9d29`
+- `results/qwen25math_svamp70_source_likelihood_sketch_20260427/svamp70_live_source_syndrome_bound_after_sketch_kill.json`
+  - sha256:
+    `3369b5590c7ea36c732ca8b03904bffe4af18d8067e2c4624e4798a6ce9fcb0a`
+- `results/qwen25math_svamp70_source_likelihood_sketch_20260427/svamp70_holdout_source_syndrome_bound_after_sketch_kill.json`
+  - sha256:
+    `e6fd0ea71815835dc9a9026b8e3d75751c22830fe40b905f2ae1c533b672001f`
+
+Tests:
+
+```bash
+git diff --check
+```
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+After PID `31103` is cleared, run the `chal311_380` MPS surface scout command
+recorded in `paper/svamp70_syndrome_bounds_after_sketch_kill_20260427.md`,
+then replay syndrome bounds before coding another predictor.
