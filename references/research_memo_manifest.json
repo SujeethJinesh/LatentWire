@@ -782,5 +782,12 @@
     "path": "references/468_target_preserving_receiver_gate_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for target-preserving receiver gates after semantic-predicate decoding, covering speculative acceptance, decoder-side information, constrained final-answer selection, conformal abstention, and self-consistency diagnostics."
+  },
+  {
+    "num": 469,
+    "slug": "recent_latent_agent_communication_refs",
+    "path": "references/469_recent_latent_agent_communication_refs.md",
+    "status": "local_memo",
+    "reason": "Recent primary-source memo for latent/activation agent communication baselines and target-preserving zero-init latent side-information requirements after durable source-surface ranking selected SVAMP70 live as the next primary gate."
   }
 ]

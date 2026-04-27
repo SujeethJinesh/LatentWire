@@ -8724,3 +8724,97 @@ ps -p 31103 -o pid,ppid,stat,etime,command
 If PID `31103` clears, resume MPS source-surface/interface reset. If it remains
 blocked, use CPU-only literature/artifact work or apply the new harness only to
 a stronger source surface, not this killed receiver branch.
+
+## 2026-04-27 Cycle - Durable source-surface ranking and recent latent-agent baselines
+
+Cycle header:
+
+1. Current ICLR readiness and distance: not ICLR-ready; no method has cleared
+   strict source controls, target preservation, seed stability, systems metrics,
+   and cross-family falsification.
+2. Current paper story: existing source surfaces contain real clean headroom,
+   but prior receiver/router branches failed to convert it into controlled
+   communication gains.
+3. Exact blocker to submission: no positive method survives on a durable
+   source surface; MPS remains blocked by orphaned PID `31103`.
+4. Current live branch: none. Top next branch is zero-init gated latent
+   side-information after source-surface selection.
+5. Highest-priority gate: make source-surface selection reproducible and rank
+   by clean source-only IDs.
+6. Scale-up rung: smoke / branch selection.
+
+Implementation updates:
+
+- Added `scripts/rank_source_contrastive_target_sets.py`.
+- Added `tests/test_rank_source_contrastive_target_sets.py`.
+- Added `references/469_recent_latent_agent_communication_refs.md`.
+- Updated `references/research_memo_manifest.json`.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/rank_source_contrastive_target_sets.py \
+  --target-set svamp70_live=path=results/qwen25math_qwen3_svamp70_source_surface_20260426/source_contrastive_target_set.json,role=primary_live,note=canonical_live_surface \
+  --target-set svamp70_holdout=path=results/qwen25math_qwen3_svamp70_holdout_source_surface_20260426/source_contrastive_target_set.json,role=canonical_holdout,note=canonical_holdout_surface \
+  --target-set svamp70_chal241_310=path=results/qwen25math_qwen3_svamp70_surface_scout_chal241_310_20260426/source_contrastive_target_set.json,role=adjacent_falsifier,note=best_adjacent_clean_surface \
+  --target-set svamp32_qwen25math=path=results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json,role=smoke_debug,note=tiny_debug_surface \
+  --target-set gsm70_qwen25math=path=results/qwen25math_qwen3_gsm70_source_surface_20260426/source_contrastive_target_set.json,role=weak_candidate,note=weak_gsm_surface \
+  --target-set svamp70_chal171_240=path=results/qwen25math_qwen3_svamp70_surface_scout_chal171_240_20260426/source_contrastive_target_set.json,role=weak_candidate,note=weak_adjacent_surface \
+  --target-set svamp70_chal311_380=path=results/qwen25math_qwen3_svamp70_surface_scout_chal311_380_20260426/source_contrastive_target_set.json,role=weak_candidate,note=weak_adjacent_surface \
+  --target-set svamp32_qwen25math_instruct=path=results/surface_scout_qwen25math_instruct_qwen3_svamp32_20260426/source_contrastive_target_set.json,role=weak_candidate,note=weak_instruct_surface \
+  --min-clean-source-only 5 \
+  --date 2026-04-27 \
+  --output-json results/durable_source_surface_ranking_20260427/source_surface_ranking.json \
+  --output-md results/durable_source_surface_ranking_20260427/source_surface_ranking.md
+```
+
+Result:
+
+- Status: `primary_surface_selected`.
+- Top surface: `svamp70_live`.
+- `svamp70_live`: clean source-only `6/70`, raw source-only `9/70`,
+  target/source oracle gain `9/70`.
+- `svamp70_holdout`: clean source-only `2/70`, still canonical holdout.
+- `svamp70_chal241_310`: clean source-only `4/70`, adjacent falsifier only.
+
+Artifact hashes:
+
+- `results/durable_source_surface_ranking_20260427/source_surface_ranking.json`:
+  `7e665698c206f748074ea567754e1f7392b0391ee60dc514bb41619e706a038f`
+- `results/durable_source_surface_ranking_20260427/source_surface_ranking.md`:
+  `99fe4631a973dcc09b4f97ef6a5b0d26c6dc833fd4968b24bb13a574cf7294e8`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest tests/test_rank_source_contrastive_target_sets.py tests/test_analyze_source_headroom_surfaces.py -q
+./venv_arm64/bin/python -m py_compile scripts/rank_source_contrastive_target_sets.py
+```
+
+Result: `8 passed in 0.07s`; compile passed.
+
+Literature update:
+
+- `references/469_recent_latent_agent_communication_refs.md` adds recent
+  primary-source latent/activation communication baselines: LatentMAS,
+  Interlat, ICML activation communication, and Thought Communication.
+- Hypothesis update: the next learned branch should be fixed-budget,
+  zero-init target-preserving latent side-information with activation/latent
+  communication baselines, not another shallow receiver threshold sweep.
+
+Decision:
+
+- Promote `svamp70_live` as the durable primary method surface.
+- Keep `svamp70_holdout` as canonical replay despite weak clean headroom.
+- Keep `svamp70_chal241_310` only as adjacent falsifier.
+
+Next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` clears, run the stronger-source scout recorded in
+`paper/postkill_historical_cpu_audit_20260427.md`, then apply the zero-init
+gated latent side-information smoke only if the scout has at least six clean
+source-only IDs and target/source oracle gain of at least six.

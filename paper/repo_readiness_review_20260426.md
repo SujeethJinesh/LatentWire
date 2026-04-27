@@ -830,6 +830,46 @@ Next exact gate:
 ps -p 31103 -o pid,ppid,stat,etime,command
 ```
 
+## 2026-04-27 Durable Source-Surface Ranking
+
+Readiness remains not ICLR-ready. Current live method branch: none.
+
+The source-surface selection gate is now durable:
+
+- New ranker: `scripts/rank_source_contrastive_target_sets.py`
+- Focused tests: `tests/test_rank_source_contrastive_target_sets.py`
+- Output: `results/durable_source_surface_ranking_20260427/source_surface_ranking.json`
+- Focused memo: `paper/durable_source_surface_ranking_20260427.md`
+
+The ranker consumes existing `source_contrastive_target_set.json` artifacts and
+ranks by clean source-only IDs after controls/baselines, not raw source-only
+counts.
+
+Decision:
+
+- `svamp70_live` is the primary next method surface: clean source-only `6/70`,
+  raw source-only `9/70`, target/source oracle gain `9/70`.
+- `svamp70_holdout` remains the canonical replay gate despite only `2/70`
+  clean source-only IDs.
+- `svamp70_chal241_310` is only an adjacent falsifier with clean `4/70`.
+
+Recent latent-agent communication references were added in
+`references/469_recent_latent_agent_communication_refs.md`. They raise the
+baseline bar: the next learned branch should include fixed-budget latent or
+activation communication baselines and systems metrics, not only text relay.
+
+Updated next exact gate:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` clears, run the stronger-source MPS scout from
+`paper/postkill_historical_cpu_audit_20260427.md`. If it reaches at least six
+clean source-only IDs and target/source oracle gain of at least six, run a
+zero-init gated latent side-information smoke on `svamp70_live` with
+source-destroying controls and activation/latent baselines.
+
 If clear, do not run the old `chal311_380` scout recorded in
 `paper/svamp70_syndrome_bounds_after_sketch_kill_20260427.md`; those artifacts
 already exist and fail the surface gate.
