@@ -77,4 +77,57 @@ def test_builds_condition_pools_and_recomputes_shuffled_correctness(tmp_path):
         for line in (out / "label_shuffle" / "source.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert label_shuffle_target[0]["prediction"] == "5"
+    assert label_shuffle_target[0]["control_donor_example_id"] == "b"
     assert label_shuffle_source[0]["prediction"] == "0"
+
+
+def test_zero_offsets_still_use_nonself_donors(tmp_path):
+    target = tmp_path / "target.jsonl"
+    text = tmp_path / "text.jsonl"
+    source = tmp_path / "source.jsonl"
+    out = tmp_path / "out"
+    target_rows = [
+        {"example_id": "a", "index": 0, "answer": ["1"], "method": "target_alone", "prediction": "0", "normalized_prediction": "0", "correct": False},
+        {"example_id": "b", "index": 1, "answer": ["2"], "method": "target_alone", "prediction": "0", "normalized_prediction": "0", "correct": False},
+        {"example_id": "c", "index": 2, "answer": ["3"], "method": "target_alone", "prediction": "0", "normalized_prediction": "0", "correct": False},
+    ]
+    source_rows = [
+        {**target_rows[0], "method": "source_alone", "prediction": "11", "normalized_prediction": "11"},
+        {**target_rows[1], "method": "source_alone", "prediction": "22", "normalized_prediction": "22"},
+        {**target_rows[2], "method": "source_alone", "prediction": "33", "normalized_prediction": "33"},
+    ]
+    _write_jsonl(target, target_rows)
+    _write_jsonl(text, [{**row, "method": "text_to_text"} for row in target_rows])
+    _write_jsonl(source, source_rows)
+
+    build.build(
+        build.parse_args(
+            [
+                "--target-jsonl",
+                str(target),
+                "--text-jsonl",
+                str(text),
+                "--source-jsonl",
+                str(source),
+                "--output-dir",
+                str(out),
+                "--shuffle-offset",
+                "0",
+                "--label-shuffle-offset",
+                "0",
+            ]
+        )
+    )
+
+    shuffled_source = [
+        json.loads(line)
+        for line in (out / "shuffled_source" / "source.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    label_shuffle_target = [
+        json.loads(line)
+        for line in (out / "label_shuffle" / "target.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    for row in shuffled_source + label_shuffle_target:
+        assert row["control_donor_example_id"] != row["example_id"]
+    assert [row["control_donor_example_id"] for row in shuffled_source] == ["b", "c", "a"]
+    assert [row["control_donor_example_id"] for row in label_shuffle_target] == ["b", "c", "a"]

@@ -137,6 +137,15 @@ def _ordered(rows_by_id: dict[str, dict[str, Any]], reference_ids: Sequence[str]
     return [dict(rows_by_id[example_id]) for example_id in reference_ids]
 
 
+def _nonself_offset_index(total: int, index: int, offset: int) -> int:
+    if total <= 1:
+        raise ValueError("Non-self controls require at least two examples")
+    donor_index = (index + offset) % total
+    if donor_index == index:
+        donor_index = (index + 1) % total
+    return donor_index
+
+
 def build(args: argparse.Namespace) -> dict[str, Any]:
     target_path = _resolve(args.target_jsonl)
     text_path = _resolve(args.text_jsonl)
@@ -227,7 +236,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
 
     rows: list[dict[str, Any]] = []
     for index, example_id in enumerate(reference_ids):
-        donor = source_ordered[(index + int(args.shuffle_offset)) % len(source_ordered)]
+        donor = source_ordered[_nonself_offset_index(len(source_ordered), index, int(args.shuffle_offset))]
         rows.append(
             _currentized_candidate(
                 current=target_by_id[example_id],
@@ -250,18 +259,20 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     label_text_rows: list[dict[str, Any]] = []
     label_source_rows: list[dict[str, Any]] = []
     for index, example_id in enumerate(reference_ids):
-        del index
         current = target_by_id[example_id]
+        source_donor = source_ordered[
+            _nonself_offset_index(len(source_ordered), index, int(args.label_shuffle_offset))
+        ]
         # Permute slot labels before receiver scoring. Source content occupies
-        # the target-labeled slot, target content occupies the source-labeled
-        # slot, and text remains text.
+        # the target-labeled slot from a non-self donor, target content occupies
+        # the source-labeled slot, and text remains text.
         label_target_rows.append(
             _currentized_candidate(
                 current=current,
-                donor=source_by_id[example_id],
+                donor=source_donor,
                 method="label_shuffle_target_candidate",
                 condition="label_shuffle",
-                donor_example_id=example_id,
+                donor_example_id=str(source_donor["example_id"]),
             )
         )
         label_text_rows.append(dict(text_by_id[example_id], control_condition="label_shuffle"))

@@ -10677,3 +10677,80 @@ If PID `31103` is gone, run the stronger-source SVAMP70 scout or KVComm strict
 source-control MPS smoke recorded earlier in the ledger. If it remains in
 `STAT=UE`, OS/session-level cleanup is required before the next
 evidence-bearing gate.
+
+## 2026-04-27 Cycle 8 - Condition Candidate Pool Control Hardening
+
+Cycle start:
+
+1. ICLR readiness: not ready; no live positive method survives strict source
+   controls and answer-masking.
+2. Current paper story: current CPU sidecars over stored artifacts are pruned,
+   but future learned receiver gates still need stricter source-destroying
+   candidate pools.
+3. Exact blocker: PID `31103` remains an orphaned MPS process in `STAT=UE`, so
+   fresh evidence-bearing MPS gates cannot run.
+4. Current live branch: none while MPS is blocked. Top next branch after cleanup
+   is stronger-source answer-masked surface discovery.
+5. Highest-priority gate: CPU-only harness hardening for condition-specific
+   receiver controls.
+6. Scale-up rung: harness/source-control hardening before smoke.
+
+Subagent findings:
+
+- artifact audit: no CPU-only evidence-bearing method gate remains; strongest
+  reusable surface is still `svamp70_live`, but it is a surface, not a method.
+- experiment/literature planner: next scientific rung is stronger-source
+  answer-masked Wyner-Ziv-style surface discovery after MPS cleanup.
+- code audit: `scripts/build_condition_likelihood_candidate_pools.py` recorded
+  `label_shuffle_offset` but did not use it; `label_shuffle` used same-example
+  source content in the target-labeled slot, and `shuffled_source` could
+  self-donor if offsets were zero or wrapped to self.
+
+Implemented:
+
+- added `_nonself_offset_index(total, index, offset)`.
+- made `shuffled_source` use guaranteed non-self source donors.
+- made `label_shuffle` use `--label-shuffle-offset` for a non-self donor in
+  the target-labeled source slot.
+- added regression coverage for zero offsets and direct donor ID checks.
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_build_condition_likelihood_candidate_pools.py \
+  tests/test_analyze_condition_likelihood_receiver_gate.py \
+  tests/test_kvcomm_eval_controls.py -q
+```
+
+Result: `18 passed in 0.12s`.
+
+```bash
+./venv_arm64/bin/python -m py_compile scripts/build_condition_likelihood_candidate_pools.py
+```
+
+Result: passed.
+
+Reference update:
+
+- `references/473_mps_blocked_next_gate_refs.md` consolidates current
+  C2C/KVCOMM/KVComm/Q-KVComm implications: future claims need a stronger
+  source surface first, then C2C/KVComm/Q-KVComm-style quality and matched-byte
+  baselines.
+
+Decision:
+
+- hardened: condition-specific candidate-pool controls.
+- not revived: condition-likelihood receiver on current SVAMP70 surface.
+- current live branch: none while PID `31103` persists.
+
+Resume command:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+If PID `31103` clears, regenerate future condition candidate pools with this
+patch before any receiver scoring. Then run stronger-source answer-masked
+surface discovery; spend learned-syndrome or zero-init query-bottleneck compute
+only if the surface has answer-unexplained clean target-pool headroom.

@@ -810,5 +810,12 @@
     "path": "references/472_answer_null_sideinfo_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for answer-null side-information after source-answer ablation killed candidate-score sidecars, motivating masked process verifiers, predicate syndromes, contrastive error tags, erasure gates, and zero-init query bottlenecks."
+  },
+  {
+    "num": 473,
+    "slug": "mps_blocked_next_gate_refs",
+    "path": "references/473_mps_blocked_next_gate_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for branch selection while MPS is blocked, consolidating C2C, KVCOMM, KVComm, and Q-KVComm implications for the next stronger-source surface gate and matched-byte baselines."
   }
 ]

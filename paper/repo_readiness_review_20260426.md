@@ -263,6 +263,14 @@ minutes per eight-example source/target/text scout, but brute-force CPU range
 scanning is low expected value. The hard blocker remains PID `31103`; after
 OS/session cleanup the next evidence-bearing gate is fresh strict-small
 same-family surface generation or KVComm source-control MPS smoke.
+
+Update `2026-04-27 05:48 PDT`: the condition-specific candidate-pool builder
+is hardened. `label_shuffle_offset` is now used for a non-self donor in the
+target-labeled source slot, and `shuffled_source` also guarantees non-self
+donors even when offsets are zero or wrap to self. This does not revive the
+killed condition-likelihood receiver, but it removes a provenance weakness
+before future receiver scoring. Focused tests passed: `18` candidate/receiver/
+KVComm-control tests plus `py_compile`.
 - strict target-mentioned oracle headroom is small on the current canonical
   surface: live target `21/70` can only reach `23/70`; holdout target `8/70`
   can only reach `12/70`
