@@ -24,6 +24,7 @@
   trace-no-hint n64 prompt-contract diagnostics.
 - Qwen3.5-2B n16 latest-small cross-size smoke and Qwen3.6 MoE/FP8 runbook.
 - Qwen3.5-2B n64 latest-small cross-size confirmation artifacts.
+- Qwen3.5-2B n160 latest-small cross-size confirmation artifacts.
 
 ## Notes
 

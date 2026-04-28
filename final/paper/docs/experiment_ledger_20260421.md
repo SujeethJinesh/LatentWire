@@ -14534,3 +14534,12 @@ exact-ID parity true, matched-minus-best-control `+0.750`, and p50 CPU latency
 the latest-small same-generation breadth story alongside Qwen3.5-0.8B n160
 seed stability. Next local gate is Qwen3.5-2B n160 or Qwen3.5-4B n16; next
 high-value external gate remains Qwen3.6 MoE/FP8 n32.
+
+Update `2026-04-28`: `qwen35_2b_n160_confirmation_20260428` clears the frozen
+latest-small n160 gate. `Qwen/Qwen3.5-2B` CPU trace-no-hint n160 seed29 reaches
+matched `160/160`, target-only `40/160`, best source-destroying control
+`41/160`, packet valid rate `1.000`, exact-ID parity true,
+matched-minus-best-control `+0.744`, and p50 CPU packet latency `13878 ms`.
+This gives two Qwen3.5 small sizes with clean n160 evidence: 0.8B is
+seed-stable at n160, and 2B is n160-confirmed on seed29. Latest/MoE readiness
+still excludes Qwen3.5-4B and Qwen3.6 MoE/FP8 until those rows run.

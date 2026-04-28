@@ -86,16 +86,17 @@ def _model_matrix() -> list[CandidateModel]:
             active_params=None,
             architecture="qwen3_5 conditional generation",
             priority="P0",
-            local_rung="CPU n16/n64 passed; n160 next",
+            local_rung="CPU n16/n64/n160 passed",
             expected_device="cpu",
             prompt_mode="trace_no_hint",
-            limit=16,
+            limit=160,
             dtype="float32",
             max_new_tokens=8,
-            status="CPU n16/n64 passed after local download; MPS skipped due Qwen3.5 backend risk",
+            status="CPU n16/n64/n160 passed after local download; MPS skipped due Qwen3.5 backend risk",
             rationale=(
-                "Best near-term small latest-model confirmation after Qwen3.5-0.8B. CPU n16/n64 both reach "
-                "1.000 matched accuracy versus 0.250 target/control, with valid packet rate 1.000."
+                "Second latest Qwen3.5 small size after Qwen3.5-0.8B. CPU n16/n64/n160 all reach "
+                "1.000 matched accuracy versus a 0.250 target floor and no source-destroying control "
+                "above 0.256 at n160, with valid packet rate 1.000."
             ),
         ),
         CandidateModel(
@@ -459,16 +460,17 @@ def main() -> None:
         "benchmark_jsonl": benchmark,
         "recommendation": (
             "Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable "
-            "passes after upgrading Transformers to 5.7.0; Granite copied-helper has a non-Qwen n160 pass. "
-            "Next widen Qwen3.5-2B to n160 or use Qwen3.6-35B-A3B "
-            "and FP8 as off-machine MoE falsification rows."
+            "passes after upgrading Transformers to 5.7.0; Qwen3.5-2B now also passes CPU n160; Granite "
+            "copied-helper has a non-Qwen n160 pass. Next run Qwen3.5-4B n16/n64 locally if feasible, "
+            "or use Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows."
         ),
         "compatibility_note": (
             "A local 2026-04-28 Qwen/Qwen3.5-0.8B smoke first failed before generation with "
             "transformers 4.51.0 because AutoConfig did not recognize model_type qwen3_5. "
             "After upgrading the repo-local environment to transformers 5.7.0, tokenizers 0.22.2, "
-            "and huggingface_hub 1.12.0, the CPU n16, n64, and n160 source-packet rows passed, with n160 "
-            "repeated on seeds 29 and 31. The same row still "
+            "and huggingface_hub 1.12.0, Qwen3.5-0.8B CPU n16, n64, and n160 source-packet rows passed, "
+            "with n160 repeated on seeds 29 and 31. Qwen3.5-2B CPU n16, n64, and n160 rows also passed "
+            "on seed 29. The same 0.8B row still "
             "fails on Apple MPS before generation with an incompatible-dimensions matmul in the "
             "hybrid attention path, so MPS failure is logged as a backend compatibility issue rather "
             "than source-packet evidence. OLMo-2-0425-1B-Instruct is a behavioral negative at n16 "

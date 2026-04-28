@@ -1989,3 +1989,12 @@ CPU trace-no-hint n64 reaches matched `64/64`, target/control `16/64`, packet
 valid rate `1.000`, and exact-ID parity true. This strengthens the latest-small
 same-generation breadth claim, while still leaving Qwen3.5-4B and Qwen3.6 MoE
 unrun.
+
+Update `2026-04-28`: Qwen3.5-2B now has n160 confirmation. CPU trace-no-hint
+n160 seed29 reaches matched `160/160`, target-only `40/160`, best
+source-destroying control `41/160`, packet valid rate `1.000`, exact-ID parity
+true, matched-minus-best-control `+0.744`, and p50 CPU latency `13878 ms`.
+This strengthens the latest-small same-generation section from one Qwen3.5 size
+to two n160-confirmed sizes. The scoped submission remains upload-ready; the
+latest-model addendum is stronger but still not MoE-claim-safe until
+Qwen3.6-35B-A3B/FP8 rows run off-machine under the same controls.
