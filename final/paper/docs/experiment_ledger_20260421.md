@@ -14570,3 +14570,14 @@ trace-no-hint n64 seed29 reaches matched `64/64`, target-only/best control
 matched-minus-best-control `+0.750`, and p50 CPU packet latency `27188 ms`.
 This gives Qwen3.5 same-generation breadth across 0.8B n160 seed-stable, 2B
 n160, and 4B n64; MoE/FP8 evidence remains the main full-paper blocker.
+
+Update `2026-04-28`: `gemma4_and_granite_strict_cross_family_20260428` adds two
+non-Qwen cross-family gates. `google/gemma-4-E2B-it` CPU trace-no-hint n64
+seed29 passes with matched `64/64`, target-only/best control `16/64`, packet
+valid rate `1.000`, exact-ID parity true, matched-minus-best-control `+0.750`,
+and p50 CPU packet latency `2179 ms`. `ibm-granite/granite-3.3-2b-instruct`
+CPU trace-no-hint n160 seed29 passes with matched `101/160 = 0.631`,
+target-only `40/160`, best source-destroying control `41/160`, packet valid
+rate `0.537`, exact-ID parity true, matched-minus-best-control `+0.375`, and
+p50 CPU packet latency `2816 ms`. This strengthens non-Qwen evidence from
+copied-helper-only to strict-prompt positive rows, but MoE/FP8 remains unrun.

@@ -107,18 +107,19 @@ passes CPU n16 and n64 rows with matched `1.000`, controls `0.250`, and valid
 packet rate `1.000`, but p50 CPU packet latency is high at about `27.2s` on the
 n64 row.
 
-The first non-Qwen positive row also now exists:
-`ibm-granite/granite-3.3-2b-instruct` reaches `128/160 = 0.800` on CPU with the
-copied-helper prompt, versus `0.250` target floor and `0.256` best control.
-Granite trace-no-hint n64 is also positive but weaker (`37/64 = 0.578`). OLMo
-2-0425-1B is a behavioral negative with zero valid packets, and Granite MPS is
-backend-blocked.
+The non-Qwen evidence is stronger now. `google/gemma-4-E2B-it` reaches
+`64/64 = 1.000` on CPU with the strict trace-no-hint prompt, versus `0.250`
+target/control floor and packet valid rate `1.000`. `ibm-granite/granite-3.3-2b-instruct`
+reaches `128/160 = 0.800` on CPU with the copied-helper prompt and
+`101/160 = 0.631` under the strict trace-no-hint prompt, versus `0.250` target
+floor and `0.256` best control. OLMo 2-0425-1B is a behavioral negative with
+zero valid packets, and Granite MPS is backend-blocked.
 
 MoE generalization is plausible because the source task is exact private-evidence
 packet emission, not dense-model-specific latent transfer, but it is not yet a
 paper claim. The safe addition is seed-stable latest-small evidence plus
-non-Qwen prompt-contract sensitivity. Claim MoE only after Qwen3.6 35B-A3B/FP8
-pass off-machine under the same controls; see
+non-Qwen strict-prompt evidence with prompt-contract sensitivity. Claim MoE
+only after Qwen3.6 35B-A3B/FP8 pass off-machine under the same controls; see
 `paper/docs/source_private_qwen36_moe_falsification_runbook_20260428.md`.
 
 ## Directory Map

@@ -294,18 +294,39 @@ def _model_matrix() -> list[CandidateModel]:
             active_params=None,
             architecture="dense",
             priority="P1",
-            local_rung="CPU copied-helper n160 passed; trace-no-hint n64 weaker",
+            local_rung="CPU copied-helper n160 and trace-no-hint n160 passed",
             expected_device="cpu",
-            prompt_mode="copied_helper",
-            limit=64,
+            prompt_mode="trace_no_hint",
+            limit=160,
             dtype="float32",
             max_new_tokens=8,
-            status="CPU copied-helper n16/n64/n160 passed; trace-no-hint n64 passes weaker; MPS backend fails",
+            status="CPU copied-helper n160 and trace-no-hint n160 passed; MPS backend fails",
             rationale=(
                 "Enterprise/open small instruct row with long-context positioning. It is the first non-Qwen "
                 "positive emitter: copied-helper CPU n160 reaches 0.800 matched accuracy vs 0.250 target and "
-                "0.256 best controls. Trace-no-hint n64 is weaker but still positive at 0.578, and Apple MPS "
-                "fails before generation, so keep the claim scoped."
+                "0.256 best controls. Trace-no-hint CPU n160 is weaker but still positive at 0.631 matched "
+                "accuracy vs 0.250 target and 0.256 best control. Apple MPS fails before generation, so keep "
+                "the claim scoped to CPU/source-emitter behavior."
+            ),
+        ),
+        CandidateModel(
+            model="google/gemma-4-E2B-it",
+            family="Gemma 4 dense multimodal/text",
+            params="2.3B effective",
+            active_params=None,
+            architecture="gemma4 conditional generation",
+            priority="P1",
+            local_rung="CPU trace-no-hint n64 passed",
+            expected_device="cpu",
+            prompt_mode="trace_no_hint",
+            limit=64,
+            dtype="float32",
+            max_new_tokens=8,
+            status="CPU n16/n64 passed after local snapshot download; official card uses Gemma4ForConditionalGeneration",
+            rationale=(
+                "Recent non-Qwen Google family row with Gemma 4 conditional-generation support in the upgraded "
+                "Transformers stack. CPU trace-no-hint n64 reaches 1.000 matched accuracy versus 0.250 target/"
+                "controls with packet valid rate 1.000, adding a cleaner non-Qwen strict-prompt row than Granite."
             ),
         ),
         CandidateModel(
@@ -465,9 +486,9 @@ def main() -> None:
         "recommendation": (
             "Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable "
             "passes after upgrading Transformers to 5.7.0; Qwen3.5-2B now also passes CPU n160; Qwen3.5-4B "
-            "passes CPU n64; Granite copied-helper has a non-Qwen n160 pass. Next use Qwen3.6-35B-A3B "
-            "and FP8 as off-machine MoE falsification rows, or run Qwen3.5-4B n160 only if local CPU time "
-            "is acceptable."
+            "passes CPU n64; Gemma 4 E2B passes CPU n64; Granite has copied-helper and trace-no-hint n160 "
+            "non-Qwen passes. Next use Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows, or "
+            "run Qwen3.5-4B/Gemma n160 only if local CPU time is acceptable."
         ),
         "compatibility_note": (
             "A local 2026-04-28 Qwen/Qwen3.5-0.8B smoke first failed before generation with "
@@ -479,8 +500,9 @@ def main() -> None:
             "fails on Apple MPS before generation with an incompatible-dimensions matmul in the "
             "hybrid attention path, so MPS failure is logged as a backend compatibility issue rather "
             "than source-packet evidence. OLMo-2-0425-1B-Instruct is a behavioral negative at n16 "
-            "with zero valid packets; Granite-3.3-2B-Instruct is a non-Qwen positive under copied-helper "
-            "CPU n160 and a weaker trace-no-hint CPU n64 positive, while its MPS row is backend-blocked."
+            "with zero valid packets; Gemma-4-E2B-it is a non-Qwen strict-prompt CPU n64 positive; "
+            "Granite-3.3-2B-Instruct is positive under copied-helper CPU n160 and weaker but still positive "
+            "under trace-no-hint CPU n160, while its MPS row is backend-blocked."
         ),
         "models": models,
     }

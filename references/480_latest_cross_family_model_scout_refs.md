@@ -22,6 +22,14 @@
 - next experiment change: queue only after access is accepted and the model is cached locally.
 - role: ablation / external-validity row.
 
+### `google/gemma-4-E2B-it`
+
+- source: https://huggingface.co/google/gemma-4-E2B-it
+- blocker helped: tests a newer Google model family with Gemma 4 conditional-generation support, hybrid attention, 128K context, and a different prompt/template stack from Qwen and Granite.
+- mechanism/design idea: use a strict `trace_no_hint` source-emitter row to test whether the packet protocol depends on Qwen-style short-code copying.
+- next experiment change: the local CPU `n=16` and `n=64` gates now pass; next useful rung is `n=160` or off-machine MoE rather than more Gemma smoke.
+- role: ablation / external-validity row.
+
 ### `ibm-granite/granite-3.3-2b-instruct`
 
 - source: https://huggingface.co/ibm-granite/granite-3.3-2b-instruct
@@ -74,11 +82,12 @@
 
 1. Finish `Qwen/Qwen3.5-0.8B` CPU n64.
 2. Run `allenai/OLMo-2-0425-1B-Instruct` local n16.
-3. Run one of `google/gemma-3-1b-it` or `ibm-granite/granite-3.3-2b-instruct` local n16, depending on cache/access.
+3. Run `google/gemma-4-E2B-it` and `ibm-granite/granite-3.3-2b-instruct` under the strict `trace_no_hint` prompt.
 4. Only then spend remote cycles on `Qwen/Qwen3.6-35B-A3B`, `Qwen/Qwen3.6-35B-A3B-FP8`, `nvidia/NVIDIA-Nemotron-Nano-9B-v2`, or `moonshotai/Kimi-K2-Thinking`.
 
 ## Claim Boundary
 
-These rows are a falsification portfolio, not evidence until run. They should
-be described as planned external-validity gates unless their result artifacts
-exist with the standard source-destroying controls.
+Rows without result artifacts are a falsification portfolio, not evidence.
+Gemma 4 E2B and Granite 3.3 now have standard source-destroying-control
+artifacts, so they can be described as non-Qwen evidence with the scoped
+limitations recorded in the latest-model memo.

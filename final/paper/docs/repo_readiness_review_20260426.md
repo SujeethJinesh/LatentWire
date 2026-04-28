@@ -2024,3 +2024,13 @@ matched-minus-best-control `+0.750`, and p50 CPU latency `27188 ms`. This
 upgrades the latest-small same-generation section to three Qwen3.5 sizes with
 at least medium evidence for 2B/4B and seed-stable n160 evidence for 0.8B. It
 still does not reduce the need for Qwen3.6-35B-A3B/FP8 MoE rows.
+
+Update `2026-04-28`: cross-family/latest-model evidence strengthens. After
+downloading `google/gemma-4-E2B-it`, CPU trace-no-hint n64 seed29 reaches
+matched `64/64`, target-only/best control `16/64`, packet valid rate `1.000`,
+exact-ID parity true, matched-minus-best-control `+0.750`, and p50 CPU latency
+`2179 ms`. Granite-3.3-2B-Instruct also now has a strict trace-no-hint CPU n160
+row: matched `101/160 = 0.631`, target-only `40/160`, best control `41/160`,
+packet valid rate `0.537`, exact-ID parity true, and p50 CPU latency `2816 ms`.
+This weakens the prompt-engineered non-Qwen objection, but the full-paper
+generalization blocker remains Qwen3.6-35B-A3B/FP8 MoE under the same controls.
