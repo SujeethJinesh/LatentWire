@@ -2008,3 +2008,11 @@ source-destroying controls stay at `0.250-0.256`; same-budget JSON/free-text
 and diagnostic-masked controls remain `0.250`. This closes one reviewer-risk
 gap around fixed-codebook memorization, but does not change the need for MoE,
 FP8, and stronger non-Qwen source-emitter rows.
+
+Update `2026-04-28`: Qwen3.5-4B now has a local CPU smoke row. CPU
+trace-no-hint n16 seed29 reaches matched `16/16`, target-only/best control
+`4/16`, packet valid rate `1.000`, exact-ID parity true,
+matched-minus-best-control `+0.750`, and p50 CPU latency `32485 ms`. This
+strengthens the latest-small same-generation section from two to three Qwen3.5
+sizes, but the 4B row is not yet medium confirmation and does not reduce the
+need for Qwen3.6-35B-A3B/FP8 MoE rows.

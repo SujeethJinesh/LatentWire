@@ -106,14 +106,18 @@ def _model_matrix() -> list[CandidateModel]:
             active_params=None,
             architecture="qwen3_5 conditional generation",
             priority="P1",
-            local_rung="n16 if memory permits",
-            expected_device="mps",
+            local_rung="CPU n16 passed; n64 next if time permits",
+            expected_device="cpu",
             prompt_mode="trace_no_hint",
             limit=16,
             dtype="float32",
             max_new_tokens=8,
-            status="planned after qwen3_5 compatibility update",
-            rationale="Small enough to be a meaningful latest-model row, but higher local memory risk than 0.8B/2B.",
+            status="CPU n16 passed; local CPU latency is high, so widen only if worth the time cost",
+            rationale=(
+                "Upper local Qwen3.5 small-hybrid row before remote 27B/MoE models. CPU n16 reaches "
+                "1.000 matched accuracy versus 0.250 target/control with packet valid rate 1.000, but "
+                "p50 packet latency is about 32.5s on CPU."
+            ),
         ),
         CandidateModel(
             model="Qwen/Qwen3.5-35B-A3B",
@@ -460,8 +464,9 @@ def main() -> None:
         "benchmark_jsonl": benchmark,
         "recommendation": (
             "Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable "
-            "passes after upgrading Transformers to 5.7.0; Qwen3.5-2B now also passes CPU n160; Granite "
-            "copied-helper has a non-Qwen n160 pass. Next run Qwen3.5-4B n16/n64 locally if feasible, "
+            "passes after upgrading Transformers to 5.7.0; Qwen3.5-2B now also passes CPU n160; Qwen3.5-4B "
+            "passes CPU n16; Granite copied-helper has a non-Qwen n160 pass. Next run Qwen3.5-4B n64 only "
+            "if local CPU time is acceptable, "
             "or use Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows."
         ),
         "compatibility_note": (
@@ -470,7 +475,7 @@ def main() -> None:
             "After upgrading the repo-local environment to transformers 5.7.0, tokenizers 0.22.2, "
             "and huggingface_hub 1.12.0, Qwen3.5-0.8B CPU n16, n64, and n160 source-packet rows passed, "
             "with n160 repeated on seeds 29 and 31. Qwen3.5-2B CPU n16, n64, and n160 rows also passed "
-            "on seed 29. The same 0.8B row still "
+            "on seed 29. Qwen3.5-4B CPU n16 passed on seed 29 after downloading the 8.7G snapshot. The same 0.8B row still "
             "fails on Apple MPS before generation with an incompatible-dimensions matmul in the "
             "hybrid attention path, so MPS failure is logged as a backend compatibility issue rather "
             "than source-packet evidence. OLMo-2-0425-1B-Instruct is a behavioral negative at n16 "

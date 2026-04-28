@@ -14553,3 +14553,12 @@ matched repair packets are `1.000`, best no-source is `0.250`, best
 source-destroying control is `0.250-0.256`, reviewer-negative controls stay
 `0.250`, and positive oracles stay `1.000`. This supports a remappable
 source-private diagnostic-code claim, not broad semantic or latent transfer.
+
+Update `2026-04-28`: `qwen35_4b_smoke_20260428` adds the upper local Qwen3.5
+small-hybrid source-emitter row. After downloading the `Qwen/Qwen3.5-4B`
+snapshot into the repo-local HF cache (`8.7G`), CPU trace-no-hint n16 seed29
+passes with matched `16/16`, target-only/best control `4/16`, packet valid rate
+`1.000`, exact-ID parity true, matched-minus-best-control `+0.750`, and p50 CPU
+packet latency `32485 ms`. This extends Qwen3.5 same-generation breadth to
+0.8B, 2B, and 4B, but the 4B row is only smoke; MoE/FP8 evidence remains the
+main full-paper blocker.
