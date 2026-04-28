@@ -82,6 +82,19 @@ It is not learned latent transfer, arbitrary KV/cache transport, or general raw
 log repair. The contribution is a reproducible, interpretable, rate-capped
 source-private communication protocol with strong controls.
 
+## Latest-Model And MoE Status
+
+The current evidence covers the final submitted model rows, including Qwen3,
+Phi-3, and Qwen2.5-era source emitters. A post-package scout adds a planned
+matrix for Qwen3.5 small models and Qwen3.6 MoE models under
+`results/source_private_latest_model_matrix_20260428/`.
+
+MoE generalization is plausible because the source task is exact private-evidence
+packet emission, not dense-model-specific latent transfer, but it is not yet a
+paper claim. The first Qwen3.5 local smoke is blocked by the repo-local
+Transformers version lacking `qwen3_5` support; run that compatibility gate
+before claiming latest-model generalization.
+
 ## Directory Map
 
 - `upload/`: files intended for external upload and checksum sidecars.

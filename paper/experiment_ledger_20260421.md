@@ -14455,3 +14455,17 @@ environment files, and a folder-level checksum manifest. `final/README.md`
 states the paper story, why the result matters, who should care, what worked,
 and the claim boundary. This is a copy/staging folder; canonical repo-root paths
 remain intact.
+
+Update `2026-04-28`: `latest_model_generalization_scout_20260428` adds the
+post-package latest-model/MoE test plan. Official Hugging Face model cards/API
+identify Qwen3.5 small rows (`0.8B`, `2B`, `4B`), Qwen3.6 dense `27B`, and
+Qwen3.6 MoE rows (`35B-A3B`, `35B-A3B-FP8`) as the next source-packet emitter
+matrix. A local `Qwen/Qwen3.5-0.8B` n16 smoke failed before generation because
+repo-local `transformers==4.51.0` does not recognize `model_type: qwen3_5`; the
+cached config declares `transformers_version: 4.57.0.dev0`. Treat this as a
+dependency blocker, not a method failure. Added
+`scripts/build_source_private_latest_model_matrix.py`,
+`tests/test_build_source_private_latest_model_matrix.py`, and
+`results/source_private_latest_model_matrix_20260428/`. The paper should not
+claim latest-model or MoE generalization until these rows run under the same
+source-destroying controls.

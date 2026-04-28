@@ -3,6 +3,7 @@
 - created: `2026-04-28`
 - purpose: consolidated reproducibility and finalization folder
 - source commit at creation: `8687e3748d3a1841231f29a2dd1419df3dcdbfd7`
+- latest-model generalization scout added: `2026-04-28`
 
 ## Included
 
@@ -15,6 +16,7 @@
 - references and citation manifests;
 - top-level repo guidance and environment files;
 - `MANIFEST.sha256` with checksums for all files in this folder.
+- latest-model/MoE generalization scout files for Qwen3.5/Qwen3.6 planning.
 
 ## Notes
 

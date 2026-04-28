@@ -852,5 +852,12 @@
     "path": "references/478_source_private_final_review_refs.md",
     "status": "local_memo",
     "reason": "Final-review reference memo tightening the compiled source-private tool-trace paper around decoder-side information, multi-agent handoff, prompt compression, latent/KV communication competitors, and test-guided repair scope."
+  },
+  {
+    "num": 479,
+    "slug": "latest_model_generalization_refs",
+    "path": "references/479_latest_model_generalization_refs.md",
+    "status": "local_memo",
+    "reason": "Official Hugging Face model-card memo for Qwen3.5/Qwen3.6 latest-model and MoE source-packet generalization planning, including small local rows, MoE/FP8 off-machine rows, and the qwen3_5 Transformers compatibility blocker."
   }
 ]
