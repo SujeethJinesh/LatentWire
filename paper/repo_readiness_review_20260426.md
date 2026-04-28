@@ -1882,3 +1882,9 @@ JSON/JSONL results, target-decoder input surfaces, figure/rate data, and
 readout memos. Archive integrity and local-path hygiene checks passed. The repo
 is now ready for manuscript upload plus artifact handoff; remaining distance is
 external venue/upload mechanics, not additional method evidence.
+
+Update `2026-04-28`: final external-handoff instructions are documented in
+`paper/source_private_tool_trace_external_handoff_20260428.md`, including upload
+paths, hashes, claim-boundary language, and post-upload sanity checks. The
+readiness status is upload-ready. The next gate is only to record the actual
+submission/artifact upload confirmation and any portal-required changes.

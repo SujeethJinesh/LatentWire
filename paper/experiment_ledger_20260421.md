@@ -14384,3 +14384,12 @@ passes, and a release-tree scan found no `/Users`, `Desktop`, or username path
 leakage. The manuscript/source package remains ready for upload; the next exact
 gate is external release handoff, e.g. attach the artifact zip to the submission
 or mirror it to the chosen archival store.
+
+Update `2026-04-28`: `source_private_tool_trace_external_handoff_20260428`
+created the final upload handoff memo
+`paper/source_private_tool_trace_external_handoff_20260428.md`. The handoff
+records exact paths, byte counts, SHA256 hashes, passed checks, claim boundaries,
+and post-upload sanity checks for the manuscript PDF, compile-tested source zip,
+and artifact archive. No new method evidence was run. The next exact gate is
+`external_submission_confirmation_20260428`: record uploaded file IDs/URLs,
+artifact location, and any portal-side warnings or format changes.
