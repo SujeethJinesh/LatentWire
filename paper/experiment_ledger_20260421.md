@@ -13391,3 +13391,86 @@ Next exact gate:
   hidden-repair benchmark to `160` frozen examples with `trace_no_hint` as the
   primary source prompt, Qwen3 and Phi-3 source emitters, exact ID parity,
   source-destroying controls, packet validity, bytes, and latency.
+
+## 2026-04-29 - Hidden-Repair Packet Strict-Small Gate
+
+Current ICLR readiness: not ready, but the live source-private branch has its
+first strict-small positive result. Estimated distance is now medium/larger
+confirmation, paired uncertainty, and stronger paper framing around explicit
+private tool-trace communication.
+
+Current story: a source model can transmit a compact private `REPAIR_DIAG`
+tool-trace field from hidden code execution logs to a target model. The target
+uses that packet with candidate-side metadata to select the correct repair.
+The gain survives Qwen3 and Phi-3 at `160` examples and disappears when the
+trace field is removed.
+
+Exact blocker: the method is still an explicit trace-field protocol, not
+raw-log repair inference or latent transfer. The next blocker is scale and
+uncertainty, not another prompt tweak.
+
+Commands:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_smoke.py \
+  --examples 160 \
+  --candidates 4 \
+  --seed 29 \
+  --budgets 2,4,8,16,32 \
+  --output-dir results/source_private_hidden_repair_packet_strict_small_20260429
+```
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py \
+  --benchmark-jsonl results/source_private_hidden_repair_packet_strict_small_20260429/benchmark.jsonl \
+  --output-dir results/source_private_hidden_repair_packet_strict_small_llm_20260429/qwen3_trace_no_hint \
+  --model Qwen/Qwen3-0.6B \
+  --device mps \
+  --dtype float32 \
+  --limit 160 \
+  --seed 29 \
+  --max-new-tokens 8 \
+  --prompt-mode trace_no_hint \
+  --no-enable-thinking
+```
+
+Equivalent model commands were run for `microsoft/Phi-3-mini-4k-instruct` in
+`trace_no_hint` mode and Qwen3 in `raw_log_no_trace` mode.
+
+Deterministic packet sweep:
+
+| Budget bytes | Pass | Matched | Best no-source | Best control | Matched text | Full log |
+|---:|---|---:|---:|---:|---:|---:|
+| 2 | `true` | 1.000 | 0.250 | 0.250 | 0.250 | 1.000 |
+| 4 | `true` | 1.000 | 0.250 | 0.256 | 0.250 | 1.000 |
+| 8 | `true` | 1.000 | 0.250 | 0.250 | 0.250 | 1.000 |
+| 16 | `true` | 1.000 | 0.250 | 0.256 | 0.250 | 1.000 |
+| 32 | `true` | 1.000 | 0.250 | 0.250 | 0.250 | 1.000 |
+
+Model-produced packets:
+
+| Run | Model | Prompt mode | Pass | Matched | Target-only | Best control | Valid packets |
+|---|---|---|---|---:|---:|---:|---:|
+| qwen3_trace_no_hint | Qwen/Qwen3-0.6B | trace_no_hint | `true` | 0.794 | 0.250 | 0.256 | 0.762 |
+| phi3_trace_no_hint | microsoft/Phi-3-mini-4k-instruct | trace_no_hint | `true` | 1.000 | 0.250 | 0.256 | 1.000 |
+| qwen3_raw_log_no_trace | Qwen/Qwen3-0.6B | raw_log_no_trace | `false` | 0.250 | 0.250 | 0.256 | 0.000 |
+
+Decision:
+
+- promote hidden-repair packet handoff to strict-small
+- keep `trace_no_hint` as the primary protocol
+- keep `raw_log_no_trace` as the source-signal destruction row
+- do not claim raw-log repair inference
+
+Artifacts:
+
+- `paper/source_private_hidden_repair_packet_strict_small_20260429.md`
+- `results/source_private_hidden_repair_packet_strict_small_20260429/`
+- `results/source_private_hidden_repair_packet_strict_small_llm_20260429/`
+
+Next exact gate:
+
+- `source_private_hidden_repair_packet_medium_20260429`: scale to `500` frozen
+  examples if feasible, otherwise `320`, add paired bootstrap uncertainty, keep
+  Qwen3/Phi-3 `trace_no_hint` primary rows and Qwen3 `raw_log_no_trace`
+  destruction row.

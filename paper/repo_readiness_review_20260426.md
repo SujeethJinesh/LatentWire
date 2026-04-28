@@ -1674,3 +1674,13 @@ leaves Qwen3 at `50/64` and Phi-3-mini at `64/64`, with controls still at
 `0` valid packets. The live story is now explicit source-private tool-trace
 handoff, not raw-log repair inference. Next gate:
 `source_private_hidden_repair_packet_strict_small_20260429`.
+
+Update `2026-04-29`: `source_private_hidden_repair_packet_strict_small_20260429`
+passes. On `160` frozen hidden-repair examples, deterministic packets reach
+`160/160` at 2 bytes while target-only remains `40/160` and controls are
+`40-41/160`. With model-produced `trace_no_hint` packets, Qwen3 reaches
+`127/160` and Phi-3-mini reaches `160/160`; target-only is `40/160` and best
+source-destroying control is `41/160`. Qwen3 `raw_log_no_trace` drops to
+`40/160` with `0` valid packets. The repo now has a strict-small positive
+method candidate: explicit source-private tool-trace packet handoff. It is
+still not ICLR-ready until medium/larger confirmation with paired uncertainty.
