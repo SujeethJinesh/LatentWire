@@ -1,8 +1,8 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: scoped positive-method manuscript ready for final human PDF/source read
-- estimated distance: final human PDF/source read, anonymity/style checks, and submit decision
+- status: scoped positive-method manuscript ready for submission packaging
+- estimated distance: source upload packaging and final artifact-release choice
 
 ## Current Paper Story
 
@@ -1861,3 +1861,14 @@ receiver. The live story is explicit source-private diagnostic-code packets for
 candidate selection with decoder side information, not learned latent transfer
 or raw-log repair. The remaining blocker is a final human PDF/source read and
 conference-form check.
+
+Update `2026-04-28`: the final human PDF/source hygiene read is complete. The
+paper source now uses local figure paths, public manifests avoid absolute user
+paths, and target-decoder smoke wording is limited to a sanity check. The source
+upload bundle
+`paper/iclr2026/submission/source_private_tool_trace_iclr_source_20260428.zip`
+was built and compile-tested from a scratch extraction. The scoped paper package
+is ready for manuscript upload. Remaining non-paper blocker: for an external
+artifact release, archive or force-add decisive raw JSON/JSONL inputs/
+predictions that are currently summarized by tracked manifests but ignored
+under `results/` or `.debug/`.

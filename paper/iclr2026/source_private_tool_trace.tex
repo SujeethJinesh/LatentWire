@@ -100,7 +100,7 @@ validity, paired uncertainty, bytes/tokens, and source-control deltas.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{../../results/source_private_tool_trace_latex_or_figures_20260430/source_private_setup.pdf}
+  \includegraphics[width=\linewidth]{figures/source_private_setup.pdf}
   \caption{Source-private evidence communication with decoder side information.
   The source observes private evidence $S$ and sends a rate-capped packet $M$.
   The target combines public state $X$, candidate state $T$, and $M$ to select a
@@ -224,7 +224,7 @@ diagnostic is then visible in parseable form.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.9\linewidth]{../../results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.pdf}
+  \includegraphics[width=0.9\linewidth]{figures/rate_curve.pdf}
   \caption{Accuracy versus communicated bytes, averaged over representative
   core and held-out reviewer-risk surfaces. This is a low-rate advantage, not
   dominance at all budgets: structured text relay becomes an oracle when
@@ -238,11 +238,11 @@ diagnostic is then visible in parseable form.
 As a limited check on whether the result depends entirely on the hard-coded
 target lookup, we replace it with Qwen3-0.6B acting as a target-side selector.
 The model receives the target-prior fallback label, source packet, candidate
-labels, and candidate diagnostic metadata. On a 16-example core slice, matched
-packets reach 0.688 versus 0.250 target/control. On a 32-example held-out slice,
-matched packets reach 0.750 versus 0.250 target and 0.281 best control. This is
-a smoke ablation, not the main evidence or a learned latent bridge, but it
-reduces the hand-coded lookup concern.
+labels, and diagnostic decoder side information. On a 16-example core slice,
+matched packets reach 0.688 versus 0.250 target/control. On a 32-example
+held-out slice, matched packets reach 0.750 versus 0.250 target and 0.281 best
+control. This is a smoke ablation, not the main evidence or a learned latent
+bridge, but it is consistent with the protocol being usable by an LLM selector.
 
 \section{Interpretability}
 
@@ -313,9 +313,10 @@ packet. A target-side candidate decoder combines that packet with public
 candidate decoder side information to select the gold candidate from the
 provided repair pool.
 The reported result is artifact-backed, interpretable, rate-accounted, and
-stable across the tested frozen 500-example surfaces, held-out repair families,
-seed repeats, source-destroying controls, structured relay baselines, and a
-small target-LLM decoder ablation.
+stable across the tested frozen 500-example surfaces, held-out repair-family
+slices, seed repeats, source-destroying controls, and structured relay
+baselines. A small target-LLM decoder smoke ablation provides a limited sanity
+check.
 
 \bibliography{source_private_tool_trace}
 \bibliographystyle{iclr2026_conference}
@@ -337,14 +338,15 @@ public issue and candidate pool; its prior selects a numeric-fallback patch. The
 source-private hidden test observes an empty input, expected value
 \texttt{unknown}, and a \texttt{KeyError}. The private trace line contains
 \diag{}=\texttt{H1}, so the matched packet is \texttt{H1}. The protocol decoder
-then selects the candidate whose public metadata handles \texttt{H1}.
+then selects the candidate whose public decoder side information handles
+\texttt{H1}.
 
 \begin{table}[t]
 \centering
 \small
 \begin{tabular}{lll}
 \toprule
-Candidate & Public metadata & Patch intent \\
+Candidate & Public decoder side information & Patch intent \\
 \midrule
 patch 0 & handles \texttt{X0} & strict key access \\
 patch 1 & handles \texttt{H1} & missing-key default \\

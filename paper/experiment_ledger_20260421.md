@@ -14343,9 +14343,31 @@ reaches the scoped-submit decision. The paper should proceed as an explicit
 source-private diagnostic-packet protocol method and should not spend the next
 cycle on the optional `n=160` target-decoder scale-up unless the claim expands
 to make an LLM target receiver a main result. The manuscript now adds sharper
-claim-boundary language, calls candidate metadata decoder side information, and
+claim-boundary language, calls candidate-side information decoder side
+information, and
 states that the constructional `25%` target floor isolates source-private
 evidence transfer from candidate generation. The final compiled PDF is
-`paper/iclr2026/source_private_tool_trace.pdf` (`7` pages, `226859` bytes,
-SHA256 `a2ac3bbd4c7c0a8b386345222cbcea0e09e67f1e6c69e61daa3a75f57e512078`).
+`paper/iclr2026/source_private_tool_trace.pdf` (`7` pages, `226708` bytes,
+SHA256 `97e460ddb3919b6b3373e12a1d01a64d64912102a8e6d2efd3301eb16cd326fe`).
 The next exact gate is `source_private_tool_trace_human_pdf_read_20260428`.
+
+Update `2026-04-28`: `source_private_tool_trace_human_pdf_read_20260428`
+completed the final source/package hygiene pass. The manuscript now uses local
+figure paths under `paper/iclr2026/figures/`, removes absolute user paths from
+the public figure manifest, softens the target-LLM decoder smoke wording, and
+keeps candidate-side information framed as decoder side information. No new model
+evidence was run; the claim remains the scoped source-private diagnostic-packet
+protocol. Remaining action before upload: exclude the ICLR template/demo source
+files from the submission bundle and decide whether to archive ignored raw
+JSON/JSONL artifacts for an external artifact release.
+
+Update `2026-04-28`: `source_private_tool_trace_submission_upload_20260428`
+built and compile-tested the source upload bundle
+`paper/iclr2026/submission/source_private_tool_trace_iclr_source_20260428.zip`
+(`360709` bytes, SHA256
+`cb1595cfd1ebb6cc5441143dbed2a00cce3bacd6b5aa43f2cca179c82862478e`). The
+bundle contains only the manuscript source, bibliography, ICLR style/BibTeX
+files, math/style dependencies, local PDF figures, and compiled PDF; template
+demo files are excluded. Scratch compile from the extracted bundle passed with
+no overfull boxes, undefined references, citation warnings, or BibTeX warnings.
+The next exact gate is `source_private_tool_trace_artifact_release_choice_20260428`.

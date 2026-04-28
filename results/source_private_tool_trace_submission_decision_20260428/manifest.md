@@ -17,9 +17,9 @@ an LLM target receiver a main result.
 
 | Artifact | Size bytes | SHA256 |
 |---|---:|---|
-| `paper/iclr2026/source_private_tool_trace.tex` | `19313` | `cf3e31fe5cd63c37753be5808e9de49082a6061343714c63ae6316226cee257b` |
-| `paper/iclr2026/source_private_tool_trace.pdf` | `226859` | `a2ac3bbd4c7c0a8b386345222cbcea0e09e67f1e6c69e61daa3a75f57e512078` |
-| `paper/iclr2026/source_private_tool_trace.log` | `19940` | `15ecd4940bde76aa870fddf42c8a850900d732ac1494b15bfb0efe3b960f9326` |
+| `paper/iclr2026/source_private_tool_trace.tex` | `19304` | `2f19f0e5b5d4d94f414641f167db02c7841df53f29181fb48eb9ea42d1f6d788` |
+| `paper/iclr2026/source_private_tool_trace.pdf` | `226708` | `97e460ddb3919b6b3373e12a1d01a64d64912102a8e6d2efd3301eb16cd326fe` |
+| `paper/iclr2026/source_private_tool_trace.log` | `19429` | `3336208d11d4000317d95fcadc2e5e370abc1a0a1326675eca1ad4981a0c849f` |
 | `paper/source_private_tool_trace_submission_decision_20260428.md` | `3827` | `99413deb5bb898330104f55a4087b3d31f181f26b1030bd0aa4e4c0e78eec4be` |
 
 ## Decisive Evidence Artifacts
@@ -36,9 +36,11 @@ an LLM target receiver a main result.
 |---|---|
 | `results/source_private_tool_trace_latex_or_figures_20260430/source_private_setup.svg` | `20cd5f56ff78234093693d53a3e92a3519eb816d23b945433d38ddd0fd51d37d` |
 | `results/source_private_tool_trace_latex_or_figures_20260430/source_private_setup.pdf` | `e4eb38679dd063abea244dc3f2e634be0dd9ff0a4cf0f30c4e047b7a142a5afc` |
+| `paper/iclr2026/figures/source_private_setup.pdf` | `e4eb38679dd063abea244dc3f2e634be0dd9ff0a4cf0f30c4e047b7a142a5afc` |
 | `results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.csv` | `b4f7a24257c8e9b087f52af66917bade8be544d82750c6e03ea862d8c25c6d0e` |
 | `results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.svg` | `c389b31dc1d7a0216dd846613446f25eaa97fe6b22e7106beb20c574c2f5f8c4` |
 | `results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.pdf` | `6f8220b8216218fd24c55f49bd262778565bb9cdc1ed31bda2c110be5f880a2c` |
+| `paper/iclr2026/figures/rate_curve.pdf` | `6f8220b8216218fd24c55f49bd262778565bb9cdc1ed31bda2c110be5f880a2c` |
 
 ## Reproducibility Note
 

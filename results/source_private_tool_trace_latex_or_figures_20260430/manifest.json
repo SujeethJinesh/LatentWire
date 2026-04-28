@@ -1,7 +1,7 @@
 {
   "date": "2026-04-30",
   "provenance_note": "Gate label predates this continuation; active environment date for final submission decision was 2026-04-28.",
-  "git_commit_when_refreshed": "aa9c311cdeeddfc5ba2dfd094c5383da01e0e1ab",
+  "git_commit_when_refreshed": "fa9c55dbcca067c79e036e1af24b50d157c22431",
   "artifacts": [
     {
       "path": "results/source_private_tool_trace_latex_or_figures_20260430/source_private_setup.svg",
@@ -9,6 +9,10 @@
     },
     {
       "path": "results/source_private_tool_trace_latex_or_figures_20260430/source_private_setup.pdf",
+      "sha256": "e4eb38679dd063abea244dc3f2e634be0dd9ff0a4cf0f30c4e047b7a142a5afc"
+    },
+    {
+      "path": "paper/iclr2026/figures/source_private_setup.pdf",
       "sha256": "e4eb38679dd063abea244dc3f2e634be0dd9ff0a4cf0f30c4e047b7a142a5afc"
     },
     {
@@ -22,8 +26,12 @@
     {
       "path": "results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.pdf",
       "sha256": "6f8220b8216218fd24c55f49bd262778565bb9cdc1ed31bda2c110be5f880a2c"
+    },
+    {
+      "path": "paper/iclr2026/figures/rate_curve.pdf",
+      "sha256": "6f8220b8216218fd24c55f49bd262778565bb9cdc1ed31bda2c110be5f880a2c"
     }
   ],
-  "core_summary": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_tool_trace_reviewer_risk_rows_20260429/core_seed29/sweep_summary.json",
-  "holdout_summary": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_tool_trace_reviewer_risk_rows_20260429/holdout_seed30/sweep_summary.json"
+  "core_summary": "results/source_private_tool_trace_reviewer_risk_rows_20260429/core_seed29/sweep_summary.json",
+  "holdout_summary": "results/source_private_tool_trace_reviewer_risk_rows_20260429/holdout_seed30/sweep_summary.json"
 }
