@@ -1,0 +1,15 @@
+{
+  "artifacts": [
+    "baseline_pack.json",
+    "baseline_pack.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_tool_trace_baseline_pack_20260429",
+  "input_sha256": {
+    "core_medium_sweep": "9063477aefdc7b28df54025a8249ae697a8637b670d5ff4e781f526b352c44c4",
+    "holdout_sweep": "479580f800d6e106929b4f9094de032953a430435613b47a780108db7400b73d",
+    "seed_repeat": "36fd0b38520282d985355df328b83af1cb6fc05bceea55091aff5a0c1942aa0e"
+  },
+  "pass_gate": true
+}

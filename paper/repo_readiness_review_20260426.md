@@ -1713,3 +1713,14 @@ is `0.516`, and the minimum lower bound over best source-destroying control is
 `0.506`. The repo now has a seed-stable positive method candidate. Remaining
 ICLR blocker: reviewer-facing baseline/system package and precise claim
 framing.
+
+Update `2026-04-29`: `source_private_tool_trace_baseline_pack_20260429`
+consolidates the live evidence into a reviewer-facing package. Covered controls
+include target-only/wrapper, zero-source, shuffled-source, random same-byte,
+answer-only, answer-masked, target-derived sidecar, matched-byte truncated
+hidden-log text, full hidden-log relay, full diagnostic oracle, trace removal,
+held-out families, and seed repeats. The exact claim should now be scoped as:
+explicit source-private tool-trace packets communicate hidden execution
+evidence to a target-side candidate decoder. Remaining reviewer-risk rows:
+matched-byte JSON/free-text relay, helper-only no-log oracle, trace-component
+masking, candidate/selector separation, and a second target-family row.

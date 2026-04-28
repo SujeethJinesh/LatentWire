@@ -13694,3 +13694,63 @@ Next exact gate:
 - `source_private_tool_trace_baseline_pack_20260429`: consolidate baselines,
   systems metrics, paired uncertainty, and threat-model controls into a
   reviewer-facing evidence package.
+
+## 2026-04-29 - Source-Private Tool-Trace Baseline Pack
+
+Current ICLR readiness: not fully ready, but the live method now has a
+reviewer-facing baseline/system evidence package. Remaining distance is exact
+paper claim drafting and deciding whether to run the remaining reviewer-risk
+rows before submission.
+
+Current story: explicit source-private tool-trace packets communicate hidden
+execution evidence to a target-side candidate decoder. The interface is a
+compact private `REPAIR_DIAG` field, not raw-log inference or unstructured
+latent transfer.
+
+Exact blocker: paper framing and a small set of reviewer-risk rows:
+matched-byte JSON/free-text relay, helper-only/no-log oracle, component masking
+ablations, and candidate/selector separation.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/build_source_private_tool_trace_baseline_pack.py \
+  --output-dir results/source_private_tool_trace_baseline_pack_20260429
+```
+
+Subagent reviewer synthesis:
+
+- biggest risks: structured text relay, helper-line/no-log target priors,
+  trace-component leakage, template leakage, one-model artifact, systems value
+- already covered: target-only/wrapper, zero/shuffled/random, answer controls,
+  target-derived sidecar, trace removal, held-out families, seed repeats,
+  cross-source-model emitters, bytes/latency/validity
+- not fully covered: matched-byte JSON/free-text relay, helper-only no-log
+  oracle, line/test-name/expected-actual masking, learned target-family row
+
+Baseline pack highlights:
+
+- primary rows passing: `8/8`
+- destruction rows failing as intended: `4/4`
+- minimum primary lower bound over target-only: `0.516`
+- minimum primary lower bound over best control: `0.506`
+- primary packet mean bytes: `1.55-2.00`
+- primary packet validity range: `0.776-1.000`
+- deterministic matched-byte text accuracy: `0.250`
+- deterministic full hidden-log relay accuracy: `1.000`
+
+Decision:
+
+- promote the method to reviewer-facing evidence package
+- keep claim boundary explicit: private tool-trace packet communication
+- do not claim raw-log repair inference or latent transfer
+
+Artifacts:
+
+- `paper/source_private_tool_trace_baseline_pack_20260429.md`
+- `results/source_private_tool_trace_baseline_pack_20260429/`
+
+Next exact gate:
+
+- `source_private_tool_trace_paper_claim_draft_20260429`: draft exact method,
+  benchmark, baseline, systems, and limitation language from the baseline pack.
