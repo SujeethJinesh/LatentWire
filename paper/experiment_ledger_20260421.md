@@ -13631,3 +13631,66 @@ Next exact gate:
 - `source_private_hidden_repair_packet_seed_repeat_20260429`: repeat core and
   held-out gates over additional frozen seeds with Qwen3/Phi-3 `trace_no_hint`
   and Qwen3 `raw_log_no_trace`.
+
+## 2026-04-29 - Hidden-Repair Packet Seed-Repeat Gate
+
+Current ICLR readiness: not ready, but the method is now seed-stable as a
+positive candidate. Remaining distance is reviewer-facing baseline/system
+packaging and paper framing, not method discovery.
+
+Current story: explicit source-private tool-trace packets communicate hidden
+execution evidence from source to target. Across four frozen `500`-example
+surfaces, the source emits a compact `REPAIR_DIAG` packet in `trace_no_hint`
+mode; Qwen3 and Phi-3 pass, all source-destroying controls stay flat, and
+removing the trace returns to target-only with `0` valid packets.
+
+Exact blocker: convert the evidence into a reviewer-ready baseline and systems
+package. The method should be framed as explicit private tool-trace
+communication, not raw-log inference or unstructured latent transfer.
+
+New seed-repeat surfaces:
+
+- `core_seed31`: core families, seed `31`, `500` examples
+- `holdout_seed32`: held-out families, seed `32`, `500` examples
+
+Aggregate results over prior and new surfaces:
+
+| Surface | Family set | Seed | Model | Mode | Matched | Target | Best control | Valid | Delta target 95% CI |
+|---|---|---:|---|---|---:|---:|---:|---:|---:|
+| core_seed29 | core | 29 | Qwen/Qwen3-0.6B | trace_no_hint | 0.808 | 0.250 | 0.252 | 0.776 | [0.516, 0.600] |
+| core_seed29 | core | 29 | microsoft/Phi-3-mini-4k-instruct | trace_no_hint | 1.000 | 0.250 | 0.252 | 1.000 | [0.714, 0.788] |
+| core_seed29 | core | 29 | Qwen/Qwen3-0.6B | raw_log_no_trace | 0.250 | 0.250 | 0.252 | 0.000 | [0.000, 0.000] |
+| core_seed31 | core | 31 | Qwen/Qwen3-0.6B | trace_no_hint | 0.808 | 0.250 | 0.256 | 0.776 | [0.516, 0.602] |
+| core_seed31 | core | 31 | microsoft/Phi-3-mini-4k-instruct | trace_no_hint | 1.000 | 0.250 | 0.256 | 1.000 | [0.710, 0.786] |
+| core_seed31 | core | 31 | Qwen/Qwen3-0.6B | raw_log_no_trace | 0.250 | 0.250 | 0.256 | 0.000 | [0.000, 0.000] |
+| holdout_seed30 | holdout | 30 | Qwen/Qwen3-0.6B | trace_no_hint | 0.922 | 0.250 | 0.258 | 0.864 | [0.632, 0.712] |
+| holdout_seed30 | holdout | 30 | microsoft/Phi-3-mini-4k-instruct | trace_no_hint | 1.000 | 0.250 | 0.258 | 1.000 | [0.710, 0.788] |
+| holdout_seed30 | holdout | 30 | Qwen/Qwen3-0.6B | raw_log_no_trace | 0.250 | 0.250 | 0.258 | 0.000 | [0.000, 0.000] |
+| holdout_seed32 | holdout | 32 | Qwen/Qwen3-0.6B | trace_no_hint | 0.924 | 0.250 | 0.252 | 0.860 | [0.634, 0.716] |
+| holdout_seed32 | holdout | 32 | microsoft/Phi-3-mini-4k-instruct | trace_no_hint | 1.000 | 0.250 | 0.252 | 1.000 | [0.710, 0.786] |
+| holdout_seed32 | holdout | 32 | Qwen/Qwen3-0.6B | raw_log_no_trace | 0.250 | 0.250 | 0.252 | 0.000 | [0.000, 0.000] |
+
+Aggregate:
+
+- primary rows passing: `8/8`
+- destruction rows failing as intended: `4/4`
+- minimum primary delta-target lower bound: `0.516`
+- minimum primary delta-control lower bound: `0.506`
+- maximum destruction matched accuracy: `0.250`
+
+Decision:
+
+- promote explicit private tool-trace packet handoff to seed-stable positive
+  method candidate
+- stop method tuning unless a reviewer-facing baseline exposes a real gap
+
+Artifacts:
+
+- `paper/source_private_hidden_repair_packet_seed_repeat_20260429.md`
+- `results/source_private_hidden_repair_packet_seed_repeat_20260429/`
+
+Next exact gate:
+
+- `source_private_tool_trace_baseline_pack_20260429`: consolidate baselines,
+  systems metrics, paired uncertainty, and threat-model controls into a
+  reviewer-facing evidence package.

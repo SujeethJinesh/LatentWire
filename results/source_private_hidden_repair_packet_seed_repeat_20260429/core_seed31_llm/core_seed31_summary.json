@@ -1,0 +1,105 @@
+{
+  "benchmark_jsonl": "results/source_private_hidden_repair_packet_seed_repeat_20260429/core_seed31/benchmark.jsonl",
+  "benchmark_sha256": "c8552ea93b358b39ee5287dfa9ea507b2729b18fadab9c553228f52f73856b3a",
+  "bootstrap_samples": 2000,
+  "gate": "source_private_hidden_repair_packet_seed_repeat_core_seed31_20260429",
+  "n": 500,
+  "pass_gate": true,
+  "pass_rule": "Qwen3 and Phi-3 trace_no_hint rows pass, raw_log_no_trace fails, and paired bootstrap lower bounds remain comfortably above +0.15 for primary rows.",
+  "rows": [
+    {
+      "best_control_name": "random_same_byte",
+      "best_source_destroying_control_accuracy": 0.256,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "matched_accuracy": 0.808,
+      "matched_correct": 404,
+      "matched_minus_best_control_bootstrap95": {
+        "high": 0.594,
+        "low": 0.506,
+        "mean": 0.552039
+      },
+      "matched_minus_target_bootstrap95": {
+        "high": 0.602,
+        "low": 0.516,
+        "mean": 0.557674
+      },
+      "mean_packet_bytes": 1.552,
+      "mean_packet_tokens": 2.86,
+      "model": "Qwen/Qwen3-0.6B",
+      "n": 500,
+      "p50_source_latency_ms": 286.98316699956194,
+      "p95_source_latency_ms": 513.1891250057379,
+      "packet_valid_rate": 0.776,
+      "pass_gate": true,
+      "predictions_sha256": "d8748c9caee744af0888871ba8f93a37fb7ee2ddcacb1b3bbd9d39cbc1987ef0",
+      "prompt_mode": "trace_no_hint",
+      "run_id": "qwen3_trace_no_hint",
+      "summary_sha256": "d42521face20d8e2ae39b23f9f884297561a5de6f22a541b54ccbcdf62260610",
+      "target_only_accuracy": 0.25,
+      "target_only_correct": 125
+    },
+    {
+      "best_control_name": "random_same_byte",
+      "best_source_destroying_control_accuracy": 0.256,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "matched_accuracy": 1.0,
+      "matched_correct": 500,
+      "matched_minus_best_control_bootstrap95": {
+        "high": 0.78,
+        "low": 0.704,
+        "mean": 0.7430589999999999
+      },
+      "matched_minus_target_bootstrap95": {
+        "high": 0.786,
+        "low": 0.71,
+        "mean": 0.7496280000000001
+      },
+      "mean_packet_bytes": 2.0,
+      "mean_packet_tokens": 3.0,
+      "model": "microsoft/Phi-3-mini-4k-instruct",
+      "n": 500,
+      "p50_source_latency_ms": 466.640083497623,
+      "p95_source_latency_ms": 586.8966249981895,
+      "packet_valid_rate": 1.0,
+      "pass_gate": true,
+      "predictions_sha256": "4c6dd63f86e7dbef8f98517a0de3ddaabc43b35a6bd6a14615f146746b33b8d4",
+      "prompt_mode": "trace_no_hint",
+      "run_id": "phi3_trace_no_hint",
+      "summary_sha256": "7a8ee9793a79efc0bd89260689aa172cf0c5f5ad3ebddb633c7d25643f102543",
+      "target_only_accuracy": 0.25,
+      "target_only_correct": 125
+    },
+    {
+      "best_control_name": "random_same_byte",
+      "best_source_destroying_control_accuracy": 0.256,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "matched_accuracy": 0.25,
+      "matched_correct": 125,
+      "matched_minus_best_control_bootstrap95": {
+        "high": 0.0,
+        "low": -0.014,
+        "mean": -0.005936
+      },
+      "matched_minus_target_bootstrap95": {
+        "high": 0.0,
+        "low": 0.0,
+        "mean": 0.0
+      },
+      "mean_packet_bytes": 0.0,
+      "mean_packet_tokens": 3.0,
+      "model": "Qwen/Qwen3-0.6B",
+      "n": 500,
+      "p50_source_latency_ms": 272.0024794980418,
+      "p95_source_latency_ms": 369.81870800082106,
+      "packet_valid_rate": 0.0,
+      "pass_gate": false,
+      "predictions_sha256": "bf5e959a2609025b441491a922584746cf7fbedbcb99404be3086e7a03a32dd5",
+      "prompt_mode": "raw_log_no_trace",
+      "run_id": "qwen3_raw_log_no_trace",
+      "summary_sha256": "3dbf72813f0493318bf02771cdee354976cfe959a43fc3a6b35ba8963ab0bf5d",
+      "target_only_accuracy": 0.25,
+      "target_only_correct": 125
+    }
+  ],
+  "title": "Source-Private Hidden-Repair Core Seed 31 Summary"
+}

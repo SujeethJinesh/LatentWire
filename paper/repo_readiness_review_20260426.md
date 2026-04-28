@@ -1703,3 +1703,13 @@ best control `129/500`. Paired bootstrap 95% deltas over target-only are
 `raw_log_no_trace` returns to `125/500` with `0` valid packets. The method is
 now medium-scale plus held-out-family positive. It remains not ICLR-ready until
 seed repeats and baseline/framing are complete.
+
+Update `2026-04-29`: seed repeats pass across four frozen `500`-example
+surfaces: core seeds `29` and `31`, held-out seeds `30` and `32`. All `8/8`
+primary `trace_no_hint` rows pass for Qwen3 and Phi-3; all `4/4`
+`raw_log_no_trace` rows fail as intended with matched accuracy at target-only
+and `0` valid packets. The minimum paired-bootstrap lower bound over target-only
+is `0.516`, and the minimum lower bound over best source-destroying control is
+`0.506`. The repo now has a seed-stable positive method candidate. Remaining
+ICLR blocker: reviewer-facing baseline/system package and precise claim
+framing.
