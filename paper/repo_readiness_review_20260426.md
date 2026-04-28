@@ -1560,3 +1560,18 @@ Next exact gate:
   recovers at least `1` C2C-clean source-necessary ID while zero-source,
   shuffled-source, target-only/slots-only, and random same-byte controls recover
   `0`, with no target-correct harm and byte/latency accounting.
+
+Update `2026-04-27`: the literature-to-method sprint promotes the
+source-private evidence-packet / candidate-syndrome benchmark as the highest
+probability one-month path. JEPA/V-JEPA/LeJEPA and VLM connector work remain
+important for anti-collapse and second-stage learned adapters, but they should
+not lead until the private benchmark exposes residual IDs. A deterministic
+source-private evidence packet smoke now passes the contract:
+`matched_syndrome=128/128`, target/no-source `32/128`, zero/shuffled/random/
+answer-only/answer-masked/target-only-sidecar controls `32/128`, matched-byte
+structured text `32/128`, and full structured text oracle `128/128` at `13`
+bytes. This is harness evidence only, not a paper claim. The live branch is now
+`source_private_evidence_packet_strict_small_20260428`: instantiate the same
+contract with LLM-generated target candidates and source packets on `100-200`
+frozen private-evidence examples, with byte/latency accounting and full
+source-destroying controls.

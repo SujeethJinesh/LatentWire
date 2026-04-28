@@ -1,0 +1,99 @@
+{
+  "artifacts": [
+    "predictions.jsonl",
+    "summary.json",
+    "summary.md",
+    "manifest.json"
+  ],
+  "command": "./venv_arm64/bin/python scripts/run_source_private_evidence_packet_gate.py --examples 128 --candidates 4 --seed 17 --syndrome-bytes 2 --output-dir results/source_private_evidence_packet_gate_20260427",
+  "summary": {
+    "best_no_source_accuracy": 0.25,
+    "best_source_destroying_control_accuracy": 0.25,
+    "matched_minus_best_control": 0.75,
+    "matched_minus_best_no_source": 0.75,
+    "matched_minus_matched_text_relay": 0.75,
+    "metrics": {
+      "answer_masked": {
+        "accuracy": 0.25,
+        "correct": 32,
+        "mean_payload_bytes": 0.0,
+        "n": 128,
+        "p50_latency_ms": 0.0003749992174562067
+      },
+      "answer_only": {
+        "accuracy": 0.25,
+        "correct": 32,
+        "mean_payload_bytes": 2.0,
+        "n": 128,
+        "p50_latency_ms": 0.002625001798151061
+      },
+      "matched_syndrome": {
+        "accuracy": 1.0,
+        "correct": 128,
+        "mean_payload_bytes": 2.0,
+        "n": 128,
+        "p50_latency_ms": 0.0026249999791616574
+      },
+      "random_same_byte": {
+        "accuracy": 0.25,
+        "correct": 32,
+        "mean_payload_bytes": 2.0,
+        "n": 128,
+        "p50_latency_ms": 0.002333999873371795
+      },
+      "shuffled_source": {
+        "accuracy": 0.25,
+        "correct": 32,
+        "mean_payload_bytes": 2.0,
+        "n": 128,
+        "p50_latency_ms": 0.002708000465645455
+      },
+      "structured_text_full": {
+        "accuracy": 1.0,
+        "correct": 128,
+        "mean_payload_bytes": 13.0,
+        "n": 128,
+        "p50_latency_ms": 0.0004159992386121303
+      },
+      "structured_text_matched": {
+        "accuracy": 0.25,
+        "correct": 32,
+        "mean_payload_bytes": 2.0,
+        "n": 128,
+        "p50_latency_ms": 0.0007080016075633466
+      },
+      "target_only": {
+        "accuracy": 0.25,
+        "correct": 32,
+        "mean_payload_bytes": 0.0,
+        "n": 128,
+        "p50_latency_ms": 0.00037500285543501377
+      },
+      "target_only_sidecar": {
+        "accuracy": 0.25,
+        "correct": 32,
+        "mean_payload_bytes": 2.0,
+        "n": 128,
+        "p50_latency_ms": 0.0028750000637955964
+      },
+      "target_wrapper": {
+        "accuracy": 0.25,
+        "correct": 32,
+        "mean_payload_bytes": 0.0,
+        "n": 128,
+        "p50_latency_ms": 0.0003749992174562067
+      },
+      "zero_source": {
+        "accuracy": 0.25,
+        "correct": 32,
+        "mean_payload_bytes": 0.0,
+        "n": 128,
+        "p50_latency_ms": 0.0003749992174562067
+      }
+    },
+    "n": 128,
+    "pass_gate": true,
+    "pass_rule": "matched_syndrome beats best no-source by >=0.15, source-destroying controls stay within +0.02 of no-source, and matched-byte structured text relay stays within +0.02 of no-source",
+    "syndrome_bytes": 2
+  }
+}

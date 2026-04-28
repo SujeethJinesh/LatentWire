@@ -12378,3 +12378,104 @@ Next exact gate:
   sidecar to beat best no-source by `>=15` points, source-destroying controls to
   remain within `2` points of no-source, and structured text at matched bytes to
   be included
+
+## 2026-04-27 Cycle 24 - Source-Private Literature Sprint And Evidence Packet Harness
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; still missing a strict-small
+   source-private positive method, but the benchmark contract is now concrete.
+2. Current paper story: source-private residual communication with decoder side
+   information is the live story; ordinary SVAMP/GSM residual hunting is
+   demoted to background evidence about target-prior contamination.
+3. Exact blocker: instantiate a source-private task where matched source
+   packets improve target selection and zero/shuffled/random/answer-only/
+   answer-masked/target-only sidecars do not.
+4. Current live branches: private evidence packet / candidate-syndrome decoder;
+   private tool-trace handoff; Query-JEPA/Q-Former adapters only after residual
+   IDs exist.
+5. Highest-priority gate: run the cheapest deterministic source-private
+   evidence-packet contract, then scale the same contract to `100-200`
+   LLM-mediated examples.
+6. Scale-up rung: smoke benchmark contract.
+
+Subagent synthesis:
+
+- reviewer: lead with private evidence packet plus candidate syndrome; do not
+  lead with Query-JEPA because learned connectors have repeatedly failed source
+  controls
+- JEPA/anti-collapse: use detached target latents, source-innovation scores,
+  variance/effective-rank/covariance/query-entropy telemetry only after a
+  source-private residual surface exists
+- VLM connector scout: Q-Former/Perceiver/Flamingo/BLIP-2/LLaVA/LLaMA-Adapter
+  motivate fixed query bottlenecks and zero-init target-preserving gates, but
+  simple projector and prompt-wrapper baselines are mandatory
+- systems/KV scout: KVComm/KVTC/KIVI are baselines and byte-accounting
+  references; cache transfer is not the first headline because byte budgets are
+  large
+- information theory/geometry: Slepian-Wolf/Wyner-Ziv/distributed indirect
+  source coding support a fixed-byte syndrome decoded with target candidate
+  side information; relative representations suggest anchor-relative codes as
+  a second variant
+- multi-agent planner: private tool/test-log handoff is the second benchmark if
+  evidence packets pass
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/run_source_private_evidence_packet_gate.py \
+  --examples 128 \
+  --candidates 4 \
+  --seed 17 \
+  --syndrome-bytes 2 \
+  --output-dir results/source_private_evidence_packet_gate_20260427
+
+./venv_arm64/bin/python -m pytest tests/test_run_source_private_evidence_packet_gate.py -q
+```
+
+Smoke results:
+
+- target-only: `32/128`
+- target wrapper/no-source: `32/128`
+- matched 2-byte syndrome: `128/128`
+- zero-source: `32/128`
+- shuffled-source: `32/128`
+- random same-byte: `32/128`
+- answer-only: `32/128`
+- answer-masked: `32/128`
+- target-only sidecar: `32/128`
+- structured text at matched 2 bytes: `32/128`
+- full structured text oracle: `128/128`, mean `13` bytes
+- matched minus best no-source/control: `+0.750`
+- gate: `pass`
+
+Interpretation:
+
+- This is not positive paper evidence; it is a deterministic harness/contract.
+- It verifies that the proposed gate can separate matched source-private
+  syndrome communication from target priors, source-destroying controls, and a
+  matched-byte structured text relay.
+- The top one-month path is now concrete: source-private evidence packet /
+  candidate-syndrome first; learned JEPA/Q-Former connector second.
+
+Artifacts:
+
+- `paper/source_private_literature_sprint_20260427.md`
+- `references/477_source_private_literature_sprint_refs.md`
+- `scripts/run_source_private_evidence_packet_gate.py`
+- `tests/test_run_source_private_evidence_packet_gate.py`
+- `results/source_private_evidence_packet_gate_20260427/summary.md`
+- `results/source_private_evidence_packet_gate_20260427/summary.json`
+- `results/source_private_evidence_packet_gate_20260427/predictions.jsonl`
+- `results/source_private_evidence_packet_gate_20260427/manifest.md`
+- `results/source_private_evidence_packet_gate_20260427/manifest.json`
+
+Next exact gate:
+
+- build `source_private_evidence_packet_strict_small_20260428` with `100-200`
+  frozen private-evidence QA examples, target `S32` no-source candidates,
+  capped source packets at `2/4/8/16/32` bytes or tokens, matched-byte
+  structured text, full evidence/full text oracle, and zero/shuffled/random/
+  answer-only/answer-masked/target-derived packet controls
+- pass only if matched source beats best no-source by `>=15` points and every
+  source-destroying control stays within `2` points of no-source

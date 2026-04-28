@@ -838,5 +838,12 @@
     "path": "references/476_source_private_comm_pivot_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo justifying the deadline pivot from ordinary math residual hunting to source-private residual communication with decoder side information, rate-distortion curves, syndrome sidecars, and strict source-destroying controls."
+  },
+  {
+    "num": 477,
+    "slug": "source_private_literature_sprint_refs",
+    "path": "references/477_source_private_literature_sprint_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source literature-to-method sprint memo ranking source-private evidence packets, tool-trace handoff, Query-JEPA/Q-Former adapters, anchor-relative codes, and KV/cache baselines for the one-month ICLR path."
   }
 ]
