@@ -41,6 +41,33 @@ def test_full_hidden_log_oracle_works_but_truncated_text_does_not() -> None:
     assert summary["metrics"]["structured_text_matched"]["accuracy"] == summary["metrics"]["target_only"]["accuracy"]
 
 
+def test_reviewer_risk_rows_separate_packet_from_matched_byte_text() -> None:
+    examples = repair_gate.make_benchmark(examples=24, candidates=4, seed=11)
+    _, summary = repair_gate.run_budget(examples=examples, seed=11, budget_bytes=2)
+
+    assert summary["pass_gate"] is True
+    assert summary["candidate_pool_recall"] == 1.0
+    assert summary["matched_selector_accuracy"] == 1.0
+    assert summary["metrics"]["structured_json_matched"]["accuracy"] == summary["metrics"]["target_only"]["accuracy"]
+    assert summary["metrics"]["structured_free_text_matched"]["accuracy"] == summary["metrics"]["target_only"]["accuracy"]
+    assert summary["metrics"]["helper_only_no_log"]["accuracy"] == summary["metrics"]["target_only"]["accuracy"]
+    assert summary["metrics"]["diag_masked_full_log"]["accuracy"] == summary["metrics"]["target_only"]["accuracy"]
+    assert summary["metrics"]["expected_actual_masked_full_log"]["accuracy"] == 1.0
+    assert summary["metrics"]["test_name_masked_full_log"]["accuracy"] == 1.0
+
+
+def test_structured_relays_are_oracles_only_when_budget_reveals_diag() -> None:
+    examples = repair_gate.make_benchmark(examples=24, candidates=4, seed=11)
+    _, small = repair_gate.run_budget(examples=examples, seed=11, budget_bytes=2)
+    _, large = repair_gate.run_budget(examples=examples, seed=11, budget_bytes=32)
+
+    assert small["metrics"]["structured_json_matched"]["accuracy"] == small["metrics"]["target_only"]["accuracy"]
+    assert small["metrics"]["structured_free_text_matched"]["accuracy"] == small["metrics"]["target_only"]["accuracy"]
+    assert large["metrics"]["structured_json_matched"]["accuracy"] == 1.0
+    assert large["metrics"]["structured_free_text_matched"]["accuracy"] == 1.0
+    assert large["pass_gate"] is False
+
+
 def test_shuffled_source_uses_nonself_source_id() -> None:
     examples = repair_gate.make_benchmark(examples=16, candidates=4, seed=13)
     rows, _ = repair_gate.run_budget(examples=examples, seed=13, budget_bytes=2)

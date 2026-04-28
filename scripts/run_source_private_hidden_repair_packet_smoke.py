@@ -369,6 +369,12 @@ def _extract_diag(payload: str | None) -> str | None:
     explicit = re.search(r"REPAIR_DIAG=([A-Z][0-9])", payload)
     if explicit:
         return explicit.group(1)
+    jsonish = re.search(r'"repair_diag"\s*:\s*"([A-Z][0-9])"', payload)
+    if jsonish:
+        return jsonish.group(1)
+    prose = re.search(r"\brepair diag(?:nostic)?\s+(?:is\s+)?([A-Z][0-9])\b", payload, flags=re.IGNORECASE)
+    if prose:
+        return prose.group(1).upper()
     exact = re.fullmatch(r"[A-Z][0-9]", payload.strip())
     if exact:
         return exact.group(0)
@@ -393,6 +399,24 @@ def _decode_packet(example: Example, payload: str | None) -> tuple[str, dict[str
 def _deterministic_nonself_index(index: int, n: int) -> int:
     candidate = (index * 17 + 11) % n
     return candidate if candidate != index else (index + 1) % n
+
+
+def _mask_log_components(private_log: str, *, mask_expected_actual: bool = False, mask_test_name: bool = False) -> str:
+    lines: list[str] = []
+    for line in private_log.splitlines():
+        if mask_expected_actual and line.startswith("expected="):
+            lines.append("expected=<MASKED>")
+        elif mask_expected_actual and line.startswith("actual="):
+            lines.append("actual=<MASKED>")
+        elif mask_test_name and line.startswith("FAILED hidden_tests/"):
+            lines.append("FAILED hidden_tests/test_MASKED.py::test_private_regression_MASKED")
+        else:
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def _mask_repair_diag(private_log: str) -> str:
+    return re.sub(r"REPAIR_DIAG=[A-Z][0-9]", "REPAIR_DIAG=??", private_log)
 
 
 def _condition_payload(
@@ -429,9 +453,30 @@ def _condition_payload(
     if condition == "structured_text_matched":
         payload = example.private_test_log.encode("utf-8")[:budget_bytes].decode("utf-8", errors="ignore")
         return payload, len(payload.encode("utf-8")), _token_count(payload), {"packet_kind": "truncated_hidden_log"}
+    if condition == "structured_json_matched":
+        text = json.dumps({"repair_diag": example.diagnostic_code}, sort_keys=True)
+        payload = text.encode("utf-8")[:budget_bytes].decode("utf-8", errors="ignore")
+        return payload, len(payload.encode("utf-8")), _token_count(payload), {"packet_kind": "truncated_json_diag"}
+    if condition == "structured_free_text_matched":
+        text = f"repair diag is {example.diagnostic_code}"
+        payload = text.encode("utf-8")[:budget_bytes].decode("utf-8", errors="ignore")
+        return payload, len(payload.encode("utf-8")), _token_count(payload), {"packet_kind": "truncated_free_text_diag"}
+    if condition == "helper_only_no_log":
+        payload = "Private REPAIR_DIAG line copied from the log: <withheld>"
+        payload = payload.encode("utf-8")[:budget_bytes].decode("utf-8", errors="ignore")
+        return payload, len(payload.encode("utf-8")), _token_count(payload), {"packet_kind": "helper_template_no_log"}
     if condition == "full_hidden_log":
         payload = example.private_test_log
         return payload, len(payload.encode("utf-8")), _token_count(payload), {"packet_kind": "full_hidden_log"}
+    if condition == "expected_actual_masked_full_log":
+        payload = _mask_log_components(example.private_test_log, mask_expected_actual=True)
+        return payload, len(payload.encode("utf-8")), _token_count(payload), {"packet_kind": "expected_actual_masked_log"}
+    if condition == "test_name_masked_full_log":
+        payload = _mask_log_components(example.private_test_log, mask_test_name=True)
+        return payload, len(payload.encode("utf-8")), _token_count(payload), {"packet_kind": "test_name_masked_log"}
+    if condition == "diag_masked_full_log":
+        payload = _mask_repair_diag(example.private_test_log)
+        return payload, len(payload.encode("utf-8")), _token_count(payload), {"packet_kind": "diag_masked_log"}
     if condition == "full_diag_text":
         payload = f"REPAIR_DIAG={example.diagnostic_code}"
         return payload, len(payload.encode("utf-8")), _token_count(payload), {"packet_kind": "full_diag_text"}
@@ -450,7 +495,13 @@ def _conditions() -> list[str]:
         "answer_masked",
         "target_derived_sidecar",
         "structured_text_matched",
+        "structured_json_matched",
+        "structured_free_text_matched",
+        "helper_only_no_log",
         "full_hidden_log",
+        "expected_actual_masked_full_log",
+        "test_name_masked_full_log",
+        "diag_masked_full_log",
         "full_diag_text",
     ]
 
@@ -479,7 +530,13 @@ def _predict_condition(
         "random_same_byte",
         "target_derived_sidecar",
         "structured_text_matched",
+        "structured_json_matched",
+        "structured_free_text_matched",
+        "helper_only_no_log",
         "full_hidden_log",
+        "expected_actual_masked_full_log",
+        "test_name_masked_full_log",
+        "diag_masked_full_log",
         "full_diag_text",
     }:
         prediction, decode_metadata = _decode_packet(example, payload)
@@ -524,11 +581,32 @@ def summarize_budget(rows: list[dict[str, Any]], *, budget_bytes: int) -> dict[s
         }
     no_source = ["target_only", "target_wrapper"]
     controls = ["zero_source", "shuffled_source", "random_same_byte", "answer_only", "answer_masked", "target_derived_sidecar"]
+    reviewer_negative_controls = [
+        "structured_text_matched",
+        "structured_json_matched",
+        "structured_free_text_matched",
+        "helper_only_no_log",
+        "diag_masked_full_log",
+    ]
+    reviewer_positive_oracles = [
+        "full_hidden_log",
+        "expected_actual_masked_full_log",
+        "test_name_masked_full_log",
+        "full_diag_text",
+    ]
     best_no_source = max(metrics[name]["accuracy"] for name in no_source)
     best_control = max(metrics[name]["accuracy"] for name in controls)
     matched = metrics["matched_repair_packet"]["accuracy"]
     matched_text = metrics["structured_text_matched"]["accuracy"]
-    pass_gate = matched - best_no_source >= 0.15 and best_control <= best_no_source + 0.02 and matched_text <= best_no_source + 0.02
+    best_reviewer_negative = max(metrics[name]["accuracy"] for name in reviewer_negative_controls)
+    min_reviewer_positive = min(metrics[name]["accuracy"] for name in reviewer_positive_oracles)
+    pass_gate = (
+        matched - best_no_source >= 0.15
+        and best_control <= best_no_source + 0.02
+        and matched_text <= best_no_source + 0.02
+        and best_reviewer_negative <= best_no_source + 0.02
+        and min_reviewer_positive >= matched
+    )
     return {
         "budget_bytes": budget_bytes,
         "n": len(rows),
@@ -536,8 +614,12 @@ def summarize_budget(rows: list[dict[str, Any]], *, budget_bytes: int) -> dict[s
         "exact_id_sha256": _sha256_text(exact_ids),
         "exact_id_parity": len(exact_ids) == len(set(exact_ids)),
         "candidate_pool_recall": 1.0,
+        "candidate_pool_gold_count": len(rows),
+        "matched_selector_accuracy": matched,
         "best_no_source_accuracy": best_no_source,
         "best_source_destroying_control_accuracy": best_control,
+        "best_reviewer_negative_control_accuracy": best_reviewer_negative,
+        "min_reviewer_positive_oracle_accuracy": min_reviewer_positive,
         "matched_minus_best_no_source": matched - best_no_source,
         "matched_minus_best_control": matched - best_control,
         "matched_minus_matched_text_relay": matched - matched_text,
@@ -584,13 +666,13 @@ def run_budget(*, examples: list[Example], seed: int, budget_bytes: int) -> tupl
 
 def summarize_sweep(budget_summaries: list[dict[str, Any]]) -> dict[str, Any]:
     passing = [summary for summary in budget_summaries if summary["pass_gate"]]
-    best = max(budget_summaries, key=lambda row: (row["pass_gate"], row["matched_minus_best_control"], -row["budget_bytes"]))
+    best = min(passing, key=lambda row: row["budget_bytes"]) if passing else max(budget_summaries, key=lambda row: row["matched_minus_best_control"])
     return {
         "budgets": [summary["budget_bytes"] for summary in budget_summaries],
         "passing_budgets": [summary["budget_bytes"] for summary in passing],
         "best_budget_bytes": best["budget_bytes"],
         "strict_smoke_pass": bool(passing),
-        "pass_rule": "At least one budget must have matched_repair_packet - best no-source >= 0.15, controls within +0.02, and matched-byte hidden-log text within +0.02.",
+        "pass_rule": "At least one budget must have matched_repair_packet - best no-source >= 0.15, source-destroying controls within +0.02, reviewer negative controls within +0.02, and reviewer positive oracles at or above matched.",
         "budget_summaries": budget_summaries,
     }
 
@@ -637,8 +719,8 @@ def _write_markdown(path: pathlib.Path, sweep: dict[str, Any]) -> None:
         f"- passing budgets: `{sweep['passing_budgets']}`",
         f"- best budget bytes: `{sweep['best_budget_bytes']}`",
         "",
-        "| Budget bytes | Pass | Matched | Best no-source | Best control | Matched text | Full log | Full diag |",
-        "|---:|---|---:|---:|---:|---:|---:|---:|",
+        "| Budget bytes | Pass | Matched | Best no-source | Best control | Best reviewer negative | Min reviewer oracle | Matched text | JSON | Free text | Helper/no-log | Diag masked | Full log | Full diag |",
+        "|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for summary in sweep["budget_summaries"]:
         metrics = summary["metrics"]
@@ -648,7 +730,13 @@ def _write_markdown(path: pathlib.Path, sweep: dict[str, Any]) -> None:
             f"{metrics['matched_repair_packet']['accuracy']:.3f} | "
             f"{summary['best_no_source_accuracy']:.3f} | "
             f"{summary['best_source_destroying_control_accuracy']:.3f} | "
+            f"{summary['best_reviewer_negative_control_accuracy']:.3f} | "
+            f"{summary['min_reviewer_positive_oracle_accuracy']:.3f} | "
             f"{metrics['structured_text_matched']['accuracy']:.3f} | "
+            f"{metrics['structured_json_matched']['accuracy']:.3f} | "
+            f"{metrics['structured_free_text_matched']['accuracy']:.3f} | "
+            f"{metrics['helper_only_no_log']['accuracy']:.3f} | "
+            f"{metrics['diag_masked_full_log']['accuracy']:.3f} | "
             f"{metrics['full_hidden_log']['accuracy']:.3f} | "
             f"{metrics['full_diag_text']['accuracy']:.3f} |"
         )

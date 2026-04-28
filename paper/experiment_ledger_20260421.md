@@ -13809,3 +13809,81 @@ Next exact gate:
 - `source_private_tool_trace_reviewer_risk_rows_20260429`: run the cheapest
   decisive reviewer-risk rows, beginning with matched-byte structured
   JSON/free-text relay and helper-only/no-log oracle.
+
+## 2026-04-29 - Source-Private Tool-Trace Reviewer-Risk Rows
+
+Current ICLR readiness: close to paper-ready for the scoped positive method.
+The deterministic reviewer-risk rows now close the biggest baseline/framing
+objections left by the baseline pack. Remaining distance is final table
+integration and a decision on whether to add an optional learned/LLM-mediated
+target-family row or list it as a limitation.
+
+Current story: compact explicit source-private `REPAIR_DIAG` packets transfer
+private execution/tool-trace evidence to a target-side candidate decoder. The
+source information is rate-efficient relative to structured text relay at the
+paper packet budget.
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_smoke.py \
+  --examples 500 \
+  --candidates 4 \
+  --seed 29 \
+  --budgets 2,4,8,16,32 \
+  --family-set core \
+  --output-dir results/source_private_tool_trace_reviewer_risk_rows_20260429/core_seed29
+
+./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_smoke.py \
+  --examples 500 \
+  --candidates 4 \
+  --seed 30 \
+  --budgets 2,4,8,16,32 \
+  --family-set holdout \
+  --output-dir results/source_private_tool_trace_reviewer_risk_rows_20260429/holdout_seed30
+```
+
+New reviewer-risk rows:
+
+- matched-byte structured JSON relay
+- matched-byte free-text relay
+- helper-template/no-log target oracle
+- diagnostic-masked full log
+- expected/actual-masked full log
+- test-name-masked full log
+- explicit candidate-pool recall and selector accuracy
+
+Results at the `2`-byte paper packet budget:
+
+- core seed `29`: matched `1.000`, target `0.250`, best source-destroying
+  control `0.254`, best reviewer negative `0.250`, min reviewer oracle
+  `1.000`, candidate-pool recall `1.000`
+- held-out seed `30`: matched `1.000`, target `0.250`, best source-destroying
+  control `0.254`, best reviewer negative `0.250`, min reviewer oracle
+  `1.000`, candidate-pool recall `1.000`
+
+Budget behavior:
+
+- budgets `2/4/8/16` pass on both surfaces
+- budget `32` intentionally fails because structured JSON/free-text relays have
+  enough bytes to expose the diagnostic and become oracles
+
+Decision:
+
+- promote the reviewer-risk rows as passed for the deterministic packet
+  protocol
+- keep the systems claim tied to the compact packet budget and report the text
+  relay curve honestly
+- do not broaden the claim beyond explicit private tool-trace packet
+  communication
+
+Artifacts:
+
+- `paper/source_private_tool_trace_reviewer_risk_rows_20260429.md`
+- `results/source_private_tool_trace_reviewer_risk_rows_20260429/`
+
+Next exact gate:
+
+- `source_private_tool_trace_final_table_20260429`: integrate model rows,
+  deterministic controls, reviewer-risk rows, bytes/tokens, validity, and
+  candidate-pool/selector separation into a paper-ready table.

@@ -1735,3 +1735,14 @@ positive-method claim if framed narrowly. The next exact gate is
 `source_private_tool_trace_reviewer_risk_rows_20260429`, focused on
 matched-byte structured JSON/free-text relays, helper-only/no-log oracle,
 trace-component masking, and explicit candidate-pool versus selector reporting.
+
+Update `2026-04-29`: `source_private_tool_trace_reviewer_risk_rows_20260429`
+passes on representative `500`-example core and held-out surfaces. At the
+`2`-byte paper packet budget, matched packets are `1.000`, target-only is
+`0.250`, best source-destroying control is `0.254`, best reviewer negative
+control is `0.250`, and min reviewer oracle is `1.000` on both surfaces.
+Matched-byte JSON/free-text relays, helper-template/no-log, and diagnostic-
+masked full-log rows stay at target-only; expected/actual-masked and
+test-name-masked full logs remain oracles. At `32` bytes, structured JSON/free
+text become oracles, so the paper should report this as a rate tradeoff. The
+next exact gate is `source_private_tool_trace_final_table_20260429`.
