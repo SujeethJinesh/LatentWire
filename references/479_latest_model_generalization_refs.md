@@ -87,6 +87,6 @@ compatibility/harness update, not another paper-story edit:
 Update `2026-04-28`: Qwen3.5 small rows now have local evidence after upgrading
 the repo-local Transformers stack. `Qwen/Qwen3.5-0.8B` passes CPU n160 with a
 seed repeat, `Qwen/Qwen3.5-2B` passes CPU n160, and `Qwen/Qwen3.5-4B` passes CPU
-n16. The 4B row is useful as a capacity-scaling smoke, but its p50 CPU packet
-latency is about `32.5s`, so the next higher-value gate remains off-machine
-Qwen3.6 MoE/FP8 n32 unless local n64 time is acceptable.
+n64. The 4B row is useful as a capacity-scaling confirmation, but its p50 CPU
+packet latency is about `27.2s` at n64, so the next higher-value gate remains
+off-machine Qwen3.6 MoE/FP8 n32 unless local n160 time is acceptable.

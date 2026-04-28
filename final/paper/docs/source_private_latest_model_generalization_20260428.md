@@ -139,6 +139,9 @@ Artifacts:
 - `results/source_private_latest_model_matrix_20260428/qwen35_4b_trace_no_hint_n16_cpu_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/qwen35_4b_trace_no_hint_n16_cpu_seed29/model_packets.jsonl`
 - `results/source_private_latest_model_matrix_20260428/qwen35_4b_trace_no_hint_n16_cpu_seed29/predictions.jsonl`
+- `results/source_private_latest_model_matrix_20260428/qwen35_4b_trace_no_hint_n64_cpu_seed29/summary.json`
+- `results/source_private_latest_model_matrix_20260428/qwen35_4b_trace_no_hint_n64_cpu_seed29/model_packets.jsonl`
+- `results/source_private_latest_model_matrix_20260428/qwen35_4b_trace_no_hint_n64_cpu_seed29/predictions.jsonl`
 
 ## Qwen3.5-2B n160 Confirmation
 
@@ -158,23 +161,23 @@ latest-small cross-size confirmation. It does not by itself prove MoE or
 cross-family generalization; it strengthens the same-generation Qwen3.5
 emitter breadth claim.
 
-## Qwen3.5-4B n16 Smoke
+## Qwen3.5-4B n64 Confirmation
 
-`Qwen/Qwen3.5-4B` now clears the local `n=16` smoke gate after downloading the
+`Qwen/Qwen3.5-4B` now clears the local `n=16` and `n=64` gates after downloading the
 repo-local Hugging Face snapshot (`8.7G` cache footprint):
 
-- matched model packet: `16/16 = 1.000`
-- target-only: `4/16 = 0.250`
-- best source-destroying control: `4/16 = 0.250`
+- matched model packet: `16/16 = 1.000` and `64/64 = 1.000`
+- target-only: `4/16 = 0.250` and `16/64 = 0.250`
+- best source-destroying control: `4/16 = 0.250` and `16/64 = 0.250`
 - matched-minus-best-control: `+0.750`
 - packet valid rate: `1.000`
 - exact-ID parity: `true`
-- median packet generation latency on CPU: `32485 ms`
+- median packet generation latency on CPU: `32485 ms` at n16 and `27188 ms` at n64
 
-This adds an upper local Qwen3.5 small-hybrid smoke row. Because CPU latency is
-high, the next Qwen3.5-4B rung should be `n=64` only if local time is acceptable;
-otherwise the higher-value next architecture gate is off-machine Qwen3.6 MoE
-and FP8 at `n=32`.
+This upgrades the upper local Qwen3.5 small-hybrid row from smoke to medium
+confirmation. Because CPU latency is high, the next Qwen3.5-4B rung should be
+`n=160` only if local time is acceptable; otherwise the higher-value next
+architecture gate is off-machine Qwen3.6 MoE and FP8 at `n=32`.
 
 ## Cross-Family Rows
 
@@ -243,7 +246,7 @@ MoE runbook:
 ## Recommended Next Gate
 
 1. Run off-machine Qwen3.6 MoE n32 if CUDA serving is available, or widen
-   Qwen3.5-4B to n64 if local CPU time is acceptable.
+   Qwen3.5-4B to n160 if local CPU time is acceptable.
 2. Try one stricter Granite prompt-contract variant to reduce missing letter
    prefixes without using copied-helper.
 3. Run Granite copied-helper n160 seed repeat if cross-family stability is more
@@ -258,9 +261,9 @@ of target-only.
 ## Paper Impact
 
 The Qwen3.5-0.8B seed-stable `n=160` result plus Qwen3.5-2B n160 confirmation
-and Qwen3.5-4B n16 smoke let the paper add a stronger post-package latest-small
-contribution: the packet protocol is executable across three latest small
-Qwen3.5 sizes once dependencies are updated.
+and Qwen3.5-4B n64 confirmation let the paper add a stronger post-package
+latest-small contribution: the packet protocol is executable across three
+latest small Qwen3.5 sizes once dependencies are updated.
 The Granite n160 pass adds a non-Qwen positive but under an easier copied-helper
 prompt, so it supports cross-family feasibility and prompt-contract sensitivity
 rather than a fully prompt-invariant claim. If Qwen3.5 small and Qwen3.6 MoE

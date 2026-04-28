@@ -27,7 +27,7 @@
 - Qwen3.5-2B n160 latest-small cross-size confirmation artifacts.
 - Source-private codebook-remap gate artifacts showing three remapped
   diagnostic codebooks across `500` examples and low-rate budgets.
-- Qwen3.5-4B n16 latest-small capacity-scaling smoke artifacts.
+- Qwen3.5-4B n16/n64 latest-small capacity-scaling artifacts.
 
 ## Notes
 

@@ -14562,3 +14562,11 @@ passes with matched `16/16`, target-only/best control `4/16`, packet valid rate
 packet latency `32485 ms`. This extends Qwen3.5 same-generation breadth to
 0.8B, 2B, and 4B, but the 4B row is only smoke; MoE/FP8 evidence remains the
 main full-paper blocker.
+
+Update `2026-04-28`: `qwen35_4b_n64_confirmation_20260428` upgrades the upper
+local Qwen3.5 small-hybrid row from smoke to medium confirmation. CPU
+trace-no-hint n64 seed29 reaches matched `64/64`, target-only/best control
+`16/64`, packet valid rate `1.000`, exact-ID parity true,
+matched-minus-best-control `+0.750`, and p50 CPU packet latency `27188 ms`.
+This gives Qwen3.5 same-generation breadth across 0.8B n160 seed-stable, 2B
+n160, and 4B n64; MoE/FP8 evidence remains the main full-paper blocker.

@@ -103,8 +103,9 @@ hybrid-attention matmul path, so this is CPU evidence only.
 `Qwen/Qwen3.5-2B` also passes CPU n16, n64, and n160 rows with matched accuracy
 `1.000`, target/control floor near `0.250`, and packet valid rate `1.000`,
 adding a second n160-confirmed latest-small Qwen3.5 size. `Qwen/Qwen3.5-4B`
-passes a CPU n16 smoke with matched `1.000`, controls `0.250`, and valid packet
-rate `1.000`, but p50 CPU packet latency is high at about `32.5s`.
+passes CPU n16 and n64 rows with matched `1.000`, controls `0.250`, and valid
+packet rate `1.000`, but p50 CPU packet latency is high at about `27.2s` on the
+n64 row.
 
 The first non-Qwen positive row also now exists:
 `ibm-granite/granite-3.3-2b-instruct` reaches `128/160 = 0.800` on CPU with the

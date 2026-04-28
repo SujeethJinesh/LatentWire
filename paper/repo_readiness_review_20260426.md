@@ -2016,3 +2016,11 @@ matched-minus-best-control `+0.750`, and p50 CPU latency `32485 ms`. This
 strengthens the latest-small same-generation section from two to three Qwen3.5
 sizes, but the 4B row is not yet medium confirmation and does not reduce the
 need for Qwen3.6-35B-A3B/FP8 MoE rows.
+
+Update `2026-04-28`: Qwen3.5-4B now has local CPU n64 confirmation. CPU
+trace-no-hint n64 seed29 reaches matched `64/64`, target-only/best control
+`16/64`, packet valid rate `1.000`, exact-ID parity true,
+matched-minus-best-control `+0.750`, and p50 CPU latency `27188 ms`. This
+upgrades the latest-small same-generation section to three Qwen3.5 sizes with
+at least medium evidence for 2B/4B and seed-stable n160 evidence for 0.8B. It
+still does not reduce the need for Qwen3.6-35B-A3B/FP8 MoE rows.
