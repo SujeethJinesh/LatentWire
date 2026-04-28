@@ -2,7 +2,7 @@
 
 - date: `2026-04-28`
 - gate: `latest_model_generalization_scout_20260428`
-- status: Qwen3.5-0.8B CPU n160 passed; Granite non-Qwen CPU n64 passed; MoE broad claim remains unproven
+- status: Qwen3.5-0.8B CPU n160 seed-repeat passed; Granite non-Qwen CPU n160 passed; MoE broad claim remains unproven
 
 ## Current Readiness
 
@@ -17,15 +17,16 @@ a compact packet. A dense model, sparse MoE model, or quantized MoE deployment
 can all succeed if they preserve exact instruction following and short-code
 copying.
 
-We now have medium-slice Qwen3.5 evidence: `Qwen/Qwen3.5-0.8B` passes the
-hidden-repair packet gate on CPU at `n=16`, `n=64`, and `n=160` after upgrading
-the repo-local Transformers stack. This is useful latest-small evidence for the
-Qwen family, but it is not yet enough to claim MoE generalization.
+We now have seed-stable medium-slice Qwen3.5 evidence: `Qwen/Qwen3.5-0.8B`
+passes the hidden-repair packet gate on CPU at `n=16`, `n=64`, and `n=160`
+after upgrading the repo-local Transformers stack, with the `n=160` row passing
+on seeds `29` and `31`. This is useful latest-small evidence for the Qwen family,
+but it is not yet enough to claim MoE generalization.
 
 We also have the first non-Qwen positive row: `ibm-granite/granite-3.3-2b-instruct`
-passes at `n=64` on CPU under the copied-helper prompt. The cross-family claim
+passes at `n=160` on CPU under the copied-helper prompt. The cross-family claim
 must be scoped: OLMo fails behaviorally with zero valid packets, and Granite's
-stricter trace-no-hint row is weaker than Qwen3.5.
+stricter trace-no-hint row is positive but weaker than Qwen3.5.
 
 ## What I Checked
 
@@ -97,6 +98,7 @@ HF_HOME=.hf_home ./venv_arm64/bin/python scripts/run_source_private_hidden_repai
 Outcome:
 
 - matched model packet: `16/16 = 1.000`, `64/64 = 1.000`, and `160/160 = 1.000`
+  on both n160 seeds (`29` and `31`)
 - target-only / best no-source: `4/16 = 0.250`, `16/64 = 0.250`, and `40/160 = 0.250`
 - zero-source, shuffled, random same-byte, answer-only, answer-masked,
   target-derived controls: all `4/16 = 0.250` at n16, `16/64 = 0.250` at n64,
@@ -118,6 +120,9 @@ Artifacts:
 - `results/source_private_latest_model_matrix_20260428/qwen35_0_8b_trace_no_hint_n160_cpu_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/qwen35_0_8b_trace_no_hint_n160_cpu_seed29/model_packets.jsonl`
 - `results/source_private_latest_model_matrix_20260428/qwen35_0_8b_trace_no_hint_n160_cpu_seed29/predictions.jsonl`
+- `results/source_private_latest_model_matrix_20260428/qwen35_0_8b_trace_no_hint_n160_cpu_seed31/summary.json`
+- `results/source_private_latest_model_matrix_20260428/qwen35_0_8b_trace_no_hint_n160_cpu_seed31/model_packets.jsonl`
+- `results/source_private_latest_model_matrix_20260428/qwen35_0_8b_trace_no_hint_n160_cpu_seed31/predictions.jsonl`
 
 ## Cross-Family Rows
 
@@ -138,6 +143,10 @@ I ran the first non-Qwen falsification rows:
   `12/16 = 0.750`, packet valid rate `0.625`, controls `0.250`, pass.
 - `ibm-granite/granite-3.3-2b-instruct`, CPU n64, copied-helper:
   `51/64 = 0.797`, packet valid rate `0.734`, controls `0.250`, pass.
+- `ibm-granite/granite-3.3-2b-instruct`, CPU n160, copied-helper:
+  `128/160 = 0.800`, packet valid rate `0.738`, best control `41/160 = 0.256`, pass.
+- `ibm-granite/granite-3.3-2b-instruct`, CPU n64, trace-no-hint:
+  `37/64 = 0.578`, packet valid rate `0.500`, controls `0.250`, pass but weaker.
 
 Artifacts:
 
@@ -146,6 +155,8 @@ Artifacts:
 - `results/source_private_non_qwen_packet_20260428/ibm_granite__granite_3_3_2b_instruct_n16_seed29_cpu/summary.json`
 - `results/source_private_non_qwen_packet_20260428/ibm_granite__granite_3_3_2b_instruct_n16_seed29_copied_helper_cpu/summary.json`
 - `results/source_private_non_qwen_packet_20260428/ibm_granite__granite_3_3_2b_instruct_n64_seed29_copied_helper_cpu/summary.json`
+- `results/source_private_non_qwen_packet_20260428/ibm_granite__granite_3_3_2b_instruct_n160_seed29_copied_helper_cpu/summary.json`
+- `results/source_private_non_qwen_packet_20260428/ibm_granite__granite_3_3_2b_instruct_n64_seed29_trace_no_hint_cpu/summary.json`
 
 ## Added Matrix
 
@@ -175,9 +186,10 @@ Reference memo:
 
 ## Recommended Next Gate
 
-1. Run a Qwen3.5-0.8B n160 seed repeat.
-2. Widen Granite copied-helper to n160 and test whether a stricter prompt can
-   recover its missing letter prefixes.
+1. Run Granite copied-helper n160 seed repeat, or run Qwen3.5-2B n16 if local
+   time/memory is preferred.
+2. Try one stricter Granite prompt-contract variant to reduce missing letter
+   prefixes without using copied-helper.
 3. Run `Qwen/Qwen3.5-2B` `n=16` if it fits local memory, otherwise CPU/off-machine.
 4. If both pass, run `Qwen/Qwen3.5-4B` and widen the best small row to `n=160`.
 5. Run `Qwen/Qwen3.6-35B-A3B` and `Qwen/Qwen3.6-35B-A3B-FP8` off-machine at
@@ -189,12 +201,13 @@ of target-only.
 
 ## Paper Impact
 
-The Qwen3.5-0.8B `n=160` pass lets the paper add a stronger post-package
-latest-small contribution: the packet protocol is executable on the latest small
-Qwen3.5 stack once dependencies are updated. The Granite n64 pass adds a
-non-Qwen positive but under an easier copied-helper prompt, so it supports
-cross-family feasibility rather than a fully prompt-invariant claim. If Qwen3.5
-small and Qwen3.6 MoE rows pass at larger scale, the paper can strengthen its
-external-validity claim from "works across Qwen3/Phi-3/Qwen2.5-era source
-emitters" to "also transfers to latest small hybrid and sparse MoE source
-emitters." Until then, keep the current scoped wording.
+The Qwen3.5-0.8B seed-stable `n=160` result lets the paper add a stronger
+post-package latest-small contribution: the packet protocol is executable on the
+latest small Qwen3.5 stack once dependencies are updated. The Granite n160 pass
+adds a non-Qwen positive but under an easier copied-helper prompt, so it supports
+cross-family feasibility and prompt-contract sensitivity rather than a fully
+prompt-invariant claim. If Qwen3.5 small and Qwen3.6 MoE rows pass at larger
+scale, the paper can strengthen its external-validity claim from "works across
+Qwen3/Phi-3/Qwen2.5-era source emitters" to "also transfers to latest small
+hybrid and sparse MoE source emitters." Until then, keep the current scoped
+wording.

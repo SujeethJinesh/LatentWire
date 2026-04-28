@@ -1964,3 +1964,14 @@ negative with `0` valid packets, and Granite MPS is backend-blocked. Readiness
 for the scoped submission is unchanged; readiness for a stronger
 model-generalization section is now latest-small medium plus non-Qwen
 confirmation, still short of seed repeat, Granite n160, and MoE/FP8 rows.
+
+Update `2026-04-28`: latest-small evidence is now seed-stable at medium scale.
+Qwen3.5-0.8B CPU trace-no-hint n160 passes on seeds 29 and 31 with matched
+`160/160`, target/control floor near `0.250`, packet valid rate `1.000`, and
+exact-ID parity true. Granite-3.3-2B copied-helper CPU n160 passes at
+`128/160 = 0.800` versus target-only `0.250` and best control `0.256`, while
+Granite trace-no-hint n64 is positive but weaker (`37/64 = 0.578`). OLMo remains
+a negative behavioral row. The scoped submission remains upload-ready; the
+latest-model/cross-family section can now safely discuss seed-stable Qwen3.5 and
+medium Granite prompt-contract sensitivity, but still cannot claim MoE or
+prompt-invariant cross-family generalization.

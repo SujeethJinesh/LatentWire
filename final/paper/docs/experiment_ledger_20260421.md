@@ -14500,3 +14500,17 @@ packet valid rate `0.734`, matched-minus-best-control `+0.547`, p50 CPU latency
 `3046 ms`. This gives a real latest-small medium row and a non-Qwen cross-family
 positive smoke/confirmation, while preserving the limitation that MoE remains
 unrun and Granite needs the easier copied-helper prompt.
+
+Update `2026-04-28`: `latest_model_seed_stability_and_granite_n160_20260428`
+adds seed stability and a medium non-Qwen row. `Qwen/Qwen3.5-0.8B` CPU
+trace-no-hint n160 seed31 repeats seed29 exactly at matched `160/160`,
+target-only `40/160`, best control `40/160`, packet valid rate `1.000`, exact-ID
+parity true, and matched-minus-best-control `+0.750`; p50 CPU packet latency is
+`10998 ms`. Granite-3.3-2B-Instruct copied-helper CPU n160 reaches `128/160 =
+0.800` versus target-only `40/160`, best control `41/160`, packet valid rate
+`0.738`, exact-ID parity true, and matched-minus-best-control `+0.544`. Granite
+trace-no-hint CPU n64 also passes but weaker at `37/64 = 0.578`, valid packet
+rate `0.500`, controls `16/64`. This upgrades latest-small evidence to
+seed-stable medium and non-Qwen evidence to medium confirmation, but the safe
+claim remains prompt-contract sensitivity rather than prompt-invariant
+cross-family generalization.

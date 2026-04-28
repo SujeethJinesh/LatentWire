@@ -20,6 +20,8 @@
 - Qwen3.5-0.8B CPU n16/n64 latest-small confirmation artifacts and non-Qwen
   cross-family falsification matrix.
 - Qwen3.5-0.8B CPU n160 latest-small row and Granite/OLMo non-Qwen packet rows.
+- Qwen3.5-0.8B n160 seed-repeat artifacts and Granite copied-helper n160 /
+  trace-no-hint n64 prompt-contract diagnostics.
 
 ## Notes
 

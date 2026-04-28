@@ -91,21 +91,24 @@ rows under `results/source_private_latest_model_matrix_20260428/`.
 
 The first latest-small row now passes: after upgrading the repo-local stack to
 `transformers==5.7.0`, `Qwen/Qwen3.5-0.8B` passes the source-private packet gate
-on CPU at `n=16`, `n=64`, and `n=160` with matched packet accuracy `1.000`,
-target/control floor near `0.250`, packet valid rate `1.000`, and exact-ID
-parity true. Apple MPS still fails before generation in the model's
+on CPU at `n=16`, `n=64`, and `n=160`, with n160 repeated on seeds `29` and
+`31`. Matched packet accuracy is `1.000`, target/control floor is near `0.250`,
+packet valid rate is `1.000`, and exact-ID parity holds. Apple MPS still fails
+before generation in the model's
 hybrid-attention matmul path, so this is CPU evidence only.
 
 The first non-Qwen positive row also now exists:
-`ibm-granite/granite-3.3-2b-instruct` reaches `51/64 = 0.797` on CPU with the
-copied-helper prompt, versus `0.250` target/control floor. OLMo-2-0425-1B is a
-behavioral negative with zero valid packets, and Granite MPS is backend-blocked.
+`ibm-granite/granite-3.3-2b-instruct` reaches `128/160 = 0.800` on CPU with the
+copied-helper prompt, versus `0.250` target floor and `0.256` best control.
+Granite trace-no-hint n64 is also positive but weaker (`37/64 = 0.578`). OLMo
+2-0425-1B is a behavioral negative with zero valid packets, and Granite MPS is
+backend-blocked.
 
 MoE generalization is plausible because the source task is exact private-evidence
 packet emission, not dense-model-specific latent transfer, but it is not yet a
-paper claim. Claim latest-model breadth only after Qwen3.5 gets a seed repeat
-and Granite widens to n160; claim MoE only after Qwen3.6 35B-A3B/FP8 pass
-off-machine under the same controls.
+paper claim. The safe addition is seed-stable latest-small evidence plus
+non-Qwen prompt-contract sensitivity. Claim MoE only after Qwen3.6 35B-A3B/FP8
+pass off-machine under the same controls.
 
 ## Directory Map
 
