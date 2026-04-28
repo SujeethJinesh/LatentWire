@@ -1,0 +1,143 @@
+{
+  "args": {
+    "benchmark_jsonl": ".debug/source_private_tool_trace_target_decoder_smoke_20260429/core_seed29_benchmark/benchmark.jsonl",
+    "device": "mps",
+    "do_sample": false,
+    "dtype": "float32",
+    "enable_thinking": false,
+    "limit": 16,
+    "max_new_tokens": 24,
+    "model": "Qwen/Qwen3-0.6B",
+    "output_dir": "results/source_private_tool_trace_target_decoder_smoke_20260429/core_seed29_qwen3_n16",
+    "seed": 29
+  },
+  "artifact_sha256": {
+    "summary.json": "4e1d54d4bcf85035552d8b8dc04fb44f57418d625c8c94145114bed640ea94d9",
+    "summary.md": "1e287320e04a0eb5696bdd41c7b286014033b3e77498051892440066049f8640",
+    "target_predictions.jsonl": "962e5c1940388ad626ad092435dfad2a07768cc8fbaee09ed027591fc1f429f4"
+  },
+  "artifacts": [
+    "target_predictions.jsonl",
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "benchmark_sha256": "a00dfef04c7186bcd7fca7943245b36170c0579e22bb2e185ff5fa70b5356e03",
+  "command": "./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py --benchmark-jsonl .debug/source_private_tool_trace_target_decoder_smoke_20260429/core_seed29_benchmark/benchmark.jsonl --output-dir results/source_private_tool_trace_target_decoder_smoke_20260429/core_seed29_qwen3_n16 --model Qwen/Qwen3-0.6B --device mps --dtype float32 --limit 16 --seed 29 --max-new-tokens 24 --no-enable-thinking",
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "run_utc": "2026-04-28T09:27:39.125089+00:00",
+  "script_sha256": "e1aa8309cd2e04d60358f8fb33ca0fb33e3a445b6b4394f835a8f15f785dd544",
+  "summary": {
+    "best_control_accuracy": 0.25,
+    "exact_id_count": 16,
+    "exact_id_parity": true,
+    "exact_id_sha256": "50ef91ed25476a81eaa533ec328f9cb4c913e13480fd4f4f0641550217a94478",
+    "matched_accuracy": 0.6875,
+    "matched_minus_best_control": 0.4375,
+    "matched_minus_target": 0.4375,
+    "metrics": {
+      "matched_packet": {
+        "accuracy": 0.6875,
+        "correct": 11,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0001",
+          "sphr_0002",
+          "sphr_0004",
+          "sphr_0005",
+          "sphr_0006",
+          "sphr_0008",
+          "sphr_0009",
+          "sphr_0012",
+          "sphr_0013",
+          "sphr_0014"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1266.5412499991362,
+        "valid_prediction_rate": 1.0
+      },
+      "random_same_byte": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1208.8981460037758,
+        "valid_prediction_rate": 1.0
+      },
+      "shuffled_packet": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1206.5626455005258,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_free_text_2byte": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1258.7136045003717,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_json_2byte": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1230.8834790019318,
+        "valid_prediction_rate": 1.0
+      },
+      "target_only": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 1234.4449375013937,
+        "valid_prediction_rate": 1.0
+      }
+    },
+    "n": 16,
+    "pass_gate": true,
+    "pass_rule": "matched LLM target decoder must beat target-only by >=0.15 while shuffled/random/2-byte structured relay controls stay within +0.05.",
+    "target_only_accuracy": 0.25
+  }
+}

@@ -1756,3 +1756,29 @@ communicate hidden execution evidence to a target-side candidate decoder. The
 next exact gate is `source_private_tool_trace_paper_skeleton_20260429`. The
 main remaining reviewer-strategy question is whether to add an optional learned
 target-decoder row or explicitly scope it as future work.
+
+Update `2026-04-29`: `source_private_tool_trace_paper_skeleton_20260429`
+drafts the paper structure around the scoped positive claim. The proposed
+paper should be framed as rate-capped source-private communication with
+interpretable tool-trace packets, not learned latent transfer. The next exact
+gate is `source_private_tool_trace_skeleton_review_20260429`: skeptical review
+of overclaiming, novelty, baselines, leakage, and whether an optional
+LLM-mediated target-decoder row is worth adding before full paper drafting.
+
+Update `2026-04-29`: `source_private_tool_trace_skeleton_review_20260429`
+identifies the remaining submission risk as novelty/protocol shape: reviewers
+may view the deterministic decoder as coded-label lookup. The skeleton was
+patched to use source-private evidence-communication wording and to make the
+next gate `source_private_tool_trace_target_decoder_smoke_20260429`: one cheap
+LLM-mediated or learned target-side selector row on a frozen slice, with the
+same source-destroying controls. If it fails, learned target decoders should be
+listed as a limitation rather than blocking the scoped protocol claim.
+
+Update `2026-04-29`: `source_private_tool_trace_target_decoder_smoke_20260429`
+passes as a small ablation. Qwen3-0.6B acting as the target-side selector
+reaches `0.688` matched versus `0.250` target/control on a 16-example core
+slice, and `0.750` matched versus `0.250` target and `0.281` best control on a
+32-example held-out slice. This does not replace the large deterministic
+evidence, but it reduces the novelty risk that the method is only hand-coded
+lookup. The next exact gate is
+`source_private_tool_trace_paper_sections_20260429`.

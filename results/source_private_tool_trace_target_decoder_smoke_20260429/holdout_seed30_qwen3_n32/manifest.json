@@ -1,0 +1,177 @@
+{
+  "args": {
+    "benchmark_jsonl": ".debug/source_private_tool_trace_target_decoder_smoke_20260429/holdout_seed30_benchmark/benchmark.jsonl",
+    "device": "mps",
+    "do_sample": false,
+    "dtype": "float32",
+    "enable_thinking": false,
+    "limit": 32,
+    "max_new_tokens": 24,
+    "model": "Qwen/Qwen3-0.6B",
+    "output_dir": "results/source_private_tool_trace_target_decoder_smoke_20260429/holdout_seed30_qwen3_n32",
+    "seed": 30
+  },
+  "artifact_sha256": {
+    "summary.json": "0b6352c0a0f68fd58846f44cf6f73e327d155010180340c2e52fdbadab3fa3c2",
+    "summary.md": "6ee6d5837b02de99126a0dc707e77dd4692b444b6d4b6a4ec795940c5bbd2d82",
+    "target_predictions.jsonl": "93acfba6437550f08673f18afeb65d07dad65813336b11cb71cec3fe2f773e3f"
+  },
+  "artifacts": [
+    "target_predictions.jsonl",
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "benchmark_sha256": "1e0c0cbfea49d04dc0e092a58c42db34031b020846f531910a7153378493e959",
+  "command": "./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py --benchmark-jsonl .debug/source_private_tool_trace_target_decoder_smoke_20260429/holdout_seed30_benchmark/benchmark.jsonl --output-dir results/source_private_tool_trace_target_decoder_smoke_20260429/holdout_seed30_qwen3_n32 --model Qwen/Qwen3-0.6B --device mps --dtype float32 --limit 32 --seed 30 --max-new-tokens 24 --no-enable-thinking",
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "run_utc": "2026-04-28T09:34:43.871061+00:00",
+  "script_sha256": "e1aa8309cd2e04d60358f8fb33ca0fb33e3a445b6b4394f835a8f15f785dd544",
+  "summary": {
+    "best_control_accuracy": 0.28125,
+    "exact_id_count": 32,
+    "exact_id_parity": true,
+    "exact_id_sha256": "29b8310938a9e3555d4706324390110f83caf8ff29eb3b4c7d1c5f55d93a88b3",
+    "matched_accuracy": 0.75,
+    "matched_minus_best_control": 0.46875,
+    "matched_minus_target": 0.5,
+    "metrics": {
+      "matched_packet": {
+        "accuracy": 0.75,
+        "correct": 24,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0001",
+          "sphr_0002",
+          "sphr_0004",
+          "sphr_0005",
+          "sphr_0006",
+          "sphr_0008",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0012",
+          "sphr_0013",
+          "sphr_0014",
+          "sphr_0016",
+          "sphr_0017",
+          "sphr_0018",
+          "sphr_0020",
+          "sphr_0021",
+          "sphr_0022",
+          "sphr_0024",
+          "sphr_0025",
+          "sphr_0026",
+          "sphr_0028",
+          "sphr_0029",
+          "sphr_0030"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1314.6710000000894,
+        "valid_prediction_rate": 1.0
+      },
+      "random_same_byte": {
+        "accuracy": 0.28125,
+        "correct": 9,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0013",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1267.9787500019302,
+        "valid_prediction_rate": 1.0
+      },
+      "shuffled_packet": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1255.3007085007266,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_free_text_2byte": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1291.9431455047743,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_json_2byte": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1302.732145999471,
+        "valid_prediction_rate": 1.0
+      },
+      "target_only": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 1284.3392704999133,
+        "valid_prediction_rate": 1.0
+      }
+    },
+    "n": 32,
+    "pass_gate": true,
+    "pass_rule": "matched LLM target decoder must beat target-only by >=0.15 while shuffled/random/2-byte structured relay controls stay within +0.05.",
+    "target_only_accuracy": 0.25
+  }
+}

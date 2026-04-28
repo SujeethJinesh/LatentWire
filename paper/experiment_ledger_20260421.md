@@ -13929,3 +13929,147 @@ Next exact gate:
 - `source_private_tool_trace_paper_skeleton_20260429`: draft method,
   benchmark, results, threat-model, limitations, and rate-curve framing from
   the final evidence table.
+
+## 2026-04-29 - Source-Private Tool-Trace Paper Skeleton
+
+Current ICLR readiness: paper-skeleton ready for the scoped positive method,
+pending skeptical review and final decision on an optional learned/LLM-mediated
+target decoder row.
+
+Current story: source-private `REPAIR_DIAG` packets are a compact,
+interpretable communication channel from private execution/tool traces to a
+target-side candidate decoder. The evidence is strongest when framed as a
+rate-capped source-private communication protocol, not latent-state transfer.
+
+Skeleton contents:
+
+- working title and one-sentence claim
+- abstract skeleton
+- formal `(X, T, S, M, D)` problem setup
+- method and target decoder description
+- benchmark description
+- baselines and controls
+- main model-mediated result table
+- reviewer-risk result table
+- systems table
+- threat model
+- interpretability and limitations
+- required figures/tables
+- submission strategy
+
+Decision:
+
+- draft paper around the scoped protocol claim
+- avoid raw-log inference, learned latent bridge, or universal cross-model
+  communication framing
+
+Artifacts:
+
+- `paper/source_private_tool_trace_paper_skeleton_20260429.md`
+- `results/source_private_tool_trace_paper_skeleton_20260429/manifest.md`
+
+Next exact gate:
+
+- `source_private_tool_trace_skeleton_review_20260429`: skeptical reviewer pass
+  and decision on whether a learned/LLM-mediated target decoder row is needed
+  before drafting full paper sections.
+
+## 2026-04-29 - Source-Private Tool-Trace Skeleton Review
+
+Current ICLR readiness: draftable as a narrow source-private
+evidence-communication paper. Not ready for a broader latent-transfer or
+general cross-model communication claim.
+
+Skeptical review outcome:
+
+- overclaiming is the top risk; title and abstract must avoid latent-transfer
+  expectations
+- same-byte structured relay is addressed at `2` bytes but must be shown as a
+  rate curve because it becomes oracle at `32` bytes
+- candidate metadata exposes the diagnostic mapping, so the paper must say
+  candidate selection with decoder side information
+- systems value should report packet validity, especially Qwen3
+  `0.776-0.864`
+- novelty risk remains: deterministic protocol decoder could be viewed as
+  coded-label lookup
+
+Decision:
+
+- patch skeleton wording toward source-private evidence communication
+- run one target-decoder smoke before full paper drafting if feasible
+
+Artifacts:
+
+- `paper/source_private_tool_trace_skeleton_review_20260429.md`
+- updated `paper/source_private_tool_trace_paper_skeleton_20260429.md`
+
+Next exact gate:
+
+- `source_private_tool_trace_target_decoder_smoke_20260429`: replace
+  deterministic lookup with an LLM-mediated or learned target-side selector on
+  a small frozen slice, preserving source-destroying controls.
+
+## 2026-04-29 - Source-Private Tool-Trace Target-Decoder Smoke
+
+Current ICLR readiness: stronger. The main scoped claim remains evidence-ready
+with the deterministic protocol decoder, and the largest novelty risk now has a
+positive target-LLM smoke ablation. This is still not scaled enough to replace
+the main evidence.
+
+Current story: compact source-private `REPAIR_DIAG` packets can be consumed by
+an LLM-mediated target-side selector, not only by a hard-coded lookup, while
+same-byte source-destroying and structured-relay controls remain near
+target-only on the tested slices.
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py \
+  --benchmark-jsonl .debug/source_private_tool_trace_target_decoder_smoke_20260429/core_seed29_benchmark/benchmark.jsonl \
+  --output-dir results/source_private_tool_trace_target_decoder_smoke_20260429/core_seed29_qwen3_n16 \
+  --model Qwen/Qwen3-0.6B \
+  --device mps \
+  --dtype float32 \
+  --limit 16 \
+  --seed 29 \
+  --max-new-tokens 24 \
+  --no-enable-thinking
+
+./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py \
+  --benchmark-jsonl .debug/source_private_tool_trace_target_decoder_smoke_20260429/holdout_seed30_benchmark/benchmark.jsonl \
+  --output-dir results/source_private_tool_trace_target_decoder_smoke_20260429/holdout_seed30_qwen3_n32 \
+  --model Qwen/Qwen3-0.6B \
+  --device mps \
+  --dtype float32 \
+  --limit 32 \
+  --seed 30 \
+  --max-new-tokens 24 \
+  --no-enable-thinking
+```
+
+Results:
+
+- core seed `29`, `N=16`: target `0.250`, matched `0.688`, best control
+  `0.250`, pass
+- held-out seed `30`, `N=16`: target `0.250`, matched `0.750`, best control
+  `0.312`, fail by one random-control example on tiny slice
+- held-out seed `30`, `N=32`: target `0.250`, matched `0.750`, best control
+  `0.281`, pass
+
+Decision:
+
+- promote as a positive target-decoder smoke/ablation
+- do not use it as the main evidence until scaled
+- include it in the paper to reduce the hand-coded decoder novelty objection
+
+Artifacts:
+
+- `scripts/run_source_private_tool_trace_target_decoder_smoke.py`
+- `tests/test_run_source_private_tool_trace_target_decoder_smoke.py`
+- `paper/source_private_tool_trace_target_decoder_smoke_20260429.md`
+- `results/source_private_tool_trace_target_decoder_smoke_20260429/`
+
+Next exact gate:
+
+- `source_private_tool_trace_paper_sections_20260429`: draft paper sections
+  around the scoped claim and include target-decoder smoke as an ablation.
