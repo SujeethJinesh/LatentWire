@@ -13754,3 +13754,58 @@ Next exact gate:
 
 - `source_private_tool_trace_paper_claim_draft_20260429`: draft exact method,
   benchmark, baseline, systems, and limitation language from the baseline pack.
+
+## 2026-04-29 - Source-Private Tool-Trace Paper Claim Draft
+
+Current ICLR readiness: close to paper-ready for a scoped positive method, but
+not final. The project now has a large-slice, held-out-family, seed-stable
+positive result and a claim-boundary memo; the remaining distance is
+reviewer-risk rows or an explicit decision to submit with those risks scoped as
+limitations.
+
+Current story: a source agent with private execution/tool traces emits a
+rate-capped explicit `REPAIR_DIAG` packet. A target-side candidate decoder uses
+that packet to select the repair candidate. The gain survives source-destroying
+controls and disappears when the trace protocol is removed.
+
+Exact blocker: reviewer-risk baselines that could still challenge the narrow
+claim:
+
+- matched-byte structured JSON/free-text relays
+- helper-only/no-log target oracle
+- trace-component masking for expected/actual value, line number, and test name
+- explicit candidate-pool recall versus selector-accuracy table
+- optional learned or LLM-mediated target-family row
+
+Evidence now encoded in the paper-claim draft:
+
+- four frozen `500`-example surfaces: core seeds `29/31`, held-out seeds
+  `30/32`
+- primary rows passing: `8/8`
+- Qwen3 matched range: `0.808-0.924`
+- Phi-3 matched range: `1.000`
+- target-only: `0.250`
+- best source-destroying controls: `0.252-0.258`
+- minimum paired-bootstrap lower bound over target-only: `0.516`
+- model-produced packet bytes: `1.55-2.00`
+- full hidden-log relay: roughly `366-374` bytes and `34` tokens per example
+- `raw_log_no_trace` returns to `0.250` with `0` valid packets on all surfaces
+
+Decision:
+
+- promote the branch as a scoped positive-method story: explicit private
+  tool-trace packet communication
+- do not promote broader latent-transfer, raw-log inference, or learned target
+  bridge claims
+
+Artifacts:
+
+- `paper/source_private_tool_trace_paper_claim_draft_20260429.md`
+- `paper/source_private_tool_trace_baseline_pack_20260429.md`
+- `results/source_private_tool_trace_baseline_pack_20260429/`
+
+Next exact gate:
+
+- `source_private_tool_trace_reviewer_risk_rows_20260429`: run the cheapest
+  decisive reviewer-risk rows, beginning with matched-byte structured
+  JSON/free-text relay and helper-only/no-log oracle.

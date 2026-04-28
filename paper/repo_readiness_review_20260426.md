@@ -1,9 +1,8 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: not ICLR-ready
-- estimated distance: one stable positive method plus larger-slice, seed-repeat,
-  source-control, and cross-family replication gates
+- status: scoped positive method found; not final ICLR-ready
+- estimated distance: reviewer-risk rows plus final paper table/framing pass
 
 ## Current Paper Story
 
@@ -1724,3 +1723,15 @@ explicit source-private tool-trace packets communicate hidden execution
 evidence to a target-side candidate decoder. Remaining reviewer-risk rows:
 matched-byte JSON/free-text relay, helper-only no-log oracle, trace-component
 masking, candidate/selector separation, and a second target-family row.
+
+Update `2026-04-29`: `source_private_tool_trace_paper_claim_draft_20260429`
+sets the paper boundary. The live paper story is now: source-private
+tool-trace packets are a compact communication interface from a private source
+agent to a target-side candidate decoder. Across four frozen `500`-example
+surfaces, Qwen3 reaches `0.808-0.924`, Phi-3 reaches `1.000`, target-only is
+`0.250`, best source-destroying controls stay `0.252-0.258`, and trace removal
+returns Qwen3 to target-only with `0` valid packets. This is close to an ICLR
+positive-method claim if framed narrowly. The next exact gate is
+`source_private_tool_trace_reviewer_risk_rows_20260429`, focused on
+matched-byte structured JSON/free-text relays, helper-only/no-log oracle,
+trace-component masking, and explicit candidate-pool versus selector reporting.
