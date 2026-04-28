@@ -19,7 +19,8 @@ source bundle, and artifact archive are present, hashed, documented, and pushed.
   `paper/artifacts/source_private_tool_trace_artifacts_20260428.zip`
 
 Hashes are recorded in
-`paper/source_private_tool_trace_external_handoff_20260428.md`.
+`paper/source_private_tool_trace_external_handoff_20260428.md` and the checksum
+sidecar `paper/source_private_tool_trace_upload_checksums_20260428.sha256`.
 
 ## Blocker
 
@@ -41,6 +42,8 @@ Once uploaded, update this memo with:
 - uploaded artifact URL or release ID;
 - portal-side PDF/source warnings, if any;
 - whether the uploaded archive SHA256 matches the local handoff memo;
+- whether all uploaded files match
+  `paper/source_private_tool_trace_upload_checksums_20260428.sha256`;
 - the final commit used for submission.
 
 ## Next Gate

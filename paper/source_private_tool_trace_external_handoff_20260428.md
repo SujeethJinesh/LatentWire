@@ -17,6 +17,10 @@ bundle and attach or mirror the artifact archive.
 
 ## Upload Files
 
+Checksum sidecar:
+
+- path: `paper/source_private_tool_trace_upload_checksums_20260428.sha256`
+
 Primary manuscript PDF:
 
 - path: `paper/iclr2026/source_private_tool_trace.pdf`
@@ -85,6 +89,8 @@ After upload, verify:
 - the PDF preview is `7` pages and uses the intended figures;
 - the source bundle is accepted by the venue system;
 - the artifact archive is attached or mirrored and its SHA256 matches this memo;
+- the three uploaded files match
+  `paper/source_private_tool_trace_upload_checksums_20260428.sha256`;
 - any artifact link in the submission points to the same archive version;
 - the abstract/metadata do not broaden the scoped claim beyond diagnostic-code
   source-private communication.

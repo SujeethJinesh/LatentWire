@@ -14400,3 +14400,9 @@ hashes, and handoff documentation, but final confirmation requires the
 submission portal ID/URL, artifact host URL/release ID, or user confirmation
 that the PDF, source bundle, and artifact archive were accepted. This blocker is
 documented in `paper/source_private_tool_trace_submission_confirmation_20260428.md`.
+
+Update `2026-04-28`: upload verification was tightened by adding
+`paper/source_private_tool_trace_upload_checksums_20260428.sha256`, covering
+the manuscript PDF, source bundle, and artifact archive. The handoff and
+confirmation memos now reference the checksum sidecar. This does not change the
+scientific evidence; it reduces external upload verification risk.

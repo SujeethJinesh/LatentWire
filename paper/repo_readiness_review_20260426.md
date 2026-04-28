@@ -1893,3 +1893,8 @@ Update `2026-04-28`: local work is complete for submission handoff. External
 submission confirmation is blocked on portal/artifact-host state that is not
 available from the repo. The blocker and required confirmation fields are
 recorded in `paper/source_private_tool_trace_submission_confirmation_20260428.md`.
+
+Update `2026-04-28`: added
+`paper/source_private_tool_trace_upload_checksums_20260428.sha256` for the
+three external upload files and linked it from the handoff/confirmation memos.
+The repo remains upload-ready and externally unconfirmed.
