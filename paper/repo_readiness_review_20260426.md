@@ -1789,3 +1789,19 @@ problem setup, method, benchmark, results, controls, systems, target-decoder
 smoke, interpretability, limitations, and conclusion. The repo is now ready to
 move from research memos into paper-source drafting. The next exact gate is
 `source_private_tool_trace_paper_draft_20260430`.
+
+Update `2026-04-30`: `source_private_tool_trace_paper_draft_20260430` creates
+a full markdown paper draft with figure/table placeholders and explicit claim
+boundaries. The manuscript is now draft-present but not submission-ready:
+remaining work is LaTeX/source conversion or figure/table asset generation,
+plus final skeptical review for overclaiming, related-work framing, and
+baseline presentation. The next exact gate is
+`source_private_tool_trace_latex_or_figures_20260430`.
+
+Update `2026-04-30`: `source_private_tool_trace_draft_review_20260430`
+completed a skeptical review of the full markdown draft. The draft was patched
+to soften broad claims and emphasize frozen synthetic surfaces, the benchmark's
+hidden diagnostic evidence, and direct auditability rather than general
+latent-transfer claims. Submission blockers remain: setup/rate-curve figures,
+count-augmented tables, concrete citations, and a choice between scaling the
+target-decoder smoke or listing it as an ablation/limitation.

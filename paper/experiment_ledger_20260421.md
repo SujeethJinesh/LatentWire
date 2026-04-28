@@ -14111,3 +14111,75 @@ Next exact gate:
 
 - `source_private_tool_trace_paper_draft_20260430`: convert section memo into
   paper draft/source with figure and table placeholders.
+
+## 2026-04-30 - Source-Private Tool-Trace Paper Draft
+
+Current ICLR readiness: full markdown paper draft exists for the scoped
+positive method. Remaining work is paper-source conversion, figure/table asset
+generation, and final skeptical review. The evidence package remains scoped:
+source-private explicit tool-trace packet communication, not broad latent
+transfer.
+
+Current story: source model reads private tool-trace diagnostics, emits compact
+`REPAIR_DIAG` packets, and a target-side candidate decoder uses public candidate
+metadata plus the packet to select repairs. Large frozen evidence supports the
+protocol decoder; a small Qwen3 target-decoder smoke reduces hand-coded lookup
+risk.
+
+Draft contents:
+
+- abstract and introduction
+- problem setup with `X, T, S, M, D`
+- hidden-repair benchmark
+- tool-trace packet method
+- baselines and controls
+- main model-mediated result table
+- deterministic threat-model tables
+- rate/systems analysis
+- target-decoder smoke
+- interpretability, related work, limitations, reproducibility, conclusion
+- appendix claim boundary and figure/table checklist
+
+Artifacts:
+
+- `paper/source_private_tool_trace_paper_draft_20260430.md`
+- `results/source_private_tool_trace_paper_draft_20260430/manifest.md`
+
+Next exact gate:
+
+- `source_private_tool_trace_latex_or_figures_20260430`: convert the markdown
+  draft into ICLR paper source or create the setup/rate-curve figure assets
+  first, preserving the scoped claim boundary.
+
+## 2026-04-30 - Source-Private Tool-Trace Draft Review
+
+Current ICLR readiness: scoped full draft exists, but submission package is not
+ready. Remaining blockers are figure/table assets, concrete citations, and
+final decision on target-decoder scale-up versus limitation framing.
+
+Skeptical review risks:
+
+- coded-label lookup / benchmark artifact remains the main novelty risk
+- target decoder evidence is only `N=16/32`, so it is an ablation
+- synthetic-only external validity must be stated plainly
+- structured text relay becomes oracle at `32` bytes, so the rate curve is
+  essential
+- related-work citations need concrete BibTeX/source entries
+
+Patches applied to the draft:
+
+- softened broad necessity/robustness language
+- scoped the evidence to the benchmark's hidden diagnostic evidence
+- changed “strict controls” to “controls tested here”
+- made synthetic frozen-surface scope explicit
+- changed interpretability language to direct auditability in this benchmark
+
+Artifacts:
+
+- `paper/source_private_tool_trace_paper_draft_20260430.md`
+- `paper/source_private_tool_trace_draft_review_20260430.md`
+
+Next exact gate:
+
+- `source_private_tool_trace_latex_or_figures_20260430`: create setup/rate-curve
+  figures or convert to ICLR LaTeX, with citations and count-augmented tables.
