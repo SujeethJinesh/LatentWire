@@ -14417,3 +14417,15 @@ release command, and release notes are documented in
 `paper/source_private_tool_trace_release_notes_20260428.md`. The next gate
 remains external submission confirmation after choosing the venue-compatible
 host path.
+
+Update `2026-04-28`: `anonymous_artifact_handoff_20260428` built a
+venue-anonymous artifact archive at
+`paper/artifacts/source_private_tool_trace_artifacts_anonymous_20260428.zip`
+(`7553609` bytes, SHA256
+`02b1dbd73dea1332976e60a255def4a470f6c91416f2603cbd8631270be3790a`). The
+source upload bundle already uses `Anonymous Authors`; the original artifact
+archive had one project-name marker in an included memo, which was sanitized in
+the anonymous archive. Archive integrity passes and the extracted anonymous
+archive has no matches for account names, local home paths, GitHub URLs, or the
+project-name marker. The anonymous upload checksum sidecar is
+`paper/source_private_tool_trace_anonymous_upload_checksums_20260428.sha256`.

@@ -21,6 +21,9 @@ source bundle, and artifact archive are present, hashed, documented, and pushed.
 Hashes are recorded in
 `paper/source_private_tool_trace_external_handoff_20260428.md` and the checksum
 sidecar `paper/source_private_tool_trace_upload_checksums_20260428.sha256`.
+For double-blind artifact upload, use
+`paper/source_private_tool_trace_anonymous_upload_checksums_20260428.sha256`
+instead.
 
 ## Blocker
 
@@ -37,6 +40,8 @@ not externally confirmed.
 GitHub release hosting is technically available, but the repository is public
 and non-anonymized. The host decision and anonymity caveat are documented in
 `paper/source_private_tool_trace_artifact_host_options_20260428.md`.
+The preferred double-blind artifact payload is
+`paper/artifacts/source_private_tool_trace_artifacts_anonymous_20260428.zip`.
 
 ## Record After Upload
 

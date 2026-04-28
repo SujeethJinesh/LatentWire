@@ -1904,3 +1904,12 @@ release hosting is available from the authenticated CLI, but it was not
 published because the current repo is public and non-anonymized. The exact
 public-release command and anonymous-host alternative are recorded in
 `paper/source_private_tool_trace_artifact_host_options_20260428.md`.
+
+Update `2026-04-28`: the double-blind artifact route is now preferred and ready.
+The anonymous artifact archive is
+`paper/artifacts/source_private_tool_trace_artifacts_anonymous_20260428.zip`
+(`7553609` bytes, SHA256
+`02b1dbd73dea1332976e60a255def4a470f6c91416f2603cbd8631270be3790a`) with
+checksum sidecar
+`paper/source_private_tool_trace_anonymous_upload_checksums_20260428.sha256`.
+Integrity and anonymity string audits passed.

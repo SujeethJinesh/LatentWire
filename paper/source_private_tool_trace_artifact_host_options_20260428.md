@@ -56,14 +56,19 @@ anonymous artifact mechanism:
 
 - `paper/iclr2026/source_private_tool_trace.pdf`
 - `paper/iclr2026/submission/source_private_tool_trace_iclr_source_20260428.zip`
-- `paper/artifacts/source_private_tool_trace_artifacts_20260428.zip`
-- `paper/source_private_tool_trace_upload_checksums_20260428.sha256`
+- `paper/artifacts/source_private_tool_trace_artifacts_anonymous_20260428.zip`
+- `paper/source_private_tool_trace_anonymous_upload_checksums_20260428.sha256`
 
 Then update `paper/source_private_tool_trace_submission_confirmation_20260428.md`
 with the anonymous URL or submission attachment ID and the SHA256 verification
 result.
 
+The anonymous archive SHA256 is
+`02b1dbd73dea1332976e60a255def4a470f6c91416f2603cbd8631270be3790a`.
+
 ## Recommendation
 
-Do not publish a public GitHub release until the anonymity requirement is known.
-The repo is otherwise ready for either host path.
+Use the anonymous archive for double-blind submission unless the venue explicitly
+allows public, non-anonymous artifacts. Do not publish a public GitHub release
+until the anonymity requirement is known. The repo is otherwise ready for either
+host path.
