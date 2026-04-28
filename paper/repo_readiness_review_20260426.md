@@ -140,6 +140,17 @@ remains source-surface discovery only; JEPA/LeJEPA/V-JEPA-style connectors stay
 deferred until a surface has at least three target-prior-unexplained residual
 IDs under source-destroying controls.
 
+Update `2026-04-27`: the deadline plan is pivoting from ordinary math residual
+hunting to source-private residual communication. The new top paper story is a
+rate-capped source message decoded with target side information: private
+evidence packets, private tool-trace distillation, candidate-syndrome sidecars,
+and only then Query-JEPA/adapter connectors. The strict-small pass bar is now a
+source-private benchmark where target wrapper `S32` and no-source oracle fail,
+matched source sidecar beats best no-source by at least `15` points, zero/
+shuffled/random/answer-only controls stay near no-source, and structured text at
+matched bytes is included. This is a method/benchmark reset, not positive
+evidence yet.
+
 Update `2026-04-27 00:50 PDT`: KVComm is now harness-ready for strict
 source-control evaluation, but it remains baseline/tooling evidence rather than
 a positive method. The wrapper supports matched, zero-source, shuffled-source,

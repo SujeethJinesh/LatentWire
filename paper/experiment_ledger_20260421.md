@@ -12306,3 +12306,75 @@ Next exact gate:
 
 - run answer-masked and answer-only source controls on the three Math-7B SVAMP70
   residual candidates that target brief S8 missed
+
+## 2026-04-27 Cycle 23 - Source-Private Pivot Portfolio
+
+Cycle start:
+
+1. Current ICLR readiness: not ready, but a one-month positive method is still
+   plausible if the project pivots away from ordinary math residual hunting.
+2. Current paper story: target prompt wrappers and no-source candidate pools
+   explain too many apparent source gains; the better story is source-private
+   residual communication under decoder side information.
+3. Exact blocker: build a task/method where the source truly has private
+   information and the target cannot recover it from prompt wrappers, target
+   sampling, no-source pools, answer-only messages, or shuffled/random sidecars.
+4. Current live branches: source-private candidate-syndrome sidecars;
+   C2C/KV-teacher distillation into compact sidecars; Query-JEPA only after
+   source-private residual IDs exist.
+5. Highest-priority gate: design and run a strict-small source-private benchmark
+   with byte accounting and source-destroying controls.
+6. Scale-up rung: strict small gate design.
+
+Subagent synthesis:
+
+- reviewer: the pivot is defensible only if target wrapper `S32`, no-source
+  oracle, structured text, source-final-only, answer-masked, zero, shuffled,
+  random, and rate-matched target sidecar controls are all included
+- planner: fastest one-month paper ideas are private evidence packets and
+  private tool-trace distillation
+- creative scout: best unusual mechanisms are challenge-response hashes,
+  innovation controllers, causal-order checksums, veto signals, and provenance
+  fingerprints
+- JEPA/connector: learned Query-JEPA/adapters should operate on target-prior
+  subtracted residuals and report variance/effective-rank/covariance/query
+  entropy telemetry
+- artifact audit: existing candidate-pool, sidecar, exact-ID, and KVComm scripts
+  can accelerate the pivot, but repo-native long-context/RAG harnessing is not
+  yet integrated
+- theory: source-private communication is a Wyner-Ziv/Slepian-Wolf-style
+  decoder-side-information problem; claim rate-distortion improvements, not
+  generic prompt quality
+
+Ranked idea portfolio:
+
+1. Private evidence packet for retrieval QA.
+2. Private tool-trace distillation.
+3. Candidate-syndrome side information over target candidate pools.
+4. Source-private Query-JEPA adapter.
+5. Private memory handoff.
+6. Private program-state debugging.
+
+Decision:
+
+- write down the pivot and stop treating ordinary SVAMP/GSM residuals as the
+  main discovery engine
+- next method should be simple and interpretable first: candidate syndrome or
+  private evidence packet
+- learned latent adapters are second-stage methods after source-private residual
+  IDs exist
+
+Artifacts:
+
+- `paper/source_private_pivot_portfolio_20260427.md`
+- `references/476_source_private_comm_pivot_refs.md`
+- `references/research_memo_manifest.json`
+
+Next exact gate:
+
+- implement a strict-small source-private evidence/tool-trace benchmark with
+  `100-200` examples
+- require target wrapper `S32` and no-source oracle to fail, matched source
+  sidecar to beat best no-source by `>=15` points, source-destroying controls to
+  remain within `2` points of no-source, and structured text at matched bytes to
+  be included
