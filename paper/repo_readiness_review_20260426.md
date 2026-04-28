@@ -169,6 +169,17 @@ Third follow-up hardening added cache-derived byte telemetry. On the CPU smoke,
 selected-layer KVComm controls average `530432` communicated bytes/example,
 while target-only is `0`; this is systems telemetry only, not method evidence.
 
+Update `2026-04-28`: the source-private candidate-syndrome protocol cleared a
+deterministic strict-small gate (`160` examples, matched `1.000`, best
+no-source/control `0.250`, `2` byte packet), but the first model-produced packet
+smoke falsifies the naive cryptographic-source-agent branch. On a frozen
+`16`-example smoke with `Qwen/Qwen2.5-0.5B-Instruct`, matched model packets stay
+at target-only (`4/16`, `0.250`) while source-final-only reaches `16/16`.
+Generated packets mostly copy instruction/key/record fragments instead of
+computing the digest. Current readiness remains not ICLR-ready. The live branch
+is now source-private handoff with naturally emitted private evidence packets;
+the next exact gate is `source_private_testlog_packet_strict_small_20260428`.
+
 The strongest bound is the SVAMP32 C2C-derived syndrome sidecar:
 
 - strict target-side pool: `14/32`

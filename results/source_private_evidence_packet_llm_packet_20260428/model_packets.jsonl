@@ -1,0 +1,16 @@
+{"example_id": "spqa_0000", "generated_text": "BLAKE2s(source-private-packet:2d94628b-6ae5bc08", "latency_ms": 2875.185375000001, "packet": "2d94", "packet_bytes": 2, "packet_tokens": 24}
+{"example_id": "spqa_0001", "generated_text": "BLAKE2s(fc1207c0-5c1d57e2-383", "latency_ms": 1943.4354170007282, "packet": "fc12", "packet_bytes": 2, "packet_tokens": 24}
+{"example_id": "spqa_0002", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:warehouse_audit_record_0002", "latency_ms": 1671.8868749958347, "packet": "0002", "packet_bytes": 2, "packet_tokens": 24}
+{"example_id": "spqa_0003", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:library_archive_record_0003", "latency_ms": 1641.5963749968796, "packet": "0003", "packet_bytes": 2, "packet_tokens": 24}
+{"example_id": "spqa_0004", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:lab_sample_routing_record_000", "latency_ms": 1827.8224589957972, "packet": "", "packet_bytes": 0, "packet_tokens": 24}
+{"example_id": "spqa_0005", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:incident_triage_record_000", "latency_ms": 1687.0046670010197, "packet": "", "packet_bytes": 0, "packet_tokens": 24}
+{"example_id": "spqa_0006", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:travel_desk_record_000", "latency_ms": 1981.1417919991072, "packet": "", "packet_bytes": 0, "packet_tokens": 24}
+{"example_id": "spqa_0007", "generated_text": "school_roster_record_0007_0", "latency_ms": 907.3523330007447, "packet": "0007", "packet_bytes": 2, "packet_tokens": 12}
+{"example_id": "spqa_0008", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:clinic_intake_record_000", "latency_ms": 1911.9622919970425, "packet": "", "packet_bytes": 0, "packet_tokens": 24}
+{"example_id": "spqa_0009", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:field_survey_record_0009", "latency_ms": 1800.9725419979077, "packet": "0009", "packet_bytes": 2, "packet_tokens": 24}
+{"example_id": "spqa_0010", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:warehouse_audit_record_0010", "latency_ms": 1848.1956659961725, "packet": "0010", "packet_bytes": 2, "packet_tokens": 24}
+{"example_id": "spqa_0011", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:library_archive_record_0011", "latency_ms": 1658.866042002046, "packet": "0011", "packet_bytes": 2, "packet_tokens": 24}
+{"example_id": "spqa_0012", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:lab_sample_routing_record_001", "latency_ms": 1713.6518750048708, "packet": "", "packet_bytes": 0, "packet_tokens": 24}
+{"example_id": "spqa_0013", "generated_text": "BLAKE2s(source-private-packet:28:budget:2)", "latency_ms": 1264.3520409983466, "packet": "", "packet_bytes": 0, "packet_tokens": 17}
+{"example_id": "spqa_0014", "generated_text": "BLAKE2s(source-private-packet:28:budget:2:travel_desk_record_001", "latency_ms": 1583.0482919991482, "packet": "", "packet_bytes": 0, "packet_tokens": 24}
+{"example_id": "spqa_0015", "generated_text": "BLAKE2s(520c023d-3a9fc4ea-821", "latency_ms": 1768.9123329982976, "packet": "520c", "packet_bytes": 2, "packet_tokens": 24}

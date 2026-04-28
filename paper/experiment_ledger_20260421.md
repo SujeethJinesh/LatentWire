@@ -12579,3 +12579,127 @@ Next exact gate:
   all controls stay within `2` points of no-source
 - if model packet production fails, pivot to private tool/test-log handoff with
   the same strict source-private gate structure
+
+## 2026-04-28 Cycle 26 - Source-Private Evidence Packet Model-Packet Smoke
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; the deterministic strict-small protocol
+   passed, but model/source-produced packets remain the blocker.
+2. Current paper story: source-private residual communication under decoder
+   side information. The target has public question/candidate state; the source
+   has private evidence; a rate-capped packet selects the right candidate only
+   when the source signal is intact.
+3. Exact blocker: replace deterministic packet generation with a defensible
+   source-agent packet without leaking answer text or relying on target priors.
+4. Current live branch: source-private evidence packet / candidate-syndrome
+   decoder.
+5. Highest-priority gate: run `source_private_evidence_packet_llm_packet_20260428`.
+6. Scale-up rung: strict-small continuation, model-mediated smoke.
+
+MPS guard:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: no live blocker was present.
+
+Subagent synthesis:
+
+- reviewer: prompted cryptographic digest computation is unlikely to be a
+  credible method; source-final and same-byte controls must expose copied
+  answer-bearing strings
+- planner: run a cheap frozen-ID smoke and pivot immediately if matched packets
+  stay at target-only
+- method scout: keep candidate-syndrome as protocol headroom, but move the
+  one-month paper path to private tool/test-log packets or naturally emitted
+  source predicates
+- harness audit: preserve exact-ID parity, strict hex parsing, byte telemetry,
+  source-destroying controls, and a source-final leak row
+
+Command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_evidence_packet_llm_packet.py \
+  --benchmark-jsonl results/source_private_evidence_packet_strict_small_20260428/benchmark.jsonl \
+  --output-dir results/source_private_evidence_packet_llm_packet_20260428 \
+  --model Qwen/Qwen2.5-0.5B-Instruct \
+  --device mps \
+  --dtype float32 \
+  --limit 16 \
+  --budget-bytes 2 \
+  --seed 28 \
+  --max-new-tokens 24 \
+  --no-enable-thinking || true
+```
+
+Results:
+
+- examples: `16`
+- budget bytes: `2`
+- model-packet gate: `fail`
+- packet nonempty rate: `0.562`
+- target-only: `4/16`, accuracy `0.250`
+- matched model packet: `4/16`, accuracy `0.250`
+- zero-source/shuffled/random/answer-only/answer-masked controls:
+  `4/16`, accuracy `0.250`
+- source-final-only: `16/16`, accuracy `1.000`
+- matched minus best no-source: `0.000`
+- matched minus best control: `0.000`
+- source-final minus best no-source: `0.750`
+- p50 matched source-packet latency: `1741.28` ms
+
+Interpretation:
+
+- This is a clean falsification of the naive "prompt an LLM to compute the
+  cryptographic syndrome" branch.
+- The source model mostly copied pieces of the instruction, witness key, or
+  record name instead of producing the digest packet.
+- The source-final-only row confirms that answer-bearing private evidence can
+  solve the task if leaked, so the failed matched packet is not caused by lack
+  of task headroom.
+- The deterministic strict-small result remains useful as a source-private
+  side-information protocol bound, but it should not be promoted as an
+  LLM-mediated method.
+
+Artifacts:
+
+- `paper/source_private_evidence_packet_llm_packet_20260428.md`
+- `scripts/run_source_private_evidence_packet_llm_packet.py`
+- `tests/test_run_source_private_evidence_packet_llm_packet.py`
+- `results/source_private_evidence_packet_llm_packet_20260428/model_packets.jsonl`
+- `results/source_private_evidence_packet_llm_packet_20260428/predictions.jsonl`
+- `results/source_private_evidence_packet_llm_packet_20260428/summary.json`
+- `results/source_private_evidence_packet_llm_packet_20260428/summary.md`
+- `results/source_private_evidence_packet_llm_packet_20260428/manifest.json`
+- `results/source_private_evidence_packet_llm_packet_20260428/manifest.md`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_run_source_private_evidence_packet_llm_packet.py \
+  tests/test_run_source_private_evidence_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_gate.py -q
+```
+
+Result: `10 passed`.
+
+Decision:
+
+- prune LLM-produced cryptographic digest packets as the live one-month method
+  branch
+- keep source-private candidate-syndrome as a benchmark/protocol lower bound
+- make `source_private_testlog_packet_strict_small_20260428` the next exact
+  gate
+
+Next exact gate:
+
+- build a private tool/test-log handoff benchmark where target sees public
+  issue plus candidate fixes and source sees private execution evidence
+- source emits a rate-capped packet/predicate derived from the private test log
+- compare against target-only, target-wrapper/no-source, matched-byte text
+  relay, full structured log oracle, and the full source-destroying suite
+- pass only if matched source beats best no-source by `>=15` points and every
+  source-destroying control stays within `2` points of no-source
