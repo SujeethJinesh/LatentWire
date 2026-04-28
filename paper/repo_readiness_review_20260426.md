@@ -1888,3 +1888,8 @@ Update `2026-04-28`: final external-handoff instructions are documented in
 paths, hashes, claim-boundary language, and post-upload sanity checks. The
 readiness status is upload-ready. The next gate is only to record the actual
 submission/artifact upload confirmation and any portal-required changes.
+
+Update `2026-04-28`: local work is complete for submission handoff. External
+submission confirmation is blocked on portal/artifact-host state that is not
+available from the repo. The blocker and required confirmation fields are
+recorded in `paper/source_private_tool_trace_submission_confirmation_20260428.md`.

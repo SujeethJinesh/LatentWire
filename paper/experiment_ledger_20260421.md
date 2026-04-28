@@ -14393,3 +14393,10 @@ and post-upload sanity checks for the manuscript PDF, compile-tested source zip,
 and artifact archive. No new method evidence was run. The next exact gate is
 `external_submission_confirmation_20260428`: record uploaded file IDs/URLs,
 artifact location, and any portal-side warnings or format changes.
+
+Update `2026-04-28`: `external_submission_confirmation_20260428` is locally
+blocked on external portal/artifact-host state. The repo has all upload files,
+hashes, and handoff documentation, but final confirmation requires the
+submission portal ID/URL, artifact host URL/release ID, or user confirmation
+that the PDF, source bundle, and artifact archive were accepted. This blocker is
+documented in `paper/source_private_tool_trace_submission_confirmation_20260428.md`.
