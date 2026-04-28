@@ -1,8 +1,8 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: scoped positive method found; not final ICLR-ready
-- estimated distance: reviewer-risk rows plus final paper table/framing pass
+- status: scoped positive-method evidence ready; paper draft not complete
+- estimated distance: paper skeleton, final framing, and optional learned target-decoder row decision
 
 ## Current Paper Story
 
@@ -1746,3 +1746,13 @@ masked full-log rows stay at target-only; expected/actual-masked and
 test-name-masked full logs remain oracles. At `32` bytes, structured JSON/free
 text become oracles, so the paper should report this as a rate tradeoff. The
 next exact gate is `source_private_tool_trace_final_table_20260429`.
+
+Update `2026-04-29`: `source_private_tool_trace_final_table_20260429`
+integrates model-mediated rows, deterministic controls, reviewer-risk rows,
+systems bytes/tokens, and candidate-pool versus selector separation into one
+paper-facing evidence table. The repo now has evidence-ready support for the
+scoped positive claim: compact explicit source-private tool-trace packets
+communicate hidden execution evidence to a target-side candidate decoder. The
+next exact gate is `source_private_tool_trace_paper_skeleton_20260429`. The
+main remaining reviewer-strategy question is whether to add an optional learned
+target-decoder row or explicitly scope it as future work.

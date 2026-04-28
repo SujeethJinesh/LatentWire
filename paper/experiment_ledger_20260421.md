@@ -13887,3 +13887,45 @@ Next exact gate:
 - `source_private_tool_trace_final_table_20260429`: integrate model rows,
   deterministic controls, reviewer-risk rows, bytes/tokens, validity, and
   candidate-pool/selector separation into a paper-ready table.
+
+## 2026-04-29 - Source-Private Tool-Trace Final Evidence Table
+
+Current ICLR readiness: evidence-ready for a scoped positive method, but still
+needs paper skeleton drafting and final reviewer positioning. The remaining
+scientific risk is no longer the core positive result; it is whether reviewers
+will require a learned target-side neural decoder rather than accepting a
+deterministic protocol decoder as the candidate-selection interface.
+
+Current story: explicit source-private tool-trace packets provide a compact
+communication channel from a private source agent to a target-side candidate
+decoder. At `2` bytes, the packet beats target-only, no-source wrappers,
+source-destroying controls, answer controls, target-derived controls, and
+same-byte JSON/free-text relays. Full structured text relays become oracles only
+when allowed enough bytes to expose the diagnostic.
+
+Final-table contents:
+
+- model-mediated rows across four `500`-example surfaces
+- deterministic target/control rows
+- reviewer-risk rows
+- bytes/token systems rows
+- candidate-pool recall versus selector accuracy separation
+- explicit unsupported-claim list
+
+Decision:
+
+- promote the branch to scoped positive-method evidence-ready
+- start paper skeleton drafting around the final table
+- keep learned target decoders as optional extension or limitation, not a
+  blocker to the current scoped claim
+
+Artifacts:
+
+- `paper/source_private_tool_trace_final_table_20260429.md`
+- `results/source_private_tool_trace_final_table_20260429/manifest.md`
+
+Next exact gate:
+
+- `source_private_tool_trace_paper_skeleton_20260429`: draft method,
+  benchmark, results, threat-model, limitations, and rate-curve framing from
+  the final evidence table.
