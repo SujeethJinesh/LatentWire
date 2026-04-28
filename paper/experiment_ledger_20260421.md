@@ -14337,3 +14337,15 @@ exact gate remains `source_private_tool_trace_submission_polish_20260430` until
 the final scoped-submit decision is made. A representative appendix example was
 added for `sphr_0001`, where the target prior chooses a numeric fallback but the
 matched private packet `H1` selects the missing-key default gold candidate.
+
+Update `2026-04-28`: `source_private_tool_trace_submission_decision_20260428`
+reaches the scoped-submit decision. The paper should proceed as an explicit
+source-private diagnostic-packet protocol method and should not spend the next
+cycle on the optional `n=160` target-decoder scale-up unless the claim expands
+to make an LLM target receiver a main result. The manuscript now adds sharper
+claim-boundary language, calls candidate metadata decoder side information, and
+states that the constructional `25%` target floor isolates source-private
+evidence transfer from candidate generation. The final compiled PDF is
+`paper/iclr2026/source_private_tool_trace.pdf` (`7` pages, `226859` bytes,
+SHA256 `a2ac3bbd4c7c0a8b386345222cbcea0e09e67f1e6c69e61daa3a75f57e512078`).
+The next exact gate is `source_private_tool_trace_human_pdf_read_20260428`.

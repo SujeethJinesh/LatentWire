@@ -119,8 +119,7 @@ Result: no matches.
 
 ## Decision
 
-The next exact gate should be `source_private_tool_trace_submission_polish_20260430`:
-line-level polish of the compiled PDF, citation metadata verification for the
-new 2025 competitor entries, optional appendix example, and final decision on
-whether the scoped protocol paper is strong enough without the target-decoder
-scale-up.
+`source_private_tool_trace_submission_polish_20260430` has been completed in
+the follow-up pass above. The next exact gate is now
+`source_private_tool_trace_human_pdf_read_20260428`: final human PDF/source
+read for claim language, table consistency, anonymity/style, and artifact links.

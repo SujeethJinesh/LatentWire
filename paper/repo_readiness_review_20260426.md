@@ -1,8 +1,8 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: scoped positive-method manuscript in submission polish
-- estimated distance: line-level PDF/source polish, citation metadata verification, optional appendix example, and final scoped-submit decision
+- status: scoped positive-method manuscript ready for final human PDF/source read
+- estimated distance: final human PDF/source read, anonymity/style checks, and submit decision
 
 ## Current Paper Story
 
@@ -1852,3 +1852,12 @@ matched--target confidence intervals, candidate-selection scope, and artifact
 provenance. A representative appendix example now illustrates a target-prior
 failure corrected by the matched private packet. Remaining blocker: final
 scoped-submit decision.
+
+Update `2026-04-28`: the final scoped-submit decision is now documented in
+`paper/source_private_tool_trace_submission_decision_20260428.md`. Proceed with
+the scoped protocol-method submission path; do not run the optional target-
+decoder `n=160` scale-up unless the main claim is expanded to an LLM target
+receiver. The live story is explicit source-private diagnostic-code packets for
+candidate selection with decoder side information, not learned latent transfer
+or raw-log repair. The remaining blocker is a final human PDF/source read and
+conference-form check.

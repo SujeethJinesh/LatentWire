@@ -27,11 +27,12 @@ the public task and a candidate pool, while a source agent observes private
 execution evidence and sends a rate-capped message. We instantiate this setting
 as an explicit diagnostic-code protocol benchmark where the target selects
 among public repair candidates and the source observes private tool-trace
-diagnostics. A compact explicit \diag{} packet improves target-side candidate
-selection from 25\% to 80.8--100.0\% across four frozen 500-example core and
-held-out-family surfaces. Zero-source, shuffled-source, random same-byte,
-answer-only, answer-masked, target-derived, same-byte structured relay,
-helper/no-log, and trace-removed controls remain near target-only
+diagnostics. A compact explicit \diag{} packet, decoded against candidate-side
+decoder information, improves target-side candidate selection from 25\% to
+80.8--100.0\% across four frozen 500-example core and held-out-family surfaces.
+Zero-source, shuffled-source, random same-byte, answer-only, answer-masked,
+target-derived, same-byte structured relay, helper/no-log, and trace-removed
+controls remain near target-only
 (25.0--25.8\% in the reported rows).
 Model-produced packets average 1.55--2.00 bytes, compared with roughly
 366--374 bytes and 34 tokens for full hidden-log relay. A small Qwen3
@@ -65,20 +66,23 @@ We instantiate this idea in hidden-repair candidate selection. The target
 receives a public repair issue, buggy implementation, and four public repair
 candidates. The source receives a private hidden-test/tool trace containing an
 explicit repair diagnostic. The source model emits a compact \diag{} packet,
-and the target-side decoder uses the packet and public candidate metadata to
-select a repair candidate. The packet is interpretable and byte-counted.
+and the target-side decoder uses the packet and public candidate decoder side
+information to select a repair candidate. The packet is interpretable and
+byte-counted.
 
 The contribution is intentionally scoped. We do not claim unstructured latent
 transfer, raw-log repair reasoning, or universal cross-model communication. We
 claim that a rate-capped source-private packet can carry the benchmark's hidden
 diagnostic evidence to a target-side candidate decoder under the controls
 tested here.
+The contribution is a falsifiable communication protocol benchmark, not
+evidence of emergent latent alignment.
 
 This makes the method closer to a syndrome-like evidence packet than to prompt
 compression or hidden-state transfer: the packet is only useful because the
-target already has candidate-side metadata that can decode it. The novelty is
-not discovering an unknown semantic representation; it is a rate-capped,
-source-private evidence interface with falsification controls.
+target already has candidate-side decoder side information that can decode it.
+The novelty is not discovering an unknown semantic representation; it is a
+rate-capped, source-private evidence interface with falsification controls.
 
 \section{Problem Setup}
 
@@ -110,8 +114,8 @@ The hidden-repair benchmark contains deterministic Python repair tasks, in the
 spirit of test-guided program-repair workflows where tests help localize and
 validate defects \citep{hu2025repairr1}. Each example has public issue text, a
 buggy implementation, four public candidate repairs, one gold candidate in the
-pool, and a source-private hidden-test/tool log. Public candidate metadata
-includes \texttt{handles\_repair\_diag=<code>}. The private source log contains
+pool, and a source-private hidden-test/tool log. Public candidate decoder side
+information includes \texttt{handles\_repair\_diag=<code>}. The private source log contains
 \texttt{private\_tool\_trace: REPAIR\_DIAG=<code>}.
 
 By construction, the target prior solves exactly one quarter of examples. The
@@ -122,6 +126,8 @@ recall 1.0, so reported improvements are selector improvements.
 
 The synthetic design is deliberate: it gives deterministic hidden evidence,
 exact ID parity, complete source-destroying controls, and byte-level accounting.
+The constructional 25\% target floor isolates source-private evidence transfer
+from candidate generation.
 It is not intended to prove unconstrained program repair or real deployment
 generality.
 
@@ -134,11 +140,11 @@ are removed. Invalid packets fall back to the target prior.
 
 The target-side protocol decoder receives the public candidate pool and packet.
 If the packet is a valid diagnostic matching exactly one candidate's
-\texttt{handles\_repair\_diag} metadata, the decoder selects that candidate;
-otherwise it returns the target-prior candidate. This design makes the
-communication channel auditable, but it is protocol-shaped rather than a
-learned latent bridge. We therefore include a Qwen3 target-decoder smoke
-ablation in Section~\ref{sec:target-decoder}.
+\texttt{handles\_repair\_diag} decoder-side-information metadata, the decoder
+selects that candidate; otherwise it returns the target-prior candidate. This
+design makes the communication channel auditable, but it is protocol-shaped
+rather than a learned latent bridge. We therefore include a Qwen3
+target-decoder smoke ablation in Section~\ref{sec:target-decoder}.
 
 \section{Baselines and Controls}
 
@@ -241,10 +247,11 @@ reduces the hand-coded lookup concern.
 \section{Interpretability}
 
 The packet channel is directly auditable in this benchmark. The packet is a
-two-character diagnostic code; target candidate metadata states which diagnostic
-each candidate handles; and component-masking controls identify the private
-trace field that carries the signal. Failures can be audited as invalid source
-packets, fallback-to-prior cases, or target-decoder selection mistakes.
+two-character diagnostic code; target candidate decoder side information states
+which diagnostic each candidate handles; and component-masking controls
+identify the private trace field that carries the signal. Failures can be
+audited as invalid source packets, fallback-to-prior cases, or target-decoder
+selection mistakes.
 
 \section{Related Work}
 
@@ -288,22 +295,23 @@ rather than target priors or extra prompt bytes, changes the final selection.
 
 \section{Limitations}
 
-The main limitation is scope. Candidate metadata exposes the diagnostic mapping,
-and the primary decoder is deterministic and protocol-shaped. The target-decoder
-smoke reduces this concern but remains small. The benchmark is synthetic and
-candidate-selection based; it does not establish unconstrained program repair,
-raw-log reasoning, real tool/retrieval deployment, or learned latent transfer.
-Structured text relay becomes an oracle when granted enough bytes. Stronger
-future comparisons should include learned prompt compression, C2C/KVComm-style
-cache transfer, and larger model-mediated target decoders under the same
-source-private controls.
+The main limitation is scope. Candidate decoder side information exposes the
+diagnostic mapping, and the primary decoder is deterministic and
+protocol-shaped. The target-decoder smoke reduces this concern but remains
+small. The benchmark is synthetic and candidate-selection based; it does not
+establish unconstrained program repair, raw-log reasoning, real tool/retrieval
+deployment, or learned latent transfer. Structured text relay becomes an oracle
+when granted enough bytes. Stronger future comparisons should include learned
+prompt compression, C2C/KVComm-style cache transfer, and larger model-mediated
+target decoders under the same source-private controls.
 
 \section{Conclusion}
 
 We present a scoped positive method for source-private evidence communication.
 A source model reads private tool-trace diagnostics and emits a compact explicit
 packet. A target-side candidate decoder combines that packet with public
-candidate metadata to select the gold candidate from the provided repair pool.
+candidate decoder side information to select the gold candidate from the
+provided repair pool.
 The reported result is artifact-backed, interpretable, rate-accounted, and
 stable across the tested frozen 500-example surfaces, held-out repair families,
 seed repeats, source-destroying controls, structured relay baselines, and a

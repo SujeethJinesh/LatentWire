@@ -28,7 +28,7 @@
 |---|---|---|---:|---:|---:|
 | core_medium_seed29 | no-source | target-only | 0.250 | 0.00 | 0.00 |
 | core_medium_seed29 | no-source | target wrapper/no-source | 0.250 | 0.00 | 0.00 |
-| core_medium_seed29 | method-oracle | matched deterministic trace packet (32 bytes) | 1.000 | 2.00 | 1.00 |
+| core_medium_seed29 | method-oracle | matched deterministic trace packet | 1.000 | 2.00 | 1.00 |
 | core_medium_seed29 | source-destroying control | zero-source | 0.250 | 0.00 | 0.00 |
 | core_medium_seed29 | source-destroying control | shuffled-source | 0.250 | 2.00 | 1.00 |
 | core_medium_seed29 | source-destroying control | random same-byte | 0.250 | 2.00 | 1.00 |
