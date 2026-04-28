@@ -1575,3 +1575,19 @@ bytes. This is harness evidence only, not a paper claim. The live branch is now
 contract with LLM-generated target candidates and source packets on `100-200`
 frozen private-evidence examples, with byte/latency accounting and full
 source-destroying controls.
+
+Update `2026-04-28`: `source_private_evidence_packet_strict_small_20260428`
+passes as a strict-small deterministic source-private protocol gate. On `160`
+frozen private-evidence QA examples, a matched binary syndrome reaches
+`160/160` at every budget `2/4/8/16/32` bytes, while target/no-source,
+matched-byte structured text, zero-source, shuffled-source, random same-byte,
+answer-only, answer-masked, target-derived, and wrong-salt same-source controls
+stay at `40/160`. Full structured text and full private evidence oracles are
+`160/160`. Exact ID parity holds with SHA256
+`3a65952ba323a8896906863f1be4e83400a6cea00ab1f18bbf58cb8e7611b19c`. This
+promotes the source-private candidate-syndrome branch from smoke to strict-small
+protocol pass, but the paper is still not ICLR-ready: packet production and
+decoding are still protocol-shaped rather than model-mediated. The next exact
+gate is `source_private_evidence_packet_llm_packet_20260428`, using the same
+frozen IDs and controls while replacing deterministic source packet production
+with model-produced packets.

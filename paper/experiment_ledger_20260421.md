@@ -12479,3 +12479,103 @@ Next exact gate:
   answer-only/answer-masked/target-derived packet controls
 - pass only if matched source beats best no-source by `>=15` points and every
   source-destroying control stays within `2` points of no-source
+
+## 2026-04-28 Cycle 25 - Source-Private Evidence Packet Strict-Small Gate
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; this cycle can clear a strict-small
+   source-private protocol gate, but not the full paper claim.
+2. Current paper story: source-private residual communication with decoder side
+   information. The target has public prompts and candidate commitments; the
+   source has private evidence; the source sends a rate-capped packet.
+3. Exact blocker: show the source-private gain beyond target/no-source priors,
+   matched-byte text, answer-only/answer-masked, and source-destroying controls.
+4. Current live branch: source-private evidence packet / candidate-syndrome
+   decoder.
+5. Highest-priority gate: run `source_private_evidence_packet_strict_small_20260428`.
+6. Scale-up rung: strict small gate.
+
+Subagent synthesis:
+
+- reviewer: a synthetic/private-evidence benchmark is defensible only with
+  target/no-source, target-wrapper, matched-byte text, answer-only,
+  answer-masked, zero, shuffled, random, target-derived, exact-ID parity, and
+  byte accounting
+- planner: promote if matched source beats target by at least `15` points and
+  controls stay flat; otherwise prune or repeat only with clear oracle headroom
+- method scout: use compact syndrome/evidence packets first; keep learned
+  Query-JEPA/Q-Former gates as second-stage methods
+- harness audit: add exact-ID hashes, artifact hashes, binary/text byte
+  accounting, wrong-salt same-source control, and tests
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/run_source_private_evidence_packet_strict_small.py \
+  --examples 160 \
+  --candidates 4 \
+  --seed 28 \
+  --budgets 2,4,8,16,32 \
+  --output-dir results/source_private_evidence_packet_strict_small_20260428
+```
+
+Results:
+
+- examples: `160`
+- candidate pool recall: `1.000`
+- best budget: `2` bytes
+- exact ID parity: `true`
+- exact ID count: `160`
+- exact ID SHA256:
+  `3a65952ba323a8896906863f1be4e83400a6cea00ab1f18bbf58cb8e7611b19c`
+- target/no-source accuracy: `0.250`
+- matched syndrome accuracy: `1.000` at every budget `2/4/8/16/32`
+- best source-destroying control accuracy: `0.250`
+- matched-byte structured text accuracy: `0.250`
+- full structured text oracle: `1.000`
+- full private evidence oracle: `1.000`
+- wrong-salt same-source control: `0.250`
+- strict-small gate: `pass`
+
+Interpretation:
+
+- Positive for the source-private candidate-syndrome protocol under a frozen,
+  deterministic strict-small benchmark.
+- Not yet ICLR-ready evidence because packet production and decoding are still
+  protocol-shaped rather than real model-mediated communication.
+- The live branch is promoted from smoke to strict-small protocol pass; learned
+  latent/JEPA connectors remain deferred.
+
+Artifacts:
+
+- `paper/source_private_evidence_packet_strict_small_20260428.md`
+- `scripts/run_source_private_evidence_packet_strict_small.py`
+- `tests/test_run_source_private_evidence_packet_strict_small.py`
+- `results/source_private_evidence_packet_strict_small_20260428/benchmark.jsonl`
+- `results/source_private_evidence_packet_strict_small_20260428/sweep_summary.md`
+- `results/source_private_evidence_packet_strict_small_20260428/sweep_summary.json`
+- `results/source_private_evidence_packet_strict_small_20260428/manifest.md`
+- `results/source_private_evidence_packet_strict_small_20260428/manifest.json`
+- `results/source_private_evidence_packet_strict_small_20260428/predictions_budget{2,4,8,16,32}.jsonl`
+- `results/source_private_evidence_packet_strict_small_20260428/summary_budget{2,4,8,16,32}.json`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_run_source_private_evidence_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_gate.py -q
+```
+
+Result: `7 passed`.
+
+Next exact gate:
+
+- run `source_private_evidence_packet_llm_packet_20260428`: freeze the same
+  `160` examples, ask a source model to emit packets under the same budgets,
+  keep the deterministic decoder and all controls, and pass only if
+  model-produced matched packets beat best no-source by `>=15` points while
+  all controls stay within `2` points of no-source
+- if model packet production fails, pivot to private tool/test-log handoff with
+  the same strict source-private gate structure
