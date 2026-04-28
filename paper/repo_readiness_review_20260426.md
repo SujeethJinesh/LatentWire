@@ -1898,3 +1898,9 @@ Update `2026-04-28`: added
 `paper/source_private_tool_trace_upload_checksums_20260428.sha256` for the
 three external upload files and linked it from the handoff/confirmation memos.
 The repo remains upload-ready and externally unconfirmed.
+
+Update `2026-04-28`: artifact-host readiness is documented. Public GitHub
+release hosting is available from the authenticated CLI, but it was not
+published because the current repo is public and non-anonymized. The exact
+public-release command and anonymous-host alternative are recorded in
+`paper/source_private_tool_trace_artifact_host_options_20260428.md`.

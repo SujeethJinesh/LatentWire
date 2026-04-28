@@ -34,12 +34,18 @@ one of:
 Until then, the submission status should be treated as locally upload-ready but
 not externally confirmed.
 
+GitHub release hosting is technically available, but the repository is public
+and non-anonymized. The host decision and anonymity caveat are documented in
+`paper/source_private_tool_trace_artifact_host_options_20260428.md`.
+
 ## Record After Upload
 
 Once uploaded, update this memo with:
 
 - final submission ID or OpenReview forum URL;
 - uploaded artifact URL or release ID;
+- host type: anonymous venue upload, anonymized artifact host, or public GitHub
+  release;
 - portal-side PDF/source warnings, if any;
 - whether the uploaded archive SHA256 matches the local handoff memo;
 - whether all uploaded files match

@@ -14406,3 +14406,14 @@ Update `2026-04-28`: upload verification was tightened by adding
 the manuscript PDF, source bundle, and artifact archive. The handoff and
 confirmation memos now reference the checksum sidecar. This does not change the
 scientific evidence; it reduces external upload verification risk.
+
+Update `2026-04-28`: external artifact hosting was audited. GitHub CLI is
+authenticated and the remote repository is public (`SujeethJinesh/LatentWire`),
+with no existing releases, so a public GitHub release is technically available.
+However, because ICLR-style double-blind submissions may require anonymous
+artifacts, no public release was created automatically. Host options, exact
+release command, and release notes are documented in
+`paper/source_private_tool_trace_artifact_host_options_20260428.md` and
+`paper/source_private_tool_trace_release_notes_20260428.md`. The next gate
+remains external submission confirmation after choosing the venue-compatible
+host path.
