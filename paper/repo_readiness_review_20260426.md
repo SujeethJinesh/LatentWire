@@ -1913,3 +1913,11 @@ The anonymous artifact archive is
 checksum sidecar
 `paper/source_private_tool_trace_anonymous_upload_checksums_20260428.sha256`.
 Integrity and anonymity string audits passed.
+
+Update `2026-04-28`: added the anonymous transfer convenience bundle
+`paper/artifacts/source_private_tool_trace_anonymous_submission_bundle_20260428.zip`
+(`8137764` bytes, SHA256
+`6d771cfc41ad4acfb8d500a6841e06e28781b3ce2549fc368dff0a1ed666e377`). The
+bundle passed archive integrity, internal checksum verification, and
+identity/local-path string audit. It is for moving the upload files together;
+the venue may still require separate PDF/source/artifact uploads.

@@ -42,6 +42,9 @@ and non-anonymized. The host decision and anonymity caveat are documented in
 `paper/source_private_tool_trace_artifact_host_options_20260428.md`.
 The preferred double-blind artifact payload is
 `paper/artifacts/source_private_tool_trace_artifacts_anonymous_20260428.zip`.
+A transfer bundle containing the PDF, source zip, anonymous artifact zip, and
+checksum sidecar is available at
+`paper/artifacts/source_private_tool_trace_anonymous_submission_bundle_20260428.zip`.
 
 ## Record After Upload
 
@@ -51,6 +54,8 @@ Once uploaded, update this memo with:
 - uploaded artifact URL or release ID;
 - host type: anonymous venue upload, anonymized artifact host, or public GitHub
   release;
+- whether the files were uploaded separately or via the anonymous transfer
+  bundle;
 - portal-side PDF/source warnings, if any;
 - whether the uploaded archive SHA256 matches the local handoff memo;
 - whether all uploaded files match

@@ -14429,3 +14429,12 @@ the anonymous archive. Archive integrity passes and the extracted anonymous
 archive has no matches for account names, local home paths, GitHub URLs, or the
 project-name marker. The anonymous upload checksum sidecar is
 `paper/source_private_tool_trace_anonymous_upload_checksums_20260428.sha256`.
+
+Update `2026-04-28`: `anonymous_submission_bundle_20260428` created a transfer
+bundle for the double-blind upload set at
+`paper/artifacts/source_private_tool_trace_anonymous_submission_bundle_20260428.zip`
+(`8137764` bytes, SHA256
+`6d771cfc41ad4acfb8d500a6841e06e28781b3ce2549fc368dff0a1ed666e377`). The
+bundle contains only the manuscript PDF, compile-tested source zip, anonymous
+artifact zip, checksum sidecar, and README. `unzip -t`, internal checksum
+verification, and identity/local-path string audit all pass.

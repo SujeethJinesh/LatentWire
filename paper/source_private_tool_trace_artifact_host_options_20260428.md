@@ -59,6 +59,13 @@ anonymous artifact mechanism:
 - `paper/artifacts/source_private_tool_trace_artifacts_anonymous_20260428.zip`
 - `paper/source_private_tool_trace_anonymous_upload_checksums_20260428.sha256`
 
+For file transfer convenience, the same anonymous upload set is also packaged
+as:
+
+- `paper/artifacts/source_private_tool_trace_anonymous_submission_bundle_20260428.zip`
+- SHA256:
+  `6d771cfc41ad4acfb8d500a6841e06e28781b3ce2549fc368dff0a1ed666e377`
+
 Then update `paper/source_private_tool_trace_submission_confirmation_20260428.md`
 with the anonymous URL or submission attachment ID and the SHA256 verification
 result.
