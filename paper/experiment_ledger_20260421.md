@@ -13269,3 +13269,71 @@ Next exact gate:
   hidden-repair examples, Qwen2.5-0.5B, Qwen3-0.6B, Phi-3-mini, and TinyLlama
   negative capability row, with the same source-destroying controls and packet
   validity/byte/latency reporting.
+
+## 2026-04-28 - Hidden-Repair Packet Cross-Model Smoke
+
+Current ICLR readiness: not ready. Estimated distance is one live method branch
+plus weakened-helper/no-helper evidence, strict-small or medium confirmation,
+and a larger frozen slice.
+
+Current story: source-private hidden-repair packets now pass across multiple
+capable source model families. The source model sees actual hidden execution
+logs plus the protocol helper line, emits a two-character repair packet, and
+the target decodes it against candidate-side diagnostic metadata. Gains
+disappear under zero, shuffled, random, answer-only, answer-masked, and
+target-derived controls.
+
+Exact blocker: helper-line diagnostics and candidate metadata remain central.
+The result is still protocol-assisted private hidden-log handoff, not
+general-purpose repair reasoning from raw logs.
+
+MPS guard:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: no live blocker was present.
+
+Runs:
+
+- `Qwen/Qwen2.5-0.5B-Instruct`
+- `Qwen/Qwen3-0.6B`
+- `microsoft/Phi-3-mini-4k-instruct`
+- `TinyLlama/TinyLlama-1.1B-Chat-v1.0`
+
+Results:
+
+| Run | Model | Family | Pass | Matched | Target-only | Best control | Valid packets | p50 latency ms |
+|---|---|---|---|---:|---:|---:|---:|---:|
+| qwen25_0_5b_helper | Qwen/Qwen2.5-0.5B-Instruct | qwen2.5 | `true` | 0.984 | 0.250 | 0.250 | 0.984 | 330.85 |
+| qwen3_0_6b_helper | Qwen/Qwen3-0.6B | qwen3 | `true` | 1.000 | 0.250 | 0.250 | 1.000 | 312.52 |
+| phi3_mini_helper | microsoft/Phi-3-mini-4k-instruct | phi3 | `true` | 1.000 | 0.250 | 0.250 | 1.000 | 511.35 |
+| tinyllama_1_1b_helper | TinyLlama/TinyLlama-1.1B-Chat-v1.0 | tinyllama | `false` | 0.250 | 0.250 | 0.250 | 0.000 | 561.73 |
+
+Aggregate:
+
+- cross-model gate: `pass`
+- passing models: `3/4`
+- non-Qwen passing models: `1`
+- all source-destroying controls stayed at target-only (`0.250`)
+- TinyLlama is a clean negative capability row with `0.000` valid packets
+
+Decision:
+
+- promote hidden-repair packet handoff to cross-model smoke on capable
+  instruction-tuned source models
+- retain the claim boundary: protocol-assisted private hidden-log packet
+  handoff, not universal code repair or no-helper extraction
+
+Artifacts:
+
+- `paper/source_private_hidden_repair_packet_cross_model_20260428.md`
+- `results/source_private_hidden_repair_packet_cross_model_20260428/`
+
+Next exact gate:
+
+- `source_private_hidden_repair_packet_weakened_helper_20260428`: same frozen
+  hidden-repair examples, remove the copied helper line first, then test a
+  harder no-helper or masked-log variant. Promote only if matched source remains
+  at least `15` points above target-only and controls remain flat.

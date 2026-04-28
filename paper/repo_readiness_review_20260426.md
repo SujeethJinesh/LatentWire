@@ -1655,3 +1655,13 @@ protocol-assisted: helper-line diagnostics and candidate metadata are still
 doing real work. The next exact gate is
 `source_private_hidden_repair_packet_cross_model_20260428`, followed by a
 no-helper or weakened-helper hidden-repair gate before any ICLR-level claim.
+
+Update `2026-04-28`: the hidden-repair packet branch now has cross-model smoke
+evidence. On the same frozen `64` examples, Qwen2.5-0.5B reaches `63/64`,
+Qwen3-0.6B reaches `64/64`, and Phi-3-mini reaches `64/64`, while all
+target-only and source-destroying controls remain at `16/64`. TinyLlama fails
+with `0` valid packets and stays at target-only, which is useful as a negative
+capability row. This removes the one-model prompt-artifact objection, but the
+paper is still not ready because helper-line diagnostics and candidate metadata
+remain part of the protocol. The next exact gate is
+`source_private_hidden_repair_packet_weakened_helper_20260428`.
