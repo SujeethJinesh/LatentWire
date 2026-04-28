@@ -23,7 +23,9 @@ the setup diagram and rate-curve data/figure before LaTeX conversion.
 ## Artifacts
 
 - `results/source_private_tool_trace_latex_or_figures_20260430/source_private_setup.svg`
+- `results/source_private_tool_trace_latex_or_figures_20260430/source_private_setup.pdf`
 - `results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.svg`
+- `results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.pdf`
 - `results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.csv`
 - `results/source_private_tool_trace_latex_or_figures_20260430/manifest.json`
 

@@ -1,8 +1,8 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: scoped positive-method manuscript draftable
-- estimated distance: paper-source draft, figures/tables, final framing, and optional target-decoder scale-up
+- status: scoped positive-method manuscript compiled
+- estimated distance: final skeptical review, table/figure polish, final framing, and optional target-decoder scale-up
 
 ## Current Paper Story
 
@@ -158,6 +158,7 @@ over two examples verifies provenance and fixed-layer reuse, with all modes at
 `0/2` and shuffled-source using nonmatching source IDs. The live branch remains
 `none`; the highest-priority executable gate after MPS clears is the
 `kvcomm_svamp32_controls_smoke_20260427` command recorded in the ledger.
+
 Follow-up hardening replaced fixed-offset shuffled-source with deterministic
 hash-based non-self pairing and answer-overlap logging; the CPU smoke still
 passes as tooling-only evidence.
@@ -1812,3 +1813,22 @@ actual SVG/CSV artifact and should be in the main paper because it shows the
 honest systems tradeoff: compact packets work at `2` bytes, while structured
 JSON/free-text relays become oracles at `32` bytes. The next exact gate is
 `source_private_tool_trace_latex_20260430`.
+
+Update `2026-04-30`: `source_private_tool_trace_latex_20260430` creates a
+project-specific ICLR LaTeX draft and bibliography under `paper/iclr2026/`.
+The source has not yet been compiled. The next exact gate is
+`source_private_tool_trace_latex_compile_20260430`, including any needed
+SVG-to-PDF conversion and bibliography cleanup.
+
+Update `2026-04-30`: `source_private_tool_trace_latex_compile_20260430`
+passes. The live branch is now an explicit source-private tool-trace packet
+handoff with large frozen-slice evidence and a compiled ICLR-style paper
+source. The paper story is scoped: compact source-private packets communicate
+hidden diagnostic evidence to a target-side candidate decoder at `2`
+bytes/tokens, while zero/shuffled/random/answer-only/answer-masked/
+target-derived controls stay near target-only and structured text relays
+become competitive only at larger budgets. The LaTeX source compiles to
+`paper/iclr2026/source_private_tool_trace.pdf` (`6` pages, `202363` bytes) with
+no overfull boxes, undefined references, or citation warnings. Remaining
+blockers are final skeptical review, target-decoder scale-up decision, and
+final table/figure/citation polish.

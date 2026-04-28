@@ -14222,3 +14222,61 @@ Next exact gate:
 - `source_private_tool_trace_latex_20260430`: convert the markdown draft to ICLR
   LaTeX source, include figure references, add citations, and add counts to the
   main table.
+
+## 2026-04-30 - Source-Private Tool-Trace LaTeX Draft
+
+Current ICLR readiness: ICLR-style LaTeX source now exists, but has not yet
+been compiled. Remaining blockers are compile cleanup, possible SVG-to-PDF
+figure conversion, final citation/style checks, and final reviewer pass.
+
+Artifacts:
+
+- `paper/iclr2026/source_private_tool_trace.tex`
+- `paper/iclr2026/source_private_tool_trace.bib`
+- `paper/source_private_tool_trace_latex_20260430.md`
+
+Draft contents:
+
+- abstract, introduction, setup, benchmark, method, baselines/controls
+- main result table with counts
+- threat-model control table
+- figure references to setup and rate-curve SVGs
+- target-decoder smoke ablation
+- related work with BibTeX entries
+- limitations, conclusion, appendix claim boundary
+
+Next exact gate:
+
+- `source_private_tool_trace_latex_compile_20260430`: compile the LaTeX source,
+  convert SVG figures to PDF if required, and fix bibliography/style issues.
+
+## 2026-04-30 - Source-Private Tool-Trace LaTeX Compile
+
+Current ICLR readiness: ICLR-style LaTeX source now compiles to PDF with
+figures and bibliography. Remaining blockers are final skeptical review,
+target-decoder scale-up decision, and table/figure caption polish.
+
+Command:
+
+```bash
+cd paper/iclr2026
+latexmk -pdf -interaction=nonstopmode -halt-on-error source_private_tool_trace.tex
+```
+
+Artifacts:
+
+- `paper/iclr2026/source_private_tool_trace.pdf` (`6` pages, `202363` bytes)
+- `results/source_private_tool_trace_latex_compile_20260430/manifest.md`
+
+Log audit:
+
+- no overfull boxes
+- no undefined references
+- no citation warnings
+- only underfull page-fill warnings remain
+
+Next exact gate:
+
+- `source_private_tool_trace_final_review_20260430`: final skeptical review of
+  the compiled paper/source, target-decoder scale-up decision, and table/figure
+  caption polish.
