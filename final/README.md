@@ -97,8 +97,9 @@ packet valid rate is `1.000`, and exact-ID parity holds. Apple MPS still fails
 before generation in the model's
 hybrid-attention matmul path, so this is CPU evidence only.
 
-`Qwen/Qwen3.5-2B` also passes a CPU n16 smoke with matched `16/16`, target/control
-`4/16`, and packet valid rate `1.000`, adding a second latest-small Qwen3.5 size.
+`Qwen/Qwen3.5-2B` also passes CPU n16 and n64 rows with matched accuracy `1.000`,
+target/control floor `0.250`, and packet valid rate `1.000`, adding a second
+latest-small Qwen3.5 size.
 
 The first non-Qwen positive row also now exists:
 `ibm-granite/granite-3.3-2b-instruct` reaches `128/160 = 0.800` on CPU with the

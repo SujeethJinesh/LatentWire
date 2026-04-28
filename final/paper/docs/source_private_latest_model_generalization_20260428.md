@@ -2,7 +2,7 @@
 
 - date: `2026-04-28`
 - gate: `latest_model_generalization_scout_20260428`
-- status: Qwen3.5-0.8B CPU n160 seed-repeat passed; Qwen3.5-2B n16 passed; Granite non-Qwen CPU n160 passed; MoE broad claim remains unproven
+- status: Qwen3.5-0.8B CPU n160 seed-repeat passed; Qwen3.5-2B n64 passed; Granite non-Qwen CPU n160 passed; MoE broad claim remains unproven
 
 ## Current Readiness
 
@@ -23,9 +23,9 @@ after upgrading the repo-local Transformers stack, with the `n=160` row passing
 on seeds `29` and `31`. This is useful latest-small evidence for the Qwen family,
 but it is not yet enough to claim MoE generalization.
 
-The next latest-small size also passes at smoke scale: `Qwen/Qwen3.5-2B` reaches
-`16/16 = 1.000` on CPU n16 with target/control at `4/16 = 0.250` and packet
-valid rate `1.000`.
+The next latest-small size also passes at confirmation scale: `Qwen/Qwen3.5-2B`
+reaches `16/16 = 1.000` on CPU n16 and `64/64 = 1.000` on CPU n64, with
+target/control at `0.250` and packet valid rate `1.000`.
 
 We also have the first non-Qwen positive row: `ibm-granite/granite-3.3-2b-instruct`
 passes at `n=160` on CPU under the copied-helper prompt. The cross-family claim
@@ -130,6 +130,9 @@ Artifacts:
 - `results/source_private_latest_model_matrix_20260428/qwen35_2b_trace_no_hint_n16_cpu_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/qwen35_2b_trace_no_hint_n16_cpu_seed29/model_packets.jsonl`
 - `results/source_private_latest_model_matrix_20260428/qwen35_2b_trace_no_hint_n16_cpu_seed29/predictions.jsonl`
+- `results/source_private_latest_model_matrix_20260428/qwen35_2b_trace_no_hint_n64_cpu_seed29/summary.json`
+- `results/source_private_latest_model_matrix_20260428/qwen35_2b_trace_no_hint_n64_cpu_seed29/model_packets.jsonl`
+- `results/source_private_latest_model_matrix_20260428/qwen35_2b_trace_no_hint_n64_cpu_seed29/predictions.jsonl`
 
 ## Cross-Family Rows
 
@@ -197,12 +200,12 @@ MoE runbook:
 
 ## Recommended Next Gate
 
-1. Widen Qwen3.5-2B to n64, or run Granite copied-helper n160 seed repeat if
+1. Widen Qwen3.5-2B to n160, or run Granite copied-helper n160 seed repeat if
    cross-family stability is more valuable.
 2. Try one stricter Granite prompt-contract variant to reduce missing letter
    prefixes without using copied-helper.
-3. Run `Qwen/Qwen3.5-2B` `n=16` if it fits local memory, otherwise CPU/off-machine.
-4. If both pass, run `Qwen/Qwen3.5-4B` and widen the best small row to `n=160`.
+3. Run `Qwen/Qwen3.5-4B` n16 if local memory/time permits.
+4. If Qwen3.5-2B n160 passes, run Qwen3.5-4B and/or move to MoE.
 5. Run `Qwen/Qwen3.6-35B-A3B` and `Qwen/Qwen3.6-35B-A3B-FP8` off-machine at
    `n=32`, then `n=500` only if controls hold.
 
@@ -212,7 +215,7 @@ of target-only.
 
 ## Paper Impact
 
-The Qwen3.5-0.8B seed-stable `n=160` result plus Qwen3.5-2B n16 smoke lets the
+The Qwen3.5-0.8B seed-stable `n=160` result plus Qwen3.5-2B n64 confirmation lets the
 paper add a stronger post-package latest-small contribution: the packet protocol
 is executable across latest small Qwen3.5 sizes once dependencies are updated.
 The Granite n160 pass adds a non-Qwen positive but under an easier copied-helper

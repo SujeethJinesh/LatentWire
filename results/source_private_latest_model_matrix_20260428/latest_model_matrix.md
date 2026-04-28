@@ -5,14 +5,14 @@
 
 ## Recommendation
 
-Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable passes after upgrading Transformers to 5.7.0; Granite copied-helper has a non-Qwen n160 pass. Next widen Qwen3.5-2B and use Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows.
+Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable passes after upgrading Transformers to 5.7.0; Granite copied-helper has a non-Qwen n160 pass. Next widen Qwen3.5-2B to n160 or use Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows.
 
 ## Model Matrix
 
 | Priority | Model | Family | Params | Active | Status | Rung |
 |---|---|---|---:|---:|---|---|
 | P0 | `Qwen/Qwen3.5-0.8B` | Qwen3.5 small hybrid | 0.8B | - | CPU n160 seed repeat passed after Transformers 5.7.0 upgrade; MPS backend fails before generation | CPU n160 passed on seeds 29/31 |
-| P0 | `Qwen/Qwen3.5-2B` | Qwen3.5 small hybrid | 2B | - | CPU n16 passed after local download; MPS skipped due Qwen3.5 backend risk | CPU n16 passed; n64 next |
+| P0 | `Qwen/Qwen3.5-2B` | Qwen3.5 small hybrid | 2B | - | CPU n16/n64 passed after local download; MPS skipped due Qwen3.5 backend risk | CPU n16/n64 passed; n160 next |
 | P1 | `Qwen/Qwen3.5-4B` | Qwen3.5 small hybrid | 4B | - | planned after qwen3_5 compatibility update | n16 if memory permits |
 | P2 | `Qwen/Qwen3.5-35B-A3B` | Qwen3.5 MoE | 35B total | 3B activated | off-machine Qwen3.5 MoE candidate | remote/API n32 after Qwen3.6 MoE |
 | P2 | `Qwen/Qwen3.5-35B-A3B-FP8` | Qwen3.5 MoE FP8 | 35B total | 3B activated | off-machine Qwen3.5 MoE FP8 candidate | remote/API n32 after Qwen3.6 FP8 |

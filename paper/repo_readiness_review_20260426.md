@@ -1983,3 +1983,9 @@ smoke row, but it supports the same-generation scaling story alongside
 Qwen3.5-0.8B n160 seed stability. Added a Qwen3.6 MoE/FP8 runbook with exact
 CUDA and endpoint-wrapper requirements; MoE readiness remains planned until
 those off-machine n32 rows exist.
+
+Update `2026-04-28`: Qwen3.5-2B now has n64 confirmation, not just smoke.
+CPU trace-no-hint n64 reaches matched `64/64`, target/control `16/64`, packet
+valid rate `1.000`, and exact-ID parity true. This strengthens the latest-small
+same-generation breadth claim, while still leaving Qwen3.5-4B and Qwen3.6 MoE
+unrun.

@@ -14525,3 +14525,12 @@ CUDA commands and an endpoint-wrapper contract for `Qwen/Qwen3.6-35B-A3B` and
 `Qwen/Qwen3.6-35B-A3B-FP8` n32 gates. The next best gate is Qwen3.5-2B n64 if
 local CPU time is acceptable, or off-machine Qwen3.6 MoE n32 if CUDA/serving is
 available.
+
+Update `2026-04-28`: `qwen35_2b_n64_confirmation_20260428` widens the latest-small
+cross-size row. `Qwen/Qwen3.5-2B` CPU trace-no-hint n64 seed29 passes with
+matched `64/64`, target-only/best control `16/64`, packet valid rate `1.000`,
+exact-ID parity true, matched-minus-best-control `+0.750`, and p50 CPU latency
+`13646 ms`. This turns Qwen3.5-2B from smoke to medium confirmation and supports
+the latest-small same-generation breadth story alongside Qwen3.5-0.8B n160
+seed stability. Next local gate is Qwen3.5-2B n160 or Qwen3.5-4B n16; next
+high-value external gate remains Qwen3.6 MoE/FP8 n32.
