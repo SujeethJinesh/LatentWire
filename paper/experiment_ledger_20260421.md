@@ -13052,3 +13052,106 @@ Next exact gate:
 
 - `source_private_testlog_packet_cross_model_20260428`: same frozen IDs and
   helper-line protocol with a second cached source model/family, same controls
+
+## 2026-04-28 Cycle 30 - Source-Private Test-Log Packet Cross-Model Gate
+
+Cycle start:
+
+1. Current ICLR readiness: not ready, but the branch has stable
+   model-mediated helper-line evidence.
+2. Current paper story: protocol-assisted source-private tool-log packet
+   handoff. A source model extracts a compact private `TRACE_SIG` packet and
+   the target decodes it with public candidate-side signatures.
+3. Exact blocker: show the result is not one-model-specific, then move to real
+   hidden-test/code-repair logs.
+4. Current live branch: source-private test-log packet handoff.
+5. Highest-priority gate:
+   `source_private_testlog_packet_cross_model_20260428`.
+6. Scale-up rung: cross-model strict-small falsification.
+
+MPS guard:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: no live blocker was present.
+
+Subagent synthesis:
+
+- reviewer: cross-model success is required before this can be more than a
+  one-model prompt artifact; helper-line success remains publishable only under
+  a narrow protocol-assisted private-log packet claim
+- planner: use frozen IDs, helper-line protocol, deterministic decoder, same
+  controls; promote if at least one non-Qwen model passes
+
+Runs:
+
+- `Qwen/Qwen2.5-0.5B-Instruct`
+- `Qwen/Qwen3-0.6B`
+- `microsoft/Phi-3-mini-4k-instruct`
+- `TinyLlama/TinyLlama-1.1B-Chat-v1.0`
+
+Attempted but not counted:
+
+- `meta-llama/Llama-3.2-1B-Instruct`: local cache entry was incomplete for
+  offline `transformers` loading
+
+Results:
+
+| Run | Model | Family | Pass | Matched | Target-only | Best control | Valid packets | p50 latency ms |
+|---|---|---|---|---:|---:|---:|---:|---:|
+| qwen25_0_5b_helper | Qwen/Qwen2.5-0.5B-Instruct | qwen2.5 | `true` | 0.938 | 0.250 | 0.250 | 0.919 | 164.86 |
+| qwen3_0_6b_helper | Qwen/Qwen3-0.6B | qwen3 | `true` | 1.000 | 0.250 | 0.250 | 1.000 | 334.17 |
+| phi3_mini_helper | microsoft/Phi-3-mini-4k-instruct | phi3 | `true` | 0.912 | 0.250 | 0.250 | 0.950 | 595.25 |
+| tinyllama_1_1b_helper | TinyLlama/TinyLlama-1.1B-Chat-v1.0 | tinyllama | `false` | 0.250 | 0.250 | 0.250 | 0.000 | 496.49 |
+
+Aggregate:
+
+- cross-model gate: `pass`
+- passing models: `3/4`
+- non-Qwen passing models: `phi3_mini_helper`
+- mean matched accuracy among passing models: `0.950`
+- all source-destroying controls stayed at `0.250`
+
+Interpretation:
+
+- The helper-line packet protocol generalizes to Qwen3 and Phi-3.
+- TinyLlama failure is a negative capability/control row.
+- Claim remains protocol-assisted private tool-log packet handoff, not
+  universal model-agnostic extraction.
+
+Artifacts:
+
+- `paper/source_private_testlog_packet_cross_model_20260428.md`
+- `results/source_private_testlog_packet_cross_model_20260428/cross_model_summary.json`
+- `results/source_private_testlog_packet_cross_model_20260428/cross_model_summary.md`
+- `results/source_private_testlog_packet_cross_model_20260428/manifest.json`
+- `results/source_private_testlog_packet_cross_model_20260428/manifest.md`
+- per-model subdirectories under
+  `results/source_private_testlog_packet_cross_model_20260428/`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_run_source_private_testlog_packet_llm_packet.py \
+  tests/test_run_source_private_testlog_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_llm_packet.py \
+  tests/test_run_source_private_evidence_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_gate.py -q
+```
+
+Result: `22 passed`.
+
+Decision:
+
+- promote the branch as cross-model on capable instruction-tuned source models
+- keep TinyLlama as a negative capability row
+- do not claim universal model-agnostic extraction
+
+Next exact gate:
+
+- `source_private_testlog_packet_hidden_repair_smoke_20260428`: same protocol
+  and controls, but private packet comes from actual hidden pytest/code-repair
+  evidence rather than synthetic signature fields

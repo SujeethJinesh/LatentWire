@@ -211,6 +211,15 @@ not a general unstructured-log extraction result. Current readiness remains not
 ICLR-ready. Next gate: cross-model/source-family confirmation on the same frozen
 IDs, then a hidden-test/code-repair variant.
 
+Update `2026-04-28`: cross-model helper-line confirmation passed on capable
+instruction-tuned source models. `Qwen/Qwen2.5-0.5B-Instruct` reaches `150/160`,
+`Qwen/Qwen3-0.6B` reaches `160/160`, and `microsoft/Phi-3-mini-4k-instruct`
+reaches `146/160`, all against a `40/160` target/control floor. TinyLlama fails
+at `40/160` with `0` valid packets, so it is a negative capability row. This
+promotes the branch as cross-model protocol-assisted private tool-log packet
+handoff, not universal extraction. Current readiness remains not ICLR-ready
+until a hidden-test/code-repair variant replaces synthetic signature fields.
+
 The strongest bound is the SVAMP32 C2C-derived syndrome sidecar:
 
 - strict target-side pool: `14/32`
