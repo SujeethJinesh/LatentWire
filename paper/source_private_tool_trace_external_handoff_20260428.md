@@ -3,7 +3,7 @@
 - date: `2026-04-28`
 - gate: `source_private_tool_trace_external_handoff_20260428`
 - status: ready for external upload
-- latest commit: `d68c4d633ca5428abd10ea895f4c171fa316f282`
+- latest committed handoff state: `8262ee33dc777cbe8f52238c8da848d68368a6d3`
 
 ## Current Readiness
 
