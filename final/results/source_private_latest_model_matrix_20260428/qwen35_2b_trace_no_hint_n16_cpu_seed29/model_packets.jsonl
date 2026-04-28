@@ -1,0 +1,16 @@
+{"example_id": "sphr_0000", "generated_text": "G0", "latency_ms": 22725.69587500766, "packet": "G0", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0001", "generated_text": "H1", "latency_ms": 23047.13766700297, "packet": "H1", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0002", "generated_text": "J2", "latency_ms": 21609.646208002232, "packet": "J2", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0003", "generated_text": "K3", "latency_ms": 20249.11520900787, "packet": "K3", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0004", "generated_text": "L4", "latency_ms": 19610.613666998688, "packet": "L4", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0005", "generated_text": "M5", "latency_ms": 17259.784709007363, "packet": "M5", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0006", "generated_text": "N6", "latency_ms": 12479.7275000019, "packet": "N6", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0007", "generated_text": "P7", "latency_ms": 14140.652417001547, "packet": "P7", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0008", "generated_text": "Q8", "latency_ms": 12546.849624995957, "packet": "Q8", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0009", "generated_text": "R9", "latency_ms": 14327.926624988322, "packet": "R9", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0010", "generated_text": "S0", "latency_ms": 14635.901917004958, "packet": "S0", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0011", "generated_text": "T1", "latency_ms": 14326.19770799647, "packet": "T1", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0012", "generated_text": "U2", "latency_ms": 13429.679540990037, "packet": "U2", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0013", "generated_text": "V3", "latency_ms": 14109.853542002384, "packet": "V3", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0014", "generated_text": "W4", "latency_ms": 13704.136166998069, "packet": "W4", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}
+{"example_id": "sphr_0015", "generated_text": "Y5", "latency_ms": 17124.913291001576, "packet": "Y5", "packet_bytes": 2, "packet_tokens": 5, "prompt_mode": "trace_no_hint", "valid_packet": true}

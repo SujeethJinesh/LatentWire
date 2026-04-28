@@ -86,14 +86,17 @@ def _model_matrix() -> list[CandidateModel]:
             active_params=None,
             architecture="qwen3_5 conditional generation",
             priority="P0",
-            local_rung="n16 then n64 if cached",
-            expected_device="mps",
+            local_rung="CPU n16 passed; n64 next",
+            expected_device="cpu",
             prompt_mode="trace_no_hint",
             limit=16,
             dtype="float32",
             max_new_tokens=8,
-            status="planned after qwen3_5 compatibility update",
-            rationale="Best near-term small latest-model confirmation if it fits local MPS memory.",
+            status="CPU n16 passed after local download; MPS skipped due Qwen3.5 backend risk",
+            rationale=(
+                "Best near-term small latest-model confirmation after Qwen3.5-0.8B. CPU n16 reaches "
+                "1.000 matched accuracy versus 0.250 target/control, with valid packet rate 1.000."
+            ),
         ),
         CandidateModel(
             model="Qwen/Qwen3.5-4B",
@@ -457,7 +460,7 @@ def main() -> None:
         "recommendation": (
             "Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable "
             "passes after upgrading Transformers to 5.7.0; Granite copied-helper has a non-Qwen n160 pass. "
-            "Next run Qwen3.5-2B and use Qwen3.6-35B-A3B "
+            "Next widen Qwen3.5-2B and use Qwen3.6-35B-A3B "
             "and FP8 as off-machine MoE falsification rows."
         ),
         "compatibility_note": (

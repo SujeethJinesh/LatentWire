@@ -5,14 +5,14 @@
 
 ## Recommendation
 
-Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable passes after upgrading Transformers to 5.7.0; Granite copied-helper has a non-Qwen n160 pass. Next run Qwen3.5-2B and use Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows.
+Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable passes after upgrading Transformers to 5.7.0; Granite copied-helper has a non-Qwen n160 pass. Next widen Qwen3.5-2B and use Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows.
 
 ## Model Matrix
 
 | Priority | Model | Family | Params | Active | Status | Rung |
 |---|---|---|---:|---:|---|---|
 | P0 | `Qwen/Qwen3.5-0.8B` | Qwen3.5 small hybrid | 0.8B | - | CPU n160 seed repeat passed after Transformers 5.7.0 upgrade; MPS backend fails before generation | CPU n160 passed on seeds 29/31 |
-| P0 | `Qwen/Qwen3.5-2B` | Qwen3.5 small hybrid | 2B | - | planned after qwen3_5 compatibility update | n16 then n64 if cached |
+| P0 | `Qwen/Qwen3.5-2B` | Qwen3.5 small hybrid | 2B | - | CPU n16 passed after local download; MPS skipped due Qwen3.5 backend risk | CPU n16 passed; n64 next |
 | P1 | `Qwen/Qwen3.5-4B` | Qwen3.5 small hybrid | 4B | - | planned after qwen3_5 compatibility update | n16 if memory permits |
 | P2 | `Qwen/Qwen3.5-35B-A3B` | Qwen3.5 MoE | 35B total | 3B activated | off-machine Qwen3.5 MoE candidate | remote/API n32 after Qwen3.6 MoE |
 | P2 | `Qwen/Qwen3.5-35B-A3B-FP8` | Qwen3.5 MoE FP8 | 35B total | 3B activated | off-machine Qwen3.5 MoE FP8 candidate | remote/API n32 after Qwen3.6 FP8 |
@@ -42,7 +42,7 @@ Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n16
 ### Qwen/Qwen3.5-2B
 
 ```bash
-./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py --benchmark-jsonl results/source_private_hidden_repair_packet_medium_20260429/benchmark.jsonl --output-dir results/source_private_latest_model_matrix_20260428/qwen__qwen3_5_2b --model Qwen/Qwen3.5-2B --device mps --dtype float32 --limit 16 --seed 29 --max-new-tokens 8 --prompt-mode trace_no_hint --no-enable-thinking
+./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py --benchmark-jsonl results/source_private_hidden_repair_packet_medium_20260429/benchmark.jsonl --output-dir results/source_private_latest_model_matrix_20260428/qwen__qwen3_5_2b --model Qwen/Qwen3.5-2B --device cpu --dtype float32 --limit 16 --seed 29 --max-new-tokens 8 --prompt-mode trace_no_hint --no-enable-thinking
 ```
 
 ### Qwen/Qwen3.5-4B

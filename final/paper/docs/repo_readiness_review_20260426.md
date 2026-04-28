@@ -1975,3 +1975,11 @@ a negative behavioral row. The scoped submission remains upload-ready; the
 latest-model/cross-family section can now safely discuss seed-stable Qwen3.5 and
 medium Granite prompt-contract sensitivity, but still cannot claim MoE or
 prompt-invariant cross-family generalization.
+
+Update `2026-04-28`: Qwen3.5 latest-small breadth improves from one size to two.
+Qwen3.5-2B CPU trace-no-hint n16 passes with matched `16/16`, target/control
+`4/16`, packet valid rate `1.000`, and exact-ID parity true. This is only a
+smoke row, but it supports the same-generation scaling story alongside
+Qwen3.5-0.8B n160 seed stability. Added a Qwen3.6 MoE/FP8 runbook with exact
+CUDA and endpoint-wrapper requirements; MoE readiness remains planned until
+those off-machine n32 rows exist.

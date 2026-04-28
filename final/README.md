@@ -97,6 +97,9 @@ packet valid rate is `1.000`, and exact-ID parity holds. Apple MPS still fails
 before generation in the model's
 hybrid-attention matmul path, so this is CPU evidence only.
 
+`Qwen/Qwen3.5-2B` also passes a CPU n16 smoke with matched `16/16`, target/control
+`4/16`, and packet valid rate `1.000`, adding a second latest-small Qwen3.5 size.
+
 The first non-Qwen positive row also now exists:
 `ibm-granite/granite-3.3-2b-instruct` reaches `128/160 = 0.800` on CPU with the
 copied-helper prompt, versus `0.250` target floor and `0.256` best control.
@@ -108,7 +111,8 @@ MoE generalization is plausible because the source task is exact private-evidenc
 packet emission, not dense-model-specific latent transfer, but it is not yet a
 paper claim. The safe addition is seed-stable latest-small evidence plus
 non-Qwen prompt-contract sensitivity. Claim MoE only after Qwen3.6 35B-A3B/FP8
-pass off-machine under the same controls.
+pass off-machine under the same controls; see
+`paper/docs/source_private_qwen36_moe_falsification_runbook_20260428.md`.
 
 ## Directory Map
 

@@ -14514,3 +14514,14 @@ rate `0.500`, controls `16/64`. This upgrades latest-small evidence to
 seed-stable medium and non-Qwen evidence to medium confirmation, but the safe
 claim remains prompt-contract sensitivity rather than prompt-invariant
 cross-family generalization.
+
+Update `2026-04-28`: `qwen35_2b_and_moe_runbook_20260428` adds a latest-small
+cross-size smoke and a ready off-machine MoE falsification plan. `Qwen/Qwen3.5-2B`
+CPU trace-no-hint n16 seed29 passes with matched `16/16`, target-only/best
+control `4/16`, packet valid rate `1.000`, exact-ID parity true,
+matched-minus-best-control `+0.750`, and p50 CPU latency `14482 ms`. Added
+`paper/source_private_qwen36_moe_falsification_runbook_20260428.md` with exact
+CUDA commands and an endpoint-wrapper contract for `Qwen/Qwen3.6-35B-A3B` and
+`Qwen/Qwen3.6-35B-A3B-FP8` n32 gates. The next best gate is Qwen3.5-2B n64 if
+local CPU time is acceptable, or off-machine Qwen3.6 MoE n32 if CUDA/serving is
+available.
