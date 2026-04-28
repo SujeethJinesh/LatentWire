@@ -1828,7 +1828,7 @@ hidden diagnostic evidence to a target-side candidate decoder at `2`
 bytes/tokens, while zero/shuffled/random/answer-only/answer-masked/
 target-derived controls stay near target-only and structured text relays
 become competitive only at larger budgets. The LaTeX source compiles to
-`paper/iclr2026/source_private_tool_trace.pdf` (`7` pages, `212923` bytes) with
+`paper/iclr2026/source_private_tool_trace.pdf` (`7` pages, `225146` bytes) with
 no overfull boxes, undefined references, or citation warnings. Remaining
 blockers are final skeptical review, target-decoder scale-up decision, and
 final table/figure/citation polish.
@@ -1843,3 +1843,11 @@ C2C/KVComm-style latent/cache communication, and test-guided repair framing.
 The next exact gate is `source_private_tool_trace_submission_polish_20260430`:
 line-level PDF/source polish, citation metadata verification, optional appendix
 example, and final scoped-submit decision.
+
+Update `2026-04-28`: submission-polish follow-up verified primary-source
+metadata for the new citations and corrected Repair-R1 to arXiv `2507.22853`.
+The manuscript now uses more precise line-level language for near-target-only
+controls, constructional target prior, smoke-ablation target decoding,
+matched--target confidence intervals, candidate-selection scope, and artifact
+provenance. Remaining blocker: optional appendix example plus final
+scoped-submit decision.

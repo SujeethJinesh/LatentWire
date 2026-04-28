@@ -4,6 +4,8 @@
 - status: final-review polish applied
 - live branch: explicit source-private tool-trace packet handoff
 - scale rung: large frozen slice plus paper final-review gate
+- provenance note: memo filename follows the submission-polish gate label; the
+  active environment date when this continuation ran was `2026-04-28`
 
 ## Starting Status
 
@@ -61,6 +63,30 @@ Added paper-facing citations for:
 - C2C and KVComm latent/cache communication competitors
 - Repair-R1 test-guided program-repair framing
 
+`source_private_tool_trace_submission_polish_20260430` verified the new
+primary-source metadata and corrected the Repair-R1 arXiv URL to
+`https://arxiv.org/abs/2507.22853`. It also replaced provisional C2C/KVComm,
+AutoGen, LLMLingua, and distributed-indirect-source-coding entries with
+primary-source metadata.
+
+## Submission Polish Follow-Up
+
+The continuation pass applied line-level recommendations from a submission
+polish reviewer:
+
+- controls are now described as near target-only rather than exactly
+  target-only in the abstract
+- the target prior is described as constructional
+- the target-decoder row is caveated as a 16--32 example smoke ablation
+- the main table's confidence interval column is labeled as a matched--target
+  delta
+- rate language now says systems-relevant property rather than broad systems
+  value
+- the conclusion now says the decoder selects the gold candidate from the
+  provided repair pool, not that it solves repair
+- artifact provenance now names the decisive result roots and avoids claiming
+  all manifests contain exact commands.
+
 Reference memo:
 
 - `references/478_source_private_final_review_refs.md`
@@ -78,7 +104,7 @@ Output:
 
 - `paper/iclr2026/source_private_tool_trace.pdf`
 - pages: `7`
-- size: `212923` bytes
+- size: `225146` bytes
 
 Log audit:
 

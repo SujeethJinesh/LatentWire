@@ -14310,7 +14310,7 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error source_private_tool_trace.t
 ```
 
 Output: `paper/iclr2026/source_private_tool_trace.pdf` (`7` pages,
-`212923` bytes). Log audit found no overfull boxes, undefined references,
+`225146` bytes). Log audit found no overfull boxes, undefined references,
 citation warnings, or BibTeX warnings.
 
 References:
@@ -14323,3 +14323,15 @@ Next exact gate:
 - `source_private_tool_trace_submission_polish_20260430`: line-level PDF/source
   polish, citation metadata verification, optional appendix example, and final
   scoped-submit decision.
+
+Update `2026-04-28`: `source_private_tool_trace_submission_polish_20260430`
+continues the final-review gate. Primary-source metadata was verified for
+Distributed Indirect Source Coding, AutoGen, LLMLingua, C2C, KVComm, and
+Repair-R1; the Repair-R1 URL was corrected to arXiv `2507.22853`. The LaTeX
+wording now says controls are near target-only, target prior is constructional,
+the target-decoder row is a 16--32 example smoke ablation, confidence intervals
+are matched--target deltas, and the conclusion selects the gold candidate from
+the provided repair pool. Appendix provenance now names the decisive result
+roots and avoids claiming every manifest contains exact commands. The next
+exact gate remains `source_private_tool_trace_submission_polish_20260430` until
+the optional appendix example and final scoped-submit decision are made.

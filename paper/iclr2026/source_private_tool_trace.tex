@@ -31,14 +31,15 @@ diagnostics. A compact explicit \diag{} packet improves target-side candidate
 selection from 25\% to 80.8--100.0\% across four frozen 500-example core and
 held-out-family surfaces. Zero-source, shuffled-source, random same-byte,
 answer-only, answer-masked, target-derived, same-byte structured relay,
-helper/no-log, and trace-removed controls remain at target-only.
+helper/no-log, and trace-removed controls remain near target-only
+(`25.0--25.8\%` in the reported rows).
 Model-produced packets average 1.55--2.00 bytes, compared with roughly
 366--374 bytes and 34 tokens for full hidden-log relay. A small Qwen3
-model-mediated protocol-decoder sanity check gives the same qualitative
-direction. The result is a narrow but reproducible positive method: explicit
-source-private tool-trace packets can transmit the benchmark's hidden
-diagnostic evidence under the controls tested here and with explicit rate
-accounting.
+model-mediated protocol-decoder sanity check improves over target/control on
+16--32 examples, but remains a smoke ablation. The result is a narrow but
+reproducible positive method: explicit source-private tool-trace packets can
+transmit the benchmark's hidden diagnostic evidence under the controls tested
+here and with explicit rate accounting.
 \end{abstract}
 
 \section{Introduction}
@@ -113,11 +114,11 @@ pool, and a source-private hidden-test/tool log. Public candidate metadata
 includes \texttt{handles\_repair\_diag=<code>}. The private source log contains
 \texttt{private\_tool\_trace: REPAIR\_DIAG=<code>}.
 
-The target prior solves exactly one quarter of examples. The main surfaces are
-a strict-small 160-example slice, a 500-example core slice, a 500-example
-held-out repair-family slice, and seed repeats over core seeds 29/31 and
-held-out seeds 30/32. Deterministic surfaces have candidate-pool recall 1.0, so
-reported improvements are selector improvements.
+By construction, the target prior solves exactly one quarter of examples. The
+main surfaces are a strict-small 160-example slice, a 500-example core slice, a
+500-example held-out repair-family slice, and seed repeats over core seeds
+29/31 and held-out seeds 30/32. Deterministic surfaces have candidate-pool
+recall 1.0, so reported improvements are selector improvements.
 
 The synthetic design is deliberate: it gives deterministic hidden evidence,
 exact ID parity, complete source-destroying controls, and byte-level accounting.
@@ -160,7 +161,7 @@ near target-only.
 \small
 \begin{tabular}{llrrrrrr}
 \toprule
-Surface & Source model & Matched & Target & Control & Valid & Bytes & 95\% CI \\
+Surface & Source model & Matched & Target & Control & Valid & Bytes & $\Delta$ 95\% CI \\
 \midrule
 core 29 & Qwen3-0.6B & 404/500 & 125/500 & 126/500 & 0.776 & 1.55 & [0.516,0.600] \\
 core 29 & Phi-3-mini & 500/500 & 125/500 & 126/500 & 1.000 & 2.00 & [0.714,0.788] \\
@@ -173,7 +174,8 @@ held-out 32 & Phi-3-mini & 500/500 & 125/500 & 126/500 & 1.000 & 2.00 & [0.710,0
 \bottomrule
 \end{tabular}
 \caption{Model-mediated source-packet rows over four frozen 500-example
-surfaces. Control is the best source-destroying control on that surface.
+surfaces. Control is the highest-accuracy source-destroying control among the
+reported control set.
 Intervals are paired bootstrap 95\% intervals for matched minus target.}
 \label{tab:main}
 \end{table}
@@ -184,7 +186,7 @@ four surfaces.
 
 \section{Threat Model Results}
 
-At the 2-byte packet budget, deterministic reviewer-risk controls remain at
+At the 2-byte packet budget, source-destroying and leakage controls remain at
 target-only while full-log and diagnostic oracles reach 100\%. Table~\ref{tab:controls}
 summarizes representative core and held-out surfaces.
 
@@ -199,16 +201,17 @@ core 29 & 1.000 & 0.250 & 0.250 & 0.250 & 0.254 & 0.250 & 0.250 & 0.250 \\
 held-out 30 & 1.000 & 0.250 & 0.250 & 0.250 & 0.254 & 0.250 & 0.250 & 0.250 \\
 \bottomrule
 \end{tabular}
-\caption{Deterministic threat-model rows at the 2-byte packet budget. Same-byte
-JSON/free-text relays and diagnostic-masked logs stay at target-only.}
+\caption{Protocol/evaluator threat-model rows at the 2-byte packet budget.
+Same-byte JSON/free-text relays and diagnostic-masked logs stay at target-only.}
 \label{tab:controls}
 \end{table}
 
 \section{Rate and Systems Analysis}
 
-The method's systems value is the far-left-rate operating point. Model-produced
-packets average 1.55--2.00 bytes and roughly one token. Full diagnostic text is
-also an oracle but costs roughly 14 bytes; full hidden-log relay reaches oracle
+The method's main systems-relevant property is the far-left-rate operating
+point. Model-produced packets average 1.55--2.00 bytes and roughly one token
+under the tokenizer/accounting used in these runs. Full diagnostic text is also
+an oracle but costs roughly 14 bytes; full hidden-log relay reaches oracle
 accuracy at roughly 366--374 bytes and 34 tokens per example. Structured JSON
 and free-text relays fail at 2 bytes but become oracles at 32 bytes because the
 diagnostic is then visible in parseable form.
@@ -226,14 +229,14 @@ diagnostic is then visible in parseable form.
 \section{Model-Mediated Protocol Decoder Smoke}
 \label{sec:target-decoder}
 
-To test whether the hard-coded target lookup is essential, we replace it with
-Qwen3-0.6B acting as a target-side selector. The model receives the target-prior
-fallback label, source packet, candidate labels, and candidate diagnostic
-metadata. On a 16-example core slice, matched packets reach 0.688 versus 0.250
-target/control. On a 32-example held-out slice, matched packets reach 0.750
-versus 0.250 target and 0.281 best control. This is a smoke ablation, not the
-main evidence or a learned latent bridge, but it reduces the hand-coded lookup
-concern.
+As a limited check on whether the result depends entirely on the hard-coded
+target lookup, we replace it with Qwen3-0.6B acting as a target-side selector.
+The model receives the target-prior fallback label, source packet, candidate
+labels, and candidate diagnostic metadata. On a 16-example core slice, matched
+packets reach 0.688 versus 0.250 target/control. On a 32-example held-out slice,
+matched packets reach 0.750 versus 0.250 target and 0.281 best control. This is
+a smoke ablation, not the main evidence or a learned latent bridge, but it
+reduces the hand-coded lookup concern.
 
 \section{Interpretability}
 
@@ -267,15 +270,15 @@ candidate pool, while only the source sees the hidden tool-trace diagnostic.
 
 \paragraph{Prompt compression and text relay.}
 Prompt-compression methods such as LLMLingua reduce visible context length
-\citep{jiang2023llmlingua}. They are important budget baselines, but they do
-not solve the source-private setting when the target never receives the hidden
+\citep{jiang2023llmlingua}. They are important budget baselines, but they
+address a different setting from ours when the target never receives the hidden
 evidence. We therefore compare against matched-byte text, JSON, hidden-log
 prefix, full diagnostic text, and full hidden-log relay rows to separate byte
 savings from private evidence communication.
 
 \paragraph{Latent, cache, and connector communication.}
-Direct activation and KV-cache communication methods such as C2C and KVComm
-communicate internal model state rather than explicit packets
+Recent preprints on direct activation and KV-cache communication, such as C2C
+and KVComm, communicate internal model state rather than explicit packets
 \citep{fu2025c2c,shi2025kvcomm}. VLM connectors and JEPA-style objectives
 motivate future learned bottlenecks and anti-collapse diagnostics
 \citep{alayrac2022flamingo,li2023blip2,assran2023ijepa,bardes2021vicreg}.
@@ -300,10 +303,11 @@ source-private controls.
 We present a scoped positive method for source-private evidence communication.
 A source model reads private tool-trace diagnostics and emits a compact explicit
 packet. A target-side candidate decoder combines that packet with public
-candidate metadata to select the correct repair. The method is reproducible,
-interpretable, rate-accounted, and stable across the tested frozen 500-example
-surfaces, held-out repair families, seed repeats, source-destroying controls,
-structured relay baselines, and a small target-LLM decoder ablation.
+candidate metadata to select the gold candidate from the provided repair pool.
+The reported result is artifact-backed, interpretable, rate-accounted, and
+stable across the tested frozen 500-example surfaces, held-out repair families,
+seed repeats, source-destroying controls, structured relay baselines, and a
+small target-LLM decoder ablation.
 
 \bibliography{source_private_tool_trace}
 \bibliographystyle{iclr2026_conference}
@@ -319,8 +323,10 @@ cross-model communication, or unconstrained repair generation.
 
 \section{Artifacts}
 
-Main result artifacts are tracked in the source-private tool-trace results
-folders. Table~\ref{tab:artifacts} lists the decisive manifests and scripts.
+Main result artifacts are tracked in the baseline-pack, reviewer-risk,
+target-decoder-smoke, and LaTeX/figure result roots, all prefixed by
+\texttt{results/source\_private\_tool\_trace\_*}. Table~\ref{tab:artifacts}
+lists the decisive manifests and scripts.
 
 \begin{table}[t]
 \centering
@@ -330,15 +336,16 @@ folders. Table~\ref{tab:artifacts} lists the decisive manifests and scripts.
 \toprule
 Evidence & N / seeds & Entry point & Artifact \\
 \midrule
-Model packet rows & 500; 29/31/30/32 & model packet extractor and baseline-pack builder & baseline-pack manifest \\
-Reviewer controls & 500; 29 and 30 & hidden-repair packet evaluator & reviewer-risk manifest \\
-Target-decoder smoke & 16/32; 29 and 30 & target-decoder smoke runner & target-decoder manifest \\
-Figures and rate curve & 500; 29 and 30 & figure builder & figure manifest \\
-LaTeX compile & paper source & latexmk & compile manifest \\
+Model packet rows & 500; 29/31/30/32 & model packet extractor and baseline-pack builder & \texttt{baseline\_pack.md} \\
+Reviewer controls & 500; 29 and 30 & hidden-repair packet evaluator & \texttt{manifest.md} \\
+Target-decoder smoke & core 16 seed 29; held-out 16/32 seed 30 & target-decoder smoke runner & \texttt{manifest.md} \\
+Figures and rate curve & 500; 29 and 30 & figure builder & \texttt{manifest.json} \\
+LaTeX compile & paper source & latexmk & \texttt{manifest.md} \\
 \bottomrule
 \end{tabular}
-\caption{Decisive artifact manifests. Each manifest records exact commands,
-paths, seeds, budgets, and summaries; the git commit provides source hashes.}
+\caption{Decisive artifact manifests. Manifests and paired JSON/Markdown
+summaries record paths, seeds, budgets, summaries, and where available exact
+commands; the git commit provides source hashes.}
 \label{tab:artifacts}
 \end{table}
 

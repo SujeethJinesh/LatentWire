@@ -43,13 +43,28 @@ test-guided repair scope.
   - Next experiment change: future learned-interface work should compare to
     C2C/KVComm-style cache transfer under matched source-private controls.
   - Role: baseline and limitation framing.
-- Repair-R1, https://arxiv.org/abs/2508.13179
+- Repair-R1, https://arxiv.org/abs/2507.22853
   - Helps: keeps the hidden-repair benchmark connected to test-guided program
     repair while preserving the paper's candidate-selection boundary.
   - Mechanism/design idea: test feedback as repair evidence.
   - Next experiment change: real repair workflows are future work; do not claim
     unconstrained repair from this benchmark.
   - Role: benchmark framing and limitation support.
+
+## Metadata Verification
+
+The submission-polish pass verified primary-source metadata for the paper-facing
+entries:
+
+- Distributed indirect source coding: Jiancheng Tang, Qianqian Yang, Deniz
+  Gunduz; arXiv `2405.13483`.
+- AutoGen: COLM 2024 OpenReview entry; title uses plural `Conversations`.
+- LLMLingua: ACL Anthology EMNLP 2023 entry with DOI
+  `10.18653/v1/2023.emnlp-main.825`.
+- C2C and KVComm: treated as recent ICLR 2026/OpenReview preprints in the
+  manuscript.
+- Repair-R1: corrected to arXiv `2507.22853`; the earlier provisional
+  `2508.13179` URL was a different paper.
 
 ## Consequence For The Paper
 

@@ -16,7 +16,7 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error source_private_tool_trace.t
 
 - `paper/iclr2026/source_private_tool_trace.pdf`
 - pages: `7`
-- size: `212923` bytes
+- size: `225146` bytes
 
 ## Log Audit
 
