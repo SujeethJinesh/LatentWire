@@ -1,0 +1,120 @@
+{
+  "gate": "source_private_testlog_packet_llm_packet_seed_repeat_20260428",
+  "helper_minus_full_log_accuracy": 0.59375,
+  "mode_summaries": {
+    "full_log": {
+      "all_pass": false,
+      "max_matched_accuracy": 0.34375,
+      "mean_matched_accuracy": 0.34375,
+      "mean_matched_minus_best_control": 0.09375,
+      "mean_matched_minus_best_no_source": 0.09375,
+      "mean_packet_valid_rate": 0.1625,
+      "min_matched_accuracy": 0.34375,
+      "passes": [
+        false,
+        false
+      ],
+      "seeds": [
+        29,
+        30
+      ],
+      "std_matched_accuracy": 0.0
+    },
+    "helper_line": {
+      "all_pass": true,
+      "max_matched_accuracy": 0.9375,
+      "mean_matched_accuracy": 0.9375,
+      "mean_matched_minus_best_control": 0.6875,
+      "mean_matched_minus_best_no_source": 0.6875,
+      "mean_packet_valid_rate": 0.91875,
+      "min_matched_accuracy": 0.9375,
+      "passes": [
+        true,
+        true
+      ],
+      "seeds": [
+        29,
+        30
+      ],
+      "std_matched_accuracy": 0.0
+    }
+  },
+  "pass_gate": true,
+  "prompt_ablation_interpretation": "helper_line repeats pass; full_log/no-helper ablation fails. Treat as protocol-assisted private tool-log packet emission, not unstructured log extraction.",
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "run_utc": "2026-04-28T07:17:06.854935+00:00",
+  "runs": [
+    {
+      "best_control_accuracy": 0.25,
+      "exact_id_sha256": "fcfd2cfcecfa51f4caae6e5de39cf0632dafb634e4f19db0dfdc12c2ef8dbd2e",
+      "manifest_path": "results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/helper_seed29/manifest.json",
+      "matched_accuracy": 0.9375,
+      "matched_correct": 150,
+      "matched_minus_best_control": 0.6875,
+      "matched_minus_best_no_source": 0.6875,
+      "n": 160,
+      "name": "helper_seed29",
+      "p50_latency_ms": 167.09302099843626,
+      "packet_valid_rate": 0.91875,
+      "pass_gate": true,
+      "prompt_mode": "helper_line",
+      "seed": 29,
+      "summary_path": "results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/helper_seed29/summary.json",
+      "target_only_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "exact_id_sha256": "fcfd2cfcecfa51f4caae6e5de39cf0632dafb634e4f19db0dfdc12c2ef8dbd2e",
+      "manifest_path": "results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/helper_seed30/manifest.json",
+      "matched_accuracy": 0.9375,
+      "matched_correct": 150,
+      "matched_minus_best_control": 0.6875,
+      "matched_minus_best_no_source": 0.6875,
+      "n": 160,
+      "name": "helper_seed30",
+      "p50_latency_ms": 164.69652050363948,
+      "packet_valid_rate": 0.91875,
+      "pass_gate": true,
+      "prompt_mode": "helper_line",
+      "seed": 30,
+      "summary_path": "results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/helper_seed30/summary.json",
+      "target_only_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "exact_id_sha256": "fcfd2cfcecfa51f4caae6e5de39cf0632dafb634e4f19db0dfdc12c2ef8dbd2e",
+      "manifest_path": "results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/full_log_seed29/manifest.json",
+      "matched_accuracy": 0.34375,
+      "matched_correct": 55,
+      "matched_minus_best_control": 0.09375,
+      "matched_minus_best_no_source": 0.09375,
+      "n": 160,
+      "name": "full_log_seed29",
+      "p50_latency_ms": 132.96602049740613,
+      "packet_valid_rate": 0.1625,
+      "pass_gate": false,
+      "prompt_mode": "full_log",
+      "seed": 29,
+      "summary_path": "results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/full_log_seed29/summary.json",
+      "target_only_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "exact_id_sha256": "fcfd2cfcecfa51f4caae6e5de39cf0632dafb634e4f19db0dfdc12c2ef8dbd2e",
+      "manifest_path": "results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/full_log_seed30/manifest.json",
+      "matched_accuracy": 0.34375,
+      "matched_correct": 55,
+      "matched_minus_best_control": 0.09375,
+      "matched_minus_best_no_source": 0.09375,
+      "n": 160,
+      "name": "full_log_seed30",
+      "p50_latency_ms": 129.0064170025289,
+      "packet_valid_rate": 0.1625,
+      "pass_gate": false,
+      "prompt_mode": "full_log",
+      "seed": 30,
+      "summary_path": "results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/full_log_seed30/summary.json",
+      "target_only_accuracy": 0.25
+    }
+  ]
+}

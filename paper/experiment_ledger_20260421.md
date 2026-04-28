@@ -12934,3 +12934,121 @@ Next exact gate:
 - `source_private_testlog_packet_llm_packet_seed_repeat_20260428`: seeds `29`
   and `30`, same frozen benchmark, same controls, plus no-helper-line prompt
   ablation
+
+## 2026-04-28 Cycle 29 - Source-Private Test-Log Packet Seed Repeat
+
+Cycle start:
+
+1. Current ICLR readiness: not ready, but the live source-private test-log
+   branch now has a positive model-mediated result.
+2. Current paper story: a source model extracts a compact private tool-log
+   packet and the target decodes it with public candidate-side signatures.
+3. Exact blocker: separate protocol-assisted packet emission from unstructured
+   log extraction, then confirm cross-model and on hidden-test/code-repair logs.
+4. Current live branch: source-private test-log packet handoff.
+5. Highest-priority gate:
+   `source_private_testlog_packet_llm_packet_seed_repeat_20260428`.
+6. Scale-up rung: strict-small model-mediated confirmation.
+
+MPS guard:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: no live blocker was present.
+
+Subagent synthesis:
+
+- reviewer: helper-line results are acceptable only as protocol-assisted
+  handoff; if no-helper collapses, do not claim generic unstructured-log
+  extraction
+- planner: aggregate exact frozen IDs across prompt modes and seeds, report
+  pass/fail per run, and keep controls flat
+- harness audit: greedy seed repeats are reproducibility checks, so record
+  prompt mode, script/benchmark hashes, deterministic decoding metadata, and
+  nonself shuffled-source provenance
+
+Script updates:
+
+- added `--prompt-mode helper_line|full_log`
+- added prompt-mode metadata to packet rows and manifests
+- added benchmark and script hashes to manifests
+- added `do_sample: false` metadata
+- added nonself shuffled-source provenance in prediction rows
+
+Runs:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_testlog_packet_llm_packet.py \
+  --benchmark-jsonl results/source_private_testlog_packet_strict_small_20260428/benchmark.jsonl \
+  --output-dir results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/helper_seed29 \
+  --model Qwen/Qwen2.5-0.5B-Instruct \
+  --device mps \
+  --dtype float32 \
+  --limit 160 \
+  --seed 29 \
+  --max-new-tokens 8 \
+  --prompt-mode helper_line \
+  --no-enable-thinking || true
+```
+
+Repeated for:
+
+- `helper_seed30`
+- `full_log_seed29`
+- `full_log_seed30`
+
+Results:
+
+| Prompt mode | Seeds | All pass | Mean matched | Min matched | Mean valid packets | Mean lift vs no-source | Mean lift vs controls |
+|---|---|---|---:|---:|---:|---:|---:|
+| helper_line | `[29, 30]` | `true` | 0.938 | 0.938 | 0.919 | 0.688 | 0.688 |
+| full_log | `[29, 30]` | `false` | 0.344 | 0.344 | 0.163 | 0.094 | 0.094 |
+
+Per-run:
+
+- helper seed 29: pass, matched `150/160`, target-only/control `40/160`
+- helper seed 30: pass, matched `150/160`, target-only/control `40/160`
+- full-log seed 29: fail, matched `55/160`, target-only/control `40/160`
+- full-log seed 30: fail, matched `55/160`, target-only/control `40/160`
+
+Interpretation:
+
+- The helper-line protocol is stable across greedy seed repeats.
+- The no-helper full-log ablation fails, mostly from invalid or partial packets.
+- Current claim must be protocol-assisted private tool-log packet emission, not
+  general log extraction.
+
+Artifacts:
+
+- `paper/source_private_testlog_packet_seed_repeat_20260428.md`
+- `results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/aggregate_summary.json`
+- `results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/aggregate_summary.md`
+- `results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/manifest.json`
+- `results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/manifest.md`
+- four per-run subdirectories under
+  `results/source_private_testlog_packet_llm_packet_seed_repeat_20260428/`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_run_source_private_testlog_packet_llm_packet.py \
+  tests/test_run_source_private_testlog_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_llm_packet.py \
+  tests/test_run_source_private_evidence_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_gate.py -q
+```
+
+Result: `22 passed`.
+
+Decision:
+
+- promote the branch under a narrow protocol-assisted handoff claim
+- do not claim generic unstructured-log extraction
+
+Next exact gate:
+
+- `source_private_testlog_packet_cross_model_20260428`: same frozen IDs and
+  helper-line protocol with a second cached source model/family, same controls

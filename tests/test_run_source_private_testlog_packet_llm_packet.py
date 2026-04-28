@@ -35,6 +35,17 @@ def test_signature_parser_accepts_plain_or_labeled_packets() -> None:
     assert llm_gate._extract_signature("candidate_0001_patch_2") == ""
 
 
+def test_prompt_modes_include_or_omit_helper_line() -> None:
+    example = _loaded_examples(1)[0]
+
+    helper_prompt = llm_gate._prompt_for_signature(example, prompt_mode="helper_line")
+    full_log_prompt = llm_gate._prompt_for_signature(example, prompt_mode="full_log")
+
+    assert "Private TRACE_SIG line copied from the log:" in helper_prompt
+    assert "Private TRACE_SIG line copied from the log:" not in full_log_prompt
+    assert "TRACE_SIG=" in full_log_prompt
+
+
 def test_exact_signature_packet_decodes_to_answer() -> None:
     examples = _loaded_examples(4)
     example = examples[2]
@@ -83,3 +94,24 @@ def test_key_like_or_label_like_outputs_do_not_create_gain() -> None:
     _, summary = llm_gate._evaluate(examples, packets, seed=28)
 
     assert summary["metrics"]["matched_model_packet"]["accuracy"] == summary["metrics"]["target_only"]["accuracy"]
+
+
+def test_shuffled_model_packet_records_nonself_source_id() -> None:
+    examples = _loaded_examples(8)
+    packets = [
+        {
+            "example_id": example.example_id,
+            "generated_text": example.answer_signature,
+            "packet": example.answer_signature,
+            "packet_bytes": 2,
+            "packet_tokens": 1,
+            "latency_ms": 0.0,
+            "valid_packet": True,
+        }
+        for example in examples
+    ]
+
+    rows, _ = llm_gate._evaluate(examples, packets, seed=28)
+
+    for row in rows:
+        assert row["conditions"]["shuffled_model_packet"]["source_example_id"] != row["example_id"]

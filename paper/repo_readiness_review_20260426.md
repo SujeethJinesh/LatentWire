@@ -202,6 +202,15 @@ model/seed on a synthetic signature benchmark with source-side private-log line
 isolation and a deterministic decoder. Next gate: seed repeat with a
 no-helper-line ablation and then a hidden-test/code-repair variant.
 
+Update `2026-04-28`: seed-repeat and prompt-mode ablation narrow the live claim.
+Helper-line protocol runs with seeds `29` and `30` both pass at `150/160`
+matched accuracy versus `40/160` target/control floor. The no-helper full-log
+ablation fails at `55/160` with low valid-packet rate (`0.163`). This keeps the
+branch alive as protocol-assisted private tool-log packet emission, but it is
+not a general unstructured-log extraction result. Current readiness remains not
+ICLR-ready. Next gate: cross-model/source-family confirmation on the same frozen
+IDs, then a hidden-test/code-repair variant.
+
 The strongest bound is the SVAMP32 C2C-derived syndrome sidecar:
 
 - strict target-side pool: `14/32`

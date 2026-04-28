@@ -80,11 +80,22 @@ def _deterministic_nonself_index(index: int, n: int) -> int:
     return (index * 17 + 11) % n if (index * 17 + 11) % n != index else (index + 1) % n
 
 
-def _prompt_for_signature(example: LoadedExample) -> str:
+def _prompt_for_signature(example: LoadedExample, *, prompt_mode: str) -> str:
     trace_line = next(
         (line for line in example.private_test_log.splitlines() if "TRACE_SIG=" in line),
         "",
     )
+    if prompt_mode == "full_log":
+        return (
+            "You are the source agent in a private tool-log handoff experiment.\n"
+            "Read the private test log and output exactly the two-character value after TRACE_SIG=.\n"
+            "Do not output the candidate label, patch name, explanation, punctuation, or code fence.\n"
+            "Return only the two-character packet.\n\n"
+            f"Private test log:\n{example.private_test_log}\n"
+            "Packet:"
+        )
+    if prompt_mode != "helper_line":
+        raise ValueError(f"unknown prompt_mode {prompt_mode!r}")
     return (
         "You are the source agent in a private tool-log handoff experiment.\n"
         "Copy exactly the two characters after the equals sign in the private TRACE_SIG line.\n"
@@ -133,6 +144,7 @@ def _generate_packets(
     seed: int,
     max_new_tokens: int,
     enable_thinking: bool | None,
+    prompt_mode: str,
 ) -> list[dict[str, Any]]:
     import torch
 
@@ -140,7 +152,7 @@ def _generate_packets(
     torch.manual_seed(seed)
     rows: list[dict[str, Any]] = []
     for example in examples:
-        prompt = _prompt_for_signature(example)
+        prompt = _prompt_for_signature(example, prompt_mode=prompt_mode)
         text_prompt = _format_prompt(tokenizer, prompt, enable_thinking=enable_thinking)
         inputs = tokenizer(text_prompt, return_tensors="pt").to(device)
         start = time.perf_counter()
@@ -164,6 +176,7 @@ def _generate_packets(
                 "packet_tokens": len(new_tokens),
                 "latency_ms": latency_ms,
                 "valid_packet": bool(re.fullmatch(r"[A-Z2-9]{2}", packet)),
+                "prompt_mode": prompt_mode,
             }
         )
     return rows
@@ -180,7 +193,8 @@ def _evaluate(
     rows: list[dict[str, Any]] = []
     for index, example in enumerate(examples):
         matched_packet = by_id[example.example_id]["packet"]
-        shuffled_packet = by_id[examples[_deterministic_nonself_index(index, len(examples))].example_id]["packet"]
+        shuffled_source = examples[_deterministic_nonself_index(index, len(examples))]
+        shuffled_packet = by_id[shuffled_source.example_id]["packet"]
         random_packet = "".join(rng.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(2))
         prior_label = _prior_prediction(example)
         prior_signature = next(candidate["failure_signature"] for candidate in example.candidates if candidate["label"] == prior_label)
@@ -204,36 +218,43 @@ def _evaluate(
                 payload_bytes = packet_row["packet_bytes"]
                 payload_tokens = packet_row["packet_tokens"]
                 latency_ms = packet_row["latency_ms"]
+                source_example_id = example.example_id
             elif condition == "shuffled_model_packet":
                 payload = shuffled_packet
                 payload_bytes = len(payload.encode("utf-8"))
                 payload_tokens = 1 if payload else 0
                 latency_ms = 0.0
+                source_example_id = shuffled_source.example_id
             elif condition == "random_same_byte":
                 payload = random_packet
                 payload_bytes = len(payload.encode("utf-8"))
                 payload_tokens = 1
                 latency_ms = 0.0
+                source_example_id = example.example_id
             elif condition == "target_derived_sidecar":
                 payload = prior_signature
                 payload_bytes = len(payload.encode("utf-8"))
                 payload_tokens = 1
                 latency_ms = 0.0
+                source_example_id = example.example_id
             elif condition == "full_signature_oracle":
                 payload = example.answer_signature
                 payload_bytes = len(payload.encode("utf-8"))
                 payload_tokens = 1
                 latency_ms = 0.0
+                source_example_id = example.example_id
             elif condition == "answer_only":
                 payload = answer_only
                 payload_bytes = len(payload.encode("utf-8"))
                 payload_tokens = 1 if payload else 0
                 latency_ms = 0.0
+                source_example_id = example.example_id
             else:
                 payload = ""
                 payload_bytes = 0
                 payload_tokens = 0
                 latency_ms = 0.0
+                source_example_id = example.example_id
             conditions[condition] = {
                 "prediction": prediction,
                 "correct": prediction == example.answer_label,
@@ -241,6 +262,7 @@ def _evaluate(
                 "payload_bytes": payload_bytes,
                 "payload_tokens": payload_tokens,
                 "latency_ms": latency_ms,
+                "source_example_id": source_example_id,
             }
         rows.append(
             {
@@ -380,6 +402,7 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=160)
     parser.add_argument("--seed", type=int, default=28)
     parser.add_argument("--max-new-tokens", type=int, default=8)
+    parser.add_argument("--prompt-mode", choices=["helper_line", "full_log"], default="helper_line")
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
     args = parser.parse_args()
 
@@ -396,6 +419,7 @@ def main() -> None:
         seed=args.seed,
         max_new_tokens=args.max_new_tokens,
         enable_thinking=args.enable_thinking,
+        prompt_mode=args.prompt_mode,
     )
     rows, summary = _evaluate(examples, packets, seed=args.seed)
     _write_jsonl(output_dir / "model_packets.jsonl", packets)
@@ -416,15 +440,33 @@ def main() -> None:
                 f"--limit {args.limit}",
                 f"--seed {args.seed}",
                 f"--max-new-tokens {args.max_new_tokens}",
+                f"--prompt-mode {args.prompt_mode}",
+                "--no-enable-thinking" if args.enable_thinking is False else "--enable-thinking",
             ]
         ),
+        "args": {
+            "benchmark_jsonl": str(args.benchmark_jsonl),
+            "output_dir": str(args.output_dir),
+            "model": args.model,
+            "device": args.device,
+            "dtype": args.dtype,
+            "limit": args.limit,
+            "seed": args.seed,
+            "max_new_tokens": args.max_new_tokens,
+            "prompt_mode": args.prompt_mode,
+            "enable_thinking": args.enable_thinking,
+            "do_sample": False,
+        },
         "artifacts": artifacts,
         "artifact_sha256": {
             artifact: _sha256_file(output_dir / artifact)
             for artifact in artifacts
             if artifact not in {"manifest.json", "manifest.md"}
         },
+        "benchmark_sha256": _sha256_file(benchmark_path),
+        "script_sha256": _sha256_file(pathlib.Path(__file__)),
         "summary": summary,
+        "prompt_mode": args.prompt_mode,
     }
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
     _write_manifest_markdown(output_dir / "manifest.md", manifest)
