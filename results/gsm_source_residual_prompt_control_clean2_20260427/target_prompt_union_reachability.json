@@ -1,0 +1,36 @@
+{
+  "c2c_clean_residual_in_pool": 0,
+  "c2c_clean_residual_in_pool_ids": [],
+  "c2c_clean_residual_total": 0,
+  "c2c_teacher_only_in_pool": 0,
+  "c2c_teacher_only_in_pool_ids": [],
+  "c2c_teacher_only_total": 0,
+  "command": "scripts/summarize_reachability_union.py --reachability target_direct=results/gsm_source_residual_prompt_control_clean2_20260427/target_direct_reachability.json --reachability target_brief=results/gsm_source_residual_prompt_control_clean2_20260427/target_brief_reachability.json --date 2026-04-27 --output-json results/gsm_source_residual_prompt_control_clean2_20260427/target_prompt_union_reachability.json --output-md results/gsm_source_residual_prompt_control_clean2_20260427/target_prompt_union_reachability.md",
+  "date": "2026-04-27",
+  "git_commit": "f17c315e2170b872fcfed6402f94f2d39b03a01a",
+  "inputs": [
+    {
+      "c2c_clean_residual_in_pool": 0,
+      "label": "target_direct",
+      "path": "results/gsm_source_residual_prompt_control_clean2_20260427/target_direct_reachability.json",
+      "sample_oracle_correct": 1
+    },
+    {
+      "c2c_clean_residual_in_pool": 0,
+      "label": "target_brief",
+      "path": "results/gsm_source_residual_prompt_control_clean2_20260427/target_brief_reachability.json",
+      "sample_oracle_correct": 1
+    }
+  ],
+  "reference_n": 70,
+  "sample_oracle_correct": 1,
+  "sample_oracle_ids": [
+    "1deed634dcd7d229"
+  ],
+  "source_contrastive_clean_in_pool": 1,
+  "source_contrastive_clean_in_pool_ids": [
+    "1deed634dcd7d229"
+  ],
+  "source_contrastive_clean_total": 2,
+  "status": "reachability_union_summarized"
+}

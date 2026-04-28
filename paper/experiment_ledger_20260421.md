@@ -12220,3 +12220,89 @@ Next exact gate:
 - a live source branch requires clean residual IDs not reached by target direct,
   target brief-wrapper, no-source merged pool, answer-only/answer-masked source,
   zero-source, shuffled-source, and random same-byte controls
+
+## 2026-04-27 Cycle 22 - Prompt-Wrapper Source Surface Controls
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; still missing a source-derived positive
+   method.
+2. Current paper story: target prompt wrappers are now a mandatory no-source
+   candidate-prior baseline.
+3. Exact blocker: identify source residual IDs only after subtracting target
+   direct, target brief-wrapper, no-source merged pools, prompt-format controls,
+   and source-answer leakage.
+4. Current live branches: prompt-controlled source-surface discovery; JEPA-style
+   source-innovation connectors only after a residual surface survives.
+5. Highest-priority gate: run target prompt-wrapper controls on reusable SVAMP70
+   and GSM clean source-only surfaces.
+6. Scale-up rung: strict small gate.
+
+Subagents:
+
+- planner: skip SVAMP32 frontier because it is saturated; test GSM clean2 if a
+  source surface remains after target prompt controls
+- reviewer: require target-wrapper, prompt-format, no-source, selector, and
+  answer-leak controls before any source residual claim
+- JEPA/anti-collapse: defer Query-JEPA and masked target-state fill-in until a
+  target-prior-unexplained source surface exists
+- artifact audit: prioritize Math-7B SVAMP70 clean7 before connector work
+
+Commands and artifacts:
+
+```bash
+./venv_arm64/bin/python scripts/materialize_generation_id_subset.py \
+  --eval-file results/qwen25_7b_qwen3_svamp70_surface_scout_20260427/_artifacts/svamp_eval_70_70.jsonl \
+  --target-set-json results/qwen25_7b_qwen3_svamp70_surface_scout_20260427/source_contrastive_target_set.json \
+  --id-fields clean_source_only \
+  --output-jsonl results/qwen25_7b_svamp70_clean7_target_brief_s8_20260427/clean7_eval.jsonl \
+  --output-meta-json results/qwen25_7b_svamp70_clean7_target_brief_s8_20260427/clean7_eval.meta.json
+
+HF_HUB_DISABLE_XET=1 PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/sample_target_candidate_surface.py \
+  --eval-file results/qwen25_7b_svamp70_clean7_target_brief_s8_20260427/clean7_eval.jsonl \
+  --model Qwen/Qwen3-0.6B \
+  --samples 8 \
+  --method-prefix target_brief_sample \
+  --temperature 0.9 \
+  --top-p 0.95 \
+  --seed 71 \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --prompt-mode source_reasoning \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --enable-thinking false \
+  --output-jsonl results/qwen25_7b_svamp70_clean7_target_brief_s8_20260427/target_brief_samples.jsonl \
+  --output-json results/qwen25_7b_svamp70_clean7_target_brief_s8_20260427/target_brief_samples.json \
+  --output-md results/qwen25_7b_svamp70_clean7_target_brief_s8_20260427/target_brief_samples.md
+```
+
+Math-7B SVAMP70 clean7 result:
+
+- target brief-wrapper S8 oracle: `4/7`
+- target-prior explained clean source-only IDs: `4`
+- residual candidates after target brief S8: `33836927fc9f1a8a`,
+  `4c84ebf42812703b`, `d64f6e35083ffe8c`
+- decision: partial prune; do not train a connector until those three survive
+  answer-masked/source-destroying controls
+
+GSM clean2 prompt-control result:
+
+- source brief S8 oracle: `1/2`
+- target direct S16 oracle: `1/2`
+- target brief-wrapper S16 oracle: `1/2`
+- target prompt union oracle: `1/2`
+- source addition beyond target prompt union: `0`
+- decision: fail GSM clean2 as a live source surface
+
+Artifacts:
+
+- `results/qwen25_7b_svamp70_clean7_target_brief_s8_20260427/manifest.md`
+- `results/gsm_source_residual_prompt_control_clean2_20260427/manifest.md`
+- `paper/prompt_wrapper_source_surface_controls_20260427.md`
+
+Next exact gate:
+
+- run answer-masked and answer-only source controls on the three Math-7B SVAMP70
+  residual candidates that target brief S8 missed

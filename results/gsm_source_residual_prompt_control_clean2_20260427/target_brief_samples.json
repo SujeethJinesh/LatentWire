@@ -1,0 +1,115 @@
+{
+  "command": "scripts/sample_target_candidate_surface.py --eval-file results/gsm_source_residual_prompt_control_clean2_20260427/gsm_clean2_eval.jsonl --model Qwen/Qwen3-0.6B --samples 16 --method-prefix target_brief_sample --temperature 0.9 --top-p 0.95 --seed 211 --device mps --dtype float32 --max-new-tokens 64 --prompt-mode source_reasoning --source-reasoning-mode brief_analysis --use-chat-template --enable-thinking false --output-jsonl results/gsm_source_residual_prompt_control_clean2_20260427/target_brief_samples.jsonl --output-json results/gsm_source_residual_prompt_control_clean2_20260427/target_brief_samples.json --output-md results/gsm_source_residual_prompt_control_clean2_20260427/target_brief_samples.md",
+  "config": {
+    "device": "mps",
+    "dtype": "float32",
+    "enable_thinking": false,
+    "max_new_tokens": 64,
+    "method_prefix": "target_brief_sample",
+    "prompt_mode": "source_reasoning",
+    "samples": 16,
+    "seed": 211,
+    "source_reasoning_mode": "brief_analysis",
+    "temperature": 0.9,
+    "top_p": 0.95,
+    "use_chat_template": true
+  },
+  "date": "2026-04-27",
+  "eval_file": "results/gsm_source_residual_prompt_control_clean2_20260427/gsm_clean2_eval.jsonl",
+  "eval_file_sha256": "094e6250d00bbcd061406a6b3942a908039e63ce765637d8a67e424abcd382a2",
+  "git_commit": "f17c315e2170b872fcfed6402f94f2d39b03a01a",
+  "model": "Qwen/Qwen3-0.6B",
+  "output_jsonl": "results/gsm_source_residual_prompt_control_clean2_20260427/target_brief_samples.jsonl",
+  "output_jsonl_sha256": "3c5d2e3a12cf655001585df9d6aaece8aafebe151aec56a8fdef89707f893dea",
+  "status": "candidate_surface_sampled",
+  "summary": {
+    "candidate_oracle_correct": 1,
+    "candidate_oracle_ids": [
+      "1deed634dcd7d229"
+    ],
+    "example_n": 2,
+    "methods": {
+      "target_brief_sample_s0": {
+        "correct": 0,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s1": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s10": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s11": {
+        "correct": 0,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s12": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s13": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s14": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s15": {
+        "correct": 0,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s2": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s3": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s4": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s5": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s6": {
+        "correct": 0,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s7": {
+        "correct": 0,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s8": {
+        "correct": 0,
+        "n": 2,
+        "numeric_coverage": 2
+      },
+      "target_brief_sample_s9": {
+        "correct": 1,
+        "n": 2,
+        "numeric_coverage": 2
+      }
+    },
+    "sample_n": 16
+  }
+}

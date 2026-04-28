@@ -115,6 +115,44 @@ branch should wait until a discovery surface has `answer_unexplained_clean_in_po
 
 Until then, JEPA is a harness/design constraint, not a headline method.
 
+## 2026-04-27 Prompt-Wrapper Control Addendum
+
+The latest prompt-wrapper gates strengthen the same conclusion.
+
+### V-JEPA 2 / V-JEPA 2.1
+
+- Sources: Meta V-JEPA 2 project materials
+  (https://ai.meta.com/vjepa/) and the V-JEPA 2.1 arXiv note
+  (https://arxiv.org/abs/2603.14482).
+- Blocker helped: avoid training a connector that predicts generic target
+  priors rather than source-specific state.
+- Mechanism/design idea: use masked latent target prediction only on residual
+  target states that target prompt-wrapper sampling cannot already reach.
+- Next experiment change: no full V-JEPA-style connector yet. Add target-prior
+  subtraction to the discovery table first, then train masked target-state
+  fill-in only on residual IDs.
+- Role: inspiration and anti-collapse diagnostic, not a baseline claim.
+
+### LLM-JEPA / LeJEPA Reinterpretation
+
+- Sources: LLM-JEPA arXiv (https://arxiv.org/abs/2509.14252) and OpenReview
+  entry (https://openreview.net/forum?id=qp4vlNfoB8); LeJEPA/SIGReg arXiv
+  (https://arxiv.org/abs/2511.08544).
+- Blocker helped: representation collapse is now secondary to target-prior
+  collapse.
+- Mechanism/design idea: use SIGReg/VICReg/Barlow telemetry to ensure side
+  information has variance and rank, but gate promotion on
+  matched-source-minus-target-prior residual IDs.
+- Next experiment change: attach finite coverage, effective rank, variance
+  floor, covariance off-diagonal, slot/query entropy, and matched-vs-control
+  margins to future source-surface discovery before connector training.
+- Role: ablation design and paper framing.
+
+The current consequence is explicit: JEPA-style objectives should predict
+source innovation over a frozen target-prior frontier, not reconstruct all
+target states or optimize latent similarity on IDs that target wrappers already
+solve.
+
 ## 2026-04-27 Committee Addendum
 
 The follow-up JEPA committee readout keeps the same decision boundary after the
@@ -198,3 +236,33 @@ but still does not create a method claim:
 4. Role: inspiration, anti-collapse diagnostics, ablation design, and paper
    framing. The source-sampling gate is discovery evidence, not communication
    evidence.
+
+## 2026-04-27 Prompt-Wrapper Control Addendum
+
+The prompt-wrapper subtraction cycle tightens the JEPA decision rule:
+
+1. Blocker helped: target brief-wrapper controls explain many apparent clean
+   source-only IDs. A JEPA connector trained before this subtraction would risk
+   learning target-prior candidate reachability rather than communication.
+2. Mechanism/design idea: train only target-prior-subtracted source innovation.
+   The bridge should predict or rank frozen target/candidate latents only on IDs
+   missed by target direct, target brief-wrapper, no-source merged pools, and
+   prompt-format controls.
+3. Next experiment change: do not run Query-JEPA yet. First produce at least
+   three residual IDs after target wrapper `S16` and answer/source controls.
+4. Role: ablation design, anti-collapse diagnostics, and paper framing.
+
+Additional primary sources to track:
+
+- V-JEPA 2 / V-JEPA 2.1, official project: https://ai.meta.com/vjepa/
+- V-JEPA 2.1, "Unlocking Dense Features in Video Self-Supervised Learning",
+  arXiv: https://arxiv.org/abs/2603.14482
+- LLM-JEPA, OpenReview: https://openreview.net/forum?id=qp4vlNfoB8
+- LLM-JEPA, arXiv: https://arxiv.org/abs/2509.14252
+- LeJEPA, arXiv: https://arxiv.org/abs/2511.08544
+
+Implication: V-JEPA-style masked latent prediction and LeJEPA/SIGReg-style
+isotropy are useful only as control-aware connector telemetry here. A future
+bridge must report source-destroying-control collapse and non-collapse metrics
+at the same time: variance floor, effective rank, covariance off-diagonal mass,
+Barlow/VICReg terms, slot entropy, and matched-vs-control margins.

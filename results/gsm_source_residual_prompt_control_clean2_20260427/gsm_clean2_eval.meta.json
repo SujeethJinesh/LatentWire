@@ -1,0 +1,20 @@
+{
+  "date": "2026-04-27",
+  "eval_file": "results/qwen25math_qwen3_gsm70_source_surface_20260426/_artifacts/gsm8k_eval_70_70.jsonl",
+  "eval_file_sha256": "7d7a342b4c520553fdcf2e1159a5ed8f5627d238dce62a382761c4b6d8ab2dfc",
+  "id_source": {
+    "id_fields": [
+      "clean_source_only"
+    ],
+    "target_set_json": "results/qwen25math_qwen3_gsm70_source_surface_20260426/source_contrastive_target_set.json",
+    "target_set_sha256": "ca8ed8e581c5aea1088071a0f69c19eb00c516cb8b7d2b0503b5f17aac65e061",
+    "type": "target_set"
+  },
+  "output_jsonl": "results/gsm_source_residual_prompt_control_clean2_20260427/gsm_clean2_eval.jsonl",
+  "output_n": 2,
+  "output_sha256": "094e6250d00bbcd061406a6b3942a908039e63ce765637d8a67e424abcd382a2",
+  "selected_ids": [
+    "1deed634dcd7d229",
+    "bc004c17bc99562d"
+  ]
+}

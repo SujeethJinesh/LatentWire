@@ -1,0 +1,25 @@
+{
+  "date": "2026-04-27",
+  "eval_file": "results/qwen25_7b_qwen3_svamp70_surface_scout_20260427/_artifacts/svamp_eval_70_70.jsonl",
+  "eval_file_sha256": "bc9178d043bc05f2d1d1dd4aa2c6ec1ed024643b1a2886dfd243c4b1eca3e131",
+  "id_source": {
+    "id_fields": [
+      "clean_source_only"
+    ],
+    "target_set_json": "results/qwen25_7b_qwen3_svamp70_surface_scout_20260427/source_contrastive_target_set.json",
+    "target_set_sha256": "b064ef84b71ff17f59dc16aa3088e97ed1b21bf21a728044cf72f77730071d31",
+    "type": "target_set"
+  },
+  "output_jsonl": "results/qwen25_7b_svamp70_clean7_target_brief_s8_20260427/clean7_eval.jsonl",
+  "output_n": 7,
+  "output_sha256": "fdfd1d9fbecf74b26bdd6e92eebe54bd86d2f48a7599c6968215f1ce68f52faa",
+  "selected_ids": [
+    "33836927fc9f1a8a",
+    "3c5aeb08941dbb6d",
+    "4c84ebf42812703b",
+    "ce08a3a269bf0151",
+    "d64f6e35083ffe8c",
+    "de1bf4d142544e5b",
+    "e099e405e8d1a66b"
+  ]
+}

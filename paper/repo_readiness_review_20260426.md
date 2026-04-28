@@ -97,6 +97,17 @@ adds `0` new C2C-clean residual IDs. The source-sampling family is pruned as a
 communication surface; the next source-surface discovery must subtract target
 brief-wrapper priors at matched or larger budget.
 
+Update `2026-04-27`: prompt-wrapper controls now partially prune the best
+reusable larger source surfaces. On the Math-7B SVAMP70 clean7 surface, target
+brief-wrapper S8 recovers `4/7` clean source-only IDs without source input,
+leaving only three residual candidates (`33836927fc9f1a8a`,
+`4c84ebf42812703b`, `d64f6e35083ffe8c`) for source-destroying controls. On GSM
+clean2, source brief S8, target direct S16, and target brief S16 all recover the
+same single ID, so source adds `0` IDs beyond the target prompt union. The live
+branch remains prompt-controlled source-surface discovery; JEPA-style connectors
+remain deferred until a target-prior-unexplained surface survives answer-masked
+controls.
+
 Update `2026-04-27`: the stricter SVAMP32 clean C2C residual target-only
 sampling gate separates generator headroom from communication. No-source target
 sampling reaches gold on `2/6` clean residual IDs with full numeric coverage,
@@ -118,6 +129,16 @@ clean correct ID. Collapse telemetry is healthy enough (`effective_rank
 is lack of source-necessary process signal and residual source-number leakage
 (`5/6` selected values appear among unmasked source numbers). Hand-built
 numeric and process sidecars are now pruned on this slice.
+
+Update `2026-04-27`: prompt-wrapper source-surface controls further narrow the
+search. On Math-7B SVAMP70 clean7, target brief-wrapper S8 reaches `4/7` clean
+source-only IDs, leaving only three residual discovery IDs and no immediate
+answer-unexplained candidate-pool signal. On GSM70 clean2, source brief S8,
+target direct S16, and target brief-wrapper S16 all reach the same single ID,
+so source adds `0` residual IDs beyond the target prompt union. The live branch
+remains source-surface discovery only; JEPA/LeJEPA/V-JEPA-style connectors stay
+deferred until a surface has at least three target-prior-unexplained residual
+IDs under source-destroying controls.
 
 Update `2026-04-27 00:50 PDT`: KVComm is now harness-ready for strict
 source-control evaluation, but it remains baseline/tooling evidence rather than
