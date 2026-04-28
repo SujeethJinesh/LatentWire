@@ -1,8 +1,8 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: scoped positive-method evidence ready; paper draft not complete
-- estimated distance: paper skeleton, final framing, and optional learned target-decoder row decision
+- status: scoped positive-method manuscript draftable
+- estimated distance: paper-source draft, figures/tables, final framing, and optional target-decoder scale-up
 
 ## Current Paper Story
 
@@ -1782,3 +1782,10 @@ slice, and `0.750` matched versus `0.250` target and `0.281` best control on a
 evidence, but it reduces the novelty risk that the method is only hand-coded
 lookup. The next exact gate is
 `source_private_tool_trace_paper_sections_20260429`.
+
+Update `2026-04-29`: `source_private_tool_trace_paper_sections_20260429`
+drafts section-level manuscript text in memo form: abstract, introduction,
+problem setup, method, benchmark, results, controls, systems, target-decoder
+smoke, interpretability, limitations, and conclusion. The repo is now ready to
+move from research memos into paper-source drafting. The next exact gate is
+`source_private_tool_trace_paper_draft_20260430`.

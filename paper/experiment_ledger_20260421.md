@@ -14073,3 +14073,41 @@ Next exact gate:
 
 - `source_private_tool_trace_paper_sections_20260429`: draft paper sections
   around the scoped claim and include target-decoder smoke as an ablation.
+
+## 2026-04-29 - Source-Private Tool-Trace Paper Sections
+
+Current ICLR readiness: section-level paper draft is ready in memo form. The
+evidence is now strong enough for a scoped positive-method manuscript draft;
+remaining work is paper-source integration, figure/table rendering, and final
+positioning.
+
+Current story: source-private tool-trace packets provide a compact,
+interpretable evidence channel from private execution traces to target-side
+candidate selection. The main result is large-slice deterministic protocol
+evidence with model-produced source packets; the Qwen3 target-decoder row is a
+small ablation that reduces the hand-coded lookup objection.
+
+Sections drafted:
+
+- title and abstract
+- introduction
+- problem formulation
+- method
+- benchmark
+- results
+- controls and threat model
+- rate/systems analysis
+- target-decoder smoke
+- interpretability
+- limitations
+- conclusion
+
+Artifacts:
+
+- `paper/source_private_tool_trace_paper_sections_20260429.md`
+- `results/source_private_tool_trace_paper_sections_20260429/manifest.md`
+
+Next exact gate:
+
+- `source_private_tool_trace_paper_draft_20260430`: convert section memo into
+  paper draft/source with figure and table placeholders.
