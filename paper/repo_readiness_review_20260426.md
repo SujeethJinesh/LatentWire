@@ -1872,3 +1872,13 @@ is ready for manuscript upload. Remaining non-paper blocker: for an external
 artifact release, archive or force-add decisive raw JSON/JSONL inputs/
 predictions that are currently summarized by tracked manifests but ignored
 under `results/` or `.debug/`.
+
+Update `2026-04-28`: the external artifact-release archive is now built at
+`paper/artifacts/source_private_tool_trace_artifacts_20260428.zip` (`7548312`
+bytes, SHA256
+`64153e44dd5b41a30e54ffa5cdb0d95ca5498c2345c13da015a9f9f076c0121f`). It
+contains the compiled PDF, compile-tested source bundle, decisive raw
+JSON/JSONL results, target-decoder input surfaces, figure/rate data, and
+readout memos. Archive integrity and local-path hygiene checks passed. The repo
+is now ready for manuscript upload plus artifact handoff; remaining distance is
+external venue/upload mechanics, not additional method evidence.

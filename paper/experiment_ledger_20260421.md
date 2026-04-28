@@ -14371,3 +14371,16 @@ files, math/style dependencies, local PDF figures, and compiled PDF; template
 demo files are excluded. Scratch compile from the extracted bundle passed with
 no overfull boxes, undefined references, citation warnings, or BibTeX warnings.
 The next exact gate is `source_private_tool_trace_artifact_release_choice_20260428`.
+
+Update `2026-04-28`: `source_private_tool_trace_artifact_release_choice_20260428`
+built the external artifact archive
+`paper/artifacts/source_private_tool_trace_artifacts_20260428.zip` (`7548312`
+bytes, SHA256
+`64153e44dd5b41a30e54ffa5cdb0d95ca5498c2345c13da015a9f9f076c0121f`). The
+archive includes the compiled paper PDF, compile-tested source upload zip,
+decisive raw JSON/JSONL result roots, target-decoder benchmark inputs copied
+from scratch space, figure/rate data, and paper readout memos. `unzip -t`
+passes, and a release-tree scan found no `/Users`, `Desktop`, or username path
+leakage. The manuscript/source package remains ready for upload; the next exact
+gate is external release handoff, e.g. attach the artifact zip to the submission
+or mirror it to the chosen archival store.
