@@ -1,0 +1,49 @@
+{
+  "args": {
+    "budgets": [
+      2,
+      4,
+      8,
+      16
+    ],
+    "candidates": 4,
+    "examples": 500,
+    "family_set": "all",
+    "output_dir": "results/source_private_codebook_remap_gate_20260428",
+    "seeds": [
+      29,
+      31,
+      37
+    ]
+  },
+  "artifact_sha256": {
+    "summary.json": "acb4b329ee63f30fdf2207e8f701ef87d0b8b3f4377d40df3d2344f25083740f",
+    "summary.md": "433d111fa57a55b8f9ec712ab641d140b8b556a947eca0a136f34bed7a93d805"
+  },
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "./venv_arm64/bin/python scripts/run_source_private_codebook_remap_gate.py --examples 500 --candidates 4 --family-set all --seeds 29,31,37 --budgets 2,4,8,16 --output-dir results/source_private_codebook_remap_gate_20260428",
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "run_utc": "2026-04-28T22:21:25.987100+00:00",
+  "script_sha256": "ad30504d3980e35f1acad2d2c46b584976f4441754515f2a85ab225c64f66724",
+  "summary": {
+    "budgets": [
+      2,
+      4,
+      8,
+      16
+    ],
+    "examples": 500,
+    "pass_gate": true,
+    "seeds": [
+      29,
+      31,
+      37
+    ],
+    "unique_codebook_count": 3
+  }
+}

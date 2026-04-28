@@ -66,6 +66,9 @@ On the final tool-trace surfaces:
   explicit private diagnostic line is the transferred signal;
 - structured text relay only explains the result at larger budgets, while the
   diagnostic packet works at the far-left low-rate regime.
+- codebook remapping across seeds preserves the result: on a `500`-example
+  all-family deterministic gate, three distinct diagnostic codebooks pass at
+  `2/4/8/16` bytes with exact ID and public candidate-label parity.
 
 Representative headline results:
 

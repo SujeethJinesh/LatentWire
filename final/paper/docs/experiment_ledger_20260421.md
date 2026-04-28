@@ -14543,3 +14543,13 @@ matched-minus-best-control `+0.744`, and p50 CPU packet latency `13878 ms`.
 This gives two Qwen3.5 small sizes with clean n160 evidence: 0.8B is
 seed-stable at n160, and 2B is n160-confirmed on seed29. Latest/MoE readiness
 still excludes Qwen3.5-4B and Qwen3.6 MoE/FP8 until those rows run.
+
+Update `2026-04-28`: `source_private_codebook_remap_gate_20260428` adds a
+large deterministic reviewer-risk ablation for the fixed-codebook objection.
+Across `500` all-family examples, seeds `29/31/37`, and budgets `2/4/8/16`,
+exact IDs and public candidate labels remain identical while diagnostic
+codebooks differ (`3` unique codebook hashes). Every seed/budget passes:
+matched repair packets are `1.000`, best no-source is `0.250`, best
+source-destroying control is `0.250-0.256`, reviewer-negative controls stay
+`0.250`, and positive oracles stay `1.000`. This supports a remappable
+source-private diagnostic-code claim, not broad semantic or latent transfer.

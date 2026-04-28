@@ -25,6 +25,8 @@
 - Qwen3.5-2B n16 latest-small cross-size smoke and Qwen3.6 MoE/FP8 runbook.
 - Qwen3.5-2B n64 latest-small cross-size confirmation artifacts.
 - Qwen3.5-2B n160 latest-small cross-size confirmation artifacts.
+- Source-private codebook-remap gate artifacts showing three remapped
+  diagnostic codebooks across `500` examples and low-rate budgets.
 
 ## Notes
 

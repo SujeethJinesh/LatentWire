@@ -1998,3 +1998,13 @@ This strengthens the latest-small same-generation section from one Qwen3.5 size
 to two n160-confirmed sizes. The scoped submission remains upload-ready; the
 latest-model addendum is stronger but still not MoE-claim-safe until
 Qwen3.6-35B-A3B/FP8 rows run off-machine under the same controls.
+
+Update `2026-04-28`: added `source_private_codebook_remap_gate_20260428`.
+The deterministic all-family `500`-example gate passes across three remapped
+diagnostic codebooks (`seeds 29/31/37`) and low-rate budgets `2/4/8/16`.
+Exact IDs and public candidate labels are identical across seeds; codebook
+hashes differ; matched packets remain `1.000`; no-source remains `0.250`; best
+source-destroying controls stay at `0.250-0.256`; same-budget JSON/free-text
+and diagnostic-masked controls remain `0.250`. This closes one reviewer-risk
+gap around fixed-codebook memorization, but does not change the need for MoE,
+FP8, and stronger non-Qwen source-emitter rows.

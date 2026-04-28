@@ -1,0 +1,251 @@
+{
+  "budgets": [
+    2,
+    4,
+    8,
+    16
+  ],
+  "codebook_remapped": true,
+  "exact_id_parity_across_seeds": true,
+  "examples": 500,
+  "family_set": "all",
+  "pass_gate": true,
+  "pass_rule": "Every seed/budget must pass the hidden-repair packet gate; exact IDs and public candidate labels must remain identical across seeds; diagnostic codebooks must differ.",
+  "public_surface_parity_across_seeds": true,
+  "seed_rows": [
+    {
+      "budget_summaries": [
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.254,
+          "budget_bytes": 2,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        },
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.256,
+          "budget_bytes": 4,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        },
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.252,
+          "budget_bytes": 8,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        },
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.252,
+          "budget_bytes": 16,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        }
+      ],
+      "codebook_sha256": "a152132572493cfe43c56d3a059119df98fd67b3c83767711c8d703419260a4f",
+      "diagnostic_preview": [
+        "G0",
+        "H1",
+        "J2",
+        "K3",
+        "L4",
+        "M5",
+        "N6",
+        "P7",
+        "Q8",
+        "R9",
+        "S0",
+        "T1"
+      ],
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "n": 500,
+      "pass_gate": true,
+      "public_surface_sha256": "5c9e717f03ba85602e603147131e8a0bde71a17de338b05d402e9b50c9d44165",
+      "seed": 29
+    },
+    {
+      "budget_summaries": [
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.252,
+          "budget_bytes": 2,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        },
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.252,
+          "budget_bytes": 4,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        },
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.254,
+          "budget_bytes": 8,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        },
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.254,
+          "budget_bytes": 16,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        }
+      ],
+      "codebook_sha256": "93fa390968342d2b863d9773f21fdf05bad51b88453fd77c096160828fd808e1",
+      "diagnostic_preview": [
+        "J0",
+        "K1",
+        "L2",
+        "M3",
+        "N4",
+        "P5",
+        "Q6",
+        "R7",
+        "S8",
+        "T9",
+        "U0",
+        "V1"
+      ],
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "n": 500,
+      "pass_gate": true,
+      "public_surface_sha256": "5c9e717f03ba85602e603147131e8a0bde71a17de338b05d402e9b50c9d44165",
+      "seed": 31
+    },
+    {
+      "budget_summaries": [
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.25,
+          "budget_bytes": 2,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        },
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.252,
+          "budget_bytes": 4,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        },
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.252,
+          "budget_bytes": 8,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        },
+        {
+          "best_no_source": 0.25,
+          "best_reviewer_negative_control": 0.25,
+          "best_source_destroying_control": 0.252,
+          "budget_bytes": 16,
+          "diag_masked_full_log": 0.25,
+          "full_diag_text": 1.0,
+          "matched": 1.0,
+          "min_reviewer_positive_oracle": 1.0,
+          "pass_gate": true,
+          "structured_free_text": 0.25,
+          "structured_json": 0.25
+        }
+      ],
+      "codebook_sha256": "a5fe24f370aafeaeac5bbba8cd2b63fb4a8f0576976b882c24fcd8f75aa78857",
+      "diagnostic_preview": [
+        "Q0",
+        "R1",
+        "S2",
+        "T3",
+        "U4",
+        "V5",
+        "W6",
+        "Y7",
+        "Z8",
+        "A9",
+        "B0",
+        "C1"
+      ],
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "n": 500,
+      "pass_gate": true,
+      "public_surface_sha256": "5c9e717f03ba85602e603147131e8a0bde71a17de338b05d402e9b50c9d44165",
+      "seed": 37
+    }
+  ],
+  "seeds": [
+    29,
+    31,
+    37
+  ],
+  "unique_codebook_count": 3
+}

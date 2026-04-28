@@ -34,6 +34,9 @@ Zero-source, shuffled-source, random same-byte, answer-only, answer-masked,
 target-derived, same-byte structured relay, helper/no-log, and trace-removed
 controls remain near target-only
 (25.0--25.8\% in the reported rows).
+An additional 500-example codebook-remap gate over three diagnostic
+vocabularies preserves 100\% matched accuracy at 2--16 bytes while keeping
+controls near target-only.
 Model-produced packets average 1.55--2.00 bytes, compared with roughly
 366--374 bytes and 34 tokens for full hidden-log relay. A small Qwen3
 model-mediated protocol-decoder sanity check improves over target/control on
@@ -212,6 +215,15 @@ Same-byte JSON/free-text relays and diagnostic-masked logs stay at target-only.}
 \label{tab:controls}
 \end{table}
 
+We also test whether the result depends on one fixed diagnostic vocabulary. A
+codebook-remap gate keeps the 500 public examples, answer labels, and public
+candidate labels fixed while changing the diagnostic code assignments across
+seeds 29, 31, and 37. Across budgets 2, 4, 8, and 16 bytes, all remapped
+codebooks pass: matched packets remain 1.000, no-source remains 0.250,
+source-destroying controls remain 0.250--0.256, same-byte JSON/free-text relays
+remain 0.250, and diagnostic-masked full logs remain 0.250. This supports a
+remappable packet-code claim rather than a single fixed-codebook lookup.
+
 \section{Rate and Systems Analysis}
 
 The method's main systems-relevant property is the far-left-rate operating
@@ -379,6 +391,7 @@ Model packet rows & 500; 29/31/30/32 & model packet extractor and baseline-pack 
 Reviewer controls & 500; 29 and 30 & hidden-repair packet evaluator & \texttt{manifest.md} \\
 Target-decoder smoke & core 16 seed 29; held-out 16/32 seed 30 & target-decoder smoke runner & \texttt{manifest.md} \\
 Figures and rate curve & 500; 29 and 30 & figure builder & \texttt{manifest.json} \\
+Codebook remap & 500; 29/31/37 & codebook-remap gate & \texttt{summary.md} \\
 LaTeX compile & paper source & latexmk & \texttt{manifest.md} \\
 \bottomrule
 \end{tabular}
