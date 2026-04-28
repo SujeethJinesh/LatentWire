@@ -180,6 +180,28 @@ computing the digest. Current readiness remains not ICLR-ready. The live branch
 is now source-private handoff with naturally emitted private evidence packets;
 the next exact gate is `source_private_testlog_packet_strict_small_20260428`.
 
+Update `2026-04-28`: the source-private test-log packet branch cleared a
+deterministic strict-small gate. On `160` examples, a two-byte private
+`TRACE_SIG` packet gives matched `160/160` while target-only, target-wrapper,
+zero, shuffled, random, answer-only, answer-masked, target-derived, and
+matched-byte raw-log controls stay at `40/160`. Full log and full signature
+oracles are `160/160`, public target prompts contain no private log or
+`TRACE_SIG`, and matched packets copy no candidate/answer labels. This promotes
+source-private test-log handoff as the live branch, but readiness remains not
+ICLR-ready because packet generation and decoding are still deterministic. The
+next exact gate is `source_private_testlog_packet_llm_packet_20260428`.
+
+Update `2026-04-28`: the same source-private test-log surface now has a
+positive model-mediated strict-small result. With
+`Qwen/Qwen2.5-0.5B-Instruct` as source packet extractor, matched model packets
+reach `150/160` (`0.938`) versus target-only and all source-destroying controls
+at `40/160` (`0.250`); full signature oracle is `160/160`, packet valid rate is
+`0.91875`, and p50 matched source-packet latency is `162.51` ms. This is the
+current live positive branch. Readiness remains not ICLR-ready because it is one
+model/seed on a synthetic signature benchmark with source-side private-log line
+isolation and a deterministic decoder. Next gate: seed repeat with a
+no-helper-line ablation and then a hidden-test/code-repair variant.
+
 The strongest bound is the SVAMP32 C2C-derived syndrome sidecar:
 
 - strict target-side pool: `14/32`

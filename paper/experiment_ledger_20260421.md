@@ -12703,3 +12703,234 @@ Next exact gate:
   relay, full structured log oracle, and the full source-destroying suite
 - pass only if matched source beats best no-source by `>=15` points and every
   source-destroying control stays within `2` points of no-source
+
+## 2026-04-28 Cycle 27 - Source-Private Test-Log Packet Strict-Small Gate
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; this gate tests a naturally emitted
+   private-evidence packet surface, but still with deterministic packetization.
+2. Current paper story: source-private residual communication under decoder
+   side information. Target sees public issue plus candidate fixes; source sees
+   a private tool/test log; a rate-capped packet identifies the candidate whose
+   public handled signature matches the private log.
+3. Exact blocker: show model-extracted packets and then a less synthetic
+   hidden-test/code-repair benchmark.
+4. Current live branch: source-private test-log packet handoff.
+5. Highest-priority gate: `source_private_testlog_packet_strict_small_20260428`.
+6. Scale-up rung: strict small gate.
+
+MPS guard:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: no live blocker was present.
+
+Subagent synthesis:
+
+- reviewer: require exact ID parity, public/private split checks, flat
+  zero/shuffled/random/answer-only/answer-masked controls, matched-byte text
+  relay, and no answer/patch-label leakage
+- planner: private tool/test-log handoff is the highest-probability branch
+  after the cryptographic packet falsification; deterministic contract first,
+  model extraction next
+- method scout: a tool-trace verdict/signature packet is the most actionable
+  source-derived signal; learned Q-bottlenecks should wait until this surface
+  survives model extraction
+- harness audit: add leakage audit, nonself shuffled packets, artifact hashes,
+  byte telemetry, and focused tests
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/run_source_private_testlog_packet_strict_small.py \
+  --examples 160 \
+  --candidates 4 \
+  --seed 28 \
+  --budgets 2,4,8,16,32 \
+  --output-dir results/source_private_testlog_packet_strict_small_20260428
+```
+
+Results:
+
+- strict-small pass: `true`
+- examples: `160`
+- candidate-pool recall: `1.000`
+- best budget: `2` bytes
+- exact ID parity: `true`
+- exact ID SHA256:
+  `fcfd2cfcecfa51f4caae6e5de39cf0632dafb634e4f19db0dfdc12c2ef8dbd2e`
+- target/no-source accuracy: `40/160`, `0.250`
+- matched test-log packet accuracy: `160/160`, `1.000` at every budget
+  `2/4/8/16/32`
+- best source-destroying control accuracy: `40/160`, `0.250`
+- matched-byte raw-log truncation accuracy: `40/160`, `0.250`
+- full structured log oracle: `160/160`, `1.000`
+- full signature text oracle: `160/160`, `1.000`
+- matched minus best no-source: `+0.750`
+- matched minus best control: `+0.750`
+
+Leakage audit:
+
+- public target private-log hits: `0`
+- public target `TRACE_SIG` hits: `0`
+- matched packet answer-label copies: `0`
+- matched packet candidate-label copies: `0`
+- matched packet over-budget count: `0`
+
+Interpretation:
+
+- Positive for the deterministic source-private test-log handoff contract.
+- Stronger than the cryptographic digest surface because `TRACE_SIG=<code>` is
+  a natural private tool-log artifact that a source agent can plausibly emit.
+- Not yet ICLR-ready because the benchmark is synthetic and the packetizer/
+  decoder are deterministic.
+
+Artifacts:
+
+- `paper/source_private_testlog_packet_strict_small_20260428.md`
+- `scripts/run_source_private_testlog_packet_strict_small.py`
+- `tests/test_run_source_private_testlog_packet_strict_small.py`
+- `results/source_private_testlog_packet_strict_small_20260428/benchmark.jsonl`
+- `results/source_private_testlog_packet_strict_small_20260428/sweep_summary.json`
+- `results/source_private_testlog_packet_strict_small_20260428/sweep_summary.md`
+- `results/source_private_testlog_packet_strict_small_20260428/leakage_audit.json`
+- `results/source_private_testlog_packet_strict_small_20260428/leakage_audit.md`
+- `results/source_private_testlog_packet_strict_small_20260428/manifest.json`
+- `results/source_private_testlog_packet_strict_small_20260428/manifest.md`
+- `results/source_private_testlog_packet_strict_small_20260428/predictions_budget{2,4,8,16,32}.jsonl`
+- `results/source_private_testlog_packet_strict_small_20260428/summary_budget{2,4,8,16,32}.json`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_run_source_private_testlog_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_llm_packet.py \
+  tests/test_run_source_private_evidence_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_gate.py -q
+```
+
+Result: `16 passed`.
+
+Decision:
+
+- promote source-private test-log packets to the live branch
+- keep deterministic candidate-syndrome/test-log gates as contracts, not final
+  method claims
+- run model-extracted `TRACE_SIG` packets next
+
+Next exact gate:
+
+- `source_private_testlog_packet_llm_packet_20260428`: same frozen benchmark,
+  source model emits only the two-byte `TRACE_SIG` from the private log,
+  deterministic decoder and full source-destroying controls
+
+## 2026-04-28 Cycle 28 - Source-Private Test-Log Model-Packet Gate
+
+Cycle start:
+
+1. Current ICLR readiness: not ready, but this is the first positive
+   model-mediated source-private packet result.
+2. Current paper story: source-private residual communication under decoder
+   side information. The source sees a private tool log and emits a compact
+   packet; the target uses public candidate signatures to decode.
+3. Exact blocker: seed stability, prompt/helper-line ablation, cross-family
+   source model, and less synthetic hidden-test/code-repair logs.
+4. Current live branch: source-private test-log packet handoff.
+5. Highest-priority gate: model-extracted `TRACE_SIG` packets on the frozen
+   strict-small benchmark.
+6. Scale-up rung: strict small model-mediated gate.
+
+MPS guard:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: no live blocker was present.
+
+Command:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_testlog_packet_llm_packet.py \
+  --benchmark-jsonl results/source_private_testlog_packet_strict_small_20260428/benchmark.jsonl \
+  --output-dir results/source_private_testlog_packet_llm_packet_20260428 \
+  --model Qwen/Qwen2.5-0.5B-Instruct \
+  --device mps \
+  --dtype float32 \
+  --limit 160 \
+  --seed 28 \
+  --max-new-tokens 8 \
+  --no-enable-thinking || true
+```
+
+Results:
+
+- model-packet gate: `pass`
+- examples: `160`
+- exact ID parity: `true`
+- exact ID SHA256:
+  `fcfd2cfcecfa51f4caae6e5de39cf0632dafb634e4f19db0dfdc12c2ef8dbd2e`
+- packet valid rate: `0.91875`
+- target-only: `40/160`, `0.250`
+- matched model packet: `150/160`, `0.938`
+- zero-source: `40/160`, `0.250`
+- shuffled model packet: `40/160`, `0.250`
+- random same-byte: `40/160`, `0.250`
+- answer-only: `40/160`, `0.250`
+- answer-masked: `40/160`, `0.250`
+- target-derived sidecar: `40/160`, `0.250`
+- full signature oracle: `160/160`, `1.000`
+- matched minus best no-source: `+0.6875`
+- matched minus best source-destroying control: `+0.6875`
+- p50 matched source-packet latency: `162.51` ms
+
+Interpretation:
+
+- This is a positive model-mediated source-private communication gate.
+- The gain survives zero, shuffled, random, answer-only, answer-masked, and
+  target-derived controls.
+- The result depends on source-side private-log line isolation: the source
+  prompt includes the copied `TRACE_SIG` line. This is a valid tool-log handoff
+  primitive, but not yet a full unstructured-log/code-repair claim.
+
+Artifacts:
+
+- `paper/source_private_testlog_packet_llm_packet_20260428.md`
+- `scripts/run_source_private_testlog_packet_llm_packet.py`
+- `tests/test_run_source_private_testlog_packet_llm_packet.py`
+- `results/source_private_testlog_packet_llm_packet_20260428/model_packets.jsonl`
+- `results/source_private_testlog_packet_llm_packet_20260428/predictions.jsonl`
+- `results/source_private_testlog_packet_llm_packet_20260428/summary.json`
+- `results/source_private_testlog_packet_llm_packet_20260428/summary.md`
+- `results/source_private_testlog_packet_llm_packet_20260428/manifest.json`
+- `results/source_private_testlog_packet_llm_packet_20260428/manifest.md`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_run_source_private_testlog_packet_llm_packet.py \
+  tests/test_run_source_private_testlog_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_llm_packet.py \
+  tests/test_run_source_private_evidence_packet_strict_small.py \
+  tests/test_run_source_private_evidence_packet_gate.py -q
+```
+
+Result: `20 passed`.
+
+Decision:
+
+- promote source-private test-log packet handoff as the current live positive
+  branch
+- keep caveats explicit: synthetic benchmark, source-side line isolation,
+  deterministic decoder, one model, one seed
+
+Next exact gate:
+
+- `source_private_testlog_packet_llm_packet_seed_repeat_20260428`: seeds `29`
+  and `30`, same frozen benchmark, same controls, plus no-helper-line prompt
+  ablation
