@@ -1,0 +1,104 @@
+{
+  "benchmark_jsonl": "results/source_private_hidden_repair_packet_medium_20260429/benchmark.jsonl",
+  "benchmark_sha256": "f1f918b549e795ef250498aa562f2e175dbdeca8f02039c61481d0ee4eea1d2d",
+  "bootstrap_samples": 2000,
+  "gate": "source_private_hidden_repair_packet_medium_20260429",
+  "n": 500,
+  "pass_gate": true,
+  "pass_rule": "Qwen3 and Phi-3 trace_no_hint rows pass, raw_log_no_trace fails, and paired bootstrap lower bounds remain comfortably above +0.15 for primary rows.",
+  "rows": [
+    {
+      "best_control_name": "random_same_byte",
+      "best_source_destroying_control_accuracy": 0.252,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "matched_accuracy": 0.808,
+      "matched_correct": 404,
+      "matched_minus_best_control_bootstrap95": {
+        "high": 0.602,
+        "low": 0.514,
+        "mean": 0.557091
+      },
+      "matched_minus_target_bootstrap95": {
+        "high": 0.6,
+        "low": 0.516,
+        "mean": 0.557365
+      },
+      "mean_packet_bytes": 1.552,
+      "mean_packet_tokens": 2.864,
+      "model": "Qwen/Qwen3-0.6B",
+      "n": 500,
+      "p50_source_latency_ms": 293.43443749894504,
+      "p95_source_latency_ms": 522.8677499981131,
+      "packet_valid_rate": 0.776,
+      "pass_gate": true,
+      "predictions_sha256": "53c7e083819d739fc9aaa73ab656d87831a21df43c8f1d8c1452f39cb998c53b",
+      "prompt_mode": "trace_no_hint",
+      "run_id": "qwen3_trace_no_hint",
+      "summary_sha256": "2c569fe5f36d761de7ae4cf71d1598adbfdf913609426e4b4868491155d435ec",
+      "target_only_accuracy": 0.25,
+      "target_only_correct": 125
+    },
+    {
+      "best_control_name": "random_same_byte",
+      "best_source_destroying_control_accuracy": 0.252,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "matched_accuracy": 1.0,
+      "matched_correct": 500,
+      "matched_minus_best_control_bootstrap95": {
+        "high": 0.786,
+        "low": 0.708,
+        "mean": 0.748269
+      },
+      "matched_minus_target_bootstrap95": {
+        "high": 0.788,
+        "low": 0.714,
+        "mean": 0.7499779999999999
+      },
+      "mean_packet_bytes": 2.0,
+      "mean_packet_tokens": 3.0,
+      "model": "microsoft/Phi-3-mini-4k-instruct",
+      "n": 500,
+      "p50_source_latency_ms": 421.89747899828944,
+      "p95_source_latency_ms": 516.4127919997554,
+      "packet_valid_rate": 1.0,
+      "pass_gate": true,
+      "predictions_sha256": "32617b25de1667ddf0db61a9104479a1782158bd374ff2658e2120ed0bd2bb89",
+      "prompt_mode": "trace_no_hint",
+      "run_id": "phi3_trace_no_hint",
+      "summary_sha256": "7f0655d528c526bcea29103fb6c29369e2b7497161519a12cde4d101df303e27",
+      "target_only_accuracy": 0.25,
+      "target_only_correct": 125
+    },
+    {
+      "best_control_name": "random_same_byte",
+      "best_source_destroying_control_accuracy": 0.252,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "matched_accuracy": 0.25,
+      "matched_correct": 125,
+      "matched_minus_best_control_bootstrap95": {
+        "high": 0.0,
+        "low": -0.006,
+        "mean": -0.001946
+      },
+      "matched_minus_target_bootstrap95": {
+        "high": 0.0,
+        "low": 0.0,
+        "mean": 0.0
+      },
+      "mean_packet_bytes": 0.0,
+      "mean_packet_tokens": 3.0,
+      "model": "Qwen/Qwen3-0.6B",
+      "n": 500,
+      "p50_source_latency_ms": 277.32956249747076,
+      "p95_source_latency_ms": 365.92812500020955,
+      "packet_valid_rate": 0.0,
+      "pass_gate": false,
+      "predictions_sha256": "2207af69c80b4eabe6e8ed1913048a90c6df1885a76ccd3c9a04c1669313ae7a",
+      "prompt_mode": "raw_log_no_trace",
+      "run_id": "qwen3_raw_log_no_trace",
+      "summary_sha256": "d3823d8f8d1e51a2b439e5bb6c6c1142c51762629a597ac9856536be8b713c99",
+      "target_only_accuracy": 0.25,
+      "target_only_correct": 125
+    }
+  ]
+}

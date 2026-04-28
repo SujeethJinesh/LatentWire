@@ -13474,3 +13474,83 @@ Next exact gate:
   examples if feasible, otherwise `320`, add paired bootstrap uncertainty, keep
   Qwen3/Phi-3 `trace_no_hint` primary rows and Qwen3 `raw_log_no_trace`
   destruction row.
+
+## 2026-04-29 - Hidden-Repair Packet Medium Gate
+
+Current ICLR readiness: not ready, but the live branch now has medium
+confirmation. Estimated distance is held-out family generalization, seed
+repeats, and reviewer-ready baseline framing.
+
+Current story: explicit source-private tool-trace packets communicate hidden
+execution evidence across models. The source emits a compact `REPAIR_DIAG`
+packet from a private trace, and the target decodes it with candidate-side
+metadata. On `500` frozen examples, Qwen3 and Phi-3 both beat target-only and
+all source-destroying controls by large paired margins; removing the trace
+destroys the signal.
+
+Exact blocker: template-family generalization. The current medium result is
+large but still from the same eight repair families, so the next paper risk is
+that reviewers call it a templated protocol demo rather than a general method.
+
+Commands:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_smoke.py \
+  --examples 500 \
+  --candidates 4 \
+  --seed 29 \
+  --budgets 2,4,8,16,32 \
+  --output-dir results/source_private_hidden_repair_packet_medium_20260429
+```
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py \
+  --benchmark-jsonl results/source_private_hidden_repair_packet_medium_20260429/benchmark.jsonl \
+  --output-dir results/source_private_hidden_repair_packet_medium_llm_20260429/qwen3_trace_no_hint \
+  --model Qwen/Qwen3-0.6B \
+  --device mps \
+  --dtype float32 \
+  --limit 500 \
+  --seed 29 \
+  --max-new-tokens 8 \
+  --prompt-mode trace_no_hint \
+  --no-enable-thinking
+```
+
+Equivalent model commands were run for `microsoft/Phi-3-mini-4k-instruct` in
+`trace_no_hint` mode and Qwen3 in `raw_log_no_trace` mode. Paired bootstrap
+summary:
+
+```bash
+./venv_arm64/bin/python scripts/summarize_source_private_hidden_repair_medium.py \
+  --llm-dir results/source_private_hidden_repair_packet_medium_llm_20260429 \
+  --benchmark-jsonl results/source_private_hidden_repair_packet_medium_20260429/benchmark.jsonl \
+  --bootstrap-samples 2000 \
+  --seed 20260429
+```
+
+Results:
+
+| Run | Model | Mode | Matched | Target | Best control | Valid | Delta target 95% CI | Delta control 95% CI |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| qwen3_trace_no_hint | Qwen/Qwen3-0.6B | trace_no_hint | 0.808 | 0.250 | 0.252 | 0.776 | [0.516, 0.600] | [0.514, 0.602] |
+| phi3_trace_no_hint | microsoft/Phi-3-mini-4k-instruct | trace_no_hint | 1.000 | 0.250 | 0.252 | 1.000 | [0.714, 0.788] | [0.708, 0.786] |
+| qwen3_raw_log_no_trace | Qwen/Qwen3-0.6B | raw_log_no_trace | 0.250 | 0.250 | 0.252 | 0.000 | [0.000, 0.000] | [-0.006, 0.000] |
+
+Decision:
+
+- promote hidden-repair packet handoff to medium confirmation
+- preserve the claim boundary: explicit private tool-trace communication
+- stop prompt tuning and move to held-out repair families plus seed repeats
+
+Artifacts:
+
+- `paper/source_private_hidden_repair_packet_medium_20260429.md`
+- `results/source_private_hidden_repair_packet_medium_20260429/`
+- `results/source_private_hidden_repair_packet_medium_llm_20260429/`
+
+Next exact gate:
+
+- `source_private_hidden_repair_packet_holdout_families_20260429`: add held-out
+  repair families, keep `trace_no_hint` and the same controls, require both
+  Qwen3 and Phi-3 to beat target-only by at least `15` points.

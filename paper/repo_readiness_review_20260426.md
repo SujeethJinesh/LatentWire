@@ -1684,3 +1684,13 @@ source-destroying control is `41/160`. Qwen3 `raw_log_no_trace` drops to
 `40/160` with `0` valid packets. The repo now has a strict-small positive
 method candidate: explicit source-private tool-trace packet handoff. It is
 still not ICLR-ready until medium/larger confirmation with paired uncertainty.
+
+Update `2026-04-29`: `source_private_hidden_repair_packet_medium_20260429`
+passes on `500` frozen examples with paired bootstrap intervals. Qwen3
+`trace_no_hint` reaches `404/500`, Phi-3-mini reaches `500/500`, target-only is
+`125/500`, and best source-destroying control is `126/500`. Bootstrap 95%
+paired deltas over target-only are `[0.516, 0.600]` for Qwen3 and
+`[0.714, 0.788]` for Phi-3. Qwen3 `raw_log_no_trace` returns to target-only
+with `0` valid packets. The live branch is now medium-confirmed as explicit
+source-private tool-trace packet handoff. Remaining blocker: held-out repair
+families and seed repeats.
