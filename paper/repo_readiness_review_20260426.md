@@ -2034,3 +2034,10 @@ row: matched `101/160 = 0.631`, target-only `40/160`, best control `41/160`,
 packet valid rate `0.537`, exact-ID parity true, and p50 CPU latency `2816 ms`.
 This weakens the prompt-engineered non-Qwen objection, but the full-paper
 generalization blocker remains Qwen3.6-35B-A3B/FP8 MoE under the same controls.
+
+Update `2026-04-28`: the Qwen3.6 MoE blocker is now execution-access rather
+than missing harness support. Added an OpenAI/vLLM-compatible endpoint runner
+for the hidden-repair packet gate, with tests verifying that endpoint packets
+flow through the same evaluator and source-destroying controls. The next exact
+gate is `Qwen/Qwen3.6-35B-A3B` endpoint n32 seed29, followed by
+`Qwen/Qwen3.6-35B-A3B-FP8` endpoint n32 if the dense-MoE row passes.

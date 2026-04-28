@@ -172,6 +172,7 @@ Run from the repository root with `./venv_arm64/bin/python`.
 ```bash
 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_smoke.py --help
 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py --help
+./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_endpoint.py --help
 ./venv_arm64/bin/python scripts/build_source_private_tool_trace_baseline_pack.py --help
 ./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py --help
 ./venv_arm64/bin/python scripts/build_source_private_latest_model_matrix.py --help
@@ -183,6 +184,7 @@ Focused tests:
 ./venv_arm64/bin/python -m pytest \
   tests/test_run_source_private_hidden_repair_packet_smoke.py \
   tests/test_run_source_private_hidden_repair_packet_llm.py \
+  tests/test_run_source_private_hidden_repair_packet_endpoint.py \
   tests/test_build_source_private_tool_trace_baseline_pack.py \
   tests/test_build_source_private_tool_trace_figures.py \
   tests/test_run_source_private_tool_trace_target_decoder_smoke.py -q

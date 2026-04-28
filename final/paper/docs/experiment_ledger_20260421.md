@@ -14581,3 +14581,12 @@ target-only `40/160`, best source-destroying control `41/160`, packet valid
 rate `0.537`, exact-ID parity true, matched-minus-best-control `+0.375`, and
 p50 CPU packet latency `2816 ms`. This strengthens non-Qwen evidence from
 copied-helper-only to strict-prompt positive rows, but MoE/FP8 remains unrun.
+
+Update `2026-04-28`: `qwen36_endpoint_runner_20260428` makes the MoE/FP8 gate
+executable through a vLLM/OpenAI-compatible endpoint. Added
+`scripts/run_source_private_hidden_repair_packet_endpoint.py`, which reuses the
+same benchmark rows, source prompt construction, packet parser, evaluator,
+controls, pass rule, and manifest format as the local HF runner while replacing
+only source packet generation with `/v1/chat/completions`. Focused fake-endpoint
+tests pass. This is harness evidence only; Qwen3.6-35B-A3B and FP8 still need
+actual n32 endpoint runs.
