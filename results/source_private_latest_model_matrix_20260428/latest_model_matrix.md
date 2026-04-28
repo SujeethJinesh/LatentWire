@@ -14,6 +14,8 @@ Treat MoE generalization as plausible but unproven. Run Qwen3.5-0.8B and Qwen3.5
 | P0 | `Qwen/Qwen3.5-0.8B` | Qwen3.5 small hybrid | 0.8B | - | blocked locally until Transformers supports qwen3_5 | compatibility smoke then n16 |
 | P0 | `Qwen/Qwen3.5-2B` | Qwen3.5 small hybrid | 2B | - | planned after qwen3_5 compatibility update | n16 then n64 if cached |
 | P1 | `Qwen/Qwen3.5-4B` | Qwen3.5 small hybrid | 4B | - | planned after qwen3_5 compatibility update | n16 if memory permits |
+| P2 | `Qwen/Qwen3.5-35B-A3B` | Qwen3.5 MoE | 35B total | 3B activated | off-machine Qwen3.5 MoE candidate | remote/API n32 after Qwen3.6 MoE |
+| P2 | `Qwen/Qwen3.5-35B-A3B-FP8` | Qwen3.5 MoE FP8 | 35B total | 3B activated | off-machine Qwen3.5 MoE FP8 candidate | remote/API n32 after Qwen3.6 FP8 |
 | P1 | `Qwen/Qwen3.6-35B-A3B` | Qwen3.6 MoE | 35B total | 3B activated | off-machine candidate | remote/API n32 then n500 if pass |
 | P1 | `Qwen/Qwen3.6-35B-A3B-FP8` | Qwen3.6 MoE FP8 | 35B total | 3B activated | off-machine candidate | remote/API n32 then n500 if pass |
 | P2 | `Qwen/Qwen3.6-27B` | Qwen3.6 dense | 27B | - | off-machine dense latest-model comparator | remote/API n32 |

@@ -1,7 +1,7 @@
 {
   "artifact_sha256": {
-    "latest_model_matrix.json": "40e964e6a0d547c187ca0d467aa6f044dccc7bcbc229c6f730a1f43a919ac26a",
-    "latest_model_matrix.md": "4304867d11512f9a14b78c20adae623e671560d19d109a1cc704e257d6fbf61d"
+    "latest_model_matrix.json": "32015e56922e638623f2117ef16e8484358aa0e6da7a75d96d5c9e16736c93b5",
+    "latest_model_matrix.md": "0b4c7a553a9980c6847c6df9e88729bd790ac75d36a249ae5662a1ee6b0557de"
   },
   "artifacts": [
     "latest_model_matrix.json",
@@ -10,11 +10,11 @@
     "manifest.md"
   ],
   "command": "scripts/build_source_private_latest_model_matrix.py --output-dir results/source_private_latest_model_matrix_20260428",
-  "script_sha256": "e20cb8f623847df1c76cca99a8fabed205b6eb26a3dd71de607316f926a1f864",
+  "script_sha256": "97b85626b3080aace2e11526ac005b23ba39803bc3ce67626edde2c37fa9436f",
   "summary": {
-    "model_count": 9,
-    "moe_count": 2,
-    "off_machine_count": 3,
+    "model_count": 11,
+    "moe_count": 4,
+    "off_machine_count": 5,
     "p0_count": 2
   }
 }

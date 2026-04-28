@@ -48,6 +48,20 @@ model generalization.
     manageable local scale.
   - Next experiment change: run only after `0.8B`/`2B`, due local memory risk.
   - Role: capacity scaling row.
+- Qwen3.5-35B-A3B, https://huggingface.co/Qwen/Qwen3.5-35B-A3B
+  - Helps: adds a Qwen3.5-generation sparse MoE row instead of relying only on
+    Qwen3.6 for MoE evidence.
+  - Mechanism/design idea: same explicit packet protocol should be insensitive
+    to sparse routing if exact diagnostic extraction is preserved.
+  - Next experiment change: run after Qwen3.6 MoE or as a fallback if Qwen3.6
+    serving is unavailable.
+  - Role: MoE cross-generation confirmation.
+- Qwen3.5-35B-A3B-FP8, https://huggingface.co/Qwen/Qwen3.5-35B-A3B-FP8
+  - Helps: checks whether Qwen3.5 MoE packet emission survives FP8 deployment.
+  - Mechanism/design idea: compare valid-packet rate against the non-FP8 MoE
+    row.
+  - Next experiment change: remote/API `n=32` after the BF16 MoE row.
+  - Role: quantization robustness.
 - Qwen3.6-27B, https://huggingface.co/Qwen/Qwen3.6-27B
   - Helps: dense comparator for Qwen3.6, separating family freshness from MoE
     routing.

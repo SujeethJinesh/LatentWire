@@ -1935,8 +1935,8 @@ is a staging copy for handoff, not a change to the scientific claim.
 
 Update `2026-04-28`: latest-model/MoE generalization remains unproven. The new
 matrix in `results/source_private_latest_model_matrix_20260428/` selects
-Qwen3.5 `0.8B/2B/4B` as local small rows and Qwen3.6 `35B-A3B` plus FP8 as
-off-machine MoE falsification rows. Local Qwen3.5 execution is blocked by the
+Qwen3.5 `0.8B/2B/4B` as local small rows and Qwen3.5/Qwen3.6 `35B-A3B` plus
+FP8 as off-machine MoE falsification rows. Local Qwen3.5 execution is blocked by the
 repo's current Transformers version lacking `qwen3_5` support. This does not
 change readiness of the current scoped submission, but it defines the next
 evidence gate if we want a stronger model-generalization claim.

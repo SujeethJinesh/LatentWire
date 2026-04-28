@@ -28,6 +28,8 @@ Official Hugging Face model cards/API identify these candidate rows:
 - `Qwen/Qwen3.5-0.8B`
 - `Qwen/Qwen3.5-2B`
 - `Qwen/Qwen3.5-4B`
+- `Qwen/Qwen3.5-35B-A3B`
+- `Qwen/Qwen3.5-35B-A3B-FP8`
 - `Qwen/Qwen3.6-35B-A3B`
 - `Qwen/Qwen3.6-35B-A3B-FP8`
 - `Qwen/Qwen3.6-27B`
