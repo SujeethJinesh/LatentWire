@@ -43,7 +43,7 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error source_private_tool_trace.t
 
 - output: `paper/iclr2026/source_private_tool_trace.pdf`
 - pages: `7`
-- size: `225146` bytes
+- size: `226624` bytes
 - figure format: PDF assets referenced from
   `results/source_private_tool_trace_latex_or_figures_20260430/`
 - log audit: no overfull boxes, undefined references, or citation warnings found

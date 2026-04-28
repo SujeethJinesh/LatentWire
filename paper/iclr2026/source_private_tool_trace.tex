@@ -32,7 +32,7 @@ selection from 25\% to 80.8--100.0\% across four frozen 500-example core and
 held-out-family surfaces. Zero-source, shuffled-source, random same-byte,
 answer-only, answer-masked, target-derived, same-byte structured relay,
 helper/no-log, and trace-removed controls remain near target-only
-(`25.0--25.8\%` in the reported rows).
+(25.0--25.8\% in the reported rows).
 Model-produced packets average 1.55--2.00 bytes, compared with roughly
 366--374 bytes and 34 tokens for full hidden-log relay. A small Qwen3
 model-mediated protocol-decoder sanity check improves over target/control on
@@ -320,6 +320,35 @@ We claim that explicit source-private tool-trace packets can communicate hidden
 diagnostic evidence to a target-side candidate decoder under rate constraints.
 We do not claim raw-log repair inference, learned latent transfer, universal
 cross-model communication, or unconstrained repair generation.
+
+\section{Representative Example}
+
+Example \texttt{sphr\_0001} asks for reading key \texttt{status} from a mapping
+and returning \texttt{unknown} when the key is absent. The target sees only the
+public issue and candidate pool; its prior selects a numeric-fallback patch. The
+source-private hidden test observes an empty input, expected value
+\texttt{unknown}, and a \texttt{KeyError}. The private trace line contains
+\diag{}=\texttt{H1}, so the matched packet is \texttt{H1}. The protocol decoder
+then selects the candidate whose public metadata handles \texttt{H1}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+Candidate & Public metadata & Patch intent \\
+\midrule
+patch 0 & handles \texttt{X0} & strict key access \\
+patch 1 & handles \texttt{H1} & missing-key default \\
+patch 2 & handles \texttt{X2} & numeric fallback; target prior \\
+patch 3 & handles \texttt{X3} & uppercase status \\
+\bottomrule
+\end{tabular}
+\caption{Representative source-private example. Without matched private
+evidence the target prior selects patch 2; with packet \texttt{H1}, the decoder
+selects the gold candidate, patch 1.}
+\label{tab:example}
+\end{table}
 
 \section{Artifacts}
 

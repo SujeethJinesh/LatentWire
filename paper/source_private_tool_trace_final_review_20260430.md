@@ -86,6 +86,8 @@ polish reviewer:
   provided repair pool, not that it solves repair
 - artifact provenance now names the decisive result roots and avoids claiming
   all manifests contain exact commands.
+- a representative appendix example now shows how a target-prior failure is
+  corrected only by the matched private `REPAIR_DIAG` packet.
 
 Reference memo:
 
@@ -104,7 +106,7 @@ Output:
 
 - `paper/iclr2026/source_private_tool_trace.pdf`
 - pages: `7`
-- size: `225146` bytes
+- size: `226624` bytes
 
 Log audit:
 

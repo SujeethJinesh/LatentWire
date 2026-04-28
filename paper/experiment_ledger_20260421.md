@@ -14310,7 +14310,7 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error source_private_tool_trace.t
 ```
 
 Output: `paper/iclr2026/source_private_tool_trace.pdf` (`7` pages,
-`225146` bytes). Log audit found no overfull boxes, undefined references,
+`226624` bytes). Log audit found no overfull boxes, undefined references,
 citation warnings, or BibTeX warnings.
 
 References:
@@ -14334,4 +14334,6 @@ are matched--target deltas, and the conclusion selects the gold candidate from
 the provided repair pool. Appendix provenance now names the decisive result
 roots and avoids claiming every manifest contains exact commands. The next
 exact gate remains `source_private_tool_trace_submission_polish_20260430` until
-the optional appendix example and final scoped-submit decision are made.
+the final scoped-submit decision is made. A representative appendix example was
+added for `sphr_0001`, where the target prior chooses a numeric fallback but the
+matched private packet `H1` selects the missing-key default gold candidate.
