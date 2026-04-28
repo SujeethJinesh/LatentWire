@@ -71,7 +71,7 @@ def _sha256_text(values: list[str]) -> str:
     return hashlib.sha256("\n".join(values).encode("utf-8")).hexdigest()
 
 
-def _families() -> tuple[RepairFamily, ...]:
+def _core_families() -> tuple[RepairFamily, ...]:
     return (
         RepairFamily(
             name="empty_list_first",
@@ -156,6 +156,101 @@ def _families() -> tuple[RepairFamily, ...]:
     )
 
 
+def _holdout_families() -> tuple[RepairFamily, ...]:
+    return (
+        RepairFamily(
+            name="clamp_negative_to_zero",
+            public_issue="Function should clamp negative integers to zero and return nonnegative values unchanged.",
+            buggy_code="def solve(value):\n    return value\n",
+            hidden_input=-3,
+            expected=0,
+            diagnostic_code="L0",
+            patch_intents=("clamp negative to zero", "absolute value", "always zero", "string conversion"),
+            answer_index=0,
+        ),
+        RepairFamily(
+            name="last_value_default",
+            public_issue="Function should return the final list value, or None when the list is empty.",
+            buggy_code="def solve(values):\n    return values[-1]\n",
+            hidden_input=[],
+            expected=None,
+            diagnostic_code="D0",
+            patch_intents=("first value fallback", "empty-list none default", "empty-list zero default", "sort before final value"),
+            answer_index=1,
+        ),
+        RepairFamily(
+            name="parse_int_default",
+            public_issue="Function should parse an integer string and return 0 when parsing fails.",
+            buggy_code="def solve(text):\n    return int(text)\n",
+            hidden_input="n/a",
+            expected=0,
+            diagnostic_code="P0",
+            patch_intents=("float parsing", "return raw text", "parse-failure zero default", "length fallback"),
+            answer_index=2,
+        ),
+        RepairFamily(
+            name="average_all_values",
+            public_issue="Function should return the arithmetic mean over all numeric list values.",
+            buggy_code="def solve(values):\n    return sum(values) / (len(values) - 1)\n",
+            hidden_input=[2, 4, 6],
+            expected=4,
+            diagnostic_code="A1",
+            patch_intents=("sum only", "divide by first value", "drop last before averaging", "average all values"),
+            answer_index=3,
+        ),
+        RepairFamily(
+            name="strip_and_lower",
+            public_issue="Function should strip surrounding whitespace and lowercase the text.",
+            buggy_code="def solve(text):\n    return text.strip()\n",
+            hidden_input=" HELLO ",
+            expected="hello",
+            diagnostic_code="B1",
+            patch_intents=("strip and lowercase", "strip only", "uppercase only", "remove spaces inside text"),
+            answer_index=0,
+        ),
+        RepairFamily(
+            name="nested_key_default",
+            public_issue="Function should read user.name from a nested mapping and default to an empty string when missing.",
+            buggy_code="def solve(row):\n    return row['user']['name']\n",
+            hidden_input={"user": {}},
+            expected="",
+            diagnostic_code="M0",
+            patch_intents=("top-level name lookup", "nested missing-key default", "return whole user mapping", "uppercase nested name"),
+            answer_index=1,
+        ),
+        RepairFamily(
+            name="wrapped_index_lookup",
+            public_issue="Function should use modulo wrapping when indexing into a list.",
+            buggy_code="def solve(payload):\n    values, index = payload\n    return values[index]\n",
+            hidden_input=([10, 20, 30], 4),
+            expected=20,
+            diagnostic_code="W1",
+            patch_intents=("clamp to final index", "always first value", "modulo-wrapped index", "sort before index"),
+            answer_index=2,
+        ),
+        RepairFamily(
+            name="strict_positive_filter",
+            public_issue="Function should keep only strictly positive values from a list.",
+            buggy_code="def solve(values):\n    return [value for value in values if value >= 0]\n",
+            hidden_input=[-1, 0, 2],
+            expected=[2],
+            diagnostic_code="F1",
+            patch_intents=("keep nonnegative values", "keep negative values", "sort positive values", "strictly positive filter"),
+            answer_index=3,
+        ),
+    )
+
+
+def _families(family_set: str) -> tuple[RepairFamily, ...]:
+    if family_set == "core":
+        return _core_families()
+    if family_set == "holdout":
+        return _holdout_families()
+    if family_set == "all":
+        return _core_families() + _holdout_families()
+    raise ValueError(f"unknown family set {family_set!r}")
+
+
 def _diagnostic_code(example_index: int, seed: int) -> str:
     return f"{DIAG_LETTERS[(example_index + seed) % len(DIAG_LETTERS)]}{example_index % 10}"
 
@@ -192,13 +287,13 @@ def _make_private_log(*, family: RepairFamily, example_index: int, actual: Any, 
     )
 
 
-def make_benchmark(*, examples: int, candidates: int, seed: int) -> list[Example]:
+def make_benchmark(*, examples: int, candidates: int, seed: int, family_set: str = "core") -> list[Example]:
     if examples <= 0:
         raise ValueError("--examples must be positive")
     if candidates != 4:
         raise ValueError("hidden repair smoke currently expects exactly 4 candidates")
     rng = random.Random(seed)
-    families = _families()
+    families = _families(family_set)
     rows: list[Example] = []
     for example_index in range(examples):
         family = families[example_index % len(families)]
@@ -591,13 +686,14 @@ def main() -> None:
     parser.add_argument("--candidates", type=int, default=4)
     parser.add_argument("--seed", type=int, default=28)
     parser.add_argument("--budgets", type=str, default="2,4,8,16,32")
+    parser.add_argument("--family-set", choices=["core", "holdout", "all"], default="core")
     parser.add_argument("--output-dir", type=pathlib.Path, required=True)
     args = parser.parse_args()
 
     budgets = [int(part.strip()) for part in args.budgets.split(",") if part.strip()]
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-    examples = make_benchmark(examples=args.examples, candidates=args.candidates, seed=args.seed)
+    examples = make_benchmark(examples=args.examples, candidates=args.candidates, seed=args.seed, family_set=args.family_set)
     _write_benchmark(output_dir / "benchmark.jsonl", examples)
 
     artifacts = ["benchmark.jsonl", "sweep_summary.json", "sweep_summary.md", "manifest.json", "manifest.md"]
@@ -622,6 +718,7 @@ def main() -> None:
                 f"--candidates {args.candidates}",
                 f"--seed {args.seed}",
                 f"--budgets {args.budgets}",
+                f"--family-set {args.family_set}",
                 f"--output-dir {args.output_dir}",
             ]
         ),

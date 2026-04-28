@@ -13554,3 +13554,80 @@ Next exact gate:
 - `source_private_hidden_repair_packet_holdout_families_20260429`: add held-out
   repair families, keep `trace_no_hint` and the same controls, require both
   Qwen3 and Phi-3 to beat target-only by at least `15` points.
+
+## 2026-04-29 - Hidden-Repair Packet Holdout-Families Gate
+
+Current ICLR readiness: not ready, but the live branch now has medium-scale
+and held-out-family confirmation. Estimated distance is seed repeats plus
+reviewer-ready baseline/framing.
+
+Current story: explicit source-private tool-trace packets are a compact
+agent-to-agent communication interface. The source sees a private hidden
+execution trace containing `REPAIR_DIAG`, emits a two-byte packet, and the
+target decodes it against public candidate metadata. The result holds on both
+core and held-out repair families, across Qwen3 and Phi-3 source emitters, and
+fails when the trace is removed.
+
+Exact blocker: seed stability and paper framing. The method is now positive,
+but still needs repeat stability before becoming an ICLR claim.
+
+Harness change:
+
+- `scripts/run_source_private_hidden_repair_packet_smoke.py` now supports
+  `--family-set core|holdout|all`
+- held-out families are disjoint from the core eight template families
+
+Commands:
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_smoke.py \
+  --examples 500 \
+  --candidates 4 \
+  --seed 30 \
+  --budgets 2,4,8,16,32 \
+  --family-set holdout \
+  --output-dir results/source_private_hidden_repair_packet_holdout_families_20260429
+```
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py \
+  --benchmark-jsonl results/source_private_hidden_repair_packet_holdout_families_20260429/benchmark.jsonl \
+  --output-dir results/source_private_hidden_repair_packet_holdout_families_llm_20260429/qwen3_trace_no_hint \
+  --model Qwen/Qwen3-0.6B \
+  --device mps \
+  --dtype float32 \
+  --limit 500 \
+  --seed 30 \
+  --max-new-tokens 8 \
+  --prompt-mode trace_no_hint \
+  --no-enable-thinking
+```
+
+Equivalent model commands were run for `microsoft/Phi-3-mini-4k-instruct` in
+`trace_no_hint` mode and Qwen3 in `raw_log_no_trace` mode.
+
+Results:
+
+| Run | Model | Mode | Matched | Target | Best control | Valid | Delta target 95% CI | Delta control 95% CI |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| qwen3_trace_no_hint | Qwen/Qwen3-0.6B | trace_no_hint | 0.922 | 0.250 | 0.258 | 0.864 | [0.632, 0.712] | [0.622, 0.706] |
+| phi3_trace_no_hint | microsoft/Phi-3-mini-4k-instruct | trace_no_hint | 1.000 | 0.250 | 0.258 | 1.000 | [0.710, 0.788] | [0.702, 0.778] |
+| qwen3_raw_log_no_trace | Qwen/Qwen3-0.6B | raw_log_no_trace | 0.250 | 0.250 | 0.258 | 0.000 | [0.000, 0.000] | [-0.016, -0.002] |
+
+Decision:
+
+- promote hidden-repair packet handoff to held-out family confirmation
+- keep the claim scoped to explicit private tool-trace communication
+- next priority is seed repeats, not more prompt variants
+
+Artifacts:
+
+- `paper/source_private_hidden_repair_packet_holdout_families_20260429.md`
+- `results/source_private_hidden_repair_packet_holdout_families_20260429/`
+- `results/source_private_hidden_repair_packet_holdout_families_llm_20260429/`
+
+Next exact gate:
+
+- `source_private_hidden_repair_packet_seed_repeat_20260429`: repeat core and
+  held-out gates over additional frozen seeds with Qwen3/Phi-3 `trace_no_hint`
+  and Qwen3 `raw_log_no_trace`.

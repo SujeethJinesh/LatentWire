@@ -1,0 +1,152 @@
+{
+  "artifact_sha256": {
+    "holdout_families_summary.json": "107cf3fa6802797e2de3e76825ba9d68eb53f1e67ec0252bae562f0376741858",
+    "holdout_families_summary.md": "aacbd2145699592eee6547496f75b385062cc3d604489948859bcd391d89646e",
+    "phi3_trace_no_hint/manifest.json": "89357075bfc24e41b2661aa202606d07489b13a9a96c3b4130c47e1968f6064a",
+    "phi3_trace_no_hint/manifest.md": "5c53d5171471904f8290e4b95acedad19794cfed8598fa9195bb7bd89c365e17",
+    "phi3_trace_no_hint/model_packets.jsonl": "014457aca7f813ef515e56383e82bc7e2a023235db2c41343a73133c51c2acae",
+    "phi3_trace_no_hint/predictions.jsonl": "00cc0432588528c2f27bf5e072ae24ca977d7507b96470d46dbab3f2c3eb665a",
+    "phi3_trace_no_hint/summary.json": "0e2989dc21721675ed0fcd530e6e572093bf1308845c72b136ce831445e28265",
+    "phi3_trace_no_hint/summary.md": "03a8e67edbc202bf46c65aff4dd8a0403e755a898404a0a82611f8a5d512515c",
+    "qwen3_raw_log_no_trace/manifest.json": "28e306bcd7cf65cc48962c26a5358d3b7fa6f65898543ed3242d81ae4b3a7461",
+    "qwen3_raw_log_no_trace/manifest.md": "ea09d0b9ce883aced550b1b3aa09f5aea2a75330129ad7136e48462135e65253",
+    "qwen3_raw_log_no_trace/model_packets.jsonl": "e142fa2f398d9718b7bcc07cc87f9fb0b12fd1b6fc189368885525133e0f52b6",
+    "qwen3_raw_log_no_trace/predictions.jsonl": "72ba88d7b00d62610e77cbc5847c60bdc2f4f1d2eacbbf7124c1f4bda7b2267e",
+    "qwen3_raw_log_no_trace/summary.json": "1c419cc874a5269c4b1c129370eb3e7a1d3ccb7206c5144e6a107c250497c6c4",
+    "qwen3_raw_log_no_trace/summary.md": "be56fc844d0b282576aa4ee418115f615cbad514eccf00281e6a1b72e157a5a5",
+    "qwen3_trace_no_hint/manifest.json": "0da0a39ec6f7ab5063cca2124060375dcf6d3230503f8082ca65d71c2e714468",
+    "qwen3_trace_no_hint/manifest.md": "207f09c5c6011882bd475692372b14df89f0df19c873948af4cfceedcf152249",
+    "qwen3_trace_no_hint/model_packets.jsonl": "97f72129648b9aa9d408e225841bf8dfc63d1670b60fee6efdd5b04a42d60721",
+    "qwen3_trace_no_hint/predictions.jsonl": "1eba9b92ef8aadd17640dfcff9be3769012e72ef5e4c5f4094065c4a06c9dd36",
+    "qwen3_trace_no_hint/summary.json": "7575ef75ab23b0b66345ab3bc1ba6da77ca4b32fc23a53e656c6bad5cf05ab6a",
+    "qwen3_trace_no_hint/summary.md": "96d408a00b58476e422b326500152ff28c4b3409e1ee5fa772b363c347e79802"
+  },
+  "artifacts": [
+    "holdout_families_summary.json",
+    "holdout_families_summary.md",
+    "qwen3_trace_no_hint/manifest.json",
+    "qwen3_trace_no_hint/manifest.md",
+    "qwen3_trace_no_hint/model_packets.jsonl",
+    "qwen3_trace_no_hint/predictions.jsonl",
+    "qwen3_trace_no_hint/summary.json",
+    "qwen3_trace_no_hint/summary.md",
+    "phi3_trace_no_hint/manifest.json",
+    "phi3_trace_no_hint/manifest.md",
+    "phi3_trace_no_hint/model_packets.jsonl",
+    "phi3_trace_no_hint/predictions.jsonl",
+    "phi3_trace_no_hint/summary.json",
+    "phi3_trace_no_hint/summary.md",
+    "qwen3_raw_log_no_trace/manifest.json",
+    "qwen3_raw_log_no_trace/manifest.md",
+    "qwen3_raw_log_no_trace/model_packets.jsonl",
+    "qwen3_raw_log_no_trace/predictions.jsonl",
+    "qwen3_raw_log_no_trace/summary.json",
+    "qwen3_raw_log_no_trace/summary.md"
+  ],
+  "gate": "source_private_hidden_repair_packet_holdout_families_20260429",
+  "summary": {
+    "benchmark_jsonl": "results/source_private_hidden_repair_packet_holdout_families_20260429/benchmark.jsonl",
+    "benchmark_sha256": "6abc6dbe61ff93eb724499642d42eebe63e1b463ce3974611a8691a1089b973b",
+    "bootstrap_samples": 2000,
+    "gate": "source_private_hidden_repair_packet_holdout_families_20260429",
+    "n": 500,
+    "pass_gate": true,
+    "pass_rule": "Qwen3 and Phi-3 trace_no_hint rows pass, raw_log_no_trace fails, and paired bootstrap lower bounds remain comfortably above +0.15 for primary rows.",
+    "rows": [
+      {
+        "best_control_name": "random_same_byte",
+        "best_source_destroying_control_accuracy": 0.258,
+        "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+        "matched_accuracy": 0.922,
+        "matched_correct": 461,
+        "matched_minus_best_control_bootstrap95": {
+          "high": 0.706,
+          "low": 0.622,
+          "mean": 0.664317
+        },
+        "matched_minus_target_bootstrap95": {
+          "high": 0.712,
+          "low": 0.632,
+          "mean": 0.672922
+        },
+        "mean_packet_bytes": 1.728,
+        "mean_packet_tokens": 2.914,
+        "model": "Qwen/Qwen3-0.6B",
+        "n": 500,
+        "p50_source_latency_ms": 330.81097950343974,
+        "p95_source_latency_ms": 429.1484159984975,
+        "packet_valid_rate": 0.864,
+        "pass_gate": true,
+        "predictions_sha256": "1eba9b92ef8aadd17640dfcff9be3769012e72ef5e4c5f4094065c4a06c9dd36",
+        "prompt_mode": "trace_no_hint",
+        "run_id": "qwen3_trace_no_hint",
+        "summary_sha256": "7575ef75ab23b0b66345ab3bc1ba6da77ca4b32fc23a53e656c6bad5cf05ab6a",
+        "target_only_accuracy": 0.25,
+        "target_only_correct": 125
+      },
+      {
+        "best_control_name": "random_same_byte",
+        "best_source_destroying_control_accuracy": 0.258,
+        "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+        "matched_accuracy": 1.0,
+        "matched_correct": 500,
+        "matched_minus_best_control_bootstrap95": {
+          "high": 0.778,
+          "low": 0.702,
+          "mean": 0.741645
+        },
+        "matched_minus_target_bootstrap95": {
+          "high": 0.788,
+          "low": 0.71,
+          "mean": 0.750289
+        },
+        "mean_packet_bytes": 2.0,
+        "mean_packet_tokens": 3.0,
+        "model": "microsoft/Phi-3-mini-4k-instruct",
+        "n": 500,
+        "p50_source_latency_ms": 480.51110400047037,
+        "p95_source_latency_ms": 602.4628340019262,
+        "packet_valid_rate": 1.0,
+        "pass_gate": true,
+        "predictions_sha256": "00cc0432588528c2f27bf5e072ae24ca977d7507b96470d46dbab3f2c3eb665a",
+        "prompt_mode": "trace_no_hint",
+        "run_id": "phi3_trace_no_hint",
+        "summary_sha256": "0e2989dc21721675ed0fcd530e6e572093bf1308845c72b136ce831445e28265",
+        "target_only_accuracy": 0.25,
+        "target_only_correct": 125
+      },
+      {
+        "best_control_name": "random_same_byte",
+        "best_source_destroying_control_accuracy": 0.258,
+        "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+        "matched_accuracy": 0.25,
+        "matched_correct": 125,
+        "matched_minus_best_control_bootstrap95": {
+          "high": -0.002,
+          "low": -0.016,
+          "mean": -0.008062
+        },
+        "matched_minus_target_bootstrap95": {
+          "high": 0.0,
+          "low": 0.0,
+          "mean": 0.0
+        },
+        "mean_packet_bytes": 0.0,
+        "mean_packet_tokens": 3.496,
+        "model": "Qwen/Qwen3-0.6B",
+        "n": 500,
+        "p50_source_latency_ms": 283.23556249961257,
+        "p95_source_latency_ms": 620.1210830040509,
+        "packet_valid_rate": 0.0,
+        "pass_gate": false,
+        "predictions_sha256": "72ba88d7b00d62610e77cbc5847c60bdc2f4f1d2eacbbf7124c1f4bda7b2267e",
+        "prompt_mode": "raw_log_no_trace",
+        "run_id": "qwen3_raw_log_no_trace",
+        "summary_sha256": "1c419cc874a5269c4b1c129370eb3e7a1d3ccb7206c5144e6a107c250497c6c4",
+        "target_only_accuracy": 0.25,
+        "target_only_correct": 125
+      }
+    ],
+    "title": "Source-Private Hidden-Repair Holdout-Families Summary"
+  }
+}

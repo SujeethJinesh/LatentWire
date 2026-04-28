@@ -12,6 +12,16 @@ def test_hidden_repair_benchmark_executes_real_buggy_cases() -> None:
     assert all("REPAIR_DIAG=" not in example.target_prompt for example in examples)
 
 
+def test_holdout_family_set_is_disjoint_and_executable() -> None:
+    core = repair_gate.make_benchmark(examples=8, candidates=4, seed=28, family_set="core")
+    holdout = repair_gate.make_benchmark(examples=8, candidates=4, seed=28, family_set="holdout")
+
+    assert {example.family_name for example in core}.isdisjoint({example.family_name for example in holdout})
+    assert len({example.family_name for example in holdout}) == 8
+    assert any("ValueError" in example.actual_repr for example in holdout)
+    assert all("REPAIR_DIAG=" in example.private_test_log for example in holdout)
+
+
 def test_matched_repair_packet_beats_controls() -> None:
     examples = repair_gate.make_benchmark(examples=32, candidates=4, seed=7)
     _, summary = repair_gate.run_budget(examples=examples, seed=7, budget_bytes=2)

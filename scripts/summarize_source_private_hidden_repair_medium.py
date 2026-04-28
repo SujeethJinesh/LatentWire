@@ -115,7 +115,7 @@ def summarize_run(
 
 def _write_markdown(path: pathlib.Path, aggregate: dict[str, Any]) -> None:
     lines = [
-        "# Source-Private Hidden-Repair Medium Summary",
+        f"# {aggregate['title']}",
         "",
         f"- gate: `{aggregate['gate']}`",
         f"- pass gate: `{aggregate['pass_gate']}`",
@@ -145,6 +145,9 @@ def main() -> None:
     parser.add_argument("--llm-dir", type=pathlib.Path, required=True)
     parser.add_argument("--benchmark-jsonl", type=pathlib.Path, required=True)
     parser.add_argument("--bootstrap-samples", type=int, default=2000)
+    parser.add_argument("--gate", default="source_private_hidden_repair_packet_medium_20260429")
+    parser.add_argument("--summary-prefix", default="medium")
+    parser.add_argument("--title", default="Source-Private Hidden-Repair Medium Summary")
     parser.add_argument("--seed", type=int, default=20260429)
     args = parser.parse_args()
 
@@ -170,7 +173,8 @@ def main() -> None:
     primary = [row for row in rows if row["prompt_mode"] == "trace_no_hint"]
     destruction = [row for row in rows if row["prompt_mode"] == "raw_log_no_trace"]
     aggregate = {
-        "gate": "source_private_hidden_repair_packet_medium_20260429",
+        "gate": args.gate,
+        "title": args.title,
         "n": rows[0]["n"] if rows else 0,
         "benchmark_jsonl": str(args.benchmark_jsonl),
         "benchmark_sha256": _sha256_file(benchmark_path),
@@ -182,8 +186,8 @@ def main() -> None:
         ),
         "rows": rows,
     }
-    (llm_dir / "medium_summary.json").write_text(json.dumps(aggregate, indent=2, sort_keys=True), encoding="utf-8")
-    _write_markdown(llm_dir / "medium_summary.md", aggregate)
+    (llm_dir / f"{args.summary_prefix}_summary.json").write_text(json.dumps(aggregate, indent=2, sort_keys=True), encoding="utf-8")
+    _write_markdown(llm_dir / f"{args.summary_prefix}_summary.md", aggregate)
 
 
 if __name__ == "__main__":

@@ -1694,3 +1694,12 @@ paired deltas over target-only are `[0.516, 0.600]` for Qwen3 and
 with `0` valid packets. The live branch is now medium-confirmed as explicit
 source-private tool-trace packet handoff. Remaining blocker: held-out repair
 families and seed repeats.
+
+Update `2026-04-29`: held-out repair-family confirmation passes. A disjoint
+eight-family held-out benchmark with `500` examples gives Qwen3
+`trace_no_hint` `461/500`, Phi-3-mini `500/500`, target-only `125/500`, and
+best control `129/500`. Paired bootstrap 95% deltas over target-only are
+`[0.632, 0.712]` for Qwen3 and `[0.710, 0.788]` for Phi-3. Qwen3
+`raw_log_no_trace` returns to `125/500` with `0` valid packets. The method is
+now medium-scale plus held-out-family positive. It remains not ICLR-ready until
+seed repeats and baseline/framing are complete.
