@@ -15,6 +15,7 @@ from typing import Any
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXPLICIT_DIAG_RE = re.compile(r"REPAIR_DIAG\s*=\s*([A-Z][0-9])")
 STANDALONE_DIAG_RE = re.compile(r"(?<![A-Z0-9])([A-Z][0-9])(?![A-Z0-9])")
+PROMPT_MODES = ("copied_helper", "log_only", "trace_no_hint", "raw_log_no_trace")
 
 
 @dataclass(frozen=True)
@@ -79,16 +80,42 @@ def _deterministic_nonself_index(index: int, n: int) -> int:
     return candidate if candidate != index else (index + 1) % n
 
 
-def _prompt_for_diag(example: LoadedExample) -> str:
-    diag_line = next((line for line in example.private_test_log.splitlines() if "REPAIR_DIAG=" in line), "")
+def _private_log_for_prompt(example: LoadedExample, *, prompt_mode: str) -> str:
+    if prompt_mode == "raw_log_no_trace":
+        banned = ("private_tool_trace:", "hint:")
+    elif prompt_mode == "trace_no_hint":
+        banned = ("hint:",)
+    else:
+        banned = ()
+    lines = [
+        line
+        for line in example.private_test_log.splitlines()
+        if not any(line.startswith(prefix) for prefix in banned)
+    ]
+    return "\n".join(lines)
+
+
+def _prompt_for_diag(example: LoadedExample, *, prompt_mode: str) -> str:
+    private_log = _private_log_for_prompt(example, prompt_mode=prompt_mode)
+    diag_line = next((line for line in private_log.splitlines() if "REPAIR_DIAG=" in line), "")
+    if prompt_mode == "raw_log_no_trace":
+        instruction = (
+            "Infer the most compact repair packet from the private hidden-test log.\n"
+            "Do not output the candidate label, patch name, explanation, punctuation, or code fence.\n"
+            "Return only a two-character repair packet if one is recoverable."
+        )
+    else:
+        instruction = (
+            "Copy exactly the two-character code after the equals sign in the private REPAIR_DIAG line.\n"
+            "Do not output the candidate label, patch name, explanation, punctuation, or code fence.\n"
+            "Return only the two-character repair packet."
+        )
     return (
         "You are the source agent in a private code-repair handoff experiment.\n"
-        "Copy exactly the two-character code after the equals sign in the private REPAIR_DIAG line.\n"
-        "Do not output the candidate label, patch name, explanation, punctuation, or code fence.\n"
-        "Return only the two-character repair packet.\n\n"
-        f"Private hidden-test log:\n{example.private_test_log}\n\n"
-        f"Private REPAIR_DIAG line copied from the log: {diag_line}\n"
-        "Packet:"
+        f"{instruction}\n\n"
+        f"Private hidden-test log:\n{private_log}\n\n"
+        + (f"Private REPAIR_DIAG line copied from the log: {diag_line}\n" if prompt_mode == "copied_helper" else "")
+        + "Packet:"
     )
 
 
@@ -125,6 +152,7 @@ def _generate_packets(
     seed: int,
     max_new_tokens: int,
     enable_thinking: bool | None,
+    prompt_mode: str,
 ) -> list[dict[str, Any]]:
     import torch
 
@@ -132,7 +160,7 @@ def _generate_packets(
     torch.manual_seed(seed)
     rows: list[dict[str, Any]] = []
     for example in examples:
-        prompt = _prompt_for_diag(example)
+        prompt = _prompt_for_diag(example, prompt_mode=prompt_mode)
         text_prompt = _format_prompt(tokenizer, prompt, enable_thinking=enable_thinking)
         inputs = tokenizer(text_prompt, return_tensors="pt").to(device)
         start = time.perf_counter()
@@ -156,6 +184,7 @@ def _generate_packets(
                 "packet_tokens": len(new_tokens),
                 "latency_ms": latency_ms,
                 "valid_packet": bool(re.fullmatch(r"[A-Z][0-9]", packet)),
+                "prompt_mode": prompt_mode,
             }
         )
     return rows
@@ -363,6 +392,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=28)
     parser.add_argument("--max-new-tokens", type=int, default=8)
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument("--prompt-mode", choices=PROMPT_MODES, default="copied_helper")
     args = parser.parse_args()
 
     benchmark_path = args.benchmark_jsonl if args.benchmark_jsonl.is_absolute() else ROOT / args.benchmark_jsonl
@@ -377,6 +407,7 @@ def main() -> None:
         seed=args.seed,
         max_new_tokens=args.max_new_tokens,
         enable_thinking=args.enable_thinking,
+        prompt_mode=args.prompt_mode,
     )
     rows, summary = _evaluate(examples, packets, seed=args.seed)
     _write_jsonl(output_dir / "model_packets.jsonl", packets)
@@ -397,6 +428,7 @@ def main() -> None:
                 f"--limit {args.limit}",
                 f"--seed {args.seed}",
                 f"--max-new-tokens {args.max_new_tokens}",
+                f"--prompt-mode {args.prompt_mode}",
                 "--no-enable-thinking" if args.enable_thinking is False else "--enable-thinking",
             ]
         ),

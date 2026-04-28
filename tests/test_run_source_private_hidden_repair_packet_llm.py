@@ -39,6 +39,22 @@ def test_exact_diag_decodes_to_answer() -> None:
     assert llm_gate._decode_packet(example, "Z9") == llm_gate._prior_prediction(example)
 
 
+def test_prompt_modes_remove_helper_scaffolding_incrementally() -> None:
+    example = _loaded_examples(1)[0]
+
+    copied = llm_gate._prompt_for_diag(example, prompt_mode="copied_helper")
+    log_only = llm_gate._prompt_for_diag(example, prompt_mode="log_only")
+    trace_no_hint = llm_gate._prompt_for_diag(example, prompt_mode="trace_no_hint")
+    raw_log = llm_gate._prompt_for_diag(example, prompt_mode="raw_log_no_trace")
+
+    assert "Private REPAIR_DIAG line copied from the log" in copied
+    assert "Private REPAIR_DIAG line copied from the log" not in log_only
+    assert "hint: emit only" in log_only
+    assert "hint: emit only" not in trace_no_hint
+    assert "private_tool_trace: REPAIR_DIAG=" in trace_no_hint
+    assert "private_tool_trace: REPAIR_DIAG=" not in raw_log
+
+
 def test_oracle_model_packets_pass_and_controls_fail() -> None:
     examples = _loaded_examples(8)
     packets = [

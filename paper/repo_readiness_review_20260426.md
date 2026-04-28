@@ -1665,3 +1665,12 @@ capability row. This removes the one-model prompt-artifact objection, but the
 paper is still not ready because helper-line diagnostics and candidate metadata
 remain part of the protocol. The next exact gate is
 `source_private_hidden_repair_packet_weakened_helper_20260428`.
+
+Update `2026-04-28`: weakened-helper evidence improves the claim boundary.
+Removing the copied helper line leaves Qwen3 at `63/64`; removing both the
+copied helper line and the hint while keeping the private `REPAIR_DIAG` trace
+leaves Qwen3 at `50/64` and Phi-3-mini at `64/64`, with controls still at
+`16/64`. Removing the trace itself drops Qwen3 to target-only (`16/64`) with
+`0` valid packets. The live story is now explicit source-private tool-trace
+handoff, not raw-log repair inference. Next gate:
+`source_private_hidden_repair_packet_strict_small_20260429`.

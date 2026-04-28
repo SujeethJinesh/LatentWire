@@ -13337,3 +13337,57 @@ Next exact gate:
   hidden-repair examples, remove the copied helper line first, then test a
   harder no-helper or masked-log variant. Promote only if matched source remains
   at least `15` points above target-only and controls remain flat.
+
+## 2026-04-28 - Hidden-Repair Packet Weakened-Helper Smoke
+
+Current ICLR readiness: not ready. Estimated distance is now a strict-small
+hidden-repair run, a medium/larger frozen slice, and a stronger explanation of
+the explicit trace-field interface.
+
+Current story: the live method is an explicit source-private tool-trace packet.
+The source sees a private hidden execution log containing a compact
+`REPAIR_DIAG` trace field. The target cannot see the hidden log, but can decode
+the packet against public candidate metadata. Gains disappear under
+source-destroying controls.
+
+Exact blocker: this remains an explicit trace-field communication protocol.
+Raw hidden logs without the trace do not yet produce a usable packet, so the
+paper claim must be about private tool-trace handoff rather than open-ended
+repair inference from logs.
+
+Harness change:
+
+- `scripts/run_source_private_hidden_repair_packet_llm.py` now supports
+  `--prompt-mode copied_helper|log_only|trace_no_hint|raw_log_no_trace`
+- `trace_no_hint` removes the copied helper line and hint while keeping the
+  private `REPAIR_DIAG` trace
+- `raw_log_no_trace` removes the trace and hint as a source-signal destruction
+  control
+
+Results:
+
+| Run | Model | Prompt mode | Pass | Matched | Target-only | Best control | Valid packets |
+|---|---|---|---|---:|---:|---:|---:|
+| qwen3_log_only | Qwen/Qwen3-0.6B | log_only | `true` | 0.984 | 0.250 | 0.250 | 0.984 |
+| qwen3_trace_no_hint | Qwen/Qwen3-0.6B | trace_no_hint | `true` | 0.781 | 0.250 | 0.250 | 0.734 |
+| qwen3_raw_log_no_trace | Qwen/Qwen3-0.6B | raw_log_no_trace | `false` | 0.250 | 0.250 | 0.250 | 0.000 |
+| phi3_trace_no_hint | microsoft/Phi-3-mini-4k-instruct | trace_no_hint | `true` | 1.000 | 0.250 | 0.250 | 1.000 |
+
+Decision:
+
+- promote `trace_no_hint` as the primary hidden-repair protocol
+- demote the copied helper line and hint; they are no longer necessary
+- keep `raw_log_no_trace` as a source-signal destruction control
+- do not claim raw-log repair inference
+
+Artifacts:
+
+- `paper/source_private_hidden_repair_packet_weakened_helper_20260428.md`
+- `results/source_private_hidden_repair_packet_weakened_helper_20260428/`
+
+Next exact gate:
+
+- `source_private_hidden_repair_packet_strict_small_20260429`: scale the
+  hidden-repair benchmark to `160` frozen examples with `trace_no_hint` as the
+  primary source prompt, Qwen3 and Phi-3 source emitters, exact ID parity,
+  source-destroying controls, packet validity, bytes, and latency.
