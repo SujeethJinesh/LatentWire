@@ -1,0 +1,464 @@
+{
+  "exact_id_sha256": "fcfd2cfcecfa51f4caae6e5de39cf0632dafb634e4f19db0dfdc12c2ef8dbd2e",
+  "interpretation": "Matched test-log packets intentionally transmit the two-byte trace signature. Leakage counts focus on answer/candidate-label copies and accidental TRACE_SIG field leakage outside the full-log oracle.",
+  "n": 160,
+  "over_budget_counts": {
+    "16": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 0,
+      "full_structured_log": 160,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 0,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    },
+    "2": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 160,
+      "full_structured_log": 160,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 0,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    },
+    "32": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 0,
+      "full_structured_log": 160,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 0,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    },
+    "4": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 160,
+      "full_structured_log": 160,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 0,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    },
+    "8": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 160,
+      "full_structured_log": 160,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 0,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    }
+  },
+  "packet_copy_counts": {
+    "16": {
+      "answer_masked": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "answer_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "full_signature_text": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 160
+      },
+      "full_structured_log": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "matched_testlog_packet": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "random_same_byte": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "shuffled_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "structured_text_matched": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_derived_sidecar": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_wrapper": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "zero_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      }
+    },
+    "2": {
+      "answer_masked": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "answer_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "full_signature_text": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 160
+      },
+      "full_structured_log": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "matched_testlog_packet": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "random_same_byte": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "shuffled_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "structured_text_matched": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_derived_sidecar": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_wrapper": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "zero_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      }
+    },
+    "32": {
+      "answer_masked": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "answer_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "full_signature_text": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 160
+      },
+      "full_structured_log": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "matched_testlog_packet": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "random_same_byte": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "shuffled_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "structured_text_matched": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_derived_sidecar": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_wrapper": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "zero_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      }
+    },
+    "4": {
+      "answer_masked": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "answer_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "full_signature_text": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 160
+      },
+      "full_structured_log": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "matched_testlog_packet": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "random_same_byte": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "shuffled_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "structured_text_matched": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_derived_sidecar": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_wrapper": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "zero_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      }
+    },
+    "8": {
+      "answer_masked": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "answer_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "full_signature_text": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 160
+      },
+      "full_structured_log": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "matched_testlog_packet": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "random_same_byte": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "shuffled_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "structured_text_matched": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_derived_sidecar": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_only": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "target_wrapper": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      },
+      "zero_source": {
+        "payload_contains_answer_label": 0,
+        "payload_contains_candidate_label": 0,
+        "payload_contains_trace_sig_field_outside_full_log": 0
+      }
+    }
+  },
+  "parse_failure_counts": {
+    "16": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 0,
+      "full_structured_log": 0,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 160,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    },
+    "2": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 0,
+      "full_structured_log": 0,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 160,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    },
+    "32": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 0,
+      "full_structured_log": 0,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 160,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    },
+    "4": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 0,
+      "full_structured_log": 0,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 160,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    },
+    "8": {
+      "answer_masked": 0,
+      "answer_only": 0,
+      "full_signature_text": 0,
+      "full_structured_log": 0,
+      "matched_testlog_packet": 0,
+      "random_same_byte": 0,
+      "shuffled_source": 0,
+      "structured_text_matched": 160,
+      "target_derived_sidecar": 0,
+      "target_only": 0,
+      "target_wrapper": 0,
+      "zero_source": 0
+    }
+  },
+  "public_target_answer_label_candidate_pool_hits": 160,
+  "public_target_private_log_hits": 0,
+  "target_prompt_trace_sig_hits": 0
+}

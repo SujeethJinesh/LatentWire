@@ -14446,3 +14446,12 @@ the PDF/source zip/anonymous artifact zip/transfer bundle. No account names,
 local paths, GitHub URLs, or project-name marker matches were found. Local
 preparation is complete; the only remaining blocker is external portal/artifact
 confirmation.
+
+Update `2026-04-28`: `final_reproducibility_folder_20260428` created
+`final/` as a consolidated finalization and reproducibility staging folder. It
+contains upload files, manuscript source/PDF, paper memos, source-private
+scripts, focused tests, relevant result directories, references, repo
+environment files, and a folder-level checksum manifest. `final/README.md`
+states the paper story, why the result matters, who should care, what worked,
+and the claim boundary. This is a copy/staging folder; canonical repo-root paths
+remain intact.

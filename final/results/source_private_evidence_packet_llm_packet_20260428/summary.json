@@ -1,0 +1,132 @@
+{
+  "best_no_source_accuracy": 0.25,
+  "best_source_destroying_control_accuracy": 0.25,
+  "budget_bytes": 2,
+  "exact_id_count": 16,
+  "exact_id_parity": true,
+  "matched_minus_best_control": 0.0,
+  "matched_minus_best_no_source": 0.0,
+  "metrics": {
+    "answer_masked": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "correct_ids": [
+        "spqa_0000",
+        "spqa_0004",
+        "spqa_0008",
+        "spqa_0012"
+      ],
+      "max_payload_bytes": 0,
+      "mean_payload_bytes": 0.0,
+      "p50_latency_ms": 0.0
+    },
+    "answer_only": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "correct_ids": [
+        "spqa_0000",
+        "spqa_0004",
+        "spqa_0008",
+        "spqa_0012"
+      ],
+      "max_payload_bytes": 2,
+      "mean_payload_bytes": 2.0,
+      "p50_latency_ms": 0.0
+    },
+    "matched_model_packet": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "correct_ids": [
+        "spqa_0000",
+        "spqa_0004",
+        "spqa_0008",
+        "spqa_0012"
+      ],
+      "max_payload_bytes": 2,
+      "mean_payload_bytes": 1.125,
+      "p50_latency_ms": 1741.2821040015842
+    },
+    "random_same_byte": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "correct_ids": [
+        "spqa_0000",
+        "spqa_0004",
+        "spqa_0008",
+        "spqa_0012"
+      ],
+      "max_payload_bytes": 2,
+      "mean_payload_bytes": 2.0,
+      "p50_latency_ms": 0.0
+    },
+    "shuffled_model_packet": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "correct_ids": [
+        "spqa_0000",
+        "spqa_0004",
+        "spqa_0008",
+        "spqa_0012"
+      ],
+      "max_payload_bytes": 2,
+      "mean_payload_bytes": 1.125,
+      "p50_latency_ms": 0.0
+    },
+    "source_final_only": {
+      "accuracy": 1.0,
+      "correct": 16,
+      "correct_ids": [
+        "spqa_0000",
+        "spqa_0001",
+        "spqa_0002",
+        "spqa_0003",
+        "spqa_0004",
+        "spqa_0005",
+        "spqa_0006",
+        "spqa_0007",
+        "spqa_0008",
+        "spqa_0009",
+        "spqa_0010",
+        "spqa_0011",
+        "spqa_0012",
+        "spqa_0013",
+        "spqa_0014",
+        "spqa_0015"
+      ],
+      "max_payload_bytes": 32,
+      "mean_payload_bytes": 28.0,
+      "p50_latency_ms": 0.0
+    },
+    "target_only": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "correct_ids": [
+        "spqa_0000",
+        "spqa_0004",
+        "spqa_0008",
+        "spqa_0012"
+      ],
+      "max_payload_bytes": 0,
+      "mean_payload_bytes": 0.0,
+      "p50_latency_ms": 0.0
+    },
+    "zero_source": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "correct_ids": [
+        "spqa_0000",
+        "spqa_0004",
+        "spqa_0008",
+        "spqa_0012"
+      ],
+      "max_payload_bytes": 0,
+      "mean_payload_bytes": 0.0,
+      "p50_latency_ms": 0.0
+    }
+  },
+  "n": 16,
+  "packet_nonempty_rate": 0.5625,
+  "pass_gate": false,
+  "pass_rule": "matched model-produced digest packet must beat target-only by >=0.15, source-destroying controls must remain within +0.02, and source-final-only must not explain the gain.",
+  "source_final_minus_best_no_source": 0.75
+}

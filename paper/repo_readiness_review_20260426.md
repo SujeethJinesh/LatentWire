@@ -1926,3 +1926,9 @@ Update `2026-04-28`: final local upload audit passed. Checksums, archive
 integrity, extracted-tree identity scan, and binary/string identity scan over
 the exact upload files all passed. The repo is locally complete for anonymous
 submission; remaining work is external confirmation only.
+
+Update `2026-04-28`: added `final/` as the consolidated reproducibility and
+finalization folder. It includes the upload payload, paper source/PDF,
+source-private code and tests, relevant result directories, references, and
+checksums. The repo remains locally complete for anonymous submission; `final/`
+is a staging copy for handoff, not a change to the scientific claim.

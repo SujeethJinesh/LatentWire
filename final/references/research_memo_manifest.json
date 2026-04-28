@@ -1,0 +1,856 @@
+[
+  {
+    "num": 357,
+    "slug": "frontier_attribution_routing_refs",
+    "path": "references/357_frontier_attribution_routing_refs.md",
+    "status": "local_memo",
+    "reason": "Frontier-selection source memo for SAE/crosscoder, attribution-patching, causal tracing, sparse routing, uncertainty, and saliency-stability ablations."
+  },
+  {
+    "num": 358,
+    "slug": "recent_lateral_method_refs",
+    "path": "references/358_recent_lateral_method_refs.md",
+    "status": "local_memo",
+    "reason": "Recent lateral-method source memo for projector/adapters, diffusion refinement, KV compression, quantization geometry, tokenizer adaptation, and transport initialization."
+  },
+  {
+    "num": 359,
+    "slug": "competitor_benchmark_refs",
+    "path": "references/359_competitor_benchmark_refs.md",
+    "status": "local_memo",
+    "reason": "Competitor benchmark source memo for direct communication, same-model cache controls, prompt compression, KV quantization, adapters, and feature-dictionary baselines."
+  },
+  {
+    "num": 360,
+    "slug": "recent_cross_model_interface_refs",
+    "path": "references/360_recent_cross_model_interface_refs.md",
+    "status": "local_memo",
+    "reason": "Recent cross-model interface memo for feature dictionaries, model stitching, tokenizer adaptation, activated adapters, test-time refinement, and multimodal connector transfer."
+  },
+  {
+    "num": 361,
+    "slug": "recent_refinement_quant_connector_refs",
+    "path": "references/361_recent_refinement_quant_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Recent refinement, quantization, connector, tokenizer, and competitor memo for routed projectors, iterative latent repair, mixed-bit protected frontiers, asymmetric K/V transport, and LatentMAS-style benchmarks."
+  },
+  {
+    "num": 362,
+    "slug": "latentmas_competitor_bootstrap_refs",
+    "path": "references/362_latentmas_competitor_bootstrap_refs.md",
+    "status": "local_memo",
+    "reason": "LatentMAS competitor bootstrap memo with local clone status, source links, native GSM commands, SVAMP-compatible wrapper plan, required telemetry, and fair-comparison ladder against LatentWire."
+  },
+  {
+    "num": 363,
+    "slug": "recent_routed_refinement_reasoning_refs",
+    "path": "references/363_recent_routed_refinement_reasoning_refs.md",
+    "status": "local_memo",
+    "reason": "Recent routed projector, adaptive compute, latent refinement, latent reasoning, and cross-model/inter-agent latent communication memo with concrete ablations and telemetry for the active positive-method paper loop."
+  },
+  {
+    "num": 364,
+    "slug": "hub_router_tokenizer_verifier_refs",
+    "path": "references/364_hub_router_tokenizer_verifier_refs.md",
+    "status": "local_memo",
+    "reason": "Recent hub dictionary, shared latent space, dynamic router regularization, verifier/stop-policy, and tokenizer/vocabulary adaptation memo with concrete ablations, required telemetry, and decision rules for the active positive-method paper loop."
+  },
+  {
+    "num": 365,
+    "slug": "recent_symmetry_hub_connector_refs",
+    "path": "references/365_recent_symmetry_hub_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Recent symmetry-aware alignment, shared sparse codebooks, routed connector banks, tokenizer/vocabulary adaptation, quantization geometry, and verifier stop-policy memo with concrete ablations, telemetry fields, and anti-loop rules for the active positive-method paper loop."
+  },
+  {
+    "num": 366,
+    "slug": "tokenizer_connector_quantization_harness_refs",
+    "path": "references/366_tokenizer_connector_quantization_harness_refs.md",
+    "status": "local_memo",
+    "reason": "Tokenizer/vocab alignment, multimodal connector bottlenecks, quantization-inspired communication, and runnable benchmark harness references with concrete ablations, telemetry fields, and clone targets for the active paper loop."
+  },
+  {
+    "num": 367,
+    "slug": "multiway_dictionary_router_stop_refs",
+    "path": "references/367_multiway_dictionary_router_stop_refs.md",
+    "status": "local_memo",
+    "reason": "Multi-way alignment, shared sparse dictionary / crosscoder, stable router, and calibrated stop-policy references with a concrete shared-hub experiment for the active positive-method paper loop."
+  },
+  {
+    "num": 368,
+    "slug": "tokenizer_connector_quantization_diffusion_refs",
+    "path": "references/368_tokenizer_connector_quantization_diffusion_refs.md",
+    "status": "local_memo",
+    "reason": "Tokenizer/vocab transfer, narrow connector families, diffusion-style iterative refinement, and AWQ/EXL2/KV-compression communication rules with exact links and three concrete ablations."
+  },
+  {
+    "num": 369,
+    "slug": "gauge_fixed_gpa_canonical_hub_refs",
+    "path": "references/369_gauge_fixed_gpa_canonical_hub_refs.md",
+    "status": "local_memo",
+    "reason": "Gauge fixing, generalized Procrustes / GPA, multi-way representation alignment, shared sparse dictionaries, and canonical hub references with three concrete LatentWire ablations."
+  },
+  {
+    "num": 370,
+    "slug": "competitor_benchmark_and_harness_directions",
+    "path": "references/370_competitor_benchmark_and_harness_directions.md",
+    "status": "local_memo",
+    "reason": "Runnable evaluation harnesses, benchmark orchestration, direct-communication competitor repos, and fair matched-table rules for the LatentWire benchmark track."
+  },
+  {
+    "num": 371,
+    "slug": "multiway_canonical_hub_recent_refs",
+    "path": "references/371_multiway_canonical_hub_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent multi-way alignment, gauge fixing, sparse crosscoder, and symmetry-aware routing references for a held-out-family canonical hub experiment."
+  },
+  {
+    "num": 372,
+    "slug": "tokenizer_interface_multimodal_recent_refs",
+    "path": "references/372_tokenizer_interface_multimodal_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Tokenizer/vocab transfer, byte-level interfaces, multimodal connector transfer, diffusion-style refinement, and quantization-inspired communication rules for the active paper loop."
+  },
+  {
+    "num": 373,
+    "slug": "competitor_benchmark_bootstrap_recent_refs",
+    "path": "references/373_competitor_benchmark_bootstrap_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Competitor benchmark bootstrap memo for harness parity, contamination control, parser consistency, and matched LatentMAS/C2C/OpenCompass/lm-eval comparisons."
+  },
+  {
+    "num": 374,
+    "slug": "lowshot_shared_dictionary_recent_refs",
+    "path": "references/374_lowshot_shared_dictionary_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Low-shot shared dictionary, universal SAE, crosscoder, and multi-way alignment memo with concrete shared-vs-private atom, regularizer, and held-out-family ablations for the active paper loop."
+  },
+  {
+    "num": 375,
+    "slug": "byte_tokenizer_interface_recent_refs",
+    "path": "references/375_byte_tokenizer_interface_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Byte-level fallback, tokenizer/vocab transfer, cross-tokenizer distillation, and interface-mismatch diagnostics memo for the active paper loop."
+  },
+  {
+    "num": 376,
+    "slug": "matched_competitor_bootstrap_recent_refs",
+    "path": "references/376_matched_competitor_bootstrap_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Matched competitor benchmark bootstrap memo for recent communication papers, harness parity, contamination control, parser discipline, and frozen comparison contracts."
+  },
+  {
+    "num": 377,
+    "slug": "multimodal_connector_diffusion_latest_refs",
+    "path": "references/377_multimodal_connector_diffusion_latest_refs.md",
+    "status": "local_memo",
+    "reason": "Recent multimodal connector, resampler, latent diffusion/refinement, and cross-model communication memo with concrete connector and iterative-interface ablations."
+  },
+  {
+    "num": 378,
+    "slug": "latest_competitor_benchmark_contract_refs",
+    "path": "references/378_latest_competitor_benchmark_contract_refs.md",
+    "status": "local_memo",
+    "reason": "Recent competitor benchmark contract memo covering direct communication peers, harness discipline, parser parity, and lane-specific matched benchmarking rules."
+  },
+  {
+    "num": 379,
+    "slug": "symmetry_quantization_interface_latest_refs",
+    "path": "references/379_symmetry_quantization_interface_latest_refs.md",
+    "status": "local_memo",
+    "reason": "Recent symmetry, gauge-fixing, quantization-geometry, and tokenizer-mismatch interface memo with mathematically motivated next experiments for LatentWire."
+  },
+  {
+    "num": 380,
+    "slug": "gauge_quotient_recent_refs",
+    "path": "references/380_gauge_quotient_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent gauge symmetry, quotient geometry, multiway alignment, and latent transport memo with concrete quotient-aware bridge ablations for the active paper loop."
+  },
+  {
+    "num": 381,
+    "slug": "competitor_benchmark_bootstrap_recent_refs",
+    "path": "references/381_competitor_benchmark_bootstrap_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent competitor and benchmark-harness memo covering fair comparison contracts, matched row types, and practical bootstrap guidance for the benchmark track."
+  },
+  {
+    "num": 382,
+    "slug": "multimodal_repair_connector_recent_refs",
+    "path": "references/382_multimodal_repair_connector_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent multimodal connector, latent repair, iterative communication, token-free reasoning, diffusion-language, and bridge-architecture memo with concrete LatentWire ablations."
+  },
+  {
+    "num": 383,
+    "slug": "quantization_compression_connector_recent_refs",
+    "path": "references/383_quantization_compression_connector_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent rate-distortion, mixed-bit, KV-compression, and communication/compression memo with concrete canonicalize-then-compress and vector-quantized bridge ablations."
+  },
+  {
+    "num": 384,
+    "slug": "competitor_contract_latest_refs",
+    "path": "references/384_competitor_contract_latest_refs.md",
+    "status": "local_memo",
+    "reason": "Latest competitor and benchmark-contract memo covering matched rows, metrics, and evaluation caveats for the benchmark track."
+  },
+  {
+    "num": 385,
+    "slug": "multimodal_latent_repair_recent_refs",
+    "path": "references/385_multimodal_latent_repair_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent multimodal connector, latent-token, diffusion-language, and iterative latent-repair memo with concrete LatentWire bridge and repair ablations."
+  },
+  {
+    "num": 386,
+    "slug": "cross_tokenizer_interface_alignment_recent_refs",
+    "path": "references/386_cross_tokenizer_interface_alignment_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Recent cross-tokenizer interface alignment memo covering byte-sidecar interfaces, sequence alignment, model-aware tokenizer transfer, and stronger interface ablations than remap tables alone."
+  },
+  {
+    "num": 387,
+    "slug": "matched_benchmark_contract_execution_refs",
+    "path": "references/387_matched_benchmark_contract_execution_refs.md",
+    "status": "local_memo",
+    "reason": "Frozen benchmark contract memo derived from the local competitor repos, covering the two-main-table-plus-appendix comparison plan and the minimum smoke tests before any headline benchmark row."
+  },
+  {
+    "num": 388,
+    "slug": "gsm8k_smoke_contract_32_recent_refs",
+    "path": "references/388_gsm8k_smoke_contract_32_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Exact 32-example GSM8K smoke contract for the current Qwen sender/receiver pair, including rows, scorer, and hard pass/fail checks before any wider benchmark execution."
+  },
+  {
+    "num": 389,
+    "slug": "sequence_aligned_sidecar_recent_refs",
+    "path": "references/389_sequence_aligned_sidecar_recent_refs.md",
+    "status": "local_memo",
+    "reason": "Sequence-aware interface memo narrowing the next additive branch after the byte-sidecar toy, with recent cross-tokenizer alignment references and the local read for the current low-shot lane."
+  },
+  {
+    "num": 390,
+    "slug": "unsaturated_canonicalization_quantized_residual_refs",
+    "path": "references/390_unsaturated_canonicalization_quantized_residual_refs.md",
+    "status": "local_memo",
+    "reason": "Fresh unsaturated 2025-2026 ideas for per-example canonicalization, gauge-invariant matching, symmetry-compatible codebook compression, and quantized low-rank correction after the current sequence-aligned sidecar lane."
+  },
+  {
+    "num": 391,
+    "slug": "adaptive_canonicalization_gauge_invariant_refs",
+    "path": "references/391_adaptive_canonicalization_gauge_invariant_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo on per-example canonicalization, adaptive symmetry breaking, and gauge-invariant matching as the next symmetry-side upgrade after the frozen benchmark sweep."
+  },
+  {
+    "num": 392,
+    "slug": "quantized_codebook_residual_refs",
+    "path": "references/392_quantized_codebook_residual_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo on low-rank residual correction, learned byte-level alignment, and codebook communication as the next compression-side upgrade after the frozen benchmark sweep."
+  },
+  {
+    "num": 393,
+    "slug": "residual_rank_sweep_next_refs",
+    "path": "references/393_residual_rank_sweep_next_refs.md",
+    "status": "local_memo",
+    "reason": "Exact residual-correction follow-up memo after the frozen same-pair baseline harness reproduced the current `0.0938` ceiling for dynalign and tokenbasis."
+  },
+  {
+    "num": 394,
+    "slug": "gauge_wrapper_real_lane_refs",
+    "path": "references/394_gauge_wrapper_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Exact gauge-fix / adaptive-canonicalization follow-up memo for wrapping the current real same-pair dynalign/tokenbasis lane once residual correction is tested."
+  },
+  {
+    "num": 395,
+    "slug": "rank16_residual_gauge_benchmark_refs",
+    "path": "references/395_rank16_residual_gauge_benchmark_refs.md",
+    "status": "local_memo",
+    "reason": "Consolidated follow-up memo after the first rank16 residual lift, covering residual-repair references, gauge/canonicalization wrappers, and fair same-pair benchmark contract guidance."
+  },
+  {
+    "num": 396,
+    "slug": "multimodal_residual_contract_followup_refs",
+    "path": "references/396_multimodal_residual_contract_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Cross-cutting follow-up memo after the rank16 residual lift, covering heterogeneous connector inspirations, quantization-style residual repair, and the next fair benchmark-table structure."
+  },
+  {
+    "num": 397,
+    "slug": "live_branch_followup_refs",
+    "path": "references/397_live_branch_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Latest follow-up memo after the negative tokenbasis rank16 control, narrowing the real same-pair branch to dynalign+residual plus gauge/canonicalization and banking the next lateral connector and benchmark-contract ideas."
+  },
+  {
+    "num": 398,
+    "slug": "adaptive_canonicalization_real_lane_refs",
+    "path": "references/398_adaptive_canonicalization_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo from the latest adaptive-canonicalization research tranche, narrowing the exact next gauge-side experiments around the surviving dynalign+rank16 residual lane."
+  },
+  {
+    "num": 399,
+    "slug": "eigenspace_residual_real_lane_refs",
+    "path": "references/399_eigenspace_residual_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused residual-repair memo from the latest low-rank/eigenspace literature pass, covering EoRA/LQER/ResQ-style next experiments for the live real lane."
+  },
+  {
+    "num": 400,
+    "slug": "multimodal_output_aware_connector_refs",
+    "path": "references/400_multimodal_output_aware_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Heterogeneous connector memo banking the latest multimodal wormhole, dense-connector, and staged repair ideas that could plug into the live lane without changing the paper story."
+  },
+  {
+    "num": 401,
+    "slug": "unsaturated_branch_revival_refs",
+    "path": "references/401_unsaturated_branch_revival_refs.md",
+    "status": "local_memo",
+    "reason": "Branch-triage memo separating saturated and still-open ideas so the next experiments stay additive instead of circling over dead same-pair lanes."
+  },
+  {
+    "num": 402,
+    "slug": "selective_preservation_quantization_connector_refs",
+    "path": "references/402_selective_preservation_quantization_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Quantization-inspired connector memo focused on selective preservation, residual codebooks, and token-aware mixed-precision ideas as additives on a stable alignment lane."
+  },
+  {
+    "num": 403,
+    "slug": "benchmark_contract_block_structure_refs",
+    "path": "references/403_benchmark_contract_block_structure_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark-structure memo from the latest contract pass, freezing the block-split comparison plan across same-pair, cross-family, reasoning-transfer, and multimodal rows."
+  },
+  {
+    "num": 404,
+    "slug": "preserve_core_residual_refs",
+    "path": "references/404_preserve_core_residual_refs.md",
+    "status": "local_memo",
+    "reason": "Selective-preservation and preserve-core / repair-tail memo from the latest compression-inspired research pass, scoped to the live dynalign residual lane."
+  },
+  {
+    "num": 405,
+    "slug": "benchmark_expansion_order_refs",
+    "path": "references/405_benchmark_expansion_order_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark-expansion memo from the latest contract research pass, narrowing the next fair order after GSM8K32 to RULER, then SCBench, then LongBench v2, with multimodal rows kept separate."
+  },
+  {
+    "num": 406,
+    "slug": "staged_sidecar_repair_refs",
+    "path": "references/406_staged_sidecar_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Connector-side memo capturing staged repair, wormhole, and sidecar ideas as lateral additives on top of the live same-pair branch."
+  },
+  {
+    "num": 407,
+    "slug": "eigenspace_residual_followup_refs",
+    "path": "references/407_eigenspace_residual_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused follow-up memo for the live eigenspace-aware residual branch, grounding the next exact repair-side experiments in EoRA/ResQ/PiSSA-style references."
+  },
+  {
+    "num": 408,
+    "slug": "benchmark_expansion_contract_followup_refs",
+    "path": "references/408_benchmark_expansion_contract_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Follow-up benchmark-contract memo fixing the next fair expansion order after GSM8K32 and keeping the table blocks medium-split and interpretable."
+  },
+  {
+    "num": 409,
+    "slug": "multimodal_connector_additive_refs",
+    "path": "references/409_multimodal_connector_additive_refs.md",
+    "status": "local_memo",
+    "reason": "Multimodal and routed-connector follow-up memo banking staged repair, prompt-aware bridge, and selective revisit ideas as additive branches."
+  },
+  {
+    "num": 410,
+    "slug": "selective_preservation_quantization_followup_refs",
+    "path": "references/410_selective_preservation_quantization_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Selective-preservation and quantization-inspired follow-up memo connecting AWQ/AQLM/LQER/EoRA/ResQ-style ideas to concrete latent-bridge ablations."
+  },
+  {
+    "num": 411,
+    "slug": "saliency_residual_followup_refs",
+    "path": "references/411_saliency_residual_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused follow-up memo for the saliency-aware residual branch, grounding the next exact learned-importance repair experiments in SERQ/AWQ/LQER/QERA-style references."
+  },
+  {
+    "num": 412,
+    "slug": "preserve_tail_quantization_followup_refs",
+    "path": "references/412_preserve_tail_quantization_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Preserve-dominant-subspace plus low-rank-tail follow-up memo for the live dynalign residual lane, with saliency-aware preservation, tail-repair allocation, and interpretable telemetry."
+  },
+  {
+    "num": 413,
+    "slug": "routed_residual_repair_followup_refs",
+    "path": "references/413_routed_residual_repair_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Routed residual repair memo for the next same-pair branch, covering conditional experts, router collapse risks, and selective repair telemetry."
+  },
+  {
+    "num": 414,
+    "slug": "anchor_preserving_codebook_tail_refs",
+    "path": "references/414_anchor_preserving_codebook_tail_refs.md",
+    "status": "local_memo",
+    "reason": "Anchor-preserving codebook tail memo for stagewise residual codebooks, commutative VQ, and preserve-anchor codec telemetry."
+  },
+  {
+    "num": 415,
+    "slug": "benchmark_block_structure_followup_refs",
+    "path": "references/415_benchmark_block_structure_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark block structure memo fixing the post-GSM8K32 expansion order, control ladder, and medium-split table plan."
+  },
+  {
+    "num": 416,
+    "slug": "routed_residual_real_lane_refs",
+    "path": "references/416_routed_residual_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused routed-repair memo for the live dynalign residual lane, narrowing the next real same-pair branch to compact conditional repair instead of more dense weighting tweaks."
+  },
+  {
+    "num": 417,
+    "slug": "benchmark_expansion_pass_gates_refs",
+    "path": "references/417_benchmark_expansion_pass_gates_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark expansion memo that freezes exact pass gates and block structure before widening beyond the frozen GSM8K32 contract."
+  },
+  {
+    "num": 418,
+    "slug": "multimodal_small_graft_refs",
+    "path": "references/418_multimodal_small_graft_refs.md",
+    "status": "local_memo",
+    "reason": "Small-graft multimodal and connector memo for lateral additive ideas that are still compact enough to graft onto the current same-pair text lane."
+  },
+  {
+    "num": 419,
+    "slug": "importance_preserve_tail_followup_refs",
+    "path": "references/419_importance_preserve_tail_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused preserve-plus-tail memo that narrows the next importance-proxy and tail-family comparisons after the negative saliency-preserve same-pair row."
+  },
+  {
+    "num": 420,
+    "slug": "value_routed_repair_refs",
+    "path": "references/420_value_routed_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for the value-side routed repair branch on top of the live dynalign residual lane."
+  },
+  {
+    "num": 421,
+    "slug": "preserve_anchor_tail_real_lane_refs",
+    "path": "references/421_preserve_anchor_tail_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for preserve-anchor and tail-family comparisons after the negative saliency-preserve same-pair row."
+  },
+  {
+    "num": 422,
+    "slug": "benchmark_competitor_pass_gates_refs",
+    "path": "references/422_benchmark_competitor_pass_gates_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark and competitor memo freezing exact widening gates and table structure after the frozen GSM8K32 contract."
+  },
+  {
+    "num": 423,
+    "slug": "value_bank_multiexpert_repair_refs",
+    "path": "references/423_value_bank_multiexpert_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for multi-expert and value-bank repair on top of the live dynalign residual lane after the single-path value route tied but did not improve the frozen contract."
+  },
+  {
+    "num": 424,
+    "slug": "tail_quantization_real_lane_refs",
+    "path": "references/424_tail_quantization_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused preserve-anchor and codebook-tail memo grounding the live backup branch in preserve-core and additive-tail quantization papers."
+  },
+  {
+    "num": 425,
+    "slug": "multimodal_verifier_sidecar_refs",
+    "path": "references/425_multimodal_verifier_sidecar_refs.md",
+    "status": "local_memo",
+    "reason": "Compact multimodal sidecar memo for verifier-gated refinement, selective preservation, and disagreement-triggered repair ideas that can graft onto the live same-pair lane."
+  },
+  {
+    "num": 426,
+    "slug": "benchmark_competitor_block_contract_refs",
+    "path": "references/426_benchmark_competitor_block_contract_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark split and widening memo freezing the next same-pair, long-context, and appendix-only comparison blocks after GSM8K32."
+  },
+  {
+    "num": 427,
+    "slug": "top2_value_routing_repair_refs",
+    "path": "references/427_top2_value_routing_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for sparse top-2 expertized V-side repair after the value-bank branch fell back to the old dynalign ceiling."
+  },
+  {
+    "num": 428,
+    "slug": "anchor_tail_followup_refs",
+    "path": "references/428_anchor_tail_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused preserve-anchor and codebook-tail backup memo for the live same-pair lane if stronger expertized repair fails."
+  },
+  {
+    "num": 429,
+    "slug": "verifier_gated_v_sidecar_refs",
+    "path": "references/429_verifier_gated_v_sidecar_refs.md",
+    "status": "local_memo",
+    "reason": "Focused verifier-gated and disagreement-triggered V-side sidecar memo for the live dynalign residual lane."
+  },
+  {
+    "num": 430,
+    "slug": "same_pair_block_contract_refs",
+    "path": "references/430_same_pair_block_contract_refs.md",
+    "status": "local_memo",
+    "reason": "Tightened same-pair and long-context table-block memo fixing widening gates after the frozen GSM8K32 contract."
+  },
+  {
+    "num": 431,
+    "slug": "value_verifier_sidecar_real_lane_refs",
+    "path": "references/431_value_verifier_sidecar_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for a verifier-gated value-side sidecar on top of the live dynalign residual lane."
+  },
+  {
+    "num": 432,
+    "slug": "anchor_codebook_tail_real_lane_refs",
+    "path": "references/432_anchor_codebook_tail_real_lane_refs.md",
+    "status": "local_memo",
+    "reason": "Backup preserve-anchor and codebook-tail memo for the live same-pair lane if verifier-gated sidecars fail."
+  },
+  {
+    "num": 433,
+    "slug": "verifier_multimodal_small_graft_refs",
+    "path": "references/433_verifier_multimodal_small_graft_refs.md",
+    "status": "local_memo",
+    "reason": "Compact multimodal and verifier-graft memo that keeps modality-inspired ideas additive to the main same-pair story."
+  },
+  {
+    "num": 434,
+    "slug": "same_pair_expansion_blocker_gates_refs",
+    "path": "references/434_same_pair_expansion_blocker_gates_refs.md",
+    "status": "local_memo",
+    "reason": "Frozen widening-order memo so same-pair, long-context, and competitor blocks stay separated until the live lane survives."
+  },
+  {
+    "num": 435,
+    "slug": "competitor_benchmark_stack_refs",
+    "path": "references/435_competitor_benchmark_stack_refs.md",
+    "status": "local_memo",
+    "reason": "Latest competitor and benchmark expansion memo covering C2C, KVComm, RULER, SCBench, and LongBench v2 with a fair-comparison contract."
+  },
+  {
+    "num": 436,
+    "slug": "query_bottleneck_anchor_refs",
+    "path": "references/436_query_bottleneck_anchor_refs.md",
+    "status": "local_memo",
+    "reason": "Cross-domain memo combining query-bottleneck connector ideas with anchor-preserving tail repair for the next live same-pair branches."
+  },
+  {
+    "num": 437,
+    "slug": "symmetry_gauge_fula_refs",
+    "path": "references/437_symmetry_gauge_fula_refs.md",
+    "status": "local_memo",
+    "reason": "Math-side memo covering quotient/gauge-aware canonicalization and multi-layer functional alignment as distinct next pivots."
+  },
+  {
+    "num": 438,
+    "slug": "tokenizer_interface_denoise_refs",
+    "path": "references/438_tokenizer_interface_denoise_refs.md",
+    "status": "local_memo",
+    "reason": "Interface-side memo covering byte-level distillation, learned tokenizer alignment, query bottlenecks, and denoising bridges."
+  },
+  {
+    "num": 439,
+    "slug": "reviewer_driven_eval_expansion_refs",
+    "path": "references/439_reviewer_driven_eval_expansion_refs.md",
+    "status": "local_memo",
+    "reason": "Evaluation memo covering larger-slice testing, uncertainty-aware benchmark reporting, and the benchmark order after reviewer feedback."
+  },
+  {
+    "num": 440,
+    "slug": "interface_redesign_connector_refs",
+    "path": "references/440_interface_redesign_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Connector-side memo covering learned query bottlenecks, tokenizer-agnostic transport, and bridge-style interface redesign."
+  },
+  {
+    "num": 441,
+    "slug": "selective_precision_transport_refs",
+    "path": "references/441_selective_precision_transport_refs.md",
+    "status": "local_memo",
+    "reason": "Codec-side memo covering anchor-preserving tails, selective precision, codebook transports, and quantization-inspired bridge ablations."
+  },
+  {
+    "num": 442,
+    "slug": "benchmark_pairing_uncertainty_refs",
+    "path": "references/442_benchmark_pairing_uncertainty_refs.md",
+    "status": "local_memo",
+    "reason": "Benchmark-order and uncertainty memo freezing the next same-pair, cross-family, and long-context evaluation blocks after reviewer feedback."
+  },
+  {
+    "num": 443,
+    "slug": "query_resampler_connector_refs",
+    "path": "references/443_query_resampler_connector_refs.md",
+    "status": "local_memo",
+    "reason": "Focused connector memo covering Q-former, resampler, tokenizer-agnostic, and bridge-model interface redesign for the next live branch."
+  },
+  {
+    "num": 444,
+    "slug": "anchor_tail_codec_refs",
+    "path": "references/444_anchor_tail_codec_refs.md",
+    "status": "local_memo",
+    "reason": "Focused codec memo covering anchor-preserving selective precision, codebook tails, and reviewer-driven telemetry for the live dynalign residual lane."
+  },
+  {
+    "num": 445,
+    "slug": "seeded_pairwise_eval_contract_refs",
+    "path": "references/445_seeded_pairwise_eval_contract_refs.md",
+    "status": "local_memo",
+    "reason": "Reviewer-driven memo freezing larger-slice, multi-seed, paired-uncertainty evaluation requirements for the next decision surface."
+  },
+  {
+    "num": 446,
+    "slug": "anchor_selective_precision_followup_refs",
+    "path": "references/446_anchor_selective_precision_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for the still-live preserve-anchor and quantize-tail codec branch after the routed and sidecar branches stalled."
+  },
+  {
+    "num": 447,
+    "slug": "qformer_connector_followup_refs",
+    "path": "references/447_qformer_connector_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for the learned connector and query-bottleneck branch if codec-side selective precision stalls."
+  },
+  {
+    "num": 448,
+    "slug": "quotient_locality_transport_followup_refs",
+    "path": "references/448_quotient_locality_transport_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Math-side memo narrowing any remaining symmetry/locality pivot to quotient-aware and interpretable transport rather than naive geometry tweaks."
+  },
+  {
+    "num": 449,
+    "slug": "competitor_benchmark_order_followup_refs",
+    "path": "references/449_competitor_benchmark_order_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo freezing the next fair public-comparator stack and the first strict cross-family comparison pair after the larger same-pair slice."
+  },
+  {
+    "num": 450,
+    "slug": "lateral_connector_repair_refs",
+    "path": "references/450_lateral_connector_repair_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo covering the strongest remaining lateral inspirations: learned connectors, conditional repair, routed patch experts, and tiny bridge-style iterations."
+  },
+  {
+    "num": 451,
+    "slug": "answer_teacher_microfit_refs",
+    "path": "references/451_answer_teacher_microfit_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for answer-token microfit, source-control learned connectors, C2C residual distillation, information bottlenecks, and latent syndrome sidecars after the calibration proxy failed."
+  },
+  {
+    "num": 452,
+    "slug": "syndrome_sidecar_refs",
+    "path": "references/452_syndrome_sidecar_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for C2C-derived latent syndrome sidecars using target candidate pools as decoder side information, with source-control residue gates."
+  },
+  {
+    "num": 453,
+    "slug": "learned_syndrome_probe_refs",
+    "path": "references/453_learned_syndrome_probe_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for cross-fitted learned query-bottleneck syndrome predictors, source-token controls, and verifier-gated repair followups after pooled hidden readout failed."
+  },
+  {
+    "num": 454,
+    "slug": "c2c_mechanism_syndrome_refs",
+    "path": "references/454_c2c_mechanism_syndrome_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for C2C prefill projector/residual tracing, cache-compression inspirations, and the next decision rule after source-hidden syndrome probes failed."
+  },
+  {
+    "num": 455,
+    "slug": "contrastive_perceiver_bottleneck_refs",
+    "path": "references/455_contrastive_perceiver_bottleneck_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for receiver-conditioned Perceiver/Q-Former bottlenecks, source-control contrast, information bottlenecks, and side-information coding after C2C mechanism summary probes failed."
+  },
+  {
+    "num": 456,
+    "slug": "conditional_debiasing_side_information_refs",
+    "path": "references/456_conditional_debiasing_side_information_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for conditional bottlenecks, target-prior debiasing, and side-information coding after anti-memory Perceiver controls failed to create source-necessary signal."
+  },
+  {
+    "num": 457,
+    "slug": "query_bottleneck_residue_refs",
+    "path": "references/457_query_bottleneck_residue_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for query-bottleneck residue prediction after pooled and all-layer source hidden syndrome probes failed the strict SVAMP32 source-control gate."
+  },
+  {
+    "num": 458,
+    "slug": "repair_verifier_source_control_refs",
+    "path": "references/458_repair_verifier_source_control_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for verifier-guided repair, target self-repair, self-consistency, tool-only repair, and source-control requirements after the SVAMP32 process-repair stack selected target-only candidates."
+  },
+  {
+    "num": 459,
+    "slug": "cross_family_interface_proxy_refs",
+    "path": "references/459_cross_family_interface_proxy_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for tokenizer/interface proxy work, byte-level cross-tokenizer distillation, sequence alignment, and KV/sidecar compression after the OPT cross-family surface failed."
+  },
+  {
+    "num": 460,
+    "slug": "token_local_c2c_residual_refs",
+    "path": "references/460_token_local_c2c_residual_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for token-local C2C residual failures, TurboQuant/QJL residual-coding inspiration, and query-bottleneck connector implications."
+  },
+  {
+    "num": 461,
+    "slug": "source_surface_blocker_interface_refs",
+    "path": "references/461_source_surface_blocker_interface_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for the source-surface blocker after SVAMP disjoint scouts, covering C2C, query/resampler connectors, relative representations, sparse cross-model concepts, DroidSpeak, and KV transform coding."
+  },
+  {
+    "num": 462,
+    "slug": "target_conditioned_side_information_query_bottleneck_refs",
+    "path": "references/462_target_conditioned_side_information_query_bottleneck_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for target-query-conditioned source bottlenecks, side-information coding, soft-prefix controls, and matched target/slots baselines after the Qwen2.5-Math Perceiver C2C-residual gate failed."
+  },
+  {
+    "num": 463,
+    "slug": "process_repair_source_control_followup_refs",
+    "path": "references/463_process_repair_source_control_followup_refs.md",
+    "status": "local_memo",
+    "reason": "Focused memo for process-repair route controls, verifier-guided search baselines, target self-repair, self-consistency, debate/candidate-exchange, and leakage controls after old SVAMP70/GSM70 repair rows resurfaced as the highest-value candidate."
+  },
+  {
+    "num": 464,
+    "slug": "target_loss_resampler_branch_refs",
+    "path": "references/464_target_loss_resampler_branch_refs.md",
+    "status": "local_memo",
+    "reason": "Consolidated primary-source memo for the next target-side LM-loss resampler branch after tiny source-prefix emitters failed source controls and generation."
+  },
+  {
+    "num": 465,
+    "slug": "source_likelihood_syndrome_sidecar_refs",
+    "path": "references/465_source_likelihood_syndrome_sidecar_refs.md",
+    "status": "local_memo",
+    "reason": "Focused primary-source memo for the SVAMP70 source likelihood sketch branch, treating the next method as a rate-capped syndrome-like sidecar conditioned on target-side candidate context."
+  },
+  {
+    "num": 466,
+    "slug": "creative_method_synthesis_after_pdf_conversion_refs",
+    "path": "references/466_creative_method_synthesis_after_pdf_conversion_refs.md",
+    "status": "local_memo",
+    "reason": "Creative post-kill literature synthesis after converting PDFs to markdown, selecting candidate-syndrome decoding, zero-init gated query bottlenecks, anchor-relative sparse difference atoms, and protected-tail quantized residuals as next bounded branches."
+  },
+  {
+    "num": 467,
+    "slug": "crossfield_noharm_predicate_refs",
+    "path": "references/467_crossfield_noharm_predicate_refs.md",
+    "status": "local_memo",
+    "reason": "Cross-field committee memo after no-harm CPU pruning, focusing on learned semantic predicates, erasure-aware side-information decoding, zero-init target-preserving receivers, source-fault detection, and fair C2C comparison."
+  },
+  {
+    "num": 468,
+    "slug": "target_preserving_receiver_gate_refs",
+    "path": "references/468_target_preserving_receiver_gate_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for target-preserving receiver gates after semantic-predicate decoding, covering speculative acceptance, decoder-side information, constrained final-answer selection, conformal abstention, and self-consistency diagnostics."
+  },
+  {
+    "num": 469,
+    "slug": "recent_latent_agent_communication_refs",
+    "path": "references/469_recent_latent_agent_communication_refs.md",
+    "status": "local_memo",
+    "reason": "Recent primary-source memo for latent/activation agent communication baselines and target-preserving zero-init latent side-information requirements after durable source-surface ranking selected SVAMP70 live as the next primary gate."
+  },
+  {
+    "num": 470,
+    "slug": "kv_cache_latent_communication_baselines_refs",
+    "path": "references/470_kv_cache_latent_communication_baselines_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo and local tooling smoke for C2C/KVComm/vector-translation baselines after source-hidden query-bottleneck diagnostics failed and MPS remained blocked."
+  },
+  {
+    "num": 471,
+    "slug": "byte_efficient_source_sideinfo_refs",
+    "path": "references/471_byte_efficient_source_sideinfo_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for byte-efficient source side-information after historical sparse-K, RotAlign/DynAlign, sidecar, and KVComm audits selected learned syndrome/innovation sidecars as the next high-value branch."
+  },
+  {
+    "num": 472,
+    "slug": "answer_null_sideinfo_refs",
+    "path": "references/472_answer_null_sideinfo_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for answer-null side-information after source-answer ablation killed candidate-score sidecars, motivating masked process verifiers, predicate syndromes, contrastive error tags, erasure gates, and zero-init query bottlenecks."
+  },
+  {
+    "num": 473,
+    "slug": "mps_blocked_next_gate_refs",
+    "path": "references/473_mps_blocked_next_gate_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for branch selection while MPS is blocked, consolidating C2C, KVCOMM, KVComm, and Q-KVComm implications for the next stronger-source surface gate and matched-byte baselines."
+  },
+  {
+    "num": 474,
+    "slug": "jepa_anticollapse_refs",
+    "path": "references/474_jepa_anticollapse_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo translating JEPA, I-JEPA, V-JEPA, LeJEPA, LLM-JEPA, VL-JEPA, M3-JEPA, VICReg, and Barlow Twins into answer-masked anti-collapse objectives and diagnostics for source-to-target communication."
+  },
+  {
+    "num": 475,
+    "slug": "crossfield_source_innovation_controls_refs",
+    "path": "references/475_crossfield_source_innovation_controls_refs.md",
+    "status": "local_memo",
+    "reason": "Cross-field primary-source memo translating distributed source coding, Kalman/predictive coding, one-bit sketches, and compressed sensing into compact source-innovation sidecars and source-destroying controls after the SVAMP32 source-sampling replay exposed prompt-wrapper reachability."
+  },
+  {
+    "num": 476,
+    "slug": "source_private_comm_pivot_refs",
+    "path": "references/476_source_private_comm_pivot_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo justifying the deadline pivot from ordinary math residual hunting to source-private residual communication with decoder side information, rate-distortion curves, syndrome sidecars, and strict source-destroying controls."
+  },
+  {
+    "num": 477,
+    "slug": "source_private_literature_sprint_refs",
+    "path": "references/477_source_private_literature_sprint_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source literature-to-method sprint memo ranking source-private evidence packets, tool-trace handoff, Query-JEPA/Q-Former adapters, anchor-relative codes, and KV/cache baselines for the one-month ICLR path."
+  },
+  {
+    "num": 478,
+    "slug": "source_private_final_review_refs",
+    "path": "references/478_source_private_final_review_refs.md",
+    "status": "local_memo",
+    "reason": "Final-review reference memo tightening the compiled source-private tool-trace paper around decoder-side information, multi-agent handoff, prompt compression, latent/KV communication competitors, and test-guided repair scope."
+  }
+]
