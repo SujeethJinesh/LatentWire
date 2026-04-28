@@ -17,6 +17,8 @@
 - top-level repo guidance and environment files;
 - `MANIFEST.sha256` with checksums for all files in this folder.
 - latest-model/MoE generalization scout files for Qwen3.5/Qwen3.6 planning.
+- Qwen3.5-0.8B CPU n16/n64 latest-small confirmation artifacts and non-Qwen
+  cross-family falsification matrix.
 
 ## Notes
 

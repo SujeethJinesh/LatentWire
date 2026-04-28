@@ -1,8 +1,8 @@
 # Latest-Model Source-Packet Matrix Manifest
 
-- model count: `11`
+- model count: `19`
 - P0 count: `2`
-- MoE count: `4`
+- MoE count: `5`
 - off-machine count: `5`
 
 ## Artifacts

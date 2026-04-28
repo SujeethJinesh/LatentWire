@@ -859,5 +859,12 @@
     "path": "references/479_latest_model_generalization_refs.md",
     "status": "local_memo",
     "reason": "Official Hugging Face model-card memo for Qwen3.5/Qwen3.6 latest-model and MoE source-packet generalization planning, including small local rows, MoE/FP8 off-machine rows, and the qwen3_5 Transformers compatibility blocker."
+  },
+  {
+    "num": 480,
+    "slug": "latest_cross_family_model_scout_refs",
+    "path": "references/480_latest_cross_family_model_scout_refs.md",
+    "status": "local_memo",
+    "reason": "Official Hugging Face model-card scout for non-Qwen latest-model and architecture-diversity source-packet falsification rows, including OLMo, Gemma, Granite, SmolLM3, Phi-4 mini, Ministral, Nemotron Nano, and Kimi K2."
   }
 ]

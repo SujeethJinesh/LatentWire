@@ -64,17 +64,18 @@ def _model_matrix() -> list[CandidateModel]:
             active_params=None,
             architecture="qwen3_5 conditional generation",
             priority="P0",
-            local_rung="compatibility smoke then n16",
-            expected_device="mps",
+            local_rung="CPU n64 passed; n160/seed repeat next",
+            expected_device="cpu",
             prompt_mode="trace_no_hint",
-            limit=16,
+            limit=64,
             dtype="float32",
             max_new_tokens=8,
-            status="blocked locally until Transformers supports qwen3_5",
+            status="CPU n16/n64 passed after Transformers 5.7.0 upgrade; MPS backend fails before generation",
             rationale=(
-                "Smallest latest Qwen3.5 candidate; ideal first test after dependency update. "
-                "The local 2026-04-28 smoke failed before generation because transformers 4.51.0 "
-                "does not recognize model_type qwen3_5."
+                "Smallest latest Qwen3.5 candidate; first live latest-model smoke row. "
+                "Transformers 5.7.0 recognizes model_type qwen3_5 and the CPU n16/n64 rows passed. "
+                "Apple MPS currently fails inside the model's hybrid attention matmul before generation, "
+                "so local confirmation uses CPU until the MPS backend path is fixed."
             ),
         ),
         CandidateModel(
@@ -242,6 +243,151 @@ def _model_matrix() -> list[CandidateModel]:
             status="optional non-Qwen-org small source emitter",
             rationale="Checks whether packet copying is robust to a reasoning-distilled Qwen derivative.",
         ),
+        CandidateModel(
+            model="allenai/OLMo-2-0425-1B-Instruct",
+            family="OLMo 2 open instruct",
+            params="1B",
+            active_params=None,
+            architecture="dense",
+            priority="P1",
+            local_rung="cross-family local n16",
+            expected_device="mps",
+            prompt_mode="trace_no_hint",
+            limit=16,
+            dtype="float32",
+            max_new_tokens=8,
+            status="planned cross-family small-model falsification row",
+            rationale=(
+                "Open-science non-Qwen/Phi small instruct model; useful for testing whether packet "
+                "emission depends on Qwen/Phi chat-template conventions."
+            ),
+        ),
+        CandidateModel(
+            model="google/gemma-3-1b-it",
+            family="Gemma 3 small instruct",
+            params="1B",
+            active_params=None,
+            architecture="dense",
+            priority="P1",
+            local_rung="cross-family local n16 if access/cache permits",
+            expected_device="mps",
+            prompt_mode="trace_no_hint",
+            limit=16,
+            dtype="float32",
+            max_new_tokens=8,
+            status="planned cross-family small-model falsification row",
+            rationale="Strong non-Qwen small-family row; may require Hugging Face access acceptance.",
+        ),
+        CandidateModel(
+            model="ibm-granite/granite-3.3-2b-instruct",
+            family="Granite 3.3 instruct",
+            params="2B",
+            active_params=None,
+            architecture="dense",
+            priority="P1",
+            local_rung="cross-family local n16",
+            expected_device="mps",
+            prompt_mode="trace_no_hint",
+            limit=16,
+            dtype="float32",
+            max_new_tokens=8,
+            status="planned cross-family small-model falsification row",
+            rationale=(
+                "Enterprise/open small instruct row with long-context positioning; useful reviewer-facing "
+                "evidence if it preserves exact short packet emission."
+            ),
+        ),
+        CandidateModel(
+            model="HuggingFaceTB/SmolLM3-3B",
+            family="SmolLM3",
+            params="3B",
+            active_params=None,
+            architecture="dense",
+            priority="P2",
+            local_rung="cross-family local n16 if memory permits",
+            expected_device="mps",
+            prompt_mode="trace_no_hint",
+            limit=16,
+            dtype="float32",
+            max_new_tokens=8,
+            status="planned cross-family small-model falsification row",
+            rationale=(
+                "HF small-model research row; adds architecture and training-family breadth beyond Qwen/Phi."
+            ),
+        ),
+        CandidateModel(
+            model="microsoft/Phi-4-mini-instruct",
+            family="Phi-4 mini instruct",
+            params="3.8B",
+            active_params=None,
+            architecture="dense",
+            priority="P2",
+            local_rung="successor-family local n16 if memory permits",
+            expected_device="mps",
+            prompt_mode="trace_no_hint",
+            limit=16,
+            dtype="float16",
+            max_new_tokens=8,
+            status="planned Phi successor row",
+            rationale=(
+                "Direct successor-family check after the existing Phi-3 positive row; useful for "
+                "separating protocol robustness from one frozen Phi generation."
+            ),
+        ),
+        CandidateModel(
+            model="mistralai/Ministral-3-3B-Instruct-2512-BF16",
+            family="Ministral 3 instruct",
+            params="3B-class",
+            active_params=None,
+            architecture="dense multimodal/text",
+            priority="P2",
+            local_rung="cross-family local/off-machine n16",
+            expected_device="mps",
+            prompt_mode="trace_no_hint",
+            limit=16,
+            dtype="float16",
+            max_new_tokens=8,
+            status="planned recent Mistral-family falsification row",
+            rationale="Recent edge-focused Mistral-family row; useful if the local backend can run it.",
+        ),
+        CandidateModel(
+            model="nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+            family="Nemotron Nano",
+            params="9B",
+            active_params=None,
+            architecture="hybrid Mamba-Transformer",
+            priority="P2",
+            local_rung="off-machine architecture-diversity n16",
+            expected_device="cuda",
+            prompt_mode="trace_no_hint",
+            limit=16,
+            dtype="bfloat16",
+            max_new_tokens=8,
+            status="planned off-machine architecture-diversity row",
+            rationale=(
+                "Hybrid Mamba-Transformer architecture row; would test packet-emitter robustness beyond "
+                "standard dense transformer families."
+            ),
+        ),
+        CandidateModel(
+            model="moonshotai/Kimi-K2-Thinking",
+            family="Kimi K2 MoE",
+            params="1T total",
+            active_params="32B activated",
+            architecture="sparse MoE",
+            priority="P2",
+            local_rung="off-machine non-Qwen MoE stress row",
+            expected_device="cuda",
+            prompt_mode="trace_no_hint",
+            limit=16,
+            dtype="bfloat16",
+            max_new_tokens=8,
+            status="planned off-machine non-Qwen MoE stress row",
+            rationale=(
+                "Non-Qwen MoE stress test; only useful after small local rows pass because it is expensive "
+                "and requires remote serving."
+            ),
+        ),
     ]
 
 
@@ -306,15 +452,19 @@ def main() -> None:
         "generated": args.generated,
         "benchmark_jsonl": benchmark,
         "recommendation": (
-            "Treat MoE generalization as plausible but unproven. Run Qwen3.5-0.8B and Qwen3.5-2B "
-            "first after upgrading Transformers to a qwen3_5-capable version; use Qwen3.6-35B-A3B "
+            "Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n16/n64 "
+            "passes after upgrading Transformers to 5.7.0; widen it to n160 with a seed repeat, then run "
+            "Qwen3.5-2B and use Qwen3.6-35B-A3B "
             "and FP8 as off-machine MoE falsification rows."
         ),
         "compatibility_note": (
-            "A local 2026-04-28 Qwen/Qwen3.5-0.8B smoke failed before generation with transformers "
-            "4.51.0 because AutoConfig did not recognize model_type qwen3_5. The model config in the "
-            "local cache declares transformers_version 4.57.0.dev0, so this is a harness dependency "
-            "blocker rather than source-packet failure."
+            "A local 2026-04-28 Qwen/Qwen3.5-0.8B smoke first failed before generation with "
+            "transformers 4.51.0 because AutoConfig did not recognize model_type qwen3_5. "
+            "After upgrading the repo-local environment to transformers 5.7.0, tokenizers 0.22.2, "
+            "and huggingface_hub 1.12.0, the CPU n16 and n64 source-packet rows passed. The same row still "
+            "fails on Apple MPS before generation with an incompatible-dimensions matmul in the "
+            "hybrid attention path, so MPS failure is logged as a backend compatibility issue rather "
+            "than source-packet evidence."
         ),
         "models": models,
     }

@@ -85,15 +85,22 @@ source-private communication protocol with strong controls.
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,
-Phi-3, and Qwen2.5-era source emitters. A post-package scout adds a planned
-matrix for Qwen3.5 small models and Qwen3.6 MoE models under
-`results/source_private_latest_model_matrix_20260428/`.
+Phi-3, and Qwen2.5-era source emitters. A post-package scout adds a matrix for
+Qwen3.5 small models, Qwen3.6 MoE models, and non-Qwen cross-family falsification
+rows under `results/source_private_latest_model_matrix_20260428/`.
+
+The first latest-small row now passes: after upgrading the repo-local stack to
+`transformers==5.7.0`, `Qwen/Qwen3.5-0.8B` passes the source-private packet gate
+on CPU at `n=16` and `n=64` with matched packet accuracy `1.000`, target/control
+floor `0.250`, packet valid rate `1.000`, and exact-ID parity true. Apple MPS
+still fails before generation in the model's hybrid-attention matmul path, so
+this is CPU evidence only.
 
 MoE generalization is plausible because the source task is exact private-evidence
 packet emission, not dense-model-specific latent transfer, but it is not yet a
-paper claim. The first Qwen3.5 local smoke is blocked by the repo-local
-Transformers version lacking `qwen3_5` support; run that compatibility gate
-before claiming latest-model generalization.
+paper claim. Claim latest-model breadth only after Qwen3.5 widens to n160 with a
+seed repeat and at least one non-Qwen row passes; claim MoE only after Qwen3.6
+35B-A3B/FP8 pass off-machine under the same controls.
 
 ## Directory Map
 
@@ -147,6 +154,7 @@ Run from the repository root with `./venv_arm64/bin/python`.
 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py --help
 ./venv_arm64/bin/python scripts/build_source_private_tool_trace_baseline_pack.py --help
 ./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py --help
+./venv_arm64/bin/python scripts/build_source_private_latest_model_matrix.py --help
 ```
 
 Focused tests:
