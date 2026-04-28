@@ -1642,3 +1642,16 @@ decoding are still protocol-shaped rather than model-mediated. The next exact
 gate is `source_private_evidence_packet_llm_packet_20260428`, using the same
 frozen IDs and controls while replacing deterministic source packet production
 with model-produced packets.
+
+Update `2026-04-28`: the source-private hidden-repair packet smoke now replaces
+synthetic trace signatures with actual hidden execution evidence. On `64`
+frozen Python repair examples, deterministic 2-byte repair packets reach
+`64/64`, while target/no-source and zero/shuffled/random/answer-only/
+answer-masked/target-derived/matched-byte-text controls stay at `16/64`. A
+Qwen3-0.6B source model also emits valid helper-line packets for `64/64`
+examples, with the same `64/64` matched versus `16/64` controls result. This
+promotes the live branch to model-mediated hidden-repair smoke, but it remains
+protocol-assisted: helper-line diagnostics and candidate metadata are still
+doing real work. The next exact gate is
+`source_private_hidden_repair_packet_cross_model_20260428`, followed by a
+no-helper or weakened-helper hidden-repair gate before any ICLR-level claim.

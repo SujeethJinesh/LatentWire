@@ -13155,3 +13155,117 @@ Next exact gate:
 - `source_private_testlog_packet_hidden_repair_smoke_20260428`: same protocol
   and controls, but private packet comes from actual hidden pytest/code-repair
   evidence rather than synthetic signature fields
+
+## 2026-04-28 - Hidden-Repair Packet Smoke Replaces Synthetic Trace Fields
+
+Current ICLR readiness: not ready. Estimated distance is still one promoted
+method plus medium confirmation, cross-model/cross-family replication, and
+no-helper or weakened-helper robustness.
+
+Current story: the live source-private packet branch now has a hidden-repair
+smoke where the private source evidence is actual hidden execution output from
+buggy Python functions. The target receives public issue text, buggy code, and a
+four-candidate repair pool; the source sees the hidden failure log and emits a
+rate-capped repair diagnostic packet.
+
+Exact blocker: the branch is still protocol-assisted by helper-line diagnostics
+and candidate metadata, so it cannot yet be claimed as general code repair or
+latent model communication.
+
+Commands:
+
+```bash
+./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_smoke.py \
+  --examples 64 \
+  --candidates 4 \
+  --seed 28 \
+  --budgets 2,4,8,16,32 \
+  --output-dir results/source_private_hidden_repair_packet_smoke_20260428
+```
+
+```bash
+PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py \
+  --benchmark-jsonl results/source_private_hidden_repair_packet_smoke_20260428/benchmark.jsonl \
+  --output-dir results/source_private_hidden_repair_packet_llm_20260428/qwen3_0_6b_helper \
+  --model Qwen/Qwen3-0.6B \
+  --device mps \
+  --dtype float32 \
+  --limit 64 \
+  --seed 28 \
+  --max-new-tokens 8 \
+  --no-enable-thinking
+```
+
+MPS guard:
+
+```bash
+ps -p 31103 -o pid,ppid,stat,etime,command
+```
+
+Result: no live blocker was present.
+
+Deterministic smoke:
+
+| Budget bytes | Pass | Matched | Best no-source | Best control | Matched text | Full log |
+|---:|---|---:|---:|---:|---:|---:|
+| 2 | `true` | 1.000 | 0.250 | 0.250 | 0.250 | 1.000 |
+| 4 | `true` | 1.000 | 0.250 | 0.250 | 0.250 | 1.000 |
+| 8 | `true` | 1.000 | 0.250 | 0.250 | 0.250 | 1.000 |
+| 16 | `true` | 1.000 | 0.250 | 0.250 | 0.250 | 1.000 |
+| 32 | `true` | 1.000 | 0.250 | 0.250 | 0.250 | 1.000 |
+
+Qwen3 model-packet smoke:
+
+| Condition | Correct | Accuracy | Mean bytes |
+|---|---:|---:|---:|
+| target_only | 16/64 | 0.250 | 0.00 |
+| matched_model_packet | 64/64 | 1.000 | 2.00 |
+| zero_source | 16/64 | 0.250 | 0.00 |
+| shuffled_model_packet | 16/64 | 0.250 | 2.00 |
+| random_same_byte | 16/64 | 0.250 | 2.00 |
+| answer_only | 16/64 | 0.250 | 2.00 |
+| answer_masked | 16/64 | 0.250 | 0.00 |
+| target_derived_sidecar | 16/64 | 0.250 | 2.00 |
+| full_diag_oracle | 64/64 | 1.000 | 2.00 |
+
+Model packet validity was `1.000`; matched minus best no-source was `0.750`;
+matched minus best control was `0.750`.
+
+Subagent synthesis:
+
+- planner: hidden-repair smoke should require actual private execution logs,
+  target-only/no-log controls, zero/shuffled/random/public controls, bytes, and
+  latency before widening
+- reviewer: this is only reviewer-safe as protocol-assisted private hidden-log
+  packet handoff; no-helper, matched-byte structured text, held-out templates,
+  and cross-model rows are required before a stronger paper claim
+
+Decision:
+
+- promote hidden-repair packet handoff to model-mediated smoke
+- keep the claim narrow because helper-line diagnostics and candidate metadata
+  remain part of the protocol
+- do not call this general code repair or latent transfer yet
+
+Artifacts:
+
+- `paper/source_private_hidden_repair_packet_smoke_20260428.md`
+- `results/source_private_hidden_repair_packet_smoke_20260428/`
+- `results/source_private_hidden_repair_packet_llm_20260428/qwen3_0_6b_helper/`
+
+Tests:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_run_source_private_hidden_repair_packet_smoke.py \
+  tests/test_run_source_private_hidden_repair_packet_llm.py -q
+```
+
+Result: `8 passed`.
+
+Next exact gate:
+
+- `source_private_hidden_repair_packet_cross_model_20260428`: same frozen
+  hidden-repair examples, Qwen2.5-0.5B, Qwen3-0.6B, Phi-3-mini, and TinyLlama
+  negative capability row, with the same source-destroying controls and packet
+  validity/byte/latency reporting.

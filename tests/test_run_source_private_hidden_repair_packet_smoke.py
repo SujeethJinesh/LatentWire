@@ -1,0 +1,39 @@
+from __future__ import annotations
+
+from scripts import run_source_private_hidden_repair_packet_smoke as repair_gate
+
+
+def test_hidden_repair_benchmark_executes_real_buggy_cases() -> None:
+    examples = repair_gate.make_benchmark(examples=16, candidates=4, seed=28)
+
+    assert len(examples) == 16
+    assert any("IndexError" in example.actual_repr for example in examples)
+    assert all("REPAIR_DIAG=" in example.private_test_log for example in examples)
+    assert all("REPAIR_DIAG=" not in example.target_prompt for example in examples)
+
+
+def test_matched_repair_packet_beats_controls() -> None:
+    examples = repair_gate.make_benchmark(examples=32, candidates=4, seed=7)
+    _, summary = repair_gate.run_budget(examples=examples, seed=7, budget_bytes=2)
+
+    assert summary["pass_gate"] is True
+    assert summary["metrics"]["matched_repair_packet"]["accuracy"] == 1.0
+    assert summary["best_source_destroying_control_accuracy"] <= summary["best_no_source_accuracy"] + 0.02
+    assert summary["metrics"]["structured_text_matched"]["accuracy"] == summary["metrics"]["target_only"]["accuracy"]
+
+
+def test_full_hidden_log_oracle_works_but_truncated_text_does_not() -> None:
+    examples = repair_gate.make_benchmark(examples=24, candidates=4, seed=11)
+    _, summary = repair_gate.run_budget(examples=examples, seed=11, budget_bytes=8)
+
+    assert summary["metrics"]["full_hidden_log"]["accuracy"] == 1.0
+    assert summary["metrics"]["full_diag_text"]["accuracy"] == 1.0
+    assert summary["metrics"]["structured_text_matched"]["accuracy"] == summary["metrics"]["target_only"]["accuracy"]
+
+
+def test_shuffled_source_uses_nonself_source_id() -> None:
+    examples = repair_gate.make_benchmark(examples=16, candidates=4, seed=13)
+    rows, _ = repair_gate.run_budget(examples=examples, seed=13, budget_bytes=2)
+
+    for row in rows:
+        assert row["conditions"]["shuffled_source"]["source_example_id"] != row["example_id"]
