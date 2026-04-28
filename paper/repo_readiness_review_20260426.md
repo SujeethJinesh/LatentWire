@@ -1921,3 +1921,8 @@ Update `2026-04-28`: added the anonymous transfer convenience bundle
 bundle passed archive integrity, internal checksum verification, and
 identity/local-path string audit. It is for moving the upload files together;
 the venue may still require separate PDF/source/artifact uploads.
+
+Update `2026-04-28`: final local upload audit passed. Checksums, archive
+integrity, extracted-tree identity scan, and binary/string identity scan over
+the exact upload files all passed. The repo is locally complete for anonymous
+submission; remaining work is external confirmation only.

@@ -45,6 +45,8 @@ The preferred double-blind artifact payload is
 A transfer bundle containing the PDF, source zip, anonymous artifact zip, and
 checksum sidecar is available at
 `paper/artifacts/source_private_tool_trace_anonymous_submission_bundle_20260428.zip`.
+The final local upload audit passed and is recorded in
+`paper/source_private_tool_trace_final_upload_audit_20260428.md`.
 
 ## Record After Upload
 
@@ -56,6 +58,7 @@ Once uploaded, update this memo with:
   release;
 - whether the files were uploaded separately or via the anonymous transfer
   bundle;
+- whether uploaded files still match the final local upload audit;
 - portal-side PDF/source warnings, if any;
 - whether the uploaded archive SHA256 matches the local handoff memo;
 - whether all uploaded files match
