@@ -64,16 +64,16 @@ def _model_matrix() -> list[CandidateModel]:
             active_params=None,
             architecture="qwen3_5 conditional generation",
             priority="P0",
-            local_rung="CPU n64 passed; n160/seed repeat next",
+            local_rung="CPU n160 passed; seed repeat next",
             expected_device="cpu",
             prompt_mode="trace_no_hint",
             limit=64,
             dtype="float32",
             max_new_tokens=8,
-            status="CPU n16/n64 passed after Transformers 5.7.0 upgrade; MPS backend fails before generation",
+            status="CPU n16/n64/n160 passed after Transformers 5.7.0 upgrade; MPS backend fails before generation",
             rationale=(
                 "Smallest latest Qwen3.5 candidate; first live latest-model smoke row. "
-                "Transformers 5.7.0 recognizes model_type qwen3_5 and the CPU n16/n64 rows passed. "
+                "Transformers 5.7.0 recognizes model_type qwen3_5 and the CPU n16/n64/n160 rows passed. "
                 "Apple MPS currently fails inside the model's hybrid attention matmul before generation, "
                 "so local confirmation uses CPU until the MPS backend path is fixed."
             ),
@@ -256,7 +256,7 @@ def _model_matrix() -> list[CandidateModel]:
             limit=16,
             dtype="float32",
             max_new_tokens=8,
-            status="planned cross-family small-model falsification row",
+            status="n16 MPS failed behaviorally with 0 valid packets; pruned unless prompt contract changes",
             rationale=(
                 "Open-science non-Qwen/Phi small instruct model; useful for testing whether packet "
                 "emission depends on Qwen/Phi chat-template conventions."
@@ -285,16 +285,17 @@ def _model_matrix() -> list[CandidateModel]:
             active_params=None,
             architecture="dense",
             priority="P1",
-            local_rung="cross-family local n16",
-            expected_device="mps",
-            prompt_mode="trace_no_hint",
-            limit=16,
+            local_rung="CPU copied-helper n64 passed; n160 next",
+            expected_device="cpu",
+            prompt_mode="copied_helper",
+            limit=64,
             dtype="float32",
             max_new_tokens=8,
-            status="planned cross-family small-model falsification row",
+            status="CPU copied-helper n16/n64 passed; MPS backend fails before generation",
             rationale=(
-                "Enterprise/open small instruct row with long-context positioning; useful reviewer-facing "
-                "evidence if it preserves exact short packet emission."
+                "Enterprise/open small instruct row with long-context positioning. It is the first non-Qwen "
+                "positive emitter: copied-helper CPU n64 reaches 0.797 matched accuracy vs 0.250 controls. "
+                "Trace-no-hint is weaker and Apple MPS fails before generation, so keep the claim scoped."
             ),
         ),
         CandidateModel(
@@ -452,19 +453,21 @@ def main() -> None:
         "generated": args.generated,
         "benchmark_jsonl": benchmark,
         "recommendation": (
-            "Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n16/n64 "
-            "passes after upgrading Transformers to 5.7.0; widen it to n160 with a seed repeat, then run "
-            "Qwen3.5-2B and use Qwen3.6-35B-A3B "
+            "Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n16/n64/n160 "
+            "passes after upgrading Transformers to 5.7.0; add a seed repeat, widen Granite copied-helper "
+            "to n160, then run Qwen3.5-2B and use Qwen3.6-35B-A3B "
             "and FP8 as off-machine MoE falsification rows."
         ),
         "compatibility_note": (
             "A local 2026-04-28 Qwen/Qwen3.5-0.8B smoke first failed before generation with "
             "transformers 4.51.0 because AutoConfig did not recognize model_type qwen3_5. "
             "After upgrading the repo-local environment to transformers 5.7.0, tokenizers 0.22.2, "
-            "and huggingface_hub 1.12.0, the CPU n16 and n64 source-packet rows passed. The same row still "
+            "and huggingface_hub 1.12.0, the CPU n16, n64, and n160 source-packet rows passed. The same row still "
             "fails on Apple MPS before generation with an incompatible-dimensions matmul in the "
             "hybrid attention path, so MPS failure is logged as a backend compatibility issue rather "
-            "than source-packet evidence."
+            "than source-packet evidence. OLMo-2-0425-1B-Instruct is a behavioral negative at n16 "
+            "with zero valid packets; Granite-3.3-2B-Instruct is a non-Qwen positive under copied-helper "
+            "CPU n64, while its MPS row is backend-blocked."
         ),
         "models": models,
     }

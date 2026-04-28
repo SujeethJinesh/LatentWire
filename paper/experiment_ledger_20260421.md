@@ -14485,3 +14485,18 @@ mini, Ministral, Nemotron Nano, and Kimi K2, documented in
 `references/480_latest_cross_family_model_scout_refs.md`. This strengthens the
 post-package contribution path but does not yet justify a broad latest/MoE
 claim; next gate is Qwen3.5-0.8B n160/seed repeat plus one non-Qwen n16 row.
+
+Update `2026-04-28`: `latest_cross_family_packet_rows_20260428` clears the
+Qwen3.5 n160 gate and adds the first non-Qwen positive row. `Qwen/Qwen3.5-0.8B`
+CPU trace-no-hint n160 seed29 reaches matched `160/160`, target-only `40/160`,
+best source-destroying control `41/160`, packet valid rate `1.000`, exact-ID
+parity true, and matched-minus-best-control `+0.744`; p50 CPU packet generation
+latency is `12059 ms`. OLMo-2-0425-1B-Instruct is a behavioral negative on MPS:
+trace-no-hint and copied-helper n16 both have `0` valid packets and matched
+`4/16`, equal to target/control. Granite-3.3-2B-Instruct is MPS-backend blocked
+before generation, but CPU rows pass: trace-no-hint n16 `10/16`, copied-helper
+n16 `12/16`, and copied-helper n64 `51/64` versus target/control `16/64`,
+packet valid rate `0.734`, matched-minus-best-control `+0.547`, p50 CPU latency
+`3046 ms`. This gives a real latest-small medium row and a non-Qwen cross-family
+positive smoke/confirmation, while preserving the limitation that MoE remains
+unrun and Granite needs the easier copied-helper prompt.

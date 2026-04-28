@@ -1,0 +1,185 @@
+{
+  "args": {
+    "benchmark_jsonl": "results/source_private_hidden_repair_packet_medium_20260429/benchmark.jsonl",
+    "device": "mps",
+    "do_sample": false,
+    "dtype": "float32",
+    "enable_thinking": false,
+    "limit": 16,
+    "max_new_tokens": 16,
+    "model": "allenai/OLMo-2-0425-1B-Instruct",
+    "output_dir": "results/source_private_non_qwen_packet_20260428/allenai__olmo_2_0425_1b_instruct_n16_seed29_copied_helper_mps",
+    "prompt_mode": "copied_helper",
+    "seed": 29
+  },
+  "artifact_sha256": {
+    "model_packets.jsonl": "bbb3290eb652a2935fdd42b6867f6c2e31aacb52ab20e73f5fafdb8ded74a2dd",
+    "predictions.jsonl": "b0bc2b83cf5c2f653418091a417e5e47c6415beffa8e58518b329059ddafefbf",
+    "summary.json": "45eec9638716c870d1c133ffa867045e6c1cf3e13a107ba52ab82edab492a2de",
+    "summary.md": "0ee615b5cc11adca39f17701d1907271b66419395da3a246e01e7417a466d916"
+  },
+  "artifacts": [
+    "model_packets.jsonl",
+    "predictions.jsonl",
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "benchmark_sha256": "f1f918b549e795ef250498aa562f2e175dbdeca8f02039c61481d0ee4eea1d2d",
+  "command": "./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py --benchmark-jsonl results/source_private_hidden_repair_packet_medium_20260429/benchmark.jsonl --output-dir results/source_private_non_qwen_packet_20260428/allenai__olmo_2_0425_1b_instruct_n16_seed29_copied_helper_mps --model allenai/OLMo-2-0425-1B-Instruct --device mps --dtype float32 --limit 16 --seed 29 --max-new-tokens 16 --prompt-mode copied_helper --no-enable-thinking",
+  "script_sha256": "b27aeeeb9ae99ae17be9970e31432e42c135ff58b36fccf89ffe113f3c28b6c1",
+  "summary": {
+    "best_no_source_accuracy": 0.25,
+    "best_source_destroying_control_accuracy": 0.25,
+    "exact_id_count": 16,
+    "exact_id_parity": true,
+    "exact_id_sha256": "50ef91ed25476a81eaa533ec328f9cb4c913e13480fd4f4f0641550217a94478",
+    "matched_minus_best_control": 0.0,
+    "matched_minus_best_no_source": 0.0,
+    "metrics": {
+      "answer_masked": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "max_payload_bytes": 0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 0.0
+      },
+      "answer_only": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "max_payload_bytes": 2,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 0.0
+      },
+      "full_diag_oracle": {
+        "accuracy": 1.0,
+        "correct": 16,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0001",
+          "sphr_0002",
+          "sphr_0003",
+          "sphr_0004",
+          "sphr_0005",
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0008",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0011",
+          "sphr_0012",
+          "sphr_0013",
+          "sphr_0014",
+          "sphr_0015"
+        ],
+        "max_payload_bytes": 2,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 0.0
+      },
+      "matched_model_packet": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "max_payload_bytes": 0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 1.0625,
+        "p50_latency_ms": 114.30627099616686
+      },
+      "random_same_byte": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "max_payload_bytes": 2,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 0.0
+      },
+      "shuffled_model_packet": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "max_payload_bytes": 0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 0.0
+      },
+      "target_derived_sidecar": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "max_payload_bytes": 2,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 0.0
+      },
+      "target_only": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "max_payload_bytes": 0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 0.0
+      },
+      "zero_source": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "max_payload_bytes": 0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 0.0
+      }
+    },
+    "n": 16,
+    "packet_valid_rate": 0.0,
+    "pass_gate": false,
+    "pass_rule": "matched model-extracted hidden-repair packet must beat no-source by >=0.15 and controls stay within +0.02."
+  }
+}

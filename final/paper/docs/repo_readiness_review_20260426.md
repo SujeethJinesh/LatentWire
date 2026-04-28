@@ -1953,3 +1953,14 @@ submission stays upload-ready; readiness for a latest-model/MoE claim improves
 from planned to latest-small smoke/confirmation only. Next exact gate:
 Qwen3.5-0.8B n160 with a seed repeat and one non-Qwen n16 row, followed by
 off-machine Qwen3.6 MoE/FP8 only if the small rows remain clean.
+
+Update `2026-04-28`: latest-small readiness improves again. Qwen3.5-0.8B now
+passes CPU trace-no-hint n160 seed29 with matched `1.000`, target-only `0.250`,
+best source-destroying control `0.256`, packet valid rate `1.000`, and exact-ID
+parity true. The first non-Qwen positive also exists: Granite-3.3-2B-Instruct
+CPU copied-helper n64 reaches `51/64 = 0.797` versus target/control `16/64 =
+0.250`, packet valid rate `0.734`, and exact-ID parity true. OLMo-2-0425-1B is
+negative with `0` valid packets, and Granite MPS is backend-blocked. Readiness
+for the scoped submission is unchanged; readiness for a stronger
+model-generalization section is now latest-small medium plus non-Qwen
+confirmation, still short of seed repeat, Granite n160, and MoE/FP8 rows.
