@@ -88,6 +88,15 @@ source direct is `1/2`. The live branch is no longer the two-ID source-sampled
 surface. The prompt wrapper must become a target-prior baseline/control before
 any future source-communication claim.
 
+Update `2026-04-27`: full SVAMP32 target brief-wrapper sampling is now promoted
+to a mandatory target-prior baseline. Target brief-wrapper S4 reaches `18/32`
+oracle and `4/6` C2C-clean residual IDs. The union of target direct S8 and
+target brief-wrapper S4 reaches `23/32` oracle and all `6/6` C2C-clean residual
+IDs. Adding the source brief S4 surface raises total oracle only to `24/32` and
+adds `0` new C2C-clean residual IDs. The source-sampling family is pruned as a
+communication surface; the next source-surface discovery must subtract target
+brief-wrapper priors at matched or larger budget.
+
 Update `2026-04-27`: the stricter SVAMP32 clean C2C residual target-only
 sampling gate separates generator headroom from communication. No-source target
 sampling reaches gold on `2/6` clean residual IDs with full numeric coverage,

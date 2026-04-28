@@ -1,0 +1,578 @@
+{
+  "base_target_set": "results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json",
+  "base_target_set_sha256": "088f0e1651f95ea04a89ec0931276a943ff104a355fe69f434182f68e778ea96",
+  "c2c_clean_residual_in_pool": 4,
+  "c2c_clean_residual_in_pool_ids": [
+    "1d50b408c8f5cd2c",
+    "47464cc0b064f172",
+    "6e9745b37ab6fc45",
+    "de1bf4d142544e5b"
+  ],
+  "c2c_clean_residual_total": 6,
+  "c2c_headroom_json": "results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json",
+  "c2c_headroom_sha256": "dfa26e421aca995fcf03f2eb9cf807d62de17e8b1601c85b4277328bd129d154",
+  "c2c_teacher_only_in_pool": 5,
+  "c2c_teacher_only_in_pool_ids": [
+    "1d50b408c8f5cd2c",
+    "47464cc0b064f172",
+    "4d780f825bb8541c",
+    "6e9745b37ab6fc45",
+    "de1bf4d142544e5b"
+  ],
+  "c2c_teacher_only_total": 9,
+  "command": "scripts/analyze_target_sampling_reachability.py --samples-jsonl results/svamp32_target_brief_sampling_full32_s4_20260427/target_brief_samples.jsonl --base-target-set results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json --c2c-headroom-json results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json --date 2026-04-27 --output-json results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.json --output-md results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.md",
+  "covered_ids": 32,
+  "date": "2026-04-27",
+  "decision": "Strong pass: C2C clean residual target reachability is large enough to justify a strict source-derived selector or connector gate.",
+  "diversity": {
+    "duplicate_nonempty_fraction": 0.4375,
+    "duplicate_nonempty_rows": 56,
+    "max_unique_answers_per_id": 4,
+    "mean_unique_answers_per_id": 2.25,
+    "median_unique_answers_per_id": 2.0,
+    "min_unique_answers_per_id": 1,
+    "unique_answer_counts_by_id": {
+      "013133cdef4f637c": 1,
+      "08d3dd8885ffb998": 2,
+      "0d2b4f7681973e19": 1,
+      "137ad74218053f8a": 2,
+      "13cb77b698eeadb5": 4,
+      "14bfbfc94f2c2e7b": 1,
+      "1d50b408c8f5cd2c": 2,
+      "2de1549556000830": 2,
+      "2f80204fc9e0896f": 2,
+      "316b525a4fcbfb89": 2,
+      "33836927fc9f1a8a": 3,
+      "3e8a5691f5443495": 2,
+      "41cce6c6e6bb0058": 1,
+      "47464cc0b064f172": 3,
+      "4c84ebf42812703b": 2,
+      "4d780f825bb8541c": 2,
+      "4ef979ea2bf931df": 4,
+      "575d7e83d84c1e67": 1,
+      "615f9d817cb5be59": 4,
+      "6e9745b37ab6fc45": 3,
+      "a85be5ec651dac24": 3,
+      "aee922049c757331": 4,
+      "b0b71023ae4d233b": 3,
+      "b1200c32546a34a5": 3,
+      "c042f0a2949ff8e6": 1,
+      "d64f6e35083ffe8c": 4,
+      "de1bf4d142544e5b": 1,
+      "de2a795ab37694af": 2,
+      "e26bdbcab1449bbe": 2,
+      "e3ab8666238a289e": 2,
+      "e7dd2efb5ec99a06": 1,
+      "f367349ce0604296": 2
+    }
+  },
+  "git_commit": "4aad04649fd186a985f59fb072e1492a47931d10",
+  "numeric_covered_ids": 32,
+  "reference_n": 32,
+  "rows": [
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "013133cdef4f637c",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": true,
+      "target_correct": true,
+      "unique_sample_values": [
+        "12"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "d64f6e35083ffe8c",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "17",
+        "49",
+        "59",
+        "96"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "3e8a5691f5443495",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "2",
+        "3"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "316b525a4fcbfb89",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "15",
+        "63"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "e26bdbcab1449bbe",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "10"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "aee922049c757331",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "17",
+        "4",
+        "9"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "1d50b408c8f5cd2c",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "246",
+        "949"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "b0b71023ae4d233b",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "5",
+        "7",
+        "8"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "b1200c32546a34a5",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "178",
+        "2.023",
+        "40"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": true,
+      "example_id": "14bfbfc94f2c2e7b",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": true,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "19"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "4c84ebf42812703b",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "10",
+        "2"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "4ef979ea2bf931df",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "4",
+        "46",
+        "9",
+        "96"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "13cb77b698eeadb5",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "177",
+        "46",
+        "7982",
+        "8002"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "e3ab8666238a289e",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": true,
+      "example_id": "2de1549556000830",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": true,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "24",
+        "30"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "615f9d817cb5be59",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "12",
+        "52",
+        "61",
+        "87"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "2f80204fc9e0896f",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "13",
+        "5"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "137ad74218053f8a",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "2",
+        "8"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": true,
+      "example_id": "4d780f825bb8541c",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": true,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "26",
+        "34"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "08d3dd8885ffb998",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "0",
+        "59"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "de1bf4d142544e5b",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "57"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "f367349ce0604296",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "14",
+        "6"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "a85be5ec651dac24",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "10",
+        "43",
+        "5"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "de2a795ab37694af",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "11",
+        "2"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "47464cc0b064f172",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "14",
+        "24",
+        "34"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "0d2b4f7681973e19",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "204"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "33836927fc9f1a8a",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "14",
+        "20",
+        "6"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "e7dd2efb5ec99a06",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "29"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "41cce6c6e6bb0058",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": true,
+      "source_correct": true,
+      "target_correct": false,
+      "unique_sample_values": [
+        "10"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "6e9745b37ab6fc45",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "11",
+        "600",
+        "61"
+      ]
+    },
+    {
+      "c2c_clean_residual": false,
+      "c2c_teacher_only": false,
+      "example_id": "c042f0a2949ff8e6",
+      "sample_oracle": true,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": true,
+      "unique_sample_values": [
+        "11"
+      ]
+    },
+    {
+      "c2c_clean_residual": true,
+      "c2c_teacher_only": true,
+      "example_id": "575d7e83d84c1e67",
+      "sample_oracle": false,
+      "sample_rows": 4,
+      "source_contrastive_clean": false,
+      "source_correct": false,
+      "target_correct": false,
+      "unique_sample_values": [
+        "24"
+      ]
+    }
+  ],
+  "sample_oracle_correct": 18,
+  "sample_oracle_gain_ids": [
+    "1d50b408c8f5cd2c",
+    "33836927fc9f1a8a",
+    "41cce6c6e6bb0058",
+    "47464cc0b064f172",
+    "4c84ebf42812703b",
+    "4d780f825bb8541c",
+    "4ef979ea2bf931df",
+    "6e9745b37ab6fc45",
+    "aee922049c757331",
+    "de1bf4d142544e5b",
+    "e26bdbcab1449bbe",
+    "e3ab8666238a289e"
+  ],
+  "sample_oracle_gain_vs_target": 12,
+  "sample_oracle_ids": [
+    "0d2b4f7681973e19",
+    "1d50b408c8f5cd2c",
+    "2f80204fc9e0896f",
+    "316b525a4fcbfb89",
+    "33836927fc9f1a8a",
+    "41cce6c6e6bb0058",
+    "47464cc0b064f172",
+    "4c84ebf42812703b",
+    "4d780f825bb8541c",
+    "4ef979ea2bf931df",
+    "6e9745b37ab6fc45",
+    "aee922049c757331",
+    "c042f0a2949ff8e6",
+    "de1bf4d142544e5b",
+    "de2a795ab37694af",
+    "e26bdbcab1449bbe",
+    "e3ab8666238a289e",
+    "f367349ce0604296"
+  ],
+  "sample_rows": 128,
+  "sample_rows_sha256": "0f2b6eacb6f53bf7850528f713d142a2beb5e8fb355a850756659c9dea489830",
+  "samples_jsonl": "results/svamp32_target_brief_sampling_full32_s4_20260427/target_brief_samples.jsonl",
+  "source_contrastive_clean_in_pool": 2,
+  "source_contrastive_clean_in_pool_ids": [
+    "41cce6c6e6bb0058",
+    "4d780f825bb8541c"
+  ],
+  "source_contrastive_clean_total": 4,
+  "source_correct": 6,
+  "status": "target_sampling_reachability_audited",
+  "target_correct": 8
+}

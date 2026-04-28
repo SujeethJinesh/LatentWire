@@ -1,0 +1,42 @@
+{
+  "baseline_path": "results/svamp32_target_sampling_full32_s8_20260427/reachability.json",
+  "baseline_sample_oracle_correct": 14,
+  "candidate_c2c_clean_residual_in_pool": 4,
+  "candidate_c2c_clean_residual_total": 6,
+  "candidate_minus_baseline_oracle": 4,
+  "candidate_path": "results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.json",
+  "candidate_sample_oracle_correct": 18,
+  "command": "scripts/compare_candidate_pool_reachability.py --baseline-reachability results/svamp32_target_sampling_full32_s8_20260427/reachability.json --candidate-reachability results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.json --date 2026-04-27 --output-json results/svamp32_target_brief_sampling_full32_s4_20260427/target_brief_vs_target_direct_reachability.json --output-md results/svamp32_target_brief_sampling_full32_s4_20260427/target_brief_vs_target_direct_reachability.md",
+  "date": "2026-04-27",
+  "decision": "Pass: candidate pool adds C2C-clean residual reachability beyond the baseline pool.",
+  "git_commit": "4aad04649fd186a985f59fb072e1492a47931d10",
+  "lost_oracle_count": 5,
+  "lost_oracle_ids": [
+    "013133cdef4f637c",
+    "14bfbfc94f2c2e7b",
+    "3e8a5691f5443495",
+    "575d7e83d84c1e67",
+    "a85be5ec651dac24"
+  ],
+  "new_c2c_clean_residual_count": 4,
+  "new_c2c_clean_residual_ids": [
+    "1d50b408c8f5cd2c",
+    "47464cc0b064f172",
+    "6e9745b37ab6fc45",
+    "de1bf4d142544e5b"
+  ],
+  "new_oracle_count": 9,
+  "new_oracle_ids": [
+    "1d50b408c8f5cd2c",
+    "33836927fc9f1a8a",
+    "41cce6c6e6bb0058",
+    "47464cc0b064f172",
+    "4c84ebf42812703b",
+    "4ef979ea2bf931df",
+    "6e9745b37ab6fc45",
+    "c042f0a2949ff8e6",
+    "de1bf4d142544e5b"
+  ],
+  "reference_n": 32,
+  "status": "candidate_pool_reachability_compared"
+}

@@ -62,3 +62,20 @@ replay found that the target model with the same brief-analysis wrapper reaches
 next valid use of these references is a new surface where target wrapper
 controls remain below matched source, or a larger held-out source surface with
 predeclared prompt controls.
+
+## 2026-04-27 Prompt-Wrapper Baseline Addendum
+
+The full SVAMP32 target brief-wrapper S4 baseline changes the blocker:
+
+1. Blocker helped: target direct plus target brief-wrapper sampling reaches
+   `23/32` oracle and all `6/6` C2C-clean residual IDs, so future source
+   messages must beat a much stronger target-prior surface.
+2. Mechanism/design idea: use compact source-innovation sidecars only after
+   subtracting target prompt-wrapper priors. The most relevant next bounded
+   experiments are causal-order sidecars, innovation matched filters, and
+   spread-spectrum challenge sketches over answer-masked source traces.
+3. Next experiment change: no learned connector on the source-sampling surface.
+   First find residual IDs not reached by target direct plus target
+   brief-wrapper at matched or larger budget.
+4. Role: inspiration, ablation design, and leakage controls. Not method
+   evidence.

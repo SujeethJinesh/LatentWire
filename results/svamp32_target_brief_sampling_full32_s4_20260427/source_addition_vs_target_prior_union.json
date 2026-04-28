@@ -1,0 +1,23 @@
+{
+  "baseline_path": "results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_union_reachability.json",
+  "baseline_sample_oracle_correct": 23,
+  "candidate_c2c_clean_residual_in_pool": 6,
+  "candidate_c2c_clean_residual_total": 6,
+  "candidate_minus_baseline_oracle": 1,
+  "candidate_path": "results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_plus_source_union_reachability.json",
+  "candidate_sample_oracle_correct": 24,
+  "command": "scripts/compare_candidate_pool_reachability.py --baseline-reachability results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_union_reachability.json --candidate-reachability results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_plus_source_union_reachability.json --date 2026-04-27 --output-json results/svamp32_target_brief_sampling_full32_s4_20260427/source_addition_vs_target_prior_union.json --output-md results/svamp32_target_brief_sampling_full32_s4_20260427/source_addition_vs_target_prior_union.md",
+  "date": "2026-04-27",
+  "decision": "Weak pass: candidate pool improves total oracle but not C2C-clean residual reachability.",
+  "git_commit": "4aad04649fd186a985f59fb072e1492a47931d10",
+  "lost_oracle_count": 0,
+  "lost_oracle_ids": [],
+  "new_c2c_clean_residual_count": 0,
+  "new_c2c_clean_residual_ids": [],
+  "new_oracle_count": 1,
+  "new_oracle_ids": [
+    "b1200c32546a34a5"
+  ],
+  "reference_n": 32,
+  "status": "candidate_pool_reachability_compared"
+}

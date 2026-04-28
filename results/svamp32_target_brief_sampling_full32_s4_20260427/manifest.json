@@ -1,0 +1,42 @@
+{
+  "artifacts": {
+    "reachability_json": {
+      "path": "results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.json",
+      "sha256": "bde2ab81fd4deb7a2aff0f9bfb11b66658b50a5008f99c63b1579bfe0216607c"
+    },
+    "source_addition_vs_target_prior_union_json": {
+      "path": "results/svamp32_target_brief_sampling_full32_s4_20260427/source_addition_vs_target_prior_union.json",
+      "sha256": "c611fa3778dbe66eda9d828b1c97f719b2b4fd3c5b731dce92a03f3848b76d3d"
+    },
+    "target_brief_samples_jsonl": {
+      "path": "results/svamp32_target_brief_sampling_full32_s4_20260427/target_brief_samples.jsonl",
+      "sha256": "0f2b6eacb6f53bf7850528f713d142a2beb5e8fb355a850756659c9dea489830"
+    },
+    "target_prior_plus_source_union_json": {
+      "path": "results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_plus_source_union_reachability.json",
+      "sha256": "90bc325da6ce39c4d82934c3e13686b418f06e8d9ff6c15ce8e7d28ebd93332d"
+    },
+    "target_prior_union_json": {
+      "path": "results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_union_reachability.json",
+      "sha256": "2a21dc9cbd76c5dd2c7d70c3d1d937ffa742674ee12111fc08d78793c1cab6b1"
+    }
+  },
+  "date": "2026-04-27",
+  "decision": "Promote target brief-wrapper sampling to a mandatory target-prior baseline; source brief adds no C2C-clean residual IDs beyond target direct plus target brief union.",
+  "metrics": {
+    "source_addition_c2c_clean_delta": 0,
+    "source_addition_oracle_delta": 1,
+    "source_brief_s4_oracle": 10,
+    "target_brief_s4_c2c_clean": 4,
+    "target_brief_s4_c2c_clean_total": 6,
+    "target_brief_s4_oracle": 18,
+    "target_direct_s8_oracle": 14,
+    "target_prior_plus_source_union_oracle": 24,
+    "target_prior_union_c2c_clean": 6,
+    "target_prior_union_c2c_clean_total": 6,
+    "target_prior_union_oracle": 23,
+    "total": 32
+  },
+  "scale_rung": "smoke",
+  "status": "target_prompt_wrapper_baseline_promoted"
+}

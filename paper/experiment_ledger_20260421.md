@@ -12101,3 +12101,122 @@ Next exact gate:
   beyond target direct, target brief-wrapper, zero-source, shuffled-source,
   answer-only, answer-masked, and random same-byte controls
   before any connector training
+
+## 2026-04-27 Cycle 21 - SVAMP32 Target Brief Wrapper Baseline
+
+Cycle start:
+
+1. Current ICLR readiness: not ready; the project still lacks a source-derived
+   positive method.
+2. Current paper story: the last source-sampling clue was explained by the
+   target brief-analysis wrapper on a two-ID replay.
+3. Exact blocker: define source residual IDs only after subtracting target
+   direct, target brief-wrapper, no-source merged pools, and source-destroying
+   controls.
+4. Current live branches: prompt-controlled source-surface discovery; compact
+   answer-masked source-innovation sidecars only after such a surface survives.
+5. Highest-priority gate: full SVAMP32 target brief-wrapper S4 baseline
+   compared against prior target direct S8 and source brief S4.
+6. Scale-up rung: smoke.
+
+Subagents:
+
+- planner: run full32 target brief-wrapper S4 first; only run S8 if S4 is
+  inconclusive
+- reviewer: promote prompt-wrapper sampling to a mandatory target-prior baseline
+  at matched or larger budget
+- creative scout: defer causal-order, innovation matched-filter, and
+  spread-spectrum challenge sidecars until a surface survives prompt controls
+
+Harness update:
+
+- added `scripts/summarize_reachability_union.py`
+  - summarizes union oracle and C2C/source-clean overlap across reachability
+    audits
+- added `tests/test_summarize_reachability_union.py`
+
+Commands:
+
+```bash
+HF_HUB_DISABLE_XET=1 PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/sample_target_candidate_surface.py \
+  --eval-file results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl \
+  --model Qwen/Qwen3-0.6B \
+  --samples 4 \
+  --method-prefix target_brief_sample \
+  --temperature 0.9 \
+  --top-p 0.95 \
+  --seed 71 \
+  --device mps \
+  --dtype float32 \
+  --max-new-tokens 64 \
+  --prompt-mode source_reasoning \
+  --source-reasoning-mode brief_analysis \
+  --use-chat-template \
+  --enable-thinking false \
+  --output-jsonl results/svamp32_target_brief_sampling_full32_s4_20260427/target_brief_samples.jsonl \
+  --output-json results/svamp32_target_brief_sampling_full32_s4_20260427/target_brief_samples.json \
+  --output-md results/svamp32_target_brief_sampling_full32_s4_20260427/target_brief_samples.md
+
+./venv_arm64/bin/python scripts/analyze_target_sampling_reachability.py \
+  --samples-jsonl results/svamp32_target_brief_sampling_full32_s4_20260427/target_brief_samples.jsonl \
+  --base-target-set results/qwen25math_svamp32_source_contrastive_sidecar_20260426/source_contrastive_target_set.json \
+  --c2c-headroom-json results/qwen25math_svamp32_c2c_headroom_20260426/compatible_target_set.json \
+  --date 2026-04-27 \
+  --output-json results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.json \
+  --output-md results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.md
+
+./venv_arm64/bin/python scripts/summarize_reachability_union.py \
+  --reachability target_direct_s8=results/svamp32_target_sampling_full32_s8_20260427/reachability.json \
+  --reachability target_brief_s4=results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.json \
+  --date 2026-04-27 \
+  --output-json results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_union_reachability.json \
+  --output-md results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_union_reachability.md
+
+./venv_arm64/bin/python scripts/summarize_reachability_union.py \
+  --reachability target_direct_s8=results/svamp32_target_sampling_full32_s8_20260427/reachability.json \
+  --reachability target_brief_s4=results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.json \
+  --reachability source_brief_s4=results/svamp32_source_sampling_full32_s4_20260427/reachability.json \
+  --date 2026-04-27 \
+  --output-json results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_plus_source_union_reachability.json \
+  --output-md results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_plus_source_union_reachability.md
+```
+
+Results:
+
+- target brief-wrapper S4 oracle: `18/32`
+- target direct S8 oracle: `14/32`
+- source brief S4 oracle: `10/32`
+- target brief-wrapper C2C-clean residual reachability: `4/6`
+- target direct plus target brief-wrapper union:
+  - oracle: `23/32`
+  - C2C-clean residual reachability: `6/6`
+  - C2C teacher-only reachability: `8/9`
+- target prior plus source union:
+  - oracle: `24/32`
+  - C2C-clean residual reachability: `6/6`
+- source addition beyond target-prior union:
+  - oracle delta: `+1` (`b1200c32546a34a5`)
+  - C2C-clean residual delta: `0`
+
+Decision:
+
+- promote target brief-wrapper sampling to a mandatory target-prior baseline
+- prune current source-sampling family as a communication surface
+- do not train a connector unless matched source adds residual IDs beyond target
+  direct plus target brief-wrapper at matched or larger budget
+
+Artifacts:
+
+- `results/svamp32_target_brief_sampling_full32_s4_20260427/manifest.md`
+- `results/svamp32_target_brief_sampling_full32_s4_20260427/reachability.md`
+- `results/svamp32_target_brief_sampling_full32_s4_20260427/target_prior_union_reachability.md`
+- `results/svamp32_target_brief_sampling_full32_s4_20260427/source_addition_vs_target_prior_union.md`
+- `paper/svamp32_target_brief_wrapper_reachability_20260427.md`
+
+Next exact gate:
+
+- rerun source-surface discovery only with target brief-wrapper controls
+  predeclared and matched or larger budget
+- a live source branch requires clean residual IDs not reached by target direct,
+  target brief-wrapper, no-source merged pool, answer-only/answer-masked source,
+  zero-source, shuffled-source, and random same-byte controls
