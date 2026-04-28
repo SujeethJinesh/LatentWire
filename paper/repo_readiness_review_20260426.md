@@ -1,8 +1,8 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: scoped positive-method manuscript compiled
-- estimated distance: final skeptical review, table/figure polish, final framing, and optional target-decoder scale-up
+- status: scoped positive-method manuscript in submission polish
+- estimated distance: line-level PDF/source polish, citation metadata verification, optional appendix example, and final scoped-submit decision
 
 ## Current Paper Story
 
@@ -1828,7 +1828,18 @@ hidden diagnostic evidence to a target-side candidate decoder at `2`
 bytes/tokens, while zero/shuffled/random/answer-only/answer-masked/
 target-derived controls stay near target-only and structured text relays
 become competitive only at larger budgets. The LaTeX source compiles to
-`paper/iclr2026/source_private_tool_trace.pdf` (`6` pages, `202363` bytes) with
+`paper/iclr2026/source_private_tool_trace.pdf` (`7` pages, `212923` bytes) with
 no overfull boxes, undefined references, or citation warnings. Remaining
 blockers are final skeptical review, target-decoder scale-up decision, and
 final table/figure/citation polish.
+
+Update `2026-04-30`: `source_private_tool_trace_final_review_20260430` applies
+the final skeptical-review framing patch. The manuscript now explicitly frames
+the result as an explicit diagnostic-code protocol benchmark, not learned
+latent transfer or unconstrained program repair; the target-decoder row is
+scoped as a model-mediated protocol-decoder smoke ablation; related work now
+covers decoder-side information, multi-agent handoff, prompt compression,
+C2C/KVComm-style latent/cache communication, and test-guided repair framing.
+The next exact gate is `source_private_tool_trace_submission_polish_20260430`:
+line-level PDF/source polish, citation metadata verification, optional appendix
+example, and final scoped-submit decision.

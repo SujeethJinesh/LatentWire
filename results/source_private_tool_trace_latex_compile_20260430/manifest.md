@@ -15,15 +15,15 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error source_private_tool_trace.t
 ## Output
 
 - `paper/iclr2026/source_private_tool_trace.pdf`
-- pages: `6`
-- size: `202363` bytes
+- pages: `7`
+- size: `212923` bytes
 
 ## Log Audit
 
 Command:
 
 ```bash
-rg -n "Overfull|undefined|Citation|LaTeX Warning|Package natbib Warning" \
+rg -n "Overfull|undefined|Citation|LaTeX Warning|Package natbib Warning|Warning--" \
   paper/iclr2026/source_private_tool_trace.log
 ```
 

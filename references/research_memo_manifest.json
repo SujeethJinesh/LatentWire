@@ -845,5 +845,12 @@
     "path": "references/477_source_private_literature_sprint_refs.md",
     "status": "local_memo",
     "reason": "Primary-source literature-to-method sprint memo ranking source-private evidence packets, tool-trace handoff, Query-JEPA/Q-Former adapters, anchor-relative codes, and KV/cache baselines for the one-month ICLR path."
+  },
+  {
+    "num": 478,
+    "slug": "source_private_final_review_refs",
+    "path": "references/478_source_private_final_review_refs.md",
+    "status": "local_memo",
+    "reason": "Final-review reference memo tightening the compiled source-private tool-trace paper around decoder-side information, multi-agent handoff, prompt compression, latent/KV communication competitors, and test-guided repair scope."
   }
 ]

@@ -14280,3 +14280,46 @@ Next exact gate:
 - `source_private_tool_trace_final_review_20260430`: final skeptical review of
   the compiled paper/source, target-decoder scale-up decision, and table/figure
   caption polish.
+
+## 2026-04-30 - Source-Private Tool-Trace Final Review Polish
+
+Current ICLR readiness: scoped positive-method manuscript is materially closer
+to submission, but still needs final line polish and citation metadata review.
+No new deterministic experiment was run; the gate addressed reviewer framing.
+
+Decision:
+
+- do not scale the target-decoder smoke this cycle
+- keep target decoding as a protocol-decoder smoke ablation
+- patch the manuscript around the coded-label/protocol, synthetic-scope,
+  low-rate, related-work, and reproducibility risks
+
+Edits:
+
+- narrowed abstract/intro language to explicit diagnostic-code communication
+- added synthetic-benchmark motivation and far-left-rate framing
+- renamed target decoder row to model-mediated protocol decoder smoke
+- split related work and added missing baseline/framing citations
+- added an appendix artifact-manifest table
+
+Compile:
+
+```bash
+cd paper/iclr2026
+latexmk -pdf -interaction=nonstopmode -halt-on-error source_private_tool_trace.tex
+```
+
+Output: `paper/iclr2026/source_private_tool_trace.pdf` (`7` pages,
+`212923` bytes). Log audit found no overfull boxes, undefined references,
+citation warnings, or BibTeX warnings.
+
+References:
+
+- `references/478_source_private_final_review_refs.md`
+- updated `references/research_memo_manifest.json`
+
+Next exact gate:
+
+- `source_private_tool_trace_submission_polish_20260430`: line-level PDF/source
+  polish, citation metadata verification, optional appendix example, and final
+  scoped-submit decision.
