@@ -1805,3 +1805,10 @@ hidden diagnostic evidence, and direct auditability rather than general
 latent-transfer claims. Submission blockers remain: setup/rate-curve figures,
 count-augmented tables, concrete citations, and a choice between scaling the
 target-decoder smoke or listing it as an ablation/limitation.
+
+Update `2026-04-30`: `source_private_tool_trace_latex_or_figures_20260430`
+generates the setup diagram and rate-curve assets. The rate curve is now an
+actual SVG/CSV artifact and should be in the main paper because it shows the
+honest systems tradeoff: compact packets work at `2` bytes, while structured
+JSON/free-text relays become oracles at `32` bytes. The next exact gate is
+`source_private_tool_trace_latex_20260430`.

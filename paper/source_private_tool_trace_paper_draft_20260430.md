@@ -154,8 +154,9 @@ packet to select the correct candidate.
 The deterministic surfaces have candidate-pool recall `1.000`, so selector
 accuracy is not confounded with candidate generation recall.
 
-**Figure 1 placeholder.** Source-private evidence communication setup:
+**Figure 1.** Source-private evidence communication setup:
 `X,T` at target, `S` at source, rate-capped packet `M`, decoder `D`.
+Asset: `results/source_private_tool_trace_latex_or_figures_20260430/source_private_setup.svg`.
 
 ## 4. Method: Tool-Trace Packets
 
@@ -280,9 +281,12 @@ transport costs.
 | full diagnostic text | `14` | `1` | oracle text field |
 | full hidden-log relay | `366-374` | about `34` | oracle full trace |
 
-**Figure 2 placeholder.** Accuracy-versus-byte curve for compact packet,
-matched-byte hidden-log text, structured JSON relay, concise free-text relay,
-full diagnostic text, and full hidden-log relay.
+**Figure 2.** Accuracy-versus-byte curve for compact packet, matched-byte
+hidden-log text, structured JSON relay, concise free-text relay, full
+diagnostic text, and full hidden-log relay. Asset:
+`results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.svg`.
+Source data:
+`results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.csv`.
 
 At `2` bytes, structured JSON and free-text relays remain target-only. At
 `32` bytes, they become oracles because the diagnostic is visible in a parseable
@@ -420,8 +424,10 @@ cross-model communication, or unconstrained repair generation.
 
 ## Appendix B. Figure/Table Checklist
 
-- Figure 1: source-private setup diagram.
-- Figure 2: rate curve over packet/text/full-log budgets.
+- Figure 1: source-private setup diagram. Asset generated:
+  `results/source_private_tool_trace_latex_or_figures_20260430/source_private_setup.svg`.
+- Figure 2: rate curve over packet/text/full-log budgets. Asset generated:
+  `results/source_private_tool_trace_latex_or_figures_20260430/rate_curve.svg`.
 - Table 1: model-mediated packet rows.
 - Table 2: deterministic source-destroying controls.
 - Table 3: reviewer-risk controls.

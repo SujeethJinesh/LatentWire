@@ -14183,3 +14183,42 @@ Next exact gate:
 
 - `source_private_tool_trace_latex_or_figures_20260430`: create setup/rate-curve
   figures or convert to ICLR LaTeX, with citations and count-augmented tables.
+
+## 2026-04-30 - Source-Private Tool-Trace Figure Assets
+
+Current ICLR readiness: full markdown draft plus the two essential figure
+assets now exist. Remaining blockers are LaTeX/source conversion, concrete
+citations, count-augmented tables, and final reviewer pass.
+
+Command:
+
+```bash
+./venv_arm64/bin/python scripts/build_source_private_tool_trace_figures.py \
+  --output-dir results/source_private_tool_trace_latex_or_figures_20260430
+```
+
+Generated assets:
+
+- `source_private_setup.svg`: source-private setup diagram for `(X,T,S,M,D)`
+- `rate_curve.svg`: accuracy versus communicated bytes for packet, structured
+  relays, full diagnostic text, and full hidden-log relay
+- `rate_curve.csv`: source data for the rate curve
+
+Decision:
+
+- use the rate curve in the main paper, not the appendix
+- keep structured text relay framing honest: JSON/free-text relays become
+  oracles at `32` bytes
+
+Artifacts:
+
+- `paper/source_private_tool_trace_latex_or_figures_20260430.md`
+- `results/source_private_tool_trace_latex_or_figures_20260430/`
+- `scripts/build_source_private_tool_trace_figures.py`
+- `tests/test_build_source_private_tool_trace_figures.py`
+
+Next exact gate:
+
+- `source_private_tool_trace_latex_20260430`: convert the markdown draft to ICLR
+  LaTeX source, include figure references, add citations, and add counts to the
+  main table.

@@ -1,0 +1,9 @@
+{
+  "artifacts": [
+    "source_private_setup.svg",
+    "rate_curve.csv",
+    "rate_curve.svg"
+  ],
+  "core_summary": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_tool_trace_reviewer_risk_rows_20260429/core_seed29/sweep_summary.json",
+  "holdout_summary": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_tool_trace_reviewer_risk_rows_20260429/holdout_seed30/sweep_summary.json"
+}
