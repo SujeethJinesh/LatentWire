@@ -14600,3 +14600,12 @@ packet rate `1.000`, exact-ID parity true, p50 MPS latency `821 ms`; seed31
 matched `160/160`, target-only/best control `40/160`, valid packet rate
 `1.000`, exact-ID parity true, p50 MPS latency `791 ms`. This makes Gemma 4 E2B
 a seed-stable strict-prompt non-Qwen medium row; MoE/FP8 remains unrun.
+
+Update `2026-04-28`: `gemma4_e2b_raw_log_source_destroying_20260428` adds the
+paired non-Qwen source-signal ablation. With `google/gemma-4-E2B-it` on MPS,
+n160 seed29, and `raw_log_no_trace`, the private `REPAIR_DIAG` trace line is
+removed. The row intentionally fails: matched `40/160 = 0.250`, target-only
+`40/160`, best control `41/160`, packet valid rate `0.000`, exact-ID parity
+true, and p50 MPS latency `663 ms`. This supports the interpretation that the
+Gemma strict-prompt positive transfers the private diagnostic trace signal
+rather than target priors or wrapper formatting alone.

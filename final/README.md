@@ -110,6 +110,8 @@ n64 row.
 The non-Qwen evidence is stronger now. `google/gemma-4-E2B-it` reaches
 `160/160 = 1.000` on MPS with the strict trace-no-hint prompt on seeds `29` and
 `31`, versus the `0.250` target/control floor and packet valid rate `1.000`.
+The paired Gemma raw-log/no-trace ablation removes the private diagnostic trace
+line and collapses to `40/160 = 0.250` with `0` valid packets.
 `ibm-granite/granite-3.3-2b-instruct`
 reaches `128/160 = 0.800` on CPU with the copied-helper prompt and
 `101/160 = 0.631` under the strict trace-no-hint prompt, versus `0.250` target

@@ -2049,3 +2049,11 @@ target-only `40/160`, source-destroying controls at `40/160` to `41/160`,
 packet valid rate `1.000`, exact-ID parity true, and p50 MPS packet latency
 `821 ms` / `791 ms`. This gives a seed-stable non-Qwen strict-prompt medium row
 on Mac-local hardware; MoE/FP8 remains the only broad-architecture blocker.
+
+Update `2026-04-28`: Gemma 4 E2B now has a direct source-signal ablation. With
+the same MPS n160 seed29 setup but `raw_log_no_trace`, the private diagnostic
+trace line is removed and the row collapses to matched `40/160 = 0.250`,
+target-only `40/160`, best control `41/160`, packet valid rate `0.000`, and
+exact-ID parity true. This strengthens the non-Qwen claim by showing the
+Gemma gain is tied to the private diagnostic signal, not target priors or the
+prompt wrapper alone.
