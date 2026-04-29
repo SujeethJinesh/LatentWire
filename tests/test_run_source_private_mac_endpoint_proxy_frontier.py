@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from scripts.run_source_private_mac_endpoint_proxy_frontier import (
     LoadedExample,
+    _candidate_rows_for_prompt,
     _candidate_table_for_condition,
     _parse_candidate_label,
+    _parse_strict_candidate_label,
     _prompt,
     summarize,
 )
@@ -58,6 +60,7 @@ def test_summarize_endpoint_proxy_frontier_passes_packet_rate_case() -> None:
 
     assert summary["pass_gate"] is True
     assert summary["prompt_style"] == "canonical"
+    assert summary["candidate_view"] == "diagnostic_table"
     assert summary["packet_minus_target_accuracy"] == 0.75
     assert summary["packet_minus_best_source_destroying_control_accuracy"] == 0.75
     assert summary["packet_vs_query_payload_compression"] == 7.0
@@ -83,6 +86,55 @@ def test_prompt_styles_preserve_public_side_information_contract() -> None:
         assert "Candidate B" in prompt
         assert "handles_repair_diag" in prompt
     assert "copied exactly" in _prompt(example, payload="G0", prompt_style="label_strict")
+
+
+def test_label_blind_candidate_view_hides_repair_diagnostic_table() -> None:
+    example = LoadedExample(
+        example_id="ex",
+        answer_label="Candidate B",
+        diagnostic_code="G0",
+        private_test_log="REPAIR_DIAG=G0",
+        candidates=(
+            {
+                "label": "Candidate A",
+                "handles_diagnostic": "G1",
+                "prior_score": 0.9,
+                "patch_name": "wrong_patch",
+                "patch_intent": "leave bug unchanged",
+            },
+            {
+                "label": "Candidate B",
+                "handles_diagnostic": "G0",
+                "prior_score": 0.1,
+                "patch_name": "right_patch",
+                "patch_intent": "fix hidden case",
+            },
+        ),
+    )
+
+    rows = _candidate_rows_for_prompt(example.candidates, candidate_view="label_blind")
+    prompt = _prompt(example, payload="G0", prompt_style="label_strict", candidate_view="label_blind")
+
+    assert "handles_repair_diag" not in rows
+    assert "handles_repair_diag" not in prompt
+    assert "G1" not in prompt
+    assert "Candidate A" not in prompt
+    assert "Candidate B" not in prompt
+    assert "Option A" in prompt
+    assert "Option B" in prompt
+    assert "there is no public key-to-candidate table" in prompt
+
+
+def test_label_blind_parser_accepts_only_visible_options_not_hidden_codes_or_labels() -> None:
+    candidates = (
+        {"label": "Candidate A", "handles_diagnostic": "G1", "prior_score": 0.9},
+        {"label": "Candidate B", "handles_diagnostic": "G0", "prior_score": 0.1},
+    )
+
+    assert _parse_strict_candidate_label("Option B", candidates, candidate_view="label_blind") == "Candidate B"
+    assert _parse_candidate_label("Option B", candidates, payload="G0", candidate_view="label_blind") == "Candidate B"
+    assert _parse_candidate_label("G0", candidates, payload="G0", candidate_view="label_blind") == ""
+    assert _parse_candidate_label("Candidate B", candidates, payload="G0", candidate_view="label_blind") == ""
 
 
 def test_deranged_candidate_table_breaks_diagnostic_mapping() -> None:

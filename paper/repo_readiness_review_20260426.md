@@ -157,6 +157,18 @@ blocker is now reviewer protocol-lookup risk. The next highest-priority gate is
 anti-lookup label-blind receiver stress on `n=160` core + holdout with
 per-example/remapped diagnostics and full controls.
 
+Update `2026-04-29`: the first label-blind anti-lookup smoke is now complete.
+The endpoint harness supports `candidate_view=label_blind`, which removes
+public `handles_repair_diag` metadata and original candidate labels from the
+prompt and disables diagnostic-code-to-candidate parser fallback. On core and
+holdout `n=8`, all opaque payloads collapse to target accuracy (`0.250`) with
+exact-ID parity and valid rate `1.000`, while the diagnostic-table positive
+comparator remains positive with minimum lift `+0.425`. This weakens hidden
+label leakage but also confirms the current method is a side-information
+protocol, not protocol-free semantic transfer. The exact blocker is now scaling
+this anti-lookup stress to `n=160` with paired uncertainty and/or adding a
+shared sparse crosscoder packet for a less table-shaped learned method.
+
 Update `2026-04-29`: the first endpoint-proxy systems row is now positive. A
 Qwen3-0.6B CPU receiver passes on core and holdout at `n=8` and `n=16` with
 endpoint-style prompt/token/TTFT/E2E logging. The stronger `n=16` rows reach

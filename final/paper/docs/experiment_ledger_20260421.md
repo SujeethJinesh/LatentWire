@@ -15421,3 +15421,24 @@ frontier with Mac-local endpoint evidence and derived cache byte floors; do not
 claim native superiority over TurboQuant, QJL, KIVI/KVQuant, C2C, KVComm, or
 production serving systems. Next exact reviewer-risk gate: anti-lookup
 label-blind receiver stress at `n=160` core + holdout.
+
+Follow-up `2026-04-29`: implemented and ran the label-blind anti-lookup smoke.
+New files: `scripts/build_source_private_anti_lookup_label_blind_summary.py`,
+`tests/test_build_source_private_anti_lookup_label_blind_summary.py`, and
+`paper/source_private_anti_lookup_label_blind_20260429.md`; the endpoint harness
+now supports `--candidate-view label_blind`. Commands:
+`./venv_arm64/bin/python scripts/run_source_private_mac_endpoint_proxy_frontier.py --benchmark-jsonl results/source_private_tool_trace_reviewer_risk_rows_20260429/core_seed29/benchmark.jsonl --output-dir results/source_private_anti_lookup_label_blind_20260429/core_seed29_qwen3_n8_label_blind --model Qwen/Qwen3-0.6B --device cpu --dtype float32 --limit 8 --max-new-tokens 12 --prompt-style label_strict --candidate-view label_blind --conditions target_only matched_packet matched_byte_text_2 random_same_byte_packet deranged_candidate_diag_table query_aware_diag_span structured_json_diag structured_free_text_diag full_hidden_log`;
+same command for `holdout_seed30`, then
+`./venv_arm64/bin/python scripts/build_source_private_anti_lookup_label_blind_summary.py --output-dir results/source_private_anti_lookup_label_blind_20260429`.
+Outcome: pass as a collapse-control artifact. With candidate repair-key
+metadata and original labels hidden, opaque payloads collapse to target on both
+core and holdout `n=8`: target `0.250`, matched packet `0.250`, max opaque
+payload `0.250`, exact-ID parity true, valid rate `1.000`. Positive
+diagnostic-table comparators remain strongly positive with minimum lift
+`+0.425`. Focused tests:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_mac_endpoint_proxy_frontier.py tests/test_build_source_private_anti_lookup_label_blind_summary.py -q`
+passed. Interpretation: this weakens hidden-label leakage as an explanation but
+confirms the current method requires target-side public side information. Next
+exact gate: scale label-blind anti-lookup to `n=160` with paired uncertainty,
+then pursue shared sparse crosscoder packets for a less protocol-shaped learned
+method.

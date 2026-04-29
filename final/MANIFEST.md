@@ -98,6 +98,10 @@
   caveating query-aware text catch-up, KV/cache byte-floor scope, production
   serving non-claims, cross-family negative boundary, and prompt-contract
   sensitivity.
+- Label-blind anti-lookup endpoint harness update, summary script, tests, memo,
+  and `n=8` core/holdout smoke artifacts showing opaque diagnostic payloads
+  collapse to target when public repair-key tables and original labels are
+  hidden.
 
 ## Notes
 

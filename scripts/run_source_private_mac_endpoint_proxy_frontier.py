@@ -29,6 +29,7 @@ CONDITIONS = (
 )
 
 PROMPT_STYLES = ("canonical", "terse", "audit", "label_strict")
+CANDIDATE_VIEWS = ("diagnostic_table", "label_blind")
 
 
 @dataclass(frozen=True)
@@ -101,12 +102,92 @@ def _candidate_table_for_condition(example: LoadedExample, *, condition: str) ->
     return tuple(candidates)
 
 
-def _prompt(example: LoadedExample, *, payload: str, prompt_style: str, condition: str = "matched_packet") -> str:
+def _candidate_rows_for_prompt(
+    candidates: tuple[dict[str, Any], ...],
+    *,
+    candidate_view: str,
+) -> str:
+    if candidate_view == "diagnostic_table":
+        return "\n".join(
+            f"- {candidate['label']}: handles_repair_diag={candidate['handles_diagnostic']}"
+            for candidate in candidates
+        )
+    if candidate_view == "label_blind":
+        rows = []
+        for candidate_index, candidate in enumerate(candidates):
+            patch_name = candidate.get("patch_name", "<hidden_patch_name>")
+            patch_intent = candidate.get("patch_intent", "<hidden_patch_intent>")
+            rows.append(f"- {_display_label(candidate_index)}: patch={patch_name}; intent={patch_intent}")
+        return "\n".join(rows)
+    raise ValueError(f"unknown candidate view {candidate_view!r}")
+
+
+def _display_label(candidate_index: int) -> str:
+    return f"Option {chr(ord('A') + candidate_index)}"
+
+
+def _visible_label_to_original(
+    generated: str,
+    candidates: tuple[dict[str, Any], ...],
+    *,
+    candidate_view: str,
+) -> str:
+    stripped = generated.strip()
+    if candidate_view == "label_blind":
+        for candidate_index, candidate in enumerate(candidates):
+            visible = _display_label(candidate_index)
+            if stripped == visible:
+                return candidate["label"]
+        for candidate_index, candidate in enumerate(candidates):
+            visible = _display_label(candidate_index)
+            if re.search(rf"(?<!\w){re.escape(visible)}(?!\w)", stripped):
+                return candidate["label"]
+        return ""
+    if candidate_view == "diagnostic_table":
+        for candidate in candidates:
+            label = candidate["label"]
+            if stripped == label:
+                return label
+        for candidate in candidates:
+            label = candidate["label"]
+            if re.search(rf"(?<!\w){re.escape(label)}(?!\w)", stripped):
+                return label
+        return ""
+    raise ValueError(f"unknown candidate view {candidate_view!r}")
+
+
+def _prior_display_label(example: LoadedExample) -> str:
+    prior_label = _prior_prediction(example)
+    for candidate_index, candidate in enumerate(example.candidates):
+        if candidate["label"] == prior_label:
+            return _display_label(candidate_index)
+    return _display_label(0)
+
+
+def _prompt(
+    example: LoadedExample,
+    *,
+    payload: str,
+    prompt_style: str,
+    condition: str = "matched_packet",
+    candidate_view: str = "diagnostic_table",
+) -> str:
     prompt_candidates = _candidate_table_for_condition(example, condition=condition)
-    candidate_rows = "\n".join(
-        f"- {candidate['label']}: handles_repair_diag={candidate['handles_diagnostic']}"
-        for candidate in prompt_candidates
-    )
+    candidate_rows = _candidate_rows_for_prompt(prompt_candidates, candidate_view=candidate_view)
+    if candidate_view == "label_blind":
+        return (
+            "Label-blind anti-lookup decoder task. Candidate repair-key metadata is hidden.\n"
+            "You may use only the public candidate labels/descriptions and the source side message. "
+            "If the side message exactly names one allowed candidate label, copy that label. "
+            "If it only contains an opaque repair key such as G0, REPAIR_DIAG=G0, JSON, or a hidden test log, "
+            "there is no public key-to-candidate table; choose the fallback candidate. "
+            "Output one full candidate label, copied exactly.\n\n"
+            f"Fallback candidate: {_prior_display_label(example)}\n"
+            f"Side message:\n{payload if payload else '<EMPTY>'}\n\n"
+            "Allowed candidate labels and public descriptions:\n"
+            f"{candidate_rows}\n\n"
+            "Copy exactly one visible option label:"
+        )
     if prompt_style == "canonical":
         return (
             "You are the target-side decoder in a source-private repair handoff.\n"
@@ -184,27 +265,31 @@ def _load_model(model_name: str, *, device: str, dtype: str) -> tuple[Any, Any]:
     return tokenizer, model
 
 
-def _parse_strict_candidate_label(generated: str, candidates: tuple[dict[str, Any], ...]) -> str:
-    stripped = generated.strip()
-    for candidate in candidates:
-        label = candidate["label"]
-        if stripped == label:
-            return label
-    for candidate in candidates:
-        label = candidate["label"]
-        if re.search(rf"(?<!\w){re.escape(label)}(?!\w)", stripped):
-            return label
-    return ""
+def _parse_strict_candidate_label(
+    generated: str,
+    candidates: tuple[dict[str, Any], ...],
+    *,
+    candidate_view: str = "diagnostic_table",
+) -> str:
+    return _visible_label_to_original(generated, candidates, candidate_view=candidate_view)
 
 
 def _payload_diagnostic_codes(payload: str) -> set[str]:
     return set(re.findall(r"\b[A-Z][0-9]\b", payload))
 
 
-def _parse_candidate_label(generated: str, candidates: tuple[dict[str, Any], ...], *, payload: str = "") -> str:
-    strict = _parse_strict_candidate_label(generated, candidates)
+def _parse_candidate_label(
+    generated: str,
+    candidates: tuple[dict[str, Any], ...],
+    *,
+    payload: str = "",
+    candidate_view: str = "diagnostic_table",
+) -> str:
+    strict = _parse_strict_candidate_label(generated, candidates, candidate_view=candidate_view)
     if strict:
         return strict
+    if candidate_view == "label_blind":
+        return ""
     stripped = generated.strip()
     diag_match = re.search(r"\b(?:REPAIR_DIAG\s*=\s*)?([A-Z][0-9])\b", stripped)
     if diag_match:
@@ -262,6 +347,7 @@ def run_frontier(
     enable_thinking: bool | None,
     conditions: list[str],
     prompt_style: str,
+    candidate_view: str = "diagnostic_table",
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     examples = _load_examples(benchmark_jsonl, limit=limit)
@@ -271,7 +357,13 @@ def run_frontier(
         for condition in conditions:
             payload = _payload_for_condition(example, condition=condition)
             prompt_candidates = _candidate_table_for_condition(example, condition=condition)
-            raw_prompt = _prompt(example, payload=payload, prompt_style=prompt_style, condition=condition)
+            raw_prompt = _prompt(
+                example,
+                payload=payload,
+                prompt_style=prompt_style,
+                condition=condition,
+                candidate_view=candidate_view,
+            )
             text_prompt = _format_prompt(tokenizer, raw_prompt, enable_thinking=enable_thinking)
             prompt_tokens = len(tokenizer(text_prompt)["input_ids"])
             generated, generated_tokens, ttft_ms, e2e_ms = _generate_one(
@@ -281,12 +373,22 @@ def run_frontier(
                 prompt=text_prompt,
                 max_new_tokens=max_new_tokens,
             )
-            strict_prediction = _parse_strict_candidate_label(generated, prompt_candidates)
-            prediction = _parse_candidate_label(generated, prompt_candidates, payload=payload)
+            strict_prediction = _parse_strict_candidate_label(
+                generated,
+                prompt_candidates,
+                candidate_view=candidate_view,
+            )
+            prediction = _parse_candidate_label(
+                generated,
+                prompt_candidates,
+                payload=payload,
+                candidate_view=candidate_view,
+            )
             rows.append(
                 {
                     "example_id": example.example_id,
                     "condition": condition,
+                    "candidate_view": candidate_view,
                     "prompt_style": prompt_style,
                     "answer_label": example.answer_label,
                     "target_prior_label": _prior_prediction(example),
@@ -307,7 +409,7 @@ def run_frontier(
                     "e2e_ms": e2e_ms,
                 }
             )
-    summary = summarize(rows, conditions=conditions, prompt_style=prompt_style)
+    summary = summarize(rows, conditions=conditions, prompt_style=prompt_style, candidate_view=candidate_view)
     _write_jsonl(output_dir / "endpoint_proxy_rows.jsonl", rows)
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
     _write_markdown(output_dir / "summary.md", summary)
@@ -325,6 +427,7 @@ def run_frontier(
         "limit": limit,
         "max_new_tokens": max_new_tokens,
         "prompt_style": prompt_style,
+        "candidate_view": candidate_view,
         "run_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "summary": summary,
     }
@@ -336,7 +439,13 @@ def run_frontier(
     return summary
 
 
-def summarize(rows: list[dict[str, Any]], *, conditions: list[str], prompt_style: str = "canonical") -> dict[str, Any]:
+def summarize(
+    rows: list[dict[str, Any]],
+    *,
+    conditions: list[str],
+    prompt_style: str = "canonical",
+    candidate_view: str = "diagnostic_table",
+) -> dict[str, Any]:
     example_ids = sorted({row["example_id"] for row in rows})
     metrics: dict[str, Any] = {}
     for condition in conditions:
@@ -375,6 +484,7 @@ def summarize(rows: list[dict[str, Any]], *, conditions: list[str], prompt_style
         "n": len(example_ids),
         "conditions": conditions,
         "prompt_style": prompt_style,
+        "candidate_view": candidate_view,
         "exact_id_parity": len(rows) == len(example_ids) * len(conditions),
         "exact_id_sha256": hashlib.sha256("\n".join(example_ids).encode("utf-8")).hexdigest(),
         "packet_minus_target_accuracy": packet["accuracy"] - target["accuracy"],
@@ -424,6 +534,7 @@ def _write_markdown(path: pathlib.Path, summary: dict[str, Any]) -> None:
         "",
         f"- examples: `{summary['n']}`",
         f"- prompt style: `{summary['prompt_style']}`",
+        f"- candidate view: `{summary['candidate_view']}`",
         f"- pass gate: `{summary['pass_gate']}`",
         f"- packet minus target accuracy: `{summary['packet_minus_target_accuracy']:.3f}`",
         f"- packet strict-label accuracy: `{summary['packet_strict_accuracy']:.3f}`",
@@ -459,6 +570,7 @@ def main() -> None:
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--conditions", choices=CONDITIONS, nargs="*", default=list(CONDITIONS))
     parser.add_argument("--prompt-style", choices=PROMPT_STYLES, default="canonical")
+    parser.add_argument("--candidate-view", choices=CANDIDATE_VIEWS, default="diagnostic_table")
     args = parser.parse_args()
     benchmark_path = args.benchmark_jsonl if args.benchmark_jsonl.is_absolute() else ROOT / args.benchmark_jsonl
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
@@ -473,6 +585,7 @@ def main() -> None:
         enable_thinking=args.enable_thinking,
         conditions=list(args.conditions),
         prompt_style=args.prompt_style,
+        candidate_view=args.candidate_view,
     )
     print(json.dumps({"output_dir": str(output_dir), "pass_gate": summary["pass_gate"]}, indent=2, sort_keys=True))
     if not summary["pass_gate"]:

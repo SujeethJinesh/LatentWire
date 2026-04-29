@@ -1,0 +1,24 @@
+{
+  "artifact_sha256": {
+    "anti_lookup_label_blind_summary.csv": "c8898ac0e7382c9d340f835a73d916582ba76e114668eb4383e434cf42f25bc4",
+    "anti_lookup_label_blind_summary.json": "48bc48dbda7bc21b08d8e8934fc64322dd2f2b8d7472e86df00ce52ab8da01fb",
+    "anti_lookup_label_blind_summary.md": "a9c052f2c3da3a19e868c637a115f9f1a53cd2cfa6a40b7935c952ee682cf524"
+  },
+  "artifacts": [
+    "anti_lookup_label_blind_summary.json",
+    "anti_lookup_label_blind_summary.csv",
+    "anti_lookup_label_blind_summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_anti_lookup_label_blind_summary",
+  "headline": {
+    "all_exact_id_parity": true,
+    "collapse_pass_rows": 2,
+    "max_opaque_minus_target": 0.0,
+    "min_diagnostic_table_positive_lift": 0.42500000000000004,
+    "min_matched_packet_valid_rate": 1.0,
+    "rows": 2
+  },
+  "pass_gate": true
+}
