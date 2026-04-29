@@ -167,3 +167,24 @@ relative to the packet in this local CPU proxy. A deliberately under-specified
 `terse` prompt fails on core `n=16`, so the receiver needs a clear public side-
 information contract. This is not a server-throughput claim; it is the first
 reproducible endpoint-style telemetry row for the systems story.
+
+Follow-up strict-control outcome: the endpoint harness now reports strict-label
+accuracy separately from diagnostic-code-mapped accuracy and includes random
+same-byte and deranged public-diagnostic-table controls. The `audit` prompt
+passes at `n=16` on both surfaces: core packet `0.750` versus best source-
+destroying control `0.250`; holdout packet `0.875` versus best source-
+destroying control `0.312`; deranged-table control is `0.000` on both. The
+strict-label packet accuracy is much lower (`0.062` core, `0.250` holdout), so
+the systems claim should be phrased as protocol-code decoding with public side
+information, not natural-language label generation.
+
+Follow-up `n=32` strict-control outcome: the same `audit` endpoint gate passes
+at `n=32` on both frozen surfaces. Core packet accuracy is `0.719` versus best
+source-destroying control `0.281`; holdout packet accuracy is `0.844` versus
+best source-destroying control `0.312`. Random same-byte packets stay at
+`0.031`/`0.094`, deranged public tables stay at `0.000`, and full hidden-log
+relay adds `+159.2 ms`/`+185.8 ms` p50 TTFT versus the packet. This strengthens
+the local byte/TTFT systems case but does not change the literature framing:
+the claim remains source-private protocol-code communication with strict
+controls, not a replacement for prompt compression or server-side KV/cache
+systems baselines.

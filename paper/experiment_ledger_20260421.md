@@ -15020,3 +15020,39 @@ boundary. Subagent audit flagged two next harness risks before promotion:
 strict label accuracy should be separated from diagnostic-code-mapped accuracy,
 and a deranged candidate-diagnostic table control should collapse the packet if
 the prompt-side codebook is destroyed.
+
+Follow-up `2026-04-29`: implemented the endpoint strict-control harness fix.
+`scripts/run_source_private_mac_endpoint_proxy_frontier.py` now reports
+strict-label accuracy separately from diagnostic-code-mapped accuracy and adds
+`random_same_byte_packet` plus `deranged_candidate_diag_table` controls. The
+audit prompt passes the stricter `n=16` gate on both frozen surfaces. Core:
+matched packet `0.750`, target `0.250`, matched-byte text `0.250`, random same-
+byte `0.000`, deranged public table `0.000`, query-aware text `0.812`, JSON
+`0.812`, free text `0.750`, full log `0.312`, full-log p50 TTFT `+278.2 ms`
+versus packet. Holdout: matched packet `0.875`, target `0.312`, matched-byte
+text `0.312`, random same-byte `0.125`, deranged public table `0.000`, query-
+aware text `0.812`, JSON `0.750`, free text `0.875`, full log `0.375`, full-log
+p50 TTFT `+227.1 ms` versus packet. The strict-label caveat is now explicit:
+matched packet strict-label accuracy is `0.062` core and `0.250` holdout, so
+the endpoint receiver is a protocol-code decoder using public side information.
+The CPU systems frontier now has `82` rows. Next gate: run canonical and audit
+strict-control endpoint rows at `n=64`; if both pass, widen to `n=160`.
+
+Follow-up `2026-04-29`: widened the endpoint strict-control audit gate to
+`n=32` on both frozen surfaces without changing the method. Commands used the
+same CPU endpoint-proxy runner with `--prompt-style audit`, `--limit 32`,
+`--max-new-tokens 24`, `--no-enable-thinking`, and output directories
+`results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n32_cpu_audit_strict_controls`
+and
+`results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n32_cpu_audit_strict_controls`.
+Core seed29: matched packet `0.719`, target-only `0.250`, matched-byte text
+`0.281`, random same-byte `0.031`, deranged public table `0.000`, best
+source-destroying control `0.281`, strict-label packet accuracy `0.156`, and
+full-log p50 TTFT `+159.2 ms` versus the packet. Holdout seed30: matched
+packet `0.844`, target-only `0.312`, matched-byte text `0.312`, random
+same-byte `0.094`, deranged public table `0.000`, best source-destroying
+control `0.312`, strict-label packet accuracy `0.219`, and full-log p50 TTFT
+`+185.8 ms` versus the packet. The regenerated CPU systems frontier now has
+`84` rows. This is the strongest local endpoint evidence so far, but it is
+still a protocol-code receiver and local CPU proxy. Next gate: `n=64`
+canonical+audit strict controls; if both pass, widen to `n=160`.

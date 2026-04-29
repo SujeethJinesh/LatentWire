@@ -171,6 +171,32 @@ information contract. Next harness fix before promotion: split strict label
 emission from diagnostic-code-mapped accuracy and add a deranged candidate-
 diagnostic table control.
 
+Update `2026-04-29`: the endpoint harness now includes the strict-label /
+diagnostic-mapped split and two endpoint source-destroying controls:
+`random_same_byte_packet` and `deranged_candidate_diag_table`. The audit prompt
+passes both surfaces at `n=16` under the stricter gate. Core: matched packet
+`0.750`, target `0.250`, best source-destroying control `0.250`, random same-
+byte `0.000`, deranged public table `0.000`. Holdout: matched packet `0.875`,
+target `0.312`, best source-destroying control `0.312`, random same-byte
+`0.125`, deranged public table `0.000`. The important caveat is strict label
+emission: packet strict-label accuracy is only `0.062` core and `0.250`
+holdout, so the endpoint evidence supports protocol-code decoding via public
+side information, not free-form candidate-label generation. The next scale gate
+is `n=64` canonical+audit with strict controls enabled.
+
+Follow-up `2026-04-29`: the same strict-control audit endpoint gate now passes
+at `n=32` on both frozen surfaces. Core: matched packet `0.719`, target
+`0.250`, best source-destroying control `0.281`, random same-byte `0.031`,
+deranged public table `0.000`, and full-log p50 TTFT `+159.2 ms` versus the
+packet. Holdout: matched packet `0.844`, target `0.312`, best
+source-destroying control `0.312`, random same-byte `0.094`, deranged public
+table `0.000`, and full-log p50 TTFT `+185.8 ms`. Strict label-only packet
+accuracy remains low (`0.156` core, `0.219` holdout), so the claim remains
+protocol-code decoding with public side information. The CPU systems frontier
+now has `84` rows. The next exact gate remains `n=64` canonical+audit strict
+controls; if that passes, widen to `n=160` and then run a server-side
+TTFT/throughput benchmark when NVIDIA GPUs are available.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

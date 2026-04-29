@@ -147,6 +147,7 @@ def _endpoint_proxy_row(row_id: str, path: pathlib.Path, *, surface: str) -> dic
     matched = _metric(summary, "matched_packet")
     target = _metric(summary, "target_only")
     matched_text = _metric(summary, "matched_byte_text_2")
+    best_source_control = summary.get("best_source_destroying_control_accuracy", matched_text["accuracy"])
     structured = max(
         _metric(summary, "query_aware_diag_span")["accuracy"],
         _metric(summary, "structured_json_diag")["accuracy"],
@@ -161,7 +162,7 @@ def _endpoint_proxy_row(row_id: str, path: pathlib.Path, *, surface: str) -> dic
         status="pass" if summary["pass_gate"] else "fail",
         accuracy=matched["accuracy"],
         target_accuracy=target["accuracy"],
-        best_control_accuracy=matched_text["accuracy"],
+        best_control_accuracy=best_source_control,
         mean_payload_bytes=matched["mean_payload_bytes"],
         mean_payload_tokens=matched["mean_payload_tokens_proxy"],
         p50_latency_ms=matched["p50_e2e_ms"],
@@ -171,6 +172,8 @@ def _endpoint_proxy_row(row_id: str, path: pathlib.Path, *, surface: str) -> dic
         note=(
             f"n={summary['n']}; prompt_style={summary.get('prompt_style', 'canonical')}; "
             f"packet_minus_target={summary['packet_minus_target_accuracy']:.3f}; "
+            f"packet_strict={summary.get('packet_strict_accuracy', matched.get('strict_accuracy', matched['accuracy'])):.3f}; "
+            f"best_source_control={best_source_control:.3f}; "
             f"query_payload_compression={summary['packet_vs_query_payload_compression']:.1f}x; "
             f"full_log_payload_compression={summary['packet_vs_full_log_payload_compression']:.1f}x; "
             f"full_log_ttft_delta={summary['full_log_ttft_delta_vs_packet_ms']:.1f}ms; "
@@ -631,6 +634,26 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "endpoint_proxy_holdout_n32_audit",
             "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n32_cpu_audit/summary.json",
             "holdout seed30 n32 CPU audit prompt",
+        ),
+        (
+            "endpoint_proxy_core_n16_audit_strict_controls",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n16_cpu_audit_strict_controls/summary.json",
+            "core seed29 n16 CPU audit strict controls",
+        ),
+        (
+            "endpoint_proxy_holdout_n16_audit_strict_controls",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n16_cpu_audit_strict_controls/summary.json",
+            "holdout seed30 n16 CPU audit strict controls",
+        ),
+        (
+            "endpoint_proxy_core_n32_audit_strict_controls",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n32_cpu_audit_strict_controls/summary.json",
+            "core seed29 n32 CPU audit strict controls",
+        ),
+        (
+            "endpoint_proxy_holdout_n32_audit_strict_controls",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n32_cpu_audit_strict_controls/summary.json",
+            "holdout seed30 n32 CPU audit strict controls",
         ),
     ]
     for row_id, rel_path, surface in endpoint_specs:

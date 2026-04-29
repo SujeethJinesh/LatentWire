@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from scripts.run_source_private_mac_endpoint_proxy_frontier import LoadedExample, _prompt, summarize
+from scripts.run_source_private_mac_endpoint_proxy_frontier import (
+    LoadedExample,
+    _candidate_table_for_condition,
+    _parse_candidate_label,
+    _prompt,
+    summarize,
+)
 
 
 def _row(example_id: str, condition: str, *, correct: bool, payload_bytes: int, prompt_tokens: int) -> dict:
@@ -24,6 +30,8 @@ def test_summarize_endpoint_proxy_frontier_passes_packet_rate_case() -> None:
         "target_only",
         "matched_packet",
         "matched_byte_text_2",
+        "random_same_byte_packet",
+        "deranged_candidate_diag_table",
         "query_aware_diag_span",
         "structured_json_diag",
         "structured_free_text_diag",
@@ -37,6 +45,8 @@ def test_summarize_endpoint_proxy_frontier_passes_packet_rate_case() -> None:
                 _row(example_id, "target_only", correct=idx == 0, payload_bytes=0, prompt_tokens=100),
                 _row(example_id, "matched_packet", correct=True, payload_bytes=2, prompt_tokens=101),
                 _row(example_id, "matched_byte_text_2", correct=idx == 0, payload_bytes=2, prompt_tokens=101),
+                _row(example_id, "random_same_byte_packet", correct=idx == 0, payload_bytes=2, prompt_tokens=101),
+                _row(example_id, "deranged_candidate_diag_table", correct=idx == 0, payload_bytes=2, prompt_tokens=101),
                 _row(example_id, "query_aware_diag_span", correct=True, payload_bytes=14, prompt_tokens=105),
                 _row(example_id, "structured_json_diag", correct=True, payload_bytes=21, prompt_tokens=107),
                 _row(example_id, "structured_free_text_diag", correct=True, payload_bytes=17, prompt_tokens=106),
@@ -49,6 +59,7 @@ def test_summarize_endpoint_proxy_frontier_passes_packet_rate_case() -> None:
     assert summary["pass_gate"] is True
     assert summary["prompt_style"] == "canonical"
     assert summary["packet_minus_target_accuracy"] == 0.75
+    assert summary["packet_minus_best_source_destroying_control_accuracy"] == 0.75
     assert summary["packet_vs_query_payload_compression"] == 7.0
     assert summary["full_log_prompt_token_delta_vs_packet"] == 89
 
@@ -71,3 +82,21 @@ def test_prompt_styles_preserve_public_side_information_contract() -> None:
         assert "Candidate A" in prompt
         assert "Candidate B" in prompt
         assert "handles_repair_diag" in prompt
+
+
+def test_deranged_candidate_table_breaks_diagnostic_mapping() -> None:
+    example = LoadedExample(
+        example_id="ex",
+        answer_label="Candidate B",
+        diagnostic_code="G0",
+        private_test_log="REPAIR_DIAG=G0",
+        candidates=(
+            {"label": "Candidate A", "handles_diagnostic": "G1", "prior_score": 0.9},
+            {"label": "Candidate B", "handles_diagnostic": "G0", "prior_score": 0.1},
+        ),
+    )
+    normal = _candidate_table_for_condition(example, condition="matched_packet")
+    deranged = _candidate_table_for_condition(example, condition="deranged_candidate_diag_table")
+
+    assert _parse_candidate_label("G0", normal) == "Candidate B"
+    assert _parse_candidate_label("G0", deranged) == "Candidate A"

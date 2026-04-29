@@ -20,6 +20,8 @@ CONDITIONS = (
     "target_only",
     "matched_packet",
     "matched_byte_text_2",
+    "random_same_byte_packet",
+    "deranged_candidate_diag_table",
     "query_aware_diag_span",
     "structured_json_diag",
     "structured_free_text_diag",
@@ -58,10 +60,22 @@ def _prior_prediction(example: LoadedExample) -> str:
     return max(example.candidates, key=lambda row: float(row["prior_score"]))["label"]
 
 
+def _random_same_byte_packet(example: LoadedExample) -> str:
+    diagnostics = [str(candidate["handles_diagnostic"]) for candidate in example.candidates]
+    alternatives = [diagnostic for diagnostic in diagnostics if diagnostic != example.diagnostic_code]
+    if alternatives:
+        return sorted(alternatives)[0]
+    return "Z9" if example.diagnostic_code != "Z9" else "Z8"
+
+
 def _payload_for_condition(example: LoadedExample, *, condition: str) -> str:
     if condition == "target_only":
         return ""
     if condition == "matched_packet":
+        return example.diagnostic_code
+    if condition == "random_same_byte_packet":
+        return _random_same_byte_packet(example)
+    if condition == "deranged_candidate_diag_table":
         return example.diagnostic_code
     if condition == "matched_byte_text_2":
         return f"REPAIR_DIAG={example.diagnostic_code}".encode("utf-8")[:2].decode("utf-8", errors="ignore")
@@ -76,10 +90,22 @@ def _payload_for_condition(example: LoadedExample, *, condition: str) -> str:
     raise ValueError(f"unknown condition {condition!r}")
 
 
-def _prompt(example: LoadedExample, *, payload: str, prompt_style: str) -> str:
+def _candidate_table_for_condition(example: LoadedExample, *, condition: str) -> tuple[dict[str, Any], ...]:
+    candidates = [dict(candidate) for candidate in example.candidates]
+    if condition != "deranged_candidate_diag_table" or len(candidates) < 2:
+        return tuple(candidates)
+    diagnostics = [candidate["handles_diagnostic"] for candidate in candidates]
+    shifted = diagnostics[1:] + diagnostics[:1]
+    for candidate, diagnostic in zip(candidates, shifted):
+        candidate["handles_diagnostic"] = diagnostic
+    return tuple(candidates)
+
+
+def _prompt(example: LoadedExample, *, payload: str, prompt_style: str, condition: str = "matched_packet") -> str:
+    prompt_candidates = _candidate_table_for_condition(example, condition=condition)
     candidate_rows = "\n".join(
         f"- {candidate['label']}: handles_repair_diag={candidate['handles_diagnostic']}"
-        for candidate in example.candidates
+        for candidate in prompt_candidates
     )
     if prompt_style == "canonical":
         return (
@@ -145,20 +171,28 @@ def _load_model(model_name: str, *, device: str, dtype: str) -> tuple[Any, Any]:
     return tokenizer, model
 
 
-def _parse_candidate_label(generated: str, example: LoadedExample) -> str:
+def _parse_strict_candidate_label(generated: str, candidates: tuple[dict[str, Any], ...]) -> str:
     stripped = generated.strip()
-    for candidate in example.candidates:
+    for candidate in candidates:
         label = candidate["label"]
         if stripped == label:
             return label
-    for candidate in example.candidates:
+    for candidate in candidates:
         label = candidate["label"]
         if re.search(rf"(?<!\w){re.escape(label)}(?!\w)", stripped):
             return label
+    return ""
+
+
+def _parse_candidate_label(generated: str, candidates: tuple[dict[str, Any], ...]) -> str:
+    strict = _parse_strict_candidate_label(generated, candidates)
+    if strict:
+        return strict
+    stripped = generated.strip()
     diag_match = re.search(r"\b(?:REPAIR_DIAG\s*=\s*)?([A-Z][0-9])\b", stripped)
     if diag_match:
         diag = diag_match.group(1)
-        matches = [candidate for candidate in example.candidates if candidate["handles_diagnostic"] == diag]
+        matches = [candidate for candidate in candidates if candidate["handles_diagnostic"] == diag]
         if len(matches) == 1:
             return matches[0]["label"]
     return ""
@@ -217,7 +251,8 @@ def run_frontier(
     for example in examples:
         for condition in conditions:
             payload = _payload_for_condition(example, condition=condition)
-            raw_prompt = _prompt(example, payload=payload, prompt_style=prompt_style)
+            prompt_candidates = _candidate_table_for_condition(example, condition=condition)
+            raw_prompt = _prompt(example, payload=payload, prompt_style=prompt_style, condition=condition)
             text_prompt = _format_prompt(tokenizer, raw_prompt, enable_thinking=enable_thinking)
             prompt_tokens = len(tokenizer(text_prompt)["input_ids"])
             generated, generated_tokens, ttft_ms, e2e_ms = _generate_one(
@@ -227,7 +262,8 @@ def run_frontier(
                 prompt=text_prompt,
                 max_new_tokens=max_new_tokens,
             )
-            prediction = _parse_candidate_label(generated, example)
+            strict_prediction = _parse_strict_candidate_label(generated, prompt_candidates)
+            prediction = _parse_candidate_label(generated, prompt_candidates)
             rows.append(
                 {
                     "example_id": example.example_id,
@@ -242,9 +278,12 @@ def run_frontier(
                     "prompt_tokens": prompt_tokens,
                     "generated_text": generated,
                     "generated_tokens": generated_tokens,
+                    "strict_prediction": strict_prediction,
                     "prediction": prediction,
                     "correct": prediction == example.answer_label,
+                    "strict_correct": strict_prediction == example.answer_label,
                     "valid_prediction": bool(prediction),
+                    "strict_valid_prediction": bool(strict_prediction),
                     "ttft_ms": ttft_ms,
                     "e2e_ms": e2e_ms,
                 }
@@ -288,7 +327,10 @@ def summarize(rows: list[dict[str, Any]], *, conditions: list[str], prompt_style
         metrics[condition] = {
             "correct": sum(1 for row in condition_rows if row["correct"]),
             "accuracy": sum(1 for row in condition_rows if row["correct"]) / len(condition_rows),
+            "strict_correct": sum(1 for row in condition_rows if row.get("strict_correct", row["correct"])),
+            "strict_accuracy": sum(1 for row in condition_rows if row.get("strict_correct", row["correct"])) / len(condition_rows),
             "valid_prediction_rate": statistics.fmean(float(row["valid_prediction"]) for row in condition_rows),
+            "strict_valid_prediction_rate": statistics.fmean(float(row.get("strict_valid_prediction", row["valid_prediction"])) for row in condition_rows),
             "mean_payload_bytes": statistics.fmean(row["payload_bytes"] for row in condition_rows),
             "mean_payload_tokens_proxy": statistics.fmean(row["payload_tokens_proxy"] for row in condition_rows),
             "mean_prompt_bytes": statistics.fmean(row["prompt_bytes"] for row in condition_rows),
@@ -304,6 +346,12 @@ def summarize(rows: list[dict[str, Any]], *, conditions: list[str], prompt_style
     full_log = metrics["full_hidden_log"]
     query = metrics["query_aware_diag_span"]
     text_at_packet = metrics["matched_byte_text_2"]
+    source_destroying_controls = [
+        name
+        for name in ("matched_byte_text_2", "random_same_byte_packet", "deranged_candidate_diag_table")
+        if name in metrics
+    ]
+    best_source_destroying_control_accuracy = max(metrics[name]["accuracy"] for name in source_destroying_controls)
     return {
         "n": len(example_ids),
         "conditions": conditions,
@@ -312,6 +360,10 @@ def summarize(rows: list[dict[str, Any]], *, conditions: list[str], prompt_style
         "exact_id_sha256": hashlib.sha256("\n".join(example_ids).encode("utf-8")).hexdigest(),
         "packet_minus_target_accuracy": packet["accuracy"] - target["accuracy"],
         "packet_minus_matched_byte_text_accuracy": packet["accuracy"] - text_at_packet["accuracy"],
+        "packet_strict_accuracy": packet["strict_accuracy"],
+        "packet_strict_minus_target_accuracy": packet["strict_accuracy"] - target["strict_accuracy"],
+        "best_source_destroying_control_accuracy": best_source_destroying_control_accuracy,
+        "packet_minus_best_source_destroying_control_accuracy": packet["accuracy"] - best_source_destroying_control_accuracy,
         "packet_vs_query_payload_compression": query["mean_payload_bytes"] / max(packet["mean_payload_bytes"], 1e-9),
         "packet_vs_full_log_payload_compression": full_log["mean_payload_bytes"] / max(packet["mean_payload_bytes"], 1e-9),
         "packet_prompt_token_delta_vs_target": packet["mean_prompt_tokens"] - target["mean_prompt_tokens"],
@@ -319,14 +371,17 @@ def summarize(rows: list[dict[str, Any]], *, conditions: list[str], prompt_style
         "full_log_ttft_delta_vs_packet_ms": full_log["p50_ttft_ms"] - packet["p50_ttft_ms"],
         "full_log_e2e_delta_vs_packet_ms": full_log["p50_e2e_ms"] - packet["p50_e2e_ms"],
         "pass_gate": (
-            packet["accuracy"] >= target["accuracy"] + 0.15
-            and text_at_packet["accuracy"] <= target["accuracy"] + 0.05
+            len(rows) == len(example_ids) * len(conditions)
+            and packet["accuracy"] >= target["accuracy"] + 0.15
+            and best_source_destroying_control_accuracy <= target["accuracy"] + 0.05
+            and packet["valid_prediction_rate"] >= 0.95
             and query["mean_payload_bytes"] > packet["mean_payload_bytes"]
             and full_log["mean_payload_bytes"] > packet["mean_payload_bytes"]
         ),
         "pass_rule": (
-            "Packet must beat target by >=0.15, matched-byte text must stay within target+0.05, "
-            "and query-aware/full-log payloads must be larger than the packet. Latency is reported, not gated."
+            "Packet must beat target by >=0.15, all included source-destroying controls must stay within "
+            "target+0.05, matched packet valid rate must be >=0.95, exact ID parity must hold, and "
+            "query-aware/full-log payloads must be larger than the packet. Latency is reported, not gated."
         ),
         "metrics": metrics,
     }
@@ -352,17 +407,20 @@ def _write_markdown(path: pathlib.Path, summary: dict[str, Any]) -> None:
         f"- prompt style: `{summary['prompt_style']}`",
         f"- pass gate: `{summary['pass_gate']}`",
         f"- packet minus target accuracy: `{summary['packet_minus_target_accuracy']:.3f}`",
+        f"- packet strict-label accuracy: `{summary['packet_strict_accuracy']:.3f}`",
+        f"- best source-destroying control accuracy: `{summary['best_source_destroying_control_accuracy']:.3f}`",
         f"- packet vs query-aware payload compression: `{summary['packet_vs_query_payload_compression']:.1f}x`",
         f"- packet vs full-log payload compression: `{summary['packet_vs_full_log_payload_compression']:.1f}x`",
         f"- full-log p50 TTFT delta vs packet: `{summary['full_log_ttft_delta_vs_packet_ms']:.2f} ms`",
         f"- full-log p50 E2E delta vs packet: `{summary['full_log_e2e_delta_vs_packet_ms']:.2f} ms`",
         "",
-        "| Condition | Accuracy | Valid | Payload bytes | Prompt tokens | p50 TTFT ms | p50 E2E ms |",
-        "|---|---:|---:|---:|---:|---:|---:|",
+        "| Condition | Accuracy | Strict accuracy | Valid | Payload bytes | Prompt tokens | p50 TTFT ms | p50 E2E ms |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for condition, metric in summary["metrics"].items():
         lines.append(
-            f"| {condition} | {metric['accuracy']:.3f} | {metric['valid_prediction_rate']:.3f} | "
+            f"| {condition} | {metric['accuracy']:.3f} | {metric['strict_accuracy']:.3f} | "
+            f"{metric['valid_prediction_rate']:.3f} | "
             f"{metric['mean_payload_bytes']:.1f} | {metric['mean_prompt_tokens']:.1f} | "
             f"{metric['p50_ttft_ms']:.2f} | {metric['p50_e2e_ms']:.2f} |"
         )

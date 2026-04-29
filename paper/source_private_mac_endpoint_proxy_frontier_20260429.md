@@ -25,6 +25,10 @@ fixed across conditions.
 - `matched_packet`: two-character private diagnostic packet.
 - `matched_byte_text_2`: structured text relay truncated to the same two-byte
   budget.
+- `random_same_byte_packet`: random valid-looking two-character packet with
+  the same payload budget.
+- `deranged_candidate_diag_table`: matched packet with the public candidate
+  diagnostic table deranged.
 - `query_aware_diag_span`: shortest query-aware diagnostic-span text.
 - `structured_json_diag`: JSON diagnostic relay.
 - `structured_free_text_diag`: free-text diagnostic relay.
@@ -77,6 +81,28 @@ fixed across conditions.
 | holdout n32 audit | target-only | 0.312 | 0.0 | 193.3 | 455.7 | 1985.8 |
 | holdout n32 audit | matched packet | 0.844 | 2.0 | 193.3 | 452.1 | 821.8 |
 | holdout n32 audit | matched-byte text | 0.312 | 2.0 | 192.3 | 434.8 | 1954.5 |
+| core n16 audit strict controls | target-only | 0.250 | 0.0 | 193.4 | 753.8 | 2917.7 |
+| core n16 audit strict controls | matched packet | 0.750 | 2.0 | 193.4 | 727.7 | 1067.1 |
+| core n16 audit strict controls | strict-label matched packet | 0.062 | 2.0 | 193.4 | 727.7 | 1067.1 |
+| core n16 audit strict controls | random same-byte packet | 0.000 | 2.0 | 193.4 | 649.1 | 1761.5 |
+| core n16 audit strict controls | deranged public table | 0.000 | 2.0 | 193.4 | 822.5 | 1278.9 |
+| holdout n16 audit strict controls | target-only | 0.312 | 0.0 | 193.3 | 478.5 | 2025.1 |
+| holdout n16 audit strict controls | matched packet | 0.875 | 2.0 | 193.3 | 461.2 | 858.3 |
+| holdout n16 audit strict controls | strict-label matched packet | 0.250 | 2.0 | 193.3 | 461.2 | 858.3 |
+| holdout n16 audit strict controls | random same-byte packet | 0.125 | 2.0 | 193.3 | 458.5 | 2118.4 |
+| holdout n16 audit strict controls | deranged public table | 0.000 | 2.0 | 193.3 | 450.0 | 1338.4 |
+| core n32 audit strict controls | target-only | 0.250 | 0.0 | 193.3 | 468.5 | 2051.1 |
+| core n32 audit strict controls | matched packet | 0.719 | 2.0 | 193.3 | 460.8 | 789.1 |
+| core n32 audit strict controls | strict-label matched packet | 0.156 | 2.0 | 193.3 | 460.8 | 789.1 |
+| core n32 audit strict controls | matched-byte text | 0.281 | 2.0 | 192.3 | 451.3 | 1950.0 |
+| core n32 audit strict controls | random same-byte packet | 0.031 | 2.0 | 193.3 | 493.2 | 1928.1 |
+| core n32 audit strict controls | deranged public table | 0.000 | 2.0 | 193.3 | 447.5 | 856.1 |
+| holdout n32 audit strict controls | target-only | 0.312 | 0.0 | 193.3 | 469.9 | 2037.7 |
+| holdout n32 audit strict controls | matched packet | 0.844 | 2.0 | 193.3 | 461.2 | 736.0 |
+| holdout n32 audit strict controls | strict-label matched packet | 0.219 | 2.0 | 193.3 | 461.2 | 736.0 |
+| holdout n32 audit strict controls | matched-byte text | 0.312 | 2.0 | 192.3 | 447.8 | 2000.6 |
+| holdout n32 audit strict controls | random same-byte packet | 0.094 | 2.0 | 193.3 | 464.6 | 1441.5 |
+| holdout n32 audit strict controls | deranged public table | 0.000 | 2.0 | 193.3 | 463.8 | 857.4 |
 
 Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
 
@@ -97,6 +123,17 @@ Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
 - terse paraphrase `n=16`: core packet collapses to target-only (`0.250`),
   showing that the receiver needs a sufficiently explicit public side-
   information contract.
+- strict-control audit `n=16`: both surfaces pass after adding random same-byte
+  and deranged public diagnostic-table controls. Core matched packet is `0.750`
+  versus best source-destroying control `0.250`; holdout matched packet is
+  `0.875` versus best source-destroying control `0.312`. The deranged-table
+  control collapses to `0.000` on both surfaces, confirming that destroying the
+  public codebook destroys the packet signal.
+- strict-control audit `n=32`: both surfaces still pass. Core matched packet is
+  `0.719` versus best source-destroying control `0.281`; holdout matched packet
+  is `0.844` versus best source-destroying control `0.312`. Random same-byte
+  controls stay at `0.031`/`0.094`, deranged public-table controls stay at
+  `0.000`, and full-log p50 TTFT is `+159.2 ms`/`+185.8 ms` versus the packet.
 
 ## Interpretation
 
@@ -111,27 +148,31 @@ CPU proxy because verbose relays often cause the model to emit fewer completion
 tokens; TTFT and byte/prompt-token deltas are the safer systems readout.
 
 The first attempted run exposed a useful harness issue: Qwen sometimes emitted
-the diagnostic code (`G0`) rather than a candidate label. The parser now maps a
-unique emitted diagnostic code back to the candidate whose public
-`handles_repair_diag` field matches it. This is auditable and preserves the
-target-side public-side-information interpretation, but the next harness should
-report strict-label accuracy and diagnostic-mapped accuracy separately.
+the diagnostic code (`G0`) rather than a candidate label. The harness now
+reports strict-label accuracy separately from diagnostic-mapped accuracy. Under
+the strict-control audit prompt, packet strict-label accuracy is only `0.062`
+core and `0.250` holdout at `n=16`, and `0.156` core / `0.219` holdout at
+`n=32`, while diagnostic-mapped accuracy is `0.750`/`0.875` at `n=16` and
+`0.719`/`0.844` at `n=32`. The correct claim is therefore protocol-code
+decoding using public side information, not free-form candidate-label
+generation.
 
 ## Reviewer Caveats
 
-- This is an `n=32 + n=32` prompt-paraphrase endpoint-proxy smoke plus earlier
-  canonical rows, not a large benchmark.
+- This is an `n=32 + n=32` prompt-paraphrase endpoint-proxy gate with strict
+  source-destroying controls, not a large benchmark.
 - Timing is local CPU generate timing, not real vLLM/OpenAI-compatible serving
   TTFT or throughput.
-- The receiver prompt explicitly describes the packet interface, so the next
-  robustness gate should test canonical and audit prompts at an `n=64`/`n=160`
-  slice and add strict-label-vs-diagnostic-mapped reporting.
+- The receiver prompt explicitly describes the packet interface. The next
+  robustness gate should scale canonical/audit prompts and the strict controls
+  to `n=64` or `n=160`.
 - Verbose relays remain strong accuracy oracles; our claim is rate efficiency
   and source-control cleanliness, not dominance over all higher-byte relays.
 
 ## Next Gate
 
-Run the same endpoint-proxy gate at `n=64` or `n=160` with prompt paraphrase
-stress and, when NVIDIA GPUs are available, a server-side vLLM/GenAI-Perf style
-TTFT/throughput benchmark against structured text, query-aware text, full-log
-relay, and KV/cache transport baselines.
+Run the same endpoint-proxy strict-control gate at `n=64` with canonical and
+audit prompts. If both pass, widen to `n=160`; when NVIDIA GPUs are available,
+run a server-side vLLM/GenAI-Perf style TTFT/throughput benchmark against
+structured text, query-aware text, full-log relay, and KV/cache transport
+baselines.
