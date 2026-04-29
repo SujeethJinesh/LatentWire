@@ -15462,3 +15462,25 @@ lookup as an explanation for the positive row, but it also reinforces the
 scoped claim that the current packet needs public side information. Next exact
 gate remains `n=160` label-blind confirmation or a materially different shared
 sparse crosscoder packet with atom knockout.
+
+Follow-up `2026-04-29`: implemented and ran the first shared sparse
+crosscoder-inspired source-private packet gate. New files:
+`scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py`,
+`tests/test_run_source_private_shared_sparse_crosscoder_packet_gate.py`,
+`paper/source_private_shared_sparse_crosscoder_packet_gate_20260429.md`, and
+`references/500_shared_sparse_crosscoder_packet_refs_20260429.md`. Command:
+`./venv_arm64/bin/python scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py --output-dir results/source_private_shared_sparse_crosscoder_packet_gate_20260429 --budgets 4 8 --train-examples 256 --eval-examples 128 --seed 29`.
+Outcome: pass. The gate evaluates core -> holdout, holdout -> core, and
+same-family all surfaces at `n=128` each. Cross-family passes bidirectionally:
+core -> holdout reaches `1.000` accuracy at `4/8` bytes versus target and best
+control `0.250`; holdout -> core reaches `0.875` at `8` bytes versus target and
+best control `0.250`; same-family reaches `0.938`. The minimum passing paired
+CI95 lower bound versus target is `+0.539`, all source-destroying controls stay
+at target, and top-atom knockout removes `100%` of the matched-minus-target
+lift. Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_shared_sparse_crosscoder_packet_gate.py -q`
+passed. Interpretation: this is the first strict-small positive learned-method
+successor after the endpoint protocol. It is still a controlled
+crosscoder-inspired shared dictionary, not a trained neural crosscoder over LLM
+activations. Next exact gate: seed-repeat confirmation at seed `31`, then a
+larger frozen slice or learned shared-dictionary variant.

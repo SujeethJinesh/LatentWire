@@ -102,6 +102,10 @@
   and `n=8`/`n=32` core/holdout stress artifacts showing opaque diagnostic
   payloads collapse to target when public repair-key tables and original labels
   are hidden, with paired bootstrap upper bounds recorded for the collapse.
+- Shared sparse crosscoder-inspired packet script, test, references, memo, and
+  strict-small bidirectional cross-family artifacts showing `4/8` byte
+  source-private atom packets beat target and all source-destroying controls
+  with paired uncertainty and top-atom knockout diagnostics.
 
 ## Notes
 

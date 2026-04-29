@@ -999,5 +999,12 @@
     "path": "references/499_systems_caveat_frontier_refs_20260429.md",
     "status": "local_memo",
     "reason": "Primary-source systems-caveat memo for the Mac-local endpoint frontier, KV/cache byte-floor comparisons, serving metric conventions, and diffusion/JEPA-inspired future learned packet methods."
+  },
+  {
+    "num": 500,
+    "slug": "shared_sparse_crosscoder_packet_refs_20260429",
+    "path": "references/500_shared_sparse_crosscoder_packet_refs_20260429.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the shared sparse crosscoder packet gate, covering sparse crosscoders, universal SAEs, SPARC, SAEBench, random-SAE interpretability cautions, relative representations, C2C, QJL, and Wyner-Ziv framing."
   }
 ]

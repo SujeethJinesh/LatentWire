@@ -2633,3 +2633,19 @@ systems byte frontier, with explicit negative boundaries. The exact remaining
 blocker is method depth and external validity: either scale the label-blind
 collapse check to `n=160`, or implement the shared sparse crosscoder packet with
 atom knockout to test a less table-shaped learned communication method.
+
+Follow-up `2026-04-29`: the shared sparse crosscoder-inspired packet gate has
+now passed strict-small bidirectional cross-family controls. At `n=128` per
+surface, the `4/8` byte source-private atom packet reaches `1.000` on core ->
+holdout, `0.875` on holdout -> core at the passing `8` byte budget, and `0.938`
+same-family, while target-only and the best source-destroying controls remain
+at `0.250`. The minimum passing paired CI95 lower bound versus target is
+`+0.539`, and top-atom knockout removes all lift. This materially improves the
+method-depth story: the paper can now claim a second, interpretable
+source-private communication interface beyond the diagnostic-table endpoint.
+
+Readiness remains short of full ICLR because this is still a controlled
+shared-dictionary packet rather than a learned neural crosscoder over LLM
+activations. Next exact blocker: seed-repeat stability for the shared sparse
+packet, followed by either a larger frozen slice or a learned shared-dictionary
+variant with the same controls.
