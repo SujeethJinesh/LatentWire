@@ -119,5 +119,13 @@ The new `label_strict` receiver prompt passes `n=16`, `n=32`, and `n=64` on
 core and holdout with exact-label outputs and valid rate `1.000`. At `n=64`,
 core reaches packet `0.703` versus target/control `0.250`, and holdout reaches
 packet `0.672` versus target/control `0.250`. It is now the live endpoint
-branch: add paired uncertainty, then scale to `n=160`, before claiming endpoint
-receiver robustness.
+branch.
+
+Paired uncertainty on the `n=64` label-strict rows now passes with `5000`
+bootstrap samples. The minimum packet-vs-target and packet-vs-best-source-
+destroying-control lower CIs are both `+0.297`; the minimum strict-label
+packet-vs-target lower CI is `+0.281`; packet valid rate is `1.000`. Query-aware
+diagnostic text is accuracy-comparable but costs `14` bytes versus the `2` byte
+packet, so it should be framed as a rate/quality comparator. This changes the
+next experiment to frozen `n=160` label-strict core+holdout before endpoint
+receiver robustness is promoted further.

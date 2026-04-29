@@ -2428,3 +2428,16 @@ holdout-to-core passes for RASP, but core-to-holdout fails below target with
 failed controls. Readiness does not improve to full ICLR yet. The next exact
 method gate should canonicalize candidate order and/or train a
 consistency/JEPA-style posterior packet; do not claim RASP as cross-family.
+
+Follow-up `2026-04-29`: paired uncertainty now strengthens the live endpoint
+receiver branch. The `n=64` label-strict endpoint rows pass a `5000`-sample
+paired bootstrap gate across core and holdout: minimum packet-vs-target lower
+CI is `+0.297`, minimum packet-vs-best-source-destroying-control lower CI is
+`+0.297`, minimum strict-label packet-vs-target lower CI is `+0.281`, and
+packet valid rate is `1.000`. Query-aware diagnostic text remains
+accuracy-comparable, but it uses `14` bytes versus the packet's `2` bytes, so
+the claim is a Pareto/rate-quality systems claim rather than an accuracy win
+over all higher-byte relays. Readiness improves on the statistics/reviewer-risk
+axis, but full ICLR readiness still needs the same `label_strict` gate at
+`n=160`, a true server TTFT/throughput benchmark when GPU serving is available,
+and a stronger learned receiver/method story beyond a hand-designed interface.

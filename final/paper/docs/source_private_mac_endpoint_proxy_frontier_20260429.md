@@ -169,6 +169,13 @@ Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
   source-destroying control `0.250`; valid prediction rate is `1.000` on both.
   Full-log p50 TTFT is `+217.2 ms` core and `+192.7 ms` holdout versus the
   packet.
+- paired uncertainty for the `n=64` label-strict rows passes with `5000`
+  bootstrap samples. The minimum packet-vs-target lower CI is `+0.297`, the
+  minimum packet-vs-best-source-destroying-control lower CI is `+0.297`, and
+  the minimum strict-label packet-vs-target lower CI is `+0.281`. Query-aware
+  diagnostic text is accuracy-comparable (`packet-query` CI ranges from
+  `[-0.109, 0.078]`) but costs `14` bytes rather than the `2` byte packet, so
+  it remains a rate/quality comparator, not a failed control.
 
 ## Interpretation
 
@@ -205,8 +212,7 @@ full candidate label copied exactly; at `n=64`, packet strict-label accuracy is
 
 ## Next Gate
 
-Run paired uncertainty on the `n=64` label-strict endpoint rows, then widen the
-same frozen gate to `n=160`; when NVIDIA GPUs are available,
-run a server-side vLLM/GenAI-Perf style TTFT/throughput benchmark against
-structured text, query-aware text, full-log relay, and KV/cache transport
-baselines.
+Widen the same frozen `label_strict` gate to `n=160`; when NVIDIA GPUs are
+available, run a server-side vLLM/GenAI-Perf style TTFT/throughput benchmark
+against structured text, query-aware text, full-log relay, and KV/cache
+transport baselines.

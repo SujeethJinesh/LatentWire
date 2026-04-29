@@ -213,3 +213,12 @@ target/control `0.250`; packet valid rate is `1.000` on both, and full-log p50
 TTFT is `+217.2 ms`/`+192.7 ms` slower than the packet. The next experiment is
 paired uncertainty on these n64 rows, then frozen `n=160` label-strict
 core+holdout.
+
+Uncertainty follow-up: the paired bootstrap gate passes on the `n=64`
+label-strict rows. Minimum packet-vs-target lower CI is `+0.297`, minimum
+packet-vs-best-source-destroying-control lower CI is `+0.297`, and minimum
+strict-label packet-vs-target lower CI is `+0.281`. Exact sign tests have zero
+packet losses versus target-only on both core and holdout. Query-aware text is
+kept as a rate/quality comparator because it is accuracy-comparable but uses
+`14` bytes rather than the packet's `2` bytes. The next experiment is now
+frozen `n=160` label-strict core+holdout.

@@ -183,6 +183,49 @@ def _endpoint_proxy_row(row_id: str, path: pathlib.Path, *, surface: str) -> dic
     )
 
 
+def _endpoint_uncertainty_row(row_id: str, path: pathlib.Path, *, surface: str) -> dict[str, Any]:
+    payload = _read_json(path)
+    rows = payload["rows"]
+    packet_accuracy = sum(row["packet_accuracy"] for row in rows) / len(rows)
+    target_accuracy = sum(row["target_accuracy"] for row in rows) / len(rows)
+    best_control_accuracy = sum(row["best_source_destroying_control_accuracy"] for row in rows) / len(rows)
+    payload_bytes = sum(row["packet_payload_bytes"] for row in rows) / len(rows)
+    valid_rate = sum(row["packet_valid_rate"] for row in rows) / len(rows)
+    ttft_deltas = [row["full_log_ttft_delta_vs_packet_ms"] for row in rows]
+    query_cis = [
+        row["comparisons"]["query_aware_diag_span"]["delta_bootstrap95"]["ci95_low"]
+        for row in rows
+    ]
+    query_highs = [
+        row["comparisons"]["query_aware_diag_span"]["delta_bootstrap95"]["ci95_high"]
+        for row in rows
+    ]
+    return _row(
+        row_id=row_id,
+        contribution="endpoint paired uncertainty",
+        method="label-strict endpoint paired bootstrap",
+        surface=surface,
+        status="pass" if payload["pass_gate"] else "fail",
+        accuracy=packet_accuracy,
+        target_accuracy=target_accuracy,
+        best_control_accuracy=best_control_accuracy,
+        mean_payload_bytes=payload_bytes,
+        mean_payload_tokens=1.0,
+        p50_latency_ms=None,
+        valid_rate=valid_rate,
+        ci95_low_vs_target=payload["min_packet_vs_target_ci95_low"],
+        ci95_low_vs_comparator=payload["min_packet_vs_best_control_ci95_low"],
+        comparator="target / best source-destroying control / query-aware text",
+        note=(
+            f"bootstrap={payload['bootstrap_samples']}; "
+            f"min_strict_vs_target_ci95_low={payload['min_strict_packet_vs_target_ci95_low']:.3f}; "
+            f"full_log_ttft_delta={min(ttft_deltas):.1f}-{max(ttft_deltas):.1f}ms; "
+            f"query_text_delta_ci_range=[{min(query_cis):.3f},{max(query_highs):.3f}] and is a "
+            "rate-quality comparator at 14 bytes vs 2-byte packet"
+        ),
+    )
+
+
 def _slot_packet_rows(path: pathlib.Path) -> list[dict[str, Any]]:
     payload = _read_json(path)
     return [
@@ -693,6 +736,13 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
     ]
     for row_id, rel_path, surface in endpoint_specs:
         rows.append(_endpoint_proxy_row(row_id, ROOT / rel_path, surface=surface))
+    rows.append(
+        _endpoint_uncertainty_row(
+            "endpoint_label_strict_n64_paired_uncertainty",
+            ROOT / "results/source_private_endpoint_uncertainty_20260429/label_strict_n64/summary.json",
+            surface="core+holdout n64 label-strict",
+        )
+    )
     pass_rows = [row for row in rows if row["status"] == "pass"]
     fail_rows = [row for row in rows if row["status"] in {"fail", "near-miss"}]
     payload = {

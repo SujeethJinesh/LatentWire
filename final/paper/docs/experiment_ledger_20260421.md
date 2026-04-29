@@ -15108,3 +15108,23 @@ strict-label accuracy `0.656`, and full-log p50 TTFT `+192.7 ms` versus the
 packet. The CPU systems frontier now has `91` rows. This clears the local n64
 endpoint receiver rung and makes paired uncertainty plus n160 the next
 reviewer-facing blockers.
+
+Follow-up `2026-04-29`: added the paired uncertainty gate for the live
+`label_strict` endpoint receiver. Command:
+`./venv_arm64/bin/python scripts/summarize_source_private_endpoint_uncertainty.py --result-dirs results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n64_cpu_label_strict_controls results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n64_cpu_label_strict_controls --output-dir results/source_private_endpoint_uncertainty_20260429/label_strict_n64 --bootstrap-samples 5000 --seed 20260429`.
+Artifact hashes: `summary.json`
+`94d9c6b652f23214c7b608685aa385fa2e230f726278246f41609befb48edfd6`,
+`summary.md`
+`7dea90eb80f8d03200bca596ce257b211440ca97e3838e4ba4f946516c566920`.
+Outcome: pass. Across core and holdout, the minimum packet-vs-target lower CI
+is `+0.297`, the minimum packet-vs-best-source-destroying-control lower CI is
+`+0.297`, the minimum strict-label packet-vs-target lower CI is `+0.281`, and
+valid rate is `1.000`. Exact sign tests have zero packet losses versus
+target-only on both surfaces (`29/0/35` and `27/0/37` wins/losses/ties). The
+CPU systems frontier was regenerated with a new endpoint uncertainty row,
+raising the aggregate to `92` rows (`cpu_systems_frontier.json`
+`d24b49a1694ae02ad924f283ff6c5dbc74083019b18bad368046ef16b980e4ba`).
+Query-aware text remains an accuracy-comparable `14` byte rate/quality
+comparator, not a destructive control failure. Next exact gate: frozen
+`label_strict` endpoint core+holdout at `n=160`, then server TTFT/throughput
+when GPU serving is available.

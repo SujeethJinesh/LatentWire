@@ -519,3 +519,6 @@ final-paper framing:
 - `490_`: Mac endpoint-proxy byte/TTFT frontier references, positioning packet
   relay against vLLM/PagedAttention, LLMLingua-family prompt compression, KV
   cache compression, and cache-transport baselines.
+- `491_`: Payload-gated endpoint receiver references and future-method memo,
+  including label-strict receiver promotion, paired uncertainty, systems
+  baselines, and denoising WZ / TurboQJL / relative-stitcher follow-up paths.

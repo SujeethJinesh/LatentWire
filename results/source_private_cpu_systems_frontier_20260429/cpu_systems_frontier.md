@@ -1,7 +1,7 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `91`
-- pass rows: `53`
+- rows: `92`
+- pass rows: `54`
 - fail / near-miss rows: `38`
 - minimum passing accuracy: `0.373`
 - maximum passing payload bytes: `8.0`
@@ -102,6 +102,7 @@
 | Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n32 CPU label-strict controls | `pass` | 0.656 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=32; prompt_style=label_strict; packet_minus_target=0.406; packet_strict=0.625; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=167.1ms; full_log_e2e_delta=335.5ms; best_verbose_relay=0.688 |
 | Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n64 CPU label-strict controls | `pass` | 0.703 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=64; prompt_style=label_strict; packet_minus_target=0.453; packet_strict=0.672; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=217.2ms; full_log_e2e_delta=294.2ms; best_verbose_relay=0.719 |
 | Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n64 CPU label-strict controls | `pass` | 0.672 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=64; prompt_style=label_strict; packet_minus_target=0.422; packet_strict=0.656; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=192.7ms; full_log_e2e_delta=279.0ms; best_verbose_relay=0.719 |
+| endpoint paired uncertainty | label-strict endpoint paired bootstrap | core+holdout n64 label-strict | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | 0.297 | bootstrap=5000; min_strict_vs_target_ci95_low=0.281; full_log_ttft_delta=192.7-217.2ms; query_text_delta_ci_range=[-0.109,0.078] and is a rate-quality comparator at 14 bytes vs 2-byte packet |
 
 ## Caveat
 
