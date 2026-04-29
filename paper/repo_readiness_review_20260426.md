@@ -1,8 +1,11 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: scoped positive-method manuscript ready for submission packaging
-- estimated distance: source upload packaging and final artifact-release choice
+- status: scoped positive-method manuscript with strengthened same-family/remap
+  packet evidence; not yet a full cross-family ICLR claim
+- estimated distance: one successful bidirectional cross-family method gate or a
+  narrower paper framing that explicitly limits the claim to same-family/source-
+  private packet communication
 
 ## Current Paper Story
 
@@ -11,6 +14,20 @@ transfer. Target-side candidate/self-repair gives a strong decoder floor, C2C
 shows real cache-level headroom, and LatentWire has a mature evaluation harness.
 What is missing is a deployable LatentWire method whose improvement is both
 source-derived and stable under source-destroying controls.
+
+Update `2026-04-29`: the current strongest contribution set is now (1)
+source-private scalar packets, (2) strict source-destroying controls, (3)
+byte/latency systems frontiers, (4) QJL/TurboQuant-style matched-byte residual
+comparator, and (5) canonical RASP relative-score packets. Canonical RASP
+serializes candidate scores by stable public candidate identity instead of
+display order and passes a larger frozen worst-remap slice (`0.442` vs `0.361`
+scalar and `0.250` target, controls clean), but the seven-remap bootstrap still
+misses strict pass by a small CI margin (`+0.146` vs `+0.150`) and bidirectional
+cross-family remains failed. The live next branch is consistency-distilled
+canonical posterior packets; the exact blocker to full-paper readiness is
+bidirectional cross-family evidence or a defensible decision to frame the paper
+as same-family/protocol-assisted source-private communication with explicit
+cross-family limitations.
 
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source

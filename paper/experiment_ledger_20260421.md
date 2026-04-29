@@ -14796,3 +14796,21 @@ Cross-family remains asymmetric: core-to-holdout fails (`0.207` RASP vs
 `0.250` target with failed controls), while holdout-to-core passes (`0.492`
 RASP vs `0.250` target, controls clean). RASP remains a secondary systems
 extension, not the headline cross-family fix.
+
+Follow-up `2026-04-29`: canonical-order RASP is now implemented as an opt-in
+relative-score variant. It serializes score bytes by stable public candidate
+identity rather than display/list position and decodes them back into the
+target's current candidate order. Across seven remap seeds at 4 bytes, canonical
+RASP improves mean equal-byte accuracy over scalar by `+0.037` and is positive
+on every remap, but the strict expanded bootstrap remains just short of the
+target-only paired CI rule: minimum canonical-vs-target CI95 lower bound
+`+0.146` versus required `+0.150`. A larger frozen rerun of the worst remap
+`127` at `1536/1024` passes (`0.442` canonical vs `0.361` scalar and `0.250`
+target; target CI95 low `+0.152`, scalar CI95 low `+0.053`, controls clean).
+Cross-family remains asymmetric: core-to-holdout fails (`0.207` canonical vs
+`0.250` target with failed controls), while holdout-to-core passes (`0.492`
+canonical vs `0.250` target, controls clean). Promote canonical RASP as a
+stronger same-family/remap robustness contribution, not as a cross-family fix.
+The next method branch should be a consistency-distilled canonical posterior
+packet with order/feature perturbation training, and it must pass bidirectional
+core/holdout before any cross-family claim.

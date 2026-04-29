@@ -1,0 +1,473 @@
+{
+  "bootstrap_samples": 2000,
+  "budget_bytes": 4,
+  "created_utc": "2026-04-29T07:22:10.001980+00:00",
+  "gate": "source_private_relative_score_bootstrap",
+  "mean_relative_accuracy": 0.4896763392857143,
+  "mean_relative_minus_scalar": 0.03655133928571429,
+  "mean_remap_relative_minus_scalar": 0.03655133928571429,
+  "method_condition": "relative_canonical_score_source",
+  "min_relative_vs_scalar_ci95_low": -0.03515625,
+  "min_relative_vs_target_ci95_low": 0.146484375,
+  "pass_gate": false,
+  "pass_rule": "Relative score packet should keep positive paired lower bound versus target-only and positive mean remap delta versus scalar at equal actual bytes.",
+  "result_dirs": [
+    "results/source_private_relative_canonical_remap101_20260429",
+    "results/source_private_relative_canonical_remap103_20260429",
+    "results/source_private_relative_canonical_remap107_20260429",
+    "results/source_private_relative_canonical_remap109_20260429",
+    "results/source_private_relative_canonical_remap113_20260429",
+    "results/source_private_relative_canonical_remap127_20260429",
+    "results/source_private_relative_canonical_remap131_20260429"
+  ],
+  "rows": [
+    {
+      "budget_bytes": 4,
+      "method_condition": "relative_canonical_score_source",
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.228515625,
+          "ci95_low": 0.107421875,
+          "mean": 0.16796875
+        },
+        "relative_canonical_answer_masked_source": {
+          "ci95_high": 0.291015625,
+          "ci95_low": 0.18359375,
+          "mean": 0.236328125
+        },
+        "relative_canonical_constrained_shuffled_source": {
+          "ci95_high": 0.2578125,
+          "ci95_low": 0.134765625,
+          "mean": 0.19921875
+        },
+        "relative_canonical_label_shuffled_ridge": {
+          "ci95_high": 0.302734375,
+          "ci95_low": 0.189453125,
+          "mean": 0.24609375
+        },
+        "relative_canonical_order_mismatch_source": {
+          "ci95_high": 0.384765625,
+          "ci95_low": 0.251953125,
+          "mean": 0.318359375
+        },
+        "relative_canonical_permuted_score_bytes": {
+          "ci95_high": 0.400390625,
+          "ci95_low": 0.267578125,
+          "mean": 0.333984375
+        },
+        "relative_canonical_random_same_byte": {
+          "ci95_high": 0.302734375,
+          "ci95_low": 0.193359375,
+          "mean": 0.248046875
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.107421875,
+          "ci95_low": 0.029296875,
+          "mean": 0.068359375
+        },
+        "target_only": {
+          "ci95_high": 0.302734375,
+          "ci95_low": 0.18359375,
+          "mean": 0.244140625
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.326171875,
+      "relative_accuracy": 0.494140625,
+      "relative_minus_best_strict_control": 0.19921875,
+      "relative_minus_scalar": 0.068359375,
+      "relative_p50_latency_ms": 3.868666499329265,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 101,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_relative_canonical_remap101_20260429",
+      "scalar_accuracy": 0.42578125,
+      "scalar_p50_latency_ms": 3.7628124991897494,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "budget_bytes": 4,
+      "method_condition": "relative_canonical_score_source",
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.251953125,
+          "ci95_low": 0.130859375,
+          "mean": 0.19140625
+        },
+        "relative_canonical_answer_masked_source": {
+          "ci95_high": 0.3359375,
+          "ci95_low": 0.220703125,
+          "mean": 0.279296875
+        },
+        "relative_canonical_constrained_shuffled_source": {
+          "ci95_high": 0.326171875,
+          "ci95_low": 0.208984375,
+          "mean": 0.267578125
+        },
+        "relative_canonical_label_shuffled_ridge": {
+          "ci95_high": 0.3203125,
+          "ci95_low": 0.205078125,
+          "mean": 0.263671875
+        },
+        "relative_canonical_order_mismatch_source": {
+          "ci95_high": 0.421875,
+          "ci95_low": 0.2890625,
+          "mean": 0.35546875
+        },
+        "relative_canonical_permuted_score_bytes": {
+          "ci95_high": 0.4296875,
+          "ci95_low": 0.298828125,
+          "mean": 0.36328125
+        },
+        "relative_canonical_random_same_byte": {
+          "ci95_high": 0.326171875,
+          "ci95_low": 0.212890625,
+          "mean": 0.271484375
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.060546875,
+          "ci95_low": -0.013671875,
+          "mean": 0.0234375
+        },
+        "target_only": {
+          "ci95_high": 0.328125,
+          "ci95_low": 0.212890625,
+          "mean": 0.26953125
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.328125,
+      "relative_accuracy": 0.51953125,
+      "relative_minus_best_strict_control": 0.263671875,
+      "relative_minus_scalar": 0.0234375,
+      "relative_p50_latency_ms": 3.6137709976173937,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 103,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_relative_canonical_remap103_20260429",
+      "scalar_accuracy": 0.49609375,
+      "scalar_p50_latency_ms": 3.940104004868772,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "budget_bytes": 4,
+      "method_condition": "relative_canonical_score_source",
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.240234375,
+          "ci95_low": 0.125,
+          "mean": 0.1796875
+        },
+        "relative_canonical_answer_masked_source": {
+          "ci95_high": 0.328125,
+          "ci95_low": 0.21875,
+          "mean": 0.2734375
+        },
+        "relative_canonical_constrained_shuffled_source": {
+          "ci95_high": 0.212890625,
+          "ci95_low": 0.08984375,
+          "mean": 0.150390625
+        },
+        "relative_canonical_label_shuffled_ridge": {
+          "ci95_high": 0.314453125,
+          "ci95_low": 0.19921875,
+          "mean": 0.2578125
+        },
+        "relative_canonical_order_mismatch_source": {
+          "ci95_high": 0.453125,
+          "ci95_low": 0.3359375,
+          "mean": 0.392578125
+        },
+        "relative_canonical_permuted_score_bytes": {
+          "ci95_high": 0.380859375,
+          "ci95_low": 0.251953125,
+          "mean": 0.31640625
+        },
+        "relative_canonical_random_same_byte": {
+          "ci95_high": 0.31640625,
+          "ci95_low": 0.201171875,
+          "mean": 0.259765625
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.04296875,
+          "ci95_low": -0.03515625,
+          "mean": 0.00390625
+        },
+        "target_only": {
+          "ci95_high": 0.310546875,
+          "ci95_low": 0.19921875,
+          "mean": 0.255859375
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.326171875,
+      "relative_accuracy": 0.505859375,
+      "relative_minus_best_strict_control": 0.150390625,
+      "relative_minus_scalar": 0.00390625,
+      "relative_p50_latency_ms": 3.6501665017567575,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 107,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_relative_canonical_remap107_20260429",
+      "scalar_accuracy": 0.501953125,
+      "scalar_p50_latency_ms": 3.8125414939713664,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "budget_bytes": 4,
+      "method_condition": "relative_canonical_score_source",
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.189453125,
+          "ci95_low": 0.076171875,
+          "mean": 0.134765625
+        },
+        "relative_canonical_answer_masked_source": {
+          "ci95_high": 0.2734375,
+          "ci95_low": 0.158203125,
+          "mean": 0.21875
+        },
+        "relative_canonical_constrained_shuffled_source": {
+          "ci95_high": 0.255859375,
+          "ci95_low": 0.138671875,
+          "mean": 0.197265625
+        },
+        "relative_canonical_label_shuffled_ridge": {
+          "ci95_high": 0.296875,
+          "ci95_low": 0.1875,
+          "mean": 0.240234375
+        },
+        "relative_canonical_order_mismatch_source": {
+          "ci95_high": 0.35546875,
+          "ci95_low": 0.224609375,
+          "mean": 0.291015625
+        },
+        "relative_canonical_permuted_score_bytes": {
+          "ci95_high": 0.380859375,
+          "ci95_low": 0.248046875,
+          "mean": 0.314453125
+        },
+        "relative_canonical_random_same_byte": {
+          "ci95_high": 0.287109375,
+          "ci95_low": 0.17578125,
+          "mean": 0.23046875
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.060546875,
+          "ci95_low": -0.0078125,
+          "mean": 0.025390625
+        },
+        "target_only": {
+          "ci95_high": 0.28125,
+          "ci95_low": 0.169921875,
+          "mean": 0.2265625
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.341796875,
+      "relative_accuracy": 0.4765625,
+      "relative_minus_best_strict_control": 0.197265625,
+      "relative_minus_scalar": 0.025390625,
+      "relative_p50_latency_ms": 3.648541991424281,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 109,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_relative_canonical_remap109_20260429",
+      "scalar_accuracy": 0.451171875,
+      "scalar_p50_latency_ms": 3.947166493162513,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "budget_bytes": 4,
+      "method_condition": "relative_canonical_score_source",
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.197265625,
+          "ci95_low": 0.083984375,
+          "mean": 0.142578125
+        },
+        "relative_canonical_answer_masked_source": {
+          "ci95_high": 0.271484375,
+          "ci95_low": 0.154296875,
+          "mean": 0.212890625
+        },
+        "relative_canonical_constrained_shuffled_source": {
+          "ci95_high": 0.248046875,
+          "ci95_low": 0.13671875,
+          "mean": 0.193359375
+        },
+        "relative_canonical_label_shuffled_ridge": {
+          "ci95_high": 0.267578125,
+          "ci95_low": 0.146484375,
+          "mean": 0.20703125
+        },
+        "relative_canonical_order_mismatch_source": {
+          "ci95_high": 0.361328125,
+          "ci95_low": 0.23828125,
+          "mean": 0.298828125
+        },
+        "relative_canonical_permuted_score_bytes": {
+          "ci95_high": 0.353515625,
+          "ci95_low": 0.22265625,
+          "mean": 0.287109375
+        },
+        "relative_canonical_random_same_byte": {
+          "ci95_high": 0.27734375,
+          "ci95_low": 0.171875,
+          "mean": 0.2265625
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.072265625,
+          "ci95_low": 0.001953125,
+          "mean": 0.037109375
+        },
+        "target_only": {
+          "ci95_high": 0.279296875,
+          "ci95_low": 0.1640625,
+          "mean": 0.22265625
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.330078125,
+      "relative_accuracy": 0.47265625,
+      "relative_minus_best_strict_control": 0.193359375,
+      "relative_minus_scalar": 0.037109375,
+      "relative_p50_latency_ms": 4.21960399398813,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 113,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_relative_canonical_remap113_20260429",
+      "scalar_accuracy": 0.435546875,
+      "scalar_p50_latency_ms": 4.385541498777457,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "budget_bytes": 4,
+      "method_condition": "relative_canonical_score_source",
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.19921875,
+          "ci95_low": 0.076171875,
+          "mean": 0.138671875
+        },
+        "relative_canonical_answer_masked_source": {
+          "ci95_high": 0.234375,
+          "ci95_low": 0.125,
+          "mean": 0.177734375
+        },
+        "relative_canonical_constrained_shuffled_source": {
+          "ci95_high": 0.283203125,
+          "ci95_low": 0.169921875,
+          "mean": 0.224609375
+        },
+        "relative_canonical_label_shuffled_ridge": {
+          "ci95_high": 0.25390625,
+          "ci95_low": 0.13671875,
+          "mean": 0.19921875
+        },
+        "relative_canonical_order_mismatch_source": {
+          "ci95_high": 0.326171875,
+          "ci95_low": 0.19140625,
+          "mean": 0.259765625
+        },
+        "relative_canonical_permuted_score_bytes": {
+          "ci95_high": 0.33203125,
+          "ci95_low": 0.203125,
+          "mean": 0.267578125
+        },
+        "relative_canonical_random_same_byte": {
+          "ci95_high": 0.26171875,
+          "ci95_low": 0.1484375,
+          "mean": 0.205078125
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.060546875,
+          "ci95_low": -0.009765625,
+          "mean": 0.025390625
+        },
+        "target_only": {
+          "ci95_high": 0.26171875,
+          "ci95_low": 0.146484375,
+          "mean": 0.203125
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.314453125,
+      "relative_accuracy": 0.453125,
+      "relative_minus_best_strict_control": 0.177734375,
+      "relative_minus_scalar": 0.025390625,
+      "relative_p50_latency_ms": 4.154041998845059,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 127,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_relative_canonical_remap127_20260429",
+      "scalar_accuracy": 0.427734375,
+      "scalar_p50_latency_ms": 3.996646002633497,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "budget_bytes": 4,
+      "method_condition": "relative_canonical_score_source",
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.23828125,
+          "ci95_low": 0.123046875,
+          "mean": 0.177734375
+        },
+        "relative_canonical_answer_masked_source": {
+          "ci95_high": 0.279296875,
+          "ci95_low": 0.166015625,
+          "mean": 0.224609375
+        },
+        "relative_canonical_constrained_shuffled_source": {
+          "ci95_high": 0.287109375,
+          "ci95_low": 0.166015625,
+          "mean": 0.2265625
+        },
+        "relative_canonical_label_shuffled_ridge": {
+          "ci95_high": 0.287109375,
+          "ci95_low": 0.171875,
+          "mean": 0.2265625
+        },
+        "relative_canonical_order_mismatch_source": {
+          "ci95_high": 0.390625,
+          "ci95_low": 0.2578125,
+          "mean": 0.326171875
+        },
+        "relative_canonical_permuted_score_bytes": {
+          "ci95_high": 0.40234375,
+          "ci95_low": 0.275390625,
+          "mean": 0.33984375
+        },
+        "relative_canonical_random_same_byte": {
+          "ci95_high": 0.31640625,
+          "ci95_low": 0.201171875,
+          "mean": 0.259765625
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.109375,
+          "ci95_low": 0.03515625,
+          "mean": 0.072265625
+        },
+        "target_only": {
+          "ci95_high": 0.310546875,
+          "ci95_low": 0.197265625,
+          "mean": 0.255859375
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.328125,
+      "relative_accuracy": 0.505859375,
+      "relative_minus_best_strict_control": 0.224609375,
+      "relative_minus_scalar": 0.072265625,
+      "relative_p50_latency_ms": 4.022082997835241,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 131,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_relative_canonical_remap131_20260429",
+      "scalar_accuracy": 0.43359375,
+      "scalar_p50_latency_ms": 3.781395993428305,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    }
+  ]
+}

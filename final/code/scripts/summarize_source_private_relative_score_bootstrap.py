@@ -50,54 +50,72 @@ def _bootstrap_ci(values: list[float], *, samples: int, seed: int) -> dict[str, 
     }
 
 
-def _summarize_dir(result_dir: pathlib.Path, *, budget: int, bootstrap_samples: int, seed: int) -> dict[str, Any]:
+def _control_conditions(method_condition: str) -> list[str]:
+    if method_condition == "relative_score_source":
+        return [
+            "relative_label_shuffled_ridge",
+            "relative_constrained_shuffled_source",
+            "relative_answer_masked_source",
+            "relative_random_same_byte",
+            "relative_order_mismatch_source",
+            "relative_permuted_score_bytes",
+        ]
+    if method_condition == "relative_canonical_score_source":
+        return [
+            "relative_canonical_label_shuffled_ridge",
+            "relative_canonical_constrained_shuffled_source",
+            "relative_canonical_answer_masked_source",
+            "relative_canonical_random_same_byte",
+            "relative_canonical_order_mismatch_source",
+            "relative_canonical_permuted_score_bytes",
+        ]
+    raise ValueError(f"unsupported method condition {method_condition!r}")
+
+
+def _summarize_dir(
+    result_dir: pathlib.Path,
+    *,
+    budget: int,
+    bootstrap_samples: int,
+    seed: int,
+    method_condition: str,
+) -> dict[str, Any]:
     summary = json.loads((result_dir / "summary.json").read_text(encoding="utf-8"))
     budget_row = next(row for row in summary["budget_summaries"] if row["budget_bytes"] == budget)
     metrics = budget_row["metrics"]
     rows = _load_predictions(result_dir, budget)
+    controls = _control_conditions(method_condition)
     baselines = [
         "target_only",
         "scalar_quantized_source",
         "raw_source_sign_sketch",
-        "relative_label_shuffled_ridge",
-        "relative_constrained_shuffled_source",
-        "relative_answer_masked_source",
-        "relative_random_same_byte",
-        "relative_order_mismatch_source",
-        "relative_permuted_score_bytes",
+        *controls,
     ]
     paired = {
         baseline: _bootstrap_ci(
-            _paired_deltas(rows, method="relative_score_source", baseline=baseline),
+            _paired_deltas(rows, method=method_condition, baseline=baseline),
             samples=bootstrap_samples,
             seed=seed + idx * 1009,
         )
         for idx, baseline in enumerate(baselines)
     }
-    strict_controls = [
-        "target_only",
-        "relative_label_shuffled_ridge",
-        "relative_constrained_shuffled_source",
-        "relative_answer_masked_source",
-        "relative_random_same_byte",
-        "relative_order_mismatch_source",
-        "relative_permuted_score_bytes",
-    ]
+    strict_controls = ["target_only", *controls]
     return {
         "result_dir": str(result_dir),
         "pass_gate": summary["pass_gate"],
         "remap_slot_seed": summary.get("remap_slot_seed"),
         "budget_bytes": budget,
-        "relative_payload_bytes": metrics["relative_score_source"]["mean_payload_bytes"],
+        "method_condition": method_condition,
+        "relative_payload_bytes": metrics[method_condition]["mean_payload_bytes"],
         "scalar_payload_bytes": metrics["scalar_quantized_source"]["mean_payload_bytes"],
-        "relative_accuracy": metrics["relative_score_source"]["accuracy"],
+        "relative_accuracy": metrics[method_condition]["accuracy"],
         "scalar_accuracy": metrics["scalar_quantized_source"]["accuracy"],
         "target_accuracy": metrics["target_only"]["accuracy"],
         "raw_sign_accuracy": metrics["raw_source_sign_sketch"]["accuracy"],
-        "relative_p50_latency_ms": metrics["relative_score_source"]["p50_latency_ms"],
+        "relative_p50_latency_ms": metrics[method_condition]["p50_latency_ms"],
         "scalar_p50_latency_ms": metrics["scalar_quantized_source"]["p50_latency_ms"],
-        "relative_minus_scalar": metrics["relative_score_source"]["accuracy"] - metrics["scalar_quantized_source"]["accuracy"],
-        "relative_minus_best_strict_control": metrics["relative_score_source"]["accuracy"]
+        "relative_minus_scalar": metrics[method_condition]["accuracy"] - metrics["scalar_quantized_source"]["accuracy"],
+        "relative_minus_best_strict_control": metrics[method_condition]["accuracy"]
         - max(metrics[name]["accuracy"] for name in strict_controls),
         "paired_bootstrap": paired,
     }
@@ -110,6 +128,7 @@ def run_summary(
     budget: int,
     bootstrap_samples: int,
     seed: int,
+    method_condition: str = "relative_score_source",
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     rows = [
@@ -118,6 +137,7 @@ def run_summary(
             budget=budget,
             bootstrap_samples=bootstrap_samples,
             seed=seed + i * 2003,
+            method_condition=method_condition,
         )
         for i, path in enumerate(result_dirs)
     ]
@@ -128,6 +148,7 @@ def run_summary(
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
         "budget_bytes": budget,
         "bootstrap_samples": bootstrap_samples,
+        "method_condition": method_condition,
         "result_dirs": [str(path) for path in result_dirs],
         "rows": rows,
         "mean_relative_accuracy": statistics.fmean(row["relative_accuracy"] for row in rows),
@@ -164,6 +185,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         "# Source-Private Relative Score Bootstrap",
         "",
         f"- pass gate: `{payload['pass_gate']}`",
+        f"- method condition: `{payload['method_condition']}`",
         f"- budget bytes: `{payload['budget_bytes']}`",
         f"- bootstrap samples: `{payload['bootstrap_samples']}`",
         f"- mean relative accuracy: `{payload['mean_relative_accuracy']:.3f}`",
@@ -198,6 +220,7 @@ def main() -> None:
     parser.add_argument("--budget", type=int, default=4)
     parser.add_argument("--bootstrap-samples", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=29)
+    parser.add_argument("--method-condition", choices=["relative_score_source", "relative_canonical_score_source"], default="relative_score_source")
     args = parser.parse_args()
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     payload = run_summary(
@@ -206,6 +229,7 @@ def main() -> None:
         budget=args.budget,
         bootstrap_samples=args.bootstrap_samples,
         seed=args.seed,
+        method_condition=args.method_condition,
     )
     print(json.dumps({"pass_gate": payload["pass_gate"], "output_dir": str(output_dir)}, indent=2, sort_keys=True))
 

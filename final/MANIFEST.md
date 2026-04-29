@@ -62,6 +62,10 @@
   with modest remap improvement over equal-byte scalar.
 - Expanded RASP remap and cross-family falsification artifacts showing positive
   mean remap lift but failed strict expanded/cross-family promotion gates.
+- Canonical-order RASP code, tests, memo, seven-remap artifacts, larger
+  worst-remap confirmation, and cross-family falsification rows showing a
+  stronger same-family/remap robustness contribution but no bidirectional
+  cross-family fix.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

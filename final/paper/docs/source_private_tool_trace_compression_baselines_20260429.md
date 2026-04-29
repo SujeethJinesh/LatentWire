@@ -300,3 +300,62 @@ Interpretation:
 - The next RASP-specific improvement should canonicalize candidate order by
   public candidate ID/hash and retest order-mismatch controls. Otherwise,
   further remap tuning risks looking like a candidate-order side channel.
+
+## 2026-04-29 Addendum: Canonical-Order RASP
+
+Canonical RASP is now added as `relative_scores_canonical`. The source still
+sends one quantized score byte per public candidate, but the packet is
+serialized by stable public candidate identity and decoded back into the
+target's current display order. This removes the strongest display-order
+side-channel objection to the first RASP implementation.
+
+New artifacts:
+
+- `results/source_private_relative_canonical_remap101_20260429/`
+- `results/source_private_relative_canonical_remap103_20260429/`
+- `results/source_private_relative_canonical_remap107_20260429/`
+- `results/source_private_relative_canonical_remap109_20260429/`
+- `results/source_private_relative_canonical_remap113_20260429/`
+- `results/source_private_relative_canonical_remap127_20260429/`
+- `results/source_private_relative_canonical_remap131_20260429/`
+- `results/source_private_relative_canonical_bootstrap_remap7_20260429/`
+- `results/source_private_relative_canonical_remap127_large_20260429/`
+- `results/source_private_relative_canonical_remap127_large_bootstrap_20260429/`
+- `results/source_private_relative_canonical_core_to_holdout_20260429/`
+- `results/source_private_relative_canonical_holdout_to_core_20260429/`
+
+Expanded remap summary:
+
+| Remap | Canonical RASP | Scalar | Target | RASP - scalar CI95 | RASP - target CI95 |
+|---:|---:|---:|---:|---:|---:|
+| 101 | 0.494 | 0.426 | 0.250 | [0.029, 0.107] | [0.184, 0.303] |
+| 103 | 0.520 | 0.496 | 0.250 | [-0.014, 0.061] | [0.213, 0.328] |
+| 107 | 0.506 | 0.502 | 0.250 | [-0.035, 0.043] | [0.199, 0.311] |
+| 109 | 0.477 | 0.451 | 0.250 | [-0.008, 0.061] | [0.170, 0.281] |
+| 113 | 0.473 | 0.436 | 0.250 | [0.002, 0.072] | [0.164, 0.279] |
+| 127 | 0.453 | 0.428 | 0.250 | [-0.010, 0.061] | [0.146, 0.262] |
+| 131 | 0.506 | 0.434 | 0.250 | [0.035, 0.109] | [0.197, 0.311] |
+
+The seven-remap bootstrap is still strict-fail because the minimum
+canonical-vs-target CI95 lower bound is `+0.146`, just below the `+0.150` rule.
+However, the larger frozen rerun of the worst remap `127` passes:
+canonical RASP `0.442`, scalar `0.361`, target `0.250`, target CI95 low
+`+0.152`, scalar CI95 low `+0.053`, controls clean.
+
+Cross-family remains asymmetric:
+
+| Train -> Eval | Canonical RASP | Scalar | Target | Controls clean | Interpretation |
+|---|---:|---:|---:|---:|---|
+| core -> holdout | 0.207 | 0.225 | 0.250 | false | fail |
+| holdout -> core | 0.492 | 0.375 | 0.250 | true | one-direction pass |
+
+Interpretation:
+
+- Canonical RASP is a stronger secondary systems/robustness contribution than
+  display-order RASP because it removes display-order serialization while
+  preserving a 4-byte payload.
+- It should be reported as same-family/remap robustness and as an ablation
+  against display-order side-channel concerns.
+- It is not a cross-family solution. The next live method branch for that gap
+  is a consistency-distilled canonical posterior packet trained under
+  candidate-order and source-feature perturbations.
