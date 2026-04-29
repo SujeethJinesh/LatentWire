@@ -14,7 +14,7 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `75` rows after adding learned Wyner-Ziv packet evidence,
+The aggregate now has `80` rows after adding learned Wyner-Ziv packet evidence,
 bidirectional cross-family falsification rows, protected residual codec
 ablation rows, progress-enabled target-decoder receiver rows, and the static
 anchor-relative sparse packet smoke plus the Mac endpoint-proxy rows. The
@@ -57,12 +57,15 @@ The learned packet story remains positive in scoped settings:
   while shuffled/random/matched-byte structured text controls stay near the
   target prior.
 - Mac endpoint-proxy rows now pass on core and holdout at `n=8` and `n=16`
-  with Qwen3-0.6B CPU. The stronger `n=16` rows reach `0.688` on both surfaces
-  versus target-only and matched-byte text at `0.250`; query-aware text is
-  `7.0x` larger, full hidden-log relay is `183.2x-186.7x` larger, and full-log
-  p50 TTFT is `+165.4 ms` to `+190.7 ms` relative to the packet. This is the
-  first endpoint-style timing row, but it remains a local CPU proxy rather than
-  server throughput.
+  under the canonical prompt, and at `n=16`/`n=32` under a second `audit`
+  prompt paraphrase. The strongest prompt-robust rows are `n=32` audit: core
+  packet `0.719` versus target `0.250` and matched-byte text `0.281`; holdout
+  packet `0.844` versus target and matched-byte text `0.312`. Query-aware text
+  is `7.0x` larger, full hidden-log relay is `183.2x-186.7x` larger, and
+  full-log p50 TTFT is `+157.4 ms` to `+163.4 ms` relative to the packet at
+  `n=32` audit. A deliberately under-specified `terse` prompt fails on core
+  (`0.250` packet, equal to target), so prompt contract specificity remains a
+  real limitation.
 
 ## Failures Kept In The Artifact
 
@@ -105,17 +108,18 @@ This supports three defensible contributions:
    structured text and hidden-log relay.
 
 It does not support a full bidirectional cross-family latent-transfer claim.
-Endpoint-proxy TTFT/E2E telemetry is now measured locally on CPU, so the paper
-can claim a Mac-local byte/TTFT frontier. It still should not claim serving-
-throughput superiority until a real vLLM/OpenAI-compatible endpoint run exists.
+Endpoint-proxy TTFT/E2E telemetry is now measured locally on CPU, including one
+passing prompt paraphrase and one failed under-specified prompt. The paper can
+claim a Mac-local byte/TTFT frontier with prompt-contract stress, but it still
+should not claim serving-throughput superiority until a real vLLM/OpenAI-
+compatible endpoint run exists.
 
 ## Next Gate
 
-The highest-priority reviewer-facing gate is now larger endpoint-proxy
-replication (`n=64`/`n=160`) with prompt paraphrase stress, followed by a true
-server-side TTFT/throughput run when NVIDIA GPUs are available. The receiver
-objection is weakened by the n32 all-control frozen-model pass and the endpoint-
-proxy timing row, and the static AR-SIP branch has been pruned. Any further
-cross-family method work should move to a learned target-preserving query
-bottleneck or richer source surface, not another static sparse coordinate
-packet.
+The highest-priority reviewer-facing gate is now `n=64`/`n=160` endpoint-proxy
+replication under both canonical and audit prompts, plus stricter endpoint
+controls that separate strict label emission from diagnostic-code mapping. A
+true server-side TTFT/throughput run remains necessary when NVIDIA GPUs are
+available. Any further cross-family method work should move to a learned
+target-preserving query bottleneck or richer source surface, not another static
+sparse coordinate packet.

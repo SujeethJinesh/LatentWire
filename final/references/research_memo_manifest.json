@@ -935,6 +935,6 @@
     "slug": "mac_endpoint_proxy_frontier_refs",
     "path": "references/490_mac_endpoint_proxy_frontier_refs.md",
     "status": "local_memo",
-    "reason": "Primary-source memo for the Mac endpoint-proxy byte/TTFT frontier, positioning the packet against vLLM/PagedAttention, LLMLingua-family prompt compression, KIVI/QJL/TurboQuant, and cache transport baselines."
+    "reason": "Primary-source memo for the Mac endpoint-proxy byte/TTFT and prompt-stress frontier, positioning the packet against vLLM/PagedAttention, LLMLingua-family prompt compression, KIVI/QJL/TurboQuant, cache transport, DistServe, and production KV/cache baselines."
   }
 ]

@@ -26,6 +26,8 @@ CONDITIONS = (
     "full_hidden_log",
 )
 
+PROMPT_STYLES = ("canonical", "terse", "audit")
+
 
 @dataclass(frozen=True)
 class LoadedExample:
@@ -74,24 +76,49 @@ def _payload_for_condition(example: LoadedExample, *, condition: str) -> str:
     raise ValueError(f"unknown condition {condition!r}")
 
 
-def _prompt(example: LoadedExample, *, payload: str) -> str:
+def _prompt(example: LoadedExample, *, payload: str, prompt_style: str) -> str:
     candidate_rows = "\n".join(
         f"- {candidate['label']}: handles_repair_diag={candidate['handles_diagnostic']}"
         for candidate in example.candidates
     )
-    return (
-        "You are the target-side decoder in a source-private repair handoff.\n"
-        "Use the source payload only to identify a repair diagnostic code.\n"
-        "A valid code is either a two-character packet like G0 or a text span like REPAIR_DIAG=G0.\n"
-        "If the code matches exactly one candidate's handles_repair_diag value, return that candidate label.\n"
-        "If no valid code is present, return the target-prior label.\n"
-        "Return only one candidate label and no explanation.\n\n"
-        f"Target-prior label: {_prior_prediction(example)}\n"
-        f"Source payload:\n{payload if payload else '<NO_SOURCE_PAYLOAD>'}\n\n"
-        "Candidates:\n"
-        f"{candidate_rows}\n\n"
-        "Candidate label:"
-    )
+    if prompt_style == "canonical":
+        return (
+            "You are the target-side decoder in a source-private repair handoff.\n"
+            "Use the source payload only to identify a repair diagnostic code.\n"
+            "A valid code is either a two-character packet like G0 or a text span like REPAIR_DIAG=G0.\n"
+            "If the code matches exactly one candidate's handles_repair_diag value, return that candidate label.\n"
+            "If no valid code is present, return the target-prior label.\n"
+            "Return only one candidate label and no explanation.\n\n"
+            f"Target-prior label: {_prior_prediction(example)}\n"
+            f"Source payload:\n{payload if payload else '<NO_SOURCE_PAYLOAD>'}\n\n"
+            "Candidates:\n"
+            f"{candidate_rows}\n\n"
+            "Candidate label:"
+        )
+    if prompt_style == "terse":
+        return (
+            "Choose one candidate.\n"
+            "The payload may contain a short repair key such as G0 or the same key in a longer string.\n"
+            "Match that key to the candidate field handles_repair_diag. With no key, use the prior.\n"
+            "Output only the candidate label.\n\n"
+            f"Prior: {_prior_prediction(example)}\n"
+            f"Payload: {payload if payload else '<NONE>'}\n\n"
+            f"{candidate_rows}\n\n"
+            "Answer:"
+        )
+    if prompt_style == "audit":
+        return (
+            "Selection audit task. The target prior is a fallback, not private evidence.\n"
+            "Read the side message. If it contains exactly one two-character repair key, pick the row whose "
+            "handles_repair_diag value is that key. Ignore formatting words around the key.\n"
+            "If the side message has no usable key, emit the fallback candidate. Emit only the label.\n\n"
+            f"Fallback candidate: {_prior_prediction(example)}\n"
+            f"Side message:\n{payload if payload else '<EMPTY>'}\n\n"
+            "Candidate rows:\n"
+            f"{candidate_rows}\n\n"
+            "Selected label:"
+        )
+    raise ValueError(f"unknown prompt style {prompt_style!r}")
 
 
 def _format_prompt(tokenizer: Any, prompt: str, *, enable_thinking: bool | None) -> str:
@@ -181,6 +208,7 @@ def run_frontier(
     max_new_tokens: int,
     enable_thinking: bool | None,
     conditions: list[str],
+    prompt_style: str,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     examples = _load_examples(benchmark_jsonl, limit=limit)
@@ -189,7 +217,7 @@ def run_frontier(
     for example in examples:
         for condition in conditions:
             payload = _payload_for_condition(example, condition=condition)
-            raw_prompt = _prompt(example, payload=payload)
+            raw_prompt = _prompt(example, payload=payload, prompt_style=prompt_style)
             text_prompt = _format_prompt(tokenizer, raw_prompt, enable_thinking=enable_thinking)
             prompt_tokens = len(tokenizer(text_prompt)["input_ids"])
             generated, generated_tokens, ttft_ms, e2e_ms = _generate_one(
@@ -204,6 +232,7 @@ def run_frontier(
                 {
                     "example_id": example.example_id,
                     "condition": condition,
+                    "prompt_style": prompt_style,
                     "answer_label": example.answer_label,
                     "target_prior_label": _prior_prediction(example),
                     "payload": payload,
@@ -220,7 +249,7 @@ def run_frontier(
                     "e2e_ms": e2e_ms,
                 }
             )
-    summary = summarize(rows, conditions=conditions)
+    summary = summarize(rows, conditions=conditions, prompt_style=prompt_style)
     _write_jsonl(output_dir / "endpoint_proxy_rows.jsonl", rows)
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
     _write_markdown(output_dir / "summary.md", summary)
@@ -237,6 +266,7 @@ def run_frontier(
         "dtype": dtype,
         "limit": limit,
         "max_new_tokens": max_new_tokens,
+        "prompt_style": prompt_style,
         "run_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "summary": summary,
     }
@@ -248,7 +278,7 @@ def run_frontier(
     return summary
 
 
-def summarize(rows: list[dict[str, Any]], *, conditions: list[str]) -> dict[str, Any]:
+def summarize(rows: list[dict[str, Any]], *, conditions: list[str], prompt_style: str = "canonical") -> dict[str, Any]:
     example_ids = sorted({row["example_id"] for row in rows})
     metrics: dict[str, Any] = {}
     for condition in conditions:
@@ -277,6 +307,7 @@ def summarize(rows: list[dict[str, Any]], *, conditions: list[str]) -> dict[str,
     return {
         "n": len(example_ids),
         "conditions": conditions,
+        "prompt_style": prompt_style,
         "exact_id_parity": len(rows) == len(example_ids) * len(conditions),
         "exact_id_sha256": hashlib.sha256("\n".join(example_ids).encode("utf-8")).hexdigest(),
         "packet_minus_target_accuracy": packet["accuracy"] - target["accuracy"],
@@ -318,6 +349,7 @@ def _write_markdown(path: pathlib.Path, summary: dict[str, Any]) -> None:
         "# Source-Private Mac Endpoint-Proxy Frontier",
         "",
         f"- examples: `{summary['n']}`",
+        f"- prompt style: `{summary['prompt_style']}`",
         f"- pass gate: `{summary['pass_gate']}`",
         f"- packet minus target accuracy: `{summary['packet_minus_target_accuracy']:.3f}`",
         f"- packet vs query-aware payload compression: `{summary['packet_vs_query_payload_compression']:.1f}x`",
@@ -349,6 +381,7 @@ def main() -> None:
     parser.add_argument("--max-new-tokens", type=int, default=24)
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--conditions", choices=CONDITIONS, nargs="*", default=list(CONDITIONS))
+    parser.add_argument("--prompt-style", choices=PROMPT_STYLES, default="canonical")
     args = parser.parse_args()
     benchmark_path = args.benchmark_jsonl if args.benchmark_jsonl.is_absolute() else ROOT / args.benchmark_jsonl
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
@@ -362,6 +395,7 @@ def main() -> None:
         max_new_tokens=args.max_new_tokens,
         enable_thinking=args.enable_thinking,
         conditions=list(args.conditions),
+        prompt_style=args.prompt_style,
     )
     print(json.dumps({"output_dir": str(output_dir), "pass_gate": summary["pass_gate"]}, indent=2, sort_keys=True))
     if not summary["pass_gate"]:

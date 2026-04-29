@@ -1,8 +1,8 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `75`
-- pass rows: `43`
-- fail / near-miss rows: `32`
+- rows: `80`
+- pass rows: `47`
+- fail / near-miss rows: `33`
 - minimum passing accuracy: `0.373`
 - maximum passing payload bytes: `8.0`
 - minimum passing model-packet valid rate: `0.537`
@@ -82,10 +82,15 @@
 | target model decoder ablation | Qwen3 target decoder | core n32 CPU all controls short decode diagnostic | `fail` | 0.000 | 0.000 | 0.000 | 2.0 | 0.000 | - | n=32; generated_tokens=8.0 |
 | target model decoder ablation | Qwen3 target decoder | core n32 CPU all controls | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=32; generated_tokens=13.0 |
 | target model decoder ablation | Qwen3 target decoder | holdout n32 CPU all controls | `pass` | 0.750 | 0.250 | 0.281 | 2.0 | 1.000 | - | n=32; generated_tokens=13.0 |
-| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n8 CPU diag-parse | `pass` | 0.750 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=8; packet_minus_target=0.500; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=181.1ms; full_log_e2e_delta=-38.9ms; best_verbose_relay=1.000 |
-| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n8 CPU diag-parse | `pass` | 0.750 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=8; packet_minus_target=0.500; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=279.5ms; full_log_e2e_delta=5.9ms; best_verbose_relay=1.000 |
-| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n16 CPU diag-parse | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; packet_minus_target=0.438; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=165.4ms; full_log_e2e_delta=-636.3ms; best_verbose_relay=1.000 |
-| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n16 CPU diag-parse | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; packet_minus_target=0.438; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=190.7ms; full_log_e2e_delta=-623.0ms; best_verbose_relay=1.000 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n8 CPU diag-parse | `pass` | 0.750 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=8; prompt_style=canonical; packet_minus_target=0.500; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=181.1ms; full_log_e2e_delta=-38.9ms; best_verbose_relay=1.000 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n8 CPU diag-parse | `pass` | 0.750 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=8; prompt_style=canonical; packet_minus_target=0.500; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=279.5ms; full_log_e2e_delta=5.9ms; best_verbose_relay=1.000 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n16 CPU diag-parse | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; prompt_style=canonical; packet_minus_target=0.438; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=165.4ms; full_log_e2e_delta=-636.3ms; best_verbose_relay=1.000 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n16 CPU diag-parse | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; prompt_style=canonical; packet_minus_target=0.438; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=190.7ms; full_log_e2e_delta=-623.0ms; best_verbose_relay=1.000 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n16 CPU terse prompt stress | `fail` | 0.250 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; prompt_style=terse; packet_minus_target=0.000; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=283.4ms; full_log_e2e_delta=-1551.2ms; best_verbose_relay=0.688 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n16 CPU audit prompt | `pass` | 0.750 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; prompt_style=audit; packet_minus_target=0.500; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=182.1ms; full_log_e2e_delta=209.7ms; best_verbose_relay=0.812 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n16 CPU audit prompt | `pass` | 0.875 | 0.312 | 0.312 | 2.0 | 1.000 | - | n=16; prompt_style=audit; packet_minus_target=0.562; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=150.2ms; full_log_e2e_delta=310.4ms; best_verbose_relay=0.875 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n32 CPU audit prompt | `pass` | 0.719 | 0.250 | 0.281 | 2.0 | 1.000 | - | n=32; prompt_style=audit; packet_minus_target=0.469; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=163.4ms; full_log_e2e_delta=225.8ms; best_verbose_relay=0.812 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n32 CPU audit prompt | `pass` | 0.844 | 0.312 | 0.312 | 2.0 | 1.000 | - | n=32; prompt_style=audit; packet_minus_target=0.531; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=157.4ms; full_log_e2e_delta=179.6ms; best_verbose_relay=0.875 |
 
 ## Caveat
 

@@ -92,12 +92,78 @@
      against cache/log relay under real serving.
    - role: systems baseline family.
 
+9. **vLLM Metrics**
+   - source: https://docs.vllm.ai/en/stable/design/metrics/
+   - blocker helped: the paper must use standard serving terms rather than
+     inventing ambiguous latency labels.
+   - mechanism/design idea: separate TTFT, per-token decode latency, E2E
+     latency, prompt tokens, and generation tokens.
+   - experiment change: future server runs should mirror vLLM metric names; the
+     current CPU proxy is labeled as a local timing proxy.
+   - role: measurement standard.
+
+10. **DistServe**
+   - source: https://arxiv.org/abs/2401.09670
+   - blocker helped: serving papers evaluate TTFT and TPOT/goodput under
+     prefill/decode separation, not just one local runtime number.
+   - mechanism/design idea: packet systems claims should eventually report
+     SLO-style TTFT/TPOT or goodput when GPUs are available.
+   - experiment change: does not change the Mac gate; changes the required GPU
+     endpoint gate.
+   - role: serving benchmark framing.
+
+11. **SnapKV**
+   - source: https://arxiv.org/abs/2404.14469
+   - blocker helped: KV compression can reduce long-context memory and latency,
+     so full-log relay could be compressed internally rather than sent raw.
+   - mechanism/design idea: compare packet relay to cache-pruning/cache-
+     compression baselines when the task moves beyond the synthetic source-
+     private surface.
+   - experiment change: no immediate Mac run; keep as a systems baseline family
+     in the discussion.
+   - role: KV compression baseline.
+
+12. **CacheBlend**
+   - source: https://arxiv.org/abs/2405.16444
+   - blocker helped: RAG/cache reuse systems can lower TTFT for reused context,
+     threatening any simple "full logs are slow" claim.
+   - mechanism/design idea: the defensible claim is currently extreme-rate
+     source-private payload, not universal serving superiority over cached
+     context systems.
+   - experiment change: future server gate should include cached full-log or
+     reused-context rows when context repeats.
+   - role: cache-reuse comparator.
+
+13. **LMCache**
+   - source: https://arxiv.org/abs/2510.09665
+   - blocker helped: production-style KV transport/offload systems are the
+     real systems neighbors for state relay.
+   - mechanism/design idea: if the paper claims systems value, it must define
+     whether it competes with prompt bytes, cache bytes, or cross-request KV
+     reuse.
+   - experiment change: future GPU endpoint run should log whether cache reuse
+     is enabled and separate prompt-token savings from cache-transport savings.
+   - role: production systems baseline.
+
+14. **Prompt Compression in the Wild**
+   - source: https://arxiv.org/abs/2604.02985
+   - blocker helped: prompt compression may have its own runtime overhead, so
+     byte savings alone are not a systems win.
+   - mechanism/design idea: report compressor/source-message construction time
+     in addition to target TTFT/E2E.
+   - experiment change: next endpoint gate should include packet construction
+     time and any text-compressor wall time if learned compression is used.
+   - role: latest prompt-compression systems caveat.
+
 ## Gate Outcome
 
 The Mac endpoint-proxy gate passes on both frozen surfaces at `n=8` and `n=16`
-with a Qwen3-0.6B CPU receiver. The stronger `n=16` rows put the 2-byte packet
-at `0.688` accuracy versus target-only and matched-byte text at `0.250`, while
-query-aware text needs `14` bytes and full hidden-log relay is
-`183.2x-186.7x` larger. Full-log TTFT is `+165.4 ms` to `+190.7 ms` relative to
-the packet in this local CPU proxy. This is not a server-throughput claim; it
-is the first reproducible endpoint-style telemetry row for the systems story.
+under the canonical prompt and at `n=16`/`n=32` under an `audit` prompt
+paraphrase. The stronger `n=32` audit rows put the 2-byte packet at `0.719`
+core and `0.844` holdout versus target-only / matched-byte text at
+`0.250-0.312`, while query-aware text needs `14` bytes and full hidden-log
+relay is `183.2x-186.7x` larger. Full-log TTFT is `+157.4 ms` to `+163.4 ms`
+relative to the packet in this local CPU proxy. A deliberately under-specified
+`terse` prompt fails on core `n=16`, so the receiver needs a clear public side-
+information contract. This is not a server-throughput claim; it is the first
+reproducible endpoint-style telemetry row for the systems story.

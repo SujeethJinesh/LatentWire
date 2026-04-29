@@ -157,6 +157,20 @@ The next gate is `n=64`/`n=160` endpoint-proxy replication with prompt
 paraphrase stress, then a vLLM/OpenAI-compatible server run when GPUs are
 available.
 
+Update `2026-04-29`: endpoint prompt-paraphrase stress now gives a cleaner
+receiver-boundary story. I added `canonical`, `terse`, and `audit` prompt
+styles to the endpoint-proxy harness. The `audit` paraphrase passes at `n=32`
+on both frozen surfaces: core matched packet `0.719` versus target `0.250` and
+matched-byte text `0.281`; holdout matched packet `0.844` versus target and
+matched-byte text `0.312`. Full-log relay is still `183.2x-186.7x` larger and
+adds `+157.4 ms` to `+163.4 ms` p50 TTFT versus the packet. The deliberately
+under-specified `terse` prompt fails on core `n=16`, with packet `0.250`, equal
+to target. This weakens the one-prompt-artifact objection, but also makes the
+limitation explicit: the endpoint receiver needs a clear public side-
+information contract. Next harness fix before promotion: split strict label
+emission from diagnostic-code-mapped accuracy and add a deranged candidate-
+diagnostic table control.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

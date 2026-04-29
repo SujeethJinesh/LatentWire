@@ -15002,3 +15002,21 @@ frontier now has `75` rows after adding these endpoint-proxy rows. This
 supports a Mac-local byte/TTFT frontier, not a server-throughput claim. Next
 gate: `n=64`/`n=160` endpoint-proxy replication with prompt paraphrase stress,
 then a real vLLM/OpenAI-compatible serving run when GPUs are available.
+
+Follow-up `2026-04-29`: added endpoint-proxy prompt-paraphrase stress. The
+harness now accepts `--prompt-style {canonical,terse,audit}`. The deliberately
+under-specified `terse` core `n=16` row fails: matched packet `0.250`, target
+`0.250`, matched-byte text `0.250`; this shows the receiver is not automatic
+under an ambiguous prompt. The `audit` paraphrase, which preserves the public
+side-information contract but changes the wording, passes on both surfaces and
+scales to `n=32`. Core seed29 `n=32` audit: matched packet `0.719`, target
+`0.250`, matched-byte text `0.281`, query-aware text `0.781`, JSON `0.781`,
+free text `0.812`, full log `0.406`, full-log p50 TTFT `+163.4 ms` versus
+packet. Holdout seed30 `n=32` audit: matched packet `0.844`, target `0.312`,
+matched-byte text `0.312`, query-aware text `0.812`, JSON `0.750`, free text
+`0.875`, full log `0.344`, full-log p50 TTFT `+157.4 ms` versus packet. The
+CPU systems frontier now has `80` rows including the prompt-stress pass/fail
+boundary. Subagent audit flagged two next harness risks before promotion:
+strict label accuracy should be separated from diagnostic-code-mapped accuracy,
+and a deranged candidate-diagnostic table control should collapse the packet if
+the prompt-side codebook is destroyed.

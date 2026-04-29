@@ -169,7 +169,8 @@ def _endpoint_proxy_row(row_id: str, path: pathlib.Path, *, surface: str) -> dic
         valid_rate=matched["valid_prediction_rate"],
         comparator="matched-byte text / query-aware text / structured relay / full log",
         note=(
-            f"n={summary['n']}; packet_minus_target={summary['packet_minus_target_accuracy']:.3f}; "
+            f"n={summary['n']}; prompt_style={summary.get('prompt_style', 'canonical')}; "
+            f"packet_minus_target={summary['packet_minus_target_accuracy']:.3f}; "
             f"query_payload_compression={summary['packet_vs_query_payload_compression']:.1f}x; "
             f"full_log_payload_compression={summary['packet_vs_full_log_payload_compression']:.1f}x; "
             f"full_log_ttft_delta={summary['full_log_ttft_delta_vs_packet_ms']:.1f}ms; "
@@ -605,6 +606,31 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "endpoint_proxy_holdout_n16_diagparse",
             "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n16_cpu_diagparse/summary.json",
             "holdout seed30 n16 CPU diag-parse",
+        ),
+        (
+            "endpoint_proxy_core_n16_terse_fail",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n16_cpu_terse/summary.json",
+            "core seed29 n16 CPU terse prompt stress",
+        ),
+        (
+            "endpoint_proxy_core_n16_audit",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n16_cpu_audit/summary.json",
+            "core seed29 n16 CPU audit prompt",
+        ),
+        (
+            "endpoint_proxy_holdout_n16_audit",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n16_cpu_audit/summary.json",
+            "holdout seed30 n16 CPU audit prompt",
+        ),
+        (
+            "endpoint_proxy_core_n32_audit",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n32_cpu_audit/summary.json",
+            "core seed29 n32 CPU audit prompt",
+        ),
+        (
+            "endpoint_proxy_holdout_n32_audit",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n32_cpu_audit/summary.json",
+            "holdout seed30 n32 CPU audit prompt",
         ),
     ]
     for row_id, rel_path, surface in endpoint_specs:

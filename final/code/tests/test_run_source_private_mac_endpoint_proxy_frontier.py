@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from scripts.run_source_private_mac_endpoint_proxy_frontier import summarize
+from scripts.run_source_private_mac_endpoint_proxy_frontier import LoadedExample, _prompt, summarize
 
 
 def _row(example_id: str, condition: str, *, correct: bool, payload_bytes: int, prompt_tokens: int) -> dict:
@@ -47,6 +47,27 @@ def test_summarize_endpoint_proxy_frontier_passes_packet_rate_case() -> None:
     summary = summarize(rows, conditions=conditions)
 
     assert summary["pass_gate"] is True
+    assert summary["prompt_style"] == "canonical"
     assert summary["packet_minus_target_accuracy"] == 0.75
     assert summary["packet_vs_query_payload_compression"] == 7.0
     assert summary["full_log_prompt_token_delta_vs_packet"] == 89
+
+
+def test_prompt_styles_preserve_public_side_information_contract() -> None:
+    example = LoadedExample(
+        example_id="ex",
+        answer_label="Candidate B",
+        diagnostic_code="G0",
+        private_test_log="REPAIR_DIAG=G0",
+        candidates=(
+            {"label": "Candidate A", "handles_diagnostic": "G1", "prior_score": 0.9},
+            {"label": "Candidate B", "handles_diagnostic": "G0", "prior_score": 0.1},
+        ),
+    )
+
+    for style in ("canonical", "terse", "audit"):
+        prompt = _prompt(example, payload="G0", prompt_style=style)
+        assert "G0" in prompt
+        assert "Candidate A" in prompt
+        assert "Candidate B" in prompt
+        assert "handles_repair_diag" in prompt

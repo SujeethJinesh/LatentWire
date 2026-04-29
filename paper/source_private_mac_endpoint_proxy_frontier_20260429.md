@@ -5,7 +5,7 @@
 - script: `scripts/run_source_private_mac_endpoint_proxy_frontier.py`
 - tests: `tests/test_run_source_private_mac_endpoint_proxy_frontier.py`,
   `tests/test_build_source_private_cpu_systems_frontier.py`
-- scale rung: strict-small endpoint-proxy smoke
+- scale rung: strict-small endpoint-proxy prompt-stress smoke
 
 ## Purpose
 
@@ -62,6 +62,21 @@ fixed across conditions.
 | holdout n16 | structured JSON | 0.938 | 21.0 | 221.4 | 532.2 | 855.9 |
 | holdout n16 | structured free text | 0.938 | 17.0 | 219.4 | 467.6 | 865.0 |
 | holdout n16 | full hidden log | 1.000 | 373.5 | 306.8 | 644.8 | 1366.7 |
+| core n16 terse | target-only | 0.250 | 0.0 | 169.4 | 533.0 | 2966.2 |
+| core n16 terse | matched packet | 0.250 | 2.0 | 169.4 | 643.7 | 2898.3 |
+| core n16 terse | matched-byte text | 0.250 | 2.0 | 168.4 | 643.5 | 2848.0 |
+| core n16 audit | target-only | 0.250 | 0.0 | 193.4 | 536.9 | 2058.9 |
+| core n16 audit | matched packet | 0.750 | 2.0 | 193.4 | 455.9 | 775.3 |
+| core n16 audit | matched-byte text | 0.250 | 2.0 | 192.4 | 432.2 | 2017.4 |
+| holdout n16 audit | target-only | 0.312 | 0.0 | 193.3 | 442.4 | 2037.1 |
+| holdout n16 audit | matched packet | 0.875 | 2.0 | 193.3 | 438.2 | 761.6 |
+| holdout n16 audit | matched-byte text | 0.312 | 2.0 | 192.3 | 411.7 | 2017.1 |
+| core n32 audit | target-only | 0.250 | 0.0 | 193.4 | 475.7 | 2014.0 |
+| core n32 audit | matched packet | 0.719 | 2.0 | 193.4 | 484.0 | 815.5 |
+| core n32 audit | matched-byte text | 0.281 | 2.0 | 192.4 | 483.1 | 1992.7 |
+| holdout n32 audit | target-only | 0.312 | 0.0 | 193.3 | 455.7 | 1985.8 |
+| holdout n32 audit | matched packet | 0.844 | 2.0 | 193.3 | 452.1 | 821.8 |
+| holdout n32 audit | matched-byte text | 0.312 | 2.0 | 192.3 | 434.8 | 1954.5 |
 
 Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
 
@@ -75,6 +90,13 @@ Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
   `0.250`; full-log p50 TTFT is `+165.4 ms` versus the packet.
 - holdout `n=16`: packet `0.688` versus target-only and matched-byte text
   `0.250`; full-log p50 TTFT is `+190.7 ms` versus the packet.
+- audit paraphrase `n=32`: core packet `0.719` versus target `0.250` and
+  matched-byte text `0.281`; holdout packet `0.844` versus target and
+  matched-byte text `0.312`. Full-log p50 TTFT remains `+157.4 ms` to
+  `+163.4 ms` versus the packet.
+- terse paraphrase `n=16`: core packet collapses to target-only (`0.250`),
+  showing that the receiver needs a sufficiently explicit public side-
+  information contract.
 
 ## Interpretation
 
@@ -92,16 +114,18 @@ The first attempted run exposed a useful harness issue: Qwen sometimes emitted
 the diagnostic code (`G0`) rather than a candidate label. The parser now maps a
 unique emitted diagnostic code back to the candidate whose public
 `handles_repair_diag` field matches it. This is auditable and preserves the
-target-side public-side-information interpretation.
+target-side public-side-information interpretation, but the next harness should
+report strict-label accuracy and diagnostic-mapped accuracy separately.
 
 ## Reviewer Caveats
 
-- This is an `n=16 + n=16` endpoint-proxy smoke plus earlier `n=8 + n=8`
-  diagnostic rows, not a large benchmark.
+- This is an `n=32 + n=32` prompt-paraphrase endpoint-proxy smoke plus earlier
+  canonical rows, not a large benchmark.
 - Timing is local CPU generate timing, not real vLLM/OpenAI-compatible serving
   TTFT or throughput.
 - The receiver prompt explicitly describes the packet interface, so the next
-  robustness gate should test prompt paraphrases and an `n=64`/`n=160` slice.
+  robustness gate should test canonical and audit prompts at an `n=64`/`n=160`
+  slice and add strict-label-vs-diagnostic-mapped reporting.
 - Verbose relays remain strong accuracy oracles; our claim is rate efficiency
   and source-control cleanliness, not dominance over all higher-byte relays.
 
