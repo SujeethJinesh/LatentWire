@@ -222,6 +222,35 @@ def _wyner_ziv_rows(path: pathlib.Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _wyner_ziv_cross_family_rows(path: pathlib.Path) -> list[dict[str, Any]]:
+    payload = _read_json(path)
+    rows = []
+    for row in payload["rows"]:
+        rows.append(
+            _row(
+                row_id=f"wyner_ziv_cross::{row['direction']}::budget{row['budget_bytes']}",
+                contribution="learned Wyner-Ziv cross-family falsification",
+                method=f"{row['budget_bytes']}-byte scalar WZ packet",
+                surface=row["direction"],
+                status="pass" if row["scalar_pass"] else "fail",
+                accuracy=row["scalar_wyner_ziv_accuracy"],
+                target_accuracy=row["target_accuracy"],
+                best_control_accuracy=row["best_scalar_control_accuracy"],
+                mean_payload_bytes=float(row["budget_bytes"]),
+                mean_payload_tokens=None,
+                p50_latency_ms=None,
+                comparator="QJL / canonical RASP / source controls",
+                note=(
+                    f"raw_sign={row['raw_source_sign_accuracy']:.3f}; "
+                    f"qjl={row['qjl_residual_accuracy']:.3f}; "
+                    f"canonical_rasp={row['canonical_rasp_accuracy']:.3f}; "
+                    f"canonical_pass={row['canonical_rasp_pass']}"
+                ),
+            )
+        )
+    return rows
+
+
 def _tool_trace_packet_row(
     row_id: str,
     path: pathlib.Path,
@@ -294,6 +323,7 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
     rows.extend(_rate_frontier_rows(ROOT / "results/source_private_rate_frontier_20260429/rate_frontier.json"))
     rows.extend(_slot_packet_rows(ROOT / "results/source_private_slot_packet_bootstrap_20260429/summary.json"))
     rows.extend(_wyner_ziv_rows(ROOT / "results/source_private_wyner_ziv_packet_gate_20260429/wyner_ziv_packet_gate.json"))
+    rows.extend(_wyner_ziv_cross_family_rows(ROOT / "results/source_private_wyner_ziv_cross_family_gate_20260429/wyner_ziv_cross_family_gate.json"))
     rows.extend(
         _relative_rows(
             ROOT / "results/source_private_relative_canonical_bootstrap_remap7_20260429/summary.json",

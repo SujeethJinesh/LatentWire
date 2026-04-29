@@ -95,6 +95,14 @@ This adds a real learned source-private syndrome contribution. It does not
 change the full-paper blocker: bidirectional cross-family evidence and a larger
 target-model decoder are still missing.
 
+Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
+`core_to_holdout` direction is below target at every budget and is explained by
+source-destroying controls; `holdout_to_core` has a strong 6-byte row but does
+not establish symmetry. This confirms the paper must not claim general
+cross-family latent transfer. The strongest defensible full-paper framing is now
+a source-private packet benchmark/method paper with learned same-family/remap
+packets, byte-rate systems wins, and explicit cross-family negative evidence.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

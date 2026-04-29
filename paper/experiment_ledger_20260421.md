@@ -14904,3 +14904,16 @@ packets are competitive but do not dominate; canonical RASP is stronger on some
 4-6 byte rows. This is now the best learned-method contribution, but it remains
 same-family/all-family remap evidence rather than a solved cross-family latent
 transfer result.
+
+Follow-up `2026-04-29`: ran
+`results/source_private_wyner_ziv_cross_family_gate_20260429`, the decisive
+bidirectional cross-family falsification for the learned WZ packet. The gate
+fails under a strict all-row rule. `core_to_holdout` fails all budgets:
+2-byte scalar WZ `0.127`, 4-byte `0.174`, 6-byte `0.146` versus target `0.250`,
+with source-destroying scalar controls reaching `0.529-0.623`. `holdout_to_core`
+remains asymmetric: 2-byte `0.328` and 4-byte `0.338` do not pass strict scalar
+controls, while 6-byte passes at `0.623` versus target/control `0.250`. This
+kills a bidirectional cross-family learned-WZ claim. Keep learned WZ as a
+same-family/remap method contribution; do not tune this exact scalar WZ
+cross-family setup without a new mechanism such as anchor-relative dictionaries
+or a target-preserving query bottleneck.

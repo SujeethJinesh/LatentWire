@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "wyner_ziv_cross_family_gate.json": "933ba6c98de29ad2fd67537976ebd24d3839f117850bcd2711af1fb82dae4ac1",
+    "wyner_ziv_cross_family_gate.md": "a1c380bed01e69f0d32a1ee9d0c9002c3d1ab1e30021fa04366f50338750076a"
+  },
+  "artifacts": [
+    "wyner_ziv_cross_family_gate.json",
+    "wyner_ziv_cross_family_gate.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

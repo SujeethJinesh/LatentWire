@@ -83,6 +83,9 @@
 - Learned Wyner-Ziv/source-side-information packet script, test, memo, and
   artifact showing `9/9` passing remapped slot-codebook rows across `2/4/6`
   bytes against query-aware text, raw sign, QJL, and canonical RASP comparators.
+- Learned Wyner-Ziv bidirectional cross-family falsification script, test, memo,
+  and artifact showing `core_to_holdout` failure and asymmetric `holdout_to_core`
+  recovery only at 6 bytes.
 
 ## Notes
 

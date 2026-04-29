@@ -1,8 +1,8 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `41`
-- pass rows: `31`
-- fail / near-miss rows: `10`
+- rows: `47`
+- pass rows: `32`
+- fail / near-miss rows: `15`
 - minimum passing accuracy: `0.418`
 - maximum passing payload bytes: `6.0`
 - minimum passing model-packet valid rate: `0.537`
@@ -30,6 +30,12 @@
 | learned Wyner-Ziv syndrome packet | 2-byte scalar WZ packet | remap 107 | `pass` | 0.418 | 0.250 | 0.246 | 2.0 | - | - | raw_sign=0.309; qjl=0.393; canonical_rasp=0.350; query_text_at_budget=0.250; packet_vs_query_text_oracle=7.0x |
 | learned Wyner-Ziv syndrome packet | 4-byte scalar WZ packet | remap 107 | `pass` | 0.445 | 0.250 | 0.246 | 4.0 | - | - | raw_sign=0.326; qjl=0.453; canonical_rasp=0.506; query_text_at_budget=0.250; packet_vs_query_text_oracle=3.5x |
 | learned Wyner-Ziv syndrome packet | 6-byte scalar WZ packet | remap 107 | `pass` | 0.492 | 0.250 | 0.232 | 6.0 | - | - | raw_sign=0.330; qjl=0.457; canonical_rasp=0.506; query_text_at_budget=0.250; packet_vs_query_text_oracle=2.3x |
+| learned Wyner-Ziv cross-family falsification | 2-byte scalar WZ packet | core_to_holdout | `fail` | 0.127 | 0.250 | 0.623 | 2.0 | - | - | raw_sign=0.283; qjl=0.252; canonical_rasp=0.125; canonical_pass=False |
+| learned Wyner-Ziv cross-family falsification | 4-byte scalar WZ packet | core_to_holdout | `fail` | 0.174 | 0.250 | 0.529 | 4.0 | - | - | raw_sign=0.365; qjl=0.131; canonical_rasp=0.207; canonical_pass=False |
+| learned Wyner-Ziv cross-family falsification | 6-byte scalar WZ packet | core_to_holdout | `fail` | 0.146 | 0.250 | 0.584 | 6.0 | - | - | raw_sign=0.326; qjl=0.131; canonical_rasp=0.207; canonical_pass=False |
+| learned Wyner-Ziv cross-family falsification | 2-byte scalar WZ packet | holdout_to_core | `fail` | 0.328 | 0.250 | 0.275 | 2.0 | - | - | raw_sign=0.246; qjl=0.381; canonical_rasp=0.375; canonical_pass=False |
+| learned Wyner-Ziv cross-family falsification | 4-byte scalar WZ packet | holdout_to_core | `fail` | 0.338 | 0.250 | 0.250 | 4.0 | - | - | raw_sign=0.129; qjl=0.414; canonical_rasp=0.498; canonical_pass=True |
+| learned Wyner-Ziv cross-family falsification | 6-byte scalar WZ packet | holdout_to_core | `pass` | 0.623 | 0.250 | 0.250 | 6.0 | - | - | raw_sign=0.109; qjl=0.564; canonical_rasp=0.498; canonical_pass=True |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 101 | `near-miss` | 0.494 | 0.250 | 0.295 | 4.0 | - | 0.184 | scalar=0.426; relative_minus_scalar=0.068 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 103 | `near-miss` | 0.520 | 0.250 | 0.256 | 4.0 | - | 0.213 | scalar=0.496; relative_minus_scalar=0.023 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 107 | `near-miss` | 0.506 | 0.250 | 0.355 | 4.0 | - | 0.199 | scalar=0.502; relative_minus_scalar=0.004 |

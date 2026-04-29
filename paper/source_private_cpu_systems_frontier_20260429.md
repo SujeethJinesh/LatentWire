@@ -14,18 +14,21 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate has `32` rows: `22` pass rows and `10` fail or near-miss rows.
-The strongest systems result remains the byte-rate frontier: a `2` byte
-diagnostic packet reaches oracle accuracy on the frozen core and holdout
-surfaces, while structured JSON/free-text relays need `21`/`17` bytes,
-query-aware diagnostic-span compression needs `14` bytes, and full hidden-log
-relay is `183.2x-186.7x` larger. Matched-byte text at the packet rate stays at
-target-only accuracy.
+The aggregate now has `47` rows after adding learned Wyner-Ziv packet evidence
+and bidirectional cross-family falsification rows. The strongest systems result
+remains the byte-rate frontier: a `2` byte diagnostic packet reaches oracle
+accuracy on the frozen core and holdout surfaces, while structured
+JSON/free-text relays need `21`/`17` bytes, query-aware diagnostic-span
+compression needs `14` bytes, and full hidden-log relay is `183.2x-186.7x`
+larger. Matched-byte text at the packet rate stays at target-only accuracy.
 
 The learned packet story remains positive in scoped settings:
 
 - `6` byte slot/no-intercept scalar packets pass the 5-seed same-codebook gate
   at `1.000` accuracy with clean controls.
+- Learned Wyner-Ziv/source-side-information scalar packets pass `9/9` remapped
+  slot-codebook rows across `2/4/6` bytes, with accuracy `0.418-0.508` versus
+  target-only `0.250`.
 - Remapped slot codebooks remain positive but weaker: scalar remap rows are
   `0.463-0.508` accuracy versus target-only `0.250`.
 - Canonical RASP gives a `4` byte candidate-relative transport. It passes the
@@ -46,6 +49,9 @@ The aggregate explicitly keeps the main failed rows:
   are not clean.
 - Canonical RASP holdout-to-core passes (`0.492` vs target `0.250`), proving the
   cross-family result is asymmetric rather than absent.
+- Learned WZ cross-family also fails bidirectionally under the strict all-budget
+  rule: `core_to_holdout` is below target at every budget and explained by
+  controls; `holdout_to_core` only passes at `6` bytes.
 - The consistency-posterior packet is pruned as a cross-family fix: the larger
   core-to-holdout row reaches only `0.354` and is matched by an order-mismatch
   control (`0.355`).
