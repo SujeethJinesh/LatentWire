@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "rate_frontier.json": "610236634d95ec0dab9a4b3db6404463fd9cc6ccabd43dac7ea54e4142961ec5",
+    "rate_frontier.md": "402e2e3a9187eb1ff6e00a987498906111e3724f470c8b3ba87246bd8831c4fb"
+  },
+  "artifacts": [
+    "rate_frontier.json",
+    "rate_frontier.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

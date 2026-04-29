@@ -14831,3 +14831,14 @@ canonical RASP (`0.502`). Do not claim consistency posterior packets as a
 positive method. Treat them as a serious JEPA/consistency-inspired ablation and
 move the next full-paper strengthening gate to systems-rate frontier telemetry
 unless a new source surface changes the cross-family hypothesis.
+
+Follow-up `2026-04-29`: added a dedicated deterministic rate-frontier artifact
+for the source-private packet story. On frozen core seed29 and holdout seed30
+reviewer-risk surfaces, the diagnostic packet reaches oracle accuracy at
+`2` bytes while matched-byte hidden-log truncation, JSON relay, and free-text
+relay remain at target-only `0.250`. Structured JSON/free-text catch up only at
+`21` and `17` bytes respectively, so the packet has a `10.5x` byte advantage
+over the nearest structured-text oracle point and `183.2x-186.7x` over full
+hidden-log relay. This strengthens the systems contribution as a far-left
+byte-rate frontier. It is not a TTFT/serving-throughput claim; endpoint timing
+remains a future required systems gate.

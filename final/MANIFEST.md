@@ -69,6 +69,9 @@
 - Consistency-posterior packet code, tests, references, memo, and bidirectional
   cross-family artifacts showing a useful JEPA/consistency-inspired ablation
   but not a clean cross-family positive method.
+- Deterministic source-private rate-frontier script, test, memo, and artifact
+  showing oracle packet accuracy at 2 bytes while JSON/free-text relays need
+  17-21 bytes and full hidden-log relay is 183x-187x larger.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

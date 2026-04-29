@@ -42,6 +42,16 @@ bytes/tokens, and matched structured-text/compression baselines. Cross-family
 should be treated as an explicit limitation until a new surface or architecture
 passes bidirectional controls.
 
+Update `2026-04-29`: a deterministic rate-frontier artifact now strengthens the
+systems claim. On frozen core and holdout reviewer-risk surfaces, the
+source-private packet reaches oracle accuracy at `2` bytes; JSON/free-text
+structured relays require at least `21`/`17` bytes to reach oracle, and full
+hidden-log relay is `183.2x-186.7x` larger. Matched-byte text at the packet
+rate remains at target-only accuracy. This supports a clean far-left byte-rate
+frontier contribution. Remaining systems gap: this is not TTFT or server
+throughput, so endpoint telemetry is still needed before making serving
+latency claims.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union
