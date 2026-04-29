@@ -34,6 +34,7 @@
 - Gemma 4 E2B MPS n160 raw-log/no-trace source-destroying ablation.
 - Granite 3.3 2B n160 strict-prompt cross-family artifact.
 - Granite 3.3 2B n160 strict-prompt seed-repeat and raw-log/no-trace ablation.
+- Qwen3 target-model decoder core n64 CPU ablation.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

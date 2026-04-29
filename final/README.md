@@ -85,6 +85,17 @@ It is not learned latent transfer, arbitrary KV/cache transport, or general raw
 log repair. The contribution is a reproducible, interpretable, rate-capped
 source-private communication protocol with strong controls.
 
+## Target-Model Decoder Ablation
+
+The main result uses a deterministic protocol decoder to isolate source-side
+communication. A Qwen3 target-decoder ablation now passes beyond tiny smoke:
+core seed29 n64 on CPU reaches `42/64 = 0.656` matched packet accuracy versus
+`16/64 = 0.250` target-only and `16/64 = 0.250` best control, with valid matched
+predictions `1.000` and exact-ID parity true. The attempted n160 MPS target
+decoder run is backend-blocked by an Apple MPS matmul shape error. Treat the n64
+row as an ablation that reduces, but does not eliminate, the hand-coded decoder
+objection.
+
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,

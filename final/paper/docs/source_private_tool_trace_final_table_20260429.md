@@ -119,6 +119,22 @@ For model-mediated packet rows, validity is reported separately from matched
 accuracy. Qwen3 is lower than Phi-3 because some packets are invalid or not
 parseable; invalid packets fall back to the target prior.
 
+## Target-Model Decoder Ablation
+
+The main tables use a deterministic protocol decoder so that source-side
+communication can be isolated cleanly. A Qwen3 target-decoder ablation reduces
+the hand-coded-decoder concern:
+
+| Surface | Target model | Device | N | Matched packet | Target-only | Best control | Valid matched | p50 latency |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| core seed 29 | Qwen3-0.6B | MPS | 16 | `0.688` | `0.250` | `0.250` | `1.000` | `1267 ms` |
+| holdout seed 30 | Qwen3-0.6B | MPS | 32 | `0.750` | `0.250` | `0.281` | `1.000` | `1315 ms` |
+| core seed 29 | Qwen3-0.6B | CPU | 64 | `0.656` | `0.250` | `0.250` | `1.000` | `2182 ms` |
+
+The attempted core n160 MPS target-decoder run failed before prediction with an
+Apple MPS matmul shape error. The CPU n64 row is therefore the current strongest
+local target-decoder confirmation. It is still an ablation, not the main claim.
+
 ## Pass/Fail Summary
 
 Passed:
@@ -132,6 +148,7 @@ Passed:
 - bytes/token systems comparison against full hidden-log relay
 - Gemma and Granite non-Qwen source-signal ablations: raw-log/no-trace
   collapses to target-only with zero valid packets
+- Qwen3 target-decoder ablation up to n64 on CPU, with controls at target floor
 
 Failed or pruned:
 

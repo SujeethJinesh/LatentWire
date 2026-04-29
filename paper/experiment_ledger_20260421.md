@@ -14637,3 +14637,13 @@ collapses to matched `40/160 = 0.250`, target-only/best control `40/160`,
 packet valid rate `0.000`, exact-ID parity true, and p50 latency `2857 ms`.
 This promotes Granite as a stable prompt-contract sensitivity row while making
 clear it is weaker than Qwen/Gemma and not a universal prompt-invariant claim.
+
+Update `2026-04-28`: `source_private_target_decoder_n64_cpu_20260428` upgrades
+the target-model decoder ablation beyond tiny smoke. The intended Qwen3 n160 MPS
+target-decoder run failed before prediction with an Apple MPS matmul shape
+error, so it is backend-blocked. The CPU fallback core seed29 n64 gate passes:
+matched packet `42/64 = 0.656`, target-only `16/64 = 0.250`, best control
+`16/64 = 0.250`, valid matched predictions `1.000`, exact-ID parity true,
+matched-minus-best-control `+0.406`, and p50 matched latency `2182 ms`. This
+does not make the target LLM decoder the main claim, but it reduces the
+hand-coded decoder objection and sets up held-out n64 as the next exact gate.

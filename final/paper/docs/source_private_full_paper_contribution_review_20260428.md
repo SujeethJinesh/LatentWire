@@ -63,6 +63,10 @@ controls show whether the gain is real source-private communication.
 - **Endpoint runner for future MoE/FP8 gates.** The same evaluator can consume
   an OpenAI/vLLM-compatible source model endpoint, so Qwen3.6 MoE and FP8 rows
   require access rather than new benchmark code.
+- **Target-model decoder ablation.** A Qwen3 target decoder now passes the core
+  source-private packet gate at n64 on CPU, with matched `0.656` versus
+  target/control `0.250`. This reduces the hand-coded decoder objection, though
+  the deterministic decoder remains the main controlled result.
 
 ## Reviewer Critique
 
@@ -95,10 +99,10 @@ The strongest likely reviewer objections are:
    n32, then FP8 n32. Pass requires matched `>= best_no_source + 0.15`, all
    source-destroying controls within `0.02` of no-source, exact-ID parity, and
    packet validity.
-2. **Target-decoder scale-up if remote remains unavailable.** Run Qwen3 target
-   decoder n160 on core and held-out surfaces. This is now higher value than
-   another source-emitter repeat because it addresses the hand-coded decoder
-   objection directly.
+2. **Target-decoder held-out scale-up if remote remains unavailable.** Run Qwen3
+   target decoder n64 on the held-out surface. This is now higher value than
+   another source-emitter repeat because it tests whether the model-mediated
+   target decoder generalizes beyond the core surface.
 3. **Paper-facing ablation table.** Build a compact table that groups target,
    matched packet, structured text, raw-log/no-trace, codebook remap, and latest
    model rows. This will make the three contributions obvious to reviewers.

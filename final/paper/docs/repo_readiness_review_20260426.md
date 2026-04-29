@@ -2077,3 +2077,12 @@ target-only/best control `40/160`, packet valid rate `0.000`, exact-ID parity
 true, and p50 packet latency `2857 ms`. This promotes Granite from a one-off
 weak non-Qwen positive to a stable prompt-contract sensitivity row, while still
 keeping the full-paper claim bounded.
+
+Update `2026-04-28`: target-model decoding is now stronger than tiny smoke.
+The intended Qwen3 target-decoder n160 MPS gate failed before prediction with an
+Apple MPS matmul shape error, so it is logged as backend-blocked. The CPU
+fallback core seed29 n64 gate passes: matched `42/64 = 0.656`, target-only
+`16/64 = 0.250`, best control `16/64 = 0.250`, valid matched predictions
+`1.000`, exact-ID parity true, and p50 matched latency `2182 ms`. This reduces
+the hand-coded decoder objection but remains an ablation until the held-out n64
+target-decoder row also passes.
