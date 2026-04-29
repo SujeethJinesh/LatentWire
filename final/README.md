@@ -114,6 +114,20 @@ information, quantization, JEPA, Q-Former, and diffusion-inspired successor
 branches. The safest full-paper claim is source-private, extreme-rate
 communication with decoder side information, not broad latent transfer.
 
+## Learned Syndrome Packet Smoke
+
+The learned-syndrome smoke in
+`results/source_private_learned_syndrome_smoke_20260429/` is the current best
+next method contribution candidate. It replaces the hand-designed diagnostic
+packet with a tiny learned encoder that maps private source observations to a
+1/2/4/8-byte binary syndrome decoded with target-side candidate latents.
+
+Seed29 passes at 1/2/4 bytes: matched `0.820/0.949/0.992` versus target
+`0.250`. Seed30 repeats the low-rate result at 1/2 bytes: matched
+`0.797/0.902` versus target `0.250`. Higher budgets are not promoted because
+some source-free controls rise above the tolerance. Treat this as a synthetic
+learned-method smoke, not yet a headline claim.
+
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,
@@ -215,6 +229,7 @@ Run from the repository root with `./venv_arm64/bin/python`.
 ./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py --help
 ./venv_arm64/bin/python scripts/build_source_private_latest_model_matrix.py --help
 ./venv_arm64/bin/python scripts/build_source_private_systems_summary.py --help
+./venv_arm64/bin/python scripts/run_source_private_learned_syndrome_smoke.py --help
 ```
 
 Focused tests:
@@ -227,7 +242,8 @@ Focused tests:
   tests/test_build_source_private_tool_trace_baseline_pack.py \
   tests/test_build_source_private_tool_trace_figures.py \
   tests/test_run_source_private_tool_trace_target_decoder_smoke.py \
-  tests/test_build_source_private_systems_summary.py -q
+  tests/test_build_source_private_systems_summary.py \
+  tests/test_run_source_private_learned_syndrome_smoke.py -q
 ```
 
 ## Final Status

@@ -14674,3 +14674,18 @@ stay near the target floor: shuffled `0.250`, random same-byte `0.266`,
 structured JSON 2-byte `0.250`, and structured free-text 2-byte `0.250`. This
 gives paired core/held-out local target-decoder confirmation; stop widening
 target-decoder rows locally unless a new decoder mechanism is introduced.
+
+Update `2026-04-29`: `source_private_learned_syndrome_smoke_20260429` adds the
+first positive learned packet branch. The smoke uses a synthetic source-private
+candidate-pool contract: source observes a noisy private projection of the
+correct candidate latent, target has public candidate latents and a prior, and a
+ridge-fitted encoder emits a 1/2/4/8-byte binary syndrome decoded by Hamming
+distance against target-side candidate codes. Seed29 train/eval `512/256` passes
+at 1/2/4 bytes: matched `0.820/0.949/0.992` versus target `0.250` and best
+no-source `0.281/0.262/0.262`; 8 bytes fails because a source-free control rises
+to `0.305`. Seed30 repeats the low-rate result: 1/2 bytes pass with matched
+`0.797/0.902` versus target `0.250` and best no-source `0.281/0.266`; 4/8
+bytes fail due source-free controls above the tolerance. This is not yet a
+headline claim, but it promotes learned Wyner-Ziv/syndrome packets as the next
+technical contribution candidate. Added `references/482_competitor_threats_and_learned_syndrome_refs.md`
+for competitor and theory positioning.

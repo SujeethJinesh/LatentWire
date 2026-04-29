@@ -873,5 +873,12 @@
     "path": "references/481_systems_novelty_and_future_methods_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for systems, novelty, competitor positioning, and future learned syndrome/latent-communication methods around source-private diagnostic packets."
+  },
+  {
+    "num": 482,
+    "slug": "competitor_threats_and_learned_syndrome_refs",
+    "path": "references/482_competitor_threats_and_learned_syndrome_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for competitor novelty threats and learned syndrome packet positioning against C2C, KVComm, activation and latent-agent communication, prompt compression, source coding with decoder side information, and DeepJSCC-WZ."
   }
 ]

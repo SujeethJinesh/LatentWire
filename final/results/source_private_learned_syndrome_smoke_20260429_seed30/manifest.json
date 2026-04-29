@@ -1,0 +1,22 @@
+{
+  "artifact_sha256": {
+    "predictions_budget1.jsonl": "8398e1c93e1f6cd7865d2f9f90368ca2417dd91b074db5902e00d7d4d55a5bab",
+    "predictions_budget2.jsonl": "3022c0fd2d4876ce8d207ea07fcbbbf837b6ffb4262da5c295cf136eb9e27ff9",
+    "predictions_budget4.jsonl": "7acc667e66c4fd00224d778bb43ac517f97b0f955ec3dba459a8c26f60846cbd",
+    "predictions_budget8.jsonl": "876332a5e81f3a0e16352fb132f3b6521c697ba4da135b87776213a096b20f19",
+    "summary.json": "677e34c075f29e334786bc9f9d88178b02e5b7809ee9b4cbc943ced3465f9d03",
+    "summary.md": "cd710f1a65c624280f942f8a140e1476c619ebb879dc82aa5216028a1135e48f"
+  },
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "predictions_budget1.jsonl",
+    "predictions_budget2.jsonl",
+    "predictions_budget4.jsonl",
+    "predictions_budget8.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "scripts/run_source_private_learned_syndrome_smoke.py --output-dir results/source_private_learned_syndrome_smoke_20260429_seed30",
+  "pass_gate": true
+}

@@ -2111,3 +2111,14 @@ exact-ID parity true, and p50 matched latency `2237 ms`. Combined with the core
 n64 CPU row (`0.656` matched versus `0.250` controls), this is enough local
 evidence to stop widening target-decoder rows and return to learned syndrome
 packets or MoE/FP8 endpoint gates.
+
+Update `2026-04-29`: learned syndrome packets are now the top live method
+candidate beyond the hand-designed diagnostic protocol. The synthetic
+source-private learned-syndrome smoke passes at the low-rate frontier on two
+seeds: seed29 passes at 1/2/4 bytes with matched `0.820/0.949/0.992` versus
+target `0.250`, and seed30 passes at 1/2 bytes with matched `0.797/0.902`
+versus target `0.250`. Higher budgets are not promoted because source-free
+binary/text controls can rise above the allowed tolerance. Readiness improves
+from "protocol-only" to "has a learned-method candidate," but this is still
+smoke evidence; the next exact gate is a real-feature learned syndrome row on
+tool-trace or cached candidate features under the same controls.

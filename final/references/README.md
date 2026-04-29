@@ -500,3 +500,6 @@ final-paper framing:
   source-private packets against C2C, KVComm, activation communication, prompt
   compression, agent handoff, source coding with decoder side information,
   quantization, JEPA, Q-Former, and diffusion-inspired successor branches.
+- `482_`: Competitor-threat and learned-syndrome memo covering C2C/KVComm,
+  activation communication, latent-agent systems, LLMLingua variants,
+  Chain-of-Agents, distributed indirect source coding, and DeepJSCC-WZ.

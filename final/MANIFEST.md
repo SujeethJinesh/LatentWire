@@ -42,6 +42,8 @@
 - Systems/novelty/future-method reference memo for C2C, KVComm, activation
   communication, prompt compression, tool-agent handoff, source coding,
   quantization, JEPA, Q-Former, and diffusion-inspired successor branches.
+- Learned syndrome packet smoke script, test, seed29/seed30 artifacts, and
+  competitor-threat reference memo for the next method-contribution branch.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes
