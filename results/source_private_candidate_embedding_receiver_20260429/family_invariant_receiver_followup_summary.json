@@ -1,0 +1,72 @@
+{
+  "created_utc": "2026-04-29T20:19:01.279972+00:00",
+  "gate": "source_private_candidate_embedding_receiver_family_invariant_followup",
+  "next_gate": "Use fold-heldout calibration or sparse/shared-dictionary receiver rather than raw cosine-anchor packets.",
+  "readout": "Simple coordinate-free and anchor-relative receiver variants do not fix core-to-holdout transfer; the naive anchor bank is pruned.",
+  "rows": [
+    {
+      "artifact": "heldout_core_to_holdout_budget8_seed29_30",
+      "best_destructive_control_accuracy": 0.310546875,
+      "candidate_feature_dims": 32,
+      "eval_examples": 512,
+      "full_diag_oracle_accuracy": 0.80859375,
+      "margin_threshold": 0.0,
+      "matched_accuracy": 0.453125,
+      "matched_minus_best_destructive_control": 0.142578125,
+      "matched_minus_target": 0.203125,
+      "packet_dim": 512,
+      "packet_feature_mode": "hashed",
+      "pass_gate": false,
+      "receiver_kind": "ridge",
+      "target_only_accuracy": 0.25
+    },
+    {
+      "artifact": "heldout_core_to_holdout_code_similarity_budget8_seed29_30",
+      "best_destructive_control_accuracy": 0.28515625,
+      "candidate_feature_dims": 0,
+      "eval_examples": 512,
+      "full_diag_oracle_accuracy": 1.0,
+      "margin_threshold": 0.25,
+      "matched_accuracy": 0.255859375,
+      "matched_minus_best_destructive_control": -0.029296875,
+      "matched_minus_target": 0.005859375,
+      "packet_dim": 512,
+      "packet_feature_mode": "hashed",
+      "pass_gate": false,
+      "receiver_kind": "code_similarity",
+      "target_only_accuracy": 0.25
+    },
+    {
+      "artifact": "heldout_core_to_holdout_anchor_relative_code_similarity_budget8_seed29_30",
+      "best_destructive_control_accuracy": 0.2578125,
+      "candidate_feature_dims": 0,
+      "eval_examples": 512,
+      "full_diag_oracle_accuracy": 0.755859375,
+      "margin_threshold": 0.09375,
+      "matched_accuracy": 0.28125,
+      "matched_minus_best_destructive_control": 0.0234375,
+      "matched_minus_target": 0.03125,
+      "packet_dim": 128,
+      "packet_feature_mode": "anchor_relative",
+      "pass_gate": false,
+      "receiver_kind": "code_similarity",
+      "target_only_accuracy": 0.25
+    },
+    {
+      "artifact": "heldout_core_to_holdout_anchor_relative_ridge_budget8_seed29_30",
+      "best_destructive_control_accuracy": 0.4375,
+      "candidate_feature_dims": 0,
+      "eval_examples": 512,
+      "full_diag_oracle_accuracy": 0.341796875,
+      "margin_threshold": 0.720246,
+      "matched_accuracy": 0.302734375,
+      "matched_minus_best_destructive_control": -0.134765625,
+      "matched_minus_target": 0.052734375,
+      "packet_dim": 128,
+      "packet_feature_mode": "anchor_relative",
+      "pass_gate": false,
+      "receiver_kind": "ridge",
+      "target_only_accuracy": 0.25
+    }
+  ]
+}

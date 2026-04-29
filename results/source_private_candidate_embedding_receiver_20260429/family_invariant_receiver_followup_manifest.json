@@ -1,0 +1,10 @@
+{
+  "artifact_sha256": {
+    "family_invariant_receiver_followup_summary.json": "ee18ec9d3973206e94052fee8a87f1db41567d020e2ec737373dbbb4559e8025",
+    "family_invariant_receiver_followup_summary.md": "f485319ab3e5c93c851b83c47a4f5fb6c92e68b26a4afff7809fca4b5dc184d1"
+  },
+  "artifacts": [
+    "family_invariant_receiver_followup_summary.json",
+    "family_invariant_receiver_followup_summary.md"
+  ]
+}

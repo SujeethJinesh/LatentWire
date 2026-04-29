@@ -52,6 +52,7 @@ CONDITIONS = [
 
 
 _CANDIDATE_MATRIX_CACHE: dict[tuple[int, int], np.ndarray] = {}
+_PACKET_CANDIDATE_MATRIX_CACHE: dict[tuple[int, int, str, int], np.ndarray] = {}
 _SOURCE_VECTOR_CACHE: dict[tuple[int, int, str], np.ndarray] = {}
 
 
@@ -107,11 +108,56 @@ def _candidate_matrix_mode(example: Example, feature_dim: int) -> np.ndarray:
     return matrix
 
 
-def _fit_cached_ridge_encoder(train_examples: list[Example], *, feature_dim: int, ridge: float) -> np.ndarray:
+def _build_anchor_matrix(train_examples: list[Example], *, feature_dim: int, anchor_count: int) -> np.ndarray:
+    candidates = np.concatenate([_candidate_matrix_mode(example, feature_dim) for example in train_examples], axis=0)
+    if len(candidates) >= anchor_count:
+        return candidates[:anchor_count].astype(np.float32)
+    repeats = int(np.ceil(anchor_count / max(1, len(candidates))))
+    return np.tile(candidates, (repeats, 1))[:anchor_count].astype(np.float32)
+
+
+def _packet_candidate_matrix(
+    example: Example,
+    *,
+    feature_dim: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
+) -> np.ndarray:
+    anchor_id = 0 if anchor_matrix is None else id(anchor_matrix)
+    key = (id(example), feature_dim, packet_feature_mode, anchor_id)
+    cached = _PACKET_CANDIDATE_MATRIX_CACHE.get(key)
+    if cached is not None:
+        return cached
+    candidates = _candidate_matrix_mode(example, feature_dim)
+    if packet_feature_mode == "hashed":
+        matrix = candidates
+    elif packet_feature_mode == "anchor_relative":
+        if anchor_matrix is None:
+            raise ValueError("anchor_relative packet features require an anchor matrix")
+        matrix = _normalize_rows(candidates @ anchor_matrix.T).astype(np.float32)
+    else:
+        raise ValueError(f"unknown packet feature mode {packet_feature_mode!r}")
+    _PACKET_CANDIDATE_MATRIX_CACHE[key] = matrix
+    return matrix
+
+
+def _fit_cached_ridge_encoder(
+    train_examples: list[Example],
+    *,
+    feature_dim: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
+    ridge: float,
+) -> np.ndarray:
     x = np.stack([_source_vector_mode(example, feature_dim, mode="matched") for example in train_examples], axis=0).astype(np.float64)
     y = []
     for example in train_examples:
-        candidates = _candidate_matrix_mode(example, feature_dim).astype(np.float64)
+        candidates = _packet_candidate_matrix(
+            example,
+            feature_dim=feature_dim,
+            packet_feature_mode=packet_feature_mode,
+            anchor_matrix=anchor_matrix,
+        ).astype(np.float64)
         answer_index = next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == example.answer_label)
         y.append(candidates[answer_index])
     y_arr = np.stack(y, axis=0).astype(np.float64)
@@ -141,8 +187,21 @@ def _source_packet(
     return _packet_from_vector(predicted, code_projection, budget_bytes)
 
 
-def _candidate_codes(example: Example, code_projection: np.ndarray, feature_dim: int, bit_count: int) -> np.ndarray:
-    candidates = _candidate_matrix_mode(example, feature_dim)
+def _candidate_codes(
+    example: Example,
+    code_projection: np.ndarray,
+    feature_dim: int,
+    bit_count: int,
+    *,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
+) -> np.ndarray:
+    candidates = _packet_candidate_matrix(
+        example,
+        feature_dim=feature_dim,
+        packet_feature_mode=packet_feature_mode,
+        anchor_matrix=anchor_matrix,
+    )
     logits = candidates @ code_projection[:bit_count].T
     return (logits >= 0).astype(np.uint8)
 
@@ -159,11 +218,20 @@ def _receiver_features(
     feature_dim: int,
     budget_bytes: int,
     candidate_feature_dims: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
 ) -> np.ndarray:
     bit_count = budget_bytes * 8
     bits = _packet_bits(payload, bit_count)
     signed_packet = bits * 2.0 - 1.0
-    codes = _candidate_codes(example, code_projection, feature_dim, bit_count).astype(np.float32)
+    codes = _candidate_codes(
+        example,
+        code_projection,
+        feature_dim,
+        bit_count,
+        packet_feature_mode=packet_feature_mode,
+        anchor_matrix=anchor_matrix,
+    ).astype(np.float32)
     signed_codes = codes * 2.0 - 1.0
     interaction = signed_codes * signed_packet[None, :]
     similarity = interaction.mean(axis=1, keepdims=True)
@@ -183,6 +251,8 @@ def _fit_receiver(
     feature_dim: int,
     budget_bytes: int,
     candidate_feature_dims: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
     ridge: float,
 ) -> np.ndarray:
     xs: list[np.ndarray] = []
@@ -203,6 +273,8 @@ def _fit_receiver(
             feature_dim=feature_dim,
             budget_bytes=budget_bytes,
             candidate_feature_dims=candidate_feature_dims,
+            packet_feature_mode=packet_feature_mode,
+            anchor_matrix=anchor_matrix,
         )
         for idx, candidate in enumerate(example.candidates):
             xs.append(features[idx])
@@ -215,28 +287,77 @@ def _fit_receiver(
     return np.linalg.solve(xtx, x.T @ y).astype(np.float32)
 
 
-def _predict_with_receiver(
+def _score_candidates(
     example: Example,
-    payload: bytes | None,
+    payload: bytes,
     *,
-    receiver: np.ndarray,
+    receiver_kind: str,
+    receiver: np.ndarray | None,
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     candidate_feature_dims: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
+) -> np.ndarray:
+    if receiver_kind == "ridge":
+        assert receiver is not None
+        features = _receiver_features(
+            example,
+            payload,
+            code_projection=code_projection,
+            feature_dim=feature_dim,
+            budget_bytes=budget_bytes,
+            candidate_feature_dims=candidate_feature_dims,
+            packet_feature_mode=packet_feature_mode,
+            anchor_matrix=anchor_matrix,
+        )
+        return features @ receiver
+    if receiver_kind == "code_similarity":
+        bit_count = budget_bytes * 8
+        bits = _packet_bits(payload, bit_count)
+        codes = _candidate_codes(
+            example,
+            code_projection,
+            feature_dim,
+            bit_count,
+            packet_feature_mode=packet_feature_mode,
+            anchor_matrix=anchor_matrix,
+        ).astype(np.float32)
+        signed_packet = bits * 2.0 - 1.0
+        signed_codes = codes * 2.0 - 1.0
+        return (signed_codes * signed_packet[None, :]).mean(axis=1)
+    raise ValueError(f"unknown receiver kind {receiver_kind!r}")
+
+
+def _predict_with_receiver(
+    example: Example,
+    payload: bytes | None,
+    *,
+    receiver_kind: str,
+    receiver: np.ndarray | None,
+    code_projection: np.ndarray,
+    feature_dim: int,
+    budget_bytes: int,
+    candidate_feature_dims: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
     margin_threshold: float,
 ) -> tuple[str, dict[str, Any]]:
     if payload is None:
         return _prior_prediction(example), {"decoder": "prior"}
-    features = _receiver_features(
+    scores = _score_candidates(
         example,
         payload,
+        receiver_kind=receiver_kind,
+        receiver=receiver,
         code_projection=code_projection,
         feature_dim=feature_dim,
         budget_bytes=budget_bytes,
         candidate_feature_dims=candidate_feature_dims,
+        packet_feature_mode=packet_feature_mode,
+        anchor_matrix=anchor_matrix,
     )
-    scores = features @ receiver
     labels = [candidate.label for candidate in example.candidates]
     prior = _prior_prediction(example)
     prior_index = labels.index(prior)
@@ -245,7 +366,7 @@ def _predict_with_receiver(
     margin_vs_prior = best_score - float(scores[prior_index])
     if labels[tied[0]] != prior and margin_vs_prior < margin_threshold:
         return prior, {
-            "decoder": "learned_candidate_embedding_target_preserve",
+            "decoder": f"{receiver_kind}_target_preserve",
             "scores": [float(score) for score in scores],
             "ties": tied,
             "margin_vs_prior": margin_vs_prior,
@@ -257,7 +378,7 @@ def _predict_with_receiver(
     else:
         prediction = labels[tied[0]]
     return prediction, {
-        "decoder": "learned_candidate_embedding_target_preserve",
+        "decoder": f"{receiver_kind}_target_preserve",
         "scores": [float(score) for score in scores],
         "ties": tied,
         "margin_vs_prior": margin_vs_prior,
@@ -276,6 +397,8 @@ def _payload_for_condition(
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
     rng: random.Random,
     random_encoder: np.ndarray,
 ) -> tuple[bytes | None, dict[str, Any]]:
@@ -323,7 +446,13 @@ def _payload_for_condition(
     if condition == "target_derived_sidecar":
         prior = _prior_prediction(example)
         prior_index = next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == prior)
-        return _packet_from_vector(_candidate_matrix_mode(example, feature_dim)[prior_index], code_projection, budget_bytes), {"source": "target_prior"}
+        candidates = _packet_candidate_matrix(
+            example,
+            feature_dim=feature_dim,
+            packet_feature_mode=packet_feature_mode,
+            anchor_matrix=anchor_matrix,
+        )
+        return _packet_from_vector(candidates[prior_index], code_projection, budget_bytes), {"source": "target_prior"}
     if condition == "answer_only":
         return example.answer_label.encode("utf-8")[:budget_bytes], {"source": "answer_label_text"}
     if condition == "structured_text_matched":
@@ -333,7 +462,13 @@ def _payload_for_condition(
         return _packet_from_vector(predicted, code_projection, budget_bytes), {"source": "wrong_encoder"}
     if condition == "full_diag_oracle":
         answer_index = next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == example.answer_label)
-        return _packet_from_vector(_candidate_matrix_mode(example, feature_dim)[answer_index], code_projection, budget_bytes), {"source": "candidate_oracle"}
+        candidates = _packet_candidate_matrix(
+            example,
+            feature_dim=feature_dim,
+            packet_feature_mode=packet_feature_mode,
+            anchor_matrix=anchor_matrix,
+        )
+        return _packet_from_vector(candidates[answer_index], code_projection, budget_bytes), {"source": "candidate_oracle"}
     raise ValueError(f"unknown condition {condition!r}")
 
 
@@ -342,11 +477,14 @@ def _evaluate_for_threshold(
     *,
     conditions: list[str],
     encoder: np.ndarray,
-    receiver: np.ndarray,
+    receiver_kind: str,
+    receiver: np.ndarray | None,
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     candidate_feature_dims: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
     margin_threshold: float,
     random_encoder: np.ndarray,
     seed: int,
@@ -364,17 +502,22 @@ def _evaluate_for_threshold(
                 code_projection=code_projection,
                 feature_dim=feature_dim,
                 budget_bytes=budget_bytes,
+                packet_feature_mode=packet_feature_mode,
+                anchor_matrix=anchor_matrix,
                 rng=rng,
                 random_encoder=random_encoder,
             )
             prediction, _ = _predict_with_receiver(
                 example,
                 payload,
+                receiver_kind=receiver_kind,
                 receiver=receiver,
                 code_projection=code_projection,
                 feature_dim=feature_dim,
                 budget_bytes=budget_bytes,
                 candidate_feature_dims=candidate_feature_dims,
+                packet_feature_mode=packet_feature_mode,
+                anchor_matrix=anchor_matrix,
                 margin_threshold=margin_threshold,
             )
             by_condition[condition].append(prediction == example.answer_label)
@@ -385,11 +528,14 @@ def _calibrate_margin_threshold(
     calibration_examples: list[Example],
     *,
     encoder: np.ndarray,
-    receiver: np.ndarray,
+    receiver_kind: str,
+    receiver: np.ndarray | None,
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     candidate_feature_dims: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
     random_encoder: np.ndarray,
     seed: int,
 ) -> tuple[float, dict[str, Any]]:
@@ -413,16 +559,17 @@ def _calibrate_margin_threshold(
             budget_bytes=budget_bytes,
             mode="matched",
         )
-        scores = (
-            _receiver_features(
-                example,
-                payload,
-                code_projection=code_projection,
-                feature_dim=feature_dim,
-                budget_bytes=budget_bytes,
-                candidate_feature_dims=candidate_feature_dims,
-            )
-            @ receiver
+        scores = _score_candidates(
+            example,
+            payload,
+            receiver_kind=receiver_kind,
+            receiver=receiver,
+            code_projection=code_projection,
+            feature_dim=feature_dim,
+            budget_bytes=budget_bytes,
+            candidate_feature_dims=candidate_feature_dims,
+            packet_feature_mode=packet_feature_mode,
+            anchor_matrix=anchor_matrix,
         )
         labels = [candidate.label for candidate in example.candidates]
         prior_index = labels.index(_prior_prediction(example))
@@ -443,11 +590,14 @@ def _calibrate_margin_threshold(
             calibration_examples,
             conditions=["target_only", "matched_candidate_embedding_receiver", *controls],
             encoder=encoder,
+            receiver_kind=receiver_kind,
             receiver=receiver,
             code_projection=code_projection,
             feature_dim=feature_dim,
             budget_bytes=budget_bytes,
             candidate_feature_dims=candidate_feature_dims,
+            packet_feature_mode=packet_feature_mode,
+            anchor_matrix=anchor_matrix,
             margin_threshold=threshold,
             random_encoder=random_encoder,
             seed=seed,
@@ -489,11 +639,14 @@ def _predict_condition(
     eval_examples: list[Example],
     index: int,
     encoder: np.ndarray,
-    receiver: np.ndarray,
+    receiver_kind: str,
+    receiver: np.ndarray | None,
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     candidate_feature_dims: int,
+    packet_feature_mode: str,
+    anchor_matrix: np.ndarray | None,
     margin_threshold: float,
     rng: random.Random,
     random_encoder: np.ndarray,
@@ -508,17 +661,22 @@ def _predict_condition(
         code_projection=code_projection,
         feature_dim=feature_dim,
         budget_bytes=budget_bytes,
+        packet_feature_mode=packet_feature_mode,
+        anchor_matrix=anchor_matrix,
         rng=rng,
         random_encoder=random_encoder,
     )
     prediction, decode_meta = _predict_with_receiver(
         example,
         payload,
+        receiver_kind=receiver_kind,
         receiver=receiver,
         code_projection=code_projection,
         feature_dim=feature_dim,
         budget_bytes=budget_bytes,
         candidate_feature_dims=candidate_feature_dims,
+        packet_feature_mode=packet_feature_mode,
+        anchor_matrix=anchor_matrix,
         margin_threshold=0.0 if condition == "full_diag_oracle" else margin_threshold,
     )
     payload_hex = (payload or b"").hex()
@@ -559,6 +717,9 @@ def run_gate(
     candidates: int,
     feature_dim: int,
     candidate_feature_dims: int,
+    receiver_kind: str,
+    packet_feature_mode: str,
+    anchor_count: int,
     budgets: list[int],
     train_seed: int,
     eval_seed: int,
@@ -566,34 +727,58 @@ def run_gate(
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     _CANDIDATE_MATRIX_CACHE.clear()
+    _PACKET_CANDIDATE_MATRIX_CACHE.clear()
     _SOURCE_VECTOR_CACHE.clear()
     train_rows = make_benchmark(examples=train_examples, candidates=candidates, seed=train_seed, family_set=train_family_set)
     eval_rows = make_benchmark(examples=eval_examples, candidates=candidates, seed=eval_seed, family_set=eval_family_set)
-    encoder = _fit_cached_ridge_encoder(train_rows, feature_dim=feature_dim, ridge=ridge)
+    packet_dim = feature_dim
+    anchor_matrix = None
+    if packet_feature_mode == "anchor_relative":
+        packet_dim = anchor_count
+        anchor_matrix = _build_anchor_matrix(train_rows, feature_dim=feature_dim, anchor_count=anchor_count)
+    encoder = _fit_cached_ridge_encoder(
+        train_rows,
+        feature_dim=feature_dim,
+        packet_feature_mode=packet_feature_mode,
+        anchor_matrix=anchor_matrix,
+        ridge=ridge,
+    )
     rng_np = np.random.default_rng(train_seed * 1009 + eval_seed)
-    code_projection = _normalize_rows(rng_np.normal(size=(max(budgets) * 8, feature_dim))).astype(np.float32)
-    random_encoder = rng_np.normal(0.0, 1.0 / np.sqrt(feature_dim), size=encoder.shape).astype(np.float32)
+    code_projection = _normalize_rows(rng_np.normal(size=(max(budgets) * 8, packet_dim))).astype(np.float32)
+    random_encoder = rng_np.normal(0.0, 1.0 / np.sqrt(packet_dim), size=encoder.shape).astype(np.float32)
     rng = random.Random(train_seed * 2003 + eval_seed)
     prediction_files: dict[str, str] = {}
     budget_summaries: list[dict[str, Any]] = []
     for budget in budgets:
-        receiver = _fit_receiver(
-            train_rows,
-            encoder=encoder,
-            code_projection=code_projection,
-            feature_dim=feature_dim,
-            budget_bytes=budget,
-            candidate_feature_dims=candidate_feature_dims,
-            ridge=ridge,
-        )
+        if receiver_kind == "ridge":
+            receiver: np.ndarray | None = _fit_receiver(
+                train_rows,
+                encoder=encoder,
+                code_projection=code_projection,
+                feature_dim=feature_dim,
+                budget_bytes=budget,
+                candidate_feature_dims=candidate_feature_dims,
+                packet_feature_mode=packet_feature_mode,
+                anchor_matrix=anchor_matrix,
+                ridge=ridge,
+            )
+            receiver_digest = hashlib.sha256(receiver.tobytes()).hexdigest()
+        elif receiver_kind == "code_similarity":
+            receiver = None
+            receiver_digest = "code_similarity"
+        else:
+            raise ValueError(f"unknown receiver kind {receiver_kind!r}")
         margin_threshold, calibration = _calibrate_margin_threshold(
             train_rows,
             encoder=encoder,
+            receiver_kind=receiver_kind,
             receiver=receiver,
             code_projection=code_projection,
             feature_dim=feature_dim,
             budget_bytes=budget,
             candidate_feature_dims=candidate_feature_dims,
+            packet_feature_mode=packet_feature_mode,
+            anchor_matrix=anchor_matrix,
             random_encoder=random_encoder,
             seed=train_seed * 3011 + eval_seed + budget,
         )
@@ -607,11 +792,14 @@ def run_gate(
                         eval_examples=eval_rows,
                         index=row_index,
                         encoder=encoder,
+                        receiver_kind=receiver_kind,
                         receiver=receiver,
                         code_projection=code_projection,
                         feature_dim=feature_dim,
                         budget_bytes=budget,
                         candidate_feature_dims=candidate_feature_dims,
+                        packet_feature_mode=packet_feature_mode,
+                        anchor_matrix=anchor_matrix,
                         margin_threshold=margin_threshold,
                         rng=rng,
                         random_encoder=random_encoder,
@@ -658,7 +846,8 @@ def run_gate(
                 "full_diag_oracle_accuracy": metrics["full_diag_oracle"]["accuracy"],
                 "margin_threshold": margin_threshold,
                 "margin_calibration": calibration,
-                "receiver_sha256": hashlib.sha256(receiver.tobytes()).hexdigest(),
+                "receiver_kind": receiver_kind,
+                "receiver_sha256": receiver_digest,
                 "metrics": metrics,
             }
         )
@@ -672,7 +861,11 @@ def run_gate(
         "eval_family_set": eval_family_set,
         "candidates": candidates,
         "feature_dim": feature_dim,
+        "packet_feature_mode": packet_feature_mode,
+        "packet_dim": packet_dim,
+        "anchor_count": anchor_count if packet_feature_mode == "anchor_relative" else 0,
         "candidate_feature_dims": candidate_feature_dims,
+        "receiver_kind": receiver_kind,
         "budgets": budgets,
         "train_seed": train_seed,
         "eval_seed": eval_seed,
@@ -690,7 +883,7 @@ def run_gate(
         ),
         "interpretation": (
             "This is a learned target-side receiver smoke: source evidence is compressed into a bit packet, "
-            "and a trained candidate scorer decodes the packet using public candidate side information."
+            "and a target-side scorer decodes the packet using public candidate side information."
         ),
     }
     (output_dir / "summary.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -728,6 +921,9 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- pass gate: `{payload['pass_gate']}`",
         f"- train/eval: `{payload['train_family_set']}:{payload['train_examples']}` / `{payload['eval_family_set']}:{payload['eval_examples']}`",
         f"- candidate feature dims: `{payload['candidate_feature_dims']}`",
+        f"- receiver kind: `{payload['receiver_kind']}`",
+        f"- packet feature mode: `{payload['packet_feature_mode']}`",
+        f"- packet dim: `{payload['packet_dim']}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
         "| Budget bytes | Pass | Matched | Target | Best destructive | Delta target | Delta destructive | Full diag oracle |",
@@ -754,6 +950,9 @@ def main() -> None:
     parser.add_argument("--candidates", type=int, default=4)
     parser.add_argument("--feature-dim", type=int, default=512)
     parser.add_argument("--candidate-feature-dims", type=int, default=32)
+    parser.add_argument("--receiver-kind", choices=["ridge", "code_similarity"], default="ridge")
+    parser.add_argument("--packet-feature-mode", choices=["hashed", "anchor_relative"], default="hashed")
+    parser.add_argument("--anchor-count", type=int, default=128)
     parser.add_argument("--budgets", type=int, nargs="+", default=[2, 4, 6])
     parser.add_argument("--train-seed", type=int, default=29)
     parser.add_argument("--eval-seed", type=int, default=30)
@@ -769,6 +968,9 @@ def main() -> None:
         candidates=args.candidates,
         feature_dim=args.feature_dim,
         candidate_feature_dims=args.candidate_feature_dims,
+        receiver_kind=args.receiver_kind,
+        packet_feature_mode=args.packet_feature_mode,
+        anchor_count=args.anchor_count,
         budgets=args.budgets,
         train_seed=args.train_seed,
         eval_seed=args.eval_seed,

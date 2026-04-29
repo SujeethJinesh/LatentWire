@@ -186,3 +186,15 @@ Implication for the sources above:
   the next experiment should encode source evidence in public anchor-relative
   coordinates or use fold-heldout calibration before making a learned-receiver
   paper claim.
+
+## Family-Invariant Receiver Follow-Up
+
+The simplest invariant fixes were falsified. A coordinate-free hashed
+code-similarity receiver has full oracle decodability (`1.000`) but target-level
+matched accuracy (`0.256`) on core-to-holdout. A naive anchor-relative cosine
+bank keeps source-destroying controls near target but only reaches matched
+`0.281` and oracle `0.756`; the anchor-relative ridge version lets controls
+dominate. This changes the next experiment: do not continue with raw
+cosine-anchor packets. Use fold-heldout calibration or sparse/shared-dictionary
+features inspired by relative representations and crosscoders, with explicit
+anchor-remap/private-atom controls.

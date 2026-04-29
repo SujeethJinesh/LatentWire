@@ -14,7 +14,7 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `101` rows after adding learned Wyner-Ziv packet evidence,
+The aggregate now has `104` rows after adding learned Wyner-Ziv packet evidence,
 bidirectional cross-family falsification rows, protected residual codec
 ablation rows, progress-enabled target-decoder receiver rows, and the static
 anchor-relative sparse packet smoke, a learned target-preserving receiver smoke,
@@ -105,6 +105,14 @@ The learned packet story remains positive in scoped settings:
   candidate feature coordinates worsens the held-out result. This directly
   addresses the hand-designed-decoder objection in-distribution but is not yet
   a cross-family method claim.
+- Three family-invariant learned-receiver follow-ups fail the core-to-holdout
+  gate. Hashed code similarity has perfect oracle decoding (`1.000`) but
+  target-level matched accuracy (`0.256`), indicating the source encoder is not
+  producing transferable candidate-code packets. A naive anchor-relative cosine
+  bank keeps controls cleaner but reduces oracle headroom (`0.756`) and only
+  reaches matched `0.281`; the anchor-relative ridge row lets controls dominate
+  (`0.438` best destructive control). This prunes simple coordinate-free and
+  cosine-anchor fixes.
 
 ## Failures Kept In The Artifact
 
@@ -141,6 +149,10 @@ The aggregate explicitly keeps the main failed rows:
   above target, but it misses strict promotion because the best destructive
   control reaches `0.311`, the matched-control gap is only `+0.143`, and the
   diagnostic oracle falls below `0.95`.
+- The coordinate-free and anchor-relative learned receiver rows are also kept
+  as failed rows. They clarify the failure mechanism: candidate-code decoding
+  itself can be oracle-perfect, but the cross-family source encoder and naive
+  anchor bank do not transmit enough source-specific evidence.
 
 ## Paper Implication
 
@@ -170,6 +182,6 @@ throughput superiority until a real vLLM/OpenAI-compatible endpoint run exists.
 The highest-priority reviewer-facing gate is now a true server-side
 TTFT/throughput run when NVIDIA GPUs are available. On the Mac, the next
 highest-value technical branch is a family-invariant learned receiver:
-anchor-relative/codebook features or fold-heldout calibration at `8` bytes,
-because the raw candidate-coordinate receiver is same-distribution stable but
-does not clear held-out-family transfer.
+fold-heldout calibration or sparse/shared-dictionary features at `8` bytes,
+because raw candidate-coordinate, coordinate-free code-similarity, and naive
+cosine-anchor receivers do not clear held-out-family transfer.

@@ -85,3 +85,29 @@ matched packet must beat target and every destructive control by at least `15`
 points, all destructive controls must stay within `target + 0.05`, and the full
 diagnostic oracle must stay above `0.95`. The highest-value next receiver is an
 anchor-relative or fold-heldout-calibrated packet decoder at `8` bytes.
+
+## Family-Invariant Follow-Up
+
+Artifact:
+
+- `results/source_private_candidate_embedding_receiver_20260429/family_invariant_receiver_followup_summary.json`
+- `results/source_private_candidate_embedding_receiver_20260429/family_invariant_receiver_followup_summary.md`
+
+I tested three small fixes for the core-to-holdout failure:
+
+| Variant | Matched | Target | Best destructive | Delta control | Oracle | Result |
+|---|---:|---:|---:|---:|---:|---|
+| raw hashed ridge receiver | 0.453 | 0.250 | 0.311 | +0.143 | 0.809 | fail |
+| hashed code-similarity receiver | 0.256 | 0.250 | 0.285 | -0.029 | 1.000 | fail |
+| anchor-relative code-similarity receiver | 0.281 | 0.250 | 0.258 | +0.023 | 0.756 | fail |
+| anchor-relative ridge receiver | 0.303 | 0.250 | 0.438 | -0.135 | 0.342 | fail |
+
+The hashed code-similarity row is diagnostic: perfect oracle decoding but
+target-level matched accuracy means the source encoder is not producing
+transferable candidate-code packets across families. The naive anchor-relative
+cosine bank is also pruned because it reduces oracle headroom and lets controls
+dominate under a learned scorer.
+
+The next receiver should not be another raw cosine-anchor variant. The live
+method direction is now fold-heldout calibration or a sparse/shared-dictionary
+receiver with explicit anchor-remap and private-atom controls.

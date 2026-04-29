@@ -2491,3 +2491,16 @@ therefore improves for the same-distribution learned-decoder contribution, but
 not for cross-family learned communication. The next Mac-local method gate is a
 family-invariant receiver using anchor-relative/codebook features or
 fold-heldout calibration at `8` bytes.
+
+Follow-up `2026-04-29`: tested simple family-invariant learned receiver fixes,
+and all failed core-to-holdout. The coordinate-free hashed code-similarity
+receiver has perfect oracle decoding (`1.000`) but target-level matched
+accuracy (`0.256`), so the source encoder is not producing transferable
+candidate-code packets. The naive anchor-relative code-similarity receiver
+keeps controls clean but reaches only matched `0.281` with oracle `0.756`; the
+anchor-relative ridge receiver reaches matched `0.303` but lets controls
+dominate (`0.438` best destructive). This prunes raw code-similarity and simple
+cosine-anchor banks as cross-family fixes. Readiness is unchanged: the learned
+receiver remains a same-distribution contribution only. Next best method gate:
+fold-heldout calibration or sparse/shared-dictionary receiver with explicit
+anchor-remap/private-atom controls.

@@ -246,6 +246,8 @@ def _candidate_embedding_receiver_row(row_id: str, path: pathlib.Path, *, surfac
         comparator="zero/shuffled/answer-masked/random/target-derived/wrong-projection controls",
         note=(
             f"train={payload['train_examples']}; eval={payload['eval_examples']}; "
+            f"receiver={payload.get('receiver_kind', 'ridge')}; "
+            f"packet_features={payload.get('packet_feature_mode', 'hashed')}; "
             f"margin_threshold={best['margin_threshold']:.3f}; "
             f"full_diag_oracle={best['full_diag_oracle_accuracy']:.3f}; "
             f"best_control={best['best_destructive_control_accuracy']:.3f}"
@@ -541,6 +543,30 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "candidate_embedding_receiver_heldout_core_to_holdout_budget8_seed29_30",
             ROOT / "results/source_private_candidate_embedding_receiver_20260429/heldout_core_to_holdout_budget8_seed29_30/summary.json",
             surface="heldout-family core-train/holdout-eval seed29->30",
+        )
+    )
+    rows.append(
+        _candidate_embedding_receiver_row(
+            "candidate_embedding_receiver_heldout_code_similarity_budget8_seed29_30",
+            ROOT
+            / "results/source_private_candidate_embedding_receiver_20260429/heldout_core_to_holdout_code_similarity_budget8_seed29_30/summary.json",
+            surface="heldout-family core-train/holdout-eval code-similarity seed29->30",
+        )
+    )
+    rows.append(
+        _candidate_embedding_receiver_row(
+            "candidate_embedding_receiver_heldout_anchor_relative_code_similarity_budget8_seed29_30",
+            ROOT
+            / "results/source_private_candidate_embedding_receiver_20260429/heldout_core_to_holdout_anchor_relative_code_similarity_budget8_seed29_30/summary.json",
+            surface="heldout-family anchor-relative code-similarity seed29->30",
+        )
+    )
+    rows.append(
+        _candidate_embedding_receiver_row(
+            "candidate_embedding_receiver_heldout_anchor_relative_ridge_budget8_seed29_30",
+            ROOT
+            / "results/source_private_candidate_embedding_receiver_20260429/heldout_core_to_holdout_anchor_relative_ridge_budget8_seed29_30/summary.json",
+            surface="heldout-family anchor-relative ridge seed29->30",
         )
     )
     rows.extend(

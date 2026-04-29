@@ -15226,3 +15226,24 @@ CPU systems frontier now has `101` rows. Next exact gate: replace the raw
 candidate-coordinate receiver with an anchor-relative/codebook or fold-heldout
 calibrated receiver at `8` bytes; do not promote the learned receiver as
 cross-family yet.
+
+Follow-up `2026-04-29`: implemented `--receiver-kind code_similarity` and
+`--packet-feature-mode anchor_relative` in
+`scripts/run_source_private_candidate_embedding_receiver.py`, then ran three
+family-invariant core-to-holdout diagnostics. Commands:
+`./venv_arm64/bin/python scripts/run_source_private_candidate_embedding_receiver.py --output-dir results/source_private_candidate_embedding_receiver_20260429/heldout_core_to_holdout_code_similarity_budget8_seed29_30 --train-examples 768 --eval-examples 512 --train-family-set core --eval-family-set holdout --feature-dim 512 --candidate-feature-dims 0 --receiver-kind code_similarity --budgets 8 --train-seed 29 --eval-seed 30 --ridge 1e-2`;
+same command with
+`--output-dir results/source_private_candidate_embedding_receiver_20260429/heldout_core_to_holdout_anchor_relative_code_similarity_budget8_seed29_30 --packet-feature-mode anchor_relative --anchor-count 128`;
+and same anchor-relative command with `--receiver-kind ridge` to
+`heldout_core_to_holdout_anchor_relative_ridge_budget8_seed29_30`. Outcomes:
+hashed code similarity fails with matched `0.256`, target `0.250`, best
+destructive `0.285`, but oracle `1.000`; anchor-relative code similarity fails
+with matched `0.281`, target `0.250`, best destructive `0.258`, oracle
+`0.756`; anchor-relative ridge fails with matched `0.303`, target `0.250`, best
+destructive `0.438`, oracle `0.342`. Aggregate artifact:
+`family_invariant_receiver_followup_summary.json`. The CPU systems frontier now
+has `104` rows. Interpretation: candidate-code decoding can work if the packet
+is oracle, but the source encoder and naive anchor-relative bank do not carry
+transferable heldout-family source evidence. Next exact gate: fold-heldout
+calibration or sparse/shared-dictionary receiver; simple code-similarity and
+cosine-anchor variants are pruned.

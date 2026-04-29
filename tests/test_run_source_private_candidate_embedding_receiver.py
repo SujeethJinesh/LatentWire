@@ -15,6 +15,9 @@ def test_candidate_embedding_receiver_passes_smoke(tmp_path) -> None:
         candidates=4,
         feature_dim=256,
         candidate_feature_dims=32,
+        receiver_kind="ridge",
+        packet_feature_mode="hashed",
+        anchor_count=64,
         budgets=[4],
         train_seed=3,
         eval_seed=4,
@@ -40,6 +43,9 @@ def test_candidate_embedding_receiver_writes_artifacts(tmp_path) -> None:
         candidates=4,
         feature_dim=128,
         candidate_feature_dims=0,
+        receiver_kind="code_similarity",
+        packet_feature_mode="anchor_relative",
+        anchor_count=32,
         budgets=[2],
         train_seed=5,
         eval_seed=6,
@@ -49,6 +55,9 @@ def test_candidate_embedding_receiver_writes_artifacts(tmp_path) -> None:
     summary = json.loads((output_dir / "summary.json").read_text())
     manifest = json.loads((output_dir / "manifest.json").read_text())
     assert summary["candidate_feature_dims"] == 0
+    assert summary["receiver_kind"] == "code_similarity"
+    assert summary["packet_feature_mode"] == "anchor_relative"
+    assert summary["packet_dim"] == 32
     assert summary["budget_summaries"][0]["budget_bytes"] == 2
     assert "predictions_budget2.jsonl" in manifest["artifacts"]
     assert (output_dir / "predictions_budget2.jsonl").exists()
