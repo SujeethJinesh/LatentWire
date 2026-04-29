@@ -111,6 +111,9 @@
 - Synonym/ontology stress artifacts showing the current shared sparse packet
   fails under paraphrased candidate-side ontology, bounding the claim away from
   robust semantic atom transfer.
+- Conditional semantic syndrome smoke script, test, memo, and artifacts showing
+  a simple learned sign-syndrome residual fails synonym stress because
+  source-destroying controls leak.
 
 ## Notes
 

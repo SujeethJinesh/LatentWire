@@ -2667,3 +2667,12 @@ candidate-side ontology. The contribution remains useful as an interpretable
 source-private sparse protocol with seed stability and causal knockout, but a
 full ICLR method story needs either a learned dictionary/crosscoder that
 survives this stress or a sharply scoped claim.
+
+Follow-up `2026-04-29`: the first learned conditional semantic syndrome smoke
+also fails under synonym stress. It has oracle headroom but does not preserve
+source-destroying controls: answer-masked and public-only controls rise as high
+as `0.500`, and core -> holdout does not beat target cleanly. This weakens the
+idea that a simple ridge/sign-syndrome learner can fix ontology coupling. The
+next method-depth blocker is now sharper: any learned successor must explicitly
+train synonym-invariant/shared-dictionary structure and include an abstention or
+target-preservation mechanism.

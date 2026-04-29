@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "conditional_semantic_syndrome_gate.json": "f912dff43d10cf1ec7ed97fa5068cc70eb93f2fa70edfef30a5483f1db9f71b4",
+    "conditional_semantic_syndrome_gate.md": "af3df77442601ad04946485318be133119be70025124cc2d8aee1c367bbd102c"
+  },
+  "artifacts": [
+    "conditional_semantic_syndrome_gate.json",
+    "conditional_semantic_syndrome_gate.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

@@ -1,0 +1,156 @@
+{
+  "budgets": [
+    2,
+    4,
+    8
+  ],
+  "candidate_view": "synonym_stress",
+  "created_utc": "2026-04-29T22:54:58.209701+00:00",
+  "feature_dim": 64,
+  "gate": "source_private_conditional_semantic_syndrome_gate",
+  "headline": {
+    "cross_family_pass": false,
+    "direction_pass": {
+      "core_to_holdout": false,
+      "holdout_to_core": false,
+      "same_family_all": false
+    },
+    "max_accuracy": 0.796875,
+    "max_lift_vs_target": 0.546875,
+    "pass_rows": 0
+  },
+  "pass_gate": false,
+  "rows": [
+    {
+      "best_control_accuracy": 0.328125,
+      "best_control_name": "wrong_projection_source",
+      "budget_bytes": 2,
+      "conditional_semantic_syndrome_accuracy": 0.171875,
+      "controls_ok": false,
+      "direction": "core_to_holdout",
+      "matched_minus_best_control": -0.15625,
+      "matched_minus_target": -0.078125,
+      "oracle_candidate_residual_accuracy": 1.0,
+      "paired_ci95_low_vs_target": -0.234375,
+      "pass_gate": false,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "best_control_name": "zero_source",
+      "budget_bytes": 4,
+      "conditional_semantic_syndrome_accuracy": 0.203125,
+      "controls_ok": true,
+      "direction": "core_to_holdout",
+      "matched_minus_best_control": -0.046875,
+      "matched_minus_target": -0.046875,
+      "oracle_candidate_residual_accuracy": 1.0,
+      "paired_ci95_low_vs_target": -0.203125,
+      "pass_gate": false,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.296875,
+      "best_control_name": "random_same_byte",
+      "budget_bytes": 8,
+      "conditional_semantic_syndrome_accuracy": 0.28125,
+      "controls_ok": true,
+      "direction": "core_to_holdout",
+      "matched_minus_best_control": -0.015625,
+      "matched_minus_target": 0.03125,
+      "oracle_candidate_residual_accuracy": 1.0,
+      "paired_ci95_low_vs_target": -0.15625,
+      "pass_gate": false,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.375,
+      "best_control_name": "answer_masked_source",
+      "budget_bytes": 2,
+      "conditional_semantic_syndrome_accuracy": 0.640625,
+      "controls_ok": false,
+      "direction": "holdout_to_core",
+      "matched_minus_best_control": 0.265625,
+      "matched_minus_target": 0.390625,
+      "oracle_candidate_residual_accuracy": 1.0,
+      "paired_ci95_low_vs_target": 0.28125,
+      "pass_gate": false,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.5,
+      "best_control_name": "answer_masked_source",
+      "budget_bytes": 4,
+      "conditional_semantic_syndrome_accuracy": 0.703125,
+      "controls_ok": false,
+      "direction": "holdout_to_core",
+      "matched_minus_best_control": 0.203125,
+      "matched_minus_target": 0.453125,
+      "oracle_candidate_residual_accuracy": 1.0,
+      "paired_ci95_low_vs_target": 0.34375,
+      "pass_gate": false,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.5,
+      "best_control_name": "answer_masked_source",
+      "budget_bytes": 8,
+      "conditional_semantic_syndrome_accuracy": 0.5,
+      "controls_ok": false,
+      "direction": "holdout_to_core",
+      "matched_minus_best_control": 0.0,
+      "matched_minus_target": 0.25,
+      "oracle_candidate_residual_accuracy": 1.0,
+      "paired_ci95_low_vs_target": 0.0625,
+      "pass_gate": false,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.4375,
+      "best_control_name": "public_only_source",
+      "budget_bytes": 2,
+      "conditional_semantic_syndrome_accuracy": 0.765625,
+      "controls_ok": false,
+      "direction": "same_family_all",
+      "matched_minus_best_control": 0.328125,
+      "matched_minus_target": 0.515625,
+      "oracle_candidate_residual_accuracy": 1.0,
+      "paired_ci95_low_vs_target": 0.328125,
+      "pass_gate": false,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.4375,
+      "best_control_name": "public_only_source",
+      "budget_bytes": 4,
+      "conditional_semantic_syndrome_accuracy": 0.796875,
+      "controls_ok": false,
+      "direction": "same_family_all",
+      "matched_minus_best_control": 0.359375,
+      "matched_minus_target": 0.546875,
+      "oracle_candidate_residual_accuracy": 1.0,
+      "paired_ci95_low_vs_target": 0.34375,
+      "pass_gate": false,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.5,
+      "best_control_name": "public_only_source",
+      "budget_bytes": 8,
+      "conditional_semantic_syndrome_accuracy": 0.796875,
+      "controls_ok": false,
+      "direction": "same_family_all",
+      "matched_minus_best_control": 0.296875,
+      "matched_minus_target": 0.546875,
+      "oracle_candidate_residual_accuracy": 1.0,
+      "paired_ci95_low_vs_target": 0.34375,
+      "pass_gate": false,
+      "target_accuracy": 0.25
+    }
+  ],
+  "run_dirs": [
+    "results/source_private_conditional_semantic_syndrome_gate_20260429/core_to_holdout",
+    "results/source_private_conditional_semantic_syndrome_gate_20260429/holdout_to_core",
+    "results/source_private_conditional_semantic_syndrome_gate_20260429/same_family_all"
+  ]
+}

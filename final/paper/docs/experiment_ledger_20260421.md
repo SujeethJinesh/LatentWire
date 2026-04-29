@@ -15513,3 +15513,20 @@ controlled ontology but not robust to ontology/synonym shift. Next exact method
 gate: learned shared dictionary/crosscoder or conditional consistency syndrome
 packet; otherwise frame the shared sparse contribution as an agreed-protocol
 source-private dictionary, not robust semantic transfer.
+
+Follow-up `2026-04-29`: implemented and ran a conditional semantic syndrome
+smoke to test whether a simple learned residual can replace the hand sparse
+dictionary under synonym stress. New files:
+`scripts/run_source_private_conditional_semantic_syndrome_gate.py`,
+`tests/test_run_source_private_conditional_semantic_syndrome_gate.py`, and
+`paper/source_private_conditional_semantic_syndrome_gate_20260429.md`. Command:
+`./venv_arm64/bin/python scripts/run_source_private_conditional_semantic_syndrome_gate.py --output-dir results/source_private_conditional_semantic_syndrome_gate_20260429 --budgets 2 4 8 --train-examples 128 --eval-examples 64 --seed 29 --feature-dim 64 --candidate-view synonym_stress`.
+Outcome: fail. Oracle candidate residual is `1.000`, so the surface has
+headroom, but cross-family pass is false, all direction passes are false, and
+there are `0` pass rows. Core -> holdout is at or below target except a tiny
+`8` byte lift (`0.281` vs `0.250`, CI low negative). Holdout -> core and
+same-family show matched lift, but controls leak: answer-masked source reaches
+`0.500` and public-only source reaches `0.500`. Interpretation: a naive learned
+semantic residual does not solve the ontology-stress failure. Next learned gate
+must add synonym-consistency training, a learned shared dictionary, or
+target-preserving abstention before it can become a claim.
