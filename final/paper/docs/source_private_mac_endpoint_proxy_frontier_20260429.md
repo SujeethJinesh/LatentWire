@@ -128,6 +128,16 @@ fixed across conditions.
 | holdout n32 label-strict | matched-byte text | 0.250 | 2.0 | 217.3 | 484.0 | 2158.0 |
 | holdout n32 label-strict | random same-byte packet | 0.000 | 2.0 | 218.3 | 477.5 | 2124.1 |
 | holdout n32 label-strict | deranged public table | 0.250 | 2.0 | 218.3 | 492.2 | 2145.0 |
+| core n64 label-strict | target-only | 0.250 | 0.0 | 218.3 | 533.6 | 2319.7 |
+| core n64 label-strict | matched packet | 0.703 | 2.0 | 218.3 | 569.9 | 2275.8 |
+| core n64 label-strict | matched-byte text | 0.250 | 2.0 | 217.3 | 537.4 | 2332.8 |
+| core n64 label-strict | random same-byte packet | 0.000 | 2.0 | 218.3 | 563.5 | 2323.5 |
+| core n64 label-strict | deranged public table | 0.234 | 2.0 | 218.3 | 565.5 | 2268.9 |
+| holdout n64 label-strict | target-only | 0.250 | 0.0 | 218.3 | 501.4 | 2079.2 |
+| holdout n64 label-strict | matched packet | 0.672 | 2.0 | 218.3 | 508.0 | 2071.2 |
+| holdout n64 label-strict | matched-byte text | 0.250 | 2.0 | 217.3 | 481.1 | 2097.2 |
+| holdout n64 label-strict | random same-byte packet | 0.000 | 2.0 | 218.3 | 485.2 | 2085.0 |
+| holdout n64 label-strict | deranged public table | 0.250 | 2.0 | 218.3 | 509.0 | 2088.0 |
 
 Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
 
@@ -154,10 +164,10 @@ Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
   packet `0.750`, target `0.250`, best source-destroying control `0.203`, but
   packet valid rate is only `0.781`.
 - label-strict receiver prompt: both surfaces pass with exact-label outputs at
-  `n=16` and `n=32`. At `n=32`, core packet is `0.688` versus best
-  source-destroying control `0.250`, and holdout packet is `0.656` versus best
+  `n=16`, `n=32`, and `n=64`. At `n=64`, core packet is `0.703` versus best
+  source-destroying control `0.250`, and holdout packet is `0.672` versus best
   source-destroying control `0.250`; valid prediction rate is `1.000` on both.
-  Full-log p50 TTFT is `+164.8 ms` core and `+167.1 ms` holdout versus the
+  Full-log p50 TTFT is `+217.2 ms` core and `+192.7 ms` holdout versus the
   packet.
 
 ## Interpretation
@@ -178,12 +188,12 @@ codes that were not in the source payload. The parser is now payload-gated: a
 diagnostic code is mapped only if that code was actually transmitted. This
 demotes the audit prompt from pass to near-miss under the valid-output gate.
 The new `label_strict` prompt fixes the stronger reviewer risk by requiring a
-full candidate label copied exactly; at `n=32`, packet strict-label accuracy is
-`0.656` core and `0.625` holdout with valid rate `1.000`.
+full candidate label copied exactly; at `n=64`, packet strict-label accuracy is
+`0.672` core and `0.656` holdout with valid rate `1.000`.
 
 ## Reviewer Caveats
 
-- This is an `n=32 + n=32` label-strict endpoint-proxy gate plus an `n=64`
+- This is an `n=64 + n=64` label-strict endpoint-proxy gate plus an `n=64`
   payload-gated audit near-miss, not a large benchmark.
 - Timing is local CPU generate timing, not real vLLM/OpenAI-compatible serving
   TTFT or throughput.
@@ -195,8 +205,8 @@ full candidate label copied exactly; at `n=32`, packet strict-label accuracy is
 
 ## Next Gate
 
-Run the label-strict endpoint-proxy strict-control gate at `n=64` on core and
-holdout. If both pass, widen to `n=160`; when NVIDIA GPUs are available,
+Run paired uncertainty on the `n=64` label-strict endpoint rows, then widen the
+same frozen gate to `n=160`; when NVIDIA GPUs are available,
 run a server-side vLLM/GenAI-Perf style TTFT/throughput benchmark against
 structured text, query-aware text, full-log relay, and KV/cache transport
 baselines.

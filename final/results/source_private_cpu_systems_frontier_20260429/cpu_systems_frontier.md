@@ -1,7 +1,7 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `89`
-- pass rows: `51`
+- rows: `91`
+- pass rows: `53`
 - fail / near-miss rows: `38`
 - minimum passing accuracy: `0.373`
 - maximum passing payload bytes: `8.0`
@@ -100,6 +100,8 @@
 | Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n16 CPU label-strict controls | `pass` | 0.625 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; prompt_style=label_strict; packet_minus_target=0.375; packet_strict=0.562; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=190.4ms; full_log_e2e_delta=352.8ms; best_verbose_relay=0.688 |
 | Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n32 CPU label-strict controls | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=32; prompt_style=label_strict; packet_minus_target=0.438; packet_strict=0.656; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=164.8ms; full_log_e2e_delta=232.3ms; best_verbose_relay=0.688 |
 | Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n32 CPU label-strict controls | `pass` | 0.656 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=32; prompt_style=label_strict; packet_minus_target=0.406; packet_strict=0.625; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=167.1ms; full_log_e2e_delta=335.5ms; best_verbose_relay=0.688 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n64 CPU label-strict controls | `pass` | 0.703 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=64; prompt_style=label_strict; packet_minus_target=0.453; packet_strict=0.672; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=217.2ms; full_log_e2e_delta=294.2ms; best_verbose_relay=0.719 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n64 CPU label-strict controls | `pass` | 0.672 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=64; prompt_style=label_strict; packet_minus_target=0.422; packet_strict=0.656; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=192.7ms; full_log_e2e_delta=279.0ms; best_verbose_relay=0.719 |
 
 ## Caveat
 

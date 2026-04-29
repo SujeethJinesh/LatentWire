@@ -1,3 +1,3 @@
 # Source-Private CPU Systems Frontier Manifest
 
-- rows: `89`
+- rows: `91`

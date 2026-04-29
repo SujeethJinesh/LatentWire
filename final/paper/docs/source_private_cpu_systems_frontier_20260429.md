@@ -14,7 +14,7 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `89` rows after adding learned Wyner-Ziv packet evidence,
+The aggregate now has `91` rows after adding learned Wyner-Ziv packet evidence,
 bidirectional cross-family falsification rows, protected residual codec
 ablation rows, progress-enabled target-decoder receiver rows, and the static
 anchor-relative sparse packet smoke plus the Mac endpoint-proxy rows. The
@@ -71,13 +71,13 @@ The learned packet story remains positive in scoped settings:
   The method signal remains strong: core `n=64` audit has packet `0.750`,
   target `0.250`, best source-destroying control `0.203`, and full-log p50 TTFT
   `+260.2 ms`, but packet valid rate is only `0.781`.
-- A new label-strict receiver prompt passes both frozen surfaces at `n=16` and
-  `n=32` with exact candidate-label outputs. At `n=32`, core reaches packet
-  `0.688`, target `0.250`, best source-destroying control `0.250`, valid rate
-  `1.000`, and full-log p50 TTFT `+164.8 ms`; holdout reaches packet `0.656`,
-  target `0.250`, best control `0.250`, valid rate `1.000`, and full-log p50
-  TTFT `+167.1 ms`. This is the current strongest endpoint receiver row
-  because it avoids the parser-risk objection.
+- A new label-strict receiver prompt passes both frozen surfaces at `n=16`,
+  `n=32`, and `n=64` with exact candidate-label outputs. At `n=64`, core
+  reaches packet `0.703`, target `0.250`, best source-destroying control
+  `0.250`, valid rate `1.000`, and full-log p50 TTFT `+217.2 ms`; holdout
+  reaches packet `0.672`, target `0.250`, best control `0.250`, valid rate
+  `1.000`, and full-log p50 TTFT `+192.7 ms`. This is the current strongest
+  endpoint receiver row because it avoids the parser-risk objection.
 
 ## Failures Kept In The Artifact
 
@@ -132,9 +132,9 @@ throughput superiority until a real vLLM/OpenAI-compatible endpoint run exists.
 
 ## Next Gate
 
-The highest-priority reviewer-facing gate is now `n=64` label-strict
-endpoint-proxy replication on core and holdout with strict controls enabled.
-If it passes, widen to `n=160`. A true server-side
+The highest-priority reviewer-facing gate is now paired uncertainty for the
+`n=64` label-strict endpoint rows, followed by the same frozen gate at `n=160`.
+A true server-side
 TTFT/throughput run remains necessary when NVIDIA GPUs are available. Any
 further cross-family method work should move to a learned target-preserving
 query bottleneck or richer source surface, not another static sparse coordinate

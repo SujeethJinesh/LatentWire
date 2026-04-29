@@ -115,8 +115,9 @@ Core `n=64` audit reaches packet `0.750`, target `0.250`, best
 source-destroying control `0.203`, and full-log p50 TTFT `+260.2 ms`, but
 packet valid rate is `0.781`.
 
-The new `label_strict` receiver prompt passes `n=16` and `n=32` on core and
-holdout with exact-label outputs and valid rate `1.000`. At `n=32`, core reaches
-packet `0.688` versus target/control `0.250`, and holdout reaches packet
-`0.656` versus target/control `0.250`. It is now the live endpoint branch:
-scale to `n=64`, then `n=160`, before claiming endpoint receiver robustness.
+The new `label_strict` receiver prompt passes `n=16`, `n=32`, and `n=64` on
+core and holdout with exact-label outputs and valid rate `1.000`. At `n=64`,
+core reaches packet `0.703` versus target/control `0.250`, and holdout reaches
+packet `0.672` versus target/control `0.250`. It is now the live endpoint
+branch: add paired uncertainty, then scale to `n=160`, before claiming endpoint
+receiver robustness.

@@ -222,6 +222,18 @@ This materially improves the endpoint contribution: the live receiver now
 outputs exact candidate labels at n32, not just protocol codes. The CPU systems
 frontier has `89` rows. Next exact gate: label-strict `n=64` core+holdout.
 
+Follow-up `2026-04-29`: label-strict `n=64` passes on both frozen endpoint
+surfaces. Core: packet `0.703`, target `0.250`, matched-byte text `0.250`,
+random same-byte `0.000`, deranged public table `0.234`, valid rate `1.000`,
+strict-label packet accuracy `0.672`, and full-log p50 TTFT `+217.2 ms`.
+Holdout: packet `0.672`, target `0.250`, matched-byte text `0.250`, random
+same-byte `0.000`, deranged public table `0.250`, valid rate `1.000`,
+strict-label packet accuracy `0.656`, and full-log p50 TTFT `+192.7 ms`.
+This clears the local n64 endpoint receiver gate and materially strengthens
+the full-paper case. The CPU systems frontier has `91` rows. Next exact gate:
+paired uncertainty on the n64 rows, then frozen label-strict `n=160`
+core+holdout.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

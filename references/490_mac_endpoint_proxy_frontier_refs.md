@@ -206,3 +206,10 @@ target/control `0.250`; packet valid rate is `1.000` on both, and full-log p50
 TTFT remains `+164.8 ms`/`+167.1 ms` slower than the packet. This makes
 `label_strict` the live endpoint receiver branch; the next experiment is
 `n=64` label-strict core+holdout.
+
+Follow-up: `label_strict` now passes `n=64` on core and holdout. Core packet is
+`0.703` versus target/control `0.250`; holdout packet is `0.672` versus
+target/control `0.250`; packet valid rate is `1.000` on both, and full-log p50
+TTFT is `+217.2 ms`/`+192.7 ms` slower than the packet. The next experiment is
+paired uncertainty on these n64 rows, then frozen `n=160` label-strict
+core+holdout.

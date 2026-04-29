@@ -15095,3 +15095,16 @@ packet. The CPU systems frontier now has `89` rows. This is the current live
 endpoint receiver evidence because it avoids the parser-risk caveat while
 preserving the 2-byte systems frontier. Next gate: label-strict `n=64`
 core+holdout.
+
+Follow-up `2026-04-29`: widened the `label_strict` endpoint receiver to `n=64`
+on both frozen surfaces. Both pass with exact-label outputs and full strict
+controls. Core seed29: matched packet `0.703`, target-only `0.250`,
+matched-byte text `0.250`, random same-byte `0.000`, deranged public table
+`0.234`, packet valid rate `1.000`, strict-label accuracy `0.672`, and
+full-log p50 TTFT `+217.2 ms` versus the packet. Holdout seed30: matched
+packet `0.672`, target-only `0.250`, matched-byte text `0.250`, random
+same-byte `0.000`, deranged public table `0.250`, packet valid rate `1.000`,
+strict-label accuracy `0.656`, and full-log p50 TTFT `+192.7 ms` versus the
+packet. The CPU systems frontier now has `91` rows. This clears the local n64
+endpoint receiver rung and makes paired uncertainty plus n160 the next
+reviewer-facing blockers.
