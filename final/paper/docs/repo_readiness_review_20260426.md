@@ -2057,3 +2057,12 @@ target-only `40/160`, best control `41/160`, packet valid rate `0.000`, and
 exact-ID parity true. This strengthens the non-Qwen claim by showing the
 Gemma gain is tied to the private diagnostic signal, not target priors or the
 prompt wrapper alone.
+
+Update `2026-04-28`: Gemma 4 E2B now clears a large local frozen slice.
+`google/gemma-4-E2B-it` MPS trace-no-hint n500 seed29 reaches matched
+`500/500 = 1.000`, target-only `125/500 = 0.250`, best source-destroying
+control `126/500 = 0.252`, packet valid rate `1.000`, exact-ID parity true,
+matched-minus-best-control `+0.748`, and p50 packet latency `754 ms`. This
+makes Gemma the strongest non-Qwen local source-emitter row: strict prompt,
+large slice, exact-ID parity, and paired source-signal ablation. The full-paper
+generalization blocker remains MoE/FP8 evidence, not dense non-Qwen feasibility.

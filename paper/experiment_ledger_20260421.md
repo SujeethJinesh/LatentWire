@@ -14609,3 +14609,12 @@ removed. The row intentionally fails: matched `40/160 = 0.250`, target-only
 true, and p50 MPS latency `663 ms`. This supports the interpretation that the
 Gemma strict-prompt positive transfers the private diagnostic trace signal
 rather than target priors or wrapper formatting alone.
+
+Update `2026-04-28`: `gemma4_e2b_mps_n500_large_slice_20260428` upgrades the
+strongest local non-Qwen source-emitter row to a large frozen slice. With
+`google/gemma-4-E2B-it`, MPS, trace-no-hint, seed29, and n500, matched packets
+reach `500/500 = 1.000`, target-only is `125/500 = 0.250`, best
+source-destroying control is `126/500 = 0.252`, packet valid rate is `1.000`,
+exact-ID parity is true, matched-minus-best-control is `+0.748`, and p50 packet
+latency is `754 ms`. This passes the large local gate and gives the paper a
+clean non-Qwen large-slice row paired with the raw-log/no-trace collapse.

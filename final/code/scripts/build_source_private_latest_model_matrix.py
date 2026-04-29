@@ -316,19 +316,20 @@ def _model_matrix() -> list[CandidateModel]:
             active_params=None,
             architecture="gemma4 conditional generation",
             priority="P1",
-            local_rung="MPS trace-no-hint n160 passed on seeds 29/31",
+            local_rung="MPS trace-no-hint n500 passed; n160 seed repeat passed",
             expected_device="mps",
             prompt_mode="trace_no_hint",
             limit=160,
             dtype="float32",
             max_new_tokens=8,
-            status="CPU n16/n64 passed; MPS n16/n160 seed repeat passed after local snapshot download",
+            status="CPU n16/n64 passed; MPS n16/n160 seed repeat and n500 passed after local snapshot download",
             rationale=(
                 "Recent non-Qwen Google family row with Gemma 4 conditional-generation support in the upgraded "
-                "Transformers stack. MPS trace-no-hint n160 reaches 1.000 matched accuracy on seeds 29 and 31 "
-                "versus a 0.250 target/control floor with packet valid rate 1.000, adding a cleaner and "
-                "seed-stable non-Qwen strict-prompt row than Granite. The raw-log/no-trace source-destroying "
-                "ablation collapses to target-only with zero valid packets."
+                "Transformers stack. MPS trace-no-hint n160 reaches 1.000 matched accuracy on seeds 29 and 31, "
+                "and the large n500 frozen row reaches 1.000 versus a 0.250 target floor and 0.252 best "
+                "source-destroying control with packet valid rate 1.000. This is the cleanest non-Qwen "
+                "strict-prompt row. The raw-log/no-trace source-destroying ablation collapses to target-only "
+                "with zero valid packets."
             ),
         ),
         CandidateModel(
@@ -488,7 +489,7 @@ def main() -> None:
         "recommendation": (
             "Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable "
             "passes after upgrading Transformers to 5.7.0; Qwen3.5-2B now also passes CPU n160; Qwen3.5-4B "
-            "passes CPU n64; Gemma 4 E2B passes MPS n160 on seeds 29/31; Granite has copied-helper and "
+            "passes CPU n64; Gemma 4 E2B passes MPS n160 on seeds 29/31 and n500 on seed29; Granite has copied-helper and "
             "trace-no-hint n160 non-Qwen passes; Gemma raw-log/no-trace collapses to target-only. Next use "
             "Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows when remote execution is allowed, "
             "or run additional local non-Qwen seeds."
@@ -504,7 +505,7 @@ def main() -> None:
             "hybrid attention path, so MPS failure is logged as a backend compatibility issue rather "
             "than source-packet evidence. OLMo-2-0425-1B-Instruct is a behavioral negative at n16 "
             "with zero valid packets; Gemma-4-E2B-it is a non-Qwen strict-prompt MPS n160 seed-stable positive "
-            "whose raw-log/no-trace row collapses to target-only with zero valid packets; "
+            "and n500 large-slice positive whose raw-log/no-trace row collapses to target-only with zero valid packets; "
             "Granite-3.3-2B-Instruct is positive under copied-helper CPU n160 and weaker but still positive "
             "under trace-no-hint CPU n160, while its MPS row is backend-blocked."
         ),

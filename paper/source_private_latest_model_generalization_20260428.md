@@ -2,7 +2,7 @@
 
 - date: `2026-04-28`
 - gate: `latest_model_generalization_scout_20260428`
-- status: Qwen3.5 0.8B/2B/4B rows pass; Gemma 4 E2B strict-prompt n160 is seed-stable on MPS; Granite strict-prompt n160 passes; MoE broad claim remains unproven
+- status: Qwen3.5 0.8B/2B/4B rows pass; Gemma 4 E2B strict-prompt n500 passes on MPS after n160 seed stability; Granite strict-prompt n160 passes; MoE broad claim remains unproven
 
 ## Current Readiness
 
@@ -28,7 +28,8 @@ reaches `16/16 = 1.000` on CPU n16 and `64/64 = 1.000` on CPU n64, with
 target/control at `0.250` and packet valid rate `1.000`.
 
 We now have two non-Qwen positive rows under the strict `trace_no_hint` prompt:
-`google/gemma-4-E2B-it` passes at `n=160` on two seeds with perfect packet emission, and
+`google/gemma-4-E2B-it` passes at `n=160` on two seeds with perfect packet emission and at
+`n=500` on MPS with the same strict prompt, and
 `ibm-granite/granite-3.3-2b-instruct` passes at `n=160` with weaker but still
 source-specific packet emission. Gemma's raw-log/no-trace source-destroying row
 collapses to target-only with zero valid packets, so the non-Qwen gain depends
@@ -220,6 +221,11 @@ I ran the first non-Qwen falsification rows:
   `40/160 = 0.250`, best control `41/160 = 0.256`, exact-ID parity true, p50
   MPS latency `821 ms`; seed31 repeats `160/160 = 1.000`, controls at
   `40/160 = 0.250`, exact-ID parity true, p50 MPS latency `791 ms`.
+- `google/gemma-4-E2B-it`, MPS n500, trace-no-hint, seed29:
+  `500/500 = 1.000`, packet valid rate `1.000`, target-only
+  `125/500 = 0.250`, best source-destroying control `126/500 = 0.252`,
+  matched-minus-best-control `+0.748`, exact-ID parity true, p50 MPS latency
+  `754 ms`.
 - `google/gemma-4-E2B-it`, MPS n160, raw-log/no-trace, seed29:
   `40/160 = 0.250`, packet valid rate `0.000`, target-only `40/160 = 0.250`,
   best control `41/160 = 0.256`, exact-ID parity true, p50 MPS latency
@@ -240,6 +246,7 @@ Artifacts:
 - `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n16_mps_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n160_mps_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n160_mps_seed31/summary.json`
+- `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n500_mps_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/gemma4_e2b_raw_log_no_trace_n160_mps_seed29/summary.json`
 
 ## Added Matrix
@@ -291,8 +298,9 @@ The Qwen3.5-0.8B seed-stable `n=160` result plus Qwen3.5-2B n160 confirmation
 and Qwen3.5-4B n64 confirmation let the paper add a stronger post-package
 latest-small contribution: the packet protocol is executable across three
 latest small Qwen3.5 sizes once dependencies are updated.
-Gemma 4 E2B adds a clean seed-stable non-Qwen strict-prompt n160 positive whose
-raw-log/no-trace row collapses to target-only, and Granite adds both
+Gemma 4 E2B adds a clean non-Qwen strict-prompt positive that is seed-stable at
+n160 and large-slice positive at n500; its raw-log/no-trace row collapses to
+target-only, and Granite adds both
 copied-helper and weaker strict-prompt n160 positives. This supports
 cross-family feasibility with prompt-contract sensitivity, not a universal
 prompt-invariant claim. If Qwen3.5 small and Qwen3.6 MoE
