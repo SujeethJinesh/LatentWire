@@ -14785,3 +14785,14 @@ relative-minus-scalar `+0.032` and minimum relative-vs-target CI95 lower bound
 `+0.189`, but the minimum relative-vs-scalar lower bound is `-0.035`. Promote
 RASP as a secondary systems/robustness contribution, not as a replacement for
 the scalar packet yet.
+
+Follow-up `2026-04-29`: expanded RASP evaluation adds remap seeds
+`109/113/127/131` and bidirectional core/holdout cross-family rows. Across
+seven remap seeds, RASP improves mean equal-byte accuracy over scalar by
+`+0.037`, but the expanded bootstrap does not pass: minimum RASP-vs-target CI95
+lower bound is `+0.146` under the `+0.15` rule, and remap `131` has a
+near-threshold random same-byte control failure (`0.301` vs cutoff `0.300`).
+Cross-family remains asymmetric: core-to-holdout fails (`0.207` RASP vs
+`0.250` target with failed controls), while holdout-to-core passes (`0.492`
+RASP vs `0.250` target, controls clean). RASP remains a secondary systems
+extension, not the headline cross-family fix.

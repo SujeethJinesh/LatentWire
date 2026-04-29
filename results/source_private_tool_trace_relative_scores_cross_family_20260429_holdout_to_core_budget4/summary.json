@@ -1,0 +1,221 @@
+{
+  "budget_summaries": [
+    {
+      "best_compression_baseline_accuracy": 0.375,
+      "best_no_source_accuracy": 0.25,
+      "budget_bytes": 4,
+      "learned_vs_compression_pass": false,
+      "matched_accuracy": 0.380859375,
+      "matched_minus_best_compression": 0.005859375,
+      "matched_minus_best_no_source": 0.130859375,
+      "metrics": {
+        "matched_learned_syndrome": {
+          "accuracy": 0.380859375,
+          "correct": 195,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 88.87064550071955,
+          "p95_latency_ms": 213.73258299718145
+        },
+        "random_same_byte": {
+          "accuracy": 0.201171875,
+          "correct": 103,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 0.45147900527808815,
+          "p95_latency_ms": 31.6967079997994
+        },
+        "raw_source_sign_sketch": {
+          "accuracy": 0.287109375,
+          "correct": 147,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 45.46570799720939,
+          "p95_latency_ms": 129.106624997803
+        },
+        "relative_answer_masked_source": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 48.39552100747824,
+          "p95_latency_ms": 123.18170799699146
+        },
+        "relative_constrained_shuffled_source": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 46.47977100103162,
+          "p95_latency_ms": 118.61133300408255
+        },
+        "relative_label_shuffled_ridge": {
+          "accuracy": 0.0859375,
+          "correct": 44,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 49.73035399598302,
+          "p95_latency_ms": 120.93149998690933
+        },
+        "relative_order_mismatch_source": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 47.36268748820294,
+          "p95_latency_ms": 124.37879100616556
+        },
+        "relative_permuted_score_bytes": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 46.66291650937637,
+          "p95_latency_ms": 117.6908750057919
+        },
+        "relative_random_same_byte": {
+          "accuracy": 0.24609375,
+          "correct": 126,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 0.044375003199093044,
+          "p95_latency_ms": 0.17062500410247594
+        },
+        "relative_score_source": {
+          "accuracy": 0.4921875,
+          "correct": 252,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 43.19887550082058,
+          "p95_latency_ms": 109.85812499711756
+        },
+        "scalar_answer_masked_source": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 46.71620800218079,
+          "p95_latency_ms": 134.2985410010442
+        },
+        "scalar_constrained_shuffled_source": {
+          "accuracy": 0.248046875,
+          "correct": 127,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 45.782187502481975,
+          "p95_latency_ms": 115.12020899681374
+        },
+        "scalar_label_shuffled_ridge": {
+          "accuracy": 0.0234375,
+          "correct": 12,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 45.82472900074208,
+          "p95_latency_ms": 112.81012499239296
+        },
+        "scalar_quantized_source": {
+          "accuracy": 0.375,
+          "correct": 192,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 43.96081249433337,
+          "p95_latency_ms": 129.89133399969433
+        },
+        "scalar_shuffled_source": {
+          "accuracy": 0.12890625,
+          "correct": 66,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 50.13856250297977,
+          "p95_latency_ms": 124.79883299965877
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 512,
+          "p50_latency_ms": 0.0026670022634789348,
+          "p95_latency_ms": 0.007624999852851033
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 512,
+          "p50_latency_ms": 0.0029999937396496534,
+          "p95_latency_ms": 0.007041991921141744
+        }
+      },
+      "pass_gate": false,
+      "qjl_controls_ok": false,
+      "qjl_minus_best_no_source": null,
+      "qjl_minus_scalar": null,
+      "qjl_residual_source_accuracy": null,
+      "qjl_source_packet_pass": false,
+      "relative_controls_ok": true,
+      "relative_minus_best_no_source": 0.2421875,
+      "relative_minus_scalar": 0.1171875,
+      "relative_score_source_accuracy": 0.4921875,
+      "relative_source_packet_pass": true,
+      "scalar_controls_ok": true,
+      "scalar_minus_best_no_source": 0.125,
+      "scalar_quantized_source_accuracy": 0.375,
+      "scalar_source_packet_pass": false,
+      "target_only_accuracy": 0.25
+    }
+  ],
+  "budgets": [
+    4
+  ],
+  "candidate_pool_recall": 1.0,
+  "candidate_view": "slot",
+  "candidates": 4,
+  "code_projection_sha256": "ecdf2cca90546220df37f713cbae254c39da756040dc798437c99b38fb8abe52",
+  "created_utc": "2026-04-29T06:56:15.548027+00:00",
+  "encoder_sha256": "eff92b932659a2265bc4a98049979f61fc73b197071034b9e2a9b3e2f173f739",
+  "eval_examples": 512,
+  "eval_family_set": "core",
+  "eval_seed": 30,
+  "exact_id_parity": true,
+  "feature_dim": 512,
+  "fit_intercept": false,
+  "gate": "source_private_tool_trace_compression_baselines",
+  "label_shuffle_encoder_sha256": "ca752741f6a1d9f3fcb00e7a105bd9182a029ef3235f4ae891da9ac40d200821",
+  "label_shuffle_seed": 145117,
+  "packet_variants": [
+    "relative_scores"
+  ],
+  "pass_gate": false,
+  "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate.",
+  "prediction_files": {
+    "4": "predictions_budget4.jsonl"
+  },
+  "qjl_residual_projection_sha256": "288d46b5161627973ba4baa257597127e16fe23b013eeb667eaa9122ac6c53ee",
+  "relative_score_calibration": {
+    "hi": 1.0124071979522704,
+    "lo": 0.48298093378543855
+  },
+  "remap_slot_seed": null,
+  "ridge": 0.01,
+  "scalar_projection_sha256": "2f98e1c1c2b6c4e6f21f9f541cecd7dad8d767eec1133352667d2c9343f6c14d",
+  "train_examples": 768,
+  "train_family_set": "holdout",
+  "train_seed": 29
+}

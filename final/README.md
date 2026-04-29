@@ -277,8 +277,13 @@ clean but does not improve remap accuracy: QJL residual trails scalar-only by
 `1.6-3.5` points on remap seeds `101/103/107`. The RASP relative-score packet
 adds a 4-byte candidate-relative transport row: it is control-clean, matches
 same-codebook scalar, and improves remap mean over equal-byte scalar by `+3.2`
-points, though the scalar delta is not uniformly significant. The next blocker
-is stronger remap margins and cross-family generalization.
+points on the first three remaps, though the scalar delta is not uniformly
+significant. Expanded seven-remap RASP improves mean equal-byte accuracy over
+scalar by `+3.7` points but does not pass the strict expanded gate due one
+near-threshold random-byte control failure and a minimum target-CI lower bound
+of `+0.146`. Cross-family remains asymmetric: holdout-to-core passes, but
+core-to-holdout fails. The next blocker is stronger remap margins and
+cross-family generalization.
 
 ## Final Status
 

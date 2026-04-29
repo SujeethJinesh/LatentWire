@@ -60,6 +60,8 @@
 - RASP relative-score packet script, test, references, remap artifacts, and
   bootstrap summary showing a 4-byte control-clean candidate-relative transport
   with modest remap improvement over equal-byte scalar.
+- Expanded RASP remap and cross-family falsification artifacts showing positive
+  mean remap lift but failed strict expanded/cross-family promotion gates.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

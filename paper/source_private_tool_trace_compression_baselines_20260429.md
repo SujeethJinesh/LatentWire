@@ -248,3 +248,55 @@ Interpretation:
 - It should be claimed as a systems/robustness extension, not as a replacement
   for the scalar packet until it survives more seeds or harder cross-family
   splits.
+
+## 2026-04-29 Addendum: RASP Expanded Remap and Cross-Family Falsification
+
+I expanded RASP to seven remap seeds and added bidirectional core/holdout
+cross-family rows.
+
+New artifacts:
+
+- `results/source_private_tool_trace_relative_scores_20260429_remap109_budget4/`
+- `results/source_private_tool_trace_relative_scores_20260429_remap113_budget4/`
+- `results/source_private_tool_trace_relative_scores_20260429_remap127_budget4/`
+- `results/source_private_tool_trace_relative_scores_20260429_remap131_budget4/`
+- `results/source_private_relative_score_bootstrap_remap8_20260429/`
+- `results/source_private_tool_trace_relative_scores_cross_family_20260429_core_to_holdout_budget4/`
+- `results/source_private_tool_trace_relative_scores_cross_family_20260429_holdout_to_core_budget4/`
+
+Expanded remap summary:
+
+| Remap | Relative | Scalar | Target | Relative - scalar CI95 | Relative controls clean |
+|---:|---:|---:|---:|---:|---:|
+| 101 | 0.494 | 0.426 | 0.250 | [0.033, 0.105] | true |
+| 103 | 0.520 | 0.496 | 0.250 | [-0.014, 0.061] | true |
+| 107 | 0.506 | 0.502 | 0.250 | [-0.035, 0.043] | true |
+| 109 | 0.477 | 0.451 | 0.250 | [-0.010, 0.061] | true |
+| 113 | 0.473 | 0.436 | 0.250 | [0.000, 0.072] | true |
+| 127 | 0.453 | 0.428 | 0.250 | [-0.010, 0.061] | true |
+| 131 | 0.506 | 0.434 | 0.250 | [0.035, 0.109] | false |
+
+The expanded bootstrap reports mean remap relative-minus-scalar `+0.037`, but
+the pass gate is false: the minimum relative-vs-target CI95 lower bound is
+`+0.146`, just under the `+0.15` rule, and remap `131` has a near-threshold
+random same-byte control failure (`0.301` versus target `0.250` and the `0.300`
+cutoff).
+
+Cross-family:
+
+| Train -> Eval | Relative | Scalar | Target | Relative controls clean | Interpretation |
+|---|---:|---:|---:|---:|---|
+| core -> holdout | 0.207 | 0.225 | 0.250 | false | fail |
+| holdout -> core | 0.492 | 0.375 | 0.250 | true | one-direction pass |
+
+Interpretation:
+
+- RASP remains useful as a systems/remap robustness extension: it improves mean
+  remap accuracy over equal-byte scalar and uses candidate-relative 4-byte
+  packets.
+- It is not yet a headline cross-family method. Core-to-holdout fails and
+  holdout-to-core passes, mirroring the asymmetric transfer risk seen in scalar
+  rows.
+- The next RASP-specific improvement should canonicalize candidate order by
+  public candidate ID/hash and retest order-mismatch controls. Otherwise,
+  further remap tuning risks looking like a candidate-order side channel.

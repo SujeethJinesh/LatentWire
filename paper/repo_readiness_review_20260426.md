@@ -2196,3 +2196,13 @@ target-only. This strengthens the paper's systems contribution and gives a
 third technical mechanism, but the scalar-vs-RASP improvement is not uniformly
 significant. Full ICLR readiness still needs either more remap seeds, a
 cross-family RASP row, or a model-emitted packet.
+
+Follow-up `2026-04-29`: expanded RASP evidence tightens the claim boundary.
+Seven remap seeds show a positive mean equal-byte lift over scalar (`+3.7`
+points), but the expanded bootstrap gate fails by the predefined rule:
+minimum RASP-vs-target CI95 lower bound is `+0.146`, and one remap has a
+near-threshold random-byte control failure. Cross-family remains asymmetric:
+holdout-to-core passes for RASP, but core-to-holdout fails below target with
+failed controls. Readiness does not improve to full ICLR yet. The next exact
+method gate should canonicalize candidate order and/or train a
+consistency/JEPA-style posterior packet; do not claim RASP as cross-family.
