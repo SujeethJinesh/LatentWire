@@ -15378,3 +15378,23 @@ passed. Interpretation: this does not create a new method, but it materially
 reduces reproducibility, novelty-positioning, and contribution-depth reviewer
 risk. Next exact gate: a negative-boundary appendix aggregating cross-family
 failures and oracle headroom, or an `n=500` composed-only coded-label stress.
+
+Follow-up `2026-04-29`: implemented the cross-family negative-boundary
+appendix. New files:
+`scripts/build_source_private_cross_family_negative_boundary.py`,
+`tests/test_build_source_private_cross_family_negative_boundary.py`,
+`paper/source_private_cross_family_negative_boundary_20260429.md`, and
+`references/498_cross_family_negative_boundary_refs_20260429.md`. Command:
+`./venv_arm64/bin/python scripts/build_source_private_cross_family_negative_boundary.py --output-dir results/source_private_cross_family_negative_boundary_20260429`.
+Outcome: pass as a boundary artifact, with `27` rows, `6` method families, `0`
+claim-ready cross-family methods, and `6` oracle-headroom rows. It aggregates
+learned WZ, canonical RASP, consistent posterior, anchor-relative sparse
+packets, learned target-preserving receivers, and masked innovation receivers.
+The key interpretation is that cross-family source/private learned
+communication is not a headline claim: several rows have high oracle headroom,
+but current learned/static interfaces fail or are asymmetric under controls.
+Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_build_source_private_cross_family_negative_boundary.py -q`
+passed. Next exact method gate, if pursued, is a shared sparse
+crosscoder/dictionary packet with feature knockout; otherwise move to paper
+revision with this boundary made explicit.

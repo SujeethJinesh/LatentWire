@@ -985,5 +985,12 @@
     "path": "references/497_iclr_evidence_bundle_refs_20260429.md",
     "status": "local_memo",
     "reason": "Primary-source related-work memo supporting the ICLR evidence bundle novelty matrix, covering C2C, KVCOMM/Q-KVComm, LLMLingua, Toolformer/MCP, TurboQuant, QJL, Slepian-Wolf/Wyner-Ziv, and JEPA/flow latent prediction."
+  },
+  {
+    "num": 498,
+    "slug": "cross_family_negative_boundary_refs_20260429",
+    "path": "references/498_cross_family_negative_boundary_refs_20260429.md",
+    "status": "local_memo",
+    "reason": "Source memo for the cross-family negative-boundary appendix and next shared sparse crosscoder/feature-knockout method gate, grounded in local failures and relative-representation/crosscoder/SAE references."
   }
 ]

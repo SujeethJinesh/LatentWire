@@ -2579,3 +2579,14 @@ ICLR-secure because production serving telemetry and broad cross-family learned
 communication are still missing. The next exact gate is a negative-boundary
 appendix over cross-family failures and oracle headroom, followed by either an
 `n=500` composed coded-label stress or paper revision.
+
+Follow-up `2026-04-29`: added the cross-family negative-boundary appendix. It
+aggregates `27` rows across `6` method families and records `0` claim-ready
+cross-family methods, while preserving `6` oracle-headroom rows. This improves
+readiness by making the paper's limitation credible rather than hidden: learned
+WZ, canonical RASP, consistency posterior, anchor-relative sparse packets,
+candidate-embedding receivers, and masked innovation receivers all fail or are
+asymmetric under strict cross-family controls. The next method branch, if any,
+must be materially different: shared sparse dictionary/crosscoder packets with
+feature knockout and bidirectional controls. Otherwise, proceed to paper
+revision around the scoped source-private evidence-packet claim.

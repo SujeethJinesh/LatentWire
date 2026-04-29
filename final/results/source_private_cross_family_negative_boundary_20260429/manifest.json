@@ -1,0 +1,18 @@
+{
+  "artifact_sha256": {
+    "cross_family_negative_boundary.csv": "b37056d1d4c3c88959bc4f0bc8ceaaf36835129edd09b4b5779fe18084699400",
+    "cross_family_negative_boundary.json": "c1ea20dd872d4f7f877d157ec8f6fc9b9b8bdb5b5eadeb442c69ebde90e0105d",
+    "cross_family_negative_boundary.md": "7fb8388e628b6573f949f7aef2b4ac20e1c044a88e889e94e3286feaa20744f3"
+  },
+  "artifacts": [
+    "cross_family_negative_boundary.json",
+    "cross_family_negative_boundary.csv",
+    "cross_family_negative_boundary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "./venv_arm64/bin/python scripts/build_source_private_cross_family_negative_boundary.py --output-dir results/source_private_cross_family_negative_boundary_20260429",
+  "pass_gate": true,
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "script_sha256": "2efd22971d2402d3068e23d58b6394cd406badc15bb16517aaf75b2271a254e7"
+}
