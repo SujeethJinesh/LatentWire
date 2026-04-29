@@ -23,6 +23,15 @@ Unsupported claims:
 - universal cross-model communication
 - learned target-side neural bridge
 
+## Contribution Map
+
+| Contribution | Evidence row | What it rules out | Current strength |
+|---|---|---|---|
+| Source-private communication with decoder side information | target-only, wrapper/no-source, zero/shuffled/random/answer controls across 500-example surfaces | target priors, prompt wrappers, answer leakage, and source-free sidecars | large frozen deterministic and model-mediated gates |
+| Rate-capped diagnostic packet method | 2-byte deterministic packets; Qwen3/Phi-3 model packets; Gemma 4 E2B n500 packet row | full-log relay as necessary communication channel; high-byte text relay as the only viable interface | large frozen slice, seed repeats, latest-small and non-Qwen local rows |
+| Strict reusable evaluation harness | exact-ID parity, candidate-pool recall, bytes/tokens/latency, source-destroying controls, codebook remap | selector leakage, candidate-generation confounds, fixed-codebook memorization | reproducible scripts, manifests, final folder checksums |
+| Boundary diagnosis for source emitters | Gemma passes strict prompt; Granite passes weakly; OLMo fails; raw-log/no-trace collapses | universal prompt-invariant source behavior | useful limitation, not a universal claim |
+
 ## Model-Mediated Packet Rows
 
 | Surface | Source model | Mode | Matched | Target | Best control | Valid packets | Mean bytes | Delta target 95% CI |
@@ -40,6 +49,24 @@ Negative model row:
 
 - Qwen3 `raw_log_no_trace` returns to `0.250` with `0` valid packets on all
   four `500`-example surfaces.
+
+Post-package local source-emitter rows:
+
+- `google/gemma-4-E2B-it`, MPS n500, strict trace-no-hint:
+  `500/500 = 1.000`, target-only `125/500 = 0.250`, best control
+  `126/500 = 0.252`, packet valid rate `1.000`, exact-ID parity true, p50
+  latency `754 ms`.
+- `Qwen/Qwen3.5-0.8B` and `Qwen/Qwen3.5-2B`, CPU n160:
+  both reach `160/160 = 1.000` with controls near `0.250`; 0.8B is repeated on
+  seeds `29/31`.
+- `Qwen/Qwen3.5-4B`, CPU n64:
+  `64/64 = 1.000`, controls `16/64 = 0.250`; useful latest-small breadth but
+  slower on local CPU.
+- `ibm-granite/granite-3.3-2b-instruct`, CPU n160 strict trace-no-hint:
+  `101/160 = 0.631`, target-only `0.250`, best control `0.256`; positive but
+  prompt-contract sensitive.
+- `allenai/OLMo-2-0425-1B-Instruct`, MPS n16:
+  behavioral negative with zero valid packets.
 
 ## Deterministic Control Rows
 
@@ -108,6 +135,7 @@ Failed or pruned:
 - raw-log-without-trace packet generation
 - ordinary SVAMP/GSM residual hunting as the near-term paper story
 - broad latent-transfer claim from current evidence
+- broad MoE/FP8 generalization until Qwen3.6-35B-A3B and FP8 rows pass
 
 ## Remaining Risk
 
@@ -116,7 +144,9 @@ whether reviewers expect a learned target-side neural decoder rather than a
 deterministic protocol decoder. The safest paper framing is to present this as
 a rate-capped source-private communication protocol with a reproducible
 candidate-decoder benchmark, then list learned target decoders as future work
-or a small optional extension if time permits.
+or a small optional extension if time permits. The second major full-paper risk
+is external validity: MoE/FP8 rows are executable through the endpoint runner
+but remain unrun because remote execution is currently disallowed.
 
 ## Next Gate
 

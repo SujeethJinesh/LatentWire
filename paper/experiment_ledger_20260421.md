@@ -14618,3 +14618,11 @@ source-destroying control is `126/500 = 0.252`, packet valid rate is `1.000`,
 exact-ID parity is true, matched-minus-best-control is `+0.748`, and p50 packet
 latency is `754 ms`. This passes the large local gate and gives the paper a
 clean non-Qwen large-slice row paired with the raw-log/no-trace collapse.
+
+Update `2026-04-28`: `source_private_full_paper_contribution_review_20260428`
+and the refreshed final evidence table make the three full-paper contributions
+explicit: (1) source-private communication with decoder side information,
+(2) a rate-capped diagnostic packet method, and (3) a strict reproducible
+source-destroying evaluation harness. The table now also separates
+post-package latest-small/non-Qwen rows from the core submission rows and keeps
+MoE/FP8 marked as unclaimed until endpoint gates pass.
