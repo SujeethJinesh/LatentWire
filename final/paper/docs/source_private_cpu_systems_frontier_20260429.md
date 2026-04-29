@@ -185,3 +185,22 @@ highest-value technical branch is a family-invariant learned receiver:
 fold-heldout calibration or sparse/shared-dictionary features at `8` bytes,
 because raw candidate-coordinate, coordinate-free code-similarity, and naive
 cosine-anchor receivers do not clear held-out-family transfer.
+
+## Pass/Fail Audit Follow-Up
+
+Follow-up `2026-04-29`: added the reviewer-facing pass/fail ledger artifact at
+`results/source_private_pass_fail_ledger_20260429/`. It derives from the same
+`104` CPU frontier rows and explicitly separates:
+
+- `3` paper-ready paired-uncertainty rows with complete accuracy/control/bytes
+  /valid/paired-CI evidence.
+- `58` positive rows that are useful but still need at least one reviewer
+  evidence field before becoming headline claims.
+- `1` weak positive row.
+- `42` failed or pruned rows.
+
+The paper implication is stricter than the frontier prose alone: only the
+label-strict endpoint paired-uncertainty rows are currently paper-ready by the
+ledger's completeness rule. The learned receiver and most systems rows remain
+supporting contributions or next-method motivation until they gain paired
+uncertainty, stronger cross-family evidence, or true server timing.

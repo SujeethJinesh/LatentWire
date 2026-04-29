@@ -957,5 +957,12 @@
     "path": "references/493_source_private_novelty_stance_20260429.md",
     "status": "local_memo",
     "reason": "Primary-source novelty stance for source-private extreme-rate evidence packets, endpoint label-strict receivers, same-distribution learned receiver stability, heldout-family failure, and C2C/activation/KV/LatentMAS/prompt-compression/source-coding comparisons."
+  },
+  {
+    "num": 494,
+    "slug": "iclr_strengthening_scout_20260429",
+    "path": "references/494_iclr_strengthening_scout_20260429.md",
+    "status": "local_memo",
+    "reason": "Primary-source scout memo for ICLR strengthening after the pass/fail audit, covering TurboQuant, QJL, KIVI, KVQuant, SnapKV, CacheGen, GenAI-Perf metric conventions, JEPA/flow latent-prediction objectives, and relative/sparse innovation receiver branches."
   }
 ]

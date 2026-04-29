@@ -1,0 +1,20 @@
+{
+  "artifact_sha256": {
+    "pass_fail_ledger.csv": "fdab05d4958e0c9e50878a932f4706eeae227c01a88619924b4d86770f7fb5a0",
+    "pass_fail_ledger.json": "19b0f6440a2ffa59dfa5d4fdd0c4912ef1da61f3becb0430ce71956ab7423320",
+    "pass_fail_ledger.md": "db4698b243c148a98c535a4b16bf88923defe25536d60927ede5270b11a2dea9"
+  },
+  "artifacts": [
+    "pass_fail_ledger.json",
+    "pass_fail_ledger.csv",
+    "pass_fail_ledger.md",
+    "manifest.json"
+  ],
+  "by_bucket": {
+    "failed_or_pruned": 42,
+    "paper_ready_evidence": 3,
+    "positive_needs_more_evidence": 58,
+    "weak_positive": 1
+  },
+  "total_rows": 104
+}

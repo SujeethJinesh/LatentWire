@@ -15247,3 +15247,24 @@ is oracle, but the source encoder and naive anchor-relative bank do not carry
 transferable heldout-family source evidence. Next exact gate: fold-heldout
 calibration or sparse/shared-dictionary receiver; simple code-similarity and
 cosine-anchor variants are pruned.
+
+Follow-up `2026-04-29`: added a reviewer-facing pass/fail ledger over the CPU
+systems frontier. Command:
+`./venv_arm64/bin/python scripts/build_source_private_pass_fail_ledger.py --output-dir results/source_private_pass_fail_ledger_20260429`.
+Outcome: `104` rows total, with `3` paper-ready paired-uncertainty rows, `58`
+positive rows needing more evidence, `1` weak positive, and `42` failed or
+pruned rows. Artifact hashes: `pass_fail_ledger.json`
+`19b0f6440a2ffa59dfa5d4fdd0c4912ef1da61f3becb0430ce71956ab7423320`,
+`pass_fail_ledger.csv`
+`fdab05d4958e0c9e50878a932f4706eeae227c01a88619924b4d86770f7fb5a0`,
+`pass_fail_ledger.md`
+`db4698b243c148a98c535a4b16bf88923defe25536d60927ede5270b11a2dea9`,
+`manifest.json`
+`59d0d9577273a8e5ab13c7723b81f35d828b485fe0d330261159b9da1c01ec94`.
+Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_build_source_private_pass_fail_ledger.py -q`
+passed. The new literature memo
+`references/494_iclr_strengthening_scout_20260429.md` records the next systems
+and method baselines: KV/cache byte lower-bound accounting against
+TurboQuant/QJL/KIVI/KVQuant/SnapKV/CacheGen, followed by a masked or sparse
+source-private innovation receiver gate.

@@ -2504,3 +2504,15 @@ cosine-anchor banks as cross-family fixes. Readiness is unchanged: the learned
 receiver remains a same-distribution contribution only. Next best method gate:
 fold-heldout calibration or sparse/shared-dictionary receiver with explicit
 anchor-remap/private-atom controls.
+
+Follow-up `2026-04-29`: added a reviewer-facing pass/fail ledger derived from
+the full CPU systems frontier. The artifact has `104` rows: `3` paper-ready
+paired-uncertainty rows, `58` positive rows needing more evidence, `1` weak
+positive, and `42` failed/pruned rows. This improves auditability and makes the
+claim boundary less cherry-picked, but readiness does not become full ICLR:
+the strongest paper-ready rows are still endpoint-proxy CPU evidence rather
+than server TTFT/throughput, and the learned receiver remains same-distribution
+only. Literature scout memo `references/494_iclr_strengthening_scout_20260429.md`
+sets the next two highest-value additions: KV/cache byte lower-bound accounting
+against TurboQuant/QJL/KIVI/KVQuant/SnapKV/CacheGen, then a masked or sparse
+source-private innovation receiver gate.
