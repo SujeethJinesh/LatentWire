@@ -503,3 +503,19 @@ final-paper framing:
 - `482_`: Competitor-threat and learned-syndrome memo covering C2C/KVComm,
   activation communication, latent-agent systems, LLMLingua variants,
   Chain-of-Agents, distributed indirect source coding, and DeepJSCC-WZ.
+- `483_`: Compression-native learned-packet memo for TurboQuant, QJL, QuIP#,
+  SpinQuant, SmoothQuant, KIVI, and protected-channel ablations.
+- `484_`: Source-private learned Wyner-Ziv packet references and same-family /
+  remap gate implications.
+- `485_`: Consistency-posterior packet references covering JEPA-style
+  anti-collapse, RASP/relative packets, QJL/TurboQuant, and KIVI.
+- `486_`: Protocol-stress and uniqueness memo for C2C, KVComm, LLMLingua,
+  source coding, and connector/bottleneck threats.
+- `487_`: Protected residual packet references and codec-comparator framing.
+- `488_`: ICLR strengthening memo after the frozen target-decoder all-control
+  gate, including novelty threats and next-method ideas.
+- `489_`: Anchor-relative sparse packet references and the cross-family smoke
+  outcome.
+- `490_`: Mac endpoint-proxy byte/TTFT frontier references, positioning packet
+  relay against vLLM/PagedAttention, LLMLingua-family prompt compression, KV
+  cache compression, and cache-transport baselines.

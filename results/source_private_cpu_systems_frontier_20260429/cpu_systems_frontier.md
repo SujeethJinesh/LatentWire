@@ -1,7 +1,7 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `71`
-- pass rows: `39`
+- rows: `75`
+- pass rows: `43`
 - fail / near-miss rows: `32`
 - minimum passing accuracy: `0.373`
 - maximum passing payload bytes: `8.0`
@@ -82,7 +82,11 @@
 | target model decoder ablation | Qwen3 target decoder | core n32 CPU all controls short decode diagnostic | `fail` | 0.000 | 0.000 | 0.000 | 2.0 | 0.000 | - | n=32; generated_tokens=8.0 |
 | target model decoder ablation | Qwen3 target decoder | core n32 CPU all controls | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=32; generated_tokens=13.0 |
 | target model decoder ablation | Qwen3 target decoder | holdout n32 CPU all controls | `pass` | 0.750 | 0.250 | 0.281 | 2.0 | 1.000 | - | n=32; generated_tokens=13.0 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n8 CPU diag-parse | `pass` | 0.750 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=8; packet_minus_target=0.500; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=181.1ms; full_log_e2e_delta=-38.9ms; best_verbose_relay=1.000 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n8 CPU diag-parse | `pass` | 0.750 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=8; packet_minus_target=0.500; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=279.5ms; full_log_e2e_delta=5.9ms; best_verbose_relay=1.000 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n16 CPU diag-parse | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; packet_minus_target=0.438; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=165.4ms; full_log_e2e_delta=-636.3ms; best_verbose_relay=1.000 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n16 CPU diag-parse | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; packet_minus_target=0.438; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=190.7ms; full_log_e2e_delta=-623.0ms; best_verbose_relay=1.000 |
 
 ## Caveat
 
-CPU/local latency is not endpoint TTFT or throughput. Cross-family rows remain explicitly failed outside the promoted same-family/remap scope.
+CPU/local endpoint-proxy timing is not server TTFT or throughput. Cross-family rows remain explicitly failed outside the promoted same-family/remap scope.

@@ -14,10 +14,10 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `71` rows after adding learned Wyner-Ziv packet evidence,
+The aggregate now has `75` rows after adding learned Wyner-Ziv packet evidence,
 bidirectional cross-family falsification rows, protected residual codec
 ablation rows, progress-enabled target-decoder receiver rows, and the static
-anchor-relative sparse packet smoke. The
+anchor-relative sparse packet smoke plus the Mac endpoint-proxy rows. The
 strongest systems result
 remains the byte-rate frontier: a `2` byte diagnostic packet reaches oracle
 accuracy on the frozen core and holdout surfaces, while structured
@@ -56,6 +56,13 @@ The learned packet story remains positive in scoped settings:
   hand-coded-decoder objection: a frozen target model reads the 2-byte packet
   while shuffled/random/matched-byte structured text controls stay near the
   target prior.
+- Mac endpoint-proxy rows now pass on core and holdout at `n=8` and `n=16`
+  with Qwen3-0.6B CPU. The stronger `n=16` rows reach `0.688` on both surfaces
+  versus target-only and matched-byte text at `0.250`; query-aware text is
+  `7.0x` larger, full hidden-log relay is `183.2x-186.7x` larger, and full-log
+  p50 TTFT is `+165.4 ms` to `+190.7 ms` relative to the packet. This is the
+  first endpoint-style timing row, but it remains a local CPU proxy rather than
+  server throughput.
 
 ## Failures Kept In The Artifact
 
@@ -98,14 +105,17 @@ This supports three defensible contributions:
    structured text and hidden-log relay.
 
 It does not support a full bidirectional cross-family latent-transfer claim.
-Endpoint TTFT/throughput remains unmeasured, so the paper should currently claim
-byte-rate and local CPU decode-cost evidence, not serving-latency superiority.
+Endpoint-proxy TTFT/E2E telemetry is now measured locally on CPU, so the paper
+can claim a Mac-local byte/TTFT frontier. It still should not claim serving-
+throughput superiority until a real vLLM/OpenAI-compatible endpoint run exists.
 
 ## Next Gate
 
-The highest-priority reviewer-facing gate is now endpoint TTFT/E2E latency for
-packet versus structured/full-log relay. The receiver objection is weakened by
-the n32 all-control frozen-model pass, and the static AR-SIP branch has been
-pruned. Any further cross-family method work should move to a learned
-target-preserving query bottleneck or richer source surface, not another static
-sparse coordinate packet.
+The highest-priority reviewer-facing gate is now larger endpoint-proxy
+replication (`n=64`/`n=160`) with prompt paraphrase stress, followed by a true
+server-side TTFT/throughput run when NVIDIA GPUs are available. The receiver
+objection is weakened by the n32 all-control frozen-model pass and the endpoint-
+proxy timing row, and the static AR-SIP branch has been pruned. Any further
+cross-family method work should move to a learned target-preserving query
+bottleneck or richer source surface, not another static sparse coordinate
+packet.

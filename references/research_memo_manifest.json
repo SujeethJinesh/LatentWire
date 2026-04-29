@@ -929,5 +929,12 @@
     "path": "references/489_anchor_relative_sparse_packet_gate_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the anchor-relative sparse packet cross-family smoke, covering relative representations, sparse crosscoders, JEPA, diffusion transformers, model stitching, and Q-Former/Perceiver-style learned receivers."
+  },
+  {
+    "num": 490,
+    "slug": "mac_endpoint_proxy_frontier_refs",
+    "path": "references/490_mac_endpoint_proxy_frontier_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the Mac endpoint-proxy byte/TTFT frontier, positioning the packet against vLLM/PagedAttention, LLMLingua-family prompt compression, KIVI/QJL/TurboQuant, and cache transport baselines."
   }
 ]

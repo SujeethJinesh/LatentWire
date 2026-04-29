@@ -13,6 +13,7 @@ def test_cpu_systems_frontier_includes_passes_and_failures(tmp_path) -> None:
     assert "learned scalar packet" in contributions
     assert "canonical RASP cross-family falsification" in contributions
     assert "consistency posterior negative ablation" in contributions
+    assert "Mac endpoint-proxy byte/TTFT frontier" in contributions
     assert "pass" in statuses
     assert "fail" in statuses
     assert (tmp_path / "frontier" / "cpu_systems_frontier.csv").exists()

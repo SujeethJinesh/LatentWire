@@ -143,6 +143,20 @@ next branch: either add endpoint TTFT/E2E systems telemetry for the existing
 positive packet, or pursue a learned target-preserving query bottleneck /
 Q-Former-style receiver rather than another static sparse code.
 
+Update `2026-04-29`: the first endpoint-proxy systems row is now positive. A
+Qwen3-0.6B CPU receiver passes on core and holdout at `n=8` and `n=16` with
+endpoint-style prompt/token/TTFT/E2E logging. The stronger `n=16` rows reach
+matched 2-byte packet accuracy `0.688` on both surfaces versus target-only and
+matched-byte text at `0.250`; query-aware text is `7.0x` larger and full
+hidden-log relay is `183.2x-186.7x` larger. Full-log p50 TTFT is `+165.4 ms` to
+`+190.7 ms` relative to the packet at `n=16`. This materially improves the
+systems story, but the readiness status remains scoped positive-method rather
+than ICLR-full ready: the endpoint evidence is still `n=16 + n=16` local CPU
+proxy, not server throughput, and cross-family latent transfer remains failed.
+The next gate is `n=64`/`n=160` endpoint-proxy replication with prompt
+paraphrase stress, then a vLLM/OpenAI-compatible server run when GPUs are
+available.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

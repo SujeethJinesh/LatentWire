@@ -14973,3 +14973,32 @@ asymmetry seen in scalar WZ and canonical RASP, so static relative sparse
 coordinates are pruned as a bidirectional cross-family fix. The next cross-
 family branch should use a learned receiver/query bottleneck or move to endpoint
 systems telemetry for the existing positive packet.
+
+Follow-up `2026-04-29`: added the first Mac endpoint-proxy systems frontier for
+the existing source-private packet. Command pattern:
+`/opt/homebrew/bin/timeout 900s env PYTHONUNBUFFERED=1 ./venv_arm64/bin/python
+scripts/run_source_private_mac_endpoint_proxy_frontier.py --benchmark-jsonl
+results/source_private_tool_trace_reviewer_risk_rows_20260429/<surface>/benchmark.jsonl
+--output-dir results/source_private_mac_endpoint_proxy_frontier_20260429/<surface>_qwen3_n8_cpu_diagparse
+--model Qwen/Qwen3-0.6B --device cpu --dtype float32 --limit 8
+--max-new-tokens 24 --no-enable-thinking`. The first core attempt failed
+because Qwen emitted a diagnostic code (`G0`) instead of a candidate label; the
+parser now maps a unique emitted diagnostic code to the public candidate whose
+`handles_repair_diag` matches it. With that auditable parser, both endpoint-
+proxy surfaces pass. Core seed29 `n=8`: matched packet `0.750`, target-only
+`0.250`, matched-byte text `0.250`, query-aware text `0.750`, JSON/free-text
+`1.000`, full log `1.000`; packet payload `2` bytes, query text `14` bytes,
+full log `366.5` bytes, full-log p50 TTFT `+181.1 ms` versus packet. Holdout
+seed30 `n=8`: matched packet `0.750`, target-only `0.250`, matched-byte text
+`0.250`, query-aware text `0.625`, JSON/free-text `0.875`, full log `1.000`;
+full log `373.5` bytes and p50 TTFT `+279.5 ms` versus packet. I then widened
+to `n=16` without changing the method. Core seed29 `n=16`: matched packet
+`0.688`, target-only `0.250`, matched-byte text `0.250`, query-aware text
+`0.812`, JSON/free-text/full-log `1.000`, full-log p50 TTFT `+165.4 ms` versus
+packet. Holdout seed30 `n=16`: matched packet `0.688`, target-only `0.250`,
+matched-byte text `0.250`, query-aware text `0.750`, JSON/free-text `0.938`,
+full log `1.000`, full-log p50 TTFT `+190.7 ms` versus packet. The CPU systems
+frontier now has `75` rows after adding these endpoint-proxy rows. This
+supports a Mac-local byte/TTFT frontier, not a server-throughput claim. Next
+gate: `n=64`/`n=160` endpoint-proxy replication with prompt paraphrase stress,
+then a real vLLM/OpenAI-compatible serving run when GPUs are available.

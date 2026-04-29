@@ -142,6 +142,43 @@ def _target_decoder_row(row_id: str, path: pathlib.Path, *, surface: str) -> dic
     )
 
 
+def _endpoint_proxy_row(row_id: str, path: pathlib.Path, *, surface: str) -> dict[str, Any]:
+    summary = _read_json(path)
+    matched = _metric(summary, "matched_packet")
+    target = _metric(summary, "target_only")
+    matched_text = _metric(summary, "matched_byte_text_2")
+    structured = max(
+        _metric(summary, "query_aware_diag_span")["accuracy"],
+        _metric(summary, "structured_json_diag")["accuracy"],
+        _metric(summary, "structured_free_text_diag")["accuracy"],
+        _metric(summary, "full_hidden_log")["accuracy"],
+    )
+    return _row(
+        row_id=row_id,
+        contribution="Mac endpoint-proxy byte/TTFT frontier",
+        method="Qwen3-0.6B packet vs text/log relay",
+        surface=surface,
+        status="pass" if summary["pass_gate"] else "fail",
+        accuracy=matched["accuracy"],
+        target_accuracy=target["accuracy"],
+        best_control_accuracy=matched_text["accuracy"],
+        mean_payload_bytes=matched["mean_payload_bytes"],
+        mean_payload_tokens=matched["mean_payload_tokens_proxy"],
+        p50_latency_ms=matched["p50_e2e_ms"],
+        p95_latency_ms=matched["p95_e2e_ms"],
+        valid_rate=matched["valid_prediction_rate"],
+        comparator="matched-byte text / query-aware text / structured relay / full log",
+        note=(
+            f"n={summary['n']}; packet_minus_target={summary['packet_minus_target_accuracy']:.3f}; "
+            f"query_payload_compression={summary['packet_vs_query_payload_compression']:.1f}x; "
+            f"full_log_payload_compression={summary['packet_vs_full_log_payload_compression']:.1f}x; "
+            f"full_log_ttft_delta={summary['full_log_ttft_delta_vs_packet_ms']:.1f}ms; "
+            f"full_log_e2e_delta={summary['full_log_e2e_delta_vs_packet_ms']:.1f}ms; "
+            f"best_verbose_relay={structured:.3f}"
+        ),
+    )
+
+
 def _slot_packet_rows(path: pathlib.Path) -> list[dict[str, Any]]:
     payload = _read_json(path)
     return [
@@ -548,6 +585,30 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
     ]
     for row_id, rel_path, surface in target_specs:
         rows.append(_target_decoder_row(row_id, ROOT / rel_path, surface=surface))
+    endpoint_specs = [
+        (
+            "endpoint_proxy_core_n8_diagparse",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n8_cpu_diagparse/summary.json",
+            "core seed29 n8 CPU diag-parse",
+        ),
+        (
+            "endpoint_proxy_holdout_n8_diagparse",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n8_cpu_diagparse/summary.json",
+            "holdout seed30 n8 CPU diag-parse",
+        ),
+        (
+            "endpoint_proxy_core_n16_diagparse",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n16_cpu_diagparse/summary.json",
+            "core seed29 n16 CPU diag-parse",
+        ),
+        (
+            "endpoint_proxy_holdout_n16_diagparse",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n16_cpu_diagparse/summary.json",
+            "holdout seed30 n16 CPU diag-parse",
+        ),
+    ]
+    for row_id, rel_path, surface in endpoint_specs:
+        rows.append(_endpoint_proxy_row(row_id, ROOT / rel_path, surface=surface))
     pass_rows = [row for row in rows if row["status"] == "pass"]
     fail_rows = [row for row in rows if row["status"] in {"fail", "near-miss"}]
     payload = {
@@ -567,7 +628,7 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
         },
         "pass_gate": True,
         "pass_rule": "This is an aggregate evidence table; individual rows carry pass/fail status from their source artifacts.",
-        "caveat": "CPU/local latency is not endpoint TTFT or throughput. Cross-family rows remain explicitly failed outside the promoted same-family/remap scope.",
+        "caveat": "CPU/local endpoint-proxy timing is not server TTFT or throughput. Cross-family rows remain explicitly failed outside the promoted same-family/remap scope.",
     }
     (output_dir / "cpu_systems_frontier.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     _write_csv(output_dir / "cpu_systems_frontier.csv", rows)
