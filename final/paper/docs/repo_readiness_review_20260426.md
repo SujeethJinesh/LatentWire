@@ -2552,3 +2552,16 @@ variant failing for the same reason. Do not tune simple masked-innovation
 projection further. The only live learned cross-family follow-up is a materially
 different shared-dictionary/crosscoder model with feature knockout, or else the
 paper should keep learned receivers as same-distribution diagnostics only.
+
+Follow-up `2026-04-29`: the coded-label/protocol risk gate passes and
+materially strengthens the current scoped positive-method claim. On `160`
+frozen examples, three code seeds, and five transform rows (`baseline`,
+opaque-label rename, diagnostic-code remap, candidate-order permutation, and
+the composed label+code+order stress), the 2-byte packet remains at `1.000`
+accuracy while target-only is `0.250`, reviewer-negative controls are `0.250`,
+and the worst source-destroying control is `0.263`. This weakens fixed-label,
+fixed-order, and single-codebook lookup objections. Readiness improves for the
+source-private evidence-packet paper, but not to full ICLR-ready status:
+remaining gaps are one-command reproduction/novelty packaging, real serving
+TTFT/TPOT/throughput, and either a broader cross-family learned method or an
+explicitly scoped claim that reports cross-family failures honestly.

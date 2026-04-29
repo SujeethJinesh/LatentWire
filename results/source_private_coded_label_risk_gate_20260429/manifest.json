@@ -1,0 +1,46 @@
+{
+  "args": {
+    "budget": 2,
+    "candidates": 4,
+    "examples": 160,
+    "family_set": "all",
+    "output_dir": "results/source_private_coded_label_risk_gate_20260429",
+    "seeds": [
+      29,
+      31,
+      37
+    ]
+  },
+  "artifact_sha256": {
+    "predictions.jsonl": "7f9067b7a59d8133df59265695d0bebdae3a718a907d98409e725bc04301eb79",
+    "summary.json": "d29b2ba829b8fc09cbe0204f80d34f9ec298b71d3fb71e7a0c7b6902eecd8240",
+    "summary.md": "914e359f13d03022e3ebe6388f80a4c691e6fd1163512bb243f1b5ecbcdb5bdd"
+  },
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "predictions.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "./venv_arm64/bin/python scripts/run_source_private_coded_label_risk_gate.py --examples 160 --candidates 4 --family-set all --seeds 29,31,37 --budget 2 --output-dir results/source_private_coded_label_risk_gate_20260429",
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "run_utc": "2026-04-29T21:15:47.721425+00:00",
+  "script_sha256": "629e3c4e179bfdd14c284d44bead3b84b196d3ecf4fa9563382bd63e5ba2f0bf",
+  "summary": {
+    "examples": 160,
+    "pass_gate": true,
+    "seeds": [
+      29,
+      31,
+      37
+    ],
+    "transforms": [
+      "baseline",
+      "label_rename",
+      "diagnostic_code_remap",
+      "candidate_pool_permutation",
+      "label_code_order_composed"
+    ]
+  }
+}

@@ -15330,3 +15330,31 @@ passed. Interpretation: anchor-relative and shared-text masked-innovation
 variants now fail the same cross-family way despite oracle headroom. Stop
 tuning this family unless the next variant is materially different, such as a
 shared-dictionary/crosscoder receiver with feature knockout.
+
+Follow-up `2026-04-29`: implemented and ran the coded-label/protocol risk gate
+for the current positive 2-byte evidence-packet method. New files:
+`scripts/run_source_private_coded_label_risk_gate.py`,
+`tests/test_run_source_private_coded_label_risk_gate.py`,
+`paper/source_private_coded_label_risk_gate_20260429.md`, and
+`references/496_coded_label_risk_and_uniqueness_scout_20260429.md`. Command:
+`./venv_arm64/bin/python scripts/run_source_private_coded_label_risk_gate.py --examples 160 --candidates 4 --family-set all --seeds 29,31,37 --budget 2 --output-dir results/source_private_coded_label_risk_gate_20260429`.
+Outcome: pass. Across `15` seed/transform rows (`baseline`, opaque
+candidate-label rename, diagnostic-code remap, candidate-pool permutation, and
+the composed label+code+order stress), matched 2-byte packet accuracy is
+`1.000`, target-only is `0.250`, reviewer-negative controls stay at `0.250`,
+positive oracle floor is `1.000`, and the worst source-destroying control is
+`0.263`. Artifact hashes: `summary.json`
+`d29b2ba829b8fc09cbe0204f80d34f9ec298b71d3fb71e7a0c7b6902eecd8240`,
+`summary.md`
+`914e359f13d03022e3ebe6388f80a4c691e6fd1163512bb243f1b5ecbcdb5bdd`,
+`predictions.jsonl`
+`7f9067b7a59d8133df59265695d0bebdae3a718a907d98409e725bc04301eb79`,
+`manifest.json`
+`f7537d59d4c47cbcbaf7337adb7e17384271fbcf4e53acd29f9b6f16372c737e`.
+Focused tests:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_coded_label_risk_gate.py -q`
+passed. Interpretation: fixed label, display-order, and single-codebook lookup
+explanations are materially weakened. This strengthens the scoped
+source-private packet claim, but does not solve broad cross-family latent
+transfer. Next exact gate: one-command reproduction/novelty bundle and, if
+time allows, a larger `n=500` composed coded-label stress row.
