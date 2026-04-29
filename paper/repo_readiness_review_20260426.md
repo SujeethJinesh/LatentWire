@@ -2134,3 +2134,15 @@ diagnostic oracle `1.000`. This is the strongest path to a distinct method
 contribution beyond diagnostic packets. The next blocker is compression-native
 baselines at the same 6-byte budget: random sign sketch, rotation+scalar
 quantization, and QJL/PQ-style controls.
+
+Update `2026-04-29`: compression-native matched-byte baselines now change the
+live method. The learned random-hyperplane syndrome is no longer the best
+transport: a 6-byte scalar-quantized learned source projection reaches `0.979`
+on a `512`-example frozen slice versus learned syndrome `0.953`, target-only
+`0.250`, raw source sign sketch `0.307`, scalar shuffled `0.166`, and scalar
+answer-masked `0.293`. A second `256`-example seed pair also passes strict
+scalar controls with scalar `0.945` versus learned syndrome `0.910`. Readiness
+improves on the systems axis because the method now has a natural quantized
+packet story, but it is still not full ICLR-ready until the scalar packet
+survives 5-seed repeats, held-out-family splits, codebook remapping, and
+candidate-side masking. The current live branch is `scalar_quantized_source`.

@@ -14705,3 +14705,19 @@ matched `0.918`, target `0.250`, best no-source `0.289`, full diagnostic oracle
 `1.000`; 12 bytes also passes. This is now a real-feature learned-method
 candidate, but not yet a headline claim until it beats compression-native
 baselines such as sign sketch, rotation quantization, or PQ/QJL controls.
+
+Update `2026-04-29`: `source_private_tool_trace_compression_baselines_20260429`
+adds the decisive matched-byte compression gate. The learned sign-syndrome row
+is positive but loses to a stronger 6-byte scalar-quantized learned source
+projection. Seed pair `29 -> 30`, train/eval `512/256`: learned syndrome
+`0.934`, scalar quantized source `0.973`, target `0.250`, raw source sign sketch
+`0.316`; strict scalar pass is false only because scalar shuffled source reaches
+`0.305` versus the `0.300` cutoff. Seed pair `31 -> 32`, train/eval `512/256`:
+learned syndrome `0.910`, scalar `0.945`, target `0.250`, raw sign sketch
+`0.172`, scalar shuffled `0.227`, scalar answer-masked `0.207`, strict scalar
+pass true. The larger seed `29 -> 30` slice with train/eval `768/512` passes:
+learned syndrome `0.953`, scalar `0.979`, target `0.250`, raw sign sketch
+`0.307`, scalar shuffled `0.166`, scalar answer-masked `0.293`. This demotes
+random-hyperplane syndrome as the headline transport and promotes the systems
+method to a 6-byte scalar-quantized learned source-posterior packet, pending
+5-seed, held-out-family, codebook-remap, and candidate-masking gates.

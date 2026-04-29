@@ -240,6 +240,7 @@ Run from the repository root with `./venv_arm64/bin/python`.
 ./venv_arm64/bin/python scripts/build_source_private_systems_summary.py --help
 ./venv_arm64/bin/python scripts/run_source_private_learned_syndrome_smoke.py --help
 ./venv_arm64/bin/python scripts/run_source_private_tool_trace_learned_syndrome.py --help
+./venv_arm64/bin/python scripts/run_source_private_tool_trace_compression_baselines.py --help
 ```
 
 Focused tests:
@@ -254,11 +255,23 @@ Focused tests:
   tests/test_run_source_private_tool_trace_target_decoder_smoke.py \
   tests/test_build_source_private_systems_summary.py \
   tests/test_run_source_private_learned_syndrome_smoke.py \
-  tests/test_run_source_private_tool_trace_learned_syndrome.py -q
+  tests/test_run_source_private_tool_trace_learned_syndrome.py \
+  tests/test_run_source_private_tool_trace_compression_baselines.py -q
 ```
+
+## Latest Method Pivot
+
+The live method is now the 6-byte scalar-quantized learned source projection.
+On the `768/512` frozen tool-trace compression gate it reaches `0.979` accuracy
+versus learned sign syndrome `0.953`, target-only `0.250`, raw source sign
+sketch `0.307`, scalar shuffled source `0.166`, and scalar answer-masked source
+`0.293`. The next blocker is not a local artifact issue; it is the research
+gate for 5-seed repeats, held-out-family splits, codebook remap, and
+candidate-side masking.
 
 ## Final Status
 
-Local preparation is complete. The remaining blocker is external only: upload
-through the venue-approved anonymous route, then record submission/artifact IDs
-and portal warnings in the submission confirmation memo.
+The reproducibility snapshot is current through the scalar-packet compression
+gate. The paper is not yet final-submission complete: the remaining blocker is
+research evidence, specifically scalar-packet repeats and stricter
+generalization/leakage gates before venue upload.
