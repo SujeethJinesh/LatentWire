@@ -15358,3 +15358,23 @@ explanations are materially weakened. This strengthens the scoped
 source-private packet claim, but does not solve broad cross-family latent
 transfer. Next exact gate: one-command reproduction/novelty bundle and, if
 time allows, a larger `n=500` composed coded-label stress row.
+
+Follow-up `2026-04-29`: implemented the reviewer-facing ICLR evidence bundle.
+New files: `scripts/build_source_private_iclr_evidence_bundle.py`,
+`tests/test_build_source_private_iclr_evidence_bundle.py`,
+`paper/source_private_iclr_evidence_bundle_20260429.md`, and
+`references/497_iclr_evidence_bundle_refs_20260429.md`. Command:
+`./venv_arm64/bin/python scripts/build_source_private_iclr_evidence_bundle.py --output-dir results/source_private_iclr_evidence_bundle_20260429`.
+Outcome: pass, with `10/10` machine checks, `5` contribution rows, and `8`
+novelty-matrix comparisons. The bundle verifies that required artifacts exist,
+the rate frontier passes, matched-byte text stays at target, the packet keeps a
+`7.0x` byte advantage over query-aware text, QJL-style cache byte lower-bound is
+above `1000x`, the coded-label composed stress passes, endpoint uncertainty
+passes on core/holdout, and the pass/fail ledger has `3` paper-ready rows. It
+also writes `reproduce_iclr_evidence_bundle.sh` with the exact Mac-local
+commands for rebuilding derived tables and focused tests. Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_build_source_private_iclr_evidence_bundle.py -q`
+passed. Interpretation: this does not create a new method, but it materially
+reduces reproducibility, novelty-positioning, and contribution-depth reviewer
+risk. Next exact gate: a negative-boundary appendix aggregating cross-family
+failures and oracle headroom, or an `n=500` composed-only coded-label stress.

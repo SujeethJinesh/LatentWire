@@ -1,0 +1,252 @@
+{
+  "artifact_status": {
+    "coded_label_risk": {
+      "bytes": 439485,
+      "exists": true,
+      "path": "results/source_private_coded_label_risk_gate_20260429/summary.json",
+      "sha256": "d29b2ba829b8fc09cbe0204f80d34f9ec298b71d3fb71e7a0c7b6902eecd8240"
+    },
+    "endpoint_uncertainty_core": {
+      "bytes": 7998,
+      "exists": true,
+      "path": "results/source_private_endpoint_uncertainty_20260429/core_label_strict_n160/summary.json",
+      "sha256": "a868bc1961c969b17c98e0363c389b19561e1414fe93170cb4e364cbaaa82646"
+    },
+    "endpoint_uncertainty_holdout": {
+      "bytes": 15231,
+      "exists": true,
+      "path": "results/source_private_endpoint_uncertainty_20260429/label_strict_n160/summary.json",
+      "sha256": "1baec769e5dea93975b36972b0e2ce9b240997a5befbf5a467c24574f7c57511"
+    },
+    "final_manifest": {
+      "bytes": 246823,
+      "exists": true,
+      "path": "final/MANIFEST.sha256",
+      "sha256": "236fcd90b0ecd25db3518413b07d08270bb4d4ad3a75e55c0433c50c4aae0c23"
+    },
+    "final_table_doc": {
+      "bytes": 10358,
+      "exists": true,
+      "path": "paper/source_private_tool_trace_final_table_20260429.md",
+      "sha256": "a9934f381c2bffbc8fef0b9746efa5ff5701228208bed81c23e7c9fc503f80f9"
+    },
+    "kv_cache_baseline": {
+      "bytes": 15104,
+      "exists": true,
+      "path": "results/source_private_kv_cache_baseline_table_20260429/kv_cache_baseline_table.json",
+      "sha256": "c2dd1ec937267cabb15cf47f320b6e94e85e5e8b87245d137d56b8abffa339c5"
+    },
+    "pass_fail_ledger": {
+      "bytes": 116447,
+      "exists": true,
+      "path": "results/source_private_pass_fail_ledger_20260429/pass_fail_ledger.json",
+      "sha256": "19b0f6440a2ffa59dfa5d4fdd0c4912ef1da61f3becb0430ce71956ab7423320"
+    },
+    "rate_frontier": {
+      "bytes": 36356,
+      "exists": true,
+      "path": "results/source_private_rate_frontier_20260429/rate_frontier.json",
+      "sha256": "7321e1dc53e677630c66c5847af845b1a27c9e2f5f70d313e8994f26e6fac229"
+    },
+    "readiness_doc": {
+      "bytes": 148323,
+      "exists": true,
+      "path": "paper/repo_readiness_review_20260426.md",
+      "sha256": "fd10f9056ba45709639062d05bf52e1535d2f97beb537cd983417d6150534f47"
+    },
+    "systems_summary": {
+      "bytes": 8223,
+      "exists": true,
+      "path": "results/source_private_systems_summary_20260428/systems_summary.json",
+      "sha256": "85aae1304598f8e94eeeb61e221d468e68e48307d68b2c75f4283ed402acac74"
+    }
+  },
+  "contribution_rows": [
+    {
+      "contribution": "Source-private evidence-packet benchmark and controls",
+      "headline_evidence": "160 examples x 3 seeds x 5 label/code/order stress transforms pass",
+      "main_metric": "matched=1.000, target=0.250, worst_control=0.263",
+      "remaining_gap": "Still a protocol/candidate-decoder task; frame as source-private evidence communication, not universal semantics.",
+      "status": "strong scoped contribution"
+    },
+    {
+      "contribution": "Extreme-rate candidate-syndrome packet method",
+      "headline_evidence": "packet oracle bytes max=2.0; matched-byte text accuracy max=0.250",
+      "main_metric": "packet vs query-aware text >= 7.0x; packet vs full log >= 183.2x",
+      "remaining_gap": "Text becomes oracle at higher bytes, so claim only the far-left rate frontier.",
+      "status": "headline method for scoped paper"
+    },
+    {
+      "contribution": "Systems byte/KV-cache accounting frontier",
+      "headline_evidence": "minimum QJL-style 1-bit cache payload is 10752.0x packet",
+      "main_metric": "minimum KIVI-style 2-bit cache payload is 21504.0x packet",
+      "remaining_gap": "Derived byte accounting only; no production GPU serving throughput yet.",
+      "status": "systems contribution with clear caveat"
+    },
+    {
+      "contribution": "Endpoint paired uncertainty and local target-decoder evidence",
+      "headline_evidence": "endpoint paired rows pass with min packet-vs-target CI lows 0.350/0.350",
+      "main_metric": "paper-ready rows in ledger=3; total audited rows=104",
+      "remaining_gap": "Mac-local proxy, not server TTFT/TPOT/throughput.",
+      "status": "paper-ready evidence rows exist, but systems scope is local"
+    },
+    {
+      "contribution": "Learned receiver / latent-method diagnostics",
+      "headline_evidence": "ledger records 4 positive learned-receiver rows and explicit failed/pruned rows",
+      "main_metric": "same-distribution positives exist; simple cross-family masked innovation failed",
+      "remaining_gap": "Need shared-dictionary/crosscoder-style method with feature knockout before claiming cross-family latent communication.",
+      "status": "bounded diagnostic contribution, not headline cross-family claim"
+    }
+  ],
+  "created_utc": "2026-04-29T21:24:42.175443+00:00",
+  "gate": "source_private_iclr_evidence_bundle",
+  "novelty_matrix": [
+    {
+      "communicated_object": "rate-capped private evidence packet decoded with target candidate side information",
+      "comparison": "LatentWire source-private packet",
+      "extreme_byte_rate": true,
+      "paper_role": "headline method",
+      "requires_model_internals": false,
+      "source": "this work",
+      "source_destroying_controls": true,
+      "source_private": true,
+      "systems_axis": "bytes, local latency, candidate accuracy, controls"
+    },
+    {
+      "communicated_object": "projected/fused source KV cache",
+      "comparison": "C2C cache-to-cache communication",
+      "extreme_byte_rate": false,
+      "paper_role": "closest high-rate internal-state baseline/framing",
+      "requires_model_internals": true,
+      "source": "https://arxiv.org/abs/2510.03215",
+      "source_destroying_controls": "not same threat model",
+      "source_private": "partly",
+      "systems_axis": "cache transfer accuracy and latency"
+    },
+    {
+      "communicated_object": "selected KV pairs/layers",
+      "comparison": "KVComm selective KV sharing",
+      "extreme_byte_rate": false,
+      "paper_role": "high-rate KV communication baseline/framing",
+      "requires_model_internals": true,
+      "source": "https://openreview.net/forum?id=F7rUng23nw",
+      "source_destroying_controls": "not same threat model",
+      "source_private": "partly",
+      "systems_axis": "fraction of KV cache transmitted"
+    },
+    {
+      "communicated_object": "quantized vectors or KV/cache states",
+      "comparison": "TurboQuant / vector-KV quantization",
+      "extreme_byte_rate": false,
+      "paper_role": "systems byte-floor comparator and future vector-packet ablation",
+      "requires_model_internals": true,
+      "source": "https://arxiv.org/abs/2504.19874",
+      "source_destroying_controls": false,
+      "source_private": false,
+      "systems_axis": "bits per vector/cache element"
+    },
+    {
+      "communicated_object": "JL-projected sign sketches for inner products/KV",
+      "comparison": "QJL 1-bit sign sketch",
+      "extreme_byte_rate": "low-bit but high-dimensional",
+      "paper_role": "matched-byte vector sketch baseline if latent branch is promoted",
+      "requires_model_internals": true,
+      "source": "https://arxiv.org/abs/2406.03482",
+      "source_destroying_controls": false,
+      "source_private": false,
+      "systems_axis": "1-bit cache/vector compression"
+    },
+    {
+      "communicated_object": "compressed visible prompt/context tokens",
+      "comparison": "Prompt/text compression such as LLMLingua-family methods",
+      "extreme_byte_rate": "token-level",
+      "paper_role": "structured text/compression framing; query-aware text relay is the local control",
+      "requires_model_internals": false,
+      "source": "https://arxiv.org/abs/2310.05736",
+      "source_destroying_controls": false,
+      "source_private": false,
+      "systems_axis": "prompt tokens, quality, latency"
+    },
+    {
+      "communicated_object": "syndrome/source code with decoder side information",
+      "comparison": "Slepian-Wolf / Wyner-Ziv source coding",
+      "extreme_byte_rate": true,
+      "paper_role": "theory framing, not empirical LLM baseline",
+      "requires_model_internals": false,
+      "source": "https://www.itsoc.org/publications/papers/noiseless-coding-of-correlated-information-sources",
+      "source_destroying_controls": "theory, not benchmark controls",
+      "source_private": true,
+      "systems_axis": "rate-distortion/coding limit"
+    },
+    {
+      "communicated_object": "predicted latent/representation state",
+      "comparison": "JEPA / diffusion-transformer latent prediction",
+      "extreme_byte_rate": false,
+      "paper_role": "inspiration for future learned receiver; not current claim",
+      "requires_model_internals": true,
+      "source": "https://openaccess.thecvf.com/content/CVPR2023/papers/Assran_Self-Supervised_Learning_From_Images_With_a_Joint-Embedding_Predictive_Architecture_CVPR_2023_paper.pdf",
+      "source_destroying_controls": false,
+      "source_private": "not primary",
+      "systems_axis": "latent prediction quality"
+    }
+  ],
+  "pass_checks": [
+    {
+      "check": "required_artifacts_exist",
+      "pass": true
+    },
+    {
+      "check": "rate_frontier_passes",
+      "pass": true
+    },
+    {
+      "check": "matched_byte_text_stays_at_target",
+      "pass": true
+    },
+    {
+      "check": "packet_beats_query_aware_text_by_7x",
+      "pass": true
+    },
+    {
+      "check": "kv_cache_qjl_lower_bound_above_1000x",
+      "pass": true
+    },
+    {
+      "check": "coded_label_risk_passes",
+      "pass": true
+    },
+    {
+      "check": "composed_label_code_order_stress_passes",
+      "pass": true
+    },
+    {
+      "check": "endpoint_core_uncertainty_passes",
+      "pass": true
+    },
+    {
+      "check": "endpoint_holdout_uncertainty_passes",
+      "pass": true
+    },
+    {
+      "check": "ledger_has_paper_ready_rows",
+      "pass": true
+    }
+  ],
+  "pass_gate": true,
+  "readiness": "scoped positive-method paper; not broad cross-family latent-transfer ready",
+  "remaining_iclr_risks": [
+    "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing.",
+    "The headline method is protocol/candidate-side-information communication, not universal semantic latent transfer.",
+    "Simple learned cross-family masked-innovation receivers failed; a future shared-dictionary/crosscoder method needs feature knockout before promotion.",
+    "The final paper must show text relay catches up at higher byte budgets to avoid unfair-baseline criticism."
+  ],
+  "reproduction_commands": [
+    "./venv_arm64/bin/python scripts/build_source_private_rate_frontier.py --output-dir results/source_private_rate_frontier_20260429",
+    "./venv_arm64/bin/python scripts/build_source_private_kv_cache_baseline_table.py --output-dir results/source_private_kv_cache_baseline_table_20260429",
+    "./venv_arm64/bin/python scripts/run_source_private_coded_label_risk_gate.py --examples 160 --candidates 4 --family-set all --seeds 29,31,37 --budget 2 --output-dir results/source_private_coded_label_risk_gate_20260429",
+    "./venv_arm64/bin/python scripts/build_source_private_pass_fail_ledger.py --output-dir results/source_private_pass_fail_ledger_20260429",
+    "find final -type f ! -name MANIFEST.sha256 -print0 | sort -z | xargs -0 shasum -a 256 > final/MANIFEST.sha256",
+    "shasum -a 256 -c final/MANIFEST.sha256",
+    "./venv_arm64/bin/python -m pytest tests/test_build_source_private_rate_frontier.py tests/test_build_source_private_kv_cache_baseline_table.py tests/test_run_source_private_coded_label_risk_gate.py tests/test_build_source_private_pass_fail_ledger.py -q"
+  ]
+}

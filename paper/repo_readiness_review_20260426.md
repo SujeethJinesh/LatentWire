@@ -2565,3 +2565,17 @@ source-private evidence-packet paper, but not to full ICLR-ready status:
 remaining gaps are one-command reproduction/novelty packaging, real serving
 TTFT/TPOT/throughput, and either a broader cross-family learned method or an
 explicitly scoped claim that reports cross-family failures honestly.
+
+Follow-up `2026-04-29`: added the ICLR evidence bundle, which consolidates the
+current contribution stack into one machine-checkable artifact. The bundle
+passes `10/10` checks and reports `5` contribution rows: source-private
+benchmark/controls, extreme-rate candidate-syndrome packets, systems
+byte/KV-cache accounting, endpoint paired uncertainty, and learned-receiver
+diagnostics with explicit failure boundaries. It also includes an `8`-row
+novelty matrix against C2C, KVComm, TurboQuant/QJL, prompt compression,
+source-coding theory, and JEPA/diffusion latent prediction. Readiness improves
+for review packaging and reproducibility. It remains scoped rather than fully
+ICLR-secure because production serving telemetry and broad cross-family learned
+communication are still missing. The next exact gate is a negative-boundary
+appendix over cross-family failures and oracle headroom, followed by either an
+`n=500` composed coded-label stress or paper revision.
