@@ -515,6 +515,34 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
             surface="all-family train768/eval512 seed29->30",
         )
     )
+    rows.append(
+        _candidate_embedding_receiver_row(
+            "candidate_embedding_receiver_diagnostic_budget8_seed29_30",
+            ROOT / "results/source_private_candidate_embedding_receiver_20260429/diagnostic_budget8_seed29_30/summary.json",
+            surface="all-family train768/eval512 seed29->30",
+        )
+    )
+    rows.append(
+        _candidate_embedding_receiver_row(
+            "candidate_embedding_receiver_diagnostic_budget8_seed31_32",
+            ROOT / "results/source_private_candidate_embedding_receiver_20260429/diagnostic_budget8_seed31_32/summary.json",
+            surface="all-family train768/eval512 seed31->32",
+        )
+    )
+    rows.append(
+        _candidate_embedding_receiver_row(
+            "candidate_embedding_receiver_diagnostic_budget8_seed37_38",
+            ROOT / "results/source_private_candidate_embedding_receiver_20260429/diagnostic_budget8_seed37_38/summary.json",
+            surface="all-family train768/eval512 seed37->38",
+        )
+    )
+    rows.append(
+        _candidate_embedding_receiver_row(
+            "candidate_embedding_receiver_heldout_core_to_holdout_budget8_seed29_30",
+            ROOT / "results/source_private_candidate_embedding_receiver_20260429/heldout_core_to_holdout_budget8_seed29_30/summary.json",
+            surface="heldout-family core-train/holdout-eval seed29->30",
+        )
+    )
     rows.extend(
         _relative_rows(
             ROOT / "results/source_private_relative_canonical_bootstrap_remap7_20260429/summary.json",

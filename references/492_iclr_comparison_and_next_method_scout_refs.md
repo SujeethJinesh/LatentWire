@@ -164,3 +164,25 @@ packet/candidate interactions, and a calibrated target-preservation margin
 gate. This supports the next-method direction suggested above, but it is still
 only a smoke; promotion requires seed repeats, held-out-family splits, and
 paired uncertainty.
+
+## Learned-Receiver Follow-Up Outcome
+
+The literature-guided receiver direction is partially validated but not
+cross-family solved. Same-distribution seed repeats show a clear rate lesson:
+`4` bytes is unstable (`2/3` seeds pass), while `8` bytes passes `3/3` seeds
+with matched mean `0.749`, matched minimum `0.514`, and minimum
+matched-control delta `+0.230`. The core-to-holdout `8` byte row fails
+(`0.453` matched, `0.311` best destructive control, `0.809` diagnostic
+oracle), and removing raw candidate feature coordinates makes heldout worse.
+
+Implication for the sources above:
+
+- JEPA/denoising objectives remain useful, but the receiver must be trained for
+  family-invariant prediction, not just same-distribution candidate scoring.
+- Perceiver/Q-Former-style query bottlenecks should use anchor-relative or
+  codebook features so the learned queries do not overfit raw candidate
+  coordinates.
+- Relative representations and crosscoder/codebook ideas move up in priority:
+  the next experiment should encode source evidence in public anchor-relative
+  coordinates or use fold-heldout calibration before making a learned-receiver
+  paper claim.

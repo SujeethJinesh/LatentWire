@@ -35,8 +35,10 @@ def test_cpu_systems_frontier_includes_passes_and_failures(tmp_path) -> None:
     uncertainty_n160 = endpoint_rows["endpoint_core_label_strict_n160_paired_uncertainty"]
     uncertainty_n160_both = endpoint_rows["endpoint_label_strict_n160_paired_uncertainty"]
     learned_receiver = endpoint_rows["candidate_embedding_receiver_gated_budget4_seed29_30"]
+    learned_receiver_8b = endpoint_rows["candidate_embedding_receiver_diagnostic_budget8_seed37_38"]
+    learned_receiver_heldout = endpoint_rows["candidate_embedding_receiver_heldout_core_to_holdout_budget8_seed29_30"]
     n64_audit = endpoint_rows["endpoint_proxy_core_n64_audit_payload_gated_nearmiss"]
-    assert payload["headline"]["total_rows"] >= 97
+    assert payload["headline"]["total_rows"] >= 101
     assert strict_core["status"] == "fail"
     assert strict_core["accuracy"] > strict_core["best_control_accuracy"]
     assert strict_core["best_control_accuracy"] == 0.21875
@@ -74,3 +76,7 @@ def test_cpu_systems_frontier_includes_passes_and_failures(tmp_path) -> None:
     assert learned_receiver["status"] == "pass"
     assert learned_receiver["accuracy"] >= learned_receiver["target_accuracy"] + 0.15
     assert learned_receiver["best_control_accuracy"] <= learned_receiver["target_accuracy"] + 0.05
+    assert learned_receiver_8b["status"] == "pass"
+    assert learned_receiver_8b["accuracy"] >= learned_receiver_8b["target_accuracy"] + 0.15
+    assert learned_receiver_heldout["status"] == "fail"
+    assert learned_receiver_heldout["accuracy"] > learned_receiver_heldout["target_accuracy"]

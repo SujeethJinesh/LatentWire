@@ -1,0 +1,10 @@
+{
+  "artifact_sha256": {
+    "multiseed_and_heldout_summary.json": "a15302f1146a8232b446b186d99b6b4406ad9ddf7a5c8723c2ef2066107742b0",
+    "multiseed_and_heldout_summary.md": "5471c59c00980d320609f63855a1426531594a23e0774d3853bf27edb1846d17"
+  },
+  "artifacts": [
+    "multiseed_and_heldout_summary.json",
+    "multiseed_and_heldout_summary.md"
+  ]
+}

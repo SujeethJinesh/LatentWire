@@ -15192,3 +15192,37 @@ wrong-projection source `0.232`. Artifact hashes: `summary.json`
 The CPU systems frontier now has `97` rows. This is a promising learned
 receiver smoke, not a promoted headline claim. Next exact gate: 3-seed repeat
 at 4 bytes and one held-out-family split with the same controls.
+
+Follow-up `2026-04-29`: ran the learned candidate-embedding receiver
+multi-seed and held-out-family diagnostic on the Mac, then regenerated the CPU
+systems frontier. Commands:
+`./venv_arm64/bin/python scripts/run_source_private_candidate_embedding_receiver.py --output-dir results/source_private_candidate_embedding_receiver_20260429/gated_budget4_seed31_32 --train-examples 768 --eval-examples 512 --train-family-set all --eval-family-set all --feature-dim 512 --budgets 4 --train-seed 31 --eval-seed 32 --ridge 1e-2`;
+same command for `gated_budget4_seed37_38` with seeds `37 -> 38`; same command
+for `diagnostic_budget8_seed29_30`, `diagnostic_budget8_seed31_32`, and
+`diagnostic_budget8_seed37_38` with `--budgets 8`; held-out command:
+`./venv_arm64/bin/python scripts/run_source_private_candidate_embedding_receiver.py --output-dir results/source_private_candidate_embedding_receiver_20260429/heldout_core_to_holdout_budget8_seed29_30 --train-examples 768 --eval-examples 512 --train-family-set core --eval-family-set holdout --feature-dim 512 --budgets 8 --train-seed 29 --eval-seed 30 --ridge 1e-2`; invariant ablation command adds
+`--candidate-feature-dims 0 --eval-examples 256`. The `4` byte receiver is not
+seed-stable: `2/3` seeds pass, matched mean `0.589`, matched minimum `0.328`,
+and minimum matched-control delta `+0.049`. The `8` byte receiver passes `3/3`
+same-distribution seeds, matched mean `0.749`, matched minimum `0.514`, max
+destructive control `0.283`, and minimum matched-control delta `+0.230`. The
+core-to-holdout `8` byte row fails: matched `0.453`, target `0.250`, best
+destructive control `0.311`, full diagnostic oracle `0.809`. Removing raw
+candidate features worsens the held-out result at `n=256`: matched `0.332`,
+best destructive control `0.309`, oracle `0.742`. Aggregate artifacts:
+`multiseed_and_heldout_summary.json`
+`a15302f1146a8232b446b186d99b6b4406ad9ddf7a5c8723c2ef2066107742b0`,
+`multiseed_and_heldout_summary.md`
+`5471c59c00980d320609f63855a1426531594a23e0774d3853bf27edb1846d17`.
+Representative summary hashes: budget8 seed29/30
+`c535f3ef5ec7a58535c5689eaa1657fe5468eabb320b754de0f2050f2aabec2c`,
+budget8 seed31/32
+`6dd3478b7a58f19c7d4c4d1301686fd973d06ea3a5657a87e7f0bb47435a84cf`,
+budget8 seed37/38
+`8f808bd8d9248aa5ab7af79c07d0c058d40255ec8c7fae9bcb48a28b21a7aa40`,
+heldout core-to-holdout
+`9dee4211cf8a3c0d1139ddff985dc6b382dc0794ce8d28c01cfd08435194fa5e`.
+CPU systems frontier now has `101` rows. Next exact gate: replace the raw
+candidate-coordinate receiver with an anchor-relative/codebook or fold-heldout
+calibrated receiver at `8` bytes; do not promote the learned receiver as
+cross-family yet.

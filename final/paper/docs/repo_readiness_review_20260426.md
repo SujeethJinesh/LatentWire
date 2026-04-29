@@ -2477,3 +2477,17 @@ receiver reaches matched `0.748`, target `0.250`, best destructive control
 both stay at `0.250`. This improves the technical-contribution portfolio, but
 it is still a smoke: next gates are 3-seed repeat, held-out-family split, paired
 uncertainty, and comparison to scalar WZ/endpoint rows.
+
+Follow-up `2026-04-29`: the learned receiver is now a bounded contribution with
+a clear failure boundary. The 4-byte receiver is not seed-stable (`2/3` seeds
+pass; one seed drops to matched `0.328` and matched-control delta `+0.049`).
+At `8` bytes, the same-distribution all-family receiver passes `3/3` seeds with
+matched mean `0.749`, matched minimum `0.514`, max destructive control `0.283`,
+and minimum matched-control delta `+0.230`. However, the core-to-holdout
+receiver fails at `8` bytes: matched `0.453`, target `0.250`, best destructive
+control `0.311`, full diagnostic oracle `0.809`. Removing raw candidate
+feature coordinates worsens heldout transfer (`0.332` at `n=256`). Readiness
+therefore improves for the same-distribution learned-decoder contribution, but
+not for cross-family learned communication. The next Mac-local method gate is a
+family-invariant receiver using anchor-relative/codebook features or
+fold-heldout calibration at `8` bytes.

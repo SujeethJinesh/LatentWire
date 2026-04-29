@@ -1,0 +1,149 @@
+{
+  "budget_summaries": [
+    {
+      "best_destructive_control_accuracy": 0.275390625,
+      "best_no_source_accuracy": 0.275390625,
+      "budget_bytes": 8,
+      "full_diag_oracle_accuracy": 1.0,
+      "margin_calibration": {
+        "best_control_accuracy": 0.2942708333333333,
+        "control_ok": true,
+        "matched_accuracy": 0.9518229166666666,
+        "target_accuracy": 0.25,
+        "threshold": 0.518485
+      },
+      "margin_threshold": 0.518485,
+      "matched_accuracy": 0.859375,
+      "matched_minus_best_destructive_control": 0.583984375,
+      "matched_minus_target": 0.609375,
+      "metrics": {
+        "answer_masked_source": {
+          "accuracy": 0.259765625,
+          "correct": 133,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 6.726666513714008,
+          "p95_latency_ms": 18.118167005013674
+        },
+        "answer_only": {
+          "accuracy": 0.2578125,
+          "correct": 132,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 0.052312519983388484,
+          "p95_latency_ms": 0.30083299498073757
+        },
+        "full_diag_oracle": {
+          "accuracy": 1.0,
+          "correct": 512,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 3.1537500181002542,
+          "p95_latency_ms": 12.88104199920781
+        },
+        "matched_candidate_embedding_receiver": {
+          "accuracy": 0.859375,
+          "correct": 440,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 7.5989169999957085,
+          "p95_latency_ms": 23.065707995556295
+        },
+        "random_same_byte": {
+          "accuracy": 0.255859375,
+          "correct": 131,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 0.056958000641316175,
+          "p95_latency_ms": 0.30020801932550967
+        },
+        "shuffled_source": {
+          "accuracy": 0.2578125,
+          "correct": 132,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 6.823457995778881,
+          "p95_latency_ms": 19.835749990306795
+        },
+        "structured_text_matched": {
+          "accuracy": 0.208984375,
+          "correct": 107,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 0.04570800228975713,
+          "p95_latency_ms": 0.24841600679792464
+        },
+        "target_derived_sidecar": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 2.947708504507318,
+          "p95_latency_ms": 10.842000017873943
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 512,
+          "p50_latency_ms": 0.002207991201430559,
+          "p95_latency_ms": 0.007041002390906215
+        },
+        "wrong_projection_source": {
+          "accuracy": 0.275390625,
+          "correct": 141,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 6.583666996448301,
+          "p95_latency_ms": 21.422625024570152
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 512,
+          "p50_latency_ms": 0.00204198295250535,
+          "p95_latency_ms": 0.006000016583129764
+        }
+      },
+      "pass_gate": true,
+      "receiver_sha256": "518fe377ea7c000b7316d4ef543be4e80b711d332180acc850f0ac1473107b29",
+      "target_only_accuracy": 0.25
+    }
+  ],
+  "budgets": [
+    8
+  ],
+  "candidate_pool_recall": 1.0,
+  "candidates": 4,
+  "code_projection_sha256": "f2fc2b603772ac095f1295fcc32378fe3f47366381473459aed29b443efd9b06",
+  "created_utc": "2026-04-29T19:10:59.235560+00:00",
+  "encoder_sha256": "071feaf238840317c1d170784cde90a4d42c8ee9d7c12d0b3aaf0ffc82813fb2",
+  "eval_examples": 512,
+  "eval_family_set": "all",
+  "eval_seed": 38,
+  "exact_id_parity": true,
+  "feature_dim": 512,
+  "gate": "source_private_candidate_embedding_receiver",
+  "interpretation": "This is a learned target-side receiver smoke: source evidence is compressed into a bit packet, and a trained candidate scorer decodes the packet using public candidate side information.",
+  "pass_gate": true,
+  "pass_rule": "Matched learned candidate-embedding receiver must beat target by >=0.15, beat every destructive control by >=0.15, keep all destructive controls within target+0.05, and keep full diagnostic oracle >=0.95.",
+  "prediction_files": {
+    "8": "predictions_budget8.jsonl"
+  },
+  "ridge": 0.01,
+  "train_examples": 768,
+  "train_family_set": "all",
+  "train_seed": 37
+}

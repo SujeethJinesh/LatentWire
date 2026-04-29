@@ -14,6 +14,7 @@ def test_candidate_embedding_receiver_passes_smoke(tmp_path) -> None:
         eval_family_set="all",
         candidates=4,
         feature_dim=256,
+        candidate_feature_dims=32,
         budgets=[4],
         train_seed=3,
         eval_seed=4,
@@ -38,6 +39,7 @@ def test_candidate_embedding_receiver_writes_artifacts(tmp_path) -> None:
         eval_family_set="all",
         candidates=4,
         feature_dim=128,
+        candidate_feature_dims=0,
         budgets=[2],
         train_seed=5,
         eval_seed=6,
@@ -46,6 +48,7 @@ def test_candidate_embedding_receiver_writes_artifacts(tmp_path) -> None:
 
     summary = json.loads((output_dir / "summary.json").read_text())
     manifest = json.loads((output_dir / "manifest.json").read_text())
+    assert summary["candidate_feature_dims"] == 0
     assert summary["budget_summaries"][0]["budget_bytes"] == 2
     assert "predictions_budget2.jsonl" in manifest["artifacts"]
     assert (output_dir / "predictions_budget2.jsonl").exists()

@@ -30,10 +30,8 @@ from scripts.run_source_private_tool_trace_learned_syndrome import (  # noqa: E4
     _bitpack,
     _bytes_to_bits,
     _candidate_matrix,
-    _fit_ridge_encoder,
     _hashed_text_features,
     _normalize_rows,
-    _source_vector,
     _token_count,
 )
 
@@ -51,6 +49,10 @@ CONDITIONS = [
     "wrong_projection_source",
     "full_diag_oracle",
 ]
+
+
+_CANDIDATE_MATRIX_CACHE: dict[tuple[int, int], np.ndarray] = {}
+_SOURCE_VECTOR_CACHE: dict[tuple[int, int, str], np.ndarray] = {}
 
 
 def _sha256_file(path: pathlib.Path) -> str:
@@ -84,9 +86,40 @@ def _source_text(example: Example, *, mode: str) -> str:
 
 
 def _source_vector_mode(example: Example, feature_dim: int, *, mode: str) -> np.ndarray:
+    key = (id(example), feature_dim, mode)
+    cached = _SOURCE_VECTOR_CACHE.get(key)
+    if cached is not None:
+        return cached
     if mode in {"matched", "answer_masked", "zero"}:
-        return _hashed_text_features(_source_text(example, mode=mode), feature_dim, namespace="source").astype(np.float32)
+        vec = _hashed_text_features(_source_text(example, mode=mode), feature_dim, namespace="source").astype(np.float32)
+        _SOURCE_VECTOR_CACHE[key] = vec
+        return vec
     raise ValueError(f"unknown source mode {mode!r}")
+
+
+def _candidate_matrix_mode(example: Example, feature_dim: int) -> np.ndarray:
+    key = (id(example), feature_dim)
+    cached = _CANDIDATE_MATRIX_CACHE.get(key)
+    if cached is not None:
+        return cached
+    matrix = _candidate_matrix(example, feature_dim)
+    _CANDIDATE_MATRIX_CACHE[key] = matrix
+    return matrix
+
+
+def _fit_cached_ridge_encoder(train_examples: list[Example], *, feature_dim: int, ridge: float) -> np.ndarray:
+    x = np.stack([_source_vector_mode(example, feature_dim, mode="matched") for example in train_examples], axis=0).astype(np.float64)
+    y = []
+    for example in train_examples:
+        candidates = _candidate_matrix_mode(example, feature_dim).astype(np.float64)
+        answer_index = next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == example.answer_label)
+        y.append(candidates[answer_index])
+    y_arr = np.stack(y, axis=0).astype(np.float64)
+    x_aug = np.concatenate([x, np.ones((x.shape[0], 1), dtype=np.float64)], axis=1)
+    xtx = x_aug.T @ x_aug
+    xtx += ridge * np.eye(xtx.shape[0], dtype=np.float64)
+    xtx[-1, -1] -= ridge
+    return np.linalg.solve(xtx, x_aug.T @ y_arr).astype(np.float32)
 
 
 def _packet_from_vector(vec: np.ndarray, code_projection: np.ndarray, budget_bytes: int) -> bytes:
@@ -109,7 +142,7 @@ def _source_packet(
 
 
 def _candidate_codes(example: Example, code_projection: np.ndarray, feature_dim: int, bit_count: int) -> np.ndarray:
-    candidates = _candidate_matrix(example, feature_dim)
+    candidates = _candidate_matrix_mode(example, feature_dim)
     logits = candidates @ code_projection[:bit_count].T
     return (logits >= 0).astype(np.uint8)
 
@@ -118,7 +151,15 @@ def _packet_bits(payload: bytes | None, bit_count: int) -> np.ndarray:
     return _bytes_to_bits(payload, bit_count).astype(np.float32)
 
 
-def _receiver_features(example: Example, payload: bytes | None, *, code_projection: np.ndarray, feature_dim: int, budget_bytes: int) -> np.ndarray:
+def _receiver_features(
+    example: Example,
+    payload: bytes | None,
+    *,
+    code_projection: np.ndarray,
+    feature_dim: int,
+    budget_bytes: int,
+    candidate_feature_dims: int,
+) -> np.ndarray:
     bit_count = budget_bytes * 8
     bits = _packet_bits(payload, bit_count)
     signed_packet = bits * 2.0 - 1.0
@@ -128,8 +169,10 @@ def _receiver_features(example: Example, payload: bytes | None, *, code_projecti
     similarity = interaction.mean(axis=1, keepdims=True)
     hamming = (codes != bits[None, :]).mean(axis=1, keepdims=True)
     priors = np.array([[float(candidate.prior_score)] for candidate in example.candidates], dtype=np.float32)
-    candidate_feats = _candidate_matrix(example, feature_dim)[:, : min(32, feature_dim)]
-    return np.concatenate([np.ones((len(example.candidates), 1), dtype=np.float32), priors, similarity, hamming, interaction, candidate_feats], axis=1)
+    parts = [np.ones((len(example.candidates), 1), dtype=np.float32), priors, similarity, hamming, interaction]
+    if candidate_feature_dims > 0:
+        parts.append(_candidate_matrix_mode(example, feature_dim)[:, : min(candidate_feature_dims, feature_dim)])
+    return np.concatenate(parts, axis=1)
 
 
 def _fit_receiver(
@@ -139,6 +182,7 @@ def _fit_receiver(
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
+    candidate_feature_dims: int,
     ridge: float,
 ) -> np.ndarray:
     xs: list[np.ndarray] = []
@@ -152,7 +196,14 @@ def _fit_receiver(
             budget_bytes=budget_bytes,
             mode="matched",
         )
-        features = _receiver_features(example, payload, code_projection=code_projection, feature_dim=feature_dim, budget_bytes=budget_bytes)
+        features = _receiver_features(
+            example,
+            payload,
+            code_projection=code_projection,
+            feature_dim=feature_dim,
+            budget_bytes=budget_bytes,
+            candidate_feature_dims=candidate_feature_dims,
+        )
         for idx, candidate in enumerate(example.candidates):
             xs.append(features[idx])
             ys.append(1.0 if candidate.label == example.answer_label else 0.0)
@@ -172,11 +223,19 @@ def _predict_with_receiver(
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
+    candidate_feature_dims: int,
     margin_threshold: float,
 ) -> tuple[str, dict[str, Any]]:
     if payload is None:
         return _prior_prediction(example), {"decoder": "prior"}
-    features = _receiver_features(example, payload, code_projection=code_projection, feature_dim=feature_dim, budget_bytes=budget_bytes)
+    features = _receiver_features(
+        example,
+        payload,
+        code_projection=code_projection,
+        feature_dim=feature_dim,
+        budget_bytes=budget_bytes,
+        candidate_feature_dims=candidate_feature_dims,
+    )
     scores = features @ receiver
     labels = [candidate.label for candidate in example.candidates]
     prior = _prior_prediction(example)
@@ -264,17 +323,17 @@ def _payload_for_condition(
     if condition == "target_derived_sidecar":
         prior = _prior_prediction(example)
         prior_index = next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == prior)
-        return _packet_from_vector(_candidate_matrix(example, feature_dim)[prior_index], code_projection, budget_bytes), {"source": "target_prior"}
+        return _packet_from_vector(_candidate_matrix_mode(example, feature_dim)[prior_index], code_projection, budget_bytes), {"source": "target_prior"}
     if condition == "answer_only":
         return example.answer_label.encode("utf-8")[:budget_bytes], {"source": "answer_label_text"}
     if condition == "structured_text_matched":
         return example.private_test_log.encode("utf-8")[:budget_bytes], {"source": "truncated_hidden_log"}
     if condition == "wrong_projection_source":
-        predicted = _augment(_source_vector(example, feature_dim, mode="matched")) @ random_encoder
+        predicted = _augment(_source_vector_mode(example, feature_dim, mode="matched")) @ random_encoder
         return _packet_from_vector(predicted, code_projection, budget_bytes), {"source": "wrong_encoder"}
     if condition == "full_diag_oracle":
         answer_index = next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == example.answer_label)
-        return _packet_from_vector(_candidate_matrix(example, feature_dim)[answer_index], code_projection, budget_bytes), {"source": "candidate_oracle"}
+        return _packet_from_vector(_candidate_matrix_mode(example, feature_dim)[answer_index], code_projection, budget_bytes), {"source": "candidate_oracle"}
     raise ValueError(f"unknown condition {condition!r}")
 
 
@@ -287,6 +346,7 @@ def _evaluate_for_threshold(
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
+    candidate_feature_dims: int,
     margin_threshold: float,
     random_encoder: np.ndarray,
     seed: int,
@@ -314,6 +374,7 @@ def _evaluate_for_threshold(
                 code_projection=code_projection,
                 feature_dim=feature_dim,
                 budget_bytes=budget_bytes,
+                candidate_feature_dims=candidate_feature_dims,
                 margin_threshold=margin_threshold,
             )
             by_condition[condition].append(prediction == example.answer_label)
@@ -328,6 +389,7 @@ def _calibrate_margin_threshold(
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
+    candidate_feature_dims: int,
     random_encoder: np.ndarray,
     seed: int,
 ) -> tuple[float, dict[str, Any]]:
@@ -351,7 +413,17 @@ def _calibrate_margin_threshold(
             budget_bytes=budget_bytes,
             mode="matched",
         )
-        scores = _receiver_features(example, payload, code_projection=code_projection, feature_dim=feature_dim, budget_bytes=budget_bytes) @ receiver
+        scores = (
+            _receiver_features(
+                example,
+                payload,
+                code_projection=code_projection,
+                feature_dim=feature_dim,
+                budget_bytes=budget_bytes,
+                candidate_feature_dims=candidate_feature_dims,
+            )
+            @ receiver
+        )
         labels = [candidate.label for candidate in example.candidates]
         prior_index = labels.index(_prior_prediction(example))
         candidate_thresholds.append(max(0.0, float(np.max(scores) - scores[prior_index])))
@@ -375,6 +447,7 @@ def _calibrate_margin_threshold(
             code_projection=code_projection,
             feature_dim=feature_dim,
             budget_bytes=budget_bytes,
+            candidate_feature_dims=candidate_feature_dims,
             margin_threshold=threshold,
             random_encoder=random_encoder,
             seed=seed,
@@ -420,6 +493,7 @@ def _predict_condition(
     code_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
+    candidate_feature_dims: int,
     margin_threshold: float,
     rng: random.Random,
     random_encoder: np.ndarray,
@@ -444,6 +518,7 @@ def _predict_condition(
         code_projection=code_projection,
         feature_dim=feature_dim,
         budget_bytes=budget_bytes,
+        candidate_feature_dims=candidate_feature_dims,
         margin_threshold=0.0 if condition == "full_diag_oracle" else margin_threshold,
     )
     payload_hex = (payload or b"").hex()
@@ -483,15 +558,18 @@ def run_gate(
     eval_family_set: str,
     candidates: int,
     feature_dim: int,
+    candidate_feature_dims: int,
     budgets: list[int],
     train_seed: int,
     eval_seed: int,
     ridge: float,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    _CANDIDATE_MATRIX_CACHE.clear()
+    _SOURCE_VECTOR_CACHE.clear()
     train_rows = make_benchmark(examples=train_examples, candidates=candidates, seed=train_seed, family_set=train_family_set)
     eval_rows = make_benchmark(examples=eval_examples, candidates=candidates, seed=eval_seed, family_set=eval_family_set)
-    encoder = _fit_ridge_encoder(train_rows, feature_dim=feature_dim, ridge=ridge)
+    encoder = _fit_cached_ridge_encoder(train_rows, feature_dim=feature_dim, ridge=ridge)
     rng_np = np.random.default_rng(train_seed * 1009 + eval_seed)
     code_projection = _normalize_rows(rng_np.normal(size=(max(budgets) * 8, feature_dim))).astype(np.float32)
     random_encoder = rng_np.normal(0.0, 1.0 / np.sqrt(feature_dim), size=encoder.shape).astype(np.float32)
@@ -505,6 +583,7 @@ def run_gate(
             code_projection=code_projection,
             feature_dim=feature_dim,
             budget_bytes=budget,
+            candidate_feature_dims=candidate_feature_dims,
             ridge=ridge,
         )
         margin_threshold, calibration = _calibrate_margin_threshold(
@@ -514,6 +593,7 @@ def run_gate(
             code_projection=code_projection,
             feature_dim=feature_dim,
             budget_bytes=budget,
+            candidate_feature_dims=candidate_feature_dims,
             random_encoder=random_encoder,
             seed=train_seed * 3011 + eval_seed + budget,
         )
@@ -531,6 +611,7 @@ def run_gate(
                         code_projection=code_projection,
                         feature_dim=feature_dim,
                         budget_bytes=budget,
+                        candidate_feature_dims=candidate_feature_dims,
                         margin_threshold=margin_threshold,
                         rng=rng,
                         random_encoder=random_encoder,
@@ -591,6 +672,7 @@ def run_gate(
         "eval_family_set": eval_family_set,
         "candidates": candidates,
         "feature_dim": feature_dim,
+        "candidate_feature_dims": candidate_feature_dims,
         "budgets": budgets,
         "train_seed": train_seed,
         "eval_seed": eval_seed,
@@ -645,6 +727,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         "",
         f"- pass gate: `{payload['pass_gate']}`",
         f"- train/eval: `{payload['train_family_set']}:{payload['train_examples']}` / `{payload['eval_family_set']}:{payload['eval_examples']}`",
+        f"- candidate feature dims: `{payload['candidate_feature_dims']}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
         "| Budget bytes | Pass | Matched | Target | Best destructive | Delta target | Delta destructive | Full diag oracle |",
@@ -670,6 +753,7 @@ def main() -> None:
     parser.add_argument("--eval-family-set", choices=["core", "holdout", "all"], default="all")
     parser.add_argument("--candidates", type=int, default=4)
     parser.add_argument("--feature-dim", type=int, default=512)
+    parser.add_argument("--candidate-feature-dims", type=int, default=32)
     parser.add_argument("--budgets", type=int, nargs="+", default=[2, 4, 6])
     parser.add_argument("--train-seed", type=int, default=29)
     parser.add_argument("--eval-seed", type=int, default=30)
@@ -684,6 +768,7 @@ def main() -> None:
         eval_family_set=args.eval_family_set,
         candidates=args.candidates,
         feature_dim=args.feature_dim,
+        candidate_feature_dims=args.candidate_feature_dims,
         budgets=args.budgets,
         train_seed=args.train_seed,
         eval_seed=args.eval_seed,
