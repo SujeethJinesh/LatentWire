@@ -2657,3 +2657,13 @@ top-atom-knockout lift removal. This upgrades the sparse packet from a single
 strict-small positive to a seed/remap-stable strict-small positive. Remaining
 ICLR blockers are now larger-slice confirmation, a learned dictionary/crosscoder
 variant, and production-grade systems telemetry if available.
+
+Follow-up `2026-04-29`: synonym/ontology stress for the shared sparse packet
+fails. Under `--candidate-atom-view synonym_stress`, max shared sparse accuracy
+falls to `0.375`, max shared-target delta to `+0.125`, and there are `0` pass
+rows while controls remain collapsed. This is an important boundary: the
+current sparse packet is not robust semantic atom transfer under paraphrased
+candidate-side ontology. The contribution remains useful as an interpretable
+source-private sparse protocol with seed stability and causal knockout, but a
+full ICLR method story needs either a learned dictionary/crosscoder that
+survives this stress or a sharply scoped claim.

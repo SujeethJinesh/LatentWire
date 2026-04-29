@@ -65,6 +65,28 @@ This is a seed/remap stability check on the same controlled family generator,
 not a new benchmark family. It supports stability of the sparse packet result
 but does not replace larger frozen-slice or learned-dictionary confirmation.
 
+## Ontology Stress
+
+The synonym/ontology stress at
+`results/source_private_shared_sparse_crosscoder_packet_gate_20260429_synonym_stress/`
+fails, as intended for an overclaim falsification:
+
+- candidate atom view: `synonym_stress`
+- cross-family pass: `false`
+- direction pass: all `false`
+- max shared sparse accuracy: `0.375`
+- max shared-target delta: `+0.125`
+- pass rows: `0`
+- controls: still collapse to target
+
+The stress paraphrases candidate intents into terms outside the hand-auditable
+atom rules while leaving the source-private packet generator unchanged. The
+failure shows the current shared sparse packet is coupled to the controlled
+ontology and should not be claimed as robust semantic transfer under
+paraphrase. It is still useful as an interpretable, source-private sparse
+communication protocol; the next method branch must learn or induce the
+dictionary if we want ontology-robust latent communication.
+
 ## Controls
 
 Source-destroying controls include zero-source, shuffled-source,
@@ -96,8 +118,8 @@ source-destroying controls.
 
 ## Next Gate
 
-Run a larger frozen-slice confirmation and then a learned shared-dictionary
-variant:
+Run a learned shared-dictionary variant or a larger native-ontology frozen
+slice with an explicitly narrow claim:
 
 ```bash
 ./venv_arm64/bin/python scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py \
@@ -109,5 +131,7 @@ variant:
 ```
 
 Promotion beyond strict-small requires preserving paired CI lower bounds above
-zero, keeping all source-destroying controls within target + `0.03`, and
-showing the same atom-knockout behavior on the larger slice.
+zero, keeping all source-destroying controls within target + `0.03`, showing
+the same atom-knockout behavior on the larger slice, and either surviving an
+ontology-breaking stress or explicitly scoping the claim to agreed sparse
+protocol dictionaries.

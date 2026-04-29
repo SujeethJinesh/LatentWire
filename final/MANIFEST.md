@@ -108,6 +108,9 @@
   with paired uncertainty and top-atom knockout diagnostics.
 - Seed-repeat shared sparse packet artifacts showing the same bidirectional
   cross-family pass and atom-knockout behavior under a second seed/remap.
+- Synonym/ontology stress artifacts showing the current shared sparse packet
+  fails under paraphrased candidate-side ontology, bounding the claim away from
+  robust semantic atom transfer.
 
 ## Notes
 

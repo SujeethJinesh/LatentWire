@@ -12,6 +12,7 @@ def test_shared_sparse_crosscoder_packet_gate_writes_artifacts(tmp_path) -> None
         train_examples=32,
         eval_examples=16,
         seed=3,
+        candidate_atom_view="native",
     )
 
     summary = json.loads((tmp_path / "shared_sparse" / "shared_sparse_crosscoder_packet_gate.json").read_text())
@@ -31,6 +32,7 @@ def test_shared_sparse_crosscoder_packet_rows_include_controls(tmp_path) -> None
         train_examples=24,
         eval_examples=8,
         seed=5,
+        candidate_atom_view="native",
     )
 
     direction = json.loads((tmp_path / "shared_sparse_controls" / "core_to_holdout" / "summary.json").read_text())
@@ -43,3 +45,19 @@ def test_shared_sparse_crosscoder_packet_rows_include_controls(tmp_path) -> None
     assert row["budget_bytes"] == 4
     assert row["paired_bootstrap_vs_target"]["ci95_high"] >= row["paired_bootstrap_vs_target"]["ci95_low"]
     assert payload["headline"]["max_shared_sparse_accuracy"] >= 0.0
+
+
+def test_shared_sparse_crosscoder_packet_synonym_stress_view(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "shared_sparse_synonym",
+        budgets=[4],
+        train_examples=24,
+        eval_examples=8,
+        seed=7,
+        candidate_atom_view="synonym_stress",
+    )
+
+    assert payload["candidate_atom_view"] == "synonym_stress"
+    direction = json.loads((tmp_path / "shared_sparse_synonym" / "core_to_holdout" / "summary.json").read_text())
+    assert direction["candidate_atom_view"] == "synonym_stress"
+    assert direction["budget_summaries"][0]["budget_bytes"] == 4

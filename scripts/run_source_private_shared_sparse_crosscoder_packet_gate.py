@@ -72,6 +72,49 @@ ATOM_ORDER = (
 )
 ATOM_TO_ID = {atom: idx for idx, atom in enumerate(ATOM_ORDER)}
 ID_TO_ATOM = {idx: atom for atom, idx in ATOM_TO_ID.items()}
+SYNONYM_STRESS_REPLACEMENTS = (
+    ("empty-list guard", "vacant sequence contingency"),
+    ("empty-list none default", "vacant sequence null fallback"),
+    ("empty-list zero default", "vacant sequence neutral fallback"),
+    ("missing-key default", "absent field substitute"),
+    ("nested missing-key default", "deep absent field substitute"),
+    ("parse-failure zero default", "conversion miss neutral fallback"),
+    ("half-up rounding", "midpoint upward numeric adjustment"),
+    ("inclusive comparison", "boundary admitting relation"),
+    ("preserve-order unique", "deduplicate retaining arrival chronology"),
+    ("none-to-empty", "null text normalization"),
+    ("sum all values", "aggregate complete numeric collection"),
+    ("case-insensitive equality", "lettercase agnostic equivalence"),
+    ("clamp negative to zero", "floor subzero values at neutral"),
+    ("modulo-wrapped index", "cyclic position lookup"),
+    ("strictly positive filter", "retain values above neutral only"),
+    ("average all values", "complete numeric mean"),
+    ("strip and lowercase", "trim then downcase text"),
+    ("strict key access", "direct field lookup"),
+    ("sort before reading", "order collection before access"),
+    ("last element fallback", "terminal item alternative"),
+    ("string coercion", "text conversion"),
+    ("first value fallback", "initial item alternative"),
+    ("sort before final value", "order collection before terminal access"),
+    ("float parsing", "decimal conversion"),
+    ("return raw text", "identity text output"),
+    ("length fallback", "size substitute"),
+    ("sum only", "aggregate without division"),
+    ("divide by first value", "normalize by initial item"),
+    ("drop last before averaging", "omit terminal item before mean"),
+    ("strip only", "trim text only"),
+    ("uppercase only", "capitalized text only"),
+    ("remove spaces inside text", "delete interior blanks"),
+    ("top-level name lookup", "outer field lookup"),
+    ("return whole user mapping", "return complete nested record"),
+    ("uppercase nested name", "capitalized inner field"),
+    ("clamp to final index", "cap position at terminal item"),
+    ("always first value", "always choose initial item"),
+    ("sort before index", "order collection before lookup"),
+    ("keep nonnegative values", "retain neutral-or-higher numbers"),
+    ("keep negative values", "retain subzero numbers"),
+    ("sort positive values", "order above-neutral numbers"),
+)
 
 CONDITIONS = (
     "target_only",
@@ -120,7 +163,19 @@ def _tokens(text: str) -> list[str]:
     return re.findall(r"[a-z0-9]+", text.lower().replace("-", " ").replace("_", " "))
 
 
-def _candidate_atoms(candidate_intent: str) -> dict[str, float]:
+def _stress_candidate_intent(candidate_intent: str, *, candidate_atom_view: str) -> str:
+    if candidate_atom_view == "native":
+        return candidate_intent
+    if candidate_atom_view != "synonym_stress":
+        raise ValueError(f"unknown candidate atom view {candidate_atom_view!r}")
+    text = candidate_intent
+    for old, new in SYNONYM_STRESS_REPLACEMENTS:
+        text = re.sub(re.escape(old), new, text, flags=re.IGNORECASE)
+    return text
+
+
+def _candidate_atoms(candidate_intent: str, *, candidate_atom_view: str = "native") -> dict[str, float]:
+    candidate_intent = _stress_candidate_intent(candidate_intent, candidate_atom_view=candidate_atom_view)
     text = candidate_intent.lower().replace("-", " ")
     toks = set(_tokens(text))
     atoms: dict[str, float] = {}
@@ -308,10 +363,10 @@ def _decode_payload_atoms(
     return atoms
 
 
-def _score_candidates(example: Example, payload_atoms: dict[str, float]) -> list[float]:
+def _score_candidates(example: Example, payload_atoms: dict[str, float], *, candidate_atom_view: str) -> list[float]:
     scores = []
     for candidate in example.candidates:
-        cand_atoms = _candidate_atoms(candidate.patch_intent)
+        cand_atoms = _candidate_atoms(candidate.patch_intent, candidate_atom_view=candidate_atom_view)
         overlap = sum(payload_atoms.get(atom, 0.0) * weight for atom, weight in cand_atoms.items())
         scores.append(overlap)
     return scores
@@ -322,6 +377,7 @@ def _predict_from_payload(
     payload: bytes | None,
     *,
     budget_bytes: int,
+    candidate_atom_view: str,
     derange: bool = False,
     knockout: str | None = None,
     rng: random.Random | None = None,
@@ -330,7 +386,7 @@ def _predict_from_payload(
     payload_atoms = _decode_payload_atoms(payload, budget_bytes=budget_bytes, derange=derange, knockout=knockout, rng=rng)
     if not payload_atoms:
         return prior, {"decoder": "prior", "payload_atoms": {}}
-    scores = _score_candidates(example, payload_atoms)
+    scores = _score_candidates(example, payload_atoms, candidate_atom_view=candidate_atom_view)
     best_score = max(scores)
     if best_score < 1.0:
         return prior, {"decoder": "shared_sparse_atom_overlap", "payload_atoms": payload_atoms, "scores": scores}
@@ -343,9 +399,9 @@ def _predict_from_payload(
     return prediction, {"decoder": "shared_sparse_atom_overlap", "payload_atoms": payload_atoms, "scores": scores}
 
 
-def _oracle_packet(example: Example, *, budget_bytes: int) -> bytes:
+def _oracle_packet(example: Example, *, budget_bytes: int, candidate_atom_view: str) -> bytes:
     answer = example.candidates[_answer_index(example)]
-    return _encode_atoms(_candidate_atoms(answer.patch_intent), budget_bytes=budget_bytes)
+    return _encode_atoms(_candidate_atoms(answer.patch_intent, candidate_atom_view=candidate_atom_view), budget_bytes=budget_bytes)
 
 
 def _payload_for_condition(
@@ -355,6 +411,7 @@ def _payload_for_condition(
     eval_examples: list[Example],
     index: int,
     budget_bytes: int,
+    candidate_atom_view: str,
     rng: random.Random,
 ) -> tuple[bytes | None, dict[str, Any], dict[str, Any]]:
     decode_kwargs: dict[str, Any] = {}
@@ -400,7 +457,9 @@ def _payload_for_condition(
             "source": example.example_id
         }, {"knockout": "random"}
     if condition == "oracle_candidate_atoms":
-        return _oracle_packet(example, budget_bytes=budget_bytes), {"source": "oracle_candidate_atoms"}, decode_kwargs
+        return _oracle_packet(example, budget_bytes=budget_bytes, candidate_atom_view=candidate_atom_view), {
+            "source": "oracle_candidate_atoms"
+        }, decode_kwargs
     raise ValueError(f"unknown condition {condition!r}")
 
 
@@ -426,6 +485,7 @@ def _predict_condition(
     eval_examples: list[Example],
     index: int,
     budget_bytes: int,
+    candidate_atom_view: str,
     rng: random.Random,
 ) -> dict[str, Any]:
     start = time.perf_counter()
@@ -435,12 +495,14 @@ def _predict_condition(
         eval_examples=eval_examples,
         index=index,
         budget_bytes=budget_bytes,
+        candidate_atom_view=candidate_atom_view,
         rng=rng,
     )
     prediction, decode_meta = _predict_from_payload(
         example,
         payload,
         budget_bytes=budget_bytes,
+        candidate_atom_view=candidate_atom_view,
         rng=rng,
         **decode_kwargs,
     )
@@ -555,6 +617,7 @@ def _run_direction(
     train_seed: int,
     eval_seed: int,
     budgets: list[int],
+    candidate_atom_view: str,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     train_rows = make_benchmark(examples=train_examples, candidates=4, seed=train_seed, family_set=train_family_set)
@@ -573,6 +636,7 @@ def _run_direction(
                         eval_examples=eval_rows,
                         index=row_index,
                         budget_bytes=budget,
+                        candidate_atom_view=candidate_atom_view,
                         rng=rng,
                     )
                     | {"example_id": example.example_id, "family_name": example.family_name, "budget_bytes": budget}
@@ -596,6 +660,7 @@ def _run_direction(
         "train_seed": train_seed,
         "eval_seed": eval_seed,
         "budgets": budgets,
+        "candidate_atom_view": candidate_atom_view,
         "atom_dictionary": list(ATOM_ORDER),
         "conditions": list(CONDITIONS),
         "source_destroying_controls": list(SOURCE_DESTROYING_CONTROLS),
@@ -629,6 +694,7 @@ def run_gate(
     train_examples: int,
     eval_examples: int,
     seed: int,
+    candidate_atom_view: str,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     specs = [
@@ -650,6 +716,7 @@ def run_gate(
             train_seed=train_seed,
             eval_seed=eval_seed,
             budgets=budgets,
+            candidate_atom_view=candidate_atom_view,
         )
         try:
             run_dirs.append(str(run_dir.relative_to(ROOT)))
@@ -687,6 +754,7 @@ def run_gate(
         "train_examples": train_examples,
         "eval_examples": eval_examples,
         "seed": seed,
+        "candidate_atom_view": candidate_atom_view,
         "rows": rows,
         "headline": {
             "direction_pass": direction_pass,
@@ -770,6 +838,7 @@ def _write_gate_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- direction pass: `{h['direction_pass']}`",
         f"- cross-family pass: `{h['cross_family_pass']}`",
         f"- budgets: `{payload['budgets']}`",
+        f"- candidate atom view: `{payload['candidate_atom_view']}`",
         f"- max shared sparse accuracy: `{h['max_shared_sparse_accuracy']:.3f}`",
         f"- max shared-target delta: `{h['max_shared_minus_target']:.3f}`",
         "",
@@ -800,6 +869,7 @@ def main() -> None:
     parser.add_argument("--train-examples", type=int, default=256)
     parser.add_argument("--eval-examples", type=int, default=128)
     parser.add_argument("--seed", type=int, default=29)
+    parser.add_argument("--candidate-atom-view", choices=["native", "synonym_stress"], default="native")
     args = parser.parse_args()
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     payload = run_gate(
@@ -808,6 +878,7 @@ def main() -> None:
         train_examples=args.train_examples,
         eval_examples=args.eval_examples,
         seed=args.seed,
+        candidate_atom_view=args.candidate_atom_view,
     )
     print(json.dumps({"output_dir": str(output_dir), "pass_gate": payload["pass_gate"]}, indent=2, sort_keys=True))
 

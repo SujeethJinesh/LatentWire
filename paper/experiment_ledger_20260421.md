@@ -15497,3 +15497,19 @@ this improves seed/remap stability, but it is still the same controlled family
 generator. Next exact gate: larger frozen-slice shared sparse confirmation
 (`512/512`) or a learned shared-dictionary/crosscoder variant with the same
 controls.
+
+Follow-up `2026-04-29`: added and ran the synonym/ontology stress for the
+shared sparse packet by extending
+`scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py` with
+`--candidate-atom-view synonym_stress`. Command:
+`./venv_arm64/bin/python scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py --output-dir results/source_private_shared_sparse_crosscoder_packet_gate_20260429_synonym_stress --budgets 4 8 --train-examples 256 --eval-examples 128 --seed 29 --candidate-atom-view synonym_stress`.
+Outcome: fail as an overclaim boundary. The stress paraphrases candidate
+intents into terms outside the hand atom rules while leaving source-private
+packet extraction unchanged. Cross-family pass is false, all direction passes
+are false, max shared sparse accuracy drops to `0.375`, max shared-target delta
+is only `+0.125`, and there are `0` pass rows. Controls remain at target. This
+means the current shared sparse packet is seed-stable under the native
+controlled ontology but not robust to ontology/synonym shift. Next exact method
+gate: learned shared dictionary/crosscoder or conditional consistency syndrome
+packet; otherwise frame the shared sparse contribution as an agreed-protocol
+source-private dictionary, not robust semantic transfer.
