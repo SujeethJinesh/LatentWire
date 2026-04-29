@@ -103,6 +103,57 @@ def test_tool_trace_compression_qjl_variant_is_opt_in(tmp_path) -> None:
     assert all(row["metadata"]["scalar_bytes"] + row["metadata"]["sign_bytes"] == 6 for row in qjl_rows)
 
 
+def test_tool_trace_compression_protected_rotated_residual_variant_is_opt_in(tmp_path) -> None:
+    default = run_gate(
+        output_dir=tmp_path / "default",
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=128,
+        budgets=[4],
+        train_seed=5,
+        eval_seed=6,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+    )
+    opt_in = run_gate(
+        output_dir=tmp_path / "protected",
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=128,
+        budgets=[4],
+        train_seed=5,
+        eval_seed=6,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+        packet_variants=["protected_rotated_residual"],
+    )
+
+    assert default["packet_variants"] == []
+    assert "protected_rotated_residual_source" not in default["budget_summaries"][0]["metrics"]
+    assert opt_in["packet_variants"] == ["protected_rotated_residual"]
+    assert "protected_rotated_residual_source" in opt_in["budget_summaries"][0]["metrics"]
+    assert opt_in["budget_summaries"][0]["protected_rotated_residual_accuracy"] is not None
+    assert opt_in["budget_summaries"][0]["protected_controls_ok"] in {True, False}
+    assert opt_in["pass_gate"] == opt_in["budget_summaries"][0]["scalar_source_packet_pass"]
+    assert "protected_projection_sha256" in opt_in
+    protected_rows = [
+        json.loads(line)
+        for line in (tmp_path / "protected" / "predictions_budget4.jsonl").read_text().splitlines()
+        if json.loads(line)["condition"] == "protected_rotated_residual_source"
+    ]
+    assert protected_rows
+    assert {row["payload_bytes"] for row in protected_rows} == {4}
+    assert all(row["metadata"]["scalar_bytes"] + row["metadata"]["sign_bytes"] == 4 for row in protected_rows)
+
+
 def test_tool_trace_compression_relative_scores_variant_is_opt_in(tmp_path) -> None:
     payload = run_gate(
         output_dir=tmp_path / "relative",

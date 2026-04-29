@@ -103,6 +103,16 @@ cross-family latent transfer. The strongest defensible full-paper framing is now
 a source-private packet benchmark/method paper with learned same-family/remap
 packets, byte-rate systems wins, and explicit cross-family negative evidence.
 
+Update `2026-04-29`: a protected rotated residual packet ablation now addresses
+the TurboQuant/QJL-style codec objection but does not become a new headline
+method. It is source-control positive on all `9/9` remap/budget rows and
+slightly improves the 2-byte scalar WZ row on two remaps, but strict promotion
+fails because p50 decode latency is `3.56-7.33 ms` rather than `<2 ms`, and two
+6-byte rows trail scalar WZ by more than `0.02`. Keep this as a principled
+systems/compression comparator. The next full-paper strengthening gate should
+remain `n=256` target-model decoder replication or a genuinely new
+anchor-relative/dictionary packet for cross-family.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

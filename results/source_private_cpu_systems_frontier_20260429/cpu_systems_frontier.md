@@ -1,8 +1,8 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `47`
+- rows: `56`
 - pass rows: `32`
-- fail / near-miss rows: `15`
+- fail / near-miss rows: `24`
 - minimum passing accuracy: `0.418`
 - maximum passing payload bytes: `6.0`
 - minimum passing model-packet valid rate: `0.537`
@@ -36,6 +36,15 @@
 | learned Wyner-Ziv cross-family falsification | 2-byte scalar WZ packet | holdout_to_core | `fail` | 0.328 | 0.250 | 0.275 | 2.0 | - | - | raw_sign=0.246; qjl=0.381; canonical_rasp=0.375; canonical_pass=False |
 | learned Wyner-Ziv cross-family falsification | 4-byte scalar WZ packet | holdout_to_core | `fail` | 0.338 | 0.250 | 0.250 | 4.0 | - | - | raw_sign=0.129; qjl=0.414; canonical_rasp=0.498; canonical_pass=True |
 | learned Wyner-Ziv cross-family falsification | 6-byte scalar WZ packet | holdout_to_core | `pass` | 0.623 | 0.250 | 0.250 | 6.0 | - | - | raw_sign=0.109; qjl=0.564; canonical_rasp=0.498; canonical_pass=True |
+| protected rotated residual packet ablation | 2-byte protected residual packet | remap 101 | `near-miss` | 0.430 | 0.250 | 0.279 | 2.0 | - | - | scalar=0.418; qjl=0.396; canonical_rasp=0.350; protected_minus_scalar=0.012; strict_codec_pass=False |
+| protected rotated residual packet ablation | 4-byte protected residual packet | remap 101 | `near-miss` | 0.447 | 0.250 | 0.264 | 4.0 | - | - | scalar=0.432; qjl=0.461; canonical_rasp=0.494; protected_minus_scalar=0.016; strict_codec_pass=False |
+| protected rotated residual packet ablation | 6-byte protected residual packet | remap 101 | `near-miss` | 0.447 | 0.250 | 0.264 | 6.0 | - | - | scalar=0.463; qjl=0.447; canonical_rasp=0.494; protected_minus_scalar=-0.016; strict_codec_pass=False |
+| protected rotated residual packet ablation | 2-byte protected residual packet | remap 103 | `near-miss` | 0.438 | 0.250 | 0.266 | 2.0 | - | - | scalar=0.436; qjl=0.439; canonical_rasp=0.363; protected_minus_scalar=0.002; strict_codec_pass=False |
+| protected rotated residual packet ablation | 4-byte protected residual packet | remap 103 | `near-miss` | 0.465 | 0.250 | 0.250 | 4.0 | - | - | scalar=0.475; qjl=0.461; canonical_rasp=0.520; protected_minus_scalar=-0.010; strict_codec_pass=False |
+| protected rotated residual packet ablation | 6-byte protected residual packet | remap 103 | `fail` | 0.479 | 0.250 | 0.244 | 6.0 | - | - | scalar=0.508; qjl=0.484; canonical_rasp=0.520; protected_minus_scalar=-0.029; strict_codec_pass=False |
+| protected rotated residual packet ablation | 2-byte protected residual packet | remap 107 | `near-miss` | 0.432 | 0.250 | 0.256 | 2.0 | - | - | scalar=0.418; qjl=0.393; canonical_rasp=0.350; protected_minus_scalar=0.014; strict_codec_pass=False |
+| protected rotated residual packet ablation | 4-byte protected residual packet | remap 107 | `near-miss` | 0.436 | 0.250 | 0.258 | 4.0 | - | - | scalar=0.445; qjl=0.453; canonical_rasp=0.506; protected_minus_scalar=-0.010; strict_codec_pass=False |
+| protected rotated residual packet ablation | 6-byte protected residual packet | remap 107 | `fail` | 0.453 | 0.250 | 0.250 | 6.0 | - | - | scalar=0.492; qjl=0.457; canonical_rasp=0.506; protected_minus_scalar=-0.039; strict_codec_pass=False |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 101 | `near-miss` | 0.494 | 0.250 | 0.295 | 4.0 | - | 0.184 | scalar=0.426; relative_minus_scalar=0.068 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 103 | `near-miss` | 0.520 | 0.250 | 0.256 | 4.0 | - | 0.213 | scalar=0.496; relative_minus_scalar=0.023 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 107 | `near-miss` | 0.506 | 0.250 | 0.355 | 4.0 | - | 0.199 | scalar=0.502; relative_minus_scalar=0.004 |

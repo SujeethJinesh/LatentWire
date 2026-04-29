@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "protected_residual_packet_gate.json": "34f3945b399fe25241a8ac8abef5c26537d90327baac8b4dac8c9d01784613d6",
+    "protected_residual_packet_gate.md": "3979fd86ae18a0e355bab9d77477866baaa98ead8aa0093e919495303d8eef61"
+  },
+  "artifacts": [
+    "protected_residual_packet_gate.json",
+    "protected_residual_packet_gate.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

@@ -86,6 +86,10 @@
 - Learned Wyner-Ziv bidirectional cross-family falsification script, test, memo,
   and artifact showing `core_to_holdout` failure and asymmetric `holdout_to_core`
   recovery only at 6 bytes.
+- Protected rotated residual packet script, test, references, memo, and artifact
+  showing a TurboQuant/QJL-style codec near-miss: source-control positive on
+  `9/9` rows but not promoted because strict latency and high-budget scalar
+  preservation bars fail.
 
 ## Notes
 

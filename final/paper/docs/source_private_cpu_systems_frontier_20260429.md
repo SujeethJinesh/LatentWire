@@ -14,8 +14,9 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `47` rows after adding learned Wyner-Ziv packet evidence
-and bidirectional cross-family falsification rows. The strongest systems result
+The aggregate now has `56` rows after adding learned Wyner-Ziv packet evidence,
+bidirectional cross-family falsification rows, and protected residual codec
+ablation rows. The strongest systems result
 remains the byte-rate frontier: a `2` byte diagnostic packet reaches oracle
 accuracy on the frozen core and holdout surfaces, while structured
 JSON/free-text relays need `21`/`17` bytes, query-aware diagnostic-span
@@ -29,6 +30,10 @@ The learned packet story remains positive in scoped settings:
 - Learned Wyner-Ziv/source-side-information scalar packets pass `9/9` remapped
   slot-codebook rows across `2/4/6` bytes, with accuracy `0.418-0.508` versus
   target-only `0.250`.
+- Protected rotated residual packets are source-control positive on `9/9`
+  remapped rows and improve the 2-byte scalar row on remaps `101` and `107`,
+  but fail strict promotion because p50 decode latency is `3.56-7.33 ms` rather
+  than `<2 ms`, and two 6-byte rows trail scalar WZ by more than `0.02`.
 - Remapped slot codebooks remain positive but weaker: scalar remap rows are
   `0.463-0.508` accuracy versus target-only `0.250`.
 - Canonical RASP gives a `4` byte candidate-relative transport. It passes the
@@ -52,6 +57,9 @@ The aggregate explicitly keeps the main failed rows:
 - Learned WZ cross-family also fails bidirectionally under the strict all-budget
   rule: `core_to_holdout` is below target at every budget and explained by
   controls; `holdout_to_core` only passes at `6` bytes.
+- Protected residual packets are kept as near-miss/fail rows rather than a
+  promoted codec method: they beat source controls but miss the strict latency
+  and high-budget scalar-preservation thresholds.
 - The consistency-posterior packet is pruned as a cross-family fix: the larger
   core-to-holdout row reaches only `0.354` and is matched by an order-mismatch
   control (`0.355`).
@@ -63,8 +71,9 @@ This supports three defensible contributions:
 
 1. A source-private packet benchmark and control protocol that distinguishes
    source evidence from target priors and matched-byte text.
-2. A compact packet method family with strong same-family/remap evidence and
-   model-emitted packet rows on current small local models.
+2. A compact packet method family with strong same-family/remap evidence,
+   principled codec ablations, and model-emitted packet rows on current small
+   local models.
 3. A systems byte-rate frontier showing large communication savings over
    structured text and hidden-log relay.
 

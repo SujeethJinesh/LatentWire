@@ -14917,3 +14917,17 @@ kills a bidirectional cross-family learned-WZ claim. Keep learned WZ as a
 same-family/remap method contribution; do not tune this exact scalar WZ
 cross-family setup without a new mechanism such as anchor-relative dictionaries
 or a target-preserving query bottleneck.
+
+Follow-up `2026-04-29`: added
+`results/source_private_protected_residual_packet_gate_20260429`, a
+TurboQuant/QJL-inspired protected residual codec ablation for the learned
+source-private packet family. The codec ranks random-rotated scalar coordinates
+by calibration separation, sends a protected scalar head, and uses remaining
+bytes for a sign-sketch residual. It is source-control positive on all `9/9`
+remap/budget rows and improves the 2-byte scalar WZ row on remaps `101` and
+`107`, but the strict promotion gate fails: protected rows have p50 decode
+latency `3.56-7.33 ms` versus the predeclared `<2 ms` systems bar, and two
+6-byte rows trail scalar WZ by more than `0.02`. Treat this as a principled
+compression/quantization comparator and near-miss, not as a new headline method.
+The CPU systems frontier now has `56` rows and includes these protected
+near-miss/fail rows.

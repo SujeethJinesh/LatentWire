@@ -218,6 +218,30 @@ def _fit_scalar_calibration(
     return lo, hi
 
 
+def _projection_utility_order(
+    train_examples: list[Example],
+    *,
+    encoder: np.ndarray,
+    projection_pool: np.ndarray,
+    feature_dim: int,
+    candidate_view: str,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Rank projection rows by source-to-gold separation under decoder side information."""
+    utilities = np.zeros(projection_pool.shape[0], dtype=np.float64)
+    for example in train_examples:
+        predicted = _project_source(example, encoder=encoder, feature_dim=feature_dim, mode="matched")
+        candidates = _candidate_matrix_for_view(example, feature_dim, candidate_view=candidate_view)
+        answer_index = next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == example.answer_label)
+        source_values = projection_pool @ predicted
+        candidate_values = candidates @ projection_pool.T
+        gold_dist = np.abs(candidate_values[answer_index] - source_values)
+        negative = np.delete(candidate_values, answer_index, axis=0)
+        negative_dist = np.min(np.abs(negative - source_values[None, :]), axis=0)
+        utilities += negative_dist - gold_dist
+    order = np.argsort(-utilities, kind="stable")
+    return projection_pool[order].astype(np.float32), utilities[order].astype(np.float32)
+
+
 def _project_source(example: Example, *, encoder: np.ndarray, feature_dim: int, mode: str) -> np.ndarray:
     source = _source_vector(example, feature_dim, mode=mode)
     if encoder.shape[0] == feature_dim + 1:
@@ -515,10 +539,14 @@ def _payload_and_decode(
     code_projection: np.ndarray,
     scalar_projection: np.ndarray,
     residual_projection: np.ndarray,
+    protected_projection: np.ndarray,
+    protected_residual_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     lo: np.ndarray,
     hi: np.ndarray,
+    protected_lo: np.ndarray,
+    protected_hi: np.ndarray,
     relative_lo: float,
     relative_hi: float,
     candidate_view: str,
@@ -622,6 +650,54 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "qjl_residual", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
+    if condition == "protected_rotated_residual_source":
+        payload = _qjl_residual_packet(
+            example,
+            encoder=encoder,
+            scalar_projection=protected_projection,
+            residual_projection=protected_residual_projection,
+            feature_dim=feature_dim,
+            lo=protected_lo,
+            hi=protected_hi,
+            budget_bytes=budget_bytes,
+            mode="matched",
+        )
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=protected_projection,
+            residual_projection=protected_residual_projection,
+            feature_dim=feature_dim,
+            lo=protected_lo,
+            hi=protected_hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "protected_rotated_residual", "candidate_view": candidate_view}
+    if condition == "protected_label_shuffled_ridge":
+        payload = _qjl_residual_packet(
+            example,
+            encoder=label_shuffle_encoder,
+            scalar_projection=protected_projection,
+            residual_projection=protected_residual_projection,
+            feature_dim=feature_dim,
+            lo=protected_lo,
+            hi=protected_hi,
+            budget_bytes=budget_bytes,
+            mode="matched",
+        )
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=protected_projection,
+            residual_projection=protected_residual_projection,
+            feature_dim=feature_dim,
+            lo=protected_lo,
+            hi=protected_hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "protected_rotated_residual", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
     if condition == "relative_score_source":
         payload = _relative_score_packet(
             example,
@@ -715,6 +791,31 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "qjl_residual", "source": other.example_id, "shuffle": "cross_family_slot", "candidate_view": candidate_view}
+    if condition == "protected_constrained_shuffled_source":
+        other = eval_examples[_constrained_nonself_index(index, eval_examples)]
+        payload = _qjl_residual_packet(
+            other,
+            encoder=encoder,
+            scalar_projection=protected_projection,
+            residual_projection=protected_residual_projection,
+            feature_dim=feature_dim,
+            lo=protected_lo,
+            hi=protected_hi,
+            budget_bytes=budget_bytes,
+            mode="matched",
+        )
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=protected_projection,
+            residual_projection=protected_residual_projection,
+            feature_dim=feature_dim,
+            lo=protected_lo,
+            hi=protected_hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "protected_rotated_residual", "source": other.example_id, "shuffle": "cross_family_slot", "candidate_view": candidate_view}
     if condition == "relative_constrained_shuffled_source":
         other = eval_examples[_constrained_nonself_index(index, eval_examples)]
         payload = _relative_score_packet(
@@ -788,6 +889,30 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "qjl_residual", "source": "answer_masked", "candidate_view": candidate_view}
+    if condition == "protected_answer_masked_source":
+        payload = _qjl_residual_packet(
+            example,
+            encoder=encoder,
+            scalar_projection=protected_projection,
+            residual_projection=protected_residual_projection,
+            feature_dim=feature_dim,
+            lo=protected_lo,
+            hi=protected_hi,
+            budget_bytes=budget_bytes,
+            mode="answer_masked",
+        )
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=protected_projection,
+            residual_projection=protected_residual_projection,
+            feature_dim=feature_dim,
+            lo=protected_lo,
+            hi=protected_hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "protected_rotated_residual", "source": "answer_masked", "candidate_view": candidate_view}
     if condition == "relative_answer_masked_source":
         payload = _relative_score_packet(
             example,
@@ -1020,6 +1145,20 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "qjl_residual", "source": "random", "candidate_view": candidate_view}
+    if condition == "protected_random_same_byte":
+        payload = rng.randbytes(budget_bytes)
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=protected_projection,
+            residual_projection=protected_residual_projection,
+            feature_dim=feature_dim,
+            lo=protected_lo,
+            hi=protected_hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "protected_rotated_residual", "source": "random", "candidate_view": candidate_view}
     if condition == "raw_source_sign_sketch":
         payload = _raw_source_sign_packet(example, code_projection, feature_dim, budget_bytes)
         prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
@@ -1044,10 +1183,14 @@ def _predict(
     code_projection: np.ndarray,
     scalar_projection: np.ndarray,
     residual_projection: np.ndarray,
+    protected_projection: np.ndarray,
+    protected_residual_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     lo: np.ndarray,
     hi: np.ndarray,
+    protected_lo: np.ndarray,
+    protected_hi: np.ndarray,
     relative_lo: float,
     relative_hi: float,
     candidate_view: str,
@@ -1066,10 +1209,14 @@ def _predict(
         code_projection=code_projection,
         scalar_projection=scalar_projection,
         residual_projection=residual_projection,
+        protected_projection=protected_projection,
+        protected_residual_projection=protected_residual_projection,
         feature_dim=feature_dim,
         budget_bytes=budget_bytes,
         lo=lo,
         hi=hi,
+        protected_lo=protected_lo,
+        protected_hi=protected_hi,
         relative_lo=relative_lo,
         relative_hi=relative_hi,
         candidate_view=candidate_view,
@@ -1165,10 +1312,28 @@ def run_gate(
     scalar_projection = _normalize_rows(rng_np.normal(size=(max_budget, feature_dim))).astype(np.float32)
     qjl_sign_projection = _normalize_rows(rng_np.normal(size=(max_budget * 8, feature_dim))).astype(np.float32)
     residual_projection = _orthogonal_residual_projection(qjl_sign_projection, scalar_projection)
+    protected_pool_size = max(max_budget * 8, 32)
+    protected_projection_pool = _normalize_rows(rng_np.normal(size=(protected_pool_size, feature_dim))).astype(np.float32)
+    protected_projection, protected_projection_utility = _projection_utility_order(
+        train_rows,
+        encoder=encoder,
+        projection_pool=protected_projection_pool,
+        feature_dim=feature_dim,
+        candidate_view=candidate_view,
+    )
+    protected_sign_projection = _normalize_rows(rng_np.normal(size=(max_budget * 8, feature_dim))).astype(np.float32)
+    protected_residual_projection = _orthogonal_residual_projection(protected_sign_projection, protected_projection[:max_budget])
     lo, hi = _fit_scalar_calibration(
         train_rows,
         encoder=encoder,
         scalar_projection=scalar_projection,
+        feature_dim=feature_dim,
+        candidate_view=candidate_view,
+    )
+    protected_lo, protected_hi = _fit_scalar_calibration(
+        train_rows,
+        encoder=encoder,
+        scalar_projection=protected_projection,
         feature_dim=feature_dim,
         candidate_view=candidate_view,
     )
@@ -1200,6 +1365,16 @@ def run_gate(
                 "qjl_constrained_shuffled_source",
                 "qjl_answer_masked_source",
                 "qjl_random_same_byte",
+            ]
+        )
+    if "protected_rotated_residual" in packet_variants:
+        conditions.extend(
+            [
+                "protected_rotated_residual_source",
+                "protected_label_shuffled_ridge",
+                "protected_constrained_shuffled_source",
+                "protected_answer_masked_source",
+                "protected_random_same_byte",
             ]
         )
     if "relative_scores" in packet_variants:
@@ -1257,10 +1432,14 @@ def run_gate(
                         code_projection=code_projection,
                         scalar_projection=scalar_projection,
                         residual_projection=residual_projection,
+                        protected_projection=protected_projection,
+                        protected_residual_projection=protected_residual_projection,
                         feature_dim=feature_dim,
                         budget_bytes=budget,
                         lo=lo,
                         hi=hi,
+                        protected_lo=protected_lo,
+                        protected_hi=protected_hi,
                         relative_lo=relative_lo,
                         relative_hi=relative_hi,
                         candidate_view=candidate_view,
@@ -1283,6 +1462,7 @@ def run_gate(
         )
         scalar = metrics["scalar_quantized_source"]["accuracy"]
         qjl = metrics["qjl_residual_source"]["accuracy"] if "qjl_residual_source" in metrics else None
+        protected = metrics["protected_rotated_residual_source"]["accuracy"] if "protected_rotated_residual_source" in metrics else None
         relative = metrics["relative_score_source"]["accuracy"] if "relative_score_source" in metrics else None
         relative_canonical = metrics["relative_canonical_score_source"]["accuracy"] if "relative_canonical_score_source" in metrics else None
         consistent_posterior = metrics["consistent_posterior_packet_source"]["accuracy"] if "consistent_posterior_packet_source" in metrics else None
@@ -1297,6 +1477,13 @@ def run_gate(
             and metrics["qjl_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["qjl_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["qjl_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+        )
+        protected_controls_ok = (
+            protected is not None
+            and metrics["protected_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["protected_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["protected_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["protected_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
         )
         relative_controls_ok = (
             relative is not None
@@ -1327,6 +1514,7 @@ def run_gate(
         )
         scalar_source_packet_pass = scalar >= no_source + 0.15 and scalar_controls_ok
         qjl_source_packet_pass = qjl is not None and qjl >= no_source + 0.15 and qjl_controls_ok
+        protected_source_packet_pass = protected is not None and protected >= no_source + 0.15 and protected_controls_ok
         relative_source_packet_pass = relative is not None and relative >= no_source + 0.15 and relative_controls_ok
         relative_canonical_source_packet_pass = (
             relative_canonical is not None and relative_canonical >= no_source + 0.15 and relative_canonical_controls_ok
@@ -1349,6 +1537,7 @@ def run_gate(
                 "matched_accuracy": matched,
                 "scalar_quantized_source_accuracy": scalar,
                 "qjl_residual_source_accuracy": qjl,
+                "protected_rotated_residual_accuracy": protected,
                 "relative_score_source_accuracy": relative,
                 "relative_canonical_score_source_accuracy": relative_canonical,
                 "consistent_posterior_packet_accuracy": consistent_posterior,
@@ -1360,6 +1549,9 @@ def run_gate(
                 "scalar_minus_best_no_source": scalar - no_source,
                 "qjl_minus_best_no_source": None if qjl is None else qjl - no_source,
                 "qjl_minus_scalar": None if qjl is None else qjl - scalar,
+                "protected_minus_best_no_source": None if protected is None else protected - no_source,
+                "protected_minus_scalar": None if protected is None else protected - scalar,
+                "protected_minus_qjl": None if protected is None or qjl is None else protected - qjl,
                 "relative_minus_best_no_source": None if relative is None else relative - no_source,
                 "relative_minus_scalar": None if relative is None else relative - scalar,
                 "relative_canonical_minus_best_no_source": None if relative_canonical is None else relative_canonical - no_source,
@@ -1373,10 +1565,12 @@ def run_gate(
                 ),
                 "scalar_controls_ok": scalar_controls_ok,
                 "qjl_controls_ok": qjl_controls_ok,
+                "protected_controls_ok": protected_controls_ok,
                 "relative_controls_ok": relative_controls_ok,
                 "relative_canonical_controls_ok": relative_canonical_controls_ok,
                 "consistent_posterior_controls_ok": consistent_posterior_controls_ok,
                 "qjl_source_packet_pass": qjl_source_packet_pass,
+                "protected_source_packet_pass": protected_source_packet_pass,
                 "relative_source_packet_pass": relative_source_packet_pass,
                 "relative_canonical_source_packet_pass": relative_canonical_source_packet_pass,
                 "consistent_posterior_packet_pass": consistent_posterior_packet_pass,
@@ -1410,10 +1604,13 @@ def run_gate(
         "code_projection_sha256": hashlib.sha256(code_projection.tobytes()).hexdigest(),
         "scalar_projection_sha256": hashlib.sha256(scalar_projection.tobytes()).hexdigest(),
         "qjl_residual_projection_sha256": hashlib.sha256(residual_projection.tobytes()).hexdigest(),
+        "protected_projection_sha256": hashlib.sha256(protected_projection.tobytes()).hexdigest(),
+        "protected_projection_utility_sha256": hashlib.sha256(protected_projection_utility.tobytes()).hexdigest(),
+        "protected_residual_projection_sha256": hashlib.sha256(protected_residual_projection.tobytes()).hexdigest(),
         "relative_score_calibration": {"lo": relative_lo, "hi": relative_hi},
         "budget_summaries": budget_summaries,
         "pass_gate": any(row["scalar_source_packet_pass"] for row in budget_summaries),
-        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate. Canonical relative-score packets serialize scores by stable public candidate identity and map bytes back at decode time. Consistent posterior packets distill smoothed candidate posteriors under source-feature and candidate-negative perturbations.",
+        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate. Protected rotated residual packets rank random-rotated scalar coordinates by calibration separation, send a protected scalar head, and append a sign-sketch residual tail. Canonical relative-score packets serialize scores by stable public candidate identity and map bytes back at decode time. Consistent posterior packets distill smoothed candidate posteriors under source-feature and candidate-negative perturbations.",
         "prediction_files": prediction_files,
     }
     (output_dir / "summary.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -1425,26 +1622,29 @@ def run_gate(
         f"- candidate view: `{candidate_view}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
-        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Relative pass | Canonical relative pass | Consistent posterior pass | Syndrome | Scalar | QJL | Relative | Canonical relative | Consistent posterior | Target | Best no-source | Relative - scalar | Canonical - scalar | Consistent - scalar |",
-        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Protected pass | Relative pass | Canonical relative pass | Consistent posterior pass | Syndrome | Scalar | QJL | Protected | Relative | Canonical relative | Consistent posterior | Target | Best no-source | Protected - scalar | Relative - scalar | Canonical - scalar | Consistent - scalar |",
+        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in budget_summaries:
         qjl_acc = "n/a" if row["qjl_residual_source_accuracy"] is None else f"{row['qjl_residual_source_accuracy']:.3f}"
+        protected_acc = "n/a" if row["protected_rotated_residual_accuracy"] is None else f"{row['protected_rotated_residual_accuracy']:.3f}"
         relative_acc = "n/a" if row["relative_score_source_accuracy"] is None else f"{row['relative_score_source_accuracy']:.3f}"
         relative_canonical_acc = "n/a" if row["relative_canonical_score_source_accuracy"] is None else f"{row['relative_canonical_score_source_accuracy']:.3f}"
         consistent_posterior_acc = "n/a" if row["consistent_posterior_packet_accuracy"] is None else f"{row['consistent_posterior_packet_accuracy']:.3f}"
+        protected_delta = "n/a" if row["protected_minus_scalar"] is None else f"{row['protected_minus_scalar']:.3f}"
         relative_delta = "n/a" if row["relative_minus_scalar"] is None else f"{row['relative_minus_scalar']:.3f}"
         relative_canonical_delta = "n/a" if row["relative_canonical_minus_scalar"] is None else f"{row['relative_canonical_minus_scalar']:.3f}"
         consistent_posterior_delta = "n/a" if row["consistent_posterior_minus_scalar"] is None else f"{row['consistent_posterior_minus_scalar']:.3f}"
         lines.append(
             f"| {row['budget_bytes']} | `{row['learned_vs_compression_pass']}` | "
             f"`{row['scalar_source_packet_pass']}` | `{row['qjl_source_packet_pass']}` | "
+            f"`{row['protected_source_packet_pass']}` | "
             f"`{row['relative_source_packet_pass']}` | `{row['relative_canonical_source_packet_pass']}` | "
             f"`{row['consistent_posterior_packet_pass']}` | "
             f"{row['matched_accuracy']:.3f} | {row['scalar_quantized_source_accuracy']:.3f} | "
-            f"{qjl_acc} | {relative_acc} | {relative_canonical_acc} | {consistent_posterior_acc} | "
+            f"{qjl_acc} | {protected_acc} | {relative_acc} | {relative_canonical_acc} | {consistent_posterior_acc} | "
             f"{row['target_only_accuracy']:.3f} | {row['best_no_source_accuracy']:.3f} | "
-            f"{relative_delta} | {relative_canonical_delta} | {consistent_posterior_delta} |"
+            f"{protected_delta} | {relative_delta} | {relative_canonical_delta} | {consistent_posterior_delta} |"
         )
     lines.append("")
     (output_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
@@ -1491,7 +1691,13 @@ def main() -> None:
     parser.add_argument("--remap-slot-seed", type=int, default=None)
     parser.add_argument(
         "--packet-variants",
-        choices=["qjl_residual", "relative_scores", "relative_scores_canonical", "consistent_posterior_packet"],
+        choices=[
+            "qjl_residual",
+            "protected_rotated_residual",
+            "relative_scores",
+            "relative_scores_canonical",
+            "consistent_posterior_packet",
+        ],
         nargs="*",
         default=[],
     )

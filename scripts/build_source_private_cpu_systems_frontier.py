@@ -251,6 +251,43 @@ def _wyner_ziv_cross_family_rows(path: pathlib.Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _protected_residual_rows(path: pathlib.Path) -> list[dict[str, Any]]:
+    payload = _read_json(path)
+    rows = []
+    for row in payload["rows"]:
+        if row["protected_pass"] and row["protected_within_002_of_scalar"] and row["p50_decode_latency_ms"] < 2.0:
+            status = "pass"
+        elif row["protected_pass"] and row["protected_within_002_of_scalar"]:
+            status = "near-miss"
+        else:
+            status = "fail"
+        rows.append(
+            _row(
+                row_id=f"protected_residual::remap{row['remap_slot_seed']}::budget{row['budget_bytes']}",
+                contribution="protected rotated residual packet ablation",
+                method=f"{row['budget_bytes']}-byte protected residual packet",
+                surface=f"remap {row['remap_slot_seed']}",
+                status=status,
+                accuracy=row["protected_accuracy"],
+                target_accuracy=row["target_accuracy"],
+                best_control_accuracy=row["best_protected_control_accuracy"],
+                mean_payload_bytes=row["mean_payload_bytes"],
+                mean_payload_tokens=row["mean_payload_tokens"],
+                p50_latency_ms=row["p50_decode_latency_ms"],
+                p95_latency_ms=row["p95_decode_latency_ms"],
+                comparator="scalar WZ / QJL residual / canonical RASP",
+                note=(
+                    f"scalar={row['scalar_wyner_ziv_accuracy']:.3f}; "
+                    f"qjl={row['qjl_residual_accuracy']:.3f}; "
+                    f"canonical_rasp={row['canonical_rasp_accuracy']:.3f}; "
+                    f"protected_minus_scalar={row['protected_minus_scalar']:.3f}; "
+                    f"strict_codec_pass={row['protected_pass'] and row['protected_within_002_of_scalar'] and row['p50_decode_latency_ms'] < 2.0}"
+                ),
+            )
+        )
+    return rows
+
+
 def _tool_trace_packet_row(
     row_id: str,
     path: pathlib.Path,
@@ -324,6 +361,7 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
     rows.extend(_slot_packet_rows(ROOT / "results/source_private_slot_packet_bootstrap_20260429/summary.json"))
     rows.extend(_wyner_ziv_rows(ROOT / "results/source_private_wyner_ziv_packet_gate_20260429/wyner_ziv_packet_gate.json"))
     rows.extend(_wyner_ziv_cross_family_rows(ROOT / "results/source_private_wyner_ziv_cross_family_gate_20260429/wyner_ziv_cross_family_gate.json"))
+    rows.extend(_protected_residual_rows(ROOT / "results/source_private_protected_residual_packet_gate_20260429/protected_residual_packet_gate.json"))
     rows.extend(
         _relative_rows(
             ROOT / "results/source_private_relative_canonical_bootstrap_remap7_20260429/summary.json",

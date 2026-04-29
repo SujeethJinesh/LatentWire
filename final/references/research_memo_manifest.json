@@ -908,5 +908,12 @@
     "path": "references/486_protocol_stress_and_uniqueness_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo positioning the source-private packet contribution against C2C, KVComm, cache reuse, prompt compression, source coding, TurboQuant/QJL, connector, and diffusion-inspired latent bottleneck work."
+  },
+  {
+    "num": 487,
+    "slug": "protected_residual_packet_refs",
+    "path": "references/487_protected_residual_packet_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the protected rotated residual packet ablation, positioning it against TurboQuant, QJL, QuIP#, SpinQuant, SmoothQuant, LLM.int8, KIVI, SnapKV, H2O, CacheGen, and CacheBlend."
   }
 ]
