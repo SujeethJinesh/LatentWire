@@ -5,7 +5,7 @@
 
 ## Recommendation
 
-Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable passes after upgrading Transformers to 5.7.0; Qwen3.5-2B now also passes CPU n160; Qwen3.5-4B passes CPU n64; Gemma 4 E2B passes CPU n64; Granite has copied-helper and trace-no-hint n160 non-Qwen passes. Next use Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows, or run Qwen3.5-4B/Gemma n160 only if local CPU time is acceptable.
+Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable passes after upgrading Transformers to 5.7.0; Qwen3.5-2B now also passes CPU n160; Qwen3.5-4B passes CPU n64; Gemma 4 E2B passes MPS n160 on seeds 29/31; Granite has copied-helper and trace-no-hint n160 non-Qwen passes. Next use Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows when remote execution is allowed, or run additional local non-Qwen seeds.
 
 ## Model Matrix
 
@@ -25,7 +25,7 @@ Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n16
 | P1 | `allenai/OLMo-2-0425-1B-Instruct` | OLMo 2 open instruct | 1B | - | n16 MPS failed behaviorally with 0 valid packets; pruned unless prompt contract changes | cross-family local n16 |
 | P1 | `google/gemma-3-1b-it` | Gemma 3 small instruct | 1B | - | planned cross-family small-model falsification row | cross-family local n16 if access/cache permits |
 | P1 | `ibm-granite/granite-3.3-2b-instruct` | Granite 3.3 instruct | 2B | - | CPU copied-helper n160 and trace-no-hint n160 passed; MPS backend fails | CPU copied-helper n160 and trace-no-hint n160 passed |
-| P1 | `google/gemma-4-E2B-it` | Gemma 4 dense multimodal/text | 2.3B effective | - | CPU n16/n64 passed after local snapshot download; official card uses Gemma4ForConditionalGeneration | CPU trace-no-hint n64 passed |
+| P1 | `google/gemma-4-E2B-it` | Gemma 4 dense multimodal/text | 2.3B effective | - | CPU n16/n64 passed; MPS n16/n160 seed repeat passed after local snapshot download | MPS trace-no-hint n160 passed on seeds 29/31 |
 | P2 | `HuggingFaceTB/SmolLM3-3B` | SmolLM3 | 3B | - | planned cross-family small-model falsification row | cross-family local n16 if memory permits |
 | P2 | `microsoft/Phi-4-mini-instruct` | Phi-4 mini instruct | 3.8B | - | planned Phi successor row | successor-family local n16 if memory permits |
 | P2 | `mistralai/Ministral-3-3B-Instruct-2512-BF16` | Ministral 3 instruct | 3B-class | - | planned recent Mistral-family falsification row | cross-family local/off-machine n16 |
@@ -85,9 +85,9 @@ Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n16
 ### google/gemma-4-E2B-it
 
 ```bash
-./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py --benchmark-jsonl results/source_private_hidden_repair_packet_medium_20260429/benchmark.jsonl --output-dir results/source_private_latest_model_matrix_20260428/google__gemma_4_e2b_it --model google/gemma-4-E2B-it --device cpu --dtype float32 --limit 64 --seed 29 --max-new-tokens 8 --prompt-mode trace_no_hint --no-enable-thinking
+./venv_arm64/bin/python scripts/run_source_private_hidden_repair_packet_llm.py --benchmark-jsonl results/source_private_hidden_repair_packet_medium_20260429/benchmark.jsonl --output-dir results/source_private_latest_model_matrix_20260428/google__gemma_4_e2b_it --model google/gemma-4-E2B-it --device mps --dtype float32 --limit 160 --seed 29 --max-new-tokens 8 --prompt-mode trace_no_hint --no-enable-thinking
 ```
 
 ## Compatibility Note
 
-A local 2026-04-28 Qwen/Qwen3.5-0.8B smoke first failed before generation with transformers 4.51.0 because AutoConfig did not recognize model_type qwen3_5. After upgrading the repo-local environment to transformers 5.7.0, tokenizers 0.22.2, and huggingface_hub 1.12.0, Qwen3.5-0.8B CPU n16, n64, and n160 source-packet rows passed, with n160 repeated on seeds 29 and 31. Qwen3.5-2B CPU n16, n64, and n160 rows also passed on seed 29. Qwen3.5-4B CPU n16/n64 passed on seed 29 after downloading the 8.7G snapshot. The same 0.8B row still fails on Apple MPS before generation with an incompatible-dimensions matmul in the hybrid attention path, so MPS failure is logged as a backend compatibility issue rather than source-packet evidence. OLMo-2-0425-1B-Instruct is a behavioral negative at n16 with zero valid packets; Gemma-4-E2B-it is a non-Qwen strict-prompt CPU n64 positive; Granite-3.3-2B-Instruct is positive under copied-helper CPU n160 and weaker but still positive under trace-no-hint CPU n160, while its MPS row is backend-blocked.
+A local 2026-04-28 Qwen/Qwen3.5-0.8B smoke first failed before generation with transformers 4.51.0 because AutoConfig did not recognize model_type qwen3_5. After upgrading the repo-local environment to transformers 5.7.0, tokenizers 0.22.2, and huggingface_hub 1.12.0, Qwen3.5-0.8B CPU n16, n64, and n160 source-packet rows passed, with n160 repeated on seeds 29 and 31. Qwen3.5-2B CPU n16, n64, and n160 rows also passed on seed 29. Qwen3.5-4B CPU n16/n64 passed on seed 29 after downloading the 8.7G snapshot. The same 0.8B row still fails on Apple MPS before generation with an incompatible-dimensions matmul in the hybrid attention path, so MPS failure is logged as a backend compatibility issue rather than source-packet evidence. OLMo-2-0425-1B-Instruct is a behavioral negative at n16 with zero valid packets; Gemma-4-E2B-it is a non-Qwen strict-prompt MPS n160 seed-stable positive; Granite-3.3-2B-Instruct is positive under copied-helper CPU n160 and weaker but still positive under trace-no-hint CPU n160, while its MPS row is backend-blocked.

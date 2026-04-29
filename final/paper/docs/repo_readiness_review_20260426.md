@@ -2041,3 +2041,11 @@ for the hidden-repair packet gate, with tests verifying that endpoint packets
 flow through the same evaluator and source-destroying controls. The next exact
 gate is `Qwen/Qwen3.6-35B-A3B` endpoint n32 seed29, followed by
 `Qwen/Qwen3.6-35B-A3B-FP8` endpoint n32 if the dense-MoE row passes.
+
+Update `2026-04-28`: remote execution is disallowed, so the next best local
+architecture-diversity hardening gate widened Gemma 4 E2B. `google/gemma-4-E2B-it`
+MPS trace-no-hint n160 passes on seeds 29 and 31 with matched `160/160`,
+target-only `40/160`, source-destroying controls at `40/160` to `41/160`,
+packet valid rate `1.000`, exact-ID parity true, and p50 MPS packet latency
+`821 ms` / `791 ms`. This gives a seed-stable non-Qwen strict-prompt medium row
+on Mac-local hardware; MoE/FP8 remains the only broad-architecture blocker.

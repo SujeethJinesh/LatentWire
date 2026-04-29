@@ -108,8 +108,9 @@ packet rate `1.000`, but p50 CPU packet latency is high at about `27.2s` on the
 n64 row.
 
 The non-Qwen evidence is stronger now. `google/gemma-4-E2B-it` reaches
-`64/64 = 1.000` on CPU with the strict trace-no-hint prompt, versus `0.250`
-target/control floor and packet valid rate `1.000`. `ibm-granite/granite-3.3-2b-instruct`
+`160/160 = 1.000` on MPS with the strict trace-no-hint prompt on seeds `29` and
+`31`, versus the `0.250` target/control floor and packet valid rate `1.000`.
+`ibm-granite/granite-3.3-2b-instruct`
 reaches `128/160 = 0.800` on CPU with the copied-helper prompt and
 `101/160 = 0.631` under the strict trace-no-hint prompt, versus `0.250` target
 floor and `0.256` best control. OLMo 2-0425-1B is a behavioral negative with

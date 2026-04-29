@@ -2,7 +2,7 @@
 
 - date: `2026-04-28`
 - gate: `latest_model_generalization_scout_20260428`
-- status: Qwen3.5 0.8B/2B/4B rows pass; Gemma 4 E2B strict-prompt n64 passes; Granite strict-prompt n160 passes; MoE broad claim remains unproven
+- status: Qwen3.5 0.8B/2B/4B rows pass; Gemma 4 E2B strict-prompt n160 is seed-stable on MPS; Granite strict-prompt n160 passes; MoE broad claim remains unproven
 
 ## Current Readiness
 
@@ -28,7 +28,7 @@ reaches `16/16 = 1.000` on CPU n16 and `64/64 = 1.000` on CPU n64, with
 target/control at `0.250` and packet valid rate `1.000`.
 
 We now have two non-Qwen positive rows under the strict `trace_no_hint` prompt:
-`google/gemma-4-E2B-it` passes at `n=64` with perfect packet emission, and
+`google/gemma-4-E2B-it` passes at `n=160` on two seeds with perfect packet emission, and
 `ibm-granite/granite-3.3-2b-instruct` passes at `n=160` with weaker but still
 source-specific packet emission. The cross-family claim remains scoped: OLMo
 fails behaviorally with zero valid packets, Granite is less prompt-robust than
@@ -213,6 +213,11 @@ I ran the first non-Qwen falsification rows:
 - `google/gemma-4-E2B-it`, CPU n64, trace-no-hint:
   `64/64 = 1.000`, packet valid rate `1.000`, target-only/best control
   `16/64 = 0.250`, exact-ID parity true, p50 CPU latency `2179 ms`, pass.
+- `google/gemma-4-E2B-it`, MPS n160, trace-no-hint, seeds 29 and 31:
+  seed29 reaches `160/160 = 1.000`, packet valid rate `1.000`, target-only
+  `40/160 = 0.250`, best control `41/160 = 0.256`, exact-ID parity true, p50
+  MPS latency `821 ms`; seed31 repeats `160/160 = 1.000`, controls at
+  `40/160 = 0.250`, exact-ID parity true, p50 MPS latency `791 ms`.
 
 Artifacts:
 
@@ -226,6 +231,9 @@ Artifacts:
 - `results/source_private_latest_model_matrix_20260428/granite33_2b_trace_no_hint_n160_cpu_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n16_cpu_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n64_cpu_seed29/summary.json`
+- `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n16_mps_seed29/summary.json`
+- `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n160_mps_seed29/summary.json`
+- `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n160_mps_seed31/summary.json`
 
 ## Added Matrix
 
@@ -259,11 +267,9 @@ MoE runbook:
 
 ## Recommended Next Gate
 
-1. Run off-machine Qwen3.6 MoE n32 if CUDA serving is available, then repeat on
-   Qwen3.6 FP8 if controls hold.
-2. Widen Gemma 4 E2B to n160 if a larger non-Qwen strict-prompt row is more
-   valuable than immediate MoE.
-3. Run Granite trace-no-hint seed repeat if cross-family stability is more
+1. Run off-machine Qwen3.6 MoE n32 if remote execution is allowed, then repeat
+   on Qwen3.6 FP8 if controls hold.
+2. Run Granite trace-no-hint seed repeat if cross-family stability is more
    valuable than another architecture.
 4. Run `Qwen/Qwen3.6-35B-A3B` and `Qwen/Qwen3.6-35B-A3B-FP8` off-machine at
    `n=32`, then `n=500` only if controls hold.
@@ -278,10 +284,10 @@ The Qwen3.5-0.8B seed-stable `n=160` result plus Qwen3.5-2B n160 confirmation
 and Qwen3.5-4B n64 confirmation let the paper add a stronger post-package
 latest-small contribution: the packet protocol is executable across three
 latest small Qwen3.5 sizes once dependencies are updated.
-Gemma 4 E2B adds a clean non-Qwen strict-prompt n64 positive, and Granite now
-adds both copied-helper and weaker strict-prompt n160 positives. This supports
-cross-family feasibility with prompt-contract sensitivity, not a universal
-prompt-invariant claim. If Qwen3.5 small and Qwen3.6 MoE
+Gemma 4 E2B adds a clean seed-stable non-Qwen strict-prompt n160 positive, and
+Granite adds both copied-helper and weaker strict-prompt n160 positives. This
+supports cross-family feasibility with prompt-contract sensitivity, not a
+universal prompt-invariant claim. If Qwen3.5 small and Qwen3.6 MoE
 rows pass at larger scale, the paper can strengthen its external-validity claim
 from "works across Qwen3/Phi-3/Qwen2.5-era source emitters" to "also transfers to
 latest small hybrid and sparse MoE source emitters." Until then, keep the

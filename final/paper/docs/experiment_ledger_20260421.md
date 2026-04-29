@@ -14590,3 +14590,13 @@ controls, pass rule, and manifest format as the local HF runner while replacing
 only source packet generation with `/v1/chat/completions`. Focused fake-endpoint
 tests pass. This is harness evidence only; Qwen3.6-35B-A3B and FP8 still need
 actual n32 endpoint runs.
+
+Update `2026-04-28`: `gemma4_e2b_mps_n160_seed_stability_20260428` strengthens
+the local non-Qwen row while remote execution is disallowed. `google/gemma-4-E2B-it`
+MPS trace-no-hint n16 seed29 passes with matched `16/16`, controls `4/16`, and
+p50 packet latency `843 ms`. The widened n160 rows pass on seeds 29 and 31:
+seed29 matched `160/160`, target-only `40/160`, best control `41/160`, valid
+packet rate `1.000`, exact-ID parity true, p50 MPS latency `821 ms`; seed31
+matched `160/160`, target-only/best control `40/160`, valid packet rate
+`1.000`, exact-ID parity true, p50 MPS latency `791 ms`. This makes Gemma 4 E2B
+a seed-stable strict-prompt non-Qwen medium row; MoE/FP8 remains unrun.

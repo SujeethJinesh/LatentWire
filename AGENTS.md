@@ -48,6 +48,9 @@ into paper-writing mode until the evidence is strong enough.
 
 ### Execution requirements each turn
 
+- Do not SSH into any machine or run commands through SSH under any
+  circumstances. If a gate needs a remote machine, write a local runbook or ask
+  the user to run the remote command manually.
 - Read the latest telemetry and reviewer feedback before deciding what to do.
 - Pick the single most important gate to clear this turn.
 - Then do the work end-to-end:
