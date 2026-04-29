@@ -113,6 +113,13 @@ systems/compression comparator. The next full-paper strengthening gate should
 remain `n=256` target-model decoder replication or a genuinely new
 anchor-relative/dictionary packet for cross-family.
 
+Update `2026-04-29`: the target-model receiver branch now has a progress-enabled
+harness and a positive `n=16` core/holdout smoke. Frozen Qwen3-0.6B decodes the
+matched 2-byte packet at `0.688` core and `0.750` holdout while target-only and
+shuffled-packet controls remain `0.250`, with valid prediction rate `1.000`.
+This weakens the hand-coded-decoder objection but does not close it. The next
+readiness-critical gate is `n=64` or `n=160` with all six receiver controls.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

@@ -92,6 +92,16 @@ def _conditions() -> list[str]:
     ]
 
 
+def _validate_conditions(conditions: list[str] | None) -> list[str]:
+    available = _conditions()
+    if not conditions:
+        return available
+    unknown = sorted(set(conditions) - set(available))
+    if unknown:
+        raise ValueError(f"unknown conditions: {unknown}")
+    return list(conditions)
+
+
 def _prompt_for_target_decoder(example: LoadedExample, *, payload: str) -> str:
     prior = _prior_prediction(example)
     candidate_rows = "\n".join(
@@ -160,15 +170,20 @@ def _generate_target_predictions(
     seed: int,
     max_new_tokens: int,
     enable_thinking: bool | None,
+    conditions: list[str] | None = None,
+    progress_jsonl: pathlib.Path | None = None,
+    progress_every: int = 16,
 ) -> list[dict[str, Any]]:
     import torch
 
+    active_conditions = _validate_conditions(conditions)
     tokenizer, model = _load_model(model_name, device=device, dtype=dtype)
     torch.manual_seed(seed)
     rng = random.Random(seed + 20260429)
     rows: list[dict[str, Any]] = []
+    progress_handle = progress_jsonl.open("a", encoding="utf-8") if progress_jsonl is not None else None
     for index, example in enumerate(examples):
-        for condition in _conditions():
+        for condition in active_conditions:
             payload, metadata = _condition_payload(
                 condition=condition,
                 example=example,
@@ -209,6 +224,24 @@ def _generate_target_predictions(
                     **metadata,
                 }
             )
+        if progress_handle is not None and ((index + 1) % max(progress_every, 1) == 0 or index + 1 == len(examples)):
+            progress_handle.write(
+                json.dumps(
+                    {
+                        "completed_examples": index + 1,
+                        "total_examples": len(examples),
+                        "rows": len(rows),
+                        "conditions": active_conditions,
+                        "last_example_id": example.example_id,
+                        "time_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+                    },
+                    sort_keys=True,
+                )
+                + "\n"
+            )
+            progress_handle.flush()
+    if progress_handle is not None:
+        progress_handle.close()
     return rows
 
 
@@ -220,12 +253,14 @@ def _sha256_file(path: pathlib.Path) -> str:
     return digest.hexdigest()
 
 
-def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    conditions = _conditions()
+def _summarize(rows: list[dict[str, Any]], *, conditions: list[str] | None = None) -> dict[str, Any]:
+    conditions = _validate_conditions(conditions)
     example_ids = sorted({row["example_id"] for row in rows})
     metrics: dict[str, Any] = {}
     for condition in conditions:
         condition_rows = [row for row in rows if row["condition"] == condition]
+        if not condition_rows:
+            raise ValueError(f"missing rows for condition {condition!r}")
         correct = [row["example_id"] for row in condition_rows if row["correct"]]
         metrics[condition] = {
             "correct": len(correct),
@@ -244,12 +279,14 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "structured_json_2byte",
         "structured_free_text_2byte",
     ]
-    best_control = max(metrics[name]["accuracy"] for name in controls)
+    controls = [name for name in controls if name in metrics]
+    best_control = max((metrics[name]["accuracy"] for name in controls), default=target)
     matched = metrics["matched_packet"]["accuracy"]
     return {
         "n": len(example_ids),
         "exact_id_count": len(example_ids),
         "exact_id_sha256": hashlib.sha256("\n".join(example_ids).encode("utf-8")).hexdigest(),
+        "conditions": conditions,
         "exact_id_parity": len(example_ids) * len(conditions) == len(rows),
         "target_only_accuracy": target,
         "matched_accuracy": matched,
@@ -327,11 +364,19 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=29)
     parser.add_argument("--max-new-tokens", type=int, default=48)
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument("--conditions", choices=_conditions(), nargs="*", default=None)
+    parser.add_argument("--progress-jsonl", type=pathlib.Path, default=None)
+    parser.add_argument("--progress-every", type=int, default=16)
     args = parser.parse_args()
 
     benchmark_path = args.benchmark_jsonl if args.benchmark_jsonl.is_absolute() else ROOT / args.benchmark_jsonl
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
+    conditions = _validate_conditions(args.conditions)
+    progress_jsonl = None
+    if args.progress_jsonl is not None:
+        progress_jsonl = args.progress_jsonl if args.progress_jsonl.is_absolute() else ROOT / args.progress_jsonl
+        progress_jsonl.parent.mkdir(parents=True, exist_ok=True)
     examples = _load_examples(benchmark_path, limit=args.limit)
     rows = _generate_target_predictions(
         examples,
@@ -341,8 +386,11 @@ def main() -> None:
         seed=args.seed,
         max_new_tokens=args.max_new_tokens,
         enable_thinking=args.enable_thinking,
+        conditions=conditions,
+        progress_jsonl=progress_jsonl,
+        progress_every=args.progress_every,
     )
-    summary = _summarize(rows)
+    summary = _summarize(rows, conditions=conditions)
     _write_jsonl(output_dir / "target_predictions.jsonl", rows)
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
     _write_markdown(output_dir / "summary.md", summary)
@@ -361,9 +409,18 @@ def main() -> None:
                 f"--seed {args.seed}",
                 f"--max-new-tokens {args.max_new_tokens}",
                 "--no-enable-thinking" if args.enable_thinking is False else "--enable-thinking",
+                "" if args.conditions is None else "--conditions " + " ".join(args.conditions),
+                "" if args.progress_jsonl is None else f"--progress-jsonl {args.progress_jsonl}",
+                f"--progress-every {args.progress_every}",
             ]
         ),
-        "args": vars(args) | {"benchmark_jsonl": str(args.benchmark_jsonl), "output_dir": str(args.output_dir), "do_sample": False},
+        "args": vars(args)
+        | {
+            "benchmark_jsonl": str(args.benchmark_jsonl),
+            "output_dir": str(args.output_dir),
+            "progress_jsonl": None if args.progress_jsonl is None else str(args.progress_jsonl),
+            "do_sample": False,
+        },
         "artifacts": artifacts,
         "artifact_sha256": {
             artifact: _sha256_file(output_dir / artifact)

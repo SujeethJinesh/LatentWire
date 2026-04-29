@@ -55,3 +55,5 @@ granite33_2b_seed31,model-emitted source packet,Granite 3.3 2B,n160 seed31,pass,
 granite33_2b_raw_no_trace,model-emitted source packet,Granite raw-log/no-trace,n160 seed31,fail,0.25,0.25,0.25,0.0,0.0,0.0,2.95625,2856.919416502933,,0.0,,,,n=160; exact_id_parity=True
 target_decoder_core_n64,target model decoder ablation,Qwen3 target decoder,core n64 CPU,pass,0.65625,0.25,0.25,0.40625,0.40625,2.0,1.0,2181.9882500058156,,1.0,,,,n=64; generated_tokens=13.0
 target_decoder_holdout_n64,target model decoder ablation,Qwen3 target decoder,holdout n64 CPU,pass,0.71875,0.25,0.265625,0.46875,0.453125,2.0,1.0,2236.993042002723,,1.0,,,,n=64; generated_tokens=13.0
+target_decoder_core_n16_progress_subset,target model decoder ablation,Qwen3 target decoder,core n16 CPU progress subset,pass,0.6875,0.25,0.25,0.4375,0.4375,2.0,1.0,4190.551874999073,,1.0,,,,n=16; generated_tokens=13.0
+target_decoder_holdout_n16_progress_subset,target model decoder ablation,Qwen3 target decoder,holdout n16 CPU progress subset,pass,0.75,0.25,0.25,0.5,0.5,2.0,1.0,4059.4567704974907,,1.0,,,,n=16; generated_tokens=13.0

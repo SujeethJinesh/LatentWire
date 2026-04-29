@@ -90,6 +90,9 @@
   showing a TurboQuant/QJL-style codec near-miss: source-control positive on
   `9/9` rows but not promoted because strict latency and high-budget scalar
   preservation bars fail.
+- Progress-enabled Qwen3 target-decoder receiver smoke artifacts showing core
+  and holdout `n=16` subset passes, plus the hardened condition-subset/progress
+  harness for larger all-control receiver runs.
 
 ## Notes
 

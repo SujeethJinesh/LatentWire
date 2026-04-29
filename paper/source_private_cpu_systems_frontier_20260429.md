@@ -14,9 +14,10 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `56` rows after adding learned Wyner-Ziv packet evidence,
+The aggregate now has `58` rows after adding learned Wyner-Ziv packet evidence,
 bidirectional cross-family falsification rows, and protected residual codec
-ablation rows. The strongest systems result
+ablation rows plus progress-enabled target-decoder receiver smoke rows. The
+strongest systems result
 remains the byte-rate frontier: a `2` byte diagnostic packet reaches oracle
 accuracy on the frozen core and holdout surfaces, while structured
 JSON/free-text relays need `21`/`17` bytes, query-aware diagnostic-span
@@ -45,6 +46,9 @@ The learned packet story remains positive in scoped settings:
 - Qwen3 target-decoder CPU n64 rows are positive (`0.656` core, `0.719`
   holdout), but this is still too small to close the hand-coded-decoder
   reviewer objection.
+- Progress-enabled Qwen3 target-decoder subset rows are positive at `n=16` on
+  both core (`0.688`) and holdout (`0.750`) against target/shuffled `0.250`,
+  validating the resumable receiver harness before larger all-control runs.
 
 ## Failures Kept In The Artifact
 

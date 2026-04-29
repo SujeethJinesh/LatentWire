@@ -86,3 +86,38 @@ def test_summarize_passes_when_matched_beats_controls() -> None:
     assert summary["pass_gate"] is True
     assert summary["matched_accuracy"] == 1.0
     assert summary["best_control_accuracy"] == summary["target_only_accuracy"]
+
+
+def test_summarize_supports_condition_subset_for_resumable_receiver_runs() -> None:
+    example = _example()
+    rows = []
+    for condition in ["target_only", "matched_packet", "shuffled_packet"]:
+        prediction = example.answer_label if condition == "matched_packet" else target_gate._prior_prediction(example)
+        rows.append(
+            {
+                "example_id": example.example_id,
+                "condition": condition,
+                "prediction": prediction,
+                "correct": prediction == example.answer_label,
+                "valid_prediction": True,
+                "payload_bytes": 2 if condition != "target_only" else 0,
+                "payload_tokens": 1 if condition != "target_only" else 0,
+                "generated_tokens": 1,
+                "latency_ms": 1.0,
+            }
+        )
+
+    summary = target_gate._summarize(rows, conditions=["target_only", "matched_packet", "shuffled_packet"])
+
+    assert summary["conditions"] == ["target_only", "matched_packet", "shuffled_packet"]
+    assert summary["exact_id_parity"] is True
+    assert summary["best_control_accuracy"] == summary["metrics"]["shuffled_packet"]["accuracy"]
+
+
+def test_validate_conditions_rejects_unknown_condition() -> None:
+    try:
+        target_gate._validate_conditions(["target_only", "bogus"])
+    except ValueError as exc:
+        assert "bogus" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")

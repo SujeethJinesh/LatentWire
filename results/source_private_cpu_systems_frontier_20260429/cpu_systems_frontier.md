@@ -1,7 +1,7 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `56`
-- pass rows: `32`
+- rows: `58`
+- pass rows: `34`
 - fail / near-miss rows: `24`
 - minimum passing accuracy: `0.418`
 - maximum passing payload bytes: `6.0`
@@ -67,6 +67,8 @@
 | model-emitted source packet | Granite raw-log/no-trace | n160 seed31 | `fail` | 0.250 | 0.250 | 0.250 | 0.0 | 0.000 | - | n=160; exact_id_parity=True |
 | target model decoder ablation | Qwen3 target decoder | core n64 CPU | `pass` | 0.656 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=64; generated_tokens=13.0 |
 | target model decoder ablation | Qwen3 target decoder | holdout n64 CPU | `pass` | 0.719 | 0.250 | 0.266 | 2.0 | 1.000 | - | n=64; generated_tokens=13.0 |
+| target model decoder ablation | Qwen3 target decoder | core n16 CPU progress subset | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; generated_tokens=13.0 |
+| target model decoder ablation | Qwen3 target decoder | holdout n16 CPU progress subset | `pass` | 0.750 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; generated_tokens=13.0 |
 
 ## Caveat
 

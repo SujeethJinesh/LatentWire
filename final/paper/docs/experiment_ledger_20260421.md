@@ -14931,3 +14931,14 @@ latency `3.56-7.33 ms` versus the predeclared `<2 ms` systems bar, and two
 compression/quantization comparator and near-miss, not as a new headline method.
 The CPU systems frontier now has `56` rows and includes these protected
 near-miss/fail rows.
+
+Follow-up `2026-04-29`: hardened the Qwen3 target-decoder receiver harness with
+condition subsets and append-only progress JSONL, then ran a cheap frozen
+receiver smoke on core and holdout. The progress-enabled `n=16` subset uses only
+`target_only`, `matched_packet`, and `shuffled_packet` conditions. Core seed29
+passes with matched `0.688` versus target/shuffled `0.250`, valid prediction
+rate `1.000`, and p50 matched latency `4190.55 ms`. Holdout seed30 passes with
+matched `0.750` versus target/shuffled `0.250`, valid prediction rate `1.000`,
+and p50 matched latency `4059.46 ms`. This strengthens the learned/model
+receiver story as a smoke result, but the next receiver defense must scale to
+`n=64` or `n=160` with all six controls.
