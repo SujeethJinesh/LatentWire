@@ -14772,3 +14772,16 @@ remap rows do not improve: remap `101` scalar `0.463` vs QJL `0.447`, remap
 is a useful matched-byte systems comparator, but it is not promoted as the live
 method. The next method branch should target remap invariance directly, likely
 relative-anchor transport or model-emitted packets.
+
+Follow-up `2026-04-29`: RASP/relative-score packets are now added as an opt-in
+candidate-relative transport. The source computes its learned posterior against
+the public candidate anchors and sends one quantized score byte per candidate,
+so the four-candidate gate uses `4` bytes. At equal actual bytes, same-codebook
+seed `29 -> 30` saturates for both scalar and relative (`1.000`). Remap rows
+are control-clean and improve mean accuracy over scalar: remap `101` relative
+`0.494` vs scalar `0.426`, remap `103` `0.520` vs `0.496`, remap `107`
+`0.506` vs `0.502`. The paired bootstrap summary reports mean remap
+relative-minus-scalar `+0.032` and minimum relative-vs-target CI95 lower bound
+`+0.189`, but the minimum relative-vs-scalar lower bound is `-0.035`. Promote
+RASP as a secondary systems/robustness contribution, not as a replacement for
+the scalar packet yet.

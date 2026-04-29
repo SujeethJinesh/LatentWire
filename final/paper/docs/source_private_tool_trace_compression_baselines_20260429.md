@@ -199,3 +199,52 @@ Interpretation:
 - It does not improve the decisive remap frontier; scalar-only is still the stronger 6-byte packet.
 - QJL/TurboQuant should be framed as a principled matched-byte comparator and systems inspiration, not promoted as the current method.
 - The next higher-value branch is remap-invariant relative-anchor transport or a model-emitted packet, not further tuning this residual variant without a new design reason.
+
+## 2026-04-29 Addendum: RASP Relative-Score Packet
+
+I added an opt-in `relative_scores` packet, a Relative-Anchor Stitch Packet
+(RASP) variant. Instead of transmitting an absolute predicted target vector, the
+source computes the predicted source posterior against the public candidate
+anchors and sends one quantized score byte per candidate. With four candidates
+this is a 4-byte packet, even under the 6-byte cap. The decoder selects the
+candidate with the highest dequantized score.
+
+This variant has a different but realistic assumption: the source may see the
+public candidate set/order before sending its packet. The private evidence is
+still necessary, checked by answer-masked, constrained-shuffled, label-shuffled,
+random-byte, score-permutation, and target-order-mismatch controls.
+
+Artifacts:
+
+- `results/source_private_tool_trace_relative_scores_20260429_seed29_30_budget4/`
+- `results/source_private_tool_trace_relative_scores_20260429_remap101_budget4/`
+- `results/source_private_tool_trace_relative_scores_20260429_remap103_budget4/`
+- `results/source_private_tool_trace_relative_scores_20260429_remap107_budget4/`
+- `results/source_private_relative_score_bootstrap_20260429/`
+
+Equal-actual-byte results:
+
+| Surface | Relative | Scalar | Target | Raw sign | Relative - scalar CI95 | Bytes rel/scalar |
+|---|---:|---:|---:|---:|---:|---:|
+| same-codebook seed29->30 | 1.000 | 1.000 | 0.250 | 0.316 | [0.000, 0.000] | 4/4 |
+| remap 101 | 0.494 | 0.426 | 0.250 | 0.326 | [0.033, 0.105] | 4/4 |
+| remap 103 | 0.520 | 0.496 | 0.250 | 0.328 | [-0.012, 0.061] | 4/4 |
+| remap 107 | 0.506 | 0.502 | 0.250 | 0.326 | [-0.035, 0.043] | 4/4 |
+
+Bootstrap summary:
+
+- mean relative accuracy: `0.630`
+- mean relative minus scalar: `0.024`
+- mean remap relative minus scalar: `0.032`
+- minimum relative-vs-target paired CI95 lower bound: `0.189`
+- minimum remap relative-vs-scalar paired CI95 lower bound: `-0.035`
+
+Interpretation:
+
+- RASP is a promising secondary contribution: it is 4-byte, control-clean, and
+  improves mean remap accuracy over equal-byte scalar.
+- The improvement over scalar is not uniformly significant; only remap `101`
+  has a positive paired lower bound versus scalar.
+- It should be claimed as a systems/robustness extension, not as a replacement
+  for the scalar packet until it survives more seeds or harder cross-family
+  splits.

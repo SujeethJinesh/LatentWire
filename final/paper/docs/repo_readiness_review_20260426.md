@@ -2186,3 +2186,13 @@ same-codebook remains saturated (`1.000` scalar and QJL), while remap seeds
 chance that a simple residual sign sketch is the missing ICLR contribution.
 Keep QJL/TurboQuant as a systems comparator and move the live method search to
 relative-anchor transport or model-emitted packets.
+
+Follow-up `2026-04-29`: relative-anchor transport now has a first positive
+systems row. RASP/relative-score packets use public candidate anchors at the
+source and send four quantized candidate scores. On equal 4-byte comparisons,
+RASP is control-clean and improves remap mean over scalar by `+3.2` points,
+with remap `101` significant versus scalar and all rows significant versus
+target-only. This strengthens the paper's systems contribution and gives a
+third technical mechanism, but the scalar-vs-RASP improvement is not uniformly
+significant. Full ICLR readiness still needs either more remap seeds, a
+cross-family RASP row, or a model-emitted packet.

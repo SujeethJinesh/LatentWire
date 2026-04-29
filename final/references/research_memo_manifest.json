@@ -887,5 +887,12 @@
     "path": "references/483_compression_native_learned_packet_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for compression-native matched-byte baselines and the scalar-quantized learned source-packet pivot, including TurboQuant, QJL, RaBitQ, KVQuant, KIVI, and decoder-side-information coding."
+  },
+  {
+    "num": 484,
+    "slug": "relative_anchor_transport_refs",
+    "path": "references/484_relative_anchor_transport_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for RASP/relative-anchor transport, including relative representations, CKA, SVCCA, model stitching, Gromov-Wasserstein alignment, and crosscoder/shared-dictionary follow-up branches."
   }
 ]

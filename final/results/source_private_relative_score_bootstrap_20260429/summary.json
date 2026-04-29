@@ -1,0 +1,273 @@
+{
+  "bootstrap_samples": 2000,
+  "budget_bytes": 4,
+  "created_utc": "2026-04-29T06:43:21.879784+00:00",
+  "gate": "source_private_relative_score_bootstrap",
+  "mean_relative_accuracy": 0.6298828125,
+  "mean_relative_minus_scalar": 0.02392578125,
+  "mean_remap_relative_minus_scalar": 0.031901041666666664,
+  "min_relative_vs_scalar_ci95_low": -0.03515625,
+  "min_relative_vs_target_ci95_low": 0.189453125,
+  "pass_gate": true,
+  "pass_rule": "Relative score packet should keep positive paired lower bound versus target-only and positive mean remap delta versus scalar at equal actual bytes.",
+  "result_dirs": [
+    "results/source_private_tool_trace_relative_scores_20260429_seed29_30_budget4",
+    "results/source_private_tool_trace_relative_scores_20260429_remap101_budget4",
+    "results/source_private_tool_trace_relative_scores_20260429_remap103_budget4",
+    "results/source_private_tool_trace_relative_scores_20260429_remap107_budget4"
+  ],
+  "rows": [
+    {
+      "budget_bytes": 4,
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.72265625,
+          "ci95_low": 0.64453125,
+          "mean": 0.68359375
+        },
+        "relative_answer_masked_source": {
+          "ci95_high": 0.787109375,
+          "ci95_low": 0.712890625,
+          "mean": 0.75
+        },
+        "relative_constrained_shuffled_source": {
+          "ci95_high": 1.0,
+          "ci95_low": 1.0,
+          "mean": 1.0
+        },
+        "relative_label_shuffled_ridge": {
+          "ci95_high": 0.80078125,
+          "ci95_low": 0.724609375,
+          "mean": 0.763671875
+        },
+        "relative_order_mismatch_source": {
+          "ci95_high": 1.0,
+          "ci95_low": 1.0,
+          "mean": 1.0
+        },
+        "relative_permuted_score_bytes": {
+          "ci95_high": 1.0,
+          "ci95_low": 1.0,
+          "mean": 1.0
+        },
+        "relative_random_same_byte": {
+          "ci95_high": 0.7890625,
+          "ci95_low": 0.716796875,
+          "mean": 0.75390625
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.0,
+          "ci95_low": 0.0,
+          "mean": 0.0
+        },
+        "target_only": {
+          "ci95_high": 0.787109375,
+          "ci95_low": 0.712890625,
+          "mean": 0.75
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.31640625,
+      "relative_accuracy": 1.0,
+      "relative_minus_best_strict_control": 0.75,
+      "relative_minus_scalar": 0.0,
+      "relative_p50_latency_ms": 25.269604004279245,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": null,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_tool_trace_relative_scores_20260429_seed29_30_budget4",
+      "scalar_accuracy": 1.0,
+      "scalar_p50_latency_ms": 25.061228494450916,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "budget_bytes": 4,
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.2265625,
+          "ci95_low": 0.107421875,
+          "mean": 0.16796875
+        },
+        "relative_answer_masked_source": {
+          "ci95_high": 0.291015625,
+          "ci95_low": 0.18359375,
+          "mean": 0.236328125
+        },
+        "relative_constrained_shuffled_source": {
+          "ci95_high": 0.373046875,
+          "ci95_low": 0.259765625,
+          "mean": 0.31640625
+        },
+        "relative_label_shuffled_ridge": {
+          "ci95_high": 0.306640625,
+          "ci95_low": 0.1875,
+          "mean": 0.24609375
+        },
+        "relative_order_mismatch_source": {
+          "ci95_high": 0.373046875,
+          "ci95_low": 0.236328125,
+          "mean": 0.302734375
+        },
+        "relative_permuted_score_bytes": {
+          "ci95_high": 0.408203125,
+          "ci95_low": 0.27734375,
+          "mean": 0.345703125
+        },
+        "relative_random_same_byte": {
+          "ci95_high": 0.318359375,
+          "ci95_low": 0.208984375,
+          "mean": 0.263671875
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.10546875,
+          "ci95_low": 0.033203125,
+          "mean": 0.068359375
+        },
+        "target_only": {
+          "ci95_high": 0.302734375,
+          "ci95_low": 0.189453125,
+          "mean": 0.244140625
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.326171875,
+      "relative_accuracy": 0.494140625,
+      "relative_minus_best_strict_control": 0.236328125,
+      "relative_minus_scalar": 0.068359375,
+      "relative_p50_latency_ms": 22.697478991176467,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 101,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_tool_trace_relative_scores_20260429_remap101_budget4",
+      "scalar_accuracy": 0.42578125,
+      "scalar_p50_latency_ms": 24.232187504821923,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "budget_bytes": 4,
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.251953125,
+          "ci95_low": 0.1328125,
+          "mean": 0.19140625
+        },
+        "relative_answer_masked_source": {
+          "ci95_high": 0.33984375,
+          "ci95_low": 0.220703125,
+          "mean": 0.279296875
+        },
+        "relative_constrained_shuffled_source": {
+          "ci95_high": 0.412109375,
+          "ci95_low": 0.302734375,
+          "mean": 0.357421875
+        },
+        "relative_label_shuffled_ridge": {
+          "ci95_high": 0.322265625,
+          "ci95_low": 0.203125,
+          "mean": 0.263671875
+        },
+        "relative_order_mismatch_source": {
+          "ci95_high": 0.41796875,
+          "ci95_low": 0.291015625,
+          "mean": 0.35546875
+        },
+        "relative_permuted_score_bytes": {
+          "ci95_high": 0.419921875,
+          "ci95_low": 0.294921875,
+          "mean": 0.35546875
+        },
+        "relative_random_same_byte": {
+          "ci95_high": 0.32421875,
+          "ci95_low": 0.2109375,
+          "mean": 0.265625
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.060546875,
+          "ci95_low": -0.01171875,
+          "mean": 0.0234375
+        },
+        "target_only": {
+          "ci95_high": 0.326171875,
+          "ci95_low": 0.208984375,
+          "mean": 0.26953125
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.328125,
+      "relative_accuracy": 0.51953125,
+      "relative_minus_best_strict_control": 0.263671875,
+      "relative_minus_scalar": 0.0234375,
+      "relative_p50_latency_ms": 22.777854494052008,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 103,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_tool_trace_relative_scores_20260429_remap103_budget4",
+      "scalar_accuracy": 0.49609375,
+      "scalar_p50_latency_ms": 23.72899949841667,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "budget_bytes": 4,
+      "paired_bootstrap": {
+        "raw_source_sign_sketch": {
+          "ci95_high": 0.236328125,
+          "ci95_low": 0.12109375,
+          "mean": 0.1796875
+        },
+        "relative_answer_masked_source": {
+          "ci95_high": 0.328125,
+          "ci95_low": 0.216796875,
+          "mean": 0.2734375
+        },
+        "relative_constrained_shuffled_source": {
+          "ci95_high": 0.392578125,
+          "ci95_low": 0.283203125,
+          "mean": 0.3359375
+        },
+        "relative_label_shuffled_ridge": {
+          "ci95_high": 0.3125,
+          "ci95_low": 0.203125,
+          "mean": 0.2578125
+        },
+        "relative_order_mismatch_source": {
+          "ci95_high": 0.416015625,
+          "ci95_low": 0.2890625,
+          "mean": 0.3515625
+        },
+        "relative_permuted_score_bytes": {
+          "ci95_high": 0.404296875,
+          "ci95_low": 0.2734375,
+          "mean": 0.33984375
+        },
+        "relative_random_same_byte": {
+          "ci95_high": 0.33984375,
+          "ci95_low": 0.23046875,
+          "mean": 0.28515625
+        },
+        "scalar_quantized_source": {
+          "ci95_high": 0.04296875,
+          "ci95_low": -0.03515625,
+          "mean": 0.00390625
+        },
+        "target_only": {
+          "ci95_high": 0.310546875,
+          "ci95_low": 0.197265625,
+          "mean": 0.255859375
+        }
+      },
+      "pass_gate": true,
+      "raw_sign_accuracy": 0.326171875,
+      "relative_accuracy": 0.505859375,
+      "relative_minus_best_strict_control": 0.255859375,
+      "relative_minus_scalar": 0.00390625,
+      "relative_p50_latency_ms": 24.027875493629836,
+      "relative_payload_bytes": 4.0,
+      "remap_slot_seed": 107,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_tool_trace_relative_scores_20260429_remap107_budget4",
+      "scalar_accuracy": 0.501953125,
+      "scalar_p50_latency_ms": 24.273541501315776,
+      "scalar_payload_bytes": 4.0,
+      "target_accuracy": 0.25
+    }
+  ]
+}

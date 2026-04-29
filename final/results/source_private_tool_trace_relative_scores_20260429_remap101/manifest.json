@@ -1,0 +1,15 @@
+{
+  "artifact_sha256": {
+    "predictions_budget6.jsonl": "cabf15f476d8d68e973b555d58ed42d9ec2008d56ecace36a39272dad0069e7d",
+    "summary.json": "727f7cec77a33631af0cdac931ae12025ca246707a4eafb0757d904945c2c432",
+    "summary.md": "4296f8b21fe3759fa4172ada9fd799e627bb9e5bd40395e818103c4268b4b362"
+  },
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "predictions_budget6.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

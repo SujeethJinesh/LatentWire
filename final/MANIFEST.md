@@ -57,6 +57,9 @@
   summary showing positive but weaker remap margins.
 - QJL/TurboQuant-style residual comparator artifacts showing clean controls but
   no improvement over scalar-only on remapped slot codebooks.
+- RASP relative-score packet script, test, references, remap artifacts, and
+  bootstrap summary showing a 4-byte control-clean candidate-relative transport
+  with modest remap improvement over equal-byte scalar.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

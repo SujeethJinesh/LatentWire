@@ -274,8 +274,11 @@ at 6 bytes with scalar `1.000`, target `0.250`, constrained shuffled source
 versus target `0.250`; the weakest paired-bootstrap lower bound versus
 target-only is `+0.156`. An opt-in QJL/TurboQuant-style residual comparator is
 clean but does not improve remap accuracy: QJL residual trails scalar-only by
-`1.6-3.5` points on remap seeds `101/103/107`. The next blocker is stronger
-remap margins and cross-family generalization.
+`1.6-3.5` points on remap seeds `101/103/107`. The RASP relative-score packet
+adds a 4-byte candidate-relative transport row: it is control-clean, matches
+same-codebook scalar, and improves remap mean over equal-byte scalar by `+3.2`
+points, though the scalar delta is not uniformly significant. The next blocker
+is stronger remap margins and cross-family generalization.
 
 ## Final Status
 

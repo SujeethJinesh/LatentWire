@@ -235,6 +235,45 @@ def _qjl_residual_packet(
     return coarse + signs
 
 
+def _fit_relative_score_calibration(
+    train_examples: list[Example],
+    *,
+    encoder: np.ndarray,
+    feature_dim: int,
+    candidate_view: str,
+) -> tuple[float, float]:
+    values: list[float] = []
+    for example in train_examples:
+        predicted = _project_source(example, encoder=encoder, feature_dim=feature_dim, mode="matched")
+        scores = _candidate_matrix_for_view(example, feature_dim, candidate_view=candidate_view) @ predicted
+        values.extend(float(score) for score in scores)
+    lo = float(np.quantile(np.array(values, dtype=np.float32), 0.01))
+    hi = float(np.quantile(np.array(values, dtype=np.float32), 0.99))
+    return lo, max(hi, lo + 1e-4)
+
+
+def _relative_score_packet(
+    example: Example,
+    *,
+    encoder: np.ndarray,
+    feature_dim: int,
+    candidate_view: str,
+    budget_bytes: int,
+    lo: float,
+    hi: float,
+    mode: str,
+) -> bytes:
+    predicted = _project_source(example, encoder=encoder, feature_dim=feature_dim, mode=mode)
+    candidates = _candidate_matrix_for_view(example, feature_dim, candidate_view=candidate_view)
+    scores = candidates @ predicted
+    limit = min(budget_bytes, len(scores))
+    return _quantize_scalar(scores[:limit].astype(np.float32), np.full(limit, lo, dtype=np.float32), np.full(limit, hi, dtype=np.float32))
+
+
+def _rotate_candidate_order(example: Example) -> Example:
+    return replace(example, candidates=example.candidates[1:] + example.candidates[:1])
+
+
 def _decode_scalar_packet(
     example: Example,
     payload: bytes | None,
@@ -259,6 +298,42 @@ def _decode_scalar_packet(
     else:
         prediction = labels[int(tied[0])]
     return prediction, {"decoder": "scalar_quantized_l2", "min_l2": min_distance, "ties": [int(i) for i in tied.tolist()]}
+
+
+def _decode_relative_score_packet(
+    example: Example,
+    payload: bytes | None,
+    *,
+    budget_bytes: int,
+    lo: float,
+    hi: float,
+) -> tuple[str, dict[str, Any]]:
+    if not payload:
+        return _prior_prediction(example), {"decoder": "prior"}
+    labels = [candidate.label for candidate in example.candidates]
+    score_count = min(len(payload), len(labels), budget_bytes)
+    decoded = _dequantize_scalar(
+        payload[:score_count],
+        np.full(score_count, lo, dtype=np.float32),
+        np.full(score_count, hi, dtype=np.float32),
+    )
+    scores = np.full(len(labels), -np.inf, dtype=np.float32)
+    scores[:score_count] = decoded
+    max_score = float(np.max(scores))
+    tied = np.flatnonzero(np.isclose(scores, max_score, rtol=1e-6, atol=1e-8))
+    prior = _prior_prediction(example)
+    if any(labels[int(idx)] == prior for idx in tied):
+        prediction = prior
+    else:
+        prediction = labels[int(tied[0])]
+    sorted_scores = sorted((float(score), idx) for idx, score in enumerate(scores) if np.isfinite(score))
+    margin = None if len(sorted_scores) < 2 else sorted_scores[-1][0] - sorted_scores[-2][0]
+    return prediction, {
+        "decoder": "relative_candidate_scores",
+        "score_bytes": score_count,
+        "score_margin": margin,
+        "ties": [int(i) for i in tied.tolist()],
+    }
 
 
 def _decode_qjl_residual_packet(
@@ -350,6 +425,8 @@ def _payload_and_decode(
     budget_bytes: int,
     lo: np.ndarray,
     hi: np.ndarray,
+    relative_lo: float,
+    relative_hi: float,
     candidate_view: str,
     rng: random.Random,
 ) -> tuple[str, bytes | None, dict[str, Any]]:
@@ -451,6 +528,32 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "qjl_residual", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
+    if condition == "relative_score_source":
+        payload = _relative_score_packet(
+            example,
+            encoder=encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+        )
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi)
+        return prediction, payload, meta | {"packet_family": "relative_candidate_scores", "candidate_view": candidate_view}
+    if condition == "relative_label_shuffled_ridge":
+        payload = _relative_score_packet(
+            example,
+            encoder=label_shuffle_encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+        )
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi)
+        return prediction, payload, meta | {"packet_family": "relative_candidate_scores", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
     if condition == "scalar_shuffled_source":
         other = eval_examples[_deterministic_nonself_index(index, len(eval_examples))]
         payload = _scalar_packet(
@@ -518,6 +621,35 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "qjl_residual", "source": other.example_id, "shuffle": "cross_family_slot", "candidate_view": candidate_view}
+    if condition == "relative_constrained_shuffled_source":
+        other = eval_examples[_constrained_nonself_index(index, eval_examples)]
+        payload = _relative_score_packet(
+            other,
+            encoder=encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+        )
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi)
+        return prediction, payload, meta | {"packet_family": "relative_candidate_scores", "source": other.example_id, "shuffle": "cross_family_slot", "candidate_view": candidate_view}
+    if condition == "relative_order_mismatch_source":
+        payload = _relative_score_packet(
+            example,
+            encoder=encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+        )
+        if len(payload) > 1:
+            payload = payload[-1:] + payload[:-1]
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi)
+        return prediction, payload, meta | {"packet_family": "relative_candidate_scores", "source": "target_order_mismatch", "candidate_view": candidate_view}
     if condition == "scalar_answer_masked_source":
         payload = _scalar_packet(
             example,
@@ -562,6 +694,38 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "qjl_residual", "source": "answer_masked", "candidate_view": candidate_view}
+    if condition == "relative_answer_masked_source":
+        payload = _relative_score_packet(
+            example,
+            encoder=encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="answer_masked",
+        )
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi)
+        return prediction, payload, meta | {"packet_family": "relative_candidate_scores", "source": "answer_masked", "candidate_view": candidate_view}
+    if condition == "relative_permuted_score_bytes":
+        payload = _relative_score_packet(
+            example,
+            encoder=encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+        )
+        if len(payload) > 1:
+            payload = payload[1:] + payload[:1]
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi)
+        return prediction, payload, meta | {"packet_family": "relative_candidate_scores", "source": "permuted_score_bytes", "candidate_view": candidate_view}
+    if condition == "relative_random_same_byte":
+        payload = rng.randbytes(min(budget_bytes, len(example.candidates)))
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi)
+        return prediction, payload, meta | {"packet_family": "relative_candidate_scores", "source": "random", "candidate_view": candidate_view}
     if condition == "qjl_random_same_byte":
         payload = rng.randbytes(budget_bytes)
         prediction, meta = _decode_qjl_residual_packet(
@@ -602,6 +766,8 @@ def _predict(
     budget_bytes: int,
     lo: np.ndarray,
     hi: np.ndarray,
+    relative_lo: float,
+    relative_hi: float,
     candidate_view: str,
     rng: random.Random,
 ) -> dict[str, Any]:
@@ -620,6 +786,8 @@ def _predict(
         budget_bytes=budget_bytes,
         lo=lo,
         hi=hi,
+        relative_lo=relative_lo,
+        relative_hi=relative_hi,
         candidate_view=candidate_view,
         rng=rng,
     )
@@ -703,6 +871,12 @@ def run_gate(
         feature_dim=feature_dim,
         candidate_view=candidate_view,
     )
+    relative_lo, relative_hi = _fit_relative_score_calibration(
+        train_rows,
+        encoder=encoder,
+        feature_dim=feature_dim,
+        candidate_view=candidate_view,
+    )
     rng = random.Random(train_seed * 4001 + eval_seed)
     packet_variants = list(packet_variants or [])
     conditions = [
@@ -727,6 +901,18 @@ def run_gate(
                 "qjl_random_same_byte",
             ]
         )
+    if "relative_scores" in packet_variants:
+        conditions.extend(
+            [
+                "relative_score_source",
+                "relative_label_shuffled_ridge",
+                "relative_constrained_shuffled_source",
+                "relative_order_mismatch_source",
+                "relative_answer_masked_source",
+                "relative_permuted_score_bytes",
+                "relative_random_same_byte",
+            ]
+        )
     budget_summaries: list[dict[str, Any]] = []
     prediction_files: dict[str, str] = {}
     for budget in budgets:
@@ -748,6 +934,8 @@ def run_gate(
                         budget_bytes=budget,
                         lo=lo,
                         hi=hi,
+                        relative_lo=relative_lo,
+                        relative_hi=relative_hi,
                         candidate_view=candidate_view,
                         rng=rng,
                     )
@@ -768,6 +956,7 @@ def run_gate(
         )
         scalar = metrics["scalar_quantized_source"]["accuracy"]
         qjl = metrics["qjl_residual_source"]["accuracy"] if "qjl_residual_source" in metrics else None
+        relative = metrics["relative_score_source"]["accuracy"] if "relative_score_source" in metrics else None
         scalar_controls_ok = (
             metrics["scalar_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["scalar_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
@@ -780,8 +969,18 @@ def run_gate(
             and metrics["qjl_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["qjl_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
         )
+        relative_controls_ok = (
+            relative is not None
+            and metrics["relative_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["relative_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["relative_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["relative_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["relative_order_mismatch_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["relative_permuted_score_bytes"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+        )
         scalar_source_packet_pass = scalar >= no_source + 0.15 and scalar_controls_ok
         qjl_source_packet_pass = qjl is not None and qjl >= no_source + 0.15 and qjl_controls_ok
+        relative_source_packet_pass = relative is not None and relative >= no_source + 0.15 and relative_controls_ok
         predictions_path = output_dir / f"predictions_budget{budget}.jsonl"
         with predictions_path.open("w", encoding="utf-8") as handle:
             for condition in conditions:
@@ -797,6 +996,7 @@ def run_gate(
                 "matched_accuracy": matched,
                 "scalar_quantized_source_accuracy": scalar,
                 "qjl_residual_source_accuracy": qjl,
+                "relative_score_source_accuracy": relative,
                 "target_only_accuracy": metrics["target_only"]["accuracy"],
                 "best_no_source_accuracy": no_source,
                 "best_compression_baseline_accuracy": compression,
@@ -805,9 +1005,13 @@ def run_gate(
                 "scalar_minus_best_no_source": scalar - no_source,
                 "qjl_minus_best_no_source": None if qjl is None else qjl - no_source,
                 "qjl_minus_scalar": None if qjl is None else qjl - scalar,
+                "relative_minus_best_no_source": None if relative is None else relative - no_source,
+                "relative_minus_scalar": None if relative is None else relative - scalar,
                 "scalar_controls_ok": scalar_controls_ok,
                 "qjl_controls_ok": qjl_controls_ok,
+                "relative_controls_ok": relative_controls_ok,
                 "qjl_source_packet_pass": qjl_source_packet_pass,
+                "relative_source_packet_pass": relative_source_packet_pass,
                 "metrics": metrics,
             }
         )
@@ -836,9 +1040,10 @@ def run_gate(
         "code_projection_sha256": hashlib.sha256(code_projection.tobytes()).hexdigest(),
         "scalar_projection_sha256": hashlib.sha256(scalar_projection.tobytes()).hexdigest(),
         "qjl_residual_projection_sha256": hashlib.sha256(residual_projection.tobytes()).hexdigest(),
+        "relative_score_calibration": {"lo": relative_lo, "hi": relative_hi},
         "budget_summaries": budget_summaries,
         "pass_gate": any(row["scalar_source_packet_pass"] for row in budget_summaries),
-        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator rows and do not change the historical pass gate.",
+        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate.",
         "prediction_files": prediction_files,
     }
     (output_dir / "summary.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -850,18 +1055,20 @@ def run_gate(
         f"- candidate view: `{candidate_view}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
-        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Syndrome | Scalar | QJL | Target | Best no-source | QJL - scalar |",
-        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Relative pass | Syndrome | Scalar | QJL | Relative | Target | Best no-source | Relative - scalar |",
+        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in budget_summaries:
         qjl_acc = "n/a" if row["qjl_residual_source_accuracy"] is None else f"{row['qjl_residual_source_accuracy']:.3f}"
-        qjl_delta = "n/a" if row["qjl_minus_scalar"] is None else f"{row['qjl_minus_scalar']:.3f}"
+        relative_acc = "n/a" if row["relative_score_source_accuracy"] is None else f"{row['relative_score_source_accuracy']:.3f}"
+        relative_delta = "n/a" if row["relative_minus_scalar"] is None else f"{row['relative_minus_scalar']:.3f}"
         lines.append(
             f"| {row['budget_bytes']} | `{row['learned_vs_compression_pass']}` | "
             f"`{row['scalar_source_packet_pass']}` | `{row['qjl_source_packet_pass']}` | "
+            f"`{row['relative_source_packet_pass']}` | "
             f"{row['matched_accuracy']:.3f} | {row['scalar_quantized_source_accuracy']:.3f} | "
-            f"{qjl_acc} | {row['target_only_accuracy']:.3f} | "
-            f"{row['best_no_source_accuracy']:.3f} | {qjl_delta} |"
+            f"{qjl_acc} | {relative_acc} | {row['target_only_accuracy']:.3f} | "
+            f"{row['best_no_source_accuracy']:.3f} | {relative_delta} |"
         )
     lines.append("")
     (output_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
@@ -906,7 +1113,7 @@ def main() -> None:
     parser.add_argument("--no-intercept", action="store_true")
     parser.add_argument("--label-shuffle-seed", type=int, default=None)
     parser.add_argument("--remap-slot-seed", type=int, default=None)
-    parser.add_argument("--packet-variants", choices=["qjl_residual"], nargs="*", default=[])
+    parser.add_argument("--packet-variants", choices=["qjl_residual", "relative_scores"], nargs="*", default=[])
     args = parser.parse_args()
     out = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     payload = run_gate(
