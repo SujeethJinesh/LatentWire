@@ -14814,3 +14814,20 @@ stronger same-family/remap robustness contribution, not as a cross-family fix.
 The next method branch should be a consistency-distilled canonical posterior
 packet with order/feature perturbation training, and it must pass bidirectional
 core/holdout before any cross-family claim.
+
+Follow-up `2026-04-29`: implemented the proposed
+`consistent_posterior_packet` as an opt-in canonical score-packet variant. It
+trains a ridge encoder on smoothed candidate-posterior centroids under
+source-feature dropout and negative-candidate dropout, then emits one canonical
+quantized score byte per candidate. Medium cross-family rows show partial
+improvement but no pass: core-to-holdout `0.381` versus target `0.250`, scalar
+`0.225`, and canonical RASP `0.207` with controls clean, but below the
+`+0.15` target-delta rule; holdout-to-core `0.391` versus target `0.250`,
+scalar `0.375`, and canonical RASP `0.492`. Larger `1536/1024` rows prune the
+branch as a cross-family fix: core-to-holdout `0.354` is below scalar `0.370`
+and the order-mismatch control is effectively identical (`0.355`), while
+holdout-to-core passes (`0.495` vs target `0.250`) but is not better than
+canonical RASP (`0.502`). Do not claim consistency posterior packets as a
+positive method. Treat them as a serious JEPA/consistency-inspired ablation and
+move the next full-paper strengthening gate to systems-rate frontier telemetry
+unless a new source surface changes the cross-family hypothesis.

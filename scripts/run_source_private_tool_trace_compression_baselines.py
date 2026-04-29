@@ -138,6 +138,58 @@ def _fit_ridge_encoder_for_view(
     return np.linalg.solve(xtx, x_aug.T @ y_arr).astype(np.float32)
 
 
+def _fit_consistent_posterior_encoder_for_view(
+    train_examples: list[Example],
+    *,
+    feature_dim: int,
+    ridge: float,
+    candidate_view: str,
+    fit_intercept: bool,
+    label_shuffle_seed: int | None = None,
+    consistency_seed: int = 0,
+    consistency_rounds: int = 4,
+    smoothing: float = 0.05,
+    source_keep_prob: float = 0.9,
+) -> np.ndarray:
+    x_rows: list[np.ndarray] = []
+    y_rows: list[np.ndarray] = []
+    label_indices = list(range(len(train_examples)))
+    if label_shuffle_seed is not None:
+        rng_shuffle = random.Random(label_shuffle_seed)
+        rng_shuffle.shuffle(label_indices)
+    for example_index, example in enumerate(train_examples):
+        label_example = train_examples[label_indices[example_index]]
+        source = _source_vector(example, feature_dim, mode="matched").astype(np.float64)
+        candidates = _candidate_matrix_for_view(label_example, feature_dim, candidate_view=candidate_view).astype(np.float64)
+        answer_index = next(idx for idx, candidate in enumerate(label_example.candidates) if candidate.label == label_example.answer_label)
+        for round_index in range(consistency_rounds):
+            rng = np.random.default_rng(consistency_seed + example_index * 1009 + round_index * 9173)
+            kept = [answer_index]
+            kept.extend(idx for idx in range(len(label_example.candidates)) if idx != answer_index and rng.random() >= 0.35)
+            if len(kept) == 1:
+                kept.append((answer_index + 1 + round_index) % len(label_example.candidates))
+            weights = np.zeros(len(label_example.candidates), dtype=np.float64)
+            weights[answer_index] = 1.0 - smoothing
+            for idx in kept:
+                if idx != answer_index:
+                    weights[idx] = smoothing / max(1, len(kept) - 1)
+            target = weights @ candidates
+            mask = (rng.random(source.shape[0]) < source_keep_prob).astype(np.float64)
+            x_rows.append(source * mask / max(source_keep_prob, 1e-6))
+            y_rows.append(target)
+    x = np.stack(x_rows, axis=0).astype(np.float64)
+    y_arr = np.stack(y_rows, axis=0).astype(np.float64)
+    if fit_intercept:
+        x_aug = np.concatenate([x, np.ones((x.shape[0], 1), dtype=np.float64)], axis=1)
+    else:
+        x_aug = x
+    xtx = x_aug.T @ x_aug
+    xtx += ridge * np.eye(xtx.shape[0], dtype=np.float64)
+    if fit_intercept:
+        xtx[-1, -1] -= ridge
+    return np.linalg.solve(xtx, x_aug.T @ y_arr).astype(np.float32)
+
+
 def _sha256_file(path: pathlib.Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -458,6 +510,8 @@ def _payload_and_decode(
     index: int,
     encoder: np.ndarray,
     label_shuffle_encoder: np.ndarray,
+    consistent_encoder: np.ndarray,
+    consistent_label_shuffle_encoder: np.ndarray,
     code_projection: np.ndarray,
     scalar_projection: np.ndarray,
     residual_projection: np.ndarray,
@@ -859,6 +913,99 @@ def _payload_and_decode(
         payload = rng.randbytes(min(budget_bytes, len(example.candidates)))
         prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi, canonical_order=True)
         return prediction, payload, meta | {"packet_family": "relative_candidate_scores_canonical", "source": "random", "candidate_view": candidate_view}
+    if condition == "consistent_posterior_packet_source":
+        payload = _relative_score_packet(
+            example,
+            encoder=consistent_encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+            canonical_order=True,
+        )
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi, canonical_order=True)
+        return prediction, payload, meta | {"packet_family": "consistent_posterior_packet", "candidate_view": candidate_view}
+    if condition == "consistent_posterior_label_shuffled_ridge":
+        payload = _relative_score_packet(
+            example,
+            encoder=consistent_label_shuffle_encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+            canonical_order=True,
+        )
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi, canonical_order=True)
+        return prediction, payload, meta | {"packet_family": "consistent_posterior_packet", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
+    if condition == "consistent_posterior_constrained_shuffled_source":
+        other = eval_examples[_constrained_nonself_label_index(index, eval_examples)]
+        payload = _relative_score_packet(
+            other,
+            encoder=consistent_encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+            canonical_order=True,
+        )
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi, canonical_order=True)
+        return prediction, payload, meta | {"packet_family": "consistent_posterior_packet", "source": other.example_id, "shuffle": "cross_family_label", "candidate_view": candidate_view}
+    if condition == "consistent_posterior_order_mismatch_source":
+        payload = _relative_score_packet(
+            example,
+            encoder=consistent_encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+            canonical_order=True,
+        )
+        if len(payload) > 1:
+            payload = payload[-1:] + payload[:-1]
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi, canonical_order=True)
+        return prediction, payload, meta | {"packet_family": "consistent_posterior_packet", "source": "canonical_order_mismatch", "candidate_view": candidate_view}
+    if condition == "consistent_posterior_answer_masked_source":
+        payload = _relative_score_packet(
+            example,
+            encoder=consistent_encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="answer_masked",
+            canonical_order=True,
+        )
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi, canonical_order=True)
+        return prediction, payload, meta | {"packet_family": "consistent_posterior_packet", "source": "answer_masked", "candidate_view": candidate_view}
+    if condition == "consistent_posterior_permuted_score_bytes":
+        payload = _relative_score_packet(
+            example,
+            encoder=consistent_encoder,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+            budget_bytes=budget_bytes,
+            lo=relative_lo,
+            hi=relative_hi,
+            mode="matched",
+            canonical_order=True,
+        )
+        if len(payload) > 1:
+            payload = payload[1:] + payload[:1]
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi, canonical_order=True)
+        return prediction, payload, meta | {"packet_family": "consistent_posterior_packet", "source": "permuted_score_bytes", "candidate_view": candidate_view}
+    if condition == "consistent_posterior_random_same_byte":
+        payload = rng.randbytes(min(budget_bytes, len(example.candidates)))
+        prediction, meta = _decode_relative_score_packet(example, payload, budget_bytes=budget_bytes, lo=relative_lo, hi=relative_hi, canonical_order=True)
+        return prediction, payload, meta | {"packet_family": "consistent_posterior_packet", "source": "random", "candidate_view": candidate_view}
     if condition == "qjl_random_same_byte":
         payload = rng.randbytes(budget_bytes)
         prediction, meta = _decode_qjl_residual_packet(
@@ -892,6 +1039,8 @@ def _predict(
     index: int,
     encoder: np.ndarray,
     label_shuffle_encoder: np.ndarray,
+    consistent_encoder: np.ndarray,
+    consistent_label_shuffle_encoder: np.ndarray,
     code_projection: np.ndarray,
     scalar_projection: np.ndarray,
     residual_projection: np.ndarray,
@@ -912,6 +1061,8 @@ def _predict(
         index=index,
         encoder=encoder,
         label_shuffle_encoder=label_shuffle_encoder,
+        consistent_encoder=consistent_encoder,
+        consistent_label_shuffle_encoder=consistent_label_shuffle_encoder,
         code_projection=code_projection,
         scalar_projection=scalar_projection,
         residual_projection=residual_projection,
@@ -991,6 +1142,23 @@ def run_gate(
         fit_intercept=fit_intercept,
         label_shuffle_seed=label_shuffle_seed if label_shuffle_seed is not None else train_seed * 5003 + eval_seed,
     )
+    consistent_encoder = _fit_consistent_posterior_encoder_for_view(
+        train_rows,
+        feature_dim=feature_dim,
+        ridge=ridge,
+        candidate_view=candidate_view,
+        fit_intercept=fit_intercept,
+        consistency_seed=train_seed * 7001 + eval_seed,
+    )
+    consistent_label_shuffle_encoder = _fit_consistent_posterior_encoder_for_view(
+        train_rows,
+        feature_dim=feature_dim,
+        ridge=ridge,
+        candidate_view=candidate_view,
+        fit_intercept=fit_intercept,
+        label_shuffle_seed=label_shuffle_seed if label_shuffle_seed is not None else train_seed * 5003 + eval_seed,
+        consistency_seed=train_seed * 7001 + eval_seed,
+    )
     rng_np = np.random.default_rng(train_seed * 3001 + eval_seed)
     max_budget = max(budgets)
     code_projection = _normalize_rows(rng_np.normal(size=(max_budget * 8, feature_dim))).astype(np.float32)
@@ -1058,6 +1226,18 @@ def run_gate(
                 "relative_canonical_random_same_byte",
             ]
         )
+    if "consistent_posterior_packet" in packet_variants:
+        conditions.extend(
+            [
+                "consistent_posterior_packet_source",
+                "consistent_posterior_label_shuffled_ridge",
+                "consistent_posterior_constrained_shuffled_source",
+                "consistent_posterior_order_mismatch_source",
+                "consistent_posterior_answer_masked_source",
+                "consistent_posterior_permuted_score_bytes",
+                "consistent_posterior_random_same_byte",
+            ]
+        )
     budget_summaries: list[dict[str, Any]] = []
     prediction_files: dict[str, str] = {}
     for budget in budgets:
@@ -1072,6 +1252,8 @@ def run_gate(
                         index=row_index,
                         encoder=encoder,
                         label_shuffle_encoder=label_shuffle_encoder,
+                        consistent_encoder=consistent_encoder,
+                        consistent_label_shuffle_encoder=consistent_label_shuffle_encoder,
                         code_projection=code_projection,
                         scalar_projection=scalar_projection,
                         residual_projection=residual_projection,
@@ -1103,6 +1285,7 @@ def run_gate(
         qjl = metrics["qjl_residual_source"]["accuracy"] if "qjl_residual_source" in metrics else None
         relative = metrics["relative_score_source"]["accuracy"] if "relative_score_source" in metrics else None
         relative_canonical = metrics["relative_canonical_score_source"]["accuracy"] if "relative_canonical_score_source" in metrics else None
+        consistent_posterior = metrics["consistent_posterior_packet_source"]["accuracy"] if "consistent_posterior_packet_source" in metrics else None
         scalar_controls_ok = (
             metrics["scalar_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["scalar_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
@@ -1133,11 +1316,23 @@ def run_gate(
             and metrics["relative_canonical_order_mismatch_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["relative_canonical_permuted_score_bytes"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
         )
+        consistent_posterior_controls_ok = (
+            consistent_posterior is not None
+            and metrics["consistent_posterior_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["consistent_posterior_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["consistent_posterior_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["consistent_posterior_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["consistent_posterior_order_mismatch_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["consistent_posterior_permuted_score_bytes"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+        )
         scalar_source_packet_pass = scalar >= no_source + 0.15 and scalar_controls_ok
         qjl_source_packet_pass = qjl is not None and qjl >= no_source + 0.15 and qjl_controls_ok
         relative_source_packet_pass = relative is not None and relative >= no_source + 0.15 and relative_controls_ok
         relative_canonical_source_packet_pass = (
             relative_canonical is not None and relative_canonical >= no_source + 0.15 and relative_canonical_controls_ok
+        )
+        consistent_posterior_packet_pass = (
+            consistent_posterior is not None and consistent_posterior >= no_source + 0.15 and consistent_posterior_controls_ok
         )
         predictions_path = output_dir / f"predictions_budget{budget}.jsonl"
         with predictions_path.open("w", encoding="utf-8") as handle:
@@ -1156,6 +1351,7 @@ def run_gate(
                 "qjl_residual_source_accuracy": qjl,
                 "relative_score_source_accuracy": relative,
                 "relative_canonical_score_source_accuracy": relative_canonical,
+                "consistent_posterior_packet_accuracy": consistent_posterior,
                 "target_only_accuracy": metrics["target_only"]["accuracy"],
                 "best_no_source_accuracy": no_source,
                 "best_compression_baseline_accuracy": compression,
@@ -1168,13 +1364,22 @@ def run_gate(
                 "relative_minus_scalar": None if relative is None else relative - scalar,
                 "relative_canonical_minus_best_no_source": None if relative_canonical is None else relative_canonical - no_source,
                 "relative_canonical_minus_scalar": None if relative_canonical is None else relative_canonical - scalar,
+                "consistent_posterior_minus_best_no_source": None if consistent_posterior is None else consistent_posterior - no_source,
+                "consistent_posterior_minus_scalar": None if consistent_posterior is None else consistent_posterior - scalar,
+                "consistent_posterior_minus_canonical_relative": (
+                    None
+                    if consistent_posterior is None or relative_canonical is None
+                    else consistent_posterior - relative_canonical
+                ),
                 "scalar_controls_ok": scalar_controls_ok,
                 "qjl_controls_ok": qjl_controls_ok,
                 "relative_controls_ok": relative_controls_ok,
                 "relative_canonical_controls_ok": relative_canonical_controls_ok,
+                "consistent_posterior_controls_ok": consistent_posterior_controls_ok,
                 "qjl_source_packet_pass": qjl_source_packet_pass,
                 "relative_source_packet_pass": relative_source_packet_pass,
                 "relative_canonical_source_packet_pass": relative_canonical_source_packet_pass,
+                "consistent_posterior_packet_pass": consistent_posterior_packet_pass,
                 "metrics": metrics,
             }
         )
@@ -1200,13 +1405,15 @@ def run_gate(
         "candidate_pool_recall": 1.0,
         "encoder_sha256": hashlib.sha256(encoder.tobytes()).hexdigest(),
         "label_shuffle_encoder_sha256": hashlib.sha256(label_shuffle_encoder.tobytes()).hexdigest(),
+        "consistent_encoder_sha256": hashlib.sha256(consistent_encoder.tobytes()).hexdigest(),
+        "consistent_label_shuffle_encoder_sha256": hashlib.sha256(consistent_label_shuffle_encoder.tobytes()).hexdigest(),
         "code_projection_sha256": hashlib.sha256(code_projection.tobytes()).hexdigest(),
         "scalar_projection_sha256": hashlib.sha256(scalar_projection.tobytes()).hexdigest(),
         "qjl_residual_projection_sha256": hashlib.sha256(residual_projection.tobytes()).hexdigest(),
         "relative_score_calibration": {"lo": relative_lo, "hi": relative_hi},
         "budget_summaries": budget_summaries,
         "pass_gate": any(row["scalar_source_packet_pass"] for row in budget_summaries),
-        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate. Canonical relative-score packets serialize scores by stable public candidate identity and map bytes back at decode time.",
+        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate. Canonical relative-score packets serialize scores by stable public candidate identity and map bytes back at decode time. Consistent posterior packets distill smoothed candidate posteriors under source-feature and candidate-negative perturbations.",
         "prediction_files": prediction_files,
     }
     (output_dir / "summary.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -1218,22 +1425,26 @@ def run_gate(
         f"- candidate view: `{candidate_view}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
-        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Relative pass | Canonical relative pass | Syndrome | Scalar | QJL | Relative | Canonical relative | Target | Best no-source | Relative - scalar | Canonical - scalar |",
-        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Relative pass | Canonical relative pass | Consistent posterior pass | Syndrome | Scalar | QJL | Relative | Canonical relative | Consistent posterior | Target | Best no-source | Relative - scalar | Canonical - scalar | Consistent - scalar |",
+        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in budget_summaries:
         qjl_acc = "n/a" if row["qjl_residual_source_accuracy"] is None else f"{row['qjl_residual_source_accuracy']:.3f}"
         relative_acc = "n/a" if row["relative_score_source_accuracy"] is None else f"{row['relative_score_source_accuracy']:.3f}"
         relative_canonical_acc = "n/a" if row["relative_canonical_score_source_accuracy"] is None else f"{row['relative_canonical_score_source_accuracy']:.3f}"
+        consistent_posterior_acc = "n/a" if row["consistent_posterior_packet_accuracy"] is None else f"{row['consistent_posterior_packet_accuracy']:.3f}"
         relative_delta = "n/a" if row["relative_minus_scalar"] is None else f"{row['relative_minus_scalar']:.3f}"
         relative_canonical_delta = "n/a" if row["relative_canonical_minus_scalar"] is None else f"{row['relative_canonical_minus_scalar']:.3f}"
+        consistent_posterior_delta = "n/a" if row["consistent_posterior_minus_scalar"] is None else f"{row['consistent_posterior_minus_scalar']:.3f}"
         lines.append(
             f"| {row['budget_bytes']} | `{row['learned_vs_compression_pass']}` | "
             f"`{row['scalar_source_packet_pass']}` | `{row['qjl_source_packet_pass']}` | "
             f"`{row['relative_source_packet_pass']}` | `{row['relative_canonical_source_packet_pass']}` | "
+            f"`{row['consistent_posterior_packet_pass']}` | "
             f"{row['matched_accuracy']:.3f} | {row['scalar_quantized_source_accuracy']:.3f} | "
-            f"{qjl_acc} | {relative_acc} | {relative_canonical_acc} | {row['target_only_accuracy']:.3f} | "
-            f"{row['best_no_source_accuracy']:.3f} | {relative_delta} | {relative_canonical_delta} |"
+            f"{qjl_acc} | {relative_acc} | {relative_canonical_acc} | {consistent_posterior_acc} | "
+            f"{row['target_only_accuracy']:.3f} | {row['best_no_source_accuracy']:.3f} | "
+            f"{relative_delta} | {relative_canonical_delta} | {consistent_posterior_delta} |"
         )
     lines.append("")
     (output_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
@@ -1278,7 +1489,12 @@ def main() -> None:
     parser.add_argument("--no-intercept", action="store_true")
     parser.add_argument("--label-shuffle-seed", type=int, default=None)
     parser.add_argument("--remap-slot-seed", type=int, default=None)
-    parser.add_argument("--packet-variants", choices=["qjl_residual", "relative_scores", "relative_scores_canonical"], nargs="*", default=[])
+    parser.add_argument(
+        "--packet-variants",
+        choices=["qjl_residual", "relative_scores", "relative_scores_canonical", "consistent_posterior_packet"],
+        nargs="*",
+        default=[],
+    )
     args = parser.parse_args()
     out = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     payload = run_gate(

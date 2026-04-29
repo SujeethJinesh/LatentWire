@@ -174,6 +174,45 @@ def test_tool_trace_compression_canonical_relative_scores_variant_is_opt_in(tmp_
     )
 
 
+def test_tool_trace_consistent_posterior_packet_variant_is_opt_in(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "consistent",
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=128,
+        budgets=[4],
+        train_seed=5,
+        eval_seed=6,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+        remap_slot_seed=101,
+        packet_variants=["consistent_posterior_packet"],
+    )
+
+    row = payload["budget_summaries"][0]
+    assert payload["packet_variants"] == ["consistent_posterior_packet"]
+    assert "consistent_posterior_packet_source" in row["metrics"]
+    assert row["consistent_posterior_packet_accuracy"] is not None
+    assert row["consistent_posterior_controls_ok"] in {True, False}
+    assert payload["pass_gate"] == row["scalar_source_packet_pass"]
+    consistent_rows = [
+        json.loads(line)
+        for line in (tmp_path / "consistent" / "predictions_budget4.jsonl").read_text().splitlines()
+        if json.loads(line)["condition"] == "consistent_posterior_packet_source"
+    ]
+    assert consistent_rows
+    assert {row["payload_bytes"] for row in consistent_rows} == {4}
+    assert all(row["metadata"]["canonical_order"] is True for row in consistent_rows)
+    assert any(
+        row["metadata"]["display_candidate_labels"] != row["metadata"]["packet_candidate_labels"]
+        for row in consistent_rows
+    )
+
+
 def test_tool_trace_slot_no_intercept_control_gate(tmp_path) -> None:
     payload = run_gate(
         output_dir=tmp_path,

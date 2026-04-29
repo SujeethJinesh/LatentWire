@@ -894,5 +894,12 @@
     "path": "references/484_relative_anchor_transport_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for RASP/relative-anchor transport, including relative representations, CKA, SVCCA, model stitching, Gromov-Wasserstein alignment, and crosscoder/shared-dictionary follow-up branches."
+  },
+  {
+    "num": 485,
+    "slug": "consistency_posterior_packet_refs",
+    "path": "references/485_consistency_posterior_packet_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the consistency-distilled canonical posterior packet ablation and next systems-rate frontier, covering JEPA/consistency objectives, relative representations, QJL/TurboQuant, KV compression, and activation/cache communication competitors."
   }
 ]

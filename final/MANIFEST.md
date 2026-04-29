@@ -66,6 +66,9 @@
   worst-remap confirmation, and cross-family falsification rows showing a
   stronger same-family/remap robustness contribution but no bidirectional
   cross-family fix.
+- Consistency-posterior packet code, tests, references, memo, and bidirectional
+  cross-family artifacts showing a useful JEPA/consistency-inspired ablation
+  but not a clean cross-family positive method.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

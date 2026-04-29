@@ -29,6 +29,19 @@ bidirectional cross-family evidence or a defensible decision to frame the paper
 as same-family/protocol-assisted source-private communication with explicit
 cross-family limitations.
 
+Update `2026-04-29`: the JEPA/consistency-inspired
+`consistent_posterior_packet` was implemented and pruned as a cross-family fix.
+It improved the failed core-to-holdout direction on the medium slice (`0.381`
+vs `0.250` target), but the larger slice failed controls: source `0.354`,
+scalar `0.370`, and order-mismatch `0.355`. Holdout-to-core remained positive
+(`0.495` vs `0.250`) but did not beat canonical RASP (`0.502`). This result
+weakens the hypothesis that more posterior smoothing alone solves
+cross-family. The highest-priority full-paper strengthening gate is now a
+systems-rate frontier with TTFT/latency, source generation cost, decode cost,
+bytes/tokens, and matched structured-text/compression baselines. Cross-family
+should be treated as an explicit limitation until a new surface or architecture
+passes bidirectional controls.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union
