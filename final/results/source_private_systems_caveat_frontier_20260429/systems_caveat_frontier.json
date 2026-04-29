@@ -1,0 +1,159 @@
+{
+  "claim_scope": "Mac-local endpoint proxy plus derived KV/cache byte floors; production serving remains future work.",
+  "gate": "source_private_systems_caveat_frontier",
+  "headline": {
+    "endpoint_rows": 2,
+    "min_full_log_ttft_delta_vs_packet_ms": 164.27308350102976,
+    "min_packet_minus_best_control_accuracy": 0.42500000000000004,
+    "min_packet_minus_target_accuracy": 0.42500000000000004,
+    "min_packet_vs_full_log_payload_compression": 183.25,
+    "min_packet_vs_query_payload_compression": 7.0,
+    "min_packet_vs_target_ci95_low": 0.35,
+    "min_qjl_1bit_cache_bytes_vs_packet": 10752.0,
+    "packet_payload_bytes": 2.0,
+    "passing_endpoint_rows": 2,
+    "terse_prompt_pass_gate": false
+  },
+  "interpretation": "The systems contribution is an extreme-rate communication frontier: a 2-byte source-private packet passes strict endpoint controls on Mac CPU n160 rows, while visible text/KV-style alternatives occupy higher byte-rate regimes. This artifact deliberately records that query-aware structured text can match accuracy at 14 bytes and that the measured TTFT/E2E rows are local CPU proxy telemetry, not production throughput.",
+  "non_claims": [
+    "No claim of beating TurboQuant, QJL, KIVI, KVQuant, C2C, or KVComm on their native same-model/KV tasks.",
+    "No production GPU serving throughput claim until vLLM/OpenAI-compatible server runs are available.",
+    "No broad cross-family latent-transfer claim; the current cross-family appendix is negative-boundary evidence.",
+    "No prompt-contract-free receiver claim; the terse prompt failure shows the public receiver contract matters."
+  ],
+  "pass_gate": true,
+  "related_work": [
+    {
+      "comparison_axis": "source-private residual evidence, 2-byte payload, strict controls",
+      "method": "LatentWire 2-byte source-private packet",
+      "role": "headline systems row",
+      "source": "this work"
+    },
+    {
+      "comparison_axis": "source/target KV-cache projection rather than public-side-info packet",
+      "method": "C2C cache-to-cache communication",
+      "role": "closest high-rate cross-model internal-state baseline",
+      "source": "https://arxiv.org/abs/2510.03215"
+    },
+    {
+      "comparison_axis": "selected KV pairs/layers rather than extreme-rate private packet",
+      "method": "KVComm selective KV sharing",
+      "role": "KV communication baseline/framing",
+      "source": "https://openreview.net/forum?id=F7rUng23nw"
+    },
+    {
+      "comparison_axis": "same-model vector quantization, not source-destroying communication control",
+      "method": "TurboQuant",
+      "role": "low-bit vector/KV byte-floor comparator",
+      "source": "https://arxiv.org/abs/2504.19874"
+    },
+    {
+      "comparison_axis": "inner-product preserving high-dimensional sketch",
+      "method": "QJL",
+      "role": "1-bit sign-sketch byte-floor comparator",
+      "source": "https://arxiv.org/abs/2406.03482"
+    },
+    {
+      "comparison_axis": "future production TTFT/TPOT/throughput baseline",
+      "method": "vLLM / PagedAttention and DistServe",
+      "role": "serving metric convention",
+      "source": "https://arxiv.org/abs/2309.06180; https://arxiv.org/abs/2401.09670"
+    },
+    {
+      "comparison_axis": "latent prediction objective, not current systems baseline",
+      "method": "Diffusion/JEPA latent prediction",
+      "role": "future learned-interface inspiration",
+      "source": "https://arxiv.org/abs/2212.09748; https://openaccess.thecvf.com/content/CVPR2023/papers/Assran_Self-Supervised_Learning_From_Images_With_a_Joint-Embedding_Predictive_Architecture_CVPR_2023_paper.pdf"
+    }
+  ],
+  "rows": [
+    {
+      "best_source_destroying_control_accuracy": 0.25,
+      "caveat": "Packet beats target and source-destroying controls at 2 bytes; query-aware/structured text can match or beat accuracy at higher byte rates; TTFT is local CPU proxy telemetry.",
+      "full_log_p50_ttft_ms": 635.9088125027483,
+      "full_log_payload_bytes": 366.5,
+      "full_log_ttft_delta_vs_packet_ms": 164.27308350102976,
+      "kivi_2bit_cache_bytes_vs_packet_min": 21504.0,
+      "matched_byte_text_accuracy": 0.25,
+      "min_packet_vs_best_control_ci95_low": 0.35,
+      "min_packet_vs_target_ci95_low": 0.35,
+      "min_strict_packet_vs_target_ci95_low": 0.3375,
+      "packet_accuracy": 0.675,
+      "packet_p50_ttft_ms": 471.6357290017186,
+      "packet_payload_bytes": 2.0,
+      "packet_strict_accuracy": 0.6625,
+      "packet_valid_rate": 1.0,
+      "packet_vs_full_log_payload_compression": 183.25,
+      "packet_vs_query_payload_compression": 7.0,
+      "pass_gate": true,
+      "prompt_contract": "label_strict",
+      "qjl_1bit_cache_bytes_vs_packet_min": 10752.0,
+      "query_aware_payload_bytes": 14.0,
+      "scope": "Mac CPU endpoint-proxy, not production serving throughput",
+      "surface": "core n160 label_strict",
+      "target_accuracy": 0.25
+    },
+    {
+      "best_source_destroying_control_accuracy": 0.25,
+      "caveat": "Packet beats target and source-destroying controls at 2 bytes; query-aware/structured text can match or beat accuracy at higher byte rates; TTFT is local CPU proxy telemetry.",
+      "full_log_p50_ttft_ms": 730.7554584840545,
+      "full_log_payload_bytes": 373.5,
+      "full_log_ttft_delta_vs_packet_ms": 183.5449584905291,
+      "kivi_2bit_cache_bytes_vs_packet_min": 21504.0,
+      "matched_byte_text_accuracy": 0.25,
+      "min_packet_vs_best_control_ci95_low": 0.35,
+      "min_packet_vs_target_ci95_low": 0.35,
+      "min_strict_packet_vs_target_ci95_low": 0.3375,
+      "packet_accuracy": 0.6875,
+      "packet_p50_ttft_ms": 547.2104999935254,
+      "packet_payload_bytes": 2.0,
+      "packet_strict_accuracy": 0.675,
+      "packet_valid_rate": 1.0,
+      "packet_vs_full_log_payload_compression": 186.75,
+      "packet_vs_query_payload_compression": 7.0,
+      "pass_gate": true,
+      "prompt_contract": "label_strict",
+      "qjl_1bit_cache_bytes_vs_packet_min": 10752.0,
+      "query_aware_payload_bytes": 14.0,
+      "scope": "Mac CPU endpoint-proxy, not production serving throughput",
+      "surface": "holdout n160 label_strict",
+      "target_accuracy": 0.25
+    },
+    {
+      "best_source_destroying_control_accuracy": 0.25,
+      "caveat": "Under-specified prompt contract: the packet collapses to target accuracy, so the receiver contract is a required part of the method.",
+      "full_log_p50_ttft_ms": 927.1381459984696,
+      "full_log_payload_bytes": 366.5,
+      "full_log_ttft_delta_vs_packet_ms": 283.4198125055991,
+      "kivi_2bit_cache_bytes_vs_packet_min": 21504.0,
+      "matched_byte_text_accuracy": 0.25,
+      "min_packet_vs_best_control_ci95_low": null,
+      "min_packet_vs_target_ci95_low": null,
+      "min_strict_packet_vs_target_ci95_low": null,
+      "packet_accuracy": 0.25,
+      "packet_p50_ttft_ms": 643.7183334928704,
+      "packet_payload_bytes": 2.0,
+      "packet_strict_accuracy": 0.25,
+      "packet_valid_rate": 1.0,
+      "packet_vs_full_log_payload_compression": 183.25,
+      "packet_vs_query_payload_compression": 7.0,
+      "pass_gate": false,
+      "prompt_contract": "terse",
+      "qjl_1bit_cache_bytes_vs_packet_min": 10752.0,
+      "query_aware_payload_bytes": 14.0,
+      "scope": "Mac CPU endpoint-proxy prompt-contract failure case",
+      "surface": "core n16 terse",
+      "target_accuracy": 0.25
+    }
+  ],
+  "source_endpoint_summaries": [
+    "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls/summary.json",
+    "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n160_cpu_label_strict_controls/summary.json"
+  ],
+  "source_kv_table": "results/source_private_kv_cache_baseline_table_20260429/kv_cache_baseline_table.json",
+  "source_terse_failure_summary": "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n16_cpu_terse/summary.json",
+  "source_uncertainty_summaries": [
+    "results/source_private_endpoint_uncertainty_20260429/core_label_strict_n160/summary.json",
+    "results/source_private_endpoint_uncertainty_20260429/label_strict_n160/summary.json"
+  ]
+}

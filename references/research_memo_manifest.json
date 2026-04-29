@@ -992,5 +992,12 @@
     "path": "references/498_cross_family_negative_boundary_refs_20260429.md",
     "status": "local_memo",
     "reason": "Source memo for the cross-family negative-boundary appendix and next shared sparse crosscoder/feature-knockout method gate, grounded in local failures and relative-representation/crosscoder/SAE references."
+  },
+  {
+    "num": 499,
+    "slug": "systems_caveat_frontier_refs_20260429",
+    "path": "references/499_systems_caveat_frontier_refs_20260429.md",
+    "status": "local_memo",
+    "reason": "Primary-source systems-caveat memo for the Mac-local endpoint frontier, KV/cache byte-floor comparisons, serving metric conventions, and diffusion/JEPA-inspired future learned packet methods."
   }
 ]

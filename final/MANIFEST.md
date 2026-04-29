@@ -93,6 +93,11 @@
 - Progress-enabled Qwen3 target-decoder receiver smoke artifacts showing core
   and holdout `n=16` subset passes, plus the hardened condition-subset/progress
   harness for larger all-control receiver runs.
+- Systems caveat frontier script, test, memo, references, and artifact showing
+  the `n=160` label-strict Mac endpoint rows pass at 2 bytes while explicitly
+  caveating query-aware text catch-up, KV/cache byte-floor scope, production
+  serving non-claims, cross-family negative boundary, and prompt-contract
+  sensitivity.
 
 ## Notes
 

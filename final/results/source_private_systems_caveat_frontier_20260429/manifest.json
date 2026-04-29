@@ -1,0 +1,30 @@
+{
+  "artifact_sha256": {
+    "systems_caveat_frontier.csv": "8a9696455511673b90756eb1f62fb4c8e112ac01782df04c38fa02aa5c43127b",
+    "systems_caveat_frontier.json": "0108d38a474fd7dcde1bba21d3897f65b4fa88ea37fb0e424e24ed9ae22dabc1",
+    "systems_caveat_frontier.md": "f8efb6d9b3e4cf2590ed578166c618d03d552a86e8ba737cc1a79856d5310416"
+  },
+  "artifacts": [
+    "systems_caveat_frontier.json",
+    "systems_caveat_frontier.csv",
+    "systems_caveat_frontier.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_systems_caveat_frontier",
+  "headline": {
+    "endpoint_rows": 2,
+    "min_full_log_ttft_delta_vs_packet_ms": 164.27308350102976,
+    "min_packet_minus_best_control_accuracy": 0.42500000000000004,
+    "min_packet_minus_target_accuracy": 0.42500000000000004,
+    "min_packet_vs_full_log_payload_compression": 183.25,
+    "min_packet_vs_query_payload_compression": 7.0,
+    "min_packet_vs_target_ci95_low": 0.35,
+    "min_qjl_1bit_cache_bytes_vs_packet": 10752.0,
+    "packet_payload_bytes": 2.0,
+    "passing_endpoint_rows": 2,
+    "terse_prompt_pass_gate": false
+  },
+  "interpretation": "The systems contribution is an extreme-rate communication frontier: a 2-byte source-private packet passes strict endpoint controls on Mac CPU n160 rows, while visible text/KV-style alternatives occupy higher byte-rate regimes. This artifact deliberately records that query-aware structured text can match accuracy at 14 bytes and that the measured TTFT/E2E rows are local CPU proxy telemetry, not production throughput.",
+  "pass_gate": true
+}

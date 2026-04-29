@@ -143,6 +143,20 @@ next branch: either add endpoint TTFT/E2E systems telemetry for the existing
 positive packet, or pursue a learned target-preserving query bottleneck /
 Q-Former-style receiver rather than another static sparse code.
 
+Update `2026-04-29`: the systems caveat frontier now gives the paper a cleaner
+reviewer-facing systems claim. The `n=160` core and holdout label-strict
+Mac-local endpoint rows pass with packet accuracy `0.675/0.688`, target/control
+`0.250`, minimum paired CI95 lower bound `+0.350`, 2-byte packet payload,
+query-aware text `7.0x` larger, full-log relay `183.25x-186.75x` larger, and
+full-log p50 TTFT `+164.3 ms` to `+183.5 ms` versus the packet. The same
+artifact records the non-claims: no production serving throughput, no native
+KV-compression superiority over TurboQuant/QJL/KIVI/KVQuant, no broad
+cross-family latent-transfer claim, and no prompt-contract-free receiver claim.
+This improves ICLR readiness for a scoped systems contribution, but the exact
+blocker is now reviewer protocol-lookup risk. The next highest-priority gate is
+anti-lookup label-blind receiver stress on `n=160` core + holdout with
+per-example/remapped diagnostics and full controls.
+
 Update `2026-04-29`: the first endpoint-proxy systems row is now positive. A
 Qwen3-0.6B CPU receiver passes on core and holdout at `n=8` and `n=16` with
 endpoint-style prompt/token/TTFT/E2E logging. The stronger `n=16` rows reach

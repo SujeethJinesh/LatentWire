@@ -15398,3 +15398,26 @@ Focused test:
 passed. Next exact method gate, if pursued, is a shared sparse
 crosscoder/dictionary packet with feature knockout; otherwise move to paper
 revision with this boundary made explicit.
+
+Follow-up `2026-04-29`: implemented the systems caveat frontier to strengthen
+the systems contribution while preventing overclaim. New files:
+`scripts/build_source_private_systems_caveat_frontier.py`,
+`tests/test_build_source_private_systems_caveat_frontier.py`,
+`paper/source_private_systems_caveat_frontier_20260429.md`, and
+`references/499_systems_caveat_frontier_refs_20260429.md`. Command:
+`./venv_arm64/bin/python scripts/build_source_private_systems_caveat_frontier.py --output-dir results/source_private_systems_caveat_frontier_20260429`.
+Outcome: pass. The artifact aggregates the `n=160` core and holdout
+label-strict Mac endpoint rows, paired uncertainty, KV/cache byte lower bounds,
+and a terse-prompt failure row. Both endpoint rows pass with packet accuracy
+`0.675/0.688` versus target/control `0.250`, minimum paired CI95 lower bound
+`+0.350`, 2-byte packet payload, query-aware text `7.0x` larger, full hidden
+log `183.25x-186.75x` larger, full-log p50 TTFT `+164.3 ms` to `+183.5 ms`
+versus packet, and QJL-style 1-bit cache byte lower-bound `10752.0x` packet
+bytes. The terse prompt stress fails at target accuracy, documenting that the
+public receiver contract is required. Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_build_source_private_systems_caveat_frontier.py -q`
+passed. Interpretation: claim an extreme-rate source-private communication
+frontier with Mac-local endpoint evidence and derived cache byte floors; do not
+claim native superiority over TurboQuant, QJL, KIVI/KVQuant, C2C, KVComm, or
+production serving systems. Next exact reviewer-risk gate: anti-lookup
+label-blind receiver stress at `n=160` core + holdout.
