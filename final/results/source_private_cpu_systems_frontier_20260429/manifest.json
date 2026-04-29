@@ -1,8 +1,8 @@
 {
   "artifact_sha256": {
-    "cpu_systems_frontier.csv": "417ae2338f2d12c1e3c998b537c3eb985944fa0a4b0be3aee7880c8db3799201",
-    "cpu_systems_frontier.json": "d24b49a1694ae02ad924f283ff6c5dbc74083019b18bad368046ef16b980e4ba",
-    "cpu_systems_frontier.md": "9a6e4e85c574b0e6cb2ed265e5e1c14dd6f0231d481ce1b544ba1e51d602ae07"
+    "cpu_systems_frontier.csv": "684a218aa308cbdae94d4e0f60d7165a8a9e9e93e26d3294e54b5d9b5b04b241",
+    "cpu_systems_frontier.json": "fd1e0ed492e6b360b4edc18d333b5bf9fa4159a6d2807403569b653bec55b0a6",
+    "cpu_systems_frontier.md": "add2fb13e6fa9fe25d5c6cf801526619e81b5c6a275f59a308966138955c22a5"
   },
   "artifacts": [
     "cpu_systems_frontier.json",

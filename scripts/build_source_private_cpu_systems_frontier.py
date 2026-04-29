@@ -733,6 +733,11 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n64_cpu_label_strict_controls/summary.json",
             "holdout seed30 n64 CPU label-strict controls",
         ),
+        (
+            "endpoint_proxy_core_n160_label_strict_controls",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls/summary.json",
+            "core seed29 n160 CPU label-strict controls",
+        ),
     ]
     for row_id, rel_path, surface in endpoint_specs:
         rows.append(_endpoint_proxy_row(row_id, ROOT / rel_path, surface=surface))
@@ -741,6 +746,13 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "endpoint_label_strict_n64_paired_uncertainty",
             ROOT / "results/source_private_endpoint_uncertainty_20260429/label_strict_n64/summary.json",
             surface="core+holdout n64 label-strict",
+        )
+    )
+    rows.append(
+        _endpoint_uncertainty_row(
+            "endpoint_core_label_strict_n160_paired_uncertainty",
+            ROOT / "results/source_private_endpoint_uncertainty_20260429/core_label_strict_n160/summary.json",
+            surface="core n160 label-strict",
         )
     )
     pass_rows = [row for row in rows if row["status"] == "pass"]

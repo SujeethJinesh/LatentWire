@@ -6,8 +6,8 @@
     "max_pass_payload_bytes": 8.0,
     "min_model_packet_valid_rate": 0.5375,
     "min_pass_accuracy": 0.373046875,
-    "pass_rows": 54,
-    "total_rows": 92
+    "pass_rows": 56,
+    "total_rows": 94
   },
   "pass_gate": true,
   "pass_rule": "This is an aggregate evidence table; individual rows carry pass/fail status from their source artifacts.",
@@ -1924,6 +1924,27 @@
       "valid_rate": 1.0
     },
     {
+      "accuracy": 0.675,
+      "best_control_accuracy": 0.25,
+      "ci95_low_vs_comparator": null,
+      "ci95_low_vs_target": null,
+      "comparator": "matched-byte text / query-aware text / structured relay / full log",
+      "contribution": "Mac endpoint-proxy byte/TTFT frontier",
+      "matched_minus_best_control": 0.42500000000000004,
+      "matched_minus_target": 0.42500000000000004,
+      "mean_payload_bytes": 2.0,
+      "mean_payload_tokens": 1.0,
+      "method": "Qwen3-0.6B packet vs text/log relay",
+      "note": "n=160; prompt_style=label_strict; packet_minus_target=0.425; packet_strict=0.662; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=164.3ms; full_log_e2e_delta=304.8ms; best_verbose_relay=0.713",
+      "p50_latency_ms": 2126.4309785037767,
+      "p95_latency_ms": 2342.1588340133894,
+      "row_id": "endpoint_proxy_core_n160_label_strict_controls",
+      "status": "pass",
+      "surface": "core seed29 n160 CPU label-strict controls",
+      "target_accuracy": 0.25,
+      "valid_rate": 1.0
+    },
+    {
       "accuracy": 0.6875,
       "best_control_accuracy": 0.25,
       "ci95_low_vs_comparator": 0.296875,
@@ -1941,6 +1962,27 @@
       "row_id": "endpoint_label_strict_n64_paired_uncertainty",
       "status": "pass",
       "surface": "core+holdout n64 label-strict",
+      "target_accuracy": 0.25,
+      "valid_rate": 1.0
+    },
+    {
+      "accuracy": 0.675,
+      "best_control_accuracy": 0.25,
+      "ci95_low_vs_comparator": 0.35,
+      "ci95_low_vs_target": 0.35,
+      "comparator": "target / best source-destroying control / query-aware text",
+      "contribution": "endpoint paired uncertainty",
+      "matched_minus_best_control": 0.42500000000000004,
+      "matched_minus_target": 0.42500000000000004,
+      "mean_payload_bytes": 2.0,
+      "mean_payload_tokens": 1.0,
+      "method": "label-strict endpoint paired bootstrap",
+      "note": "bootstrap=5000; min_strict_vs_target_ci95_low=0.338; full_log_ttft_delta=164.3-164.3ms; query_text_delta_ci_range=[-0.069,0.031] and is a rate-quality comparator at 14 bytes vs 2-byte packet",
+      "p50_latency_ms": null,
+      "p95_latency_ms": null,
+      "row_id": "endpoint_core_label_strict_n160_paired_uncertainty",
+      "status": "pass",
+      "surface": "core n160 label-strict",
       "target_accuracy": 0.25,
       "valid_rate": 1.0
     }

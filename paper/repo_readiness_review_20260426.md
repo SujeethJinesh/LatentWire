@@ -2441,3 +2441,15 @@ over all higher-byte relays. Readiness improves on the statistics/reviewer-risk
 axis, but full ICLR readiness still needs the same `label_strict` gate at
 `n=160`, a true server TTFT/throughput benchmark when GPU serving is available,
 and a stronger learned receiver/method story beyond a hand-designed interface.
+
+Follow-up `2026-04-29`: the first `n=160` endpoint scale-up row passes on core,
+but the full rung is not complete. The core label-strict all-condition CPU run
+reaches packet `0.675`, strict-label packet `0.662`, target-only `0.250`,
+matched-byte text `0.250`, random same-byte `0.000`, deranged public table
+`0.244`, best source-destroying control `0.250`, and valid rate `1.000`.
+Paired bootstrap lower CIs are `+0.350` versus target and best control, and
+`+0.338` for strict-label packet versus target. Query-aware text is slightly
+higher at `0.694` but costs `14` bytes versus the packet's `2` bytes. This
+raises confidence that the local signal scales beyond `n=64`, but readiness
+still needs holdout `n=160` and a paired core+holdout `n=160` uncertainty
+summary before calling the medium rung cleared.

@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "summary.json": "a868bc1961c969b17c98e0363c389b19561e1414fe93170cb4e364cbaaa82646",
+    "summary.md": "4d335dd8d8e9f13360d7591e1a1c898699cfb0d5cb6f5c467e69c65497c9268a"
+  },
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

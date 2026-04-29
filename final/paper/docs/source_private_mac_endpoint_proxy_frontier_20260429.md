@@ -176,6 +176,15 @@ Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
   diagnostic text is accuracy-comparable (`packet-query` CI ranges from
   `[-0.109, 0.078]`) but costs `14` bytes rather than the `2` byte packet, so
   it remains a rate/quality comparator, not a failed control.
+- core `n=160` label-strict scale-up passes after the same all-condition CPU
+  endpoint gate. The packet reaches `0.675` accuracy and `0.662` strict-label
+  accuracy versus target-only and matched-byte text at `0.250`, random
+  same-byte at `0.000`, deranged public table at `0.244`, and best
+  source-destroying control at `0.250`. Paired bootstrap lower CIs are
+  `+0.350` versus target and best control, and `+0.338` for strict-label
+  packet versus target. Query-aware text is `0.694` at `14` bytes; the packet
+  is slightly lower accuracy but `7.0x` smaller. Full-log relay is `183.2x`
+  larger and adds `+164.3 ms` p50 TTFT versus the packet.
 
 ## Interpretation
 
@@ -212,7 +221,7 @@ full candidate label copied exactly; at `n=64`, packet strict-label accuracy is
 
 ## Next Gate
 
-Widen the same frozen `label_strict` gate to `n=160`; when NVIDIA GPUs are
-available, run a server-side vLLM/GenAI-Perf style TTFT/throughput benchmark
-against structured text, query-aware text, full-log relay, and KV/cache
-transport baselines.
+Run the frozen holdout `n=160` `label_strict` endpoint gate and then the paired
+core+holdout `n=160` uncertainty summary. When NVIDIA GPUs are available, run a
+server-side vLLM/GenAI-Perf style TTFT/throughput benchmark against structured
+text, query-aware text, full-log relay, and KV/cache transport baselines.

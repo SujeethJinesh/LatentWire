@@ -222,3 +222,11 @@ packet losses versus target-only on both core and holdout. Query-aware text is
 kept as a rate/quality comparator because it is accuracy-comparable but uses
 `14` bytes rather than the packet's `2` bytes. The next experiment is now
 frozen `n=160` label-strict core+holdout.
+
+Scale-up follow-up: core `n=160` label-strict passes the same all-condition CPU
+endpoint gate. Packet accuracy is `0.675` and strict-label accuracy is `0.662`
+versus target/matched-byte text `0.250` and best source-destroying control
+`0.250`; paired lower CIs are `+0.350` versus target and best control. Query-
+aware text is slightly higher accuracy (`0.694`) but costs `14` bytes; full-log
+relay is `183.2x` larger and adds `+164.3 ms` p50 TTFT. The next experiment is
+holdout `n=160`, then paired core+holdout `n=160` uncertainty.

@@ -14,7 +14,7 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `92` rows after adding learned Wyner-Ziv packet evidence,
+The aggregate now has `94` rows after adding learned Wyner-Ziv packet evidence,
 bidirectional cross-family falsification rows, protected residual codec
 ablation rows, progress-enabled target-decoder receiver rows, and the static
 anchor-relative sparse packet smoke, Mac endpoint-proxy rows, and paired
@@ -86,6 +86,13 @@ The learned packet story remains positive in scoped settings:
   minimum strict-label packet-vs-target lower CI is `+0.281`, with valid rate
   `1.000`. Query-aware diagnostic text is treated as a rate/quality comparator:
   it is accuracy-comparable but costs `14` bytes versus the packet's `2` bytes.
+- The first `n=160` scale-up row also passes on core. The label-strict endpoint
+  packet reaches `0.675` accuracy and `0.662` strict-label accuracy versus
+  target-only/matched-byte text `0.250`, best source-destroying control
+  `0.250`, and valid rate `1.000`. The paired uncertainty row gives lower CIs
+  of `+0.350` versus target and best control, and `+0.338` for strict-label
+  packet versus target. This is not yet a full `n=160` rung because holdout is
+  still pending.
 
 ## Failures Kept In The Artifact
 
@@ -140,8 +147,8 @@ throughput superiority until a real vLLM/OpenAI-compatible endpoint run exists.
 
 ## Next Gate
 
-The highest-priority reviewer-facing gate is now the frozen `n=160`
-label-strict endpoint run on core and holdout, followed by the same paired
+The highest-priority reviewer-facing gate is now the frozen holdout `n=160`
+label-strict endpoint run, followed by the paired core+holdout `n=160`
 uncertainty summary. A true server-side TTFT/throughput run remains necessary
 when NVIDIA GPUs are available. Any further cross-family method work should
 move to a learned target-preserving query bottleneck or richer source surface,

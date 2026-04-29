@@ -129,3 +129,10 @@ diagnostic text is accuracy-comparable but costs `14` bytes versus the `2` byte
 packet, so it should be framed as a rate/quality comparator. This changes the
 next experiment to frozen `n=160` label-strict core+holdout before endpoint
 receiver robustness is promoted further.
+
+Core `n=160` now passes, including paired uncertainty. Packet accuracy is
+`0.675` and strict-label accuracy is `0.662` versus target/matched-byte text
+`0.250`, best source-destroying control `0.250`, and valid rate `1.000`.
+Paired lower CIs are `+0.350` versus target and best control. This partially
+clears the scale-up rung, but holdout `n=160` remains the exact blocker before
+the endpoint receiver branch can be called medium-confirmed.

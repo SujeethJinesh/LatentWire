@@ -15128,3 +15128,25 @@ Query-aware text remains an accuracy-comparable `14` byte rate/quality
 comparator, not a destructive control failure. Next exact gate: frozen
 `label_strict` endpoint core+holdout at `n=160`, then server TTFT/throughput
 when GPU serving is available.
+
+Follow-up `2026-04-29`: started the frozen `n=160` label-strict endpoint gate
+locally on CPU. Core seed29 completed and passed; holdout was not launched in
+this cycle because the all-condition core run took roughly `70` minutes on the
+Mac. Command:
+`./venv_arm64/bin/python scripts/run_source_private_mac_endpoint_proxy_frontier.py --benchmark-jsonl results/source_private_tool_trace_reviewer_risk_rows_20260429/core_seed29/benchmark.jsonl --output-dir results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls --limit 160 --max-new-tokens 24 --no-enable-thinking --prompt-style label_strict`.
+Core `n=160` metrics: packet `0.675`, strict-label packet `0.662`, target-only
+`0.250`, matched-byte text `0.250`, random same-byte `0.000`, deranged public
+table `0.244`, best source-destroying control `0.250`, valid rate `1.000`,
+query-aware text `0.694` at `14` bytes, structured free text `0.713` at `17`
+bytes, and full hidden-log relay `0.463` at `366.5` bytes with p50 TTFT
+`+164.3 ms` versus the packet. Artifact hashes: `summary.json`
+`ca065ed000472c3a0efb27966b76a818bbaa6bf91b431667edd82af0dedb49f3`,
+`endpoint_proxy_rows.jsonl`
+`bc19809ded5cba6ad56d7084c21ed6e952094ce995b3eef932a86e054a4aa090`.
+Paired uncertainty on core `n=160` also passes: packet-vs-target and
+packet-vs-best-control lower CIs are `+0.350`; strict-label packet-vs-target
+lower CI is `+0.338` (`summary.json`
+`a868bc1961c969b17c98e0363c389b19561e1414fe93170cb4e364cbaaa82646`).
+The CPU systems frontier was regenerated with `94` rows. Next exact gate:
+holdout seed30 `n=160` label-strict all-condition CPU endpoint run, then paired
+core+holdout `n=160` uncertainty.

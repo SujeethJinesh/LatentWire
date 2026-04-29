@@ -1,0 +1,247 @@
+{
+  "bootstrap_samples": 5000,
+  "created_utc": "2026-04-29T16:01:48.140589+00:00",
+  "gate": "source_private_endpoint_uncertainty",
+  "min_packet_vs_best_control_ci95_low": 0.35,
+  "min_packet_vs_target_ci95_low": 0.35,
+  "min_strict_packet_vs_target_ci95_low": 0.3375,
+  "pass_gate": true,
+  "pass_rule": "All endpoint rows must pass their strict gate, packet valid rate must be >=0.95, paired bootstrap lower bounds versus target and best source-destroying control must be positive, strict-label packet-vs-target lower bound must be positive, and full-log p50 TTFT must be slower than the packet. Query-aware/structured relays are reported as rate-quality comparators, not required accuracy losses.",
+  "result_dirs": [
+    "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls"
+  ],
+  "rows": [
+    {
+      "best_source_destroying_control": "matched_byte_text_2",
+      "best_source_destroying_control_accuracy": 0.25,
+      "comparisons": {
+        "deranged_candidate_diag_table": {
+          "baseline": "deranged_candidate_diag_table",
+          "delta_bootstrap95": {
+            "ci95_high": 0.5125,
+            "ci95_low": 0.35625,
+            "mean": 0.43125
+          },
+          "n": 160,
+          "paired_counts": {
+            "exact_sign_p_two_sided": 3.3881317890172014e-21,
+            "losses": 0,
+            "ties": 91,
+            "wins": 69
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.49375,
+            "ci95_low": 0.34375,
+            "mean": 0.41875
+          },
+          "strict_paired_counts": {
+            "exact_sign_p_two_sided": 1.3552527156068805e-20,
+            "losses": 0,
+            "ties": 93,
+            "wins": 67
+          }
+        },
+        "full_hidden_log": {
+          "baseline": "full_hidden_log",
+          "delta_bootstrap95": {
+            "ci95_high": 0.28125,
+            "ci95_low": 0.15,
+            "mean": 0.2125
+          },
+          "n": 160,
+          "paired_counts": {
+            "exact_sign_p_two_sided": 1.076841726899147e-09,
+            "losses": 1,
+            "ties": 124,
+            "wins": 35
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.275,
+            "ci95_low": 0.14375,
+            "mean": 0.20625
+          },
+          "strict_paired_counts": {
+            "exact_sign_p_two_sided": 2.0954757928848267e-09,
+            "losses": 1,
+            "ties": 125,
+            "wins": 34
+          }
+        },
+        "matched_byte_text_2": {
+          "baseline": "matched_byte_text_2",
+          "delta_bootstrap95": {
+            "ci95_high": 0.5,
+            "ci95_low": 0.35,
+            "mean": 0.425
+          },
+          "n": 160,
+          "paired_counts": {
+            "exact_sign_p_two_sided": 6.776263578034403e-21,
+            "losses": 0,
+            "ties": 92,
+            "wins": 68
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.4875,
+            "ci95_low": 0.3375,
+            "mean": 0.4125
+          },
+          "strict_paired_counts": {
+            "exact_sign_p_two_sided": 2.710505431213761e-20,
+            "losses": 0,
+            "ties": 94,
+            "wins": 66
+          }
+        },
+        "query_aware_diag_span": {
+          "baseline": "query_aware_diag_span",
+          "delta_bootstrap95": {
+            "ci95_high": 0.03125,
+            "ci95_low": -0.06875,
+            "mean": -0.01875
+          },
+          "n": 160,
+          "paired_counts": {
+            "exact_sign_p_two_sided": 0.629058837890625,
+            "losses": 10,
+            "ties": 143,
+            "wins": 7
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.01875,
+            "ci95_low": -0.08125,
+            "mean": -0.03125
+          },
+          "strict_paired_counts": {
+            "exact_sign_p_two_sided": 0.332305908203125,
+            "losses": 11,
+            "ties": 143,
+            "wins": 6
+          }
+        },
+        "random_same_byte_packet": {
+          "baseline": "random_same_byte_packet",
+          "delta_bootstrap95": {
+            "ci95_high": 0.74375,
+            "ci95_low": 0.6,
+            "mean": 0.675
+          },
+          "n": 160,
+          "paired_counts": {
+            "exact_sign_p_two_sided": 6.162975822039155e-33,
+            "losses": 0,
+            "ties": 52,
+            "wins": 108
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.7375,
+            "ci95_low": 0.5875,
+            "mean": 0.6625
+          },
+          "strict_paired_counts": {
+            "exact_sign_p_two_sided": 2.465190328815662e-32,
+            "losses": 0,
+            "ties": 54,
+            "wins": 106
+          }
+        },
+        "structured_free_text_diag": {
+          "baseline": "structured_free_text_diag",
+          "delta_bootstrap95": {
+            "ci95_high": 0.00625,
+            "ci95_low": -0.08125,
+            "mean": -0.0375
+          },
+          "n": 160,
+          "paired_counts": {
+            "exact_sign_p_two_sided": 0.1795654296875,
+            "losses": 10,
+            "ties": 146,
+            "wins": 4
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": -0.00625,
+            "ci95_low": -0.09375,
+            "mean": -0.05
+          },
+          "strict_paired_counts": {
+            "exact_sign_p_two_sided": 0.057373046875,
+            "losses": 11,
+            "ties": 146,
+            "wins": 3
+          }
+        },
+        "structured_json_diag": {
+          "baseline": "structured_json_diag",
+          "delta_bootstrap95": {
+            "ci95_high": 0.15625,
+            "ci95_low": 0.04375,
+            "mean": 0.1
+          },
+          "n": 160,
+          "paired_counts": {
+            "exact_sign_p_two_sided": 0.0008554458618164062,
+            "losses": 3,
+            "ties": 138,
+            "wins": 19
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.1375,
+            "ci95_low": 0.0375,
+            "mean": 0.0875
+          },
+          "strict_paired_counts": {
+            "exact_sign_p_two_sided": 0.0025768280029296875,
+            "losses": 3,
+            "ties": 140,
+            "wins": 17
+          }
+        },
+        "target_only": {
+          "baseline": "target_only",
+          "delta_bootstrap95": {
+            "ci95_high": 0.5,
+            "ci95_low": 0.35,
+            "mean": 0.425
+          },
+          "n": 160,
+          "paired_counts": {
+            "exact_sign_p_two_sided": 6.776263578034403e-21,
+            "losses": 0,
+            "ties": 92,
+            "wins": 68
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.4875,
+            "ci95_low": 0.3375,
+            "mean": 0.4125
+          },
+          "strict_paired_counts": {
+            "exact_sign_p_two_sided": 2.710505431213761e-20,
+            "losses": 0,
+            "ties": 94,
+            "wins": 66
+          }
+        }
+      },
+      "full_log_e2e_delta_vs_packet_ms": 304.75273000774905,
+      "full_log_payload_bytes": 366.5,
+      "full_log_ttft_delta_vs_packet_ms": 164.27308350102976,
+      "n": 160,
+      "packet_accuracy": 0.675,
+      "packet_payload_bytes": 2.0,
+      "packet_strict_accuracy": 0.6625,
+      "packet_valid_rate": 1.0,
+      "packet_vs_full_log_payload_compression": 183.25,
+      "packet_vs_query_payload_compression": 7.0,
+      "pass_gate": true,
+      "prompt_style": "label_strict",
+      "query_payload_bytes": 14.0,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls",
+      "rows_sha256": "bc19809ded5cba6ad56d7084c21ed6e952094ce995b3eef932a86e054a4aa090",
+      "summary_sha256": "ca065ed000472c3a0efb27966b76a818bbaa6bf91b431667edd82af0dedb49f3",
+      "surface": "core_seed29_qwen3_n160_cpu_label_strict_controls",
+      "target_accuracy": 0.25
+    }
+  ]
+}
