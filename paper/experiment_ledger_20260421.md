@@ -15171,3 +15171,24 @@ The CPU systems frontier was regenerated with `96` rows. This clears the local
 medium endpoint rung; next exact gate is server-side TTFT/throughput when GPU
 serving is available, or a Mac-local learned candidate-embedding receiver smoke
 to reduce the hand-designed-interface objection.
+
+Follow-up `2026-04-29`: implemented and ran the first target-preserving learned
+candidate-embedding receiver smoke. New files:
+`scripts/run_source_private_candidate_embedding_receiver.py` and
+`tests/test_run_source_private_candidate_embedding_receiver.py`. The receiver
+uses a learned source encoder, packet/candidate bit interactions, public
+candidate features, and a calibrated margin gate that preserves the target prior
+unless the packet evidence is strong enough. Command:
+`./venv_arm64/bin/python scripts/run_source_private_candidate_embedding_receiver.py --output-dir results/source_private_candidate_embedding_receiver_20260429/gated_budget4_seed29_30 --train-examples 768 --eval-examples 512 --train-family-set all --eval-family-set all --feature-dim 512 --budgets 4 --train-seed 29 --eval-seed 30 --ridge 1e-2`.
+Outcome: pass. At 4 bytes, matched receiver accuracy is `0.748`, target-only
+`0.250`, best destructive control `0.262`, full diagnostic oracle `0.998`, and
+the calibrated margin threshold is `0.625476`. Controls: zero-source `0.250`,
+shuffled-source `0.250`, answer-masked `0.221`, random same-byte `0.262`,
+target-derived `0.250`, answer-only `0.242`, structured text prefix `0.203`,
+wrong-projection source `0.232`. Artifact hashes: `summary.json`
+`9dad546898a444dba4e34eea3a98b2d52734c7bc74ec477afe1ef83e076ec9ac`,
+`predictions_budget4.jsonl`
+`459ad78075226711b708bf418358193b38584ace952b1b7b04cf95b3e361be29`.
+The CPU systems frontier now has `97` rows. This is a promising learned
+receiver smoke, not a promoted headline claim. Next exact gate: 3-seed repeat
+at 4 bytes and one held-out-family split with the same controls.

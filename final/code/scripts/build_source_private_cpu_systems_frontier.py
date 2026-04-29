@@ -226,6 +226,33 @@ def _endpoint_uncertainty_row(row_id: str, path: pathlib.Path, *, surface: str) 
     )
 
 
+def _candidate_embedding_receiver_row(row_id: str, path: pathlib.Path, *, surface: str) -> dict[str, Any]:
+    payload = _read_json(path)
+    best = max(payload["budget_summaries"], key=lambda row: row["matched_accuracy"] if row["pass_gate"] else -1.0)
+    return _row(
+        row_id=row_id,
+        contribution="learned target-preserving receiver",
+        method=f"{best['budget_bytes']}-byte candidate-embedding receiver",
+        surface=surface,
+        status="pass" if best["pass_gate"] else "fail",
+        accuracy=best["matched_accuracy"],
+        target_accuracy=best["target_only_accuracy"],
+        best_control_accuracy=best["best_destructive_control_accuracy"],
+        mean_payload_bytes=float(best["budget_bytes"]),
+        mean_payload_tokens=None,
+        p50_latency_ms=best["metrics"]["matched_candidate_embedding_receiver"]["p50_latency_ms"],
+        p95_latency_ms=best["metrics"]["matched_candidate_embedding_receiver"]["p95_latency_ms"],
+        valid_rate=1.0,
+        comparator="zero/shuffled/answer-masked/random/target-derived/wrong-projection controls",
+        note=(
+            f"train={payload['train_examples']}; eval={payload['eval_examples']}; "
+            f"margin_threshold={best['margin_threshold']:.3f}; "
+            f"full_diag_oracle={best['full_diag_oracle_accuracy']:.3f}; "
+            f"best_control={best['best_destructive_control_accuracy']:.3f}"
+        ),
+    )
+
+
 def _slot_packet_rows(path: pathlib.Path) -> list[dict[str, Any]]:
     payload = _read_json(path)
     return [
@@ -481,6 +508,13 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
     rows.extend(_wyner_ziv_cross_family_rows(ROOT / "results/source_private_wyner_ziv_cross_family_gate_20260429/wyner_ziv_cross_family_gate.json"))
     rows.extend(_protected_residual_rows(ROOT / "results/source_private_protected_residual_packet_gate_20260429/protected_residual_packet_gate.json"))
     rows.extend(_anchor_relative_sparse_rows(ROOT / "results/anchor_relative_sparse_packet_gate_20260429_smoke/anchor_relative_sparse_packet_gate.json"))
+    rows.append(
+        _candidate_embedding_receiver_row(
+            "candidate_embedding_receiver_gated_budget4_seed29_30",
+            ROOT / "results/source_private_candidate_embedding_receiver_20260429/gated_budget4_seed29_30/summary.json",
+            surface="all-family train768/eval512 seed29->30",
+        )
+    )
     rows.extend(
         _relative_rows(
             ROOT / "results/source_private_relative_canonical_bootstrap_remap7_20260429/summary.json",

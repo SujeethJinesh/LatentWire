@@ -153,3 +153,14 @@ far-left byte/TTFT point against text/log relays. The next technical
 contribution should be a learned candidate-embedding or denoising WZ receiver
 that keeps the same control suite and uses the endpoint `n=160` result as the
 systems anchor.
+
+## First Learned-Receiver Outcome
+
+The learned candidate-embedding receiver now has a positive smoke. At 4 bytes on
+the all-family train/eval `768/512` seed `29 -> 30` surface, it reaches matched
+accuracy `0.748` versus target `0.250` and best destructive control `0.262`.
+The receiver uses a learned source encoder, public candidate features,
+packet/candidate interactions, and a calibrated target-preservation margin
+gate. This supports the next-method direction suggested above, but it is still
+only a smoke; promotion requires seed repeats, held-out-family splits, and
+paired uncertainty.

@@ -14,11 +14,11 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `96` rows after adding learned Wyner-Ziv packet evidence,
+The aggregate now has `97` rows after adding learned Wyner-Ziv packet evidence,
 bidirectional cross-family falsification rows, protected residual codec
 ablation rows, progress-enabled target-decoder receiver rows, and the static
-anchor-relative sparse packet smoke, Mac endpoint-proxy rows, and paired
-endpoint uncertainty. The
+anchor-relative sparse packet smoke, a learned target-preserving receiver smoke,
+Mac endpoint-proxy rows, and paired endpoint uncertainty. The
 strongest systems result
 remains the byte-rate frontier: a `2` byte diagnostic packet reaches oracle
 accuracy on the frozen core and holdout surfaces, while structured
@@ -95,6 +95,13 @@ The learned packet story remains positive in scoped settings:
   `+0.338` for strict-label packet versus target. This clears the local medium
   endpoint rung, with the same caveat that it is still CPU endpoint-proxy
   timing rather than server throughput.
+- A first learned target-preserving receiver smoke passes at 4 bytes on the
+  all-family train/eval `768/512` seed `29 -> 30` surface. The learned
+  candidate-embedding receiver reaches `0.748` versus target `0.250` and best
+  destructive control `0.262`; zero-source and shuffled-source are both
+  `0.250`, and the full diagnostic oracle is `0.998`. This is not yet a
+  promoted method branch because it needs seed repeats and held-out-family
+  splits, but it directly addresses the hand-designed-decoder objection.
 
 ## Failures Kept In The Artifact
 
@@ -139,6 +146,9 @@ This supports three defensible contributions:
    packet rows on current small local models.
 3. A systems byte-rate frontier showing large communication savings over
    structured text and hidden-log relay.
+4. A first learned target-preserving receiver smoke that converts the packet
+   into candidate scores while preserving target priors under destructive
+   controls.
 
 It does not support a full bidirectional cross-family latent-transfer claim.
 Endpoint-proxy TTFT/E2E telemetry is now measured locally on CPU, including one
@@ -151,6 +161,5 @@ throughput superiority until a real vLLM/OpenAI-compatible endpoint run exists.
 
 The highest-priority reviewer-facing gate is now a true server-side
 TTFT/throughput run when NVIDIA GPUs are available. On the Mac, the next
-highest-value technical branch is a learned target-preserving query bottleneck
-or candidate-embedding receiver that preserves the same source-destroying
-controls while reducing the hand-designed-interface objection.
+highest-value technical branch is a 3-seed repeat and held-out-family split for
+the learned target-preserving candidate-embedding receiver.

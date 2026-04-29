@@ -2466,3 +2466,14 @@ remaining ICLR blockers are now (1) server-side TTFT/throughput on a GPU
 endpoint, (2) clearer comparison/framing against C2C/KVComm/activation
 communication and prompt compression, and (3) a learned receiver or
 target-preserving bottleneck that reduces the hand-designed protocol concern.
+
+Follow-up `2026-04-29`: started the learned-receiver branch and got a first
+positive smoke. `scripts/run_source_private_candidate_embedding_receiver.py`
+trains a source encoder plus target-side candidate scorer over public candidate
+features and packet/candidate interactions, with a calibrated target-preserving
+margin gate. On all-family train/eval `768/512`, seed `29 -> 30`, the 4-byte
+receiver reaches matched `0.748`, target `0.250`, best destructive control
+`0.262`, and full diagnostic oracle `0.998`; zero-source and shuffled-source
+both stay at `0.250`. This improves the technical-contribution portfolio, but
+it is still a smoke: next gates are 3-seed repeat, held-out-family split, paired
+uncertainty, and comparison to scalar WZ/endpoint rows.

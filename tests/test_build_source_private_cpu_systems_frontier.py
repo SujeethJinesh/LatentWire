@@ -15,6 +15,7 @@ def test_cpu_systems_frontier_includes_passes_and_failures(tmp_path) -> None:
     assert "consistency posterior negative ablation" in contributions
     assert "Mac endpoint-proxy byte/TTFT frontier" in contributions
     assert "endpoint paired uncertainty" in contributions
+    assert "learned target-preserving receiver" in contributions
     assert "pass" in statuses
     assert "fail" in statuses
     assert (tmp_path / "frontier" / "cpu_systems_frontier.csv").exists()
@@ -33,8 +34,9 @@ def test_cpu_systems_frontier_includes_passes_and_failures(tmp_path) -> None:
     uncertainty = endpoint_rows["endpoint_label_strict_n64_paired_uncertainty"]
     uncertainty_n160 = endpoint_rows["endpoint_core_label_strict_n160_paired_uncertainty"]
     uncertainty_n160_both = endpoint_rows["endpoint_label_strict_n160_paired_uncertainty"]
+    learned_receiver = endpoint_rows["candidate_embedding_receiver_gated_budget4_seed29_30"]
     n64_audit = endpoint_rows["endpoint_proxy_core_n64_audit_payload_gated_nearmiss"]
-    assert payload["headline"]["total_rows"] >= 96
+    assert payload["headline"]["total_rows"] >= 97
     assert strict_core["status"] == "fail"
     assert strict_core["accuracy"] > strict_core["best_control_accuracy"]
     assert strict_core["best_control_accuracy"] == 0.21875
@@ -69,3 +71,6 @@ def test_cpu_systems_frontier_includes_passes_and_failures(tmp_path) -> None:
     assert uncertainty_n160_both["status"] == "pass"
     assert uncertainty_n160_both["ci95_low_vs_target"] >= 0.35
     assert uncertainty_n160_both["ci95_low_vs_comparator"] >= 0.35
+    assert learned_receiver["status"] == "pass"
+    assert learned_receiver["accuracy"] >= learned_receiver["target_accuracy"] + 0.15
+    assert learned_receiver["best_control_accuracy"] <= learned_receiver["target_accuracy"] + 0.05

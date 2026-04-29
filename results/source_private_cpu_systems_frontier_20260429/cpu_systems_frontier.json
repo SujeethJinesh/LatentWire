@@ -6,8 +6,8 @@
     "max_pass_payload_bytes": 8.0,
     "min_model_packet_valid_rate": 0.5375,
     "min_pass_accuracy": 0.373046875,
-    "pass_rows": 58,
-    "total_rows": 96
+    "pass_rows": 59,
+    "total_rows": 97
   },
   "pass_gate": true,
   "pass_rule": "This is an aggregate evidence table; individual rows carry pass/fail status from their source artifacts.",
@@ -893,6 +893,27 @@
       "surface": "holdout_to_core",
       "target_accuracy": 0.25,
       "valid_rate": null
+    },
+    {
+      "accuracy": 0.748046875,
+      "best_control_accuracy": 0.26171875,
+      "ci95_low_vs_comparator": null,
+      "ci95_low_vs_target": null,
+      "comparator": "zero/shuffled/answer-masked/random/target-derived/wrong-projection controls",
+      "contribution": "learned target-preserving receiver",
+      "matched_minus_best_control": 0.486328125,
+      "matched_minus_target": 0.498046875,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": null,
+      "method": "4-byte candidate-embedding receiver",
+      "note": "train=768; eval=512; margin_threshold=0.625; full_diag_oracle=0.998; best_control=0.262",
+      "p50_latency_ms": 7.917937997262925,
+      "p95_latency_ms": 27.352417004294693,
+      "row_id": "candidate_embedding_receiver_gated_budget4_seed29_30",
+      "status": "pass",
+      "surface": "all-family train768/eval512 seed29->30",
+      "target_accuracy": 0.25,
+      "valid_rate": 1.0
     },
     {
       "accuracy": 0.494140625,

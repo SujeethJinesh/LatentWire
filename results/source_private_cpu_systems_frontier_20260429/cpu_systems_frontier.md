@@ -1,7 +1,7 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `96`
-- pass rows: `58`
+- rows: `97`
+- pass rows: `59`
 - fail / near-miss rows: `38`
 - minimum passing accuracy: `0.373`
 - maximum passing payload bytes: `8.0`
@@ -53,6 +53,7 @@
 | anchor-relative sparse packet cross-family falsification | 4-byte AR-SIP | holdout_to_core | `fail` | 0.248 | 0.250 | 0.250 | 4.0 | - | - | controls_ok=True; sparse_minus_target=-0.002; sparse_minus_control=-0.002 |
 | anchor-relative sparse packet cross-family falsification | 6-byte AR-SIP | holdout_to_core | `near-miss` | 0.270 | 0.250 | 0.250 | 6.0 | - | - | controls_ok=True; sparse_minus_target=0.020; sparse_minus_control=0.020 |
 | anchor-relative sparse packet cross-family falsification | 8-byte AR-SIP | holdout_to_core | `pass` | 0.373 | 0.250 | 0.262 | 8.0 | - | - | controls_ok=True; sparse_minus_target=0.123; sparse_minus_control=0.111 |
+| learned target-preserving receiver | 4-byte candidate-embedding receiver | all-family train768/eval512 seed29->30 | `pass` | 0.748 | 0.250 | 0.262 | 4.0 | 1.000 | - | train=768; eval=512; margin_threshold=0.625; full_diag_oracle=0.998; best_control=0.262 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 101 | `near-miss` | 0.494 | 0.250 | 0.295 | 4.0 | - | 0.184 | scalar=0.426; relative_minus_scalar=0.068 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 103 | `near-miss` | 0.520 | 0.250 | 0.256 | 4.0 | - | 0.213 | scalar=0.496; relative_minus_scalar=0.023 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 107 | `near-miss` | 0.506 | 0.250 | 0.355 | 4.0 | - | 0.199 | scalar=0.502; relative_minus_scalar=0.004 |
