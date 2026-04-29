@@ -64,6 +64,24 @@ This seed pair passes the strict scalar source-packet rule.
 
 The larger frozen slice resolves the seed 29/30 shuffled-source excess and passes the scalar source-packet rule.
 
+### Five-Seed 6-Byte Stability Probe
+
+The scalar packet has stable high matched accuracy, but strict controls are not yet stable enough for a final headline claim.
+
+| Seed pair | Eval n | Strict scalar pass | Scalar | Syndrome | Target | Raw sign | Scalar shuffled | Scalar masked |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 29 -> 30 | 512 | true | 0.979 | 0.953 | 0.250 | 0.307 | 0.166 | 0.293 |
+| 31 -> 32 | 256 | true | 0.945 | 0.910 | 0.250 | 0.172 | 0.227 | 0.207 |
+| 33 -> 34 | 512 | false | 0.957 | 0.924 | 0.250 | 0.207 | 0.219 | 0.344 |
+| 35 -> 36 | 512 | true | 0.992 | 0.955 | 0.250 | 0.182 | 0.201 | 0.131 |
+| 37 -> 38 | 512 | false | 0.986 | 0.945 | 0.250 | 0.201 | 0.373 | 0.283 |
+
+Mean scalar accuracy is `0.972` with range `0.945-0.992`. The strict scalar gate passes `3/5` seed pairs. The two failures are not accuracy failures; they are source-destroying-control failures, so the live branch needs control-stabilizing work before promotion.
+
+### Pruned Innovation Variant
+
+I tested a source-innovation variant that subtracts the answer-masked source features before encoding. A no-bias version fixes the answer-masked control on the hard seed `33 -> 34` (`0.215`) but collapses matched innovation accuracy to `0.389`, so it is pruned for now. The useful lesson is that invariant-template suppression must be learned as a contrastive objective, not applied as a naive feature subtraction.
+
 ## Interpretation
 
 What passed:
@@ -73,12 +91,15 @@ What passed:
 - Raw source sign sketch is weak, so the result is not explained by generic same-byte source sketching.
 - Scalar answer-masked and shuffled-source controls stay within the strict band on the 512-example slice.
 - The scalar packet has lower median latency than the bit-syndrome packet in this CPU implementation.
+- Five-seed scalar accuracy is high and stable: mean `0.972`, minimum `0.945`.
 
 What failed:
 
 - The original learned syndrome does not beat the scalar quantized transport baseline, so it should not be claimed as the strongest method.
 - The 256-example seed 29/30 scalar control was a near miss due to shuffled-source accuracy of 0.305.
 - 12-byte scalar is too saturated and has a high shuffled-source control, so 6 bytes is the cleaner claim point.
+- The scalar packet passes strict source-destroying controls on only `3/5` seed pairs.
+- Naive no-bias source-innovation coding is pruned because it stabilizes controls by destroying most of the useful signal.
 
 ## Next Gate
 

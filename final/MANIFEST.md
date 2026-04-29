@@ -49,6 +49,8 @@
 - Compression-native learned packet baseline script, tests, seed-pair and
   `512`-example artifacts, plus memo/reference update promoting the 6-byte
   scalar-quantized learned source projection as the current live method.
+- Extra 5-seed scalar stability artifacts and pruned no-bias source-innovation
+  artifact showing high scalar accuracy but incomplete source-control stability.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

@@ -2146,3 +2146,13 @@ improves on the systems axis because the method now has a natural quantized
 packet story, but it is still not full ICLR-ready until the scalar packet
 survives 5-seed repeats, held-out-family splits, codebook remapping, and
 candidate-side masking. The current live branch is `scalar_quantized_source`.
+
+Follow-up `2026-04-29`: 5-seed scalar stability is accuracy-strong but
+control-incomplete. The 6-byte scalar packet has mean matched accuracy `0.972`
+across five seed pairs and beats the learned sign-syndrome row on every seed
+checked, but strict source-destroying controls pass only `3/5`. This is not
+ready for a headline ICLR claim. The exact blocker is now control stabilization:
+answer-masked and shuffled-source packets must stay near target-only across all
+seeds without sacrificing the scalar packet's accuracy. A naive no-bias
+source-innovation variant was pruned because it reduced matched accuracy to
+`0.389` on the hard seed.

@@ -1,0 +1,117 @@
+{
+  "budget_summaries": [
+    {
+      "best_compression_baseline_accuracy": 0.95703125,
+      "best_no_source_accuracy": 0.25,
+      "budget_bytes": 6,
+      "learned_vs_compression_pass": false,
+      "matched_accuracy": 0.923828125,
+      "matched_minus_best_compression": -0.033203125,
+      "matched_minus_best_no_source": 0.673828125,
+      "metrics": {
+        "matched_learned_syndrome": {
+          "accuracy": 0.923828125,
+          "correct": 473,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 34.957333489728626,
+          "p95_latency_ms": 103.5269579879241
+        },
+        "random_same_byte": {
+          "accuracy": 0.234375,
+          "correct": 120,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 0.44618749961955473,
+          "p95_latency_ms": 20.241916994564235
+        },
+        "raw_source_sign_sketch": {
+          "accuracy": 0.20703125,
+          "correct": 106,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 19.81933350180043,
+          "p95_latency_ms": 56.16404199099634
+        },
+        "scalar_answer_masked_source": {
+          "accuracy": 0.34375,
+          "correct": 176,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 21.253145991067868,
+          "p95_latency_ms": 75.17195900436491
+        },
+        "scalar_quantized_source": {
+          "accuracy": 0.95703125,
+          "correct": 490,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 22.130479497718625,
+          "p95_latency_ms": 67.51762500789482
+        },
+        "scalar_shuffled_source": {
+          "accuracy": 0.21875,
+          "correct": 112,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 22.41158350079786,
+          "p95_latency_ms": 68.23458400322124
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 512,
+          "p50_latency_ms": 0.001624997821636498,
+          "p95_latency_ms": 0.0052910036174580455
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 512,
+          "p50_latency_ms": 0.0022079984773881733,
+          "p95_latency_ms": 0.00508299854118377
+        }
+      },
+      "pass_gate": false,
+      "scalar_controls_ok": false,
+      "scalar_minus_best_no_source": 0.70703125,
+      "scalar_quantized_source_accuracy": 0.95703125,
+      "scalar_source_packet_pass": false,
+      "target_only_accuracy": 0.25
+    }
+  ],
+  "budgets": [
+    6
+  ],
+  "candidate_pool_recall": 1.0,
+  "candidates": 4,
+  "code_projection_sha256": "e2cd205688592b191415820746ad632ccaef1fb735883ebf644362395f202349",
+  "created_utc": "2026-04-29T05:17:18.284687+00:00",
+  "encoder_sha256": "34b83d3ed5bc8324a91c76cea33b803d94c66aab0740f8e9df2b13ec0d89d95d",
+  "eval_examples": 512,
+  "eval_family_set": "all",
+  "eval_seed": 34,
+  "exact_id_parity": true,
+  "feature_dim": 512,
+  "gate": "source_private_tool_trace_compression_baselines",
+  "pass_gate": false,
+  "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05.",
+  "prediction_files": {
+    "6": "predictions_budget6.jsonl"
+  },
+  "ridge": 0.01,
+  "scalar_projection_sha256": "3e0411602e04227626e732aea3093029b855e1ca274632cb3627ed4b0c53c4c6",
+  "train_examples": 768,
+  "train_family_set": "all",
+  "train_seed": 33
+}

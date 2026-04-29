@@ -14721,3 +14721,14 @@ learned syndrome `0.953`, scalar `0.979`, target `0.250`, raw sign sketch
 random-hyperplane syndrome as the headline transport and promotes the systems
 method to a 6-byte scalar-quantized learned source-posterior packet, pending
 5-seed, held-out-family, codebook-remap, and candidate-masking gates.
+
+Follow-up `2026-04-29`: a 5-seed 6-byte scalar stability probe shows strong
+accuracy but incomplete control stability. Scalar matched accuracy across seed
+pairs is `0.979`, `0.945`, `0.957`, `0.992`, and `0.986` (mean `0.972`, min
+`0.945`), always above learned sign-syndrome and far above target-only. Strict
+scalar source-destroying controls pass `3/5` seeds. Failures are seed `33 -> 34`
+answer-masked control `0.344` and seed `37 -> 38` shuffled-source control
+`0.373`. A no-bias source-innovation variant fixes the hard answer-masked
+control (`0.215`) but collapses matched innovation accuracy to `0.389`, so it is
+pruned. The live branch remains scalar quantized source projection, but the
+next gate must be control stabilization, not scale-up.

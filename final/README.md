@@ -265,9 +265,10 @@ The live method is now the 6-byte scalar-quantized learned source projection.
 On the `768/512` frozen tool-trace compression gate it reaches `0.979` accuracy
 versus learned sign syndrome `0.953`, target-only `0.250`, raw source sign
 sketch `0.307`, scalar shuffled source `0.166`, and scalar answer-masked source
-`0.293`. The next blocker is not a local artifact issue; it is the research
-gate for 5-seed repeats, held-out-family splits, codebook remap, and
-candidate-side masking.
+`0.293`. A 5-seed probe gives mean scalar accuracy `0.972`, but strict
+source-destroying controls pass only `3/5` seeds. The next blocker is control
+stabilization, then held-out-family splits, codebook remap, and candidate-side
+masking.
 
 ## Final Status
 
