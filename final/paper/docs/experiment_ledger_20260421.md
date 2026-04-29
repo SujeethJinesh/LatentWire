@@ -14689,3 +14689,19 @@ bytes fail due source-free controls above the tolerance. This is not yet a
 headline claim, but it promotes learned Wyner-Ziv/syndrome packets as the next
 technical contribution candidate. Added `references/482_competitor_threats_and_learned_syndrome_refs.md`
 for competitor and theory positioning.
+
+Update `2026-04-29`: `source_private_tool_trace_learned_syndrome_20260429`
+moves learned syndrome packets onto real tool-trace/candidate-text features.
+The source feature is a hashed private hidden-test log; the target side has
+hashed public candidate metadata; a ridge encoder emits a bit-packed
+random-hyperplane syndrome decoded by Hamming distance. An initial run exposed
+masked-control leakage through `repair_family=...`; after masking
+`REPAIR_DIAG`, hidden input, expected/actual, failure status, test name, and
+repair family, the real-feature gate passes on two seed pairs at a common
+6-byte budget. Seed pair `29 -> 30`, train/eval `512/256`, all families: 6 bytes
+matched `0.945`, target `0.250`, best no-source `0.285`, full diagnostic oracle
+`1.000`; 8 bytes also passes but 1/2/4/12 do not. Seed pair `31 -> 32`: 6 bytes
+matched `0.918`, target `0.250`, best no-source `0.289`, full diagnostic oracle
+`1.000`; 12 bytes also passes. This is now a real-feature learned-method
+candidate, but not yet a headline claim until it beats compression-native
+baselines such as sign sketch, rotation quantization, or PQ/QJL controls.

@@ -128,6 +128,15 @@ Seed29 passes at 1/2/4 bytes: matched `0.820/0.949/0.992` versus target
 some source-free controls rise above the tolerance. Treat this as a synthetic
 learned-method smoke, not yet a headline claim.
 
+The real-feature follow-up in
+`results/source_private_tool_trace_learned_syndrome_20260429/` moves the same
+idea onto hidden-repair tool-trace and candidate-text features. At the common
+6-byte budget, seed pair `29 -> 30` reaches `0.945` matched accuracy versus
+`0.250` target and `0.285` best no-source; seed pair `31 -> 32` reaches `0.918`
+versus `0.250` target and `0.289` best no-source. This is now the strongest
+learned-method candidate, but it still needs compression-native baselines before
+becoming a headline claim.
+
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,
@@ -230,6 +239,7 @@ Run from the repository root with `./venv_arm64/bin/python`.
 ./venv_arm64/bin/python scripts/build_source_private_latest_model_matrix.py --help
 ./venv_arm64/bin/python scripts/build_source_private_systems_summary.py --help
 ./venv_arm64/bin/python scripts/run_source_private_learned_syndrome_smoke.py --help
+./venv_arm64/bin/python scripts/run_source_private_tool_trace_learned_syndrome.py --help
 ```
 
 Focused tests:
@@ -243,7 +253,8 @@ Focused tests:
   tests/test_build_source_private_tool_trace_figures.py \
   tests/test_run_source_private_tool_trace_target_decoder_smoke.py \
   tests/test_build_source_private_systems_summary.py \
-  tests/test_run_source_private_learned_syndrome_smoke.py -q
+  tests/test_run_source_private_learned_syndrome_smoke.py \
+  tests/test_run_source_private_tool_trace_learned_syndrome.py -q
 ```
 
 ## Final Status

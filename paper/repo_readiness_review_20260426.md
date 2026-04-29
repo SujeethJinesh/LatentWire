@@ -2122,3 +2122,15 @@ binary/text controls can rise above the allowed tolerance. Readiness improves
 from "protocol-only" to "has a learned-method candidate," but this is still
 smoke evidence; the next exact gate is a real-feature learned syndrome row on
 tool-trace or cached candidate features under the same controls.
+
+Update `2026-04-29`: the real-feature learned syndrome row now passes on the
+tool-trace/candidate-text surface. After tightening answer-masked controls to
+remove `REPAIR_DIAG`, hidden input, expected/actual, failure status, test name,
+and `repair_family`, the seed pair `29 -> 30` all-family train/eval `512/256`
+row passes at 6 bytes with matched `0.945`, target `0.250`, best no-source
+`0.285`, and full diagnostic oracle `1.000`; seed pair `31 -> 32` repeats at
+6 bytes with matched `0.918`, target `0.250`, best no-source `0.289`, and full
+diagnostic oracle `1.000`. This is the strongest path to a distinct method
+contribution beyond diagnostic packets. The next blocker is compression-native
+baselines at the same 6-byte budget: random sign sketch, rotation+scalar
+quantization, and QJL/PQ-style controls.

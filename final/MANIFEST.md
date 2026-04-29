@@ -44,6 +44,8 @@
   quantization, JEPA, Q-Former, and diffusion-inspired successor branches.
 - Learned syndrome packet smoke script, test, seed29/seed30 artifacts, and
   competitor-threat reference memo for the next method-contribution branch.
+- Real-feature tool-trace learned syndrome script, tests, seed-pair artifacts,
+  and memo showing a common 6-byte pass on two seed pairs.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes
