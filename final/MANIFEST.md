@@ -73,6 +73,9 @@
   showing oracle packet accuracy at 2 bytes while JSON/free-text relays need
   17-21 bytes and full hidden-log relay is 183x-187x larger.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
+- Consolidated CPU systems frontier script, test, memo, and artifact collecting
+  `32` positive, near-miss, and failed rows across rate, scalar, canonical RASP,
+  model-emitted packet, target-decoder, and cross-family evidence.
 
 ## Notes
 

@@ -14842,3 +14842,17 @@ over the nearest structured-text oracle point and `183.2x-186.7x` over full
 hidden-log relay. This strengthens the systems contribution as a far-left
 byte-rate frontier. It is not a TTFT/serving-throughput claim; endpoint timing
 remains a future required systems gate.
+
+Follow-up `2026-04-29`: added
+`results/source_private_cpu_systems_frontier_20260429`, a consolidated CPU
+systems frontier with `32` rows spanning the rate frontier, scalar packets,
+canonical RASP, model-emitted packets, target-decoder rows, cross-family
+falsifications, and pruned consistency-posterior ablations. The aggregate keeps
+both positives and failures: `22` pass rows and `10` fail/near-miss rows.
+Minimum passing accuracy is `0.442`, maximum passing payload is `6` bytes, and
+the minimum passing model-packet valid rate is `0.537`. This strengthens the
+paper package by making the systems and robustness evidence reproducible from a
+single artifact while preserving the honest limitation: cross-family remains
+asymmetric and endpoint TTFT/throughput is still unmeasured. Next reviewer gate:
+larger target-model decoder replication or diagnostic-code remap/paraphrase
+stress testing.

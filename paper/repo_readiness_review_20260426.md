@@ -52,6 +52,19 @@ frontier contribution. Remaining systems gap: this is not TTFT or server
 throughput, so endpoint telemetry is still needed before making serving
 latency claims.
 
+Update `2026-04-29`: the CPU systems frontier aggregate now gives the paper one
+reproducible table with wins, near misses, and failures. It includes `32` rows:
+rate frontier, 5-seed scalar packet stability, remapped codebooks, canonical
+RASP, model-emitted packets on current small local models, target-model decoder
+rows, bidirectional cross-family falsification, and the pruned
+consistency-posterior ablation. This strengthens the systems/robustness
+contribution and reduces cherry-picking risk, but it does not change readiness:
+the paper remains a scoped positive-method manuscript rather than a full
+cross-family ICLR-ready claim. The exact blocker is now sharper: larger
+target-decoder replication and diagnostic-code remap/paraphrase stress testing
+are needed before reviewers will accept the receiver and protocol as general
+rather than hand-coded.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union
