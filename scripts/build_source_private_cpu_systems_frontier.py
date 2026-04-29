@@ -485,6 +485,31 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "results/source_private_tool_trace_target_decoder_progress_gate_20260429/holdout_seed30_qwen3_n16_subset_cpu/summary.json",
             "holdout n16 CPU progress subset",
         ),
+        (
+            "target_decoder_core_n16_all_controls",
+            "results/source_private_tool_trace_target_decoder_progress_gate_20260429/core_seed29_qwen3_n16_all_controls_cpu/summary.json",
+            "core n16 CPU all controls",
+        ),
+        (
+            "target_decoder_holdout_n16_all_controls",
+            "results/source_private_tool_trace_target_decoder_progress_gate_20260429/holdout_seed30_qwen3_n16_all_controls_cpu/summary.json",
+            "holdout n16 CPU all controls",
+        ),
+        (
+            "target_decoder_core_n32_short_decode_fail",
+            "results/source_private_tool_trace_target_decoder_progress_gate_20260429/core_seed29_qwen3_n32_all_controls_cpu/summary.json",
+            "core n32 CPU all controls short decode diagnostic",
+        ),
+        (
+            "target_decoder_core_n32_all_controls",
+            "results/source_private_tool_trace_target_decoder_progress_gate_20260429/core_seed29_qwen3_n32_all_controls_cpu_max24/summary.json",
+            "core n32 CPU all controls",
+        ),
+        (
+            "target_decoder_holdout_n32_all_controls",
+            "results/source_private_tool_trace_target_decoder_progress_gate_20260429/holdout_seed30_qwen3_n32_all_controls_cpu_max24/summary.json",
+            "holdout n32 CPU all controls",
+        ),
     ]
     for row_id, rel_path, surface in target_specs:
         rows.append(_target_decoder_row(row_id, ROOT / rel_path, surface=surface))

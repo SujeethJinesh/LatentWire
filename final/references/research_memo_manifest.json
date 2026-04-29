@@ -915,5 +915,12 @@
     "path": "references/487_protected_residual_packet_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the protected rotated residual packet ablation, positioning it against TurboQuant, QJL, QuIP#, SpinQuant, SmoothQuant, LLM.int8, KIVI, SnapKV, H2O, CacheGen, and CacheBlend."
+  },
+  {
+    "num": 488,
+    "slug": "iclr_strengthening_and_anchor_relative_refs",
+    "path": "references/488_iclr_strengthening_and_anchor_relative_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for ICLR strengthening after the frozen target-decoder all-control gate, including novelty threats, systems baselines, JEPA/VLM/diffusion inspirations, and the anchor-relative sparse innovation packet proposal."
   }
 ]

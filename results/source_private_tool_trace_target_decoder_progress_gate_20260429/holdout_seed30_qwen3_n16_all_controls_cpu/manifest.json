@@ -1,0 +1,163 @@
+{
+  "args": {
+    "benchmark_jsonl": "results/source_private_tool_trace_reviewer_risk_rows_20260429/holdout_seed30/benchmark.jsonl",
+    "conditions": [
+      "target_only",
+      "matched_packet",
+      "shuffled_packet",
+      "random_same_byte",
+      "structured_json_2byte",
+      "structured_free_text_2byte"
+    ],
+    "device": "cpu",
+    "do_sample": false,
+    "dtype": "float32",
+    "enable_thinking": false,
+    "limit": 16,
+    "max_new_tokens": 24,
+    "model": "Qwen/Qwen3-0.6B",
+    "output_dir": "results/source_private_tool_trace_target_decoder_progress_gate_20260429/holdout_seed30_qwen3_n16_all_controls_cpu",
+    "progress_every": 1,
+    "progress_jsonl": ".debug/source_private_target_decoder_progress_20260429/holdout_seed30_qwen3_n16_all_controls_cpu_progress.jsonl",
+    "seed": 30
+  },
+  "artifact_sha256": {
+    "summary.json": "50511974116da16d092ea6094658eeadc4a900dd52b3466a0564e143b1d1c8ff",
+    "summary.md": "a3772528c6ff474b71680d66d5dd2550894f7bde2de31012da26625d59cb55b6",
+    "target_predictions.jsonl": "811cbf87b1131928c585336914322326cc2b91b721b8b897a7c06f4e531bff54"
+  },
+  "artifacts": [
+    "target_predictions.jsonl",
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "benchmark_sha256": "6abc6dbe61ff93eb724499642d42eebe63e1b463ce3974611a8691a1089b973b",
+  "command": "./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py --benchmark-jsonl results/source_private_tool_trace_reviewer_risk_rows_20260429/holdout_seed30/benchmark.jsonl --output-dir results/source_private_tool_trace_target_decoder_progress_gate_20260429/holdout_seed30_qwen3_n16_all_controls_cpu --model Qwen/Qwen3-0.6B --device cpu --dtype float32 --limit 16 --seed 30 --max-new-tokens 24 --no-enable-thinking --conditions target_only matched_packet shuffled_packet random_same_byte structured_json_2byte structured_free_text_2byte --progress-jsonl .debug/source_private_target_decoder_progress_20260429/holdout_seed30_qwen3_n16_all_controls_cpu_progress.jsonl --progress-every 1",
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "run_utc": "2026-04-29T09:57:51.225682+00:00",
+  "script_sha256": "b9401dc7b8de212c599bee5cc326d00e94aa9d2ca2f65b3dcd6bdbf481da47e0",
+  "summary": {
+    "best_control_accuracy": 0.3125,
+    "conditions": [
+      "target_only",
+      "matched_packet",
+      "shuffled_packet",
+      "random_same_byte",
+      "structured_json_2byte",
+      "structured_free_text_2byte"
+    ],
+    "exact_id_count": 16,
+    "exact_id_parity": true,
+    "exact_id_sha256": "50ef91ed25476a81eaa533ec328f9cb4c913e13480fd4f4f0641550217a94478",
+    "matched_accuracy": 0.75,
+    "matched_minus_best_control": 0.4375,
+    "matched_minus_target": 0.5,
+    "metrics": {
+      "matched_packet": {
+        "accuracy": 0.75,
+        "correct": 12,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0001",
+          "sphr_0002",
+          "sphr_0004",
+          "sphr_0005",
+          "sphr_0006",
+          "sphr_0008",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0012",
+          "sphr_0013",
+          "sphr_0014"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 2151.830583505216,
+        "valid_prediction_rate": 1.0
+      },
+      "random_same_byte": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0013"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 2149.2104999997537,
+        "valid_prediction_rate": 1.0
+      },
+      "shuffled_packet": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 2155.3401249984745,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_free_text_2byte": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 2138.259499995911,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_json_2byte": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 2102.3211244973936,
+        "valid_prediction_rate": 1.0
+      },
+      "target_only": {
+        "accuracy": 0.25,
+        "correct": 4,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012"
+        ],
+        "mean_generated_tokens": 13.0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 2100.701270996069,
+        "valid_prediction_rate": 1.0
+      }
+    },
+    "n": 16,
+    "pass_gate": false,
+    "pass_rule": "matched LLM target decoder must beat target-only by >=0.15 while shuffled/random/2-byte structured relay controls stay within +0.05.",
+    "target_only_accuracy": 0.25
+  }
+}

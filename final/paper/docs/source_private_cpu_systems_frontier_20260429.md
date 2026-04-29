@@ -14,9 +14,9 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `58` rows after adding learned Wyner-Ziv packet evidence,
-bidirectional cross-family falsification rows, and protected residual codec
-ablation rows plus progress-enabled target-decoder receiver smoke rows. The
+The aggregate now has `63` rows after adding learned Wyner-Ziv packet evidence,
+bidirectional cross-family falsification rows, protected residual codec
+ablation rows, and progress-enabled target-decoder receiver rows. The
 strongest systems result
 remains the byte-rate frontier: a `2` byte diagnostic packet reaches oracle
 accuracy on the frozen core and holdout surfaces, while structured
@@ -44,11 +44,13 @@ The learned packet story remains positive in scoped settings:
   Granite 3.3 2B strict-prompt rows, with Granite exposing a lower packet-valid
   floor (`0.537`).
 - Qwen3 target-decoder CPU n64 rows are positive (`0.656` core, `0.719`
-  holdout), but this is still too small to close the hand-coded-decoder
-  reviewer objection.
-- Progress-enabled Qwen3 target-decoder subset rows are positive at `n=16` on
-  both core (`0.688`) and holdout (`0.750`) against target/shuffled `0.250`,
-  validating the resumable receiver harness before larger all-control runs.
+  holdout), but those older rows did not have the progress instrumentation.
+- Progress-enabled Qwen3 target-decoder all-control rows now pass at `n=32` on
+  both core (`0.688` vs target/control `0.250`) and holdout (`0.750` vs target
+  `0.250`, best control `0.281`). This is the strongest current answer to the
+  hand-coded-decoder objection: a frozen target model reads the 2-byte packet
+  while shuffled/random/matched-byte structured text controls stay near the
+  target prior.
 
 ## Failures Kept In The Artifact
 
@@ -64,6 +66,12 @@ The aggregate explicitly keeps the main failed rows:
 - Protected residual packets are kept as near-miss/fail rows rather than a
   promoted codec method: they beat source controls but miss the strict latency
   and high-budget scalar-preservation thresholds.
+- A short-decode target-decoder diagnostic is kept as a failed harness row:
+  with `max_new_tokens=8`, Qwen emits only a shared candidate-label prefix and
+  valid prediction rate collapses to `0.000`. The valid all-control receiver
+  rows therefore use the 24-token cap needed to emit complete labels.
+- A direct MPS probe still fails before prediction with the known Apple MPS
+  matmul shape error, so the receiver evidence remains CPU-only on this Mac.
 - The consistency-posterior packet is pruned as a cross-family fix: the larger
   core-to-holdout row reaches only `0.354` and is matched by an order-mismatch
   control (`0.355`).
@@ -76,19 +84,20 @@ This supports three defensible contributions:
 1. A source-private packet benchmark and control protocol that distinguishes
    source evidence from target priors and matched-byte text.
 2. A compact packet method family with strong same-family/remap evidence,
-   principled codec ablations, and model-emitted packet rows on current small
-   local models.
+   principled codec ablations, frozen target-decoder rows, and model-emitted
+   packet rows on current small local models.
 3. A systems byte-rate frontier showing large communication savings over
    structured text and hidden-log relay.
 
 It does not support a full bidirectional cross-family latent-transfer claim.
 Endpoint TTFT/throughput remains unmeasured, so the paper should currently claim
-byte-rate and local decode-cost evidence, not serving-latency superiority.
+byte-rate and local CPU decode-cost evidence, not serving-latency superiority.
 
 ## Next Gate
 
-The highest-priority reviewer-facing gate is a CPU/MPS target-decoder
-replication at `n=256` or larger, followed by a diagnostic-code
-remap/paraphrase stress table. These address the two strongest objections:
-whether the receiver is hand-coded, and whether the method is only a brittle
-coded-label protocol.
+The highest-priority reviewer-facing gate is now either (1) an endpoint
+TTFT/E2E latency frontier for packet versus structured/full-log relay, or (2) a
+new anchor-relative sparse innovation packet that directly targets the failed
+bidirectional cross-family rows. The receiver objection is weakened by the n32
+all-control frozen-model pass, but not fully closed until n160/n256 all-control
+rows are available.

@@ -120,6 +120,19 @@ shuffled-packet controls remain `0.250`, with valid prediction rate `1.000`.
 This weakens the hand-coded-decoder objection but does not close it. The next
 readiness-critical gate is `n=64` or `n=160` with all six receiver controls.
 
+Update `2026-04-29`: the frozen target-decoder receiver now has strict-small
+all-control evidence. Qwen3-0.6B CPU passes at `n=32` on both core and holdout:
+core matched `0.688` versus target/best control `0.250`; holdout matched
+`0.750` versus target `0.250` and best control `0.281`. Exact-ID parity and
+valid prediction rate are `1.000`. This materially weakens the hand-coded
+decoder objection, but does not make the paper fully ICLR-ready: the receiver
+still needs `n=160`/`n=256` replication or endpoint TTFT telemetry, and
+bidirectional cross-family transfer remains failed. Literature synthesis
+confirms the safe novelty claim is source-private extreme-rate evidence
+handoff, not generic latent communication. The top new method branch is now
+anchor-relative sparse innovation packets to target the scalar WZ/canonical
+RASP cross-family failure.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

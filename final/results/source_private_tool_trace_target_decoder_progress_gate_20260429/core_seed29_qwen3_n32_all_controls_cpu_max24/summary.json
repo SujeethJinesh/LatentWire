@@ -1,0 +1,151 @@
+{
+  "best_control_accuracy": 0.25,
+  "conditions": [
+    "target_only",
+    "matched_packet",
+    "shuffled_packet",
+    "random_same_byte",
+    "structured_json_2byte",
+    "structured_free_text_2byte"
+  ],
+  "exact_id_count": 32,
+  "exact_id_parity": true,
+  "exact_id_sha256": "29b8310938a9e3555d4706324390110f83caf8ff29eb3b4c7d1c5f55d93a88b3",
+  "matched_accuracy": 0.6875,
+  "matched_minus_best_control": 0.4375,
+  "matched_minus_target": 0.4375,
+  "metrics": {
+    "matched_packet": {
+      "accuracy": 0.6875,
+      "correct": 22,
+      "correct_ids": [
+        "sphr_0000",
+        "sphr_0001",
+        "sphr_0002",
+        "sphr_0004",
+        "sphr_0005",
+        "sphr_0006",
+        "sphr_0008",
+        "sphr_0009",
+        "sphr_0012",
+        "sphr_0013",
+        "sphr_0014",
+        "sphr_0016",
+        "sphr_0017",
+        "sphr_0020",
+        "sphr_0021",
+        "sphr_0022",
+        "sphr_0024",
+        "sphr_0025",
+        "sphr_0026",
+        "sphr_0028",
+        "sphr_0029",
+        "sphr_0030"
+      ],
+      "mean_generated_tokens": 13.0,
+      "mean_payload_bytes": 2.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2117.0296874988708,
+      "valid_prediction_rate": 1.0
+    },
+    "random_same_byte": {
+      "accuracy": 0.25,
+      "correct": 8,
+      "correct_ids": [
+        "sphr_0000",
+        "sphr_0004",
+        "sphr_0008",
+        "sphr_0012",
+        "sphr_0016",
+        "sphr_0020",
+        "sphr_0024",
+        "sphr_0028"
+      ],
+      "mean_generated_tokens": 13.0,
+      "mean_payload_bytes": 2.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2083.9408750034636,
+      "valid_prediction_rate": 1.0
+    },
+    "shuffled_packet": {
+      "accuracy": 0.25,
+      "correct": 8,
+      "correct_ids": [
+        "sphr_0000",
+        "sphr_0004",
+        "sphr_0008",
+        "sphr_0012",
+        "sphr_0016",
+        "sphr_0020",
+        "sphr_0024",
+        "sphr_0028"
+      ],
+      "mean_generated_tokens": 13.0,
+      "mean_payload_bytes": 2.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2200.5230624999967,
+      "valid_prediction_rate": 1.0
+    },
+    "structured_free_text_2byte": {
+      "accuracy": 0.25,
+      "correct": 8,
+      "correct_ids": [
+        "sphr_0000",
+        "sphr_0004",
+        "sphr_0008",
+        "sphr_0012",
+        "sphr_0016",
+        "sphr_0020",
+        "sphr_0024",
+        "sphr_0028"
+      ],
+      "mean_generated_tokens": 13.0,
+      "mean_payload_bytes": 2.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2090.6575210028677,
+      "valid_prediction_rate": 1.0
+    },
+    "structured_json_2byte": {
+      "accuracy": 0.25,
+      "correct": 8,
+      "correct_ids": [
+        "sphr_0000",
+        "sphr_0004",
+        "sphr_0008",
+        "sphr_0012",
+        "sphr_0016",
+        "sphr_0020",
+        "sphr_0024",
+        "sphr_0028"
+      ],
+      "mean_generated_tokens": 13.0,
+      "mean_payload_bytes": 2.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2187.9798125009984,
+      "valid_prediction_rate": 1.0
+    },
+    "target_only": {
+      "accuracy": 0.25,
+      "correct": 8,
+      "correct_ids": [
+        "sphr_0000",
+        "sphr_0004",
+        "sphr_0008",
+        "sphr_0012",
+        "sphr_0016",
+        "sphr_0020",
+        "sphr_0024",
+        "sphr_0028"
+      ],
+      "mean_generated_tokens": 13.0,
+      "mean_payload_bytes": 0.0,
+      "mean_payload_tokens": 0.0,
+      "p50_latency_ms": 2174.8604379972676,
+      "valid_prediction_rate": 1.0
+    }
+  },
+  "n": 32,
+  "pass_gate": true,
+  "pass_rule": "matched LLM target decoder must beat target-only by >=0.15 while shuffled/random/2-byte structured relay controls stay within +0.05.",
+  "target_only_accuracy": 0.25
+}

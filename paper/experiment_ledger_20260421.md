@@ -14942,3 +14942,18 @@ matched `0.750` versus target/shuffled `0.250`, valid prediction rate `1.000`,
 and p50 matched latency `4059.46 ms`. This strengthens the learned/model
 receiver story as a smoke result, but the next receiver defense must scale to
 `n=64` or `n=160` with all six controls.
+
+Follow-up `2026-04-29`: promoted the frozen target-decoder receiver from
+three-condition smoke to strict-small all-control evidence. Qwen3-0.6B CPU
+passes at `n=32` on both frozen surfaces with all six conditions. Core seed29:
+matched `0.688`, target-only `0.250`, shuffled/random/structured text controls
+all `0.250`, valid matched rate `1.000`, p50 matched latency `2117.03 ms`.
+Holdout seed30: matched `0.750`, target-only `0.250`, best control `0.281`,
+valid matched rate `1.000`, p50 matched latency `2123.86 ms`. A short-decode
+diagnostic at `max_new_tokens=8` fails with valid prediction rate `0.000`
+because labels are truncated to a shared prefix, so valid receiver rows use a
+24-token cap. A direct MPS probe still fails before prediction with the known
+Apple MPS matmul shape error. The CPU systems frontier now has `63` rows.
+Subagent literature synthesis keeps the broad latent-communication novelty
+claim scoped and selects anchor-relative sparse innovation packets as the next
+non-scalar cross-family branch.

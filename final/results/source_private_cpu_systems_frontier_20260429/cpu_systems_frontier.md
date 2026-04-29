@@ -1,8 +1,8 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `58`
-- pass rows: `34`
-- fail / near-miss rows: `24`
+- rows: `63`
+- pass rows: `37`
+- fail / near-miss rows: `26`
 - minimum passing accuracy: `0.418`
 - maximum passing payload bytes: `6.0`
 - minimum passing model-packet valid rate: `0.537`
@@ -69,6 +69,11 @@
 | target model decoder ablation | Qwen3 target decoder | holdout n64 CPU | `pass` | 0.719 | 0.250 | 0.266 | 2.0 | 1.000 | - | n=64; generated_tokens=13.0 |
 | target model decoder ablation | Qwen3 target decoder | core n16 CPU progress subset | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; generated_tokens=13.0 |
 | target model decoder ablation | Qwen3 target decoder | holdout n16 CPU progress subset | `pass` | 0.750 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; generated_tokens=13.0 |
+| target model decoder ablation | Qwen3 target decoder | core n16 CPU all controls | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=16; generated_tokens=13.0 |
+| target model decoder ablation | Qwen3 target decoder | holdout n16 CPU all controls | `fail` | 0.750 | 0.250 | 0.312 | 2.0 | 1.000 | - | n=16; generated_tokens=13.0 |
+| target model decoder ablation | Qwen3 target decoder | core n32 CPU all controls short decode diagnostic | `fail` | 0.000 | 0.000 | 0.000 | 2.0 | 0.000 | - | n=32; generated_tokens=8.0 |
+| target model decoder ablation | Qwen3 target decoder | core n32 CPU all controls | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=32; generated_tokens=13.0 |
+| target model decoder ablation | Qwen3 target decoder | holdout n32 CPU all controls | `pass` | 0.750 | 0.250 | 0.281 | 2.0 | 1.000 | - | n=32; generated_tokens=13.0 |
 
 ## Caveat
 
