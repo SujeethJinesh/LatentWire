@@ -11,8 +11,12 @@ def test_anti_lookup_label_blind_summary_passes_collapse_smoke(tmp_path) -> None
         label_blind_summaries=[
             "results/source_private_anti_lookup_label_blind_20260429/core_seed29_qwen3_n8_label_blind/summary.json",
             "results/source_private_anti_lookup_label_blind_20260429/holdout_seed30_qwen3_n8_label_blind/summary.json",
+            "results/source_private_anti_lookup_label_blind_20260429/core_seed29_qwen3_n32_label_blind/summary.json",
+            "results/source_private_anti_lookup_label_blind_20260429/holdout_seed30_qwen3_n32_label_blind/summary.json",
         ],
         positive_summaries=[
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls/summary.json",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n160_cpu_label_strict_controls/summary.json",
             "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls/summary.json",
             "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n160_cpu_label_strict_controls/summary.json",
         ],
@@ -20,9 +24,11 @@ def test_anti_lookup_label_blind_summary_passes_collapse_smoke(tmp_path) -> None
     )
 
     assert payload["pass_gate"] is True
-    assert payload["headline"]["rows"] == 2
-    assert payload["headline"]["collapse_pass_rows"] == 2
+    assert payload["headline"]["rows"] == 4
+    assert payload["headline"]["collapse_pass_rows"] == 4
     assert payload["headline"]["max_opaque_minus_target"] <= 0.05
+    assert payload["headline"]["max_opaque_ci95_high_vs_target"] <= 0.10
+    assert payload["headline"]["max_opaque_strict_ci95_high_vs_target"] <= 0.10
     assert payload["headline"]["min_diagnostic_table_positive_lift"] >= 0.15
     assert payload["headline"]["all_exact_id_parity"] is True
     assert (tmp_path / "anti_lookup_label_blind_summary.json").exists()
@@ -36,8 +42,12 @@ def test_anti_lookup_label_blind_summary_writes_valid_outputs(tmp_path) -> None:
         label_blind_summaries=[
             "results/source_private_anti_lookup_label_blind_20260429/core_seed29_qwen3_n8_label_blind/summary.json",
             "results/source_private_anti_lookup_label_blind_20260429/holdout_seed30_qwen3_n8_label_blind/summary.json",
+            "results/source_private_anti_lookup_label_blind_20260429/core_seed29_qwen3_n32_label_blind/summary.json",
+            "results/source_private_anti_lookup_label_blind_20260429/holdout_seed30_qwen3_n32_label_blind/summary.json",
         ],
         positive_summaries=[
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls/summary.json",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n160_cpu_label_strict_controls/summary.json",
             "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls/summary.json",
             "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n160_cpu_label_strict_controls/summary.json",
         ],
@@ -48,5 +58,5 @@ def test_anti_lookup_label_blind_summary_writes_valid_outputs(tmp_path) -> None:
         rows = list(csv.DictReader(handle))
 
     assert summary["pass_gate"] is True
-    assert len(rows) == 2
+    assert len(rows) == 4
     assert rows[0]["candidate_view"] == "label_blind"

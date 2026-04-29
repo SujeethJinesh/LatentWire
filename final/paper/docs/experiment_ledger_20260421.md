@@ -15442,3 +15442,23 @@ confirms the current method requires target-side public side information. Next
 exact gate: scale label-blind anti-lookup to `n=160` with paired uncertainty,
 then pursue shared sparse crosscoder packets for a less protocol-shaped learned
 method.
+
+Follow-up `2026-04-29`: scaled the label-blind anti-lookup stress to a
+strict-small `n=32` core + holdout collapse check and hardened the summary with
+paired bootstrap upper-bound diagnostics against `target_only`. Commands:
+`./venv_arm64/bin/python scripts/run_source_private_mac_endpoint_proxy_frontier.py --benchmark-jsonl results/source_private_tool_trace_reviewer_risk_rows_20260429/core_seed29/benchmark.jsonl --output-dir results/source_private_anti_lookup_label_blind_20260429/core_seed29_qwen3_n32_label_blind --model Qwen/Qwen3-0.6B --device cpu --dtype float32 --limit 32 --max-new-tokens 8 --prompt-style label_strict --candidate-view label_blind --conditions target_only matched_packet matched_byte_text_2 random_same_byte_packet deranged_candidate_diag_table query_aware_diag_span structured_json_diag structured_free_text_diag full_hidden_log`;
+same command for `holdout_seed30`, then
+`./venv_arm64/bin/python scripts/build_source_private_anti_lookup_label_blind_summary.py --output-dir results/source_private_anti_lookup_label_blind_20260429`.
+Outcome: pass as a stricter collapse-control artifact. Across `4` rows
+(`n=8` and `n=32`, core and holdout), every opaque payload remains exactly at
+target accuracy `0.250`, exact-ID parity is true, valid/strict-valid coverage
+is `1.000`, max opaque-target delta is `0.000`, and max paired-bootstrap CI95
+high versus target is `0.000` for both regular and strict correctness. The
+positive diagnostic-table comparator remains positive with minimum lift
+`+0.425`. Focused tests:
+`./venv_arm64/bin/python -m pytest tests/test_build_source_private_anti_lookup_label_blind_summary.py tests/test_run_source_private_mac_endpoint_proxy_frontier.py -q`
+passed. Interpretation: this substantially weakens hidden-label/opaque-string
+lookup as an explanation for the positive row, but it also reinforces the
+scoped claim that the current packet needs public side information. Next exact
+gate remains `n=160` label-blind confirmation or a materially different shared
+sparse crosscoder packet with atom knockout.

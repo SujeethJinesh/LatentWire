@@ -99,9 +99,9 @@
   serving non-claims, cross-family negative boundary, and prompt-contract
   sensitivity.
 - Label-blind anti-lookup endpoint harness update, summary script, tests, memo,
-  and `n=8` core/holdout smoke artifacts showing opaque diagnostic payloads
-  collapse to target when public repair-key tables and original labels are
-  hidden.
+  and `n=8`/`n=32` core/holdout stress artifacts showing opaque diagnostic
+  payloads collapse to target when public repair-key tables and original labels
+  are hidden, with paired bootstrap upper bounds recorded for the collapse.
 
 ## Notes
 

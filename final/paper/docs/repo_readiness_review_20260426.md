@@ -2616,3 +2616,20 @@ asymmetric under strict cross-family controls. The next method branch, if any,
 must be materially different: shared sparse dictionary/crosscoder packets with
 feature knockout and bidirectional controls. Otherwise, proceed to paper
 revision around the scoped source-private evidence-packet claim.
+
+Follow-up `2026-04-29`: label-blind anti-lookup stress has been promoted from
+micro smoke to strict-small collapse evidence. The current artifact covers
+core/holdout `n=8` and `n=32`, exact-ID parity holds, valid/strict-valid
+coverage is `1.000`, every opaque packet/text/log payload collapses to target
+accuracy `0.250`, and the paired-bootstrap CI95 upper bound versus target is
+`0.000`. This reduces reviewer risk around hidden-label lookup and parser
+metadata leakage. It does not make the method protocol-free; the positive
+endpoint claim still relies on a public receiver-side side-information table.
+
+Current ICLR readiness: stronger scoped positive-method package, still not
+fully ICLR-secure. The strongest current story is a source-private
+side-information communication benchmark plus an extreme-rate packet and
+systems byte frontier, with explicit negative boundaries. The exact remaining
+blocker is method depth and external validity: either scale the label-blind
+collapse check to `n=160`, or implement the shared sparse crosscoder packet with
+atom knockout to test a less table-shaped learned communication method.
