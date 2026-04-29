@@ -2178,3 +2178,11 @@ raw source sign sketch are smaller, weakest lower bound `+0.072`. Readiness
 improves for a scoped claim, but full ICLR readiness still needs either stronger
 remap margins, a more realistic ambiguous-candidate benchmark, or model-emitted
 packets that show the method is useful beyond this controlled slot codebook.
+
+Follow-up `2026-04-29`: QJL/TurboQuant residual coding was tested as an opt-in
+matched-byte comparator. It is clean but does not improve the remap frontier:
+same-codebook remains saturated (`1.000` scalar and QJL), while remap seeds
+`101/103/107` are lower for QJL by `1.6/2.3/3.5` points. This reduces the
+chance that a simple residual sign sketch is the missing ICLR contribution.
+Keep QJL/TurboQuant as a systems comparator and move the live method search to
+relative-anchor transport or model-emitted packets.

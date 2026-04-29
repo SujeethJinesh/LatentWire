@@ -272,8 +272,10 @@ at 6 bytes with scalar `1.000`, target `0.250`, constrained shuffled source
 `0.000`, answer-masked `0.250`, and label-shuffled ridge no higher than
 `0.258`. Three remapped slot codebooks also pass with scalar `0.463-0.508`
 versus target `0.250`; the weakest paired-bootstrap lower bound versus
-target-only is `+0.156`. The next blocker is stronger remap margins and
-cross-family generalization.
+target-only is `+0.156`. An opt-in QJL/TurboQuant-style residual comparator is
+clean but does not improve remap accuracy: QJL residual trails scalar-only by
+`1.6-3.5` points on remap seeds `101/103/107`. The next blocker is stronger
+remap margins and cross-family generalization.
 
 ## Final Status
 

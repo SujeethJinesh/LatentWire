@@ -14760,3 +14760,15 @@ minimum paired CI95 lower bound versus target-only `+0.156`, and minimum paired
 CI95 lower bound versus raw sign sketch `+0.072`. This supports a scoped
 positive claim: codebook remap remains positive, but remap margins are much
 weaker than the fixed-codebook setting and must be reported as a limitation.
+
+Follow-up `2026-04-29`: an opt-in QJL/TurboQuant-style residual comparator was
+added to the compression baseline runner. It keeps the same 6-byte budget by
+combining a scalar-quantized prefix with sign bits over residual directions
+orthogonalized against the scalar projection. Same-codebook seed `29 -> 30`
+saturates for both scalar and QJL residual (`1.000` each), but the decisive
+remap rows do not improve: remap `101` scalar `0.463` vs QJL `0.447`, remap
+`103` scalar `0.508` vs QJL `0.484`, and remap `107` scalar `0.492` vs QJL
+`0.457`. QJL controls are clean and remain positive versus target-only, so this
+is a useful matched-byte systems comparator, but it is not promoted as the live
+method. The next method branch should target remap invariance directly, likely
+relative-anchor transport or model-emitted packets.

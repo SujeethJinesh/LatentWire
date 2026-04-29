@@ -55,6 +55,8 @@
   clean `5/5` seed pass, plus mixed core/holdout cross-family falsification.
 - Slot-codebook remap artifacts for seeds `101/103/107` and paired bootstrap
   summary showing positive but weaker remap margins.
+- QJL/TurboQuant-style residual comparator artifacts showing clean controls but
+  no improvement over scalar-only on remapped slot codebooks.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

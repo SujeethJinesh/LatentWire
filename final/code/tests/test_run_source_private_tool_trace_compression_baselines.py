@@ -55,6 +55,54 @@ def test_tool_trace_compression_baselines_include_source_destroying_controls(tmp
     assert "raw_source_sign_sketch" in metrics
 
 
+def test_tool_trace_compression_qjl_variant_is_opt_in(tmp_path) -> None:
+    default = run_gate(
+        output_dir=tmp_path / "default",
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=128,
+        budgets=[6],
+        train_seed=5,
+        eval_seed=6,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+    )
+    opt_in = run_gate(
+        output_dir=tmp_path / "qjl",
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=128,
+        budgets=[6],
+        train_seed=5,
+        eval_seed=6,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+        packet_variants=["qjl_residual"],
+    )
+
+    assert default["packet_variants"] == []
+    assert "qjl_residual_source" not in default["budget_summaries"][0]["metrics"]
+    assert opt_in["packet_variants"] == ["qjl_residual"]
+    assert "qjl_residual_source" in opt_in["budget_summaries"][0]["metrics"]
+    assert opt_in["pass_gate"] == opt_in["budget_summaries"][0]["scalar_source_packet_pass"]
+    qjl_rows = [
+        json.loads(line)
+        for line in (tmp_path / "qjl" / "predictions_budget6.jsonl").read_text().splitlines()
+        if json.loads(line)["condition"] == "qjl_residual_source"
+    ]
+    assert qjl_rows
+    assert {row["payload_bytes"] for row in qjl_rows} == {6}
+    assert all(row["metadata"]["scalar_bytes"] + row["metadata"]["sign_bytes"] == 6 for row in qjl_rows)
+
+
 def test_tool_trace_slot_no_intercept_control_gate(tmp_path) -> None:
     payload = run_gate(
         output_dir=tmp_path,

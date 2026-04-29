@@ -172,3 +172,30 @@ Interpretation:
 - Remapped rows are weaker and closer to raw sign sketch; the paper should report this as a limitation and avoid overclaiming broad codebook-invariant communication.
 
 If these pass, the paper contribution becomes a systems-friendly learned source-private posterior packet: a tiny quantized vector message that the target decodes with public candidate side information.
+
+## 2026-04-29 Addendum: QJL/TurboQuant Residual Comparator
+
+I added an opt-in `qjl_residual` comparator inspired by QJL/TurboQuant-style scalar-plus-sign residual coding. The packet keeps the same 6-byte budget: a coarse scalar quantized prefix plus QJL-style sign bits over residual directions orthogonalized against the scalar projection. The historical scalar pass gate is intentionally unchanged; QJL residual rows are reported as comparator rows only.
+
+Artifacts:
+
+- `results/source_private_tool_trace_qjl_residual_20260429_seed29_30/`
+- `results/source_private_tool_trace_qjl_residual_20260429_remap101/`
+- `results/source_private_tool_trace_qjl_residual_20260429_remap103/`
+- `results/source_private_tool_trace_qjl_residual_20260429_remap107/`
+
+Results:
+
+| Surface | Scalar | QJL residual | Target | QJL controls clean | QJL - scalar |
+|---|---:|---:|---:|---:|---:|
+| same-codebook seed29->30 | 1.000 | 1.000 | 0.250 | true | 0.000 |
+| remap 101 | 0.463 | 0.447 | 0.250 | true | -0.016 |
+| remap 103 | 0.508 | 0.484 | 0.250 | true | -0.023 |
+| remap 107 | 0.492 | 0.457 | 0.250 | true | -0.035 |
+
+Interpretation:
+
+- The residual comparator is clean under matched source-destroying controls and remains positive versus target-only.
+- It does not improve the decisive remap frontier; scalar-only is still the stronger 6-byte packet.
+- QJL/TurboQuant should be framed as a principled matched-byte comparator and systems inspiration, not promoted as the current method.
+- The next higher-value branch is remap-invariant relative-anchor transport or a model-emitted packet, not further tuning this residual variant without a new design reason.

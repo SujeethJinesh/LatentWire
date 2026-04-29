@@ -199,6 +199,42 @@ def _scalar_packet(
     return _quantize_scalar(scalar_projection @ predicted, lo, hi)
 
 
+def _orthogonal_residual_projection(sign_projection: np.ndarray, coarse_projection: np.ndarray) -> np.ndarray:
+    if coarse_projection.size == 0:
+        return _normalize_rows(sign_projection).astype(np.float32)
+    q, _ = np.linalg.qr(coarse_projection.astype(np.float64).T)
+    residual = sign_projection.astype(np.float64) - (sign_projection.astype(np.float64) @ q) @ q.T
+    return _normalize_rows(residual).astype(np.float32)
+
+
+def _qjl_layout(budget_bytes: int) -> tuple[int, int]:
+    if budget_bytes < 2:
+        return budget_bytes, 0
+    scalar_bytes = max(1, budget_bytes // 2)
+    return scalar_bytes, budget_bytes - scalar_bytes
+
+
+def _qjl_residual_packet(
+    example: Example,
+    *,
+    encoder: np.ndarray,
+    scalar_projection: np.ndarray,
+    residual_projection: np.ndarray,
+    feature_dim: int,
+    lo: np.ndarray,
+    hi: np.ndarray,
+    budget_bytes: int,
+    mode: str,
+) -> bytes:
+    scalar_bytes, sign_bytes = _qjl_layout(budget_bytes)
+    predicted = _project_source(example, encoder=encoder, feature_dim=feature_dim, mode=mode)
+    coarse = _quantize_scalar(scalar_projection[:scalar_bytes] @ predicted, lo[:scalar_bytes], hi[:scalar_bytes])
+    if sign_bytes == 0:
+        return coarse
+    signs = _packet_from_vector(predicted, residual_projection, sign_bytes)
+    return coarse + signs
+
+
 def _decode_scalar_packet(
     example: Example,
     payload: bytes | None,
@@ -223,6 +259,56 @@ def _decode_scalar_packet(
     else:
         prediction = labels[int(tied[0])]
     return prediction, {"decoder": "scalar_quantized_l2", "min_l2": min_distance, "ties": [int(i) for i in tied.tolist()]}
+
+
+def _decode_qjl_residual_packet(
+    example: Example,
+    payload: bytes | None,
+    *,
+    scalar_projection: np.ndarray,
+    residual_projection: np.ndarray,
+    feature_dim: int,
+    lo: np.ndarray,
+    hi: np.ndarray,
+    budget_bytes: int,
+    candidate_view: str,
+) -> tuple[str, dict[str, Any]]:
+    if not payload:
+        return _prior_prediction(example), {"decoder": "prior"}
+    scalar_bytes, sign_bytes = _qjl_layout(min(budget_bytes, len(payload)))
+    scalar_payload = payload[:scalar_bytes]
+    sign_payload = payload[scalar_bytes : scalar_bytes + sign_bytes]
+    decoded = _dequantize_scalar(scalar_payload, lo[:scalar_bytes], hi[:scalar_bytes])
+    candidates = _candidate_matrix_for_view(example, feature_dim, candidate_view=candidate_view)
+    candidate_values = candidates @ scalar_projection[:scalar_bytes].T
+    scalar_distances = np.sum((candidate_values - decoded[None, :]) ** 2, axis=1)
+    scalar_scale = max(float(np.max(scalar_distances)), 1e-8)
+    scores = scalar_distances / scalar_scale
+    sign_distance = None
+    if sign_bytes:
+        bit_count = sign_bytes * 8
+        packet_bits = np.unpackbits(np.frombuffer(sign_payload, dtype=np.uint8), bitorder="big")[:bit_count].astype(np.uint8)
+        logits = candidates @ residual_projection[:bit_count].T
+        candidate_bits = (logits >= 0).astype(np.uint8)
+        sign_distances = np.sum(candidate_bits != packet_bits[None, :], axis=1).astype(np.float32)
+        scores = scores + sign_distances / max(float(bit_count), 1.0)
+        sign_distance = int(np.min(sign_distances))
+    min_score = float(np.min(scores))
+    tied = np.flatnonzero(np.isclose(scores, min_score, rtol=1e-6, atol=1e-8))
+    labels = [candidate.label for candidate in example.candidates]
+    prior = _prior_prediction(example)
+    if any(labels[int(idx)] == prior for idx in tied):
+        prediction = prior
+    else:
+        prediction = labels[int(tied[0])]
+    return prediction, {
+        "decoder": "qjl_residual",
+        "scalar_bytes": scalar_bytes,
+        "sign_bytes": sign_bytes,
+        "min_score": min_score,
+        "min_sign_hamming": sign_distance,
+        "ties": [int(i) for i in tied.tolist()],
+    }
 
 
 def _raw_source_sign_packet(example: Example, code_projection: np.ndarray, feature_dim: int, budget_bytes: int) -> bytes:
@@ -259,6 +345,7 @@ def _payload_and_decode(
     label_shuffle_encoder: np.ndarray,
     code_projection: np.ndarray,
     scalar_projection: np.ndarray,
+    residual_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     lo: np.ndarray,
@@ -316,6 +403,54 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "scalar_quantized", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
+    if condition == "qjl_residual_source":
+        payload = _qjl_residual_packet(
+            example,
+            encoder=encoder,
+            scalar_projection=scalar_projection,
+            residual_projection=residual_projection,
+            feature_dim=feature_dim,
+            lo=lo,
+            hi=hi,
+            budget_bytes=budget_bytes,
+            mode="matched",
+        )
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=scalar_projection,
+            residual_projection=residual_projection,
+            feature_dim=feature_dim,
+            lo=lo,
+            hi=hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "qjl_residual", "candidate_view": candidate_view}
+    if condition == "qjl_label_shuffled_ridge":
+        payload = _qjl_residual_packet(
+            example,
+            encoder=label_shuffle_encoder,
+            scalar_projection=scalar_projection,
+            residual_projection=residual_projection,
+            feature_dim=feature_dim,
+            lo=lo,
+            hi=hi,
+            budget_bytes=budget_bytes,
+            mode="matched",
+        )
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=scalar_projection,
+            residual_projection=residual_projection,
+            feature_dim=feature_dim,
+            lo=lo,
+            hi=hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "qjl_residual", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
     if condition == "scalar_shuffled_source":
         other = eval_examples[_deterministic_nonself_index(index, len(eval_examples))]
         payload = _scalar_packet(
@@ -358,6 +493,31 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "scalar_quantized", "source": other.example_id, "shuffle": "cross_family_slot", "candidate_view": candidate_view}
+    if condition == "qjl_constrained_shuffled_source":
+        other = eval_examples[_constrained_nonself_index(index, eval_examples)]
+        payload = _qjl_residual_packet(
+            other,
+            encoder=encoder,
+            scalar_projection=scalar_projection,
+            residual_projection=residual_projection,
+            feature_dim=feature_dim,
+            lo=lo,
+            hi=hi,
+            budget_bytes=budget_bytes,
+            mode="matched",
+        )
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=scalar_projection,
+            residual_projection=residual_projection,
+            feature_dim=feature_dim,
+            lo=lo,
+            hi=hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "qjl_residual", "source": other.example_id, "shuffle": "cross_family_slot", "candidate_view": candidate_view}
     if condition == "scalar_answer_masked_source":
         payload = _scalar_packet(
             example,
@@ -378,6 +538,44 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "scalar_quantized", "source": "answer_masked", "candidate_view": candidate_view}
+    if condition == "qjl_answer_masked_source":
+        payload = _qjl_residual_packet(
+            example,
+            encoder=encoder,
+            scalar_projection=scalar_projection,
+            residual_projection=residual_projection,
+            feature_dim=feature_dim,
+            lo=lo,
+            hi=hi,
+            budget_bytes=budget_bytes,
+            mode="answer_masked",
+        )
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=scalar_projection,
+            residual_projection=residual_projection,
+            feature_dim=feature_dim,
+            lo=lo,
+            hi=hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "qjl_residual", "source": "answer_masked", "candidate_view": candidate_view}
+    if condition == "qjl_random_same_byte":
+        payload = rng.randbytes(budget_bytes)
+        prediction, meta = _decode_qjl_residual_packet(
+            example,
+            payload,
+            scalar_projection=scalar_projection,
+            residual_projection=residual_projection,
+            feature_dim=feature_dim,
+            lo=lo,
+            hi=hi,
+            budget_bytes=budget_bytes,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "qjl_residual", "source": "random", "candidate_view": candidate_view}
     if condition == "raw_source_sign_sketch":
         payload = _raw_source_sign_packet(example, code_projection, feature_dim, budget_bytes)
         prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
@@ -399,6 +597,7 @@ def _predict(
     label_shuffle_encoder: np.ndarray,
     code_projection: np.ndarray,
     scalar_projection: np.ndarray,
+    residual_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     lo: np.ndarray,
@@ -416,6 +615,7 @@ def _predict(
         label_shuffle_encoder=label_shuffle_encoder,
         code_projection=code_projection,
         scalar_projection=scalar_projection,
+        residual_projection=residual_projection,
         feature_dim=feature_dim,
         budget_bytes=budget_bytes,
         lo=lo,
@@ -468,6 +668,7 @@ def run_gate(
     fit_intercept: bool = True,
     label_shuffle_seed: int | None = None,
     remap_slot_seed: int | None = None,
+    packet_variants: list[str] | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     train_rows = make_benchmark(examples=train_examples, candidates=candidates, seed=train_seed, family_set=train_family_set)
@@ -493,6 +694,8 @@ def run_gate(
     max_budget = max(budgets)
     code_projection = _normalize_rows(rng_np.normal(size=(max_budget * 8, feature_dim))).astype(np.float32)
     scalar_projection = _normalize_rows(rng_np.normal(size=(max_budget, feature_dim))).astype(np.float32)
+    qjl_sign_projection = _normalize_rows(rng_np.normal(size=(max_budget * 8, feature_dim))).astype(np.float32)
+    residual_projection = _orthogonal_residual_projection(qjl_sign_projection, scalar_projection)
     lo, hi = _fit_scalar_calibration(
         train_rows,
         encoder=encoder,
@@ -501,6 +704,7 @@ def run_gate(
         candidate_view=candidate_view,
     )
     rng = random.Random(train_seed * 4001 + eval_seed)
+    packet_variants = list(packet_variants or [])
     conditions = [
         "target_only",
         "matched_learned_syndrome",
@@ -513,6 +717,16 @@ def run_gate(
         "zero_source",
         "random_same_byte",
     ]
+    if "qjl_residual" in packet_variants:
+        conditions.extend(
+            [
+                "qjl_residual_source",
+                "qjl_label_shuffled_ridge",
+                "qjl_constrained_shuffled_source",
+                "qjl_answer_masked_source",
+                "qjl_random_same_byte",
+            ]
+        )
     budget_summaries: list[dict[str, Any]] = []
     prediction_files: dict[str, str] = {}
     for budget in budgets:
@@ -529,6 +743,7 @@ def run_gate(
                         label_shuffle_encoder=label_shuffle_encoder,
                         code_projection=code_projection,
                         scalar_projection=scalar_projection,
+                        residual_projection=residual_projection,
                         feature_dim=feature_dim,
                         budget_bytes=budget,
                         lo=lo,
@@ -552,12 +767,21 @@ def run_gate(
             and metrics["scalar_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
         )
         scalar = metrics["scalar_quantized_source"]["accuracy"]
+        qjl = metrics["qjl_residual_source"]["accuracy"] if "qjl_residual_source" in metrics else None
         scalar_controls_ok = (
             metrics["scalar_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["scalar_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["scalar_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
         )
+        qjl_controls_ok = (
+            qjl is not None
+            and metrics["qjl_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["qjl_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["qjl_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["qjl_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+        )
         scalar_source_packet_pass = scalar >= no_source + 0.15 and scalar_controls_ok
+        qjl_source_packet_pass = qjl is not None and qjl >= no_source + 0.15 and qjl_controls_ok
         predictions_path = output_dir / f"predictions_budget{budget}.jsonl"
         with predictions_path.open("w", encoding="utf-8") as handle:
             for condition in conditions:
@@ -572,13 +796,18 @@ def run_gate(
                 "scalar_source_packet_pass": scalar_source_packet_pass,
                 "matched_accuracy": matched,
                 "scalar_quantized_source_accuracy": scalar,
+                "qjl_residual_source_accuracy": qjl,
                 "target_only_accuracy": metrics["target_only"]["accuracy"],
                 "best_no_source_accuracy": no_source,
                 "best_compression_baseline_accuracy": compression,
                 "matched_minus_best_no_source": matched - no_source,
                 "matched_minus_best_compression": matched - compression,
                 "scalar_minus_best_no_source": scalar - no_source,
+                "qjl_minus_best_no_source": None if qjl is None else qjl - no_source,
+                "qjl_minus_scalar": None if qjl is None else qjl - scalar,
                 "scalar_controls_ok": scalar_controls_ok,
+                "qjl_controls_ok": qjl_controls_ok,
+                "qjl_source_packet_pass": qjl_source_packet_pass,
                 "metrics": metrics,
             }
         )
@@ -597,6 +826,7 @@ def run_gate(
         "ridge": ridge,
         "candidate_view": candidate_view,
         "fit_intercept": fit_intercept,
+        "packet_variants": packet_variants,
         "label_shuffle_seed": label_shuffle_seed if label_shuffle_seed is not None else train_seed * 5003 + eval_seed,
         "remap_slot_seed": remap_slot_seed,
         "exact_id_parity": len({row.example_id for row in eval_rows}) == len(eval_rows),
@@ -605,9 +835,10 @@ def run_gate(
         "label_shuffle_encoder_sha256": hashlib.sha256(label_shuffle_encoder.tobytes()).hexdigest(),
         "code_projection_sha256": hashlib.sha256(code_projection.tobytes()).hexdigest(),
         "scalar_projection_sha256": hashlib.sha256(scalar_projection.tobytes()).hexdigest(),
+        "qjl_residual_projection_sha256": hashlib.sha256(residual_projection.tobytes()).hexdigest(),
         "budget_summaries": budget_summaries,
         "pass_gate": any(row["scalar_source_packet_pass"] for row in budget_summaries),
-        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05.",
+        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator rows and do not change the historical pass gate.",
         "prediction_files": prediction_files,
     }
     (output_dir / "summary.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -619,15 +850,18 @@ def run_gate(
         f"- candidate view: `{candidate_view}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
-        "| Budget bytes | Learned > compression | Scalar pass | Syndrome | Scalar | Target | Best no-source | Syndrome - scalar |",
-        "|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Syndrome | Scalar | QJL | Target | Best no-source | QJL - scalar |",
+        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in budget_summaries:
+        qjl_acc = "n/a" if row["qjl_residual_source_accuracy"] is None else f"{row['qjl_residual_source_accuracy']:.3f}"
+        qjl_delta = "n/a" if row["qjl_minus_scalar"] is None else f"{row['qjl_minus_scalar']:.3f}"
         lines.append(
             f"| {row['budget_bytes']} | `{row['learned_vs_compression_pass']}` | "
-            f"`{row['scalar_source_packet_pass']}` | {row['matched_accuracy']:.3f} | "
-            f"{row['scalar_quantized_source_accuracy']:.3f} | {row['target_only_accuracy']:.3f} | "
-            f"{row['best_no_source_accuracy']:.3f} | {row['matched_minus_best_compression']:.3f} |"
+            f"`{row['scalar_source_packet_pass']}` | `{row['qjl_source_packet_pass']}` | "
+            f"{row['matched_accuracy']:.3f} | {row['scalar_quantized_source_accuracy']:.3f} | "
+            f"{qjl_acc} | {row['target_only_accuracy']:.3f} | "
+            f"{row['best_no_source_accuracy']:.3f} | {qjl_delta} |"
         )
     lines.append("")
     (output_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
@@ -672,6 +906,7 @@ def main() -> None:
     parser.add_argument("--no-intercept", action="store_true")
     parser.add_argument("--label-shuffle-seed", type=int, default=None)
     parser.add_argument("--remap-slot-seed", type=int, default=None)
+    parser.add_argument("--packet-variants", choices=["qjl_residual"], nargs="*", default=[])
     args = parser.parse_args()
     out = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     payload = run_gate(
@@ -690,6 +925,7 @@ def main() -> None:
         fit_intercept=not args.no_intercept,
         label_shuffle_seed=args.label_shuffle_seed,
         remap_slot_seed=args.remap_slot_seed,
+        packet_variants=args.packet_variants,
     )
     print(json.dumps({"pass_gate": payload["pass_gate"], "output_dir": str(out)}, indent=2, sort_keys=True))
 
