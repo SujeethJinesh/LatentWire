@@ -1,0 +1,451 @@
+{
+  "anchor_count": 64,
+  "budget_summaries": [
+    {
+      "best_destructive_control_accuracy": 0.2578125,
+      "best_no_source_accuracy": 0.2578125,
+      "budget_bytes": 4,
+      "full_diag_oracle_accuracy": 1.0,
+      "margin_calibration": {
+        "best_control_accuracy": 0.25,
+        "control_ok": true,
+        "matched_accuracy": 0.8958333333333334,
+        "target_accuracy": 0.25,
+        "threshold": 0.625
+      },
+      "margin_threshold": 0.625,
+      "matched_accuracy": 0.2578125,
+      "matched_minus_best_destructive_control": 0.0,
+      "matched_minus_target": 0.0078125,
+      "metrics": {
+        "answer_masked_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 4.521687995293178,
+          "p95_latency_ms": 22.404124989407137
+        },
+        "answer_only": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.053354495321400464,
+          "p95_latency_ms": 0.18929201178252697
+        },
+        "full_diag_oracle": {
+          "accuracy": 1.0,
+          "correct": 128,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.09145801595877856,
+          "p95_latency_ms": 0.2872500044759363
+        },
+        "matched_masked_innovation_receiver": {
+          "accuracy": 0.2578125,
+          "correct": 33,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 5.87377097690478,
+          "p95_latency_ms": 21.896292018936947
+        },
+        "public_only_innovation": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 4.163978999713436,
+          "p95_latency_ms": 21.650500013493
+        },
+        "random_same_byte": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.06466700870078057,
+          "p95_latency_ms": 0.21112500689923763
+        },
+        "shuffled_mask_or_atoms": {
+          "accuracy": 0.2578125,
+          "correct": 33,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 4.12364600924775,
+          "p95_latency_ms": 26.39824998914264
+        },
+        "shuffled_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 4.256791988154873,
+          "p95_latency_ms": 16.926833020988852
+        },
+        "structured_text_matched": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.05139548738952726,
+          "p95_latency_ms": 0.1756249985191971
+        },
+        "target_derived_sidecar": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.06150001718197018,
+          "p95_latency_ms": 0.20441599190235138
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 128,
+          "p50_latency_ms": 0.002082990249618888,
+          "p95_latency_ms": 0.005416979547590017
+        },
+        "wrong_projection_source": {
+          "accuracy": 0.2578125,
+          "correct": 33,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 4.624583016266115,
+          "p95_latency_ms": 24.745749979047105
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 128,
+          "p50_latency_ms": 0.002562490408308804,
+          "p95_latency_ms": 0.007000024197623134
+        }
+      },
+      "pass_gate": false,
+      "target_only_accuracy": 0.25
+    },
+    {
+      "best_destructive_control_accuracy": 0.25,
+      "best_no_source_accuracy": 0.25,
+      "budget_bytes": 8,
+      "full_diag_oracle_accuracy": 1.0,
+      "margin_calibration": {
+        "best_control_accuracy": 0.25,
+        "control_ok": true,
+        "matched_accuracy": 0.9375,
+        "target_accuracy": 0.25,
+        "threshold": 0.6875
+      },
+      "margin_threshold": 0.6875,
+      "matched_accuracy": 0.25,
+      "matched_minus_best_destructive_control": 0.0,
+      "matched_minus_target": 0.0,
+      "metrics": {
+        "answer_masked_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 5.714541490306146,
+          "p95_latency_ms": 25.552583014359698
+        },
+        "answer_only": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.05468750896397978,
+          "p95_latency_ms": 0.18050000653602183
+        },
+        "full_diag_oracle": {
+          "accuracy": 1.0,
+          "correct": 128,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.09464599133934826,
+          "p95_latency_ms": 0.5723749927710742
+        },
+        "matched_masked_innovation_receiver": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 7.0472709921887144,
+          "p95_latency_ms": 23.293500009458512
+        },
+        "public_only_innovation": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 6.096041994169354,
+          "p95_latency_ms": 23.650707997148857
+        },
+        "random_same_byte": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.0687495048623532,
+          "p95_latency_ms": 0.25333298253826797
+        },
+        "shuffled_mask_or_atoms": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 6.9196874828776345,
+          "p95_latency_ms": 24.104874988552183
+        },
+        "shuffled_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 6.201479001902044,
+          "p95_latency_ms": 28.97237497381866
+        },
+        "structured_text_matched": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.051979004638269544,
+          "p95_latency_ms": 0.18858301336877048
+        },
+        "target_derived_sidecar": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.06477101123891771,
+          "p95_latency_ms": 0.2094999945256859
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 128,
+          "p50_latency_ms": 0.002062995918095112,
+          "p95_latency_ms": 0.005874986527487636
+        },
+        "wrong_projection_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 5.828915993333794,
+          "p95_latency_ms": 28.974999993806705
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 128,
+          "p50_latency_ms": 0.002895496436394751,
+          "p95_latency_ms": 0.008082977728918195
+        }
+      },
+      "pass_gate": false,
+      "target_only_accuracy": 0.25
+    },
+    {
+      "best_destructive_control_accuracy": 0.25,
+      "best_no_source_accuracy": 0.25,
+      "budget_bytes": 12,
+      "full_diag_oracle_accuracy": 1.0,
+      "margin_calibration": {
+        "best_control_accuracy": 0.25,
+        "control_ok": true,
+        "matched_accuracy": 0.9583333333333334,
+        "target_accuracy": 0.25,
+        "threshold": 0.75
+      },
+      "margin_threshold": 0.75,
+      "matched_accuracy": 0.25,
+      "matched_minus_best_destructive_control": 0.0,
+      "matched_minus_target": 0.0,
+      "metrics": {
+        "answer_masked_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 5.205958499573171,
+          "p95_latency_ms": 21.486375015228987
+        },
+        "answer_only": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.05468749441206455,
+          "p95_latency_ms": 0.18058301066048443
+        },
+        "full_diag_oracle": {
+          "accuracy": 1.0,
+          "correct": 128,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.09391699859406799,
+          "p95_latency_ms": 0.4505830002017319
+        },
+        "matched_masked_innovation_receiver": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 5.13093700283207,
+          "p95_latency_ms": 25.93845798401162
+        },
+        "public_only_innovation": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 5.548811997869052,
+          "p95_latency_ms": 21.400917001301423
+        },
+        "random_same_byte": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.06595849117729813,
+          "p95_latency_ms": 0.23516599321737885
+        },
+        "shuffled_mask_or_atoms": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 5.41031250031665,
+          "p95_latency_ms": 20.659833011450246
+        },
+        "shuffled_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 5.391687504015863,
+          "p95_latency_ms": 24.801167019177228
+        },
+        "structured_text_matched": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.052478993893601,
+          "p95_latency_ms": 0.1779169833753258
+        },
+        "target_derived_sidecar": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 0.06377049430739135,
+          "p95_latency_ms": 0.2924999862443656
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 128,
+          "p50_latency_ms": 0.0020415172912180424,
+          "p95_latency_ms": 0.005917012458667159
+        },
+        "wrong_projection_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 12.0,
+          "mean_payload_tokens": 1.0,
+          "n": 128,
+          "p50_latency_ms": 5.405750503996387,
+          "p95_latency_ms": 33.57450000476092
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 32,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 128,
+          "p50_latency_ms": 0.0025830231606960297,
+          "p95_latency_ms": 0.007459020707756281
+        }
+      },
+      "pass_gate": false,
+      "target_only_accuracy": 0.25
+    }
+  ],
+  "budgets": [
+    4,
+    8,
+    12
+  ],
+  "calibration_examples": 48,
+  "candidate_pool_recall": 1.0,
+  "candidates": 4,
+  "code_projection_sha256": "46c0c460368419481a7f4af1c32fe8cc17eb671b1112286b7b0235707657ade2",
+  "created_utc": "2026-04-29T20:48:45.165530+00:00",
+  "encoder_sha256": "62a88e50aa75d004229cf820f494e1b2ea9ee47df8b7ace63cc2d328d3753062",
+  "eval_examples": 128,
+  "eval_family_set": "holdout",
+  "eval_seed": 30,
+  "exact_id_parity": true,
+  "feature_dim": 256,
+  "gate": "source_private_masked_innovation_receiver",
+  "interpretation": "This gate transmits a sparse source-private innovation: hashed matched-source minus answer-masked-source features are mapped to anchor-relative target innovation from target prior candidate to answer candidate. It tests whether private source evidence survives without raw candidate-coordinate regression.",
+  "mask_repeats": 1,
+  "pass_gate": false,
+  "pass_rule": "Matched masked innovation receiver must beat target by >=0.15, beat every destructive control by >=0.15, keep all destructive controls within target+0.05, and keep full diagnostic oracle >=0.95.",
+  "prediction_files": {
+    "12": "predictions_budget12.jsonl",
+    "4": "predictions_budget4.jsonl",
+    "8": "predictions_budget8.jsonl"
+  },
+  "ridge": 0.01,
+  "source_topk": 48,
+  "target_topk": 24,
+  "train_examples": 256,
+  "train_family_set": "core",
+  "train_seed": 29
+}

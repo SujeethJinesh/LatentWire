@@ -2528,3 +2528,16 @@ systems/rate contribution and makes the comparison against KV compression more
 honest. It does not yet provide production serving throughput, so full ICLR
 readiness remains blocked by real GPU endpoint TTFT/TPOT/throughput and a
 cross-family sparse or masked innovation receiver.
+
+Follow-up `2026-04-29`: implemented the first sparse masked source-private
+innovation receiver. Same-distribution smoke is strong: all-family train/eval
+`128/64` reaches matched `0.766` at `4` bytes and `0.922` at `8` bytes, target
+`0.250`, best destructive controls `0.281`/`0.266`, and oracle `1.000`.
+However, the first strict cross-family direction fails decisively:
+core-to-holdout `256/128` reaches only `0.258` at `4` bytes and `0.250` at
+`8/12` bytes, target `0.250`, while oracle remains `1.000`. This means the
+anchor-relative innovation code can represent the answer, but the learned
+source-private innovation map does not transfer across held-out families.
+Readiness does not improve; the branch is not promoted. Next method gate must
+change the representation or supervision, likely shared-dictionary/crosscoder
+calibration with feature knockout, before rerunning cross-family.

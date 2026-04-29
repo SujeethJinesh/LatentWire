@@ -15291,3 +15291,26 @@ Focused test:
 passed. Interpretation: this is derived byte accounting, not a KV quantization
 kernel or server-throughput benchmark. It strengthens the systems framing and
 keeps the claim scoped to source-private residual communication.
+
+Follow-up `2026-04-29`: implemented and ran the sparse masked source-private
+innovation receiver. New files:
+`scripts/run_source_private_masked_innovation_receiver.py`,
+`tests/test_run_source_private_masked_innovation_receiver.py`,
+`paper/source_private_masked_innovation_receiver_20260429.md`, and
+`references/495_masked_innovation_receiver_refs_20260429.md`.
+Same-distribution smoke command:
+`./venv_arm64/bin/python scripts/run_source_private_masked_innovation_receiver.py --output-dir results/source_private_masked_innovation_receiver_20260429/smoke_all_seed3_4 --train-examples 128 --eval-examples 64 --train-family-set all --eval-family-set all --feature-dim 256 --anchor-count 64 --source-topk 48 --target-topk 24 --budgets 4 8 --train-seed 3 --eval-seed 4 --mask-repeats 1 --calibration-examples 32`.
+Outcome: pass. At `4` bytes, matched `0.766`, target `0.250`, best
+destructive `0.281`, oracle `1.000`; at `8` bytes, matched `0.922`, target
+`0.250`, best destructive `0.266`, oracle `1.000`. Cross-family command:
+`./venv_arm64/bin/python scripts/run_source_private_masked_innovation_receiver.py --output-dir results/source_private_masked_innovation_receiver_20260429/core_to_holdout_seed29_30 --train-examples 256 --eval-examples 128 --train-family-set core --eval-family-set holdout --feature-dim 256 --anchor-count 64 --source-topk 48 --target-topk 24 --budgets 4 8 12 --train-seed 29 --eval-seed 30 --mask-repeats 1 --calibration-examples 48`.
+Outcome: fail. Matched is `0.258` at `4` bytes and `0.250` at `8/12`, target
+`0.250`, and oracle `1.000`. Summary hashes: same-distribution
+`76ce60666c05aa7b7fc010bac7d6d48f46656385d9f2b796c549d6e0b7352a28`;
+core-to-holdout
+`0e142e40635870efb0e821f0a9ba0ad52388f7974e80401fabcef83fe7615fb2`.
+Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_masked_innovation_receiver.py -q`
+passed. Interpretation: the branch is alive only as a same-distribution method
+smoke. Do not promote it as cross-family communication; the next variant needs
+shared-dictionary/crosscoder calibration and feature knockout.
