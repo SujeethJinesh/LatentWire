@@ -3,16 +3,18 @@
 - pass gate: `True`
 - packet oracle bytes max: `2.0`
 - JSON/free-text oracle bytes min: `21.0` / `17.0`
+- query-aware diagnostic-span oracle bytes min: `14.0`
 - packet vs JSON oracle compression min: `10.5x`
+- packet vs query-aware oracle compression min: `7.0x`
 - packet vs full hidden-log compression min: `183.2x`
 - matched-byte text at packet accuracy max: `0.250`
 
 ## Per-Surface Frontier
 
-| Surface | Target | Packet oracle bytes | JSON oracle bytes | Free-text oracle bytes | Full log bytes | Packet vs JSON | Packet vs full log | Matched-byte text at packet |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| core seed29 | 0.250 | 2.0 | 21.0 | 17.0 | 366.4 | 10.5x | 183.2x | 0.250 |
-| holdout seed30 | 0.250 | 2.0 | 21.0 | 17.0 | 373.5 | 10.5x | 186.7x | 0.250 |
+| Surface | Target | Packet oracle bytes | JSON oracle bytes | Free-text oracle bytes | Query-aware oracle bytes | Full log bytes | Packet vs JSON | Packet vs query-aware | Packet vs full log | Matched-byte text at packet |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| core seed29 | 0.250 | 2.0 | 21.0 | 17.0 | 14.0 | 366.4 | 10.5x | 7.0x | 183.2x | 0.250 |
+| holdout seed30 | 0.250 | 2.0 | 21.0 | 17.0 | 14.0 | 373.5 | 10.5x | 7.0x | 186.7x | 0.250 |
 
 ## Rate Rows
 
@@ -88,6 +90,26 @@
 | holdout seed30 | 32 | free-text relay | matched-byte text | 1.000 | 17.0 | 4.0 | 0.003 |
 | holdout seed30 | 32 | full hidden-log relay | oracle text relay | 1.000 | 373.5 | 34.8 | 0.006 |
 | holdout seed30 | 32 | full diagnostic text | oracle diagnostic text | 1.000 | 14.0 | 1.0 | 0.002 |
+| core seed29 | 2 | query-aware diagnostic span | query-aware compressed text | 0.250 | 2.0 | 1.0 | 0.001 |
+| core seed29 | 2 | query-aware masked diagnostic span | query-aware text control | 0.250 | 2.0 | 1.0 | 0.001 |
+| core seed29 | 4 | query-aware diagnostic span | query-aware compressed text | 0.250 | 4.0 | 1.0 | 0.001 |
+| core seed29 | 4 | query-aware masked diagnostic span | query-aware text control | 0.250 | 4.0 | 1.0 | 0.001 |
+| core seed29 | 8 | query-aware diagnostic span | query-aware compressed text | 0.250 | 8.0 | 1.0 | 0.001 |
+| core seed29 | 8 | query-aware masked diagnostic span | query-aware text control | 0.250 | 8.0 | 1.0 | 0.001 |
+| core seed29 | 16 | query-aware diagnostic span | query-aware compressed text | 1.000 | 14.0 | 1.0 | 0.001 |
+| core seed29 | 16 | query-aware masked diagnostic span | query-aware text control | 0.250 | 14.0 | 1.0 | 0.001 |
+| core seed29 | 32 | query-aware diagnostic span | query-aware compressed text | 1.000 | 14.0 | 1.0 | 0.001 |
+| core seed29 | 32 | query-aware masked diagnostic span | query-aware text control | 0.250 | 14.0 | 1.0 | 0.001 |
+| holdout seed30 | 2 | query-aware diagnostic span | query-aware compressed text | 0.250 | 2.0 | 1.0 | 0.001 |
+| holdout seed30 | 2 | query-aware masked diagnostic span | query-aware text control | 0.250 | 2.0 | 1.0 | 0.001 |
+| holdout seed30 | 4 | query-aware diagnostic span | query-aware compressed text | 0.250 | 4.0 | 1.0 | 0.001 |
+| holdout seed30 | 4 | query-aware masked diagnostic span | query-aware text control | 0.250 | 4.0 | 1.0 | 0.001 |
+| holdout seed30 | 8 | query-aware diagnostic span | query-aware compressed text | 0.250 | 8.0 | 1.0 | 0.001 |
+| holdout seed30 | 8 | query-aware masked diagnostic span | query-aware text control | 0.250 | 8.0 | 1.0 | 0.001 |
+| holdout seed30 | 16 | query-aware diagnostic span | query-aware compressed text | 1.000 | 14.0 | 1.0 | 0.001 |
+| holdout seed30 | 16 | query-aware masked diagnostic span | query-aware text control | 0.250 | 14.0 | 1.0 | 0.001 |
+| holdout seed30 | 32 | query-aware diagnostic span | query-aware compressed text | 1.000 | 14.0 | 1.0 | 0.001 |
+| holdout seed30 | 32 | query-aware masked diagnostic span | query-aware text control | 0.250 | 14.0 | 1.0 | 0.001 |
 
 ## Caveat
 

@@ -14876,3 +14876,16 @@ communication. MPS target-decoder probing still fails before prediction with
 the known Apple MPS matmul shape error, so the next cheap reviewer gate is
 query-aware compressed-text controls or learned target-decoder prompt
 paraphrase stress.
+
+Follow-up `2026-04-29`: strengthened the rate-frontier artifact with a
+query-aware compressed-text baseline. The new condition extracts the shortest
+diagnostic-span text form, `REPAIR_DIAG=<code>`, from the hidden log and then
+applies the same byte budgets and deterministic decoder. It is intentionally
+stronger than naive truncation but weaker than the 2-byte packet because it must
+carry the field name as text. On both frozen surfaces, the source-private packet
+reaches oracle at `2` bytes, query-aware diagnostic-span text reaches oracle at
+`14` bytes, JSON/free-text relays need `21`/`17` bytes, matched-byte text at the
+packet point remains at target-only `0.250`, and full hidden-log relay remains
+`183.2x-186.7x` larger. This closes the easiest LLMLingua/LongLLMLingua-style
+baseline objection for the current synthetic diagnostic protocol, while leaving
+learned text compression and endpoint timing as future systems gates.

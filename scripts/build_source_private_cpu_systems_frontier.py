@@ -92,6 +92,7 @@ def _rate_frontier_rows(path: pathlib.Path) -> list[dict[str, Any]]:
                 note=(
                     f"Oracle at {surface['packet_oracle_bytes']:.1f} bytes; JSON/free-text need "
                     f"{surface['json_oracle_bytes']:.1f}/{surface['free_text_oracle_bytes']:.1f} bytes; "
+                    f"query-aware span needs {surface.get('query_aware_oracle_bytes', float('nan')):.1f} bytes; "
                     f"full log is {surface['packet_vs_full_log_compression']:.1f}x larger."
                 ),
             )

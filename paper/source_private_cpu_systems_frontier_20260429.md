@@ -17,9 +17,10 @@ and failed rows so the paper story can claim only what the evidence supports.
 The aggregate has `32` rows: `22` pass rows and `10` fail or near-miss rows.
 The strongest systems result remains the byte-rate frontier: a `2` byte
 diagnostic packet reaches oracle accuracy on the frozen core and holdout
-surfaces, while structured JSON/free-text relays need `21`/`17` bytes and full
-hidden-log relay is `183.2x-186.7x` larger. Matched-byte text at the packet rate
-stays at target-only accuracy.
+surfaces, while structured JSON/free-text relays need `21`/`17` bytes,
+query-aware diagnostic-span compression needs `14` bytes, and full hidden-log
+relay is `183.2x-186.7x` larger. Matched-byte text at the packet rate stays at
+target-only accuracy.
 
 The learned packet story remains positive in scoped settings:
 

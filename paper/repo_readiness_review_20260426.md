@@ -79,6 +79,14 @@ needs either query-aware compressed-text baselines or learned target-decoder
 prompt-paraphrase stress before claiming the protocol objection is mostly
 handled.
 
+Update `2026-04-29`: the rate frontier now includes a query-aware compressed
+text baseline, not only naive JSON/free-text truncation. The query-aware row
+extracts the shortest diagnostic-span text form from the private log and reaches
+oracle at `14` bytes on both frozen surfaces. The packet still reaches oracle at
+`2` bytes, giving a `7.0x` byte advantage over this stronger compressed-text
+baseline and `10.5x` over JSON. This improves the systems contribution, but
+does not create endpoint TTFT evidence or solve the learned-receiver objection.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

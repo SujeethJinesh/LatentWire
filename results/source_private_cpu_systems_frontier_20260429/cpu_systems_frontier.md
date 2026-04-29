@@ -11,8 +11,8 @@
 
 | Contribution | Method | Surface | Status | Accuracy | Target | Best control | Bytes | Valid | CI low vs target | Note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| byte-rate systems frontier | 2-byte diagnostic packet | core seed29 | `pass` | 1.000 | 0.250 | 0.250 | 2.0 | - | - | Oracle at 2.0 bytes; JSON/free-text need 21.0/17.0 bytes; full log is 183.2x larger. |
-| byte-rate systems frontier | 2-byte diagnostic packet | holdout seed30 | `pass` | 1.000 | 0.250 | 0.250 | 2.0 | - | - | Oracle at 2.0 bytes; JSON/free-text need 21.0/17.0 bytes; full log is 186.7x larger. |
+| byte-rate systems frontier | 2-byte diagnostic packet | core seed29 | `pass` | 1.000 | 0.250 | 0.250 | 2.0 | - | - | Oracle at 2.0 bytes; JSON/free-text need 21.0/17.0 bytes; query-aware span needs 14.0 bytes; full log is 183.2x larger. |
+| byte-rate systems frontier | 2-byte diagnostic packet | holdout seed30 | `pass` | 1.000 | 0.250 | 0.250 | 2.0 | - | - | Oracle at 2.0 bytes; JSON/free-text need 21.0/17.0 bytes; query-aware span needs 14.0 bytes; full log is 186.7x larger. |
 | learned scalar packet | 6-byte slot/no-intercept scalar packet | same-codebook | `pass` | 1.000 | 0.250 | 0.250 | 6.0 | - | 0.713 | raw_sign=0.307; scalar-control delta=0.750 |
 | learned scalar packet | 6-byte slot/no-intercept scalar packet | same-codebook | `pass` | 1.000 | 0.250 | 0.258 | 6.0 | - | 0.715 | raw_sign=0.188; scalar-control delta=0.742 |
 | learned scalar packet | 6-byte slot/no-intercept scalar packet | same-codebook | `pass` | 1.000 | 0.250 | 0.250 | 6.0 | - | 0.713 | raw_sign=0.207; scalar-control delta=0.750 |
