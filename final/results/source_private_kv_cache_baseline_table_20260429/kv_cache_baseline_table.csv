@@ -1,0 +1,13 @@
+surface,condition,accuracy,payload_bytes,payload_bytes_vs_packet,prompt_token_delta_vs_packet,prompt_token_delta_vs_target,kv_payload_bytes_fp16_bf16,kv_payload_bytes_int8,kv_payload_bytes_int4,kv_payload_bytes_turboquant_3p5bit_proxy,kv_payload_bytes_turboquant_2p5bit_proxy,kv_payload_bytes_kivi_2bit_proxy,kv_payload_bytes_qjl_1bit_sign_proxy,qjl_1bit_bytes_vs_packet,kivi_2bit_bytes_vs_packet,p50_ttft_ms,p95_ttft_ms,p50_e2e_ms,p95_e2e_ms,mean_prompt_tokens,mean_generated_tokens
+core n160 label_strict,matched_packet,0.675,2,1,0,0,0,0,0,0,0,0,0,0,0,471.636,662.909,2126.43,2342.16,218.306,12.875
+core n160 label_strict,matched_byte_text_2,0.25,2,1,0,0,0,0,0,0,0,0,0,0,0,473.018,644.878,2145.53,2380.56,217.306,13
+core n160 label_strict,query_aware_diag_span,0.69375,14,7,3.30625,3.30625,379187,189594,94796.8,82947.2,59248,47398.4,23699.2,11849.6,23699.2,452.031,651.304,2145.95,2337.09,221.613,13
+core n160 label_strict,structured_free_text_diag,0.7125,17,8.5,3,3,344064,172032,86016,75264,53760,43008,21504,10752,21504,474.183,656.568,2151.35,2381.99,221.306,13
+core n160 label_strict,structured_json_diag,0.575,21,10.5,5,5,573440,286720,143360,125440,89600,71680,35840,17920,35840,478.584,648.183,2134.54,2342.68,223.306,13
+core n160 label_strict,full_hidden_log,0.4625,366.5,183.25,87.4313,87.4313,1.00273e+07,5.01366e+06,2.50683e+06,2.19348e+06,1.56677e+06,1.25341e+06,626707,313354,626707,635.909,838.668,2431.18,2649.85,305.738,12.9375
+holdout n160 label_strict,matched_packet,0.6875,2,1,0,0,0,0,0,0,0,0,0,0,0,547.21,770.755,2110.92,3136.62,218.306,12.875
+holdout n160 label_strict,matched_byte_text_2,0.25,2,1,0,0,0,0,0,0,0,0,0,0,0,545.183,838.802,2107.43,3107.51,217.306,13
+holdout n160 label_strict,query_aware_diag_span,0.6875,14,7,3.30625,3.30625,379187,189594,94796.8,82947.2,59248,47398.4,23699.2,11849.6,23699.2,558.926,849.611,2117.99,3010.77,221.613,13
+holdout n160 label_strict,structured_free_text_diag,0.71875,17,8.5,3,3,344064,172032,86016,75264,53760,43008,21504,10752,21504,557.688,886.537,2127.65,2963.2,221.306,13
+holdout n160 label_strict,structured_json_diag,0.59375,21,10.5,5,5,573440,286720,143360,125440,89600,71680,35840,17920,35840,552.498,724.55,2123.32,3116.42,223.306,13
+holdout n160 label_strict,full_hidden_log,0.53125,373.5,186.75,90.1813,90.1813,1.03427e+07,5.17135e+06,2.58568e+06,2.26247e+06,1.61605e+06,1.29284e+06,646419,323210,646419,730.755,1075.2,2360.64,3426.32,308.488,12.9375

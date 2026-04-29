@@ -1,0 +1,31 @@
+{
+  "artifact_sha256": {
+    "kv_cache_baseline_table.csv": "7fbae8949d2ba166dc6c98e0564100adf9cd07087158710f0a0d1bf0bf384ce6",
+    "kv_cache_baseline_table.json": "c2dd1ec937267cabb15cf47f320b6e94e85e5e8b87245d137d56b8abffa339c5",
+    "kv_cache_baseline_table.md": "e81309b7fefe69314772c73e8ae5d0934d30fe57b8103cf5b28eedc05a6d8457"
+  },
+  "artifacts": [
+    "kv_cache_baseline_table.json",
+    "kv_cache_baseline_table.csv",
+    "kv_cache_baseline_table.md",
+    "manifest.json"
+  ],
+  "headline": {
+    "min_non_packet_kivi_2bit_bytes_vs_packet": 21504.0,
+    "min_non_packet_qjl_1bit_bytes_vs_packet": 10752.0,
+    "packet_payload_bytes": [
+      2.0
+    ],
+    "surfaces": 2
+  },
+  "model_config": {
+    "head_dim": 128,
+    "hidden_size": 1024,
+    "model_type": "qwen3",
+    "num_attention_heads": 16,
+    "num_hidden_layers": 28,
+    "num_key_value_heads": 8,
+    "path": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca/config.json"
+  },
+  "qwen3_config_sha256": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd"
+}

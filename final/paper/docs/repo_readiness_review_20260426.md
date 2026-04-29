@@ -2516,3 +2516,15 @@ only. Literature scout memo `references/494_iclr_strengthening_scout_20260429.md
 sets the next two highest-value additions: KV/cache byte lower-bound accounting
 against TurboQuant/QJL/KIVI/KVQuant/SnapKV/CacheGen, then a masked or sparse
 source-private innovation receiver gate.
+
+Follow-up `2026-04-29`: added the KV/cache byte lower-bound accounting artifact
+requested by the systems scout. On the `n=160` label-strict endpoint rows, the
+2-byte packet is compared to cache-payload estimates for extra prompt tokens
+under fp16/bf16, int8, int4, TurboQuant-style `3.5`/`2.5` bit,
+KIVI/KVQuant-style `2` bit, and QJL-style `1` bit assumptions. The minimum
+non-packet QJL-style cache payload is `10,752.0x` the packet; the minimum
+KIVI-style cache payload is `21,504.0x` the packet. This strengthens the
+systems/rate contribution and makes the comparison against KV compression more
+honest. It does not yet provide production serving throughput, so full ICLR
+readiness remains blocked by real GPU endpoint TTFT/TPOT/throughput and a
+cross-family sparse or masked innovation receiver.

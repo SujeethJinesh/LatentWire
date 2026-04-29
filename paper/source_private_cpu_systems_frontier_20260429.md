@@ -204,3 +204,23 @@ label-strict endpoint paired-uncertainty rows are currently paper-ready by the
 ledger's completeness rule. The learned receiver and most systems rows remain
 supporting contributions or next-method motivation until they gain paired
 uncertainty, stronger cross-family evidence, or true server timing.
+
+## KV/Cache Baseline Accounting Follow-Up
+
+Follow-up `2026-04-29`: added a derived systems baseline artifact at
+`results/source_private_kv_cache_baseline_table_20260429/`. It uses the
+existing `n=160` label-strict endpoint summaries plus the local Qwen3-0.6B
+configuration (`28` layers, `8` KV heads, head dim `128`) to estimate cache
+payload bytes for the extra prompt tokens needed by non-packet relays under
+fp16/bf16, int8, int4, TurboQuant-style `3.5`/`2.5` bit, KIVI-style `2` bit,
+and QJL-style `1` bit assumptions.
+
+Headline: the packet remains `2` bytes. For the non-packet relays in this
+artifact, even a QJL-style `1` bit cache payload for the extra prompt tokens is
+at least `10,752.0x` the packet payload, and a KIVI-style `2` bit cache payload
+is at least `21,504.0x` the packet payload. This is byte accounting only, not a
+kernel implementation or serving-throughput benchmark. Its purpose is to
+prevent overclaiming: TurboQuant/QJL/KIVI/KVQuant/SnapKV/CacheGen are mandatory
+systems baselines, but they compress or move model-visible KV/context state,
+whereas the live LatentWire claim is source-private residual communication with
+decoder side information and source-destroying controls.

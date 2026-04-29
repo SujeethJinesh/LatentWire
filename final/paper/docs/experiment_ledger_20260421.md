@@ -15268,3 +15268,26 @@ passed. The new literature memo
 and method baselines: KV/cache byte lower-bound accounting against
 TurboQuant/QJL/KIVI/KVQuant/SnapKV/CacheGen, followed by a masked or sparse
 source-private innovation receiver gate.
+
+Follow-up `2026-04-29`: implemented and ran the Mac-local KV/cache baseline
+accounting table. Command:
+`./venv_arm64/bin/python scripts/build_source_private_kv_cache_baseline_table.py --output-dir results/source_private_kv_cache_baseline_table_20260429`.
+Outcome: `12` rows over the core and holdout `n=160` label-strict endpoint
+summaries. The local Qwen3-0.6B config gives `114,688` fp16/bf16 KV bytes per
+extra prompt token, `14,336` bytes at KIVI-style `2` bit, and `7,168` bytes at
+QJL-style `1` bit. The 2-byte packet remains the far-left rate point: the
+minimum non-packet QJL-style cache payload is `10,752.0x` the packet, and the
+minimum non-packet KIVI-style cache payload is `21,504.0x` the packet.
+Artifact hashes: `kv_cache_baseline_table.json`
+`c2dd1ec937267cabb15cf47f320b6e94e85e5e8b87245d137d56b8abffa339c5`,
+`kv_cache_baseline_table.csv`
+`7fbae8949d2ba166dc6c98e0564100adf9cd07087158710f0a0d1bf0bf384ce6`,
+`kv_cache_baseline_table.md`
+`e81309b7fefe69314772c73e8ae5d0934d30fe57b8103cf5b28eedc05a6d8457`,
+`manifest.json`
+`34ca6f7d6b48204d99fd4b287d848d218f9d4e6b965ca433e5d86cd3e62f4194`.
+Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_build_source_private_kv_cache_baseline_table.py -q`
+passed. Interpretation: this is derived byte accounting, not a KV quantization
+kernel or server-throughput benchmark. It strengthens the systems framing and
+keeps the claim scoped to source-private residual communication.
