@@ -15484,3 +15484,16 @@ successor after the endpoint protocol. It is still a controlled
 crosscoder-inspired shared dictionary, not a trained neural crosscoder over LLM
 activations. Next exact gate: seed-repeat confirmation at seed `31`, then a
 larger frozen slice or learned shared-dictionary variant.
+
+Follow-up `2026-04-29`: ran the seed-repeat confirmation for the shared sparse
+crosscoder-inspired packet. Command:
+`./venv_arm64/bin/python scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py --output-dir results/source_private_shared_sparse_crosscoder_packet_gate_20260429_seed_repeat --budgets 4 8 --train-examples 256 --eval-examples 128 --seed 31`.
+Outcome: pass. The repeat preserves the exact same headline shape: cross-family
+pass true, core -> holdout `1.000` at `4/8` bytes versus target/control
+`0.250`, holdout -> core `0.875` at the passing `8` byte budget versus
+target/control `0.250`, same-family `0.938`, minimum passing paired CI95 lower
+bound `+0.539`, and top-atom knockout removing `100%` of lift. Interpretation:
+this improves seed/remap stability, but it is still the same controlled family
+generator. Next exact gate: larger frozen-slice shared sparse confirmation
+(`512/512`) or a learned shared-dictionary/crosscoder variant with the same
+controls.

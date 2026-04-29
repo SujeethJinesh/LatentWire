@@ -106,6 +106,8 @@
   strict-small bidirectional cross-family artifacts showing `4/8` byte
   source-private atom packets beat target and all source-destroying controls
   with paired uncertainty and top-atom knockout diagnostics.
+- Seed-repeat shared sparse packet artifacts showing the same bidirectional
+  cross-family pass and atom-knockout behavior under a second seed/remap.
 
 ## Notes
 

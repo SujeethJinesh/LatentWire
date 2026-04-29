@@ -46,6 +46,25 @@ The `4` byte holdout -> core row misses only the oracle threshold. The `8` byte
 row passes, so the bidirectional cross-family gate passes under the stated
 rule.
 
+## Seed Repeat
+
+The seed-repeat confirmation at seed `31` also passes:
+
+- result root:
+  `results/source_private_shared_sparse_crosscoder_packet_gate_20260429_seed_repeat/`
+- cross-family pass: `true`
+- direction pass: core -> holdout `true`, holdout -> core `true`,
+  same-family all `true`
+- max shared sparse accuracy: `1.000`
+- max shared-target delta: `+0.750`
+- minimum passing paired-bootstrap CI95 lower bound vs target: `+0.539`
+- top-atom knockout lift reduction: `1.000`
+- source-destroying controls: remain at target `0.250`
+
+This is a seed/remap stability check on the same controlled family generator,
+not a new benchmark family. It supports stability of the sparse packet result
+but does not replace larger frozen-slice or learned-dictionary confirmation.
+
 ## Controls
 
 Source-destroying controls include zero-source, shuffled-source,
@@ -77,17 +96,18 @@ source-destroying controls.
 
 ## Next Gate
 
-Run a seed-repeat confirmation:
+Run a larger frozen-slice confirmation and then a learned shared-dictionary
+variant:
 
 ```bash
 ./venv_arm64/bin/python scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py \
-  --output-dir results/source_private_shared_sparse_crosscoder_packet_gate_20260429_seed_repeat \
+  --output-dir results/source_private_shared_sparse_crosscoder_packet_gate_20260429_large \
   --budgets 4 8 \
-  --train-examples 256 \
-  --eval-examples 128 \
-  --seed 31
+  --train-examples 512 \
+  --eval-examples 512 \
+  --seed 37
 ```
 
-Promotion beyond strict-small requires passing at least two seeds, preserving
-paired CI lower bounds above zero, and keeping all source-destroying controls
-within target + `0.03`.
+Promotion beyond strict-small requires preserving paired CI lower bounds above
+zero, keeping all source-destroying controls within target + `0.03`, and
+showing the same atom-knockout behavior on the larger slice.

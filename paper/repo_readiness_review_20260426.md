@@ -2649,3 +2649,11 @@ shared-dictionary packet rather than a learned neural crosscoder over LLM
 activations. Next exact blocker: seed-repeat stability for the shared sparse
 packet, followed by either a larger frozen slice or a learned shared-dictionary
 variant with the same controls.
+
+Follow-up `2026-04-29`: shared sparse packet seed-repeat at seed `31` passes.
+The repeat preserves bidirectional cross-family pass, target/control collapse
+at `0.250`, minimum passing paired CI95 lower bound `+0.539`, and `100%`
+top-atom-knockout lift removal. This upgrades the sparse packet from a single
+strict-small positive to a seed/remap-stable strict-small positive. Remaining
+ICLR blockers are now larger-slice confirmation, a learned dictionary/crosscoder
+variant, and production-grade systems telemetry if available.

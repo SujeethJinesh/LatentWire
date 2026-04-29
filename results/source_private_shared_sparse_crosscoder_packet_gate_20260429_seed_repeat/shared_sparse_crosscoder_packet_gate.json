@@ -1,0 +1,128 @@
+{
+  "budgets": [
+    4,
+    8
+  ],
+  "created_utc": "2026-04-29T22:40:06.192275+00:00",
+  "eval_examples": 128,
+  "gate": "source_private_shared_sparse_crosscoder_packet_gate",
+  "headline": {
+    "cross_family_pass": true,
+    "direction_pass": {
+      "core_to_holdout": true,
+      "holdout_to_core": true,
+      "same_family_all": true
+    },
+    "max_shared_minus_target": 0.75,
+    "max_shared_sparse_accuracy": 1.0,
+    "min_passing_ci95_low_vs_target": 0.5390625,
+    "pass_rows": 5
+  },
+  "pass_gate": true,
+  "pass_rule": "Bidirectional cross-family pass requires at least one budget per direction with matched shared sparse packet beating target by >=0.10, best source-destroying control by >=0.05, all controls within target+0.03, paired CI95 lower bound >0, oracle >=0.90, and top-atom knockout removing >=50% of lift.",
+  "rows": [
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 4,
+      "controls_ok": true,
+      "direction": "core_to_holdout",
+      "n": 128,
+      "oracle_candidate_atoms_accuracy": 1.0,
+      "paired_ci95_high_vs_target": 0.828125,
+      "paired_ci95_low_vs_target": 0.671875,
+      "pass_gate": true,
+      "shared_minus_best_control": 0.75,
+      "shared_minus_target": 0.75,
+      "shared_sparse_accuracy": 1.0,
+      "target_accuracy": 0.25,
+      "top_atom_knockout_lift_reduction": 1.0
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 8,
+      "controls_ok": true,
+      "direction": "core_to_holdout",
+      "n": 128,
+      "oracle_candidate_atoms_accuracy": 1.0,
+      "paired_ci95_high_vs_target": 0.8203125,
+      "paired_ci95_low_vs_target": 0.671875,
+      "pass_gate": true,
+      "shared_minus_best_control": 0.75,
+      "shared_minus_target": 0.75,
+      "shared_sparse_accuracy": 1.0,
+      "target_accuracy": 0.25,
+      "top_atom_knockout_lift_reduction": 1.0
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 4,
+      "controls_ok": true,
+      "direction": "holdout_to_core",
+      "n": 128,
+      "oracle_candidate_atoms_accuracy": 0.875,
+      "paired_ci95_high_vs_target": 0.7109375,
+      "paired_ci95_low_vs_target": 0.5390625,
+      "pass_gate": false,
+      "shared_minus_best_control": 0.625,
+      "shared_minus_target": 0.625,
+      "shared_sparse_accuracy": 0.875,
+      "target_accuracy": 0.25,
+      "top_atom_knockout_lift_reduction": 1.0
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 8,
+      "controls_ok": true,
+      "direction": "holdout_to_core",
+      "n": 128,
+      "oracle_candidate_atoms_accuracy": 1.0,
+      "paired_ci95_high_vs_target": 0.7109375,
+      "paired_ci95_low_vs_target": 0.5390625,
+      "pass_gate": true,
+      "shared_minus_best_control": 0.625,
+      "shared_minus_target": 0.625,
+      "shared_sparse_accuracy": 0.875,
+      "target_accuracy": 0.25,
+      "top_atom_knockout_lift_reduction": 1.0
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 4,
+      "controls_ok": true,
+      "direction": "same_family_all",
+      "n": 128,
+      "oracle_candidate_atoms_accuracy": 0.9375,
+      "paired_ci95_high_vs_target": 0.7734375,
+      "paired_ci95_low_vs_target": 0.609375,
+      "pass_gate": true,
+      "shared_minus_best_control": 0.6875,
+      "shared_minus_target": 0.6875,
+      "shared_sparse_accuracy": 0.9375,
+      "target_accuracy": 0.25,
+      "top_atom_knockout_lift_reduction": 1.0
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 8,
+      "controls_ok": true,
+      "direction": "same_family_all",
+      "n": 128,
+      "oracle_candidate_atoms_accuracy": 1.0,
+      "paired_ci95_high_vs_target": 0.765625,
+      "paired_ci95_low_vs_target": 0.609375,
+      "pass_gate": true,
+      "shared_minus_best_control": 0.6875,
+      "shared_minus_target": 0.6875,
+      "shared_sparse_accuracy": 0.9375,
+      "target_accuracy": 0.25,
+      "top_atom_knockout_lift_reduction": 1.0
+    }
+  ],
+  "run_dirs": [
+    "results/source_private_shared_sparse_crosscoder_packet_gate_20260429_seed_repeat/core_to_holdout",
+    "results/source_private_shared_sparse_crosscoder_packet_gate_20260429_seed_repeat/holdout_to_core",
+    "results/source_private_shared_sparse_crosscoder_packet_gate_20260429_seed_repeat/same_family_all"
+  ],
+  "seed": 31,
+  "train_examples": 256
+}
