@@ -52,6 +52,19 @@ frontier contribution. Remaining systems gap: this is not TTFT or server
 throughput, so endpoint telemetry is still needed before making serving
 latency claims.
 
+Update `2026-04-29`: the shared sparse agreed-dictionary packet has now cleared
+a larger native frozen slice while preserving the known ontology boundary. On
+native candidate atoms at `n=512`, the method passes bidirectional
+cross-family: core -> holdout reaches `1.000`, holdout -> core reaches `0.875`
+at the passing `8` byte row, same-family reaches `0.938`, controls remain at
+target, the minimum passing paired CI95 lower bound is `+0.582`, and top-atom
+knockout removes `100%` of lift. The matched `n=512` synonym-stress run fails
+with `0` pass rows and max shared-target delta `+0.125`. Readiness improves for
+an interpretable agreed-dictionary source-private packet claim, but not for a
+robust semantic latent-transfer claim. The exact blocker is now a learned
+synonym-invariant shared dictionary/crosscoder gate or a final decision to
+submit the paper with the narrower agreed-protocol scope.
+
 Update `2026-04-29`: the CPU systems frontier aggregate now gives the paper one
 reproducible table with wins, near misses, and failures. It includes `32` rows:
 rate frontier, 5-seed scalar packet stability, remapped codebooks, canonical

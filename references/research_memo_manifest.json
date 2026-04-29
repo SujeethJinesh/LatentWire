@@ -1006,5 +1006,12 @@
     "path": "references/500_shared_sparse_crosscoder_packet_refs_20260429.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the shared sparse crosscoder packet gate, covering sparse crosscoders, universal SAEs, SPARC, SAEBench, random-SAE interpretability cautions, relative representations, C2C, QJL, and Wyner-Ziv framing."
+  },
+  {
+    "num": 501,
+    "slug": "full_paper_strengthening_refs_20260429",
+    "path": "references/501_full_paper_strengthening_refs_20260429.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for full-paper strengthening after the n512 shared sparse boundary, covering C2C, KVComm/KVCOMM, activation communication, LLMLingua, TurboQuant, QJL, KIVI/KVQuant, flow matching, consistency models, I-JEPA, sparse crosscoders, universal SAEs, and source-coding framing."
   }
 ]

@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "shared_sparse_crosscoder_packet_gate.json": "371c74311066520eeb6d6b4755bd996a895936c4156f877a799f617fce134c0b",
+    "shared_sparse_crosscoder_packet_gate.md": "a314fc85ebdee5fd9a194b4a0aee5b4c9687e7acdf52817c93e96ba893922807"
+  },
+  "artifacts": [
+    "shared_sparse_crosscoder_packet_gate.json",
+    "shared_sparse_crosscoder_packet_gate.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

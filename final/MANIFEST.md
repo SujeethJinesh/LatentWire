@@ -114,6 +114,10 @@
 - Conditional semantic syndrome smoke script, test, memo, and artifacts showing
   a simple learned sign-syndrome residual fails synonym stress because
   source-destroying controls leak.
+- Larger `n=512` shared sparse agreed-dictionary artifacts showing native
+  bidirectional cross-family pass with atom-knockout causality, plus matched
+  `n=512` synonym-stress artifacts showing the current sparse packet remains
+  ontology-bound rather than robust semantic transfer.
 
 ## Notes
 

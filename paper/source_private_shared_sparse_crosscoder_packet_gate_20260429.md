@@ -65,6 +65,28 @@ This is a seed/remap stability check on the same controlled family generator,
 not a new benchmark family. It supports stability of the sparse packet result
 but does not replace larger frozen-slice or learned-dictionary confirmation.
 
+## Larger Frozen Slice
+
+The larger native confirmation at
+`results/source_private_shared_sparse_crosscoder_packet_gate_20260429_n512/`
+also passes:
+
+- train/eval: `512/512`
+- seed: `41`
+- budgets: `4`, `8` bytes
+- cross-family pass: `true`
+- direction pass: core -> holdout `true`, holdout -> core `true`,
+  same-family all `true`
+- pass rows: `5`
+- max shared sparse accuracy: `1.000`
+- max shared-target delta: `+0.750`
+- minimum passing paired-bootstrap CI95 lower bound vs target: `+0.582`
+- top-atom knockout lift reduction: `1.000`
+
+This promotes the shared sparse packet beyond strict-small native evidence. It
+remains an agreed-dictionary protocol because the matched larger synonym-stress
+run fails.
+
 ## Ontology Stress
 
 The synonym/ontology stress at
@@ -86,6 +108,13 @@ ontology and should not be claimed as robust semantic transfer under
 paraphrase. It is still useful as an interpretable, source-private sparse
 communication protocol; the next method branch must learn or induce the
 dictionary if we want ontology-robust latent communication.
+
+The same boundary holds at `n=512` in
+`results/source_private_shared_sparse_crosscoder_packet_gate_20260429_n512_synonym_stress/`:
+cross-family pass is `false`, all direction passes are `false`, pass rows are
+`0`, max shared sparse accuracy is `0.375`, and max shared-target delta is
+`+0.125`. This larger stress confirms that synonym robustness is not a small
+slice artifact.
 
 ## Controls
 
@@ -111,27 +140,27 @@ source-destroying controls and causal atom diagnostics.
 The claim should remain narrow. The current implementation uses a compact
 hand-auditable atom dictionary, not a trained crosscoder over LLM activations.
 That makes it interpretable and reproducible on a Mac, but reviewers may still
-ask whether the result scales beyond the synthetic repair families. The next
-promotion gate is a seed repeat plus a larger frozen slice; the next method
-generalization gate is a learned shared dictionary/crosscoder with the same
+ask whether the result scales beyond the synthetic repair families or agreed
+ontology. The larger frozen slice now passes, so the next method generalization
+gate is a learned synonym-invariant shared dictionary/crosscoder with the same
 source-destroying controls.
 
 ## Next Gate
 
-Run a learned shared-dictionary variant or a larger native-ontology frozen
-slice with an explicitly narrow claim:
+Run a learned synonym-invariant shared-dictionary variant with an explicitly
+narrow pass/fail rule:
 
 ```bash
 ./venv_arm64/bin/python scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py \
-  --output-dir results/source_private_shared_sparse_crosscoder_packet_gate_20260429_large \
+  --output-dir results/source_private_shared_sparse_crosscoder_packet_gate_20260429_n512_synonym_stress \
   --budgets 4 8 \
   --train-examples 512 \
   --eval-examples 512 \
-  --seed 37
+  --seed 41 \
+  --candidate-atom-view synonym_stress
 ```
 
-Promotion beyond strict-small requires preserving paired CI lower bounds above
-zero, keeping all source-destroying controls within target + `0.03`, showing
-the same atom-knockout behavior on the larger slice, and either surviving an
-ontology-breaking stress or explicitly scoping the claim to agreed sparse
-protocol dictionaries.
+This already fails for the hand atom dictionary. A promoted successor must
+learn or induce synonym-invariant atoms, preserve paired CI lower bounds above
+zero, keep all source-destroying controls within target + `0.03`, and show
+causal feature knockout on native and synonym-stress surfaces.

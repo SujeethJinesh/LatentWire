@@ -15530,3 +15530,32 @@ same-family show matched lift, but controls leak: answer-masked source reaches
 semantic residual does not solve the ontology-stress failure. Next learned gate
 must add synonym-consistency training, a learned shared dictionary, or
 target-preserving abstention before it can become a claim.
+
+Follow-up `2026-04-29`: ran the larger frozen-slice shared sparse boundary
+gate requested by the ICLR-strengthening review. Commands:
+`./venv_arm64/bin/python scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py --output-dir results/source_private_shared_sparse_crosscoder_packet_gate_20260429_n512 --budgets 4 8 --train-examples 512 --eval-examples 512 --seed 41`
+and
+`./venv_arm64/bin/python scripts/run_source_private_shared_sparse_crosscoder_packet_gate.py --output-dir results/source_private_shared_sparse_crosscoder_packet_gate_20260429_n512_synonym_stress --budgets 4 8 --train-examples 512 --eval-examples 512 --seed 41 --candidate-atom-view synonym_stress`.
+Outcome: native agreed-ontology pass and synonym-stress failure. Native
+`n=512` cross-family pass is true with all direction passes true, `5` pass
+rows, max shared sparse accuracy `1.000`, max shared-target delta `+0.750`,
+minimum passing paired CI95 lower bound `+0.582`, and top-atom knockout
+removing `100%` of lift in passing rows. The matched `n=512` synonym-stress
+row has cross-family pass false, all direction passes false, `0` pass rows, max
+shared sparse accuracy `0.375`, and max shared-target delta `+0.125`.
+Artifact hashes: native summary JSON
+`371c74311066520eeb6d6b4755bd996a895936c4156f877a799f617fce134c0b`,
+native summary MD
+`a314fc85ebdee5fd9a194b4a0aee5b4c9687e7acdf52817c93e96ba893922807`,
+synonym summary JSON
+`bf6e3d30ce6cef55f5a3800f2564a5ae2feae04b9067ebb4473661a8ba9397fa`,
+and synonym summary MD
+`02438ce3855e090e91cce8551568a48b3924b2bf27a0640cddc3e0ee842e4062`.
+Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_shared_sparse_crosscoder_packet_gate.py -q`
+passed. Interpretation: the agreed-dictionary sparse packet now has larger
+slice evidence and causal knockout, making it a stronger interpretable
+technical contribution, but the synonym failure keeps the claim scoped. Next
+exact method gate: learned synonym-invariant shared dictionary/crosscoder with
+the same controls, atom/dictionary derangement, matched-byte text, and causal
+feature knockout.
