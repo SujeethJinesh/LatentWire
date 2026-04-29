@@ -943,5 +943,12 @@
     "path": "references/491_payload_gated_endpoint_and_future_methods_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for payload-gated endpoint receiver rescoring, label-strict receiver promotion, systems baselines, and future denoising WZ / TurboQJL / relative stitcher method branches."
+  },
+  {
+    "num": 492,
+    "slug": "iclr_comparison_and_next_method_scout_refs",
+    "path": "references/492_iclr_comparison_and_next_method_scout_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source scout memo for ICLR comparison framing after the n160 endpoint rung, covering C2C, activation/KV communication, prompt compression, serving systems, quantized transport, JEPA/diffusion/connectors, and representation-geometry next methods."
   }
 ]

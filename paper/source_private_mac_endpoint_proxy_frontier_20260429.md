@@ -185,6 +185,15 @@ Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
   packet versus target. Query-aware text is `0.694` at `14` bytes; the packet
   is slightly lower accuracy but `7.0x` smaller. Full-log relay is `183.2x`
   larger and adds `+164.3 ms` p50 TTFT versus the packet.
+- holdout `n=160` label-strict also passes under the same frozen all-condition
+  gate. The packet reaches `0.688` accuracy and `0.675` strict-label accuracy
+  versus target-only and matched-byte text at `0.250`, random same-byte at
+  `0.000`, deranged public table at `0.244`, and best source-destroying control
+  at `0.250`. The combined core+holdout `n=160` uncertainty gate passes with
+  minimum packet-vs-target and packet-vs-best-control lower CIs of `+0.350`,
+  and minimum strict-label packet-vs-target lower CI of `+0.338`.
+  Query-aware text ties holdout accuracy at `0.688` but uses `14` bytes instead
+  of `2`; full-log relay is `186.8x` larger and adds `+183.5 ms` p50 TTFT.
 
 ## Interpretation
 
@@ -221,7 +230,9 @@ full candidate label copied exactly; at `n=64`, packet strict-label accuracy is
 
 ## Next Gate
 
-Run the frozen holdout `n=160` `label_strict` endpoint gate and then the paired
-core+holdout `n=160` uncertainty summary. When NVIDIA GPUs are available, run a
-server-side vLLM/GenAI-Perf style TTFT/throughput benchmark against structured
-text, query-aware text, full-log relay, and KV/cache transport baselines.
+The local medium endpoint rung is now cleared. Next, run either a server-side
+vLLM/GenAI-Perf style TTFT/throughput benchmark against structured text,
+query-aware text, full-log relay, and KV/cache transport baselines, or start the
+lowest-cost learned receiver branch: a JEPA/Perceiver-style candidate-embedding
+receiver that replaces the hand-designed decoder while keeping the same
+source-destroying controls.

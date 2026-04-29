@@ -136,3 +136,12 @@ Core `n=160` now passes, including paired uncertainty. Packet accuracy is
 Paired lower CIs are `+0.350` versus target and best control. This partially
 clears the scale-up rung, but holdout `n=160` remains the exact blocker before
 the endpoint receiver branch can be called medium-confirmed.
+
+Holdout `n=160` now passes too. Packet accuracy is `0.688` and strict-label
+accuracy is `0.675` versus target/matched-byte text `0.250`, best
+source-destroying control `0.250`, and valid rate `1.000`. Combined
+core+holdout `n=160` paired uncertainty passes with minimum lower CIs `+0.350`
+versus target and best control. This clears the local medium endpoint rung.
+Future method work should now prioritize a learned candidate-embedding /
+JEPA-style receiver or a denoising WZ packet while keeping this endpoint gate as
+the systems anchor.

@@ -2453,3 +2453,16 @@ higher at `0.694` but costs `14` bytes versus the packet's `2` bytes. This
 raises confidence that the local signal scales beyond `n=64`, but readiness
 still needs holdout `n=160` and a paired core+holdout `n=160` uncertainty
 summary before calling the medium rung cleared.
+
+Follow-up `2026-04-29`: the local medium endpoint rung is now cleared. Holdout
+`n=160` label-strict passes with packet `0.688`, strict-label packet `0.675`,
+target-only `0.250`, matched-byte text `0.250`, random same-byte `0.000`,
+deranged public table `0.244`, best source-destroying control `0.250`, and
+valid rate `1.000`. The combined core+holdout `n=160` paired uncertainty gate
+passes with minimum packet-vs-target and packet-vs-best-control lower CIs of
+`+0.350`, and minimum strict-label packet-vs-target lower CI of `+0.338`.
+Readiness improves to medium local confirmation for the endpoint branch. The
+remaining ICLR blockers are now (1) server-side TTFT/throughput on a GPU
+endpoint, (2) clearer comparison/framing against C2C/KVComm/activation
+communication and prompt compression, and (3) a learned receiver or
+target-preserving bottleneck that reduces the hand-designed protocol concern.

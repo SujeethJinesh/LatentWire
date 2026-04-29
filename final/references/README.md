@@ -522,3 +522,7 @@ final-paper framing:
 - `491_`: Payload-gated endpoint receiver references and future-method memo,
   including label-strict receiver promotion, paired uncertainty, systems
   baselines, and denoising WZ / TurboQJL / relative-stitcher follow-up paths.
+- `492_`: ICLR comparison and next-method scout memo after the local `n=160`
+  endpoint rung, covering C2C, activation/KV communication, prompt compression,
+  serving metrics, quantized transport, JEPA/diffusion/connectors, and
+  representation-geometry follow-up branches.

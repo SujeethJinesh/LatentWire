@@ -230,3 +230,12 @@ versus target/matched-byte text `0.250` and best source-destroying control
 aware text is slightly higher accuracy (`0.694`) but costs `14` bytes; full-log
 relay is `183.2x` larger and adds `+164.3 ms` p50 TTFT. The next experiment is
 holdout `n=160`, then paired core+holdout `n=160` uncertainty.
+
+Medium-rung follow-up: holdout `n=160` also passes. Packet accuracy is `0.688`
+and strict-label accuracy is `0.675` versus target/matched-byte text `0.250`
+and best source-destroying control `0.250`; full-log relay is `186.8x` larger
+and adds `+183.5 ms` p50 TTFT. The combined core+holdout `n=160` paired
+uncertainty gate passes with minimum lower CIs `+0.350` versus target and best
+control, and `+0.338` for strict-label packet versus target. The local endpoint
+medium rung is now cleared; the next systems blocker is a real server-side
+TTFT/throughput run.

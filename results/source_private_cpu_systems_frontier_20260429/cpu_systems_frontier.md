@@ -1,7 +1,7 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `94`
-- pass rows: `56`
+- rows: `96`
+- pass rows: `58`
 - fail / near-miss rows: `38`
 - minimum passing accuracy: `0.373`
 - maximum passing payload bytes: `8.0`
@@ -103,8 +103,10 @@
 | Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n64 CPU label-strict controls | `pass` | 0.703 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=64; prompt_style=label_strict; packet_minus_target=0.453; packet_strict=0.672; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=217.2ms; full_log_e2e_delta=294.2ms; best_verbose_relay=0.719 |
 | Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n64 CPU label-strict controls | `pass` | 0.672 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=64; prompt_style=label_strict; packet_minus_target=0.422; packet_strict=0.656; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=192.7ms; full_log_e2e_delta=279.0ms; best_verbose_relay=0.719 |
 | Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | core seed29 n160 CPU label-strict controls | `pass` | 0.675 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=160; prompt_style=label_strict; packet_minus_target=0.425; packet_strict=0.662; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=183.2x; full_log_ttft_delta=164.3ms; full_log_e2e_delta=304.8ms; best_verbose_relay=0.713 |
+| Mac endpoint-proxy byte/TTFT frontier | Qwen3-0.6B packet vs text/log relay | holdout seed30 n160 CPU label-strict controls | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | - | n=160; prompt_style=label_strict; packet_minus_target=0.438; packet_strict=0.675; best_source_control=0.250; query_payload_compression=7.0x; full_log_payload_compression=186.8x; full_log_ttft_delta=183.5ms; full_log_e2e_delta=249.7ms; best_verbose_relay=0.719 |
 | endpoint paired uncertainty | label-strict endpoint paired bootstrap | core+holdout n64 label-strict | `pass` | 0.688 | 0.250 | 0.250 | 2.0 | 1.000 | 0.297 | bootstrap=5000; min_strict_vs_target_ci95_low=0.281; full_log_ttft_delta=192.7-217.2ms; query_text_delta_ci_range=[-0.109,0.078] and is a rate-quality comparator at 14 bytes vs 2-byte packet |
 | endpoint paired uncertainty | label-strict endpoint paired bootstrap | core n160 label-strict | `pass` | 0.675 | 0.250 | 0.250 | 2.0 | 1.000 | 0.350 | bootstrap=5000; min_strict_vs_target_ci95_low=0.338; full_log_ttft_delta=164.3-164.3ms; query_text_delta_ci_range=[-0.069,0.031] and is a rate-quality comparator at 14 bytes vs 2-byte packet |
+| endpoint paired uncertainty | label-strict endpoint paired bootstrap | core+holdout n160 label-strict | `pass` | 0.681 | 0.250 | 0.250 | 2.0 | 1.000 | 0.350 | bootstrap=5000; min_strict_vs_target_ci95_low=0.338; full_log_ttft_delta=164.3-183.5ms; query_text_delta_ci_range=[-0.069,0.044] and is a rate-quality comparator at 14 bytes vs 2-byte packet |
 
 ## Caveat
 

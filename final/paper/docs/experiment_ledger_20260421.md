@@ -15150,3 +15150,24 @@ lower CI is `+0.338` (`summary.json`
 The CPU systems frontier was regenerated with `94` rows. Next exact gate:
 holdout seed30 `n=160` label-strict all-condition CPU endpoint run, then paired
 core+holdout `n=160` uncertainty.
+
+Follow-up `2026-04-29`: completed the frozen holdout `n=160` label-strict
+endpoint gate locally on CPU. Command:
+`./venv_arm64/bin/python scripts/run_source_private_mac_endpoint_proxy_frontier.py --benchmark-jsonl results/source_private_tool_trace_reviewer_risk_rows_20260429/holdout_seed30/benchmark.jsonl --output-dir results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n160_cpu_label_strict_controls --limit 160 --max-new-tokens 24 --no-enable-thinking --prompt-style label_strict`.
+Holdout `n=160` metrics: packet `0.688`, strict-label packet `0.675`,
+target-only `0.250`, matched-byte text `0.250`, random same-byte `0.000`,
+deranged public table `0.244`, best source-destroying control `0.250`, valid
+rate `1.000`, query-aware text `0.688` at `14` bytes, structured free text
+`0.719` at `17` bytes, and full hidden-log relay `0.531` at `373.5` bytes with
+p50 TTFT `+183.5 ms` versus the packet. Artifact hashes: `summary.json`
+`63ce5b089246bd021cae5b5ee5f884eb26eab4fdd4680b8b165fe50e904dc9e8`,
+`endpoint_proxy_rows.jsonl`
+`688c7b730dcc2c3b405c450e763f289fb61620a6261e3fd6c9c94a85c7527c54`.
+Combined core+holdout `n=160` uncertainty passes: minimum packet-vs-target and
+packet-vs-best-control lower CIs are `+0.350`; minimum strict-label
+packet-vs-target lower CI is `+0.338` (`summary.json`
+`1baec769e5dea93975b36972b0e2ce9b240997a5befbf5a467c24574f7c57511`).
+The CPU systems frontier was regenerated with `96` rows. This clears the local
+medium endpoint rung; next exact gate is server-side TTFT/throughput when GPU
+serving is available, or a Mac-local learned candidate-embedding receiver smoke
+to reduce the hand-designed-interface objection.
