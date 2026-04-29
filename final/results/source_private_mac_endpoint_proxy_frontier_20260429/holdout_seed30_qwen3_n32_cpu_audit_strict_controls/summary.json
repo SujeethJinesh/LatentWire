@@ -1,5 +1,5 @@
 {
-  "best_source_destroying_control_accuracy": 0.3125,
+  "best_source_destroying_control_accuracy": 0.1875,
   "conditions": [
     "target_only",
     "matched_packet",
@@ -32,7 +32,7 @@
       "strict_accuracy": 0.0,
       "strict_correct": 0,
       "strict_valid_prediction_rate": 0.34375,
-      "valid_prediction_rate": 1.0
+      "valid_prediction_rate": 0.75
     },
     "full_hidden_log": {
       "accuracy": 0.34375,
@@ -52,8 +52,8 @@
       "valid_prediction_rate": 0.34375
     },
     "matched_byte_text_2": {
-      "accuracy": 0.3125,
-      "correct": 10,
+      "accuracy": 0.1875,
+      "correct": 6,
       "mean_generated_tokens": 11.125,
       "mean_payload_bytes": 2.0,
       "mean_payload_tokens_proxy": 1.0,
@@ -66,7 +66,7 @@
       "strict_accuracy": 0.1875,
       "strict_correct": 6,
       "strict_valid_prediction_rate": 0.8125,
-      "valid_prediction_rate": 1.0
+      "valid_prediction_rate": 0.8125
     },
     "matched_packet": {
       "accuracy": 0.84375,
@@ -83,7 +83,7 @@
       "strict_accuracy": 0.21875,
       "strict_correct": 7,
       "strict_valid_prediction_rate": 0.21875,
-      "valid_prediction_rate": 1.0
+      "valid_prediction_rate": 0.84375
     },
     "query_aware_diag_span": {
       "accuracy": 0.8125,
@@ -100,11 +100,11 @@
       "strict_accuracy": 0.3125,
       "strict_correct": 10,
       "strict_valid_prediction_rate": 0.40625,
-      "valid_prediction_rate": 1.0
+      "valid_prediction_rate": 0.90625
     },
     "random_same_byte_packet": {
-      "accuracy": 0.09375,
-      "correct": 3,
+      "accuracy": 0.0,
+      "correct": 0,
       "mean_generated_tokens": 8.0,
       "mean_payload_bytes": 2.0,
       "mean_payload_tokens_proxy": 1.0,
@@ -117,7 +117,7 @@
       "strict_accuracy": 0.0,
       "strict_correct": 0,
       "strict_valid_prediction_rate": 0.5,
-      "valid_prediction_rate": 1.0
+      "valid_prediction_rate": 0.90625
     },
     "structured_free_text_diag": {
       "accuracy": 0.875,
@@ -134,7 +134,7 @@
       "strict_accuracy": 0.15625,
       "strict_correct": 5,
       "strict_valid_prediction_rate": 0.15625,
-      "valid_prediction_rate": 1.0
+      "valid_prediction_rate": 0.875
     },
     "structured_json_diag": {
       "accuracy": 0.75,
@@ -151,11 +151,11 @@
       "strict_accuracy": 0.125,
       "strict_correct": 4,
       "strict_valid_prediction_rate": 0.21875,
-      "valid_prediction_rate": 1.0
+      "valid_prediction_rate": 0.84375
     },
     "target_only": {
-      "accuracy": 0.3125,
-      "correct": 10,
+      "accuracy": 0.25,
+      "correct": 8,
       "mean_generated_tokens": 12.375,
       "mean_payload_bytes": 0.0,
       "mean_payload_tokens_proxy": 0.0,
@@ -168,19 +168,19 @@
       "strict_accuracy": 0.25,
       "strict_correct": 8,
       "strict_valid_prediction_rate": 0.9375,
-      "valid_prediction_rate": 1.0
+      "valid_prediction_rate": 0.9375
     }
   },
   "n": 32,
-  "packet_minus_best_source_destroying_control_accuracy": 0.53125,
-  "packet_minus_matched_byte_text_accuracy": 0.53125,
-  "packet_minus_target_accuracy": 0.53125,
+  "packet_minus_best_source_destroying_control_accuracy": 0.65625,
+  "packet_minus_matched_byte_text_accuracy": 0.65625,
+  "packet_minus_target_accuracy": 0.59375,
   "packet_prompt_token_delta_vs_target": 0.0,
   "packet_strict_accuracy": 0.21875,
   "packet_strict_minus_target_accuracy": -0.03125,
   "packet_vs_full_log_payload_compression": 186.75,
   "packet_vs_query_payload_compression": 7.0,
-  "pass_gate": true,
+  "pass_gate": false,
   "pass_rule": "Packet must beat target by >=0.15, all included source-destroying controls must stay within target+0.05, matched packet valid rate must be >=0.95, exact ID parity must hold, and query-aware/full-log payloads must be larger than the packet. Latency is reported, not gated.",
   "prompt_style": "audit"
 }

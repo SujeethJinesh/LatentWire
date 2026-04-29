@@ -28,7 +28,7 @@ CONDITIONS = (
     "full_hidden_log",
 )
 
-PROMPT_STYLES = ("canonical", "terse", "audit")
+PROMPT_STYLES = ("canonical", "terse", "audit", "label_strict")
 
 
 @dataclass(frozen=True)
@@ -144,6 +144,19 @@ def _prompt(example: LoadedExample, *, payload: str, prompt_style: str, conditio
             f"{candidate_rows}\n\n"
             "Selected label:"
         )
+    if prompt_style == "label_strict":
+        return (
+            "Exact-label decoder task. Your answer is valid only if it is copied verbatim from one candidate label.\n"
+            "Do not output repair keys such as G0, JSON, explanations, or partial labels.\n"
+            "If the side message contains exactly one two-character repair key, choose the candidate whose "
+            "handles_repair_diag value exactly equals that key. If no transmitted repair key is present, choose "
+            "the fallback candidate. Output one full candidate label, copied exactly.\n\n"
+            f"Fallback candidate: {_prior_prediction(example)}\n"
+            f"Side message:\n{payload if payload else '<EMPTY>'}\n\n"
+            "Allowed candidate labels and keys:\n"
+            f"{candidate_rows}\n\n"
+            "Copy exactly one allowed candidate label:"
+        )
     raise ValueError(f"unknown prompt style {prompt_style!r}")
 
 
@@ -184,7 +197,11 @@ def _parse_strict_candidate_label(generated: str, candidates: tuple[dict[str, An
     return ""
 
 
-def _parse_candidate_label(generated: str, candidates: tuple[dict[str, Any], ...]) -> str:
+def _payload_diagnostic_codes(payload: str) -> set[str]:
+    return set(re.findall(r"\b[A-Z][0-9]\b", payload))
+
+
+def _parse_candidate_label(generated: str, candidates: tuple[dict[str, Any], ...], *, payload: str = "") -> str:
     strict = _parse_strict_candidate_label(generated, candidates)
     if strict:
         return strict
@@ -192,6 +209,8 @@ def _parse_candidate_label(generated: str, candidates: tuple[dict[str, Any], ...
     diag_match = re.search(r"\b(?:REPAIR_DIAG\s*=\s*)?([A-Z][0-9])\b", stripped)
     if diag_match:
         diag = diag_match.group(1)
+        if diag not in _payload_diagnostic_codes(payload):
+            return ""
         matches = [candidate for candidate in candidates if candidate["handles_diagnostic"] == diag]
         if len(matches) == 1:
             return matches[0]["label"]
@@ -263,7 +282,7 @@ def run_frontier(
                 max_new_tokens=max_new_tokens,
             )
             strict_prediction = _parse_strict_candidate_label(generated, prompt_candidates)
-            prediction = _parse_candidate_label(generated, prompt_candidates)
+            prediction = _parse_candidate_label(generated, prompt_candidates, payload=payload)
             rows.append(
                 {
                     "example_id": example.example_id,

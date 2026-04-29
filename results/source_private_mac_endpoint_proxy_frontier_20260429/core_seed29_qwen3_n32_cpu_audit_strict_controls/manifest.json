@@ -1,8 +1,8 @@
 {
   "artifact_sha256": {
-    "endpoint_proxy_rows.jsonl": "1a84a00cb513c1b83c7bee63c8acca425d9a8df0f2ba1d549575e1d2d4c34981",
-    "summary.json": "1e101ad72f2f0a05a3ff8906d1eb594d7c1fb9cbb2ba3cce4daf147495187ee1",
-    "summary.md": "7c0d65df6e3358deb5707ad480d1518db5b5dba80d22bd446bc23348cf32c821"
+    "endpoint_proxy_rows.jsonl": "f0a3c8536662121fc46ef0e1bab121acde5a37ddc997f6f2a2efe5bc44f29aa7",
+    "summary.json": "b5c99591b6b9b3965c69d0bedd9d1bbafb6561d87d7a4449a4e4e260d6c7f0d1",
+    "summary.md": "03deb37ccecdb95c687d81e867cb4d9075bdf4ce38b4c6619ad2af115eaebfd5"
   },
   "artifacts": [
     "endpoint_proxy_rows.jsonl",
@@ -18,10 +18,11 @@
   "max_new_tokens": 24,
   "model_name": "Qwen/Qwen3-0.6B",
   "prompt_style": "audit",
+  "rescore_utc": "2026-04-29T12:51:50.454376+00:00",
   "run_utc": "2026-04-29T12:04:47.071091+00:00",
-  "script_sha256": "87dc9bbf75dc91ffffbda0a8ca0c6719365f516ba764aa3d52d4d219e78f62dd",
+  "script_sha256": "f7517a8ec39b11f40b7993a9fb8d92c8eb2f1a19c0379b75f83a74ff4355639a",
   "summary": {
-    "best_source_destroying_control_accuracy": 0.28125,
+    "best_source_destroying_control_accuracy": 0.21875,
     "conditions": [
       "target_only",
       "matched_packet",
@@ -54,7 +55,7 @@
         "strict_accuracy": 0.0,
         "strict_correct": 0,
         "strict_valid_prediction_rate": 0.34375,
-        "valid_prediction_rate": 1.0
+        "valid_prediction_rate": 0.78125
       },
       "full_hidden_log": {
         "accuracy": 0.40625,
@@ -74,8 +75,8 @@
         "valid_prediction_rate": 0.40625
       },
       "matched_byte_text_2": {
-        "accuracy": 0.28125,
-        "correct": 9,
+        "accuracy": 0.21875,
+        "correct": 7,
         "mean_generated_tokens": 11.75,
         "mean_payload_bytes": 2.0,
         "mean_payload_tokens_proxy": 1.0,
@@ -88,7 +89,7 @@
         "strict_accuracy": 0.21875,
         "strict_correct": 7,
         "strict_valid_prediction_rate": 0.875,
-        "valid_prediction_rate": 1.0
+        "valid_prediction_rate": 0.875
       },
       "matched_packet": {
         "accuracy": 0.71875,
@@ -105,7 +106,7 @@
         "strict_accuracy": 0.15625,
         "strict_correct": 5,
         "strict_valid_prediction_rate": 0.1875,
-        "valid_prediction_rate": 1.0
+        "valid_prediction_rate": 0.75
       },
       "query_aware_diag_span": {
         "accuracy": 0.78125,
@@ -122,11 +123,11 @@
         "strict_accuracy": 0.375,
         "strict_correct": 12,
         "strict_valid_prediction_rate": 0.46875,
-        "valid_prediction_rate": 1.0
+        "valid_prediction_rate": 0.875
       },
       "random_same_byte_packet": {
-        "accuracy": 0.03125,
-        "correct": 1,
+        "accuracy": 0.0,
+        "correct": 0,
         "mean_generated_tokens": 8.3125,
         "mean_payload_bytes": 2.0,
         "mean_payload_tokens_proxy": 1.0,
@@ -139,7 +140,7 @@
         "strict_accuracy": 0.0,
         "strict_correct": 0,
         "strict_valid_prediction_rate": 0.53125,
-        "valid_prediction_rate": 1.0
+        "valid_prediction_rate": 0.96875
       },
       "structured_free_text_diag": {
         "accuracy": 0.8125,
@@ -156,7 +157,7 @@
         "strict_accuracy": 0.09375,
         "strict_correct": 3,
         "strict_valid_prediction_rate": 0.09375,
-        "valid_prediction_rate": 1.0
+        "valid_prediction_rate": 0.8125
       },
       "structured_json_diag": {
         "accuracy": 0.78125,
@@ -173,7 +174,7 @@
         "strict_accuracy": 0.1875,
         "strict_correct": 6,
         "strict_valid_prediction_rate": 0.21875,
-        "valid_prediction_rate": 1.0
+        "valid_prediction_rate": 0.8125
       },
       "target_only": {
         "accuracy": 0.25,
@@ -194,15 +195,15 @@
       }
     },
     "n": 32,
-    "packet_minus_best_source_destroying_control_accuracy": 0.4375,
-    "packet_minus_matched_byte_text_accuracy": 0.4375,
+    "packet_minus_best_source_destroying_control_accuracy": 0.5,
+    "packet_minus_matched_byte_text_accuracy": 0.5,
     "packet_minus_target_accuracy": 0.46875,
     "packet_prompt_token_delta_vs_target": 0.0,
     "packet_strict_accuracy": 0.15625,
     "packet_strict_minus_target_accuracy": -0.09375,
     "packet_vs_full_log_payload_compression": 183.25,
     "packet_vs_query_payload_compression": 7.0,
-    "pass_gate": true,
+    "pass_gate": false,
     "pass_rule": "Packet must beat target by >=0.15, all included source-destroying controls must stay within target+0.05, matched packet valid rate must be >=0.95, exact ID parity must hold, and query-aware/full-log payloads must be larger than the packet. Latency is reported, not gated.",
     "prompt_style": "audit"
   }

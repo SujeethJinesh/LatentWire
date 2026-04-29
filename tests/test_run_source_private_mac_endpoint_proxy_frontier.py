@@ -76,12 +76,13 @@ def test_prompt_styles_preserve_public_side_information_contract() -> None:
         ),
     )
 
-    for style in ("canonical", "terse", "audit"):
+    for style in ("canonical", "terse", "audit", "label_strict"):
         prompt = _prompt(example, payload="G0", prompt_style=style)
         assert "G0" in prompt
         assert "Candidate A" in prompt
         assert "Candidate B" in prompt
         assert "handles_repair_diag" in prompt
+    assert "copied exactly" in _prompt(example, payload="G0", prompt_style="label_strict")
 
 
 def test_deranged_candidate_table_breaks_diagnostic_mapping() -> None:
@@ -98,5 +99,16 @@ def test_deranged_candidate_table_breaks_diagnostic_mapping() -> None:
     normal = _candidate_table_for_condition(example, condition="matched_packet")
     deranged = _candidate_table_for_condition(example, condition="deranged_candidate_diag_table")
 
-    assert _parse_candidate_label("G0", normal) == "Candidate B"
-    assert _parse_candidate_label("G0", deranged) == "Candidate A"
+    assert _parse_candidate_label("G0", normal, payload="G0") == "Candidate B"
+    assert _parse_candidate_label("G0", deranged, payload="G0") == "Candidate A"
+
+
+def test_diagnostic_mapping_requires_transmitted_payload_code() -> None:
+    candidates = (
+        {"label": "Candidate A", "handles_diagnostic": "G1", "prior_score": 0.9},
+        {"label": "Candidate B", "handles_diagnostic": "G0", "prior_score": 0.1},
+    )
+
+    assert _parse_candidate_label("G0", candidates, payload="RE") == ""
+    assert _parse_candidate_label("G0", candidates, payload="REPAIR_DIAG=G0") == "Candidate B"
+    assert _parse_candidate_label("Candidate B", candidates, payload="RE") == "Candidate B"

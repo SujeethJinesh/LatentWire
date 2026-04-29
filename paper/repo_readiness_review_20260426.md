@@ -197,6 +197,31 @@ now has `84` rows. The next exact gate remains `n=64` canonical+audit strict
 controls; if that passes, widen to `n=160` and then run a server-side
 TTFT/throughput benchmark when NVIDIA GPUs are available.
 
+Follow-up `2026-04-29`: payload-gated rescoring fixed a parser loophole where
+the endpoint receiver could hallucinate an untransmitted diagnostic code and
+still receive diagnostic-mapped credit. Under the stricter parser, the audit
+rows remain accuracy-positive but fail the valid-output gate; core `n=64`
+audit is a near miss with packet `0.750`, target `0.250`, best
+source-destroying control `0.203`, and full-log p50 TTFT `+260.2 ms`, but
+packet valid rate is only `0.781`. I added a `label_strict` receiver prompt
+that requires exact candidate-label output. It passes both frozen surfaces at
+`n=16`: core packet `0.688` versus target/control `0.250`, holdout packet
+`0.625` versus target/control `0.250`, and packet valid rate `1.000` on both.
+This becomes the live endpoint receiver branch. The CPU systems frontier now
+has `87` rows. Next exact gate: label-strict `n=32` core+holdout, then `n=64`
+if both pass.
+
+Follow-up `2026-04-29`: label-strict `n=32` passes on both frozen endpoint
+surfaces. Core: packet `0.688`, target `0.250`, matched-byte text `0.250`,
+random same-byte `0.000`, deranged public table `0.219`, valid rate `1.000`,
+strict-label packet accuracy `0.656`, and full-log p50 TTFT `+164.8 ms`.
+Holdout: packet `0.656`, target `0.250`, matched-byte text `0.250`, random
+same-byte `0.000`, deranged public table `0.250`, valid rate `1.000`,
+strict-label packet accuracy `0.625`, and full-log p50 TTFT `+167.1 ms`.
+This materially improves the endpoint contribution: the live receiver now
+outputs exact candidate labels at n32, not just protocol codes. The CPU systems
+frontier has `89` rows. Next exact gate: label-strict `n=64` core+holdout.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

@@ -15056,3 +15056,42 @@ control `0.312`, strict-label packet accuracy `0.219`, and full-log p50 TTFT
 `84` rows. This is the strongest local endpoint evidence so far, but it is
 still a protocol-code receiver and local CPU proxy. Next gate: `n=64`
 canonical+audit strict controls; if both pass, widen to `n=160`.
+
+Follow-up `2026-04-29`: fixed a stricter endpoint parser issue before
+promoting the `n=64` gate. The old diagnostic-mapped parser could count a
+generated diagnostic code even when that code was not in the transmitted
+payload; this gave matched-byte/no-source controls occasional accidental
+credit and let the matched packet receive credit for unrelated hallucinated
+codes. The parser is now payload-gated: generated diagnostic codes map only if
+the code was transmitted in the source payload. Payload-gated rescoring demotes
+the old audit strict-control rows from pass to near-miss/fail under the
+predefined `valid_prediction_rate >= 0.95` rule, even though the source signal
+remains strong. Core `n=64` audit: packet `0.750`, target `0.250`, matched-byte
+text `0.203`, random same-byte `0.000`, deranged public table `0.000`, best
+source-destroying control `0.203`, packet valid rate `0.781`, strict-label
+packet accuracy `0.172`, and full-log p50 TTFT `+260.2 ms` versus the packet.
+To address the valid-output objection, I added a `label_strict` receiver prompt
+that says outputs must be full candidate labels copied exactly. It passes both
+`n=16` frozen surfaces with full strict controls. Core: matched packet `0.688`,
+target `0.250`, matched-byte text `0.250`, random same-byte `0.000`, deranged
+public table `0.188`, packet valid rate `1.000`, strict-label accuracy
+`0.688`, and full-log p50 TTFT `+151.9 ms`. Holdout: matched packet `0.625`,
+target `0.250`, matched-byte text `0.250`, random same-byte `0.000`, deranged
+public table `0.250`, packet valid rate `1.000`, strict-label accuracy
+`0.562`, and full-log p50 TTFT `+190.4 ms`. The regenerated CPU systems
+frontier has `87` rows. Next gate: `label_strict` `n=32` core+holdout, then
+`n=64` if both pass.
+
+Follow-up `2026-04-29`: widened the `label_strict` endpoint receiver to `n=32`
+on both frozen surfaces. Both pass with exact-label outputs and full strict
+controls. Core seed29: matched packet `0.688`, target-only `0.250`,
+matched-byte text `0.250`, random same-byte `0.000`, deranged public table
+`0.219`, packet valid rate `1.000`, strict-label accuracy `0.656`, and
+full-log p50 TTFT `+164.8 ms` versus the packet. Holdout seed30: matched
+packet `0.656`, target-only `0.250`, matched-byte text `0.250`, random
+same-byte `0.000`, deranged public table `0.250`, packet valid rate `1.000`,
+strict-label accuracy `0.625`, and full-log p50 TTFT `+167.1 ms` versus the
+packet. The CPU systems frontier now has `89` rows. This is the current live
+endpoint receiver evidence because it avoids the parser-risk caveat while
+preserving the 2-byte systems frontier. Next gate: label-strict `n=64`
+core+holdout.

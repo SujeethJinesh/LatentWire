@@ -21,10 +21,25 @@ def test_cpu_systems_frontier_includes_passes_and_failures(tmp_path) -> None:
     endpoint_rows = {row["row_id"]: row for row in payload["rows"]}
     strict_core = endpoint_rows["endpoint_proxy_core_n32_audit_strict_controls"]
     strict_holdout = endpoint_rows["endpoint_proxy_holdout_n32_audit_strict_controls"]
-    assert payload["headline"]["total_rows"] >= 84
-    assert strict_core["status"] == "pass"
+    label_core = endpoint_rows["endpoint_proxy_core_n16_label_strict_controls"]
+    label_holdout = endpoint_rows["endpoint_proxy_holdout_n16_label_strict_controls"]
+    label_core_n32 = endpoint_rows["endpoint_proxy_core_n32_label_strict_controls"]
+    label_holdout_n32 = endpoint_rows["endpoint_proxy_holdout_n32_label_strict_controls"]
+    n64_audit = endpoint_rows["endpoint_proxy_core_n64_audit_payload_gated_nearmiss"]
+    assert payload["headline"]["total_rows"] >= 89
+    assert strict_core["status"] == "fail"
     assert strict_core["accuracy"] > strict_core["best_control_accuracy"]
-    assert strict_core["best_control_accuracy"] == 0.28125
-    assert strict_holdout["status"] == "pass"
+    assert strict_core["best_control_accuracy"] == 0.21875
+    assert strict_holdout["status"] == "fail"
     assert strict_holdout["accuracy"] > strict_holdout["best_control_accuracy"]
-    assert strict_holdout["best_control_accuracy"] == 0.3125
+    assert strict_holdout["best_control_accuracy"] == 0.1875
+    assert n64_audit["status"] == "fail"
+    assert n64_audit["accuracy"] > n64_audit["best_control_accuracy"]
+    assert label_core["status"] == "pass"
+    assert label_core["accuracy"] > label_core["best_control_accuracy"]
+    assert label_holdout["status"] == "pass"
+    assert label_holdout["accuracy"] > label_holdout["best_control_accuracy"]
+    assert label_core_n32["status"] == "pass"
+    assert label_core_n32["accuracy"] > label_core_n32["best_control_accuracy"]
+    assert label_holdout_n32["status"] == "pass"
+    assert label_holdout_n32["accuracy"] > label_holdout_n32["best_control_accuracy"]

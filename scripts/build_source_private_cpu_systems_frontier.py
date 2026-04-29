@@ -655,6 +655,31 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n32_cpu_audit_strict_controls/summary.json",
             "holdout seed30 n32 CPU audit strict controls",
         ),
+        (
+            "endpoint_proxy_core_n64_audit_payload_gated_nearmiss",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n64_cpu_audit_strict_controls/summary.json",
+            "core seed29 n64 CPU audit payload-gated near miss",
+        ),
+        (
+            "endpoint_proxy_core_n16_label_strict_controls",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n16_cpu_label_strict_controls/summary.json",
+            "core seed29 n16 CPU label-strict controls",
+        ),
+        (
+            "endpoint_proxy_holdout_n16_label_strict_controls",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n16_cpu_label_strict_controls/summary.json",
+            "holdout seed30 n16 CPU label-strict controls",
+        ),
+        (
+            "endpoint_proxy_core_n32_label_strict_controls",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n32_cpu_label_strict_controls/summary.json",
+            "core seed29 n32 CPU label-strict controls",
+        ),
+        (
+            "endpoint_proxy_holdout_n32_label_strict_controls",
+            "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n32_cpu_label_strict_controls/summary.json",
+            "holdout seed30 n32 CPU label-strict controls",
+        ),
     ]
     for row_id, rel_path, surface in endpoint_specs:
         rows.append(_endpoint_proxy_row(row_id, ROOT / rel_path, surface=surface))

@@ -188,3 +188,21 @@ the local byte/TTFT systems case but does not change the literature framing:
 the claim remains source-private protocol-code communication with strict
 controls, not a replacement for prompt compression or server-side KV/cache
 systems baselines.
+
+Parser-risk follow-up: payload-gated rescoring fixed a loophole where the
+receiver could hallucinate an untransmitted diagnostic key and still receive
+diagnostic-mapped credit. This demotes the audit rows to near-miss/fail under
+the valid-output rule, although the source signal remains strong (`n=64` core
+packet `0.750` versus target `0.250` and best source-destroying control
+`0.203`). A new `label_strict` receiver prompt passes `n=16` on core and
+holdout with exact-label outputs and valid rate `1.000` (`0.688`/`0.625`
+packet accuracy versus target/control `0.250`). This changes the next
+experiment: scale `label_strict` to `n=32` and `n=64` before claiming endpoint
+receiver robustness.
+
+Follow-up: `label_strict` now passes `n=32` on core and holdout. Core packet is
+`0.688` versus target/control `0.250`; holdout packet is `0.656` versus
+target/control `0.250`; packet valid rate is `1.000` on both, and full-log p50
+TTFT remains `+164.8 ms`/`+167.1 ms` slower than the packet. This makes
+`label_strict` the live endpoint receiver branch; the next experiment is
+`n=64` label-strict core+holdout.

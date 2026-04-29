@@ -1,3 +1,4 @@
 # Mac Endpoint-Proxy Frontier Manifest
 
-- pass gate: `True`
+- pass gate: `False`
+- rescored: `true`

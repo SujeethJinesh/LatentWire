@@ -936,5 +936,12 @@
     "path": "references/490_mac_endpoint_proxy_frontier_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the Mac endpoint-proxy byte/TTFT and prompt-stress frontier, positioning the packet against vLLM/PagedAttention, LLMLingua-family prompt compression, KIVI/QJL/TurboQuant, cache transport, DistServe, and production KV/cache baselines."
+  },
+  {
+    "num": 491,
+    "slug": "payload_gated_endpoint_and_future_methods_refs",
+    "path": "references/491_payload_gated_endpoint_and_future_methods_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for payload-gated endpoint receiver rescoring, label-strict receiver promotion, systems baselines, and future denoising WZ / TurboQJL / relative stitcher method branches."
   }
 ]

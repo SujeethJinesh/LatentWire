@@ -103,6 +103,31 @@ fixed across conditions.
 | holdout n32 audit strict controls | matched-byte text | 0.312 | 2.0 | 192.3 | 447.8 | 2000.6 |
 | holdout n32 audit strict controls | random same-byte packet | 0.094 | 2.0 | 193.3 | 464.6 | 1441.5 |
 | holdout n32 audit strict controls | deranged public table | 0.000 | 2.0 | 193.3 | 463.8 | 857.4 |
+| core n64 audit payload-gated | target-only | 0.250 | 0.0 | 193.3 | 493.8 | 2210.9 |
+| core n64 audit payload-gated | matched packet | 0.750 | 2.0 | 193.3 | 466.2 | 905.6 |
+| core n64 audit payload-gated | matched-byte text | 0.203 | 2.0 | 192.3 | 466.8 | 2174.1 |
+| core n64 audit payload-gated | random same-byte packet | 0.000 | 2.0 | 193.3 | 471.9 | 2057.2 |
+| core n64 audit payload-gated | deranged public table | 0.000 | 2.0 | 193.3 | 501.0 | 905.2 |
+| core n16 label-strict | target-only | 0.250 | 0.0 | 218.4 | 481.2 | 2166.2 |
+| core n16 label-strict | matched packet | 0.688 | 2.0 | 218.4 | 508.8 | 2130.9 |
+| core n16 label-strict | matched-byte text | 0.250 | 2.0 | 217.4 | 479.9 | 2194.9 |
+| core n16 label-strict | random same-byte packet | 0.000 | 2.0 | 218.4 | 480.6 | 2152.7 |
+| core n16 label-strict | deranged public table | 0.188 | 2.0 | 218.4 | 478.4 | 2179.0 |
+| holdout n16 label-strict | target-only | 0.250 | 0.0 | 218.4 | 497.8 | 2231.2 |
+| holdout n16 label-strict | matched packet | 0.625 | 2.0 | 218.4 | 509.4 | 2089.4 |
+| holdout n16 label-strict | matched-byte text | 0.250 | 2.0 | 217.4 | 603.9 | 2118.6 |
+| holdout n16 label-strict | random same-byte packet | 0.000 | 2.0 | 218.4 | 477.3 | 2187.8 |
+| holdout n16 label-strict | deranged public table | 0.250 | 2.0 | 218.4 | 503.5 | 2095.9 |
+| core n32 label-strict | target-only | 0.250 | 0.0 | 218.3 | 519.9 | 2083.7 |
+| core n32 label-strict | matched packet | 0.688 | 2.0 | 218.3 | 495.9 | 2101.8 |
+| core n32 label-strict | matched-byte text | 0.250 | 2.0 | 217.3 | 497.3 | 2090.8 |
+| core n32 label-strict | random same-byte packet | 0.000 | 2.0 | 218.3 | 514.6 | 2079.7 |
+| core n32 label-strict | deranged public table | 0.219 | 2.0 | 218.3 | 466.4 | 2141.0 |
+| holdout n32 label-strict | target-only | 0.250 | 0.0 | 218.3 | 484.0 | 2156.4 |
+| holdout n32 label-strict | matched packet | 0.656 | 2.0 | 218.3 | 505.5 | 2131.4 |
+| holdout n32 label-strict | matched-byte text | 0.250 | 2.0 | 217.3 | 484.0 | 2158.0 |
+| holdout n32 label-strict | random same-byte packet | 0.000 | 2.0 | 218.3 | 477.5 | 2124.1 |
+| holdout n32 label-strict | deranged public table | 0.250 | 2.0 | 218.3 | 492.2 | 2145.0 |
 
 Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
 
@@ -123,17 +148,17 @@ Both frozen surfaces pass the endpoint-proxy gate at `n=8` and `n=16`:
 - terse paraphrase `n=16`: core packet collapses to target-only (`0.250`),
   showing that the receiver needs a sufficiently explicit public side-
   information contract.
-- strict-control audit `n=16`: both surfaces pass after adding random same-byte
-  and deranged public diagnostic-table controls. Core matched packet is `0.750`
-  versus best source-destroying control `0.250`; holdout matched packet is
-  `0.875` versus best source-destroying control `0.312`. The deranged-table
-  control collapses to `0.000` on both surfaces, confirming that destroying the
-  public codebook destroys the packet signal.
-- strict-control audit `n=32`: both surfaces still pass. Core matched packet is
-  `0.719` versus best source-destroying control `0.281`; holdout matched packet
-  is `0.844` versus best source-destroying control `0.312`. Random same-byte
-  controls stay at `0.031`/`0.094`, deranged public-table controls stay at
-  `0.000`, and full-log p50 TTFT is `+159.2 ms`/`+185.8 ms` versus the packet.
+- strict-control audit with payload-gated parsing: accuracy remains high, but
+  the old audit rows no longer pass the valid-output gate because Qwen sometimes
+  emits unrelated diagnostic codes. Core `n=64` is an important near miss:
+  packet `0.750`, target `0.250`, best source-destroying control `0.203`, but
+  packet valid rate is only `0.781`.
+- label-strict receiver prompt: both surfaces pass with exact-label outputs at
+  `n=16` and `n=32`. At `n=32`, core packet is `0.688` versus best
+  source-destroying control `0.250`, and holdout packet is `0.656` versus best
+  source-destroying control `0.250`; valid prediction rate is `1.000` on both.
+  Full-log p50 TTFT is `+164.8 ms` core and `+167.1 ms` holdout versus the
+  packet.
 
 ## Interpretation
 
@@ -148,19 +173,18 @@ CPU proxy because verbose relays often cause the model to emit fewer completion
 tokens; TTFT and byte/prompt-token deltas are the safer systems readout.
 
 The first attempted run exposed a useful harness issue: Qwen sometimes emitted
-the diagnostic code (`G0`) rather than a candidate label. The harness now
-reports strict-label accuracy separately from diagnostic-mapped accuracy. Under
-the strict-control audit prompt, packet strict-label accuracy is only `0.062`
-core and `0.250` holdout at `n=16`, and `0.156` core / `0.219` holdout at
-`n=32`, while diagnostic-mapped accuracy is `0.750`/`0.875` at `n=16` and
-`0.719`/`0.844` at `n=32`. The correct claim is therefore protocol-code
-decoding using public side information, not free-form candidate-label
-generation.
+the diagnostic code (`G0`) rather than a candidate label, and could hallucinate
+codes that were not in the source payload. The parser is now payload-gated: a
+diagnostic code is mapped only if that code was actually transmitted. This
+demotes the audit prompt from pass to near-miss under the valid-output gate.
+The new `label_strict` prompt fixes the stronger reviewer risk by requiring a
+full candidate label copied exactly; at `n=32`, packet strict-label accuracy is
+`0.656` core and `0.625` holdout with valid rate `1.000`.
 
 ## Reviewer Caveats
 
-- This is an `n=32 + n=32` prompt-paraphrase endpoint-proxy gate with strict
-  source-destroying controls, not a large benchmark.
+- This is an `n=32 + n=32` label-strict endpoint-proxy gate plus an `n=64`
+  payload-gated audit near-miss, not a large benchmark.
 - Timing is local CPU generate timing, not real vLLM/OpenAI-compatible serving
   TTFT or throughput.
 - The receiver prompt explicitly describes the packet interface. The next
@@ -171,8 +195,8 @@ generation.
 
 ## Next Gate
 
-Run the same endpoint-proxy strict-control gate at `n=64` with canonical and
-audit prompts. If both pass, widen to `n=160`; when NVIDIA GPUs are available,
+Run the label-strict endpoint-proxy strict-control gate at `n=64` on core and
+holdout. If both pass, widen to `n=160`; when NVIDIA GPUs are available,
 run a server-side vLLM/GenAI-Perf style TTFT/throughput benchmark against
 structured text, query-aware text, full-log relay, and KV/cache transport
 baselines.
