@@ -2086,3 +2086,28 @@ fallback core seed29 n64 gate passes: matched `42/64 = 0.656`, target-only
 `1.000`, exact-ID parity true, and p50 matched latency `2182 ms`. This reduces
 the hand-coded decoder objection but remains an ablation until the held-out n64
 target-decoder row also passes.
+
+Update `2026-04-29`: systems and novelty positioning are now explicit. Added
+`results/source_private_systems_summary_20260428/`, which aggregates the
+deterministic rate rows, model-produced packet rows, and target-decoder rows.
+The deterministic headline is: 2-byte packets reach `1.000` accuracy on core
+and held-out `500`-example surfaces; matched-byte text stays at `0.250`; full
+hidden-log relay also reaches `1.000` but costs `366.45-373.50` bytes, giving
+`183.2x-186.7x` compression for the packet. Added
+`paper/source_private_systems_novelty_review_20260429.md` and
+`references/481_systems_novelty_and_future_methods_refs.md` to position the
+work against C2C, KVComm, activation communication, prompt compression,
+tool-agent handoff, Wyner-Ziv/indirect source coding, quantization, JEPA,
+Q-Former, and diffusion-inspired successor branches. Readiness remains
+scoped-positive rather than broad ICLR-ready: the current claim is defensible,
+but the best next contribution is a learned syndrome packet smoke, and MoE/FP8
+still remains unclaimed until endpoint access is available.
+
+Update `2026-04-29`: the target-model decoder ablation now has paired
+core/held-out CPU n64 confirmation. Held-out seed30 with `Qwen/Qwen3-0.6B` as
+the target decoder reaches matched `46/64 = 0.719`, target-only `16/64 =
+0.250`, best control `17/64 = 0.266`, valid matched predictions `1.000`,
+exact-ID parity true, and p50 matched latency `2237 ms`. Combined with the core
+n64 CPU row (`0.656` matched versus `0.250` controls), this is enough local
+evidence to stop widening target-decoder rows and return to learned syndrome
+packets or MoE/FP8 endpoint gates.

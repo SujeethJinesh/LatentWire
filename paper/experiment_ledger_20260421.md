@@ -14647,3 +14647,30 @@ matched packet `42/64 = 0.656`, target-only `16/64 = 0.250`, best control
 matched-minus-best-control `+0.406`, and p50 matched latency `2182 ms`. This
 does not make the target LLM decoder the main claim, but it reduces the
 hand-coded decoder objection and sets up held-out n64 as the next exact gate.
+
+Update `2026-04-29`: `source_private_systems_novelty_review_20260429` makes the
+systems and comparison contribution explicit. Added
+`scripts/build_source_private_systems_summary.py` and
+`results/source_private_systems_summary_20260428/`, aggregating deterministic
+rate rows, model-produced packet rows, and target-decoder rows. Headline:
+2-byte diagnostic packets reach `1.000` on deterministic core/held-out
+`500`-example surfaces, matched-byte text stays at `0.250`, full hidden-log
+relay costs `366.45-373.50` bytes, and the packet is `183.2x-186.7x` smaller
+than full hidden-log relay while preserving the same private-evidence selector
+result. Added `references/481_systems_novelty_and_future_methods_refs.md` to
+position the contribution against C2C, KVComm, activation communication,
+LLMLingua, AutoGen/ReAct/Toolformer/Chain-of-Agents, Wyner-Ziv/indirect source
+coding, TurboQuant/KIVI/QJL, JEPA, Q-Former, Flamingo, and diffusion-inspired
+successor methods. The highest-value next technical branch is now a learned
+Wyner-Ziv/syndrome packet smoke on the existing source-private candidate-pool
+harness; MoE/FP8 remains unclaimed until endpoint gates can run.
+
+Update `2026-04-29`: `source_private_target_decoder_heldout_n64_cpu_20260429`
+passes. `Qwen/Qwen3-0.6B` as the target decoder on CPU, held-out seed30, n64,
+gets matched packet `46/64 = 0.719`, target-only `16/64 = 0.250`, best control
+`17/64 = 0.266`, valid matched predictions `1.000`, exact-ID parity true,
+matched-minus-best-control `+0.453`, and p50 matched latency `2237 ms`. Controls
+stay near the target floor: shuffled `0.250`, random same-byte `0.266`,
+structured JSON 2-byte `0.250`, and structured free-text 2-byte `0.250`. This
+gives paired core/held-out local target-decoder confirmation; stop widening
+target-decoder rows locally unless a new decoder mechanism is introduced.

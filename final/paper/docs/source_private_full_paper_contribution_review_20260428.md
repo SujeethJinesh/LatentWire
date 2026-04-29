@@ -25,7 +25,7 @@ tool/test/log evidence and emits a compact `REPAIR_DIAG` packet. The target
 uses public candidates plus the packet to select the repair. Source-destroying
 controls show whether the gain is real source-private communication.
 
-## Three Core Technical Contributions
+## Core Technical Contributions
 
 1. **Source-private communication formulation with decoder side information.**
    The benchmark separates public prompt/candidate state from private
@@ -50,6 +50,14 @@ controls show whether the gain is real source-private communication.
    work, because it catches target-prior, formatting, answer-leakage, and
    selector-artifact explanations.
 
+4. **Systems rate frontier for private evidence handoff.**
+   The systems summary reports packet bytes, tokens, local latency, and
+   compression against matched-byte text, full hidden-log relay, and full
+   diagnostic text. The clean claim is a far-left-rate tradeoff: 2-byte packets
+   recover private evidence where matched-byte text stays at the target floor,
+   while full structured text only becomes competitive once it receives enough
+   bytes to carry the diagnostic.
+
 ## Secondary Contributions
 
 - **Large-slice and seed-stability evidence.** Qwen/Phi rows clear 500-example
@@ -67,6 +75,11 @@ controls show whether the gain is real source-private communication.
   source-private packet gate at n64 on CPU, with matched `0.656` versus
   target/control `0.250`. This reduces the hand-coded decoder objection, though
   the deterministic decoder remains the main controlled result.
+- **Novelty/comparison contract.** The current method should be compared as a
+  source-private, extreme-rate, decoder-side-information protocol against C2C,
+  KV/cache communication, activation communication, prompt compression, and
+  text/tool-agent handoff. It should not be sold as a universal replacement for
+  latent or cache transfer.
 
 ## Reviewer Critique
 
@@ -106,6 +119,11 @@ The strongest likely reviewer objections are:
 3. **Paper-facing ablation table.** Build a compact table that groups target,
    matched packet, structured text, raw-log/no-trace, codebook remap, and latest
    model rows. This will make the three contributions obvious to reviewers.
+4. **Learned syndrome packet smoke.** If time remains after the held-out
+   target-decoder row, implement a small learned Wyner-Ziv/syndrome encoder over
+   target candidate pools. This is the highest-probability way to turn the
+   packet protocol into a second method contribution rather than another source
+   emitter repeat.
 
 ## Recommendation
 

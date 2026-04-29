@@ -1,0 +1,25 @@
+{
+  "artifact_sha256": {
+    "systems_summary.json": "85aae1304598f8e94eeeb61e221d468e68e48307d68b2c75f4283ed402acac74",
+    "systems_summary.md": "0de691fedbd48c6d3f8b4dd9b96d2d25a450f3c2ccc29cf6eeddac4684647788"
+  },
+  "artifacts": [
+    "systems_summary.json",
+    "systems_summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "scripts/build_source_private_systems_summary.py --output-dir results/source_private_systems_summary_20260428",
+  "summary": {
+    "compression_vs_full_diag": 7.0,
+    "compression_vs_full_log_max": 186.748,
+    "compression_vs_full_log_min": 183.225,
+    "full_diag_bytes": 14.0,
+    "full_log_accuracy_min": 1.0,
+    "full_log_bytes_max": 373.496,
+    "full_log_bytes_min": 366.45,
+    "matched_byte_text_accuracy_max": 0.25,
+    "packet_accuracy_min": 1.0,
+    "packet_bytes": 2.0
+  }
+}

@@ -30,6 +30,7 @@ Unsupported claims:
 | Source-private communication with decoder side information | target-only, wrapper/no-source, zero/shuffled/random/answer controls across 500-example surfaces | target priors, prompt wrappers, answer leakage, and source-free sidecars | large frozen deterministic and model-mediated gates |
 | Rate-capped diagnostic packet method | 2-byte deterministic packets; Qwen3/Phi-3 model packets; Gemma 4 E2B n500 packet row | full-log relay as necessary communication channel; high-byte text relay as the only viable interface | large frozen slice, seed repeats, latest-small and non-Qwen local rows |
 | Strict reusable evaluation harness | exact-ID parity, candidate-pool recall, bytes/tokens/latency, source-destroying controls, codebook remap | selector leakage, candidate-generation confounds, fixed-codebook memorization | reproducible scripts, manifests, final folder checksums |
+| Systems rate frontier | systems summary table; 2-byte packet vs matched-byte text vs full hidden-log relay | full trace relay as necessary at the far-left rate point | `183.2x-186.7x` fewer bytes than full hidden-log relay on deterministic core/held-out surfaces |
 | Boundary diagnosis for source emitters | Gemma passes strict prompt; Granite passes weakly; OLMo fails; raw-log/no-trace collapses | universal prompt-invariant source behavior | useful limitation, not a universal claim |
 
 ## Model-Mediated Packet Rows
@@ -99,6 +100,10 @@ the compact `2`-byte packet result.
 
 ## Systems Rows
 
+The consolidated systems artifact is
+`results/source_private_systems_summary_20260428/`. It reports deterministic
+rate rows, model-produced packet rows, and target-decoder rows.
+
 | Interface | Mean bytes | Mean tokens | Accuracy role |
 |---|---:|---:|---|
 | model-produced packet, Qwen3 | `1.55-1.73` | approximately `1` | `0.808-0.924` matched |
@@ -107,6 +112,12 @@ the compact `2`-byte packet result.
 | matched-byte hidden-log text | `2-32` | budget-dependent | target-only at compact budgets |
 | full hidden-log relay | `366-374` | about `34` | `1.000` oracle text relay |
 | full diagnostic text | `14` | `1` | `1.000` oracle diagnostic |
+
+At the deterministic 2-byte point, the packet is `183.2x-186.7x` smaller than
+full hidden-log relay and `7.0x` smaller than full diagnostic text while
+matched-byte hidden-log/JSON/free-text controls remain at the target floor.
+This should be presented as a rate frontier: structured text is a valid oracle
+once allowed enough bytes, but it does not explain the compact packet result.
 
 ## Candidate-Pool Versus Selector
 
@@ -130,10 +141,12 @@ the hand-coded-decoder concern:
 | core seed 29 | Qwen3-0.6B | MPS | 16 | `0.688` | `0.250` | `0.250` | `1.000` | `1267 ms` |
 | holdout seed 30 | Qwen3-0.6B | MPS | 32 | `0.750` | `0.250` | `0.281` | `1.000` | `1315 ms` |
 | core seed 29 | Qwen3-0.6B | CPU | 64 | `0.656` | `0.250` | `0.250` | `1.000` | `2182 ms` |
+| holdout seed 30 | Qwen3-0.6B | CPU | 64 | `0.719` | `0.250` | `0.266` | `1.000` | `2237 ms` |
 
 The attempted core n160 MPS target-decoder run failed before prediction with an
 Apple MPS matmul shape error. The CPU n64 row is therefore the current strongest
-local target-decoder confirmation. It is still an ablation, not the main claim.
+local target-decoder confirmation and now passes on both core and held-out
+surfaces. It is still an ablation, not the main claim.
 
 ## Pass/Fail Summary
 

@@ -35,6 +35,13 @@
 - Granite 3.3 2B n160 strict-prompt cross-family artifact.
 - Granite 3.3 2B n160 strict-prompt seed-repeat and raw-log/no-trace ablation.
 - Qwen3 target-model decoder core n64 CPU ablation.
+- Qwen3 target-model decoder held-out n64 CPU ablation.
+- Source-private systems summary artifact with deterministic rate rows,
+  model-produced packet rows, target-decoder rows, and `183.2x-186.7x`
+  full-log compression headline.
+- Systems/novelty/future-method reference memo for C2C, KVComm, activation
+  communication, prompt compression, tool-agent handoff, source coding,
+  quantization, JEPA, Q-Former, and diffusion-inspired successor branches.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

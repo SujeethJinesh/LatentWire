@@ -479,3 +479,24 @@ File `388_` narrows the immediate benchmark execution lane:
 `75_transformers_with_multiresolution_attention_heads.md` is a canonical-link note rather than a PDF because OpenReview blocked direct shell download from this machine on 2026-04-16.
 
 See `math_grounding_manifest.json` for source URLs and the reason each paper was added. See `research_memo_manifest.json` for local synthesis memos that collect multiple source links for the active paper loop.
+
+Files `476_` through `481_` collect the source-private communication pivot and
+final-paper framing:
+
+- `476_`: Source-private communication pivot references for decoder side
+  information, rate-distortion, syndrome sidecars, and source-destroying
+  controls.
+- `477_`: Literature-to-method sprint references for evidence packets,
+  tool-trace handoff, Query-JEPA/Q-Former adapters, anchor-relative codes, and
+  KV/cache baselines.
+- `478_`: Final-review references for decoder-side information, multi-agent
+  handoff, prompt compression, latent/KV communication competitors, and
+  test-guided repair framing.
+- `479_`: Official Hugging Face model-card memo for Qwen3.5/Qwen3.6 latest-model
+  and MoE source-packet generalization planning.
+- `480_`: Official Hugging Face scout for non-Qwen architecture-diversity
+  source-packet falsification rows.
+- `481_`: Systems, novelty, and future-method reference memo comparing
+  source-private packets against C2C, KVComm, activation communication, prompt
+  compression, agent handoff, source coding with decoder side information,
+  quantization, JEPA, Q-Former, and diffusion-inspired successor branches.

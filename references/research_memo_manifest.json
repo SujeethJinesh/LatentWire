@@ -866,5 +866,12 @@
     "path": "references/480_latest_cross_family_model_scout_refs.md",
     "status": "local_memo",
     "reason": "Official Hugging Face model-card scout for non-Qwen latest-model and architecture-diversity source-packet falsification rows, including OLMo, Gemma, Granite, SmolLM3, Phi-4 mini, Ministral, Nemotron Nano, and Kimi K2."
+  },
+  {
+    "num": 481,
+    "slug": "systems_novelty_and_future_methods_refs",
+    "path": "references/481_systems_novelty_and_future_methods_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for systems, novelty, competitor positioning, and future learned syndrome/latent-communication methods around source-private diagnostic packets."
   }
 ]

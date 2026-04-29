@@ -91,10 +91,28 @@ The main result uses a deterministic protocol decoder to isolate source-side
 communication. A Qwen3 target-decoder ablation now passes beyond tiny smoke:
 core seed29 n64 on CPU reaches `42/64 = 0.656` matched packet accuracy versus
 `16/64 = 0.250` target-only and `16/64 = 0.250` best control, with valid matched
-predictions `1.000` and exact-ID parity true. The attempted n160 MPS target
-decoder run is backend-blocked by an Apple MPS matmul shape error. Treat the n64
-row as an ablation that reduces, but does not eliminate, the hand-coded decoder
-objection.
+predictions `1.000` and exact-ID parity true. The held-out seed30 n64 CPU row
+also passes: `46/64 = 0.719` matched versus `16/64 = 0.250` target-only and
+`17/64 = 0.266` best control. The attempted n160 MPS target decoder run is
+backend-blocked by an Apple MPS matmul shape error. Treat the paired n64 rows as
+ablations that reduce, but do not eliminate, the hand-coded decoder objection.
+
+## Systems And Novelty Update
+
+The systems artifact `results/source_private_systems_summary_20260428/` now
+aggregates deterministic rate rows, model-produced packet rows, and
+target-decoder rows. The main systems point is a rate frontier: 2-byte packets
+reach `1.000` on deterministic core/held-out `500`-example surfaces while
+matched-byte text remains at `0.250`; full hidden-log relay also reaches
+`1.000` but costs `366.45-373.50` bytes, so the packet is
+`183.2x-186.7x` smaller.
+
+The novelty memo `references/481_systems_novelty_and_future_methods_refs.md`
+positions the work against C2C, KVComm, activation communication, prompt
+compression, text/tool-agent handoff, source coding with decoder side
+information, quantization, JEPA, Q-Former, and diffusion-inspired successor
+branches. The safest full-paper claim is source-private, extreme-rate
+communication with decoder side information, not broad latent transfer.
 
 ## Latest-Model And MoE Status
 
@@ -196,6 +214,7 @@ Run from the repository root with `./venv_arm64/bin/python`.
 ./venv_arm64/bin/python scripts/build_source_private_tool_trace_baseline_pack.py --help
 ./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py --help
 ./venv_arm64/bin/python scripts/build_source_private_latest_model_matrix.py --help
+./venv_arm64/bin/python scripts/build_source_private_systems_summary.py --help
 ```
 
 Focused tests:
@@ -207,7 +226,8 @@ Focused tests:
   tests/test_run_source_private_hidden_repair_packet_endpoint.py \
   tests/test_build_source_private_tool_trace_baseline_pack.py \
   tests/test_build_source_private_tool_trace_figures.py \
-  tests/test_run_source_private_tool_trace_target_decoder_smoke.py -q
+  tests/test_run_source_private_tool_trace_target_decoder_smoke.py \
+  tests/test_build_source_private_systems_summary.py -q
 ```
 
 ## Final Status
