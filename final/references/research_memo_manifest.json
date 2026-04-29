@@ -922,5 +922,12 @@
     "path": "references/488_iclr_strengthening_and_anchor_relative_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for ICLR strengthening after the frozen target-decoder all-control gate, including novelty threats, systems baselines, JEPA/VLM/diffusion inspirations, and the anchor-relative sparse innovation packet proposal."
+  },
+  {
+    "num": 489,
+    "slug": "anchor_relative_sparse_packet_gate_refs",
+    "path": "references/489_anchor_relative_sparse_packet_gate_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the anchor-relative sparse packet cross-family smoke, covering relative representations, sparse crosscoders, JEPA, diffusion transformers, model stitching, and Q-Former/Perceiver-style learned receivers."
   }
 ]

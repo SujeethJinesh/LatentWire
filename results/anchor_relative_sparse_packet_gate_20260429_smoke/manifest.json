@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "anchor_relative_sparse_packet_gate.json": "850b0fe899be26ec60343e9c4c2455995ef4150644d84ddd316f67264c0f361a",
+    "anchor_relative_sparse_packet_gate.md": "5cce25835561675633fae1d1002a3cb72256b758653e5f635df3a8ee2c9b350c"
+  },
+  "artifacts": [
+    "anchor_relative_sparse_packet_gate.json",
+    "anchor_relative_sparse_packet_gate.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

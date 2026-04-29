@@ -1,0 +1,192 @@
+{
+  "gate": "anchor_relative_sparse_packet_gate",
+  "headline": {
+    "budgets": [
+      2,
+      4,
+      6,
+      8
+    ],
+    "direction_pass": {
+      "core_to_holdout": false,
+      "holdout_to_core": true
+    },
+    "directions": [
+      "core_to_holdout",
+      "holdout_to_core"
+    ],
+    "max_sparse_accuracy": 0.49609375,
+    "max_sparse_minus_target": 0.24609375,
+    "min_sparse_accuracy": 0.125,
+    "min_sparse_minus_control": -0.2109375,
+    "pass_directions": 1
+  },
+  "pass_gate": false,
+  "pass_rule": "At least one budget per direction must beat target by >=0.10, beat the best source-destroying control by >=0.05, and keep every control within target+0.03.",
+  "rows": [
+    {
+      "best_control_accuracy": 0.453125,
+      "budget_bytes": 2,
+      "control_accuracies": {
+        "sparse_anchor_answer_masked_source": 0.125,
+        "sparse_anchor_constrained_shuffled_source": 0.25,
+        "sparse_anchor_id_permutation": 0.453125,
+        "sparse_anchor_random_valid_same_byte": 0.23828125,
+        "sparse_anchor_target_derived_sidecar": 0.25
+      },
+      "controls_ok": false,
+      "direction": "core_to_holdout",
+      "exact_id_parity": true,
+      "n": 512,
+      "pass_gate": false,
+      "sparse_anchor_accuracy": 0.2421875,
+      "sparse_minus_best_control": -0.2109375,
+      "sparse_minus_target": -0.0078125,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.271484375,
+      "budget_bytes": 4,
+      "control_accuracies": {
+        "sparse_anchor_answer_masked_source": 0.125,
+        "sparse_anchor_constrained_shuffled_source": 0.19140625,
+        "sparse_anchor_id_permutation": 0.25,
+        "sparse_anchor_random_valid_same_byte": 0.271484375,
+        "sparse_anchor_target_derived_sidecar": 0.25
+      },
+      "controls_ok": true,
+      "direction": "core_to_holdout",
+      "exact_id_parity": true,
+      "n": 512,
+      "pass_gate": false,
+      "sparse_anchor_accuracy": 0.25,
+      "sparse_minus_best_control": -0.021484375,
+      "sparse_minus_target": 0.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.283203125,
+      "budget_bytes": 6,
+      "control_accuracies": {
+        "sparse_anchor_answer_masked_source": 0.125,
+        "sparse_anchor_constrained_shuffled_source": 0.125,
+        "sparse_anchor_id_permutation": 0.25,
+        "sparse_anchor_random_valid_same_byte": 0.283203125,
+        "sparse_anchor_target_derived_sidecar": 0.25
+      },
+      "controls_ok": false,
+      "direction": "core_to_holdout",
+      "exact_id_parity": true,
+      "n": 512,
+      "pass_gate": false,
+      "sparse_anchor_accuracy": 0.125,
+      "sparse_minus_best_control": -0.158203125,
+      "sparse_minus_target": -0.125,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.375,
+      "budget_bytes": 8,
+      "control_accuracies": {
+        "sparse_anchor_answer_masked_source": 0.25,
+        "sparse_anchor_constrained_shuffled_source": 0.25,
+        "sparse_anchor_id_permutation": 0.375,
+        "sparse_anchor_random_valid_same_byte": 0.263671875,
+        "sparse_anchor_target_derived_sidecar": 0.25
+      },
+      "controls_ok": false,
+      "direction": "core_to_holdout",
+      "exact_id_parity": true,
+      "n": 512,
+      "pass_gate": false,
+      "sparse_anchor_accuracy": 0.25,
+      "sparse_minus_best_control": -0.125,
+      "sparse_minus_target": 0.0,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 2,
+      "control_accuracies": {
+        "sparse_anchor_answer_masked_source": 0.125,
+        "sparse_anchor_constrained_shuffled_source": 0.2109375,
+        "sparse_anchor_id_permutation": 0.236328125,
+        "sparse_anchor_random_valid_same_byte": 0.25,
+        "sparse_anchor_target_derived_sidecar": 0.25
+      },
+      "controls_ok": true,
+      "direction": "holdout_to_core",
+      "exact_id_parity": true,
+      "n": 512,
+      "pass_gate": true,
+      "sparse_anchor_accuracy": 0.49609375,
+      "sparse_minus_best_control": 0.24609375,
+      "sparse_minus_target": 0.24609375,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 4,
+      "control_accuracies": {
+        "sparse_anchor_answer_masked_source": 0.0,
+        "sparse_anchor_constrained_shuffled_source": 0.025390625,
+        "sparse_anchor_id_permutation": 0.125,
+        "sparse_anchor_random_valid_same_byte": 0.228515625,
+        "sparse_anchor_target_derived_sidecar": 0.25
+      },
+      "controls_ok": true,
+      "direction": "holdout_to_core",
+      "exact_id_parity": true,
+      "n": 512,
+      "pass_gate": false,
+      "sparse_anchor_accuracy": 0.248046875,
+      "sparse_minus_best_control": -0.001953125,
+      "sparse_minus_target": -0.001953125,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 6,
+      "control_accuracies": {
+        "sparse_anchor_answer_masked_source": 0.0,
+        "sparse_anchor_constrained_shuffled_source": 0.126953125,
+        "sparse_anchor_id_permutation": 0.125,
+        "sparse_anchor_random_valid_same_byte": 0.24609375,
+        "sparse_anchor_target_derived_sidecar": 0.25
+      },
+      "controls_ok": true,
+      "direction": "holdout_to_core",
+      "exact_id_parity": true,
+      "n": 512,
+      "pass_gate": false,
+      "sparse_anchor_accuracy": 0.26953125,
+      "sparse_minus_best_control": 0.01953125,
+      "sparse_minus_target": 0.01953125,
+      "target_accuracy": 0.25
+    },
+    {
+      "best_control_accuracy": 0.26171875,
+      "budget_bytes": 8,
+      "control_accuracies": {
+        "sparse_anchor_answer_masked_source": 0.25,
+        "sparse_anchor_constrained_shuffled_source": 0.126953125,
+        "sparse_anchor_id_permutation": 0.125,
+        "sparse_anchor_random_valid_same_byte": 0.26171875,
+        "sparse_anchor_target_derived_sidecar": 0.25
+      },
+      "controls_ok": true,
+      "direction": "holdout_to_core",
+      "exact_id_parity": true,
+      "n": 512,
+      "pass_gate": true,
+      "sparse_anchor_accuracy": 0.373046875,
+      "sparse_minus_best_control": 0.111328125,
+      "sparse_minus_target": 0.123046875,
+      "target_accuracy": 0.25
+    }
+  ],
+  "run_dirs": [
+    "/Users/sujeethjinesh/Desktop/LatentWire/results/anchor_relative_sparse_packet_gate_20260429_smoke/core_to_holdout",
+    "/Users/sujeethjinesh/Desktop/LatentWire/results/anchor_relative_sparse_packet_gate_20260429_smoke/holdout_to_core"
+  ]
+}

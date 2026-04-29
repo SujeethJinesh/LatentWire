@@ -288,6 +288,40 @@ def _protected_residual_rows(path: pathlib.Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _anchor_relative_sparse_rows(path: pathlib.Path) -> list[dict[str, Any]]:
+    payload = _read_json(path)
+    rows = []
+    for row in payload["rows"]:
+        if row["pass_gate"]:
+            status = "pass"
+        elif row["sparse_anchor_accuracy"] > row["target_accuracy"]:
+            status = "near-miss"
+        else:
+            status = "fail"
+        rows.append(
+            _row(
+                row_id=f"anchor_sparse::{row['direction']}::budget{row['budget_bytes']}",
+                contribution="anchor-relative sparse packet cross-family falsification",
+                method=f"{row['budget_bytes']}-byte AR-SIP",
+                surface=row["direction"],
+                status=status,
+                accuracy=row["sparse_anchor_accuracy"],
+                target_accuracy=row["target_accuracy"],
+                best_control_accuracy=row["best_control_accuracy"],
+                mean_payload_bytes=float(row["budget_bytes"]),
+                mean_payload_tokens=None,
+                p50_latency_ms=None,
+                comparator="scalar WZ / canonical RASP / source controls",
+                note=(
+                    f"controls_ok={row['controls_ok']}; "
+                    f"sparse_minus_target={row['sparse_minus_target']:.3f}; "
+                    f"sparse_minus_control={row['sparse_minus_best_control']:.3f}"
+                ),
+            )
+        )
+    return rows
+
+
 def _tool_trace_packet_row(
     row_id: str,
     path: pathlib.Path,
@@ -362,6 +396,7 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
     rows.extend(_wyner_ziv_rows(ROOT / "results/source_private_wyner_ziv_packet_gate_20260429/wyner_ziv_packet_gate.json"))
     rows.extend(_wyner_ziv_cross_family_rows(ROOT / "results/source_private_wyner_ziv_cross_family_gate_20260429/wyner_ziv_cross_family_gate.json"))
     rows.extend(_protected_residual_rows(ROOT / "results/source_private_protected_residual_packet_gate_20260429/protected_residual_packet_gate.json"))
+    rows.extend(_anchor_relative_sparse_rows(ROOT / "results/anchor_relative_sparse_packet_gate_20260429_smoke/anchor_relative_sparse_packet_gate.json"))
     rows.extend(
         _relative_rows(
             ROOT / "results/source_private_relative_canonical_bootstrap_remap7_20260429/summary.json",

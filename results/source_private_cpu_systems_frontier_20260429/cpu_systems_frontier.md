@@ -1,10 +1,10 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `63`
-- pass rows: `37`
-- fail / near-miss rows: `26`
-- minimum passing accuracy: `0.418`
-- maximum passing payload bytes: `6.0`
+- rows: `71`
+- pass rows: `39`
+- fail / near-miss rows: `32`
+- minimum passing accuracy: `0.373`
+- maximum passing payload bytes: `8.0`
 - minimum passing model-packet valid rate: `0.537`
 
 ## Rows
@@ -45,6 +45,14 @@
 | protected rotated residual packet ablation | 2-byte protected residual packet | remap 107 | `near-miss` | 0.432 | 0.250 | 0.256 | 2.0 | - | - | scalar=0.418; qjl=0.393; canonical_rasp=0.350; protected_minus_scalar=0.014; strict_codec_pass=False |
 | protected rotated residual packet ablation | 4-byte protected residual packet | remap 107 | `near-miss` | 0.436 | 0.250 | 0.258 | 4.0 | - | - | scalar=0.445; qjl=0.453; canonical_rasp=0.506; protected_minus_scalar=-0.010; strict_codec_pass=False |
 | protected rotated residual packet ablation | 6-byte protected residual packet | remap 107 | `fail` | 0.453 | 0.250 | 0.250 | 6.0 | - | - | scalar=0.492; qjl=0.457; canonical_rasp=0.506; protected_minus_scalar=-0.039; strict_codec_pass=False |
+| anchor-relative sparse packet cross-family falsification | 2-byte AR-SIP | core_to_holdout | `fail` | 0.242 | 0.250 | 0.453 | 2.0 | - | - | controls_ok=False; sparse_minus_target=-0.008; sparse_minus_control=-0.211 |
+| anchor-relative sparse packet cross-family falsification | 4-byte AR-SIP | core_to_holdout | `fail` | 0.250 | 0.250 | 0.271 | 4.0 | - | - | controls_ok=True; sparse_minus_target=0.000; sparse_minus_control=-0.021 |
+| anchor-relative sparse packet cross-family falsification | 6-byte AR-SIP | core_to_holdout | `fail` | 0.125 | 0.250 | 0.283 | 6.0 | - | - | controls_ok=False; sparse_minus_target=-0.125; sparse_minus_control=-0.158 |
+| anchor-relative sparse packet cross-family falsification | 8-byte AR-SIP | core_to_holdout | `fail` | 0.250 | 0.250 | 0.375 | 8.0 | - | - | controls_ok=False; sparse_minus_target=0.000; sparse_minus_control=-0.125 |
+| anchor-relative sparse packet cross-family falsification | 2-byte AR-SIP | holdout_to_core | `pass` | 0.496 | 0.250 | 0.250 | 2.0 | - | - | controls_ok=True; sparse_minus_target=0.246; sparse_minus_control=0.246 |
+| anchor-relative sparse packet cross-family falsification | 4-byte AR-SIP | holdout_to_core | `fail` | 0.248 | 0.250 | 0.250 | 4.0 | - | - | controls_ok=True; sparse_minus_target=-0.002; sparse_minus_control=-0.002 |
+| anchor-relative sparse packet cross-family falsification | 6-byte AR-SIP | holdout_to_core | `near-miss` | 0.270 | 0.250 | 0.250 | 6.0 | - | - | controls_ok=True; sparse_minus_target=0.020; sparse_minus_control=0.020 |
+| anchor-relative sparse packet cross-family falsification | 8-byte AR-SIP | holdout_to_core | `pass` | 0.373 | 0.250 | 0.262 | 8.0 | - | - | controls_ok=True; sparse_minus_target=0.123; sparse_minus_control=0.111 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 101 | `near-miss` | 0.494 | 0.250 | 0.295 | 4.0 | - | 0.184 | scalar=0.426; relative_minus_scalar=0.068 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 103 | `near-miss` | 0.520 | 0.250 | 0.256 | 4.0 | - | 0.213 | scalar=0.496; relative_minus_scalar=0.023 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 107 | `near-miss` | 0.506 | 0.250 | 0.355 | 4.0 | - | 0.199 | scalar=0.502; relative_minus_scalar=0.004 |

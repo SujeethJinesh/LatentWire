@@ -14,9 +14,10 @@ and failed rows so the paper story can claim only what the evidence supports.
 
 ## Headline
 
-The aggregate now has `63` rows after adding learned Wyner-Ziv packet evidence,
+The aggregate now has `71` rows after adding learned Wyner-Ziv packet evidence,
 bidirectional cross-family falsification rows, protected residual codec
-ablation rows, and progress-enabled target-decoder receiver rows. The
+ablation rows, progress-enabled target-decoder receiver rows, and the static
+anchor-relative sparse packet smoke. The
 strongest systems result
 remains the byte-rate frontier: a `2` byte diagnostic packet reaches oracle
 accuracy on the frozen core and holdout surfaces, while structured
@@ -40,6 +41,10 @@ The learned packet story remains positive in scoped settings:
 - Canonical RASP gives a `4` byte candidate-relative transport. It passes the
   larger worst-remap slice (`0.442` vs scalar `0.361` and target `0.250`) but
   the seven-remap bootstrap remains a near miss.
+- Static anchor-relative sparse innovation packets pass holdout-to-core at some
+  budgets (`0.496` at 2 bytes and `0.373` at 8 bytes with clean controls), but
+  fail core-to-holdout. This prunes the shallow hypothesis that relative sparse
+  coordinates alone solve bidirectional cross-family transfer.
 - Model-emitted source packets pass on Qwen3.5 small models, Gemma 4 E2B, and
   Granite 3.3 2B strict-prompt rows, with Granite exposing a lower packet-valid
   floor (`0.537`).
@@ -63,6 +68,9 @@ The aggregate explicitly keeps the main failed rows:
 - Learned WZ cross-family also fails bidirectionally under the strict all-budget
   rule: `core_to_holdout` is below target at every budget and explained by
   controls; `holdout_to_core` only passes at `6` bytes.
+- Static AR-SIP repeats the same asymmetry: holdout-to-core has clean positive
+  rows, but core-to-holdout stays at or below target-only and some anchor/random
+  controls dominate the matched packet.
 - Protected residual packets are kept as near-miss/fail rows rather than a
   promoted codec method: they beat source controls but miss the strict latency
   and high-budget scalar-preservation thresholds.
@@ -95,9 +103,9 @@ byte-rate and local CPU decode-cost evidence, not serving-latency superiority.
 
 ## Next Gate
 
-The highest-priority reviewer-facing gate is now either (1) an endpoint
-TTFT/E2E latency frontier for packet versus structured/full-log relay, or (2) a
-new anchor-relative sparse innovation packet that directly targets the failed
-bidirectional cross-family rows. The receiver objection is weakened by the n32
-all-control frozen-model pass, but not fully closed until n160/n256 all-control
-rows are available.
+The highest-priority reviewer-facing gate is now endpoint TTFT/E2E latency for
+packet versus structured/full-log relay. The receiver objection is weakened by
+the n32 all-control frozen-model pass, and the static AR-SIP branch has been
+pruned. Any further cross-family method work should move to a learned
+target-preserving query bottleneck or richer source surface, not another static
+sparse coordinate packet.

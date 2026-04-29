@@ -133,6 +133,16 @@ handoff, not generic latent communication. The top new method branch is now
 anchor-relative sparse innovation packets to target the scalar WZ/canonical
 RASP cross-family failure.
 
+Update `2026-04-29`: the static anchor-relative sparse innovation packet branch
+has been tested and pruned as a bidirectional cross-family fix. AR-SIP passes
+holdout-to-core at some budgets (`0.496` at 2 bytes and `0.373` at 8 bytes with
+clean controls), but core-to-holdout stays at or below target-only and
+anchor/random controls can dominate. This is a serious negative for shallow
+relative-coordinate fixes. It strengthens the paper's honesty and narrows the
+next branch: either add endpoint TTFT/E2E systems telemetry for the existing
+positive packet, or pursue a learned target-preserving query bottleneck /
+Q-Former-style receiver rather than another static sparse code.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

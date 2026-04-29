@@ -14957,3 +14957,19 @@ Apple MPS matmul shape error. The CPU systems frontier now has `63` rows.
 Subagent literature synthesis keeps the broad latent-communication novelty
 claim scoped and selects anchor-relative sparse innovation packets as the next
 non-scalar cross-family branch.
+
+Follow-up `2026-04-29`: implemented and ran the first static
+anchor-relative sparse innovation packet (AR-SIP) cross-family smoke. The gate
+sends sparse `(candidate-anchor id, quantized score)` atoms and tests
+target-only, constrained shuffled source, answer-masked source, random valid
+same-byte, target-derived sidecar, and anchor-id permutation controls. The
+result is a useful negative: overall pass gate `False`, with direction pass
+`core_to_holdout=False` and `holdout_to_core=True`. Core-to-holdout never beats
+target-only (`0.242`, `0.250`, `0.125`, `0.250` across 2/4/6/8 bytes versus
+target `0.250`) and anchor/random controls can dominate. Holdout-to-core has
+clean positive rows at 2 bytes (`0.496` vs target/control `0.250`) and 8 bytes
+(`0.373` vs target `0.250`, best control `0.262`). This repeats the same
+asymmetry seen in scalar WZ and canonical RASP, so static relative sparse
+coordinates are pruned as a bidirectional cross-family fix. The next cross-
+family branch should use a learned receiver/query bottleneck or move to endpoint
+systems telemetry for the existing positive packet.
