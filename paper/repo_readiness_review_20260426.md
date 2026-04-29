@@ -65,6 +65,20 @@ target-decoder replication and diagnostic-code remap/paraphrase stress testing
 are needed before reviewers will accept the receiver and protocol as general
 rather than hand-coded.
 
+Update `2026-04-29`: the protocol-stress aggregate sharpens the uniqueness
+claim and the remaining reviewer risk. Deterministic diagnostic-codebook remaps
+pass across three `500`-example codebooks and four byte budgets; learned
+slot-feature remaps pass at `6` bytes with weaker margins; canonical
+candidate-order RASP rows remain positive but are marked as near misses because
+their aggregate bootstrap does not clear the strict CI threshold. The paper now
+has a clearer technical-contribution stack: source-private evidence-packet
+benchmark/control protocol, compact scalar packet method, byte-rate systems
+frontier, QJL/TurboQuant-style matched-byte comparator, canonical RASP
+candidate-relative packet, and protocol-stress/uniqueness accounting. It still
+needs either query-aware compressed-text baselines or learned target-decoder
+prompt-paraphrase stress before claiming the protocol objection is mostly
+handled.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

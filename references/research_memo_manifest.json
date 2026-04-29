@@ -901,5 +901,12 @@
     "path": "references/485_consistency_posterior_packet_refs.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the consistency-distilled canonical posterior packet ablation and next systems-rate frontier, covering JEPA/consistency objectives, relative representations, QJL/TurboQuant, KV compression, and activation/cache communication competitors."
+  },
+  {
+    "num": 486,
+    "slug": "protocol_stress_and_uniqueness_refs",
+    "path": "references/486_protocol_stress_and_uniqueness_refs.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo positioning the source-private packet contribution against C2C, KVComm, cache reuse, prompt compression, source coding, TurboQuant/QJL, connector, and diffusion-inspired latent bottleneck work."
   }
 ]

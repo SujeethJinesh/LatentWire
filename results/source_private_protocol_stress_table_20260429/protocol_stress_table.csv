@@ -1,0 +1,23 @@
+family,stressor,surface,status,n,mean_payload_bytes,accuracy,target_accuracy,best_control_accuracy,delta_vs_target,delta_vs_best_control,exact_or_public_parity,note
+deterministic diagnostic packet,diagnostic codebook remap,seed 29 budget 2,pass,500,2.0,1.0,0.25,0.254,0.75,0.746,True,"codebook=a1521325; preview=G0,H1,J2,K3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 29 budget 4,pass,500,4.0,1.0,0.25,0.256,0.75,0.744,True,"codebook=a1521325; preview=G0,H1,J2,K3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 29 budget 8,pass,500,8.0,1.0,0.25,0.252,0.75,0.748,True,"codebook=a1521325; preview=G0,H1,J2,K3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 29 budget 16,pass,500,16.0,1.0,0.25,0.252,0.75,0.748,True,"codebook=a1521325; preview=G0,H1,J2,K3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 31 budget 2,pass,500,2.0,1.0,0.25,0.252,0.75,0.748,True,"codebook=93fa3909; preview=J0,K1,L2,M3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 31 budget 4,pass,500,4.0,1.0,0.25,0.252,0.75,0.748,True,"codebook=93fa3909; preview=J0,K1,L2,M3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 31 budget 8,pass,500,8.0,1.0,0.25,0.254,0.75,0.746,True,"codebook=93fa3909; preview=J0,K1,L2,M3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 31 budget 16,pass,500,16.0,1.0,0.25,0.254,0.75,0.746,True,"codebook=93fa3909; preview=J0,K1,L2,M3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 37 budget 2,pass,500,2.0,1.0,0.25,0.25,0.75,0.75,True,"codebook=a5fe24f3; preview=Q0,R1,S2,T3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 37 budget 4,pass,500,4.0,1.0,0.25,0.252,0.75,0.748,True,"codebook=a5fe24f3; preview=Q0,R1,S2,T3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 37 budget 8,pass,500,8.0,1.0,0.25,0.252,0.75,0.748,True,"codebook=a5fe24f3; preview=Q0,R1,S2,T3"
+deterministic diagnostic packet,diagnostic codebook remap,seed 37 budget 16,pass,500,16.0,1.0,0.25,0.252,0.75,0.748,True,"codebook=a5fe24f3; preview=Q0,R1,S2,T3"
+learned scalar packet,slot-feature remap,remap 101,pass,512,6.0,0.462890625,0.25,0.263671875,0.212890625,0.19921875,True,raw_sign=0.332; ci_low_vs_target=0.156
+learned scalar packet,slot-feature remap,remap 103,pass,512,6.0,0.5078125,0.25,0.265625,0.2578125,0.2421875,True,raw_sign=0.316; ci_low_vs_target=0.199
+learned scalar packet,slot-feature remap,remap 107,pass,512,6.0,0.4921875,0.25,0.25,0.2421875,0.2421875,True,raw_sign=0.330; ci_low_vs_target=0.186
+canonical RASP relative-score packet,canonical candidate-order remap,remap 101,near-miss,512,4.0,0.494140625,0.25,0.294921875,0.244140625,0.19921875,True,scalar=0.426; relative_minus_scalar=0.068; ci_low_vs_target=0.184
+canonical RASP relative-score packet,canonical candidate-order remap,remap 103,near-miss,512,4.0,0.51953125,0.25,0.255859375,0.26953125,0.263671875,True,scalar=0.496; relative_minus_scalar=0.023; ci_low_vs_target=0.213
+canonical RASP relative-score packet,canonical candidate-order remap,remap 107,near-miss,512,4.0,0.505859375,0.25,0.35546875,0.255859375,0.150390625,True,scalar=0.502; relative_minus_scalar=0.004; ci_low_vs_target=0.199
+canonical RASP relative-score packet,canonical candidate-order remap,remap 109,near-miss,512,4.0,0.4765625,0.25,0.279296875,0.2265625,0.197265625,True,scalar=0.451; relative_minus_scalar=0.025; ci_low_vs_target=0.170
+canonical RASP relative-score packet,canonical candidate-order remap,remap 113,near-miss,512,4.0,0.47265625,0.25,0.279296875,0.22265625,0.193359375,True,scalar=0.436; relative_minus_scalar=0.037; ci_low_vs_target=0.164
+canonical RASP relative-score packet,canonical candidate-order remap,remap 127,near-miss,512,4.0,0.453125,0.25,0.275390625,0.203125,0.177734375,True,scalar=0.428; relative_minus_scalar=0.025; ci_low_vs_target=0.146
+canonical RASP relative-score packet,canonical candidate-order remap,remap 131,near-miss,512,4.0,0.505859375,0.25,0.28125,0.255859375,0.224609375,True,scalar=0.434; relative_minus_scalar=0.072; ci_low_vs_target=0.197

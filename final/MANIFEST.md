@@ -76,6 +76,9 @@
 - Consolidated CPU systems frontier script, test, memo, and artifact collecting
   `32` positive, near-miss, and failed rows across rate, scalar, canonical RASP,
   model-emitted packet, target-decoder, and cross-family evidence.
+- Protocol-stress table script, test, memo, references, and artifact collecting
+  diagnostic-codebook, learned slot-feature, and canonical candidate-order
+  remap evidence plus the remaining learned target-decoder paraphrase gap.
 
 ## Notes
 

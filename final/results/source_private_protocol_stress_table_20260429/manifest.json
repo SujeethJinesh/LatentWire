@@ -1,0 +1,15 @@
+{
+  "artifact_sha256": {
+    "protocol_stress_table.csv": "76102a3f77ec1351084d8a3b1e8de7d44406f477d6a2c309655269abf2317f32",
+    "protocol_stress_table.json": "f3291c145f315709daa2bf0348a3245a875bb03f96caac0d680de22fd55a4f82",
+    "protocol_stress_table.md": "82f9f010e71d851223d458c5007e5dfb7181f81c0a4be7ab5d83f5ebab9c509c"
+  },
+  "artifacts": [
+    "protocol_stress_table.json",
+    "protocol_stress_table.md",
+    "protocol_stress_table.csv",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

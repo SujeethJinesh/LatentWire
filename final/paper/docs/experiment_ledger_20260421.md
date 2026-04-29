@@ -14856,3 +14856,23 @@ single artifact while preserving the honest limitation: cross-family remains
 asymmetric and endpoint TTFT/throughput is still unmeasured. Next reviewer gate:
 larger target-model decoder replication or diagnostic-code remap/paraphrase
 stress testing.
+
+Follow-up `2026-04-29`: added
+`results/source_private_protocol_stress_table_20260429`, a focused reviewer-risk
+aggregation for the fixed-codebook/protocol objection. The table has `22` rows:
+`12` deterministic diagnostic-codebook remap rows over `500` examples and
+budgets `2/4/8/16`, `3` learned slot-feature remap rows over `512` examples at
+`6` bytes, and `7` canonical candidate-order remap rows over `512` examples at
+`4` bytes. It reports `15` pass rows and `7` near-miss rows, with minimum
+passing delta versus target-only `+0.213`. The near-miss rows are intentional:
+canonical RASP is positive on each remap but the seven-remap bootstrap remains
+just short of the strict CI rule. The new reference memo
+`references/486_protocol_stress_and_uniqueness_refs.md` positions the
+contribution against C2C, KVComm, cache reuse, prompt compression, decoder-side
+source coding, TurboQuant/QJL, connectors, and diffusion-inspired bottlenecks.
+The defensible novelty is now framed as extreme-rate source-private evidence
+handoff with decoder side information, not generic model-to-model
+communication. MPS target-decoder probing still fails before prediction with
+the known Apple MPS matmul shape error, so the next cheap reviewer gate is
+query-aware compressed-text controls or learned target-decoder prompt
+paraphrase stress.
