@@ -300,13 +300,14 @@ def _model_matrix() -> list[CandidateModel]:
             limit=160,
             dtype="float32",
             max_new_tokens=8,
-            status="CPU copied-helper n160 and trace-no-hint n160 passed; MPS backend fails",
+            status="CPU copied-helper n160 and trace-no-hint n160 seed repeat passed; raw-log/no-trace collapses; MPS backend fails",
             rationale=(
                 "Enterprise/open small instruct row with long-context positioning. It is the first non-Qwen "
                 "positive emitter: copied-helper CPU n160 reaches 0.800 matched accuracy vs 0.250 target and "
-                "0.256 best controls. Trace-no-hint CPU n160 is weaker but still positive at 0.631 matched "
-                "accuracy vs 0.250 target and 0.256 best control. Apple MPS fails before generation, so keep "
-                "the claim scoped to CPU/source-emitter behavior."
+                "0.256 best controls. Trace-no-hint CPU n160 is weaker but seed-stable at 0.631 matched "
+                "accuracy on seeds 29/31 versus a 0.250 target/control floor. Raw-log/no-trace collapses to "
+                "target-only with zero valid packets, so the Granite gain is tied to the private diagnostic "
+                "trace. Apple MPS fails before generation, so keep the claim scoped to CPU/source-emitter behavior."
             ),
         ),
         CandidateModel(
@@ -490,7 +491,7 @@ def main() -> None:
             "Treat MoE generalization as plausible but unproven. Qwen3.5-0.8B now has CPU n160 seed-stable "
             "passes after upgrading Transformers to 5.7.0; Qwen3.5-2B now also passes CPU n160; Qwen3.5-4B "
             "passes CPU n64; Gemma 4 E2B passes MPS n160 on seeds 29/31 and n500 on seed29; Granite has copied-helper and "
-            "trace-no-hint n160 non-Qwen passes; Gemma raw-log/no-trace collapses to target-only. Next use "
+            "trace-no-hint n160 non-Qwen seed-stable passes; Gemma and Granite raw-log/no-trace rows collapse to target-only. Next use "
             "Qwen3.6-35B-A3B and FP8 as off-machine MoE falsification rows when remote execution is allowed, "
             "or run additional local non-Qwen seeds."
         ),
@@ -506,8 +507,9 @@ def main() -> None:
             "than source-packet evidence. OLMo-2-0425-1B-Instruct is a behavioral negative at n16 "
             "with zero valid packets; Gemma-4-E2B-it is a non-Qwen strict-prompt MPS n160 seed-stable positive "
             "and n500 large-slice positive whose raw-log/no-trace row collapses to target-only with zero valid packets; "
-            "Granite-3.3-2B-Instruct is positive under copied-helper CPU n160 and weaker but still positive "
-            "under trace-no-hint CPU n160, while its MPS row is backend-blocked."
+            "Granite-3.3-2B-Instruct is positive under copied-helper CPU n160 and weaker but seed-stable "
+            "under trace-no-hint CPU n160 on seeds 29/31; its raw-log/no-trace row collapses to target-only, "
+            "while its MPS row is backend-blocked."
         ),
         "models": models,
     }

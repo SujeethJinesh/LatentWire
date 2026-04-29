@@ -14626,3 +14626,14 @@ explicit: (1) source-private communication with decoder side information,
 source-destroying evaluation harness. The table now also separates
 post-package latest-small/non-Qwen rows from the core submission rows and keeps
 MoE/FP8 marked as unclaimed until endpoint gates pass.
+
+Update `2026-04-28`: `granite33_2b_seed_stability_and_trace_ablation_20260428`
+hardens the weakest positive non-Qwen emitter. `ibm-granite/granite-3.3-2b-instruct`
+CPU trace-no-hint n160 seed31 repeats the seed29 strict-prompt boundary:
+matched `101/160 = 0.631`, target-only/best control `40/160 = 0.250`, packet
+valid rate `0.537`, exact-ID parity true, matched-minus-best-control `+0.381`,
+and p50 packet latency `3691 ms`. The paired raw-log/no-trace n160 seed31 row
+collapses to matched `40/160 = 0.250`, target-only/best control `40/160`,
+packet valid rate `0.000`, exact-ID parity true, and p50 latency `2857 ms`.
+This promotes Granite as a stable prompt-contract sensitivity row while making
+clear it is weaker than Qwen/Gemma and not a universal prompt-invariant claim.

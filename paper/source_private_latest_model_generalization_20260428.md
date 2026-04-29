@@ -2,7 +2,7 @@
 
 - date: `2026-04-28`
 - gate: `latest_model_generalization_scout_20260428`
-- status: Qwen3.5 0.8B/2B/4B rows pass; Gemma 4 E2B strict-prompt n500 passes on MPS after n160 seed stability; Granite strict-prompt n160 passes; MoE broad claim remains unproven
+- status: Qwen3.5 0.8B/2B/4B rows pass; Gemma 4 E2B strict-prompt n500 passes on MPS after n160 seed stability; Granite strict-prompt n160 is seed-stable on CPU and collapses under raw-log/no-trace; MoE broad claim remains unproven
 
 ## Current Readiness
 
@@ -30,12 +30,13 @@ target/control at `0.250` and packet valid rate `1.000`.
 We now have two non-Qwen positive rows under the strict `trace_no_hint` prompt:
 `google/gemma-4-E2B-it` passes at `n=160` on two seeds with perfect packet emission and at
 `n=500` on MPS with the same strict prompt, and
-`ibm-granite/granite-3.3-2b-instruct` passes at `n=160` with weaker but still
-source-specific packet emission. Gemma's raw-log/no-trace source-destroying row
-collapses to target-only with zero valid packets, so the non-Qwen gain depends
-on the private diagnostic trace line. The cross-family claim remains scoped:
-OLMo fails behaviorally with zero valid packets, Granite is less prompt-robust
-than Qwen/Gemma, and MoE/FP8 rows remain unrun.
+`ibm-granite/granite-3.3-2b-instruct` passes at `n=160` on two seeds with
+weaker but stable source-specific packet emission. Gemma and Granite
+raw-log/no-trace source-destroying rows collapse to target-only with zero valid
+packets, so the non-Qwen gains depend on the private diagnostic trace line. The
+cross-family claim remains scoped: OLMo fails behaviorally with zero valid
+packets, Granite is less prompt-robust than Qwen/Gemma, and MoE/FP8 rows remain
+unrun.
 
 ## What I Checked
 
@@ -211,6 +212,14 @@ I ran the first non-Qwen falsification rows:
   `101/160 = 0.631`, packet valid rate `0.537`, target-only `40/160 = 0.250`,
   best control `41/160 = 0.256`, exact-ID parity true, p50 CPU latency
   `2816 ms`, pass but still weaker than Qwen/Gemma.
+- `ibm-granite/granite-3.3-2b-instruct`, CPU n160, trace-no-hint, seed31:
+  repeats the same boundary result with `101/160 = 0.631`, packet valid rate
+  `0.537`, target-only/best control `40/160 = 0.250`, exact-ID parity true, p50
+  CPU latency `3691 ms`.
+- `ibm-granite/granite-3.3-2b-instruct`, CPU n160, raw-log/no-trace, seed31:
+  source-signal ablation collapses to `40/160 = 0.250`, packet valid rate
+  `0.000`, target-only/best control `40/160 = 0.250`, exact-ID parity true, p50
+  CPU latency `2857 ms`.
 - `google/gemma-4-E2B-it`, CPU n16, trace-no-hint:
   `16/16 = 1.000`, packet valid rate `1.000`, controls `4/16 = 0.250`, pass.
 - `google/gemma-4-E2B-it`, CPU n64, trace-no-hint:
@@ -241,6 +250,8 @@ Artifacts:
 - `results/source_private_non_qwen_packet_20260428/ibm_granite__granite_3_3_2b_instruct_n160_seed29_copied_helper_cpu/summary.json`
 - `results/source_private_non_qwen_packet_20260428/ibm_granite__granite_3_3_2b_instruct_n64_seed29_trace_no_hint_cpu/summary.json`
 - `results/source_private_latest_model_matrix_20260428/granite33_2b_trace_no_hint_n160_cpu_seed29/summary.json`
+- `results/source_private_latest_model_matrix_20260428/granite33_2b_trace_no_hint_n160_cpu_seed31/summary.json`
+- `results/source_private_latest_model_matrix_20260428/granite33_2b_raw_log_no_trace_n160_cpu_seed31/summary.json`
 - `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n16_cpu_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n64_cpu_seed29/summary.json`
 - `results/source_private_latest_model_matrix_20260428/gemma4_e2b_trace_no_hint_n16_mps_seed29/summary.json`
@@ -301,9 +312,10 @@ latest small Qwen3.5 sizes once dependencies are updated.
 Gemma 4 E2B adds a clean non-Qwen strict-prompt positive that is seed-stable at
 n160 and large-slice positive at n500; its raw-log/no-trace row collapses to
 target-only, and Granite adds both
-copied-helper and weaker strict-prompt n160 positives. This supports
-cross-family feasibility with prompt-contract sensitivity, not a universal
-prompt-invariant claim. If Qwen3.5 small and Qwen3.6 MoE
+copied-helper and weaker strict-prompt n160 positives that repeat on a second
+seed and collapse under raw-log/no-trace. This supports cross-family
+feasibility with prompt-contract sensitivity, not a universal prompt-invariant
+claim. If Qwen3.5 small and Qwen3.6 MoE
 rows pass at larger scale, the paper can strengthen its external-validity claim
 from "works across Qwen3/Phi-3/Qwen2.5-era source emitters" to "also transfers to
 latest small hybrid and sparse MoE source emitters." Until then, keep the

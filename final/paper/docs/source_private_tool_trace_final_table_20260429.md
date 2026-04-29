@@ -63,8 +63,9 @@ Post-package local source-emitter rows:
   `64/64 = 1.000`, controls `16/64 = 0.250`; useful latest-small breadth but
   slower on local CPU.
 - `ibm-granite/granite-3.3-2b-instruct`, CPU n160 strict trace-no-hint:
-  `101/160 = 0.631`, target-only `0.250`, best control `0.256`; positive but
-  prompt-contract sensitive.
+  `101/160 = 0.631` on seeds `29/31`, target-only `0.250`, best control
+  `0.250-0.256`; positive but prompt-contract sensitive. Its paired
+  raw-log/no-trace seed31 row collapses to `0.250` with zero valid packets.
 - `allenai/OLMo-2-0425-1B-Instruct`, MPS n16:
   behavioral negative with zero valid packets.
 
@@ -129,6 +130,8 @@ Passed:
 - reviewer-risk rows for matched-byte JSON/free-text, helper/no-log, diagnostic
   masking, and component masking
 - bytes/token systems comparison against full hidden-log relay
+- Gemma and Granite non-Qwen source-signal ablations: raw-log/no-trace
+  collapses to target-only with zero valid packets
 
 Failed or pruned:
 

@@ -118,9 +118,11 @@ The paired Gemma raw-log/no-trace ablation removes the private diagnostic trace
 line and collapses to `40/160 = 0.250` with `0` valid packets.
 `ibm-granite/granite-3.3-2b-instruct`
 reaches `128/160 = 0.800` on CPU with the copied-helper prompt and
-`101/160 = 0.631` under the strict trace-no-hint prompt, versus `0.250` target
-floor and `0.256` best control. OLMo 2-0425-1B is a behavioral negative with
-zero valid packets, and Granite MPS is backend-blocked.
+`101/160 = 0.631` under the strict trace-no-hint prompt on seeds `29/31`,
+versus `0.250` target floor and `0.250-0.256` best controls. Its paired
+raw-log/no-trace seed31 row collapses to `40/160 = 0.250` with `0` valid
+packets. OLMo 2-0425-1B is a behavioral negative with zero valid packets, and
+Granite MPS is backend-blocked.
 
 MoE generalization is plausible because the source task is exact private-evidence
 packet emission, not dense-model-specific latent transfer, but it is not yet a

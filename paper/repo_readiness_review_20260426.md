@@ -2066,3 +2066,14 @@ matched-minus-best-control `+0.748`, and p50 packet latency `754 ms`. This
 makes Gemma the strongest non-Qwen local source-emitter row: strict prompt,
 large slice, exact-ID parity, and paired source-signal ablation. The full-paper
 generalization blocker remains MoE/FP8 evidence, not dense non-Qwen feasibility.
+
+Update `2026-04-28`: Granite 3.3 2B now has a seed-stable strict-prompt boundary
+and paired source-signal ablation. `ibm-granite/granite-3.3-2b-instruct` CPU
+trace-no-hint n160 seed31 repeats the seed29 result exactly at matched
+`101/160 = 0.631`, target-only/best control `40/160 = 0.250`, packet valid rate
+`0.537`, exact-ID parity true, and p50 packet latency `3691 ms`. The paired
+raw-log/no-trace n160 seed31 row collapses to matched `40/160 = 0.250`,
+target-only/best control `40/160`, packet valid rate `0.000`, exact-ID parity
+true, and p50 packet latency `2857 ms`. This promotes Granite from a one-off
+weak non-Qwen positive to a stable prompt-contract sensitivity row, while still
+keeping the full-paper claim bounded.

@@ -56,7 +56,8 @@ controls show whether the gain is real source-private communication.
   frozen slices; Qwen3.5 small rows add latest-small breadth; Gemma 4 E2B now
   clears a strict-prompt n500 local row with MPS latency around `754 ms`.
 - **Cross-family prompt-contract diagnosis.** Gemma is clean and seed-stable;
-  Granite passes but is weaker; OLMo is a behavioral negative. This is more
+  Granite is weaker but now repeats on a second strict-prompt n160 seed and
+  collapses under raw-log/no-trace; OLMo is a behavioral negative. This is more
   useful than hiding failures because it identifies packet-emitter instruction
   following as a necessary condition.
 - **Endpoint runner for future MoE/FP8 gates.** The same evaluator can consume
@@ -94,10 +95,10 @@ The strongest likely reviewer objections are:
    n32, then FP8 n32. Pass requires matched `>= best_no_source + 0.15`, all
    source-destroying controls within `0.02` of no-source, exact-ID parity, and
    packet validity.
-2. **Local non-Qwen repeat if remote remains unavailable.** Repeat Gemma n500 on
-   seed31 or run Granite trace-no-hint n160 seed31. Gemma seed31 is expected to
-   pass; Granite seed31 is more discriminative because it tests the weaker
-   prompt-contract boundary.
+2. **Target-decoder scale-up if remote remains unavailable.** Run Qwen3 target
+   decoder n160 on core and held-out surfaces. This is now higher value than
+   another source-emitter repeat because it addresses the hand-coded decoder
+   objection directly.
 3. **Paper-facing ablation table.** Build a compact table that groups target,
    matched packet, structured text, raw-log/no-trace, codebook remap, and latest
    model rows. This will make the three contributions obvious to reviewers.
