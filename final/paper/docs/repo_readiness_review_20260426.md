@@ -87,6 +87,14 @@ oracle at `14` bytes on both frozen surfaces. The packet still reaches oracle at
 baseline and `10.5x` over JSON. This improves the systems contribution, but
 does not create endpoint TTFT evidence or solve the learned-receiver objection.
 
+Update `2026-04-29`: the learned Wyner-Ziv packet gate is now the strongest
+answer to the “hand-coded deterministic code” objection. It passes `9/9`
+remapped slot-codebook rows across `2/4/6` byte budgets, with scalar WZ accuracy
+`0.418-0.508` versus target-only `0.250` and clean source-destroying controls.
+This adds a real learned source-private syndrome contribution. It does not
+change the full-paper blocker: bidirectional cross-family evidence and a larger
+target-model decoder are still missing.
+
 Update `2026-04-27`: the no-harm CPU replay kills shallow source-predicate
 decoding on current artifacts. A 4-bit candidate syndrome still has source
 specificity on holdout (`4` clean source-necessary IDs, control clean union

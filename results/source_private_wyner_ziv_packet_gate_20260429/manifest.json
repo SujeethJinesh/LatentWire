@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "wyner_ziv_packet_gate.json": "8e6112dd4c0b808f222aa43f5be7540e4edf11f2919eed2b305ac460ecbe382a",
+    "wyner_ziv_packet_gate.md": "a1bcbf6a646759f9ef2e7d59950f800ebddb52132a8a7b0a7bdb23e1769f848b"
+  },
+  "artifacts": [
+    "wyner_ziv_packet_gate.json",
+    "wyner_ziv_packet_gate.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

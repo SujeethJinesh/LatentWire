@@ -1,9 +1,9 @@
 # Source-Private CPU Systems Frontier
 
-- rows: `32`
-- pass rows: `22`
+- rows: `41`
+- pass rows: `31`
 - fail / near-miss rows: `10`
-- minimum passing accuracy: `0.442`
+- minimum passing accuracy: `0.418`
 - maximum passing payload bytes: `6.0`
 - minimum passing model-packet valid rate: `0.537`
 
@@ -21,6 +21,15 @@
 | learned scalar packet | 6-byte slot/no-intercept scalar packet | remap 101 | `pass` | 0.463 | 0.250 | 0.264 | 6.0 | - | 0.156 | raw_sign=0.332; scalar-control delta=0.199 |
 | learned scalar packet | 6-byte slot/no-intercept scalar packet | remap 103 | `pass` | 0.508 | 0.250 | 0.266 | 6.0 | - | 0.199 | raw_sign=0.316; scalar-control delta=0.242 |
 | learned scalar packet | 6-byte slot/no-intercept scalar packet | remap 107 | `pass` | 0.492 | 0.250 | 0.250 | 6.0 | - | 0.186 | raw_sign=0.330; scalar-control delta=0.242 |
+| learned Wyner-Ziv syndrome packet | 2-byte scalar WZ packet | remap 101 | `pass` | 0.418 | 0.250 | 0.264 | 2.0 | - | - | raw_sign=0.301; qjl=0.396; canonical_rasp=0.350; query_text_at_budget=0.250; packet_vs_query_text_oracle=7.0x |
+| learned Wyner-Ziv syndrome packet | 4-byte scalar WZ packet | remap 101 | `pass` | 0.432 | 0.250 | 0.264 | 4.0 | - | - | raw_sign=0.326; qjl=0.461; canonical_rasp=0.494; query_text_at_budget=0.250; packet_vs_query_text_oracle=3.5x |
+| learned Wyner-Ziv syndrome packet | 6-byte scalar WZ packet | remap 101 | `pass` | 0.463 | 0.250 | 0.264 | 6.0 | - | - | raw_sign=0.332; qjl=0.447; canonical_rasp=0.494; query_text_at_budget=0.250; packet_vs_query_text_oracle=2.3x |
+| learned Wyner-Ziv syndrome packet | 2-byte scalar WZ packet | remap 103 | `pass` | 0.436 | 0.250 | 0.250 | 2.0 | - | - | raw_sign=0.303; qjl=0.439; canonical_rasp=0.363; query_text_at_budget=0.250; packet_vs_query_text_oracle=7.0x |
+| learned Wyner-Ziv syndrome packet | 4-byte scalar WZ packet | remap 103 | `pass` | 0.475 | 0.250 | 0.266 | 4.0 | - | - | raw_sign=0.328; qjl=0.461; canonical_rasp=0.520; query_text_at_budget=0.250; packet_vs_query_text_oracle=3.5x |
+| learned Wyner-Ziv syndrome packet | 6-byte scalar WZ packet | remap 103 | `pass` | 0.508 | 0.250 | 0.266 | 6.0 | - | - | raw_sign=0.316; qjl=0.484; canonical_rasp=0.520; query_text_at_budget=0.250; packet_vs_query_text_oracle=2.3x |
+| learned Wyner-Ziv syndrome packet | 2-byte scalar WZ packet | remap 107 | `pass` | 0.418 | 0.250 | 0.246 | 2.0 | - | - | raw_sign=0.309; qjl=0.393; canonical_rasp=0.350; query_text_at_budget=0.250; packet_vs_query_text_oracle=7.0x |
+| learned Wyner-Ziv syndrome packet | 4-byte scalar WZ packet | remap 107 | `pass` | 0.445 | 0.250 | 0.246 | 4.0 | - | - | raw_sign=0.326; qjl=0.453; canonical_rasp=0.506; query_text_at_budget=0.250; packet_vs_query_text_oracle=3.5x |
+| learned Wyner-Ziv syndrome packet | 6-byte scalar WZ packet | remap 107 | `pass` | 0.492 | 0.250 | 0.232 | 6.0 | - | - | raw_sign=0.330; qjl=0.457; canonical_rasp=0.506; query_text_at_budget=0.250; packet_vs_query_text_oracle=2.3x |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 101 | `near-miss` | 0.494 | 0.250 | 0.295 | 4.0 | - | 0.184 | scalar=0.426; relative_minus_scalar=0.068 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 103 | `near-miss` | 0.520 | 0.250 | 0.256 | 4.0 | - | 0.213 | scalar=0.496; relative_minus_scalar=0.023 |
 | canonical RASP remap robustness | 4-byte canonical RASP | remap 107 | `near-miss` | 0.506 | 0.250 | 0.355 | 4.0 | - | 0.199 | scalar=0.502; relative_minus_scalar=0.004 |

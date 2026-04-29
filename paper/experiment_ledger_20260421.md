@@ -14889,3 +14889,18 @@ packet point remains at target-only `0.250`, and full hidden-log relay remains
 `183.2x-186.7x` larger. This closes the easiest LLMLingua/LongLLMLingua-style
 baseline objection for the current synthetic diagnostic protocol, while leaving
 learned text compression and endpoint timing as future systems gates.
+
+Follow-up `2026-04-29`: added
+`results/source_private_wyner_ziv_packet_gate_20260429`, a learned
+source-private syndrome gate using the Wyner-Ziv/decoder-side-information
+framing. The encoder maps private source evidence into scalar quantized packets
+and the decoder compares against public candidate side information. On three
+remapped slot codebooks (`101/103/107`) and budgets `2/4/6` bytes, all `9/9`
+rows pass the scalar WZ packet rule. Accuracy ranges from `0.418` at the
+hardest 2-byte rows to `0.508` at the best 6-byte row, versus target-only
+`0.250` and query-aware text-at-budget `0.250`. The minimum scalar-control
+margin is `+0.154`; raw source sign sketches are `0.301-0.332`; QJL residual
+packets are competitive but do not dominate; canonical RASP is stronger on some
+4-6 byte rows. This is now the best learned-method contribution, but it remains
+same-family/all-family remap evidence rather than a solved cross-family latent
+transfer result.

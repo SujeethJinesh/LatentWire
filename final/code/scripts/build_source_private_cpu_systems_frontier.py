@@ -192,6 +192,36 @@ def _relative_rows(path: pathlib.Path, *, contribution: str, status_override: st
     return rows
 
 
+def _wyner_ziv_rows(path: pathlib.Path) -> list[dict[str, Any]]:
+    payload = _read_json(path)
+    rows = []
+    for row in payload["rows"]:
+        rows.append(
+            _row(
+                row_id=f"wyner_ziv::remap{row['remap_slot_seed']}::budget{row['budget_bytes']}",
+                contribution="learned Wyner-Ziv syndrome packet",
+                method=f"{row['budget_bytes']}-byte scalar WZ packet",
+                surface=f"remap {row['remap_slot_seed']}",
+                status="pass" if row["scalar_pass"] else "fail",
+                accuracy=row["scalar_wyner_ziv_accuracy"],
+                target_accuracy=row["target_accuracy"],
+                best_control_accuracy=row["best_scalar_control_accuracy"],
+                mean_payload_bytes=float(row["budget_bytes"]),
+                mean_payload_tokens=None,
+                p50_latency_ms=None,
+                comparator="query-aware diagnostic text / QJL / raw sign",
+                note=(
+                    f"raw_sign={row['raw_source_sign_accuracy']:.3f}; "
+                    f"qjl={row['qjl_residual_accuracy']:.3f}; "
+                    f"canonical_rasp={row['canonical_rasp_accuracy']:.3f}; "
+                    f"query_text_at_budget={row['query_aware_text_at_budget_accuracy']:.3f}; "
+                    f"packet_vs_query_text_oracle={row['packet_vs_query_aware_oracle_compression']:.1f}x"
+                ),
+            )
+        )
+    return rows
+
+
 def _tool_trace_packet_row(
     row_id: str,
     path: pathlib.Path,
@@ -263,6 +293,7 @@ def build_cpu_frontier(*, output_dir: pathlib.Path) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     rows.extend(_rate_frontier_rows(ROOT / "results/source_private_rate_frontier_20260429/rate_frontier.json"))
     rows.extend(_slot_packet_rows(ROOT / "results/source_private_slot_packet_bootstrap_20260429/summary.json"))
+    rows.extend(_wyner_ziv_rows(ROOT / "results/source_private_wyner_ziv_packet_gate_20260429/wyner_ziv_packet_gate.json"))
     rows.extend(
         _relative_rows(
             ROOT / "results/source_private_relative_canonical_bootstrap_remap7_20260429/summary.json",

@@ -80,6 +80,9 @@
 - Protocol-stress table script, test, memo, references, and artifact collecting
   diagnostic-codebook, learned slot-feature, and canonical candidate-order
   remap evidence plus the remaining learned target-decoder paraphrase gap.
+- Learned Wyner-Ziv/source-side-information packet script, test, memo, and
+  artifact showing `9/9` passing remapped slot-codebook rows across `2/4/6`
+  bytes against query-aware text, raw sign, QJL, and canonical RASP comparators.
 
 ## Notes
 
