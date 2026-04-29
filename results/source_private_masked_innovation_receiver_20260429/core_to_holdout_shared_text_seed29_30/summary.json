@@ -1,0 +1,313 @@
+{
+  "anchor_count": 64,
+  "budget_summaries": [
+    {
+      "best_destructive_control_accuracy": 0.25,
+      "best_no_source_accuracy": 0.25,
+      "budget_bytes": 4,
+      "full_diag_oracle_accuracy": 1.0,
+      "margin_calibration": {
+        "best_control_accuracy": 0.25,
+        "control_ok": true,
+        "matched_accuracy": 0.7916666666666666,
+        "target_accuracy": 0.25,
+        "threshold": 0.75
+      },
+      "margin_threshold": 0.75,
+      "matched_accuracy": 0.265625,
+      "matched_minus_best_destructive_control": 0.015625,
+      "matched_minus_target": 0.015625,
+      "metrics": {
+        "answer_masked_source": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 5.216333505813964,
+          "p95_latency_ms": 13.780665991362184
+        },
+        "answer_only": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.044395492295734584,
+          "p95_latency_ms": 0.15091701061464846
+        },
+        "full_diag_oracle": {
+          "accuracy": 1.0,
+          "correct": 64,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.07068749982863665,
+          "p95_latency_ms": 0.21245802054181695
+        },
+        "matched_masked_innovation_receiver": {
+          "accuracy": 0.265625,
+          "correct": 17,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 6.2598754884675145,
+          "p95_latency_ms": 22.381666989531368
+        },
+        "public_only_innovation": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 4.634479497326538,
+          "p95_latency_ms": 14.08983298460953
+        },
+        "random_same_byte": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.057541998103260994,
+          "p95_latency_ms": 0.1998750085476786
+        },
+        "shuffled_mask_or_atoms": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 4.399791490868665,
+          "p95_latency_ms": 16.17824999266304
+        },
+        "shuffled_source": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 4.799999500392005,
+          "p95_latency_ms": 24.149709002813324
+        },
+        "structured_text_matched": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.042292012949474156,
+          "p95_latency_ms": 0.1479579950682819
+        },
+        "target_derived_sidecar": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.053291485528461635,
+          "p95_latency_ms": 0.18920900765806437
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 64,
+          "p50_latency_ms": 0.0025000044843181968,
+          "p95_latency_ms": 0.008041999535635114
+        },
+        "wrong_projection_source": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 4.290041993954219,
+          "p95_latency_ms": 22.471082978881896
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 64,
+          "p50_latency_ms": 0.0034170079743489623,
+          "p95_latency_ms": 0.009374984074383974
+        }
+      },
+      "pass_gate": false,
+      "target_only_accuracy": 0.25
+    },
+    {
+      "best_destructive_control_accuracy": 0.25,
+      "best_no_source_accuracy": 0.25,
+      "budget_bytes": 8,
+      "full_diag_oracle_accuracy": 1.0,
+      "margin_calibration": {
+        "best_control_accuracy": 0.25,
+        "control_ok": true,
+        "matched_accuracy": 1.0,
+        "target_accuracy": 0.25,
+        "threshold": 0.65625
+      },
+      "margin_threshold": 0.65625,
+      "matched_accuracy": 0.25,
+      "matched_minus_best_destructive_control": 0.0,
+      "matched_minus_target": 0.0,
+      "metrics": {
+        "answer_masked_source": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 6.342708496958949,
+          "p95_latency_ms": 25.501459022052586
+        },
+        "answer_only": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.04672899376600981,
+          "p95_latency_ms": 0.21683401428163052
+        },
+        "full_diag_oracle": {
+          "accuracy": 1.0,
+          "correct": 64,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.06672950985375792,
+          "p95_latency_ms": 0.2381670055910945
+        },
+        "matched_masked_innovation_receiver": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 4.989562003174797,
+          "p95_latency_ms": 25.81979101523757
+        },
+        "public_only_innovation": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 4.389749999972992,
+          "p95_latency_ms": 25.251957995351404
+        },
+        "random_same_byte": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.06206201214808971,
+          "p95_latency_ms": 0.16974998288787901
+        },
+        "shuffled_mask_or_atoms": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 5.419354492914863,
+          "p95_latency_ms": 16.778084012912586
+        },
+        "shuffled_source": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 3.1523954967269674,
+          "p95_latency_ms": 24.685083015356213
+        },
+        "structured_text_matched": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.04391650145407766,
+          "p95_latency_ms": 0.14954200014472008
+        },
+        "target_derived_sidecar": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 0.05877100920770317,
+          "p95_latency_ms": 0.17995800590142608
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 64,
+          "p50_latency_ms": 0.002416985807940364,
+          "p95_latency_ms": 0.0070829992182552814
+        },
+        "wrong_projection_source": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 8.0,
+          "mean_payload_tokens": 1.0,
+          "n": 64,
+          "p50_latency_ms": 5.32200001180172,
+          "p95_latency_ms": 30.80341700115241
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 16,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 64,
+          "p50_latency_ms": 0.0031454983400180936,
+          "p95_latency_ms": 0.00929197994992137
+        }
+      },
+      "pass_gate": false,
+      "target_only_accuracy": 0.25
+    }
+  ],
+  "budgets": [
+    4,
+    8
+  ],
+  "calibration_examples": 24,
+  "candidate_pool_recall": 1.0,
+  "candidate_view": "shared_text",
+  "candidates": 4,
+  "code_projection_sha256": "365c40cd2578302ae8cdf091d53bdf7545cba90c18573d814424342d1a50c9ef",
+  "created_utc": "2026-04-29T21:05:05.088267+00:00",
+  "encoder_sha256": "90f3b81ba8c393d720830a29d6d6c7742b9d04e12123f6a23d0f84b81a872daa",
+  "eval_examples": 64,
+  "eval_family_set": "holdout",
+  "eval_seed": 30,
+  "exact_id_parity": true,
+  "feature_dim": 128,
+  "gate": "source_private_masked_innovation_receiver",
+  "interpretation": "This gate transmits a sparse source-private innovation: hashed matched-source minus answer-masked-source features are mapped to anchor-relative target innovation from target prior candidate to answer candidate. It tests whether private source evidence survives without raw candidate-coordinate regression.",
+  "mask_repeats": 1,
+  "pass_gate": false,
+  "pass_rule": "Matched masked innovation receiver must beat target by >=0.15, beat every destructive control by >=0.15, keep all destructive controls within target+0.05, and keep full diagnostic oracle >=0.95.",
+  "prediction_files": {
+    "4": "predictions_budget4.jsonl",
+    "8": "predictions_budget8.jsonl"
+  },
+  "representation_dim": 128,
+  "ridge": 0.01,
+  "source_topk": 32,
+  "target_topk": 32,
+  "train_examples": 128,
+  "train_family_set": "core",
+  "train_seed": 29
+}

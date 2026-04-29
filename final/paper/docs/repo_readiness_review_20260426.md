@@ -2541,3 +2541,14 @@ source-private innovation map does not transfer across held-out families.
 Readiness does not improve; the branch is not promoted. Next method gate must
 change the representation or supervision, likely shared-dictionary/crosscoder
 calibration with feature knockout, before rerunning cross-family.
+
+Follow-up `2026-04-29`: tested a stricter shared-text semantic view for the
+masked innovation receiver. Candidate features use shared lexical intent/public
+issue features and mask diagnostic handles, so this is less protocol-coded than
+the anchor-relative view. It still fails core-to-holdout: matched `0.266` at
+`4` bytes and `0.250` at `8` bytes versus target `0.250`; all destructive
+controls stay at target and oracle stays `1.000`. This is the second adjacent
+variant failing for the same reason. Do not tune simple masked-innovation
+projection further. The only live learned cross-family follow-up is a materially
+different shared-dictionary/crosscoder model with feature knockout, or else the
+paper should keep learned receivers as same-distribution diagnostics only.

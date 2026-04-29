@@ -70,6 +70,8 @@ First strict cross-family direction:
 | core-to-holdout | 4 | `false` | 0.258 | 0.250 | 0.258 | 1.000 |
 | core-to-holdout | 8 | `false` | 0.250 | 0.250 | 0.250 | 1.000 |
 | core-to-holdout | 12 | `false` | 0.250 | 0.250 | 0.250 | 1.000 |
+| core-to-holdout shared-text | 4 | `false` | 0.266 | 0.250 | 0.250 | 1.000 |
+| core-to-holdout shared-text | 8 | `false` | 0.250 | 0.250 | 0.250 | 1.000 |
 
 The same-distribution smoke is clean: zero-source, answer-masked,
 public-only-innovation, shuffled-atoms, random same-byte, target-derived,
@@ -79,6 +81,13 @@ The cross-family result fails decisively. Oracle remains `1.000`, so the
 anchor-relative innovation code can represent the answer. The learned
 source-private innovation map does not transfer from core families to holdout
 families.
+
+Follow-up shared-text view: a stricter semantic variant uses a shared lexical
+feature namespace for source evidence and candidate intent, while masking
+candidate diagnostic handles. This also fails core-to-holdout: `0.266` at
+`4` bytes and `0.250` at `8` bytes. Controls remain clean and oracle remains
+`1.000`, so the failure is again source-innovation transfer rather than packet
+capacity or target-side candidate decoding.
 
 ## Interpretation
 
@@ -92,7 +101,9 @@ not just tune budgets.
 ## Next Gate
 
 Do not run the reverse direction until a new diagnostic changes the hypothesis.
-The next method gate should either:
+Two adjacent variants now fail for the same reason: anchor-relative and
+shared-text source innovation maps both collapse to target on core-to-holdout
+despite oracle headroom. The next method gate should either:
 
 - add fold-heldout/shared-dictionary calibration with explicit feature knockout,
   or

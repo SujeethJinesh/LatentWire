@@ -33,6 +33,7 @@ from scripts.run_source_private_hidden_repair_packet_smoke import (  # noqa: E40
 )
 from scripts.run_source_private_tool_trace_learned_syndrome import (  # noqa: E402
     _augment,
+    _hashed_text_features,
     _normalize_rows,
     _token_count,
 )
@@ -54,8 +55,42 @@ CONDITIONS = [
     "full_diag_oracle",
 ]
 
+_SEMANTIC_CANDIDATE_MATRIX_CACHE: dict[tuple[int, int], np.ndarray] = {}
 
-def _relative_candidates(example: Example, *, feature_dim: int, anchor_matrix: np.ndarray) -> np.ndarray:
+
+def _semantic_candidate_matrix(example: Example, *, feature_dim: int) -> np.ndarray:
+    key = (id(example), feature_dim)
+    cached = _SEMANTIC_CANDIDATE_MATRIX_CACHE.get(key)
+    if cached is not None:
+        return cached
+    texts = [
+        "\n".join(
+            [
+                f"intent={candidate.patch_intent}",
+                f"public_issue={example.public_issue}",
+                "handles_repair_diag=<MASKED>",
+            ]
+        )
+        for candidate in example.candidates
+    ]
+    matrix = _normalize_rows(
+        np.stack([_hashed_text_features(text, feature_dim, namespace="shared_semantic") for text in texts])
+    ).astype(np.float32)
+    _SEMANTIC_CANDIDATE_MATRIX_CACHE[key] = matrix
+    return matrix
+
+
+def _relative_candidates(
+    example: Example,
+    *,
+    feature_dim: int,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
+) -> np.ndarray:
+    if candidate_view == "shared_text":
+        return _semantic_candidate_matrix(example, feature_dim=feature_dim)
+    if anchor_matrix is None:
+        raise ValueError("anchor-relative candidate view requires an anchor matrix")
     candidates = _candidate_matrix_mode(example, feature_dim)
     return _normalize_rows(candidates @ anchor_matrix.T).astype(np.float32)
 
@@ -69,8 +104,15 @@ def _prior_index(example: Example) -> int:
     return next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == prior)
 
 
-def _target_innovation(example: Example, *, feature_dim: int, anchor_matrix: np.ndarray, topk: int) -> np.ndarray:
-    rel = _relative_candidates(example, feature_dim=feature_dim, anchor_matrix=anchor_matrix)
+def _target_innovation(
+    example: Example,
+    *,
+    feature_dim: int,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
+    topk: int,
+) -> np.ndarray:
+    rel = _relative_candidates(example, feature_dim=feature_dim, anchor_matrix=anchor_matrix, candidate_view=candidate_view)
     delta = rel[_answer_index(example)] - rel[_prior_index(example)]
     if topk > 0 and topk < delta.size:
         keep = np.argpartition(np.abs(delta), -topk)[-topk:]
@@ -83,8 +125,15 @@ def _target_innovation(example: Example, *, feature_dim: int, anchor_matrix: np.
     return delta.astype(np.float32)
 
 
-def _candidate_innovations(example: Example, *, feature_dim: int, anchor_matrix: np.ndarray, topk: int) -> np.ndarray:
-    rel = _relative_candidates(example, feature_dim=feature_dim, anchor_matrix=anchor_matrix)
+def _candidate_innovations(
+    example: Example,
+    *,
+    feature_dim: int,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
+    topk: int,
+) -> np.ndarray:
+    rel = _relative_candidates(example, feature_dim=feature_dim, anchor_matrix=anchor_matrix, candidate_view=candidate_view)
     prior = rel[_prior_index(example)]
     deltas = rel - prior[None, :]
     if topk > 0 and topk < deltas.shape[1]:
@@ -121,7 +170,8 @@ def _fit_innovation_encoder(
     train_examples: list[Example],
     *,
     feature_dim: int,
-    anchor_matrix: np.ndarray,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
     source_topk: int,
     target_topk: int,
     ridge: float,
@@ -132,7 +182,13 @@ def _fit_innovation_encoder(
     ys: list[np.ndarray] = []
     for example in train_examples:
         base_x = _source_innovation(example, feature_dim=feature_dim, source_topk=source_topk, mode="matched")
-        base_y = _target_innovation(example, feature_dim=feature_dim, anchor_matrix=anchor_matrix, topk=target_topk)
+        base_y = _target_innovation(
+            example,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            candidate_view=candidate_view,
+            topk=target_topk,
+        )
         xs.append(base_x)
         ys.append(base_y)
         for _ in range(mask_repeats):
@@ -174,9 +230,11 @@ def _condition_vector(
     feature_dim: int,
     source_topk: int,
     target_topk: int,
-    anchor_matrix: np.ndarray,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
     random_encoder: np.ndarray,
     atom_permutation: np.ndarray,
+    representation_dim: int,
 ) -> tuple[np.ndarray | None, dict[str, Any]]:
     if condition in {"target_only", "zero_source"}:
         return None, {}
@@ -200,7 +258,7 @@ def _condition_vector(
         vec = _predict_innovation(example, encoder=encoder, feature_dim=feature_dim, source_topk=source_topk, mode="matched")
         return vec[atom_permutation], {"source": "atom_permuted"}
     if condition == "target_derived_sidecar":
-        return np.zeros(anchor_matrix.shape[0], dtype=np.float32), {"source": "target_prior_zero_innovation"}
+        return np.zeros(representation_dim, dtype=np.float32), {"source": "target_prior_zero_innovation"}
     if condition == "wrong_projection_source":
         pred = _augment(_source_innovation(example, feature_dim=feature_dim, source_topk=source_topk, mode="matched")) @ random_encoder
         norm = float(np.linalg.norm(pred))
@@ -208,7 +266,16 @@ def _condition_vector(
             pred = pred / norm
         return pred.astype(np.float32), {"source": "wrong_encoder"}
     if condition == "full_diag_oracle":
-        return _target_innovation(example, feature_dim=feature_dim, anchor_matrix=anchor_matrix, topk=target_topk), {"source": "target_innovation_oracle"}
+        return (
+            _target_innovation(
+                example,
+                feature_dim=feature_dim,
+                anchor_matrix=anchor_matrix,
+                candidate_view=candidate_view,
+                topk=target_topk,
+            ),
+            {"source": "target_innovation_oracle"},
+        )
     raise ValueError(f"condition {condition!r} does not use an innovation vector")
 
 
@@ -224,9 +291,11 @@ def _payload_for_condition(
     budget_bytes: int,
     source_topk: int,
     target_topk: int,
-    anchor_matrix: np.ndarray,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
     random_encoder: np.ndarray,
     atom_permutation: np.ndarray,
+    representation_dim: int,
     rng: random.Random,
 ) -> tuple[bytes | None, dict[str, Any]]:
     if condition in {"answer_only", "structured_text_matched"}:
@@ -245,8 +314,10 @@ def _payload_for_condition(
         source_topk=source_topk,
         target_topk=target_topk,
         anchor_matrix=anchor_matrix,
+        candidate_view=candidate_view,
         random_encoder=random_encoder,
         atom_permutation=atom_permutation,
+        representation_dim=representation_dim,
     )
     if vec is None:
         return None, meta
@@ -260,9 +331,16 @@ def _candidate_codes(
     feature_dim: int,
     budget_bytes: int,
     target_topk: int,
-    anchor_matrix: np.ndarray,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
 ) -> np.ndarray:
-    innovations = _candidate_innovations(example, feature_dim=feature_dim, anchor_matrix=anchor_matrix, topk=target_topk)
+    innovations = _candidate_innovations(
+        example,
+        feature_dim=feature_dim,
+        anchor_matrix=anchor_matrix,
+        candidate_view=candidate_view,
+        topk=target_topk,
+    )
     logits = innovations @ code_projection[: budget_bytes * 8].T
     return (logits >= 0).astype(np.uint8)
 
@@ -275,7 +353,8 @@ def _score_candidates(
     feature_dim: int,
     budget_bytes: int,
     target_topk: int,
-    anchor_matrix: np.ndarray,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
 ) -> np.ndarray:
     bits = _packet_bits(payload, budget_bytes * 8)
     codes = _candidate_codes(
@@ -285,6 +364,7 @@ def _score_candidates(
         budget_bytes=budget_bytes,
         target_topk=target_topk,
         anchor_matrix=anchor_matrix,
+        candidate_view=candidate_view,
     ).astype(np.float32)
     signed_packet = bits * 2.0 - 1.0
     signed_codes = codes * 2.0 - 1.0
@@ -299,7 +379,8 @@ def _predict_with_receiver(
     feature_dim: int,
     budget_bytes: int,
     target_topk: int,
-    anchor_matrix: np.ndarray,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
     margin_threshold: float,
 ) -> tuple[str, dict[str, Any]]:
     prior = _prior_prediction(example)
@@ -313,6 +394,7 @@ def _predict_with_receiver(
         budget_bytes=budget_bytes,
         target_topk=target_topk,
         anchor_matrix=anchor_matrix,
+        candidate_view=candidate_view,
     )
     labels = [candidate.label for candidate in example.candidates]
     prior_index = labels.index(prior)
@@ -354,7 +436,9 @@ def _predict_condition(
     budget_bytes: int,
     source_topk: int,
     target_topk: int,
-    anchor_matrix: np.ndarray,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
+    representation_dim: int,
     margin_threshold: float,
     random_encoder: np.ndarray,
     atom_permutation: np.ndarray,
@@ -373,8 +457,10 @@ def _predict_condition(
         source_topk=source_topk,
         target_topk=target_topk,
         anchor_matrix=anchor_matrix,
+        candidate_view=candidate_view,
         random_encoder=random_encoder,
         atom_permutation=atom_permutation,
+        representation_dim=representation_dim,
         rng=rng,
     )
     prediction, decode_meta = _predict_with_receiver(
@@ -385,6 +471,7 @@ def _predict_condition(
         budget_bytes=budget_bytes,
         target_topk=target_topk,
         anchor_matrix=anchor_matrix,
+        candidate_view=candidate_view,
         margin_threshold=0.0 if condition == "full_diag_oracle" else margin_threshold,
     )
     payload_hex = (payload or b"").hex()
@@ -425,7 +512,9 @@ def _evaluate_threshold(
     budget_bytes: int,
     source_topk: int,
     target_topk: int,
-    anchor_matrix: np.ndarray,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
+    representation_dim: int,
     random_encoder: np.ndarray,
     atom_permutation: np.ndarray,
     margin_threshold: float,
@@ -447,6 +536,8 @@ def _evaluate_threshold(
                 source_topk=source_topk,
                 target_topk=target_topk,
                 anchor_matrix=anchor_matrix,
+                candidate_view=candidate_view,
+                representation_dim=representation_dim,
                 margin_threshold=margin_threshold,
                 random_encoder=random_encoder,
                 atom_permutation=atom_permutation,
@@ -465,7 +556,9 @@ def _calibrate_margin_threshold(
     budget_bytes: int,
     source_topk: int,
     target_topk: int,
-    anchor_matrix: np.ndarray,
+    anchor_matrix: np.ndarray | None,
+    candidate_view: str,
+    representation_dim: int,
     random_encoder: np.ndarray,
     atom_permutation: np.ndarray,
     seed: int,
@@ -497,6 +590,7 @@ def _calibrate_margin_threshold(
             budget_bytes=budget_bytes,
             target_topk=target_topk,
             anchor_matrix=anchor_matrix,
+            candidate_view=candidate_view,
         )
         labels = [candidate.label for candidate in example.candidates]
         prior_index = labels.index(_prior_prediction(example))
@@ -522,6 +616,8 @@ def _calibrate_margin_threshold(
             source_topk=source_topk,
             target_topk=target_topk,
             anchor_matrix=anchor_matrix,
+            candidate_view=candidate_view,
+            representation_dim=representation_dim,
             random_encoder=random_encoder,
             atom_permutation=atom_permutation,
             margin_threshold=threshold,
@@ -567,6 +663,7 @@ def run_gate(
     candidates: int,
     feature_dim: int,
     anchor_count: int,
+    candidate_view: str,
     source_topk: int,
     target_topk: int,
     budgets: list[int],
@@ -577,23 +674,32 @@ def run_gate(
     calibration_examples: int,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    _SEMANTIC_CANDIDATE_MATRIX_CACHE.clear()
     train_rows = make_benchmark(examples=train_examples, candidates=candidates, seed=train_seed, family_set=train_family_set)
     eval_rows = make_benchmark(examples=eval_examples, candidates=candidates, seed=eval_seed, family_set=eval_family_set)
-    anchor_matrix = _build_anchor_matrix(train_rows, feature_dim=feature_dim, anchor_count=anchor_count)
+    if candidate_view == "anchor_relative":
+        anchor_matrix: np.ndarray | None = _build_anchor_matrix(train_rows, feature_dim=feature_dim, anchor_count=anchor_count)
+        representation_dim = anchor_count
+    elif candidate_view == "shared_text":
+        anchor_matrix = None
+        representation_dim = feature_dim
+    else:
+        raise ValueError(f"unknown candidate view {candidate_view!r}")
     rng_np = np.random.default_rng(train_seed * 1009 + eval_seed)
     encoder = _fit_innovation_encoder(
         train_rows,
         feature_dim=feature_dim,
         anchor_matrix=anchor_matrix,
+        candidate_view=candidate_view,
         source_topk=source_topk,
         target_topk=target_topk,
         ridge=ridge,
         mask_repeats=mask_repeats,
         rng=rng_np,
     )
-    code_projection = _normalize_rows(rng_np.normal(size=(max(budgets) * 8, anchor_count))).astype(np.float32)
-    random_encoder = rng_np.normal(0.0, 1.0 / np.sqrt(anchor_count), size=encoder.shape).astype(np.float32)
-    atom_permutation = rng_np.permutation(anchor_count)
+    code_projection = _normalize_rows(rng_np.normal(size=(max(budgets) * 8, representation_dim))).astype(np.float32)
+    random_encoder = rng_np.normal(0.0, 1.0 / np.sqrt(representation_dim), size=encoder.shape).astype(np.float32)
+    atom_permutation = rng_np.permutation(representation_dim)
     rng = random.Random(train_seed * 2003 + eval_seed)
     prediction_files: dict[str, str] = {}
     budget_summaries: list[dict[str, Any]] = []
@@ -608,6 +714,8 @@ def run_gate(
             source_topk=source_topk,
             target_topk=target_topk,
             anchor_matrix=anchor_matrix,
+            candidate_view=candidate_view,
+            representation_dim=representation_dim,
             random_encoder=random_encoder,
             atom_permutation=atom_permutation,
             seed=train_seed * 3011 + eval_seed + budget,
@@ -628,6 +736,8 @@ def run_gate(
                         source_topk=source_topk,
                         target_topk=target_topk,
                         anchor_matrix=anchor_matrix,
+                        candidate_view=candidate_view,
+                        representation_dim=representation_dim,
                         margin_threshold=margin_threshold,
                         random_encoder=random_encoder,
                         atom_permutation=atom_permutation,
@@ -690,7 +800,9 @@ def run_gate(
         "eval_family_set": eval_family_set,
         "candidates": candidates,
         "feature_dim": feature_dim,
+        "candidate_view": candidate_view,
         "anchor_count": anchor_count,
+        "representation_dim": representation_dim,
         "source_topk": source_topk,
         "target_topk": target_topk,
         "budgets": budgets,
@@ -750,7 +862,9 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         "",
         f"- pass gate: `{payload['pass_gate']}`",
         f"- train/eval: `{payload['train_family_set']}:{payload['train_examples']}` / `{payload['eval_family_set']}:{payload['eval_examples']}`",
+        f"- candidate view: `{payload['candidate_view']}`",
         f"- anchor count: `{payload['anchor_count']}`",
+        f"- representation dim: `{payload['representation_dim']}`",
         f"- source top-k: `{payload['source_topk']}`",
         f"- target top-k: `{payload['target_topk']}`",
         f"- mask repeats: `{payload['mask_repeats']}`",
@@ -780,6 +894,7 @@ def main() -> None:
     parser.add_argument("--candidates", type=int, default=4)
     parser.add_argument("--feature-dim", type=int, default=512)
     parser.add_argument("--anchor-count", type=int, default=128)
+    parser.add_argument("--candidate-view", choices=["anchor_relative", "shared_text"], default="anchor_relative")
     parser.add_argument("--source-topk", type=int, default=64)
     parser.add_argument("--target-topk", type=int, default=32)
     parser.add_argument("--budgets", type=int, nargs="+", default=[4, 8, 12])
@@ -799,6 +914,7 @@ def main() -> None:
         candidates=args.candidates,
         feature_dim=args.feature_dim,
         anchor_count=args.anchor_count,
+        candidate_view=args.candidate_view,
         source_topk=args.source_topk,
         target_topk=args.target_topk,
         budgets=args.budgets,

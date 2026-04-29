@@ -15314,3 +15314,19 @@ Focused test:
 passed. Interpretation: the branch is alive only as a same-distribution method
 smoke. Do not promote it as cross-family communication; the next variant needs
 shared-dictionary/crosscoder calibration and feature knockout.
+
+Follow-up `2026-04-29`: added `--candidate-view shared_text` to the masked
+innovation receiver and reran a smaller core-to-holdout discriminator. Command:
+`./venv_arm64/bin/python scripts/run_source_private_masked_innovation_receiver.py --output-dir results/source_private_masked_innovation_receiver_20260429/core_to_holdout_shared_text_seed29_30 --train-examples 128 --eval-examples 64 --train-family-set core --eval-family-set holdout --candidate-view shared_text --feature-dim 128 --anchor-count 64 --source-topk 32 --target-topk 32 --budgets 4 8 --train-seed 29 --eval-seed 30 --mask-repeats 1 --calibration-examples 24`.
+Outcome: fail. At `4` bytes, matched `0.266`, target `0.250`, best destructive
+`0.250`, oracle `1.000`; at `8` bytes, matched `0.250`, target `0.250`, best
+destructive `0.250`, oracle `1.000`. Summary hash:
+`ea32fc2742d2c52a39c801af3ccbf24bcbc698539acec12628b5bcdc63eb7838`;
+manifest hash:
+`53579f684ac3110bcbc9b3986595b9b3c89b80041ca46903168ad5999ce76508`.
+Focused test after adding the shared view:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_masked_innovation_receiver.py -q`
+passed. Interpretation: anchor-relative and shared-text masked-innovation
+variants now fail the same cross-family way despite oracle headroom. Stop
+tuning this family unless the next variant is materially different, such as a
+shared-dictionary/crosscoder receiver with feature knockout.
