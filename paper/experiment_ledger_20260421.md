@@ -14732,3 +14732,18 @@ answer-masked control `0.344` and seed `37 -> 38` shuffled-source control
 control (`0.215`) but collapses matched innovation accuracy to `0.389`, so it is
 pruned. The live branch remains scalar quantized source projection, but the
 next gate must be control stabilization, not scale-up.
+
+Follow-up `2026-04-29`: control-stabilized scalar packet gate passes on the
+same 5-seed surface after narrowing target-side side information to public
+candidate slots and fitting ridge without an intercept. This removes explicit
+candidate diagnostic fields and rich candidate semantics from the target-side
+candidate representation. At 6 bytes, train/eval `768/512`, all-family seeds
+`29->30`, `31->32`, `33->34`, `35->36`, and `37->38` all pass: scalar matched
+`1.000` on every seed, target `0.250`, constrained shuffled source `0.000`,
+answer-masked source `0.250`, label-shuffled ridge `0.207-0.258`, and raw
+source sign sketch `0.182-0.307`. This is the first clean 5-seed learned-packet
+gate. Cross-family remains mixed: holdout-to-core passes with scalar `0.625`
+versus target `0.250`, but core-to-holdout fails with scalar `0.125` and
+constrained shuffled source `0.625`. Promote the slot/no-intercept scalar packet
+as a scoped same-family/all-family communication method; do not claim symmetric
+cross-family generalization yet.

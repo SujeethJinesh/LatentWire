@@ -51,6 +51,8 @@
   scalar-quantized learned source projection as the current live method.
 - Extra 5-seed scalar stability artifacts and pruned no-bias source-innovation
   artifact showing high scalar accuracy but incomplete source-control stability.
+- Control-stabilized `slot/no-intercept` scalar packet artifacts showing a
+  clean `5/5` seed pass, plus mixed core/holdout cross-family falsification.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

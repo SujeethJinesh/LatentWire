@@ -2156,3 +2156,15 @@ answer-masked and shuffled-source packets must stay near target-only across all
 seeds without sacrificing the scalar packet's accuracy. A naive no-bias
 source-innovation variant was pruned because it reduced matched accuracy to
 `0.389` on the hard seed.
+
+Follow-up `2026-04-29`: the live learned-method branch is now the
+`slot/no-intercept` scalar packet. It narrows target-side side information to
+public candidate slots and removes the ridge intercept, preventing an
+answer-masked source from emitting a learned global prior packet. This gate
+passes `5/5` all-family seed pairs at train/eval `768/512`: matched scalar
+`1.000`, target `0.250`, constrained shuffled source `0.000`, answer-masked
+`0.250`, label-shuffled ridge at or below `0.258`, and raw source sign sketch
+at or below `0.307`. Readiness improves to a genuine learned-packet positive on
+a scoped same-family/all-family surface. The remaining blockers for full ICLR
+are cross-family generalization, codebook remap for slot identities, paired
+uncertainty, and a more realistic ambiguous-candidate benchmark.

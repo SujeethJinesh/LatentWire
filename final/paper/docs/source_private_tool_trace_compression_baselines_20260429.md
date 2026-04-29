@@ -78,6 +78,31 @@ The scalar packet has stable high matched accuracy, but strict controls are not 
 
 Mean scalar accuracy is `0.972` with range `0.945-0.992`. The strict scalar gate passes `3/5` seed pairs. The two failures are not accuracy failures; they are source-destroying-control failures, so the live branch needs control-stabilizing work before promotion.
 
+### Control-Stabilized Slot Packet
+
+The control-stabilizing variant removes explicit candidate diagnostic fields and candidate semantics from the target-side candidate representation. The target-side codebook contains only public candidate slots; the source packet must select the correct slot from private evidence. Ridge is fit without an intercept so an answer-masked source cannot emit a learned global prior packet.
+
+Settings: `candidate_view=slot`, `--no-intercept`, 6-byte scalar packet, train/eval `768/512`, all families unless noted.
+
+| Seed pair | Strict scalar pass | Scalar | Target | Constrained shuffle | Answer-masked | Label-shuffled ridge | Raw sign |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 29 -> 30 | true | 1.000 | 0.250 | 0.000 | 0.250 | 0.242 | 0.307 |
+| 31 -> 32 | true | 1.000 | 0.250 | 0.000 | 0.250 | 0.258 | 0.188 |
+| 33 -> 34 | true | 1.000 | 0.250 | 0.000 | 0.250 | 0.229 | 0.207 |
+| 35 -> 36 | true | 1.000 | 0.250 | 0.000 | 0.250 | 0.254 | 0.182 |
+| 37 -> 38 | true | 1.000 | 0.250 | 0.000 | 0.250 | 0.207 | 0.201 |
+
+This is the first learned-packet gate in this branch to pass all five seed pairs with clean source-destroying controls. It is narrower than the semantic candidate-text setting: the target has public candidate slots rather than rich candidate text. That makes the claim cleaner but more scoped.
+
+Cross-family falsification is mixed:
+
+| Train -> Eval | Strict scalar pass | Scalar | Target | Constrained shuffle | Answer-masked | Label-shuffled ridge |
+|---|---:|---:|---:|---:|---:|---:|
+| core -> holdout | false | 0.125 | 0.250 | 0.625 | 0.250 | 0.275 |
+| holdout -> core | true | 0.625 | 0.250 | 0.250 | 0.250 | 0.193 |
+
+So the slot packet is same-family/all-family seed-stable but not yet a symmetric cross-family method.
+
 ### Pruned Innovation Variant
 
 I tested a source-innovation variant that subtracts the answer-masked source features before encoding. A no-bias version fixes the answer-masked control on the hard seed `33 -> 34` (`0.215`) but collapses matched innovation accuracy to `0.389`, so it is pruned for now. The useful lesson is that invariant-template suppression must be learned as a contrastive objective, not applied as a naive feature subtraction.
@@ -92,6 +117,7 @@ What passed:
 - Scalar answer-masked and shuffled-source controls stay within the strict band on the 512-example slice.
 - The scalar packet has lower median latency than the bit-syndrome packet in this CPU implementation.
 - Five-seed scalar accuracy is high and stable: mean `0.972`, minimum `0.945`.
+- The slot/no-intercept scalar packet passes `5/5` seeds with perfect matched accuracy and clean controls.
 
 What failed:
 
@@ -100,15 +126,17 @@ What failed:
 - 12-byte scalar is too saturated and has a high shuffled-source control, so 6 bytes is the cleaner claim point.
 - The scalar packet passes strict source-destroying controls on only `3/5` seed pairs.
 - Naive no-bias source-innovation coding is pruned because it stabilizes controls by destroying most of the useful signal.
+- Rich candidate text remains leaky: `no_diag` and `semantic` views can preserve very high scalar accuracy while answer-masked or label-shuffled controls rise above the target floor.
+- Cross-family slot transfer is asymmetric: holdout-to-core passes, but core-to-holdout fails.
 
 ## Next Gate
 
 Promote `scalar_quantized_source` to the live method only after:
 
-1. 5-seed 6-byte scalar repeat on 256 or 512 examples.
-2. Core-to-holdout family split.
-3. Candidate-codebook remap.
-4. Candidate-side masking of diagnostic/family tokens.
-5. Paired bootstrap confidence intervals versus target-only, learned syndrome, raw sign sketch, and matched-byte text.
+1. Codebook remap for the `slot/no-intercept` packet.
+2. Paired bootstrap confidence intervals over the 5 seed pairs.
+3. A harder cross-family split or a clear same-family claim boundary.
+4. A candidate-side ambiguity benchmark where public candidate text is not already target-solvable.
+5. A model-emitted version of the slot packet or a learned neural encoder trained on real traces.
 
 If these pass, the paper contribution becomes a systems-friendly learned source-private posterior packet: a tiny quantized vector message that the target decodes with public candidate side information.

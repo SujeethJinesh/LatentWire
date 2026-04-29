@@ -1,0 +1,139 @@
+{
+  "budget_summaries": [
+    {
+      "best_compression_baseline_accuracy": 1.0,
+      "best_no_source_accuracy": 0.26171875,
+      "budget_bytes": 6,
+      "learned_vs_compression_pass": false,
+      "matched_accuracy": 0.251953125,
+      "matched_minus_best_compression": -0.748046875,
+      "matched_minus_best_no_source": -0.009765625,
+      "metrics": {
+        "matched_learned_syndrome": {
+          "accuracy": 0.251953125,
+          "correct": 129,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 49.67983350798022,
+          "p95_latency_ms": 136.97370901354589
+        },
+        "random_same_byte": {
+          "accuracy": 0.26171875,
+          "correct": 134,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 0.4816665023099631,
+          "p95_latency_ms": 31.08441700169351
+        },
+        "raw_source_sign_sketch": {
+          "accuracy": 0.181640625,
+          "correct": 93,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 27.20964650507085,
+          "p95_latency_ms": 89.25016599823721
+        },
+        "scalar_answer_masked_source": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 30.843520500638988,
+          "p95_latency_ms": 108.08608398656361
+        },
+        "scalar_constrained_shuffled_source": {
+          "accuracy": 0.384765625,
+          "correct": 197,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 30.14758299832465,
+          "p95_latency_ms": 95.95320800144691
+        },
+        "scalar_label_shuffled_ridge": {
+          "accuracy": 0.27734375,
+          "correct": 142,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 30.46983349486254,
+          "p95_latency_ms": 95.27612500824034
+        },
+        "scalar_quantized_source": {
+          "accuracy": 1.0,
+          "correct": 512,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 32.87039600400021,
+          "p95_latency_ms": 112.65104199992493
+        },
+        "scalar_shuffled_source": {
+          "accuracy": 0.287109375,
+          "correct": 147,
+          "mean_payload_bytes": 6.0,
+          "mean_payload_tokens": 1.0,
+          "n": 512,
+          "p50_latency_ms": 32.35283349931706,
+          "p95_latency_ms": 103.97799999918789
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 512,
+          "p50_latency_ms": 0.0017909987946040928,
+          "p95_latency_ms": 0.006041998858563602
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 128,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 512,
+          "p50_latency_ms": 0.0022089952835813165,
+          "p95_latency_ms": 0.005415990017354488
+        }
+      },
+      "pass_gate": false,
+      "scalar_controls_ok": false,
+      "scalar_minus_best_no_source": 0.73828125,
+      "scalar_quantized_source_accuracy": 1.0,
+      "scalar_source_packet_pass": false,
+      "target_only_accuracy": 0.25
+    }
+  ],
+  "budgets": [
+    6
+  ],
+  "candidate_pool_recall": 1.0,
+  "candidate_view": "no_diag",
+  "candidates": 4,
+  "code_projection_sha256": "643089fbe04521f1c85c3b06364eb8d0e4bc5895207ee906ed945f7b588cf151",
+  "created_utc": "2026-04-29T05:43:17.352257+00:00",
+  "encoder_sha256": "0f8fc55b8c580d87d6851d127a3bdb57b5bb040b8e7728f5141a1355aeff455b",
+  "eval_examples": 512,
+  "eval_family_set": "all",
+  "eval_seed": 36,
+  "exact_id_parity": true,
+  "feature_dim": 512,
+  "fit_intercept": false,
+  "gate": "source_private_tool_trace_compression_baselines",
+  "label_shuffle_encoder_sha256": "3ef8d36cd5fb6805360ab2ad03705ac279133861dff12ae38c3b89938f990adb",
+  "label_shuffle_seed": 175141,
+  "pass_gate": false,
+  "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05.",
+  "prediction_files": {
+    "6": "predictions_budget6.jsonl"
+  },
+  "ridge": 0.01,
+  "scalar_projection_sha256": "aa0b3e735cc4b50a08ba1a4334a1fa347e64f11a9f5ddbefd26e36bfdcd70dfa",
+  "train_examples": 768,
+  "train_family_set": "all",
+  "train_seed": 35
+}

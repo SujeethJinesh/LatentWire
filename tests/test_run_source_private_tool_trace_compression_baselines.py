@@ -49,5 +49,33 @@ def test_tool_trace_compression_baselines_include_source_destroying_controls(tmp
     assert metrics["zero_source"]["accuracy"] == metrics["target_only"]["accuracy"]
     assert "scalar_quantized_source" in metrics
     assert "scalar_shuffled_source" in metrics
+    assert "scalar_constrained_shuffled_source" in metrics
     assert "scalar_answer_masked_source" in metrics
+    assert "scalar_label_shuffled_ridge" in metrics
     assert "raw_source_sign_sketch" in metrics
+
+
+def test_tool_trace_slot_no_intercept_control_gate(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path,
+        train_examples=128,
+        eval_examples=64,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=256,
+        budgets=[6],
+        train_seed=7,
+        eval_seed=8,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+    )
+
+    row = payload["budget_summaries"][0]
+    metrics = row["metrics"]
+    assert payload["pass_gate"] is True
+    assert row["scalar_source_packet_pass"] is True
+    assert metrics["scalar_quantized_source"]["accuracy"] >= 0.90
+    assert metrics["scalar_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+    assert metrics["scalar_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05

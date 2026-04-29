@@ -28,12 +28,99 @@ from scripts.run_source_private_tool_trace_learned_syndrome import (  # noqa: E4
     _candidate_matrix,
     _decode_packet,
     _fit_ridge_encoder,
+    _hashed_text_features,
     _normalize_rows,
     _packet_from_vector,
     _source_packet,
     _source_vector,
     _token_count,
 )
+
+
+def _candidate_texts_for_view(example: Example, *, candidate_view: str) -> list[str]:
+    rows: list[str] = []
+    for candidate in example.candidates:
+        if candidate_view == "full":
+            rows.append(
+                "\n".join(
+                    [
+                        f"patch={candidate.patch_name}",
+                        f"intent={candidate.patch_intent}",
+                        f"handles_repair_diag={candidate.handles_diagnostic}",
+                        f"public_issue={example.public_issue}",
+                    ]
+                )
+            )
+        elif candidate_view == "no_diag":
+            rows.append(
+                "\n".join(
+                    [
+                        f"patch={candidate.patch_name}",
+                        f"intent={candidate.patch_intent}",
+                        f"handles_repair_diag=<MASKED>",
+                        f"public_issue={example.public_issue}",
+                    ]
+                )
+            )
+        elif candidate_view == "semantic":
+            rows.append(
+                "\n".join(
+                    [
+                        f"intent={candidate.patch_intent}",
+                        f"public_issue={example.public_issue}",
+                    ]
+                )
+            )
+        elif candidate_view == "slot":
+            rows.append(f"candidate_slot={len(rows)}")
+        else:
+            raise ValueError(f"unknown candidate view {candidate_view!r}")
+    return rows
+
+
+def _candidate_matrix_for_view(example: Example, feature_dim: int, *, candidate_view: str) -> np.ndarray:
+    if candidate_view == "full":
+        return _candidate_matrix(example, feature_dim)
+    return _normalize_rows(
+        np.stack(
+            [
+                _hashed_text_features(text, feature_dim, namespace=f"candidate:{candidate_view}")
+                for text in _candidate_texts_for_view(example, candidate_view=candidate_view)
+            ]
+        )
+    ).astype(np.float32)
+
+
+def _fit_ridge_encoder_for_view(
+    train_examples: list[Example],
+    *,
+    feature_dim: int,
+    ridge: float,
+    candidate_view: str,
+    fit_intercept: bool,
+    label_shuffle_seed: int | None = None,
+) -> np.ndarray:
+    x = np.stack([_source_vector(example, feature_dim, mode="matched") for example in train_examples], axis=0).astype(np.float64)
+    y = []
+    label_indices = list(range(len(train_examples)))
+    if label_shuffle_seed is not None:
+        rng = random.Random(label_shuffle_seed)
+        rng.shuffle(label_indices)
+    for example in train_examples:
+        label_example = train_examples[label_indices[len(y)]]
+        candidates = _candidate_matrix_for_view(label_example, feature_dim, candidate_view=candidate_view).astype(np.float64)
+        answer_index = next(idx for idx, candidate in enumerate(label_example.candidates) if candidate.label == label_example.answer_label)
+        y.append(candidates[answer_index])
+    y_arr = np.stack(y, axis=0).astype(np.float64)
+    if fit_intercept:
+        x_aug = np.concatenate([x, np.ones((x.shape[0], 1), dtype=np.float64)], axis=1)
+    else:
+        x_aug = x
+    xtx = x_aug.T @ x_aug
+    xtx += ridge * np.eye(xtx.shape[0], dtype=np.float64)
+    if fit_intercept:
+        xtx[-1, -1] -= ridge
+    return np.linalg.solve(xtx, x_aug.T @ y_arr).astype(np.float32)
 
 
 def _sha256_file(path: pathlib.Path) -> str:
@@ -50,17 +137,27 @@ def _fit_scalar_calibration(
     encoder: np.ndarray,
     scalar_projection: np.ndarray,
     feature_dim: int,
+    candidate_view: str,
 ) -> tuple[np.ndarray, np.ndarray]:
     projected: list[np.ndarray] = []
     for example in train_examples:
-        predicted = _augment(_source_vector(example, feature_dim, mode="matched")) @ encoder
+        predicted = _project_source(example, encoder=encoder, feature_dim=feature_dim, mode="matched")
         projected.append(scalar_projection @ predicted)
-        projected.extend(_candidate_matrix(example, feature_dim) @ scalar_projection.T)
+        projected.extend(_candidate_matrix_for_view(example, feature_dim, candidate_view=candidate_view) @ scalar_projection.T)
     values = np.stack(projected, axis=0).astype(np.float32)
     lo = np.quantile(values, 0.01, axis=0).astype(np.float32)
     hi = np.quantile(values, 0.99, axis=0).astype(np.float32)
     hi = np.maximum(hi, lo + 1e-4)
     return lo, hi
+
+
+def _project_source(example: Example, *, encoder: np.ndarray, feature_dim: int, mode: str) -> np.ndarray:
+    source = _source_vector(example, feature_dim, mode=mode)
+    if encoder.shape[0] == feature_dim + 1:
+        return _augment(source) @ encoder
+    if encoder.shape[0] == feature_dim:
+        return source @ encoder
+    raise ValueError(f"encoder shape {encoder.shape} is incompatible with feature_dim={feature_dim}")
 
 
 def _quantize_scalar(values: np.ndarray, lo: np.ndarray, hi: np.ndarray) -> bytes:
@@ -83,7 +180,7 @@ def _scalar_packet(
     hi: np.ndarray,
     mode: str,
 ) -> bytes:
-    predicted = _augment(_source_vector(example, feature_dim, mode=mode)) @ encoder
+    predicted = _project_source(example, encoder=encoder, feature_dim=feature_dim, mode=mode)
     return _quantize_scalar(scalar_projection @ predicted, lo, hi)
 
 
@@ -95,11 +192,12 @@ def _decode_scalar_packet(
     feature_dim: int,
     lo: np.ndarray,
     hi: np.ndarray,
+    candidate_view: str,
 ) -> tuple[str, dict[str, Any]]:
     if not payload:
         return _prior_prediction(example), {"decoder": "prior"}
     decoded = _dequantize_scalar(payload, lo, hi)
-    candidate_values = _candidate_matrix(example, feature_dim) @ scalar_projection[: len(payload)].T
+    candidate_values = _candidate_matrix_for_view(example, feature_dim, candidate_view=candidate_view) @ scalar_projection[: len(payload)].T
     distances = np.sum((candidate_values - decoded[None, :]) ** 2, axis=1)
     min_distance = float(np.min(distances))
     tied = np.flatnonzero(np.isclose(distances, min_distance, rtol=1e-6, atol=1e-8))
@@ -116,6 +214,26 @@ def _raw_source_sign_packet(example: Example, code_projection: np.ndarray, featu
     return _packet_from_vector(_source_vector(example, feature_dim, mode="matched"), code_projection, budget_bytes)
 
 
+def _answer_slot(example: Example) -> int:
+    return next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == example.answer_label)
+
+
+def _constrained_nonself_index(index: int, examples: list[Example]) -> int:
+    current = examples[index]
+    current_slot = _answer_slot(current)
+    n = len(examples)
+    for offset in range(1, n):
+        candidate_index = (index * 17 + 11 + offset) % n
+        candidate = examples[candidate_index]
+        if candidate_index != index and candidate.family_name != current.family_name and _answer_slot(candidate) != current_slot:
+            return candidate_index
+    for offset in range(1, n):
+        candidate_index = (index + offset) % n
+        if examples[candidate_index].family_name != current.family_name:
+            return candidate_index
+    return _deterministic_nonself_index(index, n)
+
+
 def _payload_and_decode(
     *,
     condition: str,
@@ -123,19 +241,24 @@ def _payload_and_decode(
     eval_examples: list[Example],
     index: int,
     encoder: np.ndarray,
+    label_shuffle_encoder: np.ndarray,
     code_projection: np.ndarray,
     scalar_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     lo: np.ndarray,
     hi: np.ndarray,
+    candidate_view: str,
     rng: random.Random,
 ) -> tuple[str, bytes | None, dict[str, Any]]:
     if condition in {"target_only", "zero_source"}:
         prediction, meta = _decode_packet(example, None, code_projection, feature_dim, budget_bytes)
         return prediction, None, meta
     if condition == "matched_learned_syndrome":
-        payload = _source_packet(example, encoder, code_projection, feature_dim, budget_bytes, mode="matched")
+        if encoder.shape[0] == feature_dim + 1:
+            payload = _source_packet(example, encoder, code_projection, feature_dim, budget_bytes, mode="matched")
+        else:
+            payload = _packet_from_vector(_project_source(example, encoder=encoder, feature_dim=feature_dim, mode="matched"), code_projection, budget_bytes)
         prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
         return prediction, payload, meta | {"packet_family": "learned_syndrome"}
     if condition == "scalar_quantized_source":
@@ -155,8 +278,29 @@ def _payload_and_decode(
             feature_dim=feature_dim,
             lo=lo[:budget_bytes],
             hi=hi[:budget_bytes],
+            candidate_view=candidate_view,
         )
-        return prediction, payload, meta | {"packet_family": "scalar_quantized"}
+        return prediction, payload, meta | {"packet_family": "scalar_quantized", "candidate_view": candidate_view}
+    if condition == "scalar_label_shuffled_ridge":
+        payload = _scalar_packet(
+            example,
+            encoder=label_shuffle_encoder,
+            scalar_projection=scalar_projection[:budget_bytes],
+            feature_dim=feature_dim,
+            lo=lo[:budget_bytes],
+            hi=hi[:budget_bytes],
+            mode="matched",
+        )
+        prediction, meta = _decode_scalar_packet(
+            example,
+            payload,
+            scalar_projection=scalar_projection[:budget_bytes],
+            feature_dim=feature_dim,
+            lo=lo[:budget_bytes],
+            hi=hi[:budget_bytes],
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "scalar_quantized", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
     if condition == "scalar_shuffled_source":
         other = eval_examples[_deterministic_nonself_index(index, len(eval_examples))]
         payload = _scalar_packet(
@@ -175,8 +319,30 @@ def _payload_and_decode(
             feature_dim=feature_dim,
             lo=lo[:budget_bytes],
             hi=hi[:budget_bytes],
+            candidate_view=candidate_view,
         )
-        return prediction, payload, meta | {"packet_family": "scalar_quantized", "source": other.example_id}
+        return prediction, payload, meta | {"packet_family": "scalar_quantized", "source": other.example_id, "candidate_view": candidate_view}
+    if condition == "scalar_constrained_shuffled_source":
+        other = eval_examples[_constrained_nonself_index(index, eval_examples)]
+        payload = _scalar_packet(
+            other,
+            encoder=encoder,
+            scalar_projection=scalar_projection[:budget_bytes],
+            feature_dim=feature_dim,
+            lo=lo[:budget_bytes],
+            hi=hi[:budget_bytes],
+            mode="matched",
+        )
+        prediction, meta = _decode_scalar_packet(
+            example,
+            payload,
+            scalar_projection=scalar_projection[:budget_bytes],
+            feature_dim=feature_dim,
+            lo=lo[:budget_bytes],
+            hi=hi[:budget_bytes],
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "scalar_quantized", "source": other.example_id, "shuffle": "cross_family_slot", "candidate_view": candidate_view}
     if condition == "scalar_answer_masked_source":
         payload = _scalar_packet(
             example,
@@ -194,8 +360,9 @@ def _payload_and_decode(
             feature_dim=feature_dim,
             lo=lo[:budget_bytes],
             hi=hi[:budget_bytes],
+            candidate_view=candidate_view,
         )
-        return prediction, payload, meta | {"packet_family": "scalar_quantized", "source": "answer_masked"}
+        return prediction, payload, meta | {"packet_family": "scalar_quantized", "source": "answer_masked", "candidate_view": candidate_view}
     if condition == "raw_source_sign_sketch":
         payload = _raw_source_sign_packet(example, code_projection, feature_dim, budget_bytes)
         prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
@@ -214,12 +381,14 @@ def _predict(
     eval_examples: list[Example],
     index: int,
     encoder: np.ndarray,
+    label_shuffle_encoder: np.ndarray,
     code_projection: np.ndarray,
     scalar_projection: np.ndarray,
     feature_dim: int,
     budget_bytes: int,
     lo: np.ndarray,
     hi: np.ndarray,
+    candidate_view: str,
     rng: random.Random,
 ) -> dict[str, Any]:
     start = time.perf_counter()
@@ -229,12 +398,14 @@ def _predict(
         eval_examples=eval_examples,
         index=index,
         encoder=encoder,
+        label_shuffle_encoder=label_shuffle_encoder,
         code_projection=code_projection,
         scalar_projection=scalar_projection,
         feature_dim=feature_dim,
         budget_bytes=budget_bytes,
         lo=lo,
         hi=hi,
+        candidate_view=candidate_view,
         rng=rng,
     )
     payload_hex = (payload or b"").hex()
@@ -278,22 +449,47 @@ def run_gate(
     train_seed: int,
     eval_seed: int,
     ridge: float,
+    candidate_view: str = "full",
+    fit_intercept: bool = True,
+    label_shuffle_seed: int | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     train_rows = make_benchmark(examples=train_examples, candidates=candidates, seed=train_seed, family_set=train_family_set)
     eval_rows = make_benchmark(examples=eval_examples, candidates=candidates, seed=eval_seed, family_set=eval_family_set)
-    encoder = _fit_ridge_encoder(train_rows, feature_dim=feature_dim, ridge=ridge)
+    encoder = _fit_ridge_encoder_for_view(
+        train_rows,
+        feature_dim=feature_dim,
+        ridge=ridge,
+        candidate_view=candidate_view,
+        fit_intercept=fit_intercept,
+    )
+    label_shuffle_encoder = _fit_ridge_encoder_for_view(
+        train_rows,
+        feature_dim=feature_dim,
+        ridge=ridge,
+        candidate_view=candidate_view,
+        fit_intercept=fit_intercept,
+        label_shuffle_seed=label_shuffle_seed if label_shuffle_seed is not None else train_seed * 5003 + eval_seed,
+    )
     rng_np = np.random.default_rng(train_seed * 3001 + eval_seed)
     max_budget = max(budgets)
     code_projection = _normalize_rows(rng_np.normal(size=(max_budget * 8, feature_dim))).astype(np.float32)
     scalar_projection = _normalize_rows(rng_np.normal(size=(max_budget, feature_dim))).astype(np.float32)
-    lo, hi = _fit_scalar_calibration(train_rows, encoder=encoder, scalar_projection=scalar_projection, feature_dim=feature_dim)
+    lo, hi = _fit_scalar_calibration(
+        train_rows,
+        encoder=encoder,
+        scalar_projection=scalar_projection,
+        feature_dim=feature_dim,
+        candidate_view=candidate_view,
+    )
     rng = random.Random(train_seed * 4001 + eval_seed)
     conditions = [
         "target_only",
         "matched_learned_syndrome",
         "scalar_quantized_source",
+        "scalar_label_shuffled_ridge",
         "scalar_shuffled_source",
+        "scalar_constrained_shuffled_source",
         "scalar_answer_masked_source",
         "raw_source_sign_sketch",
         "zero_source",
@@ -312,12 +508,14 @@ def run_gate(
                         eval_examples=eval_rows,
                         index=row_index,
                         encoder=encoder,
+                        label_shuffle_encoder=label_shuffle_encoder,
                         code_projection=code_projection,
                         scalar_projection=scalar_projection,
                         feature_dim=feature_dim,
                         budget_bytes=budget,
                         lo=lo,
                         hi=hi,
+                        candidate_view=candidate_view,
                         rng=rng,
                     )
                     | {"example_id": example.example_id, "family_name": example.family_name, "budget_bytes": budget}
@@ -337,8 +535,9 @@ def run_gate(
         )
         scalar = metrics["scalar_quantized_source"]["accuracy"]
         scalar_controls_ok = (
-            metrics["scalar_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            metrics["scalar_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["scalar_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["scalar_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
         )
         scalar_source_packet_pass = scalar >= no_source + 0.15 and scalar_controls_ok
         predictions_path = output_dir / f"predictions_budget{budget}.jsonl"
@@ -378,13 +577,17 @@ def run_gate(
         "train_seed": train_seed,
         "eval_seed": eval_seed,
         "ridge": ridge,
+        "candidate_view": candidate_view,
+        "fit_intercept": fit_intercept,
+        "label_shuffle_seed": label_shuffle_seed if label_shuffle_seed is not None else train_seed * 5003 + eval_seed,
         "exact_id_parity": len({row.example_id for row in eval_rows}) == len(eval_rows),
         "candidate_pool_recall": 1.0,
         "encoder_sha256": hashlib.sha256(encoder.tobytes()).hexdigest(),
+        "label_shuffle_encoder_sha256": hashlib.sha256(label_shuffle_encoder.tobytes()).hexdigest(),
         "code_projection_sha256": hashlib.sha256(code_projection.tobytes()).hexdigest(),
         "scalar_projection_sha256": hashlib.sha256(scalar_projection.tobytes()).hexdigest(),
         "budget_summaries": budget_summaries,
-        "pass_gate": any(row["pass_gate"] or row["scalar_source_packet_pass"] for row in budget_summaries),
+        "pass_gate": any(row["scalar_source_packet_pass"] for row in budget_summaries),
         "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05.",
         "prediction_files": prediction_files,
     }
@@ -394,6 +597,7 @@ def run_gate(
         "",
         f"- pass gate: `{payload['pass_gate']}`",
         f"- train/eval: `{train_family_set}:{train_examples}` / `{eval_family_set}:{eval_examples}`",
+        f"- candidate view: `{candidate_view}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
         "| Budget bytes | Learned > compression | Scalar pass | Syndrome | Scalar | Target | Best no-source | Syndrome - scalar |",
@@ -445,6 +649,9 @@ def main() -> None:
     parser.add_argument("--train-seed", type=int, default=29)
     parser.add_argument("--eval-seed", type=int, default=30)
     parser.add_argument("--ridge", type=float, default=1e-2)
+    parser.add_argument("--candidate-view", choices=["full", "no_diag", "semantic", "slot"], default="full")
+    parser.add_argument("--no-intercept", action="store_true")
+    parser.add_argument("--label-shuffle-seed", type=int, default=None)
     args = parser.parse_args()
     out = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     payload = run_gate(
@@ -459,6 +666,9 @@ def main() -> None:
         train_seed=args.train_seed,
         eval_seed=args.eval_seed,
         ridge=args.ridge,
+        candidate_view=args.candidate_view,
+        fit_intercept=not args.no_intercept,
+        label_shuffle_seed=args.label_shuffle_seed,
     )
     print(json.dumps({"pass_gate": payload["pass_gate"], "output_dir": str(out)}, indent=2, sort_keys=True))
 

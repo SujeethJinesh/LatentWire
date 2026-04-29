@@ -266,9 +266,11 @@ On the `768/512` frozen tool-trace compression gate it reaches `0.979` accuracy
 versus learned sign syndrome `0.953`, target-only `0.250`, raw source sign
 sketch `0.307`, scalar shuffled source `0.166`, and scalar answer-masked source
 `0.293`. A 5-seed probe gives mean scalar accuracy `0.972`, but strict
-source-destroying controls pass only `3/5` seeds. The next blocker is control
-stabilization, then held-out-family splits, codebook remap, and candidate-side
-masking.
+source-destroying controls pass only `3/5` seeds. The control-stabilized
+variant is `candidate_view=slot` with `--no-intercept`: it passes `5/5` seeds
+at 6 bytes with scalar `1.000`, target `0.250`, constrained shuffled source
+`0.000`, answer-masked `0.250`, and label-shuffled ridge no higher than
+`0.258`. The next blocker is cross-family generalization and codebook remap.
 
 ## Final Status
 
