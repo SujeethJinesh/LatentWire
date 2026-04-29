@@ -15559,3 +15559,26 @@ technical contribution, but the synonym failure keeps the claim scoped. Next
 exact method gate: learned synonym-invariant shared dictionary/crosscoder with
 the same controls, atom/dictionary derangement, matched-byte text, and causal
 feature knockout.
+
+Follow-up `2026-04-29`: implemented and ran the first learned/calibrated
+synonym-dictionary packet gate. New files:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`, and
+`paper/source_private_learned_synonym_dictionary_packet_gate_20260429.md`.
+Commands:
+`./venv_arm64/bin/python scripts/run_source_private_learned_synonym_dictionary_packet_gate.py --output-dir results/source_private_learned_synonym_dictionary_packet_gate_20260429 --budgets 4 8 --train-examples 512 --eval-examples 256 --seed 43 --candidate-atom-view synonym_stress --candidate-calibration all_public --calibration-examples 512 --feature-dim 384 --ridge 0.25 --top-k 8 --min-score 0.02`
+and the same command with `--candidate-atom-view native` and output
+`results/source_private_learned_synonym_dictionary_packet_gate_20260429_native`.
+Outcome: pass on both native and synonym-stress views. Native: cross-family
+pass true, all directions pass, `4` pass rows, max learned accuracy `1.000`,
+max learned-target delta `+0.750`, minimum passing CI95 lower bound `+0.695`.
+Synonym stress: cross-family pass true, all directions pass, `4` pass rows, max
+learned accuracy `1.000`, max learned-target delta `+0.750`, minimum passing
+CI95 lower bound `+0.562`. In promoted 4-byte rows, strict source-destroying
+controls stay within target + `0.03`, and top-feature knockout removes `100%`
+of lift. Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py -q`
+passed. Interpretation: this is a meaningful third method contribution if
+framed as a calibrated public-dictionary interface. It is not yet a
+synonym-heldout or activation-learned crosscoder. Next exact gate: seed repeat
+plus held-out paraphrase/synonym clusters.

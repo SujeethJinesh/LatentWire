@@ -65,6 +65,17 @@ robust semantic latent-transfer claim. The exact blocker is now a learned
 synonym-invariant shared dictionary/crosscoder gate or a final decision to
 submit the paper with the narrower agreed-protocol scope.
 
+Update `2026-04-29`: a learned/calibrated synonym-dictionary packet now gives
+the paper a stronger third method contribution. On `n=256` native and
+synonym-stress views, the gate passes bidirectional cross-family with promoted
+4-byte rows, controls within target + `0.03`, paired CI lower bounds at least
+`+0.562`, and top-feature knockout removing `100%` of lift. This directly
+addresses the prior hand sparse synonym-stress failure, but it remains scoped:
+the dictionary is calibrated from public candidate text and frozen synonym
+variants into the existing atom space, not learned from LLM activations. The
+readiness blocker moves from “no synonym-robust packet” to “no seed repeat or
+held-out synonym-cluster proof for the calibrated dictionary.”
+
 Update `2026-04-29`: the CPU systems frontier aggregate now gives the paper one
 reproducible table with wins, near misses, and failures. It includes `32` rows:
 rate frontier, 5-seed scalar packet stability, remapped codebooks, canonical

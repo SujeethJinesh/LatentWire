@@ -1013,5 +1013,12 @@
     "path": "references/501_full_paper_strengthening_refs_20260429.md",
     "status": "local_memo",
     "reason": "Primary-source memo for full-paper strengthening after the n512 shared sparse boundary, covering C2C, KVComm/KVCOMM, activation communication, LLMLingua, TurboQuant, QJL, KIVI/KVQuant, flow matching, consistency models, I-JEPA, sparse crosscoders, universal SAEs, and source-coding framing."
+  },
+  {
+    "num": 502,
+    "slug": "learned_synonym_dictionary_packet_refs_20260429",
+    "path": "references/502_learned_synonym_dictionary_packet_refs_20260429.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the learned/calibrated synonym-dictionary packet gate, covering sparse dictionaries, sparse crosscoders, SAEBench, I-JEPA, SimCSE, Sentence-BERT, learned compression, and Wyner-Ziv source coding."
   }
 ]
