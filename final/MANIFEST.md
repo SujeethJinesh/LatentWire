@@ -53,6 +53,8 @@
   artifact showing high scalar accuracy but incomplete source-control stability.
 - Control-stabilized `slot/no-intercept` scalar packet artifacts showing a
   clean `5/5` seed pass, plus mixed core/holdout cross-family falsification.
+- Slot-codebook remap artifacts for seeds `101/103/107` and paired bootstrap
+  summary showing positive but weaker remap margins.
 - OpenAI/vLLM-compatible endpoint runner and tests for Qwen3.6 MoE/FP8 gates.
 
 ## Notes

@@ -2168,3 +2168,13 @@ at or below `0.307`. Readiness improves to a genuine learned-packet positive on
 a scoped same-family/all-family surface. The remaining blockers for full ICLR
 are cross-family generalization, codebook remap for slot identities, paired
 uncertainty, and a more realistic ambiguous-candidate benchmark.
+
+Follow-up `2026-04-29`: codebook-remap and paired uncertainty reduce one major
+reviewer risk. Three remapped slot codebooks pass strict controls with scalar
+accuracy `0.463-0.508` versus target-only `0.250`; paired bootstrap lower
+bounds versus target-only remain positive, with the weakest lower bound
+`+0.156`. The same bootstrap also shows the limitation: remap margins versus
+raw source sign sketch are smaller, weakest lower bound `+0.072`. Readiness
+improves for a scoped claim, but full ICLR readiness still needs either stronger
+remap margins, a more realistic ambiguous-candidate benchmark, or model-emitted
+packets that show the method is useful beyond this controlled slot codebook.

@@ -79,3 +79,41 @@ def test_tool_trace_slot_no_intercept_control_gate(tmp_path) -> None:
     assert metrics["scalar_quantized_source"]["accuracy"] >= 0.90
     assert metrics["scalar_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
     assert metrics["scalar_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+
+
+def test_tool_trace_slot_remap_changes_codebook_and_passes(tmp_path) -> None:
+    baseline = run_gate(
+        output_dir=tmp_path / "base",
+        train_examples=128,
+        eval_examples=64,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=256,
+        budgets=[6],
+        train_seed=7,
+        eval_seed=8,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+    )
+    remapped = run_gate(
+        output_dir=tmp_path / "remap",
+        train_examples=128,
+        eval_examples=64,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=256,
+        budgets=[6],
+        train_seed=7,
+        eval_seed=8,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+        remap_slot_seed=101,
+    )
+
+    assert remapped["pass_gate"] is True
+    assert remapped["remap_slot_seed"] == 101
+    assert baseline["encoder_sha256"] != remapped["encoder_sha256"]

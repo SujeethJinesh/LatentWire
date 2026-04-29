@@ -139,4 +139,36 @@ Promote `scalar_quantized_source` to the live method only after:
 4. A candidate-side ambiguity benchmark where public candidate text is not already target-solvable.
 5. A model-emitted version of the slot packet or a learned neural encoder trained on real traces.
 
+## 2026-04-29 Addendum: Slot Remap and Bootstrap
+
+The `slot/no-intercept` scalar packet now has a codebook-remap and paired-bootstrap readout.
+
+Artifacts:
+
+- `results/source_private_tool_trace_slot_remap_20260429_seed101/`
+- `results/source_private_tool_trace_slot_remap_20260429_seed103/`
+- `results/source_private_tool_trace_slot_remap_20260429_seed107/`
+- `results/source_private_slot_packet_bootstrap_20260429/`
+
+Three remapped slot codebooks pass the strict scalar gate:
+
+| Remap seed | Scalar | Target | Best strict control | Raw sign | Delta target CI95 | Delta raw CI95 |
+|---:|---:|---:|---:|---:|---:|---:|
+| 101 | 0.463 | 0.250 | 0.264 | 0.332 | [0.156, 0.270] | [0.072, 0.189] |
+| 103 | 0.508 | 0.250 | 0.266 | 0.316 | [0.199, 0.314] | [0.127, 0.252] |
+| 107 | 0.492 | 0.250 | 0.250 | 0.330 | [0.186, 0.303] | [0.104, 0.221] |
+
+Combined with the five same-codebook seed rows, the bootstrap summary reports:
+
+- mean scalar accuracy: `0.808`
+- mean scalar minus best strict control: `0.552`
+- minimum paired CI95 lower bound versus target-only: `0.156`
+- minimum paired CI95 lower bound versus raw source sign sketch: `0.072`
+
+Interpretation:
+
+- Same-codebook slot communication is now strong and clean.
+- Remapped slot codebooks remain positive versus target-only and strict controls, so the method is not only one fixed slot convention.
+- Remapped rows are weaker and closer to raw sign sketch; the paper should report this as a limitation and avoid overclaiming broad codebook-invariant communication.
+
 If these pass, the paper contribution becomes a systems-friendly learned source-private posterior packet: a tiny quantized vector message that the target decodes with public candidate side information.

@@ -14747,3 +14747,16 @@ versus target `0.250`, but core-to-holdout fails with scalar `0.125` and
 constrained shuffled source `0.625`. Promote the slot/no-intercept scalar packet
 as a scoped same-family/all-family communication method; do not claim symmetric
 cross-family generalization yet.
+
+Follow-up `2026-04-29`: slot-codebook remap and paired bootstrap are now added
+for the `slot/no-intercept` scalar packet. Three remapped codebooks pass strict
+scalar controls: remap seed `101` scalar `0.463` vs target `0.250`, best strict
+control `0.264`, raw sign `0.332`; remap `103` scalar `0.508` vs target
+`0.250`, best strict control `0.266`, raw sign `0.316`; remap `107` scalar
+`0.492` vs target `0.250`, best strict control `0.250`, raw sign `0.330`.
+The bootstrap summary across five same-codebook rows and three remap rows has
+mean scalar accuracy `0.808`, mean scalar-minus-best-strict-control `0.552`,
+minimum paired CI95 lower bound versus target-only `+0.156`, and minimum paired
+CI95 lower bound versus raw sign sketch `+0.072`. This supports a scoped
+positive claim: codebook remap remains positive, but remap margins are much
+weaker than the fixed-codebook setting and must be reported as a limitation.

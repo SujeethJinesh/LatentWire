@@ -270,7 +270,10 @@ source-destroying controls pass only `3/5` seeds. The control-stabilized
 variant is `candidate_view=slot` with `--no-intercept`: it passes `5/5` seeds
 at 6 bytes with scalar `1.000`, target `0.250`, constrained shuffled source
 `0.000`, answer-masked `0.250`, and label-shuffled ridge no higher than
-`0.258`. The next blocker is cross-family generalization and codebook remap.
+`0.258`. Three remapped slot codebooks also pass with scalar `0.463-0.508`
+versus target `0.250`; the weakest paired-bootstrap lower bound versus
+target-only is `+0.156`. The next blocker is stronger remap margins and
+cross-family generalization.
 
 ## Final Status
 

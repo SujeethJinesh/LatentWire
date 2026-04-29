@@ -9,6 +9,7 @@ import random
 import statistics
 import sys
 import time
+from dataclasses import replace
 from typing import Any
 
 import numpy as np
@@ -76,6 +77,20 @@ def _candidate_texts_for_view(example: Example, *, candidate_view: str) -> list[
         else:
             raise ValueError(f"unknown candidate view {candidate_view!r}")
     return rows
+
+
+def _remap_candidate_slots(examples: list[Example], *, remap_seed: int | None) -> list[Example]:
+    if remap_seed is None:
+        return examples
+    remapped: list[Example] = []
+    for index, example in enumerate(examples):
+        rng = random.Random(remap_seed * 1000003 + index)
+        order = list(range(len(example.candidates)))
+        rng.shuffle(order)
+        if order == list(range(len(example.candidates))):
+            order = order[1:] + order[:1]
+        remapped.append(replace(example, candidates=tuple(example.candidates[i] for i in order)))
+    return remapped
 
 
 def _candidate_matrix_for_view(example: Example, feature_dim: int, *, candidate_view: str) -> np.ndarray:
@@ -452,10 +467,13 @@ def run_gate(
     candidate_view: str = "full",
     fit_intercept: bool = True,
     label_shuffle_seed: int | None = None,
+    remap_slot_seed: int | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     train_rows = make_benchmark(examples=train_examples, candidates=candidates, seed=train_seed, family_set=train_family_set)
     eval_rows = make_benchmark(examples=eval_examples, candidates=candidates, seed=eval_seed, family_set=eval_family_set)
+    train_rows = _remap_candidate_slots(train_rows, remap_seed=remap_slot_seed)
+    eval_rows = _remap_candidate_slots(eval_rows, remap_seed=remap_slot_seed)
     encoder = _fit_ridge_encoder_for_view(
         train_rows,
         feature_dim=feature_dim,
@@ -580,6 +598,7 @@ def run_gate(
         "candidate_view": candidate_view,
         "fit_intercept": fit_intercept,
         "label_shuffle_seed": label_shuffle_seed if label_shuffle_seed is not None else train_seed * 5003 + eval_seed,
+        "remap_slot_seed": remap_slot_seed,
         "exact_id_parity": len({row.example_id for row in eval_rows}) == len(eval_rows),
         "candidate_pool_recall": 1.0,
         "encoder_sha256": hashlib.sha256(encoder.tobytes()).hexdigest(),
@@ -652,6 +671,7 @@ def main() -> None:
     parser.add_argument("--candidate-view", choices=["full", "no_diag", "semantic", "slot"], default="full")
     parser.add_argument("--no-intercept", action="store_true")
     parser.add_argument("--label-shuffle-seed", type=int, default=None)
+    parser.add_argument("--remap-slot-seed", type=int, default=None)
     args = parser.parse_args()
     out = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     payload = run_gate(
@@ -669,6 +689,7 @@ def main() -> None:
         candidate_view=args.candidate_view,
         fit_intercept=not args.no_intercept,
         label_shuffle_seed=args.label_shuffle_seed,
+        remap_slot_seed=args.remap_slot_seed,
     )
     print(json.dumps({"pass_gate": payload["pass_gate"], "output_dir": str(out)}, indent=2, sort_keys=True))
 
