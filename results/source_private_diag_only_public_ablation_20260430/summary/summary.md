@@ -1,0 +1,18 @@
+# Source-Private Balanced Diagnostic Packet Gate
+
+- pass gate: `True`
+- runs: `2`
+- budget bytes: `2`
+- min packet accuracy: `1.000`
+- max public-only accuracy: `0.178`
+- min packet-public CI95 low: `0.788`
+- max public-target CI95 high: `-0.022`
+
+| Direct run | Public-only run | n | packet | public | target | best control | packet-public CI | public-target CI |
+|---|---|---:|---:|---:|---:|---:|---|---|
+| `results/source_private_diag_only_public_ablation_20260430/direct_diag_n500_seed29` | `results/source_private_diag_only_public_ablation_20260430/n500_seed29_diag_only_public_same_eval` | 500 | 1.000 | 0.178 | 0.250 | 0.250 | [0.788, 0.856] | [-0.118, -0.022] |
+| `results/source_private_diag_only_public_ablation_20260430/direct_diag_n500_seed31` | `results/source_private_diag_only_public_ablation_20260430/n500_seed31_diag_only_public_same_eval` | 500 | 1.000 | 0.142 | 0.250 | 0.250 | [0.828, 0.888] | [-0.156, -0.060] |
+
+Budget-2 direct diagnostic packet must pass strict controls; public-only diag receiver must have CI95 high <= target+0.05; packet-public CI95 low must be >= 0.10; and eval IDs must match exactly.
+
+Balanced plausible-decoy diagnostic tables remove obvious X-code distractors and public semantic shortcuts. A direct 2-byte private diagnostic packet remains sufficient, while a trained public-only diagnostic receiver does not solve the task.

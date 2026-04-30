@@ -16210,3 +16210,26 @@ weakens the same-ID and slot-lookup objections, and it sharpens the paper claim
 to source-private communication with decoder side information. It still is not
 protocol-free latent transfer. Next exact gate: `n=500` disjoint full/semantic
 / opaque-slot stress plus a public-only learned receiver ablation.
+
+Update `2026-04-30`: the public-only semantic ablation exposed a shortcut and
+forced a cleaner source-causality gate. A separately trained public-only
+receiver on the previous full/semantic candidate views reaches `1.000` at n64,
+so those semantic-view positives cannot be treated as clean packet-causality
+evidence. I added `diagnostic_table_mode=plausible_decoys` to
+`scripts/run_source_private_hidden_repair_packet_smoke.py`, `candidate_view=
+diag_only` to the candidate-view code, a public-only receiver ablation
+(`scripts/run_source_private_public_only_receiver_ablation.py`), and a paired
+summary (`scripts/summarize_source_private_balanced_diag_packet_gate.py`).
+Artifacts: `results/source_private_diag_only_public_ablation_20260430/`; memo:
+`paper/source_private_balanced_diag_packet_gate_20260430.md`; references:
+`references/524_balanced_diag_packet_gate_refs_20260430.md`. Outcome: balanced
+plausible-decoy diagnostic tables pass at n500 over two seeds. At 2 bytes,
+direct source-private packets score `1.000` on both seeds, target and best
+controls are `0.250`, public-only receiver accuracy is at most `0.178`, the
+minimum paired packet-public CI95 lower bound is `+0.788`, and the max
+public-target CI95 high is `-0.022`. The learned syndrome receiver fails this
+harder balanced `diag_only` surface at n64 (`0.312` learned matched), so it is
+not promoted there. Interpretation: promote the balanced direct diagnostic
+packet as the cleanest source-causality contribution; demote prior semantic
+learned-receiver rows to method-depth diagnostics unless paired against a
+public-only baseline.

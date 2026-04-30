@@ -99,6 +99,7 @@ def _fit_state(
     eval_start_index: int,
     train_family_set: str,
     eval_family_set: str,
+    diagnostic_table_mode: str,
     candidates: int,
     feature_dim: int,
     budget_bytes: int,
@@ -113,6 +114,7 @@ def _fit_state(
         seed=train_seed,
         family_set=train_family_set,
         start_index=train_start_index,
+        diagnostic_table_mode=diagnostic_table_mode,
     )
     eval_rows = make_benchmark(
         examples=eval_examples,
@@ -120,6 +122,7 @@ def _fit_state(
         seed=eval_seed,
         family_set=eval_family_set,
         start_index=eval_start_index,
+        diagnostic_table_mode=diagnostic_table_mode,
     )
     train_rows = _remap_candidate_slots(train_rows, remap_seed=remap_slot_seed)
     eval_rows = _remap_candidate_slots(eval_rows, remap_seed=remap_slot_seed)
@@ -601,6 +604,7 @@ def run_gate(
     eval_start_index: int,
     train_family_set: str,
     eval_family_set: str,
+    diagnostic_table_mode: str,
     candidates: int,
     feature_dim: int,
     budget_bytes: int,
@@ -629,6 +633,7 @@ def run_gate(
         eval_start_index=eval_start_index,
         train_family_set=train_family_set,
         eval_family_set=eval_family_set,
+        diagnostic_table_mode=diagnostic_table_mode,
         candidates=candidates,
         feature_dim=feature_dim,
         budget_bytes=budget_bytes,
@@ -672,6 +677,7 @@ def run_gate(
         "eval_start_index": eval_start_index,
         "train_family_set": train_family_set,
         "eval_family_set": eval_family_set,
+        "diagnostic_table_mode": diagnostic_table_mode,
         "candidates": candidates,
         "feature_dim": feature_dim,
         "budget_bytes": budget_bytes,
@@ -755,12 +761,13 @@ def main() -> None:
     parser.add_argument("--eval-start-index", type=int, default=0)
     parser.add_argument("--train-family-set", choices=["core", "holdout", "all"], default="all")
     parser.add_argument("--eval-family-set", choices=["core", "holdout", "all"], default="all")
+    parser.add_argument("--diagnostic-table-mode", choices=["legacy", "plausible_decoys"], default="legacy")
     parser.add_argument("--candidates", type=int, default=4)
     parser.add_argument("--feature-dim", type=int, default=256)
     parser.add_argument("--budget-bytes", type=int, default=6)
     parser.add_argument("--ridge", type=float, default=1e-2)
     parser.add_argument("--receiver-ridge", type=float, default=1e-2)
-    parser.add_argument("--candidate-view", choices=["full", "no_diag", "semantic", "slot"], default="full")
+    parser.add_argument("--candidate-view", choices=["full", "no_diag", "semantic", "diag_only", "slot"], default="full")
     parser.add_argument("--fit-intercept", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument(
         "--remap-slot-seed",
@@ -790,6 +797,7 @@ def main() -> None:
         eval_start_index=args.eval_start_index,
         train_family_set=args.train_family_set,
         eval_family_set=args.eval_family_set,
+        diagnostic_table_mode=args.diagnostic_table_mode,
         candidates=args.candidates,
         feature_dim=args.feature_dim,
         budget_bytes=args.budget_bytes,

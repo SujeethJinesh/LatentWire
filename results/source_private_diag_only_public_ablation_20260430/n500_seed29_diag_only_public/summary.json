@@ -1,0 +1,22 @@
+{
+  "candidate_view": "diag_only",
+  "exact_id_sha256": "c5b6a95b7e8817807407d78bdb85a02a8fbf46c8cd5ccf6f99407a4b17575f2a",
+  "include_vectors": true,
+  "max_allowed_lift": 0.05,
+  "n": 500,
+  "p50_latency_ms": 0.06241600203793496,
+  "p95_latency_ms": 0.24754198966547847,
+  "paired_bootstrap_public_vs_target": {
+    "ci95_high": -0.01600000075995922,
+    "ci95_low": -0.11400000005960464,
+    "point": -0.06400000303983688
+  },
+  "public_minus_target": -0.064,
+  "public_only_accuracy": 0.186,
+  "public_only_no_leak": true,
+  "remap_slot_seed": null,
+  "target_only_accuracy": 0.25,
+  "train_eval_id_intersection_count": 0,
+  "train_eval_id_intersection_sample": [],
+  "train_id_sha256": "dc1e81a9b4be815e4b142ed05838221a55b444c7ba73b5fe218fee0e23b12e63"
+}

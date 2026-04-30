@@ -1167,5 +1167,12 @@
     "path": "references/523_masked_consistency_label_blind_stress_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the disjoint-ID label-blind stress of the learned masked-consistency receiver, covering shortcut/artifact controls, adversarial filtering, decoder-side information, denoising/consistency receivers, and Q-Former-style bridge inspiration."
+  },
+  {
+    "num": 524,
+    "slug": "balanced_diag_packet_gate_refs_20260430",
+    "path": "references/524_balanced_diag_packet_gate_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the balanced plausible-decoy diagnostic packet gate and public-only receiver ablation, covering annotation artifacts, adversarial filtering, Wyner-Ziv/DISCUS side-information coding, consistency receivers, TurboQuant, and C2C claim boundaries."
   }
 ]

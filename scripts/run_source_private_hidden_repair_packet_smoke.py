@@ -255,6 +255,25 @@ def _diagnostic_code(example_index: int, seed: int) -> str:
     return f"{DIAG_LETTERS[(example_index + seed) % len(DIAG_LETTERS)]}{example_index % 10}"
 
 
+def _plausible_decoy_diagnostic_code(
+    *,
+    example_index: int,
+    seed: int,
+    candidate_index: int,
+    answer_index: int,
+    candidates: int,
+    answer_code: str,
+) -> str:
+    offset = (candidate_index - answer_index) % candidates
+    for attempt in range(1, candidates + 3):
+        code_index = example_index + (offset + attempt) * 997 + seed * 13
+        code_seed = seed + (offset + attempt) * 37
+        code = _diagnostic_code(code_index, code_seed)
+        if code != answer_code:
+            return code
+    raise RuntimeError("could not construct non-answer diagnostic decoy")
+
+
 def _run_buggy_code(family: RepairFamily) -> tuple[Any, str]:
     namespace: dict[str, Any] = {}
     exec(family.buggy_code, namespace)
@@ -294,6 +313,7 @@ def make_benchmark(
     seed: int,
     family_set: str = "core",
     start_index: int = 0,
+    diagnostic_table_mode: str = "legacy",
 ) -> list[Example]:
     if examples <= 0:
         raise ValueError("--examples must be positive")
@@ -301,6 +321,8 @@ def make_benchmark(
         raise ValueError("hidden repair smoke currently expects exactly 4 candidates")
     if start_index < 0:
         raise ValueError("start_index must be non-negative")
+    if diagnostic_table_mode not in {"legacy", "plausible_decoys"}:
+        raise ValueError(f"unknown diagnostic_table_mode {diagnostic_table_mode!r}")
     rng = random.Random(seed)
     families = _families(family_set)
     rows: list[Example] = []
@@ -317,7 +339,19 @@ def make_benchmark(
         )
         candidate_rows: list[Candidate] = []
         for candidate_index, intent in enumerate(family.patch_intents):
-            diagnostic = diagnostic_code if candidate_index == answer_index else f"X{candidate_index}"
+            if candidate_index == answer_index:
+                diagnostic = diagnostic_code
+            elif diagnostic_table_mode == "legacy":
+                diagnostic = f"X{candidate_index}"
+            else:
+                diagnostic = _plausible_decoy_diagnostic_code(
+                    example_index=example_index,
+                    seed=seed,
+                    candidate_index=candidate_index,
+                    answer_index=answer_index,
+                    candidates=candidates,
+                    answer_code=diagnostic_code,
+                )
             candidate_rows.append(
                 Candidate(
                     label=_candidate_label(example_index, candidate_index),
@@ -785,13 +819,20 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=28)
     parser.add_argument("--budgets", type=str, default="2,4,8,16,32")
     parser.add_argument("--family-set", choices=["core", "holdout", "all"], default="core")
+    parser.add_argument("--diagnostic-table-mode", choices=["legacy", "plausible_decoys"], default="legacy")
     parser.add_argument("--output-dir", type=pathlib.Path, required=True)
     args = parser.parse_args()
 
     budgets = [int(part.strip()) for part in args.budgets.split(",") if part.strip()]
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-    examples = make_benchmark(examples=args.examples, candidates=args.candidates, seed=args.seed, family_set=args.family_set)
+    examples = make_benchmark(
+        examples=args.examples,
+        candidates=args.candidates,
+        seed=args.seed,
+        family_set=args.family_set,
+        diagnostic_table_mode=args.diagnostic_table_mode,
+    )
     _write_benchmark(output_dir / "benchmark.jsonl", examples)
 
     artifacts = ["benchmark.jsonl", "sweep_summary.json", "sweep_summary.md", "manifest.json", "manifest.md"]

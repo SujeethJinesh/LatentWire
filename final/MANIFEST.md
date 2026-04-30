@@ -222,6 +222,12 @@
   intersections are `0`, max opaque learned lift vs target is `+0.012`, max
   opaque paired CI95 high vs target is `+0.066`, and a semantic candidate-view
   diagnostic passes at `0.996` without explicit diagnostic keys.
+- Balanced plausible-decoy diagnostic packet code, tests, references, memo, and
+  artifacts showing the old full/semantic surface has a public-only shortcut,
+  while the balanced `diag_only` surface yields a clean n500 source-causality
+  result: 2-byte direct private packets score `1.000` over two seeds, public-only
+  diagnostic receivers reach at most `0.178`, min packet-public CI95 low is
+  `+0.788`, and source-destroying/text controls stay near target.
 
 ## Notes
 

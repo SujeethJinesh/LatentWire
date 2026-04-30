@@ -3098,3 +3098,20 @@ slot channels. ICLR readiness improves to a strong scoped full-paper candidate,
 but comfortable acceptance still needs an `n=500` disjoint repeat, a public-only
 semantic receiver ablation, one cross-family/model pair, and stronger
 production systems telemetry. COLM workshop readiness is very strong.
+
+Update `2026-04-30`: the public-only ablation found a serious shortcut in the
+prior semantic/full learned-receiver surface and produced a cleaner replacement
+gate. Public-only classifiers trained only on public full/semantic candidate
+features reach `1.000` at n64, so those rows cannot be used as clean
+source-causality claims. I added balanced plausible-decoy diagnostic tables and
+a `diag_only` candidate view. On the balanced n500 surface, 2-byte direct
+source-private diagnostic packets score `1.000` over two seeds, while the
+same-eval public-only diagnostic receiver reaches at most `0.178`; min
+packet-public CI95 lower bound is `+0.788`, and controls/text negatives remain
+near target. Readiness implication: ICLR story is narrower but stronger. The
+clean headline contribution is now low-rate source-private side-information
+coding under balanced public-only controls, with learned masked-consistency as
+a supporting receiver-depth ablation rather than the main causal proof. COLM
+workshop readiness remains very strong; ICLR comfort still needs one
+cross-family/model-mediated balanced diagnostic row and native systems
+telemetry.

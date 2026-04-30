@@ -15,6 +15,7 @@ def _state() -> gate.ConsistencyReceiverState:
         eval_start_index=0,
         train_family_set="all",
         eval_family_set="all",
+        diagnostic_table_mode="legacy",
         candidates=4,
         feature_dim=64,
         budget_bytes=2,
@@ -34,6 +35,7 @@ def test_remap_slot_seed_changes_candidate_order_without_changing_answers() -> N
         eval_start_index=0,
         train_family_set="all",
         eval_family_set="all",
+        diagnostic_table_mode="legacy",
         candidates=4,
         feature_dim=32,
         budget_bytes=2,
@@ -51,6 +53,7 @@ def test_remap_slot_seed_changes_candidate_order_without_changing_answers() -> N
         eval_start_index=0,
         train_family_set="all",
         eval_family_set="all",
+        diagnostic_table_mode="legacy",
         candidates=4,
         feature_dim=32,
         budget_bytes=2,
@@ -78,6 +81,7 @@ def test_start_indices_make_train_eval_ids_disjoint() -> None:
         eval_start_index=10_000,
         train_family_set="all",
         eval_family_set="all",
+        diagnostic_table_mode="legacy",
         candidates=4,
         feature_dim=32,
         budget_bytes=2,
@@ -87,6 +91,32 @@ def test_start_indices_make_train_eval_ids_disjoint() -> None:
     )
 
     assert {row.example_id for row in state.train_rows}.isdisjoint({row.example_id for row in state.eval_rows})
+
+
+def test_plausible_decoy_diagnostic_table_removes_obvious_x_codes() -> None:
+    state = gate._fit_state(
+        train_examples=16,
+        eval_examples=8,
+        train_seed=13,
+        eval_seed=14,
+        train_start_index=0,
+        eval_start_index=10_000,
+        train_family_set="all",
+        eval_family_set="all",
+        diagnostic_table_mode="plausible_decoys",
+        candidates=4,
+        feature_dim=32,
+        budget_bytes=2,
+        ridge=1e-2,
+        candidate_view="diag_only",
+        fit_intercept=False,
+    )
+
+    for example in state.eval_rows:
+        diags = [candidate.handles_diagnostic for candidate in example.candidates]
+        assert len(set(diags)) == len(diags)
+        assert example.diagnostic_code in diags
+        assert all(not diag.startswith("X") for diag in diags)
 
 
 def test_receiver_features_have_one_row_per_candidate() -> None:
@@ -148,6 +178,7 @@ def test_run_gate_writes_smoke_artifacts(tmp_path) -> None:
         eval_start_index=0,
         train_family_set="all",
         eval_family_set="all",
+        diagnostic_table_mode="legacy",
         candidates=4,
         feature_dim=64,
         budget_bytes=2,

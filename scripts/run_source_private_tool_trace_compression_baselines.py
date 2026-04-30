@@ -82,6 +82,8 @@ def _candidate_texts_for_view(example: Example, *, candidate_view: str) -> list[
                     ]
                 )
             )
+        elif candidate_view == "diag_only":
+            rows.append(f"handles_repair_diag={candidate.handles_diagnostic}")
         elif candidate_view == "slot":
             rows.append(f"candidate_slot={len(rows)}")
         else:
