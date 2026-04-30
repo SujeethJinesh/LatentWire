@@ -194,6 +194,18 @@ target `0.250`. Utility-protected Hadamard cuts unique payloads further to
 strongest version of the compression-native contribution: geometry-mitigated
 source-private PQ with a hardware-friendly structured rotation caveat.
 
+The reviewer-facing PQ systems table is in
+`results/source_private_pq_systems_comparison_table_20260430/`. It consolidates
+PQ/OPQ/Hadamard, scalar WZ, frozen Qwen3 verifier, same-byte/query-aware/full-log
+text relay, KV byte floors, and C2C/KVComm/TurboQuant/QJL reference rows. The
+table passes with PQ min delta over best source-destroying control `+0.212`,
+canonical cached PQ decode p50 `0.0212 ms`, protected-Hadamard unique payloads
+as low as `386/500`, frozen verifier min accuracy `1.000`, same-byte text max
+accuracy `0.250`, query-aware text `7.0x` raw bytes, full-log relay at least
+`183.25x` raw bytes, and KV byte floors at least `10752x` raw bytes. This is the
+main systems comparison artifact for finalization; it is explicitly not a
+native GPU/vLLM serving claim.
+
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,

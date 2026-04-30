@@ -1265,5 +1265,12 @@
     "path": "references/537_product_codebook_geometry_knockout_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for geometry-mitigated PQ knockout stress, covering PQ, OPQ, Hadamard incoherence, QuaRot, TurboQuant, Slepian-Wolf/Wyner-Ziv side information, payload uniqueness, public-mean knockout, and structured-rotation systems framing."
+  },
+  {
+    "num": 538,
+    "slug": "pq_systems_comparison_refs_20260430",
+    "path": "references/538_pq_systems_comparison_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the PQ systems comparison table, covering PQ/OPQ, QuIP#/QuaRot/TurboQuant/QJL/KIVI/KVQuant, C2C/KVComm/Q-KVComm, vLLM/PagedAttention, DistServe, text relay baselines, KV exposure accounting, and non-claims for production serving."
   }
 ]

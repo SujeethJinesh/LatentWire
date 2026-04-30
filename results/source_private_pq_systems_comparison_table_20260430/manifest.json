@@ -1,0 +1,44 @@
+{
+  "artifact_sha256": {
+    "source_private_pq_systems_comparison_table.csv": "1a4a0447e4a5f4227d4b00c4c4134afca2669e26bd1757ddcdb77390a22afae6",
+    "source_private_pq_systems_comparison_table.json": "2de3228eb9a7d9f00683de0ba0698aea00731f5b13b984678e7e97f078a76031",
+    "source_private_pq_systems_comparison_table.md": "f0d80acf6b13c24c48b88b384a5b7c45ddb697e7c4a55dbc0b7e277168534300"
+  },
+  "artifacts": [
+    "source_private_pq_systems_comparison_table.json",
+    "source_private_pq_systems_comparison_table.csv",
+    "source_private_pq_systems_comparison_table.md",
+    "manifest.json"
+  ],
+  "headline": {
+    "claim_boundary": "This table supports a source-private boundary-traffic and residual-code systems claim. It does not claim production GPU serving speedup, native KV-cache compression superiority, or protocol-free latent reasoning.",
+    "full_log_raw_ratio_min": 183.25,
+    "kv_raw_ratio_min": 10752.0,
+    "pass_gate": true,
+    "pq_geometry_rows": 4,
+    "pq_max_cached_decode_p50_ms": 0.021187501261010766,
+    "pq_min_delta_vs_best_control": 0.21199999999999997,
+    "pq_mitigation_rows": 3,
+    "protected_hadamard_unique_payloads_min": 386,
+    "query_aware_text_raw_ratio": 7.0,
+    "same_byte_text_accuracy_max": 0.25,
+    "verifier_max_p50_latency_ms": 1674.0718749933876,
+    "verifier_min_accuracy": 1.0
+  },
+  "input_sha256": {
+    "decode_frontier": "07cffc93562351947ca7353dd15239709bc7c6a7bc153d3d3de60c752f08fbfd",
+    "geometry_stress": "f9aed855b47b88f06086cc4e71d4333ff3993eb2e0313bc9fc40784b23e392d6",
+    "packet_trace_card": "1694a7259cc00ef27dbd51971f1a5106acff7f671371caf51b3d7ed72e9f8db2",
+    "pq_gate": "37374a2c36679c0edeae0d3006569112ec538fbf8a3aefb50ff88890b561f7a0",
+    "rate_frontier": "109250e4f1797f6c94dff34bd102dfd86b6faf4fcb6fe5d3c75f90ee508a7fcd",
+    "verifier_trace": "e1e855fd721485e3a4ef30df99059725cdd3dbb11af6ce8aa893299eb5bc8123"
+  },
+  "inputs": {
+    "decode_frontier": "results/source_private_product_codebook_decode_frontier_n500_20260430/product_codebook_decode_frontier.json",
+    "geometry_stress": "results/source_private_product_codebook_geometry_knockout_stress_n500_20260430/product_codebook_geometry_knockout_stress.json",
+    "packet_trace_card": "results/source_private_packet_trace_card_v2_20260430/packet_trace_card_v2.json",
+    "pq_gate": "results/source_private_product_codebook_packet_gate_n500_20260430/product_codebook_packet_gate.json",
+    "rate_frontier": "results/source_private_systems_rate_assumption_frontier_20260430/systems_rate_assumption_frontier.json",
+    "verifier_trace": "results/source_private_verifier_consumption_trace_20260430/qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/verifier_consumption_trace.json"
+  }
+}

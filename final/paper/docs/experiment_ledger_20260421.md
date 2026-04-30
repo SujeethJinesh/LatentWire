@@ -16556,3 +16556,26 @@ Next exact gate: build a systems comparison table for canonical PQ,
 utility-OPQ, protected Hadamard, scalar WZ, text relay, KV baselines, and the
 frozen verifier packet with bytes, cached decode, and exposed-private-state
 accounting.
+
+Update `2026-04-30`: added the reviewer-facing PQ systems comparison table.
+Code: `scripts/build_source_private_pq_systems_comparison_table.py`; test:
+`tests/test_build_source_private_pq_systems_comparison_table.py`; memo:
+`paper/source_private_pq_systems_comparison_table_20260430.md`; references:
+`references/538_pq_systems_comparison_refs_20260430.md`; artifact:
+`results/source_private_pq_systems_comparison_table_20260430/`. Outcome:
+the table pass gate is `true` and joins canonical PQ, utility-OPQ, protected
+Hadamard, utility-protected Hadamard, scalar WZ, frozen Qwen3 verifier
+packets, same-byte/query-aware/full-log text relay, KV byte floors, and
+C2C/KVComm/TurboQuant/QJL/LLMLingua/Gist references. Headline values:
+PQ geometry rows `4`, mitigation rows `3`, PQ min delta over best
+source-destroying control `+0.212`, max cached PQ decode p50 `0.0212 ms`,
+protected-Hadamard min unique payloads `386/500`, frozen verifier min accuracy
+`1.000`, frozen verifier max Mac CPU p50 `1674.1 ms`, same-byte text max
+accuracy `0.250`, query-aware text `7.0x` raw bytes, full-log relay at least
+`183.25x` raw bytes, and KV byte floors at least `10752x` raw bytes.
+Interpretation: this does not add a new positive receiver, but it materially
+improves the systems contribution and prevents overclaiming. The strongest
+claim is now source-private residual-code boundary traffic with explicit
+private-text/KV exposure accounting. The next exact ICLR method gate is a
+product-codebook model-mediated receiver at n256, scaling to n500 only if
+strict controls pass.

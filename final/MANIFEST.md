@@ -276,6 +276,14 @@
   protected Hadamard reduces unique payloads to `404-425` with collision-subset
   accuracy `0.457-0.537`; utility-protected Hadamard reduces unique payloads to
   `386-405` with collision-subset accuracy `0.494-0.513`.
+- Reviewer-facing PQ systems comparison table code, test, references, memo, and
+  artifact joining geometry-mitigated PQ, scalar WZ, frozen Qwen3 verifier,
+  same-byte/query-aware/full-log text relay, KV byte floors, and
+  C2C/KVComm/TurboQuant/QJL reference rows. The pass table reports PQ min delta
+  over best source-destroying control `+0.212`, canonical cached PQ decode p50
+  `0.0212 ms`, frozen verifier min accuracy `1.000`, same-byte text max
+  accuracy `0.250`, query-aware text `7.0x` raw bytes, full-log relay at least
+  `183.25x` raw bytes, and KV byte floors at least `10752x` raw bytes.
 
 ## Notes
 
