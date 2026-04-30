@@ -205,6 +205,21 @@ collapses to target-only at ranks `4/8/16`, so the frozen BGE bilinear family is
 now mostly exhausted. The next credible method branch is a true query-resampler
 or target-preserving connector, not more low-rank bilinear tuning.
 
+Update `2026-04-30`: the memory-traffic trace-card now strengthens the systems
+case into a clearer third contribution. The new ledger joins packet, text,
+full-log, semantic-anchor, and KV byte-floor rows into raw bytes, 64B
+cache-line traffic, 128B DMA-burst traffic, batch-64 packet amortization, TTFT
+proxy deltas, and source text/KV exposure. It preserves the important caveat:
+an isolated 2B packet still costs one transfer quantum, so query-aware text ties
+at one 64B line even though it is `7.0x` raw bytes and exposes private text.
+The hardware-positive statement is now narrower and stronger: source-private
+packets minimize semantic payload and private-state movement, avoid source text
+and KV/cache exposure, and become traffic-efficient under batched contiguous
+packet records (`5.0` line bytes/request at batch 64). Readiness improves on
+the systems axis, but the ICLR-full blocker remains the same: a non-hand-coded
+learned receiver, ideally a JEPA/Q-Former-style query resampler with
+source-destroying negatives, must clear held-out synonym controls.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

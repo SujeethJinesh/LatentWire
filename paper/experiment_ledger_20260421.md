@@ -15816,3 +15816,23 @@ best learned accuracy `0.250`, best lift `+0.000`, controls clean, oracle
 `0.250`. Interpretation: directly trained low-rank factors are a clean negative
 on the current frozen BGE feature setup. Prune further bilinear/low-rank BGE
 tuning unless a new feature source or objective changes the hypothesis.
+
+Follow-up `2026-04-30`: added a source-private memory traffic ledger as a
+systems trace-card artifact. New code:
+`scripts/build_source_private_memory_traffic_ledger.py`; test:
+`tests/test_build_source_private_memory_traffic_ledger.py`; artifact:
+`results/source_private_memory_traffic_ledger_20260430/`. The artifact passes
+and joins the systems rate frontier, hardware packet frontier, and packet ISA
+batch frontier into one JSON/CSV/Markdown ledger with raw bytes, single-request
+64B cache-line traffic, single-request 128B DMA-burst traffic, batch-64 packet
+amortization, TTFT proxy deltas, and source text/KV exposure. Headline: packet
+raw minimum is `2` bytes, an isolated request is still `64` line bytes and
+`128` DMA bytes, batch-64 packed packet records reach `5.0` line bytes/request
+and `6.0` DMA bytes/request, query-aware text remains `7.0x` raw bytes but ties
+at `1.0x` cache-line traffic, full hidden-log relay is at least `183.25x` raw
+bytes and `6.0x` cache-line bytes with at least `+164.27 ms` p50 TTFT, and KV
+byte-floor rows are at least `10752.0x` raw bytes and `336.0x` cache-line
+bytes. Interpretation: the systems contribution is now stronger and more
+honest. The paper should claim source-private payload/state-movement and
+batched packet-ISA advantages, while explicitly caveating that production GPU
+throughput and native KV transport remain future gates.

@@ -1062,5 +1062,12 @@
     "path": "references/508_hardware_packet_frontier_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the hardware-facing packet frontier, covering Tambe Lab research themes, GainSight, BlockDialect, EdgeBERT, AdaptivFloat, CAMEL, and 3LA."
+  },
+  {
+    "num": 509,
+    "slug": "memory_traffic_ledger_refs_20260430",
+    "path": "references/509_memory_traffic_ledger_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the memory traffic ledger and packet-ISA trace-card framing, covering Tambe Lab systems themes, FlashAttention IO-awareness, vLLM/PagedAttention KV memory, GainSight, and C2C."
   }
 ]

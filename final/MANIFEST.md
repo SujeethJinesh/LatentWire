@@ -130,6 +130,10 @@
   artifact consolidating learned packet rows, same-byte text controls,
   scalar/QJL source-coding comparators, structured text rate rows, and
   KV/TurboQuant/KIVI byte-floor accounting with explicit caveats.
+- Source-private memory traffic ledger script, test, memo, references, and
+  artifact joining packet, text, full-log, semantic-anchor, and KV byte-floor
+  rows into raw bytes, 64B cache-line traffic, 128B DMA-burst traffic,
+  batch-64 packet amortization, TTFT proxy deltas, and source text/KV exposure.
 
 ## Notes
 
