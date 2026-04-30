@@ -1,0 +1,10 @@
+{
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_masked_consistency_public_separation",
+  "pass_gate": false
+}

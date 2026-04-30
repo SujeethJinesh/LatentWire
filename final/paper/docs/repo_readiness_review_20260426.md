@@ -36,6 +36,21 @@ highest-value ICLR strengthening gate: n500 masked-consistency with public-only
 separation, or a packet trace-card v2 for systems if no new method branch is
 run.
 
+Update `2026-04-30`: the n500 balanced `diag_only` public-separation gate prunes
+the current learned masked-consistency receiver as a headline contribution. The
+task itself is clean: public-only rows on the same eval IDs are below target
+(`0.178` and `0.142` vs `0.250`). The learned receiver still fails strict
+promotion, reaching only `0.336` and `0.302` matched accuracy over two n500
+seed pairs, with min lift over best control `+0.052`. Oracle packets decode at
+`1.000`, so the receiver can use the interface when the packet is correct; the
+source encoder does not produce the right packet under balanced plausible-decoy
+diagnostic handles. Budget `16` and `--fit-intercept` probes remain below
+threshold. Readiness implication: the three strongest contributions should be
+the source-private controlled benchmark/protocol, balanced direct diagnostic
+packet plus frozen binary-verifier receiver, and systems byte/traffic frontier.
+The learned-receiver slot is open only if a new posterior/flow/query-bottleneck
+branch beats this pruned baseline under the same controls.
+
 ## Current Paper Story
 
 The honest current story is conditional innovation rather than proven latent

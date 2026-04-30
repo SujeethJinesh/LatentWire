@@ -1195,5 +1195,12 @@
     "path": "references/527_binary_receiver_deranged_and_next_branches_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the cross-family binary-verifier deranged-table gate and next method branches, covering TurboQuant, QJL, KIVI, KVQuant, FlashAttention, vLLM, DistServe, GainSight, DiT, consistency models, flow matching, I-JEPA, V-JEPA, Flamingo/Perceiver Resampler, BLIP-2/Q-Former, and indirect source coding with decoder side information."
+  },
+  {
+    "num": 528,
+    "slug": "masked_consistency_pruning_and_next_systems_refs_20260430",
+    "path": "references/528_masked_consistency_pruning_and_next_systems_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for pruning the masked-consistency receiver on balanced diag-only public-separation and choosing next systems/receiver branches, covering consistency/flow/DiT/JEPA inspiration, TurboQuant/QJL/KIVI/Gist baselines, and side-information coding framing."
   }
 ]

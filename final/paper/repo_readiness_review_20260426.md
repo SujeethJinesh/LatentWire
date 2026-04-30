@@ -1,12 +1,55 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: stronger scoped positive-method manuscript with medium packet,
-  receiver, anti-lookup, and systems trace-card evidence; not yet a comfortable
-  broad latent-transfer ICLR claim
-- estimated distance: one successful less hand-shaped learned receiver or
-  larger label-blind/generalization gate, plus native serving telemetry when
-  NVIDIA/server hardware is available
+- status: stronger scoped positive-method manuscript with balanced packet,
+  frozen binary-verifier receiver, anti-lookup, and systems trace-card evidence;
+  not yet a comfortable broad latent-transfer ICLR claim
+- estimated distance: one successful less protocol-shaped learned receiver or
+  cross-family binary-verifier/label-blind scale-up gate, plus native serving
+  telemetry when NVIDIA/server hardware is available
+
+Update `2026-04-30`: a calibrated frozen Qwen3 binary-verifier receiver now
+passes the balanced diagnostic strict-small gate over two n64 seeds. The target
+model scores yes/no equality between the 2-byte packet and each public
+candidate diagnostic handle, then falls back to target prior unless the
+yes-minus-no margin is positive. This fixes the earlier random-packet control
+failure where the verifier chose the least-negative candidate. Combined n64
+paired summary: `2/2` pass rows, matched packet `1.000`, target `0.250`, best
+control at most `0.266`, minimum matched-best-control delta `+0.734`, minimum
+CI95 lower bound `+0.625` vs best control, and valid rate `1.000`. Readiness
+improves on the hand-coded-decoder objection, but the claim remains a
+source-private side-information protocol: this is not proof of protocol-free
+latent transfer and not a production latency win on Mac CPU.
+
+Update `2026-04-30`: the binary-verifier receiver now replicates on the
+balanced cross-family core and holdout n64 slices, and a deranged public-table
+control precisely marks the claim boundary. Exact-table core and holdout rows
+pass with matched `1.000`, target/control `0.250`, valid rate `1.000`, and
+minimum paired CI95 lower bound `+0.641`. In the deranged-table control, the
+real source packet is kept but candidate diagnostic handles are rotated; both
+core and holdout drop to `0.000` while collision-free random packets stay at
+target `0.250`. This is strong evidence for source-private side-information
+communication and against random/target-prior artifacts. It is also direct
+evidence that the receiver depends on the public decoder table, so the paper
+must not sell this row as protocol-free semantic latent reasoning. Next
+highest-value ICLR strengthening gate: n500 masked-consistency with public-only
+separation, or a packet trace-card v2 for systems if no new method branch is
+run.
+
+Update `2026-04-30`: the n500 balanced `diag_only` public-separation gate prunes
+the current learned masked-consistency receiver as a headline contribution. The
+task itself is clean: public-only rows on the same eval IDs are below target
+(`0.178` and `0.142` vs `0.250`). The learned receiver still fails strict
+promotion, reaching only `0.336` and `0.302` matched accuracy over two n500
+seed pairs, with min lift over best control `+0.052`. Oracle packets decode at
+`1.000`, so the receiver can use the interface when the packet is correct; the
+source encoder does not produce the right packet under balanced plausible-decoy
+diagnostic handles. Budget `16` and `--fit-intercept` probes remain below
+threshold. Readiness implication: the three strongest contributions should be
+the source-private controlled benchmark/protocol, balanced direct diagnostic
+packet plus frozen binary-verifier receiver, and systems byte/traffic frontier.
+The learned-receiver slot is open only if a new posterior/flow/query-bottleneck
+branch beats this pruned baseline under the same controls.
 
 ## Current Paper Story
 
@@ -3115,3 +3158,19 @@ a supporting receiver-depth ablation rather than the main causal proof. COLM
 workshop readiness remains very strong; ICLR comfort still needs one
 cross-family/model-mediated balanced diagnostic row and native systems
 telemetry.
+
+Update `2026-04-30`: balanced cross-family public-only falsification is now
+cleared for the direct diagnostic packet, but model-mediated balanced decoding
+is still not cleared. Four n500 rows pass across core->holdout and
+holdout->core public-only training/eval splits: 2-byte direct packets stay at
+`1.000`, max public-only accuracy is `0.178`, min packet-public CI95 low is
+`+0.788`, and hardened summary checks verify eval-ID, family-name, answer-label,
+config, and public train/eval disjointness. A frozen Qwen3-0.6B label-output
+receiver on balanced n32 is positive but partial (`0.688` matched vs `0.250`
+target/control, CI95 low `+0.281`, valid rate `0.938`), while a faster
+choice-alias prompt fails at target-only accuracy. Readiness implication:
+current ICLR distance improves on leakage/generalization controls, but the
+full-paper blocker is now precise: produce a balanced learned or frozen target
+receiver with valid rate `>=0.95` at n64+, or keep the paper claim explicitly
+as a rigorous source-private side-information protocol with systems accounting.
+COLM workshop readiness remains very strong.

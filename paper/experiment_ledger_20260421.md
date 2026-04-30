@@ -16315,3 +16315,24 @@ tables drop to `0.000`. Interpretation: this strengthens source causality and
 rules out target-prior/random collision explanations, but it also confirms the
 claim boundary: the receiver follows the public side-information table; this is
 not protocol-free semantic latent transfer.
+
+Update `2026-04-30`: ran the decisive balanced `diag_only` public-separation
+gate for the learned masked-consistency receiver and pruned the branch as a
+headline ICLR contribution. New summary script:
+`scripts/summarize_source_private_masked_consistency_public_gate.py`; artifacts:
+`results/source_private_masked_consistency_diag_only_public_gate_20260430/`;
+memo:
+`paper/source_private_masked_consistency_diag_only_public_gate_20260430.md`;
+references:
+`references/528_masked_consistency_pruning_and_next_systems_refs_20260430.md`.
+Outcome: the n500 gate fails over two disjoint seed pairs. Learned matched
+accuracy is `0.336` and `0.302` versus target `0.250`, with public-only rows
+below target (`0.178` and `0.142`) on the same eval IDs. The failure is not a
+public-only shortcut; it is an encoder/interface failure. Oracle packet decoding
+is `1.000`, but matched source packets are about `0.243-0.273` bit fraction
+away from oracle packets. Budget `16` only reaches `0.366`, and
+`--fit-intercept` reaches `0.346`, so simple rate/intercept tuning is not
+enough. Interpretation: keep masked consistency as a negative/method-depth
+diagnostic; do not count it among the three headline technical contributions.
+Next highest-value Mac gate is a packet trace-card v2 systems artifact or a new
+posterior/flow/Q-Former-style learned receiver with source-control negatives.
