@@ -16004,3 +16004,31 @@ packets now have stable paired source-causal lift against target/control rows on
 the frozen `n=256` surface. They do not statistically dominate scalar WZ on
 every row (`min CI95 low vs scalar = -0.035`), so scalar remains a strong
 adjacent codec comparator rather than a defeated baseline.
+
+Follow-up `2026-04-30`: ran the direct Qwen3-0.6B target-decoder medium gate
+on the core reviewer-risk surface and added paired uncertainty for the result.
+Code updates:
+`scripts/run_source_private_tool_trace_target_decoder_smoke.py` now supports
+append-style partial prediction logs for future long receiver runs, and
+`scripts/summarize_source_private_target_decoder_uncertainty.py` summarizes
+paired bootstrap uncertainty for target-decoder artifacts. Tests:
+`tests/test_run_source_private_tool_trace_target_decoder_smoke.py` and
+`tests/test_summarize_source_private_target_decoder_uncertainty.py`; memo:
+`paper/source_private_target_decoder_n160_20260430.md`; strengthening memo:
+`paper/source_private_iclr_strengthening_deep_dive_20260430.md`; references:
+`references/516_receiver_systems_novelty_scout_refs_20260430.md`; artifacts:
+`results/source_private_tool_trace_target_decoder_n160_20260430/core_seed29_qwen3_n160_all_controls_cpu/`
+and
+`results/source_private_tool_trace_target_decoder_n160_20260430/paired_uncertainty_core/`.
+Outcome: pass gate `True`, exact ID parity `True`, matched packet
+`111/160 = 0.694`, target-only `40/160 = 0.250`, shuffled packet
+`0.250`, random same-byte `0.250`, structured JSON 2-byte `0.250`, structured
+free-text 2-byte `0.250`, matched-target `+0.444`, matched-best-control
+`+0.444`, valid prediction rate `1.000`, matched p50 CPU latency
+`2670.3 ms`, and paired CI95 lower bounds `+0.369` versus both target-only and
+best control. Interpretation: direct model-mediated packet consumption is now a
+medium Mac-local supporting result rather than only an n64 smoke, but it is not
+a serving-speed claim and it is not yet product-codebook-specific decoding. The
+next exact gate is held-out `n=160` direct target decoding or, for a more
+creative method branch, a packet-consistency denoiser stacked on the live packet
+surface.

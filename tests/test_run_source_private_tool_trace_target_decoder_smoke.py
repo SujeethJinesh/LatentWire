@@ -114,6 +114,16 @@ def test_summarize_supports_condition_subset_for_resumable_receiver_runs() -> No
     assert summary["best_control_accuracy"] == summary["metrics"]["shuffled_packet"]["accuracy"]
 
 
+def test_partial_prediction_reader_returns_rows_when_present(tmp_path) -> None:
+    path = tmp_path / "target_predictions.partial.jsonl"
+    path.write_text('{"example_id":"e0","condition":"target_only"}\n', encoding="utf-8")
+
+    rows = target_gate._read_partial_jsonl(path)
+
+    assert rows == [{"example_id": "e0", "condition": "target_only"}]
+    assert target_gate._read_partial_jsonl(tmp_path / "missing.jsonl") == []
+
+
 def test_validate_conditions_rejects_unknown_condition() -> None:
     try:
         target_gate._validate_conditions(["target_only", "bogus"])

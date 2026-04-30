@@ -293,7 +293,7 @@ At `2` bytes, structured JSON and free-text relays remain target-only. At
 format. This is not a contradiction; it is the expected rate curve. The packet
 method occupies the compact-rate regime.
 
-## 9. Target-Decoder Smoke
+## 9. Target-Decoder Ablation
 
 A skeptical reviewer may object that the target-side protocol decoder is doing
 too much work. To test this, we replace the hard-coded packet-to-candidate
@@ -301,17 +301,20 @@ lookup with Qwen3-0.6B acting as a target-side selector. The model receives the
 target-prior fallback label, the source packet, candidate labels, and candidate
 `handles_repair_diag` metadata.
 
-**Table 5. Qwen3 target-decoder smoke.**
+**Table 5. Qwen3 target-decoder ablation.**
 
 | Surface | N | Target | Matched packet | Best control | Pass |
 |---|---:|---:|---:|---:|---|
 | core seed 29 | `16` | `0.250` | `0.688` | `0.250` | yes |
 | held-out seed 30 | `32` | `0.250` | `0.750` | `0.281` | yes |
+| core seed 29 | `160` | `0.250` | `0.694` | `0.250` | yes |
 
-This is a smoke ablation, not the main evidence. It reduces the hand-coded
-lookup concern by showing that packet consumption can be model-mediated while
-preserving controls on small slices. Scaling this row is future work unless
-review strategy requires it.
+This is still an ablation, not the main systems evidence. It reduces the
+hand-coded lookup concern by showing that packet consumption can be
+model-mediated while preserving controls. The `n=160` row has paired CI95 lower
+bounds `+0.369` versus both target-only and best control, but CPU decoding is
+slow (`2670 ms` p50 per matched condition), so it should not be used as a
+serving-speed claim.
 
 ## 10. Interpretability
 
@@ -361,8 +364,9 @@ makes the problem auditable and rate-counted, but it is not unconstrained code
 generation or raw-log repair reasoning.
 
 The primary target decoder is deterministic and protocol-shaped. The Qwen3
-target-decoder smoke reduces this concern, but remains small and should not be
-overclaimed as a learned target bridge.
+target-decoder ablation now passes at `n=160` on the core surface, which
+reduces this concern, but held-out `n=160` and product-codebook-specific
+model-mediated decoding remain open.
 
 The benchmark is synthetic. Held-out repair families and seed repeats reduce
 template-specific concerns, but real tool traces, retrieval traces, and

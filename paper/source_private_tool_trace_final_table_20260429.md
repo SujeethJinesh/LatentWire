@@ -142,11 +142,14 @@ the hand-coded-decoder concern:
 | holdout seed 30 | Qwen3-0.6B | MPS | 32 | `0.750` | `0.250` | `0.281` | `1.000` | `1315 ms` |
 | core seed 29 | Qwen3-0.6B | CPU | 64 | `0.656` | `0.250` | `0.250` | `1.000` | `2182 ms` |
 | holdout seed 30 | Qwen3-0.6B | CPU | 64 | `0.719` | `0.250` | `0.266` | `1.000` | `2237 ms` |
+| core seed 29 | Qwen3-0.6B | CPU | 160 | `0.694` | `0.250` | `0.250` | `1.000` | `2670 ms` |
 
 The attempted core n160 MPS target-decoder run failed before prediction with an
-Apple MPS matmul shape error. The CPU n64 row is therefore the current strongest
-local target-decoder confirmation and now passes on both core and held-out
-surfaces. It is still an ablation, not the main claim.
+Apple MPS matmul shape error. The CPU n160 row is now the strongest local
+direct target-decoder confirmation on the core surface, with paired CI95 lower
+bounds `+0.369` versus both target-only and best control. Held-out direct
+target decoding remains at n64. This is still an ablation, not the main systems
+claim.
 
 ## Pass/Fail Summary
 

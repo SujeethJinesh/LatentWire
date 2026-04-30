@@ -244,7 +244,7 @@ diagnostic is then visible in parseable form.
   \label{fig:rate}
 \end{figure}
 
-\section{Model-Mediated Protocol Decoder Smoke}
+\section{Model-Mediated Protocol Decoder Ablation}
 \label{sec:target-decoder}
 
 As a limited check on whether the result depends entirely on the hard-coded
@@ -253,8 +253,12 @@ The model receives the target-prior fallback label, source packet, candidate
 labels, and diagnostic decoder side information. On a 16-example core slice,
 matched packets reach 0.688 versus 0.250 target/control. On a 32-example
 held-out slice, matched packets reach 0.750 versus 0.250 target and 0.281 best
-control. This is a smoke ablation, not the main evidence or a learned latent
-bridge, but it is consistent with the protocol being usable by an LLM selector.
+control. The larger local CPU core row reaches 0.694 on 160 examples while
+target-only, shuffled-source, random same-byte, two-byte JSON, and two-byte
+free-text controls all remain at 0.250; paired bootstrap lower bounds are
++0.369 versus both target and best control. This is still an ablation, not the
+main systems evidence or a learned latent bridge, but it is consistent with the
+protocol being usable by an LLM selector.
 
 \section{Interpretability}
 
@@ -309,8 +313,9 @@ rather than target priors or extra prompt bytes, changes the final selection.
 
 The main limitation is scope. Candidate decoder side information exposes the
 diagnostic mapping, and the primary decoder is deterministic and
-protocol-shaped. The target-decoder smoke reduces this concern but remains
-small. The benchmark is synthetic and candidate-selection based; it does not
+protocol-shaped. The target-decoder ablation reduces this concern but still
+needs held-out 160-example replication and product-codebook-specific model
+decoding. The benchmark is synthetic and candidate-selection based; it does not
 establish unconstrained program repair, raw-log reasoning, real tool/retrieval
 deployment, or learned latent transfer. Structured text relay becomes an oracle
 when granted enough bytes. Stronger future comparisons should include learned

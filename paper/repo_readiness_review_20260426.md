@@ -2967,3 +2967,17 @@ accuracy on every row, yet paired CI lower bounds versus scalar can be negative.
 The next full-paper blocker is therefore not PQ-vs-scalar dominance; it is a
 model-mediated receiver or cross-family/generalization gate that makes the
 communication method feel less hand-coded.
+
+Update `2026-04-30`: direct Qwen3-0.6B target decoding now clears a medium
+Mac-local core gate. On `n=160` all-control CPU evaluation, the frozen target
+decoder reaches `0.694` with the matched 2-byte packet while target-only,
+shuffled-source, random same-byte, structured JSON 2-byte, and structured
+free-text 2-byte all remain at `0.250`; exact ID parity and valid prediction
+rate are `1.000`; paired CI95 lower bounds are `+0.369` versus both target-only
+and best control. This materially reduces the hand-coded decoder objection and
+upgrades the receiver evidence from n64 smoke to medium supporting evidence.
+Readiness is now a stronger scoped ICLR submission candidate, but still not a
+comfortable broad latent-transfer paper. Remaining blockers: held-out/seed
+target-decoder replication, product-codebook-specific model-mediated decoding,
+native serving systems telemetry, and a clear final claim boundary that does not
+overstate wins against C2C/KVCOMM/KV compression or prompt-compression methods.

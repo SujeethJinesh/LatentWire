@@ -1,0 +1,116 @@
+{
+  "bootstrap_samples": 5000,
+  "created_utc": "2026-04-30T07:09:25.952938+00:00",
+  "gate": "source_private_target_decoder_uncertainty",
+  "headline": {
+    "max_p50_latency_ms": 2670.306125000934,
+    "min_matched_minus_best_control": 0.44375,
+    "min_matched_minus_target": 0.44375,
+    "min_paired_ci95_low_vs_best_control": 0.36875,
+    "min_paired_ci95_low_vs_target": 0.36875,
+    "min_valid_prediction_rate": 1.0,
+    "pass_rows": 1,
+    "rows": 1
+  },
+  "interpretation": "This gate asks whether a frozen target LLM can consume the compact source packet beyond target priors and same-byte/source-destroyed controls. It is a reviewer-defense receiver gate, not a systems-speed claim.",
+  "pass_gate": true,
+  "pass_rule": "Every target-decoder run must pass its point gate, preserve exact-ID parity, have matched valid prediction rate >=0.95, and have paired CI95 lower bounds above +0.10 versus both target-only and the strongest source-destroying or matched-byte text control.",
+  "result_dirs": [
+    "results/source_private_tool_trace_target_decoder_n160_20260430/core_seed29_qwen3_n160_all_controls_cpu"
+  ],
+  "rows": [
+    {
+      "best_control": "shuffled_packet",
+      "best_control_accuracy": 0.25,
+      "comparisons": {
+        "random_same_byte": {
+          "baseline": "random_same_byte",
+          "n": 160,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 89,
+            "wins": 71
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.525,
+            "ci95_low": 0.3625,
+            "mean": 0.44375
+          }
+        },
+        "shuffled_packet": {
+          "baseline": "shuffled_packet",
+          "n": 160,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 89,
+            "wins": 71
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.51875,
+            "ci95_low": 0.36875,
+            "mean": 0.44375
+          }
+        },
+        "structured_free_text_2byte": {
+          "baseline": "structured_free_text_2byte",
+          "n": 160,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 89,
+            "wins": 71
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.51875,
+            "ci95_low": 0.36875,
+            "mean": 0.44375
+          }
+        },
+        "structured_json_2byte": {
+          "baseline": "structured_json_2byte",
+          "n": 160,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 89,
+            "wins": 71
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.525,
+            "ci95_low": 0.3625,
+            "mean": 0.44375
+          }
+        },
+        "target_only": {
+          "baseline": "target_only",
+          "n": 160,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 89,
+            "wins": 71
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.51875,
+            "ci95_low": 0.36875,
+            "mean": 0.44375
+          }
+        }
+      },
+      "exact_id_parity": true,
+      "matched_accuracy": 0.69375,
+      "matched_mean_generated_tokens": 13.0,
+      "matched_mean_payload_bytes": 2.0,
+      "matched_minus_best_control": 0.44375,
+      "matched_minus_target": 0.44375,
+      "matched_p50_latency_ms": 2670.306125000934,
+      "matched_valid_prediction_rate": 1.0,
+      "n": 160,
+      "paired_vs_best_control_ci95_low": 0.36875,
+      "paired_vs_target_ci95_low": 0.36875,
+      "pass_gate": true,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_tool_trace_target_decoder_n160_20260430/core_seed29_qwen3_n160_all_controls_cpu",
+      "rows_sha256": "d852707fe02fd76f55807b84a6e6b532e45f112bebddf5421726307a7fde06e8",
+      "summary_sha256": "f2c10773fe7b40088f01947646e59bd06ad84e769a76a1afb69e6d2760b46250",
+      "surface": "core_seed29_qwen3_n160_all_controls_cpu",
+      "target_only_accuracy": 0.25
+    }
+  ]
+}

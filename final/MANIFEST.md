@@ -173,6 +173,16 @@
   surface: `8/9` pass rows, all remaps covered, min passing CI95 low `+0.191`
   vs target and `+0.152` vs best destructive control, with scalar WZ kept as a
   strong adjacent comparator.
+- Direct Qwen3 target-decoder `n=160` all-control CPU artifact, paired
+  uncertainty summary, memo, and synced runner/summarizer tests showing frozen
+  target-model packet consumption is now medium Mac-local supporting evidence:
+  matched packet `0.694`, target/control/text-2B rows `0.250`, valid prediction
+  rate `1.000`, and paired CI95 lower bound `+0.369` versus target and best
+  control.
+- Receiver/systems/novelty scout memo and ICLR strengthening deep-dive memo
+  clarifying the current technical contributions, C2C/KVCOMM/KV-compression and
+  prompt-compression comparison boundary, COLM-vs-ICLR readiness gap, and the
+  next packet-consistency denoiser branch.
 
 ## Notes
 

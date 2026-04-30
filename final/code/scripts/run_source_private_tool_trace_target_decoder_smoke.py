@@ -172,6 +172,7 @@ def _generate_target_predictions(
     enable_thinking: bool | None,
     conditions: list[str] | None = None,
     progress_jsonl: pathlib.Path | None = None,
+    partial_predictions_jsonl: pathlib.Path | None = None,
     progress_every: int = 16,
 ) -> list[dict[str, Any]]:
     import torch
@@ -182,6 +183,7 @@ def _generate_target_predictions(
     rng = random.Random(seed + 20260429)
     rows: list[dict[str, Any]] = []
     progress_handle = progress_jsonl.open("a", encoding="utf-8") if progress_jsonl is not None else None
+    partial_handle = partial_predictions_jsonl.open("a", encoding="utf-8") if partial_predictions_jsonl is not None else None
     for index, example in enumerate(examples):
         for condition in active_conditions:
             payload, metadata = _condition_payload(
@@ -206,24 +208,26 @@ def _generate_target_predictions(
             new_tokens = output[0][inputs["input_ids"].shape[-1] :]
             generated = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
             prediction = _parse_candidate_label(generated, example)
-            rows.append(
-                {
-                    "example_id": example.example_id,
-                    "condition": condition,
-                    "answer_label": example.answer_label,
-                    "target_prior_label": _prior_prediction(example),
-                    "payload": payload,
-                    "payload_bytes": len(payload.encode("utf-8")),
-                    "payload_tokens": len(re.findall(r"\S+", payload)),
-                    "generated_text": generated,
-                    "prediction": prediction,
-                    "correct": prediction == example.answer_label,
-                    "valid_prediction": bool(prediction),
-                    "latency_ms": latency_ms,
-                    "generated_tokens": len(new_tokens),
-                    **metadata,
-                }
-            )
+            row = {
+                "example_id": example.example_id,
+                "condition": condition,
+                "answer_label": example.answer_label,
+                "target_prior_label": _prior_prediction(example),
+                "payload": payload,
+                "payload_bytes": len(payload.encode("utf-8")),
+                "payload_tokens": len(re.findall(r"\S+", payload)),
+                "generated_text": generated,
+                "prediction": prediction,
+                "correct": prediction == example.answer_label,
+                "valid_prediction": bool(prediction),
+                "latency_ms": latency_ms,
+                "generated_tokens": len(new_tokens),
+                **metadata,
+            }
+            rows.append(row)
+            if partial_handle is not None:
+                partial_handle.write(json.dumps(row, sort_keys=True) + "\n")
+                partial_handle.flush()
         if progress_handle is not None and ((index + 1) % max(progress_every, 1) == 0 or index + 1 == len(examples)):
             progress_handle.write(
                 json.dumps(
@@ -242,6 +246,8 @@ def _generate_target_predictions(
             progress_handle.flush()
     if progress_handle is not None:
         progress_handle.close()
+    if partial_handle is not None:
+        partial_handle.close()
     return rows
 
 
@@ -301,6 +307,10 @@ def _summarize(rows: list[dict[str, Any]], *, conditions: list[str] | None = Non
 
 def _write_jsonl(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
     path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
+
+
+def _read_partial_jsonl(path: pathlib.Path) -> list[dict[str, Any]]:
+    return _load_jsonl(path) if path.exists() else []
 
 
 def _write_markdown(path: pathlib.Path, summary: dict[str, Any]) -> None:
@@ -366,6 +376,7 @@ def main() -> None:
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--conditions", choices=_conditions(), nargs="*", default=None)
     parser.add_argument("--progress-jsonl", type=pathlib.Path, default=None)
+    parser.add_argument("--partial-predictions-jsonl", type=pathlib.Path, default=None)
     parser.add_argument("--progress-every", type=int, default=16)
     args = parser.parse_args()
 
@@ -377,6 +388,14 @@ def main() -> None:
     if args.progress_jsonl is not None:
         progress_jsonl = args.progress_jsonl if args.progress_jsonl.is_absolute() else ROOT / args.progress_jsonl
         progress_jsonl.parent.mkdir(parents=True, exist_ok=True)
+    partial_predictions_jsonl = None
+    if args.partial_predictions_jsonl is not None:
+        partial_predictions_jsonl = (
+            args.partial_predictions_jsonl
+            if args.partial_predictions_jsonl.is_absolute()
+            else ROOT / args.partial_predictions_jsonl
+        )
+        partial_predictions_jsonl.parent.mkdir(parents=True, exist_ok=True)
     examples = _load_examples(benchmark_path, limit=args.limit)
     rows = _generate_target_predictions(
         examples,
@@ -388,13 +407,22 @@ def main() -> None:
         enable_thinking=args.enable_thinking,
         conditions=conditions,
         progress_jsonl=progress_jsonl,
+        partial_predictions_jsonl=partial_predictions_jsonl,
         progress_every=args.progress_every,
     )
+    if partial_predictions_jsonl is not None:
+        partial_rows = _read_partial_jsonl(partial_predictions_jsonl)
+        if len(partial_rows) < len(rows):
+            raise RuntimeError(
+                f"partial prediction log {partial_predictions_jsonl} has {len(partial_rows)} rows but final run produced {len(rows)}"
+            )
     summary = _summarize(rows, conditions=conditions)
     _write_jsonl(output_dir / "target_predictions.jsonl", rows)
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
     _write_markdown(output_dir / "summary.md", summary)
     artifacts = ["target_predictions.jsonl", "summary.json", "summary.md", "manifest.json", "manifest.md"]
+    if partial_predictions_jsonl is not None and partial_predictions_jsonl.parent.resolve() == output_dir.resolve():
+        artifacts.insert(1, partial_predictions_jsonl.name)
     manifest = {
         "command": " ".join(
             [
@@ -411,6 +439,9 @@ def main() -> None:
                 "--no-enable-thinking" if args.enable_thinking is False else "--enable-thinking",
                 "" if args.conditions is None else "--conditions " + " ".join(args.conditions),
                 "" if args.progress_jsonl is None else f"--progress-jsonl {args.progress_jsonl}",
+                ""
+                if args.partial_predictions_jsonl is None
+                else f"--partial-predictions-jsonl {args.partial_predictions_jsonl}",
                 f"--progress-every {args.progress_every}",
             ]
         ),
@@ -419,6 +450,7 @@ def main() -> None:
             "benchmark_jsonl": str(args.benchmark_jsonl),
             "output_dir": str(args.output_dir),
             "progress_jsonl": None if args.progress_jsonl is None else str(args.progress_jsonl),
+            "partial_predictions_jsonl": None if partial_predictions_jsonl is None else str(partial_predictions_jsonl),
             "do_sample": False,
         },
         "artifacts": artifacts,

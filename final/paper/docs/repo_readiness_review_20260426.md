@@ -268,6 +268,34 @@ next credible full-paper strengthening work is either stronger frozen
 LLM/activation features, a compression-native packet method inspired by QJL/
 TurboQuant/PQ, or a less synthetic private retrieval/tool-trace benchmark.
 
+Update `2026-04-30`: the first pure compression-native rotation-sign packet has
+been tested and pruned as a headline method. The new controlled gate evaluates
+random-rotation source sign sketches under constrained-shuffle, answer-masked,
+permuted-bit, and random same-byte controls across three remapped codebooks and
+`2/4/6` byte budgets at `n=256`. It fails with `0/9` pass rows: max
+rotation-sign accuracy is only `0.348`, max rotation-control margin is
+`+0.066`, and it trails scalar Wyner-Ziv by `0.141-0.230` accuracy on every
+row. This is useful as a negative control: the current positive packet evidence
+is not explained by generic random-sign sketching. The compression-native next
+step should be product-codebook packets or stronger protected residual
+selection; the full-paper blocker remains a non-hand-coded learned receiver or
+a narrower source-private packet + systems framing.
+
+Update `2026-04-30`: product-codebook packets materially improve the
+compression-native contribution. The new gate sends one learned product-
+quantizer centroid index per byte over source-projected vectors, with
+label-shuffled, constrained-shuffle, answer-masked, permuted-code, and random
+same-byte controls. On the same three remapped `n=256` surfaces and `2/4/6`
+byte budgets used for rotation-sign, the functional gate passes: `8/9` row-
+level source-control passes, all three remaps covered, max accuracy `0.598`,
+control margins `+0.199` to `+0.320`, and product-codebook accuracy beats
+scalar Wyner-Ziv on every row by `+0.004` to `+0.125`. The strict systems gate
+does not pass because the simple Python decoder has p50 latency `8.3-10.3 ms`.
+Readiness improves on method depth because we now have a learned discrete
+codec that beats scalar/QJL/protected/sign comparators on the remapped surface,
+but the full-paper blocker remains: optimize or separate PQ decode latency, add
+paired uncertainty, and still address the hand-coded/target-decoder objection.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does
@@ -2913,3 +2941,43 @@ the semantic-anchor contribution. The paper still needs a reviewer-satisfying
 ablation that removes or replaces the hand-written anchor lexicon, and a
 systems rate/assumption table that clearly separates LatentWire packets from
 TurboQuant/QJL/KV compression baselines.
+
+Follow-up `2026-04-30`: the product-codebook branch is now systems-positive on
+receiver-side decode. The product-codebook packet gate functionally passed but
+initially failed strict latency because the old timing path included source
+packet construction. The new decode frontier reports the correct breakdown:
+request-public table decode p50 is at most `0.4942 ms`, resident PQ lookup p50
+is at most `0.02000 ms`, cached-vector decode p50 is at most `0.0257 ms`, and
+all table/cached decoders exactly match the canonical predictions. This upgrades
+the third contribution from “functional learned discrete packet with a latency
+caveat” to “functional learned discrete packet with a low-latency receiver.”
+The paper is still not comfortably ICLR-full: it needs paired uncertainty/seed
+stability for product-codebook rows and a model-mediated or cross-family
+receiver gate to reduce the hand-coded protocol objection. It is now much
+stronger as a COLM workshop paper and closer to a scoped ICLR submission.
+
+Update `2026-04-30`: product-codebook packets now have paired uncertainty on
+the same remapped `n=256` surface. The uncertainty gate passes with `8/9` rows,
+all three remaps covered, minimum passing CI95 lower bound `+0.191` versus
+target-only and `+0.152` versus the strongest product-codebook destructive
+control. The known failed 2-byte remap-107 row stays failed. This strengthens
+the learned discrete-packet contribution and reduces chance/cherry-picking
+risk, but it also clarifies the comparison to scalar WZ: PQ beats scalar in raw
+accuracy on every row, yet paired CI lower bounds versus scalar can be negative.
+The next full-paper blocker is therefore not PQ-vs-scalar dominance; it is a
+model-mediated receiver or cross-family/generalization gate that makes the
+communication method feel less hand-coded.
+
+Update `2026-04-30`: direct Qwen3-0.6B target decoding now clears a medium
+Mac-local core gate. On `n=160` all-control CPU evaluation, the frozen target
+decoder reaches `0.694` with the matched 2-byte packet while target-only,
+shuffled-source, random same-byte, structured JSON 2-byte, and structured
+free-text 2-byte all remain at `0.250`; exact ID parity and valid prediction
+rate are `1.000`; paired CI95 lower bounds are `+0.369` versus both target-only
+and best control. This materially reduces the hand-coded decoder objection and
+upgrades the receiver evidence from n64 smoke to medium supporting evidence.
+Readiness is now a stronger scoped ICLR submission candidate, but still not a
+comfortable broad latent-transfer paper. Remaining blockers: held-out/seed
+target-decoder replication, product-codebook-specific model-mediated decoding,
+native serving systems telemetry, and a clear final claim boundary that does not
+overstate wins against C2C/KVCOMM/KV compression or prompt-compression methods.

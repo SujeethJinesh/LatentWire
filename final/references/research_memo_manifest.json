@@ -1111,5 +1111,12 @@
     "path": "references/515_product_codebook_decode_frontier_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the product-codebook decode frontier, covering product quantization, OPQ, PQ distance-table decoding, Quicker ADC, compact-code decoder framing, VQ codebooks, and benchmark methodology."
+  },
+  {
+    "num": 516,
+    "slug": "receiver_systems_novelty_scout_refs_20260430",
+    "path": "references/516_receiver_systems_novelty_scout_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source scout memo for the current ICLR strengthening cycle, covering systems/IO baselines, KV/cache communication competitors, prompt compression, Q-Former/Flamingo receiver inspiration, and diffusion/flow/consistency receiver ideas."
   }
 ]

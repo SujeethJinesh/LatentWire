@@ -15924,3 +15924,111 @@ as a near-term path. The next highest-yield branches are stronger frozen
 LLM/activation features under whole-pool training, compression-native packets
 such as rotation-sign or product-codebook packets, or a less hand-coded
 private retrieval/tool-trace surface.
+
+Follow-up `2026-04-30`: implemented and ran the controlled rotation-sign packet
+gate as the next compression-native branch. Code:
+`scripts/run_source_private_tool_trace_compression_baselines.py` and
+`scripts/build_source_private_rotation_sign_packet_gate.py`; tests:
+`tests/test_run_source_private_tool_trace_compression_baselines.py` and
+`tests/test_build_source_private_rotation_sign_packet_gate.py`; memo:
+`paper/source_private_rotation_sign_packet_gate_20260430.md`; references:
+`references/513_rotation_sign_packet_refs_20260430.md`; artifact:
+`results/source_private_rotation_sign_packet_gate_20260430/`. The gate adds
+source-destroying controls for pure random-rotation sign sketches:
+constrained-shuffle, answer-masked, permuted-bit, and random same-byte. Outcome:
+negative with `0/9` pass rows, max rotation-sign accuracy `0.348`, max
+rotation-control margin only `+0.066`, and rotation-sign trailing scalar
+Wyner-Ziv by `0.141-0.230` accuracy across all rows. The 2-byte rows decode
+quickly (`~0.58 ms`) but are too weak; the 4/6-byte rows are still weak and
+have current Python p50 decode latencies of `6.6-9.5 ms`. Decision: prune pure
+rotation-sign packets as a headline method and keep them as a fair
+compression-native ablation. The next compression-native branch should be
+product-codebook packets, while the main learned-receiver branch should move to
+stronger frozen activations or a less hand-coded private retrieval/tool-trace
+surface.
+
+Follow-up `2026-04-30`: implemented and ran the product-codebook packet gate,
+which is now the strongest compression-native candidate. Code:
+`scripts/run_source_private_tool_trace_compression_baselines.py` and
+`scripts/build_source_private_product_codebook_packet_gate.py`; tests:
+`tests/test_run_source_private_tool_trace_compression_baselines.py` and
+`tests/test_build_source_private_product_codebook_packet_gate.py`; memo:
+`paper/source_private_product_codebook_packet_gate_20260430.md`; references:
+`references/514_product_codebook_packet_refs_20260430.md`; artifact:
+`results/source_private_product_codebook_packet_gate_20260430/`. The gate fits
+a product quantizer over source-projected training vectors and sends one learned
+centroid index per byte. Outcome: strict systems-latency gate is false, but the
+functional method gate is true. Product-codebook packets pass `8/9` row-level
+source-control checks, cover all three remaps, reach max accuracy `0.598`, beat
+the strongest product-codebook destructive control by `+0.199` to `+0.320`, and
+beat scalar Wyner-Ziv on every row by `+0.004` to `+0.125`. The 2-byte remap-107
+row fails controls (`PQ-control +0.199` but best control `0.312` > target+0.05),
+and all rows fail the strict `<2 ms` latency bar with current Python p50 decode
+latencies `8.3-10.3 ms`. Decision: promote product-codebook packets as the live
+compression-native method candidate, with an explicit latency caveat. The next
+exact gate is optimized/cached PQ decode plus paired bootstrap; a separate
+target-decoder n256 gate remains necessary for the hand-coded-decoder objection.
+
+Follow-up `2026-04-30`: implemented and ran the product-codebook decode
+frontier, resolving the immediate systems-latency blocker for the receiver side
+of the live product-codebook branch. Code:
+`scripts/build_source_private_product_codebook_decode_frontier.py`; test:
+`tests/test_build_source_private_product_codebook_decode_frontier.py`; memo:
+`paper/source_private_product_codebook_decode_frontier_20260430.md`;
+references:
+`references/515_product_codebook_decode_frontier_refs_20260430.md`; artifact:
+`results/source_private_product_codebook_decode_frontier_20260430/`. Outcome:
+pass gate `True`, `8/9` pass rows, all three remaps covered, zero canonical
+decoder mismatches, zero table-decoder mismatches, max request-public table
+decode p50 `0.4942 ms`, max resident table lookup p50 `0.02000 ms`, max
+cached-vector p50 `0.0257 ms`, and min speedup vs the prior recorded harness
+timing `371.893x`. Interpretation: the earlier `8.3-10.3 ms` p50 row was not
+a true receiver decode limit; it mostly measured source packet construction
+from private evidence features. Product-codebook packets now have a defensible
+receiver-side systems win when public target-side candidate state is available.
+Do not overclaim end-to-end serving speedup yet: source packet construction,
+native GPU serving, and model-mediated target decode remain separate gates.
+
+Follow-up `2026-04-30`: added paired uncertainty for the live
+product-codebook packet branch. Code:
+`scripts/summarize_source_private_product_codebook_uncertainty.py`; test:
+`tests/test_summarize_source_private_product_codebook_uncertainty.py`; memo:
+`paper/source_private_product_codebook_uncertainty_20260430.md`; artifact:
+`results/source_private_product_codebook_uncertainty_20260430/`. Outcome:
+pass gate `True`, `8/9` pass rows, all three remaps covered, min passing paired
+CI95 low vs target `+0.191`, min passing paired CI95 low vs best
+product-codebook destructive control `+0.152`, max product-codebook accuracy
+`0.598`, and the known 2-byte remap-107 row remains failed by importing the
+original functional source-control pass flag. Interpretation: product-codebook
+packets now have stable paired source-causal lift against target/control rows on
+the frozen `n=256` surface. They do not statistically dominate scalar WZ on
+every row (`min CI95 low vs scalar = -0.035`), so scalar remains a strong
+adjacent codec comparator rather than a defeated baseline.
+
+Follow-up `2026-04-30`: ran the direct Qwen3-0.6B target-decoder medium gate
+on the core reviewer-risk surface and added paired uncertainty for the result.
+Code updates:
+`scripts/run_source_private_tool_trace_target_decoder_smoke.py` now supports
+append-style partial prediction logs for future long receiver runs, and
+`scripts/summarize_source_private_target_decoder_uncertainty.py` summarizes
+paired bootstrap uncertainty for target-decoder artifacts. Tests:
+`tests/test_run_source_private_tool_trace_target_decoder_smoke.py` and
+`tests/test_summarize_source_private_target_decoder_uncertainty.py`; memo:
+`paper/source_private_target_decoder_n160_20260430.md`; strengthening memo:
+`paper/source_private_iclr_strengthening_deep_dive_20260430.md`; references:
+`references/516_receiver_systems_novelty_scout_refs_20260430.md`; artifacts:
+`results/source_private_tool_trace_target_decoder_n160_20260430/core_seed29_qwen3_n160_all_controls_cpu/`
+and
+`results/source_private_tool_trace_target_decoder_n160_20260430/paired_uncertainty_core/`.
+Outcome: pass gate `True`, exact ID parity `True`, matched packet
+`111/160 = 0.694`, target-only `40/160 = 0.250`, shuffled packet
+`0.250`, random same-byte `0.250`, structured JSON 2-byte `0.250`, structured
+free-text 2-byte `0.250`, matched-target `+0.444`, matched-best-control
+`+0.444`, valid prediction rate `1.000`, matched p50 CPU latency
+`2670.3 ms`, and paired CI95 lower bounds `+0.369` versus both target-only and
+best control. Interpretation: direct model-mediated packet consumption is now a
+medium Mac-local supporting result rather than only an n64 smoke, but it is not
+a serving-speed claim and it is not yet product-codebook-specific decoding. The
+next exact gate is held-out `n=160` direct target decoding or, for a more
+creative method branch, a packet-consistency denoiser stacked on the live packet
+surface.
