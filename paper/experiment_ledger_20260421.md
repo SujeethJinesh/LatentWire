@@ -15968,3 +15968,23 @@ latencies `8.3-10.3 ms`. Decision: promote product-codebook packets as the live
 compression-native method candidate, with an explicit latency caveat. The next
 exact gate is optimized/cached PQ decode plus paired bootstrap; a separate
 target-decoder n256 gate remains necessary for the hand-coded-decoder objection.
+
+Follow-up `2026-04-30`: implemented and ran the product-codebook decode
+frontier, resolving the immediate systems-latency blocker for the receiver side
+of the live product-codebook branch. Code:
+`scripts/build_source_private_product_codebook_decode_frontier.py`; test:
+`tests/test_build_source_private_product_codebook_decode_frontier.py`; memo:
+`paper/source_private_product_codebook_decode_frontier_20260430.md`;
+references:
+`references/515_product_codebook_decode_frontier_refs_20260430.md`; artifact:
+`results/source_private_product_codebook_decode_frontier_20260430/`. Outcome:
+pass gate `True`, `8/9` pass rows, all three remaps covered, zero canonical
+decoder mismatches, zero table-decoder mismatches, max request-public table
+decode p50 `0.4942 ms`, max resident table lookup p50 `0.02000 ms`, max
+cached-vector p50 `0.0257 ms`, and min speedup vs the prior recorded harness
+timing `371.893x`. Interpretation: the earlier `8.3-10.3 ms` p50 row was not
+a true receiver decode limit; it mostly measured source packet construction
+from private evidence features. Product-codebook packets now have a defensible
+receiver-side systems win when public target-side candidate state is available.
+Do not overclaim end-to-end serving speedup yet: source packet construction,
+native GPU serving, and model-mediated target decode remain separate gates.

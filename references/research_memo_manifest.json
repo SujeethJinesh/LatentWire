@@ -1104,5 +1104,12 @@
     "path": "references/514_product_codebook_packet_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the product-codebook packet gate, covering product quantization, TurboQuant, QJL, KIVI, C2C, LMCache, semantic communication, and diffusion-transformer latent-space framing."
+  },
+  {
+    "num": 515,
+    "slug": "product_codebook_decode_frontier_refs_20260430",
+    "path": "references/515_product_codebook_decode_frontier_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the product-codebook decode frontier, covering product quantization, OPQ, PQ distance-table decoding, Quicker ADC, compact-code decoder framing, VQ codebooks, and benchmark methodology."
   }
 ]

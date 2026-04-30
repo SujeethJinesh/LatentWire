@@ -2941,3 +2941,17 @@ the semantic-anchor contribution. The paper still needs a reviewer-satisfying
 ablation that removes or replaces the hand-written anchor lexicon, and a
 systems rate/assumption table that clearly separates LatentWire packets from
 TurboQuant/QJL/KV compression baselines.
+
+Follow-up `2026-04-30`: the product-codebook branch is now systems-positive on
+receiver-side decode. The product-codebook packet gate functionally passed but
+initially failed strict latency because the old timing path included source
+packet construction. The new decode frontier reports the correct breakdown:
+request-public table decode p50 is at most `0.4942 ms`, resident PQ lookup p50
+is at most `0.02000 ms`, cached-vector decode p50 is at most `0.0257 ms`, and
+all table/cached decoders exactly match the canonical predictions. This upgrades
+the third contribution from “functional learned discrete packet with a latency
+caveat” to “functional learned discrete packet with a low-latency receiver.”
+The paper is still not comfortably ICLR-full: it needs paired uncertainty/seed
+stability for product-codebook rows and a model-mediated or cross-family
+receiver gate to reduce the hand-coded protocol objection. It is now much
+stronger as a COLM workshop paper and closer to a scoped ICLR submission.

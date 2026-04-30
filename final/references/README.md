@@ -538,3 +538,6 @@ final-paper framing:
 - `514_`: Product-codebook packet references for product quantization,
   TurboQuant, QJL, KIVI, C2C, LMCache, semantic communication, and
   diffusion-transformer latent-space framing.
+- `515_`: Product-codebook decode frontier references for PQ distance-table
+  decoding, OPQ, Quicker ADC, compact-code decoder framing, VQ codebooks, and
+  benchmark methodology.

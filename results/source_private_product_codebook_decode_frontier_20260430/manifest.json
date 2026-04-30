@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "product_codebook_decode_frontier.json": "db001d4f04b7e759829f2c2524b75a2bc4ad479a9d82807f6ac14eb680fbfce5",
+    "product_codebook_decode_frontier.md": "12f66549f925f2949b0750067d2bd71bf562b2970dce4c49bf4c72b1e80d3c9e"
+  },
+  "artifacts": [
+    "product_codebook_decode_frontier.json",
+    "product_codebook_decode_frontier.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

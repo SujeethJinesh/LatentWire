@@ -163,6 +163,11 @@
   all three remaps covered, max accuracy `0.598`, control margins up to
   `+0.320`, and product-codebook accuracy above scalar WZ on every row) while
   failing the strict systems-latency gate under the current Python decoder.
+- Product-codebook decode frontier code, test, references, memo, and artifact
+  showing the live PQ packet has a receiver-side systems win: request-public
+  table decode p50 <= `0.4942 ms`, resident lookup p50 <= `0.02000 ms`, cached
+  vector decode p50 <= `0.0257 ms`, and exact parity with the canonical
+  decoder.
 
 ## Notes
 
