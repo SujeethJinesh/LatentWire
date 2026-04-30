@@ -1020,5 +1020,12 @@
     "path": "references/502_learned_synonym_dictionary_packet_refs_20260429.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the learned/calibrated synonym-dictionary packet gate, covering sparse dictionaries, sparse crosscoders, SAEBench, I-JEPA, SimCSE, Sentence-BERT, learned compression, and Wyner-Ziv source coding."
+  },
+  {
+    "num": 503,
+    "slug": "systems_comparison_and_method_next_refs_20260429",
+    "path": "references/503_systems_comparison_and_method_next_refs_20260429.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for systems comparison and next-method planning after the learned synonym seed/heldout boundary, covering C2C, vector translation, LatentMAS, prompt compression, TurboQuant, QJL, KIVI, relative representations, Q-Former/Perceiver connectors, JEPA, and diffusion-transformer inspiration."
   }
 ]

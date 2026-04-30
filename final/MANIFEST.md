@@ -126,6 +126,10 @@
   receiver fails without exact transformed phrase overlap while a
   family-B-calibrated diagnostic passes. This records the calibrated
   public-dictionary claim boundary for finalization.
+- Reviewer-facing systems comparison table script, test, memo, references, and
+  artifact consolidating learned packet rows, same-byte text controls,
+  scalar/QJL source-coding comparators, structured text rate rows, and
+  KV/TurboQuant/KIVI byte-floor accounting with explicit caveats.
 
 ## Notes
 

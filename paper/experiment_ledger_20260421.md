@@ -15605,3 +15605,21 @@ interface, while held-out paraphrase generalization is a documented negative
 boundary. Next exact gate: implement a stronger receiver for the held-out
 family-B split, preferably anchor-relative or contrastive synonym-consistency
 features, and require the same zero/shuffled/random/answer/text controls.
+
+Follow-up `2026-04-29`: added a reviewer-facing systems comparison table after
+the learned synonym seed/heldout boundary. New files:
+`scripts/build_source_private_systems_comparison_table.py`,
+`tests/test_build_source_private_systems_comparison_table.py`,
+`paper/source_private_systems_comparison_table_20260429.md`, and
+`references/503_systems_comparison_and_method_next_refs_20260429.md`. Command:
+`./venv_arm64/bin/python scripts/build_source_private_systems_comparison_table.py --output-dir results/source_private_systems_comparison_table_20260429`.
+Outcome: pass as an artifact-consolidation/system-claim guard. The table
+records `3` headline learned 4-byte pass rows with minimum learned-target delta
+`+0.625`; same-surface, same-byte structured text max accuracy `0.250` and max
+delta `+0.000`; scalar and QJL source-coding comparators at `1.000` accuracy
+on their own source-feature surface; and endpoint non-packet QJL 1-bit KV
+byte-floor ratios at least `10752.0x` the packet. Interpretation: the systems
+claim is now sharper and safer. We can claim a far-left-rate source-private
+task-communication point under controls, but not superiority over TurboQuant,
+KIVI, QJL, or KV kernels. Next exact method gate remains an anchor-relative
+sparse innovation receiver on the held-out family-B split.

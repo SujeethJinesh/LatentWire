@@ -1,0 +1,23 @@
+{
+  "artifact_sha256": {
+    "source_private_systems_comparison_table.csv": "57655f284b9c44edfeb0e504bf62d315c6582d52319c1c6bfe178f353e1dbd51",
+    "source_private_systems_comparison_table.json": "e9d34af523d7de3fe3fc845587847e058acf420a278a6314b572746f814f9bea",
+    "source_private_systems_comparison_table.md": "732e5b481f8167da8f8f9fb7492b64f1a9c6eebe9af1c451b0859a72b1043cf5"
+  },
+  "artifacts": [
+    "source_private_systems_comparison_table.json",
+    "source_private_systems_comparison_table.csv",
+    "source_private_systems_comparison_table.md",
+    "manifest.json"
+  ],
+  "headline": {
+    "claim_boundary": "The learned packet has clean same-surface 4-byte rows and seed stability, but held-out paraphrase generalization fails; KV/TurboQuant rows are byte-floor accounting only.",
+    "compression_qjl_accuracy": 1.0,
+    "compression_scalar_accuracy": 1.0,
+    "headline_learned_min_delta_vs_target": 0.625,
+    "headline_learned_pass_rows": 3,
+    "min_endpoint_nonpacket_qjl_1bit_bytes_vs_packet": 10752.0,
+    "same_surface_text_max_accuracy": 0.25,
+    "same_surface_text_max_delta_vs_target": 0.0
+  }
+}

@@ -2719,3 +2719,16 @@ transfer. Highest-priority next branch: a stronger held-out receiver
 (anchor-relative sparse features, contrastive synonym-consistency dictionary,
 or activation-backed crosscoder) evaluated on the same family-B split and
 systems byte table.
+
+Follow-up `2026-04-29`: added the systems comparison table artifact. This
+improves reviewer readiness by consolidating headline packets, same-byte text
+controls, scalar/QJL source-coding comparators, structured text rate rows, and
+KV/TurboQuant/KIVI byte-floor accounting into one reproducible artifact. The
+headline is favorable but scoped: `3` learned 4-byte pass rows, minimum
+learned-target delta `+0.625`, same-surface matched structured text max delta
+`+0.000`, scalar/QJL source-coding comparators at `1.000` on their own surface,
+and endpoint non-packet QJL 1-bit byte-floor ratio at least `10752.0x` packet.
+Readiness improves for the systems contribution, but full ICLR readiness still
+depends on either a held-out family-B receiver pass or a much narrower
+calibrated-public-dictionary framing. Next exact gate: anchor-relative sparse
+innovation receiver on the held-out paraphrase split.
