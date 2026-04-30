@@ -13,8 +13,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 METHOD = "matched_packet"
 CONTROL_CONDITIONS = [
+    "deranged_candidate_diag_table",
     "shuffled_packet",
     "random_same_byte",
+    "random_noncandidate_same_byte",
     "structured_json_2byte",
     "structured_free_text_2byte",
 ]

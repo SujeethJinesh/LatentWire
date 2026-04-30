@@ -16287,3 +16287,31 @@ combined n64 paired summary has `2/2` pass rows, matched packet `1.000`, target
 evidence for the balanced diagnostic protocol, but not as broad latent transfer
 or a production latency claim; the Mac CPU receiver uses four target forward
 passes per condition and has p50 matched latency around `1.1 s`.
+
+Update `2026-04-30`: extended the calibrated binary-verifier receiver to the
+balanced cross-family core/holdout artifact and added the reviewer-critical
+deranged public-table control. Harness changes:
+`scripts/run_source_private_tool_trace_target_decoder_smoke.py` now supports
+`deranged_candidate_diag_table`, which sends the real source packet but rotates
+candidate `handles_repair_diag` values, and
+`random_noncandidate_same_byte`, which guarantees no accidental random-code
+collision. `scripts/summarize_source_private_target_decoder_uncertainty.py`
+counts both as controls when present. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_core_n64_binary_logprob_cpu/`,
+`qwen3_seed29_holdout_n64_binary_logprob_cpu/`,
+`paired_uncertainty_qwen3_seed29_core_holdout_n64_binary_logprob_cpu/`,
+`qwen3_seed29_core_n64_binary_logprob_deranged_cpu/`,
+`qwen3_seed29_holdout_n64_binary_logprob_deranged_cpu/`, and
+`paired_uncertainty_qwen3_seed29_core_holdout_n64_binary_logprob_deranged_cpu/`;
+memo:
+`paper/source_private_binary_verifier_cross_family_deranged_20260430.md`;
+references:
+`references/527_binary_receiver_deranged_and_next_branches_refs_20260430.md`.
+Outcome: exact-table binary receiver passes core and holdout n64 (`1.000`
+matched, `0.250` target/best control, min CI95 low `+0.641`, valid `1.000`).
+The deranged-control gate also passes: core and holdout stay `1.000` on matched
+packets, collision-free random packets stay at `0.250`, and deranged public
+tables drop to `0.000`. Interpretation: this strengthens source causality and
+rules out target-prior/random collision explanations, but it also confirms the
+claim boundary: the receiver follows the public side-information table; this is
+not protocol-free semantic latent transfer.

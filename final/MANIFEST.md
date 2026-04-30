@@ -245,6 +245,13 @@
   `0.266`, minimum matched-best-control delta `+0.734`, minimum CI95 lower bound
   `+0.625` vs best control, valid rate `1.000`. Choice-token likelihood is
   pruned at target-only accuracy.
+- Cross-family binary-verifier deranged-control code, tests, references, memo,
+  and artifacts showing the calibrated receiver replicates on balanced core and
+  holdout n64 slices while exposing the public-side-information boundary:
+  exact-table core/holdout matched packets score `1.000` with target/control at
+  `0.250` and min CI95 low `+0.641`; deranged public-handle tables drop to
+  `0.000` on both surfaces, while collision-free random packets remain at
+  `0.250`.
 
 ## Notes
 

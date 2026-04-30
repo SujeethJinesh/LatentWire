@@ -1188,5 +1188,12 @@
     "path": "references/526_balanced_binary_verifier_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the calibrated balanced binary-verifier receiver, covering LM likelihood classification, calibration, constrained decoding, structured LM programs, serving/KV baselines, TurboQuant/QJL/KIVI compression baselines, diffusion-transformer and V-JEPA receiver inspiration, and systems claim boundaries."
+  },
+  {
+    "num": 527,
+    "slug": "binary_receiver_deranged_and_next_branches_refs_20260430",
+    "path": "references/527_binary_receiver_deranged_and_next_branches_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the cross-family binary-verifier deranged-table gate and next method branches, covering TurboQuant, QJL, KIVI, KVQuant, FlashAttention, vLLM, DistServe, GainSight, DiT, consistency models, flow matching, I-JEPA, V-JEPA, Flamingo/Perceiver Resampler, BLIP-2/Q-Former, and indirect source coding with decoder side information."
   }
 ]

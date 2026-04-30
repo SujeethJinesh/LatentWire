@@ -59,12 +59,32 @@ def test_condition_payloads_keep_structured_relays_at_two_bytes() -> None:
     text_payload, _ = target_gate._condition_payload(
         condition="structured_free_text_2byte", example=examples[0], examples=examples, index=0, rng=target_gate.random.Random(7)
     )
+    random_noncandidate, metadata = target_gate._condition_payload(
+        condition="random_noncandidate_same_byte",
+        example=examples[0],
+        examples=examples,
+        index=0,
+        rng=target_gate.random.Random(7),
+    )
 
     assert matched == examples[0].diagnostic_code
     assert len(json_payload.encode("utf-8")) == 2
     assert len(text_payload.encode("utf-8")) == 2
     assert json_payload != examples[0].diagnostic_code
     assert text_payload != examples[0].diagnostic_code
+    assert metadata["packet_kind"] == "random_noncandidate_diag"
+    assert random_noncandidate not in {candidate["handles_diagnostic"] for candidate in examples[0].candidates}
+
+
+def test_deranged_candidate_table_rotates_handles_without_relabeling() -> None:
+    example = _example()
+    deranged = target_gate._candidate_table_for_condition(example, condition="deranged_candidate_diag_table")
+    original_handles = [candidate["handles_diagnostic"] for candidate in example.candidates]
+    deranged_handles = [candidate["handles_diagnostic"] for candidate in deranged]
+
+    assert [candidate["label"] for candidate in deranged] == [candidate["label"] for candidate in example.candidates]
+    assert deranged_handles == original_handles[1:] + original_handles[:1]
+    assert target_gate._candidate_table_for_condition(example, condition="matched_packet") == example.candidates
 
 
 def test_parse_candidate_label_accepts_exact_or_embedded_label() -> None:

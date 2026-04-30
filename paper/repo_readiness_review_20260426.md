@@ -21,6 +21,21 @@ improves on the hand-coded-decoder objection, but the claim remains a
 source-private side-information protocol: this is not proof of protocol-free
 latent transfer and not a production latency win on Mac CPU.
 
+Update `2026-04-30`: the binary-verifier receiver now replicates on the
+balanced cross-family core and holdout n64 slices, and a deranged public-table
+control precisely marks the claim boundary. Exact-table core and holdout rows
+pass with matched `1.000`, target/control `0.250`, valid rate `1.000`, and
+minimum paired CI95 lower bound `+0.641`. In the deranged-table control, the
+real source packet is kept but candidate diagnostic handles are rotated; both
+core and holdout drop to `0.000` while collision-free random packets stay at
+target `0.250`. This is strong evidence for source-private side-information
+communication and against random/target-prior artifacts. It is also direct
+evidence that the receiver depends on the public decoder table, so the paper
+must not sell this row as protocol-free semantic latent reasoning. Next
+highest-value ICLR strengthening gate: n500 masked-consistency with public-only
+separation, or a packet trace-card v2 for systems if no new method branch is
+run.
+
 ## Current Paper Story
 
 The honest current story is conditional innovation rather than proven latent

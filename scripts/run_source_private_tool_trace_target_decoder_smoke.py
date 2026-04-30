@@ -54,6 +54,20 @@ def _deterministic_nonself_index(index: int, n: int) -> int:
     return candidate if candidate != index else (index + 1) % n
 
 
+def _random_noncandidate_same_byte(example: LoadedExample, *, rng: random.Random) -> str:
+    diagnostics = {str(candidate["handles_diagnostic"]) for candidate in example.candidates}
+    for _ in range(100):
+        payload = f"{rng.choice('ABCDEFGHJKLMNPQRSTUVWYZ')}{rng.randrange(0, 10)}"
+        if payload not in diagnostics:
+            return payload
+    for letter in "ABCDEFGHJKLMNPQRSTUVWYZ":
+        for digit in range(10):
+            payload = f"{letter}{digit}"
+            if payload not in diagnostics:
+                return payload
+    raise ValueError("could not construct a non-candidate two-byte diagnostic payload")
+
+
 def _condition_payload(
     *,
     condition: str,
@@ -66,11 +80,15 @@ def _condition_payload(
         return "", {"packet_kind": "none"}
     if condition == "matched_packet":
         return example.diagnostic_code, {"packet_kind": "repair_diag"}
+    if condition == "deranged_candidate_diag_table":
+        return example.diagnostic_code, {"packet_kind": "repair_diag", "candidate_table": "deranged_handles"}
     if condition == "shuffled_packet":
         other = examples[_deterministic_nonself_index(index, len(examples))]
         return other.diagnostic_code, {"packet_kind": "repair_diag", "source_example_id": other.example_id}
     if condition == "random_same_byte":
         return f"{rng.choice('ABCDEFGHJKLMNPQRSTUVWYZ')}{rng.randrange(0, 10)}", {"packet_kind": "random_diag"}
+    if condition == "random_noncandidate_same_byte":
+        return _random_noncandidate_same_byte(example, rng=rng), {"packet_kind": "random_noncandidate_diag"}
     if condition == "structured_json_2byte":
         payload = json.dumps({"repair_diag": example.diagnostic_code}, sort_keys=True).encode("utf-8")[:2].decode(
             "utf-8", errors="ignore"
@@ -90,8 +108,10 @@ def _conditions() -> list[str]:
     return [
         "target_only",
         "matched_packet",
+        "deranged_candidate_diag_table",
         "shuffled_packet",
         "random_same_byte",
+        "random_noncandidate_same_byte",
         "structured_json_2byte",
         "structured_free_text_2byte",
     ]
@@ -105,6 +125,26 @@ def _validate_conditions(conditions: list[str] | None) -> list[str]:
     if unknown:
         raise ValueError(f"unknown conditions: {unknown}")
     return list(conditions)
+
+
+def _candidate_table_for_condition(example: LoadedExample, *, condition: str) -> tuple[dict[str, Any], ...]:
+    candidates = [dict(candidate) for candidate in example.candidates]
+    if condition != "deranged_candidate_diag_table" or len(candidates) < 2:
+        return tuple(candidates)
+    diagnostics = [candidate["handles_diagnostic"] for candidate in candidates]
+    shifted = diagnostics[1:] + diagnostics[:1]
+    for candidate, diagnostic in zip(candidates, shifted):
+        candidate["handles_diagnostic"] = diagnostic
+    return tuple(candidates)
+
+
+def _example_with_candidates(example: LoadedExample, candidates: tuple[dict[str, Any], ...]) -> LoadedExample:
+    return LoadedExample(
+        example_id=example.example_id,
+        answer_label=example.answer_label,
+        diagnostic_code=example.diagnostic_code,
+        candidates=candidates,
+    )
 
 
 def _prompt_for_target_decoder(example: LoadedExample, *, payload: str, prompt_mode: str = "label") -> str:
@@ -308,20 +348,24 @@ def _generate_target_predictions(
                 index=index,
                 rng=rng,
             )
+            prompt_example = _example_with_candidates(
+                example,
+                _candidate_table_for_condition(example, condition=condition),
+            )
             start = time.perf_counter()
             choice_scores: dict[str, float] | None = None
             binary_scores: list[dict[str, Any]] | None = None
             binary_fallback_to_prior = False
             if decode_mode == "candidate_binary_logprob":
                 if not _valid_diag_payload(payload):
-                    generated = _prior_prediction(example)
+                    generated = _prior_prediction(prompt_example)
                     prediction = generated
                     generated_tokens = 0
                     binary_scores = []
                     binary_fallback_to_prior = True
                 else:
                     binary_scores = []
-                    for candidate in example.candidates:
+                    for candidate in prompt_example.candidates:
                         prompt = _prompt_for_binary_match(payload=payload, candidate=candidate)
                         text_prompt = _format_prompt(tokenizer, prompt, enable_thinking=enable_thinking)
                         inputs = tokenizer(text_prompt, return_tensors="pt").to(device)
@@ -348,11 +392,11 @@ def _generate_target_predictions(
                                 "no_surface": no_surface,
                             }
                         )
-                    prediction, binary_fallback_to_prior = _binary_prediction_from_scores(example, binary_scores)
+                    prediction, binary_fallback_to_prior = _binary_prediction_from_scores(prompt_example, binary_scores)
                     generated = prediction
-                    generated_tokens = len(example.candidates)
+                    generated_tokens = len(prompt_example.candidates)
             else:
-                prompt = _prompt_for_target_decoder(example, payload=payload, prompt_mode=prompt_mode)
+                prompt = _prompt_for_target_decoder(prompt_example, payload=payload, prompt_mode=prompt_mode)
                 text_prompt = _format_prompt(tokenizer, prompt, enable_thinking=enable_thinking)
                 inputs = tokenizer(text_prompt, return_tensors="pt").to(device)
                 with torch.no_grad():
@@ -367,12 +411,12 @@ def _generate_target_predictions(
                         )
                 if decode_mode == "choice_logprob":
                     choice_scores = _choice_token_scores(tokenizer, output.logits[0, -1])
-                    generated, prediction = _choice_prediction_from_scores(example, choice_scores)
+                    generated, prediction = _choice_prediction_from_scores(prompt_example, choice_scores)
                     generated_tokens = 1
                 else:
                     new_tokens = output[0][inputs["input_ids"].shape[-1] :]
                     generated = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
-                    prediction = _parse_candidate_label(generated, example, prompt_mode=prompt_mode)
+                    prediction = _parse_candidate_label(generated, prompt_example, prompt_mode=prompt_mode)
                     generated_tokens = len(new_tokens)
             latency_ms = (time.perf_counter() - start) * 1000.0
             row = {
@@ -380,6 +424,7 @@ def _generate_target_predictions(
                 "condition": condition,
                 "answer_label": example.answer_label,
                 "target_prior_label": _prior_prediction(example),
+                "prompt_candidate_table": "deranged_handles" if condition == "deranged_candidate_diag_table" else "original",
                 "payload": payload,
                 "payload_bytes": len(payload.encode("utf-8")),
                 "payload_tokens": len(re.findall(r"\S+", payload)),
@@ -454,8 +499,10 @@ def _summarize(rows: list[dict[str, Any]], *, conditions: list[str] | None = Non
         }
     target = metrics["target_only"]["accuracy"]
     controls = [
+        "deranged_candidate_diag_table",
         "shuffled_packet",
         "random_same_byte",
+        "random_noncandidate_same_byte",
         "structured_json_2byte",
         "structured_free_text_2byte",
     ]
