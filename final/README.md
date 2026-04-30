@@ -206,6 +206,16 @@ accuracy `0.250`, query-aware text `7.0x` raw bytes, full-log relay at least
 main systems comparison artifact for finalization; it is explicitly not a
 native GPU/vLLM serving claim.
 
+The product-codebook model-mediated receiver follow-up is now negative. The
+updated target-decoder harness supports constrained A/B/C/D logprob scoring,
+candidate-wise yes/no binary logprob scoring, disjoint train/eval ID offsets,
+train/eval overlap recording, and stricter exact-ID parity. The n16
+choice-logprob run is flat at `0.3125` for matched, target, and every control.
+The n8 disjoint-ID binary verifier reaches `0.500` on matched packets, but all
+packet-bearing controls also reach `0.500`, in both signature-only and
+distance-table modes. Treat Qwen3-0.6B prompt/logprob PQ reception as pruned;
+do not claim it as a positive receiver.
+
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,

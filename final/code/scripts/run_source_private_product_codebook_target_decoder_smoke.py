@@ -4,6 +4,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import math
 import pathlib
 import random
 import re
@@ -83,10 +84,24 @@ def build_receiver_state(
     candidate_view: str,
     fit_intercept: bool,
     remap_slot_seed: int | None,
+    train_start_index: int = 0,
+    eval_start_index: int = 0,
     label_shuffle_seed: int | None = None,
 ) -> ProductCodebookReceiverState:
-    train_rows = make_benchmark(examples=train_examples, candidates=candidates, seed=train_seed, family_set=train_family_set)
-    eval_rows = make_benchmark(examples=eval_examples, candidates=candidates, seed=eval_seed, family_set=eval_family_set)
+    train_rows = make_benchmark(
+        examples=train_examples,
+        candidates=candidates,
+        seed=train_seed,
+        family_set=train_family_set,
+        start_index=train_start_index,
+    )
+    eval_rows = make_benchmark(
+        examples=eval_examples,
+        candidates=candidates,
+        seed=eval_seed,
+        family_set=eval_family_set,
+        start_index=eval_start_index,
+    )
     train_rows = _remap_candidate_slots(train_rows, remap_seed=remap_slot_seed)
     eval_rows = _remap_candidate_slots(eval_rows, remap_seed=remap_slot_seed)
     encoder = _fit_ridge_encoder_for_view(
@@ -380,6 +395,36 @@ def _prompt_for_product_codebook_decoder(
     )
 
 
+def _prompt_for_product_codebook_binary_match(
+    example: Example,
+    *,
+    payload: bytes | None,
+    state: ProductCodebookReceiverState,
+    candidate_metadata_mode: str,
+    focus_choice: str,
+) -> str:
+    if focus_choice not in _choice_labels(example):
+        raise ValueError(f"unknown focus choice {focus_choice!r}")
+    base_prompt = _prompt_for_product_codebook_decoder(
+        example,
+        payload=payload,
+        state=state,
+        candidate_metadata_mode=candidate_metadata_mode,
+    ).removesuffix("Candidate choice:")
+    if candidate_metadata_mode == "signature":
+        rule = "Answer yes only if the focus candidate has the unique strongest exact byte match to the packet."
+    elif candidate_metadata_mode == "distance":
+        rule = "Answer yes only if the focus candidate has the unique smallest distance_to_packet value."
+    else:
+        raise ValueError(f"unknown candidate metadata mode {candidate_metadata_mode!r}")
+    return (
+        base_prompt
+        + f"Focus candidate: {focus_choice}\n"
+        + f"{rule} If no packet is present or the best packet match is tied, answer yes only for the target-prior candidate.\n"
+        + "Return only yes or no.\n\nDoes the focus candidate match the source packet best? Answer:"
+    )
+
+
 def _parse_candidate_choice(generated: str, example: Example) -> str:
     stripped = generated.strip()
     choices = _choice_labels(example)
@@ -390,6 +435,75 @@ def _parse_candidate_choice(generated: str, example: Example) -> str:
         if re.search(rf"(?<![A-Za-z0-9]){re.escape(choice)}(?![A-Za-z0-9])", stripped):
             return choice
     return ""
+
+
+def _choice_prediction_from_scores(example: Example, choice_scores: dict[str, float]) -> tuple[str, str]:
+    best_score = max(choice_scores.values())
+    tied = [
+        choice
+        for choice, score in choice_scores.items()
+        if math.isclose(score, best_score, rel_tol=1e-6, abs_tol=1e-8)
+    ]
+    prior_choice = _choice_for_candidate_label(example, _prior_prediction(example))
+    display_prediction = prior_choice if prior_choice in tied else sorted(tied)[0]
+    return display_prediction, _candidate_label_for_choice(example, display_prediction)
+
+
+def _token_surface_score(tokenizer: Any, logits: Any, surfaces: tuple[str, ...]) -> tuple[float, str]:
+    log_probs = logits.log_softmax(dim=-1)
+    scored: list[tuple[float, str]] = []
+    for surface in surfaces:
+        ids = tokenizer.encode(surface, add_special_tokens=False)
+        if len(ids) == 1:
+            scored.append((float(log_probs[int(ids[0])].item()), surface))
+    if not scored:
+        raise ValueError(f"could not find a single-token encoding for surfaces {surfaces!r}")
+    return max(scored, key=lambda item: item[0])
+
+
+def _yes_no_token_scores(tokenizer: Any, logits: Any) -> dict[str, Any]:
+    yes_score, yes_surface = _token_surface_score(tokenizer, logits, (" yes", " Yes", "yes", "Yes"))
+    no_score, no_surface = _token_surface_score(tokenizer, logits, (" no", " No", "no", "No"))
+    return {
+        "yes_logprob": yes_score,
+        "no_logprob": no_score,
+        "yes_minus_no": yes_score - no_score,
+        "yes_surface": yes_surface,
+        "no_surface": no_surface,
+    }
+
+
+def _choice_token_scores(tokenizer: Any, logits: Any, choices: list[str]) -> tuple[dict[str, float], dict[str, str]]:
+    scores: dict[str, float] = {}
+    surfaces: dict[str, str] = {}
+    for choice in choices:
+        score, surface = _token_surface_score(tokenizer, logits, (choice, f" {choice}"))
+        scores[choice] = score
+        surfaces[choice] = surface
+    return scores, surfaces
+
+
+def _binary_prediction_from_scores(
+    example: Example,
+    binary_scores: list[dict[str, Any]],
+    *,
+    threshold: float,
+) -> tuple[str, str, bool]:
+    best_score = max(row["yes_minus_no"] for row in binary_scores)
+    prior_choice = _choice_for_candidate_label(example, _prior_prediction(example))
+    if best_score <= threshold:
+        return prior_choice, _prior_prediction(example), True
+    tied = [
+        row
+        for row in binary_scores
+        if math.isclose(row["yes_minus_no"], best_score, rel_tol=1e-6, abs_tol=1e-8)
+    ]
+    display_prediction = (
+        prior_choice
+        if any(row["display_choice"] == prior_choice for row in tied)
+        else sorted(row["display_choice"] for row in tied)[0]
+    )
+    return display_prediction, _candidate_label_for_choice(example, display_prediction), False
 
 
 def _generate_target_predictions(
@@ -406,6 +520,8 @@ def _generate_target_predictions(
     progress_jsonl: pathlib.Path | None = None,
     partial_predictions_jsonl: pathlib.Path | None = None,
     progress_every: int = 16,
+    decode_mode: str = "generate",
+    binary_fallback_threshold: float = 0.0,
 ) -> list[dict[str, Any]]:
     import torch
 
@@ -434,18 +550,74 @@ def _generate_target_predictions(
             text_prompt = _format_prompt(tokenizer, prompt, enable_thinking=enable_thinking)
             inputs = tokenizer(text_prompt, return_tensors="pt").to(device)
             start = time.perf_counter()
-            with torch.no_grad():
-                output = model.generate(
-                    **inputs,
-                    max_new_tokens=max_new_tokens,
-                    do_sample=False,
-                    pad_token_id=tokenizer.eos_token_id,
+            choice_scores: dict[str, float] | None = None
+            choice_surfaces: dict[str, str] | None = None
+            binary_scores: list[dict[str, Any]] | None = None
+            binary_fallback_to_prior = False
+            if decode_mode == "candidate_binary_logprob" and payload is None:
+                display_prediction = _choice_for_candidate_label(example, _prior_prediction(example))
+                prediction = _prior_prediction(example)
+                generated = display_prediction
+                generated_tokens = 0
+                latency_ms = (time.perf_counter() - start) * 1000.0
+                binary_scores = []
+                binary_fallback_to_prior = True
+            elif decode_mode == "candidate_binary_logprob":
+                binary_scores = []
+                for focus_choice in _choice_labels(example):
+                    binary_prompt = _prompt_for_product_codebook_binary_match(
+                        example,
+                        payload=payload,
+                        state=state,
+                        candidate_metadata_mode=candidate_metadata_mode,
+                        focus_choice=focus_choice,
+                    )
+                    text_binary_prompt = _format_prompt(tokenizer, binary_prompt, enable_thinking=enable_thinking)
+                    binary_inputs = tokenizer(text_binary_prompt, return_tensors="pt").to(device)
+                    with torch.no_grad():
+                        binary_output = model(**binary_inputs)
+                    binary_scores.append(
+                        {
+                            "display_choice": focus_choice,
+                            "candidate_label": _candidate_label_for_choice(example, focus_choice),
+                            **_yes_no_token_scores(tokenizer, binary_output.logits[0, -1]),
+                        }
+                    )
+                latency_ms = (time.perf_counter() - start) * 1000.0
+                display_prediction, prediction, binary_fallback_to_prior = _binary_prediction_from_scores(
+                    example,
+                    binary_scores,
+                    threshold=binary_fallback_threshold,
                 )
-            latency_ms = (time.perf_counter() - start) * 1000.0
-            new_tokens = output[0][inputs["input_ids"].shape[-1] :]
-            generated = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
-            display_prediction = _parse_candidate_choice(generated, example)
-            prediction = _candidate_label_for_choice(example, display_prediction) if display_prediction else ""
+                generated = display_prediction
+                generated_tokens = len(binary_scores)
+            else:
+                with torch.no_grad():
+                    if decode_mode == "choice_logprob":
+                        output = model(**inputs)
+                    else:
+                        output = model.generate(
+                            **inputs,
+                            max_new_tokens=max_new_tokens,
+                            do_sample=False,
+                            pad_token_id=tokenizer.eos_token_id,
+                        )
+                latency_ms = (time.perf_counter() - start) * 1000.0
+                if decode_mode == "choice_logprob":
+                    choice_scores, choice_surfaces = _choice_token_scores(
+                        tokenizer,
+                        output.logits[0, -1],
+                        _choice_labels(example),
+                    )
+                    display_prediction, prediction = _choice_prediction_from_scores(example, choice_scores)
+                    generated = display_prediction
+                    generated_tokens = 1
+                else:
+                    new_tokens = output[0][inputs["input_ids"].shape[-1] :]
+                    generated = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
+                    display_prediction = _parse_candidate_choice(generated, example)
+                    prediction = _candidate_label_for_choice(example, display_prediction) if display_prediction else ""
+                    generated_tokens = len(new_tokens)
             payload_hex = (payload or b"").hex()
             row = {
                 "example_id": example.example_id,
@@ -457,15 +629,25 @@ def _generate_target_predictions(
                 "payload_bytes": len(payload or b""),
                 "payload_tokens": _token_count(payload_hex),
                 "candidate_metadata_mode": candidate_metadata_mode,
+                "decode_mode": decode_mode,
+                "binary_fallback_threshold": binary_fallback_threshold
+                if decode_mode == "candidate_binary_logprob"
+                else None,
                 "generated_text": generated,
                 "display_prediction": display_prediction,
                 "prediction": prediction,
                 "correct": prediction == example.answer_label,
                 "valid_prediction": bool(prediction),
                 "latency_ms": latency_ms,
-                "generated_tokens": len(new_tokens),
+                "generated_tokens": generated_tokens,
                 **metadata,
             }
+            if choice_scores is not None:
+                row["choice_logprobs"] = choice_scores
+                row["choice_surfaces"] = choice_surfaces
+            if binary_scores is not None:
+                row["candidate_binary_logprobs"] = binary_scores
+                row["binary_fallback_to_prior"] = binary_fallback_to_prior
             rows.append(row)
             if partial_handle is not None:
                 partial_handle.write(json.dumps(row, sort_keys=True) + "\n")
@@ -497,10 +679,27 @@ def _summarize(rows: list[dict[str, Any]], *, conditions: list[str] | None = Non
     conditions = _validate_conditions(conditions)
     example_ids = sorted({row["example_id"] for row in rows})
     metrics: dict[str, Any] = {}
+    condition_id_parity: dict[str, Any] = {}
     for condition in conditions:
         condition_rows = [row for row in rows if row["condition"] == condition]
         if not condition_rows:
             raise ValueError(f"missing rows for condition {condition!r}")
+        condition_ids = [row["example_id"] for row in condition_rows]
+        duplicate_ids = sorted({example_id for example_id in condition_ids if condition_ids.count(example_id) > 1})
+        missing_ids = sorted(set(example_ids) - set(condition_ids))
+        extra_ids = sorted(set(condition_ids) - set(example_ids))
+        condition_id_parity[condition] = {
+            "rows": len(condition_rows),
+            "unique_ids": len(set(condition_ids)),
+            "duplicate_ids": duplicate_ids,
+            "missing_ids": missing_ids,
+            "extra_ids": extra_ids,
+            "passes": len(condition_rows) == len(example_ids)
+            and len(set(condition_ids)) == len(example_ids)
+            and not duplicate_ids
+            and not missing_ids
+            and not extra_ids,
+        }
         correct = [row["example_id"] for row in condition_rows if row["correct"]]
         metrics[condition] = {
             "correct": len(correct),
@@ -530,7 +729,9 @@ def _summarize(rows: list[dict[str, Any]], *, conditions: list[str] | None = Non
     best_control_condition = max(controls, key=lambda name: metrics[name]["accuracy"]) if controls else "target_only"
     best_control = metrics[best_control_condition]["accuracy"] if controls else target
     max_valid_gap = max((1.0 - metrics[name]["valid_prediction_rate"] for name in metrics), default=0.0)
-    exact_id_parity = len(example_ids) * len(conditions) == len(rows)
+    exact_id_parity = len(example_ids) * len(conditions) == len(rows) and all(
+        row["passes"] for row in condition_id_parity.values()
+    )
     paired = _paired_bootstrap(rows, example_ids=example_ids, best_control_condition=best_control_condition)
     threshold_pass = exact_id_parity and matched - target >= 0.15 and best_control <= target + 0.05 and max_valid_gap <= 0.05
     return {
@@ -539,6 +740,7 @@ def _summarize(rows: list[dict[str, Any]], *, conditions: list[str] | None = Non
         "exact_id_sha256": hashlib.sha256("\n".join(example_ids).encode("utf-8")).hexdigest(),
         "conditions": conditions,
         "exact_id_parity": exact_id_parity,
+        "condition_id_parity": condition_id_parity,
         "target_only_accuracy": target,
         "matched_accuracy": matched,
         "best_control_condition": best_control_condition,
@@ -663,6 +865,7 @@ def _write_manifest_markdown(path: pathlib.Path, manifest: dict[str, Any]) -> No
         f"- matched accuracy: `{summary['matched_accuracy']:.3f}`",
         f"- target-only accuracy: `{summary['target_only_accuracy']:.3f}`",
         f"- best control accuracy: `{summary['best_control_accuracy']:.3f}`",
+        f"- train/eval ID overlap count: `{manifest.get('train_eval_id_overlap_count', 'n/a')}`",
         "",
         "## Artifacts",
         "",
@@ -681,6 +884,8 @@ def main() -> None:
     parser.add_argument("--eval-examples", type=int, default=32)
     parser.add_argument("--train-seed", type=int, default=29)
     parser.add_argument("--eval-seed", type=int, default=30)
+    parser.add_argument("--train-start-index", type=int, default=0)
+    parser.add_argument("--eval-start-index", type=int, default=0)
     parser.add_argument("--train-family-set", default="all")
     parser.add_argument("--eval-family-set", default="all")
     parser.add_argument("--candidates", type=int, default=4)
@@ -692,6 +897,8 @@ def main() -> None:
     parser.add_argument("--remap-slot-seed", type=int, default=101)
     parser.add_argument("--label-shuffle-seed", type=int, default=None)
     parser.add_argument("--candidate-metadata-mode", choices=["signature", "distance"], default="signature")
+    parser.add_argument("--decode-mode", choices=["generate", "choice_logprob", "candidate_binary_logprob"], default="generate")
+    parser.add_argument("--binary-fallback-threshold", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=29)
     parser.add_argument("--max-new-tokens", type=int, default=24)
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
@@ -720,6 +927,8 @@ def main() -> None:
         eval_examples=args.eval_examples,
         train_seed=args.train_seed,
         eval_seed=args.eval_seed,
+        train_start_index=args.train_start_index,
+        eval_start_index=args.eval_start_index,
         train_family_set=args.train_family_set,
         eval_family_set=args.eval_family_set,
         candidates=args.candidates,
@@ -744,6 +953,8 @@ def main() -> None:
         progress_jsonl=progress_jsonl,
         partial_predictions_jsonl=partial_predictions_jsonl,
         progress_every=args.progress_every,
+        decode_mode=args.decode_mode,
+        binary_fallback_threshold=args.binary_fallback_threshold,
     )
     if partial_predictions_jsonl is not None:
         partial_rows = _read_partial_jsonl(partial_predictions_jsonl)
@@ -758,6 +969,7 @@ def main() -> None:
     artifacts = ["target_predictions.jsonl", "summary.json", "summary.md", "manifest.json", "manifest.md"]
     if partial_predictions_jsonl is not None and partial_predictions_jsonl.parent.resolve() == output_dir.resolve():
         artifacts.insert(1, partial_predictions_jsonl.name)
+    train_eval_id_overlap = sorted({row.example_id for row in state.train_rows} & {row.example_id for row in state.eval_rows})
     manifest = {
         "command": " ".join(
             [
@@ -771,6 +983,8 @@ def main() -> None:
                 f"--eval-examples {args.eval_examples}",
                 f"--train-seed {args.train_seed}",
                 f"--eval-seed {args.eval_seed}",
+                f"--train-start-index {args.train_start_index}",
+                f"--eval-start-index {args.eval_start_index}",
                 f"--train-family-set {args.train_family_set}",
                 f"--eval-family-set {args.eval_family_set}",
                 f"--candidates {args.candidates}",
@@ -782,6 +996,8 @@ def main() -> None:
                 f"--remap-slot-seed {args.remap_slot_seed}",
                 "" if args.label_shuffle_seed is None else f"--label-shuffle-seed {args.label_shuffle_seed}",
                 f"--candidate-metadata-mode {args.candidate_metadata_mode}",
+                f"--decode-mode {args.decode_mode}",
+                f"--binary-fallback-threshold {args.binary_fallback_threshold}",
                 f"--seed {args.seed}",
                 f"--max-new-tokens {args.max_new_tokens}",
                 "--no-enable-thinking" if args.enable_thinking is False else "--enable-thinking",
@@ -801,6 +1017,8 @@ def main() -> None:
             "partial_predictions_jsonl": None if partial_predictions_jsonl is None else str(partial_predictions_jsonl),
             "do_sample": False,
         },
+        "train_eval_id_overlap": train_eval_id_overlap,
+        "train_eval_id_overlap_count": len(train_eval_id_overlap),
         "artifacts": artifacts,
         "artifact_sha256": {
             artifact: _sha256_file(output_dir / artifact)

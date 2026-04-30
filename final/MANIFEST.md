@@ -130,6 +130,10 @@
   artifact consolidating learned packet rows, same-byte text controls,
   scalar/QJL source-coding comparators, structured text rate rows, and
   KV/TurboQuant/KIVI byte-floor accounting with explicit caveats.
+- Product-codebook target-decoder harness update with constrained choice
+  logprob, binary yes/no logprob, disjoint train/eval ID accounting, and
+  stricter exact-ID parity, plus negative n16/n8 model-mediated PQ receiver
+  artifacts documenting packet-position/control leakage.
 - Source-private memory traffic ledger script, test, memo, references, and
   artifact joining packet, text, full-log, semantic-anchor, and KV byte-floor
   rows into raw bytes, 64B cache-line traffic, 128B DMA-burst traffic,

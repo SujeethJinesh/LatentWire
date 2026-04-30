@@ -1,0 +1,320 @@
+{
+  "best_control_accuracy": 0.5,
+  "best_control_condition": "label_shuffled_ridge",
+  "condition_id_parity": {
+    "answer_masked_source": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "constrained_shuffled_source": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "label_shuffled_ridge": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "matched_product_codebook": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "permuted_codes": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "random_same_byte": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "structured_free_text_same_byte": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "structured_json_same_byte": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "target_derived_sidecar": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "target_only": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "wrong_codebook_packet": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    },
+    "zero_source": {
+      "duplicate_ids": [],
+      "extra_ids": [],
+      "missing_ids": [],
+      "passes": true,
+      "rows": 8,
+      "unique_ids": 8
+    }
+  },
+  "conditions": [
+    "target_only",
+    "zero_source",
+    "matched_product_codebook",
+    "label_shuffled_ridge",
+    "constrained_shuffled_source",
+    "answer_masked_source",
+    "permuted_codes",
+    "wrong_codebook_packet",
+    "random_same_byte",
+    "structured_json_same_byte",
+    "structured_free_text_same_byte",
+    "target_derived_sidecar"
+  ],
+  "exact_id_count": 8,
+  "exact_id_parity": true,
+  "exact_id_sha256": "491b0fb18efb38726960db9b82fc07a27e9108bb4136fe303a3e407a81d4b437",
+  "matched_accuracy": 0.5,
+  "matched_minus_best_control": 0.0,
+  "matched_minus_target": 0.25,
+  "metrics": {
+    "answer_masked_source": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2332.0101460121805,
+      "valid_prediction_rate": 1.0
+    },
+    "constrained_shuffled_source": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2384.0537289943313,
+      "valid_prediction_rate": 1.0
+    },
+    "label_shuffled_ridge": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2414.125770505052,
+      "valid_prediction_rate": 1.0
+    },
+    "matched_product_codebook": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2471.1582090094453,
+      "valid_prediction_rate": 1.0
+    },
+    "permuted_codes": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2314.91960400308,
+      "valid_prediction_rate": 1.0
+    },
+    "random_same_byte": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2341.877333499724,
+      "valid_prediction_rate": 1.0
+    },
+    "structured_free_text_same_byte": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2335.6441664946033,
+      "valid_prediction_rate": 1.0
+    },
+    "structured_json_same_byte": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2276.74439601833,
+      "valid_prediction_rate": 1.0
+    },
+    "target_derived_sidecar": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2360.732500514132,
+      "valid_prediction_rate": 1.0
+    },
+    "target_only": {
+      "accuracy": 0.25,
+      "correct": 2,
+      "correct_ids": [
+        "sphr_10000",
+        "sphr_10004"
+      ],
+      "mean_generated_tokens": 0.0,
+      "mean_payload_bytes": 0.0,
+      "mean_payload_tokens": 0.0,
+      "p50_latency_ms": 0.015707992133684456,
+      "valid_prediction_rate": 1.0
+    },
+    "wrong_codebook_packet": {
+      "accuracy": 0.5,
+      "correct": 4,
+      "correct_ids": [
+        "sphr_10001",
+        "sphr_10004",
+        "sphr_10006",
+        "sphr_10007"
+      ],
+      "mean_generated_tokens": 4.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 2335.4439999966417,
+      "valid_prediction_rate": 1.0
+    },
+    "zero_source": {
+      "accuracy": 0.25,
+      "correct": 2,
+      "correct_ids": [
+        "sphr_10000",
+        "sphr_10004"
+      ],
+      "mean_generated_tokens": 0.0,
+      "mean_payload_bytes": 0.0,
+      "mean_payload_tokens": 0.0,
+      "p50_latency_ms": 0.014271019608713686,
+      "valid_prediction_rate": 1.0
+    }
+  },
+  "n": 8,
+  "paired_bootstrap": {
+    "best_control_condition": "label_shuffled_ridge",
+    "matched_vs_best_control": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "point": 0.0
+    },
+    "matched_vs_target": {
+      "ci95_high": 0.625,
+      "ci95_low": -0.25,
+      "point": 0.25
+    },
+    "samples": 2000,
+    "seed": 20260430
+  },
+  "pass_gate": false,
+  "pass_rule": "matched product-codebook target decoder must beat target-only by >=0.15, every source-destroying or same-byte text/target-derived control must stay within target+0.05, exact-ID parity must hold, and every condition must keep valid prediction rate >=0.95. strict_ci_pass_gate additionally requires paired bootstrap CI95 lower bounds >=+0.10 for matched-vs-target and matched-vs-best-control.",
+  "strict_ci_pass_gate": false,
+  "target_only_accuracy": 0.25
+}

@@ -16579,3 +16579,28 @@ claim is now source-private residual-code boundary traffic with explicit
 private-text/KV exposure accounting. The next exact ICLR method gate is a
 product-codebook model-mediated receiver at n256, scaling to n500 only if
 strict controls pass.
+
+Update `2026-04-30`: the product-codebook model-mediated receiver branch was
+stress-tested with constrained logprob decoding and pruned for this cycle.
+Code: `scripts/run_source_private_product_codebook_target_decoder_smoke.py`;
+tests: `tests/test_run_source_private_product_codebook_target_decoder_smoke.py`;
+memo: `paper/source_private_product_codebook_model_receiver_20260430.md`;
+literature scout:
+`references/539_pq_model_receiver_lit_scout_20260430.md`; artifacts:
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu/`,
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n8_signature_binary_logprob_disjoint_cpu/`,
+and
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n8_distance_binary_logprob_disjoint_cpu/`.
+The harness now records train/eval ID overlap, supports `choice_logprob` and
+`candidate_binary_logprob`, and hardens exact-ID parity against duplicate
+condition rows. Results: n16 distance choice-logprob failed with matched,
+target-only, and all controls at `0.3125`. The disjoint-ID n8 signature binary
+gate failed because matched improved to `0.500` but all packet-bearing controls
+also rose to `0.500`; the distance binary diagnostic repeated the same pattern.
+Interpretation: Qwen3-0.6B frozen prompt/logprob receivers are reacting to
+packet-bearing prompt structure or option position, not matched PQ evidence.
+Do not scale this model-mediated PQ prompt branch. Next exact Mac-local gate:
+the systems reviewer recommends a protected-Hadamard/OPQ PQ receiver batch
+microbench across batch sizes `1/8/64/256`; the next method gate should move
+away from prompt-only PQ toward either a learned score adapter with deranged
+public-table controls or larger frozen-verifier scale.

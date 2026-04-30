@@ -1,0 +1,289 @@
+{
+  "args": {
+    "budget_bytes": 4,
+    "candidate_metadata_mode": "distance",
+    "candidate_view": "slot",
+    "candidates": 4,
+    "conditions": null,
+    "decode_mode": "choice_logprob",
+    "device": "cpu",
+    "do_sample": false,
+    "dtype": "float32",
+    "enable_thinking": false,
+    "eval_examples": 16,
+    "eval_family_set": "all",
+    "eval_seed": 30,
+    "feature_dim": 512,
+    "fit_intercept": false,
+    "label_shuffle_seed": null,
+    "max_new_tokens": 24,
+    "model": "Qwen/Qwen3-0.6B",
+    "output_dir": "results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu",
+    "partial_predictions_jsonl": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu/target_predictions.partial.jsonl",
+    "progress_every": 4,
+    "progress_jsonl": "results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu/progress.jsonl",
+    "remap_slot_seed": 101,
+    "require_pass": false,
+    "ridge": 0.01,
+    "seed": 29,
+    "train_examples": 512,
+    "train_family_set": "all",
+    "train_seed": 29
+  },
+  "artifact_sha256": {
+    "summary.json": "cf176a046ca6e2a4a62179229f6f0276265afc7f3fa9ce9f0128a59c7773ccf6",
+    "summary.md": "63b3b1deb93770a471322f88176e517c6f53bccaafe30c258aff73b5d602755e",
+    "target_predictions.jsonl": "f35fa145202740f6d6c9cc6b49fa38a8c37b0729035bdcee43e604b109871fe2",
+    "target_predictions.partial.jsonl": "f35fa145202740f6d6c9cc6b49fa38a8c37b0729035bdcee43e604b109871fe2"
+  },
+  "artifacts": [
+    "target_predictions.jsonl",
+    "target_predictions.partial.jsonl",
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "./venv_arm64/bin/python scripts/run_source_private_product_codebook_target_decoder_smoke.py --output-dir results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu --model Qwen/Qwen3-0.6B --device cpu --dtype float32 --train-examples 512 --eval-examples 16 --train-seed 29 --eval-seed 30 --train-family-set all --eval-family-set all --candidates 4 --feature-dim 512 --budget-bytes 4 --ridge 0.01 --candidate-view slot --no-fit-intercept --remap-slot-seed 101  --candidate-metadata-mode distance --decode-mode choice_logprob --seed 29 --max-new-tokens 24 --no-enable-thinking  --progress-jsonl results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu/progress.jsonl --partial-predictions-jsonl results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu/target_predictions.partial.jsonl --progress-every 4 --no-require-pass",
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "run_utc": "2026-04-30T16:58:41.535039+00:00",
+  "script_sha256": "332d213bfe3117d935cfc72904f535ebc92f042c57b0dd18db7f388ad3ddc7a9",
+  "summary": {
+    "best_control_accuracy": 0.3125,
+    "best_control_condition": "zero_source",
+    "conditions": [
+      "target_only",
+      "zero_source",
+      "matched_product_codebook",
+      "label_shuffled_ridge",
+      "constrained_shuffled_source",
+      "answer_masked_source",
+      "permuted_codes",
+      "wrong_codebook_packet",
+      "random_same_byte",
+      "structured_json_same_byte",
+      "structured_free_text_same_byte",
+      "target_derived_sidecar"
+    ],
+    "exact_id_count": 16,
+    "exact_id_parity": true,
+    "exact_id_sha256": "50ef91ed25476a81eaa533ec328f9cb4c913e13480fd4f4f0641550217a94478",
+    "matched_accuracy": 0.3125,
+    "matched_minus_best_control": 0.0,
+    "matched_minus_target": 0.0,
+    "metrics": {
+      "answer_masked_source": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 597.1024994942127,
+        "valid_prediction_rate": 1.0
+      },
+      "constrained_shuffled_source": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 604.1365420096554,
+        "valid_prediction_rate": 1.0
+      },
+      "label_shuffled_ridge": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 631.1025419854559,
+        "valid_prediction_rate": 1.0
+      },
+      "matched_product_codebook": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 637.9432505054865,
+        "valid_prediction_rate": 1.0
+      },
+      "permuted_codes": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 591.4547294960357,
+        "valid_prediction_rate": 1.0
+      },
+      "random_same_byte": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 578.2374589907704,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_free_text_same_byte": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 649.4564585009357,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_json_same_byte": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 605.8624999859603,
+        "valid_prediction_rate": 1.0
+      },
+      "target_derived_sidecar": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 607.9142709932057,
+        "valid_prediction_rate": 1.0
+      },
+      "target_only": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 496.88543799857143,
+        "valid_prediction_rate": 1.0
+      },
+      "wrong_codebook_packet": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 575.2143955032807,
+        "valid_prediction_rate": 1.0
+      },
+      "zero_source": {
+        "accuracy": 0.3125,
+        "correct": 5,
+        "correct_ids": [
+          "sphr_0006",
+          "sphr_0007",
+          "sphr_0009",
+          "sphr_0010",
+          "sphr_0015"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 503.5513960028766,
+        "valid_prediction_rate": 1.0
+      }
+    },
+    "n": 16,
+    "paired_bootstrap": {
+      "best_control_condition": "zero_source",
+      "matched_vs_best_control": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "point": 0.0
+      },
+      "matched_vs_target": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "point": 0.0
+      },
+      "samples": 2000,
+      "seed": 20260430
+    },
+    "pass_gate": false,
+    "pass_rule": "matched product-codebook target decoder must beat target-only by >=0.15, every source-destroying or same-byte text/target-derived control must stay within target+0.05, exact-ID parity must hold, and every condition must keep valid prediction rate >=0.95. strict_ci_pass_gate additionally requires paired bootstrap CI95 lower bounds >=+0.10 for matched-vs-target and matched-vs-best-control.",
+    "strict_ci_pass_gate": false,
+    "target_only_accuracy": 0.3125
+  }
+}

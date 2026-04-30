@@ -97,6 +97,32 @@ Interpretation: Qwen3-0.6B on CPU is not a useful prompt-only product-codebook
 receiver for numeric PQ tables. This prunes the current product-codebook
 prompt-decoder branch.
 
+Additional constrained-logprob artifacts:
+
+- `results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu/`
+- `results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n8_signature_binary_logprob_disjoint_cpu/`
+- `results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n8_distance_binary_logprob_disjoint_cpu/`
+
+The harness now supports `choice_logprob` and `candidate_binary_logprob`
+decoding, records train/eval ID overlap, and uses stricter per-condition exact
+ID parity checks. The n16 distance `choice_logprob` gate failed with matched,
+target-only, and every control at `0.3125`, so next-token A/B/C/D likelihood is
+just option-prior behavior.
+
+The leak-clean n8 disjoint-ID binary verifier also failed as a source-private
+receiver. Signature-only binary scoring reached matched `0.500` versus target
+`0.250`, but every packet-bearing control also reached `0.500`; the best
+control was label-shuffled ridge at `0.500`, matched-minus-best-control was
+`0.000`, and train/eval ID overlap was `0`. The distance-table diagnostic
+repeated the same failure: matched `0.500`, best control `0.500`, target
+`0.250`, exact ID parity true, train/eval ID overlap `0`.
+
+Interpretation: binary/logprob scoring can react to packet-bearing prompt
+structure, but it does not distinguish matched PQ packets from shuffled,
+label-shuffled, wrong-codebook, random, structured-text, or target-derived
+controls. Distance metadata is therefore only a table-reader upper bound, and
+it does not currently provide a promotable model-mediated PQ receiver.
+
 ### Masked-PQ Consistency Receiver
 
 Unweighted artifact:

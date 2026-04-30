@@ -1272,5 +1272,12 @@
     "path": "references/538_pq_systems_comparison_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the PQ systems comparison table, covering PQ/OPQ, QuIP#/QuaRot/TurboQuant/QJL/KIVI/KVQuant, C2C/KVComm/Q-KVComm, vLLM/PagedAttention, DistServe, text relay baselines, KV exposure accounting, and non-claims for production serving."
+  },
+  {
+    "num": 539,
+    "slug": "pq_model_receiver_lit_scout_20260430",
+    "path": "references/539_pq_model_receiver_lit_scout_20260430.md",
+    "status": "local_memo",
+    "reason": "Targeted primary-source literature scout for the product-codebook/PQ model-mediated receiver branch, covering cross-model KV/activation communication, PQ/OPQ/quantization, constrained/logprob decoding, novelty boundaries, subsumption risks, reviewer risks, and cheap Mac ablations."
   }
 ]
