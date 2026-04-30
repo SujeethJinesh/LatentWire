@@ -40,7 +40,6 @@ from scripts.run_source_private_shared_sparse_crosscoder_packet_gate import (  #
     _percentile,
     _random_packet,
     _source_private_atoms,
-    _stress_candidate_intent,
 )
 from scripts.run_source_private_tool_trace_learned_syndrome import _token_count  # noqa: E402
 
@@ -65,6 +64,65 @@ CONDITIONS = (
 STRICT_SOURCE_DESTROYING_CONTROLS = tuple(
     condition for condition in SOURCE_DESTROYING_CONTROLS if condition in CONDITIONS
 )
+
+HELDOUT_SYNONYM_REPLACEMENTS = (
+    ("empty-list guard", "no-element collection safeguard"),
+    ("empty-list none default", "no-element collection null return"),
+    ("empty-list zero default", "no-element collection baseline number"),
+    ("missing-key default", "unavailable slot replacement"),
+    ("nested missing-key default", "deep unavailable slot replacement"),
+    ("parse-failure zero default", "failed parse returns baseline number"),
+    ("half-up rounding", "tie-breaking round toward larger value"),
+    ("inclusive comparison", "edge-inclusive comparator"),
+    ("preserve-order unique", "remove repeats while preserving input sequence"),
+    ("none-to-empty", "null value becomes blank text"),
+    ("sum all values", "total every numeric entry"),
+    ("case-insensitive equality", "compare text without lettercase"),
+    ("clamp negative to zero", "raise subzero values to baseline"),
+    ("modulo-wrapped index", "wrap position around collection length"),
+    ("strictly positive filter", "keep numbers greater than baseline"),
+    ("average all values", "mean over every numeric entry"),
+    ("strip and lowercase", "trim whitespace then normalize casing"),
+    ("strict key access", "direct required slot retrieval"),
+    ("sort before reading", "order values before lookup"),
+    ("last element fallback", "use terminal item as backup"),
+    ("string coercion", "convert value into text"),
+    ("first value fallback", "use initial item as backup"),
+    ("sort before final value", "order values before terminal lookup"),
+    ("float parsing", "decimal number conversion"),
+    ("return raw text", "return original text unchanged"),
+    ("length fallback", "collection size backup"),
+    ("sum only", "total without averaging"),
+    ("divide by first value", "scale by initial numeric entry"),
+    ("drop last before averaging", "exclude terminal item before mean"),
+    ("strip only", "trim whitespace only"),
+    ("uppercase only", "capitalize all letters only"),
+    ("remove spaces inside text", "remove internal whitespace"),
+    ("top-level name lookup", "outer slot retrieval"),
+    ("return whole user mapping", "return complete record mapping"),
+    ("uppercase nested name", "capitalize inner name field"),
+    ("clamp to final index", "cap lookup at terminal position"),
+    ("always first value", "always pick initial entry"),
+    ("sort before index", "order values before position lookup"),
+    ("keep nonnegative values", "retain baseline-or-higher numbers"),
+    ("keep negative values", "select values below baseline"),
+    ("sort positive values", "order numbers greater than baseline"),
+)
+
+
+def _candidate_surface_text(candidate_intent: str, *, candidate_atom_view: str) -> str:
+    if candidate_atom_view == "native":
+        return candidate_intent
+    if candidate_atom_view == "synonym_stress":
+        from scripts.run_source_private_shared_sparse_crosscoder_packet_gate import _stress_candidate_intent
+
+        return _stress_candidate_intent(candidate_intent, candidate_atom_view="synonym_stress")
+    if candidate_atom_view != "heldout_synonym":
+        raise ValueError(f"unknown candidate atom view {candidate_atom_view!r}")
+    text = candidate_intent
+    for old, new in HELDOUT_SYNONYM_REPLACEMENTS:
+        text = re.sub(re.escape(old), new, text, flags=re.IGNORECASE)
+    return text
 
 
 def _sha256_file(path: pathlib.Path) -> str:
@@ -141,7 +199,7 @@ def _fit_ridge_dictionary(
     examples: list[Example],
     feature_dim: int,
     ridge: float,
-    candidate_atom_view: str,
+    calibration_atom_view: str,
     top_k: int,
     min_score: float,
 ) -> LearnedSynonymDictionary:
@@ -154,9 +212,9 @@ def _fit_ridge_dictionary(
             if not np.any(y):
                 continue
             texts = [candidate.patch_intent]
-            stressed = _stress_candidate_intent(candidate.patch_intent, candidate_atom_view=candidate_atom_view)
-            if stressed != candidate.patch_intent:
-                texts.append(stressed)
+            calibrated = _candidate_surface_text(candidate.patch_intent, candidate_atom_view=calibration_atom_view)
+            if calibrated != candidate.patch_intent:
+                texts.append(calibrated)
             for text in texts:
                 x_rows.append(_featurize_text(text, dim=feature_dim))
                 y_rows.append(y)
@@ -192,6 +250,59 @@ def _calibration_examples(
 def _prior_index(example: Example) -> int:
     prior = _prior_prediction(example)
     return next(idx for idx, candidate in enumerate(example.candidates) if candidate.label == prior)
+
+
+def _surface_overlap_audit(
+    *,
+    calibration_rows: list[Example],
+    eval_rows: list[Example],
+    calibration_atom_view: str,
+    candidate_atom_view: str,
+) -> dict[str, Any]:
+    calibration_surfaces = {
+        _candidate_surface_text(candidate.patch_intent, candidate_atom_view=calibration_atom_view).lower()
+        for example in calibration_rows
+        for candidate in example.candidates
+    }
+    eval_surface_pairs = [
+        (
+            candidate.patch_intent.lower(),
+            _candidate_surface_text(candidate.patch_intent, candidate_atom_view=candidate_atom_view).lower(),
+        )
+        for example in eval_rows
+        for candidate in example.candidates
+    ]
+    eval_surfaces = [surface for _, surface in eval_surface_pairs]
+    transformed_eval_surfaces = [
+        surface for native_surface, surface in eval_surface_pairs if surface != native_surface
+    ]
+    calibration_tokens = {
+        token
+        for surface in calibration_surfaces
+        for token in _word_tokens(surface)
+    }
+    eval_tokens = {token for surface in eval_surfaces for token in _word_tokens(surface)}
+    exact_overlap = [surface for surface in eval_surfaces if surface in calibration_surfaces]
+    transformed_exact_overlap = [
+        surface for surface in transformed_eval_surfaces if surface in calibration_surfaces
+    ]
+    shared_tokens = sorted(calibration_tokens & eval_tokens)
+    return {
+        "calibration_atom_view": calibration_atom_view,
+        "candidate_atom_view": candidate_atom_view,
+        "calibration_surface_count": len(calibration_surfaces),
+        "eval_surface_count": len(eval_surfaces),
+        "exact_eval_surface_overlap_count": len(exact_overlap),
+        "exact_eval_surface_overlap_rate": len(exact_overlap) / len(eval_surfaces) if eval_surfaces else 0.0,
+        "transformed_eval_surface_count": len(transformed_eval_surfaces),
+        "exact_transformed_eval_surface_overlap_count": len(transformed_exact_overlap),
+        "exact_transformed_eval_surface_overlap_rate": (
+            len(transformed_exact_overlap) / len(transformed_eval_surfaces) if transformed_eval_surfaces else 0.0
+        ),
+        "exact_transformed_eval_surface_overlap_sample": transformed_exact_overlap[:10],
+        "shared_token_count": len(shared_tokens),
+        "shared_token_sample": shared_tokens[:25],
+    }
 
 
 def _payload_for_condition(
@@ -249,7 +360,9 @@ def _payload_for_condition(
         }, {"knockout": "random"}
     if condition == "oracle_learned_candidate_atoms":
         answer = example.candidates[_answer_index(example)]
-        learned_atoms = dictionary.predict_atoms(_stress_candidate_intent(answer.patch_intent, candidate_atom_view=candidate_atom_view))
+        learned_atoms = dictionary.predict_atoms(
+            _candidate_surface_text(answer.patch_intent, candidate_atom_view=candidate_atom_view)
+        )
         return _encode_atoms(learned_atoms, budget_bytes=budget_bytes), {"source": "oracle_learned_candidate_atoms"}, decode_kwargs
     raise ValueError(f"unknown condition {condition!r}")
 
@@ -263,7 +376,7 @@ def _score_candidates(
 ) -> list[float]:
     scores = []
     for candidate in example.candidates:
-        text = _stress_candidate_intent(candidate.patch_intent, candidate_atom_view=candidate_atom_view)
+        text = _candidate_surface_text(candidate.patch_intent, candidate_atom_view=candidate_atom_view)
         learned_atoms = dictionary.predict_atoms(text)
         overlap = sum(payload_atoms.get(atom, 0.0) * score for atom, score in learned_atoms.items())
         scores.append(overlap)
@@ -439,6 +552,7 @@ def _run_direction(
     eval_seed: int,
     budgets: list[int],
     candidate_atom_view: str,
+    calibration_atom_view: str,
     candidate_calibration: str,
     calibration_examples: int,
     feature_dim: int,
@@ -459,9 +573,15 @@ def _run_direction(
         examples=calibration_rows,
         feature_dim=feature_dim,
         ridge=ridge,
-        candidate_atom_view=candidate_atom_view,
+        calibration_atom_view=calibration_atom_view,
         top_k=top_k,
         min_score=min_score,
+    )
+    surface_overlap_audit = _surface_overlap_audit(
+        calibration_rows=calibration_rows,
+        eval_rows=eval_rows,
+        calibration_atom_view=calibration_atom_view,
+        candidate_atom_view=candidate_atom_view,
     )
     budget_summaries: list[dict[str, Any]] = []
     prediction_files: dict[str, str] = {}
@@ -503,8 +623,10 @@ def _run_direction(
         "eval_seed": eval_seed,
         "budgets": budgets,
         "candidate_atom_view": candidate_atom_view,
+        "calibration_atom_view": calibration_atom_view,
         "candidate_calibration": candidate_calibration,
         "calibration_examples": len(calibration_rows),
+        "surface_overlap_audit": surface_overlap_audit,
         "feature_dim": feature_dim,
         "ridge": ridge,
         "top_k": top_k,
@@ -549,8 +671,10 @@ def run_gate(
     ridge: float,
     top_k: int,
     min_score: float,
+    calibration_atom_view: str | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    effective_calibration_atom_view = calibration_atom_view or candidate_atom_view
     specs = [
         ("core_to_holdout", "core", "holdout", seed, seed + 1),
         ("holdout_to_core", "holdout", "core", seed + 1, seed),
@@ -571,6 +695,7 @@ def run_gate(
             eval_seed=eval_seed,
             budgets=budgets,
             candidate_atom_view=candidate_atom_view,
+            calibration_atom_view=effective_calibration_atom_view,
             candidate_calibration=candidate_calibration,
             calibration_examples=calibration_examples,
             feature_dim=feature_dim,
@@ -615,6 +740,7 @@ def run_gate(
         "eval_examples": eval_examples,
         "seed": seed,
         "candidate_atom_view": candidate_atom_view,
+        "calibration_atom_view": effective_calibration_atom_view,
         "candidate_calibration": candidate_calibration,
         "calibration_examples": calibration_examples,
         "feature_dim": feature_dim,
@@ -686,7 +812,9 @@ def _write_direction_markdown(path: pathlib.Path, payload: dict[str, Any]) -> No
         f"- pass gate: `{payload['pass_gate']}`",
         f"- train/eval families: `{payload['train_family_set']} -> {payload['eval_family_set']}`",
         f"- candidate atom view: `{payload['candidate_atom_view']}`",
+        f"- calibration atom view: `{payload['calibration_atom_view']}`",
         f"- candidate calibration: `{payload['candidate_calibration']}`",
+        f"- exact eval surface overlap count: `{payload['surface_overlap_audit']['exact_eval_surface_overlap_count']}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
         "| Budget | Pass | Learned packet | Target | Best control | Delta target | CI95 low | Top knockout reduction | Oracle |",
@@ -714,6 +842,7 @@ def _write_gate_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- cross-family pass: `{h['cross_family_pass']}`",
         f"- budgets: `{payload['budgets']}`",
         f"- candidate atom view: `{payload['candidate_atom_view']}`",
+        f"- calibration atom view: `{payload['calibration_atom_view']}`",
         f"- candidate calibration: `{payload['candidate_calibration']}`",
         f"- max learned packet accuracy: `{h['max_learned_synonym_dictionary_accuracy']:.3f}`",
         f"- max learned-target delta: `{h['max_learned_minus_target']:.3f}`",
@@ -745,7 +874,17 @@ def main() -> None:
     parser.add_argument("--train-examples", type=int, default=512)
     parser.add_argument("--eval-examples", type=int, default=256)
     parser.add_argument("--seed", type=int, default=43)
-    parser.add_argument("--candidate-atom-view", choices=["native", "synonym_stress"], default="synonym_stress")
+    parser.add_argument(
+        "--candidate-atom-view",
+        choices=["native", "synonym_stress", "heldout_synonym"],
+        default="synonym_stress",
+    )
+    parser.add_argument(
+        "--calibration-atom-view",
+        choices=["native", "synonym_stress", "heldout_synonym"],
+        default=None,
+        help="Surface used to calibrate the learned dictionary; defaults to --candidate-atom-view.",
+    )
     parser.add_argument("--candidate-calibration", choices=["train_only", "all_public"], default="all_public")
     parser.add_argument("--calibration-examples", type=int, default=512)
     parser.add_argument("--feature-dim", type=int, default=384)
@@ -761,6 +900,7 @@ def main() -> None:
         eval_examples=args.eval_examples,
         seed=args.seed,
         candidate_atom_view=args.candidate_atom_view,
+        calibration_atom_view=args.calibration_atom_view,
         candidate_calibration=args.candidate_calibration,
         calibration_examples=args.calibration_examples,
         feature_dim=args.feature_dim,

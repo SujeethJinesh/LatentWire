@@ -2700,3 +2700,22 @@ idea that a simple ridge/sign-syndrome learner can fix ontology coupling. The
 next method-depth blocker is now sharper: any learned successor must explicitly
 train synonym-invariant/shared-dictionary structure and include an abstention or
 target-preservation mechanism.
+
+Follow-up `2026-04-29`: the calibrated learned synonym-dictionary packet now
+has seed-repeat evidence and a documented held-out paraphrase boundary. The
+seed repeat at `n=256`, budget `4`, seed `47` passes bidirectional
+cross-family controls with `3` pass rows, max learned packet accuracy `1.000`,
+max learned-target delta `+0.750`, and minimum passing CI95 lower bound
+`+0.562`. The stricter family-B held-out split, where calibration sees
+`synonym_stress` and evaluation uses `heldout_synonym`, fails despite exact
+transformed phrase overlap `0`: cross-family pass false, `0` pass rows, max
+learned accuracy `0.500`, and learned-candidate oracle `0.375`. A
+family-B-calibrated diagnostic passes, so the boundary is receiver
+generalization rather than packet capacity. Current readiness improves for a
+scoped ICLR submission because the claim is more defensible and less
+cherry-picked, but it is still not full ICLR-ready: the method is a calibrated
+public-dictionary communication interface, not held-out semantic latent
+transfer. Highest-priority next branch: a stronger held-out receiver
+(anchor-relative sparse features, contrastive synonym-consistency dictionary,
+or activation-backed crosscoder) evaluated on the same family-B split and
+systems byte table.

@@ -15582,3 +15582,26 @@ passed. Interpretation: this is a meaningful third method contribution if
 framed as a calibrated public-dictionary interface. It is not yet a
 synonym-heldout or activation-learned crosscoder. Next exact gate: seed repeat
 plus held-out paraphrase/synonym clusters.
+
+Follow-up `2026-04-29`: completed the seed-repeat and held-out synonym-family
+gate for the learned/calibrated synonym dictionary. Code now separates
+`--candidate-atom-view` from `--calibration-atom-view` and writes a
+surface-overlap audit, including exact transformed eval phrase overlap. The
+seed-repeat command:
+`./venv_arm64/bin/python scripts/run_source_private_learned_synonym_dictionary_packet_gate.py --output-dir results/source_private_learned_synonym_dictionary_packet_gate_20260429_seed_repeat --budgets 4 --train-examples 512 --eval-examples 256 --seed 47 --candidate-atom-view synonym_stress --candidate-calibration all_public --calibration-atom-view synonym_stress --calibration-examples 512 --feature-dim 384 --ridge 0.25 --top-k 8 --min-score 0.02`
+passes: cross-family pass true, all directions pass, `3` pass rows, max
+learned packet accuracy `1.000`, max learned-target delta `+0.750`, and
+minimum passing CI95 lower bound `+0.562`. The held-out family-B command:
+`./venv_arm64/bin/python scripts/run_source_private_learned_synonym_dictionary_packet_gate.py --output-dir results/source_private_learned_synonym_dictionary_packet_gate_20260429_heldout_synonym --budgets 4 --train-examples 512 --eval-examples 256 --seed 47 --candidate-atom-view heldout_synonym --candidate-calibration all_public --calibration-atom-view synonym_stress --calibration-examples 512 --feature-dim 384 --ridge 0.25 --top-k 8 --min-score 0.02`
+fails with exact transformed phrase overlap `0`: cross-family pass false,
+`0` pass rows, max learned packet accuracy `0.500`, max learned-target delta
+`+0.250`, and learned-candidate oracle only `0.375`. A same-family-B
+calibration diagnostic at
+`results/source_private_learned_synonym_dictionary_packet_gate_20260429_heldout_synonym_calibrated_oracle`
+passes with all directions at `1.000`, confirming channel capacity under
+matching public calibration but not held-out semantic transfer. Interpretation:
+the contribution is now seed-stable as a calibrated public-dictionary packet
+interface, while held-out paraphrase generalization is a documented negative
+boundary. Next exact gate: implement a stronger receiver for the held-out
+family-B split, preferably anchor-relative or contrastive synonym-consistency
+features, and require the same zero/shuffled/random/answer/text controls.

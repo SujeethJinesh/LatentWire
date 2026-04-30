@@ -61,3 +61,32 @@ def test_learned_synonym_dictionary_rows_include_knockout_and_controls(tmp_path)
     assert row["budget_bytes"] == 4
     assert row["paired_bootstrap_vs_target"]["ci95_high"] >= row["paired_bootstrap_vs_target"]["ci95_low"]
     assert payload["headline"]["max_learned_synonym_dictionary_accuracy"] >= 0.0
+
+
+def test_learned_synonym_dictionary_supports_heldout_synonym_surface(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_heldout",
+        budgets=[4],
+        train_examples=24,
+        eval_examples=8,
+        seed=17,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=32,
+        feature_dim=48,
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_heldout" / "core_to_holdout" / "summary.json").read_text()
+    )
+    audit = direction["surface_overlap_audit"]
+    assert payload["candidate_atom_view"] == "heldout_synonym"
+    assert payload["calibration_atom_view"] == "synonym_stress"
+    assert audit["candidate_atom_view"] == "heldout_synonym"
+    assert audit["calibration_atom_view"] == "synonym_stress"
+    assert audit["transformed_eval_surface_count"] > 0
+    assert audit["exact_transformed_eval_surface_overlap_count"] == 0

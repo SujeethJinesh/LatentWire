@@ -121,6 +121,11 @@
 - Learned/calibrated synonym-dictionary packet script, tests, memo, and native
   plus synonym-stress `n=256` artifacts showing 4-byte bidirectional
   cross-family pass under strict controls, with public-calibration caveats.
+- Learned synonym-dictionary seed-repeat artifacts preserving the 4-byte
+  cross-family pass, plus held-out family-B artifacts showing the current
+  receiver fails without exact transformed phrase overlap while a
+  family-B-calibrated diagnostic passes. This records the calibrated
+  public-dictionary claim boundary for finalization.
 
 ## Notes
 
