@@ -16447,3 +16447,28 @@ bytes/request at batch 64, and `5.0` line/DMA bytes/request at batch 256.
 Interpretation: this improves systems credibility and prevents a reviewer from
 catching a hard-coded 64B line assumption on Apple hardware; it still does not
 replace native GPU/vLLM TTFT/TPOT/goodput telemetry.
+
+Update `2026-04-30`: implemented and ran the strict n256
+`source_private_anchor_relative_crosscoder_receiver` gate as the next
+less-protocol-shaped receiver test. Code:
+`scripts/run_source_private_anchor_relative_crosscoder_receiver_gate.py`; test:
+`tests/test_run_source_private_anchor_relative_crosscoder_receiver_gate.py`;
+memo:
+`paper/source_private_anchor_relative_crosscoder_receiver_gate_20260430.md`;
+references:
+`references/534_anchor_relative_crosscoder_receiver_gate_refs_20260430.md`;
+artifacts:
+`results/source_private_anchor_relative_crosscoder_receiver_n256_20260430/`.
+Outcome: bidirectional cross-family fails. Core->holdout reaches matched
+`0.277/0.270` at `4/8` bytes versus target `0.250`, best controls
+`0.266/0.258`, oracle `0.641/0.742`, and paired CI95 lows
+`-0.039/-0.043`. Holdout->core reaches matched `0.309/0.301` versus target
+`0.250`, best controls `0.277/0.266`, oracle `0.762/0.828`, and paired CI95
+lows `-0.012/-0.020`. Exact ordered-ID parity and candidate-pool recall hold,
+but top-feature knockout does not reduce matched accuracy. A cheap n128 debug
+grid over hashed, anchor-relative, learned-anchor-relative, `diag_only`, and
+`semantic` views finds no passing row. Interpretation: prune this
+anchor-relative/crosscoder receiver as a headline positive method. The failure
+looks like an encoder/interface problem, not a simple byte-budget miss. Next
+highest-value gate is n500 seed stability for the frozen verifier positive row
+plus a TurboResidual/PQ packet branch under the same strict controls.

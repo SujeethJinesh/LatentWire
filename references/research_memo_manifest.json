@@ -1237,5 +1237,12 @@
     "path": "references/533_mac_128b_boundary_accounting_refs_20260430.md",
     "status": "local_memo",
     "reason": "Systems correction memo for Mac-local 128B cache-line packet accounting, C2C/KVCOMM/KIVI/KVQuant/QJL/TurboQuant/vLLM/DistServe claim boundaries, and verifier trace non-claims."
+  },
+  {
+    "num": 534,
+    "slug": "anchor_relative_crosscoder_receiver_gate_refs_20260430",
+    "path": "references/534_anchor_relative_crosscoder_receiver_gate_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for pruning the strict anchor-relative/crosscoder receiver gate, covering relative representations, model stitching, sparse crosscoders, universal SAEs, Wyner-Ziv/Slepian-Wolf framing, KV compression baselines, TurboQuant, and serving telemetry requirements."
   }
 ]

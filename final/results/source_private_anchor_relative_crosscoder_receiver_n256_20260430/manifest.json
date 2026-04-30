@@ -1,0 +1,14 @@
+{
+  "artifact_sha256": {
+    "core_to_holdout_seed29/summary.json": "d4f84b0968b5fb024acb5d292d834878b2575277b98807f5f7ecc46d2b3b9529",
+    "holdout_to_core_seed29/summary.json": "77aff53ef5a20ad17a1804aa2b92b4d93563f2e0023eee6f2d1a097f1c599faf"
+  },
+  "artifacts": [
+    "core_to_holdout_seed29/",
+    "holdout_to_core_seed29/",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_anchor_relative_crosscoder_receiver_n256_20260430",
+  "pass_gate": false
+}

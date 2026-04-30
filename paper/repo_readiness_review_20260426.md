@@ -3249,3 +3249,27 @@ stress at the receiver level, or native GPU/vLLM TTFT/TPOT/goodput telemetry.
 The next highest-priority method branch is an anchor-relative sparse crosscoder
 or candidate-logit flow receiver that reduces dependence on the diagnostic
 table.
+
+Update `2026-04-30`: `source_private_anchor_relative_crosscoder_receiver_n256`
+adds a strict learned receiver harness and prunes the current
+anchor-relative/crosscoder branch as a headline positive method. Code:
+`scripts/run_source_private_anchor_relative_crosscoder_receiver_gate.py`;
+test:
+`tests/test_run_source_private_anchor_relative_crosscoder_receiver_gate.py`;
+memo:
+`paper/source_private_anchor_relative_crosscoder_receiver_gate_20260430.md`;
+references:
+`references/534_anchor_relative_crosscoder_receiver_gate_refs_20260430.md`;
+results:
+`results/source_private_anchor_relative_crosscoder_receiver_n256_20260430/`.
+The harness includes public-only sidecars, feature-ID permutation,
+top-feature knockout, matched-byte structured text, paired bootstrap, and
+exact ordered-ID parity. Bidirectional n256 cross-family fails: matched packets
+only reach `0.270-0.309` against a `0.250` target prior, oracles remain below
+`0.95`, CI95 lower bounds cross zero, and top-feature knockout does not reduce
+matched accuracy. Readiness implication: this improves reviewer defensibility
+by ruling out a tempting but weak non-table story; it does not close the ICLR
+positive-method blocker. Current status remains COLM-workshop plausible, not
+comfortable ICLR full paper. Next exact gate: n500 seed stability for the
+frozen verifier positive row plus a TurboResidual/PQ packet branch that keeps
+the same strict controls and systems accounting.

@@ -137,6 +137,20 @@ versus `0.250` target and `0.289` best no-source. This is now the strongest
 learned-method candidate, but it still needs compression-native baselines before
 becoming a headline claim.
 
+## Anchor-Relative Receiver Boundary
+
+The strict anchor-relative/crosscoder receiver gate in
+`results/source_private_anchor_relative_crosscoder_receiver_n256_20260430/`
+does not pass. Core-to-holdout and holdout-to-core n256 rows keep exact ID
+parity and candidate-pool recall, but matched packets only reach `0.270-0.309`
+against a `0.250` target prior; oracles stay below the `0.95` pass bar; paired
+CI lower bounds cross zero; and top-feature knockout does not reduce matched
+accuracy.
+
+Treat this as a reviewer-facing negative boundary, not a contribution claim.
+It prunes the current anchor-relative/crosscoder implementation and supports
+the narrower source-private residual-coding story.
+
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,

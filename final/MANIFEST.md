@@ -252,6 +252,11 @@
   `0.250` and min CI95 low `+0.641`; deranged public-handle tables drop to
   `0.000` on both surfaces, while collision-free random packets remain at
   `0.250`.
+- Strict anchor-relative/crosscoder receiver code, test, references, memo, and
+  bidirectional n256 artifacts showing the current non-table receiver branch is
+  pruned: matched packets reach only `0.270-0.309` versus target `0.250`,
+  oracles remain below `0.95`, paired CI95 lower bounds cross zero, and
+  top-feature knockout does not reduce matched accuracy.
 
 ## Notes
 
