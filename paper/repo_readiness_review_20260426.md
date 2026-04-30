@@ -3115,3 +3115,19 @@ a supporting receiver-depth ablation rather than the main causal proof. COLM
 workshop readiness remains very strong; ICLR comfort still needs one
 cross-family/model-mediated balanced diagnostic row and native systems
 telemetry.
+
+Update `2026-04-30`: balanced cross-family public-only falsification is now
+cleared for the direct diagnostic packet, but model-mediated balanced decoding
+is still not cleared. Four n500 rows pass across core->holdout and
+holdout->core public-only training/eval splits: 2-byte direct packets stay at
+`1.000`, max public-only accuracy is `0.178`, min packet-public CI95 low is
+`+0.788`, and hardened summary checks verify eval-ID, family-name, answer-label,
+config, and public train/eval disjointness. A frozen Qwen3-0.6B label-output
+receiver on balanced n32 is positive but partial (`0.688` matched vs `0.250`
+target/control, CI95 low `+0.281`, valid rate `0.938`), while a faster
+choice-alias prompt fails at target-only accuracy. Readiness implication:
+current ICLR distance improves on leakage/generalization controls, but the
+full-paper blocker is now precise: produce a balanced learned or frozen target
+receiver with valid rate `>=0.95` at n64+, or keep the paper claim explicitly
+as a rigorous source-private side-information protocol with systems accounting.
+COLM workshop readiness remains very strong.

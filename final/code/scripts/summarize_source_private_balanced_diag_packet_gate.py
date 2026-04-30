@@ -31,6 +31,13 @@ def _read_json(path: pathlib.Path) -> dict[str, Any]:
     return json.loads(_resolve(path).read_text(encoding="utf-8"))
 
 
+def _read_optional_json(path: pathlib.Path) -> dict[str, Any]:
+    resolved = _resolve(path)
+    if not resolved.exists():
+        return {}
+    return json.loads(resolved.read_text(encoding="utf-8"))
+
+
 def _read_jsonl(path: pathlib.Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in _resolve(path).read_text(encoding="utf-8").splitlines() if line.strip()]
 
@@ -60,6 +67,8 @@ def _pair_row(*, direct_dir: pathlib.Path, public_dir: pathlib.Path, budget_byte
     direct_dir = _resolve(direct_dir)
     public_dir = _resolve(public_dir)
     sweep = _read_json(direct_dir / "sweep_summary.json")
+    direct_manifest = _read_optional_json(direct_dir / "manifest.json")
+    direct_args = direct_manifest.get("args", {})
     direct_summary = next(row for row in sweep["budget_summaries"] if int(row["budget_bytes"]) == budget_bytes)
     direct_rows = _read_jsonl(direct_dir / f"predictions_budget{budget_bytes}.jsonl")
     public_payload = _read_json(public_dir / "run_summary.json")
@@ -68,6 +77,24 @@ def _pair_row(*, direct_dir: pathlib.Path, public_dir: pathlib.Path, budget_byte
     public_ids = [row["example_id"] for row in public_rows]
     public_by_id = {row["example_id"]: row for row in public_rows}
     same_eval_ids = direct_ids == public_ids
+    content_parity = same_eval_ids and all(
+        row.get("family_name") == public_by_id[row["example_id"]].get("family_name")
+        and row.get("answer_label") == public_by_id[row["example_id"]].get("answer_label")
+        for row in direct_rows
+    )
+    public_eval_family_set = public_payload.get("eval_family_set")
+    direct_family_set = direct_args.get("family_set")
+    direct_eval_config_matches_public = (
+        direct_family_set == public_eval_family_set
+        and int(direct_args.get("examples", -1)) == int(public_payload.get("eval_examples", -2))
+        and int(direct_args.get("seed", -1)) == int(public_payload.get("eval_seed", -2))
+    )
+    public_train_eval_disjoint = public_payload.get("summary", {}).get("train_eval_id_intersection_count") == 0
+    balanced_diag_config = (
+        direct_args.get("diagnostic_table_mode") == "plausible_decoys"
+        and public_payload.get("diagnostic_table_mode") == "plausible_decoys"
+        and public_payload.get("candidate_view") == "diag_only"
+    )
     packet_correct = [bool(row["conditions"]["matched_repair_packet"]["correct"]) for row in direct_rows]
     public_correct = [bool(public_by_id[row["example_id"]]["public_correct"]) for row in direct_rows]
     target_correct = [bool(row["conditions"]["target_only"]["correct"]) for row in direct_rows]
@@ -79,6 +106,13 @@ def _pair_row(*, direct_dir: pathlib.Path, public_dir: pathlib.Path, budget_byte
         "budget_bytes": budget_bytes,
         "n": len(direct_rows),
         "same_eval_ids": same_eval_ids,
+        "content_parity": content_parity,
+        "direct_eval_config_matches_public": direct_eval_config_matches_public,
+        "public_train_eval_disjoint": public_train_eval_disjoint,
+        "balanced_diag_config": balanced_diag_config,
+        "direct_family_set": direct_family_set,
+        "public_train_family_set": public_payload.get("train_family_set"),
+        "public_eval_family_set": public_eval_family_set,
         "exact_id_sha256": _sha256_ids(direct_ids),
         "direct_pass_gate": bool(direct_summary["pass_gate"]),
         "public_pass_gate": bool(public_payload["pass_gate"]),
@@ -109,6 +143,10 @@ def summarize_pairs(
     headline = {
         "pass_gate": all(
             row["same_eval_ids"]
+            and row["content_parity"]
+            and row["direct_eval_config_matches_public"]
+            and row["public_train_eval_disjoint"]
+            and row["balanced_diag_config"]
             and row["direct_pass_gate"]
             and row["public_pass_gate"]
             and row["packet_minus_public"]["ci95_low"] >= min_packet_minus_public_ci_low
@@ -122,6 +160,10 @@ def summarize_pairs(
         "min_packet_minus_public_ci95_low": min(row["packet_minus_public"]["ci95_low"] for row in rows),
         "max_public_minus_target_ci95_high": max(row["public_minus_target"]["ci95_high"] for row in rows),
         "all_same_eval_ids": all(row["same_eval_ids"] for row in rows),
+        "all_content_parity": all(row["content_parity"] for row in rows),
+        "all_direct_eval_config_matches_public": all(row["direct_eval_config_matches_public"] for row in rows),
+        "all_public_train_eval_disjoint": all(row["public_train_eval_disjoint"] for row in rows),
+        "all_balanced_diag_config": all(row["balanced_diag_config"] for row in rows),
         "all_direct_pass": all(row["direct_pass_gate"] for row in rows),
         "all_public_no_leak": all(row["public_pass_gate"] for row in rows),
     }
@@ -132,7 +174,8 @@ def summarize_pairs(
         "pass_rule": (
             f"Budget-{budget_bytes} direct diagnostic packet must pass strict controls; public-only diag receiver "
             f"must have CI95 high <= target+{max_public_lift:.2f}; packet-public CI95 low must be >= "
-            f"{min_packet_minus_public_ci_low:.2f}; and eval IDs must match exactly."
+            f"{min_packet_minus_public_ci_low:.2f}; eval IDs/families/answers must match exactly; public train/eval "
+            "IDs must be disjoint; and both runs must use plausible-decoy diag_only config."
         ),
         "interpretation": (
             "Balanced plausible-decoy diagnostic tables remove obvious X-code distractors and public semantic shortcuts. "
@@ -152,16 +195,18 @@ def summarize_pairs(
         f"- min packet-public CI95 low: `{headline['min_packet_minus_public_ci95_low']:.3f}`",
         f"- max public-target CI95 high: `{headline['max_public_minus_target_ci95_high']:.3f}`",
         "",
-        "| Direct run | Public-only run | n | packet | public | target | best control | packet-public CI | public-target CI |",
-        "|---|---|---:|---:|---:|---:|---:|---|---|",
+        "| Direct run | Public-only run | families | n | packet | public | target | best control | packet-public CI | public-target CI | parity |",
+        "|---|---|---|---:|---:|---:|---:|---:|---|---|---|",
     ]
     for row in rows:
         lines.append(
-            f"| `{row['direct_dir']}` | `{row['public_dir']}` | {row['n']} | "
+            f"| `{row['direct_dir']}` | `{row['public_dir']}` | "
+            f"{row['public_train_family_set']}->{row['public_eval_family_set']} | {row['n']} | "
             f"{row['packet_accuracy']:.3f} | {row['public_only_accuracy']:.3f} | "
             f"{row['target_only_accuracy']:.3f} | {row['best_control_accuracy']:.3f} | "
             f"[{row['packet_minus_public']['ci95_low']:.3f}, {row['packet_minus_public']['ci95_high']:.3f}] | "
-            f"[{row['public_minus_target']['ci95_low']:.3f}, {row['public_minus_target']['ci95_high']:.3f}] |"
+            f"[{row['public_minus_target']['ci95_low']:.3f}, {row['public_minus_target']['ci95_high']:.3f}] | "
+            f"`{row['same_eval_ids'] and row['content_parity']}` |"
         )
     lines.extend(["", payload["pass_rule"], "", payload["interpretation"], ""])
     (output_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")

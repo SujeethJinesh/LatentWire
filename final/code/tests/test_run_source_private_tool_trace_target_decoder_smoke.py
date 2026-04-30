@@ -31,6 +31,20 @@ def test_prompt_uses_packet_metadata_and_prior_without_answer_label() -> None:
     assert f"answer_label: {example.answer_label}" not in prompt
 
 
+def test_choice_alias_prompt_uses_option_letters_without_answer_label() -> None:
+    example = _example()
+    prompt = target_gate._prompt_for_target_decoder(
+        example,
+        payload=example.diagnostic_code,
+        prompt_mode="choice_alias",
+    )
+
+    assert "Return only A, B, C, or D" in prompt
+    assert f"Source packet: {example.diagnostic_code}" in prompt
+    assert "Target-prior option:" in prompt
+    assert f"answer_label: {example.answer_label}" not in prompt
+
+
 def test_condition_payloads_keep_structured_relays_at_two_bytes() -> None:
     examples = [_example(), _example()]
 
@@ -59,6 +73,13 @@ def test_parse_candidate_label_accepts_exact_or_embedded_label() -> None:
     assert target_gate._parse_candidate_label(f"{label}\n", example) == label
     assert target_gate._parse_candidate_label(f"The answer is {label}.", example) == label
     assert target_gate._parse_candidate_label("candidate_9999_patch_0_repair_record", example) == ""
+
+
+def test_parse_candidate_label_accepts_choice_alias() -> None:
+    example = _example()
+
+    assert target_gate._parse_candidate_label("A", example, prompt_mode="choice_alias") == example.candidates[0]["label"]
+    assert target_gate._parse_candidate_label("Option D", example, prompt_mode="choice_alias") == example.candidates[3]["label"]
 
 
 def test_summarize_passes_when_matched_beats_controls() -> None:

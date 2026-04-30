@@ -1,11 +1,12 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: scoped positive-method manuscript with strengthened same-family/remap
-  packet evidence; not yet a full cross-family ICLR claim
-- estimated distance: one successful bidirectional cross-family method gate or a
-  narrower paper framing that explicitly limits the claim to same-family/source-
-  private packet communication
+- status: stronger scoped positive-method manuscript with medium packet,
+  receiver, anti-lookup, and systems trace-card evidence; not yet a comfortable
+  broad latent-transfer ICLR claim
+- estimated distance: one successful less hand-shaped learned receiver or
+  larger label-blind/generalization gate, plus native serving telemetry when
+  NVIDIA/server hardware is available
 
 ## Current Paper Story
 
@@ -3052,3 +3053,81 @@ information, not protocol-free latent semantic transfer. Current ICLR distance:
 stronger scoped submission candidate, still not comfortable full ICLR until
 either a less hand-shaped learned receiver, one large frozen label-blind stress,
 or native serving telemetry lands. COLM workshop readiness is strong.
+
+Update `2026-04-30`: the Mac unified-memory transport profile strengthens the
+systems contribution without overclaiming. It passes on the existing `n=160`
+core and held-out endpoint rows with exact-ID parity, matched packet min lift
+`+0.425`, destructive-control max lift `+0.000`, query-aware text at `7.00x`
+raw bytes but `1.00x` line bytes, full-log relay at `183.25x` raw bytes and
+`6.00x` line bytes, and batch-64 packet records at `5.00` line bytes/request.
+Readiness implication: the paper now has a clearer third contribution for
+systems/hardware reviewers: boundary-traffic accounting with source-text/KV
+exposure flags and explicit production non-claims. It still does not replace
+native GPU/server telemetry, and the main ICLR blocker remains a less
+table-shaped learned receiver or a larger frozen label-blind stress.
+
+Update `2026-04-30`: the learned masked-consistency receiver materially improves
+method depth. It passes one `n=64` smoke and two `n=256` seed-pair
+confirmations over 6-byte learned syndrome packets. Minimum n256 learned
+matched accuracy is `0.957`, minimum lift vs target is `+0.707`, minimum lift
+vs best destructive control is `+0.676`, and minimum CI95 lower bound vs best
+control is `+0.617`. The receiver preserves deterministic packet utility
+(`learned-Hamming` range `-0.020` to `+0.016`) while suppressing control leakage
+that deterministic Hamming leaves exposed. Readiness implication: this is the
+strongest answer so far to the hand-written decoder objection, but it remains a
+public-candidate/code-feature receiver. ICLR comfort still requires
+label-blind/public-table stress and preferably `n=500`; COLM workshop readiness
+is now very strong.
+
+Update `2026-04-30`: the learned receiver now passes the immediate
+label-blind/public-table stress on disjoint train/eval IDs. Artifact:
+`results/source_private_masked_consistency_receiver_label_blind_20260430/`;
+memo:
+`paper/source_private_masked_consistency_label_blind_stress_20260430.md`.
+Outcome: `2/2` disjoint full-view n256 anchors pass (`0.914` and `0.957`
+learned matched accuracy), `2/2` opaque slot-remap n256 rows collapse
+(`0.234` and `0.262` learned matched accuracy against target `0.250`), all
+decisive train/eval ID intersections are `0`, all exact-ID parity checks pass,
+and the max opaque paired CI95 high versus target is `+0.066`. The semantic
+candidate-view diagnostic also passes at `0.996` after removing explicit
+diagnostic keys, with all destructive controls at target. Readiness
+implication: the same-ID and slot-lookup objections are now substantially
+weaker, and the method contribution is clearer: a learned source-private byte
+receiver that uses decoder-side public semantics and rejects opaque remapped
+slot channels. ICLR readiness improves to a strong scoped full-paper candidate,
+but comfortable acceptance still needs an `n=500` disjoint repeat, a public-only
+semantic receiver ablation, one cross-family/model pair, and stronger
+production systems telemetry. COLM workshop readiness is very strong.
+
+Update `2026-04-30`: the public-only ablation found a serious shortcut in the
+prior semantic/full learned-receiver surface and produced a cleaner replacement
+gate. Public-only classifiers trained only on public full/semantic candidate
+features reach `1.000` at n64, so those rows cannot be used as clean
+source-causality claims. I added balanced plausible-decoy diagnostic tables and
+a `diag_only` candidate view. On the balanced n500 surface, 2-byte direct
+source-private diagnostic packets score `1.000` over two seeds, while the
+same-eval public-only diagnostic receiver reaches at most `0.178`; min
+packet-public CI95 lower bound is `+0.788`, and controls/text negatives remain
+near target. Readiness implication: ICLR story is narrower but stronger. The
+clean headline contribution is now low-rate source-private side-information
+coding under balanced public-only controls, with learned masked-consistency as
+a supporting receiver-depth ablation rather than the main causal proof. COLM
+workshop readiness remains very strong; ICLR comfort still needs one
+cross-family/model-mediated balanced diagnostic row and native systems
+telemetry.
+
+Update `2026-04-30`: balanced cross-family public-only falsification is now
+cleared for the direct diagnostic packet, but model-mediated balanced decoding
+is still not cleared. Four n500 rows pass across core->holdout and
+holdout->core public-only training/eval splits: 2-byte direct packets stay at
+`1.000`, max public-only accuracy is `0.178`, min packet-public CI95 low is
+`+0.788`, and hardened summary checks verify eval-ID, family-name, answer-label,
+config, and public train/eval disjointness. A frozen Qwen3-0.6B label-output
+receiver on balanced n32 is positive but partial (`0.688` matched vs `0.250`
+target/control, CI95 low `+0.281`, valid rate `0.938`), while a faster
+choice-alias prompt fails at target-only accuracy. Readiness implication:
+current ICLR distance improves on leakage/generalization controls, but the
+full-paper blocker is now precise: produce a balanced learned or frozen target
+receiver with valid rate `>=0.95` at n64+, or keep the paper claim explicitly
+as a rigorous source-private side-information protocol with systems accounting.
+COLM workshop readiness remains very strong.

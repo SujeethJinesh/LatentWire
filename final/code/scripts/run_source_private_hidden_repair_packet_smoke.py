@@ -819,6 +819,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=28)
     parser.add_argument("--budgets", type=str, default="2,4,8,16,32")
     parser.add_argument("--family-set", choices=["core", "holdout", "all"], default="core")
+    parser.add_argument("--start-index", type=int, default=0)
     parser.add_argument("--diagnostic-table-mode", choices=["legacy", "plausible_decoys"], default="legacy")
     parser.add_argument("--output-dir", type=pathlib.Path, required=True)
     args = parser.parse_args()
@@ -831,6 +832,7 @@ def main() -> None:
         candidates=args.candidates,
         seed=args.seed,
         family_set=args.family_set,
+        start_index=args.start_index,
         diagnostic_table_mode=args.diagnostic_table_mode,
     )
     _write_benchmark(output_dir / "benchmark.jsonl", examples)
@@ -858,6 +860,8 @@ def main() -> None:
                 f"--seed {args.seed}",
                 f"--budgets {args.budgets}",
                 f"--family-set {args.family_set}",
+                f"--start-index {args.start_index}",
+                f"--diagnostic-table-mode {args.diagnostic_table_mode}",
                 f"--output-dir {args.output_dir}",
             ]
         ),

@@ -228,6 +228,15 @@
   result: 2-byte direct private packets score `1.000` over two seeds, public-only
   diagnostic receivers reach at most `0.178`, min packet-public CI95 low is
   `+0.788`, and source-destroying/text controls stay near target.
+- Balanced cross-family public-only falsification and model-receiver probe code,
+  tests, references, memo, and artifacts. The direct/public cross-family gate
+  passes over four n500 rows across `core->holdout` and `holdout->core`: 2-byte
+  direct packets stay at `1.000`, max public-only accuracy is `0.178`, min
+  packet-public CI95 low is `+0.788`, and hardened summary checks verify eval
+  ID, family, answer, config, and public train/eval disjointness. The frozen
+  Qwen3-0.6B balanced label-output receiver is positive but partial (`0.688`
+  matched vs `0.250` target/control, CI95 low `+0.281`, valid rate `0.938`);
+  the choice-alias receiver is pruned at target-only accuracy.
 
 ## Notes
 

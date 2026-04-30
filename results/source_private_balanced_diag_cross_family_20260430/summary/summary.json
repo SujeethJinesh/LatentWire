@@ -1,0 +1,163 @@
+{
+  "gate": "source_private_balanced_diag_packet_gate",
+  "headline": {
+    "all_balanced_diag_config": true,
+    "all_content_parity": true,
+    "all_direct_eval_config_matches_public": true,
+    "all_direct_pass": true,
+    "all_public_no_leak": true,
+    "all_public_train_eval_disjoint": true,
+    "all_same_eval_ids": true,
+    "budget_bytes": 2,
+    "max_public_minus_target_ci95_high": -0.02199999988079071,
+    "max_public_only_accuracy": 0.178,
+    "min_packet_accuracy": 1.0,
+    "min_packet_minus_public_ci95_low": 0.7879999876022339,
+    "pass_gate": true,
+    "runs": 4
+  },
+  "interpretation": "Balanced plausible-decoy diagnostic tables remove obvious X-code distractors and public semantic shortcuts. A direct 2-byte private diagnostic packet remains sufficient, while a trained public-only diagnostic receiver does not solve the task.",
+  "pass_rule": "Budget-2 direct diagnostic packet must pass strict controls; public-only diag receiver must have CI95 high <= target+0.05; packet-public CI95 low must be >= 0.10; eval IDs/families/answers must match exactly; public train/eval IDs must be disjoint; and both runs must use plausible-decoy diag_only config.",
+  "rows": [
+    {
+      "balanced_diag_config": true,
+      "best_control_accuracy": 0.25,
+      "best_reviewer_negative_accuracy": 0.25,
+      "budget_bytes": 2,
+      "content_parity": true,
+      "direct_dir": "results/source_private_balanced_diag_cross_family_20260430/direct_holdout_n500_seed29",
+      "direct_eval_config_matches_public": true,
+      "direct_family_set": "holdout",
+      "direct_pass_gate": true,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "n": 500,
+      "packet_accuracy": 1.0,
+      "packet_minus_public": {
+        "ci95_high": 0.8560000061988831,
+        "ci95_low": 0.7879999876022339,
+        "point": 0.8220000267028809
+      },
+      "packet_p50_latency_ms": 0.002333021257072687,
+      "packet_payload_bytes": 2.0,
+      "public_dir": "results/source_private_balanced_diag_cross_family_20260430/public_core_to_holdout_n500_seed29",
+      "public_eval_family_set": "holdout",
+      "public_minus_target": {
+        "ci95_high": -0.02199999988079071,
+        "ci95_low": -0.11800000071525574,
+        "point": -0.07199999690055847
+      },
+      "public_only_accuracy": 0.178,
+      "public_p50_latency_ms": 0.0627080153208226,
+      "public_pass_gate": true,
+      "public_train_eval_disjoint": true,
+      "public_train_family_set": "core",
+      "same_eval_ids": true,
+      "target_only_accuracy": 0.25
+    },
+    {
+      "balanced_diag_config": true,
+      "best_control_accuracy": 0.25,
+      "best_reviewer_negative_accuracy": 0.25,
+      "budget_bytes": 2,
+      "content_parity": true,
+      "direct_dir": "results/source_private_balanced_diag_cross_family_20260430/direct_holdout_n500_seed31",
+      "direct_eval_config_matches_public": true,
+      "direct_family_set": "holdout",
+      "direct_pass_gate": true,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "n": 500,
+      "packet_accuracy": 1.0,
+      "packet_minus_public": {
+        "ci95_high": 0.8880000114440918,
+        "ci95_low": 0.82795000821352,
+        "point": 0.8579999804496765
+      },
+      "packet_p50_latency_ms": 0.002333021257072687,
+      "packet_payload_bytes": 2.0,
+      "public_dir": "results/source_private_balanced_diag_cross_family_20260430/public_core_to_holdout_n500_seed31",
+      "public_eval_family_set": "holdout",
+      "public_minus_target": {
+        "ci95_high": -0.05999999865889549,
+        "ci95_low": -0.15600000321865082,
+        "point": -0.1080000028014183
+      },
+      "public_only_accuracy": 0.142,
+      "public_p50_latency_ms": 0.06327050505205989,
+      "public_pass_gate": true,
+      "public_train_eval_disjoint": true,
+      "public_train_family_set": "core",
+      "same_eval_ids": true,
+      "target_only_accuracy": 0.25
+    },
+    {
+      "balanced_diag_config": true,
+      "best_control_accuracy": 0.25,
+      "best_reviewer_negative_accuracy": 0.25,
+      "budget_bytes": 2,
+      "content_parity": true,
+      "direct_dir": "results/source_private_balanced_diag_cross_family_20260430/direct_core_n500_seed29",
+      "direct_eval_config_matches_public": true,
+      "direct_family_set": "core",
+      "direct_pass_gate": true,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "n": 500,
+      "packet_accuracy": 1.0,
+      "packet_minus_public": {
+        "ci95_high": 0.8560000061988831,
+        "ci95_low": 0.7879999876022339,
+        "point": 0.8220000267028809
+      },
+      "packet_p50_latency_ms": 0.002416985807940364,
+      "packet_payload_bytes": 2.0,
+      "public_dir": "results/source_private_balanced_diag_cross_family_20260430/public_holdout_to_core_n500_seed29",
+      "public_eval_family_set": "core",
+      "public_minus_target": {
+        "ci95_high": -0.02199999988079071,
+        "ci95_low": -0.11800000071525574,
+        "point": -0.07199999690055847
+      },
+      "public_only_accuracy": 0.178,
+      "public_p50_latency_ms": 0.06291699537541717,
+      "public_pass_gate": true,
+      "public_train_eval_disjoint": true,
+      "public_train_family_set": "holdout",
+      "same_eval_ids": true,
+      "target_only_accuracy": 0.25
+    },
+    {
+      "balanced_diag_config": true,
+      "best_control_accuracy": 0.25,
+      "best_reviewer_negative_accuracy": 0.25,
+      "budget_bytes": 2,
+      "content_parity": true,
+      "direct_dir": "results/source_private_balanced_diag_cross_family_20260430/direct_core_n500_seed31",
+      "direct_eval_config_matches_public": true,
+      "direct_family_set": "core",
+      "direct_pass_gate": true,
+      "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+      "n": 500,
+      "packet_accuracy": 1.0,
+      "packet_minus_public": {
+        "ci95_high": 0.8880000114440918,
+        "ci95_low": 0.82795000821352,
+        "point": 0.8579999804496765
+      },
+      "packet_p50_latency_ms": 0.002374988980591297,
+      "packet_payload_bytes": 2.0,
+      "public_dir": "results/source_private_balanced_diag_cross_family_20260430/public_holdout_to_core_n500_seed31",
+      "public_eval_family_set": "core",
+      "public_minus_target": {
+        "ci95_high": -0.05999999865889549,
+        "ci95_low": -0.15600000321865082,
+        "point": -0.1080000028014183
+      },
+      "public_only_accuracy": 0.142,
+      "public_p50_latency_ms": 0.06195799505803734,
+      "public_pass_gate": true,
+      "public_train_eval_disjoint": true,
+      "public_train_family_set": "holdout",
+      "same_eval_ids": true,
+      "target_only_accuracy": 0.25
+    }
+  ]
+}

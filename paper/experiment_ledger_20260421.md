@@ -16233,3 +16233,28 @@ not promoted there. Interpretation: promote the balanced direct diagnostic
 packet as the cleanest source-causality contribution; demote prior semantic
 learned-receiver rows to method-depth diagnostics unless paired against a
 public-only baseline.
+
+Update `2026-04-30`: added the balanced cross-family public-only falsification
+and a frozen-target receiver probe. Code hardening:
+`scripts/run_source_private_hidden_repair_packet_smoke.py` now exposes
+`--start-index` and records `--diagnostic-table-mode` in its replayable command;
+`scripts/summarize_source_private_balanced_diag_packet_gate.py` now requires
+eval-ID, family-name, answer-label, direct/public config, train/eval
+disjointness, and plausible-decoy `diag_only` parity. Artifacts:
+`results/source_private_balanced_diag_cross_family_20260430/` and
+`results/source_private_balanced_diag_target_decoder_20260430/`; memo:
+`paper/source_private_balanced_diag_cross_family_model_receiver_20260430.md`;
+references:
+`references/525_balanced_cross_family_model_receiver_refs_20260430.md`. Outcome:
+cross-family public-only gate passes over four n500 rows: core->holdout and
+holdout->core, two seeds, 2-byte direct packets at `1.000`, max public-only
+accuracy `0.178`, min packet-public CI95 low `+0.788`, and max public-target
+CI95 high `-0.022`. The frozen Qwen3-0.6B label-output receiver on balanced n32
+is a useful partial (`0.688` matched vs `0.250` target/control, CI95 low
+`+0.281`) but fails the strict uncertainty promotion because valid prediction
+rate is `0.938 < 0.95`. The choice-alias receiver is pruned: it reaches `1.000`
+valid output rate but collapses to option priors and gives no matched lift
+(`0.250`). Readiness implication: direct/public source causality is stronger and
+cross-family public-only leakage is weakened, but comfortable ICLR still needs a
+balanced model-mediated or learned receiver that passes strict validity at n64+
+and native serving telemetry.

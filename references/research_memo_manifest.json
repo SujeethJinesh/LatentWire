@@ -1174,5 +1174,12 @@
     "path": "references/524_balanced_diag_packet_gate_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the balanced plausible-decoy diagnostic packet gate and public-only receiver ablation, covering annotation artifacts, adversarial filtering, Wyner-Ziv/DISCUS side-information coding, consistency receivers, TurboQuant, and C2C claim boundaries."
+  },
+  {
+    "num": 525,
+    "slug": "balanced_cross_family_model_receiver_refs_20260430",
+    "path": "references/525_balanced_cross_family_model_receiver_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the balanced cross-family public-only falsification and frozen target-decoder receiver probe, covering activation communication, C2C/KVComm, TurboQuant/KIVI, Wyner-Ziv side information, diffusion-token merging, and DistServe systems framing."
   }
 ]

@@ -1,0 +1,116 @@
+{
+  "bootstrap_samples": 5000,
+  "created_utc": "2026-04-30T12:13:20.318654+00:00",
+  "gate": "source_private_target_decoder_uncertainty",
+  "headline": {
+    "max_p50_latency_ms": 2133.783395998762,
+    "min_matched_minus_best_control": 0.4375,
+    "min_matched_minus_target": 0.4375,
+    "min_paired_ci95_low_vs_best_control": 0.28125,
+    "min_paired_ci95_low_vs_target": 0.28125,
+    "min_valid_prediction_rate": 0.9375,
+    "pass_rows": 1,
+    "rows": 1
+  },
+  "interpretation": "This gate asks whether a frozen target LLM can consume the compact source packet beyond target priors and same-byte/source-destroyed controls. It is a reviewer-defense receiver gate, not a systems-speed claim.",
+  "pass_gate": false,
+  "pass_rule": "Every target-decoder run must pass its point gate, preserve exact-ID parity, have matched valid prediction rate >=0.95, and have paired CI95 lower bounds above +0.10 versus both target-only and the strongest source-destroying or matched-byte text control.",
+  "result_dirs": [
+    "results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_cpu"
+  ],
+  "rows": [
+    {
+      "best_control": "shuffled_packet",
+      "best_control_accuracy": 0.25,
+      "comparisons": {
+        "random_same_byte": {
+          "baseline": "random_same_byte",
+          "n": 32,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 18,
+            "wins": 14
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.59375,
+            "ci95_low": 0.28125,
+            "mean": 0.4375
+          }
+        },
+        "shuffled_packet": {
+          "baseline": "shuffled_packet",
+          "n": 32,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 18,
+            "wins": 14
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.59375,
+            "ci95_low": 0.28125,
+            "mean": 0.4375
+          }
+        },
+        "structured_free_text_2byte": {
+          "baseline": "structured_free_text_2byte",
+          "n": 32,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 18,
+            "wins": 14
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.625,
+            "ci95_low": 0.28125,
+            "mean": 0.4375
+          }
+        },
+        "structured_json_2byte": {
+          "baseline": "structured_json_2byte",
+          "n": 32,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 18,
+            "wins": 14
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.59375,
+            "ci95_low": 0.28125,
+            "mean": 0.4375
+          }
+        },
+        "target_only": {
+          "baseline": "target_only",
+          "n": 32,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 18,
+            "wins": 14
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.59375,
+            "ci95_low": 0.28125,
+            "mean": 0.4375
+          }
+        }
+      },
+      "exact_id_parity": true,
+      "matched_accuracy": 0.6875,
+      "matched_mean_generated_tokens": 12.375,
+      "matched_mean_payload_bytes": 2.0,
+      "matched_minus_best_control": 0.4375,
+      "matched_minus_target": 0.4375,
+      "matched_p50_latency_ms": 2133.783395998762,
+      "matched_valid_prediction_rate": 0.9375,
+      "n": 32,
+      "paired_vs_best_control_ci95_low": 0.28125,
+      "paired_vs_target_ci95_low": 0.28125,
+      "pass_gate": true,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_cpu",
+      "rows_sha256": "1f6504bfda69642be13c73f96d82ae5dbe12d35ba3b1b750c71940d963723d9c",
+      "summary_sha256": "1031f09f55ab899b84db18f516d8448c5ee50947f578c748b0f6b6775a5f486f",
+      "surface": "qwen3_seed29_n32_cpu",
+      "target_only_accuracy": 0.25
+    }
+  ]
+}

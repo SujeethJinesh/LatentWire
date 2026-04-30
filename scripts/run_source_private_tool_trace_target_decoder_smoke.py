@@ -81,6 +81,10 @@ def _condition_payload(
     raise ValueError(f"unknown condition {condition!r}")
 
 
+def _choice_label(index: int) -> str:
+    return "ABCD"[index]
+
+
 def _conditions() -> list[str]:
     return [
         "target_only",
@@ -102,13 +106,36 @@ def _validate_conditions(conditions: list[str] | None) -> list[str]:
     return list(conditions)
 
 
-def _prompt_for_target_decoder(example: LoadedExample, *, payload: str) -> str:
+def _prompt_for_target_decoder(example: LoadedExample, *, payload: str, prompt_mode: str = "label") -> str:
     prior = _prior_prediction(example)
+    packet = payload if payload else "<NO_SOURCE_PACKET>"
+    if prompt_mode == "choice_alias":
+        prior_choice = next(
+            _choice_label(index)
+            for index, candidate in enumerate(example.candidates)
+            if candidate["label"] == prior
+        )
+        candidate_rows = "\n".join(
+            f"{_choice_label(index)}. label={candidate['label']}; handles_repair_diag={candidate['handles_diagnostic']}"
+            for index, candidate in enumerate(example.candidates)
+        )
+        return (
+            "You are the target-side decoder in a source-private repair handoff.\n"
+            "Use only the source packet and candidate handles_repair_diag metadata.\n"
+            "If the source packet is a two-character code matching exactly one option's "
+            "handles_repair_diag value, return that option letter.\n"
+            "If no valid packet is present or no option matches, return the target-prior option letter.\n"
+            "Never return the source packet itself. Return only A, B, C, or D and no explanation.\n\n"
+            f"Target-prior option: {prior_choice}\n"
+            f"Source packet: {packet}\n"
+            "Options:\n"
+            f"{candidate_rows}\n\n"
+            "Option letter:"
+        )
     candidate_rows = "\n".join(
         f"- {candidate['label']}: handles_repair_diag={candidate['handles_diagnostic']}"
         for candidate in example.candidates
     )
-    packet = payload if payload else "<NO_SOURCE_PACKET>"
     return (
         "You are the target-side decoder in a source-private repair handoff.\n"
         "Use only the source packet and candidate handles_repair_diag metadata.\n"
@@ -148,8 +175,15 @@ def _load_model(model_name: str, *, device: str, dtype: str) -> tuple[Any, Any]:
     return tokenizer, model
 
 
-def _parse_candidate_label(generated: str, example: LoadedExample) -> str:
+def _parse_candidate_label(generated: str, example: LoadedExample, *, prompt_mode: str = "label") -> str:
     stripped = generated.strip()
+    if prompt_mode == "choice_alias":
+        exact_choice = re.fullmatch(r"[A-D]", stripped.upper())
+        if exact_choice:
+            return example.candidates["ABCD".index(exact_choice.group(0))]["label"]
+        embedded_choice = re.search(r"(?<![A-Z])([A-D])(?![A-Z])", stripped.upper())
+        if embedded_choice:
+            return example.candidates["ABCD".index(embedded_choice.group(1))]["label"]
     for candidate in example.candidates:
         label = candidate["label"]
         if stripped == label:
@@ -174,6 +208,7 @@ def _generate_target_predictions(
     progress_jsonl: pathlib.Path | None = None,
     partial_predictions_jsonl: pathlib.Path | None = None,
     progress_every: int = 16,
+    prompt_mode: str = "label",
 ) -> list[dict[str, Any]]:
     import torch
 
@@ -193,7 +228,7 @@ def _generate_target_predictions(
                 index=index,
                 rng=rng,
             )
-            prompt = _prompt_for_target_decoder(example, payload=payload)
+            prompt = _prompt_for_target_decoder(example, payload=payload, prompt_mode=prompt_mode)
             text_prompt = _format_prompt(tokenizer, prompt, enable_thinking=enable_thinking)
             inputs = tokenizer(text_prompt, return_tensors="pt").to(device)
             start = time.perf_counter()
@@ -207,7 +242,7 @@ def _generate_target_predictions(
             latency_ms = (time.perf_counter() - start) * 1000.0
             new_tokens = output[0][inputs["input_ids"].shape[-1] :]
             generated = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
-            prediction = _parse_candidate_label(generated, example)
+            prediction = _parse_candidate_label(generated, example, prompt_mode=prompt_mode)
             row = {
                 "example_id": example.example_id,
                 "condition": condition,
@@ -217,6 +252,7 @@ def _generate_target_predictions(
                 "payload_bytes": len(payload.encode("utf-8")),
                 "payload_tokens": len(re.findall(r"\S+", payload)),
                 "generated_text": generated,
+                "prompt_mode": prompt_mode,
                 "prediction": prediction,
                 "correct": prediction == example.answer_label,
                 "valid_prediction": bool(prediction),
@@ -375,6 +411,7 @@ def main() -> None:
     parser.add_argument("--max-new-tokens", type=int, default=48)
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--conditions", choices=_conditions(), nargs="*", default=None)
+    parser.add_argument("--prompt-mode", choices=["label", "choice_alias"], default="label")
     parser.add_argument("--progress-jsonl", type=pathlib.Path, default=None)
     parser.add_argument("--partial-predictions-jsonl", type=pathlib.Path, default=None)
     parser.add_argument("--progress-every", type=int, default=16)
@@ -409,6 +446,7 @@ def main() -> None:
         progress_jsonl=progress_jsonl,
         partial_predictions_jsonl=partial_predictions_jsonl,
         progress_every=args.progress_every,
+        prompt_mode=args.prompt_mode,
     )
     if partial_predictions_jsonl is not None:
         partial_rows = _read_partial_jsonl(partial_predictions_jsonl)
@@ -438,6 +476,7 @@ def main() -> None:
                 f"--max-new-tokens {args.max_new_tokens}",
                 "--no-enable-thinking" if args.enable_thinking is False else "--enable-thinking",
                 "" if args.conditions is None else "--conditions " + " ".join(args.conditions),
+                f"--prompt-mode {args.prompt_mode}",
                 "" if args.progress_jsonl is None else f"--progress-jsonl {args.progress_jsonl}",
                 ""
                 if args.partial_predictions_jsonl is None

@@ -1,0 +1,39 @@
+{
+  "artifact_sha256": {
+    "predictions.jsonl": "3a0d6ec739f4ecfed0fddc653862c4941ff39ae984010e92697450e93f9b1957",
+    "receiver_weights.json": "3853ae6600a5eae5669a479d144b4e313550044bfcc37d969a9ca7543b8f2eaf",
+    "run_summary.json": "67db4cf799e3444e463a04012a679f1cc26ce9f83399f82b2aaad1869a359317",
+    "summary.json": "0a09597bc58cc3990901eb26209768b604e6a7a011957312c1ac51788fe5f23b",
+    "summary.md": "63b90a727f94aa646ef2cfdafdbc8e204ea3b3c69734c5adb65ce758009119f8"
+  },
+  "artifacts": [
+    "run_summary.json",
+    "summary.json",
+    "summary.md",
+    "predictions.jsonl",
+    "receiver_weights.json"
+  ],
+  "pass_gate": true,
+  "summary": {
+    "candidate_view": "diag_only",
+    "exact_id_sha256": "711f0916b27f6e0b1e892e6cc242c09366b832eb67e00959feb5fc627a08d0d9",
+    "include_vectors": true,
+    "max_allowed_lift": 0.05,
+    "n": 500,
+    "p50_latency_ms": 0.0627080153208226,
+    "p95_latency_ms": 0.23483301629312336,
+    "paired_bootstrap_public_vs_target": {
+      "ci95_high": -0.02199999988079071,
+      "ci95_low": -0.11800000071525574,
+      "point": -0.07199999690055847
+    },
+    "public_minus_target": -0.07200000000000001,
+    "public_only_accuracy": 0.178,
+    "public_only_no_leak": true,
+    "remap_slot_seed": null,
+    "target_only_accuracy": 0.25,
+    "train_eval_id_intersection_count": 0,
+    "train_eval_id_intersection_sample": [],
+    "train_id_sha256": "9b4b0ae82b139a58521a68f5f5202814bd2ff9c805c1301cdf81147542d7d198"
+  }
+}

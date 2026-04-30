@@ -1,0 +1,26 @@
+{
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_balanced_diag_packet_gate",
+  "headline": {
+    "all_balanced_diag_config": true,
+    "all_content_parity": true,
+    "all_direct_eval_config_matches_public": true,
+    "all_direct_pass": true,
+    "all_public_no_leak": true,
+    "all_public_train_eval_disjoint": true,
+    "all_same_eval_ids": true,
+    "budget_bytes": 2,
+    "max_public_minus_target_ci95_high": -0.02199999988079071,
+    "max_public_only_accuracy": 0.178,
+    "min_packet_accuracy": 1.0,
+    "min_packet_minus_public_ci95_low": 0.7879999876022339,
+    "pass_gate": true,
+    "runs": 4
+  },
+  "pass_gate": true
+}
