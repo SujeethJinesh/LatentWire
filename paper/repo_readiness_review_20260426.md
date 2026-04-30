@@ -3489,3 +3489,21 @@ generality boundary and a stronger critique of our own semantic-anchor method.
 ICLR remains blocked on learned public ontology calibration, receiver-
 conditioned residual codebooks, model-mediated packet consumption, or native
 GPU serving telemetry.
+
+Update `2026-04-30`: learned public ontology calibration is alive but not
+solved. New memo:
+`paper/source_private_public_adapter_heldout_receiver_20260430.md`; new
+artifact:
+`results/source_private_public_adapter_heldout_packet_gate_20260430/summary/`;
+new references:
+`references/546_public_adapter_heldout_receiver_refs_20260430.md`. The
+MiniLM public semantic-anchor teacher adapter reaches `0.875` matched-packet
+accuracy and `+0.625` over target on its best rows, but across `36` rows it
+still has no bidirectional pass (`3` pass rows, `3` near misses). Shuffled,
+atom-deranged, and private-random controls remain too high. More importantly,
+the permuted-teacher negative control passes `2` individual rows, so the method
+cannot yet be framed as clean learned ontology transfer. Readiness impact:
+COLM remains strong as a scoped method-plus-boundary paper. Comfortable ICLR
+now requires a receiver-conditioned residual/codebook or candidate-local
+normalization method that preserves the matched source lift while forcing
+shuffled/permuted controls back to target.

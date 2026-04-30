@@ -16770,3 +16770,28 @@ embeddings do not replace the public semantic-anchor receiver; the next exact
 method gate should be learned public ontology calibration or
 receiver-conditioned residual codebooks, with private-random-knockout exposed
 as a first-class failure reason.
+
+Update `2026-04-30`: the public semantic-anchor teacher adapter confirms that
+learned public calibration has signal but does not yet solve the ICLR method
+gap. Code: `scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`
+adds `--adapter-target-mode` with `native_atoms`, `semantic_anchor_teacher`,
+and `permuted_semantic_anchor_teacher`; the direction audit now records
+calibration/eval exact-ID overlap. Summary code:
+`scripts/summarize_source_private_hf_embedding_heldout_packet_gate.py`; tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py` and
+`tests/test_summarize_source_private_hf_embedding_heldout_packet_gate.py`;
+memo: `paper/source_private_public_adapter_heldout_receiver_20260430.md`;
+references: `references/546_public_adapter_heldout_receiver_refs_20260430.md`;
+artifact:
+`results/source_private_public_adapter_heldout_packet_gate_20260430/summary/`.
+Outcome: across `36` public-adapter rows, the strict bidirectional pass gate is
+`false`: `3` rows pass and `3` are near misses. The best semantic-teacher rows
+reach `0.875` matched-packet accuracy and `+0.625` over target, but shuffled,
+deranged, or private-random controls prevent promotion. The permuted-teacher
+negative control also passes `2` individual rows, so the public adapter alone
+is not a clean contribution. Train-only calibration removes exact transformed
+surface overlap in core-to-holdout but weakens cross-family transfer. Decision:
+promote learned public ontology calibration as an alive signal, not a solved
+method. Highest-priority next branch is a receiver-conditioned residual/codebook
+with candidate-local normalization and an explicit permuted-teacher failure
+requirement in the pass rule.

@@ -231,6 +231,101 @@ def test_learned_synonym_dictionary_hashed_hf_feature_mode_records_model(tmp_pat
     assert "hf_last_mean" in calls
 
 
+def test_public_adapter_semantic_anchor_teacher_records_mode_and_audit(tmp_path, monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_hf_text_features(texts: list[str], *, dim: int, text_feature_mode: str) -> np.ndarray:
+        calls.append(text_feature_mode)
+        rows = []
+        for text in texts:
+            row = np.zeros(dim, dtype=np.float64)
+            for token in text.lower().split():
+                row[sum(ord(ch) for ch in token) % dim] += 1.0
+            norm = np.linalg.norm(row)
+            rows.append(row / max(norm, 1.0))
+        return np.stack(rows, axis=0)
+
+    monkeypatch.setattr(gate, "_hf_text_features", fake_hf_text_features)
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_public_adapter",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=8,
+        seed=27,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=32,
+        text_feature_mode="hf_last_mean",
+        adapter_target_mode="semantic_anchor_teacher",
+        feature_model="fake/local-model",
+        feature_device="cpu",
+        feature_dtype="float32",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.7,
+    )
+
+    summary = json.loads(
+        (
+            tmp_path
+            / "learned_synonym_dictionary_public_adapter"
+            / "learned_synonym_dictionary_packet_gate.json"
+        ).read_text()
+    )
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_public_adapter" / "core_to_holdout" / "summary.json").read_text()
+    )
+    assert payload["adapter_target_mode"] == "semantic_anchor_teacher"
+    assert summary["adapter_target_mode"] == "semantic_anchor_teacher"
+    assert direction["adapter_target_mode"] == "semantic_anchor_teacher"
+    assert "calibration_eval_exact_id_overlap_count" in direction["surface_overlap_audit"]
+    assert direction["surface_overlap_audit"]["calibration_eval_exact_id_overlap_count"] >= 0
+    assert "hf_last_mean" in calls
+
+
+def test_public_adapter_fit_does_not_touch_private_source_or_answers(monkeypatch) -> None:
+    def fail_answer_index(example: gate.Example) -> int:
+        raise AssertionError("public adapter fit should not inspect answer labels")
+
+    def fail_source_private_atoms(text: str, *, mode: str = "matched") -> dict[str, float]:
+        raise AssertionError("public adapter fit should not inspect private source logs")
+
+    monkeypatch.setattr(gate, "_answer_index", fail_answer_index)
+    monkeypatch.setattr(gate, "_source_private_atoms", fail_source_private_atoms)
+    examples = gate.make_benchmark(examples=12, candidates=4, seed=28, family_set="all")
+
+    dictionary = gate._fit_dictionary(
+        examples=examples,
+        feature_dim=32,
+        ridge=0.5,
+        calibration_atom_view="synonym_stress",
+        top_k=6,
+        min_score=0.0,
+        text_feature_mode="hashed",
+        adapter_target_mode="semantic_anchor_teacher",
+        receiver_mode="atom_ridge",
+        contrastive_negative_sources=0,
+        contrastive_rank=4,
+    )
+
+    assert dictionary.receiver_mode == "atom_ridge"
+    assert dictionary.weights.shape == (32, len(gate.ATOM_ORDER))
+
+
+def test_permuted_public_adapter_target_is_deterministic_negative_control() -> None:
+    text = "tie-breaking round toward larger value"
+    teacher = gate._semantic_anchor_atom_vector(text)
+    permuted_a = gate._permute_atom_vector(teacher, namespace="semantic-anchor-teacher-negative")
+    permuted_b = gate._permute_atom_vector(teacher, namespace="semantic-anchor-teacher-negative")
+
+    assert np.any(teacher)
+    assert np.array_equal(permuted_a, permuted_b)
+    assert not np.array_equal(teacher, permuted_a)
+
+
 def test_learned_synonym_dictionary_contrastive_receiver_records_mode(tmp_path) -> None:
     payload = run_gate(
         output_dir=tmp_path / "learned_synonym_dictionary_contrastive",

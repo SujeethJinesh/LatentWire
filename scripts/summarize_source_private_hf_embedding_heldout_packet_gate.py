@@ -65,6 +65,7 @@ def _flatten(run_dirs: list[pathlib.Path]) -> list[dict[str, Any]]:
                     "run_dir": str(run_dir.relative_to(ROOT)),
                     "feature_model": payload.get("feature_model"),
                     "text_feature_mode": payload["text_feature_mode"],
+                    "adapter_target_mode": payload.get("adapter_target_mode", "native_atoms"),
                     "receiver_mode": payload["receiver_mode"],
                     "min_decision_score": payload["min_decision_score"],
                     "top_k": payload["top_k"],
@@ -108,6 +109,10 @@ def _semantic_anchor_summary(path: pathlib.Path | None) -> dict[str, Any] | None
 
 def summarize(rows: list[dict[str, Any]], semantic_anchor: dict[str, Any] | None) -> dict[str, Any]:
     pass_rows = [row for row in rows if row["pass_gate"]]
+    has_public_adapter = any(row.get("adapter_target_mode", "native_atoms") != "native_atoms" for row in rows)
+    has_permuted_adapter = any(
+        row.get("adapter_target_mode") == "permuted_semantic_anchor_teacher" for row in rows
+    )
     near_miss_rows = [
         row
         for row in rows
@@ -126,6 +131,7 @@ def summarize(rows: list[dict[str, Any]], semantic_anchor: dict[str, Any] | None
                 "run_dir": row["run_dir"],
                 "feature_model": row["feature_model"],
                 "text_feature_mode": row["text_feature_mode"],
+                "adapter_target_mode": row.get("adapter_target_mode", "native_atoms"),
                 "receiver_mode": row["receiver_mode"],
                 "pass_rows": 0,
                 "direction_pass": {"core_to_holdout": False, "holdout_to_core": False, "same_family_all": False},
@@ -162,23 +168,44 @@ def summarize(rows: list[dict[str, Any]], semantic_anchor: dict[str, Any] | None
             for run in by_run.values()
         ),
         "interpretation": (
-            "Frozen embedding receivers recover part of the semantic-anchor held-out packet signal with clean "
-            "source-destroying controls, but none of the tested BGE/MiniLM variants clears the strict "
-            "bidirectional gate. This weakens the hypothesis that a generic frozen text embedding alone can "
-            "replace the explicit public semantic-anchor lexicon; the live next branch is a learned receiver "
-            "or a better public ontology calibration layer, not another fixed-basis packet tweak."
+            (
+                "Public semantic-anchor teacher adapters can produce large matched-packet lifts, but this sweep "
+                "does not clear the strict bidirectional gate. The permuted-teacher negative control also passes "
+                "some individual rows, so the branch is alive only if the next receiver adds candidate-local "
+                "normalization or residual/codebook conditioning that collapses shuffled, deranged, and permuted "
+                "controls while preserving the matched source packet."
+            )
+            if has_public_adapter and has_permuted_adapter
+            else (
+                "Public semantic-anchor teacher adapters can produce large matched-packet lifts, but this sweep "
+                "does not clear the strict bidirectional gate. The next branch should reduce broad false-positive "
+                "source matches with candidate-local normalization or receiver-conditioned residual codebooks."
+            )
+            if has_public_adapter
+            else (
+                "Frozen embedding receivers recover part of the semantic-anchor held-out packet signal with clean "
+                "source-destroying controls, but none of the tested BGE/MiniLM variants clears the strict "
+                "bidirectional gate. This weakens the hypothesis that a generic frozen text embedding alone can "
+                "replace the explicit public semantic-anchor lexicon; the live next branch is a learned receiver "
+                "or a better public ontology calibration layer, not another fixed-basis packet tweak."
+            )
         ),
     }
 
 
 def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     summary = payload["summary"]
+    title = (
+        "Public Adapter Held-Out Packet Summary"
+        if any(row.get("adapter_target_mode", "native_atoms") != "native_atoms" for row in payload["rows"])
+        else "Frozen Embedding Held-Out Packet Summary"
+    )
 
     def fmt(value: Any) -> str:
         return "n/a" if value is None else f"{float(value):.3f}"
 
     lines = [
-        "# Frozen Embedding Held-Out Packet Summary",
+        f"# {title}",
         "",
         f"- pass gate: `{summary['pass_gate']}`",
         f"- rows: `{summary['rows']}`",
@@ -199,13 +226,14 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
             "",
             "## Runs",
             "",
-            "| Run | Model | Mode | Pass rows | Direction pass | Max acc | Max delta | Max CI95 low | Min oracle |",
-            "|---|---|---|---:|---|---:|---:|---:|---:|",
+            "| Run | Model | Mode | Adapter target | Pass rows | Direction pass | Max acc | Max delta | Max CI95 low | Min oracle |",
+            "|---|---|---|---|---:|---|---:|---:|---:|---:|",
         ]
     )
     for row in summary["runs"]:
         lines.append(
             f"| `{row['run_dir']}` | {row['feature_model']} | `{row['text_feature_mode']}` | "
+            f"`{row['adapter_target_mode']}` | "
             f"{row['pass_rows']} | `{row['direction_pass']}` | {row['max_accuracy']:.3f} | "
             f"{row['max_delta_vs_target']:.3f} | {row['max_ci95_low_vs_target']:.3f} | {row['min_oracle']:.3f} |"
         )

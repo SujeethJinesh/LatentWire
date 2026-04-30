@@ -333,6 +333,15 @@
   holdout-to-core 4-byte row fails private-random-knockout lift reduction
   (`0.906`), so the next branch is learned public ontology calibration or
   receiver-conditioned residual codebooks.
+- Public semantic-anchor teacher adapter code, tests, references, memo, and
+  artifacts showing that learned public ontology calibration has signal but is
+  not yet a clean ICLR method. Across `36` public-adapter rows, there are `3`
+  pass rows and `3` near misses with no bidirectional pass. The best
+  semantic-teacher rows reach `0.875` matched-packet accuracy and `+0.625`
+  over target, but shuffled/deranged/private-random controls prevent
+  promotion, and the permuted-teacher negative control passes `2` individual
+  rows. The next branch is receiver-conditioned residual/codebook decoding with
+  candidate-local normalization.
 
 ## Notes
 

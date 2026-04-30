@@ -1321,5 +1321,12 @@
     "path": "references/545_frozen_embedding_heldout_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the frozen BGE/MiniLM held-out semantic receiver ablation, covering Sentence-BERT, MiniLM, BGE, C2C, QINCo, novelty boundaries, and the learned public ontology calibration next branch."
+  },
+  {
+    "num": 546,
+    "slug": "public_adapter_heldout_receiver_refs_20260430",
+    "path": "references/546_public_adapter_heldout_receiver_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the public semantic-anchor teacher adapter, covering Relative Representations, C2C, KVCOMM, QINCo, Perceiver/Flamingo/Q-Former, TurboQuant/QJL, novelty boundaries, and the receiver-conditioned residual-codebook next branch."
   }
 ]

@@ -70,6 +70,11 @@ JEPA_RECEIVER_MODES = {
     "jepa_query_resampler_control_regularized",
     "jepa_query_resampler_pool_contrastive",
 }
+ADAPTER_TARGET_MODES = {
+    "native_atoms",
+    "semantic_anchor_teacher",
+    "permuted_semantic_anchor_teacher",
+}
 
 HELDOUT_SYNONYM_REPLACEMENTS = (
     ("empty-list guard", "no-element collection safeguard"),
@@ -368,6 +373,23 @@ def _atom_vector(atoms: dict[str, float]) -> np.ndarray:
     return vector
 
 
+def _semantic_anchor_atom_vector(text: str) -> np.ndarray:
+    vector = np.zeros(len(ATOM_ORDER), dtype=np.float64)
+    for term, score in _semantic_anchor_terms(text).items():
+        if not term.startswith("anchor:"):
+            continue
+        atom = term.removeprefix("anchor:")
+        if atom in ATOM_TO_ID:
+            vector[ATOM_TO_ID[atom]] = max(vector[ATOM_TO_ID[atom]], float(score))
+    return vector
+
+
+def _permute_atom_vector(vector: np.ndarray, *, namespace: str) -> np.ndarray:
+    seed = int.from_bytes(hashlib.blake2b(namespace.encode("utf-8"), digest_size=8).digest(), "little")
+    permutation = np.random.default_rng(seed).permutation(len(ATOM_ORDER))
+    return vector[permutation]
+
+
 def _atoms_from_vector(vector: np.ndarray, *, top_k: int, min_score: float) -> dict[str, float]:
     if vector.size == 0:
         return {}
@@ -489,20 +511,27 @@ def _fit_ridge_dictionary(
     top_k: int,
     min_score: float,
     text_feature_mode: str,
+    adapter_target_mode: str = "native_atoms",
 ) -> LearnedSynonymDictionary:
+    if adapter_target_mode not in ADAPTER_TARGET_MODES:
+        raise ValueError(f"unknown adapter target mode {adapter_target_mode!r}")
     x_rows: list[np.ndarray] = []
     y_rows: list[np.ndarray] = []
     for example in examples:
         for candidate in example.candidates:
-            native_atoms = _candidate_atoms(candidate.patch_intent, candidate_atom_view="native")
-            y = _atom_vector(native_atoms)
-            if not np.any(y):
-                continue
             texts = [candidate.patch_intent]
             calibrated = _candidate_surface_text(candidate.patch_intent, candidate_atom_view=calibration_atom_view)
             if calibrated != candidate.patch_intent:
                 texts.append(calibrated)
             for text in texts:
+                if adapter_target_mode == "native_atoms":
+                    y = _atom_vector(_candidate_atoms(candidate.patch_intent, candidate_atom_view="native"))
+                else:
+                    y = _semantic_anchor_atom_vector(text)
+                    if adapter_target_mode == "permuted_semantic_anchor_teacher":
+                        y = _permute_atom_vector(y, namespace="semantic-anchor-teacher-negative")
+                if not np.any(y):
+                    continue
                 x_rows.append(_featurize_text(text, dim=feature_dim, text_feature_mode=text_feature_mode))
                 y_rows.append(y)
     if not x_rows:
@@ -1422,6 +1451,7 @@ def _fit_dictionary(
     min_score: float,
     text_feature_mode: str,
     receiver_mode: str,
+    adapter_target_mode: str = "native_atoms",
     contrastive_negative_sources: int,
     contrastive_rank: int,
     low_rank_factor_epochs: int = 250,
@@ -1435,6 +1465,10 @@ def _fit_dictionary(
     jepa_weight_decay: float = 0.001,
     seed: int = 0,
 ) -> LearnedSynonymDictionary:
+    if adapter_target_mode not in ADAPTER_TARGET_MODES:
+        raise ValueError(f"unknown adapter target mode {adapter_target_mode!r}")
+    if adapter_target_mode != "native_atoms" and receiver_mode != "atom_ridge":
+        raise ValueError("adapter_target_mode is only supported with the public atom_ridge receiver")
     if receiver_mode == "atom_ridge":
         return _fit_ridge_dictionary(
             examples=examples,
@@ -1444,6 +1478,7 @@ def _fit_dictionary(
             top_k=top_k,
             min_score=min_score,
             text_feature_mode=text_feature_mode,
+            adapter_target_mode=adapter_target_mode,
         )
     if receiver_mode == "contrastive_bilinear":
         return _fit_contrastive_bilinear_dictionary(
@@ -1552,6 +1587,9 @@ def _surface_overlap_audit(
     calibration_atom_view: str,
     candidate_atom_view: str,
 ) -> dict[str, Any]:
+    calibration_ids = {example.example_id for example in calibration_rows}
+    eval_ids = [example.example_id for example in eval_rows]
+    exact_id_overlap = [example_id for example_id in eval_ids if example_id in calibration_ids]
     calibration_surfaces = {
         _candidate_surface_text(candidate.patch_intent, candidate_atom_view=calibration_atom_view).lower()
         for example in calibration_rows
@@ -1583,6 +1621,10 @@ def _surface_overlap_audit(
     return {
         "calibration_atom_view": calibration_atom_view,
         "candidate_atom_view": candidate_atom_view,
+        "calibration_example_count": len(calibration_rows),
+        "eval_example_count": len(eval_rows),
+        "calibration_eval_exact_id_overlap_count": len(exact_id_overlap),
+        "calibration_eval_exact_id_overlap_sample": exact_id_overlap[:10],
         "calibration_surface_count": len(calibration_surfaces),
         "eval_surface_count": len(eval_surfaces),
         "exact_eval_surface_overlap_count": len(exact_overlap),
@@ -1866,6 +1908,7 @@ def _run_direction(
     top_k: int,
     min_score: float,
     text_feature_mode: str,
+    adapter_target_mode: str,
     min_decision_score: float,
     receiver_mode: str,
     contrastive_negative_sources: int,
@@ -1897,6 +1940,7 @@ def _run_direction(
         top_k=top_k,
         min_score=min_score,
         text_feature_mode=text_feature_mode,
+        adapter_target_mode=adapter_target_mode,
         receiver_mode=receiver_mode,
         contrastive_negative_sources=contrastive_negative_sources,
         contrastive_rank=contrastive_rank,
@@ -1964,6 +2008,7 @@ def _run_direction(
         "surface_overlap_audit": surface_overlap_audit,
         "feature_dim": feature_dim,
         "text_feature_mode": text_feature_mode,
+        "adapter_target_mode": adapter_target_mode,
         "receiver_mode": receiver_mode,
         "contrastive_negative_sources": contrastive_negative_sources,
         "contrastive_rank": contrastive_rank if receiver_mode in {"contrastive_low_rank_query", "contrastive_low_rank_factor"} else None,
@@ -2026,6 +2071,7 @@ def run_gate(
     min_score: float,
     calibration_atom_view: str | None = None,
     text_feature_mode: str = "hashed",
+    adapter_target_mode: str = "native_atoms",
     receiver_mode: str = "atom_ridge",
     contrastive_negative_sources: int = 0,
     contrastive_rank: int = 4,
@@ -2081,6 +2127,7 @@ def run_gate(
             top_k=top_k,
             min_score=min_score,
             text_feature_mode=text_feature_mode,
+            adapter_target_mode=adapter_target_mode,
             receiver_mode=receiver_mode,
             contrastive_negative_sources=contrastive_negative_sources,
             contrastive_rank=contrastive_rank,
@@ -2141,6 +2188,7 @@ def run_gate(
         "calibration_examples": calibration_examples,
         "feature_dim": feature_dim,
         "text_feature_mode": text_feature_mode,
+        "adapter_target_mode": adapter_target_mode,
         "receiver_mode": receiver_mode,
         "contrastive_negative_sources": contrastive_negative_sources,
         "contrastive_rank": contrastive_rank if receiver_mode in {"contrastive_low_rank_query", "contrastive_low_rank_factor"} else None,
@@ -2234,6 +2282,7 @@ def _write_direction_markdown(path: pathlib.Path, payload: dict[str, Any]) -> No
         f"- calibration atom view: `{payload['calibration_atom_view']}`",
         f"- candidate calibration: `{payload['candidate_calibration']}`",
         f"- text feature mode: `{payload['text_feature_mode']}`",
+        f"- adapter target mode: `{payload['adapter_target_mode']}`",
         f"- receiver mode: `{payload['receiver_mode']}`",
         f"- contrastive negative sources: `{payload['contrastive_negative_sources']}`",
         f"- contrastive rank: `{payload['contrastive_rank']}`",
@@ -2251,6 +2300,7 @@ def _write_direction_markdown(path: pathlib.Path, payload: dict[str, Any]) -> No
         f"- JEPA context variance: `{payload['jepa_context_variance']}`",
         f"- receiver effective rank: `{payload['receiver_effective_rank']}`",
         f"- min decision score: `{payload['min_decision_score']}`",
+        f"- calibration/eval exact ID overlap count: `{payload['surface_overlap_audit']['calibration_eval_exact_id_overlap_count']}`",
         f"- exact eval surface overlap count: `{payload['surface_overlap_audit']['exact_eval_surface_overlap_count']}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
@@ -2282,6 +2332,7 @@ def _write_gate_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- calibration atom view: `{payload['calibration_atom_view']}`",
         f"- candidate calibration: `{payload['candidate_calibration']}`",
         f"- text feature mode: `{payload['text_feature_mode']}`",
+        f"- adapter target mode: `{payload['adapter_target_mode']}`",
         f"- receiver mode: `{payload['receiver_mode']}`",
         f"- contrastive negative sources: `{payload['contrastive_negative_sources']}`",
         f"- contrastive rank: `{payload['contrastive_rank']}`",
@@ -2354,6 +2405,16 @@ def main() -> None:
         help=(
             "Target-side candidate dictionary features. semantic_anchor adds public atom-anchor expansions; "
             "hf_* uses frozen Transformer text features; hashed_hf_* combines generic lexical hashing with frozen embeddings."
+        ),
+    )
+    parser.add_argument(
+        "--adapter-target-mode",
+        choices=["native_atoms", "semantic_anchor_teacher", "permuted_semantic_anchor_teacher"],
+        default="native_atoms",
+        help=(
+            "Public receiver supervision target for atom_ridge. semantic_anchor_teacher distills public "
+            "semantic-anchor coordinates from calibration surfaces into the chosen features; permuted_* is "
+            "a negative control that should collapse."
         ),
     )
     parser.add_argument("--feature-model", default="BAAI/bge-small-en")
@@ -2464,6 +2525,7 @@ def main() -> None:
         calibration_examples=args.calibration_examples,
         feature_dim=args.feature_dim,
         text_feature_mode=args.text_feature_mode,
+        adapter_target_mode=args.adapter_target_mode,
         receiver_mode=args.receiver_mode,
         contrastive_negative_sources=args.contrastive_negative_sources,
         contrastive_rank=args.contrastive_rank,
