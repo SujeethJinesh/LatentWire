@@ -16258,3 +16258,120 @@ valid output rate but collapses to option priors and gives no matched lift
 cross-family public-only leakage is weakened, but comfortable ICLR still needs a
 balanced model-mediated or learned receiver that passes strict validity at n64+
 and native serving telemetry.
+
+Update `2026-04-30`: the balanced target receiver now has a stricter frozen
+Qwen3 binary-verifier row that passes the strict-small gate over two seeds. I
+added `candidate_binary_logprob` to
+`scripts/run_source_private_tool_trace_target_decoder_smoke.py`: for each
+candidate, the target model scores a yes/no equality question between the
+2-byte source packet and the candidate's public diagnostic handle, then falls
+back to the target prior unless the best yes-minus-no margin is positive. The
+first n4 diagnostic without this threshold failed because random packets chose
+the least-negative candidate; the calibrated fallback fixed that control
+failure. I also added leakage-focused tests for packet validity, binary prompt
+answer-label exclusion, token-surface scoring, and fallback behavior. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_choice_logprob_cpu/`,
+`qwen3_seed29_n32_binary_logprob_cpu/`,
+`qwen3_seed29_n64_binary_logprob_cpu/`,
+`qwen3_seed31_n64_binary_logprob_cpu/`, and
+`paired_uncertainty_qwen3_n64_binary_logprob_cpu_2seed/`; memo:
+`paper/source_private_balanced_binary_verifier_receiver_20260430.md`;
+references:
+`references/526_balanced_binary_verifier_receiver_refs_20260430.md`. Outcome:
+choice-token likelihood is pruned (`0.250` matched, equal to target/control).
+The calibrated binary verifier passes n32 seed29 and n64 seeds 29/31. The
+combined n64 paired summary has `2/2` pass rows, matched packet `1.000`, target
+`0.250`, best control at most `0.266`, minimum matched-best-control delta
+`+0.734`, minimum CI95 lower bound `+0.625` vs best control, and valid rate
+`1.000`. Interpretation: promote this as model-mediated packet-consumption
+evidence for the balanced diagnostic protocol, but not as broad latent transfer
+or a production latency claim; the Mac CPU receiver uses four target forward
+passes per condition and has p50 matched latency around `1.1 s`.
+
+Update `2026-04-30`: extended the calibrated binary-verifier receiver to the
+balanced cross-family core/holdout artifact and added the reviewer-critical
+deranged public-table control. Harness changes:
+`scripts/run_source_private_tool_trace_target_decoder_smoke.py` now supports
+`deranged_candidate_diag_table`, which sends the real source packet but rotates
+candidate `handles_repair_diag` values, and
+`random_noncandidate_same_byte`, which guarantees no accidental random-code
+collision. `scripts/summarize_source_private_target_decoder_uncertainty.py`
+counts both as controls when present. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_core_n64_binary_logprob_cpu/`,
+`qwen3_seed29_holdout_n64_binary_logprob_cpu/`,
+`paired_uncertainty_qwen3_seed29_core_holdout_n64_binary_logprob_cpu/`,
+`qwen3_seed29_core_n64_binary_logprob_deranged_cpu/`,
+`qwen3_seed29_holdout_n64_binary_logprob_deranged_cpu/`, and
+`paired_uncertainty_qwen3_seed29_core_holdout_n64_binary_logprob_deranged_cpu/`;
+memo:
+`paper/source_private_binary_verifier_cross_family_deranged_20260430.md`;
+references:
+`references/527_binary_receiver_deranged_and_next_branches_refs_20260430.md`.
+Outcome: exact-table binary receiver passes core and holdout n64 (`1.000`
+matched, `0.250` target/best control, min CI95 low `+0.641`, valid `1.000`).
+The deranged-control gate also passes: core and holdout stay `1.000` on matched
+packets, collision-free random packets stay at `0.250`, and deranged public
+tables drop to `0.000`. Interpretation: this strengthens source causality and
+rules out target-prior/random collision explanations, but it also confirms the
+claim boundary: the receiver follows the public side-information table; this is
+not protocol-free semantic latent transfer.
+
+Update `2026-04-30`: ran the decisive balanced `diag_only` public-separation
+gate for the learned masked-consistency receiver and pruned the branch as a
+headline ICLR contribution. New summary script:
+`scripts/summarize_source_private_masked_consistency_public_gate.py`; artifacts:
+`results/source_private_masked_consistency_diag_only_public_gate_20260430/`;
+memo:
+`paper/source_private_masked_consistency_diag_only_public_gate_20260430.md`;
+references:
+`references/528_masked_consistency_pruning_and_next_systems_refs_20260430.md`.
+Outcome: the n500 gate fails over two disjoint seed pairs. Learned matched
+accuracy is `0.336` and `0.302` versus target `0.250`, with public-only rows
+below target (`0.178` and `0.142`) on the same eval IDs. The failure is not a
+public-only shortcut; it is an encoder/interface failure. Oracle packet decoding
+is `1.000`, but matched source packets are about `0.243-0.273` bit fraction
+away from oracle packets. Budget `16` only reaches `0.366`, and
+`--fit-intercept` reaches `0.346`, so simple rate/intercept tuning is not
+enough. Interpretation: keep masked consistency as a negative/method-depth
+diagnostic; do not count it among the three headline technical contributions.
+Next highest-value Mac gate is a packet trace-card v2 systems artifact or a new
+posterior/flow/Q-Former-style learned receiver with source-control negatives.
+
+Update `2026-04-30`: added the systems packet trace-card v2 and a local Mac
+packet-ring transport microbench. Code:
+`scripts/build_source_private_packet_trace_card_v2.py`,
+`scripts/source_private_packet_ring_transport_microbench.c`, and
+`scripts/build_source_private_mac_packet_ring_transport_microbench.py`;
+artifacts: `results/source_private_packet_trace_card_v2_20260430/` and
+`results/source_private_mac_packet_ring_transport_microbench_20260430/`; memo:
+`paper/source_private_packet_trace_card_v2_20260430.md`; references:
+`references/529_packet_trace_card_v2_refs_20260430.md`. Outcome: trace card
+passes `7/7` checks. It reports 2-byte raw packets, `64B` single-request
+cache-line traffic, batch-64 packet traffic of `5.00` line bytes/request and
+`6.00` DMA bytes/request, query-aware text at `7.0x` raw bytes but `1.0x`
+cache-line bytes, full hidden-log relay at `183.25x` raw and `6.0x` line bytes,
+and KV byte floors at `10752x` raw / `336x` line bytes. The local C microbench
+passes with five repeats: packet batch64 p95 is `0.65 ns/request`, query-aware
+text is `1.02x` packet p95, full logs are `8.80x` packet p50, and QJL/KV floor
+is `671.23x` packet p50. Interpretation: promote the systems contribution as
+source-private boundary traffic with explicit transfer quanta, batch
+amortization, privacy exposure, and non-claims. This does not create production
+GPU serving evidence or solve the learned-receiver blocker.
+
+Update `2026-04-30`: ran the learned contrastive semantic-anchor receiver probe
+and pruned the exact bilinear receiver family as a headline contribution. Memo:
+`paper/source_private_contrastive_receiver_pruning_20260430.md`; references:
+`references/530_contrastive_receiver_pruning_refs_20260430.md`; artifacts:
+`results/source_private_contrastive_semantic_anchor_small_gate_20260430_n128_noneg/`,
+`results/source_private_contrastive_semantic_anchor_small_gate_20260430_n128_ctrlneg/`,
+and
+`results/source_private_contrastive_semantic_anchor_small_gate_20260430_n128_noneg_threshold070/`.
+Outcome: the unconstrained contrastive receiver keeps strong matched signal
+(`1.000` max learned accuracy at n128) but fails core->holdout because atom-ID
+derangement rises to `0.375`; adding two shuffled-source negatives fixes strict
+controls but drops core->holdout matched accuracy to `0.375`; raising the
+decision threshold to `0.70` suppresses controls but also kills matched lift.
+Interpretation: do not spend another cycle tuning this bilinear receiver
+without a new mechanism. The promoted contribution stack remains the
+source-private benchmark/protocol, balanced direct packet plus frozen binary
+verifier/semantic-anchor receiver, and hardware-readable packet trace-card.

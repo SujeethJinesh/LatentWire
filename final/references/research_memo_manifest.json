@@ -1209,5 +1209,12 @@
     "path": "references/529_packet_trace_card_v2_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source systems memo for packet trace card v2 and Mac packet-ring transport microbench, covering TurboQuant, QJL, KIVI, KVQuant, vLLM/PagedAttention, FlashAttention, DistServe, and Apple unified-memory hardware context."
+  },
+  {
+    "num": 530,
+    "slug": "contrastive_receiver_pruning_refs_20260430",
+    "path": "references/530_contrastive_receiver_pruning_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for pruning the learned contrastive semantic-anchor receiver, covering sparse crosscoders, universal SAEs, symmetry/orbit crosscoders, SimCSE, Wyner-Ziv side-information coding, OPQ, and C2C boundaries."
   }
 ]

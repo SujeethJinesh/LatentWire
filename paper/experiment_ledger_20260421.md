@@ -16357,3 +16357,21 @@ is `671.23x` packet p50. Interpretation: promote the systems contribution as
 source-private boundary traffic with explicit transfer quanta, batch
 amortization, privacy exposure, and non-claims. This does not create production
 GPU serving evidence or solve the learned-receiver blocker.
+
+Update `2026-04-30`: ran the learned contrastive semantic-anchor receiver probe
+and pruned the exact bilinear receiver family as a headline contribution. Memo:
+`paper/source_private_contrastive_receiver_pruning_20260430.md`; references:
+`references/530_contrastive_receiver_pruning_refs_20260430.md`; artifacts:
+`results/source_private_contrastive_semantic_anchor_small_gate_20260430_n128_noneg/`,
+`results/source_private_contrastive_semantic_anchor_small_gate_20260430_n128_ctrlneg/`,
+and
+`results/source_private_contrastive_semantic_anchor_small_gate_20260430_n128_noneg_threshold070/`.
+Outcome: the unconstrained contrastive receiver keeps strong matched signal
+(`1.000` max learned accuracy at n128) but fails core->holdout because atom-ID
+derangement rises to `0.375`; adding two shuffled-source negatives fixes strict
+controls but drops core->holdout matched accuracy to `0.375`; raising the
+decision threshold to `0.70` suppresses controls but also kills matched lift.
+Interpretation: do not spend another cycle tuning this bilinear receiver
+without a new mechanism. The promoted contribution stack remains the
+source-private benchmark/protocol, balanced direct packet plus frozen binary
+verifier/semantic-anchor receiver, and hardware-readable packet trace-card.

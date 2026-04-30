@@ -64,6 +64,19 @@ hardware-readable boundary-traffic trace card, not just deterministic byte
 counting. Remaining ICLR gap: production NVIDIA/vLLM telemetry or a materially
 different learned receiver.
 
+Update `2026-04-30`: the learned contrastive semantic-anchor receiver was
+tested as the most direct less-hand-shaped replacement for the explicit
+semantic-anchor overlap decoder and is pruned for now. The n128 unconstrained
+bilinear receiver has real source signal but fails a destructive control
+(`atom_id_derangement=0.375` in core->holdout). Adding shuffled-source
+negatives restores controls but collapses core->holdout matched accuracy to
+`0.375`; a stricter target-preservation threshold collapses matched lift. This
+keeps the paper honest: the semantic-anchor receiver remains the promoted
+held-out paraphrase result, while plain contrastive compatibility is a negative
+ablation. Readiness does not improve; the full-paper gap remains a materially
+different learned/model-mediated receiver or larger frozen Qwen binary-verifier
+scale-up plus native serving telemetry.
+
 ## Current Paper Story
 
 The honest current story is conditional innovation rather than proven latent
