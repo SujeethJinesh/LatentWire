@@ -61,3 +61,30 @@ def test_candidate_embedding_receiver_writes_artifacts(tmp_path) -> None:
     assert summary["budget_summaries"][0]["budget_bytes"] == 2
     assert "predictions_budget2.jsonl" in manifest["artifacts"]
     assert (output_dir / "predictions_budget2.jsonl").exists()
+
+
+def test_candidate_embedding_receiver_supports_learned_anchor_relative(tmp_path) -> None:
+    output_dir = tmp_path / "receiver_learned_anchor"
+    payload = run_gate(
+        output_dir=output_dir,
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="core",
+        eval_family_set="holdout",
+        candidates=4,
+        feature_dim=128,
+        candidate_feature_dims=0,
+        receiver_kind="code_similarity",
+        packet_feature_mode="learned_anchor_relative",
+        anchor_count=32,
+        budgets=[2],
+        train_seed=7,
+        eval_seed=8,
+        ridge=1e-2,
+    )
+
+    summary = json.loads((output_dir / "summary.json").read_text())
+    assert payload["packet_feature_mode"] == "learned_anchor_relative"
+    assert summary["packet_dim"] == 32
+    assert summary["anchor_count"] == 32
+    assert summary["anchor_build_mode"] == "deterministic_spherical_kmeans"

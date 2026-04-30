@@ -15699,3 +15699,23 @@ this strengthens the systems contribution as a rate/assumption frontier, but it
 does not claim native wins over KV compression, C2C, KVComm, TurboQuant, QJL, or
 prompt-compression methods. Next exact gate remains the learned/frozen
 embedding receiver ablation for a less symbolic communication interface.
+
+Follow-up `2026-04-30`: implemented and tested a deterministic learned
+anchor-relative receiver ablation for the hard core-to-holdout split. Code:
+`scripts/run_source_private_candidate_embedding_receiver.py` now supports
+`--packet-feature-mode learned_anchor_relative`, which builds a public
+farthest-first plus spherical-k-means anchor basis from training candidate
+features. Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_candidate_embedding_receiver.py -q`
+passed (`3 passed`). Runs:
+`results/source_private_candidate_embedding_receiver_20260430/heldout_core_to_holdout_learned_anchor_relative_code_similarity_budget8_seed29_30`
+and
+`results/source_private_candidate_embedding_receiver_20260430/heldout_core_to_holdout_learned_anchor_relative_ridge_budget8_seed29_30`.
+Both fail strict pass at `n=512`, `8` bytes, candidate feature dims `0`.
+Code-similarity: matched `0.250`, target `0.250`, best destructive `0.268`,
+oracle `0.723`. Ridge: matched `0.250`, target `0.250`, best destructive
+`0.336`, oracle `0.516`. Exact ID parity holds. Interpretation: public learned
+anchor geometry does not recover the semantic-anchor gain; the ridge variant
+also leaks through answer/text controls. Prune this adjacent embedding-receiver
+variant unless a new frozen LLM embedding, activation feature, or contrastive
+source-control signal changes the hypothesis.

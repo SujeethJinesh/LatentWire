@@ -116,6 +116,48 @@ def _build_anchor_matrix(train_examples: list[Example], *, feature_dim: int, anc
     return np.tile(candidates, (repeats, 1))[:anchor_count].astype(np.float32)
 
 
+def _build_learned_anchor_matrix(
+    train_examples: list[Example],
+    *,
+    feature_dim: int,
+    anchor_count: int,
+    seed: int,
+    iterations: int = 12,
+) -> np.ndarray:
+    candidates = np.concatenate([_candidate_matrix_mode(example, feature_dim) for example in train_examples], axis=0).astype(
+        np.float32
+    )
+    if len(candidates) == 0:
+        return np.zeros((anchor_count, feature_dim), dtype=np.float32)
+    if len(candidates) < anchor_count:
+        repeats = int(np.ceil(anchor_count / len(candidates)))
+        candidates = np.tile(candidates, (repeats, 1))[:anchor_count]
+
+    # Deterministic farthest-first initialization gives a public, reproducible
+    # anchor basis without using answer labels.
+    start = seed % len(candidates)
+    selected = [start]
+    nearest = candidates @ candidates[start]
+    while len(selected) < anchor_count:
+        next_idx = int(np.argmin(nearest))
+        selected.append(next_idx)
+        nearest = np.maximum(nearest, candidates @ candidates[next_idx])
+    centers = candidates[selected].astype(np.float32)
+
+    for _ in range(iterations):
+        assignments = np.argmax(candidates @ centers.T, axis=1)
+        new_centers = np.zeros_like(centers)
+        for idx in range(anchor_count):
+            members = candidates[assignments == idx]
+            if len(members) == 0:
+                similarity = candidates @ centers.T
+                new_centers[idx] = candidates[int(np.argmin(np.max(similarity, axis=1)))]
+            else:
+                new_centers[idx] = members.mean(axis=0)
+        centers = _normalize_rows(new_centers).astype(np.float32)
+    return centers
+
+
 def _packet_candidate_matrix(
     example: Example,
     *,
@@ -131,9 +173,9 @@ def _packet_candidate_matrix(
     candidates = _candidate_matrix_mode(example, feature_dim)
     if packet_feature_mode == "hashed":
         matrix = candidates
-    elif packet_feature_mode == "anchor_relative":
+    elif packet_feature_mode in {"anchor_relative", "learned_anchor_relative"}:
         if anchor_matrix is None:
-            raise ValueError("anchor_relative packet features require an anchor matrix")
+            raise ValueError(f"{packet_feature_mode} packet features require an anchor matrix")
         matrix = _normalize_rows(candidates @ anchor_matrix.T).astype(np.float32)
     else:
         raise ValueError(f"unknown packet feature mode {packet_feature_mode!r}")
@@ -733,9 +775,20 @@ def run_gate(
     eval_rows = make_benchmark(examples=eval_examples, candidates=candidates, seed=eval_seed, family_set=eval_family_set)
     packet_dim = feature_dim
     anchor_matrix = None
+    anchor_build_mode = "none"
     if packet_feature_mode == "anchor_relative":
         packet_dim = anchor_count
         anchor_matrix = _build_anchor_matrix(train_rows, feature_dim=feature_dim, anchor_count=anchor_count)
+        anchor_build_mode = "first_train_candidates"
+    elif packet_feature_mode == "learned_anchor_relative":
+        packet_dim = anchor_count
+        anchor_matrix = _build_learned_anchor_matrix(
+            train_rows,
+            feature_dim=feature_dim,
+            anchor_count=anchor_count,
+            seed=train_seed * 1009 + eval_seed,
+        )
+        anchor_build_mode = "deterministic_spherical_kmeans"
     encoder = _fit_cached_ridge_encoder(
         train_rows,
         feature_dim=feature_dim,
@@ -863,7 +916,8 @@ def run_gate(
         "feature_dim": feature_dim,
         "packet_feature_mode": packet_feature_mode,
         "packet_dim": packet_dim,
-        "anchor_count": anchor_count if packet_feature_mode == "anchor_relative" else 0,
+        "anchor_count": anchor_count if packet_feature_mode in {"anchor_relative", "learned_anchor_relative"} else 0,
+        "anchor_build_mode": anchor_build_mode,
         "candidate_feature_dims": candidate_feature_dims,
         "receiver_kind": receiver_kind,
         "budgets": budgets,
@@ -951,7 +1005,11 @@ def main() -> None:
     parser.add_argument("--feature-dim", type=int, default=512)
     parser.add_argument("--candidate-feature-dims", type=int, default=32)
     parser.add_argument("--receiver-kind", choices=["ridge", "code_similarity"], default="ridge")
-    parser.add_argument("--packet-feature-mode", choices=["hashed", "anchor_relative"], default="hashed")
+    parser.add_argument(
+        "--packet-feature-mode",
+        choices=["hashed", "anchor_relative", "learned_anchor_relative"],
+        default="hashed",
+    )
     parser.add_argument("--anchor-count", type=int, default=128)
     parser.add_argument("--budgets", type=int, nargs="+", default=[2, 4, 6])
     parser.add_argument("--train-seed", type=int, default=29)

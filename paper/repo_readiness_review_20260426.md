@@ -138,6 +138,18 @@ is a learned/frozen embedding or activation receiver that keeps the current
 control discipline, plus one cross-family model pair or native GPU systems
 comparison when available.
 
+Update `2026-04-30`: a learned public anchor-relative receiver was implemented
+and pruned on the hard held-out direction. The new
+`learned_anchor_relative` mode builds deterministic spherical-k-means anchors
+from public training candidates, then decodes an 8-byte packet with either
+code-similarity or ridge. On core-to-holdout `n=512`, both variants stay at
+target (`0.250`) while oracle headroom is only `0.723` for code-similarity and
+`0.516` for ridge; ridge also has source-destroying control leakage
+(`answer_only=0.336`). This strengthens the paper's honesty and narrows the
+next blocker: simple public embedding geometry is not enough. The next
+high-value method branch should use frozen LLM embeddings/activations or a
+contrastive source-control objective, not more tuning of this receiver family.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does
