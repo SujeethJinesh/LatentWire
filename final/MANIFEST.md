@@ -296,6 +296,13 @@
   hashes are invariant across batch sizes `1/8/64/256`, and 7-byte packet
   records amortize to `7.0` bytes/request at batch256 under 128B burst
   accounting.
+- PQ packet transport plus receiver waterfall code, tests, references, memo,
+  and artifacts joining the Mac packet-ring transport with the PQ receiver
+  microbench: the pass gate is `true`, 7-byte PQ packet records move at
+  batch64 p95 `0.6609 ns/request`, receiver batch64 p50 is
+  `0.01628 ms/request`, receiver mismatches are `0`, query-aware text is
+  `2.00x` record bytes and exposes private text, full-log transport is `8.34x`
+  PQ p50, and the QJL-style KV byte floor is `622.05x` PQ p50.
 
 ## Notes
 

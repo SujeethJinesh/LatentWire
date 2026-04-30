@@ -1286,5 +1286,12 @@
     "path": "references/540_pq_receiver_batch_microbench_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the PQ receiver batch microbench, covering PQ/OPQ, Hadamard/rotation quantization, TurboQuant/QJL/KIVI/KVQuant, C2C/KVComm, vLLM/PagedAttention, DistServe, FlashAttention, receiver-kernel novelty boundaries, and GPU-serving non-claims."
+  },
+  {
+    "num": 541,
+    "slug": "pq_transport_receiver_waterfall_refs_20260430",
+    "path": "references/541_pq_transport_receiver_waterfall_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the joined PQ packet transport plus receiver waterfall, covering PQ/OPQ, TurboQuant/QJL/KIVI/KVQuant, C2C/KVComm/KVCOMM/Q-KVComm, vLLM/PagedAttention, DistServe, FlashAttention, CacheGen, Infinite-LLM, LMCache, and side-information coding boundaries."
   }
 ]

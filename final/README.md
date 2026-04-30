@@ -381,3 +381,17 @@ The reproducibility snapshot is current through the scalar-packet compression
 gate. The paper is not yet final-submission complete: the remaining blocker is
 research evidence, specifically scalar-packet repeats and stricter
 generalization/leakage gates before venue upload.
+
+## 2026-04-30 PQ Systems Update
+
+The latest snapshot adds the geometry-mitigated PQ packet systems path. The
+joined transport plus receiver waterfall passes for 7-byte source-private PQ
+records: batch64 packet transport p95 is `0.6609 ns/request`, receiver batch64
+p50 is `0.01628 ms/request`, receiver mismatches are `0`, query-aware text is
+`2.00x` record bytes and exposes private text, and the QJL-style KV byte floor
+is `622.05x` PQ transport p50 in the Mac packet-ring microbench.
+
+This strengthens the COLM-ready story as source-private packet communication
+with concrete systems accounting. The ICLR blocker remains evidence for a
+learned or frozen model-mediated receiver beyond deterministic public-table
+decode, or native NVIDIA/vLLM serving telemetry.

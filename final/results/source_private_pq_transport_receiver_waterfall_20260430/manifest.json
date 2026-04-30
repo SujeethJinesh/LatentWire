@@ -1,0 +1,37 @@
+{
+  "artifact_sha256": {
+    "pq_transport_receiver_waterfall.csv": "dc9b87fdce6a3a4a99536ab06013d6ff80b7cf7e373ed03a18272411b4999526",
+    "pq_transport_receiver_waterfall.json": "7c090da2473b0b811a9119e480186a263a405e3ac9431231a7e11dee1cd817cd",
+    "pq_transport_receiver_waterfall.md": "d9ca67bdcd3c56f4bd1b24514989987728962df4eea29024473cd84358d56789"
+  },
+  "artifacts": [
+    "pq_transport_receiver_waterfall.json",
+    "pq_transport_receiver_waterfall.md",
+    "pq_transport_receiver_waterfall.csv",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_pq_transport_receiver_waterfall",
+  "headline": {
+    "batch_size": 64,
+    "full_log_p50_ratio_vs_pq_transport": 8.336692736631177,
+    "full_log_record_ratio_vs_pq": 52.857142857142854,
+    "kv_floor_p50_ratio_vs_pq_transport": 622.051558523728,
+    "kv_floor_record_ratio_vs_pq": 3072.0,
+    "max_receiver_mismatch_count": 0,
+    "pass_gate": true,
+    "pq_receiver_batch64_p50_ms_per_request": 0.01627513765575154,
+    "pq_receiver_resident_p50_ms_per_request": 0.01666697789914906,
+    "pq_record_bytes": 7,
+    "pq_transport_batch64_dma_bytes_per_request": 8.0,
+    "pq_transport_batch64_line_bytes_per_request": 7.0,
+    "pq_transport_batch64_p95_ns_per_request": 0.660897,
+    "query_text_exposes_private_text": true,
+    "query_text_p95_ratio_vs_pq_transport": 1.0468771987162901,
+    "query_text_record_ratio_vs_pq": 2.0,
+    "receiver_pass_gate": true,
+    "transport_pass_gate": true,
+    "transport_share_of_receiver_batch64_p50": 4.06077671340889e-05
+  },
+  "pass_gate": true
+}

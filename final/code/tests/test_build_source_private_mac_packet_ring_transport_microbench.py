@@ -13,6 +13,13 @@ def test_augment_rows_computes_same_batch_ratios() -> None:
             "p95_ns_per_request": 12.0,
         },
         {
+            "profile": "pq_packet_4b_payload_7b_record",
+            "record_bytes": 7,
+            "batch_size": 64,
+            "p50_ns_per_request": 11.0,
+            "p95_ns_per_request": 13.0,
+        },
+        {
             "profile": "full_hidden_log_370b",
             "record_bytes": 370,
             "batch_size": 64,
@@ -28,3 +35,6 @@ def test_augment_rows_computes_same_batch_ratios() -> None:
     assert full["dma_bytes_per_request"] == 370.0
     assert full["ratio_p50_vs_packet_same_batch"] == 4.0
     assert full["ratio_p95_vs_packet_same_batch"] == 5.0
+    pq = next(row for row in augmented if row["profile"] == "pq_packet_4b_payload_7b_record")
+    assert pq["line_bytes_per_request"] == 7.0
+    assert pq["dma_bytes_per_request"] == 8.0

@@ -3387,3 +3387,24 @@ larger frozen-verifier scale, a protected-Hadamard/OPQ batch systems
 microbench, or NVIDIA/vLLM serving telemetry. Next exact gate on the Mac:
 protected-Hadamard/OPQ PQ receiver batch microbench at batch sizes
 `1/8/64/256`, with exact prediction parity and cache-line/DMA accounting.
+
+Update `2026-04-30`: the Mac-local systems gate after that receiver batch
+microbench is now closed by the joined PQ transport plus receiver waterfall.
+New artifact:
+`results/source_private_pq_transport_receiver_waterfall_20260430/`; supporting
+transport artifact:
+`results/source_private_mac_packet_ring_transport_microbench_pq7_20260430/`;
+memo:
+`paper/source_private_pq_transport_receiver_waterfall_20260430.md`;
+references:
+`references/541_pq_transport_receiver_waterfall_refs_20260430.md`. The
+waterfall pass gate is `true`: 7-byte PQ packet records move at batch64 p95
+`0.6609 ns/request`, decode at max batch64 p50 `0.01628 ms/request`, and retain
+zero receiver mismatches. Query-aware text is `2.00x` record bytes and exposes
+private text; the full hidden-log row is `52.86x` record bytes and `8.34x`
+transport p50; the QJL-style 1-bit KV floor is `3072x` record bytes and
+`622.05x` transport p50. Readiness impact: COLM workshop is strong with a
+precise source-private packet + systems story. ICLR full still needs a learned
+or frozen model-mediated receiver beyond public-table decode, larger verifier
+scale, a less synthetic cross-family benchmark, or native NVIDIA/vLLM serving
+telemetry.

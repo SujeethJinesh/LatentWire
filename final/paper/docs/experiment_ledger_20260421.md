@@ -16626,3 +16626,29 @@ exact gate: extend the packet-ring transport microbench to 7-byte PQ records
 and 14-byte query-aware text records, then join transport plus receiver timing
 into one systems waterfall while pursuing a stronger learned/non-hand-decoded
 receiver branch separately.
+
+Update `2026-04-30`: the PQ packet transport plus receiver waterfall now
+passes. Code:
+`scripts/build_source_private_pq_transport_receiver_waterfall.py`; updated
+transport code:
+`scripts/build_source_private_mac_packet_ring_transport_microbench.py` and
+`scripts/source_private_packet_ring_transport_microbench.c`; tests:
+`tests/test_build_source_private_mac_packet_ring_transport_microbench.py` and
+`tests/test_build_source_private_pq_transport_receiver_waterfall.py`; memo:
+`paper/source_private_pq_transport_receiver_waterfall_20260430.md`;
+references:
+`references/541_pq_transport_receiver_waterfall_refs_20260430.md`;
+artifacts:
+`results/source_private_mac_packet_ring_transport_microbench_pq7_20260430/`
+and `results/source_private_pq_transport_receiver_waterfall_20260430/`.
+Outcome: pass gate `true`. PQ batch64 transport is `7.0` line bytes/request,
+`8.0` DMA bytes/request, p95 `0.6609 ns/request`, and CV `0.0121`. The joined
+receiver row has batch64 p50 `0.01628 ms/request`, resident p50
+`0.01667 ms/request`, and mismatch count `0`. Query-aware text uses `2.00x`
+record bytes and exposes private text; full-log transport is `8.34x` PQ p50;
+the QJL-style KV byte floor is `622.05x` PQ p50. Interpretation: this closes
+the strongest Mac-local systems gate for source-private PQ packets, but it
+still is not a native GPU/vLLM serving result or protocol-free latent
+reasoning. Next exact gate: learned/control-regularized innovation receiver
+with deranged public-table controls, while preserving this waterfall as the
+systems side contribution.

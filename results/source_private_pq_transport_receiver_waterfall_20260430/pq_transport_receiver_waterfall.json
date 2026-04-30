@@ -1,0 +1,201 @@
+{
+  "checks": [
+    {
+      "check": "transport_gate_passes",
+      "pass": true,
+      "value": "True"
+    },
+    {
+      "check": "receiver_gate_passes",
+      "pass": true,
+      "value": "True"
+    },
+    {
+      "check": "pq_transport_under_1us",
+      "pass": true,
+      "value": "0.66 ns/request"
+    },
+    {
+      "check": "pq_receiver_under_0p25ms",
+      "pass": true,
+      "value": "batch p95 0.01787 ms; resident p95 0.01883 ms"
+    },
+    {
+      "check": "pq_receiver_exact",
+      "pass": true,
+      "value": "0"
+    },
+    {
+      "check": "query_text_larger_and_exposes_text",
+      "pass": true,
+      "value": "2.00x bytes; exposes text=True"
+    },
+    {
+      "check": "full_log_transport_slower",
+      "pass": true,
+      "value": "8.34x PQ p50 transport"
+    },
+    {
+      "check": "kv_floor_transport_slower",
+      "pass": true,
+      "value": "622.05x PQ p50 transport"
+    }
+  ],
+  "gate": "source_private_pq_transport_receiver_waterfall",
+  "headline": {
+    "batch_size": 64,
+    "full_log_p50_ratio_vs_pq_transport": 8.336692736631177,
+    "full_log_record_ratio_vs_pq": 52.857142857142854,
+    "kv_floor_p50_ratio_vs_pq_transport": 622.051558523728,
+    "kv_floor_record_ratio_vs_pq": 3072.0,
+    "max_receiver_mismatch_count": 0,
+    "pass_gate": true,
+    "pq_receiver_batch64_p50_ms_per_request": 0.01627513765575154,
+    "pq_receiver_resident_p50_ms_per_request": 0.01666697789914906,
+    "pq_record_bytes": 7,
+    "pq_transport_batch64_dma_bytes_per_request": 8.0,
+    "pq_transport_batch64_line_bytes_per_request": 7.0,
+    "pq_transport_batch64_p95_ns_per_request": 0.660897,
+    "query_text_exposes_private_text": true,
+    "query_text_p95_ratio_vs_pq_transport": 1.0468771987162901,
+    "query_text_record_ratio_vs_pq": 2.0,
+    "receiver_pass_gate": true,
+    "transport_pass_gate": true,
+    "transport_share_of_receiver_batch64_p50": 4.06077671340889e-05
+  },
+  "interpretation": "This artifact joins measured packet-ring transport with the PQ resident receiver microbench. It supports a Mac-local boundary-traffic plus receiver-kernel claim for 7-byte PQ packet records, not a production GPU serving or protocol-free latent-reasoning claim.",
+  "non_claims": [
+    "No NVIDIA, vLLM, TTFT, TPOT, HBM, PCIe, or NVLink measurement is included.",
+    "Query-aware text can have similar copy timing at this size but exposes private text and uses 2x the PQ record bytes.",
+    "KV rows are byte-floor transport comparators, not native KVComm/C2C implementations."
+  ],
+  "pass_gate": true,
+  "rows": [
+    {
+      "batch_size": 64,
+      "component": "packet",
+      "dma_bytes_per_request": 6.0,
+      "line_bytes_per_request": 5.0,
+      "notes": "legacy 2B diagnostic packet record",
+      "p50_ms_per_request": 6.480519999999999e-07,
+      "p50_ns_per_request": 0.648052,
+      "p95_ms_per_request": 6.877640000000001e-07,
+      "p95_ns_per_request": 0.687764,
+      "profile": "packet_2b_payload_5b_record",
+      "record_bytes": 5,
+      "source_kv_exposed": false,
+      "source_text_exposed": false
+    },
+    {
+      "batch_size": 64,
+      "component": "transport",
+      "dma_bytes_per_request": 8.0,
+      "line_bytes_per_request": 7.0,
+      "notes": "4B PQ payload plus 3B record overhead",
+      "p50_ms_per_request": 6.432689999999999e-07,
+      "p50_ns_per_request": 0.643269,
+      "p95_ms_per_request": 6.608969999999999e-07,
+      "p95_ns_per_request": 0.660897,
+      "profile": "pq_packet_4b_payload_7b_record",
+      "record_bytes": 7,
+      "source_kv_exposed": false,
+      "source_text_exposed": false
+    },
+    {
+      "batch_size": 64,
+      "component": "transport",
+      "dma_bytes_per_request": 14.0,
+      "line_bytes_per_request": 14.0,
+      "notes": "query-aware private text comparator",
+      "p50_ms_per_request": 6.72894e-07,
+      "p50_ns_per_request": 0.672894,
+      "p95_ms_per_request": 6.91878e-07,
+      "p95_ns_per_request": 0.691878,
+      "profile": "query_aware_text_14b",
+      "record_bytes": 14,
+      "source_kv_exposed": false,
+      "source_text_exposed": true
+    },
+    {
+      "batch_size": 64,
+      "component": "transport",
+      "dma_bytes_per_request": 370.0,
+      "line_bytes_per_request": 370.0,
+      "notes": "full private-log relay comparator",
+      "p50_ms_per_request": 5.362736e-06,
+      "p50_ns_per_request": 5.362736,
+      "p95_ms_per_request": 5.652241e-06,
+      "p95_ns_per_request": 5.652241,
+      "profile": "full_hidden_log_370b",
+      "record_bytes": 370,
+      "source_kv_exposed": false,
+      "source_text_exposed": true
+    },
+    {
+      "batch_size": 64,
+      "component": "transport",
+      "dma_bytes_per_request": 21504.0,
+      "line_bytes_per_request": 21504.0,
+      "notes": "1-bit KV byte-floor comparator",
+      "p50_ms_per_request": 0.000400146484,
+      "p50_ns_per_request": 400.146484,
+      "p95_ms_per_request": 0.000404174805,
+      "p95_ns_per_request": 404.174805,
+      "profile": "qjl_1bit_kv_floor_21504b",
+      "record_bytes": 21504,
+      "source_kv_exposed": true,
+      "source_text_exposed": false
+    },
+    {
+      "batch_size": 64,
+      "component": "transport",
+      "dma_bytes_per_request": 43008.0,
+      "line_bytes_per_request": 43008.0,
+      "notes": "2-bit KV byte-floor comparator",
+      "p50_ms_per_request": 0.001164672852,
+      "p50_ns_per_request": 1164.672852,
+      "p95_ms_per_request": 0.001169555664,
+      "p95_ns_per_request": 1169.555664,
+      "profile": "kivi_2bit_kv_floor_43008b",
+      "record_bytes": 43008,
+      "source_kv_exposed": true,
+      "source_text_exposed": false
+    },
+    {
+      "batch_size": 1,
+      "component": "receiver",
+      "dma_bytes_per_request": null,
+      "line_bytes_per_request": null,
+      "notes": "max resident lookup over all remap/variant rows",
+      "p50_ms_per_request": 0.01666697789914906,
+      "p50_ns_per_request": null,
+      "p95_ms_per_request": 0.01883300137706101,
+      "p95_ns_per_request": null,
+      "profile": "pq_resident_table_decode_max",
+      "record_bytes": 7,
+      "source_kv_exposed": false,
+      "source_text_exposed": false
+    },
+    {
+      "batch_size": 64,
+      "component": "receiver",
+      "dma_bytes_per_request": null,
+      "line_bytes_per_request": null,
+      "notes": "max batched decode over all remap/variant rows",
+      "p50_ms_per_request": 0.01627513765575154,
+      "p50_ns_per_request": null,
+      "p95_ms_per_request": 0.017871734144137008,
+      "p95_ns_per_request": null,
+      "profile": "pq_batch64_decode_max",
+      "record_bytes": 7,
+      "source_kv_exposed": false,
+      "source_text_exposed": false
+    }
+  ],
+  "sources": {
+    "receiver": "results/source_private_pq_receiver_batch_microbench_20260430/pq_receiver_batch_microbench.json",
+    "receiver_sha256": "d7667844321482f958bed837815b775ea907bf24b55d034eeeb99f9ff9ab2d06",
+    "transport": "results/source_private_mac_packet_ring_transport_microbench_pq7_20260430/packet_ring_transport_microbench.json",
+    "transport_sha256": "77c9a4137239ec65fd00b357fe754542ca3bcb94df417b555c5ab8a73c755838"
+  }
+}

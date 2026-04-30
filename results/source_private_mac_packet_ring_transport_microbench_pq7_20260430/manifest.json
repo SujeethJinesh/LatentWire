@@ -1,0 +1,36 @@
+{
+  "artifacts": [
+    "packet_ring_transport_microbench.json",
+    "packet_ring_transport_microbench.md",
+    "packet_ring_transport_microbench.csv",
+    "raw_microbench_output.json",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_mac_packet_ring_transport_microbench",
+  "headline": {
+    "all_packet_p95_under_1us": true,
+    "batch64_packet_cv_under_15pct": true,
+    "full_log_batch64_p50_ratio_vs_packet": 8.275163104195343,
+    "kv_floor_batch64_p50_ratio_vs_packet": 617.4604568769173,
+    "packet_batch64_cv": 0.02522322,
+    "packet_batch64_dma_bytes_per_request": 6.0,
+    "packet_batch64_line_bytes_per_request": 5.0,
+    "packet_batch64_p50_ns_per_request": 0.648052,
+    "packet_batch64_p95_ns_per_request": 0.687764,
+    "packet_batch64_record_bytes": 5,
+    "packet_max_cv": 0.02522322,
+    "pass_gate": true,
+    "pq_packet_batch64_cv": 0.01206917,
+    "pq_packet_batch64_dma_bytes_per_request": 8.0,
+    "pq_packet_batch64_line_bytes_per_request": 7.0,
+    "pq_packet_batch64_p50_ns_per_request": 0.643269,
+    "pq_packet_batch64_p95_ns_per_request": 0.660897,
+    "pq_packet_batch64_record_bytes": 7,
+    "query_text_batch64_p95_ratio_vs_packet": 1.0059817030260378,
+    "query_text_batch64_p95_ratio_vs_pq_packet": 1.0468771987162901,
+    "repeats": 5,
+    "target_bytes_per_repeat": 134217728
+  },
+  "pass_gate": true
+}

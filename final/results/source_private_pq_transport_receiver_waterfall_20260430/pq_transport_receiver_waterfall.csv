@@ -1,0 +1,9 @@
+component,profile,batch_size,record_bytes,source_text_exposed,source_kv_exposed,line_bytes_per_request,dma_bytes_per_request,p50_ns_per_request,p95_ns_per_request,p50_ms_per_request,p95_ms_per_request,notes
+packet,packet_2b_payload_5b_record,64,5,False,False,5,6,0.648052,0.687764,6.48052e-07,6.87764e-07,legacy 2B diagnostic packet record
+transport,pq_packet_4b_payload_7b_record,64,7,False,False,7,8,0.643269,0.660897,6.43269e-07,6.60897e-07,4B PQ payload plus 3B record overhead
+transport,query_aware_text_14b,64,14,True,False,14,14,0.672894,0.691878,6.72894e-07,6.91878e-07,query-aware private text comparator
+transport,full_hidden_log_370b,64,370,True,False,370,370,5.36274,5.65224,5.36274e-06,5.65224e-06,full private-log relay comparator
+transport,qjl_1bit_kv_floor_21504b,64,21504,False,True,21504,21504,400.146,404.175,0.000400146,0.000404175,1-bit KV byte-floor comparator
+transport,kivi_2bit_kv_floor_43008b,64,43008,False,True,43008,43008,1164.67,1169.56,0.00116467,0.00116956,2-bit KV byte-floor comparator
+receiver,pq_resident_table_decode_max,1,7,False,False,,,,,0.016667,0.018833,max resident lookup over all remap/variant rows
+receiver,pq_batch64_decode_max,64,7,False,False,,,,,0.0162751,0.0178717,max batched decode over all remap/variant rows

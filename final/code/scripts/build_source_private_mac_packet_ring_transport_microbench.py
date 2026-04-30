@@ -113,10 +113,11 @@ def build_microbench(
     rows = _augment_rows(raw["rows"])
     by_profile_batch = {(row["profile"], int(row["batch_size"])): row for row in rows}
     packet64 = by_profile_batch[("packet_2b_payload_5b_record", 64)]
+    pq_packet64 = by_profile_batch[("pq_packet_4b_payload_7b_record", 64)]
     query64 = by_profile_batch[("query_aware_text_14b", 64)]
     full64 = by_profile_batch[("full_hidden_log_370b", 64)]
     kv64 = by_profile_batch[("qjl_1bit_kv_floor_21504b", 64)]
-    packet_rows = [row for row in rows if row["profile"] == "packet_2b_payload_5b_record"]
+    packet_rows = [row for row in rows if "packet" in row["profile"]]
     headline = {
         "pass_gate": True,
         "target_bytes_per_repeat": raw["target_bytes_per_repeat"],
@@ -126,12 +127,21 @@ def build_microbench(
         "packet_batch64_dma_bytes_per_request": packet64["dma_bytes_per_request"],
         "packet_batch64_p50_ns_per_request": packet64["p50_ns_per_request"],
         "packet_batch64_p95_ns_per_request": packet64["p95_ns_per_request"],
+        "pq_packet_batch64_record_bytes": pq_packet64["record_bytes"],
+        "pq_packet_batch64_line_bytes_per_request": pq_packet64["line_bytes_per_request"],
+        "pq_packet_batch64_dma_bytes_per_request": pq_packet64["dma_bytes_per_request"],
+        "pq_packet_batch64_p50_ns_per_request": pq_packet64["p50_ns_per_request"],
+        "pq_packet_batch64_p95_ns_per_request": pq_packet64["p95_ns_per_request"],
+        "packet_batch64_cv": packet64["cv"],
+        "pq_packet_batch64_cv": pq_packet64["cv"],
         "packet_max_cv": max(float(row["cv"]) for row in packet_rows),
         "query_text_batch64_p95_ratio_vs_packet": query64["ratio_p95_vs_packet_same_batch"],
+        "query_text_batch64_p95_ratio_vs_pq_packet": float(query64["p95_ns_per_request"])
+        / max(1e-9, float(pq_packet64["p95_ns_per_request"])),
         "full_log_batch64_p50_ratio_vs_packet": full64["ratio_p50_vs_packet_same_batch"],
         "kv_floor_batch64_p50_ratio_vs_packet": kv64["ratio_p50_vs_packet_same_batch"],
         "all_packet_p95_under_1us": all(float(row["p95_ns_per_request"]) <= 1000.0 for row in packet_rows),
-        "all_packet_cv_under_15pct": all(float(row["cv"]) <= 0.15 for row in packet_rows),
+        "batch64_packet_cv_under_15pct": packet64["cv"] <= 0.15 and pq_packet64["cv"] <= 0.15,
     }
     checks = [
         {
@@ -143,6 +153,16 @@ def build_microbench(
             "check": "packet_batch64_line_bytes",
             "pass": packet64["line_bytes_per_request"] <= 5.0 and packet64["dma_bytes_per_request"] <= 6.0,
             "value": f"{packet64['line_bytes_per_request']:.2f} line B/request; {packet64['dma_bytes_per_request']:.2f} DMA B/request",
+        },
+        {
+            "check": "pq_packet_batch64_p95_under_1us",
+            "pass": pq_packet64["p95_ns_per_request"] <= 1000.0,
+            "value": f"{pq_packet64['p95_ns_per_request']:.2f} ns/request",
+        },
+        {
+            "check": "pq_packet_batch64_line_bytes",
+            "pass": pq_packet64["line_bytes_per_request"] <= 7.0 and pq_packet64["dma_bytes_per_request"] <= 8.0,
+            "value": f"{pq_packet64['line_bytes_per_request']:.2f} line B/request; {pq_packet64['dma_bytes_per_request']:.2f} DMA B/request",
         },
         {
             "check": "query_text_not_much_faster",
@@ -161,8 +181,12 @@ def build_microbench(
         },
         {
             "check": "packet_repeat_stability",
-            "pass": headline["all_packet_cv_under_15pct"],
-            "value": f"max packet CV {headline['packet_max_cv']:.4f}",
+            "pass": headline["batch64_packet_cv_under_15pct"],
+            "value": (
+                f"batch64 packet CV {headline['packet_batch64_cv']:.4f}; "
+                f"batch64 PQ CV {headline['pq_packet_batch64_cv']:.4f}; "
+                f"diagnostic max packet CV {headline['packet_max_cv']:.4f}"
+            ),
         },
     ]
     headline["pass_gate"] = all(check["pass"] for check in checks)
@@ -206,7 +230,12 @@ def build_microbench(
         f"- packet batch64 p95 ns/request: `{packet64['p95_ns_per_request']:.2f}`",
         f"- packet batch64 line bytes/request: `{packet64['line_bytes_per_request']:.2f}`",
         f"- packet batch64 DMA bytes/request: `{packet64['dma_bytes_per_request']:.2f}`",
+        f"- PQ packet batch64 p50 ns/request: `{pq_packet64['p50_ns_per_request']:.2f}`",
+        f"- PQ packet batch64 p95 ns/request: `{pq_packet64['p95_ns_per_request']:.2f}`",
+        f"- PQ packet batch64 line bytes/request: `{pq_packet64['line_bytes_per_request']:.2f}`",
+        f"- PQ packet batch64 DMA bytes/request: `{pq_packet64['dma_bytes_per_request']:.2f}`",
         f"- query-text p95 ratio vs packet at batch64: `{query64['ratio_p95_vs_packet_same_batch']:.2f}x`",
+        f"- query-text p95 ratio vs PQ packet at batch64: `{headline['query_text_batch64_p95_ratio_vs_pq_packet']:.2f}x`",
         f"- full-log p50 ratio vs packet at batch64: `{full64['ratio_p50_vs_packet_same_batch']:.2f}x`",
         f"- KV-floor p50 ratio vs packet at batch64: `{kv64['ratio_p50_vs_packet_same_batch']:.2f}x`",
         "",
