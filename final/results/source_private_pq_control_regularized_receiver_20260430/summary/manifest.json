@@ -1,0 +1,29 @@
+{
+  "artifact_sha256": {
+    "pq_control_regularized_receiver_summary.json": "65a78fb5e32febe6e731992b65181bbc77942994d4dda01ee8726b63dfd80b52",
+    "pq_control_regularized_receiver_summary.md": "faff35e2f70c38bf7ae9875fcaa9478dbbac602e91c518e0aab4af25c7054385"
+  },
+  "artifacts": [
+    "pq_control_regularized_receiver_summary.json",
+    "pq_control_regularized_receiver_summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "headline": {
+    "disjoint_pass_rows": 0,
+    "disjoint_rows": 2,
+    "low_control_overlap_pass_rows": 3,
+    "low_control_overlap_rows": 3,
+    "max_disjoint_l2_accuracy": 0.26953125,
+    "max_disjoint_learned_accuracy": 0.264,
+    "max_low_control_overlap_best_control_accuracy": 0.298,
+    "min_low_control_overlap_ci95_low_vs_best_control": 0.1420000046491623,
+    "min_low_control_overlap_learned_accuracy": 0.504,
+    "overlap_pass_rows": 3,
+    "overlap_rows": 4,
+    "pass_gate": true,
+    "pass_rows": 3,
+    "rows": 6
+  },
+  "pass_gate": true
+}

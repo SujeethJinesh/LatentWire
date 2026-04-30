@@ -395,3 +395,11 @@ This strengthens the COLM-ready story as source-private packet communication
 with concrete systems accounting. The ICLR blocker remains evidence for a
 learned or frozen model-mediated receiver beyond deterministic public-table
 decode, or native NVIDIA/vLLM serving telemetry.
+
+## 2026-04-30 Learned Receiver Update
+
+The PQ control-regularized receiver diagnostic is included. It shows a learned
+score adapter can preserve utility-protected-Hadamard PQ on the exact-ID
+overlap n500 surface across remaps, but disjoint train/eval IDs collapse both
+deterministic PQ and learned reception. This should be treated as a useful
+diagnostic and a blocker: the next ICLR-grade method must be disjoint-safe.

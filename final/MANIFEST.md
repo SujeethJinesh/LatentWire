@@ -303,6 +303,12 @@
   `0.01628 ms/request`, receiver mismatches are `0`, query-aware text is
   `2.00x` record bytes and exposes private text, full-log transport is `8.34x`
   PQ p50, and the QJL-style KV byte floor is `622.05x` PQ p50.
+- PQ control-regularized learned receiver code, tests, references, memo, and
+  artifacts showing a bounded learned-receiver diagnostic: exact-ID overlap
+  remaps `101/103/107` preserve utility-protected-Hadamard PQ at learned
+  accuracy `0.504/0.504/0.516` with controls near target and deranged
+  public-table accuracy at most `0.180`, but disjoint-ID probes collapse with
+  max deterministic/learned accuracy `0.270/0.264`.
 
 ## Notes
 

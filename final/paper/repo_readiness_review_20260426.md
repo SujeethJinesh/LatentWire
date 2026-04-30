@@ -3408,3 +3408,20 @@ precise source-private packet + systems story. ICLR full still needs a learned
 or frozen model-mediated receiver beyond public-table decode, larger verifier
 scale, a less synthetic cross-family benchmark, or native NVIDIA/vLLM serving
 telemetry.
+
+Update `2026-04-30`: the learned PQ receiver branch is now sharper but still
+not ICLR-ready. New artifact:
+`results/source_private_pq_control_regularized_receiver_20260430/`; memo:
+`paper/source_private_pq_control_regularized_receiver_20260430.md`;
+references:
+`references/542_pq_control_regularized_receiver_refs_20260430.md`. A
+low-control learned score adapter preserves the utility-protected-Hadamard PQ
+signal on exact-ID overlap remaps `101/103/107` with learned accuracy
+`0.504/0.504/0.516`, best controls at most `0.298`, and deranged public-table
+accuracy at most `0.180`. However disjoint-ID probes collapse: max disjoint L2
+accuracy is `0.270` and max disjoint learned accuracy is `0.264`. Readiness
+impact: do not use learned PQ reception as a headline ICLR contribution yet.
+The strongest honest contribution is now the source-private packet protocol,
+the systems waterfall, and the explicit diagnosis that the current PQ source
+encoder is not disjoint-safe. Next method gate must change the source encoder
+or connector and pass disjoint-ID controls.

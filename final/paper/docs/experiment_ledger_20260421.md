@@ -16652,3 +16652,30 @@ still is not a native GPU/vLLM serving result or protocol-free latent
 reasoning. Next exact gate: learned/control-regularized innovation receiver
 with deranged public-table controls, while preserving this waterfall as the
 systems side contribution.
+
+Update `2026-04-30`: the PQ control-regularized learned receiver diagnostic is
+implemented and recorded. Code:
+`scripts/run_source_private_pq_control_regularized_receiver.py` and
+`scripts/summarize_source_private_pq_control_regularized_receiver.py`; tests:
+`tests/test_run_source_private_pq_control_regularized_receiver.py` and
+`tests/test_summarize_source_private_pq_control_regularized_receiver.py`;
+memo:
+`paper/source_private_pq_control_regularized_receiver_20260430.md`;
+references:
+`references/542_pq_control_regularized_receiver_refs_20260430.md`;
+artifact:
+`results/source_private_pq_control_regularized_receiver_20260430/`. Outcome:
+the low-control learned PQ receiver preserves deterministic
+utility-protected-Hadamard PQ on the established n500 exact-ID overlap surface
+for remaps `101/103/107`: learned accuracy `0.504/0.504/0.516`, L2 accuracy
+`0.504/0.504/0.516`, target `0.250`, best destructive control at most
+`0.298`, deranged public-table accuracy `0.180/0.158/0.124`, and minimum CI95
+low versus best control `+0.142`. The strict/disjoint probes fail: disjoint
+n256 has learned `0.250` and L2 `0.270`; disjoint n500 has learned/L2 `0.264`.
+Interpretation: this is a bounded positive learned-receiver diagnostic but a
+stronger ICLR blocker for PQ as a headline method. The exact-overlap rows show
+the learned receiver can preserve PQ under controls, but disjoint IDs collapse
+the source packet signal itself. Next exact gate: change the source
+encoder/interface, e.g. conditional innovation packets, TurboResidual PQ/QJL,
+or a Perceiver/Q-Former-style connector, and require disjoint-ID n256/n500
+success before widening.
