@@ -1125,5 +1125,12 @@
     "path": "references/517_serving_slo_envelope_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the serving SLO envelope, covering FlashAttention IO-awareness, vLLM/PagedAttention, DistServe, Orca, KIVI, TurboQuant, and QJL."
+  },
+  {
+    "num": 518,
+    "slug": "product_codebook_model_receiver_refs_20260430",
+    "path": "references/518_product_codebook_model_receiver_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the product-codebook model-mediated and masked-PQ receiver diagnostics, covering PQ/OPQ, VQ discrete latents, D3PM/MaskGIT/Consistency receiver inspiration, TurboQuant, and C2C."
   }
 ]

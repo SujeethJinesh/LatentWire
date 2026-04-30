@@ -191,6 +191,10 @@
   the source-private systems story into serving-reviewer terms: boundary
   exposure, batch-64 line/DMA bytes, TTFT margins, explicit TPOT/goodput
   non-claims, and GPU counter requirements.
+- Product-codebook model-receiver diagnostic code, tests, references, memo, and
+  artifacts showing the blinded Qwen3-0.6B prompt receiver fails to use PQ
+  packets on Mac CPU, and a masked-PQ consistency adapter either collapses to
+  target-only or exactly reproduces deterministic PQ L2 without beating it.
 
 ## Notes
 

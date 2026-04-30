@@ -1,0 +1,238 @@
+{
+  "best_control_accuracy": 0.3125,
+  "best_control_condition": "zero_source",
+  "conditions": [
+    "target_only",
+    "zero_source",
+    "matched_product_codebook",
+    "label_shuffled_ridge",
+    "constrained_shuffled_source",
+    "answer_masked_source",
+    "permuted_codes",
+    "wrong_codebook_packet",
+    "random_same_byte",
+    "structured_json_same_byte",
+    "structured_free_text_same_byte",
+    "target_derived_sidecar"
+  ],
+  "exact_id_count": 16,
+  "exact_id_parity": true,
+  "exact_id_sha256": "50ef91ed25476a81eaa533ec328f9cb4c913e13480fd4f4f0641550217a94478",
+  "matched_accuracy": 0.3125,
+  "matched_minus_best_control": 0.0,
+  "matched_minus_target": 0.0,
+  "metrics": {
+    "answer_masked_source": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1227.3730000015348,
+      "valid_prediction_rate": 1.0
+    },
+    "constrained_shuffled_source": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1261.5305624931352,
+      "valid_prediction_rate": 1.0
+    },
+    "label_shuffled_ridge": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1249.0620004973607,
+      "valid_prediction_rate": 1.0
+    },
+    "matched_product_codebook": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1263.3893955062376,
+      "valid_prediction_rate": 1.0
+    },
+    "permuted_codes": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1201.62347900623,
+      "valid_prediction_rate": 1.0
+    },
+    "random_same_byte": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1040.0092080089962,
+      "valid_prediction_rate": 1.0
+    },
+    "structured_free_text_same_byte": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1290.3112085041357,
+      "valid_prediction_rate": 1.0
+    },
+    "structured_json_same_byte": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1272.8595000080531,
+      "valid_prediction_rate": 1.0
+    },
+    "target_derived_sidecar": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1018.2602914865129,
+      "valid_prediction_rate": 1.0
+    },
+    "target_only": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 0.0,
+      "mean_payload_tokens": 0.0,
+      "p50_latency_ms": 860.2250830008416,
+      "valid_prediction_rate": 1.0
+    },
+    "wrong_codebook_packet": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "p50_latency_ms": 1248.9853954903083,
+      "valid_prediction_rate": 1.0
+    },
+    "zero_source": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "correct_ids": [
+        "sphr_0006",
+        "sphr_0007",
+        "sphr_0009",
+        "sphr_0010",
+        "sphr_0015"
+      ],
+      "mean_generated_tokens": 2.0,
+      "mean_payload_bytes": 0.0,
+      "mean_payload_tokens": 0.0,
+      "p50_latency_ms": 890.2687704830896,
+      "valid_prediction_rate": 1.0
+    }
+  },
+  "n": 16,
+  "paired_bootstrap": {
+    "best_control_condition": "zero_source",
+    "matched_vs_best_control": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "point": 0.0
+    },
+    "matched_vs_target": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "point": 0.0
+    },
+    "samples": 2000,
+    "seed": 20260430
+  },
+  "pass_gate": false,
+  "pass_rule": "matched product-codebook target decoder must beat target-only by >=0.15, every source-destroying or same-byte text/target-derived control must stay within target+0.05, exact-ID parity must hold, and every condition must keep valid prediction rate >=0.95. strict_ci_pass_gate additionally requires paired bootstrap CI95 lower bounds >=+0.10 for matched-vs-target and matched-vs-best-control.",
+  "strict_ci_pass_gate": false,
+  "target_only_accuracy": 0.3125
+}

@@ -2967,3 +2967,58 @@ accuracy on every row, yet paired CI lower bounds versus scalar can be negative.
 The next full-paper blocker is therefore not PQ-vs-scalar dominance; it is a
 model-mediated receiver or cross-family/generalization gate that makes the
 communication method feel less hand-coded.
+
+Update `2026-04-30`: direct Qwen3-0.6B target decoding now clears a medium
+Mac-local core gate. On `n=160` all-control CPU evaluation, the frozen target
+decoder reaches `0.694` with the matched 2-byte packet while target-only,
+shuffled-source, random same-byte, structured JSON 2-byte, and structured
+free-text 2-byte all remain at `0.250`; exact ID parity and valid prediction
+rate are `1.000`; paired CI95 lower bounds are `+0.369` versus both target-only
+and best control. This materially reduces the hand-coded decoder objection and
+upgrades the receiver evidence from n64 smoke to medium supporting evidence.
+Readiness is now a stronger scoped ICLR submission candidate, but still not a
+comfortable broad latent-transfer paper. Remaining blockers: held-out/seed
+target-decoder replication, product-codebook-specific model-mediated decoding,
+native serving systems telemetry, and a clear final claim boundary that does not
+overstate wins against C2C/KVCOMM/KV compression or prompt-compression methods.
+
+Update `2026-04-30`: the serving SLO envelope makes the systems story more
+reviewer-readable without changing the method readiness. It reports `10` rows,
+`4` Mac TTFT proxy rows, `0` production-goodput claim rows, packet batch-64
+traffic of `5.0` line bytes/request and `6.0` DMA bytes/request, and explicit
+TTFT margins at `500/750/1000 ms`. The important negative result is preserved:
+the held-out packet proxy misses a strict `500 ms` TTFT SLO by `47.21 ms`, so
+native GPU/server telemetry is still required before making production serving
+claims. Readiness remains a stronger scoped positive-method paper. The exact
+blocker for comfortable ICLR remains held-out/model-mediated receiver
+replication, product-codebook-specific target decoding, and native serving
+counters when NVIDIA hardware is available.
+
+Update `2026-04-30`: held-out direct Qwen3-0.6B target decoding now replicates
+the core `n=160` pass. The held-out row reaches `0.719` matched accuracy versus
+`0.250` target-only and `0.263` best control; valid prediction rate and exact
+ID parity are `1.000`. The combined core+held-out uncertainty artifact passes
+`2/2` rows with minimum CI95 lower bound `+0.369` versus target and best
+control. This removes the immediate held-out receiver-replication blocker for
+the simple protocol packet. Remaining blockers for comfortable ICLR are now
+sharper: product-codebook-specific model-mediated decoding, a less
+protocol-shaped learned receiver or clearly scoped claim boundary, and native
+serving telemetry.
+
+Update `2026-04-30`: the product-codebook-specific receiver blocker is now
+sharper and partially negative. I added a blinded A/B/C/D Qwen3-0.6B
+product-codebook target-decoder harness plus a masked-PQ consistency receiver.
+The prompt receiver fails on Mac CPU: in the reproducible n16 no-explicit-prior
+distance diagnostic, matched product-codebook packets stay at target-only
+(`0.312`) and every destructive control matches that row. Earlier n32 prompt
+diagnostics showed the same no-lift behavior. The masked-PQ consistency
+receiver is also not a new contribution: unweighted training collapses to
+target-only, while matched-weighted training exactly reproduces deterministic
+PQ L2 (`0.582` matched, `0.273` best control) but does not beat it and is
+slower in the current Python path. Readiness implication: product-codebook
+packets remain valuable as a controlled learned discrete codec and systems
+frontier, but the current model-mediated/learned PQ receiver branch should be
+pruned. The live claim should either narrow around the packet/control/systems
+story, or the next method gate must change the packet geometry itself
+(OPQ/protected-basis/source-control PQ) rather than adding another receiver on
+the same PQ table.

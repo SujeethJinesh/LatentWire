@@ -3004,3 +3004,21 @@ the simple protocol packet. Remaining blockers for comfortable ICLR are now
 sharper: product-codebook-specific model-mediated decoding, a less
 protocol-shaped learned receiver or clearly scoped claim boundary, and native
 serving telemetry.
+
+Update `2026-04-30`: the product-codebook-specific receiver blocker is now
+sharper and partially negative. I added a blinded A/B/C/D Qwen3-0.6B
+product-codebook target-decoder harness plus a masked-PQ consistency receiver.
+The prompt receiver fails on Mac CPU: in the reproducible n16 no-explicit-prior
+distance diagnostic, matched product-codebook packets stay at target-only
+(`0.312`) and every destructive control matches that row. Earlier n32 prompt
+diagnostics showed the same no-lift behavior. The masked-PQ consistency
+receiver is also not a new contribution: unweighted training collapses to
+target-only, while matched-weighted training exactly reproduces deterministic
+PQ L2 (`0.582` matched, `0.273` best control) but does not beat it and is
+slower in the current Python path. Readiness implication: product-codebook
+packets remain valuable as a controlled learned discrete codec and systems
+frontier, but the current model-mediated/learned PQ receiver branch should be
+pruned. The live claim should either narrow around the packet/control/systems
+story, or the next method gate must change the packet geometry itself
+(OPQ/protected-basis/source-control PQ) rather than adding another receiver on
+the same PQ table.

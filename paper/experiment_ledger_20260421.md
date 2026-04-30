@@ -16066,3 +16066,30 @@ best control, and max p50 latency `2670.3 ms`. Interpretation: the
 model-mediated receiver defense now has held-out medium confirmation on local
 CPU. It remains a receiver-efficacy result, not a serving-speed result, and it
 does not yet show model-mediated consumption of product-codebook packets.
+
+Follow-up `2026-04-30`: ran the product-codebook-specific receiver diagnostics.
+Code:
+`scripts/run_source_private_product_codebook_target_decoder_smoke.py` and
+`scripts/run_source_private_masked_pq_consistency_receiver.py`; tests:
+`tests/test_run_source_private_product_codebook_target_decoder_smoke.py` and
+`tests/test_run_source_private_masked_pq_consistency_receiver.py`; memo:
+`paper/source_private_product_codebook_model_receiver_20260430.md`; references:
+`references/518_product_codebook_model_receiver_refs_20260430.md`; artifacts:
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_no_explicit_prior_cpu/`,
+`results/source_private_masked_pq_consistency_receiver_20260430/remap101_budget4_n256/`,
+and
+`results/source_private_masked_pq_consistency_receiver_20260430/remap101_budget4_n256_weighted/`.
+Outcome: the blinded Qwen3-0.6B product-codebook target decoder fails; matched
+PQ remains at target-only (`0.312` on n16 no-explicit-prior distance mode), and
+the model returns the same choice for every condition. Analytical n32 probing
+showed signature exact-overlap is not a valid receiver surface (`0.281`
+Hamming accuracy while deterministic PQ L2 is `0.562`). The masked-PQ
+consistency receiver also fails as a new contribution: unweighted training
+collapses to target-only (`0.250`), while weighted training recovers the
+deterministic PQ L2 row exactly (`0.582` matched, `0.273` best control) without
+beating it and with a slower Python feature path. Interpretation: keep
+product-codebook packets as a supporting learned discrete codec/systems result,
+but prune the current prompt-only PQ receiver and one-step masked-PQ adapter as
+headline candidates. The next high-value gate is either a true PQ feature
+surface change, native GPU serving telemetry, or a final narrower claim
+boundary.

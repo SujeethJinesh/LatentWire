@@ -16004,3 +16004,92 @@ packets now have stable paired source-causal lift against target/control rows on
 the frozen `n=256` surface. They do not statistically dominate scalar WZ on
 every row (`min CI95 low vs scalar = -0.035`), so scalar remains a strong
 adjacent codec comparator rather than a defeated baseline.
+
+Follow-up `2026-04-30`: ran the direct Qwen3-0.6B target-decoder medium gate
+on the core reviewer-risk surface and added paired uncertainty for the result.
+Code updates:
+`scripts/run_source_private_tool_trace_target_decoder_smoke.py` now supports
+append-style partial prediction logs for future long receiver runs, and
+`scripts/summarize_source_private_target_decoder_uncertainty.py` summarizes
+paired bootstrap uncertainty for target-decoder artifacts. Tests:
+`tests/test_run_source_private_tool_trace_target_decoder_smoke.py` and
+`tests/test_summarize_source_private_target_decoder_uncertainty.py`; memo:
+`paper/source_private_target_decoder_n160_20260430.md`; strengthening memo:
+`paper/source_private_iclr_strengthening_deep_dive_20260430.md`; references:
+`references/516_receiver_systems_novelty_scout_refs_20260430.md`; artifacts:
+`results/source_private_tool_trace_target_decoder_n160_20260430/core_seed29_qwen3_n160_all_controls_cpu/`
+and
+`results/source_private_tool_trace_target_decoder_n160_20260430/paired_uncertainty_core/`.
+Outcome: pass gate `True`, exact ID parity `True`, matched packet
+`111/160 = 0.694`, target-only `40/160 = 0.250`, shuffled packet
+`0.250`, random same-byte `0.250`, structured JSON 2-byte `0.250`, structured
+free-text 2-byte `0.250`, matched-target `+0.444`, matched-best-control
+`+0.444`, valid prediction rate `1.000`, matched p50 CPU latency
+`2670.3 ms`, and paired CI95 lower bounds `+0.369` versus both target-only and
+best control. Interpretation: direct model-mediated packet consumption is now a
+medium Mac-local supporting result rather than only an n64 smoke, but it is not
+a serving-speed claim and it is not yet product-codebook-specific decoding. The
+next exact gate is held-out `n=160` direct target decoding or, for a more
+creative method branch, a packet-consistency denoiser stacked on the live packet
+surface.
+
+Follow-up `2026-04-30`: added the serving SLO envelope to make the systems
+claim reviewer-readable without overclaiming production throughput. Code:
+`scripts/build_source_private_serving_slo_envelope.py`; test:
+`tests/test_build_source_private_serving_slo_envelope.py`; memo:
+`paper/source_private_serving_slo_envelope_20260430.md`; references:
+`references/517_serving_slo_envelope_refs_20260430.md`; artifact:
+`results/source_private_serving_slo_envelope_20260430/`. Outcome: pass gate
+`True`, `10` rows, `4` TTFT proxy rows, `0` production goodput claim rows, all
+`10` rows marked as needing GPU counters for serving claims, packet batch-64
+traffic `5.0` line bytes/request and `6.0` DMA bytes/request, and packet TTFT
+margins of `-47.21 ms` at `500 ms`, `+202.79 ms` at `750 ms`, and
+`+452.79 ms` at `1000 ms`. Interpretation: this strengthens the systems
+contribution by translating packet evidence into boundary exposure, transfer
+granularity, TTFT margin, TPOT/goodput non-claims, and native GPU counter
+requirements. It does not solve the learned/model-mediated receiver blocker.
+
+Follow-up `2026-04-30`: completed the held-out direct Qwen3-0.6B
+target-decoder `n=160` replication and the combined core+held-out paired
+uncertainty summary. Artifact:
+`results/source_private_tool_trace_target_decoder_n160_20260430/holdout_seed30_qwen3_n160_all_controls_cpu/`;
+paired artifact:
+`results/source_private_tool_trace_target_decoder_n160_20260430/paired_uncertainty_core_holdout/`;
+memo update: `paper/source_private_target_decoder_n160_20260430.md`. Outcome:
+held-out pass gate `True`, exact ID parity `True`, matched packet
+`115/160 = 0.719`, target-only `40/160 = 0.250`, shuffled `0.256`, random
+same-byte `0.263`, structured JSON/free-text 2-byte `0.250`, matched-target
+`+0.469`, matched-best-control `+0.456`, valid prediction rate `1.000`, and
+matched p50 CPU latency `2451.1 ms`. Combined core+held-out paired uncertainty
+passes with `2/2` rows, minimum CI95 lower bound `+0.369` versus target and
+best control, and max p50 latency `2670.3 ms`. Interpretation: the
+model-mediated receiver defense now has held-out medium confirmation on local
+CPU. It remains a receiver-efficacy result, not a serving-speed result, and it
+does not yet show model-mediated consumption of product-codebook packets.
+
+Follow-up `2026-04-30`: ran the product-codebook-specific receiver diagnostics.
+Code:
+`scripts/run_source_private_product_codebook_target_decoder_smoke.py` and
+`scripts/run_source_private_masked_pq_consistency_receiver.py`; tests:
+`tests/test_run_source_private_product_codebook_target_decoder_smoke.py` and
+`tests/test_run_source_private_masked_pq_consistency_receiver.py`; memo:
+`paper/source_private_product_codebook_model_receiver_20260430.md`; references:
+`references/518_product_codebook_model_receiver_refs_20260430.md`; artifacts:
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_no_explicit_prior_cpu/`,
+`results/source_private_masked_pq_consistency_receiver_20260430/remap101_budget4_n256/`,
+and
+`results/source_private_masked_pq_consistency_receiver_20260430/remap101_budget4_n256_weighted/`.
+Outcome: the blinded Qwen3-0.6B product-codebook target decoder fails; matched
+PQ remains at target-only (`0.312` on n16 no-explicit-prior distance mode), and
+the model returns the same choice for every condition. Analytical n32 probing
+showed signature exact-overlap is not a valid receiver surface (`0.281`
+Hamming accuracy while deterministic PQ L2 is `0.562`). The masked-PQ
+consistency receiver also fails as a new contribution: unweighted training
+collapses to target-only (`0.250`), while weighted training recovers the
+deterministic PQ L2 row exactly (`0.582` matched, `0.273` best control) without
+beating it and with a slower Python feature path. Interpretation: keep
+product-codebook packets as a supporting learned discrete codec/systems result,
+but prune the current prompt-only PQ receiver and one-step masked-PQ adapter as
+headline candidates. The next high-value gate is either a true PQ feature
+surface change, native GPU serving telemetry, or a final narrower claim
+boundary.
