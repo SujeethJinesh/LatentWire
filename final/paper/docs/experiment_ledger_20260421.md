@@ -15743,3 +15743,23 @@ embeddings are a useful non-symbolic ablation and produce source-derived signal,
 but do not replace the semantic-anchor receiver. Next exact gate: train a small
 contrastive/JEPA-style source-control receiver over frozen features with the
 same destructive controls, rather than swapping more frozen embedding models.
+
+Follow-up `2026-04-30`: implemented a contrastive bilinear packet receiver in
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py` and added
+explicit shuffled-source negatives via `--contrastive-negative-sources`. The
+semantic-anchor contrastive smoke passes
+(`results/source_private_contrastive_receiver_semantic_anchor_smoke_20260430`):
+`4/6` rows pass at `n=32`, best learned accuracy is `1.000`, best lift is
+`+0.750`, and strict source-destroying controls are clean on passing rows. The
+plain frozen BGE contrastive smoke has strong matched signal but fails controls:
+best learned accuracy is `1.000`, but shuffled-source controls reach `0.500` in
+holdout-to-core and `0.4375` in same-family
+(`results/source_private_contrastive_frozen_receiver_bge_smoke_20260430`). The
+control-aware BGE run fixes the strict source-destroying controls but loses
+enough lift to remain negative: `2/6` rows pass, best learned accuracy is
+`0.750`, best lift is `+0.500`, and core-to-holdout remains below promotion
+(`results/source_private_control_contrastive_frozen_receiver_bge_smoke_20260430`).
+Interpretation: source-control contrastive training is useful and reviewer-safe,
+but frozen BGE bilinear scoring is not yet a headline receiver. Next exact gate:
+a tiny query-resampler or low-rank information-bottleneck receiver trained with
+source-destroying negatives and reported as a rate-distortion curve.

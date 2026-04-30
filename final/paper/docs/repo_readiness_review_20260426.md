@@ -161,6 +161,19 @@ held-out paraphrase result. The next blocker is now narrower: train a small
 contrastive or JEPA-style receiver over frozen features with source-destroying
 negatives, instead of relying on off-the-shelf embeddings alone.
 
+Update `2026-04-30`: the contrastive receiver branch clarified the method
+frontier but does not yet upgrade readiness. A semantic-anchor bilinear
+contrastive receiver passes the n32 smoke (`4/6` pass rows, best learned
+`1.000`, best lift `+0.750`), showing the objective and rate-capped packet path
+are viable. Plain frozen BGE bilinear scoring recovers strong matched signal but
+fails reviewer controls because shuffled-source packets become useful. Adding
+explicit shuffled-source negatives fixes the strict source-destroying controls,
+but matched lift drops (`2/6` pass rows, best learned `0.750`). Readiness remains
+a strong scoped positive-method paper, not a broad latent-communication ICLR
+claim. The next highest-value branch is a query-resampler or low-rank
+information-bottleneck receiver trained with source-control negatives and
+reported as a rate-distortion curve.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

@@ -175,3 +175,44 @@ def test_learned_synonym_dictionary_hf_feature_mode_records_model(tmp_path, monk
     assert summary["feature_model"] == "fake/local-model"
     assert summary["feature_device"] == "cpu"
     assert summary["feature_dtype"] == "float32"
+
+
+def test_learned_synonym_dictionary_contrastive_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_contrastive",
+        budgets=[4],
+        train_examples=24,
+        eval_examples=8,
+        seed=29,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=24,
+        feature_dim=48,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="contrastive_bilinear",
+        contrastive_negative_sources=1,
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_contrastive" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path / "learned_synonym_dictionary_contrastive" / "core_to_holdout" / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+    assert payload["receiver_mode"] == "contrastive_bilinear"
+    assert payload["contrastive_negative_sources"] == 1
+    assert direction["receiver_mode"] == "contrastive_bilinear"
+    assert direction["contrastive_negative_sources"] == 1
+    assert prediction["metadata"]["decoder"] in {
+        "learned_synonym_dictionary",
+        "learned_synonym_dictionary_target_preserve",
+    }

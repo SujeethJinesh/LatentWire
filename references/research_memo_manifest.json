@@ -1048,5 +1048,12 @@
     "path": "references/506_frozen_receiver_smoke_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for frozen BGE/Qwen3 receiver smokes and the next contrastive/JEPA-style source-control receiver branch."
+  },
+  {
+    "num": 507,
+    "slug": "contrastive_receiver_refs_20260430",
+    "path": "references/507_contrastive_receiver_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the contrastive receiver smoke, covering CPC/InfoNCE, CLIP, I-JEPA, Q-Former, Flamingo/Perceiver Resampler, QJL, and TurboQuant."
   }
 ]
