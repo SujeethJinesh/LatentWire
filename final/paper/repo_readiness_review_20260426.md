@@ -2955,3 +2955,15 @@ The paper is still not comfortably ICLR-full: it needs paired uncertainty/seed
 stability for product-codebook rows and a model-mediated or cross-family
 receiver gate to reduce the hand-coded protocol objection. It is now much
 stronger as a COLM workshop paper and closer to a scoped ICLR submission.
+
+Update `2026-04-30`: product-codebook packets now have paired uncertainty on
+the same remapped `n=256` surface. The uncertainty gate passes with `8/9` rows,
+all three remaps covered, minimum passing CI95 lower bound `+0.191` versus
+target-only and `+0.152` versus the strongest product-codebook destructive
+control. The known failed 2-byte remap-107 row stays failed. This strengthens
+the learned discrete-packet contribution and reduces chance/cherry-picking
+risk, but it also clarifies the comparison to scalar WZ: PQ beats scalar in raw
+accuracy on every row, yet paired CI lower bounds versus scalar can be negative.
+The next full-paper blocker is therefore not PQ-vs-scalar dominance; it is a
+model-mediated receiver or cross-family/generalization gate that makes the
+communication method feel less hand-coded.

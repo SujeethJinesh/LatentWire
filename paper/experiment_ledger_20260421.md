@@ -15988,3 +15988,19 @@ from private evidence features. Product-codebook packets now have a defensible
 receiver-side systems win when public target-side candidate state is available.
 Do not overclaim end-to-end serving speedup yet: source packet construction,
 native GPU serving, and model-mediated target decode remain separate gates.
+
+Follow-up `2026-04-30`: added paired uncertainty for the live
+product-codebook packet branch. Code:
+`scripts/summarize_source_private_product_codebook_uncertainty.py`; test:
+`tests/test_summarize_source_private_product_codebook_uncertainty.py`; memo:
+`paper/source_private_product_codebook_uncertainty_20260430.md`; artifact:
+`results/source_private_product_codebook_uncertainty_20260430/`. Outcome:
+pass gate `True`, `8/9` pass rows, all three remaps covered, min passing paired
+CI95 low vs target `+0.191`, min passing paired CI95 low vs best
+product-codebook destructive control `+0.152`, max product-codebook accuracy
+`0.598`, and the known 2-byte remap-107 row remains failed by importing the
+original functional source-control pass flag. Interpretation: product-codebook
+packets now have stable paired source-causal lift against target/control rows on
+the frozen `n=256` surface. They do not statistically dominate scalar WZ on
+every row (`min CI95 low vs scalar = -0.035`), so scalar remains a strong
+adjacent codec comparator rather than a defeated baseline.

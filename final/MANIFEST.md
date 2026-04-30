@@ -168,6 +168,11 @@
   table decode p50 <= `0.4942 ms`, resident lookup p50 <= `0.02000 ms`, cached
   vector decode p50 <= `0.0257 ms`, and exact parity with the canonical
   decoder.
+- Product-codebook paired uncertainty script, test, memo, and artifact showing
+  the live PQ packet has paired source-causal lift on the remapped `n=256`
+  surface: `8/9` pass rows, all remaps covered, min passing CI95 low `+0.191`
+  vs target and `+0.152` vs best destructive control, with scalar WZ kept as a
+  strong adjacent comparator.
 
 ## Notes
 
