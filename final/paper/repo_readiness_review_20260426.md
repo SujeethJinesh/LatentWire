@@ -3531,3 +3531,35 @@ closer but still not comfortable: next gates are n512/n500 seed repeats,
 matched C2C/KVComm-style baselines, broader tasks, and a systems table for
 offline public calibration, cold candidate feature build, resident decode,
 packet/record bytes, and source text/KV exposure.
+
+Update `2026-04-30`: candidate-local residual decoding now clears the n512
+repeat gate and has a branch-specific systems trace. Updated method memo:
+`paper/source_private_candidate_local_residual_receiver_20260430.md`; new
+systems memo:
+`paper/source_private_candidate_local_residual_systems_waterfall_20260430.md`;
+new code:
+`scripts/build_source_private_candidate_local_residual_systems_waterfall.py`;
+new tests:
+`tests/test_build_source_private_candidate_local_residual_systems_waterfall.py`;
+new references:
+`references/548_candidate_local_residual_systems_refs_20260430.md`; artifacts:
+`results/source_private_candidate_local_residual_receiver_20260430/summary/`
+and
+`results/source_private_candidate_local_residual_systems_waterfall_20260430/`.
+The aggregate candidate-local summary now reports `54` rows, `21` pass rows,
+and pass gate `true`: n256 seeds `47/53/59` and n512 seeds `47/53/59` all pass
+`core_to_holdout`, `holdout_to_core`, and `same_family_all`. The n512 held-out
+rows are stable at 8B: core->holdout matched `0.625` vs target `0.250`; holdout
+->core matched `0.500` vs target `0.250`; same-family matched `0.5625` vs
+target `0.250`. The systems waterfall passes `9/9` n512 packet rows, reports
+an 8B payload as an 11B record with batch-64 `11.00` 64B-line bytes/request and
+`12.00` 128B-DMA bytes/request, max current Python nonresident packet p50
+`0.303916 ms/request`, representative seed59 resident sparse decode p50 at most
+`5.231934 us/request` with `0` mismatches, max cold public candidate feature
+build `4.161215 ms/request`, and source text/KV exposure `false/false`.
+Readiness impact: COLM workshop readiness is now strong if scoped to
+source-private byte packets plus receiver-local public side information. ICLR
+is closer but still not comfortable until we add same-slice competitor baselines
+(Relative Representations, linear/Procrustes/CCA public calibration,
+matched-byte text, and C2C/KV-style cache proxy), another broader/n500
+validation, and NVIDIA/vLLM serving counters for production systems claims.

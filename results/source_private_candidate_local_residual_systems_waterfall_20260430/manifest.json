@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "candidate_local_residual_systems_waterfall.csv": "69e19452771942f47fce26b82322fd30472e900384fe496882986225431ad673",
+    "candidate_local_residual_systems_waterfall.json": "ff6b22f1583c5dfec370a97aa9ddb619c60d5d6a25310bb12e05f6f119680736",
+    "candidate_local_residual_systems_waterfall.md": "f2f5c688a9986fc333406b9efac3fc7f9ec6407542fe36265731fa7367479211"
+  },
+  "artifacts": [
+    "candidate_local_residual_systems_waterfall.json",
+    "candidate_local_residual_systems_waterfall.csv",
+    "candidate_local_residual_systems_waterfall.md"
+  ],
+  "pass_gate": true
+}

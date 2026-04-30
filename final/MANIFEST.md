@@ -344,11 +344,16 @@
   candidate-local normalization.
 - Candidate-local residual receiver code, tests, references, memo, and
   artifacts showing the public adapter branch now has a positive held-out
-  method row. The aggregate summary has `36` rows, `15` pass rows, and true
-  bidirectional cross-family pass; n256 seeds `47/53/59` all pass and n512
-  seed `47` passes, with zero family-qualified calibration/eval ID overlap and
-  zero transformed held-out surface overlap in promoted runs. Strict controls
-  include private-random atom packets and an in-run permuted-teacher receiver.
+  method row. The aggregate summary now has `54` rows, `21` pass rows, and
+  true bidirectional cross-family pass; n256 and n512 seeds `47/53/59` all
+  pass, with zero family-qualified calibration/eval ID overlap and zero
+  transformed held-out surface overlap in promoted runs. Strict controls include
+  private-random atom packets and an in-run permuted-teacher receiver.
+- Candidate-local residual systems waterfall code, tests, references, memo, and
+  artifact showing the live n512 branch passes `9/9` packet rows with 8B
+  payload / 11B record accounting, batch-64 `11.00` line bytes/request,
+  representative resident sparse decode p50 <= `5.232 us/request`, zero
+  resident mismatches, and no source text/KV exposure.
 
 ## Notes
 

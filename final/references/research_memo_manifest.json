@@ -1335,5 +1335,12 @@
     "path": "references/547_candidate_local_residual_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the candidate-local residual receiver, covering Relative Representations, C2C/KVComm/KVCOMM/Q-KVComm, QINCo, Perceiver/Flamingo/Q-Former, TurboQuant/QJL, Slepian-Wolf/Wyner-Ziv, novelty boundaries, and the live positive held-out packet branch."
+  },
+  {
+    "num": 548,
+    "slug": "candidate_local_residual_systems_refs_20260430",
+    "path": "references/548_candidate_local_residual_systems_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the candidate-local residual systems waterfall, covering C2C/KVComm/KVCOMM, vLLM/PagedAttention metrics, DistServe, FlashAttention IO accounting, TurboQuant/QJL, byte/exposure boundaries, and NVIDIA/vLLM non-claims."
   }
 ]

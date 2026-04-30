@@ -5,6 +5,8 @@
 - code: `scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`
 - summary: `results/source_private_candidate_local_residual_receiver_20260430/summary/`
 - references: `references/547_candidate_local_residual_receiver_refs_20260430.md`
+- systems:
+  `results/source_private_candidate_local_residual_systems_waterfall_20260430/`
 
 ## What Changed
 
@@ -33,15 +35,16 @@ expected to lose lift when a real transmitted atom is removed.
 Aggregate artifact:
 `results/source_private_candidate_local_residual_receiver_20260430/summary/hf_embedding_heldout_packet_summary.md`
 
-Across three n256 seeds (`47`, `53`, `59`) plus one n512 scale run (`47`), the
-aggregate summary reports:
+Across three n256 seeds (`47`, `53`, `59`) plus three n512 scale repeats
+(`47`, `53`, `59`), the aggregate summary reports:
 
-- `36` rows total;
-- `15` pass rows;
+- `54` rows total;
+- `21` pass rows;
 - bidirectional cross-family pass gate: `true`;
 - all n256 seeds pass `core_to_holdout`, `holdout_to_core`, and
   `same_family_all`;
-- n512 seed `47` also passes all three directions;
+- all n512 seeds pass `core_to_holdout`, `holdout_to_core`, and
+  `same_family_all`;
 - family-qualified calibration/eval ID overlap is `0` in all promoted runs;
 - transformed held-out eval surface overlap is `0` in all promoted runs.
 
@@ -57,6 +60,32 @@ Representative promoted rows:
 | n256 seed 59 | holdout->core | 4B | 0.500 | 0.250 | 0.258 | +0.250 | +0.199 | 1.000 |
 | n512 seed 47 | core->holdout | 8B | 0.625 | 0.250 | 0.250 | +0.375 | +0.332 | 0.875 |
 | n512 seed 47 | holdout->core | 8B | 0.500 | 0.250 | 0.260 | +0.250 | +0.209 | 0.875 |
+| n512 seed 53 | core->holdout | 8B | 0.625 | 0.250 | 0.254 | +0.375 | +0.332 | 0.875 |
+| n512 seed 53 | holdout->core | 8B | 0.500 | 0.250 | 0.254 | +0.250 | +0.211 | 0.875 |
+| n512 seed 59 | core->holdout | 8B | 0.625 | 0.250 | 0.250 | +0.375 | +0.334 | 0.875 |
+| n512 seed 59 | holdout->core | 8B | 0.500 | 0.250 | 0.256 | +0.250 | +0.215 | 0.875 |
+
+## Systems Evidence
+
+New branch-specific systems artifact:
+`results/source_private_candidate_local_residual_systems_waterfall_20260430/`
+
+The systems waterfall reports:
+
+- `9/9` n512 packet rows pass at 8B across seeds `47/53/59` and all three
+  directions;
+- the 8B payload is an 11B record under the current 3B header/parity accounting;
+- batch-64 packet traffic is `11.00` 64B-line bytes/request and `12.00`
+  128B-DMA bytes/request;
+- current Python nonresident packet decode max p50 is `0.303916 ms/request`;
+- representative seed59 n512 resident sparse decode over cached public
+  candidate residuals has max p50 `5.231934 us/request`, max p95
+  `13.923666 us/request`, and `0` mismatches;
+- max cold public candidate feature build is `4.161215 ms/request`;
+- source text/KV exposure is `false/false`.
+
+This is a Mac-local receiver-cache and boundary-traffic result. It is not a
+production vLLM/NVIDIA claim.
 
 ## Interpretation
 
@@ -93,12 +122,12 @@ pass the strict rows.
 
 This is not yet enough for a comfortable ICLR full paper. Required next gates:
 
-1. n512/n500 repeated seeds, not just seed `47`;
+1. n500 repeats or another reviewer-hostile larger slice beyond the n512 seed
+   repeats now cleared;
 2. matched comparisons against C2C/KVComm/KVCOMM/Q-KVComm style communication
    on the same task or a carefully scoped proxy;
-3. systems table separating offline public adapter fit, cold candidate feature
-   build, resident candidate-cache decode, packet bytes, record bytes, and
-   source text/KV exposure;
+3. n500 repeats or an additional reviewer-hostile held-out benchmark beyond the
+   current n512 synonym gate;
 4. broader benchmarks beyond the held-out synonym repair task;
 5. NVIDIA/vLLM-style serving counters before any production systems claim.
 

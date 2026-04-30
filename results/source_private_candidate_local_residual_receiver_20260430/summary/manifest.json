@@ -1,7 +1,7 @@
 {
   "artifact_sha256": {
-    "hf_embedding_heldout_packet_summary.json": "080736e322c241aca6d8e60742a65642dde49fccea09f0f6dc2d31180d86e430",
-    "hf_embedding_heldout_packet_summary.md": "ee7af26f35904f1d7e2a6717f9d8c2759783338d66ac935b70e6e64362a4ef9a"
+    "hf_embedding_heldout_packet_summary.json": "45a4c75c97f53224dc232d72fcbe5f63b0ad7529184c5e03e659a3e95721fdd4",
+    "hf_embedding_heldout_packet_summary.md": "5ae5408b9bc6d4d6c871e44aa5ab75c147b98ad633fa4d25cb8ed6b6ca873c5b"
   },
   "artifacts": [
     "hf_embedding_heldout_packet_summary.json",

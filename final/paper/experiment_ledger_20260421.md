@@ -16828,3 +16828,36 @@ decoding as the current strongest positive contribution. It is not yet ICLR
 complete: next exact gates are n512/n500 seed repeats, matched C2C/KVComm-style
 baselines, broader benchmarks, and systems accounting for cold public-candidate
 feature build versus resident decode.
+
+Update `2026-04-30`: n512 seed repeats and a branch-specific systems waterfall
+strengthen the candidate-local residual receiver from a live branch into the
+current strongest ICLR candidate method. Code:
+`scripts/build_source_private_candidate_local_residual_systems_waterfall.py`;
+tests:
+`tests/test_build_source_private_candidate_local_residual_systems_waterfall.py`;
+method memo:
+`paper/source_private_candidate_local_residual_receiver_20260430.md`; systems
+memo:
+`paper/source_private_candidate_local_residual_systems_waterfall_20260430.md`;
+references:
+`references/548_candidate_local_residual_systems_refs_20260430.md`; artifacts:
+`results/source_private_candidate_local_residual_receiver_20260430/summary/`
+and
+`results/source_private_candidate_local_residual_systems_waterfall_20260430/`.
+Outcome: aggregate candidate-local evidence now has `54` rows, `21` pass rows,
+and pass gate `true`. n256 seeds `47/53/59` and n512 seeds `47/53/59` all pass
+`core_to_holdout`, `holdout_to_core`, and `same_family_all`; n512 passing rows
+use 8B packets, with core->holdout matched `0.625` vs target `0.250` and
+holdout->core matched `0.500` vs target `0.250` across all three seeds.
+Promoted rows preserve family-qualified calibration/eval exact-ID overlap `0`
+and transformed held-out eval surface overlap `0`. The systems waterfall passes
+`9/9` n512 packet rows, reports the 8B payload as an 11B record, batch-64
+traffic at `11.00` 64B-line bytes/request and `12.00` 128B-DMA bytes/request,
+max current Python nonresident packet p50 `0.303916 ms/request`, representative
+seed59 resident sparse decode p50 at most `5.231934 us/request` with `0`
+mismatches, max cold public candidate feature build `4.161215 ms/request`, and
+source text/KV exposure `false/false`. Readiness impact: COLM workshop is now
+strong for a scoped positive-method plus systems-positioning paper. Comfortable
+ICLR still requires same-slice Relative Representation / linear translation /
+matched-byte text / C2C-KV proxy baselines, broader or n500 validation, and
+NVIDIA/vLLM counters before production systems claims.
