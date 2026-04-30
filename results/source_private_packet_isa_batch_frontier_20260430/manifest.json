@@ -1,0 +1,33 @@
+{
+  "artifacts": [
+    "packet_isa_batch_frontier.json",
+    "packet_isa_batch_frontier.csv",
+    "packet_isa_batch_frontier.md"
+  ],
+  "gate": "source_private_packet_isa_batch_frontier",
+  "headline": {
+    "batch_sizes": [
+      1,
+      4,
+      16,
+      64
+    ],
+    "best_min_payload_batch_size": 64,
+    "best_min_payload_line_bytes_per_request": 5.0,
+    "best_min_payload_requests_per_64b_line": 12,
+    "header_bytes": 2,
+    "max_dma_packing_efficiency": 21.333333333333332,
+    "max_line_packing_efficiency": 12.8,
+    "minimum_packet_bytes_with_overhead": 5,
+    "parity_bytes": 1,
+    "pass_gate": true,
+    "payload_bytes": [
+      2,
+      4,
+      8,
+      16,
+      32
+    ]
+  },
+  "pass_gate": true
+}

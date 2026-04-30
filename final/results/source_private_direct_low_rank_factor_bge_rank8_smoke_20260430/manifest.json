@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "learned_synonym_dictionary_packet_gate.json": "98a6397239d138f355f23beba5993a1ba0ad4f67d7093472b2e27c9ef23c9b4d",
+    "learned_synonym_dictionary_packet_gate.md": "a11a075b261cb0092090fff1c3e05f3d25b1ed251e36f64fc513bc17c2ad00d5"
+  },
+  "artifacts": [
+    "learned_synonym_dictionary_packet_gate.json",
+    "learned_synonym_dictionary_packet_gate.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

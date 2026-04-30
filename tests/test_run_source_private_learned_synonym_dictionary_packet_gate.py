@@ -271,3 +271,114 @@ def test_low_rank_query_receiver_truncates_bilinear_map() -> None:
     assert dictionary.contrastive_rank == 2
     assert dictionary.receiver_effective_rank <= 2
     assert np.linalg.matrix_rank(dictionary.weights) <= 2
+
+
+def test_low_rank_factor_receiver_scores_with_explicit_factors(monkeypatch) -> None:
+    def fake_featurize_text(text: str, *, dim: int, text_feature_mode: str = "hashed") -> np.ndarray:
+        assert text == "candidate"
+        assert dim == 3
+        assert text_feature_mode == "hashed"
+        return np.array([1.0, 2.0, -1.0], dtype=np.float64)
+
+    monkeypatch.setattr(gate, "_featurize_text", fake_featurize_text)
+    left = np.array([[1.0, 0.0], [0.5, -1.0], [0.0, 2.0]], dtype=np.float64)
+    right = np.zeros((len(gate.ATOM_ORDER), 2), dtype=np.float64)
+    right[gate.ATOM_TO_ID["sum"], :] = [2.0, -0.5]
+    right[gate.ATOM_TO_ID["default"], :] = [1.0, 1.5]
+    dictionary = gate.LearnedSynonymDictionary(
+        feature_dim=3,
+        weights=left @ right.T,
+        top_k=2,
+        min_score=0.0,
+        text_feature_mode="hashed",
+        receiver_mode="contrastive_low_rank_factor",
+        bias=0.25,
+        contrastive_rank=2,
+        receiver_effective_rank=2,
+        left_factors=left,
+        right_factors=right,
+    )
+
+    payload_atoms = {"sum": 0.75, "default": 0.25}
+    feature = np.array([1.0, 2.0, -1.0], dtype=np.float64)
+    atom_vector = gate._atom_vector(payload_atoms)
+    expected = float((feature @ left) @ (atom_vector @ right) + 0.25)
+    assert dictionary.score_text("candidate", payload_atoms) == expected
+
+
+def test_direct_low_rank_factor_receiver_records_training_args(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_direct_low_rank",
+        budgets=[4],
+        train_examples=20,
+        eval_examples=8,
+        seed=41,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=20,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="contrastive_low_rank_factor",
+        contrastive_negative_sources=1,
+        contrastive_rank=3,
+        low_rank_factor_epochs=8,
+        low_rank_factor_lr=0.03,
+        low_rank_factor_loss="squared",
+        low_rank_factor_seed=123,
+        ridge=0.001,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_direct_low_rank" / "core_to_holdout" / "summary.json").read_text()
+    )
+    assert payload["receiver_mode"] == "contrastive_low_rank_factor"
+    assert payload["contrastive_rank"] == 3
+    assert payload["low_rank_factor_epochs"] == 8
+    assert payload["low_rank_factor_lr"] == 0.03
+    assert payload["low_rank_factor_loss"] == "squared"
+    assert payload["low_rank_factor_seed"] == 123
+    assert direction["receiver_mode"] == "contrastive_low_rank_factor"
+    assert direction["contrastive_rank"] == 3
+    assert direction["low_rank_factor_epochs"] == 8
+    assert direction["low_rank_factor_lr"] == 0.03
+    assert direction["low_rank_factor_loss"] == "squared"
+    assert direction["low_rank_factor_seed"] == 123
+    assert direction["receiver_effective_rank"] <= 3
+
+
+def test_fit_low_rank_factor_receiver_is_deterministic() -> None:
+    examples = gate.make_benchmark(examples=18, candidates=4, seed=43, family_set="all")
+    kwargs = dict(
+        examples=examples,
+        feature_dim=36,
+        ridge=0.001,
+        calibration_atom_view="synonym_stress",
+        top_k=6,
+        min_score=0.0,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="contrastive_low_rank_factor",
+        contrastive_negative_sources=1,
+        contrastive_rank=2,
+        low_rank_factor_epochs=6,
+        low_rank_factor_lr=0.04,
+        low_rank_factor_loss="bce",
+        low_rank_factor_seed=777,
+        seed=43,
+    )
+
+    first = gate._fit_dictionary(**kwargs)
+    second = gate._fit_dictionary(**kwargs)
+
+    assert first.receiver_mode == "contrastive_low_rank_factor"
+    assert first.left_factors is not None
+    assert first.right_factors is not None
+    assert first.left_factors.shape == (36, 2)
+    assert first.right_factors.shape == (len(gate.ATOM_ORDER), 2)
+    assert first.receiver_effective_rank <= 2
+    assert np.allclose(first.left_factors, second.left_factors)
+    assert np.allclose(first.right_factors, second.right_factors)
+    assert first.bias == second.bias

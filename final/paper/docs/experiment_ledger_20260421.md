@@ -15791,3 +15791,28 @@ promotion. Interpretation: post-hoc low-rank truncation gives a useful
 capacity frontier, but it is not the learned receiver breakthrough. Next method
 gate should be a real trainable low-rank/query-resampler receiver with
 source-destroying negatives, not SVD truncation.
+
+Follow-up `2026-04-30`: added a packet-ISA batch frontier and directly trained
+low-rank factor receiver. New systems code:
+`scripts/build_source_private_packet_isa_batch_frontier.py`; test:
+`tests/test_build_source_private_packet_isa_batch_frontier.py`; artifact:
+`results/source_private_packet_isa_batch_frontier_20260430/`. The artifact
+passes and stress-tests 2/4/8/16/32-byte payloads with a 2-byte header,
+1-byte parity/check field, 64B cache-line rounding, 128B DMA-burst rounding,
+and batch sizes 1/4/16/64. Headline: minimum packet bytes with overhead is `5`;
+a single 2-byte payload request still costs `64` line bytes and `128` DMA bytes;
+batch-64 packing lowers that to `5.0` line bytes/request and `6.0` DMA
+bytes/request; max line packing efficiency is `12.8x` and max DMA packing
+efficiency is `21.33x`. Interpretation: single requests are transfer-quantum
+limited, but tiny packets are hardware-useful under batched contiguous packing.
+
+Method follow-up: added `--receiver-mode contrastive_low_rank_factor`, a
+directly trained factor receiver scored as `(feature @ U) dot (atom_vector @ V)
++ bias`. It trains in NumPy with matched-source positives and shuffled-source
+negatives. BGE rank sweep artifacts:
+`results/source_private_direct_low_rank_factor_bge_rank{4,8,16}_smoke_20260430`.
+All direct-factor rows fail strict promotion and collapse to target-only:
+best learned accuracy `0.250`, best lift `+0.000`, controls clean, oracle
+`0.250`. Interpretation: directly trained low-rank factors are a clean negative
+on the current frozen BGE feature setup. Prune further bilinear/low-rank BGE
+tuning unless a new feature source or objective changes the hypothesis.

@@ -193,6 +193,18 @@ receiver branch should train the bottleneck factors/query vectors directly with
 source-control negatives, or pause method invention and scale the existing
 semantic-anchor evidence plus target-decoder/hardware systems rows.
 
+Update `2026-04-30`: packet ISA/batch accounting improves the systems
+contribution, while the direct low-rank factor receiver is pruned. The packet
+ISA artifact adds realistic overheads: a 2B payload becomes a 5B record with a
+2B header and 1B parity/check field; a single request is still 64B/128B
+line/burst limited, but batch-64 packing reaches `5.0` line bytes/request and
+`6.0` DMA bytes/request. This is valuable for a hardware-facing story because
+it identifies where packets matter: batched contiguous transfer, privacy, and
+avoiding text/KV movement. The direct low-rank factor receiver over BGE features
+collapses to target-only at ranks `4/8/16`, so the frozen BGE bilinear family is
+now mostly exhausted. The next credible method branch is a true query-resampler
+or target-preserving connector, not more low-rank bilinear tuning.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

@@ -371,6 +371,8 @@ class LearnedSynonymDictionary:
         bias: float = 0.0,
         contrastive_rank: int | None = None,
         receiver_effective_rank: int | None = None,
+        left_factors: np.ndarray | None = None,
+        right_factors: np.ndarray | None = None,
     ) -> None:
         self.feature_dim = feature_dim
         self.weights = weights
@@ -381,6 +383,8 @@ class LearnedSynonymDictionary:
         self.bias = bias
         self.contrastive_rank = contrastive_rank
         self.receiver_effective_rank = receiver_effective_rank
+        self.left_factors = left_factors
+        self.right_factors = right_factors
 
     def predict_atoms(self, text: str) -> dict[str, float]:
         features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
@@ -397,6 +401,12 @@ class LearnedSynonymDictionary:
             features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
             payload_vector = _atom_vector(payload_atoms)
             return float(features @ self.weights @ payload_vector + self.bias)
+        if self.receiver_mode == "contrastive_low_rank_factor":
+            if self.left_factors is None or self.right_factors is None:
+                raise ValueError("contrastive_low_rank_factor receiver is missing explicit factors")
+            features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
+            payload_vector = _atom_vector(payload_atoms)
+            return float((features @ self.left_factors) @ (payload_vector @ self.right_factors) + self.bias)
         raise ValueError(f"unknown receiver mode {self.receiver_mode!r}")
 
 
@@ -568,6 +578,121 @@ def _fit_contrastive_low_rank_query_dictionary(
     return dictionary
 
 
+def _fit_contrastive_low_rank_factor_dictionary(
+    *,
+    examples: list[Example],
+    feature_dim: int,
+    ridge: float,
+    calibration_atom_view: str,
+    top_k: int,
+    min_score: float,
+    text_feature_mode: str,
+    negative_source_controls: int = 0,
+    seed: int = 0,
+    contrastive_rank: int = 4,
+    low_rank_factor_epochs: int = 250,
+    low_rank_factor_lr: float = 0.05,
+    low_rank_factor_loss: str = "bce",
+) -> LearnedSynonymDictionary:
+    if contrastive_rank <= 0:
+        raise ValueError("contrastive_rank must be positive for contrastive_low_rank_factor")
+    if low_rank_factor_epochs <= 0:
+        raise ValueError("low_rank_factor_epochs must be positive")
+    if low_rank_factor_lr <= 0:
+        raise ValueError("low_rank_factor_lr must be positive")
+    if low_rank_factor_loss not in {"bce", "squared"}:
+        raise ValueError(f"unknown low_rank_factor_loss {low_rank_factor_loss!r}")
+
+    x_rows: list[np.ndarray] = []
+    atom_rows: list[np.ndarray] = []
+    y_rows: list[float] = []
+    source_vectors = [
+        _atom_vector(_source_private_atoms(example.private_test_log, mode="matched")) for example in examples
+    ]
+    py_rng = random.Random(seed)
+
+    def add_candidate_rows(example: Example, source_vector: np.ndarray, matched_source: bool) -> None:
+        if not np.any(source_vector):
+            return
+        answer_index = _answer_index(example)
+        for idx, candidate in enumerate(example.candidates):
+            texts = [candidate.patch_intent]
+            calibrated = _candidate_surface_text(candidate.patch_intent, candidate_atom_view=calibration_atom_view)
+            if calibrated != candidate.patch_intent:
+                texts.append(calibrated)
+            label = 1.0 if matched_source and idx == answer_index else 0.0
+            for text in texts:
+                x_rows.append(_featurize_text(text, dim=feature_dim, text_feature_mode=text_feature_mode))
+                atom_rows.append(source_vector)
+                y_rows.append(label)
+
+    for example_index, example in enumerate(examples):
+        add_candidate_rows(example, source_vectors[example_index], matched_source=True)
+        if negative_source_controls <= 0 or len(examples) < 2:
+            continue
+        candidate_indices = [idx for idx in range(len(examples)) if idx != example_index and np.any(source_vectors[idx])]
+        py_rng.shuffle(candidate_indices)
+        for negative_index in candidate_indices[:negative_source_controls]:
+            add_candidate_rows(example, source_vectors[negative_index], matched_source=False)
+
+    atom_dim = len(ATOM_ORDER)
+    if not x_rows:
+        return LearnedSynonymDictionary(
+            feature_dim=feature_dim,
+            weights=np.zeros((feature_dim, atom_dim), dtype=np.float64),
+            top_k=top_k,
+            min_score=min_score,
+            text_feature_mode=text_feature_mode,
+            receiver_mode="contrastive_low_rank_factor",
+            contrastive_rank=contrastive_rank,
+            receiver_effective_rank=0,
+            left_factors=np.zeros((feature_dim, contrastive_rank), dtype=np.float64),
+            right_factors=np.zeros((atom_dim, contrastive_rank), dtype=np.float64),
+        )
+
+    x = np.stack(x_rows, axis=0)
+    atoms = np.stack(atom_rows, axis=0)
+    y = np.array(y_rows, dtype=np.float64)
+    rng = np.random.default_rng(seed)
+    scale = 1.0 / np.sqrt(max(feature_dim, atom_dim))
+    left = rng.normal(0.0, scale, size=(feature_dim, contrastive_rank))
+    right = rng.normal(0.0, scale, size=(atom_dim, contrastive_rank))
+    prior = float(np.clip(y.mean(), 1e-4, 1.0 - 1e-4))
+    bias = float(np.log(prior / (1.0 - prior))) if low_rank_factor_loss == "bce" else prior
+
+    for _ in range(low_rank_factor_epochs):
+        projected_x = x @ left
+        projected_atoms = atoms @ right
+        scores = np.sum(projected_x * projected_atoms, axis=1) + bias
+        if low_rank_factor_loss == "bce":
+            clipped = np.clip(scores, -40.0, 40.0)
+            errors = 1.0 / (1.0 + np.exp(-clipped)) - y
+        else:
+            errors = scores - y
+        errors /= max(1, len(y))
+        grad_left = x.T @ (errors[:, None] * projected_atoms) + ridge * left
+        grad_right = atoms.T @ (errors[:, None] * projected_x) + ridge * right
+        grad_bias = float(errors.sum())
+        left -= low_rank_factor_lr * grad_left
+        right -= low_rank_factor_lr * grad_right
+        bias -= low_rank_factor_lr * grad_bias
+
+    weights = left @ right.T
+    return LearnedSynonymDictionary(
+        feature_dim=feature_dim,
+        weights=weights,
+        top_k=top_k,
+        min_score=min_score,
+        text_feature_mode=text_feature_mode,
+        receiver_mode="contrastive_low_rank_factor",
+        bias=bias,
+        contrastive_rank=contrastive_rank,
+        receiver_effective_rank=int(np.linalg.matrix_rank(weights)),
+        left_factors=left,
+        right_factors=right,
+    )
+
+
 def _fit_dictionary(
     *,
     examples: list[Example],
@@ -580,7 +705,11 @@ def _fit_dictionary(
     receiver_mode: str,
     contrastive_negative_sources: int,
     contrastive_rank: int,
-    seed: int,
+    low_rank_factor_epochs: int = 250,
+    low_rank_factor_lr: float = 0.05,
+    low_rank_factor_loss: str = "bce",
+    low_rank_factor_seed: int | None = None,
+    seed: int = 0,
 ) -> LearnedSynonymDictionary:
     if receiver_mode == "atom_ridge":
         return _fit_ridge_dictionary(
@@ -616,6 +745,22 @@ def _fit_dictionary(
             negative_source_controls=contrastive_negative_sources,
             seed=seed,
             contrastive_rank=contrastive_rank,
+        )
+    if receiver_mode == "contrastive_low_rank_factor":
+        return _fit_contrastive_low_rank_factor_dictionary(
+            examples=examples,
+            feature_dim=feature_dim,
+            ridge=ridge,
+            calibration_atom_view=calibration_atom_view,
+            top_k=top_k,
+            min_score=min_score,
+            text_feature_mode=text_feature_mode,
+            negative_source_controls=contrastive_negative_sources,
+            seed=seed if low_rank_factor_seed is None else low_rank_factor_seed,
+            contrastive_rank=contrastive_rank,
+            low_rank_factor_epochs=low_rank_factor_epochs,
+            low_rank_factor_lr=low_rank_factor_lr,
+            low_rank_factor_loss=low_rank_factor_loss,
         )
     raise ValueError(f"unknown receiver mode {receiver_mode!r}")
 
@@ -964,6 +1109,10 @@ def _run_direction(
     receiver_mode: str,
     contrastive_negative_sources: int,
     contrastive_rank: int,
+    low_rank_factor_epochs: int,
+    low_rank_factor_lr: float,
+    low_rank_factor_loss: str,
+    low_rank_factor_seed: int | None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     train_rows = make_benchmark(examples=train_examples, candidates=4, seed=train_seed, family_set=train_family_set)
@@ -985,6 +1134,10 @@ def _run_direction(
         receiver_mode=receiver_mode,
         contrastive_negative_sources=contrastive_negative_sources,
         contrastive_rank=contrastive_rank,
+        low_rank_factor_epochs=low_rank_factor_epochs,
+        low_rank_factor_lr=low_rank_factor_lr,
+        low_rank_factor_loss=low_rank_factor_loss,
+        low_rank_factor_seed=low_rank_factor_seed,
         seed=train_seed + 211,
     )
     surface_overlap_audit = _surface_overlap_audit(
@@ -1042,7 +1195,11 @@ def _run_direction(
         "text_feature_mode": text_feature_mode,
         "receiver_mode": receiver_mode,
         "contrastive_negative_sources": contrastive_negative_sources,
-        "contrastive_rank": contrastive_rank if receiver_mode == "contrastive_low_rank_query" else None,
+        "contrastive_rank": contrastive_rank if receiver_mode in {"contrastive_low_rank_query", "contrastive_low_rank_factor"} else None,
+        "low_rank_factor_epochs": low_rank_factor_epochs if receiver_mode == "contrastive_low_rank_factor" else None,
+        "low_rank_factor_lr": low_rank_factor_lr if receiver_mode == "contrastive_low_rank_factor" else None,
+        "low_rank_factor_loss": low_rank_factor_loss if receiver_mode == "contrastive_low_rank_factor" else None,
+        "low_rank_factor_seed": low_rank_factor_seed if receiver_mode == "contrastive_low_rank_factor" else None,
         "receiver_effective_rank": dictionary.receiver_effective_rank,
         "ridge": ridge,
         "top_k": top_k,
@@ -1093,6 +1250,10 @@ def run_gate(
     receiver_mode: str = "atom_ridge",
     contrastive_negative_sources: int = 0,
     contrastive_rank: int = 4,
+    low_rank_factor_epochs: int = 250,
+    low_rank_factor_lr: float = 0.05,
+    low_rank_factor_loss: str = "bce",
+    low_rank_factor_seed: int | None = None,
     min_decision_score: float = 0.20,
     feature_model: str = "BAAI/bge-small-en",
     feature_device: str = "auto",
@@ -1139,6 +1300,10 @@ def run_gate(
             receiver_mode=receiver_mode,
             contrastive_negative_sources=contrastive_negative_sources,
             contrastive_rank=contrastive_rank,
+            low_rank_factor_epochs=low_rank_factor_epochs,
+            low_rank_factor_lr=low_rank_factor_lr,
+            low_rank_factor_loss=low_rank_factor_loss,
+            low_rank_factor_seed=low_rank_factor_seed,
             min_decision_score=min_decision_score,
         )
         try:
@@ -1185,7 +1350,11 @@ def run_gate(
         "text_feature_mode": text_feature_mode,
         "receiver_mode": receiver_mode,
         "contrastive_negative_sources": contrastive_negative_sources,
-        "contrastive_rank": contrastive_rank if receiver_mode == "contrastive_low_rank_query" else None,
+        "contrastive_rank": contrastive_rank if receiver_mode in {"contrastive_low_rank_query", "contrastive_low_rank_factor"} else None,
+        "low_rank_factor_epochs": low_rank_factor_epochs if receiver_mode == "contrastive_low_rank_factor" else None,
+        "low_rank_factor_lr": low_rank_factor_lr if receiver_mode == "contrastive_low_rank_factor" else None,
+        "low_rank_factor_loss": low_rank_factor_loss if receiver_mode == "contrastive_low_rank_factor" else None,
+        "low_rank_factor_seed": low_rank_factor_seed if receiver_mode == "contrastive_low_rank_factor" else None,
         "feature_model": feature_model if text_feature_mode.startswith("hf_") else None,
         "feature_device": _resolve_torch_device(feature_device) if text_feature_mode.startswith("hf_") else None,
         "feature_dtype": feature_dtype if text_feature_mode.startswith("hf_") else None,
@@ -1265,6 +1434,10 @@ def _write_direction_markdown(path: pathlib.Path, payload: dict[str, Any]) -> No
         f"- receiver mode: `{payload['receiver_mode']}`",
         f"- contrastive negative sources: `{payload['contrastive_negative_sources']}`",
         f"- contrastive rank: `{payload['contrastive_rank']}`",
+        f"- low-rank factor epochs: `{payload['low_rank_factor_epochs']}`",
+        f"- low-rank factor lr: `{payload['low_rank_factor_lr']}`",
+        f"- low-rank factor loss: `{payload['low_rank_factor_loss']}`",
+        f"- low-rank factor seed: `{payload['low_rank_factor_seed']}`",
         f"- receiver effective rank: `{payload['receiver_effective_rank']}`",
         f"- min decision score: `{payload['min_decision_score']}`",
         f"- exact eval surface overlap count: `{payload['surface_overlap_audit']['exact_eval_surface_overlap_count']}`",
@@ -1301,6 +1474,10 @@ def _write_gate_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- receiver mode: `{payload['receiver_mode']}`",
         f"- contrastive negative sources: `{payload['contrastive_negative_sources']}`",
         f"- contrastive rank: `{payload['contrastive_rank']}`",
+        f"- low-rank factor epochs: `{payload['low_rank_factor_epochs']}`",
+        f"- low-rank factor lr: `{payload['low_rank_factor_lr']}`",
+        f"- low-rank factor loss: `{payload['low_rank_factor_loss']}`",
+        f"- low-rank factor seed: `{payload['low_rank_factor_seed']}`",
         f"- min decision score: `{payload['min_decision_score']}`",
         f"- max learned packet accuracy: `{h['max_learned_synonym_dictionary_accuracy']:.3f}`",
         f"- max learned-target delta: `{h['max_learned_minus_target']:.3f}`",
@@ -1359,7 +1536,7 @@ def main() -> None:
     parser.add_argument("--local-files-only", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument(
         "--receiver-mode",
-        choices=["atom_ridge", "contrastive_bilinear", "contrastive_low_rank_query"],
+        choices=["atom_ridge", "contrastive_bilinear", "contrastive_low_rank_query", "contrastive_low_rank_factor"],
         default="atom_ridge",
     )
     parser.add_argument(
@@ -1372,7 +1549,31 @@ def main() -> None:
         "--contrastive-rank",
         type=int,
         default=4,
-        help="For contrastive_low_rank_query, truncate the learned bilinear receiver to this candidate-query/source-atom rank.",
+        help="Low-rank receiver rank. For contrastive_low_rank_query this truncates the bilinear map; for contrastive_low_rank_factor this is the directly trained factor rank.",
+    )
+    parser.add_argument(
+        "--low-rank-factor-epochs",
+        type=int,
+        default=250,
+        help="For contrastive_low_rank_factor, number of numpy gradient steps.",
+    )
+    parser.add_argument(
+        "--low-rank-factor-lr",
+        type=float,
+        default=0.05,
+        help="For contrastive_low_rank_factor, gradient step size.",
+    )
+    parser.add_argument(
+        "--low-rank-factor-loss",
+        choices=["bce", "squared"],
+        default="bce",
+        help="For contrastive_low_rank_factor, objective used for matched candidate/source-control negatives.",
+    )
+    parser.add_argument(
+        "--low-rank-factor-seed",
+        type=int,
+        default=None,
+        help="For contrastive_low_rank_factor, explicit factor initialization seed; defaults to the direction train seed.",
     )
     parser.add_argument("--ridge", type=float, default=0.25)
     parser.add_argument("--top-k", type=int, default=8)
@@ -1400,6 +1601,10 @@ def main() -> None:
         receiver_mode=args.receiver_mode,
         contrastive_negative_sources=args.contrastive_negative_sources,
         contrastive_rank=args.contrastive_rank,
+        low_rank_factor_epochs=args.low_rank_factor_epochs,
+        low_rank_factor_lr=args.low_rank_factor_lr,
+        low_rank_factor_loss=args.low_rank_factor_loss,
+        low_rank_factor_seed=args.low_rank_factor_seed,
         feature_model=args.feature_model,
         feature_device=args.feature_device,
         feature_dtype=args.feature_dtype,
