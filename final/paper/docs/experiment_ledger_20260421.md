@@ -15901,3 +15901,26 @@ plain trainable JEPA-Q leaked, and control-regularized JEPA-Q suppresses the
 matched signal. The next learned-receiver gate should use stronger frozen
 activation features or a whole-candidate-pool contrastive objective rather than
 more threshold tuning.
+
+Follow-up `2026-04-30`: implemented the whole-candidate-pool contrastive
+JEPA-Q receiver and ran the strict smoke. New receiver mode:
+`jepa_query_resampler_pool_contrastive`; code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`; focused
+tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`;
+memo:
+`paper/source_private_pool_contrastive_jepa_receiver_20260430.md`; references:
+`references/512_pool_contrastive_and_compression_packet_refs_20260430.md`;
+artifact:
+`results/source_private_pool_contrastive_jepa_query_resampler_semantic_anchor_smoke_20260430/`.
+This variant trains a whole-pool softmax target on matched packets and
+target-prior preservation targets for shuffled-source, atom-deranged, and
+random same-byte packet groups. Outcome: strict smoke is negative with `0/6`
+pass rows, max learned accuracy `0.250`, max learned-target lift `+0.000`,
+controls at target, rank `128`, query entropy about `1.3246`, and context
+variance about `0.0050-0.0053`. Some matched rows fall below target
+(`0.125`). Decision: prune the current semantic-anchor JEPA-Q receiver family
+as a near-term path. The next highest-yield branches are stronger frozen
+LLM/activation features under whole-pool training, compression-native packets
+such as rotation-sign or product-codebook packets, or a less hand-coded
+private retrieval/tool-trace surface.

@@ -1083,5 +1083,12 @@
     "path": "references/511_control_regularized_jepa_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the control-regularized JEPA/Q-Former receiver gate and novelty/systems pressure test, covering I-JEPA, BLIP-2/Q-Former, Flamingo, LLMLingua, C2C, KIVI, KVQuant, and QJL."
+  },
+  {
+    "num": 512,
+    "slug": "pool_contrastive_and_compression_packet_refs_20260430",
+    "path": "references/512_pool_contrastive_and_compression_packet_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the whole-pool contrastive receiver falsification and next compression-native packet branches, covering I-JEPA, BLIP-2/Q-Former, DiT, consistency models, QJL, TurboQuant, product quantization, and KIVI."
   }
 ]

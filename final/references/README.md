@@ -529,3 +529,6 @@ final-paper framing:
 - `511_`: Control-regularized JEPA/Q-Former receiver references and
   novelty/systems pressure-test memo for I-JEPA, BLIP-2/Q-Former, Flamingo,
   LLMLingua, C2C, KIVI, KVQuant, and QJL.
+- `512_`: Whole-pool contrastive receiver and compression-native packet
+  references for I-JEPA, BLIP-2/Q-Former, DiT, consistency models, QJL,
+  TurboQuant, product quantization, and KIVI.

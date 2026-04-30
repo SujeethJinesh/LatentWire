@@ -147,6 +147,11 @@
   collapsing to target-only behavior; this prunes the current JEPA-Q objective
   family and moves the next learned-receiver gate to stronger activation
   features or whole-candidate-pool training.
+- Whole-candidate-pool contrastive JEPA-Q receiver code, tests, references,
+  memo, and smoke artifact showing that training on the actual candidate-pool
+  decision surface still collapses to at-or-below-target matched performance
+  with clean controls; this closes the current semantic-anchor JEPA-Q receiver
+  family as a near-term ICLR method path.
 
 ## Notes
 

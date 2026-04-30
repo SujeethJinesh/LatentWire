@@ -257,6 +257,17 @@ honest paper story is a strong source-private packet protocol and systems
 frontier with a promoted semantic-anchor receiver, not broad learned latent
 communication.
 
+Update `2026-04-30`: the whole-candidate-pool contrastive JEPA-Q rescue also
+failed. It trains on the actual candidate-pool decision surface instead of
+independent candidate rows, with shuffled-source, atom-deranged, and random
+same-byte groups assigned target-prior preservation targets. The strict smoke
+has `0/6` pass rows, max learned accuracy `0.250`, max lift `+0.000`, and clean
+controls because matched packet signal is suppressed. This sharpens the
+readiness decision: do not spend more cycles tuning semantic-anchor JEPA-Q. The
+next credible full-paper strengthening work is either stronger frozen
+LLM/activation features, a compression-native packet method inspired by QJL/
+TurboQuant/PQ, or a less synthetic private retrieval/tool-trace benchmark.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

@@ -704,3 +704,91 @@ def test_fit_control_regularized_jepa_query_resampler_differs_from_plain_trainab
     assert plain.resampler_output is not None
     assert np.allclose(regularized.resampler_output, repeated.resampler_output)
     assert not np.allclose(regularized.resampler_output, plain.resampler_output)
+
+
+def test_pool_contrastive_jepa_query_resampler_records_training_metadata(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_pool_contrastive_jepa_query",
+        budgets=[4],
+        train_examples=12,
+        eval_examples=6,
+        seed=59,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=12,
+        feature_dim=24,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="jepa_query_resampler_pool_contrastive",
+        contrastive_negative_sources=1,
+        jepa_query_count=2,
+        jepa_hidden_dim=4,
+        jepa_train_epochs=2,
+        jepa_lr=0.02,
+        jepa_weight_decay=0.001,
+        ridge=0.01,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (
+            tmp_path
+            / "learned_synonym_dictionary_pool_contrastive_jepa_query"
+            / "core_to_holdout"
+            / "summary.json"
+        ).read_text()
+    )
+    row = direction["budget_summaries"][0]
+    assert payload["receiver_mode"] == "jepa_query_resampler_pool_contrastive"
+    assert payload["jepa_trainable_factors"] is True
+    assert payload["jepa_train_epochs"] == 2
+    assert direction["receiver_mode"] == "jepa_query_resampler_pool_contrastive"
+    assert direction["jepa_trainable_factors"] is True
+    assert direction["jepa_train_epochs"] == 2
+    assert "shuffled_source" in row["metrics"]
+    assert "random_same_byte" in row["metrics"]
+    assert "atom_id_derangement" in row["metrics"]
+
+
+def test_fit_pool_contrastive_jepa_query_resampler_is_deterministic() -> None:
+    examples = gate.make_benchmark(examples=10, candidates=4, seed=61, family_set="all")
+    kwargs = dict(
+        examples=examples,
+        feature_dim=20,
+        ridge=0.01,
+        calibration_atom_view="synonym_stress",
+        top_k=6,
+        min_score=0.0,
+        text_feature_mode="semantic_anchor",
+        contrastive_negative_sources=1,
+        contrastive_rank=2,
+        jepa_query_count=2,
+        jepa_hidden_dim=4,
+        jepa_train_epochs=2,
+        jepa_lr=0.02,
+        jepa_weight_decay=0.001,
+        seed=61,
+    )
+
+    first = gate._fit_dictionary(
+        **kwargs,
+        receiver_mode="jepa_query_resampler_pool_contrastive",
+    )
+    second = gate._fit_dictionary(
+        **kwargs,
+        receiver_mode="jepa_query_resampler_pool_contrastive",
+    )
+    control_regularized = gate._fit_dictionary(
+        **kwargs,
+        receiver_mode="jepa_query_resampler_control_regularized",
+    )
+
+    assert first.receiver_mode == "jepa_query_resampler_pool_contrastive"
+    assert first.jepa_trainable_factors is True
+    assert first.resampler_output is not None
+    assert second.resampler_output is not None
+    assert control_regularized.resampler_output is not None
+    assert np.allclose(first.resampler_output, second.resampler_output)
+    assert not np.allclose(first.resampler_output, control_regularized.resampler_output)
