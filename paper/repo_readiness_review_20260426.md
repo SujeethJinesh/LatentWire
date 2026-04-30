@@ -3200,3 +3200,26 @@ full-paper blocker is now precise: produce a balanced learned or frozen target
 receiver with valid rate `>=0.95` at n64+, or keep the paper claim explicitly
 as a rigorous source-private side-information protocol with systems accounting.
 COLM workshop readiness remains very strong.
+
+Update `2026-04-30`: the frozen Qwen3-0.6B binary verifier now clears a larger
+combined-control cross-family n128 gate, and the systems story has a
+receiver-consumption trace. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_core_n128_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_holdout_n128_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/paired_uncertainty_qwen3_seed29_core_holdout_n128_binary_logprob_combined_cpu/`,
+and
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed29_core_holdout_n128_binary_logprob_combined_cpu/`;
+memo:
+`paper/source_private_binary_verifier_n128_consumption_trace_20260430.md`.
+Outcome: core and holdout both score `1.000` matched, `0.250` target-only,
+`0.250` best control, `0.000` deranged public-table control, valid rate `1.000`,
+and min paired CI95 low `+0.672` versus target and best control. The verifier
+trace reports `2` payload bytes, `5` packet-record bytes, batch-64 traffic of
+`5.0` line bytes/request and `6.0` DMA bytes/request, and four target-side
+binary forward passes/example with Mac CPU p50 about `1.63-1.67`s. Readiness
+implication: this materially strengthens the scoped positive-method case and
+COLM workshop readiness. For comfortable ICLR, the remaining gap is still a
+seed-stable n160/n500 receiver slice, a less protocol-shaped learned receiver,
+or native GPU/vLLM TTFT/TPOT/goodput telemetry. The claim should stay
+source-private side-information communication with public decoder side
+information, not protocol-free latent reasoning.

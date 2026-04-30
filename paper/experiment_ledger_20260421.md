@@ -16375,3 +16375,30 @@ Interpretation: do not spend another cycle tuning this bilinear receiver
 without a new mechanism. The promoted contribution stack remains the
 source-private benchmark/protocol, balanced direct packet plus frozen binary
 verifier/semantic-anchor receiver, and hardware-readable packet trace-card.
+
+Update `2026-04-30`: scaled the frozen Qwen3-0.6B binary-verifier receiver to
+combined-control cross-family n128 and added a verifier-consumption trace.
+Code: `scripts/build_source_private_verifier_consumption_trace.py`; tests:
+`tests/test_build_source_private_verifier_consumption_trace.py`; memo:
+`paper/source_private_binary_verifier_n128_consumption_trace_20260430.md`;
+references:
+`references/531_systems_novelty_private_packet_verifier_refs_20260430.md`.
+Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_core_n128_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_holdout_n128_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/paired_uncertainty_qwen3_seed29_core_holdout_n128_binary_logprob_combined_cpu/`,
+and
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed29_core_holdout_n128_binary_logprob_combined_cpu/`.
+Outcome: both core and holdout pass at n128 with matched packet `1.000`,
+target-only `0.250`, best control `0.250`, deranged public-table control
+`0.000`, valid prediction rate `1.000`, exact-ID parity `True`, min
+matched-target and matched-best-control lift `+0.750`, and min paired CI95
+lower bound `+0.672`. The consumption trace reports a `2`-byte payload, `5`-byte
+packet record, `64`B single-request cache-line accounting, `128`B DMA accounting,
+batch-64 packed traffic of `5.0` line bytes/request and `6.0` DMA bytes/request,
+and four target-side binary forward passes/example with Mac CPU p50
+`1630.8-1665.5` ms. Interpretation: promote this as stronger frozen
+model-mediated source-private communication evidence and a more honest systems
+trace; do not claim production latency or protocol-free latent transfer. The
+next exact gate is seed31 n128/n160 with the same combined controls, followed
+by a batched/fused receiver or learned candidate-logit flow receiver.

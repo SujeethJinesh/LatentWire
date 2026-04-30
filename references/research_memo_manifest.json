@@ -1216,5 +1216,12 @@
     "path": "references/530_contrastive_receiver_pruning_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for pruning the learned contrastive semantic-anchor receiver, covering sparse crosscoders, universal SAEs, symmetry/orbit crosscoders, SimCSE, Wyner-Ziv side-information coding, OPQ, and C2C boundaries."
+  },
+  {
+    "num": 531,
+    "slug": "systems_novelty_private_packet_verifier_refs_20260430",
+    "path": "references/531_systems_novelty_private_packet_verifier_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source systems novelty memo for the source-private 2-byte packet plus frozen verifier branch, covering TurboQuant, QJL, KIVI/KVQuant, C2C/KVCOMM, vLLM, DistServe, FlashAttention, GainSight/Tambe hardware framing, and diffusion/consistency/flow receiver inspiration."
   }
 ]
