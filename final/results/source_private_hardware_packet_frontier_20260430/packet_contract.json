@@ -1,0 +1,48 @@
+{
+  "allowed_receiver_state": [
+    "public prompt",
+    "public candidate set",
+    "public receiver dictionary or learned receiver weights",
+    "target-side prior/cache state"
+  ],
+  "byte_budget_options": [
+    2,
+    4,
+    8
+  ],
+  "contract_name": "LatentWire source-private diagnostic packet ISA",
+  "control_requirements": [
+    "zero-source",
+    "shuffled-source",
+    "random same-byte",
+    "answer-only",
+    "answer-masked",
+    "target-derived sidecar",
+    "atom/code derangement where applicable"
+  ],
+  "fields": [
+    {
+      "bits": 8,
+      "name": "atom_or_slot_id",
+      "purpose": "public receiver dictionary index"
+    },
+    {
+      "bits": 8,
+      "name": "confidence_or_parity",
+      "purpose": "receiver thresholding, validity, or parity"
+    },
+    {
+      "bits": "16-48",
+      "name": "optional_extra_atoms",
+      "purpose": "additional source-private evidence under 4/8 byte budgets"
+    }
+  ],
+  "forbidden_sender_material": [
+    "private source text relay",
+    "source KV/cache tensors",
+    "answer string or candidate label by construction"
+  ],
+  "invalid_packet_behavior": "fall back to target-only prediction or abstain; invalid packets must not improve controls",
+  "minimum_packet_bytes": 2.0,
+  "version": "2026-04-30"
+}

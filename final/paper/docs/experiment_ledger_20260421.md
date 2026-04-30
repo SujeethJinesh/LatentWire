@@ -15763,3 +15763,31 @@ Interpretation: source-control contrastive training is useful and reviewer-safe,
 but frozen BGE bilinear scoring is not yet a headline receiver. Next exact gate:
 a tiny query-resampler or low-rank information-bottleneck receiver trained with
 source-destroying negatives and reported as a rate-distortion curve.
+
+Follow-up `2026-04-30`: added a hardware-facing systems packet frontier and a
+low-rank query receiver smoke. New hardware code:
+`scripts/build_source_private_hardware_packet_frontier.py`; test:
+`tests/test_build_source_private_hardware_packet_frontier.py`; artifact:
+`results/source_private_hardware_packet_frontier_20260430/`. The artifact
+passes and reports raw bytes, 64B cache-line rounding, 128B DMA-burst rounding,
+packet lifetime, receiver access pattern, and a machine-readable
+`packet_contract.json`. Headline: packet raw minimum is `2` bytes but line
+minimum is `64` bytes; query-aware text is `7.0x` raw bytes but `1.0x` at 64B
+line granularity; full hidden-log relay is at least `183.25x` raw bytes and
+`6.0x` cache-line bytes; KV byte-floor rows are at least `10752.0x` raw bytes
+and `336.0x` cache-line bytes; full-log p50 TTFT delta remains at least
+`+164.27 ms`. This strengthens the hardware/systems story while making the
+cache-line caveat explicit.
+
+Method follow-up: added `--receiver-mode contrastive_low_rank_query` with
+`--contrastive-rank` to the learned synonym packet gate. It fits the
+source-control contrastive receiver and SVD-truncates the bilinear map as a
+cheap query-bottleneck proxy. BGE rank sweep artifacts:
+`results/source_private_low_rank_query_frozen_receiver_bge_rank{1,2,4,8}_smoke_20260430`.
+All ranks fail strict promotion. Rank 1 erases signal (`0` lift), ranks 2/4
+reach at most `0.375`, and rank 8 has one passing holdout-to-core row
+(`0.625` vs target/control `0.250`) but fails bidirectional and same-family
+promotion. Interpretation: post-hoc low-rank truncation gives a useful
+capacity frontier, but it is not the learned receiver breakthrough. Next method
+gate should be a real trainable low-rank/query-resampler receiver with
+source-destroying negatives, not SVD truncation.

@@ -174,6 +174,25 @@ claim. The next highest-value branch is a query-resampler or low-rank
 information-bottleneck receiver trained with source-control negatives and
 reported as a rate-distortion curve.
 
+Update `2026-04-30`: the systems contribution is now stronger and more
+hardware-readable. The new hardware packet frontier translates the rate table
+into raw bytes, 64B cache-line traffic, 128B DMA-burst traffic, packet lifetime,
+and a machine-readable packet contract. It preserves the honest caveat that a
+2-byte packet still occupies at least one 64B transfer, so query-aware 14-byte
+text ties at cache-line granularity while losing on semantic payload and privacy.
+Full hidden-log relay remains at least `6.0x` larger at cache-line granularity,
+and KV byte-floor rows remain at least `336.0x` larger. This improves the
+Tambe-lab/systems-facing contribution without claiming production accelerator
+throughput.
+
+Update `2026-04-30`: the low-rank query receiver smoke did not promote. Ranks
+`1/2/4/8` over frozen BGE features all fail strict promotion; only rank 8 gets
+one passing holdout-to-core row, while core-to-holdout remains too weak. This
+weakens the hypothesis that post-hoc SVD bottlenecking is enough. The next
+receiver branch should train the bottleneck factors/query vectors directly with
+source-control negatives, or pause method invention and scale the existing
+semantic-anchor evidence plus target-decoder/hardware systems rows.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

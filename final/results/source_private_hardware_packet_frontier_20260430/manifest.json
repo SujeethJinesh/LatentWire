@@ -1,0 +1,26 @@
+{
+  "artifacts": [
+    "hardware_packet_frontier.json",
+    "hardware_packet_frontier.csv",
+    "hardware_packet_frontier.md",
+    "packet_contract.json"
+  ],
+  "gate": "source_private_hardware_packet_frontier",
+  "headline": {
+    "endpoint_rows": 2,
+    "endpoint_rows_passing_controls": 2,
+    "full_log_cacheline_ratio_min": 6.0,
+    "full_log_raw_ratio_min": 183.25,
+    "full_log_ttft_delta_ms_min": 164.27308350102976,
+    "kv_cacheline_ratio_min": 336.0,
+    "kv_raw_ratio_min": 10752.0,
+    "kv_rows": 2,
+    "packet_cacheline_bytes_min": 64.0,
+    "packet_raw_bytes_min": 2.0,
+    "pass_gate": true,
+    "query_aware_text_cacheline_ratio_min": 1.0,
+    "query_aware_text_raw_ratio_min": 7.0,
+    "semantic_rows": 2
+  },
+  "pass_gate": true
+}

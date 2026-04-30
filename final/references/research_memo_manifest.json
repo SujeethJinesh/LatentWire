@@ -1055,5 +1055,12 @@
     "path": "references/507_contrastive_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the contrastive receiver smoke, covering CPC/InfoNCE, CLIP, I-JEPA, Q-Former, Flamingo/Perceiver Resampler, QJL, and TurboQuant."
+  },
+  {
+    "num": 508,
+    "slug": "hardware_packet_frontier_refs_20260430",
+    "path": "references/508_hardware_packet_frontier_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the hardware-facing packet frontier, covering Tambe Lab research themes, GainSight, BlockDialect, EdgeBERT, AdaptivFloat, CAMEL, and 3LA."
   }
 ]

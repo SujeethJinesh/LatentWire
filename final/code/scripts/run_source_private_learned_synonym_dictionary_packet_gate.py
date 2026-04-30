@@ -369,6 +369,8 @@ class LearnedSynonymDictionary:
         text_feature_mode: str,
         receiver_mode: str = "atom_ridge",
         bias: float = 0.0,
+        contrastive_rank: int | None = None,
+        receiver_effective_rank: int | None = None,
     ) -> None:
         self.feature_dim = feature_dim
         self.weights = weights
@@ -377,6 +379,8 @@ class LearnedSynonymDictionary:
         self.text_feature_mode = text_feature_mode
         self.receiver_mode = receiver_mode
         self.bias = bias
+        self.contrastive_rank = contrastive_rank
+        self.receiver_effective_rank = receiver_effective_rank
 
     def predict_atoms(self, text: str) -> dict[str, float]:
         features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
@@ -389,7 +393,7 @@ class LearnedSynonymDictionary:
         if self.receiver_mode == "atom_ridge":
             learned_atoms = self.predict_atoms(text)
             return sum(payload_atoms.get(atom, 0.0) * score for atom, score in learned_atoms.items())
-        if self.receiver_mode == "contrastive_bilinear":
+        if self.receiver_mode in {"contrastive_bilinear", "contrastive_low_rank_query"}:
             features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
             payload_vector = _atom_vector(payload_atoms)
             return float(features @ self.weights @ payload_vector + self.bias)
@@ -456,6 +460,7 @@ def _fit_contrastive_bilinear_dictionary(
     text_feature_mode: str,
     negative_source_controls: int = 0,
     seed: int = 0,
+    receiver_mode: str = "contrastive_bilinear",
 ) -> LearnedSynonymDictionary:
     x_rows: list[np.ndarray] = []
     y_rows: list[float] = []
@@ -494,7 +499,8 @@ def _fit_contrastive_bilinear_dictionary(
             top_k=top_k,
             min_score=min_score,
             text_feature_mode=text_feature_mode,
-            receiver_mode="contrastive_bilinear",
+            receiver_mode=receiver_mode,
+            receiver_effective_rank=0,
         )
     x = np.stack(x_rows, axis=0)
     y = np.array(y_rows, dtype=np.float64)
@@ -515,9 +521,51 @@ def _fit_contrastive_bilinear_dictionary(
         top_k=top_k,
         min_score=min_score,
         text_feature_mode=text_feature_mode,
-        receiver_mode="contrastive_bilinear",
+        receiver_mode=receiver_mode,
         bias=float(solution[-1]),
+        receiver_effective_rank=int(np.linalg.matrix_rank(solution[:-1].reshape(feature_dim, len(ATOM_ORDER)))),
     )
+
+
+def _fit_contrastive_low_rank_query_dictionary(
+    *,
+    examples: list[Example],
+    feature_dim: int,
+    ridge: float,
+    calibration_atom_view: str,
+    top_k: int,
+    min_score: float,
+    text_feature_mode: str,
+    negative_source_controls: int = 0,
+    seed: int = 0,
+    contrastive_rank: int = 4,
+) -> LearnedSynonymDictionary:
+    if contrastive_rank <= 0:
+        raise ValueError("contrastive_rank must be positive for contrastive_low_rank_query")
+    dictionary = _fit_contrastive_bilinear_dictionary(
+        examples=examples,
+        feature_dim=feature_dim,
+        ridge=ridge,
+        calibration_atom_view=calibration_atom_view,
+        top_k=top_k,
+        min_score=min_score,
+        text_feature_mode=text_feature_mode,
+        negative_source_controls=negative_source_controls,
+        seed=seed,
+        receiver_mode="contrastive_low_rank_query",
+    )
+    if dictionary.weights.size == 0:
+        effective_rank = 0
+    else:
+        u, singular_values, vh = np.linalg.svd(dictionary.weights, full_matrices=False)
+        effective_rank = min(contrastive_rank, int(np.count_nonzero(singular_values > 1e-12)))
+        if effective_rank == 0:
+            dictionary.weights = np.zeros_like(dictionary.weights)
+        else:
+            dictionary.weights = (u[:, :effective_rank] * singular_values[:effective_rank]) @ vh[:effective_rank, :]
+    dictionary.contrastive_rank = contrastive_rank
+    dictionary.receiver_effective_rank = effective_rank
+    return dictionary
 
 
 def _fit_dictionary(
@@ -531,6 +579,7 @@ def _fit_dictionary(
     text_feature_mode: str,
     receiver_mode: str,
     contrastive_negative_sources: int,
+    contrastive_rank: int,
     seed: int,
 ) -> LearnedSynonymDictionary:
     if receiver_mode == "atom_ridge":
@@ -554,6 +603,19 @@ def _fit_dictionary(
             text_feature_mode=text_feature_mode,
             negative_source_controls=contrastive_negative_sources,
             seed=seed,
+        )
+    if receiver_mode == "contrastive_low_rank_query":
+        return _fit_contrastive_low_rank_query_dictionary(
+            examples=examples,
+            feature_dim=feature_dim,
+            ridge=ridge,
+            calibration_atom_view=calibration_atom_view,
+            top_k=top_k,
+            min_score=min_score,
+            text_feature_mode=text_feature_mode,
+            negative_source_controls=contrastive_negative_sources,
+            seed=seed,
+            contrastive_rank=contrastive_rank,
         )
     raise ValueError(f"unknown receiver mode {receiver_mode!r}")
 
@@ -901,6 +963,7 @@ def _run_direction(
     min_decision_score: float,
     receiver_mode: str,
     contrastive_negative_sources: int,
+    contrastive_rank: int,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     train_rows = make_benchmark(examples=train_examples, candidates=4, seed=train_seed, family_set=train_family_set)
@@ -921,6 +984,7 @@ def _run_direction(
         text_feature_mode=text_feature_mode,
         receiver_mode=receiver_mode,
         contrastive_negative_sources=contrastive_negative_sources,
+        contrastive_rank=contrastive_rank,
         seed=train_seed + 211,
     )
     surface_overlap_audit = _surface_overlap_audit(
@@ -978,6 +1042,8 @@ def _run_direction(
         "text_feature_mode": text_feature_mode,
         "receiver_mode": receiver_mode,
         "contrastive_negative_sources": contrastive_negative_sources,
+        "contrastive_rank": contrastive_rank if receiver_mode == "contrastive_low_rank_query" else None,
+        "receiver_effective_rank": dictionary.receiver_effective_rank,
         "ridge": ridge,
         "top_k": top_k,
         "min_score": min_score,
@@ -1026,6 +1092,7 @@ def run_gate(
     text_feature_mode: str = "hashed",
     receiver_mode: str = "atom_ridge",
     contrastive_negative_sources: int = 0,
+    contrastive_rank: int = 4,
     min_decision_score: float = 0.20,
     feature_model: str = "BAAI/bge-small-en",
     feature_device: str = "auto",
@@ -1071,6 +1138,7 @@ def run_gate(
             text_feature_mode=text_feature_mode,
             receiver_mode=receiver_mode,
             contrastive_negative_sources=contrastive_negative_sources,
+            contrastive_rank=contrastive_rank,
             min_decision_score=min_decision_score,
         )
         try:
@@ -1117,6 +1185,7 @@ def run_gate(
         "text_feature_mode": text_feature_mode,
         "receiver_mode": receiver_mode,
         "contrastive_negative_sources": contrastive_negative_sources,
+        "contrastive_rank": contrastive_rank if receiver_mode == "contrastive_low_rank_query" else None,
         "feature_model": feature_model if text_feature_mode.startswith("hf_") else None,
         "feature_device": _resolve_torch_device(feature_device) if text_feature_mode.startswith("hf_") else None,
         "feature_dtype": feature_dtype if text_feature_mode.startswith("hf_") else None,
@@ -1195,6 +1264,8 @@ def _write_direction_markdown(path: pathlib.Path, payload: dict[str, Any]) -> No
         f"- text feature mode: `{payload['text_feature_mode']}`",
         f"- receiver mode: `{payload['receiver_mode']}`",
         f"- contrastive negative sources: `{payload['contrastive_negative_sources']}`",
+        f"- contrastive rank: `{payload['contrastive_rank']}`",
+        f"- receiver effective rank: `{payload['receiver_effective_rank']}`",
         f"- min decision score: `{payload['min_decision_score']}`",
         f"- exact eval surface overlap count: `{payload['surface_overlap_audit']['exact_eval_surface_overlap_count']}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
@@ -1229,6 +1300,7 @@ def _write_gate_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- text feature mode: `{payload['text_feature_mode']}`",
         f"- receiver mode: `{payload['receiver_mode']}`",
         f"- contrastive negative sources: `{payload['contrastive_negative_sources']}`",
+        f"- contrastive rank: `{payload['contrastive_rank']}`",
         f"- min decision score: `{payload['min_decision_score']}`",
         f"- max learned packet accuracy: `{h['max_learned_synonym_dictionary_accuracy']:.3f}`",
         f"- max learned-target delta: `{h['max_learned_minus_target']:.3f}`",
@@ -1285,12 +1357,22 @@ def main() -> None:
     parser.add_argument("--feature-dtype", choices=["float32", "float16", "bfloat16"], default="float32")
     parser.add_argument("--feature-max-length", type=int, default=128)
     parser.add_argument("--local-files-only", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--receiver-mode", choices=["atom_ridge", "contrastive_bilinear"], default="atom_ridge")
+    parser.add_argument(
+        "--receiver-mode",
+        choices=["atom_ridge", "contrastive_bilinear", "contrastive_low_rank_query"],
+        default="atom_ridge",
+    )
     parser.add_argument(
         "--contrastive-negative-sources",
         type=int,
         default=0,
         help="For contrastive_bilinear, add this many shuffled source packets per calibration example as zero-label negatives.",
+    )
+    parser.add_argument(
+        "--contrastive-rank",
+        type=int,
+        default=4,
+        help="For contrastive_low_rank_query, truncate the learned bilinear receiver to this candidate-query/source-atom rank.",
     )
     parser.add_argument("--ridge", type=float, default=0.25)
     parser.add_argument("--top-k", type=int, default=8)
@@ -1317,6 +1399,7 @@ def main() -> None:
         text_feature_mode=args.text_feature_mode,
         receiver_mode=args.receiver_mode,
         contrastive_negative_sources=args.contrastive_negative_sources,
+        contrastive_rank=args.contrastive_rank,
         feature_model=args.feature_model,
         feature_device=args.feature_device,
         feature_dtype=args.feature_dtype,

@@ -216,3 +216,58 @@ def test_learned_synonym_dictionary_contrastive_receiver_records_mode(tmp_path) 
         "learned_synonym_dictionary",
         "learned_synonym_dictionary_target_preserve",
     }
+
+
+def test_learned_synonym_dictionary_low_rank_query_receiver_records_bottleneck(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_low_rank_query",
+        budgets=[4],
+        train_examples=24,
+        eval_examples=8,
+        seed=31,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=24,
+        feature_dim=48,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="contrastive_low_rank_query",
+        contrastive_negative_sources=1,
+        contrastive_rank=3,
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_low_rank_query" / "core_to_holdout" / "summary.json").read_text()
+    )
+    assert payload["receiver_mode"] == "contrastive_low_rank_query"
+    assert payload["contrastive_rank"] == 3
+    assert direction["receiver_mode"] == "contrastive_low_rank_query"
+    assert direction["contrastive_rank"] == 3
+    assert direction["receiver_effective_rank"] <= 3
+
+
+def test_low_rank_query_receiver_truncates_bilinear_map() -> None:
+    examples = gate.make_benchmark(examples=18, candidates=4, seed=37, family_set="all")
+
+    dictionary = gate._fit_dictionary(
+        examples=examples,
+        feature_dim=40,
+        ridge=0.5,
+        calibration_atom_view="synonym_stress",
+        top_k=6,
+        min_score=0.0,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="contrastive_low_rank_query",
+        contrastive_negative_sources=1,
+        contrastive_rank=2,
+        seed=37,
+    )
+
+    assert dictionary.receiver_mode == "contrastive_low_rank_query"
+    assert dictionary.contrastive_rank == 2
+    assert dictionary.receiver_effective_rank <= 2
+    assert np.linalg.matrix_rank(dictionary.weights) <= 2
