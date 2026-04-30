@@ -15653,3 +15653,24 @@ technical contribution, but the claim remains scoped because the receiver uses
 a public semantic-anchor lexicon rather than learned/frozen activation
 features. Next exact gate: 3-seed medium confirmation at `n=512`, followed by a
 learned/frozen embedding receiver ablation.
+
+Follow-up `2026-04-30`: completed the semantic-anchor held-out medium
+confirmation. Aggregate artifact:
+`results/source_private_semantic_anchor_heldout_medium_confirmation_20260430/`.
+Per-seed artifacts:
+`results/source_private_semantic_anchor_heldout_packet_gate_20260430_seed47_n512`,
+`results/source_private_semantic_anchor_heldout_packet_gate_20260430_seed53_n512`,
+and
+`results/source_private_semantic_anchor_heldout_packet_gate_20260430_seed59_n512`.
+Command template:
+`PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_learned_synonym_dictionary_packet_gate.py --output-dir results/source_private_semantic_anchor_heldout_packet_gate_20260430_seed${seed}_n512 --budgets 4 8 --train-examples 768 --eval-examples 512 --seed ${seed} --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration all_public --calibration-examples 768 --feature-dim 384 --text-feature-mode semantic_anchor --ridge 0.25 --top-k 8 --min-score 0.05 --min-decision-score 0.70`.
+Outcome: all three seeds pass; `18/18` rows pass across three directions and
+two budgets. Minimum passing paired CI95 lower bound is `+0.457`; minimum
+learned-target lift is `+0.500`; maximum passing best-control accuracy is
+`0.254`; minimum oracle candidate-map accuracy is `0.875`; exact ID parity
+holds; and exact transformed held-out surface overlap is `0` in every
+direction. Interpretation: semantic-anchor source-private packets are now
+medium, seed-stable, held-out-paraphrase positive evidence. Remaining blocker:
+the receiver uses an explicit semantic-anchor lexicon, so the next exact gate is
+a frozen/learned embedding receiver ablation plus a systems rate/assumption
+frontier table.

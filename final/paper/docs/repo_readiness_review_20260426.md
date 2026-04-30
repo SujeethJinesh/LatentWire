@@ -2750,3 +2750,17 @@ short of full ICLR because the receiver uses an explicit public semantic-anchor
 lexicon, not a learned/frozen activation-level bridge. Next exact gate:
 3-seed medium confirmation at `n=512`, then a learned or frozen-embedding
 receiver ablation that removes the hand-written anchor lexicon.
+
+Follow-up `2026-04-30`: the semantic-anchor receiver now has medium
+confirmation. Seeds `47`, `53`, and `59` all pass at `n=512`; aggregate
+artifact
+`results/source_private_semantic_anchor_heldout_medium_confirmation_20260430`
+records `18/18` pass rows across core-to-holdout, holdout-to-core, and
+same-family directions at `4/8` bytes. Minimum paired CI95 lower bound is
+`+0.457`, minimum learned-target lift is `+0.500`, maximum best-control
+accuracy is `0.254`, and exact transformed held-out surface overlap remains
+`0`. Readiness improves from strict-small to medium seed-stable evidence for
+the semantic-anchor contribution. The paper still needs a reviewer-satisfying
+ablation that removes or replaces the hand-written anchor lexicon, and a
+systems rate/assumption table that clearly separates LatentWire packets from
+TurboQuant/QJL/KV compression baselines.
