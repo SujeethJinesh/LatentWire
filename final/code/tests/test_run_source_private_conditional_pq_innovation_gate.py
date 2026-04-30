@@ -4,7 +4,7 @@ import json
 
 import numpy as np
 
-from scripts.run_source_private_conditional_pq_innovation_gate import _derangement, run_gate
+from scripts.run_source_private_conditional_pq_innovation_gate import BASIS_VIEWS, _derangement, run_gate
 
 
 def test_derangement_moves_every_candidate() -> None:
@@ -12,6 +12,11 @@ def test_derangement_moves_every_candidate() -> None:
 
     assert sorted(int(value) for value in perm) == [0, 1, 2, 3]
     assert np.all(perm != np.arange(4))
+
+
+def test_cli_exposes_less_diagnostic_basis_views() -> None:
+    assert "semantic" in BASIS_VIEWS
+    assert "no_diag" in BASIS_VIEWS
 
 
 def test_conditional_pq_innovation_gate_writes_artifacts(tmp_path) -> None:

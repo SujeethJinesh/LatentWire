@@ -76,6 +76,7 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     budget2_rows = [row for row in decisive_rows if row["budget_bytes"] == 2]
     anchor_rows = [row for row in decisive_rows if row["basis_view"] == "anchor_relative"]
     shared_rows = [row for row in decisive_rows if row["basis_view"] == "shared_text"]
+    less_diagnostic_rows = [row for row in decisive_rows if row["basis_view"] in {"semantic", "no_diag"}]
     return {
         "rows": len(rows),
         "pass_rows": sum(1 for row in rows if row["pass_gate"]),
@@ -85,6 +86,8 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "anchor_relative_decisive_pass_rows": sum(1 for row in anchor_rows if row["pass_gate"]),
         "shared_text_decisive_rows": len(shared_rows),
         "shared_text_decisive_pass_rows": sum(1 for row in shared_rows if row["pass_gate"]),
+        "less_diagnostic_decisive_rows": len(less_diagnostic_rows),
+        "less_diagnostic_decisive_pass_rows": sum(1 for row in less_diagnostic_rows if row["pass_gate"]),
         "budget2_decisive_rows": len(budget2_rows),
         "budget2_decisive_pass_rows": sum(1 for row in budget2_rows if row["pass_gate"]),
         "min_decisive_source_accuracy": None if not decisive_rows else min(row["source_accuracy"] for row in decisive_rows),
@@ -103,9 +106,10 @@ def _summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
         and all(row["pass_gate"] for row in budget2_rows),
         "interpretation": (
             "Conditional PQ innovation passes same-family disjoint-ID n500 gates across shared-text and "
-            "anchor-relative bases, including 2-byte low-uniqueness rows. Bidirectional held-out-family rows "
-            "remain negative, so the method should be framed as shared-schema disjoint communication rather than "
-            "unseen-family latent transfer."
+            "anchor-relative bases, including 2-byte low-uniqueness rows. Less-diagnostic semantic/no-diagnostic "
+            "basis rows test whether the result survives without direct public diagnostic handles. "
+            "Bidirectional held-out-family rows remain negative, so the method should be framed as shared-schema "
+            "disjoint communication rather than unseen-family latent transfer."
         ),
     }
 
@@ -119,6 +123,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- pass gate: `{summary['pass_gate']}`",
         f"- rows: `{summary['rows']}`",
         f"- decisive n500 pass rows: `{summary['decisive_disjoint_n500_pass_rows']}/{summary['decisive_disjoint_n500_rows']}`",
+        f"- less-diagnostic n500 pass rows: `{summary['less_diagnostic_decisive_pass_rows']}/{summary['less_diagnostic_decisive_rows']}`",
         f"- budget-2 n500 pass rows: `{summary['budget2_decisive_pass_rows']}/{summary['budget2_decisive_rows']}`",
         f"- cross-family pass rows: `{summary['cross_family_pass_rows']}/{summary['cross_family_rows']}`",
         f"- min decisive source accuracy: `{summary['min_decisive_source_accuracy']}`",

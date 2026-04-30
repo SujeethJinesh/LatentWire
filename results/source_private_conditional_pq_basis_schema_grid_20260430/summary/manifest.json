@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "conditional_pq_basis_schema_grid_summary.json": "4b10fb9dd8ec10c2471244ba82e3f5fb136eb3f0174bf7ee62006bb836197cdd",
+    "conditional_pq_basis_schema_grid_summary.md": "fff4eba79dcdc20d51a0ebb311fa6fee037cb17a8cd6d4f160bfd649bcd40bf9"
+  },
+  "artifacts": [
+    "conditional_pq_basis_schema_grid_summary.json",
+    "conditional_pq_basis_schema_grid_summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

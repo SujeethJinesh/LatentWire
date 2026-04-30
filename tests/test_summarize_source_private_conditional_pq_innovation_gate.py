@@ -13,7 +13,7 @@ def test_conditional_pq_summary_marks_decisive_and_cross_family_rows() -> None:
             "eval_examples": 500,
             "train_eval_id_intersection_count": 0,
             "budget_bytes": 2,
-            "basis_view": "anchor_relative",
+            "basis_view": "no_diag",
             "pass_gate": True,
             "source_accuracy": 1.0,
             "best_control_accuracy": 0.27,
@@ -39,6 +39,7 @@ def test_conditional_pq_summary_marks_decisive_and_cross_family_rows() -> None:
 
     assert summary["pass_gate"] is True
     assert summary["decisive_disjoint_n500_pass_rows"] == 1
+    assert summary["less_diagnostic_decisive_pass_rows"] == 1
     assert summary["budget2_decisive_pass_rows"] == 1
     assert summary["cross_family_rows"] == 1
     assert summary["cross_family_pass_rows"] == 0

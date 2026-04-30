@@ -1307,5 +1307,12 @@
     "path": "references/543_conditional_pq_innovation_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the conditional PQ innovation gate, covering Wyner-Ziv/Slepian-Wolf side-information coding, information bottleneck, PQ/OPQ, QJL/TurboQuant, relative representations, FNet/common bases, Perceiver/Q-Former/Flamingo connectors, C2C/KVComm/KVCOMM threats, novelty boundaries, and disjoint shared-schema communication."
+  },
+  {
+    "num": 544,
+    "slug": "conditional_pq_semantic_schema_systems_refs_20260430",
+    "path": "references/544_conditional_pq_semantic_schema_systems_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the conditional PQ semantic/no-diagnostic stress, cross-family basis/schema grid, packet-ISA waterfall, QINCo/public-conditioned codebook next branch, and systems/non-claim boundaries."
   }
 ]

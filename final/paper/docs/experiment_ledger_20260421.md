@@ -16706,3 +16706,42 @@ Wyner-Ziv-style conditional innovation packet and common-basis result for
 shared-schema disjoint communication. Do not claim unseen-family latent
 transfer yet. Next exact gate: less synthetic / held-out-schema conditional
 innovation, or model-mediated receiver consumption of the same 2-byte packet.
+
+Update `2026-04-30`: the conditional PQ semantic/schema/systems stress further
+strengthens the bounded positive result while sharpening the ICLR blocker.
+Code:
+`scripts/run_source_private_conditional_pq_innovation_gate.py`,
+`scripts/summarize_source_private_conditional_pq_innovation_gate.py`,
+`scripts/summarize_source_private_conditional_pq_basis_schema_grid.py`, and
+`scripts/build_source_private_conditional_pq_packet_isa_waterfall.py`; tests:
+`tests/test_run_source_private_conditional_pq_innovation_gate.py`,
+`tests/test_summarize_source_private_conditional_pq_innovation_gate.py`,
+`tests/test_summarize_source_private_conditional_pq_basis_schema_grid.py`, and
+`tests/test_build_source_private_conditional_pq_packet_isa_waterfall.py`;
+memo:
+`paper/source_private_conditional_pq_semantic_schema_systems_20260430.md`;
+references:
+`references/544_conditional_pq_semantic_schema_systems_refs_20260430.md`;
+artifacts:
+`results/source_private_conditional_pq_innovation_gate_20260430/`,
+`results/source_private_conditional_pq_basis_schema_grid_20260430/`, and
+`results/source_private_conditional_pq_packet_isa_waterfall_20260430/`.
+Outcome: the updated conditional summary now has `16/16` decisive same-family
+n500 rows passing. Less-diagnostic semantic/no-diagnostic rows pass `8/8`;
+semantic and no-diagnostic n500 4-byte remaps `101/103/107` all score `1.000`
+versus target `0.250`, and 2-byte semantic/no-diagnostic rows also score
+`1.000` with best controls `0.302/0.290` and CI95 lows `+0.658/+0.668`.
+The cross-family basis/schema grid over `28` rows (`7` public bases x `2`
+diagnostic-table modes x `2` directions) has `0` pass rows, maximum source
+accuracy `0.316406`, maximum source-minus-best-control only `+0.007812`, and
+maximum CI95 low `0.000`. Systems waterfall update passes: the live 2-byte
+conditional packet is a 5-byte record with batch64 `5.0` line bytes/request,
+`6.0` DMA bytes/request, p95 transport `0.688 ns/request`, receiver p50
+`0.01628 ms/request`, no source text/KV exposure, and accuracy minimum `1.000`;
+the 4-byte packet is a 7-byte record with batch64 `7.0` line bytes/request,
+`8.0` DMA bytes/request, p95 transport `0.661 ns/request`, receiver p50
+`0.01628 ms/request`, and accuracy minimum `0.996`. Interpretation: promote
+semantic/no-diagnostic shared-schema conditional innovation and packet-ISA
+systems accounting. Do not claim unseen-family transfer. Next exact branch:
+public-conditioned residual codebooks or receiver-conditioned slots that build
+a local common basis from target-public candidate state.

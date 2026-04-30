@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "conditional_pq_packet_isa_waterfall.json": "db8bdf00150de6b8722cc80e27eddead2d05070d52c45db203b8ba16b78fd96f",
+    "conditional_pq_packet_isa_waterfall.md": "2d82faf0831a9aa6c45cfc09fc015eb3fe4f36b747fb4bae46b76f910af14989"
+  },
+  "artifacts": [
+    "conditional_pq_packet_isa_waterfall.json",
+    "conditional_pq_packet_isa_waterfall.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

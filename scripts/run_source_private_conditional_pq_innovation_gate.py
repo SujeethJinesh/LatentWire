@@ -66,6 +66,7 @@ CONTROL_CONDITIONS = [
     "deranged_public_basis",
     "opaque_slot_basis",
 ]
+BASIS_VIEWS = ("shared_text", "anchor_relative", "semantic", "no_diag", "full", "diag_only", "slot")
 
 
 def _sha256_file(path: pathlib.Path) -> str:
@@ -1016,7 +1017,7 @@ def main() -> None:
     parser.add_argument("--candidates", type=int, default=4)
     parser.add_argument("--feature-dim", type=int, default=512)
     parser.add_argument("--anchor-count", type=int, default=128)
-    parser.add_argument("--basis-view", choices=["shared_text", "anchor_relative"], default="shared_text")
+    parser.add_argument("--basis-view", choices=BASIS_VIEWS, default="shared_text")
     parser.add_argument("--source-topk", type=int, default=64)
     parser.add_argument("--target-topk", type=int, default=32)
     parser.add_argument("--budget-bytes", type=int, default=4)

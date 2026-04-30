@@ -1,4 +1,4 @@
 # Conditional PQ Innovation Summary Manifest
 
 - pass gate: `True`
-- rows: `12`
+- rows: `20`

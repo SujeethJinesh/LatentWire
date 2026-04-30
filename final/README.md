@@ -413,3 +413,13 @@ across shared-text and anchor-relative bases, including 2-byte rows with lower
 payload uniqueness. Bidirectional held-out-family rows still fail, so the claim
 boundary is shared-schema source-private communication, not broad unseen-family
 latent transfer.
+
+## 2026-04-30 Semantic/Systems Stress Update
+
+The semantic/no-diagnostic conditional PQ stress is included. Same-family n500
+now has `16/16` decisive rows passing, including `8/8` semantic or
+no-diagnostic rows and `4/4` 2-byte rows. A 28-row cross-family basis/schema
+grid has `0` passes, so static public-basis selection does not rescue unseen
+families. The packet-ISA waterfall now ties the live 2-byte/4-byte conditional
+packets to 5-byte/7-byte records, Mac-local cache/DMA accounting, and no source
+text/KV exposure.

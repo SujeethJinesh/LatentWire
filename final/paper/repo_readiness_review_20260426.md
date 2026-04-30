@@ -3446,3 +3446,26 @@ less synthetic or held-out-schema success, model-mediated receiver consumption
 of the same packet, or GPU serving telemetry. COLM readiness is now stronger
 because the paper has a positive disjoint-ID method plus a clear negative
 boundary.
+
+Update `2026-04-30`: semantic/no-diagnostic and systems follow-up strengthen
+the bounded positive method but keep ICLR full-paper readiness gated. New memo:
+`paper/source_private_conditional_pq_semantic_schema_systems_20260430.md`;
+new artifacts:
+`results/source_private_conditional_pq_basis_schema_grid_20260430/` and
+`results/source_private_conditional_pq_packet_isa_waterfall_20260430/`.
+The updated conditional summary now has `16/16` same-family n500 rows passing,
+including `8/8` less-diagnostic semantic/no-diagnostic rows and `4/4` 2-byte
+rows. Semantic/no-diagnostic 2-byte n500 rows score `1.000` versus target
+`0.250`, with best controls `0.302/0.290` and CI95 lows `+0.658/+0.668`.
+The cross-family basis/schema grid has `0/28` pass rows across seven public
+bases, two diagnostic-table modes, and both directions; max source accuracy is
+only `0.316406` and max source-minus-best-control is `+0.007812`. The systems
+waterfall now attaches the live conditional method to packet-ISA accounting:
+2-byte packets are 5-byte records with batch64 `5.0` line bytes/request and
+`6.0` DMA bytes/request; 4-byte packets are 7-byte records with batch64 `7.0`
+line bytes/request and `8.0` DMA bytes/request; receiver p50 is
+`0.01628 ms/request` and source text/KV exposure is false for both. Readiness
+impact: COLM workshop readiness is strong for a scoped shared-schema
+source-private conditional packet paper. Comfortable ICLR still requires
+public-conditioned codebooks, held-out ontology/schema success, model-mediated
+consumption, or NVIDIA/vLLM telemetry.

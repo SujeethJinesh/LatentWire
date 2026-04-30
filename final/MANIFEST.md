@@ -317,6 +317,13 @@
   payload ratio to `0.532-0.594`. Opaque slot basis remains at target, deranged
   public basis collapses to `0.000`, and bidirectional held-out-family rows
   remain negative.
+- Semantic/no-diagnostic conditional PQ stress code, tests, references, memo,
+  and artifacts showing that same-family n500 remains strong without explicit
+  diagnostic handles: `16/16` decisive rows pass, including `8/8`
+  semantic/no-diagnostic rows and `4/4` 2-byte rows. The 28-row cross-family
+  basis/schema grid has `0` passes, and the packet-ISA waterfall reports 2-byte
+  and 4-byte conditional packets as 5-byte and 7-byte records with Mac-local
+  transport/receiver accounting and no source text/KV exposure.
 
 ## Notes
 
