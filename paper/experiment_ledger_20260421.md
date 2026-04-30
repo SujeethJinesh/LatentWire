@@ -16137,3 +16137,23 @@ source-private communication with decoder side information, not protocol-free
 semantic transfer. The next reviewer-defense gate is deterministic `n=500`
 label-blind stress; the next method-depth gate is a learned/shared-dictionary
 receiver that reduces the public-table shape.
+
+Update `2026-04-30`: added the Mac unified-memory transport profile as a
+hardware-facing systems trace-card. Code:
+`scripts/build_source_private_mac_unified_memory_transport_profile.py`; test:
+`tests/test_build_source_private_mac_unified_memory_transport_profile.py`;
+memo: `paper/source_private_mac_unified_memory_transport_profile_20260430.md`;
+references:
+`references/521_mac_unified_memory_transport_profile_refs_20260430.md`;
+artifact:
+`results/source_private_mac_unified_memory_transport_profile_20260430/`.
+Outcome: pass gate `True`, `2/2` exact-ID parity surfaces, matched packet min
+delta vs target `+0.425`, max source-destroying-control delta `+0.000`,
+query-aware text raw ratio `7.00x` but line ratio `1.00x`, full hidden-log raw
+ratio `183.25x`, full hidden-log line ratio `6.00x`, full-log QJL-style
+1-bit prompt-KV delta per packet byte `313353.6x`, and batch-64 packet traffic
+`5.00` line bytes/request plus `6.00` DMA bytes/request. Interpretation: this
+upgrades the systems contribution from byte accounting to a reviewer-readable
+boundary-traffic profile with explicit source-text/KV exposure flags and hard
+non-claims. It does not prove production serving speed; NVIDIA/server TTFT,
+TPOT, goodput, and memory-counter telemetry remain future gates.

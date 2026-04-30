@@ -1,0 +1,38 @@
+{
+  "artifact_sha256": {
+    "mac_unified_memory_transport_profile.csv": "65050c3b81cb7f9cfa31774c12a899fb1b4f183f29e101c6165e6ac2391ca7f7",
+    "mac_unified_memory_transport_profile.json": "d351515645c69661ada7ab896b6ccfe52757bd9b8b4105ff4f6d29d5e6109db1",
+    "mac_unified_memory_transport_profile.md": "5b57151b7757ec3dd39046ddd6602df50803b591b1e7d15078ea52228186e4a1"
+  },
+  "artifacts": [
+    "mac_unified_memory_transport_profile.json",
+    "mac_unified_memory_transport_profile.csv",
+    "mac_unified_memory_transport_profile.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_mac_unified_memory_transport_profile",
+  "headline": {
+    "exact_id_parity": true,
+    "full_log_line_ratio_min": 6.0,
+    "full_log_qjl_1bit_kv_delta_bytes_per_packet_byte_min": 313353.60000000003,
+    "full_log_raw_ratio_min": 183.25,
+    "matched_packet_min_delta_vs_target": 0.42500000000000004,
+    "max_source_destroying_control_delta_vs_target": 0.0,
+    "packet_batch64_dma_bytes_per_request_min": 6.0,
+    "packet_batch64_line_bytes_per_request_min": 5.0,
+    "packet_payload_bytes": [
+      2.0
+    ],
+    "pass_gate": true,
+    "positive_packet_rows": 2,
+    "private_text_relay_rows": 8,
+    "query_aware_text_line_ratio_min": 1.0,
+    "query_aware_text_raw_ratio_min": 7.0,
+    "rows": 18,
+    "source_kv_exposed_rows": 0,
+    "source_text_exposed_rows": 10,
+    "surfaces": 2
+  },
+  "pass_gate": true
+}

@@ -1146,5 +1146,12 @@
     "path": "references/520_anti_lookup_label_blind_scaleup_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the n=160 label-blind anti-lookup scale-up, covering Slepian-Wolf/Wyner-Ziv decoder side information, semantic communication, learned side-information coding, C2C, and KVComm boundaries."
+  },
+  {
+    "num": 521,
+    "slug": "mac_unified_memory_transport_profile_refs_20260430",
+    "path": "references/521_mac_unified_memory_transport_profile_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the Mac unified-memory transport profile, covering Apple/MLX unified memory, PyTorch MPS constraints, FlashAttention IO framing, vLLM/PagedAttention, DistServe, KIVI, TurboQuant, QJL, and C2C claim boundaries."
   }
 ]

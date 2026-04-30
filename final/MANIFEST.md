@@ -204,6 +204,12 @@
   at medium scale: `2/2` collapse rows, exact-ID parity `True`, max opaque lift
   over target `0.000`, max paired CI95 high versus target `0.000`, and minimum
   positive diagnostic-table comparator lift `+0.425`.
+- Mac unified-memory transport profile code, test, references, memo, and
+  artifact joining `n=160` endpoint rows with packet-ISA packing and KV byte
+  floors: pass gate `True`, exact-ID parity `True`, matched packet min lift
+  `+0.425`, destructive-control max lift `+0.000`, query-aware text `7.00x`
+  raw but `1.00x` line bytes, full-log relay `183.25x` raw and `6.00x` line
+  bytes, and batch-64 packet records at `5.00` line bytes/request.
 
 ## Notes
 

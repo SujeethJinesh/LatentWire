@@ -1,11 +1,12 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: scoped positive-method manuscript with strengthened same-family/remap
-  packet evidence; not yet a full cross-family ICLR claim
-- estimated distance: one successful bidirectional cross-family method gate or a
-  narrower paper framing that explicitly limits the claim to same-family/source-
-  private packet communication
+- status: stronger scoped positive-method manuscript with medium packet,
+  receiver, anti-lookup, and systems trace-card evidence; not yet a comfortable
+  broad latent-transfer ICLR claim
+- estimated distance: one successful less hand-shaped learned receiver or
+  larger label-blind/generalization gate, plus native serving telemetry when
+  NVIDIA/server hardware is available
 
 ## Current Paper Story
 
@@ -3052,3 +3053,15 @@ information, not protocol-free latent semantic transfer. Current ICLR distance:
 stronger scoped submission candidate, still not comfortable full ICLR until
 either a less hand-shaped learned receiver, one large frozen label-blind stress,
 or native serving telemetry lands. COLM workshop readiness is strong.
+
+Update `2026-04-30`: the Mac unified-memory transport profile strengthens the
+systems contribution without overclaiming. It passes on the existing `n=160`
+core and held-out endpoint rows with exact-ID parity, matched packet min lift
+`+0.425`, destructive-control max lift `+0.000`, query-aware text at `7.00x`
+raw bytes but `1.00x` line bytes, full-log relay at `183.25x` raw bytes and
+`6.00x` line bytes, and batch-64 packet records at `5.00` line bytes/request.
+Readiness implication: the paper now has a clearer third contribution for
+systems/hardware reviewers: boundary-traffic accounting with source-text/KV
+exposure flags and explicit production non-claims. It still does not replace
+native GPU/server telemetry, and the main ICLR blocker remains a less
+table-shaped learned receiver or a larger frozen label-blind stress.
