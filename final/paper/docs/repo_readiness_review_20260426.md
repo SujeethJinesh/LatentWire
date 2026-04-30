@@ -51,6 +51,19 @@ packet plus frozen binary-verifier receiver, and systems byte/traffic frontier.
 The learned-receiver slot is open only if a new posterior/flow/query-bottleneck
 branch beats this pruned baseline under the same controls.
 
+Update `2026-04-30`: the systems contribution is now stronger and more
+reviewer-ready. The packet trace-card v2 passes `7/7` checks and consolidates
+strict source controls, same-byte text negatives, query-aware text, full-log
+relay, KV byte floors, batch amortization, and overclaim guards. A local Mac C
+microbench adds measured pack-copy-verify evidence: at batch 64, the 2-byte
+payload / 5-byte record packet has p95 `0.65 ns/request`, query-aware text is
+`1.02x` packet p95 while exposing private text, full-log relay is `8.80x`
+packet p50, and the QJL-style KV byte-floor buffer is `671.23x` packet p50.
+Readiness implication: the third technical contribution should be a
+hardware-readable boundary-traffic trace card, not just deterministic byte
+counting. Remaining ICLR gap: production NVIDIA/vLLM telemetry or a materially
+different learned receiver.
+
 ## Current Paper Story
 
 The honest current story is conditional innovation rather than proven latent

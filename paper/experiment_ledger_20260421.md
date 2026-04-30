@@ -16336,3 +16336,24 @@ enough. Interpretation: keep masked consistency as a negative/method-depth
 diagnostic; do not count it among the three headline technical contributions.
 Next highest-value Mac gate is a packet trace-card v2 systems artifact or a new
 posterior/flow/Q-Former-style learned receiver with source-control negatives.
+
+Update `2026-04-30`: added the systems packet trace-card v2 and a local Mac
+packet-ring transport microbench. Code:
+`scripts/build_source_private_packet_trace_card_v2.py`,
+`scripts/source_private_packet_ring_transport_microbench.c`, and
+`scripts/build_source_private_mac_packet_ring_transport_microbench.py`;
+artifacts: `results/source_private_packet_trace_card_v2_20260430/` and
+`results/source_private_mac_packet_ring_transport_microbench_20260430/`; memo:
+`paper/source_private_packet_trace_card_v2_20260430.md`; references:
+`references/529_packet_trace_card_v2_refs_20260430.md`. Outcome: trace card
+passes `7/7` checks. It reports 2-byte raw packets, `64B` single-request
+cache-line traffic, batch-64 packet traffic of `5.00` line bytes/request and
+`6.00` DMA bytes/request, query-aware text at `7.0x` raw bytes but `1.0x`
+cache-line bytes, full hidden-log relay at `183.25x` raw and `6.0x` line bytes,
+and KV byte floors at `10752x` raw / `336x` line bytes. The local C microbench
+passes with five repeats: packet batch64 p95 is `0.65 ns/request`, query-aware
+text is `1.02x` packet p95, full logs are `8.80x` packet p50, and QJL/KV floor
+is `671.23x` packet p50. Interpretation: promote the systems contribution as
+source-private boundary traffic with explicit transfer quanta, batch
+amortization, privacy exposure, and non-claims. This does not create production
+GPU serving evidence or solve the learned-receiver blocker.

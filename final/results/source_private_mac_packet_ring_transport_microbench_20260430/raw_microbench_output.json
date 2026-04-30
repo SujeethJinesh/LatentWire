@@ -1,0 +1,507 @@
+{
+  "repeats": 5,
+  "rows": [
+    {
+      "batch_size": 1,
+      "cv": 0.13540662,
+      "iterations": 26843545,
+      "mean_ns_per_request": 4.433654,
+      "p50_ns_per_request": 4.155599,
+      "p95_ns_per_request": 5.632267,
+      "profile": "packet_2b_payload_5b_record",
+      "record_bytes": 5,
+      "repeat_ns_per_request": [
+        4.15504,
+        4.155599,
+        4.159696,
+        5.632267,
+        4.06567
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 5
+    },
+    {
+      "batch_size": 4,
+      "cv": 0.000897,
+      "iterations": 6710886,
+      "mean_ns_per_request": 1.632393,
+      "p50_ns_per_request": 1.632944,
+      "p95_ns_per_request": 1.633614,
+      "profile": "packet_2b_payload_5b_record",
+      "record_bytes": 5,
+      "repeat_ns_per_request": [
+        1.633093,
+        1.632944,
+        1.633614,
+        1.632795,
+        1.629517
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 20
+    },
+    {
+      "batch_size": 16,
+      "cv": 0.01221828,
+      "iterations": 1677721,
+      "mean_ns_per_request": 0.666023,
+      "p50_ns_per_request": 0.660494,
+      "p95_ns_per_request": 0.677519,
+      "profile": "packet_2b_payload_5b_record",
+      "record_bytes": 5,
+      "repeat_ns_per_request": [
+        0.674166,
+        0.677519,
+        0.660084,
+        0.660494,
+        0.657849
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 80
+    },
+    {
+      "batch_size": 64,
+      "cv": 0.00440243,
+      "iterations": 419430,
+      "mean_ns_per_request": 0.643537,
+      "p50_ns_per_request": 0.64306,
+      "p95_ns_per_request": 0.648611,
+      "profile": "packet_2b_payload_5b_record",
+      "record_bytes": 5,
+      "repeat_ns_per_request": [
+        0.640043,
+        0.648611,
+        0.64306,
+        0.643805,
+        0.642166
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 320
+    },
+    {
+      "batch_size": 256,
+      "cv": 0.10362822,
+      "iterations": 104857,
+      "mean_ns_per_request": 0.697512,
+      "p50_ns_per_request": 0.661653,
+      "p95_ns_per_request": 0.842069,
+      "profile": "packet_2b_payload_5b_record",
+      "record_bytes": 5,
+      "repeat_ns_per_request": [
+        0.661653,
+        0.662472,
+        0.661057,
+        0.660311,
+        0.842069
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 1280
+    },
+    {
+      "batch_size": 1,
+      "cv": 0.00431627,
+      "iterations": 9586980,
+      "mean_ns_per_request": 4.672921,
+      "p50_ns_per_request": 4.658923,
+      "p95_ns_per_request": 4.697621,
+      "profile": "query_aware_text_14b",
+      "record_bytes": 14,
+      "repeat_ns_per_request": [
+        4.697621,
+        4.658923,
+        4.655481,
+        4.655063,
+        4.697517
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 14
+    },
+    {
+      "batch_size": 4,
+      "cv": 0.00226051,
+      "iterations": 2396745,
+      "mean_ns_per_request": 1.553169,
+      "p50_ns_per_request": 1.551479,
+      "p95_ns_per_request": 1.559928,
+      "profile": "query_aware_text_14b",
+      "record_bytes": 14,
+      "repeat_ns_per_request": [
+        1.551479,
+        1.550227,
+        1.551062,
+        1.553148,
+        1.559928
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 56
+    },
+    {
+      "batch_size": 16,
+      "cv": 0.01861408,
+      "iterations": 599186,
+      "mean_ns_per_request": 0.653303,
+      "p50_ns_per_request": 0.651613,
+      "p95_ns_per_request": 0.676126,
+      "profile": "query_aware_text_14b",
+      "record_bytes": 14,
+      "repeat_ns_per_request": [
+        0.644312,
+        0.651613,
+        0.676126,
+        0.652761,
+        0.641704
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 224
+    },
+    {
+      "batch_size": 64,
+      "cv": 0.00749878,
+      "iterations": 149796,
+      "mean_ns_per_request": 0.653389,
+      "p50_ns_per_request": 0.650677,
+      "p95_ns_per_request": 0.660482,
+      "profile": "query_aware_text_14b",
+      "record_bytes": 14,
+      "repeat_ns_per_request": [
+        0.660482,
+        0.657978,
+        0.650677,
+        0.648173,
+        0.649634
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 896
+    },
+    {
+      "batch_size": 256,
+      "cv": 0.00947785,
+      "iterations": 37449,
+      "mean_ns_per_request": 0.778997,
+      "p50_ns_per_request": 0.777724,
+      "p95_ns_per_request": 0.790972,
+      "profile": "query_aware_text_14b",
+      "record_bytes": 14,
+      "repeat_ns_per_request": [
+        0.772718,
+        0.770527,
+        0.777724,
+        0.783044,
+        0.790972
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 3584
+    },
+    {
+      "batch_size": 1,
+      "cv": 0.02468245,
+      "iterations": 362750,
+      "mean_ns_per_request": 5.754928,
+      "p50_ns_per_request": 5.772571,
+      "p95_ns_per_request": 5.954514,
+      "profile": "full_hidden_log_370b",
+      "record_bytes": 370,
+      "repeat_ns_per_request": [
+        5.772571,
+        5.954514,
+        5.855272,
+        5.607167,
+        5.585114
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 370
+    },
+    {
+      "batch_size": 4,
+      "cv": 0.00461565,
+      "iterations": 90687,
+      "mean_ns_per_request": 5.10437,
+      "p50_ns_per_request": 5.088932,
+      "p95_ns_per_request": 5.135797,
+      "profile": "full_hidden_log_370b",
+      "record_bytes": 370,
+      "repeat_ns_per_request": [
+        5.130283,
+        5.135797,
+        5.083419,
+        5.088932,
+        5.083419
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 1480
+    },
+    {
+      "batch_size": 16,
+      "cv": 0.01641597,
+      "iterations": 22671,
+      "mean_ns_per_request": 4.896123,
+      "p50_ns_per_request": 4.871311,
+      "p95_ns_per_request": 5.033964,
+      "profile": "full_hidden_log_370b",
+      "record_bytes": 370,
+      "repeat_ns_per_request": [
+        5.033964,
+        4.920934,
+        4.863041,
+        4.871311,
+        4.791363
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 5920
+    },
+    {
+      "batch_size": 64,
+      "cv": 0.01486342,
+      "iterations": 5667,
+      "mean_ns_per_request": 5.659961,
+      "p50_ns_per_request": 5.660513,
+      "p95_ns_per_request": 5.779072,
+      "profile": "full_hidden_log_370b",
+      "record_bytes": 370,
+      "repeat_ns_per_request": [
+        5.519896,
+        5.779072,
+        5.643969,
+        5.660513,
+        5.696356
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 23680
+    },
+    {
+      "batch_size": 256,
+      "cv": 0.02145967,
+      "iterations": 1416,
+      "mean_ns_per_request": 6.158413,
+      "p50_ns_per_request": 6.201448,
+      "p95_ns_per_request": 6.32007,
+      "profile": "full_hidden_log_370b",
+      "record_bytes": 370,
+      "repeat_ns_per_request": [
+        6.226276,
+        6.201448,
+        5.928341,
+        6.11593,
+        6.32007
+      ],
+      "source_kv_exposed": false,
+      "source_text_exposed": true,
+      "total_bytes_per_iteration": 94720
+    },
+    {
+      "batch_size": 1,
+      "cv": 0.01920832,
+      "iterations": 6241,
+      "mean_ns_per_request": 243.807082,
+      "p50_ns_per_request": 242.90979,
+      "p95_ns_per_request": 249.47925,
+      "profile": "qjl_1bit_kv_floor_21504b",
+      "record_bytes": 21504,
+      "repeat_ns_per_request": [
+        237.622176,
+        240.185868,
+        242.90979,
+        249.47925,
+        248.838327
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 21504
+    },
+    {
+      "batch_size": 4,
+      "cv": 0.020784,
+      "iterations": 1560,
+      "mean_ns_per_request": 230.833333,
+      "p50_ns_per_request": 230.128205,
+      "p95_ns_per_request": 237.019231,
+      "profile": "qjl_1bit_kv_floor_21504b",
+      "record_bytes": 21504,
+      "repeat_ns_per_request": [
+        235.576923,
+        237.019231,
+        226.602564,
+        230.128205,
+        224.839744
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 86016
+    },
+    {
+      "batch_size": 16,
+      "cv": 0.00271867,
+      "iterations": 390,
+      "mean_ns_per_request": 342.5,
+      "p50_ns_per_request": 342.467949,
+      "p95_ns_per_request": 344.070513,
+      "profile": "qjl_1bit_kv_floor_21504b",
+      "record_bytes": 21504,
+      "repeat_ns_per_request": [
+        344.070513,
+        341.185897,
+        342.147436,
+        342.467949,
+        342.628205
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 344064
+    },
+    {
+      "batch_size": 64,
+      "cv": 0.00567813,
+      "iterations": 128,
+      "mean_ns_per_request": 431.982422,
+      "p50_ns_per_request": 431.640625,
+      "p95_ns_per_request": 435.180664,
+      "profile": "qjl_1bit_kv_floor_21504b",
+      "record_bytes": 21504,
+      "repeat_ns_per_request": [
+        435.180664,
+        434.204102,
+        431.640625,
+        428.466797,
+        430.419922
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 1376256
+    },
+    {
+      "batch_size": 256,
+      "cv": 0.01298987,
+      "iterations": 128,
+      "mean_ns_per_request": 653.631592,
+      "p50_ns_per_request": 658.630371,
+      "p95_ns_per_request": 662.689209,
+      "profile": "qjl_1bit_kv_floor_21504b",
+      "record_bytes": 21504,
+      "repeat_ns_per_request": [
+        640.380859,
+        662.689209,
+        659.454346,
+        647.003174,
+        658.630371
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 5505024
+    },
+    {
+      "batch_size": 1,
+      "cv": 0.00182321,
+      "iterations": 3120,
+      "mean_ns_per_request": 581.987179,
+      "p50_ns_per_request": 582.051282,
+      "p95_ns_per_request": 583.653846,
+      "profile": "kivi_2bit_kv_floor_43008b",
+      "record_bytes": 43008,
+      "repeat_ns_per_request": [
+        580.448718,
+        581.410256,
+        582.371795,
+        582.051282,
+        583.653846
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 43008
+    },
+    {
+      "batch_size": 4,
+      "cv": 0.00341909,
+      "iterations": 780,
+      "mean_ns_per_request": 674.423077,
+      "p50_ns_per_request": 674.038462,
+      "p95_ns_per_request": 678.525641,
+      "profile": "kivi_2bit_kv_floor_43008b",
+      "record_bytes": 43008,
+      "repeat_ns_per_request": [
+        672.115385,
+        672.435897,
+        674.038462,
+        678.525641,
+        675.0
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 172032
+    },
+    {
+      "batch_size": 16,
+      "cv": 0.00090747,
+      "iterations": 195,
+      "mean_ns_per_request": 684.871795,
+      "p50_ns_per_request": 685.25641,
+      "p95_ns_per_request": 685.576923,
+      "profile": "kivi_2bit_kv_floor_43008b",
+      "record_bytes": 43008,
+      "repeat_ns_per_request": [
+        685.25641,
+        685.25641,
+        683.974359,
+        685.576923,
+        684.294872
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 688128
+    },
+    {
+      "batch_size": 64,
+      "cv": 0.02205362,
+      "iterations": 128,
+      "mean_ns_per_request": 1125.952148,
+      "p50_ns_per_request": 1140.136719,
+      "p95_ns_per_request": 1149.169922,
+      "profile": "kivi_2bit_kv_floor_43008b",
+      "record_bytes": 43008,
+      "repeat_ns_per_request": [
+        1149.169922,
+        1147.827148,
+        1140.136719,
+        1103.637695,
+        1088.989258
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 2752512
+    },
+    {
+      "batch_size": 256,
+      "cv": 0.04347544,
+      "iterations": 128,
+      "mean_ns_per_request": 1332.495117,
+      "p50_ns_per_request": 1287.567139,
+      "p95_ns_per_request": 1410.339355,
+      "profile": "kivi_2bit_kv_floor_43008b",
+      "record_bytes": 43008,
+      "repeat_ns_per_request": [
+        1287.567139,
+        1287.536621,
+        1281.036377,
+        1395.996094,
+        1410.339355
+      ],
+      "source_kv_exposed": true,
+      "source_text_exposed": false,
+      "total_bytes_per_iteration": 11010048
+    }
+  ],
+  "sink": 109413448465,
+  "target_bytes_per_repeat": 134217728
+}

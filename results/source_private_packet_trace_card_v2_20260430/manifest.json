@@ -1,0 +1,28 @@
+{
+  "artifacts": [
+    "packet_trace_card_v2.json",
+    "packet_trace_card_v2.md",
+    "packet_trace_rows_v2.csv",
+    "claim_checklist_v2.json",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_packet_trace_card_v2",
+  "headline": {
+    "checklist_passed": 7,
+    "checklist_total": 7,
+    "full_log_raw_ratio_min": 183.25,
+    "kv_raw_ratio_min": 10752.0,
+    "packet_batch64_dma_bytes_per_request": 6.0,
+    "packet_batch64_line_bytes_per_request": 5.0,
+    "packet_raw_bytes_min": 2.0,
+    "packet_single_request_cacheline_bytes_min": 64.0,
+    "pass_gate": true,
+    "query_aware_text_cacheline_ratio": 1.0,
+    "query_aware_text_raw_ratio": 7.0,
+    "qwen_receiver_cpu_p50_latency_ms_max": 915.6614375096979,
+    "qwen_receiver_pass_rows": 2,
+    "qwen_receiver_rows": 2
+  },
+  "pass_gate": true
+}

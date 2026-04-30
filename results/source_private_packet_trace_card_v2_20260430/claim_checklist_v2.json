@@ -1,0 +1,44 @@
+[
+  {
+    "check": "strict_source_controls",
+    "pass": true,
+    "reviewer_risk_reduced": "packet lift is not from zero/shuffled/random/text/deranged controls",
+    "value": "endpoint 2/2; qwen 2/2"
+  },
+  {
+    "check": "same_byte_text_negative",
+    "pass": true,
+    "reviewer_risk_reduced": "same-byte text relay does not explain packet accuracy",
+    "value": "0.250"
+  },
+  {
+    "check": "query_aware_text_raw_gap",
+    "pass": true,
+    "reviewer_risk_reduced": "strongest visible-text relay needs more semantic payload and exposes private text",
+    "value": "7.0x raw bytes; 1.0x cache-line bytes"
+  },
+  {
+    "check": "full_log_transport_gap",
+    "pass": true,
+    "reviewer_risk_reduced": "full private text relay is not the same operating point",
+    "value": "183.2x raw; 6.0x line; +164.27 ms TTFT proxy"
+  },
+  {
+    "check": "kv_byte_floor_gap",
+    "pass": true,
+    "reviewer_risk_reduced": "KV/cache movement is a different and much larger transport object",
+    "value": "10752x raw; 336x line"
+  },
+  {
+    "check": "batch_amortization",
+    "pass": true,
+    "reviewer_risk_reduced": "the one-line single-request floor can be amortized by packed packet records",
+    "value": "5.00 line B/request; 6.00 DMA B/request at batch 64"
+  },
+  {
+    "check": "production_overclaim_guard",
+    "pass": true,
+    "reviewer_risk_reduced": "Mac trace card does not pretend to be NVIDIA/HBM throughput",
+    "value": "This is not measured accelerator throughput.; It assumes ideal contiguous packing of packet records inside a batch.; It does not model receiver compute or dictionary/cache locality beyond packet bytes."
+  }
+]

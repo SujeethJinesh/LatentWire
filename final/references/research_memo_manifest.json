@@ -1202,5 +1202,12 @@
     "path": "references/528_masked_consistency_pruning_and_next_systems_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for pruning the masked-consistency receiver on balanced diag-only public-separation and choosing next systems/receiver branches, covering consistency/flow/DiT/JEPA inspiration, TurboQuant/QJL/KIVI/Gist baselines, and side-information coding framing."
+  },
+  {
+    "num": 529,
+    "slug": "packet_trace_card_v2_refs_20260430",
+    "path": "references/529_packet_trace_card_v2_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source systems memo for packet trace card v2 and Mac packet-ring transport microbench, covering TurboQuant, QJL, KIVI, KVQuant, vLLM/PagedAttention, FlashAttention, DistServe, and Apple unified-memory hardware context."
   }
 ]
