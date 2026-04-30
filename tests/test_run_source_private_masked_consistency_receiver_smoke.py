@@ -11,6 +11,8 @@ def _state() -> gate.ConsistencyReceiverState:
         eval_examples=16,
         train_seed=5,
         eval_seed=6,
+        train_start_index=0,
+        eval_start_index=0,
         train_family_set="all",
         eval_family_set="all",
         candidates=4,
@@ -20,6 +22,71 @@ def _state() -> gate.ConsistencyReceiverState:
         candidate_view="full",
         fit_intercept=False,
     )
+
+
+def test_remap_slot_seed_changes_candidate_order_without_changing_answers() -> None:
+    baseline = gate._fit_state(
+        train_examples=16,
+        eval_examples=8,
+        train_seed=13,
+        eval_seed=14,
+        train_start_index=0,
+        eval_start_index=0,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=32,
+        budget_bytes=2,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+        remap_slot_seed=None,
+    )
+    remapped = gate._fit_state(
+        train_examples=16,
+        eval_examples=8,
+        train_seed=13,
+        eval_seed=14,
+        train_start_index=0,
+        eval_start_index=0,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=32,
+        budget_bytes=2,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+        remap_slot_seed=901,
+    )
+
+    assert baseline.eval_rows[0].example_id == remapped.eval_rows[0].example_id
+    assert baseline.eval_rows[0].answer_label == remapped.eval_rows[0].answer_label
+    assert [candidate.label for candidate in baseline.eval_rows[0].candidates] != [
+        candidate.label for candidate in remapped.eval_rows[0].candidates
+    ]
+    assert remapped.eval_rows[0].answer_label in {candidate.label for candidate in remapped.eval_rows[0].candidates}
+
+
+def test_start_indices_make_train_eval_ids_disjoint() -> None:
+    state = gate._fit_state(
+        train_examples=16,
+        eval_examples=8,
+        train_seed=13,
+        eval_seed=14,
+        train_start_index=0,
+        eval_start_index=10_000,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=32,
+        budget_bytes=2,
+        ridge=1e-2,
+        candidate_view="full",
+        fit_intercept=False,
+    )
+
+    assert {row.example_id for row in state.train_rows}.isdisjoint({row.example_id for row in state.eval_rows})
 
 
 def test_receiver_features_have_one_row_per_candidate() -> None:
@@ -77,6 +144,8 @@ def test_run_gate_writes_smoke_artifacts(tmp_path) -> None:
         eval_examples=16,
         train_seed=7,
         eval_seed=8,
+        train_start_index=0,
+        eval_start_index=0,
         train_family_set="all",
         eval_family_set="all",
         candidates=4,
@@ -86,6 +155,7 @@ def test_run_gate_writes_smoke_artifacts(tmp_path) -> None:
         receiver_ridge=1e-2,
         candidate_view="full",
         fit_intercept=False,
+        remap_slot_seed=None,
         seed=9,
         mask_rounds=1,
         random_rounds=1,

@@ -28,6 +28,7 @@ from scripts.run_source_private_tool_trace_compression_baselines import (  # noq
     _candidate_matrix_for_view,
     _fit_ridge_encoder_for_view,
     _project_source,
+    _remap_candidate_slots,
 )
 from scripts.run_source_private_tool_trace_learned_syndrome import (  # noqa: E402
     _bytes_to_bits,
@@ -68,6 +69,7 @@ class ConsistencyReceiverState:
     budget_bytes: int
     candidate_view: str
     fit_intercept: bool
+    remap_slot_seed: int | None
 
     @property
     def bit_count(self) -> int:
@@ -93,6 +95,8 @@ def _fit_state(
     eval_examples: int,
     train_seed: int,
     eval_seed: int,
+    train_start_index: int,
+    eval_start_index: int,
     train_family_set: str,
     eval_family_set: str,
     candidates: int,
@@ -101,9 +105,24 @@ def _fit_state(
     ridge: float,
     candidate_view: str,
     fit_intercept: bool,
+    remap_slot_seed: int | None = None,
 ) -> ConsistencyReceiverState:
-    train_rows = make_benchmark(examples=train_examples, candidates=candidates, seed=train_seed, family_set=train_family_set)
-    eval_rows = make_benchmark(examples=eval_examples, candidates=candidates, seed=eval_seed, family_set=eval_family_set)
+    train_rows = make_benchmark(
+        examples=train_examples,
+        candidates=candidates,
+        seed=train_seed,
+        family_set=train_family_set,
+        start_index=train_start_index,
+    )
+    eval_rows = make_benchmark(
+        examples=eval_examples,
+        candidates=candidates,
+        seed=eval_seed,
+        family_set=eval_family_set,
+        start_index=eval_start_index,
+    )
+    train_rows = _remap_candidate_slots(train_rows, remap_seed=remap_slot_seed)
+    eval_rows = _remap_candidate_slots(eval_rows, remap_seed=remap_slot_seed)
     encoder = _fit_ridge_encoder_for_view(
         train_rows,
         feature_dim=feature_dim,
@@ -131,6 +150,7 @@ def _fit_state(
         budget_bytes=budget_bytes,
         candidate_view=candidate_view,
         fit_intercept=fit_intercept,
+        remap_slot_seed=remap_slot_seed,
     )
 
 
@@ -449,6 +469,28 @@ def _paired_bootstrap(rows: list[dict[str, Any]], *, condition_a: str, condition
 
 def _summarize(rows: list[dict[str, Any]], *, conditions: list[str], tolerance_vs_hamming: float) -> dict[str, Any]:
     example_ids = sorted({row["example_id"] for row in rows})
+    condition_ids = {
+        condition: [row["example_id"] for row in rows if row["condition"] == condition]
+        for condition in conditions
+    }
+    condition_unique_counts = {
+        condition: len(set(ids))
+        for condition, ids in condition_ids.items()
+    }
+    condition_duplicate_counts = {
+        condition: len(ids) - len(set(ids))
+        for condition, ids in condition_ids.items()
+    }
+    condition_id_sha256 = {
+        condition: hashlib.sha256("\n".join(sorted(ids)).encode("utf-8")).hexdigest()
+        for condition, ids in condition_ids.items()
+    }
+    condition_id_parity = all(
+        len(ids) == len(example_ids)
+        and condition_unique_counts[condition] == len(example_ids)
+        and set(ids) == set(example_ids)
+        for condition, ids in condition_ids.items()
+    )
     learned_metrics: dict[str, Any] = {}
     hamming_metrics: dict[str, Any] = {}
     for condition in conditions:
@@ -462,7 +504,7 @@ def _summarize(rows: list[dict[str, Any]], *, conditions: list[str], tolerance_v
     best_control_condition = max(control_names, key=lambda condition: learned_metrics[condition]["accuracy"])
     best_control = learned_metrics[best_control_condition]["accuracy"]
     controls_ok = all(learned_metrics[condition]["accuracy"] <= target + 0.05 for condition in control_names)
-    exact_id_parity = len(rows) == len(example_ids) * len(conditions)
+    exact_id_parity = len(rows) == len(example_ids) * len(conditions) and condition_id_parity
     source_packet_pass = exact_id_parity and matched >= target + 0.15 and matched >= best_control + 0.15 and controls_ok
     replacement_pass = source_packet_pass and matched >= hamming_matched - tolerance_vs_hamming
     return {
@@ -471,6 +513,10 @@ def _summarize(rows: list[dict[str, Any]], *, conditions: list[str], tolerance_v
         "exact_id_count": len(example_ids),
         "exact_id_sha256": hashlib.sha256("\n".join(example_ids).encode("utf-8")).hexdigest(),
         "exact_id_parity": exact_id_parity,
+        "condition_id_sha256": condition_id_sha256,
+        "condition_unique_counts": condition_unique_counts,
+        "condition_duplicate_counts": condition_duplicate_counts,
+        "condition_id_parity": condition_id_parity,
         "target_only_accuracy": target,
         "learned_matched_accuracy": matched,
         "hamming_matched_accuracy": hamming_matched,
@@ -551,6 +597,8 @@ def run_gate(
     eval_examples: int,
     train_seed: int,
     eval_seed: int,
+    train_start_index: int,
+    eval_start_index: int,
     train_family_set: str,
     eval_family_set: str,
     candidates: int,
@@ -560,6 +608,7 @@ def run_gate(
     receiver_ridge: float,
     candidate_view: str,
     fit_intercept: bool,
+    remap_slot_seed: int | None = None,
     seed: int,
     mask_rounds: int,
     random_rounds: int,
@@ -576,6 +625,8 @@ def run_gate(
         eval_examples=eval_examples,
         train_seed=train_seed,
         eval_seed=eval_seed,
+        train_start_index=train_start_index,
+        eval_start_index=eval_start_index,
         train_family_set=train_family_set,
         eval_family_set=eval_family_set,
         candidates=candidates,
@@ -584,6 +635,7 @@ def run_gate(
         ridge=ridge,
         candidate_view=candidate_view,
         fit_intercept=fit_intercept,
+        remap_slot_seed=remap_slot_seed,
     )
     receiver_weights = _fit_receiver(
         state,
@@ -607,6 +659,8 @@ def run_gate(
         encoding="utf-8",
     )
     exact_ids = [row.example_id for row in state.eval_rows]
+    train_ids = [row.example_id for row in state.train_rows]
+    train_eval_id_intersection = sorted(set(train_ids).intersection(exact_ids))
     payload = {
         "gate": "source_private_masked_consistency_receiver_smoke",
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
@@ -614,6 +668,8 @@ def run_gate(
         "eval_examples": eval_examples,
         "train_seed": train_seed,
         "eval_seed": eval_seed,
+        "train_start_index": train_start_index,
+        "eval_start_index": eval_start_index,
         "train_family_set": train_family_set,
         "eval_family_set": eval_family_set,
         "candidates": candidates,
@@ -623,6 +679,7 @@ def run_gate(
         "receiver_ridge": receiver_ridge,
         "candidate_view": candidate_view,
         "fit_intercept": fit_intercept,
+        "remap_slot_seed": remap_slot_seed,
         "seed": seed,
         "mask_rounds": mask_rounds,
         "random_rounds": random_rounds,
@@ -633,6 +690,9 @@ def run_gate(
         "tolerance_vs_hamming": tolerance_vs_hamming,
         "exact_id_parity": summary["exact_id_parity"],
         "exact_id_sha256": hashlib.sha256("\n".join(exact_ids).encode("utf-8")).hexdigest(),
+        "train_id_sha256": hashlib.sha256("\n".join(train_ids).encode("utf-8")).hexdigest(),
+        "train_eval_id_intersection_count": len(train_eval_id_intersection),
+        "train_eval_id_intersection_sample": train_eval_id_intersection[:10],
         "candidate_pool_recall": 1.0,
         "encoder_sha256": hashlib.sha256(state.encoder.tobytes()).hexdigest(),
         "code_projection_sha256": hashlib.sha256(state.code_projection.tobytes()).hexdigest(),
@@ -691,6 +751,8 @@ def main() -> None:
     parser.add_argument("--eval-examples", type=int, default=64)
     parser.add_argument("--train-seed", type=int, default=29)
     parser.add_argument("--eval-seed", type=int, default=30)
+    parser.add_argument("--train-start-index", type=int, default=0)
+    parser.add_argument("--eval-start-index", type=int, default=0)
     parser.add_argument("--train-family-set", choices=["core", "holdout", "all"], default="all")
     parser.add_argument("--eval-family-set", choices=["core", "holdout", "all"], default="all")
     parser.add_argument("--candidates", type=int, default=4)
@@ -700,6 +762,12 @@ def main() -> None:
     parser.add_argument("--receiver-ridge", type=float, default=1e-2)
     parser.add_argument("--candidate-view", choices=["full", "no_diag", "semantic", "slot"], default="full")
     parser.add_argument("--fit-intercept", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument(
+        "--remap-slot-seed",
+        type=int,
+        default=None,
+        help="Deterministically remap candidate order per example before fitting/evaluation.",
+    )
     parser.add_argument("--seed", type=int, default=29)
     parser.add_argument("--mask-rounds", type=int, default=4)
     parser.add_argument("--random-rounds", type=int, default=2)
@@ -718,6 +786,8 @@ def main() -> None:
         eval_examples=args.eval_examples,
         train_seed=args.train_seed,
         eval_seed=args.eval_seed,
+        train_start_index=args.train_start_index,
+        eval_start_index=args.eval_start_index,
         train_family_set=args.train_family_set,
         eval_family_set=args.eval_family_set,
         candidates=args.candidates,
@@ -727,6 +797,7 @@ def main() -> None:
         receiver_ridge=args.receiver_ridge,
         candidate_view=args.candidate_view,
         fit_intercept=args.fit_intercept,
+        remap_slot_seed=args.remap_slot_seed,
         seed=args.seed,
         mask_rounds=args.mask_rounds,
         random_rounds=args.random_rounds,

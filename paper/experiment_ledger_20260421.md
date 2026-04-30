@@ -16180,3 +16180,33 @@ semantic-transfer proof. It shows a one-step learned receiver can preserve most
 packet utility while learning when to ignore destructive packets. Next gate is
 label-blind/public-table stress for the learned receiver, then `n=500` if it
 holds.
+
+Update `2026-04-30`: hardened and ran the disjoint-ID label-blind stress for
+the learned masked-consistency receiver. Code updates:
+`scripts/run_source_private_hidden_repair_packet_smoke.py` now supports
+`start_index`; `scripts/run_source_private_masked_consistency_receiver_smoke.py`
+now supports `--train-start-index`, `--eval-start-index`, and
+`--remap-slot-seed`; new summary script:
+`scripts/summarize_source_private_masked_consistency_label_blind_stress.py`;
+tests:
+`tests/test_run_source_private_masked_consistency_receiver_smoke.py` and
+`tests/test_summarize_source_private_masked_consistency_label_blind_stress.py`;
+memo:
+`paper/source_private_masked_consistency_label_blind_stress_20260430.md`;
+references:
+`references/523_masked_consistency_label_blind_stress_refs_20260430.md`;
+artifacts:
+`results/source_private_masked_consistency_receiver_label_blind_20260430/`.
+Outcome: summary pass gate `True`, `2/2` disjoint full-view n256 anchors pass,
+`2/2` opaque remapped-slot n256 rows collapse, all decisive train/eval ID
+intersection counts are `0`, all exact-ID parity checks pass, min full-view
+lift vs target is `+0.664`, max opaque learned lift vs target is `+0.012`, max
+opaque Hamming lift vs target is `+0.023`, and max opaque paired CI95 high vs
+target is `+0.066`. A semantic-view diagnostic with explicit diagnostic keys
+removed still passes at `0.996` learned accuracy with controls at target,
+showing that source bytes can be decoded against public candidate semantics
+rather than only exact repair-key tables. Interpretation: this materially
+weakens the same-ID and slot-lookup objections, and it sharpens the paper claim
+to source-private communication with decoder side information. It still is not
+protocol-free latent transfer. Next exact gate: `n=500` disjoint full/semantic
+/ opaque-slot stress plus a public-only learned receiver ablation.

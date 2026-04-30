@@ -287,15 +287,25 @@ def _make_private_log(*, family: RepairFamily, example_index: int, actual: Any, 
     )
 
 
-def make_benchmark(*, examples: int, candidates: int, seed: int, family_set: str = "core") -> list[Example]:
+def make_benchmark(
+    *,
+    examples: int,
+    candidates: int,
+    seed: int,
+    family_set: str = "core",
+    start_index: int = 0,
+) -> list[Example]:
     if examples <= 0:
         raise ValueError("--examples must be positive")
     if candidates != 4:
         raise ValueError("hidden repair smoke currently expects exactly 4 candidates")
+    if start_index < 0:
+        raise ValueError("start_index must be non-negative")
     rng = random.Random(seed)
     families = _families(family_set)
     rows: list[Example] = []
-    for example_index in range(examples):
+    for local_index in range(examples):
+        example_index = start_index + local_index
         family = families[example_index % len(families)]
         prior_index = family.answer_index if example_index % candidates == 0 else (family.answer_index + 1) % candidates
         answer_index = family.answer_index

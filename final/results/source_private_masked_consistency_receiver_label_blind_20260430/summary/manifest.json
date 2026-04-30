@@ -1,0 +1,28 @@
+{
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_masked_consistency_receiver_label_blind_stress",
+  "headline": {
+    "all_disjoint_train_eval": true,
+    "all_exact_id_parity": true,
+    "blinded_controls_clean": true,
+    "blinded_n256_runs": 1,
+    "max_blinded_lift_vs_target": 0.74609375,
+    "max_control_delta": 0.015625,
+    "max_opaque_slot_hamming_lift_vs_target": 0.0234375,
+    "max_opaque_slot_lift_vs_target": 0.01171875,
+    "min_blinded_lift_vs_target": 0.74609375,
+    "min_reference_full_lift_vs_target": 0.6640625,
+    "opaque_slot_collapse": true,
+    "opaque_slot_n256_runs": 2,
+    "pass_gate": true,
+    "reference_full_n256_pass": true,
+    "reference_full_n256_runs": 2,
+    "runs": 5
+  },
+  "pass_gate": true
+}

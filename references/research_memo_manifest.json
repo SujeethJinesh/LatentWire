@@ -1160,5 +1160,12 @@
     "path": "references/522_masked_consistency_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the learned masked-consistency receiver over 6-byte syndrome packets, covering D3PM, MaskGIT, consistency models, latent consistency, I-JEPA/V-JEPA, Wyner-Ziv side information, and DISCUS syndrome coding."
+  },
+  {
+    "num": 523,
+    "slug": "masked_consistency_label_blind_stress_refs_20260430",
+    "path": "references/523_masked_consistency_label_blind_stress_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the disjoint-ID label-blind stress of the learned masked-consistency receiver, covering shortcut/artifact controls, adversarial filtering, decoder-side information, denoising/consistency receivers, and Q-Former-style bridge inspiration."
   }
 ]

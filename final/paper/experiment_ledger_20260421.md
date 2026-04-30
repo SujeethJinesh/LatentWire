@@ -16137,3 +16137,76 @@ source-private communication with decoder side information, not protocol-free
 semantic transfer. The next reviewer-defense gate is deterministic `n=500`
 label-blind stress; the next method-depth gate is a learned/shared-dictionary
 receiver that reduces the public-table shape.
+
+Update `2026-04-30`: added the Mac unified-memory transport profile as a
+hardware-facing systems trace-card. Code:
+`scripts/build_source_private_mac_unified_memory_transport_profile.py`; test:
+`tests/test_build_source_private_mac_unified_memory_transport_profile.py`;
+memo: `paper/source_private_mac_unified_memory_transport_profile_20260430.md`;
+references:
+`references/521_mac_unified_memory_transport_profile_refs_20260430.md`;
+artifact:
+`results/source_private_mac_unified_memory_transport_profile_20260430/`.
+Outcome: pass gate `True`, `2/2` exact-ID parity surfaces, matched packet min
+delta vs target `+0.425`, max source-destroying-control delta `+0.000`,
+query-aware text raw ratio `7.00x` but line ratio `1.00x`, full hidden-log raw
+ratio `183.25x`, full hidden-log line ratio `6.00x`, full-log QJL-style
+1-bit prompt-KV delta per packet byte `313353.6x`, and batch-64 packet traffic
+`5.00` line bytes/request plus `6.00` DMA bytes/request. Interpretation: this
+upgrades the systems contribution from byte accounting to a reviewer-readable
+boundary-traffic profile with explicit source-text/KV exposure flags and hard
+non-claims. It does not prove production serving speed; NVIDIA/server TTFT,
+TPOT, goodput, and memory-counter telemetry remain future gates.
+
+Update `2026-04-30`: added and ran the learned masked-consistency receiver over
+6-byte learned syndrome packets. Code:
+`scripts/run_source_private_masked_consistency_receiver_smoke.py` and
+`scripts/summarize_source_private_masked_consistency_receiver.py`; tests:
+`tests/test_run_source_private_masked_consistency_receiver_smoke.py` and
+`tests/test_summarize_source_private_masked_consistency_receiver.py`; memo:
+`paper/source_private_masked_consistency_receiver_20260430.md`; references:
+`references/522_masked_consistency_receiver_refs_20260430.md`; artifacts:
+`results/source_private_masked_consistency_receiver_smoke_20260430/`. Outcome:
+aggregate pass gate `True` over one `n=64` smoke and two `n=256` seed-pair
+confirmations. Minimum n256 learned matched accuracy is `0.957`; minimum n256
+lift vs target is `+0.707`; minimum n256 lift vs best destructive control is
+`+0.676`; minimum n256 CI95 lower bound is `+0.652` vs target and `+0.617` vs
+best control; learned-minus-deterministic-Hamming ranges from `-0.020` to
+`+0.016`. Important diagnostic: deterministic Hamming leaks on some controls in
+the first n256 run (`shuffled_source=0.332`, `wrong_projection=0.328`), while
+the learned receiver suppresses them to near target (`0.246`, `0.258`).
+Interpretation: promote this as a method-depth contribution, not a final
+semantic-transfer proof. It shows a one-step learned receiver can preserve most
+packet utility while learning when to ignore destructive packets. Next gate is
+label-blind/public-table stress for the learned receiver, then `n=500` if it
+holds.
+
+Update `2026-04-30`: hardened and ran the disjoint-ID label-blind stress for
+the learned masked-consistency receiver. Code updates:
+`scripts/run_source_private_hidden_repair_packet_smoke.py` now supports
+`start_index`; `scripts/run_source_private_masked_consistency_receiver_smoke.py`
+now supports `--train-start-index`, `--eval-start-index`, and
+`--remap-slot-seed`; new summary script:
+`scripts/summarize_source_private_masked_consistency_label_blind_stress.py`;
+tests:
+`tests/test_run_source_private_masked_consistency_receiver_smoke.py` and
+`tests/test_summarize_source_private_masked_consistency_label_blind_stress.py`;
+memo:
+`paper/source_private_masked_consistency_label_blind_stress_20260430.md`;
+references:
+`references/523_masked_consistency_label_blind_stress_refs_20260430.md`;
+artifacts:
+`results/source_private_masked_consistency_receiver_label_blind_20260430/`.
+Outcome: summary pass gate `True`, `2/2` disjoint full-view n256 anchors pass,
+`2/2` opaque remapped-slot n256 rows collapse, all decisive train/eval ID
+intersection counts are `0`, all exact-ID parity checks pass, min full-view
+lift vs target is `+0.664`, max opaque learned lift vs target is `+0.012`, max
+opaque Hamming lift vs target is `+0.023`, and max opaque paired CI95 high vs
+target is `+0.066`. A semantic-view diagnostic with explicit diagnostic keys
+removed still passes at `0.996` learned accuracy with controls at target,
+showing that source bytes can be decoded against public candidate semantics
+rather than only exact repair-key tables. Interpretation: this materially
+weakens the same-ID and slot-lookup objections, and it sharpens the paper claim
+to source-private communication with decoder side information. It still is not
+protocol-free latent transfer. Next exact gate: `n=500` disjoint full/semantic
+/ opaque-slot stress plus a public-only learned receiver ablation.

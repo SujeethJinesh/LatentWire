@@ -216,6 +216,12 @@
   n256 learned matched accuracy is `0.957`, minimum lift vs target is `+0.707`,
   minimum lift vs best destructive control is `+0.676`, and minimum CI95 lower
   bound vs best control is `+0.617`.
+- Disjoint-ID label-blind stress code, tests, references, memo, and artifacts
+  for the learned masked-consistency receiver: `2/2` full-view n256 anchors
+  pass, `2/2` opaque remapped-slot n256 rows collapse, train/eval ID
+  intersections are `0`, max opaque learned lift vs target is `+0.012`, max
+  opaque paired CI95 high vs target is `+0.066`, and a semantic candidate-view
+  diagnostic passes at `0.996` without explicit diagnostic keys.
 
 ## Notes
 

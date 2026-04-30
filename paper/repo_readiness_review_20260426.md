@@ -3078,3 +3078,23 @@ strongest answer so far to the hand-written decoder objection, but it remains a
 public-candidate/code-feature receiver. ICLR comfort still requires
 label-blind/public-table stress and preferably `n=500`; COLM workshop readiness
 is now very strong.
+
+Update `2026-04-30`: the learned receiver now passes the immediate
+label-blind/public-table stress on disjoint train/eval IDs. Artifact:
+`results/source_private_masked_consistency_receiver_label_blind_20260430/`;
+memo:
+`paper/source_private_masked_consistency_label_blind_stress_20260430.md`.
+Outcome: `2/2` disjoint full-view n256 anchors pass (`0.914` and `0.957`
+learned matched accuracy), `2/2` opaque slot-remap n256 rows collapse
+(`0.234` and `0.262` learned matched accuracy against target `0.250`), all
+decisive train/eval ID intersections are `0`, all exact-ID parity checks pass,
+and the max opaque paired CI95 high versus target is `+0.066`. The semantic
+candidate-view diagnostic also passes at `0.996` after removing explicit
+diagnostic keys, with all destructive controls at target. Readiness
+implication: the same-ID and slot-lookup objections are now substantially
+weaker, and the method contribution is clearer: a learned source-private byte
+receiver that uses decoder-side public semantics and rejects opaque remapped
+slot channels. ICLR readiness improves to a strong scoped full-paper candidate,
+but comfortable acceptance still needs an `n=500` disjoint repeat, a public-only
+semantic receiver ablation, one cross-family/model pair, and stronger
+production systems telemetry. COLM workshop readiness is very strong.
