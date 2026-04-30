@@ -119,6 +119,25 @@ This adds a real learned source-private syndrome contribution. It does not
 change the full-paper blocker: bidirectional cross-family evidence and a larger
 target-model decoder are still missing.
 
+Update `2026-04-30`: the semantic-anchor held-out receiver and the systems
+rate-and-assumption frontier materially strengthen the full-paper case. The
+semantic-anchor medium confirmation passes `18/18` rows across three seeds,
+three directions, and `4/8` byte budgets, with minimum learned-target lift
+`+0.500`, minimum passing CI95 lower bound `+0.457`, best source-destroying
+controls at target, oracle candidate-map accuracy at least `0.875`, and zero
+exact transformed held-out overlap. The new systems frontier consolidates
+endpoint packets, same-byte text, query-aware text relay, full hidden-log relay,
+semantic-anchor rows, KV byte floors, and external C2C/KVComm/TurboQuant/QJL/
+LLMLingua/Gist-token rows under explicit access assumptions. It passes as a
+reviewer-facing systems artifact: same-byte text remains target-only, query-
+aware visible text needs `7.0x` packet bytes, full hidden-log relay is at least
+`183.2x` larger with `+164.27 ms` TTFT, and KV byte floors are at least
+`10752.0x` packet bytes. Readiness is now a stronger scoped positive-method
+paper, but still not a broad ICLR latent-communication claim. The exact blocker
+is a learned/frozen embedding or activation receiver that keeps the current
+control discipline, plus one cross-family model pair or native GPU systems
+comparison when available.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

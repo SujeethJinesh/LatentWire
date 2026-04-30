@@ -15674,3 +15674,28 @@ medium, seed-stable, held-out-paraphrase positive evidence. Remaining blocker:
 the receiver uses an explicit semantic-anchor lexicon, so the next exact gate is
 a frozen/learned embedding receiver ablation plus a systems rate/assumption
 frontier table.
+
+Follow-up `2026-04-30`: added the systems rate-and-assumption frontier required
+to make the systems contribution reviewer-safe. New code:
+`scripts/build_source_private_systems_rate_assumption_frontier.py`; focused
+test: `tests/test_build_source_private_systems_rate_assumption_frontier.py`;
+memo: `paper/source_private_systems_rate_assumption_frontier_20260430.md`;
+reference memo:
+`references/505_systems_rate_assumption_frontier_refs_20260430.md`; artifact:
+`results/source_private_systems_rate_assumption_frontier_20260430/`. Command:
+`./venv_arm64/bin/python scripts/build_source_private_systems_rate_assumption_frontier.py --output-dir results/source_private_systems_rate_assumption_frontier_20260430`.
+Outcome: pass as an artifact-consolidation systems gate. The table has `20`
+rows and records endpoint packets, same-byte and higher-byte text relays,
+semantic-anchor medium rows, QJL/KIVI/KVQuant byte floors, C2C/KVComm,
+TurboQuant, QJL, LLMLingua, and gist-token related-work rows with explicit
+access assumptions. Headline: endpoint packet rows pass `2/2`;
+semantic-anchor medium rows pass `18/18`; min endpoint lift over target is
+`+0.425`; min semantic-anchor lift is `+0.500`; same-byte structured text maxes
+at `0.250`; query-aware visible text needs `14` bytes (`7.0x` the 2-byte
+packet); full hidden-log relay is at least `183.2x` larger and `+164.27 ms`
+TTFT; KV byte-floor rows are at least `10752.0x` the packet; and the
+under-specified receiver-contract row stays at target (`0.250`). Interpretation:
+this strengthens the systems contribution as a rate/assumption frontier, but it
+does not claim native wins over KV compression, C2C, KVComm, TurboQuant, QJL, or
+prompt-compression methods. Next exact gate remains the learned/frozen
+embedding receiver ablation for a less symbolic communication interface.

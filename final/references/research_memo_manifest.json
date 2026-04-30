@@ -1034,5 +1034,12 @@
     "path": "references/504_semantic_anchor_heldout_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the semantic-anchor held-out receiver gate, covering relative representations, Sentence-BERT, SimCSE, sparse crosscoders, I-JEPA, Q-Former/Perceiver connectors, and QJL/TurboQuant systems caveats."
+  },
+  {
+    "num": 505,
+    "slug": "systems_rate_assumption_frontier_refs_20260430",
+    "path": "references/505_systems_rate_assumption_frontier_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source systems/rate frontier memo for assumption-separated comparisons against C2C, KVComm, TurboQuant, QJL, KIVI/KVQuant, LLMLingua, LLMLingua-2, and gist tokens."
   }
 ]

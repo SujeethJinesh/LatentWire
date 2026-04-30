@@ -1,0 +1,37 @@
+{
+  "artifact_sha256": {
+    "systems_rate_assumption_frontier.csv": "7e5fed6e7700dd085901051879d82fef51c2e96c55cc54b21d02accf2b4c795e",
+    "systems_rate_assumption_frontier.json": "109250e4f1797f6c94dff34bd102dfd86b6faf4fcb6fe5d3c75f90ee508a7fcd",
+    "systems_rate_assumption_frontier.md": "e0f5887ac9eda615893efd7151196cefe46dfce9d10375fe45f3edd7b511c8ea"
+  },
+  "artifacts": [
+    "systems_rate_assumption_frontier.json",
+    "systems_rate_assumption_frontier.csv",
+    "systems_rate_assumption_frontier.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_systems_rate_assumption_frontier",
+  "headline": {
+    "contract_failure_packet_accuracy": 0.25,
+    "endpoint_packet_rows": 2,
+    "endpoint_packet_rows_passing": 2,
+    "external_reference_rows": 6,
+    "full_log_bytes_vs_packet_min": 183.225,
+    "min_endpoint_packet_delta_vs_target": 0.42500000000000004,
+    "min_full_log_ttft_delta_vs_packet_ms": 164.27308350102976,
+    "min_kv_byte_floor_vs_packet": 10752.0,
+    "min_semantic_packet_delta_vs_target": 0.5,
+    "packet_payload_bytes_min": 2.0,
+    "query_aware_text_bytes_vs_packet": 7.0,
+    "query_aware_text_oracle_bytes_min": 14.0,
+    "same_byte_text_accuracy_max": 0.25,
+    "semantic_medium_pass_rows": 18,
+    "semantic_medium_total_rows": 18,
+    "semantic_packet_budget_bytes": [
+      4,
+      8
+    ]
+  },
+  "pass_gate": true
+}
