@@ -16093,3 +16093,24 @@ but prune the current prompt-only PQ receiver and one-step masked-PQ adapter as
 headline candidates. The next high-value gate is either a true PQ feature
 surface change, native GPU serving telemetry, or a final narrower claim
 boundary.
+
+Follow-up `2026-04-30`: implemented and ran the product-codebook geometry gate.
+Code: `scripts/build_source_private_product_codebook_geometry_gate.py`; test:
+`tests/test_build_source_private_product_codebook_geometry_gate.py`; memo:
+`paper/source_private_product_codebook_geometry_gate_20260430.md`; references:
+`references/519_product_codebook_geometry_refs_20260430.md`; artifacts:
+`results/source_private_product_codebook_geometry_gate_20260430/remap101_budget4_n256/`,
+`results/source_private_product_codebook_geometry_gate_20260430/remap101_budget4_opq_n256/`,
+`results/source_private_product_codebook_geometry_gate_20260430/remap107_budget2_opq_n256/`,
+and
+`results/source_private_product_codebook_geometry_gate_20260430/remap107_budget2_opq8_n256/`.
+Outcome: utility regrouping and OPQ-Procrustes do not promote as stronger PQ
+methods. On remap-101/budget-4, canonical PQ remains best or tied
+(`0.582` source accuracy), with best noncanonical gain only `+0.004`; OPQ is
+slightly worse (`0.578`). On the known weak remap-107/budget-2 row, OPQ repairs
+the source-control failure and improves source accuracy from `0.512` to
+`0.527`, but the `+0.016` gain is below the `+0.03` promotion bar and saturates
+at 8 iterations. Interpretation: keep geometry variants as ablations; the next
+PQ branch needs a source-control-trained protected rotation, not generic OPQ.
+Reviewer priority should shift to label-blind anti-lookup scaling or a
+no-NVIDIA systems trace-card v2.

@@ -3022,3 +3022,17 @@ pruned. The live claim should either narrow around the packet/control/systems
 story, or the next method gate must change the packet geometry itself
 (OPQ/protected-basis/source-control PQ) rather than adding another receiver on
 the same PQ table.
+
+Update `2026-04-30`: the first product-codebook geometry-change gate is now
+complete and negative/near-miss. Utility regrouping, random balanced grouping,
+and OPQ-Procrustes do not beat canonical contiguous PQ on the strong
+remap-101/budget-4 row; best noncanonical gain is only `+0.004`, and OPQ is
+`-0.004`. OPQ does partially repair the known weak remap-107/budget-2 row:
+canonical fails controls at `0.512` source / `0.312` best control, while OPQ
+passes controls at `0.527` source / `0.289` best control. The effect is still
+below the `+0.03` promotion bar and saturates with 8 OPQ iterations. Readiness
+implication: PQ geometry variants should be reported as ablations, not a new
+headline contribution. The next highest-value Mac-local work is the
+reviewer-suggested label-blind anti-lookup scale-up or a no-NVIDIA systems
+trace-card v2; a future PQ method branch would need a source-control-trained
+protected rotation rather than generic OPQ.

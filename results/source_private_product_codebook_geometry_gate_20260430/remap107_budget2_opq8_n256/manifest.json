@@ -1,0 +1,44 @@
+{
+  "args": {
+    "bootstrap_samples": 1000,
+    "budgets": [
+      2
+    ],
+    "candidate_view": "slot",
+    "candidates": 4,
+    "eval_examples": 256,
+    "eval_family_set": "all",
+    "eval_seed": 30,
+    "feature_dim": 512,
+    "fit_intercept": false,
+    "opq_iterations": 8,
+    "output_dir": "results/source_private_product_codebook_geometry_gate_20260430/remap107_budget2_opq8_n256",
+    "remap_seeds": [
+      107
+    ],
+    "require_pass": false,
+    "ridge": 0.01,
+    "train_examples": 512,
+    "train_family_set": "all",
+    "train_seed": 29,
+    "variants": [
+      "canonical",
+      "opq_procrustes"
+    ]
+  },
+  "artifact_sha256": {
+    "product_codebook_geometry_gate.json": "df1c3ecee20779c68911dad575d9de09aa6c314af44fda1bfcdc9416f8617b05",
+    "product_codebook_geometry_gate.md": "b530f123597cdc1aaaa3f0ef583fd5652bdc97fd7a8ee1423719dc865f3efc47"
+  },
+  "artifacts": [
+    "product_codebook_geometry_gate.json",
+    "product_codebook_geometry_gate.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "scripts/build_source_private_product_codebook_geometry_gate.py --output-dir results/source_private_product_codebook_geometry_gate_20260430/remap107_budget2_opq8_n256 --train-examples 512 --eval-examples 256 --train-seed 29 --eval-seed 30 --remap-seeds 107 --budgets 2 --variants canonical opq_procrustes --train-family-set all --eval-family-set all --candidates 4 --feature-dim 512 --ridge 0.01 --candidate-view slot --no-fit-intercept --bootstrap-samples 1000 --opq-iterations 8 --no-require-pass",
+  "pass_gate": false,
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "run_utc": "2026-04-30T09:29:06.968783+00:00",
+  "script_sha256": "2b3cde98147ac34b7c5cfb5196b357a16a5804888d78c44e820620b83005e19a"
+}

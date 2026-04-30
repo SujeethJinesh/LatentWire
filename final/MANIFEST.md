@@ -195,6 +195,10 @@
   artifacts showing the blinded Qwen3-0.6B prompt receiver fails to use PQ
   packets on Mac CPU, and a masked-PQ consistency adapter either collapses to
   target-only or exactly reproduces deterministic PQ L2 without beating it.
+- Product-codebook geometry gate code, test, references, memo, and artifacts
+  showing utility regrouping and OPQ-Procrustes do not promote over canonical
+  PQ; OPQ partially repairs the weak remap-107/budget-2 row but remains below
+  the promotion bar.
 
 ## Notes
 

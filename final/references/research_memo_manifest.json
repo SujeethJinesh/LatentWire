@@ -1132,5 +1132,12 @@
     "path": "references/518_product_codebook_model_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the product-codebook model-mediated and masked-PQ receiver diagnostics, covering PQ/OPQ, VQ discrete latents, D3PM/MaskGIT/Consistency receiver inspiration, TurboQuant, and C2C."
+  },
+  {
+    "num": 519,
+    "slug": "product_codebook_geometry_refs_20260430",
+    "path": "references/519_product_codebook_geometry_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the product-codebook geometry gate, covering canonical PQ, OPQ-Procrustes, rotation-aware quantization, and Wyner-Ziv decoder-side information framing."
   }
 ]
