@@ -2732,3 +2732,21 @@ Readiness improves for the systems contribution, but full ICLR readiness still
 depends on either a held-out family-B receiver pass or a much narrower
 calibrated-public-dictionary framing. Next exact gate: anchor-relative sparse
 innovation receiver on the held-out paraphrase split.
+
+Follow-up `2026-04-30`: the held-out family-B receiver blocker is now partially
+cleared by a semantic-anchor, target-preserving receiver. The new strict-small
+artifact
+`results/source_private_semantic_anchor_heldout_packet_gate_20260430_threshold070_oraclefree`
+passes bidirectional cross-family and same-family directions at `n=256` with
+`6/6` pass rows. At `4/8` bytes, learned packet accuracy is `0.750/1.000` on
+core -> holdout, `0.875/0.875` on holdout -> core, and `0.812/0.938`
+same-family, while target and best source-destroying control remain `0.250`.
+Exact transformed held-out surface overlap is `0`, paired CI95 lower bounds
+are at least `+0.438`, candidate-map oracle is `0.875-1.000`, and top-atom
+knockout removes all lift. This materially strengthens the paper's method
+depth and gives a new contribution: source-private packets decoded through
+public semantic anchors under held-out paraphrase drift. Readiness remains
+short of full ICLR because the receiver uses an explicit public semantic-anchor
+lexicon, not a learned/frozen activation-level bridge. Next exact gate:
+3-seed medium confirmation at `n=512`, then a learned or frozen-embedding
+receiver ablation that removes the hand-written anchor lexicon.

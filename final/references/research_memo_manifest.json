@@ -1027,5 +1027,12 @@
     "path": "references/503_systems_comparison_and_method_next_refs_20260429.md",
     "status": "local_memo",
     "reason": "Primary-source memo for systems comparison and next-method planning after the learned synonym seed/heldout boundary, covering C2C, vector translation, LatentMAS, prompt compression, TurboQuant, QJL, KIVI, relative representations, Q-Former/Perceiver connectors, JEPA, and diffusion-transformer inspiration."
+  },
+  {
+    "num": 504,
+    "slug": "semantic_anchor_heldout_receiver_refs_20260430",
+    "path": "references/504_semantic_anchor_heldout_receiver_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the semantic-anchor held-out receiver gate, covering relative representations, Sentence-BERT, SimCSE, sparse crosscoders, I-JEPA, Q-Former/Perceiver connectors, and QJL/TurboQuant systems caveats."
   }
 ]

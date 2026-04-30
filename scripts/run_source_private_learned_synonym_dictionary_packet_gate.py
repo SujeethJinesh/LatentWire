@@ -142,7 +142,60 @@ def _word_tokens(text: str) -> list[str]:
     return re.findall(r"[a-z0-9]+", text.lower().replace("-", " ").replace("_", " "))
 
 
-def _featurize_text(text: str, *, dim: int) -> np.ndarray:
+SEMANTIC_ANCHOR_EXPANSIONS: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
+    (("empty", "vacant", "element", "no element", "no-element"), ("empty",)),
+    (("list", "sequence", "collection"), ("list", "all_values")),
+    (("guard", "contingency", "safeguard"), ("guard",)),
+    (("none", "null"), ("none", "default")),
+    (("zero", "neutral", "baseline"), ("zero", "default")),
+    (("missing", "absent", "unavailable"), ("missing",)),
+    (("key", "field", "slot"), ("key", "mapping")),
+    (("default", "fallback", "substitute", "replacement", "backup", "alternative"), ("default", "fallback")),
+    (("nested", "deep", "inner"), ("nested", "mapping")),
+    (("parse", "parsing", "conversion", "convert", "decimal", "number"), ("parse", "integer")),
+    (("failure", "failed", "miss"), ("failure",)),
+    (("round", "rounding", "midpoint", "tie", "tie breaking", "tie-breaking"), ("round", "half_up")),
+    (("upward", "larger"), ("half_up",)),
+    (("inclusive", "boundary", "edge", "admitting"), ("inclusive", "threshold")),
+    (("comparison", "comparator", "relation", "equivalence", "equality"), ("equality", "threshold")),
+    (("preserve", "preserving", "retaining"), ("preserve",)),
+    (("order", "chronology"), ("order",)),
+    (("unique", "deduplicate", "repeats"), ("unique",)),
+    (("sum", "aggregate", "total"), ("sum", "all_values")),
+    (("average", "mean"), ("average", "mean", "all_values")),
+    (("case", "lettercase", "casing"), ("case",)),
+    (("insensitive", "agnostic", "without lettercase"), ("insensitive",)),
+    (("lowercase", "downcase"), ("lowercase", "case")),
+    (("clamp", "floor", "raise", "cap"), ("clamp",)),
+    (("negative", "subzero"), ("negative",)),
+    (("final", "last", "terminal"), ("final", "last")),
+    (("index", "position", "lookup"), ("index",)),
+    (("modulo", "cyclic", "wrap", "wrapped"), ("modulo", "index", "list")),
+    (("strict", "direct", "required"), ("strict",)),
+    (("positive", "above neutral", "greater than baseline"), ("positive",)),
+    (("filter", "retain", "keep"), ("filter",)),
+    (("first", "initial"), ("first",)),
+    (("string", "text"), ("string",)),
+)
+
+
+def _semantic_anchor_terms(text: str) -> dict[str, float]:
+    lowered = text.lower().replace("_", " ")
+    tokens = set(_word_tokens(lowered))
+    terms: dict[str, float] = {}
+    for token in tokens:
+        if token in ATOM_TO_ID:
+            terms[f"anchor:{token}"] = max(terms.get(f"anchor:{token}", 0.0), 1.0)
+    for triggers, anchors in SEMANTIC_ANCHOR_EXPANSIONS:
+        if any((trigger in tokens) or (trigger in lowered) for trigger in triggers):
+            for anchor in anchors:
+                terms[f"anchor:{anchor}"] = max(terms.get(f"anchor:{anchor}", 0.0), 1.0)
+    return terms
+
+
+def _featurize_text(text: str, *, dim: int, text_feature_mode: str = "hashed") -> np.ndarray:
+    if text_feature_mode not in {"hashed", "semantic_anchor"}:
+        raise ValueError(f"unknown text feature mode {text_feature_mode!r}")
     lowered = text.lower()
     words = _word_tokens(lowered)
     features = np.zeros(dim, dtype=np.float64)
@@ -155,6 +208,9 @@ def _featurize_text(text: str, *, dim: int) -> np.ndarray:
         if len(compact) >= n:
             for idx in range(len(compact) - n + 1):
                 features[_stable_index(f"c{n}:{compact[idx:idx+n]}", dim)] += 0.35
+    if text_feature_mode == "semantic_anchor":
+        for term, weight in _semantic_anchor_terms(text).items():
+            features[_stable_index(term, dim)] += 2.5 * weight
     norm = float(np.linalg.norm(features))
     if norm > 0:
         features /= norm
@@ -182,14 +238,23 @@ def _atoms_from_vector(vector: np.ndarray, *, top_k: int, min_score: float) -> d
 
 
 class LearnedSynonymDictionary:
-    def __init__(self, *, feature_dim: int, weights: np.ndarray, top_k: int, min_score: float) -> None:
+    def __init__(
+        self,
+        *,
+        feature_dim: int,
+        weights: np.ndarray,
+        top_k: int,
+        min_score: float,
+        text_feature_mode: str,
+    ) -> None:
         self.feature_dim = feature_dim
         self.weights = weights
         self.top_k = top_k
         self.min_score = min_score
+        self.text_feature_mode = text_feature_mode
 
     def predict_atoms(self, text: str) -> dict[str, float]:
-        features = _featurize_text(text, dim=self.feature_dim)
+        features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
         scores = np.maximum(features @ self.weights, 0.0)
         return _atoms_from_vector(scores, top_k=self.top_k, min_score=self.min_score)
 
@@ -202,6 +267,7 @@ def _fit_ridge_dictionary(
     calibration_atom_view: str,
     top_k: int,
     min_score: float,
+    text_feature_mode: str,
 ) -> LearnedSynonymDictionary:
     x_rows: list[np.ndarray] = []
     y_rows: list[np.ndarray] = []
@@ -216,7 +282,7 @@ def _fit_ridge_dictionary(
             if calibrated != candidate.patch_intent:
                 texts.append(calibrated)
             for text in texts:
-                x_rows.append(_featurize_text(text, dim=feature_dim))
+                x_rows.append(_featurize_text(text, dim=feature_dim, text_feature_mode=text_feature_mode))
                 y_rows.append(y)
     if not x_rows:
         return LearnedSynonymDictionary(
@@ -224,13 +290,20 @@ def _fit_ridge_dictionary(
             weights=np.zeros((feature_dim, len(ATOM_ORDER)), dtype=np.float64),
             top_k=top_k,
             min_score=min_score,
+            text_feature_mode=text_feature_mode,
         )
     x = np.stack(x_rows, axis=0)
     y = np.stack(y_rows, axis=0)
     xtx = x.T @ x
     regularized = xtx + ridge * np.eye(feature_dim, dtype=np.float64)
     weights = np.linalg.solve(regularized, x.T @ y)
-    return LearnedSynonymDictionary(feature_dim=feature_dim, weights=weights, top_k=top_k, min_score=min_score)
+    return LearnedSynonymDictionary(
+        feature_dim=feature_dim,
+        weights=weights,
+        top_k=top_k,
+        min_score=min_score,
+        text_feature_mode=text_feature_mode,
+    )
 
 
 def _calibration_examples(
@@ -390,6 +463,7 @@ def _predict_from_payload(
     budget_bytes: int,
     dictionary: LearnedSynonymDictionary,
     candidate_atom_view: str,
+    min_decision_score: float,
     derange: bool = False,
     knockout: str | None = None,
     rng: random.Random | None = None,
@@ -405,12 +479,24 @@ def _predict_from_payload(
         candidate_atom_view=candidate_atom_view,
     )
     best_score = max(scores)
-    if best_score < 0.20:
-        return prior, {"decoder": "learned_synonym_dictionary", "payload_atoms": payload_atoms, "scores": scores}
+    if best_score < min_decision_score:
+        return prior, {
+            "decoder": "learned_synonym_dictionary_target_preserve",
+            "payload_atoms": payload_atoms,
+            "scores": scores,
+            "best_score": best_score,
+            "min_decision_score": min_decision_score,
+        }
     tied = [idx for idx, score in enumerate(scores) if abs(score - best_score) <= 1e-8]
     labels = [candidate.label for candidate in example.candidates]
     prediction = prior if any(labels[idx] == prior for idx in tied) else labels[tied[0]]
-    return prediction, {"decoder": "learned_synonym_dictionary", "payload_atoms": payload_atoms, "scores": scores}
+    return prediction, {
+        "decoder": "learned_synonym_dictionary",
+        "payload_atoms": payload_atoms,
+        "scores": scores,
+        "best_score": best_score,
+        "min_decision_score": min_decision_score,
+    }
 
 
 def _predict_condition(
@@ -422,6 +508,7 @@ def _predict_condition(
     budget_bytes: int,
     dictionary: LearnedSynonymDictionary,
     candidate_atom_view: str,
+    min_decision_score: float,
     rng: random.Random,
 ) -> dict[str, Any]:
     start = time.perf_counter()
@@ -441,6 +528,7 @@ def _predict_condition(
         budget_bytes=budget_bytes,
         dictionary=dictionary,
         candidate_atom_view=candidate_atom_view,
+        min_decision_score=0.0 if condition == "oracle_learned_candidate_atoms" else min_decision_score,
         rng=rng,
         **decode_kwargs,
     )
@@ -559,6 +647,8 @@ def _run_direction(
     ridge: float,
     top_k: int,
     min_score: float,
+    text_feature_mode: str,
+    min_decision_score: float,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     train_rows = make_benchmark(examples=train_examples, candidates=4, seed=train_seed, family_set=train_family_set)
@@ -576,6 +666,7 @@ def _run_direction(
         calibration_atom_view=calibration_atom_view,
         top_k=top_k,
         min_score=min_score,
+        text_feature_mode=text_feature_mode,
     )
     surface_overlap_audit = _surface_overlap_audit(
         calibration_rows=calibration_rows,
@@ -599,6 +690,7 @@ def _run_direction(
                         budget_bytes=budget,
                         dictionary=dictionary,
                         candidate_atom_view=candidate_atom_view,
+                        min_decision_score=min_decision_score,
                         rng=rng,
                     )
                     | {"example_id": example.example_id, "family_name": example.family_name, "budget_bytes": budget}
@@ -628,9 +720,11 @@ def _run_direction(
         "calibration_examples": len(calibration_rows),
         "surface_overlap_audit": surface_overlap_audit,
         "feature_dim": feature_dim,
+        "text_feature_mode": text_feature_mode,
         "ridge": ridge,
         "top_k": top_k,
         "min_score": min_score,
+        "min_decision_score": min_decision_score,
         "atom_dictionary": list(ATOM_ORDER),
         "conditions": list(CONDITIONS),
         "source_destroying_controls": list(STRICT_SOURCE_DESTROYING_CONTROLS),
@@ -672,6 +766,8 @@ def run_gate(
     top_k: int,
     min_score: float,
     calibration_atom_view: str | None = None,
+    text_feature_mode: str = "hashed",
+    min_decision_score: float = 0.20,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     effective_calibration_atom_view = calibration_atom_view or candidate_atom_view
@@ -702,6 +798,8 @@ def run_gate(
             ridge=ridge,
             top_k=top_k,
             min_score=min_score,
+            text_feature_mode=text_feature_mode,
+            min_decision_score=min_decision_score,
         )
         try:
             run_dirs.append(str(run_dir.relative_to(ROOT)))
@@ -744,9 +842,11 @@ def run_gate(
         "candidate_calibration": candidate_calibration,
         "calibration_examples": calibration_examples,
         "feature_dim": feature_dim,
+        "text_feature_mode": text_feature_mode,
         "ridge": ridge,
         "top_k": top_k,
         "min_score": min_score,
+        "min_decision_score": min_decision_score,
         "rows": rows,
         "headline": {
             "direction_pass": direction_pass,
@@ -814,6 +914,8 @@ def _write_direction_markdown(path: pathlib.Path, payload: dict[str, Any]) -> No
         f"- candidate atom view: `{payload['candidate_atom_view']}`",
         f"- calibration atom view: `{payload['calibration_atom_view']}`",
         f"- candidate calibration: `{payload['candidate_calibration']}`",
+        f"- text feature mode: `{payload['text_feature_mode']}`",
+        f"- min decision score: `{payload['min_decision_score']}`",
         f"- exact eval surface overlap count: `{payload['surface_overlap_audit']['exact_eval_surface_overlap_count']}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
@@ -844,6 +946,8 @@ def _write_gate_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- candidate atom view: `{payload['candidate_atom_view']}`",
         f"- calibration atom view: `{payload['calibration_atom_view']}`",
         f"- candidate calibration: `{payload['candidate_calibration']}`",
+        f"- text feature mode: `{payload['text_feature_mode']}`",
+        f"- min decision score: `{payload['min_decision_score']}`",
         f"- max learned packet accuracy: `{h['max_learned_synonym_dictionary_accuracy']:.3f}`",
         f"- max learned-target delta: `{h['max_learned_minus_target']:.3f}`",
         "",
@@ -888,9 +992,21 @@ def main() -> None:
     parser.add_argument("--candidate-calibration", choices=["train_only", "all_public"], default="all_public")
     parser.add_argument("--calibration-examples", type=int, default=512)
     parser.add_argument("--feature-dim", type=int, default=384)
+    parser.add_argument(
+        "--text-feature-mode",
+        choices=["hashed", "semantic_anchor"],
+        default="hashed",
+        help="Target-side candidate dictionary features. semantic_anchor adds public atom-anchor expansions.",
+    )
     parser.add_argument("--ridge", type=float, default=0.25)
     parser.add_argument("--top-k", type=int, default=8)
     parser.add_argument("--min-score", type=float, default=0.05)
+    parser.add_argument(
+        "--min-decision-score",
+        type=float,
+        default=0.20,
+        help="Preserve the target prior unless the best packet/candidate atom score reaches this threshold.",
+    )
     args = parser.parse_args()
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     payload = run_gate(
@@ -904,9 +1020,11 @@ def main() -> None:
         candidate_calibration=args.candidate_calibration,
         calibration_examples=args.calibration_examples,
         feature_dim=args.feature_dim,
+        text_feature_mode=args.text_feature_mode,
         ridge=args.ridge,
         top_k=args.top_k,
         min_score=args.min_score,
+        min_decision_score=args.min_decision_score,
     )
     print(json.dumps({"output_dir": str(output_dir), "pass_gate": payload["pass_gate"]}, indent=2, sort_keys=True))
 

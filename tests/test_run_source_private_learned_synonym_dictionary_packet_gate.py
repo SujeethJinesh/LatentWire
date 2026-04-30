@@ -90,3 +90,39 @@ def test_learned_synonym_dictionary_supports_heldout_synonym_surface(tmp_path) -
     assert audit["calibration_atom_view"] == "synonym_stress"
     assert audit["transformed_eval_surface_count"] > 0
     assert audit["exact_transformed_eval_surface_overlap_count"] == 0
+
+
+def test_learned_synonym_dictionary_semantic_anchor_mode_records_threshold(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_semantic_anchor",
+        budgets=[4],
+        train_examples=24,
+        eval_examples=8,
+        seed=19,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=32,
+        feature_dim=48,
+        text_feature_mode="semantic_anchor",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.7,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_semantic_anchor" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path / "learned_synonym_dictionary_semantic_anchor" / "core_to_holdout" / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "oracle_learned_candidate_atoms"
+    )
+    assert payload["text_feature_mode"] == "semantic_anchor"
+    assert payload["min_decision_score"] == 0.7
+    assert direction["text_feature_mode"] == "semantic_anchor"
+    assert direction["min_decision_score"] == 0.7
+    assert prediction["metadata"]["min_decision_score"] == 0.0

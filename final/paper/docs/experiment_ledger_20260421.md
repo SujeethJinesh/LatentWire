@@ -15623,3 +15623,33 @@ claim is now sharper and safer. We can claim a far-left-rate source-private
 task-communication point under controls, but not superiority over TurboQuant,
 KIVI, QJL, or KV kernels. Next exact method gate remains an anchor-relative
 sparse innovation receiver on the held-out family-B split.
+
+Follow-up `2026-04-30`: implemented and ran the semantic-anchor held-out
+receiver gate for the learned source-private packet. New code path:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py` now has
+`--text-feature-mode semantic_anchor`, `--min-decision-score`, and an oracle
+diagnostic threshold bypass so target-preserving operation is separated from
+candidate-map headroom. New memo:
+`paper/source_private_semantic_anchor_heldout_receiver_20260430.md`. New
+references memo:
+`references/504_semantic_anchor_heldout_receiver_refs_20260430.md`. Main
+command:
+`PYTHONUNBUFFERED=1 ./venv_arm64/bin/python scripts/run_source_private_learned_synonym_dictionary_packet_gate.py --output-dir results/source_private_semantic_anchor_heldout_packet_gate_20260430_threshold070_oraclefree --budgets 4 8 --train-examples 512 --eval-examples 256 --seed 47 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration all_public --calibration-examples 512 --feature-dim 384 --text-feature-mode semantic_anchor --ridge 0.25 --top-k 8 --min-score 0.05 --min-decision-score 0.70`.
+Outcome: strict-small held-out receiver passes. Cross-family pass true, all
+directions pass, `6/6` pass rows. Learned packet accuracy is `0.750/1.000` for
+core-to-holdout at `4/8` bytes, `0.875/0.875` for holdout-to-core, and
+`0.812/0.938` same-family, all versus target `0.250` and best source-destroying
+control `0.250`. Minimum passing paired CI95 lower bound is `+0.438`, oracle
+candidate-map accuracy is `0.875-1.000`, top-atom knockout removes `100%` of
+lift, exact ID parity holds, and exact transformed held-out surface overlap is
+`0` in every direction. Boundary artifacts preserve the ablations:
+`results/source_private_semantic_anchor_heldout_packet_gate_20260430` fails
+because shuffled-source reaches `0.375` without target preservation, and
+`results/source_private_semantic_anchor_heldout_packet_gate_20260430_threshold070`
+shows controls fixed but oracle headroom incorrectly thresholded. Focused test:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py -q`
+passes. Interpretation: this revives the held-out paraphrase branch as a real
+technical contribution, but the claim remains scoped because the receiver uses
+a public semantic-anchor lexicon rather than learned/frozen activation
+features. Next exact gate: 3-seed medium confirmation at `n=512`, followed by a
+learned/frozen embedding receiver ablation.
