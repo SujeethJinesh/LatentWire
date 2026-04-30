@@ -1041,5 +1041,12 @@
     "path": "references/505_systems_rate_assumption_frontier_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source systems/rate frontier memo for assumption-separated comparisons against C2C, KVComm, TurboQuant, QJL, KIVI/KVQuant, LLMLingua, LLMLingua-2, and gist tokens."
+  },
+  {
+    "num": 506,
+    "slug": "frozen_receiver_smoke_refs_20260430",
+    "path": "references/506_frozen_receiver_smoke_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for frozen BGE/Qwen3 receiver smokes and the next contrastive/JEPA-style source-control receiver branch."
   }
 ]

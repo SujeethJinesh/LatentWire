@@ -15719,3 +15719,27 @@ anchor geometry does not recover the semantic-anchor gain; the ridge variant
 also leaks through answer/text controls. Prune this adjacent embedding-receiver
 variant unless a new frozen LLM embedding, activation feature, or contrastive
 source-control signal changes the hypothesis.
+
+Follow-up `2026-04-30`: implemented frozen Transformer feature modes in the
+live learned synonym dictionary packet gate. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py` now
+supports `--text-feature-mode hf_last_mean` and `hf_mid_last_mean`, with
+local-files-only HF loading, mean-pooled hidden states, deterministic projection,
+and feature caching. The older candidate-embedding receiver also now has a
+`frozen_transformer` backend for later activation ablations. Test:
+`./venv_arm64/bin/python -m pytest tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py tests/test_run_source_private_candidate_embedding_receiver.py -q`
+passed (`8 passed`). Smoke artifacts:
+`results/source_private_frozen_receiver_bge_smoke_20260430`,
+`results/source_private_frozen_receiver_bge_midlast_smoke_20260430`, and
+`results/source_private_frozen_receiver_qwen3_0_6b_cpu_tiny_20260430`.
+Outcomes: BGE final-mean n32 fails but has signal, max learned accuracy `0.625`,
+max lift `+0.375`, clean controls, oracle at most `0.625`; BGE mid+last n32
+also fails, max learned `0.625`, clean controls, oracle improves to `0.875` in
+one direction but remains inconsistent; Qwen3-0.6B CPU n8 fails, max learned
+`0.500`, clean controls, best oracle `0.750`. An attempted Qwen3-0.6B MPS run
+failed in an MPS matmul shape-inference path and is treated as backend
+instability, not method evidence. Interpretation: off-the-shelf frozen
+embeddings are a useful non-symbolic ablation and produce source-derived signal,
+but do not replace the semantic-anchor receiver. Next exact gate: train a small
+contrastive/JEPA-style source-control receiver over frozen features with the
+same destructive controls, rather than swapping more frozen embedding models.

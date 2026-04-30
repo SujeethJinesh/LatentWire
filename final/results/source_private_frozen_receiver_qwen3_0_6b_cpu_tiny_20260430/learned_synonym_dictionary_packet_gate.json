@@ -1,0 +1,93 @@
+{
+  "budgets": [
+    4
+  ],
+  "calibration_atom_view": "synonym_stress",
+  "calibration_examples": 16,
+  "candidate_atom_view": "heldout_synonym",
+  "candidate_calibration": "all_public",
+  "created_utc": "2026-04-30T02:52:00.757857+00:00",
+  "eval_examples": 8,
+  "feature_device": "cpu",
+  "feature_dim": 1024,
+  "feature_dtype": "float32",
+  "feature_max_length": 80,
+  "feature_model": "Qwen/Qwen3-0.6B",
+  "gate": "source_private_learned_synonym_dictionary_packet_gate",
+  "headline": {
+    "cross_family_pass": false,
+    "direction_pass": {
+      "core_to_holdout": false,
+      "holdout_to_core": false,
+      "same_family_all": false
+    },
+    "max_learned_minus_target": 0.25,
+    "max_learned_synonym_dictionary_accuracy": 0.5,
+    "min_passing_ci95_low_vs_target": 0.0,
+    "pass_rows": 0
+  },
+  "min_decision_score": 0.7,
+  "min_score": 0.05,
+  "pass_gate": false,
+  "pass_rule": "Bidirectional cross-family pass requires at least one budget per direction with learned synonym dictionary packet beating target by >=0.15, best source-destroying control by >=0.10, all source-destroying controls within target+0.03, paired CI95 lower bound >0.05, learned candidate oracle >=0.80, and top-feature knockout removing >=50% of lift.",
+  "ridge": 0.25,
+  "rows": [
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 4,
+      "controls_ok": true,
+      "direction": "core_to_holdout",
+      "learned_minus_best_control": 0.25,
+      "learned_minus_target": 0.25,
+      "learned_synonym_dictionary_accuracy": 0.5,
+      "n": 8,
+      "oracle_learned_candidate_atoms_accuracy": 0.75,
+      "paired_ci95_high_vs_target": 0.625,
+      "paired_ci95_low_vs_target": 0.0,
+      "pass_gate": false,
+      "target_accuracy": 0.25,
+      "top_atom_knockout_lift_reduction": 1.0
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 4,
+      "controls_ok": true,
+      "direction": "holdout_to_core",
+      "learned_minus_best_control": 0.0,
+      "learned_minus_target": 0.0,
+      "learned_synonym_dictionary_accuracy": 0.25,
+      "n": 8,
+      "oracle_learned_candidate_atoms_accuracy": 0.5,
+      "paired_ci95_high_vs_target": 0.0,
+      "paired_ci95_low_vs_target": 0.0,
+      "pass_gate": false,
+      "target_accuracy": 0.25,
+      "top_atom_knockout_lift_reduction": 0.0
+    },
+    {
+      "best_control_accuracy": 0.25,
+      "budget_bytes": 4,
+      "controls_ok": true,
+      "direction": "same_family_all",
+      "learned_minus_best_control": 0.0,
+      "learned_minus_target": 0.0,
+      "learned_synonym_dictionary_accuracy": 0.25,
+      "n": 8,
+      "oracle_learned_candidate_atoms_accuracy": 0.5,
+      "paired_ci95_high_vs_target": 0.0,
+      "paired_ci95_low_vs_target": 0.0,
+      "pass_gate": false,
+      "target_accuracy": 0.25,
+      "top_atom_knockout_lift_reduction": 0.0
+    }
+  ],
+  "run_dirs": [
+    "results/source_private_frozen_receiver_qwen3_0_6b_cpu_tiny_20260430/core_to_holdout",
+    "results/source_private_frozen_receiver_qwen3_0_6b_cpu_tiny_20260430/holdout_to_core",
+    "results/source_private_frozen_receiver_qwen3_0_6b_cpu_tiny_20260430/same_family_all"
+  ],
+  "seed": 47,
+  "text_feature_mode": "hf_last_mean",
+  "top_k": 8,
+  "train_examples": 16
+}

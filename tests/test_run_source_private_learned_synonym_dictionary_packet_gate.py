@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import json
 
+import numpy as np
+
+import scripts.run_source_private_learned_synonym_dictionary_packet_gate as gate
 from scripts.run_source_private_learned_synonym_dictionary_packet_gate import run_gate
 
 
@@ -126,3 +129,49 @@ def test_learned_synonym_dictionary_semantic_anchor_mode_records_threshold(tmp_p
     assert direction["text_feature_mode"] == "semantic_anchor"
     assert direction["min_decision_score"] == 0.7
     assert prediction["metadata"]["min_decision_score"] == 0.0
+
+
+def test_learned_synonym_dictionary_hf_feature_mode_records_model(tmp_path, monkeypatch) -> None:
+    def fake_hf_text_features(texts: list[str], *, dim: int, text_feature_mode: str) -> np.ndarray:
+        rows = []
+        for text in texts:
+            row = np.zeros(dim, dtype=np.float64)
+            for token in text.lower().split():
+                row[sum(ord(ch) for ch in token) % dim] += 1.0
+            norm = np.linalg.norm(row)
+            rows.append(row / max(norm, 1.0))
+        return np.stack(rows, axis=0)
+
+    monkeypatch.setattr(gate, "_hf_text_features", fake_hf_text_features)
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_hf_features",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=8,
+        seed=23,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=32,
+        text_feature_mode="hf_mid_last_mean",
+        feature_model="fake/local-model",
+        feature_device="cpu",
+        feature_dtype="float32",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.7,
+    )
+
+    summary = json.loads(
+        (
+            tmp_path
+            / "learned_synonym_dictionary_hf_features"
+            / "learned_synonym_dictionary_packet_gate.json"
+        ).read_text()
+    )
+    assert payload["text_feature_mode"] == "hf_mid_last_mean"
+    assert summary["feature_model"] == "fake/local-model"
+    assert summary["feature_device"] == "cpu"
+    assert summary["feature_dtype"] == "float32"

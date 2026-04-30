@@ -29,6 +29,7 @@ from scripts.run_source_private_tool_trace_learned_syndrome import (  # noqa: E4
     _augment,
     _bitpack,
     _bytes_to_bits,
+    _candidate_texts,
     _candidate_matrix,
     _hashed_text_features,
     _normalize_rows,
@@ -51,9 +52,99 @@ CONDITIONS = [
 ]
 
 
-_CANDIDATE_MATRIX_CACHE: dict[tuple[int, int], np.ndarray] = {}
-_PACKET_CANDIDATE_MATRIX_CACHE: dict[tuple[int, int, str, int], np.ndarray] = {}
-_SOURCE_VECTOR_CACHE: dict[tuple[int, int, str], np.ndarray] = {}
+_CANDIDATE_MATRIX_CACHE: dict[tuple[int, int, str], np.ndarray] = {}
+_PACKET_CANDIDATE_MATRIX_CACHE: dict[tuple[int, int, str, int, str], np.ndarray] = {}
+_SOURCE_VECTOR_CACHE: dict[tuple[int, int, str, str], np.ndarray] = {}
+_FROZEN_TEXT_CACHE: dict[tuple[str, str, str, str, int, int], np.ndarray] = {}
+_FROZEN_MODEL_CACHE: dict[tuple[str, str], tuple[Any, Any, str]] = {}
+_FEATURE_BACKEND = "hashed"
+_EMBEDDING_MODEL = "BAAI/bge-small-en"
+_EMBEDDING_DEVICE = "auto"
+_EMBEDDING_MAX_LENGTH = 128
+_EMBEDDING_BATCH_SIZE = 32
+
+
+def _feature_cache_tag() -> str:
+    if _FEATURE_BACKEND == "hashed":
+        return "hashed"
+    return f"{_FEATURE_BACKEND}:{_EMBEDDING_MODEL}:{_EMBEDDING_DEVICE}:{_EMBEDDING_MAX_LENGTH}"
+
+
+def _resolve_torch_device(device: str) -> str:
+    if device != "auto":
+        return device
+    import torch
+
+    if torch.backends.mps.is_available():
+        return "mps"
+    if torch.cuda.is_available():
+        return "cuda"
+    return "cpu"
+
+
+def _load_frozen_text_model() -> tuple[Any, Any, str]:
+    device = _resolve_torch_device(_EMBEDDING_DEVICE)
+    key = (_EMBEDDING_MODEL, device)
+    cached = _FROZEN_MODEL_CACHE.get(key)
+    if cached is not None:
+        return cached
+    import torch
+    from transformers import AutoModel, AutoTokenizer
+
+    tokenizer = AutoTokenizer.from_pretrained(_EMBEDDING_MODEL, local_files_only=True, trust_remote_code=True)
+    model = AutoModel.from_pretrained(_EMBEDDING_MODEL, local_files_only=True, trust_remote_code=True).to(device)
+    model.eval()
+    if device == "mps":
+        model = model.to(torch.float32)
+    loaded = (tokenizer, model, device)
+    _FROZEN_MODEL_CACHE[key] = loaded
+    return loaded
+
+
+def _project_feature_dim(values: np.ndarray, *, dim: int, namespace: str) -> np.ndarray:
+    if values.shape[1] == dim:
+        return _normalize_rows(values).astype(np.float32)
+    rng_seed = int.from_bytes(
+        hashlib.blake2b(f"{namespace}:{values.shape[1]}:{dim}".encode("utf-8"), digest_size=8).digest(),
+        "little",
+    )
+    rng = np.random.default_rng(rng_seed)
+    projection = rng.normal(0.0, 1.0 / np.sqrt(values.shape[1]), size=(values.shape[1], dim)).astype(np.float32)
+    return _normalize_rows(values @ projection).astype(np.float32)
+
+
+def _frozen_text_features(texts: list[str], *, dim: int, namespace: str) -> np.ndarray:
+    if not texts:
+        return np.zeros((0, dim), dtype=np.float32)
+    cache_key_prefix = (namespace, _EMBEDDING_MODEL, _resolve_torch_device(_EMBEDDING_DEVICE), _EMBEDDING_MAX_LENGTH, dim)
+    missing = [
+        text
+        for text in dict.fromkeys(texts)
+        if (text, *cache_key_prefix) not in _FROZEN_TEXT_CACHE
+    ]
+    if missing:
+        import torch
+
+        tokenizer, model, device = _load_frozen_text_model()
+        for start in range(0, len(missing), _EMBEDDING_BATCH_SIZE):
+            batch_texts = missing[start : start + _EMBEDDING_BATCH_SIZE]
+            encoded = tokenizer(
+                batch_texts,
+                padding=True,
+                truncation=True,
+                max_length=_EMBEDDING_MAX_LENGTH,
+                return_tensors="pt",
+            )
+            encoded = {key: value.to(device) for key, value in encoded.items()}
+            with torch.inference_mode():
+                output = model(**encoded)
+                hidden = output.last_hidden_state.float()
+                mask = encoded["attention_mask"].unsqueeze(-1).float()
+                pooled = (hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1.0)
+            projected = _project_feature_dim(pooled.cpu().numpy().astype(np.float32), dim=dim, namespace=namespace)
+            for text, vector in zip(batch_texts, projected, strict=True):
+                _FROZEN_TEXT_CACHE[(text, *cache_key_prefix)] = vector
+    return np.stack([_FROZEN_TEXT_CACHE[(text, *cache_key_prefix)] for text in texts], axis=0).astype(np.float32)
 
 
 def _sha256_file(path: pathlib.Path) -> str:
@@ -87,23 +178,38 @@ def _source_text(example: Example, *, mode: str) -> str:
 
 
 def _source_vector_mode(example: Example, feature_dim: int, *, mode: str) -> np.ndarray:
-    key = (id(example), feature_dim, mode)
+    feature_tag = _feature_cache_tag()
+    key = (id(example), feature_dim, mode, feature_tag)
     cached = _SOURCE_VECTOR_CACHE.get(key)
     if cached is not None:
         return cached
     if mode in {"matched", "answer_masked", "zero"}:
-        vec = _hashed_text_features(_source_text(example, mode=mode), feature_dim, namespace="source").astype(np.float32)
+        text = _source_text(example, mode=mode)
+        if _FEATURE_BACKEND == "hashed":
+            vec = _hashed_text_features(text, feature_dim, namespace="source").astype(np.float32)
+        elif _FEATURE_BACKEND == "frozen_transformer":
+            vec = _frozen_text_features([text], dim=feature_dim, namespace="source")[0]
+        else:
+            raise ValueError(f"unknown feature backend {_FEATURE_BACKEND!r}")
         _SOURCE_VECTOR_CACHE[key] = vec
         return vec
     raise ValueError(f"unknown source mode {mode!r}")
 
 
 def _candidate_matrix_mode(example: Example, feature_dim: int) -> np.ndarray:
-    key = (id(example), feature_dim)
+    feature_tag = _feature_cache_tag()
+    key = (id(example), feature_dim, feature_tag)
     cached = _CANDIDATE_MATRIX_CACHE.get(key)
     if cached is not None:
         return cached
-    matrix = _candidate_matrix(example, feature_dim)
+    if _FEATURE_BACKEND == "hashed":
+        matrix = _candidate_matrix(example, feature_dim)
+    elif _FEATURE_BACKEND == "frozen_transformer":
+        matrix = _normalize_rows(
+            _frozen_text_features(_candidate_texts(example), dim=feature_dim, namespace="candidate")
+        ).astype(np.float32)
+    else:
+        raise ValueError(f"unknown feature backend {_FEATURE_BACKEND!r}")
     _CANDIDATE_MATRIX_CACHE[key] = matrix
     return matrix
 
@@ -166,7 +272,7 @@ def _packet_candidate_matrix(
     anchor_matrix: np.ndarray | None,
 ) -> np.ndarray:
     anchor_id = 0 if anchor_matrix is None else id(anchor_matrix)
-    key = (id(example), feature_dim, packet_feature_mode, anchor_id)
+    key = (id(example), feature_dim, packet_feature_mode, anchor_id, _feature_cache_tag())
     cached = _PACKET_CANDIDATE_MATRIX_CACHE.get(key)
     if cached is not None:
         return cached
@@ -766,7 +872,18 @@ def run_gate(
     train_seed: int,
     eval_seed: int,
     ridge: float,
+    feature_backend: str = "hashed",
+    embedding_model: str = "BAAI/bge-small-en",
+    embedding_device: str = "auto",
+    embedding_max_length: int = 128,
+    embedding_batch_size: int = 32,
 ) -> dict[str, Any]:
+    global _FEATURE_BACKEND, _EMBEDDING_MODEL, _EMBEDDING_DEVICE, _EMBEDDING_MAX_LENGTH, _EMBEDDING_BATCH_SIZE
+    _FEATURE_BACKEND = feature_backend
+    _EMBEDDING_MODEL = embedding_model
+    _EMBEDDING_DEVICE = embedding_device
+    _EMBEDDING_MAX_LENGTH = embedding_max_length
+    _EMBEDDING_BATCH_SIZE = embedding_batch_size
     output_dir.mkdir(parents=True, exist_ok=True)
     _CANDIDATE_MATRIX_CACHE.clear()
     _PACKET_CANDIDATE_MATRIX_CACHE.clear()
@@ -914,6 +1031,10 @@ def run_gate(
         "eval_family_set": eval_family_set,
         "candidates": candidates,
         "feature_dim": feature_dim,
+        "feature_backend": feature_backend,
+        "embedding_model": embedding_model if feature_backend == "frozen_transformer" else None,
+        "embedding_device": _resolve_torch_device(embedding_device) if feature_backend == "frozen_transformer" else None,
+        "embedding_max_length": embedding_max_length if feature_backend == "frozen_transformer" else None,
         "packet_feature_mode": packet_feature_mode,
         "packet_dim": packet_dim,
         "anchor_count": anchor_count if packet_feature_mode in {"anchor_relative", "learned_anchor_relative"} else 0,
@@ -975,6 +1096,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- pass gate: `{payload['pass_gate']}`",
         f"- train/eval: `{payload['train_family_set']}:{payload['train_examples']}` / `{payload['eval_family_set']}:{payload['eval_examples']}`",
         f"- candidate feature dims: `{payload['candidate_feature_dims']}`",
+        f"- feature backend: `{payload['feature_backend']}`",
         f"- receiver kind: `{payload['receiver_kind']}`",
         f"- packet feature mode: `{payload['packet_feature_mode']}`",
         f"- packet dim: `{payload['packet_dim']}`",
@@ -1015,6 +1137,11 @@ def main() -> None:
     parser.add_argument("--train-seed", type=int, default=29)
     parser.add_argument("--eval-seed", type=int, default=30)
     parser.add_argument("--ridge", type=float, default=1e-2)
+    parser.add_argument("--feature-backend", choices=["hashed", "frozen_transformer"], default="hashed")
+    parser.add_argument("--embedding-model", default="BAAI/bge-small-en")
+    parser.add_argument("--embedding-device", default="auto")
+    parser.add_argument("--embedding-max-length", type=int, default=128)
+    parser.add_argument("--embedding-batch-size", type=int, default=32)
     args = parser.parse_args()
     out = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     payload = run_gate(
@@ -1033,6 +1160,11 @@ def main() -> None:
         train_seed=args.train_seed,
         eval_seed=args.eval_seed,
         ridge=args.ridge,
+        feature_backend=args.feature_backend,
+        embedding_model=args.embedding_model,
+        embedding_device=args.embedding_device,
+        embedding_max_length=args.embedding_max_length,
+        embedding_batch_size=args.embedding_batch_size,
     )
     print(json.dumps({"pass_gate": payload["pass_gate"], "output_dir": str(out)}, indent=2, sort_keys=True))
 

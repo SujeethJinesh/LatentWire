@@ -142,6 +142,125 @@ def _word_tokens(text: str) -> list[str]:
     return re.findall(r"[a-z0-9]+", text.lower().replace("-", " ").replace("_", " "))
 
 
+_HF_TEXT_FEATURE_CACHE: dict[tuple[str, str, str, str, int, int, str, str], np.ndarray] = {}
+_HF_MODEL_CACHE: dict[tuple[str, str, str], tuple[Any, Any, str, Any]] = {}
+_HF_FEATURE_MODEL = "BAAI/bge-small-en"
+_HF_FEATURE_DEVICE = "auto"
+_HF_FEATURE_DTYPE = "float32"
+_HF_FEATURE_MAX_LENGTH = 128
+_HF_FEATURE_LOCAL_FILES_ONLY = True
+
+
+def _resolve_torch_device(device: str) -> str:
+    if device != "auto":
+        return device
+    import torch
+
+    if torch.backends.mps.is_available():
+        return "mps"
+    if torch.cuda.is_available():
+        return "cuda"
+    return "cpu"
+
+
+def _resolve_torch_dtype(dtype: str) -> Any:
+    import torch
+
+    if dtype == "float16":
+        return torch.float16
+    if dtype == "bfloat16":
+        return torch.bfloat16
+    if dtype == "float32":
+        return torch.float32
+    raise ValueError(f"unknown feature dtype {dtype!r}")
+
+
+def _load_hf_feature_model() -> tuple[Any, Any, str, Any]:
+    device = _resolve_torch_device(_HF_FEATURE_DEVICE)
+    dtype = _resolve_torch_dtype(_HF_FEATURE_DTYPE)
+    key = (_HF_FEATURE_MODEL, device, _HF_FEATURE_DTYPE)
+    cached = _HF_MODEL_CACHE.get(key)
+    if cached is not None:
+        return cached
+    from transformers import AutoModel, AutoTokenizer
+
+    tokenizer = AutoTokenizer.from_pretrained(
+        _HF_FEATURE_MODEL,
+        local_files_only=_HF_FEATURE_LOCAL_FILES_ONLY,
+        trust_remote_code=True,
+    )
+    model = AutoModel.from_pretrained(
+        _HF_FEATURE_MODEL,
+        local_files_only=_HF_FEATURE_LOCAL_FILES_ONLY,
+        trust_remote_code=True,
+    ).to(device)
+    if device in {"mps", "cuda"} and dtype != _resolve_torch_dtype("float32"):
+        model = model.to(dtype)
+    model.eval()
+    loaded = (tokenizer, model, device, dtype)
+    _HF_MODEL_CACHE[key] = loaded
+    return loaded
+
+
+def _project_feature_dim(values: np.ndarray, *, dim: int, namespace: str) -> np.ndarray:
+    if values.shape[1] == dim:
+        projected = values
+    else:
+        rng_seed = int.from_bytes(
+            hashlib.blake2b(f"{namespace}:{values.shape[1]}:{dim}".encode("utf-8"), digest_size=8).digest(),
+            "little",
+        )
+        rng = np.random.default_rng(rng_seed)
+        projection = rng.normal(0.0, 1.0 / np.sqrt(values.shape[1]), size=(values.shape[1], dim))
+        projected = values @ projection
+    norm = np.linalg.norm(projected, axis=-1, keepdims=True)
+    return (projected / np.maximum(norm, 1e-8)).astype(np.float64)
+
+
+def _hf_text_features(texts: list[str], *, dim: int, text_feature_mode: str) -> np.ndarray:
+    if not texts:
+        return np.zeros((0, dim), dtype=np.float64)
+    device = _resolve_torch_device(_HF_FEATURE_DEVICE)
+    cache_prefix = (
+        _HF_FEATURE_MODEL,
+        device,
+        _HF_FEATURE_DTYPE,
+        _HF_FEATURE_MAX_LENGTH,
+        dim,
+        text_feature_mode,
+    )
+    missing = [text for text in dict.fromkeys(texts) if (text, *cache_prefix) not in _HF_TEXT_FEATURE_CACHE]
+    if missing:
+        import torch
+
+        tokenizer, model, device, _ = _load_hf_feature_model()
+        encoded = tokenizer(
+            missing,
+            padding=True,
+            truncation=True,
+            max_length=_HF_FEATURE_MAX_LENGTH,
+            return_tensors="pt",
+        )
+        encoded = {key: value.to(device) for key, value in encoded.items()}
+        with torch.inference_mode():
+            output = model(**encoded, output_hidden_states=text_feature_mode == "hf_mid_last_mean")
+            mask = encoded["attention_mask"].unsqueeze(-1).float()
+            if text_feature_mode == "hf_mid_last_mean" and output.hidden_states is not None:
+                layers = [output.hidden_states[len(output.hidden_states) // 2], output.hidden_states[-1]]
+                pooled_layers = []
+                for hidden in layers:
+                    hidden = hidden.float()
+                    pooled_layers.append((hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1.0))
+                pooled = torch.cat(pooled_layers, dim=1)
+            else:
+                hidden = output.last_hidden_state.float()
+                pooled = (hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1.0)
+        vectors = _project_feature_dim(pooled.cpu().numpy().astype(np.float64), dim=dim, namespace=text_feature_mode)
+        for text, vector in zip(missing, vectors, strict=True):
+            _HF_TEXT_FEATURE_CACHE[(text, *cache_prefix)] = vector
+    return np.stack([_HF_TEXT_FEATURE_CACHE[(text, *cache_prefix)] for text in texts], axis=0)
+
+
 SEMANTIC_ANCHOR_EXPANSIONS: tuple[tuple[tuple[str, ...], tuple[str, ...]], ...] = (
     (("empty", "vacant", "element", "no element", "no-element"), ("empty",)),
     (("list", "sequence", "collection"), ("list", "all_values")),
@@ -194,8 +313,10 @@ def _semantic_anchor_terms(text: str) -> dict[str, float]:
 
 
 def _featurize_text(text: str, *, dim: int, text_feature_mode: str = "hashed") -> np.ndarray:
-    if text_feature_mode not in {"hashed", "semantic_anchor"}:
+    if text_feature_mode not in {"hashed", "semantic_anchor", "hf_last_mean", "hf_mid_last_mean"}:
         raise ValueError(f"unknown text feature mode {text_feature_mode!r}")
+    if text_feature_mode in {"hf_last_mean", "hf_mid_last_mean"}:
+        return _hf_text_features([text], dim=dim, text_feature_mode=text_feature_mode)[0]
     lowered = text.lower()
     words = _word_tokens(lowered)
     features = np.zeros(dim, dtype=np.float64)
@@ -768,7 +889,18 @@ def run_gate(
     calibration_atom_view: str | None = None,
     text_feature_mode: str = "hashed",
     min_decision_score: float = 0.20,
+    feature_model: str = "BAAI/bge-small-en",
+    feature_device: str = "auto",
+    feature_dtype: str = "float32",
+    feature_max_length: int = 128,
+    local_files_only: bool = True,
 ) -> dict[str, Any]:
+    global _HF_FEATURE_MODEL, _HF_FEATURE_DEVICE, _HF_FEATURE_DTYPE, _HF_FEATURE_MAX_LENGTH, _HF_FEATURE_LOCAL_FILES_ONLY
+    _HF_FEATURE_MODEL = feature_model
+    _HF_FEATURE_DEVICE = feature_device
+    _HF_FEATURE_DTYPE = feature_dtype
+    _HF_FEATURE_MAX_LENGTH = feature_max_length
+    _HF_FEATURE_LOCAL_FILES_ONLY = local_files_only
     output_dir.mkdir(parents=True, exist_ok=True)
     effective_calibration_atom_view = calibration_atom_view or candidate_atom_view
     specs = [
@@ -843,6 +975,10 @@ def run_gate(
         "calibration_examples": calibration_examples,
         "feature_dim": feature_dim,
         "text_feature_mode": text_feature_mode,
+        "feature_model": feature_model if text_feature_mode.startswith("hf_") else None,
+        "feature_device": _resolve_torch_device(feature_device) if text_feature_mode.startswith("hf_") else None,
+        "feature_dtype": feature_dtype if text_feature_mode.startswith("hf_") else None,
+        "feature_max_length": feature_max_length if text_feature_mode.startswith("hf_") else None,
         "ridge": ridge,
         "top_k": top_k,
         "min_score": min_score,
@@ -994,10 +1130,15 @@ def main() -> None:
     parser.add_argument("--feature-dim", type=int, default=384)
     parser.add_argument(
         "--text-feature-mode",
-        choices=["hashed", "semantic_anchor"],
+        choices=["hashed", "semantic_anchor", "hf_last_mean", "hf_mid_last_mean"],
         default="hashed",
-        help="Target-side candidate dictionary features. semantic_anchor adds public atom-anchor expansions.",
+        help="Target-side candidate dictionary features. semantic_anchor adds public atom-anchor expansions; hf_* uses frozen Transformer text features.",
     )
+    parser.add_argument("--feature-model", default="BAAI/bge-small-en")
+    parser.add_argument("--feature-device", default="auto")
+    parser.add_argument("--feature-dtype", choices=["float32", "float16", "bfloat16"], default="float32")
+    parser.add_argument("--feature-max-length", type=int, default=128)
+    parser.add_argument("--local-files-only", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--ridge", type=float, default=0.25)
     parser.add_argument("--top-k", type=int, default=8)
     parser.add_argument("--min-score", type=float, default=0.05)
@@ -1021,6 +1162,11 @@ def main() -> None:
         calibration_examples=args.calibration_examples,
         feature_dim=args.feature_dim,
         text_feature_mode=args.text_feature_mode,
+        feature_model=args.feature_model,
+        feature_device=args.feature_device,
+        feature_dtype=args.feature_dtype,
+        feature_max_length=args.feature_max_length,
+        local_files_only=args.local_files_only,
         ridge=args.ridge,
         top_k=args.top_k,
         min_score=args.min_score,

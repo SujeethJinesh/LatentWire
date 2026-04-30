@@ -150,6 +150,17 @@ next blocker: simple public embedding geometry is not enough. The next
 high-value method branch should use frozen LLM embeddings/activations or a
 contrastive source-control objective, not more tuning of this receiver family.
 
+Update `2026-04-30`: frozen receiver smokes sharpen the blocker. The live gate
+now supports frozen HF hidden-state features (`hf_last_mean` and
+`hf_mid_last_mean`). BGE and Qwen3-0.6B smokes produce some source-derived lift
+with clean controls, but do not pass: BGE n32 reaches at most `0.625` learned
+accuracy and `+0.375` lift, with inconsistent oracle headroom; Qwen3-0.6B CPU
+n8 reaches `0.500`; Qwen3-0.6B MPS fails due backend matmul shape inference.
+This means the explicit semantic-anchor receiver remains the only promoted
+held-out paraphrase result. The next blocker is now narrower: train a small
+contrastive or JEPA-style receiver over frozen features with source-destroying
+negatives, instead of relying on off-the-shelf embeddings alone.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does
