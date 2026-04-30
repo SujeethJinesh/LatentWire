@@ -16679,3 +16679,30 @@ the source packet signal itself. Next exact gate: change the source
 encoder/interface, e.g. conditional innovation packets, TurboResidual PQ/QJL,
 or a Perceiver/Q-Former-style connector, and require disjoint-ID n256/n500
 success before widening.
+
+Update `2026-04-30`: the conditional PQ innovation branch fixes the previous
+same-family disjoint-ID collapse and becomes the live positive method row.
+Code: `scripts/run_source_private_conditional_pq_innovation_gate.py` and
+`scripts/summarize_source_private_conditional_pq_innovation_gate.py`; tests:
+`tests/test_run_source_private_conditional_pq_innovation_gate.py` and
+`tests/test_summarize_source_private_conditional_pq_innovation_gate.py`;
+memo: `paper/source_private_conditional_pq_innovation_gate_20260430.md`;
+references: `references/543_conditional_pq_innovation_refs_20260430.md`;
+artifact: `results/source_private_conditional_pq_innovation_gate_20260430/`.
+Outcome: same-family disjoint-ID gates pass at n256/n500 with zero train/eval
+ID overlap. Shared-text n500 remaps `101/103/107` score source `1.000` versus
+target `0.250`, best control `0.272-0.274`, and CI95 lower bound versus best
+control at least `+0.684`; anchor-relative n500 remaps score
+`0.996/0.996/0.998` versus target `0.250`, best control `0.256-0.262`, and
+CI95 lower bound at least `+0.692`. The 2-byte n500 rows remain perfect:
+anchor-relative source `1.000`, best control `0.276`, unique payload ratio
+`0.594`; shared-text source `1.000`, best control `0.288`, unique payload ratio
+`0.532`. Destructive controls are clean: answer-masked source stays at target,
+opaque slot basis stays at target, and deranged public basis collapses to
+`0.000`. Bidirectional held-out-family falsification remains negative:
+core->holdout source `0.281` and holdout->core source `0.297` versus target
+`0.250`, with CI95 lows crossing zero. Interpretation: promote this as a
+Wyner-Ziv-style conditional innovation packet and common-basis result for
+shared-schema disjoint communication. Do not claim unseen-family latent
+transfer yet. Next exact gate: less synthetic / held-out-schema conditional
+innovation, or model-mediated receiver consumption of the same 2-byte packet.

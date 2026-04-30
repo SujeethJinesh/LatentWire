@@ -15,7 +15,7 @@
 - final paper/review/upload memos;
 - references and citation manifests;
 - top-level repo guidance and environment files;
-- `MANIFEST.sha256` with checksums for all files in this folder.
+- `MANIFEST.sha256` with checksums for reproducible non-cache files in this folder.
 - latest-model/MoE generalization scout files for Qwen3.5/Qwen3.6 planning.
 - Qwen3.5-0.8B CPU n16/n64 latest-small confirmation artifacts and non-Qwen
   cross-family falsification matrix.
@@ -309,6 +309,14 @@
   accuracy `0.504/0.504/0.516` with controls near target and deranged
   public-table accuracy at most `0.180`, but disjoint-ID probes collapse with
   max deterministic/learned accuracy `0.270/0.264`.
+- Conditional PQ innovation code, tests, references, memo, and artifacts
+  showing the current strongest positive method row: same-family disjoint-ID
+  n500 gates pass across shared-text and anchor-relative public bases. Shared
+  text scores `1.000` across remaps `101/103/107`; anchor-relative scores
+  `0.996-0.998`; 2-byte n500 rows still score `1.000` while reducing unique
+  payload ratio to `0.532-0.594`. Opaque slot basis remains at target, deranged
+  public basis collapses to `0.000`, and bidirectional held-out-family rows
+  remain negative.
 
 ## Notes
 

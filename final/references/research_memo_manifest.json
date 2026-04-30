@@ -1300,5 +1300,12 @@
     "path": "references/542_pq_control_regularized_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the PQ control-regularized learned receiver diagnostic, covering PQ, QJL, TurboQuant, DDPM/D3PM/MaskGIT/consistency models, Slepian-Wolf/Wyner-Ziv side information, BLIP-2/Q-Former, Flamingo, relative representations, C2C, KVCOMM, novelty boundaries, and the disjoint-ID blocker."
+  },
+  {
+    "num": 543,
+    "slug": "conditional_pq_innovation_refs_20260430",
+    "path": "references/543_conditional_pq_innovation_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the conditional PQ innovation gate, covering Wyner-Ziv/Slepian-Wolf side-information coding, information bottleneck, PQ/OPQ, QJL/TurboQuant, relative representations, FNet/common bases, Perceiver/Q-Former/Flamingo connectors, C2C/KVComm/KVCOMM threats, novelty boundaries, and disjoint shared-schema communication."
   }
 ]

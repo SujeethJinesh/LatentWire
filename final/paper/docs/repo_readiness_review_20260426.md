@@ -3425,3 +3425,24 @@ The strongest honest contribution is now the source-private packet protocol,
 the systems waterfall, and the explicit diagnosis that the current PQ source
 encoder is not disjoint-safe. Next method gate must change the source encoder
 or connector and pass disjoint-ID controls.
+
+Update `2026-04-30`: the conditional PQ innovation gate materially improves
+ICLR readiness by converting the disjoint-ID blocker into a positive
+same-family/shared-schema method row. New artifact:
+`results/source_private_conditional_pq_innovation_gate_20260430/`; memo:
+`paper/source_private_conditional_pq_innovation_gate_20260430.md`; references:
+`references/543_conditional_pq_innovation_refs_20260430.md`. The method sends
+`source(matched)-source(answer-masked)` through a protected-Hadamard product
+codebook and decodes against public candidate innovations relative to the
+target prior. Same-family disjoint n500 rows pass `8/8`: shared-text basis
+scores `1.000` across three remaps; anchor-relative basis scores `0.996-0.998`
+across three remaps; 2-byte shared-text and anchor-relative rows also score
+`1.000` while reducing unique payload ratio to `0.532-0.594`. Best destructive
+controls stay at most `0.288`, opaque slot basis remains at target `0.250`,
+deranged public basis collapses to `0.000`, and min CI95 lower bound versus
+best control is `+0.668`. However bidirectional held-out-family rows fail
+(`0.281/0.297` source vs `0.250` target), so comfortable ICLR still needs a
+less synthetic or held-out-schema success, model-mediated receiver consumption
+of the same packet, or GPU serving telemetry. COLM readiness is now stronger
+because the paper has a positive disjoint-ID method plus a clear negative
+boundary.

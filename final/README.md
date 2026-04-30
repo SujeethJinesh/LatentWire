@@ -403,3 +403,13 @@ score adapter can preserve utility-protected-Hadamard PQ on the exact-ID
 overlap n500 surface across remaps, but disjoint train/eval IDs collapse both
 deterministic PQ and learned reception. This should be treated as a useful
 diagnostic and a blocker: the next ICLR-grade method must be disjoint-safe.
+
+## 2026-04-30 Conditional PQ Innovation Update
+
+The conditional PQ innovation gate is included. It fixes the same-family
+disjoint-ID PQ collapse by sending `source(matched)-source(answer-masked)` and
+decoding against public candidate innovations. Same-family n500 rows pass
+across shared-text and anchor-relative bases, including 2-byte rows with lower
+payload uniqueness. Bidirectional held-out-family rows still fail, so the claim
+boundary is shared-schema source-private communication, not broad unseen-family
+latent transfer.

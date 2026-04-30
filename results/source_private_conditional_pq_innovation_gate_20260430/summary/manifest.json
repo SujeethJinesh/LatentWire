@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "conditional_pq_innovation_summary.json": "5872f0768516d4abd68ea5cab2ac0dfae070097334a71aaf30e012081446a733",
+    "conditional_pq_innovation_summary.md": "e91e64bc88944a07e9b32078a0791cb2fc3b24559c5083dc31b8d9b266dd36a6"
+  },
+  "artifacts": [
+    "conditional_pq_innovation_summary.json",
+    "conditional_pq_innovation_summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}
