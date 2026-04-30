@@ -134,6 +134,10 @@
   artifact joining packet, text, full-log, semantic-anchor, and KV byte-floor
   rows into raw bytes, 64B cache-line traffic, 128B DMA-burst traffic,
   batch-64 packet amortization, TTFT proxy deltas, and source text/KV exposure.
+- JEPA/Q-Former-style query resampler receiver code, tests, references, memo,
+  and smoke artifacts showing partial non-collapsed source signal but failed
+  bidirectional held-out promotion, so the branch remains a learned-connector
+  baseline rather than a paper claim.
 
 ## Notes
 

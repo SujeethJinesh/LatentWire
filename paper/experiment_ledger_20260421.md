@@ -15836,3 +15836,24 @@ bytes. Interpretation: the systems contribution is now stronger and more
 honest. The paper should claim source-private payload/state-movement and
 batched packet-ISA advantages, while explicitly caveating that production GPU
 throughput and native KV transport remain future gates.
+
+Follow-up `2026-04-30`: implemented the first JEPA/Q-Former-style query
+resampler receiver and ran two strict smokes. New receiver mode:
+`--receiver-mode jepa_query_resampler`; focused tests now cover deterministic
+fitting, candidate-conditioned packet-atom attention scoring, and metadata.
+Artifacts:
+`results/source_private_jepa_query_resampler_semantic_anchor_smoke2_20260430/`
+and
+`results/source_private_jepa_query_resampler_semantic_anchor_k8_smoke_20260430/`.
+The `K=4,D=8` smoke is negative (`0/6` pass rows, best learned `0.375`, best
+lift `+0.125`). The wider `K=8,D=16` smoke recovers partial source signal but
+still fails strict promotion (`0/6` pass rows): core -> holdout reaches `0.500`
+at `4/8` bytes with clean controls, same-family reaches `0.625`, but holdout ->
+core remains at or below target and oracle/headroom is below promotion. Query
+rank/entropy diagnostics are non-collapsed (`rank=128`, entropy about `1.33`),
+so this is not merely target-cache collapse. Interpretation: a
+candidate-conditioned query-resampler is a useful learned-connector baseline,
+but the current random-feature query/key/value formulation is not enough. Do
+not tune thresholds on this branch; the next credible variant must train
+query/key/value factors end-to-end or use stronger frozen LLM/activation
+features.

@@ -220,6 +220,18 @@ the systems axis, but the ICLR-full blocker remains the same: a non-hand-coded
 learned receiver, ideally a JEPA/Q-Former-style query resampler with
 source-destroying negatives, must clear held-out synonym controls.
 
+Update `2026-04-30`: the first JEPA/Q-Former-style query-resampler receiver is
+implemented but negative. It is candidate-conditioned and materially different
+from the pruned bilinear/low-rank BGE family: candidate features generate query
+vectors over packet-atom keys/values, then a learned output head scores the
+attended contexts. The wider smoke shows partial signal (`0.500` core ->
+holdout and `0.625` same-family, versus `0.250` target), with non-collapsed
+rank/entropy diagnostics, but it fails bidirectional held-out transfer and
+oracle/headroom requirements. This keeps the learned-receiver blocker open and
+narrows the next branch: either train the query/key/value factors end-to-end
+with source-control negatives, or move the same receiver shape onto stronger
+frozen LLM/activation features. Do not promote the random-feature JEPA-Q smoke.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

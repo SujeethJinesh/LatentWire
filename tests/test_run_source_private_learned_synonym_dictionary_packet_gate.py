@@ -382,3 +382,127 @@ def test_fit_low_rank_factor_receiver_is_deterministic() -> None:
     assert np.allclose(first.left_factors, second.left_factors)
     assert np.allclose(first.right_factors, second.right_factors)
     assert first.bias == second.bias
+
+
+def test_jepa_query_resampler_scores_with_attention_factors(monkeypatch) -> None:
+    def fake_featurize_text(text: str, *, dim: int, text_feature_mode: str = "hashed") -> np.ndarray:
+        assert text == "candidate"
+        assert dim == 2
+        assert text_feature_mode == "hashed"
+        return np.array([1.0, 0.5], dtype=np.float64)
+
+    monkeypatch.setattr(gate, "_featurize_text", fake_featurize_text)
+    query_factors = np.zeros((2, 2, 2), dtype=np.float64)
+    query_factors[0, 0, :] = [1.0, 0.0]
+    query_factors[1, 0, :] = [0.0, 1.0]
+    query_factors[0, 1, :] = [0.5, 0.5]
+    query_factors[1, 1, :] = [1.0, -0.5]
+    atom_keys = np.zeros((len(gate.ATOM_ORDER), 2), dtype=np.float64)
+    atom_values = np.zeros((len(gate.ATOM_ORDER), 2), dtype=np.float64)
+    atom_keys[gate.ATOM_TO_ID["sum"], :] = [1.0, 0.0]
+    atom_keys[gate.ATOM_TO_ID["default"], :] = [0.0, 1.0]
+    atom_values[gate.ATOM_TO_ID["sum"], :] = [0.25, 1.0]
+    atom_values[gate.ATOM_TO_ID["default"], :] = [1.0, -0.25]
+    output = np.array([0.5, -0.25, 0.75, 0.1], dtype=np.float64)
+    dictionary = gate.LearnedSynonymDictionary(
+        feature_dim=2,
+        weights=np.zeros((2, len(gate.ATOM_ORDER)), dtype=np.float64),
+        top_k=2,
+        min_score=0.0,
+        text_feature_mode="hashed",
+        receiver_mode="jepa_query_resampler",
+        bias=0.125,
+        receiver_effective_rank=2,
+        resampler_query_factors=query_factors,
+        resampler_atom_keys=atom_keys,
+        resampler_atom_values=atom_values,
+        resampler_output=output,
+        jepa_query_count=2,
+        jepa_hidden_dim=2,
+    )
+
+    feature = np.array([1.0, 0.5], dtype=np.float64)
+    atom_vector = gate._atom_vector({"sum": 1.0, "default": 0.5})
+    context, _ = gate._jepa_attention_features(
+        features=feature,
+        payload_vector=atom_vector,
+        query_factors=query_factors,
+        atom_keys=atom_keys,
+        atom_values=atom_values,
+    )
+    expected = float(context @ output + 0.125)
+    assert dictionary.score_text("candidate", {"sum": 1.0, "default": 0.5}) == expected
+
+
+def test_jepa_query_resampler_receiver_records_bottleneck(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_jepa_query",
+        budgets=[4],
+        train_examples=20,
+        eval_examples=8,
+        seed=47,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=20,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="jepa_query_resampler",
+        contrastive_negative_sources=1,
+        jepa_query_count=3,
+        jepa_hidden_dim=5,
+        ridge=0.01,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_jepa_query" / "core_to_holdout" / "summary.json").read_text()
+    )
+    assert payload["receiver_mode"] == "jepa_query_resampler"
+    assert payload["jepa_query_count"] == 3
+    assert payload["jepa_hidden_dim"] == 5
+    assert direction["receiver_mode"] == "jepa_query_resampler"
+    assert direction["jepa_query_count"] == 3
+    assert direction["jepa_hidden_dim"] == 5
+    assert direction["jepa_query_entropy"] is not None
+    assert direction["jepa_context_variance"] is not None
+    assert direction["receiver_effective_rank"] is not None
+
+
+def test_fit_jepa_query_resampler_receiver_is_deterministic() -> None:
+    examples = gate.make_benchmark(examples=18, candidates=4, seed=49, family_set="all")
+    kwargs = dict(
+        examples=examples,
+        feature_dim=36,
+        ridge=0.01,
+        calibration_atom_view="synonym_stress",
+        top_k=6,
+        min_score=0.0,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="jepa_query_resampler",
+        contrastive_negative_sources=1,
+        contrastive_rank=2,
+        jepa_query_count=4,
+        jepa_hidden_dim=6,
+        seed=49,
+    )
+
+    first = gate._fit_dictionary(**kwargs)
+    second = gate._fit_dictionary(**kwargs)
+
+    assert first.receiver_mode == "jepa_query_resampler"
+    assert first.resampler_query_factors is not None
+    assert first.resampler_atom_keys is not None
+    assert first.resampler_atom_values is not None
+    assert first.resampler_output is not None
+    assert first.resampler_query_factors.shape == (36, 4, 6)
+    assert first.resampler_atom_keys.shape == (len(gate.ATOM_ORDER), 6)
+    assert first.resampler_atom_values.shape == (len(gate.ATOM_ORDER), 6)
+    assert first.resampler_output.shape == (24,)
+    assert np.allclose(first.resampler_query_factors, second.resampler_query_factors)
+    assert np.allclose(first.resampler_atom_keys, second.resampler_atom_keys)
+    assert np.allclose(first.resampler_atom_values, second.resampler_atom_values)
+    assert np.allclose(first.resampler_output, second.resampler_output)
+    assert first.bias == second.bias
