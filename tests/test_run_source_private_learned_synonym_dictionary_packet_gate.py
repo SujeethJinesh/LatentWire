@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 
 import numpy as np
 
@@ -279,8 +280,13 @@ def test_public_adapter_semantic_anchor_teacher_records_mode_and_audit(tmp_path,
         (tmp_path / "learned_synonym_dictionary_public_adapter" / "core_to_holdout" / "summary.json").read_text()
     )
     assert payload["adapter_target_mode"] == "semantic_anchor_teacher"
+    assert payload["decoder_score_mode"] == "global_dot"
     assert summary["adapter_target_mode"] == "semantic_anchor_teacher"
+    assert summary["decoder_score_mode"] == "global_dot"
     assert direction["adapter_target_mode"] == "semantic_anchor_teacher"
+    assert "private_random_source_atoms" in direction["source_destroying_controls"]
+    assert "permuted_teacher_receiver" in direction["source_destroying_controls"]
+    assert "permuted_teacher_receiver" in direction["conditions"]
     assert "calibration_eval_exact_id_overlap_count" in direction["surface_overlap_audit"]
     assert direction["surface_overlap_audit"]["calibration_eval_exact_id_overlap_count"] >= 0
     assert "hf_last_mean" in calls
@@ -324,6 +330,83 @@ def test_permuted_public_adapter_target_is_deterministic_negative_control() -> N
     assert np.any(teacher)
     assert np.array_equal(permuted_a, permuted_b)
     assert not np.array_equal(teacher, permuted_a)
+
+
+def test_private_random_source_atoms_preserve_values_but_destroy_atom_ids() -> None:
+    atoms = {
+        gate.ATOM_ORDER[0]: 0.9,
+        gate.ATOM_ORDER[1]: 0.6,
+        gate.ATOM_ORDER[2]: 0.3,
+    }
+    randomized = gate._private_random_source_atoms(atoms, rng=random.Random(7))
+
+    assert len(randomized) == len(atoms)
+    assert not (set(randomized) & set(atoms))
+    assert sorted(randomized.values(), reverse=True) == sorted(atoms.values(), reverse=True)
+
+
+def test_all_public_eval_disjoint_calibration_uses_qualified_ids() -> None:
+    train_rows = gate.make_benchmark(examples=16, candidates=4, seed=31, family_set="core")
+    eval_rows = gate.make_benchmark(examples=16, candidates=4, seed=32, family_set="holdout")
+    calibration_rows = gate._calibration_examples(
+        mode="all_public_eval_disjoint",
+        train_examples=train_rows,
+        eval_examples=eval_rows,
+        calibration_count=32,
+        seed=33,
+    )
+    audit = gate._surface_overlap_audit(
+        calibration_rows=calibration_rows,
+        eval_rows=eval_rows,
+        calibration_atom_view="synonym_stress",
+        candidate_atom_view="heldout_synonym",
+    )
+
+    assert audit["calibration_eval_exact_id_overlap_count"] == 0
+    assert audit["calibration_eval_local_id_overlap_count"] > 0
+    assert not (
+        {gate._qualified_example_id(example) for example in calibration_rows}
+        & {gate._qualified_example_id(example) for example in eval_rows}
+    )
+
+
+def test_candidate_local_residual_scoring_ignores_common_candidate_component() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=30, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+
+        def __init__(self, common: np.ndarray) -> None:
+            self.common = common
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text] + self.common
+
+    payload_atoms = {gate.ATOM_ORDER[0]: 1.0}
+    baseline_scores, baseline_meta = gate._score_candidates(
+        example=example,
+        payload_atoms=payload_atoms,
+        dictionary=DummyDictionary(np.zeros(dim, dtype=np.float64)),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="candidate_local_residual_norm",
+    )
+    shifted_scores, shifted_meta = gate._score_candidates(
+        example=example,
+        payload_atoms=payload_atoms,
+        dictionary=DummyDictionary(np.ones(dim, dtype=np.float64) * 3.0),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="candidate_local_residual_norm",
+    )
+
+    assert np.allclose(baseline_scores, shifted_scores)
+    assert baseline_meta["decoder_score_mode"] == "candidate_local_residual_norm"
+    assert shifted_meta["candidate_local_payload_l2"] == baseline_meta["candidate_local_payload_l2"]
 
 
 def test_learned_synonym_dictionary_contrastive_receiver_records_mode(tmp_path) -> None:

@@ -3507,3 +3507,27 @@ COLM remains strong as a scoped method-plus-boundary paper. Comfortable ICLR
 now requires a receiver-conditioned residual/codebook or candidate-local
 normalization method that preserves the matched source lift while forcing
 shuffled/permuted controls back to target.
+
+Update `2026-04-30`: candidate-local residual normalization closes the
+immediate public-adapter blocker and becomes the strongest positive held-out
+method branch. New memo:
+`paper/source_private_candidate_local_residual_receiver_20260430.md`; new
+artifact:
+`results/source_private_candidate_local_residual_receiver_20260430/summary/`;
+new references:
+`references/547_candidate_local_residual_receiver_refs_20260430.md`. The
+MiniLM public semantic-anchor teacher adapter with
+`candidate_local_residual_norm`, `all_public_eval_disjoint` calibration, and
+strict in-run `private_random_source_atoms` plus `permuted_teacher_receiver`
+controls passes bidirectional held-out cross-family at n256 on seeds
+`47/53/59` and at n512 on seed `47`. Aggregate result: `36` rows, `15` pass
+rows, pass gate `true`; promoted runs have family-qualified calibration/eval
+ID overlap `0` and transformed held-out surface overlap `0`. Representative
+n256 rows: core->holdout 8B matched `0.625` vs target `0.250` and best control
+`0.250-0.258`; holdout->core 4B matched `0.500` vs target `0.250` and best
+control `0.250-0.258`. Readiness impact: COLM workshop is now strong with a
+positive method plus negative-boundary and systems story. ICLR is meaningfully
+closer but still not comfortable: next gates are n512/n500 seed repeats,
+matched C2C/KVComm-style baselines, broader tasks, and a systems table for
+offline public calibration, cold candidate feature build, resident decode,
+packet/record bytes, and source text/KV exposure.

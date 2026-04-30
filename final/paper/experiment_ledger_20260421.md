@@ -16770,3 +16770,61 @@ embeddings do not replace the public semantic-anchor receiver; the next exact
 method gate should be learned public ontology calibration or
 receiver-conditioned residual codebooks, with private-random-knockout exposed
 as a first-class failure reason.
+
+Update `2026-04-30`: the public semantic-anchor teacher adapter confirms that
+learned public calibration has signal but does not yet solve the ICLR method
+gap. Code: `scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`
+adds `--adapter-target-mode` with `native_atoms`, `semantic_anchor_teacher`,
+and `permuted_semantic_anchor_teacher`; the direction audit now records
+calibration/eval exact-ID overlap. Summary code:
+`scripts/summarize_source_private_hf_embedding_heldout_packet_gate.py`; tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py` and
+`tests/test_summarize_source_private_hf_embedding_heldout_packet_gate.py`;
+memo: `paper/source_private_public_adapter_heldout_receiver_20260430.md`;
+references: `references/546_public_adapter_heldout_receiver_refs_20260430.md`;
+artifact:
+`results/source_private_public_adapter_heldout_packet_gate_20260430/summary/`.
+Outcome: across `36` public-adapter rows, the strict bidirectional pass gate is
+`false`: `3` rows pass and `3` are near misses. The best semantic-teacher rows
+reach `0.875` matched-packet accuracy and `+0.625` over target, but shuffled,
+deranged, or private-random controls prevent promotion. The permuted-teacher
+negative control also passes `2` individual rows, so the public adapter alone
+is not a clean contribution. Train-only calibration removes exact transformed
+surface overlap in core-to-holdout but weakens cross-family transfer. Decision:
+promote learned public ontology calibration as an alive signal, not a solved
+method. Highest-priority next branch is a receiver-conditioned residual/codebook
+with candidate-local normalization and an explicit permuted-teacher failure
+requirement in the pass rule.
+
+Update `2026-04-30`: the candidate-local residual receiver promotes the public
+adapter branch from diagnostic signal to live positive held-out method. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py` adds
+`--decoder-score-mode candidate_local_residual_norm`,
+`private_random_source_atoms`, `permuted_teacher_receiver`, and
+`all_public_eval_disjoint` calibration with family-qualified ID overlap audit.
+Summary code:
+`scripts/summarize_source_private_hf_embedding_heldout_packet_gate.py`; tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py` and
+`tests/test_summarize_source_private_hf_embedding_heldout_packet_gate.py`;
+memo:
+`paper/source_private_candidate_local_residual_receiver_20260430.md`;
+references:
+`references/547_candidate_local_residual_receiver_refs_20260430.md`;
+artifact:
+`results/source_private_candidate_local_residual_receiver_20260430/summary/`.
+Outcome: the aggregate candidate-local summary has `36` rows, `15` pass rows,
+and a true bidirectional cross-family pass gate. n256 seeds `47/53/59` all pass
+`core_to_holdout`, `holdout_to_core`, and `same_family_all`; n512 seed `47`
+also passes all three directions. Promoted runs have family-qualified
+calibration/eval ID overlap `0` and transformed held-out eval surface overlap
+`0`. Representative n256 rows: core->holdout 8B reaches matched `0.625` versus
+target `0.250` and best control `0.250-0.258`, CI95 low at least `+0.316`;
+holdout->core 4B reaches matched `0.500` versus target `0.250`, best control
+`0.250-0.258`, CI95 low `+0.195/+0.199`, oracle `1.000`. n512 seed `47`
+passes core->holdout 8B at matched `0.625` versus best control `0.250`, CI95
+low `+0.332`, and holdout->core 8B at matched `0.500` versus best control
+`0.260`, CI95 low `+0.209`. Interpretation: promote candidate-local residual
+decoding as the current strongest positive contribution. It is not yet ICLR
+complete: next exact gates are n512/n500 seed repeats, matched C2C/KVComm-style
+baselines, broader benchmarks, and systems accounting for cold public-candidate
+feature build versus resident decode.

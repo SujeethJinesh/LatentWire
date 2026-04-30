@@ -342,6 +342,13 @@
   promotion, and the permuted-teacher negative control passes `2` individual
   rows. The next branch is receiver-conditioned residual/codebook decoding with
   candidate-local normalization.
+- Candidate-local residual receiver code, tests, references, memo, and
+  artifacts showing the public adapter branch now has a positive held-out
+  method row. The aggregate summary has `36` rows, `15` pass rows, and true
+  bidirectional cross-family pass; n256 seeds `47/53/59` all pass and n512
+  seed `47` passes, with zero family-qualified calibration/eval ID overlap and
+  zero transformed held-out surface overlap in promoted runs. Strict controls
+  include private-random atom packets and an in-run permuted-teacher receiver.
 
 ## Notes
 

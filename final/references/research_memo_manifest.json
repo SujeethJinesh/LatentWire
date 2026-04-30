@@ -1328,5 +1328,12 @@
     "path": "references/546_public_adapter_heldout_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the public semantic-anchor teacher adapter, covering Relative Representations, C2C, KVCOMM, QINCo, Perceiver/Flamingo/Q-Former, TurboQuant/QJL, novelty boundaries, and the receiver-conditioned residual-codebook next branch."
+  },
+  {
+    "num": 547,
+    "slug": "candidate_local_residual_receiver_refs_20260430",
+    "path": "references/547_candidate_local_residual_receiver_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the candidate-local residual receiver, covering Relative Representations, C2C/KVComm/KVCOMM/Q-KVComm, QINCo, Perceiver/Flamingo/Q-Former, TurboQuant/QJL, Slepian-Wolf/Wyner-Ziv, novelty boundaries, and the live positive held-out packet branch."
   }
 ]

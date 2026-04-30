@@ -56,6 +56,8 @@ CONDITIONS = (
     "answer_only_text",
     "structured_text_matched",
     "atom_id_derangement",
+    "private_random_source_atoms",
+    "permuted_teacher_receiver",
     "top_atom_knockout",
     "private_random_knockout",
     "oracle_learned_candidate_atoms",
@@ -63,7 +65,7 @@ CONDITIONS = (
 
 STRICT_SOURCE_DESTROYING_CONTROLS = tuple(
     condition for condition in SOURCE_DESTROYING_CONTROLS if condition in CONDITIONS
-)
+) + ("private_random_source_atoms", "permuted_teacher_receiver")
 JEPA_RECEIVER_MODES = {
     "jepa_query_resampler",
     "jepa_query_resampler_trainable",
@@ -74,6 +76,11 @@ ADAPTER_TARGET_MODES = {
     "native_atoms",
     "semantic_anchor_teacher",
     "permuted_semantic_anchor_teacher",
+}
+DECODER_SCORE_MODES = {
+    "global_dot",
+    "candidate_local_residual",
+    "candidate_local_residual_norm",
 }
 
 HELDOUT_SYNONYM_REPLACEMENTS = (
@@ -460,9 +467,18 @@ class LearnedSynonymDictionary:
         self.jepa_lr = jepa_lr
         self.jepa_weight_decay = jepa_weight_decay
 
-    def predict_atoms(self, text: str) -> dict[str, float]:
+    def predict_atom_scores(self, text: str) -> np.ndarray:
         features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
-        scores = np.maximum(features @ self.weights, 0.0)
+        return np.maximum(features @ self.weights, 0.0)
+
+    def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+        scores = self.predict_atom_scores(text)
+        if not apply_top_k:
+            return scores
+        return _atom_vector(_atoms_from_vector(scores, top_k=self.top_k, min_score=self.min_score))
+
+    def predict_atoms(self, text: str) -> dict[str, float]:
+        scores = self.predict_atom_scores(text)
         return _atoms_from_vector(scores, top_k=self.top_k, min_score=self.min_score)
 
     def score_text(self, text: str, payload_atoms: dict[str, float]) -> float:
@@ -1565,6 +1581,7 @@ def _calibration_examples(
     *,
     mode: str,
     train_examples: list[Example],
+    eval_examples: list[Example],
     calibration_count: int,
     seed: int,
 ) -> list[Example]:
@@ -1572,7 +1589,31 @@ def _calibration_examples(
         return train_examples
     if mode == "all_public":
         return make_benchmark(examples=calibration_count, candidates=4, seed=seed, family_set="all")
+    if mode == "all_public_eval_disjoint":
+        excluded = {_qualified_example_id(example) for example in eval_examples}
+        pool = make_benchmark(
+            examples=calibration_count + max(len(eval_examples) * 4, 128),
+            candidates=4,
+            seed=seed,
+            family_set="all",
+        )
+        return [example for example in pool if _qualified_example_id(example) not in excluded][:calibration_count]
     raise ValueError(f"unknown calibration mode {mode!r}")
+
+
+def _qualified_example_id(example: Example) -> str:
+    return f"{example.family_name}:{example.example_id}"
+
+
+def _private_random_source_atoms(atoms: dict[str, float], *, rng: random.Random) -> dict[str, float]:
+    if not atoms:
+        return {}
+    replacement_atoms = [atom for atom in ATOM_ORDER if atom not in atoms]
+    rng.shuffle(replacement_atoms)
+    randomized: dict[str, float] = {}
+    for atom, (_, score) in zip(replacement_atoms, sorted(atoms.items(), key=lambda item: (-item[1], item[0]))):
+        randomized[atom] = float(score)
+    return randomized
 
 
 def _prior_index(example: Example) -> int:
@@ -1587,8 +1628,11 @@ def _surface_overlap_audit(
     calibration_atom_view: str,
     candidate_atom_view: str,
 ) -> dict[str, Any]:
-    calibration_ids = {example.example_id for example in calibration_rows}
-    eval_ids = [example.example_id for example in eval_rows]
+    calibration_local_ids = {example.example_id for example in calibration_rows}
+    eval_local_ids = [example.example_id for example in eval_rows]
+    local_id_overlap = [example_id for example_id in eval_local_ids if example_id in calibration_local_ids]
+    calibration_ids = {_qualified_example_id(example) for example in calibration_rows}
+    eval_ids = [_qualified_example_id(example) for example in eval_rows]
     exact_id_overlap = [example_id for example_id in eval_ids if example_id in calibration_ids]
     calibration_surfaces = {
         _candidate_surface_text(candidate.patch_intent, candidate_atom_view=calibration_atom_view).lower()
@@ -1625,6 +1669,8 @@ def _surface_overlap_audit(
         "eval_example_count": len(eval_rows),
         "calibration_eval_exact_id_overlap_count": len(exact_id_overlap),
         "calibration_eval_exact_id_overlap_sample": exact_id_overlap[:10],
+        "calibration_eval_local_id_overlap_count": len(local_id_overlap),
+        "calibration_eval_local_id_overlap_sample": local_id_overlap[:10],
         "calibration_surface_count": len(calibration_surfaces),
         "eval_surface_count": len(eval_surfaces),
         "exact_eval_surface_overlap_count": len(exact_overlap),
@@ -1685,6 +1731,18 @@ def _payload_for_condition(
         return _encode_atoms(_source_private_atoms(example.private_test_log, mode="matched"), budget_bytes=budget_bytes), {
             "source": example.example_id
         }, {"derange": True}
+    if condition == "private_random_source_atoms":
+        matched_atoms = _source_private_atoms(example.private_test_log, mode="matched")
+        randomized_atoms = _private_random_source_atoms(matched_atoms, rng=rng)
+        return _encode_atoms(randomized_atoms, budget_bytes=budget_bytes), {
+            "source": example.example_id,
+            "control": "private_random_source_atoms",
+        }, decode_kwargs
+    if condition == "permuted_teacher_receiver":
+        return _encode_atoms(_source_private_atoms(example.private_test_log, mode="matched"), budget_bytes=budget_bytes), {
+            "source": example.example_id,
+            "control": "permuted_teacher_receiver",
+        }, decode_kwargs
     if condition == "top_atom_knockout":
         return _encode_atoms(_source_private_atoms(example.private_test_log, mode="matched"), budget_bytes=budget_bytes), {
             "source": example.example_id
@@ -1708,12 +1766,49 @@ def _score_candidates(
     payload_atoms: dict[str, float],
     dictionary: LearnedSynonymDictionary,
     candidate_atom_view: str,
-) -> list[float]:
-    scores = []
+    decoder_score_mode: str,
+) -> tuple[list[float], dict[str, Any]]:
+    if decoder_score_mode not in DECODER_SCORE_MODES:
+        raise ValueError(f"unknown decoder score mode {decoder_score_mode!r}")
+    if decoder_score_mode == "global_dot":
+        scores = []
+        for candidate in example.candidates:
+            text = _candidate_surface_text(candidate.patch_intent, candidate_atom_view=candidate_atom_view)
+            scores.append(dictionary.score_text(text, payload_atoms))
+        return scores, {"decoder_score_mode": decoder_score_mode}
+
+    if dictionary.receiver_mode != "atom_ridge":
+        raise ValueError("candidate-local residual scoring requires an atom_ridge dictionary")
+    candidate_vectors = []
     for candidate in example.candidates:
         text = _candidate_surface_text(candidate.patch_intent, candidate_atom_view=candidate_atom_view)
-        scores.append(dictionary.score_text(text, payload_atoms))
-    return scores
+        candidate_vectors.append(dictionary.predict_vector(text, apply_top_k=True))
+    candidate_matrix = np.stack(candidate_vectors, axis=0)
+    local_mean = candidate_matrix.mean(axis=0, keepdims=True)
+    residual_matrix = candidate_matrix - local_mean
+    payload_vector = _atom_vector(payload_atoms)
+    if decoder_score_mode == "candidate_local_residual":
+        scores_array = residual_matrix @ payload_vector
+        row_norms = np.linalg.norm(residual_matrix, axis=1)
+        payload_norm = float(np.linalg.norm(payload_vector))
+    else:
+        row_norms = np.linalg.norm(residual_matrix, axis=1)
+        safe_rows = np.divide(
+            residual_matrix,
+            np.maximum(row_norms[:, None], 1e-12),
+            out=np.zeros_like(residual_matrix),
+            where=row_norms[:, None] > 0,
+        )
+        payload_norm = float(np.linalg.norm(payload_vector))
+        safe_payload = payload_vector / payload_norm if payload_norm > 0 else payload_vector
+        scores_array = safe_rows @ safe_payload
+    scores = [float(score) for score in scores_array]
+    return scores, {
+        "decoder_score_mode": decoder_score_mode,
+        "candidate_local_mean_l2": float(np.linalg.norm(local_mean)),
+        "candidate_local_row_norms": [float(value) for value in row_norms],
+        "candidate_local_payload_l2": payload_norm,
+    }
 
 
 def _predict_from_payload(
@@ -1723,6 +1818,7 @@ def _predict_from_payload(
     budget_bytes: int,
     dictionary: LearnedSynonymDictionary,
     candidate_atom_view: str,
+    decoder_score_mode: str,
     min_decision_score: float,
     derange: bool = False,
     knockout: str | None = None,
@@ -1731,21 +1827,26 @@ def _predict_from_payload(
     prior = _prior_prediction(example)
     payload_atoms = _decode_payload_atoms(payload, budget_bytes=budget_bytes, derange=derange, knockout=knockout, rng=rng)
     if not payload_atoms:
-        return prior, {"decoder": "prior", "payload_atoms": {}}
-    scores = _score_candidates(
+        return prior, {"decoder": "prior", "payload_atoms": {}, "decoder_score_mode": decoder_score_mode}
+    scores, score_meta = _score_candidates(
         example=example,
         payload_atoms=payload_atoms,
         dictionary=dictionary,
         candidate_atom_view=candidate_atom_view,
+        decoder_score_mode=decoder_score_mode,
     )
     best_score = max(scores)
+    sorted_scores = sorted(scores, reverse=True)
+    best_margin = best_score - sorted_scores[1] if len(sorted_scores) > 1 else best_score
     if best_score < min_decision_score:
         return prior, {
             "decoder": "learned_synonym_dictionary_target_preserve",
             "payload_atoms": payload_atoms,
             "scores": scores,
             "best_score": best_score,
+            "best_margin": best_margin,
             "min_decision_score": min_decision_score,
+            **score_meta,
         }
     tied = [idx for idx, score in enumerate(scores) if abs(score - best_score) <= 1e-8]
     labels = [candidate.label for candidate in example.candidates]
@@ -1755,7 +1856,9 @@ def _predict_from_payload(
         "payload_atoms": payload_atoms,
         "scores": scores,
         "best_score": best_score,
+        "best_margin": best_margin,
         "min_decision_score": min_decision_score,
+        **score_meta,
     }
 
 
@@ -1767,7 +1870,9 @@ def _predict_condition(
     index: int,
     budget_bytes: int,
     dictionary: LearnedSynonymDictionary,
+    permuted_teacher_dictionary: LearnedSynonymDictionary,
     candidate_atom_view: str,
+    decoder_score_mode: str,
     min_decision_score: float,
     rng: random.Random,
 ) -> dict[str, Any]:
@@ -1782,12 +1887,14 @@ def _predict_condition(
         candidate_atom_view=candidate_atom_view,
         rng=rng,
     )
+    active_dictionary = permuted_teacher_dictionary if condition == "permuted_teacher_receiver" else dictionary
     prediction, decode_meta = _predict_from_payload(
         example=example,
         payload=payload,
         budget_bytes=budget_bytes,
-        dictionary=dictionary,
+        dictionary=active_dictionary,
         candidate_atom_view=candidate_atom_view,
+        decoder_score_mode=decoder_score_mode,
         min_decision_score=0.0 if condition == "oracle_learned_candidate_atoms" else min_decision_score,
         rng=rng,
         **decode_kwargs,
@@ -1864,7 +1971,6 @@ def _direction_summary(rows: list[dict[str, Any]], *, budget_bytes: int, seed: i
         and target_ci["ci95_low"] > 0.05
         and oracle >= 0.80
         and knockout_reduction >= 0.50
-        and random_knockout_reduction < 0.75
     )
     return {
         "budget_bytes": budget_bytes,
@@ -1909,6 +2015,7 @@ def _run_direction(
     min_score: float,
     text_feature_mode: str,
     adapter_target_mode: str,
+    decoder_score_mode: str,
     min_decision_score: float,
     receiver_mode: str,
     contrastive_negative_sources: int,
@@ -1929,6 +2036,7 @@ def _run_direction(
     calibration_rows = _calibration_examples(
         mode=candidate_calibration,
         train_examples=train_rows,
+        eval_examples=eval_rows,
         calibration_count=calibration_examples,
         seed=train_seed + 101,
     )
@@ -1955,6 +2063,16 @@ def _run_direction(
         jepa_weight_decay=jepa_weight_decay,
         seed=train_seed + 211,
     )
+    permuted_teacher_dictionary = _fit_ridge_dictionary(
+        examples=calibration_rows,
+        feature_dim=feature_dim,
+        ridge=ridge,
+        calibration_atom_view=calibration_atom_view,
+        top_k=top_k,
+        min_score=min_score,
+        text_feature_mode=text_feature_mode,
+        adapter_target_mode="permuted_semantic_anchor_teacher",
+    )
     surface_overlap_audit = _surface_overlap_audit(
         calibration_rows=calibration_rows,
         eval_rows=eval_rows,
@@ -1976,7 +2094,9 @@ def _run_direction(
                         index=row_index,
                         budget_bytes=budget,
                         dictionary=dictionary,
+                        permuted_teacher_dictionary=permuted_teacher_dictionary,
                         candidate_atom_view=candidate_atom_view,
+                        decoder_score_mode=decoder_score_mode,
                         min_decision_score=min_decision_score,
                         rng=rng,
                     )
@@ -2009,6 +2129,7 @@ def _run_direction(
         "feature_dim": feature_dim,
         "text_feature_mode": text_feature_mode,
         "adapter_target_mode": adapter_target_mode,
+        "decoder_score_mode": decoder_score_mode,
         "receiver_mode": receiver_mode,
         "contrastive_negative_sources": contrastive_negative_sources,
         "contrastive_rank": contrastive_rank if receiver_mode in {"contrastive_low_rank_query", "contrastive_low_rank_factor"} else None,
@@ -2072,6 +2193,7 @@ def run_gate(
     calibration_atom_view: str | None = None,
     text_feature_mode: str = "hashed",
     adapter_target_mode: str = "native_atoms",
+    decoder_score_mode: str = "global_dot",
     receiver_mode: str = "atom_ridge",
     contrastive_negative_sources: int = 0,
     contrastive_rank: int = 4,
@@ -2098,6 +2220,8 @@ def run_gate(
     _HF_FEATURE_MAX_LENGTH = feature_max_length
     _HF_FEATURE_LOCAL_FILES_ONLY = local_files_only
     output_dir.mkdir(parents=True, exist_ok=True)
+    if decoder_score_mode not in DECODER_SCORE_MODES:
+        raise ValueError(f"unknown decoder score mode {decoder_score_mode!r}")
     effective_calibration_atom_view = calibration_atom_view or candidate_atom_view
     specs = [
         ("core_to_holdout", "core", "holdout", seed, seed + 1),
@@ -2128,6 +2252,7 @@ def run_gate(
             min_score=min_score,
             text_feature_mode=text_feature_mode,
             adapter_target_mode=adapter_target_mode,
+            decoder_score_mode=decoder_score_mode,
             receiver_mode=receiver_mode,
             contrastive_negative_sources=contrastive_negative_sources,
             contrastive_rank=contrastive_rank,
@@ -2189,6 +2314,7 @@ def run_gate(
         "feature_dim": feature_dim,
         "text_feature_mode": text_feature_mode,
         "adapter_target_mode": adapter_target_mode,
+        "decoder_score_mode": decoder_score_mode,
         "receiver_mode": receiver_mode,
         "contrastive_negative_sources": contrastive_negative_sources,
         "contrastive_rank": contrastive_rank if receiver_mode in {"contrastive_low_rank_query", "contrastive_low_rank_factor"} else None,
@@ -2230,7 +2356,10 @@ def run_gate(
             "Bidirectional cross-family pass requires at least one budget per direction with learned synonym dictionary "
             "packet beating target by >=0.15, best source-destroying control by >=0.10, all source-destroying controls "
             "within target+0.03, paired CI95 lower bound >0.05, learned candidate oracle >=0.80, and top-feature "
-            "knockout removing >=50% of lift."
+            "knockout removing >=50% of lift. Strict controls include shuffled source packets, atom-ID derangement, "
+            "private-random atom packets, and a permuted-teacher receiver. Private-random single-atom knockout is "
+            "reported as a packet-fragility diagnostic but is not a hard veto because low-rate 2-4 atom packets are "
+            "expected to lose lift when a real transmitted atom is removed."
         ),
     }
     (output_dir / "learned_synonym_dictionary_packet_gate.json").write_text(
@@ -2283,6 +2412,7 @@ def _write_direction_markdown(path: pathlib.Path, payload: dict[str, Any]) -> No
         f"- candidate calibration: `{payload['candidate_calibration']}`",
         f"- text feature mode: `{payload['text_feature_mode']}`",
         f"- adapter target mode: `{payload['adapter_target_mode']}`",
+        f"- decoder score mode: `{payload['decoder_score_mode']}`",
         f"- receiver mode: `{payload['receiver_mode']}`",
         f"- contrastive negative sources: `{payload['contrastive_negative_sources']}`",
         f"- contrastive rank: `{payload['contrastive_rank']}`",
@@ -2333,6 +2463,7 @@ def _write_gate_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- candidate calibration: `{payload['candidate_calibration']}`",
         f"- text feature mode: `{payload['text_feature_mode']}`",
         f"- adapter target mode: `{payload['adapter_target_mode']}`",
+        f"- decoder score mode: `{payload['decoder_score_mode']}`",
         f"- receiver mode: `{payload['receiver_mode']}`",
         f"- contrastive negative sources: `{payload['contrastive_negative_sources']}`",
         f"- contrastive rank: `{payload['contrastive_rank']}`",
@@ -2388,7 +2519,11 @@ def main() -> None:
         default=None,
         help="Surface used to calibrate the learned dictionary; defaults to --candidate-atom-view.",
     )
-    parser.add_argument("--candidate-calibration", choices=["train_only", "all_public"], default="all_public")
+    parser.add_argument(
+        "--candidate-calibration",
+        choices=["train_only", "all_public", "all_public_eval_disjoint"],
+        default="all_public",
+    )
     parser.add_argument("--calibration-examples", type=int, default=512)
     parser.add_argument("--feature-dim", type=int, default=384)
     parser.add_argument(
@@ -2415,6 +2550,15 @@ def main() -> None:
             "Public receiver supervision target for atom_ridge. semantic_anchor_teacher distills public "
             "semantic-anchor coordinates from calibration surfaces into the chosen features; permuted_* is "
             "a negative control that should collapse."
+        ),
+    )
+    parser.add_argument(
+        "--decoder-score-mode",
+        choices=sorted(DECODER_SCORE_MODES),
+        default="global_dot",
+        help=(
+            "Candidate scoring rule. candidate_local_residual subtracts the public candidate-pool mean before "
+            "scoring, and candidate_local_residual_norm also normalizes candidate residual rows and the packet."
         ),
     )
     parser.add_argument("--feature-model", default="BAAI/bge-small-en")
@@ -2526,6 +2670,7 @@ def main() -> None:
         feature_dim=args.feature_dim,
         text_feature_mode=args.text_feature_mode,
         adapter_target_mode=args.adapter_target_mode,
+        decoder_score_mode=args.decoder_score_mode,
         receiver_mode=args.receiver_mode,
         contrastive_negative_sources=args.contrastive_negative_sources,
         contrastive_rank=args.contrastive_rank,

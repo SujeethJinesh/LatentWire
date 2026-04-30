@@ -66,6 +66,7 @@ def _flatten(run_dirs: list[pathlib.Path]) -> list[dict[str, Any]]:
                     "feature_model": payload.get("feature_model"),
                     "text_feature_mode": payload["text_feature_mode"],
                     "adapter_target_mode": payload.get("adapter_target_mode", "native_atoms"),
+                    "decoder_score_mode": payload.get("decoder_score_mode", "global_dot"),
                     "receiver_mode": payload["receiver_mode"],
                     "min_decision_score": payload["min_decision_score"],
                     "top_k": payload["top_k"],
@@ -113,6 +114,9 @@ def summarize(rows: list[dict[str, Any]], semantic_anchor: dict[str, Any] | None
     has_permuted_adapter = any(
         row.get("adapter_target_mode") == "permuted_semantic_anchor_teacher" for row in rows
     )
+    has_candidate_local = any(
+        row.get("decoder_score_mode", "global_dot").startswith("candidate_local") for row in rows
+    )
     near_miss_rows = [
         row
         for row in rows
@@ -132,6 +136,7 @@ def summarize(rows: list[dict[str, Any]], semantic_anchor: dict[str, Any] | None
                 "feature_model": row["feature_model"],
                 "text_feature_mode": row["text_feature_mode"],
                 "adapter_target_mode": row.get("adapter_target_mode", "native_atoms"),
+                "decoder_score_mode": row.get("decoder_score_mode", "global_dot"),
                 "receiver_mode": row["receiver_mode"],
                 "pass_rows": 0,
                 "direction_pass": {"core_to_holdout": False, "holdout_to_core": False, "same_family_all": False},
@@ -168,6 +173,15 @@ def summarize(rows: list[dict[str, Any]], semantic_anchor: dict[str, Any] | None
             for run in by_run.values()
         ),
         "interpretation": (
+            (
+                "Candidate-local residual scoring turns the public semantic-anchor adapter into a positive "
+                "bidirectional held-out packet result on this sweep. The surviving rows require matched source "
+                "packets to beat target-only and all strict destructive controls, including private-random atom "
+                "packets and an in-run permuted-teacher receiver. The branch should now be scaled to larger "
+                "frozen slices, repeated seeds, and competitor baselines before being treated as ICLR-ready."
+            )
+            if has_public_adapter and has_candidate_local and pass_rows
+            else
             (
                 "Public semantic-anchor teacher adapters can produce large matched-packet lifts, but this sweep "
                 "does not clear the strict bidirectional gate. The permuted-teacher negative control also passes "
@@ -232,7 +246,8 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     )
     for row in summary["runs"]:
         lines.append(
-            f"| `{row['run_dir']}` | {row['feature_model']} | `{row['text_feature_mode']}` | "
+            f"| `{row['run_dir']}` | {row['feature_model']} | "
+            f"`{row['text_feature_mode']}/{row['decoder_score_mode']}` | "
             f"`{row['adapter_target_mode']}` | "
             f"{row['pass_rows']} | `{row['direction_pass']}` | {row['max_accuracy']:.3f} | "
             f"{row['max_delta_vs_target']:.3f} | {row['max_ci95_low_vs_target']:.3f} | {row['min_oracle']:.3f} |"
