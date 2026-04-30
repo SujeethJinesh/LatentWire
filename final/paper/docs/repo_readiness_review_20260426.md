@@ -64,6 +64,19 @@ hardware-readable boundary-traffic trace card, not just deterministic byte
 counting. Remaining ICLR gap: production NVIDIA/vLLM telemetry or a materially
 different learned receiver.
 
+Update `2026-04-30`: the learned contrastive semantic-anchor receiver was
+tested as the most direct less-hand-shaped replacement for the explicit
+semantic-anchor overlap decoder and is pruned for now. The n128 unconstrained
+bilinear receiver has real source signal but fails a destructive control
+(`atom_id_derangement=0.375` in core->holdout). Adding shuffled-source
+negatives restores controls but collapses core->holdout matched accuracy to
+`0.375`; a stricter target-preservation threshold collapses matched lift. This
+keeps the paper honest: the semantic-anchor receiver remains the promoted
+held-out paraphrase result, while plain contrastive compatibility is a negative
+ablation. Readiness does not improve; the full-paper gap remains a materially
+different learned/model-mediated receiver or larger frozen Qwen binary-verifier
+scale-up plus native serving telemetry.
+
 ## Current Paper Story
 
 The honest current story is conditional innovation rather than proven latent
@@ -3187,3 +3200,115 @@ full-paper blocker is now precise: produce a balanced learned or frozen target
 receiver with valid rate `>=0.95` at n64+, or keep the paper claim explicitly
 as a rigorous source-private side-information protocol with systems accounting.
 COLM workshop readiness remains very strong.
+
+Update `2026-04-30`: the frozen Qwen3-0.6B binary verifier now clears a larger
+combined-control cross-family n128 gate, and the systems story has a
+receiver-consumption trace. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_core_n128_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_holdout_n128_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/paired_uncertainty_qwen3_seed29_core_holdout_n128_binary_logprob_combined_cpu/`,
+and
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed29_core_holdout_n128_binary_logprob_combined_cpu/`;
+memo:
+`paper/source_private_binary_verifier_n128_consumption_trace_20260430.md`.
+Outcome: core and holdout both score `1.000` matched, `0.250` target-only,
+`0.250` best control, `0.000` deranged public-table control, valid rate `1.000`,
+and min paired CI95 low `+0.672` versus target and best control. The verifier
+trace reports `2` payload bytes, `5` packet-record bytes, batch-64 traffic of
+`5.0` line bytes/request and `6.0` DMA bytes/request, and four target-side
+binary forward passes/example with Mac CPU p50 about `1.63-1.67`s. Readiness
+implication: this materially strengthens the scoped positive-method case and
+COLM workshop readiness. For comfortable ICLR, the remaining gap is still a
+seed-stable n160/n500 receiver slice, a less protocol-shaped learned receiver,
+or native GPU/vLLM TTFT/TPOT/goodput telemetry. The claim should stay
+source-private side-information communication with public decoder side
+information, not protocol-free latent reasoning.
+
+Update `2026-04-30`: the same frozen Qwen3-0.6B binary-verifier receiver now
+passes the seed31 n160 stability rung on both core and held-out balanced
+surfaces. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_core_n160_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_holdout_n160_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/paired_uncertainty_qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`,
+and
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`;
+memo:
+`paper/source_private_binary_verifier_seed31_n160_20260430.md`. Outcome:
+matched packet remains `1.000`, target-only and best same-byte/source-destroyed
+control remain `0.250`, deranged public-table accuracy is `0.000`, valid rate
+is `1.000`, exact-ID parity holds, and min CI95 lower bound versus target/best
+control is `+0.681`. The verifier consumption trace now records observed
+Mac-local cache-line accounting from `sysctl hw.cachelinesize = 128`, so
+batch-64 packet traffic is `6.0` line bytes/request rather than the earlier
+generic `64B`-line `5.0` estimate. Readiness implication: COLM workshop
+readiness is strong for a scoped source-private packet communication paper with
+strict controls and hardware-observed systems accounting. Comfortable ICLR
+full-paper readiness still needs at least one of: n500/multi-seed frozen
+receiver scale, a less hand-shaped learned receiver, public-only/label-blind
+stress at the receiver level, or native GPU/vLLM TTFT/TPOT/goodput telemetry.
+The next highest-priority method branch is an anchor-relative sparse crosscoder
+or candidate-logit flow receiver that reduces dependence on the diagnostic
+table.
+
+Update `2026-04-30`: `source_private_anchor_relative_crosscoder_receiver_n256`
+adds a strict learned receiver harness and prunes the current
+anchor-relative/crosscoder branch as a headline positive method. Code:
+`scripts/run_source_private_anchor_relative_crosscoder_receiver_gate.py`;
+test:
+`tests/test_run_source_private_anchor_relative_crosscoder_receiver_gate.py`;
+memo:
+`paper/source_private_anchor_relative_crosscoder_receiver_gate_20260430.md`;
+references:
+`references/534_anchor_relative_crosscoder_receiver_gate_refs_20260430.md`;
+results:
+`results/source_private_anchor_relative_crosscoder_receiver_n256_20260430/`.
+The harness includes public-only sidecars, feature-ID permutation,
+top-feature knockout, matched-byte structured text, paired bootstrap, and
+exact ordered-ID parity. Bidirectional n256 cross-family fails: matched packets
+only reach `0.270-0.309` against a `0.250` target prior, oracles remain below
+`0.95`, CI95 lower bounds cross zero, and top-feature knockout does not reduce
+matched accuracy. Readiness implication: this improves reviewer defensibility
+by ruling out a tempting but weak non-table story; it does not close the ICLR
+positive-method blocker. Current status remains COLM-workshop plausible, not
+comfortable ICLR full paper. Next exact gate: n500 seed stability for the
+frozen verifier positive row plus a TurboResidual/PQ packet branch that keeps
+the same strict controls and systems accounting.
+
+Update `2026-04-30`: the TurboResidual/PQ path is now materially stronger via
+an n500 product-codebook packet gate. Artifacts:
+`results/source_private_product_codebook_packet_gate_n500_20260430/`,
+`results/source_private_product_codebook_uncertainty_n500_20260430/`, and
+`results/source_private_product_codebook_decode_frontier_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_n500_sprint_20260430.md`; references:
+`references/535_product_codebook_n500_refs_20260430.md`. The 4-byte PQ packet
+passes all three remapped codebooks at n500: accuracy `0.482-0.520`, target
+`0.250`, best PQ control `0.252-0.268`, scalar WZ `0.424-0.504`, min paired
+CI95 low `+0.174` versus target and `+0.154` versus best PQ control. Cached
+target-side decode is also systems-positive: max cached p50 `0.0212 ms`, max
+request-public table p50 `0.3694 ms`, max resident lookup p50 `0.0177 ms`,
+and zero canonical/cached/table mismatches. Readiness implication: this gives
+the paper a third defensible contribution beyond the benchmark and verifier:
+a compression-native product-codebook source-private packet with n500 remap
+stability and fast cached decode. Comfortable ICLR still needs native
+GPU/vLLM/KV telemetry, frozen verifier n500 or batched verifier evidence, and
+top-codeword/OPQ/protected-basis stress before claiming a broad systems win.
+
+Update `2026-04-30`: the first top-codeword stress for the n500 PQ branch is
+complete. Artifact:
+`results/source_private_product_codebook_knockout_stress_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_knockout_stress_20260430.md`;
+references:
+`references/536_product_codebook_knockout_stress_refs_20260430.md`. The
+adversarial stress passes: replacing the byte with the largest gold-vs-nearest
+wrong contribution by the worst valid code drops remap accuracies from
+`0.482-0.520` to `0.002-0.004`, with paired CI95 lows `+0.436` or higher for
+matched over knockout. The public-mean stress fails: replacing that byte with a
+train-public mean code removes only `10-20%` of matched lift. Payload entropy is
+also lookup-risky: `498-500` unique 4-byte payloads at n500. Readiness
+implication: this strengthens the causal diagnostic for the PQ systems row but
+does not close the ICLR concern that the 4-byte code can behave like a compact
+example identifier. Next gate: OPQ/protected-basis PQ or verifier n500; keep the
+paper claim source-private residual coding with strict controls, not broad
+latent reasoning.

@@ -1251,5 +1251,12 @@
     "path": "references/535_product_codebook_n500_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the n500 product-codebook/PQ packet sprint, covering PQ/OPQ, TurboQuant, RaBitQ, QJL, KIVI/KVQuant, C2C/KVComm, Slepian-Wolf framing, and diffusion/flow/consistency receiver inspiration."
+  },
+  {
+    "num": 536,
+    "slug": "product_codebook_knockout_stress_refs_20260430",
+    "path": "references/536_product_codebook_knockout_stress_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the n500 product-codebook top-codeword knockout stress, covering PQ/OPQ, vector quantization, additive/composite quantization, TurboQuant, Slepian-Wolf side information, semantic communication, and reviewer-facing codeword causality controls."
   }
 ]

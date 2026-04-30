@@ -3249,3 +3249,66 @@ stress at the receiver level, or native GPU/vLLM TTFT/TPOT/goodput telemetry.
 The next highest-priority method branch is an anchor-relative sparse crosscoder
 or candidate-logit flow receiver that reduces dependence on the diagnostic
 table.
+
+Update `2026-04-30`: `source_private_anchor_relative_crosscoder_receiver_n256`
+adds a strict learned receiver harness and prunes the current
+anchor-relative/crosscoder branch as a headline positive method. Code:
+`scripts/run_source_private_anchor_relative_crosscoder_receiver_gate.py`;
+test:
+`tests/test_run_source_private_anchor_relative_crosscoder_receiver_gate.py`;
+memo:
+`paper/source_private_anchor_relative_crosscoder_receiver_gate_20260430.md`;
+references:
+`references/534_anchor_relative_crosscoder_receiver_gate_refs_20260430.md`;
+results:
+`results/source_private_anchor_relative_crosscoder_receiver_n256_20260430/`.
+The harness includes public-only sidecars, feature-ID permutation,
+top-feature knockout, matched-byte structured text, paired bootstrap, and
+exact ordered-ID parity. Bidirectional n256 cross-family fails: matched packets
+only reach `0.270-0.309` against a `0.250` target prior, oracles remain below
+`0.95`, CI95 lower bounds cross zero, and top-feature knockout does not reduce
+matched accuracy. Readiness implication: this improves reviewer defensibility
+by ruling out a tempting but weak non-table story; it does not close the ICLR
+positive-method blocker. Current status remains COLM-workshop plausible, not
+comfortable ICLR full paper. Next exact gate: n500 seed stability for the
+frozen verifier positive row plus a TurboResidual/PQ packet branch that keeps
+the same strict controls and systems accounting.
+
+Update `2026-04-30`: the TurboResidual/PQ path is now materially stronger via
+an n500 product-codebook packet gate. Artifacts:
+`results/source_private_product_codebook_packet_gate_n500_20260430/`,
+`results/source_private_product_codebook_uncertainty_n500_20260430/`, and
+`results/source_private_product_codebook_decode_frontier_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_n500_sprint_20260430.md`; references:
+`references/535_product_codebook_n500_refs_20260430.md`. The 4-byte PQ packet
+passes all three remapped codebooks at n500: accuracy `0.482-0.520`, target
+`0.250`, best PQ control `0.252-0.268`, scalar WZ `0.424-0.504`, min paired
+CI95 low `+0.174` versus target and `+0.154` versus best PQ control. Cached
+target-side decode is also systems-positive: max cached p50 `0.0212 ms`, max
+request-public table p50 `0.3694 ms`, max resident lookup p50 `0.0177 ms`,
+and zero canonical/cached/table mismatches. Readiness implication: this gives
+the paper a third defensible contribution beyond the benchmark and verifier:
+a compression-native product-codebook source-private packet with n500 remap
+stability and fast cached decode. Comfortable ICLR still needs native
+GPU/vLLM/KV telemetry, frozen verifier n500 or batched verifier evidence, and
+top-codeword/OPQ/protected-basis stress before claiming a broad systems win.
+
+Update `2026-04-30`: the first top-codeword stress for the n500 PQ branch is
+complete. Artifact:
+`results/source_private_product_codebook_knockout_stress_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_knockout_stress_20260430.md`;
+references:
+`references/536_product_codebook_knockout_stress_refs_20260430.md`. The
+adversarial stress passes: replacing the byte with the largest gold-vs-nearest
+wrong contribution by the worst valid code drops remap accuracies from
+`0.482-0.520` to `0.002-0.004`, with paired CI95 lows `+0.436` or higher for
+matched over knockout. The public-mean stress fails: replacing that byte with a
+train-public mean code removes only `10-20%` of matched lift. Payload entropy is
+also lookup-risky: `498-500` unique 4-byte payloads at n500. Readiness
+implication: this strengthens the causal diagnostic for the PQ systems row but
+does not close the ICLR concern that the 4-byte code can behave like a compact
+example identifier. Next gate: OPQ/protected-basis PQ or verifier n500; keep the
+paper claim source-private residual coding with strict controls, not broad
+latent reasoning.

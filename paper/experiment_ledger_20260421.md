@@ -16498,3 +16498,27 @@ compression-native contribution with source-causal lift and fast cached
 target-side decode. It does not prove protocol-free latent reasoning or native
 GPU serving speedup. The next ICLR blocker is frozen verifier n500 or GPU
 serving telemetry plus top-codeword/OPQ/protected-basis stress for the PQ row.
+
+Update `2026-04-30`: added the n500 product-codebook top-codeword knockout
+stress gate. Code:
+`scripts/build_source_private_product_codebook_knockout_stress.py`; test:
+`tests/test_build_source_private_product_codebook_knockout_stress.py`; memo:
+`paper/source_private_product_codebook_knockout_stress_20260430.md`;
+references:
+`references/536_product_codebook_knockout_stress_refs_20260430.md`; artifact:
+`results/source_private_product_codebook_knockout_stress_n500_20260430/`.
+Outcome: adversarial top-codeword knockout passes all three remaps. Matched PQ
+accuracy remains `0.482/0.508/0.520` versus target `0.250`; replacing the
+per-example top-margin byte with the worst valid code collapses accuracy to
+`0.002/0.002/0.004`, removing `1.91-2.07x` of matched lift with paired CI95
+lows `+0.436/+0.468/+0.474` for matched over knockout. The stricter
+public-mean knockout fails: replacing the same byte with a train-public mean
+code leaves accuracy `0.456-0.482` and removes only `0.10-0.20` of lift.
+Payload entropy/collision diagnostics show near-unique 4-byte packets
+(`498-500` unique payloads at n500, max payload frequency `2`, min entropy
+`8.96` bits). Interpretation: PQ is margin-sensitive and not explained by
+generic byte structure, but the public-neutral stress and high payload
+uniqueness keep the lookup-ID objection alive. Promote this as a diagnostic
+supporting row, not as a fully interpretable PQ proof. The next exact gate is
+OPQ/protected-basis PQ at n500, looking for comparable lift with stronger
+public-mean knockout sensitivity or lower lookup-like uniqueness.

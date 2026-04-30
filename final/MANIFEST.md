@@ -263,6 +263,13 @@
   best PQ control `0.252-0.268`, minimum paired CI95 low `+0.174` versus
   target and `+0.154` versus best control, max cached receiver p50 `0.0212 ms`,
   and zero cached/table decoder mismatches.
+- Product-codebook/PQ top-codeword knockout stress code, test, references,
+  memo, and n500 artifact. The adversarial stress passes across remaps:
+  top-margin worst-code replacement drops `0.482-0.520` matched accuracy to
+  `0.002-0.004`, with paired CI95 lows at least `+0.436`; the public-mean
+  stress fails and payload entropy shows `498-500` unique 4-byte packets, so
+  the artifact supports byte-causality diagnostics while preserving the
+  OPQ/protected-basis lookup-risk blocker.
 
 ## Notes
 

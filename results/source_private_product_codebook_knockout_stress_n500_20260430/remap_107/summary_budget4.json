@@ -1,0 +1,324 @@
+{
+  "adversarial_knockout_pass": true,
+  "budget_bytes": 4,
+  "candidate_pool_recall": 1.0,
+  "exact_id_parity": true,
+  "mean_matched_margin": 0.007321908742189407,
+  "mean_payload_accuracy": 0.234,
+  "mean_payload_bytes": 4.0,
+  "mean_payload_tokens": 1.0,
+  "mean_random_margin_contribution": 0.007503506958484649,
+  "mean_top_margin_contribution": 0.11411762492358685,
+  "metadata_file": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_product_codebook_knockout_stress_n500_20260430/remap_107/metadata_budget4.jsonl",
+  "metrics": {
+    "mean_payload": {
+      "accuracy": 0.234,
+      "correct": 117,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015208002878353,
+      "p95_latency_ms": 0.015916972188279033
+    },
+    "product_codebook_source": {
+      "accuracy": 0.52,
+      "correct": 260,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.018874998204410076,
+      "p95_latency_ms": 0.022374995751306415
+    },
+    "random_codeword_removed_mean": {
+      "accuracy": 0.5,
+      "correct": 250,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015458994312211871,
+      "p95_latency_ms": 0.016291014617308974
+    },
+    "random_codeword_removed_random": {
+      "accuracy": 0.454,
+      "correct": 227,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015291996533051133,
+      "p95_latency_ms": 0.016000005416572094
+    },
+    "target_only": {
+      "accuracy": 0.25,
+      "correct": 125,
+      "mean_payload_bytes": 0.0,
+      "mean_payload_tokens": 0.0,
+      "n": 500,
+      "p50_latency_ms": 0.0005420006345957518,
+      "p95_latency_ms": 0.0008750066626816988
+    },
+    "top_codeword_only": {
+      "accuracy": 0.586,
+      "correct": 293,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015249999705702066,
+      "p95_latency_ms": 0.016040983609855175
+    },
+    "top_codeword_removed_mean": {
+      "accuracy": 0.482,
+      "correct": 241,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.016458012396469712,
+      "p95_latency_ms": 0.017582991858944297
+    },
+    "top_codeword_removed_worst": {
+      "accuracy": 0.004,
+      "correct": 2,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.01575000351294875,
+      "p95_latency_ms": 0.016583973774686456
+    }
+  },
+  "n": 500,
+  "paired_comparisons": {
+    "mean_payload": {
+      "accuracy": 0.234,
+      "paired_counts": {
+        "losses": 50,
+        "ties": 257,
+        "wins": 193
+      },
+      "paired_delta": {
+        "ci95_high": 0.34,
+        "ci95_low": 0.232,
+        "mean": 0.286
+      }
+    },
+    "random_codeword_removed_mean": {
+      "accuracy": 0.5,
+      "paired_counts": {
+        "losses": 10,
+        "ties": 470,
+        "wins": 20
+      },
+      "paired_delta": {
+        "ci95_high": 0.042,
+        "ci95_low": -0.002,
+        "mean": 0.02
+      }
+    },
+    "random_codeword_removed_random": {
+      "accuracy": 0.454,
+      "paired_counts": {
+        "losses": 22,
+        "ties": 423,
+        "wins": 55
+      },
+      "paired_delta": {
+        "ci95_high": 0.1,
+        "ci95_low": 0.032,
+        "mean": 0.066
+      }
+    },
+    "target_only": {
+      "accuracy": 0.25,
+      "paired_counts": {
+        "losses": 60,
+        "ties": 245,
+        "wins": 195
+      },
+      "paired_delta": {
+        "ci95_high": 0.33,
+        "ci95_low": 0.212,
+        "mean": 0.27
+      }
+    },
+    "top_codeword_only": {
+      "accuracy": 0.586,
+      "paired_counts": {
+        "losses": 66,
+        "ties": 401,
+        "wins": 33
+      },
+      "paired_delta": {
+        "ci95_high": -0.026,
+        "ci95_low": -0.104,
+        "mean": -0.066
+      }
+    },
+    "top_codeword_removed_mean": {
+      "accuracy": 0.482,
+      "paired_counts": {
+        "losses": 6,
+        "ties": 469,
+        "wins": 25
+      },
+      "paired_delta": {
+        "ci95_high": 0.06,
+        "ci95_low": 0.016,
+        "mean": 0.038
+      }
+    },
+    "top_codeword_removed_worst": {
+      "accuracy": 0.004,
+      "paired_counts": {
+        "losses": 0,
+        "ties": 242,
+        "wins": 258
+      },
+      "paired_delta": {
+        "ci95_high": 0.558,
+        "ci95_low": 0.474,
+        "mean": 0.516
+      }
+    }
+  },
+  "payload_entropy": {
+    "codeword_summaries": [
+      {
+        "entropy_bits": 7.246009217638894,
+        "max_frequency": 23,
+        "subspace_index": 0,
+        "top5_codes": [
+          {
+            "code": 113,
+            "count": 23
+          },
+          {
+            "code": 150,
+            "count": 11
+          },
+          {
+            "code": 133,
+            "count": 8
+          },
+          {
+            "code": 226,
+            "count": 8
+          },
+          {
+            "code": 227,
+            "count": 8
+          }
+        ],
+        "unique_codes": 195
+      },
+      {
+        "entropy_bits": 7.169545537894784,
+        "max_frequency": 32,
+        "subspace_index": 1,
+        "top5_codes": [
+          {
+            "code": 84,
+            "count": 32
+          },
+          {
+            "code": 233,
+            "count": 11
+          },
+          {
+            "code": 131,
+            "count": 10
+          },
+          {
+            "code": 117,
+            "count": 7
+          },
+          {
+            "code": 97,
+            "count": 6
+          }
+        ],
+        "unique_codes": 190
+      },
+      {
+        "entropy_bits": 7.222884097723424,
+        "max_frequency": 11,
+        "subspace_index": 2,
+        "top5_codes": [
+          {
+            "code": 15,
+            "count": 11
+          },
+          {
+            "code": 74,
+            "count": 11
+          },
+          {
+            "code": 75,
+            "count": 10
+          },
+          {
+            "code": 240,
+            "count": 10
+          },
+          {
+            "code": 80,
+            "count": 9
+          }
+        ],
+        "unique_codes": 188
+      },
+      {
+        "entropy_bits": 7.3266393015798155,
+        "max_frequency": 10,
+        "subspace_index": 3,
+        "top5_codes": [
+          {
+            "code": 7,
+            "count": 10
+          },
+          {
+            "code": 253,
+            "count": 9
+          },
+          {
+            "code": 54,
+            "count": 8
+          },
+          {
+            "code": 88,
+            "count": 8
+          },
+          {
+            "code": 227,
+            "count": 8
+          }
+        ],
+        "unique_codes": 198
+      }
+    ],
+    "collision_payloads": 2,
+    "max_payload_frequency": 2,
+    "payload_entropy_bits": 8.957784284662017,
+    "single_label_payloads": 496,
+    "unique_once_payloads": 496,
+    "unique_payloads": 498
+  },
+  "predictions_file": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_product_codebook_knockout_stress_n500_20260430/remap_107/predictions_budget4.jsonl",
+  "public_mean_knockout_pass": false,
+  "random_mean_accuracy": 0.5,
+  "random_mean_lift_removed_fraction": 0.07407407407407414,
+  "random_random_accuracy": 0.454,
+  "remap_slot_seed": 107,
+  "source_accuracy": 0.52,
+  "source_minus_target": 0.27,
+  "table_build_latency": {
+    "mean_ms": 0.29966572375269607,
+    "p50_ms": 0.29749999521300197,
+    "p95_ms": 0.30816602520644665
+  },
+  "target_accuracy": 0.25,
+  "top_mean_accuracy": 0.482,
+  "top_mean_lift_removed_fraction": 0.14074074074074086,
+  "top_mean_minus_random_mean_removed_fraction": 0.06666666666666672,
+  "top_only_accuracy": 0.586,
+  "top_only_lift_vs_target": 0.33599999999999997,
+  "top_worst_accuracy": 0.004,
+  "top_worst_lift_removed_fraction": 1.911111111111111
+}

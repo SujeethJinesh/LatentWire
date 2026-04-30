@@ -1,0 +1,15 @@
+{
+  "adversarial_pass_gate": true,
+  "artifact_sha256": {
+    "product_codebook_knockout_stress.json": "ec784bb2aa66cb1a5e681d48a1278a6968e518ad116e386136dc04ede5865917",
+    "product_codebook_knockout_stress.md": "6a4201521107d1fe534dc92cdecfcf02cb41dc873f0ce3fc2b151a466acad302"
+  },
+  "artifacts": [
+    "product_codebook_knockout_stress.json",
+    "product_codebook_knockout_stress.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true,
+  "public_mean_pass_gate": false
+}

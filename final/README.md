@@ -170,6 +170,18 @@ This is now the strongest compression-native systems contribution. It should be
 claimed as source-private residual coding with fast cached target-side decode,
 not as protocol-free latent reasoning or native GPU serving speedup.
 
+The follow-up knockout stress in
+`results/source_private_product_codebook_knockout_stress_n500_20260430/`
+passes the adversarial diagnostic but fails the stricter public-neutral
+diagnostic. Replacing the per-example top-margin codeword with the worst valid
+code collapses accuracy from `0.482-0.520` to `0.002-0.004`, with paired CI95
+lows at least `+0.436` for matched over knockout. Replacing that same codeword
+with a train-public mean code removes only `10-20%` of lift. Payload entropy
+also shows `498-500` unique 4-byte payloads at n500. Treat this as evidence that
+PQ decisions depend on source-selected codewords, plus a clear limitation that
+OPQ/protected-basis stress is still needed before claiming an interpretable
+anti-lookup codec.
+
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,

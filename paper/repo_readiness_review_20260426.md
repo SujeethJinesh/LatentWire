@@ -3293,3 +3293,22 @@ a compression-native product-codebook source-private packet with n500 remap
 stability and fast cached decode. Comfortable ICLR still needs native
 GPU/vLLM/KV telemetry, frozen verifier n500 or batched verifier evidence, and
 top-codeword/OPQ/protected-basis stress before claiming a broad systems win.
+
+Update `2026-04-30`: the first top-codeword stress for the n500 PQ branch is
+complete. Artifact:
+`results/source_private_product_codebook_knockout_stress_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_knockout_stress_20260430.md`;
+references:
+`references/536_product_codebook_knockout_stress_refs_20260430.md`. The
+adversarial stress passes: replacing the byte with the largest gold-vs-nearest
+wrong contribution by the worst valid code drops remap accuracies from
+`0.482-0.520` to `0.002-0.004`, with paired CI95 lows `+0.436` or higher for
+matched over knockout. The public-mean stress fails: replacing that byte with a
+train-public mean code removes only `10-20%` of matched lift. Payload entropy is
+also lookup-risky: `498-500` unique 4-byte payloads at n500. Readiness
+implication: this strengthens the causal diagnostic for the PQ systems row but
+does not close the ICLR concern that the 4-byte code can behave like a compact
+example identifier. Next gate: OPQ/protected-basis PQ or verifier n500; keep the
+paper claim source-private residual coding with strict controls, not broad
+latent reasoning.

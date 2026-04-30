@@ -16315,3 +16315,210 @@ tables drop to `0.000`. Interpretation: this strengthens source causality and
 rules out target-prior/random collision explanations, but it also confirms the
 claim boundary: the receiver follows the public side-information table; this is
 not protocol-free semantic latent transfer.
+
+Update `2026-04-30`: ran the decisive balanced `diag_only` public-separation
+gate for the learned masked-consistency receiver and pruned the branch as a
+headline ICLR contribution. New summary script:
+`scripts/summarize_source_private_masked_consistency_public_gate.py`; artifacts:
+`results/source_private_masked_consistency_diag_only_public_gate_20260430/`;
+memo:
+`paper/source_private_masked_consistency_diag_only_public_gate_20260430.md`;
+references:
+`references/528_masked_consistency_pruning_and_next_systems_refs_20260430.md`.
+Outcome: the n500 gate fails over two disjoint seed pairs. Learned matched
+accuracy is `0.336` and `0.302` versus target `0.250`, with public-only rows
+below target (`0.178` and `0.142`) on the same eval IDs. The failure is not a
+public-only shortcut; it is an encoder/interface failure. Oracle packet decoding
+is `1.000`, but matched source packets are about `0.243-0.273` bit fraction
+away from oracle packets. Budget `16` only reaches `0.366`, and
+`--fit-intercept` reaches `0.346`, so simple rate/intercept tuning is not
+enough. Interpretation: keep masked consistency as a negative/method-depth
+diagnostic; do not count it among the three headline technical contributions.
+Next highest-value Mac gate is a packet trace-card v2 systems artifact or a new
+posterior/flow/Q-Former-style learned receiver with source-control negatives.
+
+Update `2026-04-30`: added the systems packet trace-card v2 and a local Mac
+packet-ring transport microbench. Code:
+`scripts/build_source_private_packet_trace_card_v2.py`,
+`scripts/source_private_packet_ring_transport_microbench.c`, and
+`scripts/build_source_private_mac_packet_ring_transport_microbench.py`;
+artifacts: `results/source_private_packet_trace_card_v2_20260430/` and
+`results/source_private_mac_packet_ring_transport_microbench_20260430/`; memo:
+`paper/source_private_packet_trace_card_v2_20260430.md`; references:
+`references/529_packet_trace_card_v2_refs_20260430.md`. Outcome: trace card
+passes `7/7` checks. It reports 2-byte raw packets, `64B` single-request
+cache-line traffic, batch-64 packet traffic of `5.00` line bytes/request and
+`6.00` DMA bytes/request, query-aware text at `7.0x` raw bytes but `1.0x`
+cache-line bytes, full hidden-log relay at `183.25x` raw and `6.0x` line bytes,
+and KV byte floors at `10752x` raw / `336x` line bytes. The local C microbench
+passes with five repeats: packet batch64 p95 is `0.65 ns/request`, query-aware
+text is `1.02x` packet p95, full logs are `8.80x` packet p50, and QJL/KV floor
+is `671.23x` packet p50. Interpretation: promote the systems contribution as
+source-private boundary traffic with explicit transfer quanta, batch
+amortization, privacy exposure, and non-claims. This does not create production
+GPU serving evidence or solve the learned-receiver blocker.
+
+Update `2026-04-30`: ran the learned contrastive semantic-anchor receiver probe
+and pruned the exact bilinear receiver family as a headline contribution. Memo:
+`paper/source_private_contrastive_receiver_pruning_20260430.md`; references:
+`references/530_contrastive_receiver_pruning_refs_20260430.md`; artifacts:
+`results/source_private_contrastive_semantic_anchor_small_gate_20260430_n128_noneg/`,
+`results/source_private_contrastive_semantic_anchor_small_gate_20260430_n128_ctrlneg/`,
+and
+`results/source_private_contrastive_semantic_anchor_small_gate_20260430_n128_noneg_threshold070/`.
+Outcome: the unconstrained contrastive receiver keeps strong matched signal
+(`1.000` max learned accuracy at n128) but fails core->holdout because atom-ID
+derangement rises to `0.375`; adding two shuffled-source negatives fixes strict
+controls but drops core->holdout matched accuracy to `0.375`; raising the
+decision threshold to `0.70` suppresses controls but also kills matched lift.
+Interpretation: do not spend another cycle tuning this bilinear receiver
+without a new mechanism. The promoted contribution stack remains the
+source-private benchmark/protocol, balanced direct packet plus frozen binary
+verifier/semantic-anchor receiver, and hardware-readable packet trace-card.
+
+Update `2026-04-30`: scaled the frozen Qwen3-0.6B binary-verifier receiver to
+combined-control cross-family n128 and added a verifier-consumption trace.
+Code: `scripts/build_source_private_verifier_consumption_trace.py`; tests:
+`tests/test_build_source_private_verifier_consumption_trace.py`; memo:
+`paper/source_private_binary_verifier_n128_consumption_trace_20260430.md`;
+references:
+`references/531_systems_novelty_private_packet_verifier_refs_20260430.md`.
+Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_core_n128_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_holdout_n128_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/paired_uncertainty_qwen3_seed29_core_holdout_n128_binary_logprob_combined_cpu/`,
+and
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed29_core_holdout_n128_binary_logprob_combined_cpu/`.
+Outcome: both core and holdout pass at n128 with matched packet `1.000`,
+target-only `0.250`, best control `0.250`, deranged public-table control
+`0.000`, valid prediction rate `1.000`, exact-ID parity `True`, min
+matched-target and matched-best-control lift `+0.750`, and min paired CI95
+lower bound `+0.672`. The consumption trace reports a `2`-byte payload, `5`-byte
+packet record, `64`B single-request cache-line accounting, `128`B DMA accounting,
+batch-64 packed traffic of `5.0` line bytes/request and `6.0` DMA bytes/request,
+and four target-side binary forward passes/example with Mac CPU p50
+`1630.8-1665.5` ms. Interpretation: promote this as stronger frozen
+model-mediated source-private communication evidence and a more honest systems
+trace; do not claim production latency or protocol-free latent transfer. The
+next exact gate is seed31 n128/n160 with the same combined controls, followed
+by a batched/fused receiver or learned candidate-logit flow receiver.
+
+Update `2026-04-30`: the seed31 n160 frozen-verifier stability gate passes on
+both balanced cross-family core and holdout surfaces. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_core_n160_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_holdout_n160_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/paired_uncertainty_qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`,
+and
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`;
+memo:
+`paper/source_private_binary_verifier_seed31_n160_20260430.md`;
+references:
+`references/532_seed_stability_uniqueness_and_next_receivers_refs_20260430.md`.
+Outcome: core and holdout both score `1.000` matched, `0.250` target-only,
+`0.250` best same-byte/source-destroyed control, `0.000` deranged public-table
+control, exact-ID parity `True`, valid prediction rate `1.000`, min matched
+lift `+0.750`, and min paired CI95 lower bound `+0.681` versus both target and
+best control. The consumption trace reports a `2`-byte payload, `5`-byte packet
+record, observed Mac cache-line accounting from `sysctl hw.cachelinesize =
+128`, `128`B DMA accounting, batch-64 traffic of `6.0` line bytes/request and
+`6.0` DMA bytes/request, batch-256 traffic of `5.0` line bytes/request and
+`5.0` DMA bytes/request, and four target-side binary forward passes/example
+with Mac CPU p50 `1651.6-1674.1` ms. Harness hardening:
+`scripts/build_source_private_verifier_consumption_trace.py` now rejects
+partial prediction files by default unless `--allow-partial-predictions` is
+passed and auto-detects the local cache-line floor unless `--line-size` is
+explicit. Interpretation: seed stability for the frozen model-mediated packet
+row is materially stronger, and the Mac systems accounting is now hardware
+observed rather than hard-coded. The remaining ICLR blocker is no longer this
+seed rung; it is a less protocol-shaped receiver, n500/multi-seed scale, and
+GPU/server systems telemetry.
+
+Update `2026-04-30`: separated the Mac-local `128B` cache-line correction into
+a dedicated systems-readout memo. Code:
+`scripts/build_source_private_verifier_consumption_trace.py`; test:
+`tests/test_build_source_private_verifier_consumption_trace.py`; memo:
+`paper/source_private_mac_128b_verifier_consumption_trace_20260430.md`;
+references:
+`references/533_mac_128b_boundary_accounting_refs_20260430.md`; artifact:
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`.
+Outcome: accuracy evidence is unchanged, but the trace now reports observed
+Mac floor accounting: `128B` single-request line/DMA, `6.0` line/DMA
+bytes/request at batch 64, and `5.0` line/DMA bytes/request at batch 256.
+Interpretation: this improves systems credibility and prevents a reviewer from
+catching a hard-coded 64B line assumption on Apple hardware; it still does not
+replace native GPU/vLLM TTFT/TPOT/goodput telemetry.
+
+Update `2026-04-30`: implemented and ran the strict n256
+`source_private_anchor_relative_crosscoder_receiver` gate as the next
+less-protocol-shaped receiver test. Code:
+`scripts/run_source_private_anchor_relative_crosscoder_receiver_gate.py`; test:
+`tests/test_run_source_private_anchor_relative_crosscoder_receiver_gate.py`;
+memo:
+`paper/source_private_anchor_relative_crosscoder_receiver_gate_20260430.md`;
+references:
+`references/534_anchor_relative_crosscoder_receiver_gate_refs_20260430.md`;
+artifacts:
+`results/source_private_anchor_relative_crosscoder_receiver_n256_20260430/`.
+Outcome: bidirectional cross-family fails. Core->holdout reaches matched
+`0.277/0.270` at `4/8` bytes versus target `0.250`, best controls
+`0.266/0.258`, oracle `0.641/0.742`, and paired CI95 lows
+`-0.039/-0.043`. Holdout->core reaches matched `0.309/0.301` versus target
+`0.250`, best controls `0.277/0.266`, oracle `0.762/0.828`, and paired CI95
+lows `-0.012/-0.020`. Exact ordered-ID parity and candidate-pool recall hold,
+but top-feature knockout does not reduce matched accuracy. A cheap n128 debug
+grid over hashed, anchor-relative, learned-anchor-relative, `diag_only`, and
+`semantic` views finds no passing row. Interpretation: prune this
+anchor-relative/crosscoder receiver as a headline positive method. The failure
+looks like an encoder/interface problem, not a simple byte-budget miss. Next
+highest-value gate is n500 seed stability for the frozen verifier positive row
+plus a TurboResidual/PQ packet branch under the same strict controls.
+
+Update `2026-04-30`: scaled the product-codebook/PQ packet branch to an n500
+Mac-local gate and promoted it as the current compression-native systems
+contribution. Artifacts:
+`results/source_private_product_codebook_packet_gate_n500_20260430/`,
+`results/source_private_product_codebook_uncertainty_n500_20260430/`, and
+`results/source_private_product_codebook_decode_frontier_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_n500_sprint_20260430.md`;
+references:
+`references/535_product_codebook_n500_refs_20260430.md`. Outcome: the
+functional n500 gate passes all three remaps at 4 bytes. Product-codebook
+accuracy is `0.482/0.508/0.520` for remaps `101/103/107` versus target
+`0.250`, best PQ controls `0.268/0.262/0.252`, and scalar WZ
+`0.424/0.502/0.504`; min PQ-control margin is `+0.214`, and all rows pass the
+systems-latency rule in the recorded path. Paired uncertainty passes `3/3`
+rows with min CI95 low `+0.174` versus target and `+0.154` versus best PQ
+control, while paired PQ-vs-scalar remains a tradeoff (`min CI95 low -0.032`).
+The decode frontier also passes `3/3`: max cached receiver p50 `0.0212 ms`,
+max request-public table decode p50 `0.3694 ms`, max resident table lookup p50
+`0.0177 ms`, zero prediction mismatches, and min cached speedup `17.38x` over
+the earlier Python path. Interpretation: this creates a distinct
+compression-native contribution with source-causal lift and fast cached
+target-side decode. It does not prove protocol-free latent reasoning or native
+GPU serving speedup. The next ICLR blocker is frozen verifier n500 or GPU
+serving telemetry plus top-codeword/OPQ/protected-basis stress for the PQ row.
+
+Update `2026-04-30`: added the n500 product-codebook top-codeword knockout
+stress gate. Code:
+`scripts/build_source_private_product_codebook_knockout_stress.py`; test:
+`tests/test_build_source_private_product_codebook_knockout_stress.py`; memo:
+`paper/source_private_product_codebook_knockout_stress_20260430.md`;
+references:
+`references/536_product_codebook_knockout_stress_refs_20260430.md`; artifact:
+`results/source_private_product_codebook_knockout_stress_n500_20260430/`.
+Outcome: adversarial top-codeword knockout passes all three remaps. Matched PQ
+accuracy remains `0.482/0.508/0.520` versus target `0.250`; replacing the
+per-example top-margin byte with the worst valid code collapses accuracy to
+`0.002/0.002/0.004`, removing `1.91-2.07x` of matched lift with paired CI95
+lows `+0.436/+0.468/+0.474` for matched over knockout. The stricter
+public-mean knockout fails: replacing the same byte with a train-public mean
+code leaves accuracy `0.456-0.482` and removes only `0.10-0.20` of lift.
+Payload entropy/collision diagnostics show near-unique 4-byte packets
+(`498-500` unique payloads at n500, max payload frequency `2`, min entropy
+`8.96` bits). Interpretation: PQ is margin-sensitive and not explained by
+generic byte structure, but the public-neutral stress and high payload
+uniqueness keep the lookup-ID objection alive. Promote this as a diagnostic
+supporting row, not as a fully interpretable PQ proof. The next exact gate is
+OPQ/protected-basis PQ at n500, looking for comparable lift with stronger
+public-mean knockout sensitivity or lower lookup-like uniqueness.

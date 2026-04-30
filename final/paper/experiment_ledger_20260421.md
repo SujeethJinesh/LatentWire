@@ -16447,3 +16447,78 @@ bytes/request at batch 64, and `5.0` line/DMA bytes/request at batch 256.
 Interpretation: this improves systems credibility and prevents a reviewer from
 catching a hard-coded 64B line assumption on Apple hardware; it still does not
 replace native GPU/vLLM TTFT/TPOT/goodput telemetry.
+
+Update `2026-04-30`: implemented and ran the strict n256
+`source_private_anchor_relative_crosscoder_receiver` gate as the next
+less-protocol-shaped receiver test. Code:
+`scripts/run_source_private_anchor_relative_crosscoder_receiver_gate.py`; test:
+`tests/test_run_source_private_anchor_relative_crosscoder_receiver_gate.py`;
+memo:
+`paper/source_private_anchor_relative_crosscoder_receiver_gate_20260430.md`;
+references:
+`references/534_anchor_relative_crosscoder_receiver_gate_refs_20260430.md`;
+artifacts:
+`results/source_private_anchor_relative_crosscoder_receiver_n256_20260430/`.
+Outcome: bidirectional cross-family fails. Core->holdout reaches matched
+`0.277/0.270` at `4/8` bytes versus target `0.250`, best controls
+`0.266/0.258`, oracle `0.641/0.742`, and paired CI95 lows
+`-0.039/-0.043`. Holdout->core reaches matched `0.309/0.301` versus target
+`0.250`, best controls `0.277/0.266`, oracle `0.762/0.828`, and paired CI95
+lows `-0.012/-0.020`. Exact ordered-ID parity and candidate-pool recall hold,
+but top-feature knockout does not reduce matched accuracy. A cheap n128 debug
+grid over hashed, anchor-relative, learned-anchor-relative, `diag_only`, and
+`semantic` views finds no passing row. Interpretation: prune this
+anchor-relative/crosscoder receiver as a headline positive method. The failure
+looks like an encoder/interface problem, not a simple byte-budget miss. Next
+highest-value gate is n500 seed stability for the frozen verifier positive row
+plus a TurboResidual/PQ packet branch under the same strict controls.
+
+Update `2026-04-30`: scaled the product-codebook/PQ packet branch to an n500
+Mac-local gate and promoted it as the current compression-native systems
+contribution. Artifacts:
+`results/source_private_product_codebook_packet_gate_n500_20260430/`,
+`results/source_private_product_codebook_uncertainty_n500_20260430/`, and
+`results/source_private_product_codebook_decode_frontier_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_n500_sprint_20260430.md`;
+references:
+`references/535_product_codebook_n500_refs_20260430.md`. Outcome: the
+functional n500 gate passes all three remaps at 4 bytes. Product-codebook
+accuracy is `0.482/0.508/0.520` for remaps `101/103/107` versus target
+`0.250`, best PQ controls `0.268/0.262/0.252`, and scalar WZ
+`0.424/0.502/0.504`; min PQ-control margin is `+0.214`, and all rows pass the
+systems-latency rule in the recorded path. Paired uncertainty passes `3/3`
+rows with min CI95 low `+0.174` versus target and `+0.154` versus best PQ
+control, while paired PQ-vs-scalar remains a tradeoff (`min CI95 low -0.032`).
+The decode frontier also passes `3/3`: max cached receiver p50 `0.0212 ms`,
+max request-public table decode p50 `0.3694 ms`, max resident table lookup p50
+`0.0177 ms`, zero prediction mismatches, and min cached speedup `17.38x` over
+the earlier Python path. Interpretation: this creates a distinct
+compression-native contribution with source-causal lift and fast cached
+target-side decode. It does not prove protocol-free latent reasoning or native
+GPU serving speedup. The next ICLR blocker is frozen verifier n500 or GPU
+serving telemetry plus top-codeword/OPQ/protected-basis stress for the PQ row.
+
+Update `2026-04-30`: added the n500 product-codebook top-codeword knockout
+stress gate. Code:
+`scripts/build_source_private_product_codebook_knockout_stress.py`; test:
+`tests/test_build_source_private_product_codebook_knockout_stress.py`; memo:
+`paper/source_private_product_codebook_knockout_stress_20260430.md`;
+references:
+`references/536_product_codebook_knockout_stress_refs_20260430.md`; artifact:
+`results/source_private_product_codebook_knockout_stress_n500_20260430/`.
+Outcome: adversarial top-codeword knockout passes all three remaps. Matched PQ
+accuracy remains `0.482/0.508/0.520` versus target `0.250`; replacing the
+per-example top-margin byte with the worst valid code collapses accuracy to
+`0.002/0.002/0.004`, removing `1.91-2.07x` of matched lift with paired CI95
+lows `+0.436/+0.468/+0.474` for matched over knockout. The stricter
+public-mean knockout fails: replacing the same byte with a train-public mean
+code leaves accuracy `0.456-0.482` and removes only `0.10-0.20` of lift.
+Payload entropy/collision diagnostics show near-unique 4-byte packets
+(`498-500` unique payloads at n500, max payload frequency `2`, min entropy
+`8.96` bits). Interpretation: PQ is margin-sensitive and not explained by
+generic byte structure, but the public-neutral stress and high payload
+uniqueness keep the lookup-ID objection alive. Promote this as a diagnostic
+supporting row, not as a fully interpretable PQ proof. The next exact gate is
+OPQ/protected-basis PQ at n500, looking for comparable lift with stronger
+public-mean knockout sensitivity or lower lookup-like uniqueness.
