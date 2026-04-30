@@ -234,6 +234,16 @@ accuracy at roughly 366--374 bytes and 34 tokens per example. Structured JSON
 and free-text relays fail at 2 bytes but become oracles at 32 bytes because the
 diagnostic is then visible in parseable form.
 
+The hardware-facing accounting is intentionally conservative. An isolated
+2-byte packet still rounds to one 64B cache line and one 128B DMA burst. With
+the packet ISA's 2B header and 1B parity/check field, the 2B payload is a 5B
+record; under batch-64 contiguous packing this amortizes to 5.0 line
+bytes/request and 6.0 DMA bytes/request. The serving SLO envelope has four Mac
+TTFT proxy rows and zero production-goodput claim rows: the held-out packet
+proxy misses a strict 500 ms TTFT SLO by 47.21 ms but has +202.79 ms margin at
+750 ms. Native GPU/server TTFT, TPOT, goodput, and memory counters remain
+future systems gates.
+
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.9\linewidth]{figures/rate_curve.pdf}
@@ -256,9 +266,12 @@ held-out slice, matched packets reach 0.750 versus 0.250 target and 0.281 best
 control. The larger local CPU core row reaches 0.694 on 160 examples while
 target-only, shuffled-source, random same-byte, two-byte JSON, and two-byte
 free-text controls all remain at 0.250; paired bootstrap lower bounds are
-+0.369 versus both target and best control. This is still an ablation, not the
-main systems evidence or a learned latent bridge, but it is consistent with the
-protocol being usable by an LLM selector.
++0.369 versus both target and best control. The matched held-out CPU row also
+passes at 160 examples, reaching 0.719 versus 0.250 target and 0.263 best
+control; combined core/held-out uncertainty preserves a +0.369 minimum lower
+bound. This is still an ablation, not the main systems evidence or a learned
+latent bridge, but it is consistent with the protocol being usable by an LLM
+selector.
 
 \section{Interpretability}
 

@@ -2981,3 +2981,26 @@ comfortable broad latent-transfer paper. Remaining blockers: held-out/seed
 target-decoder replication, product-codebook-specific model-mediated decoding,
 native serving systems telemetry, and a clear final claim boundary that does not
 overstate wins against C2C/KVCOMM/KV compression or prompt-compression methods.
+
+Update `2026-04-30`: the serving SLO envelope makes the systems story more
+reviewer-readable without changing the method readiness. It reports `10` rows,
+`4` Mac TTFT proxy rows, `0` production-goodput claim rows, packet batch-64
+traffic of `5.0` line bytes/request and `6.0` DMA bytes/request, and explicit
+TTFT margins at `500/750/1000 ms`. The important negative result is preserved:
+the held-out packet proxy misses a strict `500 ms` TTFT SLO by `47.21 ms`, so
+native GPU/server telemetry is still required before making production serving
+claims. Readiness remains a stronger scoped positive-method paper. The exact
+blocker for comfortable ICLR remains held-out/model-mediated receiver
+replication, product-codebook-specific target decoding, and native serving
+counters when NVIDIA hardware is available.
+
+Update `2026-04-30`: held-out direct Qwen3-0.6B target decoding now replicates
+the core `n=160` pass. The held-out row reaches `0.719` matched accuracy versus
+`0.250` target-only and `0.263` best control; valid prediction rate and exact
+ID parity are `1.000`. The combined core+held-out uncertainty artifact passes
+`2/2` rows with minimum CI95 lower bound `+0.369` versus target and best
+control. This removes the immediate held-out receiver-replication blocker for
+the simple protocol packet. Remaining blockers for comfortable ICLR are now
+sharper: product-codebook-specific model-mediated decoding, a less
+protocol-shaped learned receiver or clearly scoped claim boundary, and native
+serving telemetry.

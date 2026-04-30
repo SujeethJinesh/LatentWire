@@ -16032,3 +16032,37 @@ a serving-speed claim and it is not yet product-codebook-specific decoding. The
 next exact gate is held-out `n=160` direct target decoding or, for a more
 creative method branch, a packet-consistency denoiser stacked on the live packet
 surface.
+
+Follow-up `2026-04-30`: added the serving SLO envelope to make the systems
+claim reviewer-readable without overclaiming production throughput. Code:
+`scripts/build_source_private_serving_slo_envelope.py`; test:
+`tests/test_build_source_private_serving_slo_envelope.py`; memo:
+`paper/source_private_serving_slo_envelope_20260430.md`; references:
+`references/517_serving_slo_envelope_refs_20260430.md`; artifact:
+`results/source_private_serving_slo_envelope_20260430/`. Outcome: pass gate
+`True`, `10` rows, `4` TTFT proxy rows, `0` production goodput claim rows, all
+`10` rows marked as needing GPU counters for serving claims, packet batch-64
+traffic `5.0` line bytes/request and `6.0` DMA bytes/request, and packet TTFT
+margins of `-47.21 ms` at `500 ms`, `+202.79 ms` at `750 ms`, and
+`+452.79 ms` at `1000 ms`. Interpretation: this strengthens the systems
+contribution by translating packet evidence into boundary exposure, transfer
+granularity, TTFT margin, TPOT/goodput non-claims, and native GPU counter
+requirements. It does not solve the learned/model-mediated receiver blocker.
+
+Follow-up `2026-04-30`: completed the held-out direct Qwen3-0.6B
+target-decoder `n=160` replication and the combined core+held-out paired
+uncertainty summary. Artifact:
+`results/source_private_tool_trace_target_decoder_n160_20260430/holdout_seed30_qwen3_n160_all_controls_cpu/`;
+paired artifact:
+`results/source_private_tool_trace_target_decoder_n160_20260430/paired_uncertainty_core_holdout/`;
+memo update: `paper/source_private_target_decoder_n160_20260430.md`. Outcome:
+held-out pass gate `True`, exact ID parity `True`, matched packet
+`115/160 = 0.719`, target-only `40/160 = 0.250`, shuffled `0.256`, random
+same-byte `0.263`, structured JSON/free-text 2-byte `0.250`, matched-target
+`+0.469`, matched-best-control `+0.456`, valid prediction rate `1.000`, and
+matched p50 CPU latency `2451.1 ms`. Combined core+held-out paired uncertainty
+passes with `2/2` rows, minimum CI95 lower bound `+0.369` versus target and
+best control, and max p50 latency `2670.3 ms`. Interpretation: the
+model-mediated receiver defense now has held-out medium confirmation on local
+CPU. It remains a receiver-efficacy result, not a serving-speed result, and it
+does not yet show model-mediated consumption of product-codebook packets.

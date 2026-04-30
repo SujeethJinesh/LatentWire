@@ -1,0 +1,25 @@
+{
+  "artifacts": [
+    "serving_slo_envelope.json",
+    "serving_slo_envelope.csv",
+    "serving_slo_envelope.md"
+  ],
+  "gate": "source_private_serving_slo_envelope",
+  "headline": {
+    "endpoint_packet_rows": 2,
+    "goodput_claim_allowed_rows": 0,
+    "gpu_counter_required_rows": 10,
+    "native_serving_gap": "GPU TPOT/goodput and accelerator counters remain unmeasured",
+    "packet_min_batch64_dma_bytes": 6.0,
+    "packet_min_batch64_line_bytes": 5.0,
+    "packet_min_raw_bytes": 2.0,
+    "packet_min_ttft_slo_1000_margin_ms": 452.78950000647455,
+    "packet_min_ttft_slo_500_margin_ms": -47.210499993525445,
+    "packet_min_ttft_slo_750_margin_ms": 202.78950000647455,
+    "pass_gate": true,
+    "rows": 10,
+    "source_exposure_rows": 6,
+    "ttft_measured_rows": 4
+  },
+  "pass_gate": true
+}

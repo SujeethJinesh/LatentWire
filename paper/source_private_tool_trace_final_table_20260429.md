@@ -104,6 +104,18 @@ The consolidated systems artifact is
 `results/source_private_systems_summary_20260428/`. It reports deterministic
 rate rows, model-produced packet rows, and target-decoder rows.
 
+The hardware-facing systems artifacts are:
+
+- `results/source_private_memory_traffic_ledger_20260430/`
+- `results/source_private_packet_isa_batch_frontier_20260430/`
+- `results/source_private_serving_slo_envelope_20260430/`
+
+Together they report raw bytes, 64B line traffic, 128B DMA traffic, batch-64
+packet amortization, source text/KV exposure, TTFT proxy margins, and explicit
+TPOT/goodput non-claims. The serving SLO envelope has `10` rows, `4` TTFT proxy
+rows, `0` production-goodput claim rows, and marks all rows as requiring native
+GPU counters before serving-throughput claims.
+
 | Interface | Mean bytes | Mean tokens | Accuracy role |
 |---|---:|---:|---|
 | model-produced packet, Qwen3 | `1.55-1.73` | approximately `1` | `0.808-0.924` matched |
@@ -118,6 +130,14 @@ full hidden-log relay and `7.0x` smaller than full diagnostic text while
 matched-byte hidden-log/JSON/free-text controls remain at the target floor.
 This should be presented as a rate frontier: structured text is a valid oracle
 once allowed enough bytes, but it does not explain the compact packet result.
+
+At the serving-accounting level, an isolated 2-byte packet still rounds to one
+64B cache line and one 128B DMA burst. With the packet ISA's 2B header and 1B
+parity/check overhead, the 2B payload becomes a 5B record; under batch-64
+contiguous packing this amortizes to `5.0` line bytes/request and `6.0` DMA
+bytes/request. The held-out Mac TTFT proxy packet row misses a strict `500 ms`
+SLO by `47.21 ms` but has `+202.79 ms` margin at `750 ms`, so production
+serving claims remain blocked on native GPU/server telemetry.
 
 ## Candidate-Pool Versus Selector
 
@@ -143,13 +163,13 @@ the hand-coded-decoder concern:
 | core seed 29 | Qwen3-0.6B | CPU | 64 | `0.656` | `0.250` | `0.250` | `1.000` | `2182 ms` |
 | holdout seed 30 | Qwen3-0.6B | CPU | 64 | `0.719` | `0.250` | `0.266` | `1.000` | `2237 ms` |
 | core seed 29 | Qwen3-0.6B | CPU | 160 | `0.694` | `0.250` | `0.250` | `1.000` | `2670 ms` |
+| holdout seed 30 | Qwen3-0.6B | CPU | 160 | `0.719` | `0.250` | `0.263` | `1.000` | `2451 ms` |
 
 The attempted core n160 MPS target-decoder run failed before prediction with an
 Apple MPS matmul shape error. The CPU n160 row is now the strongest local
-direct target-decoder confirmation on the core surface, with paired CI95 lower
-bounds `+0.369` versus both target-only and best control. Held-out direct
-target decoding remains at n64. This is still an ablation, not the main systems
-claim.
+direct target-decoder confirmation on the core and held-out surfaces, with
+combined paired CI95 lower bounds at least `+0.369` versus both target-only and
+best control. This is still an ablation, not the main systems claim.
 
 ## Pass/Fail Summary
 
@@ -164,7 +184,8 @@ Passed:
 - bytes/token systems comparison against full hidden-log relay
 - Gemma and Granite non-Qwen source-signal ablations: raw-log/no-trace
   collapses to target-only with zero valid packets
-- Qwen3 target-decoder ablation up to n64 on CPU, with controls at target floor
+- Qwen3 target-decoder ablation up to n160 on core and held-out CPU surfaces,
+  with controls near target floor
 
 Failed or pruned:
 

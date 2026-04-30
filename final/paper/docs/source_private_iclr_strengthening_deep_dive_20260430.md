@@ -49,8 +49,9 @@
 4. **Systems/hardware traffic accounting.** The paper has a deterministic
    memory-traffic ledger and packet-ISA trace card. It reports raw payload
    bytes, cache-line/DMA rounding, batch packing, source-text exposure, KV/cache
-   exposure, and TTFT proxies. This avoids the overclaim that a 2-byte payload
-   is always a 2-byte hardware transaction.
+   exposure, TTFT proxies, and a serving SLO envelope. This avoids the
+   overclaim that a 2-byte payload is always a 2-byte hardware transaction or
+   that Mac proxy latency is production goodput.
 
 5. **Negative-boundary and pruning evidence.** Several plausible latent
    receiver families failed under controls: public anchor-relative receivers,
@@ -62,14 +63,14 @@
 
 - **Model-mediated receiver.** The target must consume packets with less
   hand-coded logic. This cycle upgrades direct Qwen target-decoder evidence from
-  n64 to n160 on the core surface; held-out n160 and product-codebook-specific
-  model-mediated decoding remain open.
+  n64 to n160 on both core and held-out surfaces; product-codebook-specific
+  model-mediated decoding remains open.
 - **Cross-family robustness.** The paper is strongest for scoped
   source-private packet communication, not broad bidirectional cross-family
   latent transfer.
 - **Native systems telemetry.** Mac-local bytes/latency and deterministic
-  traffic ledgers are useful, but NVIDIA/server TTFT, TPOT, goodput, and memory
-  traffic remain future gates.
+  traffic/SLO ledgers are useful, but NVIDIA/server TTFT, TPOT, goodput, and
+  memory traffic remain future gates.
 - **Competitor baselines.** We must position against C2C/KVCOMM/KV cache
   compression, prompt compression, gist/soft prompt compression, Q-Former-style
   connectors, and product quantization without claiming wins on their native
@@ -118,12 +119,20 @@ Key conclusions:
   support reporting memory movement, transfer granularity, TTFT/TPOT/goodput,
   and per-query adaptive cost rather than only raw byte counts.
 
+The serving SLO envelope artifact is
+`results/source_private_serving_slo_envelope_20260430/`; reference memo:
+`references/517_serving_slo_envelope_refs_20260430.md`. It reports `10` rows,
+`4` TTFT proxy rows, `0` production-goodput claim rows, packet batch-64 traffic
+of `5.0` line bytes/request and `6.0` DMA bytes/request, and explicitly marks
+all rows as requiring GPU counters before production serving claims.
+
 ## Reviewer-Risk Ranking
 
 1. **Hand-coded receiver objection.** Partly addressed this cycle. The direct
-   Qwen3-0.6B target decoder reaches `0.694` on `n=160` with target-only and
-   all controls at `0.250`; paired CI95 lower bound is `+0.369` versus target
-   and best control.
+   Qwen3-0.6B target decoder reaches `0.694` on core `n=160` and `0.719` on
+   held-out `n=160`; target-only is `0.250`, best control is at most `0.263`,
+   and the combined paired CI95 lower bound is `+0.369` versus target and best
+   control.
 2. **Coded benchmark objection.** Response: keep codebook remaps, learned
    product-codebook packets, semantic-anchor held-out surface, answer controls,
    and matched text baselines visible.
@@ -169,10 +178,11 @@ evidence is likely enough for a scoped workshop paper if written honestly:
 ## What Is Needed For Comfortable ICLR Full Paper
 
 - direct model-mediated receiver at `n=160` or `n=256` with paired uncertainty;
-- at least one seed or held-out surface beyond the first receiver pass;
+- product-codebook-specific model-mediated receiver or a learned receiver with
+  equivalent controls;
 - final table that includes target-only, scalar WZ, product-codebook,
   same-byte/query-aware text, full-log relay, QJL/TurboQuant/KV byte floors, and
-  C2C/KVCOMM comparison notes;
+  C2C/KVCOMM comparison notes plus the serving SLO envelope;
 - one cross-family or ontology-stress row that does not depend on exact
   phrase overlap, or a very explicit claim boundary;
 - native GPU/server systems run when available, reporting TTFT/TPOT/goodput and
@@ -190,9 +200,9 @@ evidence is likely enough for a scoped workshop paper if written honestly:
 ## Current Decision
 
 Promote direct Qwen target decoding from smoke to medium Mac-local supporting
-evidence. Do not claim fast receiver serving from this row: p50 CPU latency is
-about `2.7 s` per condition. The next exact gate is held-out `n=160` direct
-target decoding if local time allows; otherwise move to the
-`packet_consistency_denoiser` branch because it is the highest-yield route to a
-less protocol-shaped receiver while preserving the packet interface that already
-works.
+evidence with held-out replication. Do not claim fast receiver serving from
+this row: p50 CPU latency is about `2.45-2.67 s` per matched condition. The
+next exact gate is product-codebook-specific model-mediated target decoding or
+the `packet_consistency_denoiser` branch because both attack the remaining
+"deterministic receiver" critique while preserving the packet interface that
+already works.

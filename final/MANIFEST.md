@@ -179,10 +179,18 @@
   matched packet `0.694`, target/control/text-2B rows `0.250`, valid prediction
   rate `1.000`, and paired CI95 lower bound `+0.369` versus target and best
   control.
+- Held-out Qwen3 target-decoder `n=160` all-control CPU artifact and combined
+  core+held-out paired uncertainty showing the receiver defense replicates:
+  held-out matched packet `0.719`, target-only `0.250`, best control `0.263`,
+  valid prediction rate `1.000`, and combined min CI95 lower bound `+0.369`.
 - Receiver/systems/novelty scout memo and ICLR strengthening deep-dive memo
   clarifying the current technical contributions, C2C/KVCOMM/KV-compression and
   prompt-compression comparison boundary, COLM-vs-ICLR readiness gap, and the
   next packet-consistency denoiser branch.
+- Serving SLO envelope script, test, references, memo, and artifact translating
+  the source-private systems story into serving-reviewer terms: boundary
+  exposure, batch-64 line/DMA bytes, TTFT margins, explicit TPOT/goodput
+  non-claims, and GPU counter requirements.
 
 ## Notes
 

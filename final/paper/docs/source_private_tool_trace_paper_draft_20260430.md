@@ -293,6 +293,16 @@ At `2` bytes, structured JSON and free-text relays remain target-only. At
 format. This is not a contradiction; it is the expected rate curve. The packet
 method occupies the compact-rate regime.
 
+The hardware-facing accounting is intentionally more conservative than the raw
+byte table. A single packet request still rounds to one `64`B cache line and one
+`128`B DMA burst. With the packet ISA's `2`B header and `1`B parity/check field,
+a 2B payload becomes a 5B record; under batch-64 contiguous packing, this
+amortizes to `5.0` line bytes/request and `6.0` DMA bytes/request. The serving
+SLO envelope reports `4` Mac TTFT proxy rows and `0` production-goodput claim
+rows; the held-out packet proxy misses a `500 ms` TTFT SLO by `47.21 ms` but
+has `+202.79 ms` margin at `750 ms`. Native GPU/server TTFT, TPOT, goodput, and
+hardware counters remain required before making production-serving claims.
+
 ## 9. Target-Decoder Ablation
 
 A skeptical reviewer may object that the target-side protocol decoder is doing
@@ -308,13 +318,14 @@ target-prior fallback label, the source packet, candidate labels, and candidate
 | core seed 29 | `16` | `0.250` | `0.688` | `0.250` | yes |
 | held-out seed 30 | `32` | `0.250` | `0.750` | `0.281` | yes |
 | core seed 29 | `160` | `0.250` | `0.694` | `0.250` | yes |
+| held-out seed 30 | `160` | `0.250` | `0.719` | `0.263` | yes |
 
 This is still an ablation, not the main systems evidence. It reduces the
 hand-coded lookup concern by showing that packet consumption can be
-model-mediated while preserving controls. The `n=160` row has paired CI95 lower
-bounds `+0.369` versus both target-only and best control, but CPU decoding is
-slow (`2670 ms` p50 per matched condition), so it should not be used as a
-serving-speed claim.
+model-mediated while preserving controls. The core+held-out `n=160` rows have
+paired CI95 lower bounds at least `+0.369` versus both target-only and best
+control, but CPU decoding is slow (`2451-2670 ms` p50 per matched condition),
+so it should not be used as a serving-speed claim.
 
 ## 10. Interpretability
 

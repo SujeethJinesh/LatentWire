@@ -1118,5 +1118,12 @@
     "path": "references/516_receiver_systems_novelty_scout_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source scout memo for the current ICLR strengthening cycle, covering systems/IO baselines, KV/cache communication competitors, prompt compression, Q-Former/Flamingo receiver inspiration, and diffusion/flow/consistency receiver ideas."
+  },
+  {
+    "num": 517,
+    "slug": "serving_slo_envelope_refs_20260430",
+    "path": "references/517_serving_slo_envelope_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the serving SLO envelope, covering FlashAttention IO-awareness, vLLM/PagedAttention, DistServe, Orca, KIVI, TurboQuant, and QJL."
   }
 ]
