@@ -1,0 +1,3 @@
+surface,candidate_view,n,target_accuracy,matched_packet_accuracy,max_opaque_accuracy,max_opaque_minus_target,max_opaque_ci95_high_vs_target,max_opaque_strict_ci95_high_vs_target,matched_packet_valid_rate,exact_id_parity,collapse_pass,diagnostic_table_positive_packet_accuracy,diagnostic_table_positive_target_accuracy,diagnostic_table_positive_lift
+core n160 label_blind,label_blind,160,0.25,0.25,0.25,0,0,0,1,True,True,0.675,0.25,0.425
+holdout n160 label_blind,label_blind,160,0.25,0.24375,0.25,0,0,0,1,True,True,0.6875,0.25,0.4375

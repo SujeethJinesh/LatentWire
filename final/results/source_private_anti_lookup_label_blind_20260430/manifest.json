@@ -1,0 +1,26 @@
+{
+  "artifact_sha256": {
+    "anti_lookup_label_blind_summary.csv": "a4f990bf80ebdf5d007b8899c42e0e15cacdb4e5505c4b06be054e49fa34f12a",
+    "anti_lookup_label_blind_summary.json": "fa61f83144ee767baa13972df4d270e2feb703b0999269d3204445432421b093",
+    "anti_lookup_label_blind_summary.md": "79e6e3d08c50617a3e9e638cc2a8b02b0ed8df987b02d57db1b6a1da371689d4"
+  },
+  "artifacts": [
+    "anti_lookup_label_blind_summary.json",
+    "anti_lookup_label_blind_summary.csv",
+    "anti_lookup_label_blind_summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_anti_lookup_label_blind_summary",
+  "headline": {
+    "all_exact_id_parity": true,
+    "collapse_pass_rows": 2,
+    "max_opaque_ci95_high_vs_target": 0.0,
+    "max_opaque_minus_target": 0.0,
+    "max_opaque_strict_ci95_high_vs_target": 0.0,
+    "min_diagnostic_table_positive_lift": 0.42500000000000004,
+    "min_matched_packet_valid_rate": 1.0,
+    "rows": 2
+  },
+  "pass_gate": true
+}

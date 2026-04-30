@@ -3004,3 +3004,51 @@ the simple protocol packet. Remaining blockers for comfortable ICLR are now
 sharper: product-codebook-specific model-mediated decoding, a less
 protocol-shaped learned receiver or clearly scoped claim boundary, and native
 serving telemetry.
+
+Update `2026-04-30`: the product-codebook-specific receiver blocker is now
+sharper and partially negative. I added a blinded A/B/C/D Qwen3-0.6B
+product-codebook target-decoder harness plus a masked-PQ consistency receiver.
+The prompt receiver fails on Mac CPU: in the reproducible n16 no-explicit-prior
+distance diagnostic, matched product-codebook packets stay at target-only
+(`0.312`) and every destructive control matches that row. Earlier n32 prompt
+diagnostics showed the same no-lift behavior. The masked-PQ consistency
+receiver is also not a new contribution: unweighted training collapses to
+target-only, while matched-weighted training exactly reproduces deterministic
+PQ L2 (`0.582` matched, `0.273` best control) but does not beat it and is
+slower in the current Python path. Readiness implication: product-codebook
+packets remain valuable as a controlled learned discrete codec and systems
+frontier, but the current model-mediated/learned PQ receiver branch should be
+pruned. The live claim should either narrow around the packet/control/systems
+story, or the next method gate must change the packet geometry itself
+(OPQ/protected-basis/source-control PQ) rather than adding another receiver on
+the same PQ table.
+
+Update `2026-04-30`: the first product-codebook geometry-change gate is now
+complete and negative/near-miss. Utility regrouping, random balanced grouping,
+and OPQ-Procrustes do not beat canonical contiguous PQ on the strong
+remap-101/budget-4 row; best noncanonical gain is only `+0.004`, and OPQ is
+`-0.004`. OPQ does partially repair the known weak remap-107/budget-2 row:
+canonical fails controls at `0.512` source / `0.312` best control, while OPQ
+passes controls at `0.527` source / `0.289` best control. The effect is still
+below the `+0.03` promotion bar and saturates with 8 OPQ iterations. Readiness
+implication: PQ geometry variants should be reported as ablations, not a new
+headline contribution. The next highest-value Mac-local work is the
+reviewer-suggested label-blind anti-lookup scale-up or a no-NVIDIA systems
+trace-card v2; a future PQ method branch would need a source-control-trained
+protected rotation rather than generic OPQ.
+
+Update `2026-04-30`: the label-blind anti-lookup scale-up now passes on the
+same `n=160` core and held-out endpoint surfaces used by the positive
+diagnostic-table target-decoder result. Artifact:
+`results/source_private_anti_lookup_label_blind_20260430/`; memo:
+`paper/source_private_anti_lookup_label_blind_n160_20260430.md`. Outcome:
+`2/2` collapse rows, exact-ID parity `True`, max opaque lift over target
+`0.000`, max paired CI95 high versus target `0.000`, matched packet valid rate
+`1.000`, and minimum diagnostic-table positive comparator lift `+0.425`.
+Readiness implication: the coded-label/lookup objection is now materially
+weaker at medium scale, but the claim is narrower and more honest. The paper
+should frame LatentWire as source-private communication with decoder side
+information, not protocol-free latent semantic transfer. Current ICLR distance:
+stronger scoped submission candidate, still not comfortable full ICLR until
+either a less hand-shaped learned receiver, one large frozen label-blind stress,
+or native serving telemetry lands. COLM workshop readiness is strong.

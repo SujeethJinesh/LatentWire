@@ -1,0 +1,267 @@
+{
+  "gate": "source_private_anti_lookup_label_blind_summary",
+  "headline": {
+    "all_exact_id_parity": true,
+    "collapse_pass_rows": 2,
+    "max_opaque_ci95_high_vs_target": 0.0,
+    "max_opaque_minus_target": 0.0,
+    "max_opaque_strict_ci95_high_vs_target": 0.0,
+    "min_diagnostic_table_positive_lift": 0.42500000000000004,
+    "min_matched_packet_valid_rate": 1.0,
+    "rows": 2
+  },
+  "interpretation": "When candidate repair-key metadata and original labels are hidden, opaque diagnostic packets and text relays collapse to target accuracy while the diagnostic-table endpoint rows remain strongly positive. This weakens the leakage concern that hidden labels alone explain the positive endpoint row, but it also confirms the current method requires a public side-information table. It is not protocol-free semantic transfer. Bootstrap upper bounds here are one-sided collapse diagnostics, not positive-method CIs.",
+  "next_gate": "Run n=500 deterministic label-blind stress if the final claim needs the large frozen surface, or prioritize a learned/shared-dictionary receiver if the goal is a protocol-free or less table-shaped method.",
+  "opaque_conditions": [
+    "matched_packet",
+    "matched_byte_text_2",
+    "random_same_byte_packet",
+    "deranged_candidate_diag_table",
+    "query_aware_diag_span",
+    "structured_json_diag",
+    "structured_free_text_diag",
+    "full_hidden_log"
+  ],
+  "pass_gate": true,
+  "rows": [
+    {
+      "candidate_view": "label_blind",
+      "collapse_comparisons_vs_target": {
+        "deranged_candidate_diag_table": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "full_hidden_log": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "matched_byte_text_2": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "matched_packet": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "query_aware_diag_span": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "random_same_byte_packet": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "structured_free_text_diag": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "structured_json_diag": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        }
+      },
+      "collapse_pass": true,
+      "diagnostic_table_positive_lift": 0.42500000000000004,
+      "diagnostic_table_positive_packet_accuracy": 0.675,
+      "diagnostic_table_positive_target_accuracy": 0.25,
+      "exact_id_parity": true,
+      "matched_packet_accuracy": 0.25,
+      "matched_packet_valid_rate": 1.0,
+      "max_opaque_accuracy": 0.25,
+      "max_opaque_ci95_high_vs_target": 0.0,
+      "max_opaque_minus_target": 0.0,
+      "max_opaque_strict_ci95_high_vs_target": 0.0,
+      "n": 160,
+      "surface": "core n160 label_blind",
+      "target_accuracy": 0.25
+    },
+    {
+      "candidate_view": "label_blind",
+      "collapse_comparisons_vs_target": {
+        "deranged_candidate_diag_table": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": -0.01875,
+            "mean": -0.00625
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": -0.01875,
+            "mean": -0.00625
+          }
+        },
+        "full_hidden_log": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "matched_byte_text_2": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "matched_packet": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": -0.01875,
+            "mean": -0.00625
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": -0.01875,
+            "mean": -0.00625
+          }
+        },
+        "query_aware_diag_span": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "random_same_byte_packet": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "structured_free_text_diag": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        },
+        "structured_json_diag": {
+          "delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "strict_delta_bootstrap95": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          }
+        }
+      },
+      "collapse_pass": true,
+      "diagnostic_table_positive_lift": 0.4375,
+      "diagnostic_table_positive_packet_accuracy": 0.6875,
+      "diagnostic_table_positive_target_accuracy": 0.25,
+      "exact_id_parity": true,
+      "matched_packet_accuracy": 0.24375,
+      "matched_packet_valid_rate": 1.0,
+      "max_opaque_accuracy": 0.25,
+      "max_opaque_ci95_high_vs_target": 0.0,
+      "max_opaque_minus_target": 0.0,
+      "max_opaque_strict_ci95_high_vs_target": 0.0,
+      "n": 160,
+      "surface": "holdout n160 label_blind",
+      "target_accuracy": 0.25
+    }
+  ],
+  "scale_rung": "medium anti-lookup stress",
+  "source_label_blind_summaries": [
+    "results/source_private_anti_lookup_label_blind_20260430/core_seed29_qwen3_n160_label_blind/summary.json",
+    "results/source_private_anti_lookup_label_blind_20260430/holdout_seed30_qwen3_n160_label_blind/summary.json"
+  ],
+  "source_positive_summaries": [
+    "results/source_private_mac_endpoint_proxy_frontier_20260429/core_seed29_qwen3_n160_cpu_label_strict_controls/summary.json",
+    "results/source_private_mac_endpoint_proxy_frontier_20260429/holdout_seed30_qwen3_n160_cpu_label_strict_controls/summary.json"
+  ]
+}

@@ -199,6 +199,11 @@
   showing utility regrouping and OPQ-Procrustes do not promote over canonical
   PQ; OPQ partially repairs the weak remap-107/budget-2 row but remains below
   the promotion bar.
+- Label-blind anti-lookup `n=160` scale-up code/test update, references, memo,
+  and core+held-out artifacts showing the coded-label/lookup objection weakens
+  at medium scale: `2/2` collapse rows, exact-ID parity `True`, max opaque lift
+  over target `0.000`, max paired CI95 high versus target `0.000`, and minimum
+  positive diagnostic-table comparator lift `+0.425`.
 
 ## Notes
 

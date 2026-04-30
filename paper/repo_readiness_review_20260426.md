@@ -3036,3 +3036,19 @@ headline contribution. The next highest-value Mac-local work is the
 reviewer-suggested label-blind anti-lookup scale-up or a no-NVIDIA systems
 trace-card v2; a future PQ method branch would need a source-control-trained
 protected rotation rather than generic OPQ.
+
+Update `2026-04-30`: the label-blind anti-lookup scale-up now passes on the
+same `n=160` core and held-out endpoint surfaces used by the positive
+diagnostic-table target-decoder result. Artifact:
+`results/source_private_anti_lookup_label_blind_20260430/`; memo:
+`paper/source_private_anti_lookup_label_blind_n160_20260430.md`. Outcome:
+`2/2` collapse rows, exact-ID parity `True`, max opaque lift over target
+`0.000`, max paired CI95 high versus target `0.000`, matched packet valid rate
+`1.000`, and minimum diagnostic-table positive comparator lift `+0.425`.
+Readiness implication: the coded-label/lookup objection is now materially
+weaker at medium scale, but the claim is narrower and more honest. The paper
+should frame LatentWire as source-private communication with decoder side
+information, not protocol-free latent semantic transfer. Current ICLR distance:
+stronger scoped submission candidate, still not comfortable full ICLR until
+either a less hand-shaped learned receiver, one large frozen label-blind stress,
+or native serving telemetry lands. COLM workshop readiness is strong.

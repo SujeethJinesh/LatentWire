@@ -16114,3 +16114,26 @@ at 8 iterations. Interpretation: keep geometry variants as ablations; the next
 PQ branch needs a source-control-trained protected rotation, not generic OPQ.
 Reviewer priority should shift to label-blind anti-lookup scaling or a
 no-NVIDIA systems trace-card v2.
+
+Update `2026-04-30`: the label-blind anti-lookup stress now scales to the
+same `n=160` core and held-out endpoint surfaces as the positive diagnostic
+table result. Code update:
+`scripts/build_source_private_anti_lookup_label_blind_summary.py`; test:
+`tests/test_build_source_private_anti_lookup_label_blind_summary.py`; memo:
+`paper/source_private_anti_lookup_label_blind_n160_20260430.md`; references:
+`references/520_anti_lookup_label_blind_scaleup_refs_20260430.md`; artifact:
+`results/source_private_anti_lookup_label_blind_20260430/`. Outcome: summary
+pass gate `True`, `2/2` collapse rows, exact-ID parity `True`, max opaque
+payload accuracy minus target `0.000`, max paired CI95 high versus target
+`0.000`, max strict CI95 high versus target `0.000`, matched packet valid rate
+`1.000`, and minimum positive diagnostic-table comparator lift `+0.425`. Core
+label-blind matched packet, matched-byte text, random same-byte, deranged
+table, query-aware text, JSON/free-text diagnostic text, and full hidden-log
+relay all score exactly target-only (`0.250`). Held-out matches target-only
+within the same collapse rule (`matched_packet=0.244`, max opaque `0.250`).
+Interpretation: this directly weakens the coded-label/lookup objection at
+medium scale. It also sharpens the claim boundary: the method is
+source-private communication with decoder side information, not protocol-free
+semantic transfer. The next reviewer-defense gate is deterministic `n=500`
+label-blind stress; the next method-depth gate is a learned/shared-dictionary
+receiver that reduces the public-table shape.

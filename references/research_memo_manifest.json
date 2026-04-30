@@ -1139,5 +1139,12 @@
     "path": "references/519_product_codebook_geometry_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the product-codebook geometry gate, covering canonical PQ, OPQ-Procrustes, rotation-aware quantization, and Wyner-Ziv decoder-side information framing."
+  },
+  {
+    "num": 520,
+    "slug": "anti_lookup_label_blind_scaleup_refs_20260430",
+    "path": "references/520_anti_lookup_label_blind_scaleup_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the n=160 label-blind anti-lookup scale-up, covering Slepian-Wolf/Wyner-Ziv decoder side information, semantic communication, learned side-information coding, C2C, and KVComm boundaries."
   }
 ]

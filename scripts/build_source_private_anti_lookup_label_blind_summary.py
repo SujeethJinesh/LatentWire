@@ -249,6 +249,7 @@ def build_anti_lookup_summary(
     if len(label_paths) != len(positive_paths):
         raise ValueError("label_blind_summaries and positive_summaries must have equal length")
     rows = [_row(label_path, positive_path) for label_path, positive_path in zip(label_paths, positive_paths, strict=True)]
+    max_n = max(row["n"] for row in rows)
     headline = {
         "rows": len(rows),
         "collapse_pass_rows": sum(1 for row in rows if row["collapse_pass"]),
@@ -271,7 +272,13 @@ def build_anti_lookup_summary(
     payload = {
         "gate": "source_private_anti_lookup_label_blind_summary",
         "pass_gate": pass_gate,
-        "scale_rung": "strict-small anti-lookup stress" if max(row["n"] for row in rows) >= 32 else "micro smoke anti-lookup stress",
+        "scale_rung": (
+            "medium anti-lookup stress"
+            if max_n >= 160
+            else "strict-small anti-lookup stress"
+            if max_n >= 32
+            else "micro smoke anti-lookup stress"
+        ),
         "source_label_blind_summaries": [str(path.relative_to(ROOT)) for path in label_paths],
         "source_positive_summaries": [str(path.relative_to(ROOT)) for path in positive_paths],
         "headline": headline,
@@ -285,8 +292,8 @@ def build_anti_lookup_summary(
             "Bootstrap upper bounds here are one-sided collapse diagnostics, not positive-method CIs."
         ),
         "next_gate": (
-            "Run n=160 core+holdout label-blind stress with paired uncertainty, then implement a learned/shared-dictionary "
-            "receiver if the goal is a protocol-free or less table-shaped method."
+            "Run n=500 deterministic label-blind stress if the final claim needs the large frozen surface, or prioritize "
+            "a learned/shared-dictionary receiver if the goal is a protocol-free or less table-shaped method."
         ),
     }
 
