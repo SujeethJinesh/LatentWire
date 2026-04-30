@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import torch
+
 from scripts import run_source_private_hidden_repair_packet_smoke as repair_gate
 from scripts import run_source_private_tool_trace_target_decoder_smoke as target_gate
 
@@ -80,6 +82,92 @@ def test_parse_candidate_label_accepts_choice_alias() -> None:
 
     assert target_gate._parse_candidate_label("A", example, prompt_mode="choice_alias") == example.candidates[0]["label"]
     assert target_gate._parse_candidate_label("Option D", example, prompt_mode="choice_alias") == example.candidates[3]["label"]
+
+
+def test_choice_prediction_from_scores_ties_to_prior() -> None:
+    example = _example()
+    prior_choice = target_gate._prior_choice(example)
+    scores = {choice: 0.0 for choice in "ABCD"}
+
+    choice, prediction = target_gate._choice_prediction_from_scores(example, scores)
+
+    assert choice == prior_choice
+    assert prediction == target_gate._prior_prediction(example)
+
+
+def test_choice_prediction_from_scores_selects_best_choice() -> None:
+    example = _example()
+    scores = {"A": -4.0, "B": -3.0, "C": -0.1, "D": -2.0}
+
+    choice, prediction = target_gate._choice_prediction_from_scores(example, scores)
+
+    assert choice == "C"
+    assert prediction == example.candidates[2]["label"]
+
+
+def test_binary_match_prompt_uses_packet_without_answer_label() -> None:
+    example = _example()
+    candidate = example.candidates[0]
+    prompt = target_gate._prompt_for_binary_match(payload=example.diagnostic_code, candidate=candidate)
+
+    assert f"Source packet: {example.diagnostic_code}" in prompt
+    assert candidate["handles_diagnostic"] in prompt
+    assert candidate["label"] in prompt
+    assert f"answer_label: {example.answer_label}" not in prompt
+
+
+def test_valid_diag_payload_rejects_non_packet_controls() -> None:
+    assert target_gate._valid_diag_payload("A1") is True
+    assert target_gate._valid_diag_payload(" Z9 ") is True
+    assert target_gate._valid_diag_payload("<NO_SOURCE_PACKET>") is False
+    assert target_gate._valid_diag_payload("repair diag is A1") is False
+    assert target_gate._valid_diag_payload("A10") is False
+    assert target_gate._valid_diag_payload("AA") is False
+
+
+class _TinyTokenizer:
+    def encode(self, surface: str, add_special_tokens: bool = False) -> list[int]:
+        assert add_special_tokens is False
+        table = {" yes": [1], "yes": [2], " no": [3], "no": [4], "multi token": [5, 6]}
+        return table.get(surface, [])
+
+
+def test_token_surface_score_uses_best_single_token_surface() -> None:
+    logits = torch.full((8,), -10.0)
+    logits[1] = 1.0
+    logits[2] = 3.0
+
+    score, surface = target_gate._token_surface_score(_TinyTokenizer(), logits, (" yes", "yes", "multi token"))
+
+    assert surface == "yes"
+    assert score > -0.2
+
+
+def test_binary_prediction_requires_positive_yes_margin() -> None:
+    example = _example()
+    scores = [
+        {"candidate_label": candidate["label"], "yes_minus_no": -0.1 * (index + 1)}
+        for index, candidate in enumerate(example.candidates)
+    ]
+
+    prediction, fallback = target_gate._binary_prediction_from_scores(example, scores)
+
+    assert fallback is True
+    assert prediction == target_gate._prior_prediction(example)
+
+
+def test_binary_prediction_selects_positive_match() -> None:
+    example = _example()
+    scores = [
+        {"candidate_label": candidate["label"], "yes_minus_no": -1.0}
+        for candidate in example.candidates
+    ]
+    scores[2]["yes_minus_no"] = 2.0
+
+    prediction, fallback = target_gate._binary_prediction_from_scores(example, scores)
+
+    assert fallback is False
+    assert prediction == example.candidates[2]["label"]
 
 
 def test_summarize_passes_when_matched_beats_controls() -> None:

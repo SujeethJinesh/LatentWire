@@ -1,12 +1,25 @@
 # Repo Readiness Review
 
 - date: `2026-04-26`
-- status: stronger scoped positive-method manuscript with medium packet,
-  receiver, anti-lookup, and systems trace-card evidence; not yet a comfortable
-  broad latent-transfer ICLR claim
-- estimated distance: one successful less hand-shaped learned receiver or
-  larger label-blind/generalization gate, plus native serving telemetry when
-  NVIDIA/server hardware is available
+- status: stronger scoped positive-method manuscript with balanced packet,
+  frozen binary-verifier receiver, anti-lookup, and systems trace-card evidence;
+  not yet a comfortable broad latent-transfer ICLR claim
+- estimated distance: one successful less protocol-shaped learned receiver or
+  cross-family binary-verifier/label-blind scale-up gate, plus native serving
+  telemetry when NVIDIA/server hardware is available
+
+Update `2026-04-30`: a calibrated frozen Qwen3 binary-verifier receiver now
+passes the balanced diagnostic strict-small gate over two n64 seeds. The target
+model scores yes/no equality between the 2-byte packet and each public
+candidate diagnostic handle, then falls back to target prior unless the
+yes-minus-no margin is positive. This fixes the earlier random-packet control
+failure where the verifier chose the least-negative candidate. Combined n64
+paired summary: `2/2` pass rows, matched packet `1.000`, target `0.250`, best
+control at most `0.266`, minimum matched-best-control delta `+0.734`, minimum
+CI95 lower bound `+0.625` vs best control, and valid rate `1.000`. Readiness
+improves on the hand-coded-decoder objection, but the claim remains a
+source-private side-information protocol: this is not proof of protocol-free
+latent transfer and not a production latency win on Mac CPU.
 
 ## Current Paper Story
 

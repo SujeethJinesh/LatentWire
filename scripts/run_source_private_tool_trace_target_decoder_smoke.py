@@ -4,6 +4,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import math
 import pathlib
 import random
 import re
@@ -151,6 +152,20 @@ def _prompt_for_target_decoder(example: LoadedExample, *, payload: str, prompt_m
     )
 
 
+def _prompt_for_binary_match(*, payload: str, candidate: dict[str, Any]) -> str:
+    packet = payload if payload else "<NO_SOURCE_PACKET>"
+    return (
+        "You are a target-side packet verifier in a source-private repair handoff.\n"
+        "Decide whether the source packet exactly matches this candidate's handles_repair_diag value.\n"
+        "If the source packet is missing, malformed, or different, answer no.\n"
+        "Return only yes or no.\n\n"
+        f"Source packet: {packet}\n"
+        f"Candidate label: {candidate['label']}\n"
+        f"Candidate handles_repair_diag: {candidate['handles_diagnostic']}\n"
+        "Does the source packet exactly match this candidate handles_repair_diag? Answer:"
+    )
+
+
 def _format_prompt(tokenizer: Any, prompt: str, *, enable_thinking: bool | None) -> str:
     if hasattr(tokenizer, "apply_chat_template"):
         kwargs: dict[str, Any] = {"tokenize": False, "add_generation_prompt": True}
@@ -195,6 +210,66 @@ def _parse_candidate_label(generated: str, example: LoadedExample, *, prompt_mod
     return ""
 
 
+def _prior_choice(example: LoadedExample) -> str:
+    prior = _prior_prediction(example)
+    return next(
+        _choice_label(index)
+        for index, candidate in enumerate(example.candidates)
+        if candidate["label"] == prior
+    )
+
+
+def _choice_prediction_from_scores(example: LoadedExample, choice_scores: dict[str, float]) -> tuple[str, str]:
+    best_score = max(choice_scores.values())
+    tied = [choice for choice, score in choice_scores.items() if math.isclose(score, best_score, rel_tol=1e-6, abs_tol=1e-8)]
+    prior = _prior_choice(example)
+    choice = prior if prior in tied else sorted(tied)[0]
+    return choice, example.candidates["ABCD".index(choice)]["label"]
+
+
+def _token_surface_score(tokenizer: Any, logits: Any, surfaces: tuple[str, ...]) -> tuple[float, str]:
+    log_probs = logits.log_softmax(dim=-1)
+    scored: list[tuple[float, str]] = []
+    for surface in surfaces:
+        ids = tokenizer.encode(surface, add_special_tokens=False)
+        if len(ids) == 1:
+            scored.append((float(log_probs[int(ids[0])].item()), surface))
+    if not scored:
+        raise ValueError(f"could not find a single-token encoding for surfaces {surfaces!r}")
+    return max(scored, key=lambda item: item[0])
+
+
+def _choice_token_scores(tokenizer: Any, logits: Any) -> dict[str, float]:
+    scores: dict[str, float] = {}
+    for choice in "ABCD":
+        scores[choice] = _token_surface_score(tokenizer, logits, (choice, f" {choice}"))[0]
+    return scores
+
+
+def _binary_prediction_from_scores(
+    example: LoadedExample,
+    binary_scores: list[dict[str, Any]],
+    *,
+    threshold: float = 0.0,
+) -> tuple[str, bool]:
+    best_score = max(row["yes_minus_no"] for row in binary_scores)
+    if best_score <= threshold:
+        return _prior_prediction(example), True
+    tied = [
+        row
+        for row in binary_scores
+        if math.isclose(row["yes_minus_no"], best_score, rel_tol=1e-6, abs_tol=1e-8)
+    ]
+    prior = _prior_prediction(example)
+    if any(row["candidate_label"] == prior for row in tied):
+        return prior, False
+    return sorted(tied, key=lambda row: row["candidate_label"])[0]["candidate_label"], False
+
+
+def _valid_diag_payload(payload: str) -> bool:
+    return bool(re.fullmatch(r"[A-Z][0-9]", payload.strip()))
+
+
 def _generate_target_predictions(
     examples: list[LoadedExample],
     *,
@@ -209,9 +284,14 @@ def _generate_target_predictions(
     partial_predictions_jsonl: pathlib.Path | None = None,
     progress_every: int = 16,
     prompt_mode: str = "label",
+    decode_mode: str = "generate",
 ) -> list[dict[str, Any]]:
     import torch
 
+    if decode_mode == "choice_logprob" and prompt_mode != "choice_alias":
+        raise ValueError("choice_logprob decode mode requires --prompt-mode choice_alias")
+    if decode_mode == "candidate_binary_logprob" and prompt_mode != "label":
+        raise ValueError("candidate_binary_logprob decode mode requires --prompt-mode label")
     active_conditions = _validate_conditions(conditions)
     tokenizer, model = _load_model(model_name, device=device, dtype=dtype)
     torch.manual_seed(seed)
@@ -228,21 +308,73 @@ def _generate_target_predictions(
                 index=index,
                 rng=rng,
             )
-            prompt = _prompt_for_target_decoder(example, payload=payload, prompt_mode=prompt_mode)
-            text_prompt = _format_prompt(tokenizer, prompt, enable_thinking=enable_thinking)
-            inputs = tokenizer(text_prompt, return_tensors="pt").to(device)
             start = time.perf_counter()
-            with torch.no_grad():
-                output = model.generate(
-                    **inputs,
-                    max_new_tokens=max_new_tokens,
-                    do_sample=False,
-                    pad_token_id=tokenizer.eos_token_id,
-                )
+            choice_scores: dict[str, float] | None = None
+            binary_scores: list[dict[str, Any]] | None = None
+            binary_fallback_to_prior = False
+            if decode_mode == "candidate_binary_logprob":
+                if not _valid_diag_payload(payload):
+                    generated = _prior_prediction(example)
+                    prediction = generated
+                    generated_tokens = 0
+                    binary_scores = []
+                    binary_fallback_to_prior = True
+                else:
+                    binary_scores = []
+                    for candidate in example.candidates:
+                        prompt = _prompt_for_binary_match(payload=payload, candidate=candidate)
+                        text_prompt = _format_prompt(tokenizer, prompt, enable_thinking=enable_thinking)
+                        inputs = tokenizer(text_prompt, return_tensors="pt").to(device)
+                        with torch.no_grad():
+                            output = model(**inputs)
+                        yes_score, yes_surface = _token_surface_score(
+                            tokenizer,
+                            output.logits[0, -1],
+                            (" yes", " Yes", "yes", "Yes"),
+                        )
+                        no_score, no_surface = _token_surface_score(
+                            tokenizer,
+                            output.logits[0, -1],
+                            (" no", " No", "no", "No"),
+                        )
+                        binary_scores.append(
+                            {
+                                "candidate_label": candidate["label"],
+                                "handles_diagnostic": candidate["handles_diagnostic"],
+                                "yes_logprob": yes_score,
+                                "no_logprob": no_score,
+                                "yes_minus_no": yes_score - no_score,
+                                "yes_surface": yes_surface,
+                                "no_surface": no_surface,
+                            }
+                        )
+                    prediction, binary_fallback_to_prior = _binary_prediction_from_scores(example, binary_scores)
+                    generated = prediction
+                    generated_tokens = len(example.candidates)
+            else:
+                prompt = _prompt_for_target_decoder(example, payload=payload, prompt_mode=prompt_mode)
+                text_prompt = _format_prompt(tokenizer, prompt, enable_thinking=enable_thinking)
+                inputs = tokenizer(text_prompt, return_tensors="pt").to(device)
+                with torch.no_grad():
+                    if decode_mode == "choice_logprob":
+                        output = model(**inputs)
+                    else:
+                        output = model.generate(
+                            **inputs,
+                            max_new_tokens=max_new_tokens,
+                            do_sample=False,
+                            pad_token_id=tokenizer.eos_token_id,
+                        )
+                if decode_mode == "choice_logprob":
+                    choice_scores = _choice_token_scores(tokenizer, output.logits[0, -1])
+                    generated, prediction = _choice_prediction_from_scores(example, choice_scores)
+                    generated_tokens = 1
+                else:
+                    new_tokens = output[0][inputs["input_ids"].shape[-1] :]
+                    generated = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
+                    prediction = _parse_candidate_label(generated, example, prompt_mode=prompt_mode)
+                    generated_tokens = len(new_tokens)
             latency_ms = (time.perf_counter() - start) * 1000.0
-            new_tokens = output[0][inputs["input_ids"].shape[-1] :]
-            generated = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
-            prediction = _parse_candidate_label(generated, example, prompt_mode=prompt_mode)
             row = {
                 "example_id": example.example_id,
                 "condition": condition,
@@ -251,15 +383,21 @@ def _generate_target_predictions(
                 "payload": payload,
                 "payload_bytes": len(payload.encode("utf-8")),
                 "payload_tokens": len(re.findall(r"\S+", payload)),
+                "decode_mode": decode_mode,
                 "generated_text": generated,
                 "prompt_mode": prompt_mode,
                 "prediction": prediction,
                 "correct": prediction == example.answer_label,
                 "valid_prediction": bool(prediction),
                 "latency_ms": latency_ms,
-                "generated_tokens": len(new_tokens),
+                "generated_tokens": generated_tokens,
                 **metadata,
             }
+            if choice_scores is not None:
+                row["choice_logprobs"] = choice_scores
+            if binary_scores is not None:
+                row["candidate_binary_logprobs"] = binary_scores
+                row["binary_fallback_to_prior"] = binary_fallback_to_prior
             rows.append(row)
             if partial_handle is not None:
                 partial_handle.write(json.dumps(row, sort_keys=True) + "\n")
@@ -412,6 +550,11 @@ def main() -> None:
     parser.add_argument("--enable-thinking", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--conditions", choices=_conditions(), nargs="*", default=None)
     parser.add_argument("--prompt-mode", choices=["label", "choice_alias"], default="label")
+    parser.add_argument(
+        "--decode-mode",
+        choices=["generate", "choice_logprob", "candidate_binary_logprob"],
+        default="generate",
+    )
     parser.add_argument("--progress-jsonl", type=pathlib.Path, default=None)
     parser.add_argument("--partial-predictions-jsonl", type=pathlib.Path, default=None)
     parser.add_argument("--progress-every", type=int, default=16)
@@ -447,6 +590,7 @@ def main() -> None:
         partial_predictions_jsonl=partial_predictions_jsonl,
         progress_every=args.progress_every,
         prompt_mode=args.prompt_mode,
+        decode_mode=args.decode_mode,
     )
     if partial_predictions_jsonl is not None:
         partial_rows = _read_partial_jsonl(partial_predictions_jsonl)
@@ -477,6 +621,7 @@ def main() -> None:
                 "--no-enable-thinking" if args.enable_thinking is False else "--enable-thinking",
                 "" if args.conditions is None else "--conditions " + " ".join(args.conditions),
                 f"--prompt-mode {args.prompt_mode}",
+                f"--decode-mode {args.decode_mode}",
                 "" if args.progress_jsonl is None else f"--progress-jsonl {args.progress_jsonl}",
                 ""
                 if args.partial_predictions_jsonl is None

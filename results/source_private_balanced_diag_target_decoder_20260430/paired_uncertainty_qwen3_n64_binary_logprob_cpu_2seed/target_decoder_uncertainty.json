@@ -1,0 +1,210 @@
+{
+  "bootstrap_samples": 5000,
+  "created_utc": "2026-04-30T12:49:19.602755+00:00",
+  "gate": "source_private_target_decoder_uncertainty",
+  "headline": {
+    "max_p50_latency_ms": 1119.0609790064627,
+    "min_matched_minus_best_control": 0.734375,
+    "min_matched_minus_target": 0.75,
+    "min_paired_ci95_low_vs_best_control": 0.625,
+    "min_paired_ci95_low_vs_target": 0.640625,
+    "min_valid_prediction_rate": 1.0,
+    "pass_rows": 2,
+    "rows": 2
+  },
+  "interpretation": "This gate asks whether a frozen target LLM can consume the compact source packet beyond target priors and same-byte/source-destroyed controls. It is a reviewer-defense receiver gate, not a systems-speed claim.",
+  "pass_gate": true,
+  "pass_rule": "Every target-decoder run must pass its point gate, preserve exact-ID parity, have matched valid prediction rate >=0.95, and have paired CI95 lower bounds above +0.10 versus both target-only and the strongest source-destroying or matched-byte text control.",
+  "result_dirs": [
+    "results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n64_binary_logprob_cpu",
+    "results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_n64_binary_logprob_cpu"
+  ],
+  "rows": [
+    {
+      "best_control": "shuffled_packet",
+      "best_control_accuracy": 0.25,
+      "comparisons": {
+        "random_same_byte": {
+          "baseline": "random_same_byte",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 16,
+            "wins": 48
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.859375,
+            "ci95_low": 0.640625,
+            "mean": 0.75
+          }
+        },
+        "shuffled_packet": {
+          "baseline": "shuffled_packet",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 16,
+            "wins": 48
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.84375,
+            "ci95_low": 0.640625,
+            "mean": 0.75
+          }
+        },
+        "structured_free_text_2byte": {
+          "baseline": "structured_free_text_2byte",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 16,
+            "wins": 48
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.859375,
+            "ci95_low": 0.640625,
+            "mean": 0.75
+          }
+        },
+        "structured_json_2byte": {
+          "baseline": "structured_json_2byte",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 16,
+            "wins": 48
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.84375,
+            "ci95_low": 0.640625,
+            "mean": 0.75
+          }
+        },
+        "target_only": {
+          "baseline": "target_only",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 16,
+            "wins": 48
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.859375,
+            "ci95_low": 0.640625,
+            "mean": 0.75
+          }
+        }
+      },
+      "exact_id_parity": true,
+      "matched_accuracy": 1.0,
+      "matched_mean_generated_tokens": 4.0,
+      "matched_mean_payload_bytes": 2.0,
+      "matched_minus_best_control": 0.75,
+      "matched_minus_target": 0.75,
+      "matched_p50_latency_ms": 1087.5756875029765,
+      "matched_valid_prediction_rate": 1.0,
+      "n": 64,
+      "paired_vs_best_control_ci95_low": 0.640625,
+      "paired_vs_target_ci95_low": 0.640625,
+      "pass_gate": true,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n64_binary_logprob_cpu",
+      "rows_sha256": "06f31a6475a176d1a3221a4f5c33256d31e466ad5a1fc97fa27defd2ef7b3849",
+      "summary_sha256": "c3b1d8660099a520858bf84cd4d7cac30ce39562b73c90632a97376eb3e39447",
+      "surface": "qwen3_seed29_n64_binary_logprob_cpu",
+      "target_only_accuracy": 0.25
+    },
+    {
+      "best_control": "random_same_byte",
+      "best_control_accuracy": 0.265625,
+      "comparisons": {
+        "random_same_byte": {
+          "baseline": "random_same_byte",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 17,
+            "wins": 47
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.84375,
+            "ci95_low": 0.625,
+            "mean": 0.734375
+          }
+        },
+        "shuffled_packet": {
+          "baseline": "shuffled_packet",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 16,
+            "wins": 48
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.859375,
+            "ci95_low": 0.640625,
+            "mean": 0.75
+          }
+        },
+        "structured_free_text_2byte": {
+          "baseline": "structured_free_text_2byte",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 16,
+            "wins": 48
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.84375,
+            "ci95_low": 0.640625,
+            "mean": 0.75
+          }
+        },
+        "structured_json_2byte": {
+          "baseline": "structured_json_2byte",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 16,
+            "wins": 48
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.859375,
+            "ci95_low": 0.640625,
+            "mean": 0.75
+          }
+        },
+        "target_only": {
+          "baseline": "target_only",
+          "n": 64,
+          "paired_counts": {
+            "losses": 0,
+            "ties": 16,
+            "wins": 48
+          },
+          "paired_delta_bootstrap95": {
+            "ci95_high": 0.84375,
+            "ci95_low": 0.640625,
+            "mean": 0.75
+          }
+        }
+      },
+      "exact_id_parity": true,
+      "matched_accuracy": 1.0,
+      "matched_mean_generated_tokens": 4.0,
+      "matched_mean_payload_bytes": 2.0,
+      "matched_minus_best_control": 0.734375,
+      "matched_minus_target": 0.75,
+      "matched_p50_latency_ms": 1119.0609790064627,
+      "matched_valid_prediction_rate": 1.0,
+      "n": 64,
+      "paired_vs_best_control_ci95_low": 0.625,
+      "paired_vs_target_ci95_low": 0.640625,
+      "pass_gate": true,
+      "result_dir": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_n64_binary_logprob_cpu",
+      "rows_sha256": "dcb5f4c5bf36ce1775f8f2b4d7a90aeabb24eee3b4ab7662dad3cec184181018",
+      "summary_sha256": "2e03139d042cee66e98c8689f6865417317f7f10acfc7efa5948fab21c12f481",
+      "surface": "qwen3_seed31_n64_binary_logprob_cpu",
+      "target_only_accuracy": 0.25
+    }
+  ]
+}

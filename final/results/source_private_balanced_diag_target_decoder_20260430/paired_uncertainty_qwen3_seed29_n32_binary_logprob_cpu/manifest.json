@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "target_decoder_uncertainty.json": "b30cdea303e0c6e7f1c5ea617daa121112ea3f1bf844ba846e687f802ccbade2",
+    "target_decoder_uncertainty.md": "5649d43fa27b3971c0b330e4a349fe7a65d93b9c40f032abc7cf822b9dadb174"
+  },
+  "artifacts": [
+    "target_decoder_uncertainty.json",
+    "target_decoder_uncertainty.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

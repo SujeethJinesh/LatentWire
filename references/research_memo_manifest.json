@@ -1181,5 +1181,12 @@
     "path": "references/525_balanced_cross_family_model_receiver_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the balanced cross-family public-only falsification and frozen target-decoder receiver probe, covering activation communication, C2C/KVComm, TurboQuant/KIVI, Wyner-Ziv side information, diffusion-token merging, and DistServe systems framing."
+  },
+  {
+    "num": 526,
+    "slug": "balanced_binary_verifier_receiver_refs_20260430",
+    "path": "references/526_balanced_binary_verifier_receiver_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the calibrated balanced binary-verifier receiver, covering LM likelihood classification, calibration, constrained decoding, structured LM programs, serving/KV baselines, TurboQuant/QJL/KIVI compression baselines, diffusion-transformer and V-JEPA receiver inspiration, and systems claim boundaries."
   }
 ]

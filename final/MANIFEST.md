@@ -237,6 +237,14 @@
   Qwen3-0.6B balanced label-output receiver is positive but partial (`0.688`
   matched vs `0.250` target/control, CI95 low `+0.281`, valid rate `0.938`);
   the choice-alias receiver is pruned at target-only accuracy.
+- Balanced binary-verifier receiver code, tests, references, memo, and
+  artifacts showing a stricter frozen Qwen3 target receiver now passes n64 over
+  two seeds. The target scores yes/no packet-candidate equality and falls back
+  to target prior unless the yes-minus-no margin is positive. Combined n64:
+  `2/2` pass rows, matched packet `1.000`, target `0.250`, best control at most
+  `0.266`, minimum matched-best-control delta `+0.734`, minimum CI95 lower bound
+  `+0.625` vs best control, valid rate `1.000`. Choice-token likelihood is
+  pruned at target-only accuracy.
 
 ## Notes
 

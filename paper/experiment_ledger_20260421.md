@@ -16258,3 +16258,32 @@ valid output rate but collapses to option priors and gives no matched lift
 cross-family public-only leakage is weakened, but comfortable ICLR still needs a
 balanced model-mediated or learned receiver that passes strict validity at n64+
 and native serving telemetry.
+
+Update `2026-04-30`: the balanced target receiver now has a stricter frozen
+Qwen3 binary-verifier row that passes the strict-small gate over two seeds. I
+added `candidate_binary_logprob` to
+`scripts/run_source_private_tool_trace_target_decoder_smoke.py`: for each
+candidate, the target model scores a yes/no equality question between the
+2-byte source packet and the candidate's public diagnostic handle, then falls
+back to the target prior unless the best yes-minus-no margin is positive. The
+first n4 diagnostic without this threshold failed because random packets chose
+the least-negative candidate; the calibrated fallback fixed that control
+failure. I also added leakage-focused tests for packet validity, binary prompt
+answer-label exclusion, token-surface scoring, and fallback behavior. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_choice_logprob_cpu/`,
+`qwen3_seed29_n32_binary_logprob_cpu/`,
+`qwen3_seed29_n64_binary_logprob_cpu/`,
+`qwen3_seed31_n64_binary_logprob_cpu/`, and
+`paired_uncertainty_qwen3_n64_binary_logprob_cpu_2seed/`; memo:
+`paper/source_private_balanced_binary_verifier_receiver_20260430.md`;
+references:
+`references/526_balanced_binary_verifier_receiver_refs_20260430.md`. Outcome:
+choice-token likelihood is pruned (`0.250` matched, equal to target/control).
+The calibrated binary verifier passes n32 seed29 and n64 seeds 29/31. The
+combined n64 paired summary has `2/2` pass rows, matched packet `1.000`, target
+`0.250`, best control at most `0.266`, minimum matched-best-control delta
+`+0.734`, minimum CI95 lower bound `+0.625` vs best control, and valid rate
+`1.000`. Interpretation: promote this as model-mediated packet-consumption
+evidence for the balanced diagnostic protocol, but not as broad latent transfer
+or a production latency claim; the Mac CPU receiver uses four target forward
+passes per condition and has p50 matched latency around `1.1 s`.

@@ -1,0 +1,183 @@
+{
+  "args": {
+    "benchmark_jsonl": "results/source_private_diag_only_public_ablation_20260430/direct_diag_n500_seed29/benchmark.jsonl",
+    "conditions": [
+      "target_only",
+      "matched_packet",
+      "shuffled_packet",
+      "random_same_byte",
+      "structured_json_2byte",
+      "structured_free_text_2byte"
+    ],
+    "decode_mode": "choice_logprob",
+    "device": "cpu",
+    "do_sample": false,
+    "dtype": "float32",
+    "enable_thinking": false,
+    "limit": 32,
+    "max_new_tokens": 1,
+    "model": "Qwen/Qwen3-0.6B",
+    "output_dir": "results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_choice_logprob_cpu",
+    "partial_predictions_jsonl": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_choice_logprob_cpu/target_predictions.partial.jsonl",
+    "progress_every": 4,
+    "progress_jsonl": ".debug/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_choice_logprob_cpu_progress.jsonl",
+    "prompt_mode": "choice_alias",
+    "seed": 29
+  },
+  "artifact_sha256": {
+    "summary.json": "ae8a6aa7f96293e262c5db5334816e7a82c29d726a53754c2e014b697e63222a",
+    "summary.md": "65f3e49af8e29390ab8f8c6fa967785f78b62235c735bb82c9c3747465e93f56",
+    "target_predictions.jsonl": "e71eb7d4c21392058a9cf565decbb82430209d300bcd899c1c8eba12215f00bb",
+    "target_predictions.partial.jsonl": "e71eb7d4c21392058a9cf565decbb82430209d300bcd899c1c8eba12215f00bb"
+  },
+  "artifacts": [
+    "target_predictions.jsonl",
+    "target_predictions.partial.jsonl",
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "benchmark_sha256": "baf6f0efe1e776ddad0b0647270cebee95f59c33e876f09f4c54619d1cdee7bc",
+  "command": "./venv_arm64/bin/python scripts/run_source_private_tool_trace_target_decoder_smoke.py --benchmark-jsonl results/source_private_diag_only_public_ablation_20260430/direct_diag_n500_seed29/benchmark.jsonl --output-dir results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_choice_logprob_cpu --model Qwen/Qwen3-0.6B --device cpu --dtype float32 --limit 32 --seed 29 --max-new-tokens 1 --no-enable-thinking --conditions target_only matched_packet shuffled_packet random_same_byte structured_json_2byte structured_free_text_2byte --prompt-mode choice_alias --decode-mode choice_logprob --progress-jsonl .debug/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_choice_logprob_cpu_progress.jsonl --partial-predictions-jsonl results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed29_n32_choice_logprob_cpu/target_predictions.partial.jsonl --progress-every 4",
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "run_utc": "2026-04-30T12:31:29.653147+00:00",
+  "script_sha256": "c6fda081acad0f40712508e0c5a0aab68534309caa01e81ebdf63cf2169c8e90",
+  "summary": {
+    "best_control_accuracy": 0.25,
+    "conditions": [
+      "target_only",
+      "matched_packet",
+      "shuffled_packet",
+      "random_same_byte",
+      "structured_json_2byte",
+      "structured_free_text_2byte"
+    ],
+    "exact_id_count": 32,
+    "exact_id_parity": true,
+    "exact_id_sha256": "29b8310938a9e3555d4706324390110f83caf8ff29eb3b4c7d1c5f55d93a88b3",
+    "matched_accuracy": 0.25,
+    "matched_minus_best_control": 0.0,
+    "matched_minus_target": 0.0,
+    "metrics": {
+      "matched_packet": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 738.4281044942327,
+        "valid_prediction_rate": 1.0
+      },
+      "random_same_byte": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 768.0403539998224,
+        "valid_prediction_rate": 1.0
+      },
+      "shuffled_packet": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 945.43968749349,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_free_text_2byte": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 875.1395625149598,
+        "valid_prediction_rate": 1.0
+      },
+      "structured_json_2byte": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 2.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 837.8137709951261,
+        "valid_prediction_rate": 1.0
+      },
+      "target_only": {
+        "accuracy": 0.25,
+        "correct": 8,
+        "correct_ids": [
+          "sphr_0000",
+          "sphr_0004",
+          "sphr_0008",
+          "sphr_0012",
+          "sphr_0016",
+          "sphr_0020",
+          "sphr_0024",
+          "sphr_0028"
+        ],
+        "mean_generated_tokens": 1.0,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 841.4402499911375,
+        "valid_prediction_rate": 1.0
+      }
+    },
+    "n": 32,
+    "pass_gate": false,
+    "pass_rule": "matched LLM target decoder must beat target-only by >=0.15 while shuffled/random/2-byte structured relay controls stay within +0.05.",
+    "target_only_accuracy": 0.25
+  }
+}
