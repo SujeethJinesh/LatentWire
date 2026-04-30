@@ -15946,3 +15946,25 @@ compression-native ablation. The next compression-native branch should be
 product-codebook packets, while the main learned-receiver branch should move to
 stronger frozen activations or a less hand-coded private retrieval/tool-trace
 surface.
+
+Follow-up `2026-04-30`: implemented and ran the product-codebook packet gate,
+which is now the strongest compression-native candidate. Code:
+`scripts/run_source_private_tool_trace_compression_baselines.py` and
+`scripts/build_source_private_product_codebook_packet_gate.py`; tests:
+`tests/test_run_source_private_tool_trace_compression_baselines.py` and
+`tests/test_build_source_private_product_codebook_packet_gate.py`; memo:
+`paper/source_private_product_codebook_packet_gate_20260430.md`; references:
+`references/514_product_codebook_packet_refs_20260430.md`; artifact:
+`results/source_private_product_codebook_packet_gate_20260430/`. The gate fits
+a product quantizer over source-projected training vectors and sends one learned
+centroid index per byte. Outcome: strict systems-latency gate is false, but the
+functional method gate is true. Product-codebook packets pass `8/9` row-level
+source-control checks, cover all three remaps, reach max accuracy `0.598`, beat
+the strongest product-codebook destructive control by `+0.199` to `+0.320`, and
+beat scalar Wyner-Ziv on every row by `+0.004` to `+0.125`. The 2-byte remap-107
+row fails controls (`PQ-control +0.199` but best control `0.312` > target+0.05),
+and all rows fail the strict `<2 ms` latency bar with current Python p50 decode
+latencies `8.3-10.3 ms`. Decision: promote product-codebook packets as the live
+compression-native method candidate, with an explicit latency caveat. The next
+exact gate is optimized/cached PQ decode plus paired bootstrap; a separate
+target-decoder n256 gate remains necessary for the hand-coded-decoder objection.

@@ -535,3 +535,6 @@ final-paper framing:
 - `513_`: Controlled rotation-sign packet falsification and compression-native
   systems framing for QJL, TurboQuant, product quantization, KIVI, SnapKV, C2C,
   DeepSC, and CUDA transfer-granularity caveats.
+- `514_`: Product-codebook packet references for product quantization,
+  TurboQuant, QJL, KIVI, C2C, LMCache, semantic communication, and
+  diffusion-transformer latent-space framing.

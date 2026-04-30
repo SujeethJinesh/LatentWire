@@ -281,6 +281,21 @@ step should be product-codebook packets or stronger protected residual
 selection; the full-paper blocker remains a non-hand-coded learned receiver or
 a narrower source-private packet + systems framing.
 
+Update `2026-04-30`: product-codebook packets materially improve the
+compression-native contribution. The new gate sends one learned product-
+quantizer centroid index per byte over source-projected vectors, with
+label-shuffled, constrained-shuffle, answer-masked, permuted-code, and random
+same-byte controls. On the same three remapped `n=256` surfaces and `2/4/6`
+byte budgets used for rotation-sign, the functional gate passes: `8/9` row-
+level source-control passes, all three remaps covered, max accuracy `0.598`,
+control margins `+0.199` to `+0.320`, and product-codebook accuracy beats
+scalar Wyner-Ziv on every row by `+0.004` to `+0.125`. The strict systems gate
+does not pass because the simple Python decoder has p50 latency `8.3-10.3 ms`.
+Readiness improves on method depth because we now have a learned discrete
+codec that beats scalar/QJL/protected/sign comparators on the remapped surface,
+but the full-paper blocker remains: optimize or separate PQ decode latency, add
+paired uncertainty, and still address the hand-coded/target-decoder objection.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

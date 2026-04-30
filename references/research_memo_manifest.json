@@ -1097,5 +1097,12 @@
     "path": "references/513_rotation_sign_packet_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the controlled rotation-sign packet falsification and compression-native systems framing, covering QJL, TurboQuant, product quantization, KIVI, SnapKV, C2C, DeepSC, and CUDA memory-transaction caveats."
+  },
+  {
+    "num": 514,
+    "slug": "product_codebook_packet_refs_20260430",
+    "path": "references/514_product_codebook_packet_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the product-codebook packet gate, covering product quantization, TurboQuant, QJL, KIVI, C2C, LMCache, semantic communication, and diffusion-transformer latent-space framing."
   }
 ]

@@ -9,7 +9,7 @@ import random
 import statistics
 import sys
 import time
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from typing import Any
 
 import numpy as np
@@ -24,6 +24,16 @@ from scripts.run_source_private_hidden_repair_packet_smoke import (  # noqa: E40
     _prior_prediction,
     make_benchmark,
 )
+
+
+@dataclass(frozen=True)
+class ProductCodebook:
+    centroids: tuple[np.ndarray, ...]
+    slices: tuple[slice, ...]
+
+    @property
+    def subspaces(self) -> int:
+        return len(self.centroids)
 from scripts.run_source_private_tool_trace_learned_syndrome import (  # noqa: E402
     _augment,
     _candidate_matrix,
@@ -311,6 +321,100 @@ def _qjl_residual_packet(
     return coarse + signs
 
 
+def _fit_product_codebook(
+    train_examples: list[Example],
+    *,
+    encoder: np.ndarray,
+    feature_dim: int,
+    budget_bytes: int,
+    seed: int,
+    iterations: int = 12,
+) -> ProductCodebook:
+    if budget_bytes < 1:
+        raise ValueError("product codebook requires at least one byte")
+    vectors = np.stack(
+        [_project_source(example, encoder=encoder, feature_dim=feature_dim, mode="matched") for example in train_examples],
+        axis=0,
+    ).astype(np.float32)
+    dim_indices = np.array_split(np.arange(feature_dim), budget_bytes)
+    rng = np.random.default_rng(seed)
+    centroids: list[np.ndarray] = []
+    slices: list[slice] = []
+    offset = 0
+    for subspace_index, indices in enumerate(dim_indices):
+        part = vectors[:, indices].astype(np.float32)
+        cluster_count = min(256, max(2, part.shape[0]))
+        init_indices = rng.choice(part.shape[0], size=cluster_count, replace=part.shape[0] < cluster_count)
+        sub_centroids = part[init_indices].copy()
+        for _ in range(iterations):
+            distances = np.sum((part[:, None, :] - sub_centroids[None, :, :]) ** 2, axis=2)
+            assignments = np.argmin(distances, axis=1)
+            for centroid_index in range(cluster_count):
+                mask = assignments == centroid_index
+                if np.any(mask):
+                    sub_centroids[centroid_index] = part[mask].mean(axis=0)
+        if len(indices) == 0 or int(indices[0]) != offset:
+            # array_split over arange should produce contiguous partitions.
+            raise ValueError("non-contiguous product-codebook partition")
+        centroids.append(sub_centroids.astype(np.float32))
+        slices.append(slice(int(indices[0]), int(indices[-1]) + 1))
+        offset = int(indices[-1]) + 1
+    return ProductCodebook(centroids=tuple(centroids), slices=tuple(slices))
+
+
+def _product_codebook_packet(
+    example: Example,
+    *,
+    encoder: np.ndarray,
+    codebook: ProductCodebook,
+    feature_dim: int,
+    mode: str,
+) -> bytes:
+    predicted = _project_source(example, encoder=encoder, feature_dim=feature_dim, mode=mode)
+    codes = np.zeros(codebook.subspaces, dtype=np.uint8)
+    for subspace_index, (sub_centroids, dim_slice) in enumerate(zip(codebook.centroids, codebook.slices, strict=True)):
+        part = predicted[dim_slice]
+        distances = np.sum((sub_centroids - part[None, :]) ** 2, axis=1)
+        codes[subspace_index] = int(np.argmin(distances))
+    return codes.tobytes()
+
+
+def _decode_product_codebook_packet(
+    example: Example,
+    payload: bytes | None,
+    *,
+    codebook: ProductCodebook,
+    feature_dim: int,
+    candidate_view: str,
+) -> tuple[str, dict[str, Any]]:
+    if not payload:
+        return _prior_prediction(example), {"decoder": "prior"}
+    reconstructed = np.zeros(feature_dim, dtype=np.float32)
+    used_subspaces = min(len(payload), codebook.subspaces)
+    raw_codes = np.frombuffer(payload[:used_subspaces], dtype=np.uint8)
+    for subspace_index, code in enumerate(raw_codes):
+        sub_centroids = codebook.centroids[subspace_index]
+        centroid_index = int(code) % sub_centroids.shape[0]
+        reconstructed[codebook.slices[subspace_index]] = sub_centroids[centroid_index]
+    candidates = _candidate_matrix_for_view(example, feature_dim, candidate_view=candidate_view)
+    distances = np.sum((candidates - reconstructed[None, :]) ** 2, axis=1)
+    min_distance = float(np.min(distances))
+    tied = np.flatnonzero(np.isclose(distances, min_distance, rtol=1e-6, atol=1e-8))
+    labels = [candidate.label for candidate in example.candidates]
+    prior = _prior_prediction(example)
+    if any(labels[int(idx)] == prior for idx in tied):
+        prediction = prior
+    else:
+        prediction = labels[int(tied[0])]
+    return prediction, {
+        "decoder": "product_codebook_l2",
+        "subspaces": used_subspaces,
+        "centroids_per_subspace": [int(codebook.centroids[idx].shape[0]) for idx in range(used_subspaces)],
+        "min_l2": min_distance,
+        "ties": [int(i) for i in tied.tolist()],
+    }
+
+
 def _fit_relative_score_calibration(
     train_examples: list[Example],
     *,
@@ -556,6 +660,7 @@ def _payload_and_decode(
     residual_projection: np.ndarray,
     protected_projection: np.ndarray,
     protected_residual_projection: np.ndarray,
+    product_codebook: ProductCodebook | None,
     feature_dim: int,
     budget_bytes: int,
     lo: np.ndarray,
@@ -713,6 +818,42 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "protected_rotated_residual", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
+    if condition == "product_codebook_source":
+        if product_codebook is None:
+            raise ValueError("product_codebook_source requires product_codebook")
+        payload = _product_codebook_packet(
+            example,
+            encoder=encoder,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            mode="matched",
+        )
+        prediction, meta = _decode_product_codebook_packet(
+            example,
+            payload,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "product_codebook", "candidate_view": candidate_view}
+    if condition == "product_codebook_label_shuffled_ridge":
+        if product_codebook is None:
+            raise ValueError("product_codebook_label_shuffled_ridge requires product_codebook")
+        payload = _product_codebook_packet(
+            example,
+            encoder=label_shuffle_encoder,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            mode="matched",
+        )
+        prediction, meta = _decode_product_codebook_packet(
+            example,
+            payload,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "product_codebook", "source": "label_shuffled_ridge", "candidate_view": candidate_view}
     if condition == "relative_score_source":
         payload = _relative_score_packet(
             example,
@@ -831,6 +972,30 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "protected_rotated_residual", "source": other.example_id, "shuffle": "cross_family_slot", "candidate_view": candidate_view}
+    if condition == "product_codebook_constrained_shuffled_source":
+        if product_codebook is None:
+            raise ValueError("product_codebook_constrained_shuffled_source requires product_codebook")
+        other = eval_examples[_constrained_nonself_index(index, eval_examples)]
+        payload = _product_codebook_packet(
+            other,
+            encoder=encoder,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            mode="matched",
+        )
+        prediction, meta = _decode_product_codebook_packet(
+            example,
+            payload,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {
+            "packet_family": "product_codebook",
+            "source": other.example_id,
+            "shuffle": "cross_family_slot",
+            "candidate_view": candidate_view,
+        }
     if condition == "relative_constrained_shuffled_source":
         other = eval_examples[_constrained_nonself_index(index, eval_examples)]
         payload = _relative_score_packet(
@@ -928,6 +1093,24 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "protected_rotated_residual", "source": "answer_masked", "candidate_view": candidate_view}
+    if condition == "product_codebook_answer_masked_source":
+        if product_codebook is None:
+            raise ValueError("product_codebook_answer_masked_source requires product_codebook")
+        payload = _product_codebook_packet(
+            example,
+            encoder=encoder,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            mode="answer_masked",
+        )
+        prediction, meta = _decode_product_codebook_packet(
+            example,
+            payload,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "product_codebook", "source": "answer_masked", "candidate_view": candidate_view}
     if condition == "relative_answer_masked_source":
         payload = _relative_score_packet(
             example,
@@ -1174,6 +1357,38 @@ def _payload_and_decode(
             candidate_view=candidate_view,
         )
         return prediction, payload, meta | {"packet_family": "protected_rotated_residual", "source": "random", "candidate_view": candidate_view}
+    if condition == "product_codebook_permuted_codes":
+        if product_codebook is None:
+            raise ValueError("product_codebook_permuted_codes requires product_codebook")
+        payload = _product_codebook_packet(
+            example,
+            encoder=encoder,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            mode="matched",
+        )
+        if len(payload) > 1:
+            payload = payload[1:] + payload[:1]
+        prediction, meta = _decode_product_codebook_packet(
+            example,
+            payload,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "product_codebook", "source": "permuted_codes", "candidate_view": candidate_view}
+    if condition == "product_codebook_random_same_byte":
+        if product_codebook is None:
+            raise ValueError("product_codebook_random_same_byte requires product_codebook")
+        payload = rng.randbytes(product_codebook.subspaces)
+        prediction, meta = _decode_product_codebook_packet(
+            example,
+            payload,
+            codebook=product_codebook,
+            feature_dim=feature_dim,
+            candidate_view=candidate_view,
+        )
+        return prediction, payload, meta | {"packet_family": "product_codebook", "source": "random", "candidate_view": candidate_view}
     if condition == "raw_source_sign_sketch":
         payload = _raw_source_sign_packet(example, code_projection, feature_dim, budget_bytes)
         prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
@@ -1227,6 +1442,7 @@ def _predict(
     residual_projection: np.ndarray,
     protected_projection: np.ndarray,
     protected_residual_projection: np.ndarray,
+    product_codebook: ProductCodebook | None,
     feature_dim: int,
     budget_bytes: int,
     lo: np.ndarray,
@@ -1253,6 +1469,7 @@ def _predict(
         residual_projection=residual_projection,
         protected_projection=protected_projection,
         protected_residual_projection=protected_residual_projection,
+        product_codebook=product_codebook,
         feature_dim=feature_dim,
         budget_bytes=budget_bytes,
         lo=lo,
@@ -1316,6 +1533,7 @@ def run_gate(
     eval_rows = make_benchmark(examples=eval_examples, candidates=candidates, seed=eval_seed, family_set=eval_family_set)
     train_rows = _remap_candidate_slots(train_rows, remap_seed=remap_slot_seed)
     eval_rows = _remap_candidate_slots(eval_rows, remap_seed=remap_slot_seed)
+    packet_variants = list(packet_variants or [])
     encoder = _fit_ridge_encoder_for_view(
         train_rows,
         feature_dim=feature_dim,
@@ -1365,6 +1583,18 @@ def run_gate(
     )
     protected_sign_projection = _normalize_rows(rng_np.normal(size=(max_budget * 8, feature_dim))).astype(np.float32)
     protected_residual_projection = _orthogonal_residual_projection(protected_sign_projection, protected_projection[:max_budget])
+    product_codebooks: dict[int, ProductCodebook] = {}
+    if packet_variants and "product_codebook" in packet_variants:
+        product_codebooks = {
+            budget: _fit_product_codebook(
+                train_rows,
+                encoder=encoder,
+                feature_dim=feature_dim,
+                budget_bytes=budget,
+                seed=train_seed * 9001 + eval_seed * 17 + budget,
+            )
+            for budget in budgets
+        }
     lo, hi = _fit_scalar_calibration(
         train_rows,
         encoder=encoder,
@@ -1386,7 +1616,6 @@ def run_gate(
         candidate_view=candidate_view,
     )
     rng = random.Random(train_seed * 4001 + eval_seed)
-    packet_variants = list(packet_variants or [])
     conditions = [
         "target_only",
         "matched_learned_syndrome",
@@ -1429,6 +1658,17 @@ def run_gate(
                 "rotation_sign_random_same_byte",
             ]
         )
+    if "product_codebook" in packet_variants:
+        conditions.extend(
+            [
+                "product_codebook_source",
+                "product_codebook_label_shuffled_ridge",
+                "product_codebook_constrained_shuffled_source",
+                "product_codebook_answer_masked_source",
+                "product_codebook_permuted_codes",
+                "product_codebook_random_same_byte",
+            ]
+        )
     if "relative_scores" in packet_variants:
         conditions.extend(
             [
@@ -1468,6 +1708,7 @@ def run_gate(
     budget_summaries: list[dict[str, Any]] = []
     prediction_files: dict[str, str] = {}
     for budget in budgets:
+        product_codebook = product_codebooks.get(budget)
         by_condition: dict[str, list[dict[str, Any]]] = {condition: [] for condition in conditions}
         for row_index, example in enumerate(eval_rows):
             for condition in conditions:
@@ -1486,6 +1727,7 @@ def run_gate(
                         residual_projection=residual_projection,
                         protected_projection=protected_projection,
                         protected_residual_projection=protected_residual_projection,
+                        product_codebook=product_codebook,
                         feature_dim=feature_dim,
                         budget_bytes=budget,
                         lo=lo,
@@ -1516,6 +1758,7 @@ def run_gate(
         qjl = metrics["qjl_residual_source"]["accuracy"] if "qjl_residual_source" in metrics else None
         protected = metrics["protected_rotated_residual_source"]["accuracy"] if "protected_rotated_residual_source" in metrics else None
         rotation_sign = metrics["rotation_sign_source"]["accuracy"] if "rotation_sign_source" in metrics else None
+        product_codebook = metrics["product_codebook_source"]["accuracy"] if "product_codebook_source" in metrics else None
         relative = metrics["relative_score_source"]["accuracy"] if "relative_score_source" in metrics else None
         relative_canonical = metrics["relative_canonical_score_source"]["accuracy"] if "relative_canonical_score_source" in metrics else None
         consistent_posterior = metrics["consistent_posterior_packet_source"]["accuracy"] if "consistent_posterior_packet_source" in metrics else None
@@ -1544,6 +1787,14 @@ def run_gate(
             and metrics["rotation_sign_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["rotation_sign_permuted_bits"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["rotation_sign_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+        )
+        product_codebook_controls_ok = (
+            product_codebook is not None
+            and metrics["product_codebook_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["product_codebook_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["product_codebook_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["product_codebook_permuted_codes"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["product_codebook_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
         )
         relative_controls_ok = (
             relative is not None
@@ -1578,6 +1829,9 @@ def run_gate(
         rotation_sign_source_packet_pass = (
             rotation_sign is not None and rotation_sign >= no_source + 0.15 and rotation_sign_controls_ok
         )
+        product_codebook_source_packet_pass = (
+            product_codebook is not None and product_codebook >= no_source + 0.15 and product_codebook_controls_ok
+        )
         relative_source_packet_pass = relative is not None and relative >= no_source + 0.15 and relative_controls_ok
         relative_canonical_source_packet_pass = (
             relative_canonical is not None and relative_canonical >= no_source + 0.15 and relative_canonical_controls_ok
@@ -1602,6 +1856,7 @@ def run_gate(
                 "qjl_residual_source_accuracy": qjl,
                 "protected_rotated_residual_accuracy": protected,
                 "rotation_sign_source_accuracy": rotation_sign,
+                "product_codebook_source_accuracy": product_codebook,
                 "relative_score_source_accuracy": relative,
                 "relative_canonical_score_source_accuracy": relative_canonical,
                 "consistent_posterior_packet_accuracy": consistent_posterior,
@@ -1621,6 +1876,12 @@ def run_gate(
                 "rotation_sign_minus_raw_source_sign": (
                     None if rotation_sign is None else rotation_sign - metrics["raw_source_sign_sketch"]["accuracy"]
                 ),
+                "product_codebook_minus_best_no_source": None if product_codebook is None else product_codebook - no_source,
+                "product_codebook_minus_scalar": None if product_codebook is None else product_codebook - scalar,
+                "product_codebook_minus_qjl": None if product_codebook is None or qjl is None else product_codebook - qjl,
+                "product_codebook_minus_protected": (
+                    None if product_codebook is None or protected is None else product_codebook - protected
+                ),
                 "relative_minus_best_no_source": None if relative is None else relative - no_source,
                 "relative_minus_scalar": None if relative is None else relative - scalar,
                 "relative_canonical_minus_best_no_source": None if relative_canonical is None else relative_canonical - no_source,
@@ -1636,12 +1897,14 @@ def run_gate(
                 "qjl_controls_ok": qjl_controls_ok,
                 "protected_controls_ok": protected_controls_ok,
                 "rotation_sign_controls_ok": rotation_sign_controls_ok,
+                "product_codebook_controls_ok": product_codebook_controls_ok,
                 "relative_controls_ok": relative_controls_ok,
                 "relative_canonical_controls_ok": relative_canonical_controls_ok,
                 "consistent_posterior_controls_ok": consistent_posterior_controls_ok,
                 "qjl_source_packet_pass": qjl_source_packet_pass,
                 "protected_source_packet_pass": protected_source_packet_pass,
                 "rotation_sign_source_packet_pass": rotation_sign_source_packet_pass,
+                "product_codebook_source_packet_pass": product_codebook_source_packet_pass,
                 "relative_source_packet_pass": relative_source_packet_pass,
                 "relative_canonical_source_packet_pass": relative_canonical_source_packet_pass,
                 "consistent_posterior_packet_pass": consistent_posterior_packet_pass,
@@ -1678,10 +1941,14 @@ def run_gate(
         "protected_projection_sha256": hashlib.sha256(protected_projection.tobytes()).hexdigest(),
         "protected_projection_utility_sha256": hashlib.sha256(protected_projection_utility.tobytes()).hexdigest(),
         "protected_residual_projection_sha256": hashlib.sha256(protected_residual_projection.tobytes()).hexdigest(),
+        "product_codebook_sha256": {
+            str(budget): hashlib.sha256(b"".join(centroid.tobytes() for centroid in codebook.centroids)).hexdigest()
+            for budget, codebook in product_codebooks.items()
+        },
         "relative_score_calibration": {"lo": relative_lo, "hi": relative_hi},
         "budget_summaries": budget_summaries,
         "pass_gate": any(row["scalar_source_packet_pass"] for row in budget_summaries),
-        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate. Protected rotated residual packets rank random-rotated scalar coordinates by calibration separation, send a protected scalar head, and append a sign-sketch residual tail. Rotation-sign packets send only random-rotation source signs and must beat no-source while constrained shuffle, answer-masked, permuted-bit, and random same-byte controls stay within target_only +0.05. Canonical relative-score packets serialize scores by stable public candidate identity and map bytes back at decode time. Consistent posterior packets distill smoothed candidate posteriors under source-feature and candidate-negative perturbations.",
+        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate. Protected rotated residual packets rank random-rotated scalar coordinates by calibration separation, send a protected scalar head, and append a sign-sketch residual tail. Rotation-sign packets send only random-rotation source signs and must beat no-source while constrained shuffle, answer-masked, permuted-bit, and random same-byte controls stay within target_only +0.05. Product-codebook packets send one learned centroid index per byte and must beat no-source while label-shuffled, constrained-shuffle, answer-masked, permuted-code, and random same-byte controls stay within target_only +0.05. Canonical relative-score packets serialize scores by stable public candidate identity and map bytes back at decode time. Consistent posterior packets distill smoothed candidate posteriors under source-feature and candidate-negative perturbations.",
         "prediction_files": prediction_files,
     }
     (output_dir / "summary.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -1693,18 +1960,20 @@ def run_gate(
         f"- candidate view: `{candidate_view}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
-        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Protected pass | Rotation-sign pass | Relative pass | Canonical relative pass | Consistent posterior pass | Syndrome | Scalar | QJL | Protected | Rotation-sign | Relative | Canonical relative | Consistent posterior | Target | Best no-source | Protected - scalar | Rotation-sign - scalar | Relative - scalar | Canonical - scalar | Consistent - scalar |",
-        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Protected pass | Rotation-sign pass | PQ pass | Relative pass | Canonical relative pass | Consistent posterior pass | Syndrome | Scalar | QJL | Protected | Rotation-sign | PQ | Relative | Canonical relative | Consistent posterior | Target | Best no-source | Protected - scalar | Rotation-sign - scalar | PQ - scalar | Relative - scalar | Canonical - scalar | Consistent - scalar |",
+        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in budget_summaries:
         qjl_acc = "n/a" if row["qjl_residual_source_accuracy"] is None else f"{row['qjl_residual_source_accuracy']:.3f}"
         protected_acc = "n/a" if row["protected_rotated_residual_accuracy"] is None else f"{row['protected_rotated_residual_accuracy']:.3f}"
         rotation_sign_acc = "n/a" if row["rotation_sign_source_accuracy"] is None else f"{row['rotation_sign_source_accuracy']:.3f}"
+        product_codebook_acc = "n/a" if row["product_codebook_source_accuracy"] is None else f"{row['product_codebook_source_accuracy']:.3f}"
         relative_acc = "n/a" if row["relative_score_source_accuracy"] is None else f"{row['relative_score_source_accuracy']:.3f}"
         relative_canonical_acc = "n/a" if row["relative_canonical_score_source_accuracy"] is None else f"{row['relative_canonical_score_source_accuracy']:.3f}"
         consistent_posterior_acc = "n/a" if row["consistent_posterior_packet_accuracy"] is None else f"{row['consistent_posterior_packet_accuracy']:.3f}"
         protected_delta = "n/a" if row["protected_minus_scalar"] is None else f"{row['protected_minus_scalar']:.3f}"
         rotation_sign_delta = "n/a" if row["rotation_sign_minus_scalar"] is None else f"{row['rotation_sign_minus_scalar']:.3f}"
+        product_codebook_delta = "n/a" if row["product_codebook_minus_scalar"] is None else f"{row['product_codebook_minus_scalar']:.3f}"
         relative_delta = "n/a" if row["relative_minus_scalar"] is None else f"{row['relative_minus_scalar']:.3f}"
         relative_canonical_delta = "n/a" if row["relative_canonical_minus_scalar"] is None else f"{row['relative_canonical_minus_scalar']:.3f}"
         consistent_posterior_delta = "n/a" if row["consistent_posterior_minus_scalar"] is None else f"{row['consistent_posterior_minus_scalar']:.3f}"
@@ -1712,12 +1981,15 @@ def run_gate(
             f"| {row['budget_bytes']} | `{row['learned_vs_compression_pass']}` | "
             f"`{row['scalar_source_packet_pass']}` | `{row['qjl_source_packet_pass']}` | "
             f"`{row['protected_source_packet_pass']}` | `{row['rotation_sign_source_packet_pass']}` | "
+            f"`{row['product_codebook_source_packet_pass']}` | "
             f"`{row['relative_source_packet_pass']}` | `{row['relative_canonical_source_packet_pass']}` | "
             f"`{row['consistent_posterior_packet_pass']}` | "
             f"{row['matched_accuracy']:.3f} | {row['scalar_quantized_source_accuracy']:.3f} | "
-            f"{qjl_acc} | {protected_acc} | {rotation_sign_acc} | {relative_acc} | {relative_canonical_acc} | {consistent_posterior_acc} | "
+            f"{qjl_acc} | {protected_acc} | {rotation_sign_acc} | {product_codebook_acc} | "
+            f"{relative_acc} | {relative_canonical_acc} | {consistent_posterior_acc} | "
             f"{row['target_only_accuracy']:.3f} | {row['best_no_source_accuracy']:.3f} | "
-            f"{protected_delta} | {rotation_sign_delta} | {relative_delta} | {relative_canonical_delta} | {consistent_posterior_delta} |"
+            f"{protected_delta} | {rotation_sign_delta} | {product_codebook_delta} | "
+            f"{relative_delta} | {relative_canonical_delta} | {consistent_posterior_delta} |"
         )
     lines.append("")
     (output_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
@@ -1768,6 +2040,7 @@ def main() -> None:
             "qjl_residual",
             "protected_rotated_residual",
             "rotation_sign",
+            "product_codebook",
             "relative_scores",
             "relative_scores_canonical",
             "consistent_posterior_packet",

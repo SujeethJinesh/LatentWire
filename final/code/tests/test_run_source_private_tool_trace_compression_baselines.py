@@ -216,6 +216,70 @@ def test_tool_trace_compression_rotation_sign_variant_is_opt_in(tmp_path) -> Non
     }.issubset(control_conditions)
 
 
+def test_tool_trace_compression_product_codebook_variant_is_opt_in(tmp_path) -> None:
+    default = run_gate(
+        output_dir=tmp_path / "default",
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=128,
+        budgets=[4],
+        train_seed=5,
+        eval_seed=6,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+    )
+    opt_in = run_gate(
+        output_dir=tmp_path / "product_codebook",
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=128,
+        budgets=[4],
+        train_seed=5,
+        eval_seed=6,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+        packet_variants=["product_codebook"],
+    )
+
+    assert default["packet_variants"] == []
+    assert "product_codebook_source" not in default["budget_summaries"][0]["metrics"]
+    assert opt_in["packet_variants"] == ["product_codebook"]
+    row = opt_in["budget_summaries"][0]
+    assert "product_codebook_source" in row["metrics"]
+    assert row["product_codebook_source_accuracy"] is not None
+    assert row["product_codebook_controls_ok"] in {True, False}
+    assert "4" in opt_in["product_codebook_sha256"]
+    product_rows = [
+        json.loads(line)
+        for line in (tmp_path / "product_codebook" / "predictions_budget4.jsonl").read_text().splitlines()
+        if json.loads(line)["condition"] == "product_codebook_source"
+    ]
+    control_conditions = {
+        json.loads(line)["condition"]
+        for line in (tmp_path / "product_codebook" / "predictions_budget4.jsonl").read_text().splitlines()
+        if json.loads(line)["condition"].startswith("product_codebook_")
+    }
+    assert product_rows
+    assert {row["payload_bytes"] for row in product_rows} == {4}
+    assert all(row["metadata"]["subspaces"] == 4 for row in product_rows)
+    assert {
+        "product_codebook_source",
+        "product_codebook_label_shuffled_ridge",
+        "product_codebook_constrained_shuffled_source",
+        "product_codebook_answer_masked_source",
+        "product_codebook_permuted_codes",
+        "product_codebook_random_same_byte",
+    }.issubset(control_conditions)
+
+
 def test_tool_trace_compression_relative_scores_variant_is_opt_in(tmp_path) -> None:
     payload = run_gate(
         output_dir=tmp_path / "relative",

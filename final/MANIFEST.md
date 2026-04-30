@@ -158,6 +158,11 @@
   `0.348`, max control margin `+0.066`), so they should remain a baseline while
   product-codebook or stronger protected residual packets become the next
   compression-native gate.
+- Product-codebook packet code, tests, references, memo, and three-remap
+  artifact showing a functional compression-native pass (`8/9` row-level passes,
+  all three remaps covered, max accuracy `0.598`, control margins up to
+  `+0.320`, and product-codebook accuracy above scalar WZ on every row) while
+  failing the strict systems-latency gate under the current Python decoder.
 
 ## Notes
 
