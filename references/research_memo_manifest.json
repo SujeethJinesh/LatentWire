@@ -1076,5 +1076,12 @@
     "path": "references/510_jepa_query_resampler_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the JEPA/Q-Former-style query resampler receiver smoke, covering BLIP-2/Q-Former, Flamingo, Perceiver IO, I-JEPA, and VICReg anti-collapse diagnostics."
+  },
+  {
+    "num": 511,
+    "slug": "control_regularized_jepa_receiver_refs_20260430",
+    "path": "references/511_control_regularized_jepa_receiver_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the control-regularized JEPA/Q-Former receiver gate and novelty/systems pressure test, covering I-JEPA, BLIP-2/Q-Former, Flamingo, LLMLingua, C2C, KIVI, KVQuant, and QJL."
   }
 ]

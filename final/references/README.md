@@ -526,3 +526,6 @@ final-paper framing:
   endpoint rung, covering C2C, activation/KV communication, prompt compression,
   serving metrics, quantized transport, JEPA/diffusion/connectors, and
   representation-geometry follow-up branches.
+- `511_`: Control-regularized JEPA/Q-Former receiver references and
+  novelty/systems pressure-test memo for I-JEPA, BLIP-2/Q-Former, Flamingo,
+  LLMLingua, C2C, KIVI, KVQuant, and QJL.

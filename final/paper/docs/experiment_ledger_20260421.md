@@ -15816,3 +15816,88 @@ best learned accuracy `0.250`, best lift `+0.000`, controls clean, oracle
 `0.250`. Interpretation: directly trained low-rank factors are a clean negative
 on the current frozen BGE feature setup. Prune further bilinear/low-rank BGE
 tuning unless a new feature source or objective changes the hypothesis.
+
+Follow-up `2026-04-30`: added a source-private memory traffic ledger as a
+systems trace-card artifact. New code:
+`scripts/build_source_private_memory_traffic_ledger.py`; test:
+`tests/test_build_source_private_memory_traffic_ledger.py`; artifact:
+`results/source_private_memory_traffic_ledger_20260430/`. The artifact passes
+and joins the systems rate frontier, hardware packet frontier, and packet ISA
+batch frontier into one JSON/CSV/Markdown ledger with raw bytes, single-request
+64B cache-line traffic, single-request 128B DMA-burst traffic, batch-64 packet
+amortization, TTFT proxy deltas, and source text/KV exposure. Headline: packet
+raw minimum is `2` bytes, an isolated request is still `64` line bytes and
+`128` DMA bytes, batch-64 packed packet records reach `5.0` line bytes/request
+and `6.0` DMA bytes/request, query-aware text remains `7.0x` raw bytes but ties
+at `1.0x` cache-line traffic, full hidden-log relay is at least `183.25x` raw
+bytes and `6.0x` cache-line bytes with at least `+164.27 ms` p50 TTFT, and KV
+byte-floor rows are at least `10752.0x` raw bytes and `336.0x` cache-line
+bytes. Interpretation: the systems contribution is now stronger and more
+honest. The paper should claim source-private payload/state-movement and
+batched packet-ISA advantages, while explicitly caveating that production GPU
+throughput and native KV transport remain future gates.
+
+Follow-up `2026-04-30`: implemented the first JEPA/Q-Former-style query
+resampler receiver and ran two strict smokes. New receiver mode:
+`--receiver-mode jepa_query_resampler`; focused tests now cover deterministic
+fitting, candidate-conditioned packet-atom attention scoring, and metadata.
+Artifacts:
+`results/source_private_jepa_query_resampler_semantic_anchor_smoke2_20260430/`
+and
+`results/source_private_jepa_query_resampler_semantic_anchor_k8_smoke_20260430/`.
+The `K=4,D=8` smoke is negative (`0/6` pass rows, best learned `0.375`, best
+lift `+0.125`). The wider `K=8,D=16` smoke recovers partial source signal but
+still fails strict promotion (`0/6` pass rows): core -> holdout reaches `0.500`
+at `4/8` bytes with clean controls, same-family reaches `0.625`, but holdout ->
+core remains at or below target and oracle/headroom is below promotion. Query
+rank/entropy diagnostics are non-collapsed (`rank=128`, entropy about `1.33`),
+so this is not merely target-cache collapse. Interpretation: a
+candidate-conditioned query-resampler is a useful learned-connector baseline,
+but the current random-feature query/key/value formulation is not enough. Do
+not tune thresholds on this branch; the next credible variant must train
+query/key/value factors end-to-end or use stronger frozen LLM/activation
+features.
+
+Follow-up `2026-04-30`: added `--receiver-mode
+jepa_query_resampler_trainable`, a CPU Torch trainable query/key/value packet
+resampler that converts back to NumPy for deterministic scoring. Focused tests
+now cover empty-payload masking, trainable metadata, deterministic fitting, and
+control presence. Artifact:
+`results/source_private_trainable_jepa_query_resampler_semantic_anchor_smoke_20260430/`.
+The trainable smoke is negative (`0/6` pass rows), but informative. It recovers
+stronger matched signal in holdout -> core at 4 bytes (`0.625` vs target
+`0.250`) and weak same-family signal (`0.375`), with non-collapsed telemetry
+(`rank=119-121`, entropy about `1.32`). However, shuffled-source controls rise
+to `0.375` at the 4-byte holdout -> core row and `0.625` at the 8-byte row,
+fully explaining the strongest gains; core -> holdout remains at target.
+Interpretation: training Q/K/V factors proves the connector can learn a signal,
+but the current objective leaks through source controls. Do not promote; the
+next trainable variant must include explicit zero/shuffled/random/deranged
+control regularization or switch to a stronger feature source.
+
+Follow-up `2026-04-30`: implemented and ran the control-regularized JEPA-Q
+gate. New receiver mode:
+`jepa_query_resampler_control_regularized`; code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`; focused
+tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`;
+memo:
+`paper/source_private_control_regularized_jepa_query_resampler_20260430.md`;
+references:
+`references/511_control_regularized_jepa_receiver_refs_20260430.md`;
+primary artifact:
+`results/source_private_control_regularized_jepa_query_resampler_semantic_anchor_smoke_20260430/`;
+threshold diagnostic:
+`results/source_private_control_regularized_jepa_query_resampler_semantic_anchor_smoke_lowthreshold_20260430/`.
+The objective adds shuffled-source, atom-deranged, and random same-byte
+destructive-control negatives plus a pairwise margin. Outcome: strict smoke is
+negative with `0/6` pass rows, max learned accuracy `0.250`, max lift `+0.000`,
+controls at target under the default threshold, rank `128`, query entropy about
+`1.322-1.324`, and context variance about `0.0067-0.0068`. The low-threshold
+diagnostic also fails and re-exposes control risk: best controls reach `0.500`
+in core -> holdout at 4 bytes and `0.375` in same-family at 4 bytes. Decision:
+prune this exact JEPA-Q objective family. Random-feature JEPA-Q was partial,
+plain trainable JEPA-Q leaked, and control-regularized JEPA-Q suppresses the
+matched signal. The next learned-receiver gate should use stronger frozen
+activation features or a whole-candidate-pool contrastive objective rather than
+more threshold tuning.

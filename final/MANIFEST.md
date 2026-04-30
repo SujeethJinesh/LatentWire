@@ -141,6 +141,12 @@
 - Trainable JEPA-Q query/key/value receiver code, tests, memo, and smoke
   artifacts showing stronger asymmetric matched signal but shuffled-source
   leakage, making control-regularized training the next method gate.
+- Control-regularized JEPA-Q receiver code, tests, references, memo, primary
+  smoke artifact, and low-threshold diagnostic artifact showing that explicit
+  destructive-control regularization cleans default-threshold controls by
+  collapsing to target-only behavior; this prunes the current JEPA-Q objective
+  family and moves the next learned-receiver gate to stronger activation
+  features or whole-candidate-pool training.
 
 ## Notes
 

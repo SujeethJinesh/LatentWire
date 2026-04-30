@@ -243,6 +243,20 @@ JEPA-Q: train destructive controls as explicit target-preserving negatives and
 require controls within target `+0.03` before widening. If that fails, shift to
 stronger frozen activation features rather than more semantic-anchor tuning.
 
+Update `2026-04-30`: the control-regularized JEPA-Q gate failed and should be
+pruned. The new receiver mode trains shuffled-source, atom-deranged, and random
+same-byte packets as explicit destructive-control negatives. It cleans controls
+under the default threshold but collapses to target-only behavior: `0/6` pass
+rows, max learned accuracy `0.250`, max lift `+0.000`, with non-collapsed
+rank/entropy telemetry. A low-threshold diagnostic still fails and reintroduces
+control risk. This closes the current JEPA-Q objective family as a near-term
+paper path. The readiness blocker remains the same but is sharper: the paper
+needs either a stronger non-hand-coded receiver using frozen activation/LLM
+features or a whole-candidate-pool contrastive objective. Until then, the
+honest paper story is a strong source-private packet protocol and systems
+frontier with a promoted semantic-anchor receiver, not broad learned latent
+communication.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

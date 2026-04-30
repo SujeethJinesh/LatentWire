@@ -64,6 +64,11 @@ CONDITIONS = (
 STRICT_SOURCE_DESTROYING_CONTROLS = tuple(
     condition for condition in SOURCE_DESTROYING_CONTROLS if condition in CONDITIONS
 )
+JEPA_RECEIVER_MODES = {
+    "jepa_query_resampler",
+    "jepa_query_resampler_trainable",
+    "jepa_query_resampler_control_regularized",
+}
 
 HELDOUT_SYNONYM_REPLACEMENTS = (
     ("empty-list guard", "no-element collection safeguard"),
@@ -437,7 +442,7 @@ class LearnedSynonymDictionary:
             features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
             payload_vector = _atom_vector(payload_atoms)
             return float((features @ self.left_factors) @ (payload_vector @ self.right_factors) + self.bias)
-        if self.receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"}:
+        if self.receiver_mode in JEPA_RECEIVER_MODES:
             if (
                 self.resampler_query_factors is None
                 or self.resampler_atom_keys is None
@@ -968,6 +973,7 @@ def _fit_jepa_query_resampler_trainable_dictionary(
     jepa_train_epochs: int = 100,
     jepa_lr: float = 0.01,
     jepa_weight_decay: float = 0.001,
+    control_regularized: bool = False,
 ) -> LearnedSynonymDictionary:
     if jepa_query_count <= 0:
         raise ValueError("jepa_query_count must be positive")
@@ -1002,12 +1008,46 @@ def _fit_jepa_query_resampler_trainable_dictionary(
     feature_rows: list[np.ndarray] = []
     atom_rows: list[np.ndarray] = []
     y_rows: list[float] = []
+    row_weights: list[float] = []
     source_vectors = [
         _atom_vector(_source_private_atoms(example.private_test_log, mode="matched")) for example in examples
     ]
     py_rng = random.Random(seed)
 
-    def add_candidate_rows(example: Example, source_vector: np.ndarray, matched_source: bool) -> None:
+    def deranged_source_vector(source_vector: np.ndarray) -> np.ndarray:
+        active = np.flatnonzero(source_vector > 0.0)
+        if active.size == 0:
+            return source_vector.copy()
+        deranged = np.zeros_like(source_vector)
+        if active.size == 1:
+            dst = (int(active[0]) + 1) % len(source_vector)
+            deranged[dst] = source_vector[active[0]]
+            return deranged
+        for src, dst in zip(active, np.roll(active, 1), strict=True):
+            deranged[dst] = source_vector[src]
+        return deranged
+
+    def random_same_byte_source_vector(source_vector: np.ndarray) -> np.ndarray:
+        active = np.flatnonzero(source_vector > 0.0)
+        random_vector = np.zeros_like(source_vector)
+        if active.size == 0:
+            return random_vector
+        inactive = [idx for idx in range(len(source_vector)) if idx not in set(int(atom) for atom in active)]
+        pool = inactive or list(range(len(source_vector)))
+        choices = py_rng.sample(pool, k=min(len(pool), len(active)))
+        values = [float(source_vector[idx]) for idx in active]
+        py_rng.shuffle(values)
+        for idx, value in zip(choices, values, strict=True):
+            random_vector[idx] = value
+        return random_vector
+
+    def add_candidate_rows(
+        example: Example,
+        source_vector: np.ndarray,
+        matched_source: bool,
+        *,
+        weight: float = 1.0,
+    ) -> None:
         if not np.any(source_vector):
             return
         answer_index = _answer_index(example)
@@ -1021,6 +1061,7 @@ def _fit_jepa_query_resampler_trainable_dictionary(
                 feature_rows.append(_featurize_text(text, dim=feature_dim, text_feature_mode=text_feature_mode))
                 atom_rows.append(source_vector)
                 y_rows.append(label)
+                row_weights.append(weight)
 
     for example_index, example in enumerate(examples):
         add_candidate_rows(example, source_vectors[example_index], matched_source=True)
@@ -1029,7 +1070,20 @@ def _fit_jepa_query_resampler_trainable_dictionary(
         candidate_indices = [idx for idx in range(len(examples)) if idx != example_index and np.any(source_vectors[idx])]
         py_rng.shuffle(candidate_indices)
         for negative_index in candidate_indices[:negative_source_controls]:
-            add_candidate_rows(example, source_vectors[negative_index], matched_source=False)
+            add_candidate_rows(
+                example,
+                source_vectors[negative_index],
+                matched_source=False,
+                weight=3.0 if control_regularized else 1.0,
+            )
+        if control_regularized:
+            add_candidate_rows(example, deranged_source_vector(source_vectors[example_index]), matched_source=False, weight=3.0)
+            add_candidate_rows(
+                example,
+                random_same_byte_source_vector(source_vectors[example_index]),
+                matched_source=False,
+                weight=3.0,
+            )
 
     if not feature_rows:
         return LearnedSynonymDictionary(
@@ -1038,7 +1092,11 @@ def _fit_jepa_query_resampler_trainable_dictionary(
             top_k=top_k,
             min_score=min_score,
             text_feature_mode=text_feature_mode,
-            receiver_mode="jepa_query_resampler_trainable",
+            receiver_mode=(
+                "jepa_query_resampler_control_regularized"
+                if control_regularized
+                else "jepa_query_resampler_trainable"
+            ),
             receiver_effective_rank=0,
             resampler_query_factors=query_factors_init,
             resampler_atom_keys=atom_keys_init,
@@ -1057,6 +1115,7 @@ def _fit_jepa_query_resampler_trainable_dictionary(
     x = torch.tensor(np.stack(feature_rows, axis=0), dtype=torch.float32)
     atoms = torch.tensor(np.stack(atom_rows, axis=0), dtype=torch.float32)
     y = torch.tensor(np.array(y_rows, dtype=np.float32), dtype=torch.float32)
+    weights = torch.tensor(np.array(row_weights, dtype=np.float32), dtype=torch.float32)
     query_factors = torch.tensor(query_factors_init, dtype=torch.float32, requires_grad=True)
     atom_keys = torch.tensor(atom_keys_init, dtype=torch.float32, requires_grad=True)
     atom_values = torch.tensor(atom_values_init, dtype=torch.float32, requires_grad=True)
@@ -1089,7 +1148,14 @@ def _fit_jepa_query_resampler_trainable_dictionary(
     for _ in range(jepa_train_epochs):
         optimizer.zero_grad(set_to_none=True)
         scores, context = forward_scores()
-        loss = F.binary_cross_entropy_with_logits(scores, y, pos_weight=pos_weight)
+        per_row_loss = F.binary_cross_entropy_with_logits(scores, y, pos_weight=pos_weight, reduction="none")
+        loss = (per_row_loss * weights).sum() / weights.sum().clamp_min(1.0)
+        if control_regularized:
+            positive_scores = scores[y > 0.5]
+            negative_scores = scores[y <= 0.5]
+            if positive_scores.numel() and negative_scores.numel():
+                control_margin = torch.relu(negative_scores[:, None] - positive_scores[None, :] + 0.25).mean()
+                loss = loss + 0.15 * control_margin
         if context.shape[0] > 1:
             variance_floor = torch.relu(0.02 - torch.var(context, dim=0)).mean()
             loss = loss + 0.05 * variance_floor
@@ -1128,7 +1194,11 @@ def _fit_jepa_query_resampler_trainable_dictionary(
         top_k=top_k,
         min_score=min_score,
         text_feature_mode=text_feature_mode,
-        receiver_mode="jepa_query_resampler_trainable",
+        receiver_mode=(
+            "jepa_query_resampler_control_regularized"
+            if control_regularized
+            else "jepa_query_resampler_trainable"
+        ),
         bias=trained_bias,
         receiver_effective_rank=receiver_effective_rank,
         resampler_query_factors=trained_query_factors,
@@ -1234,7 +1304,7 @@ def _fit_dictionary(
             jepa_query_count=jepa_query_count,
             jepa_hidden_dim=jepa_hidden_dim,
         )
-    if receiver_mode == "jepa_query_resampler_trainable":
+    if receiver_mode in {"jepa_query_resampler_trainable", "jepa_query_resampler_control_regularized"}:
         return _fit_jepa_query_resampler_trainable_dictionary(
             examples=examples,
             feature_dim=feature_dim,
@@ -1250,6 +1320,7 @@ def _fit_dictionary(
             jepa_train_epochs=jepa_train_epochs,
             jepa_lr=jepa_lr,
             jepa_weight_decay=jepa_weight_decay,
+            control_regularized=receiver_mode == "jepa_query_resampler_control_regularized",
         )
     raise ValueError(f"unknown receiver mode {receiver_mode!r}")
 
@@ -1699,14 +1770,14 @@ def _run_direction(
         "low_rank_factor_lr": low_rank_factor_lr if receiver_mode == "contrastive_low_rank_factor" else None,
         "low_rank_factor_loss": low_rank_factor_loss if receiver_mode == "contrastive_low_rank_factor" else None,
         "low_rank_factor_seed": low_rank_factor_seed if receiver_mode == "contrastive_low_rank_factor" else None,
-        "jepa_query_count": dictionary.jepa_query_count if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
-        "jepa_hidden_dim": dictionary.jepa_hidden_dim if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
-        "jepa_query_entropy": dictionary.jepa_query_entropy if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
-        "jepa_context_variance": dictionary.jepa_context_variance if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
-        "jepa_trainable_factors": dictionary.jepa_trainable_factors if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
-        "jepa_train_epochs": dictionary.jepa_train_epochs if receiver_mode == "jepa_query_resampler_trainable" else None,
-        "jepa_lr": dictionary.jepa_lr if receiver_mode == "jepa_query_resampler_trainable" else None,
-        "jepa_weight_decay": dictionary.jepa_weight_decay if receiver_mode == "jepa_query_resampler_trainable" else None,
+        "jepa_query_count": dictionary.jepa_query_count if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_hidden_dim": dictionary.jepa_hidden_dim if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_query_entropy": dictionary.jepa_query_entropy if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_context_variance": dictionary.jepa_context_variance if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_trainable_factors": dictionary.jepa_trainable_factors if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_train_epochs": dictionary.jepa_train_epochs if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_lr": dictionary.jepa_lr if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_weight_decay": dictionary.jepa_weight_decay if receiver_mode in JEPA_RECEIVER_MODES else None,
         "receiver_effective_rank": dictionary.receiver_effective_rank,
         "ridge": ridge,
         "top_k": top_k,
@@ -1872,12 +1943,15 @@ def run_gate(
         "low_rank_factor_lr": low_rank_factor_lr if receiver_mode == "contrastive_low_rank_factor" else None,
         "low_rank_factor_loss": low_rank_factor_loss if receiver_mode == "contrastive_low_rank_factor" else None,
         "low_rank_factor_seed": low_rank_factor_seed if receiver_mode == "contrastive_low_rank_factor" else None,
-        "jepa_query_count": jepa_query_count if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
-        "jepa_hidden_dim": jepa_hidden_dim if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
-        "jepa_trainable_factors": receiver_mode == "jepa_query_resampler_trainable" if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
-        "jepa_train_epochs": jepa_train_epochs if receiver_mode == "jepa_query_resampler_trainable" else None,
-        "jepa_lr": jepa_lr if receiver_mode == "jepa_query_resampler_trainable" else None,
-        "jepa_weight_decay": jepa_weight_decay if receiver_mode == "jepa_query_resampler_trainable" else None,
+        "jepa_query_count": jepa_query_count if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_hidden_dim": jepa_hidden_dim if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_trainable_factors": receiver_mode in {
+            "jepa_query_resampler_trainable",
+            "jepa_query_resampler_control_regularized",
+        } if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_train_epochs": jepa_train_epochs if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_lr": jepa_lr if receiver_mode in JEPA_RECEIVER_MODES else None,
+        "jepa_weight_decay": jepa_weight_decay if receiver_mode in JEPA_RECEIVER_MODES else None,
         "feature_model": feature_model if text_feature_mode.startswith("hf_") else None,
         "feature_device": _resolve_torch_device(feature_device) if text_feature_mode.startswith("hf_") else None,
         "feature_dtype": feature_dtype if text_feature_mode.startswith("hf_") else None,
@@ -2080,6 +2154,7 @@ def main() -> None:
             "contrastive_low_rank_factor",
             "jepa_query_resampler",
             "jepa_query_resampler_trainable",
+            "jepa_query_resampler_control_regularized",
         ],
         default="atom_ridge",
     )

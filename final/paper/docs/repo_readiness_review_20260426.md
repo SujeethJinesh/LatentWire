@@ -205,6 +205,58 @@ collapses to target-only at ranks `4/8/16`, so the frozen BGE bilinear family is
 now mostly exhausted. The next credible method branch is a true query-resampler
 or target-preserving connector, not more low-rank bilinear tuning.
 
+Update `2026-04-30`: the memory-traffic trace-card now strengthens the systems
+case into a clearer third contribution. The new ledger joins packet, text,
+full-log, semantic-anchor, and KV byte-floor rows into raw bytes, 64B
+cache-line traffic, 128B DMA-burst traffic, batch-64 packet amortization, TTFT
+proxy deltas, and source text/KV exposure. It preserves the important caveat:
+an isolated 2B packet still costs one transfer quantum, so query-aware text ties
+at one 64B line even though it is `7.0x` raw bytes and exposes private text.
+The hardware-positive statement is now narrower and stronger: source-private
+packets minimize semantic payload and private-state movement, avoid source text
+and KV/cache exposure, and become traffic-efficient under batched contiguous
+packet records (`5.0` line bytes/request at batch 64). Readiness improves on
+the systems axis, but the ICLR-full blocker remains the same: a non-hand-coded
+learned receiver, ideally a JEPA/Q-Former-style query resampler with
+source-destroying negatives, must clear held-out synonym controls.
+
+Update `2026-04-30`: the first JEPA/Q-Former-style query-resampler receiver is
+implemented but negative. It is candidate-conditioned and materially different
+from the pruned bilinear/low-rank BGE family: candidate features generate query
+vectors over packet-atom keys/values, then a learned output head scores the
+attended contexts. The wider smoke shows partial signal (`0.500` core ->
+holdout and `0.625` same-family, versus `0.250` target), with non-collapsed
+rank/entropy diagnostics, but it fails bidirectional held-out transfer and
+oracle/headroom requirements. This keeps the learned-receiver blocker open and
+narrows the next branch: either train the query/key/value factors end-to-end
+with source-control negatives, or move the same receiver shape onto stronger
+frozen LLM/activation features. Do not promote the random-feature JEPA-Q smoke.
+
+Update `2026-04-30`: the trainable JEPA-Q follow-up confirms that the receiver
+can learn nontrivial signal, but not safely enough. End-to-end CPU training of
+query/key/value factors improves the holdout -> core 4-byte row to `0.625`
+against target `0.250`, but shuffled-source rises to `0.375`; at 8 bytes,
+shuffled-source reaches `0.625` and fully explains the gain. Core -> holdout
+remains target-only. This is not communication by the paper's rules. The
+highest-value next receiver variant is now control-regularized trainable
+JEPA-Q: train destructive controls as explicit target-preserving negatives and
+require controls within target `+0.03` before widening. If that fails, shift to
+stronger frozen activation features rather than more semantic-anchor tuning.
+
+Update `2026-04-30`: the control-regularized JEPA-Q gate failed and should be
+pruned. The new receiver mode trains shuffled-source, atom-deranged, and random
+same-byte packets as explicit destructive-control negatives. It cleans controls
+under the default threshold but collapses to target-only behavior: `0/6` pass
+rows, max learned accuracy `0.250`, max lift `+0.000`, with non-collapsed
+rank/entropy telemetry. A low-threshold diagnostic still fails and reintroduces
+control risk. This closes the current JEPA-Q objective family as a near-term
+paper path. The readiness blocker remains the same but is sharper: the paper
+needs either a stronger non-hand-coded receiver using frozen activation/LLM
+features or a whole-candidate-pool contrastive objective. Until then, the
+honest paper story is a strong source-private packet protocol and systems
+frontier with a promoted semantic-anchor receiver, not broad learned latent
+communication.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

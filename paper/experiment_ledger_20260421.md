@@ -15874,3 +15874,30 @@ Interpretation: training Q/K/V factors proves the connector can learn a signal,
 but the current objective leaks through source controls. Do not promote; the
 next trainable variant must include explicit zero/shuffled/random/deranged
 control regularization or switch to a stronger feature source.
+
+Follow-up `2026-04-30`: implemented and ran the control-regularized JEPA-Q
+gate. New receiver mode:
+`jepa_query_resampler_control_regularized`; code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`; focused
+tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`;
+memo:
+`paper/source_private_control_regularized_jepa_query_resampler_20260430.md`;
+references:
+`references/511_control_regularized_jepa_receiver_refs_20260430.md`;
+primary artifact:
+`results/source_private_control_regularized_jepa_query_resampler_semantic_anchor_smoke_20260430/`;
+threshold diagnostic:
+`results/source_private_control_regularized_jepa_query_resampler_semantic_anchor_smoke_lowthreshold_20260430/`.
+The objective adds shuffled-source, atom-deranged, and random same-byte
+destructive-control negatives plus a pairwise margin. Outcome: strict smoke is
+negative with `0/6` pass rows, max learned accuracy `0.250`, max lift `+0.000`,
+controls at target under the default threshold, rank `128`, query entropy about
+`1.322-1.324`, and context variance about `0.0067-0.0068`. The low-threshold
+diagnostic also fails and re-exposes control risk: best controls reach `0.500`
+in core -> holdout at 4 bytes and `0.375` in same-family at 4 bytes. Decision:
+prune this exact JEPA-Q objective family. Random-feature JEPA-Q was partial,
+plain trainable JEPA-Q leaked, and control-regularized JEPA-Q suppresses the
+matched signal. The next learned-receiver gate should use stronger frozen
+activation features or a whole-candidate-pool contrastive objective rather than
+more threshold tuning.
