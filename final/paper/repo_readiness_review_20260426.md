@@ -3223,3 +3223,25 @@ seed-stable n160/n500 receiver slice, a less protocol-shaped learned receiver,
 or native GPU/vLLM TTFT/TPOT/goodput telemetry. The claim should stay
 source-private side-information communication with public decoder side
 information, not protocol-free latent reasoning.
+
+Update `2026-04-30`: the same frozen Qwen3-0.6B binary-verifier receiver now
+passes the seed31 n160 stability rung on both core and held-out balanced
+surfaces. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_core_n160_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_holdout_n160_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/paired_uncertainty_qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`,
+and
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`;
+memo:
+`paper/source_private_binary_verifier_seed31_n160_20260430.md`. Outcome:
+matched packet remains `1.000`, target-only and best same-byte/source-destroyed
+control remain `0.250`, deranged public-table accuracy is `0.000`, valid rate
+is `1.000`, exact-ID parity holds, and min CI95 lower bound versus target/best
+control is `+0.681`. Readiness implication: COLM workshop readiness is strong
+for a scoped source-private packet communication paper with strict controls and
+systems accounting. Comfortable ICLR full-paper readiness still needs at least
+one of: n500/multi-seed frozen receiver scale, a less hand-shaped learned
+receiver, public-only/label-blind stress at the receiver level, or native
+GPU/vLLM TTFT/TPOT/goodput telemetry. The next highest-priority method branch
+is an anchor-relative sparse crosscoder or candidate-logit flow receiver that
+reduces dependence on the diagnostic table.

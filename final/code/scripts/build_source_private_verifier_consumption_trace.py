@@ -70,15 +70,20 @@ def _read_jsonl(path: pathlib.Path) -> list[dict[str, Any]]:
     return rows
 
 
-def _prediction_path(result_dir: pathlib.Path) -> pathlib.Path:
+def _prediction_path(result_dir: pathlib.Path, *, allow_partial_predictions: bool) -> pathlib.Path:
     resolved = _resolve(result_dir)
     final_path = resolved / "target_predictions.jsonl"
     partial_path = resolved / "target_predictions.partial.jsonl"
     if final_path.exists():
         return final_path
-    if partial_path.exists():
+    if allow_partial_predictions and partial_path.exists():
         return partial_path
-    raise FileNotFoundError(f"missing target predictions in {resolved}")
+    if partial_path.exists():
+        raise FileNotFoundError(
+            f"missing finalized target_predictions.jsonl in {resolved}; "
+            "partial predictions exist but require --allow-partial-predictions"
+        )
+    raise FileNotFoundError(f"missing target_predictions.jsonl in {resolved}")
 
 
 def _percentile(values: list[float], quantile: float) -> float:
@@ -191,11 +196,12 @@ def build_verifier_consumption_trace(
     dma_burst: int = 128,
     batch_size: int = 64,
     record_overhead_bytes: int = 3,
+    allow_partial_predictions: bool = False,
 ) -> dict[str, Any]:
     all_rows: list[dict[str, Any]] = []
     sources: list[dict[str, Any]] = []
     for result_dir in result_dirs:
-        prediction_path = _prediction_path(result_dir)
+        prediction_path = _prediction_path(result_dir, allow_partial_predictions=allow_partial_predictions)
         rows = _read_jsonl(prediction_path)
         sources.append(
             {
@@ -393,6 +399,11 @@ def main() -> None:
     parser.add_argument("--dma-burst", type=int, default=128)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--record-overhead-bytes", type=int, default=3)
+    parser.add_argument(
+        "--allow-partial-predictions",
+        action="store_true",
+        help="Permit target_predictions.partial.jsonl for scratch/debug traces. Final artifacts require finalized predictions.",
+    )
     args = parser.parse_args()
     payload = build_verifier_consumption_trace(
         result_dirs=args.result_dirs,
@@ -401,6 +412,7 @@ def main() -> None:
         dma_burst=args.dma_burst,
         batch_size=args.batch_size,
         record_overhead_bytes=args.record_overhead_bytes,
+        allow_partial_predictions=args.allow_partial_predictions,
     )
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
     print(json.dumps({"output_dir": str(output_dir), "pass_gate": payload["pass_gate"]}, indent=2))

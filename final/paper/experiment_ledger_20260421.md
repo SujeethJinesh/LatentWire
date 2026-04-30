@@ -16402,3 +16402,29 @@ model-mediated source-private communication evidence and a more honest systems
 trace; do not claim production latency or protocol-free latent transfer. The
 next exact gate is seed31 n128/n160 with the same combined controls, followed
 by a batched/fused receiver or learned candidate-logit flow receiver.
+
+Update `2026-04-30`: the seed31 n160 frozen-verifier stability gate passes on
+both balanced cross-family core and holdout surfaces. Artifacts:
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_core_n160_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/qwen3_seed31_holdout_n160_binary_logprob_combined_cpu/`,
+`results/source_private_balanced_diag_target_decoder_20260430/paired_uncertainty_qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`,
+and
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`;
+memo:
+`paper/source_private_binary_verifier_seed31_n160_20260430.md`;
+references:
+`references/532_seed_stability_uniqueness_and_next_receivers_refs_20260430.md`.
+Outcome: core and holdout both score `1.000` matched, `0.250` target-only,
+`0.250` best same-byte/source-destroyed control, `0.000` deranged public-table
+control, exact-ID parity `True`, valid prediction rate `1.000`, min matched
+lift `+0.750`, and min paired CI95 lower bound `+0.681` versus both target and
+best control. The consumption trace reports a `2`-byte payload, `5`-byte packet
+record, `64`B cache-line accounting, `128`B DMA accounting, batch-64 traffic of
+`5.0` line bytes/request and `6.0` DMA bytes/request, and four target-side
+binary forward passes/example with Mac CPU p50 `1651.6-1674.1` ms. Harness
+hardening: `scripts/build_source_private_verifier_consumption_trace.py` now
+rejects partial prediction files by default unless
+`--allow-partial-predictions` is passed. Interpretation: seed stability for the
+frozen model-mediated packet row is materially stronger. The remaining ICLR
+blocker is no longer this seed rung; it is a less protocol-shaped receiver,
+n500/multi-seed scale, and GPU/server systems telemetry.

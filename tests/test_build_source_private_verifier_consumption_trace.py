@@ -104,3 +104,32 @@ def test_verifier_consumption_trace_reports_forward_passes_and_boundary_bytes(tm
     manifest = json.loads((tmp_path / "trace" / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["gate"] == "source_private_verifier_consumption_trace"
     assert (tmp_path / "trace" / "verifier_consumption_trace.csv").exists()
+
+
+def test_verifier_consumption_trace_rejects_partial_predictions_by_default(tmp_path) -> None:
+    result_dir = tmp_path / "run"
+    result_dir.mkdir()
+    (result_dir / "target_predictions.partial.jsonl").write_text(
+        json.dumps(
+            _row(
+                example_id="e0",
+                condition="target_only",
+                correct=True,
+                payload_bytes=0,
+                latency_ms=0.1,
+                binary_passes=0,
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    try:
+        build_verifier_consumption_trace(
+            result_dirs=[result_dir],
+            output_dir=tmp_path / "trace",
+        )
+    except FileNotFoundError as exc:
+        assert "allow-partial-predictions" in str(exc)
+    else:
+        raise AssertionError("expected partial predictions to be rejected")

@@ -1,0 +1,30 @@
+{
+  "artifacts": [
+    "verifier_consumption_trace.json",
+    "verifier_consumption_trace.csv",
+    "verifier_consumption_trace.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_verifier_consumption_trace",
+  "headline": {
+    "batch_size": 64,
+    "max_best_control_accuracy": 0.25,
+    "max_matched_mean_binary_forward_passes": 4.0,
+    "max_matched_mean_packet_record_bytes": 5.0,
+    "max_matched_mean_payload_bytes": 2.0,
+    "max_matched_p50_latency_ms": 1674.0718749933876,
+    "max_matched_p95_latency_ms": 1773.506988104782,
+    "max_target_only_accuracy": 0.25,
+    "min_matched_accuracy": 1.0,
+    "min_matched_minus_best_control": 0.75,
+    "min_matched_minus_target": 0.75,
+    "pass_gate": true,
+    "record_overhead_bytes": 3,
+    "result_dirs": 2,
+    "rows": 16,
+    "single_request_dma_floor_bytes": 128,
+    "single_request_line_floor_bytes": 64
+  },
+  "pass_gate": true
+}

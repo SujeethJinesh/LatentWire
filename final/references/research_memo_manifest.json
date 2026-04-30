@@ -1223,5 +1223,12 @@
     "path": "references/531_systems_novelty_private_packet_verifier_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source systems novelty memo for the source-private 2-byte packet plus frozen verifier branch, covering TurboQuant, QJL, KIVI/KVQuant, C2C/KVCOMM, vLLM, DistServe, FlashAttention, GainSight/Tambe hardware framing, and diffusion/consistency/flow receiver inspiration."
+  },
+  {
+    "num": 532,
+    "slug": "seed_stability_uniqueness_and_next_receivers_refs_20260430",
+    "path": "references/532_seed_stability_uniqueness_and_next_receivers_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo integrating seed-stability reviewer concerns, closest cache/text/tool communication competitors, and next non-table receiver branches from sparse crosscoders, consistency/flow receivers, and TurboResidual product coding."
   }
 ]
