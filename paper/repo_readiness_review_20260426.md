@@ -232,6 +232,17 @@ narrows the next branch: either train the query/key/value factors end-to-end
 with source-control negatives, or move the same receiver shape onto stronger
 frozen LLM/activation features. Do not promote the random-feature JEPA-Q smoke.
 
+Update `2026-04-30`: the trainable JEPA-Q follow-up confirms that the receiver
+can learn nontrivial signal, but not safely enough. End-to-end CPU training of
+query/key/value factors improves the holdout -> core 4-byte row to `0.625`
+against target `0.250`, but shuffled-source rises to `0.375`; at 8 bytes,
+shuffled-source reaches `0.625` and fully explains the gain. Core -> holdout
+remains target-only. This is not communication by the paper's rules. The
+highest-value next receiver variant is now control-regularized trainable
+JEPA-Q: train destructive controls as explicit target-preserving negatives and
+require controls within target `+0.03` before widening. If that fails, shift to
+stronger frozen activation features rather than more semantic-anchor tuning.
+
 Update `2026-04-29`: bidirectional cross-family learned WZ fails. The
 `core_to_holdout` direction is below target at every budget and is explained by
 source-destroying controls; `holdout_to_core` has a strong 6-byte row but does

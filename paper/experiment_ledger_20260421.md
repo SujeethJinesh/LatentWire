@@ -15857,3 +15857,20 @@ but the current random-feature query/key/value formulation is not enough. Do
 not tune thresholds on this branch; the next credible variant must train
 query/key/value factors end-to-end or use stronger frozen LLM/activation
 features.
+
+Follow-up `2026-04-30`: added `--receiver-mode
+jepa_query_resampler_trainable`, a CPU Torch trainable query/key/value packet
+resampler that converts back to NumPy for deterministic scoring. Focused tests
+now cover empty-payload masking, trainable metadata, deterministic fitting, and
+control presence. Artifact:
+`results/source_private_trainable_jepa_query_resampler_semantic_anchor_smoke_20260430/`.
+The trainable smoke is negative (`0/6` pass rows), but informative. It recovers
+stronger matched signal in holdout -> core at 4 bytes (`0.625` vs target
+`0.250`) and weak same-family signal (`0.375`), with non-collapsed telemetry
+(`rank=119-121`, entropy about `1.32`). However, shuffled-source controls rise
+to `0.375` at the 4-byte holdout -> core row and `0.625` at the 8-byte row,
+fully explaining the strongest gains; core -> holdout remains at target.
+Interpretation: training Q/K/V factors proves the connector can learn a signal,
+but the current objective leaks through source controls. Do not promote; the
+next trainable variant must include explicit zero/shuffled/random/deranged
+control regularization or switch to a stronger feature source.

@@ -384,6 +384,10 @@ class LearnedSynonymDictionary:
         jepa_hidden_dim: int | None = None,
         jepa_query_entropy: float | None = None,
         jepa_context_variance: float | None = None,
+        jepa_trainable_factors: bool = False,
+        jepa_train_epochs: int | None = None,
+        jepa_lr: float | None = None,
+        jepa_weight_decay: float | None = None,
     ) -> None:
         self.feature_dim = feature_dim
         self.weights = weights
@@ -407,6 +411,10 @@ class LearnedSynonymDictionary:
         self.jepa_hidden_dim = jepa_hidden_dim
         self.jepa_query_entropy = jepa_query_entropy
         self.jepa_context_variance = jepa_context_variance
+        self.jepa_trainable_factors = jepa_trainable_factors
+        self.jepa_train_epochs = jepa_train_epochs
+        self.jepa_lr = jepa_lr
+        self.jepa_weight_decay = jepa_weight_decay
 
     def predict_atoms(self, text: str) -> dict[str, float]:
         features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
@@ -429,7 +437,7 @@ class LearnedSynonymDictionary:
             features = _featurize_text(text, dim=self.feature_dim, text_feature_mode=self.text_feature_mode)
             payload_vector = _atom_vector(payload_atoms)
             return float((features @ self.left_factors) @ (payload_vector @ self.right_factors) + self.bias)
-        if self.receiver_mode == "jepa_query_resampler":
+        if self.receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"}:
             if (
                 self.resampler_query_factors is None
                 or self.resampler_atom_keys is None
@@ -944,6 +952,200 @@ def _fit_jepa_query_resampler_dictionary(
     )
 
 
+def _fit_jepa_query_resampler_trainable_dictionary(
+    *,
+    examples: list[Example],
+    feature_dim: int,
+    ridge: float,
+    calibration_atom_view: str,
+    top_k: int,
+    min_score: float,
+    text_feature_mode: str,
+    negative_source_controls: int = 0,
+    seed: int = 0,
+    jepa_query_count: int = 8,
+    jepa_hidden_dim: int = 32,
+    jepa_train_epochs: int = 100,
+    jepa_lr: float = 0.01,
+    jepa_weight_decay: float = 0.001,
+) -> LearnedSynonymDictionary:
+    if jepa_query_count <= 0:
+        raise ValueError("jepa_query_count must be positive")
+    if jepa_hidden_dim <= 0:
+        raise ValueError("jepa_hidden_dim must be positive")
+    if jepa_train_epochs <= 0:
+        raise ValueError("jepa_train_epochs must be positive")
+    if jepa_lr <= 0:
+        raise ValueError("jepa_lr must be positive")
+    if jepa_weight_decay < 0:
+        raise ValueError("jepa_weight_decay must be non-negative")
+
+    atom_predictor = _fit_ridge_dictionary(
+        examples=examples,
+        feature_dim=feature_dim,
+        ridge=ridge,
+        calibration_atom_view=calibration_atom_view,
+        top_k=top_k,
+        min_score=min_score,
+        text_feature_mode=text_feature_mode,
+    )
+    atom_dim = len(ATOM_ORDER)
+    rng = np.random.default_rng(seed)
+    query_factors_init = rng.normal(
+        0.0,
+        1.0 / np.sqrt(max(1, feature_dim)),
+        size=(feature_dim, jepa_query_count, jepa_hidden_dim),
+    )
+    atom_keys_init = rng.normal(0.0, 1.0 / np.sqrt(jepa_hidden_dim), size=(atom_dim, jepa_hidden_dim))
+    atom_values_init = rng.normal(0.0, 1.0 / np.sqrt(jepa_hidden_dim), size=(atom_dim, jepa_hidden_dim))
+
+    feature_rows: list[np.ndarray] = []
+    atom_rows: list[np.ndarray] = []
+    y_rows: list[float] = []
+    source_vectors = [
+        _atom_vector(_source_private_atoms(example.private_test_log, mode="matched")) for example in examples
+    ]
+    py_rng = random.Random(seed)
+
+    def add_candidate_rows(example: Example, source_vector: np.ndarray, matched_source: bool) -> None:
+        if not np.any(source_vector):
+            return
+        answer_index = _answer_index(example)
+        for idx, candidate in enumerate(example.candidates):
+            texts = [candidate.patch_intent]
+            calibrated = _candidate_surface_text(candidate.patch_intent, candidate_atom_view=calibration_atom_view)
+            if calibrated != candidate.patch_intent:
+                texts.append(calibrated)
+            label = 1.0 if matched_source and idx == answer_index else 0.0
+            for text in texts:
+                feature_rows.append(_featurize_text(text, dim=feature_dim, text_feature_mode=text_feature_mode))
+                atom_rows.append(source_vector)
+                y_rows.append(label)
+
+    for example_index, example in enumerate(examples):
+        add_candidate_rows(example, source_vectors[example_index], matched_source=True)
+        if negative_source_controls <= 0 or len(examples) < 2:
+            continue
+        candidate_indices = [idx for idx in range(len(examples)) if idx != example_index and np.any(source_vectors[idx])]
+        py_rng.shuffle(candidate_indices)
+        for negative_index in candidate_indices[:negative_source_controls]:
+            add_candidate_rows(example, source_vectors[negative_index], matched_source=False)
+
+    if not feature_rows:
+        return LearnedSynonymDictionary(
+            feature_dim=feature_dim,
+            weights=atom_predictor.weights,
+            top_k=top_k,
+            min_score=min_score,
+            text_feature_mode=text_feature_mode,
+            receiver_mode="jepa_query_resampler_trainable",
+            receiver_effective_rank=0,
+            resampler_query_factors=query_factors_init,
+            resampler_atom_keys=atom_keys_init,
+            resampler_atom_values=atom_values_init,
+            resampler_output=np.zeros(jepa_query_count * jepa_hidden_dim, dtype=np.float64),
+            jepa_query_count=jepa_query_count,
+            jepa_hidden_dim=jepa_hidden_dim,
+            jepa_query_entropy=0.0,
+            jepa_context_variance=0.0,
+        )
+
+    import torch
+    import torch.nn.functional as F
+
+    torch.manual_seed(seed)
+    x = torch.tensor(np.stack(feature_rows, axis=0), dtype=torch.float32)
+    atoms = torch.tensor(np.stack(atom_rows, axis=0), dtype=torch.float32)
+    y = torch.tensor(np.array(y_rows, dtype=np.float32), dtype=torch.float32)
+    query_factors = torch.tensor(query_factors_init, dtype=torch.float32, requires_grad=True)
+    atom_keys = torch.tensor(atom_keys_init, dtype=torch.float32, requires_grad=True)
+    atom_values = torch.tensor(atom_values_init, dtype=torch.float32, requires_grad=True)
+    output = torch.zeros(jepa_query_count * jepa_hidden_dim, dtype=torch.float32, requires_grad=True)
+    prior = float(np.clip(float(np.mean(y_rows)), 1e-4, 1.0 - 1e-4))
+    bias = torch.tensor(np.log(prior / (1.0 - prior)), dtype=torch.float32, requires_grad=True)
+    optimizer = torch.optim.AdamW(
+        [query_factors, atom_keys, atom_values, output, bias],
+        lr=jepa_lr,
+        weight_decay=jepa_weight_decay,
+    )
+    positives = float(np.sum(y_rows))
+    negatives = float(len(y_rows) - positives)
+    pos_weight = torch.tensor([negatives / max(positives, 1.0)], dtype=torch.float32)
+
+    def forward_scores() -> tuple[Any, Any]:
+        queries = torch.einsum("bf,fkh->bkh", x, query_factors)
+        queries = F.normalize(queries, p=2, dim=-1, eps=1e-8)
+        keys = F.normalize(atom_keys, p=2, dim=-1, eps=1e-8)
+        values = F.normalize(atom_values, p=2, dim=-1, eps=1e-8)
+        logits = torch.einsum("bkh,ah->bka", queries, keys) / np.sqrt(max(1, jepa_hidden_dim))
+        active = atoms > 0.0
+        logits = logits.masked_fill(~active[:, None, :], -1.0e4)
+        attention = torch.softmax(logits, dim=-1)
+        weighted_values = values[None, :, :] * atoms[:, :, None]
+        context = torch.einsum("bka,bah->bkh", attention, weighted_values).reshape(x.shape[0], -1)
+        context = F.normalize(context, p=2, dim=-1, eps=1e-8)
+        return context @ output + bias, context
+
+    for _ in range(jepa_train_epochs):
+        optimizer.zero_grad(set_to_none=True)
+        scores, context = forward_scores()
+        loss = F.binary_cross_entropy_with_logits(scores, y, pos_weight=pos_weight)
+        if context.shape[0] > 1:
+            variance_floor = torch.relu(0.02 - torch.var(context, dim=0)).mean()
+            loss = loss + 0.05 * variance_floor
+        loss.backward()
+        optimizer.step()
+
+    with torch.no_grad():
+        _, context = forward_scores()
+        trained_query_factors = query_factors.detach().cpu().numpy().astype(np.float64)
+        trained_atom_keys = F.normalize(atom_keys, p=2, dim=-1, eps=1e-8).detach().cpu().numpy().astype(np.float64)
+        trained_atom_values = F.normalize(atom_values, p=2, dim=-1, eps=1e-8).detach().cpu().numpy().astype(np.float64)
+        trained_output = output.detach().cpu().numpy().astype(np.float64)
+        trained_bias = float(bias.detach().cpu().item())
+        receiver_effective_rank = int(np.linalg.matrix_rank(context.detach().cpu().numpy()))
+
+    entropy_values: list[float] = []
+    source_contexts: list[np.ndarray] = []
+    probe_features = np.ones(feature_dim, dtype=np.float64) / np.sqrt(feature_dim)
+    for source_vector in source_vectors:
+        context_np, attentions = _jepa_attention_features(
+            features=probe_features,
+            payload_vector=source_vector,
+            query_factors=trained_query_factors,
+            atom_keys=trained_atom_keys,
+            atom_values=trained_atom_values,
+        )
+        source_contexts.append(context_np)
+        if attentions.size:
+            entropy_values.extend(
+                float(-np.sum(attention * np.log(np.maximum(attention, 1e-8)))) for attention in attentions
+            )
+    context_variance = float(np.mean(np.var(np.stack(source_contexts, axis=0), axis=0))) if source_contexts else 0.0
+    return LearnedSynonymDictionary(
+        feature_dim=feature_dim,
+        weights=atom_predictor.weights,
+        top_k=top_k,
+        min_score=min_score,
+        text_feature_mode=text_feature_mode,
+        receiver_mode="jepa_query_resampler_trainable",
+        bias=trained_bias,
+        receiver_effective_rank=receiver_effective_rank,
+        resampler_query_factors=trained_query_factors,
+        resampler_atom_keys=trained_atom_keys,
+        resampler_atom_values=trained_atom_values,
+        resampler_output=trained_output,
+        jepa_query_count=jepa_query_count,
+        jepa_hidden_dim=jepa_hidden_dim,
+        jepa_query_entropy=statistics.fmean(entropy_values) if entropy_values else 0.0,
+        jepa_context_variance=context_variance,
+        jepa_trainable_factors=True,
+        jepa_train_epochs=jepa_train_epochs,
+        jepa_lr=jepa_lr,
+        jepa_weight_decay=jepa_weight_decay,
+    )
+
+
 def _fit_dictionary(
     *,
     examples: list[Example],
@@ -962,6 +1164,9 @@ def _fit_dictionary(
     low_rank_factor_seed: int | None = None,
     jepa_query_count: int = 8,
     jepa_hidden_dim: int = 32,
+    jepa_train_epochs: int = 100,
+    jepa_lr: float = 0.01,
+    jepa_weight_decay: float = 0.001,
     seed: int = 0,
 ) -> LearnedSynonymDictionary:
     if receiver_mode == "atom_ridge":
@@ -1028,6 +1233,23 @@ def _fit_dictionary(
             seed=seed,
             jepa_query_count=jepa_query_count,
             jepa_hidden_dim=jepa_hidden_dim,
+        )
+    if receiver_mode == "jepa_query_resampler_trainable":
+        return _fit_jepa_query_resampler_trainable_dictionary(
+            examples=examples,
+            feature_dim=feature_dim,
+            ridge=ridge,
+            calibration_atom_view=calibration_atom_view,
+            top_k=top_k,
+            min_score=min_score,
+            text_feature_mode=text_feature_mode,
+            negative_source_controls=contrastive_negative_sources,
+            seed=seed,
+            jepa_query_count=jepa_query_count,
+            jepa_hidden_dim=jepa_hidden_dim,
+            jepa_train_epochs=jepa_train_epochs,
+            jepa_lr=jepa_lr,
+            jepa_weight_decay=jepa_weight_decay,
         )
     raise ValueError(f"unknown receiver mode {receiver_mode!r}")
 
@@ -1382,6 +1604,9 @@ def _run_direction(
     low_rank_factor_seed: int | None,
     jepa_query_count: int,
     jepa_hidden_dim: int,
+    jepa_train_epochs: int,
+    jepa_lr: float,
+    jepa_weight_decay: float,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     train_rows = make_benchmark(examples=train_examples, candidates=4, seed=train_seed, family_set=train_family_set)
@@ -1409,6 +1634,9 @@ def _run_direction(
         low_rank_factor_seed=low_rank_factor_seed,
         jepa_query_count=jepa_query_count,
         jepa_hidden_dim=jepa_hidden_dim,
+        jepa_train_epochs=jepa_train_epochs,
+        jepa_lr=jepa_lr,
+        jepa_weight_decay=jepa_weight_decay,
         seed=train_seed + 211,
     )
     surface_overlap_audit = _surface_overlap_audit(
@@ -1471,10 +1699,14 @@ def _run_direction(
         "low_rank_factor_lr": low_rank_factor_lr if receiver_mode == "contrastive_low_rank_factor" else None,
         "low_rank_factor_loss": low_rank_factor_loss if receiver_mode == "contrastive_low_rank_factor" else None,
         "low_rank_factor_seed": low_rank_factor_seed if receiver_mode == "contrastive_low_rank_factor" else None,
-        "jepa_query_count": dictionary.jepa_query_count if receiver_mode == "jepa_query_resampler" else None,
-        "jepa_hidden_dim": dictionary.jepa_hidden_dim if receiver_mode == "jepa_query_resampler" else None,
-        "jepa_query_entropy": dictionary.jepa_query_entropy if receiver_mode == "jepa_query_resampler" else None,
-        "jepa_context_variance": dictionary.jepa_context_variance if receiver_mode == "jepa_query_resampler" else None,
+        "jepa_query_count": dictionary.jepa_query_count if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
+        "jepa_hidden_dim": dictionary.jepa_hidden_dim if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
+        "jepa_query_entropy": dictionary.jepa_query_entropy if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
+        "jepa_context_variance": dictionary.jepa_context_variance if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
+        "jepa_trainable_factors": dictionary.jepa_trainable_factors if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
+        "jepa_train_epochs": dictionary.jepa_train_epochs if receiver_mode == "jepa_query_resampler_trainable" else None,
+        "jepa_lr": dictionary.jepa_lr if receiver_mode == "jepa_query_resampler_trainable" else None,
+        "jepa_weight_decay": dictionary.jepa_weight_decay if receiver_mode == "jepa_query_resampler_trainable" else None,
         "receiver_effective_rank": dictionary.receiver_effective_rank,
         "ridge": ridge,
         "top_k": top_k,
@@ -1531,6 +1763,9 @@ def run_gate(
     low_rank_factor_seed: int | None = None,
     jepa_query_count: int = 8,
     jepa_hidden_dim: int = 32,
+    jepa_train_epochs: int = 100,
+    jepa_lr: float = 0.01,
+    jepa_weight_decay: float = 0.001,
     min_decision_score: float = 0.20,
     feature_model: str = "BAAI/bge-small-en",
     feature_device: str = "auto",
@@ -1583,6 +1818,9 @@ def run_gate(
             low_rank_factor_seed=low_rank_factor_seed,
             jepa_query_count=jepa_query_count,
             jepa_hidden_dim=jepa_hidden_dim,
+            jepa_train_epochs=jepa_train_epochs,
+            jepa_lr=jepa_lr,
+            jepa_weight_decay=jepa_weight_decay,
             min_decision_score=min_decision_score,
         )
         try:
@@ -1634,8 +1872,12 @@ def run_gate(
         "low_rank_factor_lr": low_rank_factor_lr if receiver_mode == "contrastive_low_rank_factor" else None,
         "low_rank_factor_loss": low_rank_factor_loss if receiver_mode == "contrastive_low_rank_factor" else None,
         "low_rank_factor_seed": low_rank_factor_seed if receiver_mode == "contrastive_low_rank_factor" else None,
-        "jepa_query_count": jepa_query_count if receiver_mode == "jepa_query_resampler" else None,
-        "jepa_hidden_dim": jepa_hidden_dim if receiver_mode == "jepa_query_resampler" else None,
+        "jepa_query_count": jepa_query_count if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
+        "jepa_hidden_dim": jepa_hidden_dim if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
+        "jepa_trainable_factors": receiver_mode == "jepa_query_resampler_trainable" if receiver_mode in {"jepa_query_resampler", "jepa_query_resampler_trainable"} else None,
+        "jepa_train_epochs": jepa_train_epochs if receiver_mode == "jepa_query_resampler_trainable" else None,
+        "jepa_lr": jepa_lr if receiver_mode == "jepa_query_resampler_trainable" else None,
+        "jepa_weight_decay": jepa_weight_decay if receiver_mode == "jepa_query_resampler_trainable" else None,
         "feature_model": feature_model if text_feature_mode.startswith("hf_") else None,
         "feature_device": _resolve_torch_device(feature_device) if text_feature_mode.startswith("hf_") else None,
         "feature_dtype": feature_dtype if text_feature_mode.startswith("hf_") else None,
@@ -1721,6 +1963,10 @@ def _write_direction_markdown(path: pathlib.Path, payload: dict[str, Any]) -> No
         f"- low-rank factor seed: `{payload['low_rank_factor_seed']}`",
         f"- JEPA query count: `{payload['jepa_query_count']}`",
         f"- JEPA hidden dim: `{payload['jepa_hidden_dim']}`",
+        f"- JEPA trainable factors: `{payload['jepa_trainable_factors']}`",
+        f"- JEPA train epochs: `{payload['jepa_train_epochs']}`",
+        f"- JEPA lr: `{payload['jepa_lr']}`",
+        f"- JEPA weight decay: `{payload['jepa_weight_decay']}`",
         f"- JEPA query entropy: `{payload['jepa_query_entropy']}`",
         f"- JEPA context variance: `{payload['jepa_context_variance']}`",
         f"- receiver effective rank: `{payload['receiver_effective_rank']}`",
@@ -1765,6 +2011,10 @@ def _write_gate_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- low-rank factor seed: `{payload['low_rank_factor_seed']}`",
         f"- JEPA query count: `{payload['jepa_query_count']}`",
         f"- JEPA hidden dim: `{payload['jepa_hidden_dim']}`",
+        f"- JEPA trainable factors: `{payload['jepa_trainable_factors']}`",
+        f"- JEPA train epochs: `{payload['jepa_train_epochs']}`",
+        f"- JEPA lr: `{payload['jepa_lr']}`",
+        f"- JEPA weight decay: `{payload['jepa_weight_decay']}`",
         f"- min decision score: `{payload['min_decision_score']}`",
         f"- max learned packet accuracy: `{h['max_learned_synonym_dictionary_accuracy']:.3f}`",
         f"- max learned-target delta: `{h['max_learned_minus_target']:.3f}`",
@@ -1829,6 +2079,7 @@ def main() -> None:
             "contrastive_low_rank_query",
             "contrastive_low_rank_factor",
             "jepa_query_resampler",
+            "jepa_query_resampler_trainable",
         ],
         default="atom_ridge",
     )
@@ -1880,6 +2131,24 @@ def main() -> None:
         default=32,
         help="For jepa_query_resampler, hidden dimension of query/key/value packet attention.",
     )
+    parser.add_argument(
+        "--jepa-train-epochs",
+        type=int,
+        default=100,
+        help="For jepa_query_resampler_trainable, CPU torch optimization epochs.",
+    )
+    parser.add_argument(
+        "--jepa-lr",
+        type=float,
+        default=0.01,
+        help="For jepa_query_resampler_trainable, CPU torch optimizer learning rate.",
+    )
+    parser.add_argument(
+        "--jepa-weight-decay",
+        type=float,
+        default=0.001,
+        help="For jepa_query_resampler_trainable, AdamW weight decay on trainable query/key/value factors.",
+    )
     parser.add_argument("--ridge", type=float, default=0.25)
     parser.add_argument("--top-k", type=int, default=8)
     parser.add_argument("--min-score", type=float, default=0.05)
@@ -1912,6 +2181,9 @@ def main() -> None:
         low_rank_factor_seed=args.low_rank_factor_seed,
         jepa_query_count=args.jepa_query_count,
         jepa_hidden_dim=args.jepa_hidden_dim,
+        jepa_train_epochs=args.jepa_train_epochs,
+        jepa_lr=args.jepa_lr,
+        jepa_weight_decay=args.jepa_weight_decay,
         feature_model=args.feature_model,
         feature_device=args.feature_device,
         feature_dtype=args.feature_dtype,

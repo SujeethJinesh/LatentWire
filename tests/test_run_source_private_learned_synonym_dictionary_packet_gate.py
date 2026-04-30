@@ -506,3 +506,114 @@ def test_fit_jepa_query_resampler_receiver_is_deterministic() -> None:
     assert np.allclose(first.resampler_atom_values, second.resampler_atom_values)
     assert np.allclose(first.resampler_output, second.resampler_output)
     assert first.bias == second.bias
+
+
+def test_jepa_attention_empty_payload_returns_zero_context() -> None:
+    query_factors = np.ones((3, 2, 4), dtype=np.float64)
+    atom_keys = np.ones((len(gate.ATOM_ORDER), 4), dtype=np.float64)
+    atom_values = np.ones((len(gate.ATOM_ORDER), 4), dtype=np.float64)
+    context, attention = gate._jepa_attention_features(
+        features=np.array([1.0, 0.0, -1.0], dtype=np.float64),
+        payload_vector=np.zeros(len(gate.ATOM_ORDER), dtype=np.float64),
+        query_factors=query_factors,
+        atom_keys=atom_keys,
+        atom_values=atom_values,
+    )
+
+    assert context.shape == (8,)
+    assert attention.shape == (2, 0)
+    assert np.allclose(context, 0.0)
+    assert not np.isnan(context).any()
+
+
+def test_trainable_jepa_query_resampler_records_training_metadata(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_trainable_jepa_query",
+        budgets=[4],
+        train_examples=12,
+        eval_examples=6,
+        seed=51,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=12,
+        feature_dim=24,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="jepa_query_resampler_trainable",
+        contrastive_negative_sources=1,
+        jepa_query_count=2,
+        jepa_hidden_dim=4,
+        jepa_train_epochs=2,
+        jepa_lr=0.02,
+        jepa_weight_decay=0.001,
+        ridge=0.01,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (
+            tmp_path
+            / "learned_synonym_dictionary_trainable_jepa_query"
+            / "core_to_holdout"
+            / "summary.json"
+        ).read_text()
+    )
+    row = direction["budget_summaries"][0]
+    assert payload["receiver_mode"] == "jepa_query_resampler_trainable"
+    assert payload["jepa_trainable_factors"] is True
+    assert payload["jepa_train_epochs"] == 2
+    assert payload["jepa_lr"] == 0.02
+    assert payload["jepa_weight_decay"] == 0.001
+    assert direction["jepa_trainable_factors"] is True
+    assert direction["jepa_train_epochs"] == 2
+    assert direction["jepa_lr"] == 0.02
+    assert direction["jepa_weight_decay"] == 0.001
+    assert "zero_source" in row["metrics"]
+    assert "shuffled_source" in row["metrics"]
+    assert "atom_id_derangement" in row["metrics"]
+    assert "top_atom_knockout" in row["metrics"]
+    assert "private_random_knockout" in row["metrics"]
+
+
+def test_fit_trainable_jepa_query_resampler_is_deterministic() -> None:
+    examples = gate.make_benchmark(examples=10, candidates=4, seed=53, family_set="all")
+    kwargs = dict(
+        examples=examples,
+        feature_dim=20,
+        ridge=0.01,
+        calibration_atom_view="synonym_stress",
+        top_k=6,
+        min_score=0.0,
+        text_feature_mode="semantic_anchor",
+        receiver_mode="jepa_query_resampler_trainable",
+        contrastive_negative_sources=1,
+        contrastive_rank=2,
+        jepa_query_count=2,
+        jepa_hidden_dim=4,
+        jepa_train_epochs=2,
+        jepa_lr=0.02,
+        jepa_weight_decay=0.001,
+        seed=53,
+    )
+
+    first = gate._fit_dictionary(**kwargs)
+    second = gate._fit_dictionary(**kwargs)
+
+    assert first.receiver_mode == "jepa_query_resampler_trainable"
+    assert first.jepa_trainable_factors is True
+    assert first.resampler_query_factors is not None
+    assert first.resampler_atom_keys is not None
+    assert first.resampler_atom_values is not None
+    assert first.resampler_output is not None
+    assert np.allclose(first.resampler_query_factors, second.resampler_query_factors)
+    assert np.allclose(first.resampler_atom_keys, second.resampler_atom_keys)
+    assert np.allclose(first.resampler_atom_values, second.resampler_atom_values)
+    assert np.allclose(first.resampler_output, second.resampler_output)
+    assert first.bias == second.bias
+    random_only = gate._fit_dictionary(
+        **{k: v for k, v in kwargs.items() if k not in {"receiver_mode", "jepa_train_epochs", "jepa_lr", "jepa_weight_decay"}},
+        receiver_mode="jepa_query_resampler",
+    )
+    assert not np.allclose(first.resampler_output, random_only.resampler_output)

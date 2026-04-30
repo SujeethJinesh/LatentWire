@@ -138,6 +138,9 @@
   and smoke artifacts showing partial non-collapsed source signal but failed
   bidirectional held-out promotion, so the branch remains a learned-connector
   baseline rather than a paper claim.
+- Trainable JEPA-Q query/key/value receiver code, tests, memo, and smoke
+  artifacts showing stronger asymmetric matched signal but shuffled-source
+  leakage, making control-regularized training the next method gate.
 
 ## Notes
 
