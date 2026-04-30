@@ -122,9 +122,12 @@ trace:
 
 - matched source-boundary payload: `2` bytes;
 - packet record with record overhead: `5` bytes;
-- single request transfer accounting: `64` cache-line bytes and `128` DMA
+- observed Mac cache-line source: `sysctl hw.cachelinesize = 128`;
+- single request transfer accounting: `128` cache-line bytes and `128` DMA
   bytes;
-- batch-64 packed accounting: `5.0` line bytes/request and `6.0` DMA
+- batch-64 packed accounting: `6.0` line bytes/request and `6.0` DMA
+  bytes/request;
+- batch-256 packed accounting: `5.0` line bytes/request and `5.0` DMA
   bytes/request;
 - target-side verifier cost: `4.0` binary forward passes/example;
 - Mac CPU matched p50: `1651.6-1674.1` ms;

@@ -6,11 +6,13 @@ import hashlib
 import json
 import math
 import pathlib
+import subprocess
 import statistics
 from typing import Any
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+DEFAULT_BATCH_SIZES = (1, 4, 16, 64, 256)
 
 CONDITION_ROLE = {
     "target_only": "no_source",
@@ -113,6 +115,38 @@ def _batch_quantum_per_request(value: float, *, batch_size: int, quantum: int) -
     return float(math.ceil((value * batch_size) / quantum) * quantum) / batch_size
 
 
+def _detect_cache_line_size() -> tuple[int, str]:
+    try:
+        completed = subprocess.run(
+            ["sysctl", "-n", "hw.cachelinesize"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        detected = int(completed.stdout.strip())
+        if detected > 0:
+            return detected, "sysctl hw.cachelinesize"
+    except (FileNotFoundError, ValueError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        pass
+    return 64, "fallback_64B"
+
+
+def _resolve_line_size(line_size: int | None) -> tuple[int, str]:
+    if line_size is not None and line_size > 0:
+        return int(line_size), "explicit"
+    return _detect_cache_line_size()
+
+
+def _resolve_batch_sizes(batch_sizes: list[int] | None, batch_size: int) -> list[int]:
+    requested = list(DEFAULT_BATCH_SIZES if batch_sizes is None else batch_sizes)
+    requested.append(batch_size)
+    resolved = sorted({int(size) for size in requested if int(size) > 0})
+    if not resolved:
+        raise ValueError("at least one positive batch size is required")
+    return resolved
+
+
 def _condition_flags(condition: str) -> dict[str, bool]:
     role = CONDITION_ROLE.get(condition, "other_control")
     source_private = role in {
@@ -144,6 +178,7 @@ def _condition_metrics(
     line_size: int,
     dma_burst: int,
     batch_size: int,
+    batch_sizes: list[int],
     record_overhead_bytes: int,
 ) -> dict[str, Any]:
     payload_bytes = [float(row.get("payload_bytes", 0.0)) for row in rows]
@@ -155,6 +190,14 @@ def _condition_metrics(
         for row in rows
     ]
     flags = _condition_flags(condition)
+    batch_line = {
+        str(size): _batch_quantum_per_request(mean_packet_record_bytes, batch_size=size, quantum=line_size)
+        for size in batch_sizes
+    }
+    batch_dma = {
+        str(size): _batch_quantum_per_request(mean_packet_record_bytes, batch_size=size, quantum=dma_burst)
+        for size in batch_sizes
+    }
     return {
         "result_dir": str(result_dir),
         "condition": condition,
@@ -172,6 +215,8 @@ def _condition_metrics(
         "batch64_dma_bytes_per_request": _batch_quantum_per_request(
             mean_packet_record_bytes, batch_size=batch_size, quantum=dma_burst
         ),
+        "batch_line_bytes_per_request": batch_line,
+        "batch_dma_bytes_per_request": batch_dma,
         "mean_payload_tokens": statistics.fmean(float(row.get("payload_tokens", 0.0)) for row in rows),
         "mean_generated_tokens": statistics.fmean(float(row.get("generated_tokens", 0.0)) for row in rows),
         "mean_binary_forward_passes": statistics.fmean(binary_forward_passes),
@@ -192,12 +237,15 @@ def build_verifier_consumption_trace(
     *,
     result_dirs: list[pathlib.Path],
     output_dir: pathlib.Path,
-    line_size: int = 64,
+    line_size: int | None = None,
     dma_burst: int = 128,
     batch_size: int = 64,
+    batch_sizes: list[int] | None = None,
     record_overhead_bytes: int = 3,
     allow_partial_predictions: bool = False,
 ) -> dict[str, Any]:
+    line_size, line_size_source = _resolve_line_size(line_size)
+    batch_sizes = _resolve_batch_sizes(batch_sizes, batch_size)
     all_rows: list[dict[str, Any]] = []
     sources: list[dict[str, Any]] = []
     for result_dir in result_dirs:
@@ -220,6 +268,7 @@ def build_verifier_consumption_trace(
                     line_size=line_size,
                     dma_burst=dma_burst,
                     batch_size=batch_size,
+                    batch_sizes=batch_sizes,
                     record_overhead_bytes=record_overhead_bytes,
                 )
             )
@@ -260,6 +309,8 @@ def build_verifier_consumption_trace(
                 "matched_single_request_dma_bytes": matched["single_request_dma_bytes"],
                 "matched_batch64_line_bytes_per_request": matched["batch64_line_bytes_per_request"],
                 "matched_batch64_dma_bytes_per_request": matched["batch64_dma_bytes_per_request"],
+                "matched_batch_line_bytes_per_request": matched["batch_line_bytes_per_request"],
+                "matched_batch_dma_bytes_per_request": matched["batch_dma_bytes_per_request"],
             }
         )
 
@@ -278,8 +329,10 @@ def build_verifier_consumption_trace(
         "max_matched_mean_payload_bytes": max(row["matched_mean_payload_bytes"] for row in per_result),
         "max_matched_mean_packet_record_bytes": max(row["matched_mean_packet_record_bytes"] for row in per_result),
         "single_request_line_floor_bytes": line_size,
+        "cache_line_size_source": line_size_source,
         "single_request_dma_floor_bytes": dma_burst,
         "batch_size": batch_size,
+        "batch_sizes": batch_sizes,
         "record_overhead_bytes": record_overhead_bytes,
     }
     payload = {
@@ -324,6 +377,8 @@ def build_verifier_consumption_trace(
         f"- max matched binary forward passes/example: `{headline['max_matched_mean_binary_forward_passes']:.2f}`",
         f"- matched source-boundary payload bytes: `{headline['max_matched_mean_payload_bytes']:.2f}`",
         f"- matched packet record bytes: `{headline['max_matched_mean_packet_record_bytes']:.2f}`",
+        f"- cache-line bytes/source: `{headline['single_request_line_floor_bytes']}` / `{headline['cache_line_size_source']}`",
+        f"- batch sizes: `{headline['batch_sizes']}`",
         "",
         "| result | condition | role | acc | payload B | record B | line B | DMA B | fwd/ex | p50 ms | p95 ms | exposure |",
         "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|",
@@ -346,6 +401,23 @@ def build_verifier_consumption_trace(
             f"{row['mean_binary_forward_passes']:.2f} | {row['p50_latency_ms']:.2f} | "
             f"{row['p95_latency_ms']:.2f} | {', '.join(exposure)} |"
         )
+    md_lines.extend(
+        [
+            "",
+            "## Matched Packet Batch Floors",
+            "",
+            "| result | batch | line B/request | DMA B/request |",
+            "|---|---:|---:|---:|",
+        ]
+    )
+    for row in matched_rows:
+        for size in batch_sizes:
+            key = str(size)
+            md_lines.append(
+                f"| {pathlib.Path(row['result_dir']).name} | {size} | "
+                f"{row['batch_line_bytes_per_request'][key]:.2f} | "
+                f"{row['batch_dma_bytes_per_request'][key]:.2f} |"
+            )
     md_lines.extend(
         [
             "",
@@ -383,6 +455,7 @@ def build_verifier_consumption_trace(
                 f"- min matched minus target: `{headline['min_matched_minus_target']:.3f}`",
                 f"- min matched minus best control: `{headline['min_matched_minus_best_control']:.3f}`",
                 f"- max matched p50 latency ms: `{headline['max_matched_p50_latency_ms']:.2f}`",
+                f"- cache-line bytes/source: `{headline['single_request_line_floor_bytes']}` / `{headline['cache_line_size_source']}`",
                 "",
             ]
         ),
@@ -395,9 +468,15 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--result-dirs", nargs="+", type=pathlib.Path, required=True)
     parser.add_argument("--output-dir", type=pathlib.Path, required=True)
-    parser.add_argument("--line-size", type=int, default=64)
+    parser.add_argument(
+        "--line-size",
+        type=int,
+        default=None,
+        help="Cache-line accounting quantum. Defaults to sysctl hw.cachelinesize when available; pass 64/128 to force.",
+    )
     parser.add_argument("--dma-burst", type=int, default=128)
     parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--batch-sizes", type=int, nargs="+", default=list(DEFAULT_BATCH_SIZES))
     parser.add_argument("--record-overhead-bytes", type=int, default=3)
     parser.add_argument(
         "--allow-partial-predictions",
@@ -411,6 +490,7 @@ def main() -> None:
         line_size=args.line_size,
         dma_burst=args.dma_burst,
         batch_size=args.batch_size,
+        batch_sizes=args.batch_sizes,
         record_overhead_bytes=args.record_overhead_bytes,
         allow_partial_predictions=args.allow_partial_predictions,
     )

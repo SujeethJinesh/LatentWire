@@ -84,6 +84,7 @@ def test_verifier_consumption_trace_reports_forward_passes_and_boundary_bytes(tm
     payload = build_verifier_consumption_trace(
         result_dirs=[result_dir],
         output_dir=tmp_path / "trace",
+        line_size=64,
     )
 
     assert payload["pass_gate"] is True
@@ -98,12 +99,74 @@ def test_verifier_consumption_trace_reports_forward_passes_and_boundary_bytes(tm
     assert matched["single_request_dma_bytes"] == 128.0
     assert matched["batch64_line_bytes_per_request"] == 5.0
     assert matched["batch64_dma_bytes_per_request"] == 6.0
+    assert matched["batch_line_bytes_per_request"]["1"] == 64.0
+    assert matched["batch_line_bytes_per_request"]["64"] == 5.0
     assert matched["source_private"] is True
     assert structured["source_text_exposed"] is True
+    assert payload["headline"]["cache_line_size_source"] == "explicit"
 
     manifest = json.loads((tmp_path / "trace" / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["gate"] == "source_private_verifier_consumption_trace"
     assert (tmp_path / "trace" / "verifier_consumption_trace.csv").exists()
+
+
+def test_verifier_consumption_trace_supports_128b_mac_cacheline_floor(tmp_path) -> None:
+    result_dir = tmp_path / "run"
+    result_dir.mkdir()
+    rows = []
+    for index in range(4):
+        example_id = f"e{index}"
+        rows.extend(
+            [
+                _row(
+                    example_id=example_id,
+                    condition="target_only",
+                    correct=index == 0,
+                    payload_bytes=0,
+                    latency_ms=0.1,
+                    binary_passes=0,
+                ),
+                _row(
+                    example_id=example_id,
+                    condition="matched_packet",
+                    correct=True,
+                    payload_bytes=2,
+                    latency_ms=10.0,
+                    binary_passes=4,
+                ),
+                _row(
+                    example_id=example_id,
+                    condition="random_same_byte",
+                    correct=index == 0,
+                    payload_bytes=2,
+                    latency_ms=9.0,
+                    binary_passes=4,
+                ),
+            ]
+        )
+    (result_dir / "target_predictions.jsonl").write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n",
+        encoding="utf-8",
+    )
+
+    payload = build_verifier_consumption_trace(
+        result_dirs=[result_dir],
+        output_dir=tmp_path / "trace128",
+        line_size=128,
+        dma_burst=128,
+        batch_sizes=[1, 4, 16, 64, 256],
+    )
+
+    matched = next(row for row in payload["rows"] if row["condition"] == "matched_packet")
+    assert payload["headline"]["single_request_line_floor_bytes"] == 128
+    assert payload["headline"]["cache_line_size_source"] == "explicit"
+    assert matched["mean_packet_record_bytes"] == 5.0
+    assert matched["single_request_cacheline_bytes"] == 128.0
+    assert matched["batch_line_bytes_per_request"]["1"] == 128.0
+    assert matched["batch_line_bytes_per_request"]["4"] == 32.0
+    assert matched["batch_line_bytes_per_request"]["16"] == 8.0
+    assert matched["batch_line_bytes_per_request"]["64"] == 6.0
+    assert matched["batch_line_bytes_per_request"]["256"] == 5.0
 
 
 def test_verifier_consumption_trace_rejects_partial_predictions_by_default(tmp_path) -> None:

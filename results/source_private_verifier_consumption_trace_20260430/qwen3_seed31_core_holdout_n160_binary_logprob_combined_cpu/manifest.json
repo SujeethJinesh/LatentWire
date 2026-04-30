@@ -9,6 +9,14 @@
   "gate": "source_private_verifier_consumption_trace",
   "headline": {
     "batch_size": 64,
+    "batch_sizes": [
+      1,
+      4,
+      16,
+      64,
+      256
+    ],
+    "cache_line_size_source": "sysctl hw.cachelinesize",
     "max_best_control_accuracy": 0.25,
     "max_matched_mean_binary_forward_passes": 4.0,
     "max_matched_mean_packet_record_bytes": 5.0,
@@ -24,7 +32,7 @@
     "result_dirs": 2,
     "rows": 16,
     "single_request_dma_floor_bytes": 128,
-    "single_request_line_floor_bytes": 64
+    "single_request_line_floor_bytes": 128
   },
   "pass_gate": true
 }

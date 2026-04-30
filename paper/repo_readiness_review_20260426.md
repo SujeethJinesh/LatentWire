@@ -3237,11 +3237,15 @@ memo:
 matched packet remains `1.000`, target-only and best same-byte/source-destroyed
 control remain `0.250`, deranged public-table accuracy is `0.000`, valid rate
 is `1.000`, exact-ID parity holds, and min CI95 lower bound versus target/best
-control is `+0.681`. Readiness implication: COLM workshop readiness is strong
-for a scoped source-private packet communication paper with strict controls and
-systems accounting. Comfortable ICLR full-paper readiness still needs at least
-one of: n500/multi-seed frozen receiver scale, a less hand-shaped learned
-receiver, public-only/label-blind stress at the receiver level, or native
-GPU/vLLM TTFT/TPOT/goodput telemetry. The next highest-priority method branch
-is an anchor-relative sparse crosscoder or candidate-logit flow receiver that
-reduces dependence on the diagnostic table.
+control is `+0.681`. The verifier consumption trace now records observed
+Mac-local cache-line accounting from `sysctl hw.cachelinesize = 128`, so
+batch-64 packet traffic is `6.0` line bytes/request rather than the earlier
+generic `64B`-line `5.0` estimate. Readiness implication: COLM workshop
+readiness is strong for a scoped source-private packet communication paper with
+strict controls and hardware-observed systems accounting. Comfortable ICLR
+full-paper readiness still needs at least one of: n500/multi-seed frozen
+receiver scale, a less hand-shaped learned receiver, public-only/label-blind
+stress at the receiver level, or native GPU/vLLM TTFT/TPOT/goodput telemetry.
+The next highest-priority method branch is an anchor-relative sparse crosscoder
+or candidate-logit flow receiver that reduces dependence on the diagnostic
+table.

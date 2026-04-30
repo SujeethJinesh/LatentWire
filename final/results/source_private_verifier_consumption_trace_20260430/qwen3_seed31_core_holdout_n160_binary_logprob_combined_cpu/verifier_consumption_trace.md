@@ -9,25 +9,42 @@
 - max matched binary forward passes/example: `4.00`
 - matched source-boundary payload bytes: `2.00`
 - matched packet record bytes: `5.00`
+- cache-line bytes/source: `128` / `sysctl hw.cachelinesize`
+- batch sizes: `[1, 4, 16, 64, 256]`
 
 | result | condition | role | acc | payload B | record B | line B | DMA B | fwd/ex | p50 ms | p95 ms | exposure |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| qwen3_seed31_core_n160_binary_logprob_combined_cpu | deranged_candidate_diag_table | source_destroying_control | 0.000 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1660.71 | 1765.54 | source-private, destroyed |
-| qwen3_seed31_core_n160_binary_logprob_combined_cpu | matched_packet | source_packet | 1.000 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1651.57 | 1757.48 | source-private |
-| qwen3_seed31_core_n160_binary_logprob_combined_cpu | random_noncandidate_same_byte | source_destroying_control | 0.250 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1655.79 | 1747.98 | source-private, destroyed |
-| qwen3_seed31_core_n160_binary_logprob_combined_cpu | random_same_byte | source_destroying_control | 0.244 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1663.69 | 1773.43 | source-private, destroyed |
-| qwen3_seed31_core_n160_binary_logprob_combined_cpu | shuffled_packet | source_destroying_control | 0.250 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1654.97 | 1755.01 | source-private, destroyed |
-| qwen3_seed31_core_n160_binary_logprob_combined_cpu | structured_free_text_2byte | matched_byte_text_control | 0.250 | 2.00 | 5.00 | 64 | 128 | 0.00 | 0.00 | 0.00 | source-private, text, destroyed |
-| qwen3_seed31_core_n160_binary_logprob_combined_cpu | structured_json_2byte | matched_byte_text_control | 0.250 | 2.00 | 5.00 | 64 | 128 | 0.00 | 0.01 | 0.01 | source-private, text, destroyed |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | deranged_candidate_diag_table | source_destroying_control | 0.000 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1660.71 | 1765.54 | source-private, destroyed |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | matched_packet | source_packet | 1.000 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1651.57 | 1757.48 | source-private |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | random_noncandidate_same_byte | source_destroying_control | 0.250 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1655.79 | 1747.98 | source-private, destroyed |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | random_same_byte | source_destroying_control | 0.244 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1663.69 | 1773.43 | source-private, destroyed |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | shuffled_packet | source_destroying_control | 0.250 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1654.97 | 1755.01 | source-private, destroyed |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | structured_free_text_2byte | matched_byte_text_control | 0.250 | 2.00 | 5.00 | 128 | 128 | 0.00 | 0.00 | 0.00 | source-private, text, destroyed |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | structured_json_2byte | matched_byte_text_control | 0.250 | 2.00 | 5.00 | 128 | 128 | 0.00 | 0.01 | 0.01 | source-private, text, destroyed |
 | qwen3_seed31_core_n160_binary_logprob_combined_cpu | target_only | no_source | 0.250 | 0.00 | 0.00 | 0 | 0 | 0.00 | 0.00 | 0.00 |  |
-| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | deranged_candidate_diag_table | source_destroying_control | 0.000 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1665.35 | 1782.31 | source-private, destroyed |
-| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | matched_packet | source_packet | 1.000 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1674.07 | 1773.51 | source-private |
-| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | random_noncandidate_same_byte | source_destroying_control | 0.250 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1668.56 | 1786.21 | source-private, destroyed |
-| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | random_same_byte | source_destroying_control | 0.244 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1667.96 | 1780.33 | source-private, destroyed |
-| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | shuffled_packet | source_destroying_control | 0.250 | 2.00 | 5.00 | 64 | 128 | 4.00 | 1669.80 | 1791.40 | source-private, destroyed |
-| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | structured_free_text_2byte | matched_byte_text_control | 0.250 | 2.00 | 5.00 | 64 | 128 | 0.00 | 0.00 | 0.00 | source-private, text, destroyed |
-| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | structured_json_2byte | matched_byte_text_control | 0.250 | 2.00 | 5.00 | 64 | 128 | 0.00 | 0.01 | 0.01 | source-private, text, destroyed |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | deranged_candidate_diag_table | source_destroying_control | 0.000 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1665.35 | 1782.31 | source-private, destroyed |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | matched_packet | source_packet | 1.000 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1674.07 | 1773.51 | source-private |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | random_noncandidate_same_byte | source_destroying_control | 0.250 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1668.56 | 1786.21 | source-private, destroyed |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | random_same_byte | source_destroying_control | 0.244 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1667.96 | 1780.33 | source-private, destroyed |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | shuffled_packet | source_destroying_control | 0.250 | 2.00 | 5.00 | 128 | 128 | 4.00 | 1669.80 | 1791.40 | source-private, destroyed |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | structured_free_text_2byte | matched_byte_text_control | 0.250 | 2.00 | 5.00 | 128 | 128 | 0.00 | 0.00 | 0.00 | source-private, text, destroyed |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | structured_json_2byte | matched_byte_text_control | 0.250 | 2.00 | 5.00 | 128 | 128 | 0.00 | 0.01 | 0.01 | source-private, text, destroyed |
 | qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | target_only | no_source | 0.250 | 0.00 | 0.00 | 0 | 0 | 0.00 | 0.00 | 0.00 |  |
+
+## Matched Packet Batch Floors
+
+| result | batch | line B/request | DMA B/request |
+|---|---:|---:|---:|
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | 1 | 128.00 | 128.00 |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | 4 | 32.00 | 32.00 |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | 16 | 8.00 | 8.00 |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | 64 | 6.00 | 6.00 |
+| qwen3_seed31_core_n160_binary_logprob_combined_cpu | 256 | 5.00 | 5.00 |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | 1 | 128.00 | 128.00 |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | 4 | 32.00 | 32.00 |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | 16 | 8.00 | 8.00 |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | 64 | 6.00 | 6.00 |
+| qwen3_seed31_holdout_n160_binary_logprob_combined_cpu | 256 | 5.00 | 5.00 |
 
 ## Interpretation
 

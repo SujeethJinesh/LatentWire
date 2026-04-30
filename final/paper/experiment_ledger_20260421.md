@@ -16419,12 +16419,31 @@ Outcome: core and holdout both score `1.000` matched, `0.250` target-only,
 control, exact-ID parity `True`, valid prediction rate `1.000`, min matched
 lift `+0.750`, and min paired CI95 lower bound `+0.681` versus both target and
 best control. The consumption trace reports a `2`-byte payload, `5`-byte packet
-record, `64`B cache-line accounting, `128`B DMA accounting, batch-64 traffic of
-`5.0` line bytes/request and `6.0` DMA bytes/request, and four target-side
-binary forward passes/example with Mac CPU p50 `1651.6-1674.1` ms. Harness
-hardening: `scripts/build_source_private_verifier_consumption_trace.py` now
-rejects partial prediction files by default unless
-`--allow-partial-predictions` is passed. Interpretation: seed stability for the
-frozen model-mediated packet row is materially stronger. The remaining ICLR
-blocker is no longer this seed rung; it is a less protocol-shaped receiver,
-n500/multi-seed scale, and GPU/server systems telemetry.
+record, observed Mac cache-line accounting from `sysctl hw.cachelinesize =
+128`, `128`B DMA accounting, batch-64 traffic of `6.0` line bytes/request and
+`6.0` DMA bytes/request, batch-256 traffic of `5.0` line bytes/request and
+`5.0` DMA bytes/request, and four target-side binary forward passes/example
+with Mac CPU p50 `1651.6-1674.1` ms. Harness hardening:
+`scripts/build_source_private_verifier_consumption_trace.py` now rejects
+partial prediction files by default unless `--allow-partial-predictions` is
+passed and auto-detects the local cache-line floor unless `--line-size` is
+explicit. Interpretation: seed stability for the frozen model-mediated packet
+row is materially stronger, and the Mac systems accounting is now hardware
+observed rather than hard-coded. The remaining ICLR blocker is no longer this
+seed rung; it is a less protocol-shaped receiver, n500/multi-seed scale, and
+GPU/server systems telemetry.
+
+Update `2026-04-30`: separated the Mac-local `128B` cache-line correction into
+a dedicated systems-readout memo. Code:
+`scripts/build_source_private_verifier_consumption_trace.py`; test:
+`tests/test_build_source_private_verifier_consumption_trace.py`; memo:
+`paper/source_private_mac_128b_verifier_consumption_trace_20260430.md`;
+references:
+`references/533_mac_128b_boundary_accounting_refs_20260430.md`; artifact:
+`results/source_private_verifier_consumption_trace_20260430/qwen3_seed31_core_holdout_n160_binary_logprob_combined_cpu/`.
+Outcome: accuracy evidence is unchanged, but the trace now reports observed
+Mac floor accounting: `128B` single-request line/DMA, `6.0` line/DMA
+bytes/request at batch 64, and `5.0` line/DMA bytes/request at batch 256.
+Interpretation: this improves systems credibility and prevents a reviewer from
+catching a hard-coded 64B line assumption on Apple hardware; it still does not
+replace native GPU/vLLM TTFT/TPOT/goodput telemetry.

@@ -1230,5 +1230,12 @@
     "path": "references/532_seed_stability_uniqueness_and_next_receivers_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo integrating seed-stability reviewer concerns, closest cache/text/tool communication competitors, and next non-table receiver branches from sparse crosscoders, consistency/flow receivers, and TurboResidual product coding."
+  },
+  {
+    "num": 533,
+    "slug": "mac_128b_boundary_accounting_refs_20260430",
+    "path": "references/533_mac_128b_boundary_accounting_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Systems correction memo for Mac-local 128B cache-line packet accounting, C2C/KVCOMM/KIVI/KVQuant/QJL/TurboQuant/vLLM/DistServe claim boundaries, and verifier trace non-claims."
   }
 ]
