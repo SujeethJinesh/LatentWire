@@ -423,3 +423,16 @@ grid has `0` passes, so static public-basis selection does not rescue unseen
 families. The packet-ISA waterfall now ties the live 2-byte/4-byte conditional
 packets to 5-byte/7-byte records, Mac-local cache/DMA accounting, and no source
 text/KV exposure.
+
+## 2026-04-30 Frozen Embedding Receiver Update
+
+The frozen BGE/MiniLM held-out receiver ablation is included. It tests whether
+generic sentence embeddings can replace the explicit semantic-anchor lexicon on
+the held-out synonym packet gate. Across `60` rows, no frozen embedding variant
+passes bidirectionally: `20` rows pass and `32` are near misses, while the
+semantic-anchor reference remains `18/18`. MiniLM is the best partial receiver,
+passing holdout-to-core and same-family but failing core-to-holdout because the
+oracle ceiling is only `0.750`. Hashed+HF variants produce `0` pass rows. This
+strengthens the claim boundary: the next ICLR-grade method should be learned
+public ontology calibration or receiver-conditioned residual codebooks, not
+another fixed embedding basis.

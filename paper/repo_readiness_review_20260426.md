@@ -3469,3 +3469,23 @@ impact: COLM workshop readiness is strong for a scoped shared-schema
 source-private conditional packet paper. Comfortable ICLR still requires
 public-conditioned codebooks, held-out ontology/schema success, model-mediated
 consumption, or NVIDIA/vLLM telemetry.
+
+Update `2026-04-30`: the frozen embedding held-out receiver ablation improves
+claim precision but does not close the ICLR gap. New memo:
+`paper/source_private_frozen_embedding_heldout_receiver_20260430.md`; new
+artifact:
+`results/source_private_hf_embedding_heldout_packet_gate_20260430/summary/`;
+new references:
+`references/545_frozen_embedding_heldout_receiver_refs_20260430.md`. Across
+`60` BGE/MiniLM frozen-receiver rows, no run clears the bidirectional held-out
+gate. There are `20` strict pass rows and `32` near misses, compared with the
+semantic-anchor reference at `18/18`. MiniLM is the strongest partial receiver:
+holdout-to-core and same-family pass, while core-to-holdout tops out at
+`0.625` accuracy with clean controls but oracle `0.750`; a stronger
+holdout-to-core 4-byte row reaches `0.750` but fails the private-random
+knockout rule (`0.906` lift reduction). Hashed+HF variants produce `0` pass
+rows. Readiness impact: COLM is stronger because we now have a clear
+generality boundary and a stronger critique of our own semantic-anchor method.
+ICLR remains blocked on learned public ontology calibration, receiver-
+conditioned residual codebooks, model-mediated packet consumption, or native
+GPU serving telemetry.

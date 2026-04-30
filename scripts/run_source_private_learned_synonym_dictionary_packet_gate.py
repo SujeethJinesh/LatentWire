@@ -319,10 +319,26 @@ def _semantic_anchor_terms(text: str) -> dict[str, float]:
 
 
 def _featurize_text(text: str, *, dim: int, text_feature_mode: str = "hashed") -> np.ndarray:
-    if text_feature_mode not in {"hashed", "semantic_anchor", "hf_last_mean", "hf_mid_last_mean"}:
+    if text_feature_mode not in {
+        "hashed",
+        "semantic_anchor",
+        "hf_last_mean",
+        "hf_mid_last_mean",
+        "hashed_hf_last_mean",
+        "hashed_hf_mid_last_mean",
+    }:
         raise ValueError(f"unknown text feature mode {text_feature_mode!r}")
     if text_feature_mode in {"hf_last_mean", "hf_mid_last_mean"}:
         return _hf_text_features([text], dim=dim, text_feature_mode=text_feature_mode)[0]
+    if text_feature_mode in {"hashed_hf_last_mean", "hashed_hf_mid_last_mean"}:
+        hf_mode = "hf_last_mean" if text_feature_mode == "hashed_hf_last_mean" else "hf_mid_last_mean"
+        hashed = _featurize_text(text, dim=dim, text_feature_mode="hashed")
+        hf = _hf_text_features([text], dim=dim, text_feature_mode=hf_mode)
+        combined = hashed + hf[0]
+        norm = float(np.linalg.norm(combined))
+        if norm > 0:
+            combined = combined / norm
+        return combined.astype(np.float64)
     lowered = text.lower()
     words = _word_tokens(lowered)
     features = np.zeros(dim, dtype=np.float64)
@@ -2095,7 +2111,11 @@ def run_gate(
                     "learned_minus_target": summary["learned_minus_target"],
                     "learned_minus_best_control": summary["learned_minus_best_control"],
                     "oracle_learned_candidate_atoms_accuracy": summary["oracle_learned_candidate_atoms_accuracy"],
+                    "best_control_name": summary["best_control_name"],
+                    "top_atom_knockout_accuracy": summary["top_atom_knockout_accuracy"],
+                    "private_random_knockout_accuracy": summary["private_random_knockout_accuracy"],
                     "top_atom_knockout_lift_reduction": summary["top_atom_knockout_lift_reduction"],
+                    "private_random_knockout_lift_reduction": summary["private_random_knockout_lift_reduction"],
                     "paired_ci95_low_vs_target": summary["paired_bootstrap_vs_target"]["ci95_low"],
                     "paired_ci95_high_vs_target": summary["paired_bootstrap_vs_target"]["ci95_high"],
                     "controls_ok": summary["controls_ok"],
@@ -2138,10 +2158,10 @@ def run_gate(
         "jepa_train_epochs": jepa_train_epochs if receiver_mode in JEPA_RECEIVER_MODES else None,
         "jepa_lr": jepa_lr if receiver_mode in JEPA_RECEIVER_MODES else None,
         "jepa_weight_decay": jepa_weight_decay if receiver_mode in JEPA_RECEIVER_MODES else None,
-        "feature_model": feature_model if text_feature_mode.startswith("hf_") else None,
-        "feature_device": _resolve_torch_device(feature_device) if text_feature_mode.startswith("hf_") else None,
-        "feature_dtype": feature_dtype if text_feature_mode.startswith("hf_") else None,
-        "feature_max_length": feature_max_length if text_feature_mode.startswith("hf_") else None,
+        "feature_model": feature_model if "hf_" in text_feature_mode else None,
+        "feature_device": _resolve_torch_device(feature_device) if "hf_" in text_feature_mode else None,
+        "feature_dtype": feature_dtype if "hf_" in text_feature_mode else None,
+        "feature_max_length": feature_max_length if "hf_" in text_feature_mode else None,
         "ridge": ridge,
         "top_k": top_k,
         "min_score": min_score,
@@ -2322,9 +2342,19 @@ def main() -> None:
     parser.add_argument("--feature-dim", type=int, default=384)
     parser.add_argument(
         "--text-feature-mode",
-        choices=["hashed", "semantic_anchor", "hf_last_mean", "hf_mid_last_mean"],
+        choices=[
+            "hashed",
+            "semantic_anchor",
+            "hf_last_mean",
+            "hf_mid_last_mean",
+            "hashed_hf_last_mean",
+            "hashed_hf_mid_last_mean",
+        ],
         default="hashed",
-        help="Target-side candidate dictionary features. semantic_anchor adds public atom-anchor expansions; hf_* uses frozen Transformer text features.",
+        help=(
+            "Target-side candidate dictionary features. semantic_anchor adds public atom-anchor expansions; "
+            "hf_* uses frozen Transformer text features; hashed_hf_* combines generic lexical hashing with frozen embeddings."
+        ),
     )
     parser.add_argument("--feature-model", default="BAAI/bge-small-en")
     parser.add_argument("--feature-device", default="auto")

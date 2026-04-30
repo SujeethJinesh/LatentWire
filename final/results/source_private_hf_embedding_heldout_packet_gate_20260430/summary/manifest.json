@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "hf_embedding_heldout_packet_summary.json": "0b8a70af52e8ae21d1a7e769651b9b0d5ff445dc42620311d7843e09fc5045fc",
+    "hf_embedding_heldout_packet_summary.md": "ecd52a5a586aa456a22aed5cd5378ee59438d999f24a442f3c158dd6cd6b9150"
+  },
+  "artifacts": [
+    "hf_embedding_heldout_packet_summary.json",
+    "hf_embedding_heldout_packet_summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

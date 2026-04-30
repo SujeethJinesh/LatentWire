@@ -16745,3 +16745,28 @@ semantic/no-diagnostic shared-schema conditional innovation and packet-ISA
 systems accounting. Do not claim unseen-family transfer. Next exact branch:
 public-conditioned residual codebooks or receiver-conditioned slots that build
 a local common basis from target-public candidate state.
+
+Update `2026-04-30`: the frozen BGE/MiniLM held-out receiver ablation prunes a
+natural replacement for the explicit semantic-anchor lexicon. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py` now
+supports `hashed_hf_last_mean` and `hashed_hf_mid_last_mean`; summary code:
+`scripts/summarize_source_private_hf_embedding_heldout_packet_gate.py`; tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py` and
+`tests/test_summarize_source_private_hf_embedding_heldout_packet_gate.py`;
+memo: `paper/source_private_frozen_embedding_heldout_receiver_20260430.md`;
+references:
+`references/545_frozen_embedding_heldout_receiver_refs_20260430.md`;
+artifact:
+`results/source_private_hf_embedding_heldout_packet_gate_20260430/summary/`.
+Outcome: across `60` frozen-embedding rows, the strict bidirectional pass gate
+is `false`: `20` rows pass and `32` are near misses, while the semantic-anchor
+reference remains `18/18` with minimum passing CI95 lower bound `+0.457`.
+MiniLM is the best partial receiver: holdout-to-core and same-family pass, and
+core-to-holdout reaches up to `0.625` vs target/best-control `0.250`, but the
+oracle ceiling is only `0.750`. The strongest holdout-to-core 4-byte row scores
+`0.750` but fails because private-random-knockout lift reduction is `0.906`.
+Hashed+HF features produce `0` pass rows. Interpretation: generic frozen text
+embeddings do not replace the public semantic-anchor receiver; the next exact
+method gate should be learned public ontology calibration or
+receiver-conditioned residual codebooks, with private-random-knockout exposed
+as a first-class failure reason.

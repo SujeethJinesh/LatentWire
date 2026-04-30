@@ -57,11 +57,16 @@ def test_learned_synonym_dictionary_rows_include_knockout_and_controls(tmp_path)
     )
     row = direction["budget_summaries"][0]
     metrics = row["metrics"]
+    aggregate_row = payload["rows"][0]
     assert "learned_synonym_dictionary_packet" in metrics
     assert "atom_id_derangement" in metrics
     assert "top_atom_knockout" in metrics
     assert "private_random_knockout" in metrics
     assert row["budget_bytes"] == 4
+    assert aggregate_row["best_control_name"] in metrics
+    assert "top_atom_knockout_accuracy" in aggregate_row
+    assert "private_random_knockout_accuracy" in aggregate_row
+    assert "private_random_knockout_lift_reduction" in aggregate_row
     assert row["paired_bootstrap_vs_target"]["ci95_high"] >= row["paired_bootstrap_vs_target"]["ci95_low"]
     assert payload["headline"]["max_learned_synonym_dictionary_accuracy"] >= 0.0
 
@@ -175,6 +180,55 @@ def test_learned_synonym_dictionary_hf_feature_mode_records_model(tmp_path, monk
     assert summary["feature_model"] == "fake/local-model"
     assert summary["feature_device"] == "cpu"
     assert summary["feature_dtype"] == "float32"
+
+
+def test_learned_synonym_dictionary_hashed_hf_feature_mode_records_model(tmp_path, monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_hf_text_features(texts: list[str], *, dim: int, text_feature_mode: str) -> np.ndarray:
+        calls.append(text_feature_mode)
+        rows = []
+        for text in texts:
+            row = np.zeros(dim, dtype=np.float64)
+            for token in text.lower().split():
+                row[sum(ord(ch) for ch in token) % dim] += 1.0
+            norm = np.linalg.norm(row)
+            rows.append(row / max(norm, 1.0))
+        return np.stack(rows, axis=0)
+
+    monkeypatch.setattr(gate, "_hf_text_features", fake_hf_text_features)
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_hashed_hf_features",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=8,
+        seed=25,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=32,
+        text_feature_mode="hashed_hf_last_mean",
+        feature_model="fake/local-model",
+        feature_device="cpu",
+        feature_dtype="float32",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.7,
+    )
+
+    summary = json.loads(
+        (
+            tmp_path
+            / "learned_synonym_dictionary_hashed_hf_features"
+            / "learned_synonym_dictionary_packet_gate.json"
+        ).read_text()
+    )
+    assert payload["text_feature_mode"] == "hashed_hf_last_mean"
+    assert summary["feature_model"] == "fake/local-model"
+    assert summary["feature_device"] == "cpu"
+    assert "hf_last_mean" in calls
 
 
 def test_learned_synonym_dictionary_contrastive_receiver_records_mode(tmp_path) -> None:

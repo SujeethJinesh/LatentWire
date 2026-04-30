@@ -1,0 +1,17 @@
+{
+  "artifact_sha256": {
+    "predictions_budget4.jsonl": "9be1da6017711a7a019ea47a0bf5083c049f4813f2c48fb8234c7a859f79f487",
+    "predictions_budget8.jsonl": "38fc66cf809668be5f06a367ad5ae7a22fba7c5b734abd0db36a87d4c845cc9a",
+    "summary.json": "b193fab7740138303cb5b2064f6eea15bac45de8879fa9abbccb9e4976628eac",
+    "summary.md": "7863a4a2ffe566a33934e464b7cae3b7ab7607f601633d6ab49f95c34d82fadf"
+  },
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "predictions_budget4.jsonl",
+    "predictions_budget8.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

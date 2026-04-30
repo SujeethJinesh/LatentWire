@@ -324,6 +324,15 @@
   basis/schema grid has `0` passes, and the packet-ISA waterfall reports 2-byte
   and 4-byte conditional packets as 5-byte and 7-byte records with Mac-local
   transport/receiver accounting and no source text/KV exposure.
+- Frozen BGE/MiniLM held-out receiver code, tests, references, memo, and
+  artifacts showing that generic frozen sentence embeddings do not replace the
+  explicit semantic-anchor lexicon. The aggregate has `60` rows, `20` strict
+  pass rows, `32` near misses, and no bidirectional frozen-receiver pass, while
+  the semantic-anchor reference remains `18/18`. MiniLM is the best partial
+  receiver, but core-to-holdout fails on oracle ceiling and a strong
+  holdout-to-core 4-byte row fails private-random-knockout lift reduction
+  (`0.906`), so the next branch is learned public ontology calibration or
+  receiver-conditioned residual codebooks.
 
 ## Notes
 
