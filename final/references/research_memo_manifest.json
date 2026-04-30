@@ -1258,5 +1258,12 @@
     "path": "references/536_product_codebook_knockout_stress_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the n500 product-codebook top-codeword knockout stress, covering PQ/OPQ, vector quantization, additive/composite quantization, TurboQuant, Slepian-Wolf side information, semantic communication, and reviewer-facing codeword causality controls."
+  },
+  {
+    "num": 537,
+    "slug": "product_codebook_geometry_knockout_refs_20260430",
+    "path": "references/537_product_codebook_geometry_knockout_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for geometry-mitigated PQ knockout stress, covering PQ, OPQ, Hadamard incoherence, QuaRot, TurboQuant, Slepian-Wolf/Wyner-Ziv side information, payload uniqueness, public-mean knockout, and structured-rotation systems framing."
   }
 ]

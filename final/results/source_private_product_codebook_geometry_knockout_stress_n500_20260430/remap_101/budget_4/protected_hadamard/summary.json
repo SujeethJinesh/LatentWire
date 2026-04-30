@@ -1,0 +1,442 @@
+{
+  "adversarial_knockout_pass": true,
+  "best_control_accuracy": 0.268,
+  "best_control_condition": "answer_masked_source",
+  "budget_bytes": 4,
+  "candidate_pool_recall": 1.0,
+  "controls_ok": true,
+  "exact_id_parity": true,
+  "mean_matched_margin": -0.012784397542476653,
+  "mean_payload_accuracy": 0.254,
+  "mean_payload_bytes": 4.0,
+  "mean_payload_tokens": 1.0,
+  "mean_random_margin_contribution": -0.0022483035176992417,
+  "mean_top_margin_contribution": 0.03487672969326377,
+  "metadata_file": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_product_codebook_geometry_knockout_stress_n500_20260430/remap_101/budget_4/protected_hadamard/metadata.jsonl",
+  "metrics": {
+    "answer_masked_source": {
+      "accuracy": 0.268,
+      "correct": 134,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015833997167646885,
+      "p95_latency_ms": 0.017916987417265773
+    },
+    "constrained_shuffled_source": {
+      "accuracy": 0.178,
+      "correct": 89,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.016125006368383765,
+      "p95_latency_ms": 0.018416991224512458
+    },
+    "label_shuffled_ridge": {
+      "accuracy": 0.24,
+      "correct": 120,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.016874982975423336,
+      "p95_latency_ms": 0.019166996935382485
+    },
+    "mean_payload": {
+      "accuracy": 0.254,
+      "correct": 127,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015333003830164671,
+      "p95_latency_ms": 0.01724998583085835
+    },
+    "permuted_codes": {
+      "accuracy": 0.236,
+      "correct": 118,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.01562500256113708,
+      "p95_latency_ms": 0.017709011444821954
+    },
+    "random_codeword_removed_mean": {
+      "accuracy": 0.49,
+      "correct": 245,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015375000657513738,
+      "p95_latency_ms": 0.01704200985841453
+    },
+    "random_codeword_removed_random": {
+      "accuracy": 0.486,
+      "correct": 243,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015375000657513738,
+      "p95_latency_ms": 0.017291982658207417
+    },
+    "random_same_byte": {
+      "accuracy": 0.24,
+      "correct": 120,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015541998436674476,
+      "p95_latency_ms": 0.017125013982877135
+    },
+    "source": {
+      "accuracy": 0.498,
+      "correct": 249,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.019500002963468432,
+      "p95_latency_ms": 0.031083007343113422
+    },
+    "target_only": {
+      "accuracy": 0.25,
+      "correct": 125,
+      "mean_payload_bytes": 0.0,
+      "mean_payload_tokens": 0.0,
+      "n": 500,
+      "p50_latency_ms": 0.0007089984137564898,
+      "p95_latency_ms": 0.0012500095181167126
+    },
+    "top_codeword_only": {
+      "accuracy": 0.552,
+      "correct": 276,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015333003830164671,
+      "p95_latency_ms": 0.016375008272007108
+    },
+    "top_codeword_removed_mean": {
+      "accuracy": 0.472,
+      "correct": 236,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015457990230061114,
+      "p95_latency_ms": 0.01720900763757527
+    },
+    "top_codeword_removed_worst": {
+      "accuracy": 0.154,
+      "correct": 77,
+      "mean_payload_bytes": 4.0,
+      "mean_payload_tokens": 1.0,
+      "n": 500,
+      "p50_latency_ms": 0.015415993402712047,
+      "p95_latency_ms": 0.016915990272536874
+    }
+  },
+  "n": 500,
+  "paired_comparisons": {
+    "answer_masked_source": {
+      "accuracy": 0.268,
+      "paired_counts": {
+        "losses": 66,
+        "ties": 253,
+        "wins": 181
+      },
+      "paired_delta": {
+        "ci95_high": 0.29,
+        "ci95_low": 0.168,
+        "mean": 0.23
+      }
+    },
+    "constrained_shuffled_source": {
+      "accuracy": 0.178,
+      "paired_counts": {
+        "losses": 52,
+        "ties": 236,
+        "wins": 212
+      },
+      "paired_delta": {
+        "ci95_high": 0.374,
+        "ci95_low": 0.266,
+        "mean": 0.32
+      }
+    },
+    "label_shuffled_ridge": {
+      "accuracy": 0.24,
+      "paired_counts": {
+        "losses": 65,
+        "ties": 241,
+        "wins": 194
+      },
+      "paired_delta": {
+        "ci95_high": 0.32,
+        "ci95_low": 0.2,
+        "mean": 0.258
+      }
+    },
+    "mean_payload": {
+      "accuracy": 0.254,
+      "paired_counts": {
+        "losses": 68,
+        "ties": 242,
+        "wins": 190
+      },
+      "paired_delta": {
+        "ci95_high": 0.302,
+        "ci95_low": 0.184,
+        "mean": 0.244
+      }
+    },
+    "permuted_codes": {
+      "accuracy": 0.236,
+      "paired_counts": {
+        "losses": 54,
+        "ties": 261,
+        "wins": 185
+      },
+      "paired_delta": {
+        "ci95_high": 0.314,
+        "ci95_low": 0.204,
+        "mean": 0.262
+      }
+    },
+    "random_codeword_removed_mean": {
+      "accuracy": 0.49,
+      "paired_counts": {
+        "losses": 6,
+        "ties": 484,
+        "wins": 10
+      },
+      "paired_delta": {
+        "ci95_high": 0.024,
+        "ci95_low": -0.008,
+        "mean": 0.008
+      }
+    },
+    "random_codeword_removed_random": {
+      "accuracy": 0.486,
+      "paired_counts": {
+        "losses": 19,
+        "ties": 456,
+        "wins": 25
+      },
+      "paired_delta": {
+        "ci95_high": 0.036,
+        "ci95_low": -0.012,
+        "mean": 0.012
+      }
+    },
+    "random_same_byte": {
+      "accuracy": 0.24,
+      "paired_counts": {
+        "losses": 63,
+        "ties": 245,
+        "wins": 192
+      },
+      "paired_delta": {
+        "ci95_high": 0.314,
+        "ci95_low": 0.2,
+        "mean": 0.258
+      }
+    },
+    "target_only": {
+      "accuracy": 0.25,
+      "paired_counts": {
+        "losses": 62,
+        "ties": 252,
+        "wins": 186
+      },
+      "paired_delta": {
+        "ci95_high": 0.31,
+        "ci95_low": 0.188,
+        "mean": 0.248
+      }
+    },
+    "top_codeword_only": {
+      "accuracy": 0.552,
+      "paired_counts": {
+        "losses": 59,
+        "ties": 409,
+        "wins": 32
+      },
+      "paired_delta": {
+        "ci95_high": -0.014,
+        "ci95_low": -0.094,
+        "mean": -0.054
+      }
+    },
+    "top_codeword_removed_mean": {
+      "accuracy": 0.472,
+      "paired_counts": {
+        "losses": 2,
+        "ties": 483,
+        "wins": 15
+      },
+      "paired_delta": {
+        "ci95_high": 0.044,
+        "ci95_low": 0.01,
+        "mean": 0.026
+      }
+    },
+    "top_codeword_removed_worst": {
+      "accuracy": 0.154,
+      "paired_counts": {
+        "losses": 0,
+        "ties": 328,
+        "wins": 172
+      },
+      "paired_delta": {
+        "ci95_high": 0.384,
+        "ci95_low": 0.302,
+        "mean": 0.344
+      }
+    }
+  },
+  "payload_entropy": {
+    "codeword_summaries": [
+      {
+        "entropy_bits": 7.235926883205166,
+        "max_frequency": 14,
+        "subspace_index": 0,
+        "top5_codes": [
+          {
+            "code": 10,
+            "count": 14
+          },
+          {
+            "code": 237,
+            "count": 13
+          },
+          {
+            "code": 20,
+            "count": 11
+          },
+          {
+            "code": 16,
+            "count": 9
+          },
+          {
+            "code": 37,
+            "count": 8
+          }
+        ],
+        "unique_codes": 191
+      },
+      {
+        "entropy_bits": 7.284589110696855,
+        "max_frequency": 11,
+        "subspace_index": 1,
+        "top5_codes": [
+          {
+            "code": 255,
+            "count": 11
+          },
+          {
+            "code": 248,
+            "count": 10
+          },
+          {
+            "code": 6,
+            "count": 8
+          },
+          {
+            "code": 233,
+            "count": 8
+          },
+          {
+            "code": 209,
+            "count": 7
+          }
+        ],
+        "unique_codes": 192
+      },
+      {
+        "entropy_bits": 7.244884581585582,
+        "max_frequency": 11,
+        "subspace_index": 2,
+        "top5_codes": [
+          {
+            "code": 92,
+            "count": 11
+          },
+          {
+            "code": 230,
+            "count": 11
+          },
+          {
+            "code": 229,
+            "count": 9
+          },
+          {
+            "code": 32,
+            "count": 8
+          },
+          {
+            "code": 207,
+            "count": 8
+          }
+        ],
+        "unique_codes": 195
+      },
+      {
+        "entropy_bits": 7.332027875836886,
+        "max_frequency": 10,
+        "subspace_index": 3,
+        "top5_codes": [
+          {
+            "code": 1,
+            "count": 10
+          },
+          {
+            "code": 28,
+            "count": 9
+          },
+          {
+            "code": 44,
+            "count": 8
+          },
+          {
+            "code": 246,
+            "count": 8
+          },
+          {
+            "code": 19,
+            "count": 7
+          }
+        ],
+        "unique_codes": 199
+      }
+    ],
+    "collision_payloads": 62,
+    "max_payload_frequency": 7,
+    "payload_entropy_bits": 8.561873790705636,
+    "single_label_payloads": 350,
+    "unique_once_payloads": 350,
+    "unique_payloads": 412
+  },
+  "payload_reuse": {
+    "collision_accuracy": 0.5266666666666666,
+    "collision_n": 150,
+    "max_payload_frequency": 7,
+    "singleton_accuracy": 0.4857142857142857,
+    "singleton_n": 350
+  },
+  "predictions_file": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_product_codebook_geometry_knockout_stress_n500_20260430/remap_101/budget_4/protected_hadamard/predictions.jsonl",
+  "public_mean_delta_over_random_mean": 0.07258064516129038,
+  "public_mean_knockout_pass": false,
+  "random_mean_accuracy": 0.49,
+  "random_mean_lift_removed_fraction": 0.03225806451612906,
+  "random_random_accuracy": 0.486,
+  "remap_slot_seed": 101,
+  "source_accuracy": 0.498,
+  "source_minus_best_control": 0.22999999999999998,
+  "source_minus_target": 0.248,
+  "source_packet_pass": true,
+  "target_accuracy": 0.25,
+  "top_mean_accuracy": 0.472,
+  "top_mean_lift_removed_fraction": 0.10483870967741944,
+  "top_only_accuracy": 0.552,
+  "top_worst_accuracy": 0.154,
+  "top_worst_lift_removed_fraction": 1.3870967741935483,
+  "variant": "protected_hadamard",
+  "variant_sha256": "e9a08a9a6af8241129cecb9bb83f7a1c11ec8f48cbcd586fc70fe1e464f4d2cd"
+}

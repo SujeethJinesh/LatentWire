@@ -4,6 +4,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import math
 import pathlib
 import random
 import statistics
@@ -122,7 +123,7 @@ def _groups_for_variant(
         rng = np.random.default_rng(seed)
         order = rng.permutation(dims)
         return tuple(np.asarray(sorted(group), dtype=np.int64) for group in np.array_split(order, budget_bytes))
-    if variant in {"opq_procrustes", "utility_opq_procrustes"}:
+    if variant in {"opq_procrustes", "utility_opq_procrustes", "protected_hadamard", "utility_protected_hadamard"}:
         return tuple(group.astype(np.int64) for group in np.array_split(dims, budget_bytes))
     raise ValueError(f"unknown geometry variant {variant!r}")
 
@@ -186,6 +187,35 @@ def _initial_rotation(
     return rotation
 
 
+def _hadamard_matrix(feature_dim: int) -> np.ndarray:
+    if feature_dim <= 0 or feature_dim & (feature_dim - 1):
+        raise ValueError("protected_hadamard requires power-of-two feature_dim")
+    matrix = np.ones((1, 1), dtype=np.float32)
+    while matrix.shape[0] < feature_dim:
+        matrix = np.block([[matrix, matrix], [matrix, -matrix]]).astype(np.float32)
+    return (matrix / math.sqrt(feature_dim)).astype(np.float32)
+
+
+def _protected_hadamard_rotation(
+    *,
+    feature_dim: int,
+    seed: int,
+    utilities: np.ndarray,
+    utility_ordered: bool,
+) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    base = _hadamard_matrix(feature_dim)
+    signs = rng.choice(np.array([-1.0, 1.0], dtype=np.float32), size=feature_dim)
+    rotation = signs[:, None] * base
+    if utility_ordered:
+        order = np.argsort(-utilities, kind="stable")
+    else:
+        order = rng.permutation(np.arange(feature_dim))
+    protected = np.zeros_like(rotation)
+    protected[order] = rotation
+    return protected.astype(np.float32)
+
+
 def _fit_geometry_codebook(
     train_rows: list[Example],
     *,
@@ -204,6 +234,14 @@ def _fit_geometry_codebook(
     ).astype(np.float32)
     rotation: np.ndarray | None = None
     rotated_vectors = vectors
+    if variant in {"protected_hadamard", "utility_protected_hadamard"}:
+        rotation = _protected_hadamard_rotation(
+            feature_dim=feature_dim,
+            seed=seed,
+            utilities=utilities,
+            utility_ordered=variant == "utility_protected_hadamard",
+        )
+        rotated_vectors = (vectors @ rotation).astype(np.float32)
     if variant in {"opq_procrustes", "utility_opq_procrustes"}:
         rotation = _initial_rotation(variant=variant, feature_dim=feature_dim, utilities=utilities)
         for step in range(opq_iterations):
@@ -723,6 +761,8 @@ def main() -> None:
             "random_balanced",
             "opq_procrustes",
             "utility_opq_procrustes",
+            "protected_hadamard",
+            "utility_protected_hadamard",
         ],
         nargs="+",
         default=["canonical", "utility_round_robin", "utility_balanced"],

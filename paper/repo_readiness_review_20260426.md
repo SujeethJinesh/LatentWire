@@ -3312,3 +3312,23 @@ does not close the ICLR concern that the 4-byte code can behave like a compact
 example identifier. Next gate: OPQ/protected-basis PQ or verifier n500; keep the
 paper claim source-private residual coding with strict controls, not broad
 latent reasoning.
+
+Update `2026-04-30`: the OPQ/protected-basis PQ follow-up now passes the
+lookup-risk mitigation gate. Artifact:
+`results/source_private_product_codebook_geometry_knockout_stress_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_geometry_knockout_stress_20260430.md`;
+references:
+`references/537_product_codebook_geometry_knockout_refs_20260430.md`. All
+`18/18` geometry rows pass source controls and adversarial byte knockout.
+Utility-OPQ keeps source accuracy within `0.006` of canonical and makes
+public-mean top-byte replacement remove `1.49-1.60x` of matched lift across all
+remaps. Protected Hadamard keeps accuracy `0.498-0.514`, cuts unique n500
+payloads from canonical `498-500` to `404-425`, and retains collision-subset
+accuracy `0.457-0.537` versus target `0.250`. Utility-protected Hadamard cuts
+unique payloads further to `386-405` with collision-subset accuracy
+`0.494-0.513`. Readiness implication: the PQ branch is no longer just canonical
+PQ plus a stress test; it is a geometry-mitigated residual-code method with a
+credible systems angle through structured Hadamard rotations. Comfortable ICLR
+still needs verifier n500 or native GPU/vLLM/KV systems telemetry and a broader
+competitor table, but the paper now has a stronger third technical contribution.

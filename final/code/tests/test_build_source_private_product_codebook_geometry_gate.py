@@ -49,6 +49,21 @@ def test_opq_groups_are_canonical_partitions_for_rotated_space() -> None:
     assert sorted(int(dim) for group in groups for dim in group) == list(range(64))
 
 
+def test_protected_hadamard_groups_are_canonical_partitions_for_rotated_space() -> None:
+    utilities = [0.0] * 64
+
+    groups = _groups_for_variant(
+        variant="protected_hadamard",
+        feature_dim=64,
+        budget_bytes=4,
+        utilities=utilities,
+        seed=7,
+    )
+
+    assert [len(group) for group in groups] == [16, 16, 16, 16]
+    assert sorted(int(dim) for group in groups for dim in group) == list(range(64))
+
+
 def test_product_codebook_geometry_gate_writes_artifacts(tmp_path) -> None:
     payload = run_geometry_gate(
         output_dir=tmp_path / "geometry",

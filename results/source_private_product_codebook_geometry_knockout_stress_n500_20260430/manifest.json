@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "product_codebook_geometry_knockout_stress.json": "f9aed855b47b88f06086cc4e71d4333ff3993eb2e0313bc9fc40784b23e392d6",
+    "product_codebook_geometry_knockout_stress.md": "c9c26f0d0cd85cef13e0f34b87ba238b4e0d3effd2f707a5a975ddc41c25af92"
+  },
+  "artifacts": [
+    "product_codebook_geometry_knockout_stress.json",
+    "product_codebook_geometry_knockout_stress.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

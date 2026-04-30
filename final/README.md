@@ -182,6 +182,18 @@ PQ decisions depend on source-selected codewords, plus a clear limitation that
 OPQ/protected-basis stress is still needed before claiming an interpretable
 anti-lookup codec.
 
+That OPQ/protected-basis stress is now present in
+`results/source_private_product_codebook_geometry_knockout_stress_n500_20260430/`.
+All `18/18` geometry rows pass source controls and adversarial byte knockout.
+Utility-OPQ preserves canonical accuracy while making public-mean top-byte
+replacement remove `1.49-1.60x` of matched lift. Protected Hadamard keeps
+accuracy `0.498-0.514`, cuts unique payloads from canonical `498-500` to
+`404-425`, and the reused-payload subset still scores `0.457-0.537` versus
+target `0.250`. Utility-protected Hadamard cuts unique payloads further to
+`386-405` while keeping reused-payload accuracy `0.494-0.513`. This is now the
+strongest version of the compression-native contribution: geometry-mitigated
+source-private PQ with a hardware-friendly structured rotation caveat.
+
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,

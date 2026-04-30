@@ -16522,3 +16522,37 @@ uniqueness keep the lookup-ID objection alive. Promote this as a diagnostic
 supporting row, not as a fully interpretable PQ proof. The next exact gate is
 OPQ/protected-basis PQ at n500, looking for comparable lift with stronger
 public-mean knockout sensitivity or lower lookup-like uniqueness.
+
+Update `2026-04-30`: the OPQ/protected-basis n500 geometry knockout gate passes
+and materially strengthens the PQ contribution. Code:
+`scripts/build_source_private_product_codebook_geometry_knockout_stress.py`;
+updated geometry support:
+`scripts/build_source_private_product_codebook_geometry_gate.py`; tests:
+`tests/test_build_source_private_product_codebook_geometry_knockout_stress.py`
+and `tests/test_build_source_private_product_codebook_geometry_gate.py`; memo:
+`paper/source_private_product_codebook_geometry_knockout_stress_20260430.md`;
+references:
+`references/537_product_codebook_geometry_knockout_refs_20260430.md`; artifact:
+`results/source_private_product_codebook_geometry_knockout_stress_n500_20260430/`.
+Outcome: all `18/18` rows across canonical, utility-balanced, OPQ,
+utility-OPQ, protected Hadamard, and utility-protected Hadamard pass source
+controls and adversarial top-codeword knockout. The mitigation gate passes all
+three remaps (`11` noncanonical rows): variants must stay within `0.02` of
+canonical accuracy and either improve public-mean knockout lift removal by
+`>=0.05` or reduce unique payloads by `>=25` while reused-payload accuracy
+still beats target by `>=0.10`. Utility-OPQ preserves accuracy
+(`0.480/0.504/0.514`) and makes public-mean top-codeword replacement remove
+`1.49-1.60x` of matched lift. Protected Hadamard keeps accuracy
+`0.498/0.514/0.512`, reduces unique payloads from canonical `500/499/498` to
+`412/404/425`, and the reused-payload subsets still score
+`0.527/0.537/0.457` versus target `0.250`. Utility-protected Hadamard further
+reduces unique payloads to `386/394/405` while scoring `0.504/0.504/0.516`;
+reused-payload subset accuracy is `0.513/0.497/0.494`. Interpretation:
+promote geometry-mitigated PQ as a stronger method contribution: OPQ improves
+public-mean byte sensitivity, while structured Hadamard rotations reduce
+lookup-like singleton payload behavior with a hardware-friendly transform. This
+still does not prove protocol-free latent reasoning or production GPU speedup.
+Next exact gate: build a systems comparison table for canonical PQ,
+utility-OPQ, protected Hadamard, scalar WZ, text relay, KV baselines, and the
+frozen verifier packet with bytes, cached decode, and exposed-private-state
+accounting.

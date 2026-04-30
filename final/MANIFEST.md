@@ -270,6 +270,12 @@
   stress fails and payload entropy shows `498-500` unique 4-byte packets, so
   the artifact supports byte-causality diagnostics while preserving the
   OPQ/protected-basis lookup-risk blocker.
+- Product-codebook/PQ geometry-knockout stress code, tests, references, memo,
+  and n500 artifact showing that OPQ/protected bases mitigate the lookup-risk
+  blocker. Utility-OPQ passes public-mean top-byte sensitivity on all remaps;
+  protected Hadamard reduces unique payloads to `404-425` with collision-subset
+  accuracy `0.457-0.537`; utility-protected Hadamard reduces unique payloads to
+  `386-405` with collision-subset accuracy `0.494-0.513`.
 
 ## Notes
 
