@@ -16579,3 +16579,50 @@ claim is now source-private residual-code boundary traffic with explicit
 private-text/KV exposure accounting. The next exact ICLR method gate is a
 product-codebook model-mediated receiver at n256, scaling to n500 only if
 strict controls pass.
+
+Update `2026-04-30`: the product-codebook model-mediated receiver branch was
+stress-tested with constrained logprob decoding and pruned for this cycle.
+Code: `scripts/run_source_private_product_codebook_target_decoder_smoke.py`;
+tests: `tests/test_run_source_private_product_codebook_target_decoder_smoke.py`;
+memo: `paper/source_private_product_codebook_model_receiver_20260430.md`;
+literature scout:
+`references/539_pq_model_receiver_lit_scout_20260430.md`; artifacts:
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu/`,
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n8_signature_binary_logprob_disjoint_cpu/`,
+and
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n8_distance_binary_logprob_disjoint_cpu/`.
+The harness now records train/eval ID overlap, supports `choice_logprob` and
+`candidate_binary_logprob`, and hardens exact-ID parity against duplicate
+condition rows. Results: n16 distance choice-logprob failed with matched,
+target-only, and all controls at `0.3125`. The disjoint-ID n8 signature binary
+gate failed because matched improved to `0.500` but all packet-bearing controls
+also rose to `0.500`; the distance binary diagnostic repeated the same pattern.
+Interpretation: Qwen3-0.6B frozen prompt/logprob receivers are reacting to
+packet-bearing prompt structure or option position, not matched PQ evidence.
+Do not scale this model-mediated PQ prompt branch. Next exact Mac-local gate:
+the systems reviewer recommends a protected-Hadamard/OPQ PQ receiver batch
+microbench across batch sizes `1/8/64/256`; the next method gate should move
+away from prompt-only PQ toward either a learned score adapter with deranged
+public-table controls or larger frozen-verifier scale.
+
+Update `2026-04-30`: the protected-Hadamard/OPQ PQ receiver batch microbench
+clears the Mac-local systems gate. Code:
+`scripts/build_source_private_pq_receiver_batch_microbench.py`; test:
+`tests/test_build_source_private_pq_receiver_batch_microbench.py`; memo:
+`paper/source_private_pq_receiver_batch_microbench_20260430.md`; references:
+`references/540_pq_receiver_batch_microbench_refs_20260430.md`; artifact:
+`results/source_private_pq_receiver_batch_microbench_20260430/`. Outcome:
+all `18/18` rows across remaps `101/103/107` and variants `canonical`,
+`utility_balanced`, `opq_procrustes`, `utility_opq_procrustes`,
+`protected_hadamard`, and `utility_protected_hadamard` pass. Max resident-table
+decode p50 is `0.0167 ms/request`; max batch64 p50 is `0.0163 ms/request`;
+max public table build p50 is `1.9629 ms`; table and batch mismatch counts are
+both `0`; prediction hashes are invariant across batch sizes; and 7-byte packet
+records amortize to `7.0` bytes/request at batch256 under 128B burst
+accounting. Interpretation: promote this as receiver-kernel systems evidence
+for geometry-mitigated source-private PQ packets. Do not claim GPU/vLLM
+serving speedup, TTFT/TPOT/goodput, or protocol-free latent reasoning. Next
+exact gate: extend the packet-ring transport microbench to 7-byte PQ records
+and 14-byte query-aware text records, then join transport plus receiver timing
+into one systems waterfall while pursuing a stronger learned/non-hand-decoded
+receiver branch separately.

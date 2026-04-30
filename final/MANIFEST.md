@@ -288,6 +288,14 @@
   `0.0212 ms`, frozen verifier min accuracy `1.000`, same-byte text max
   accuracy `0.250`, query-aware text `7.0x` raw bytes, full-log relay at least
   `183.25x` raw bytes, and KV byte floors at least `10752x` raw bytes.
+- PQ receiver batch microbench code, test, references, memo, and artifact
+  showing the geometry-mitigated resident receiver is exact and cheap on the
+  Mac-local n500 gate: `18/18` canonical/OPQ/protected-Hadamard rows pass,
+  max resident table p50 is `0.0167 ms/request`, max batch64 p50 is
+  `0.0163 ms/request`, resident/table and batch mismatches are `0`, prediction
+  hashes are invariant across batch sizes `1/8/64/256`, and 7-byte packet
+  records amortize to `7.0` bytes/request at batch256 under 128B burst
+  accounting.
 
 ## Notes
 

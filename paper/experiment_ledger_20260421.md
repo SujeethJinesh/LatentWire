@@ -16604,3 +16604,25 @@ the systems reviewer recommends a protected-Hadamard/OPQ PQ receiver batch
 microbench across batch sizes `1/8/64/256`; the next method gate should move
 away from prompt-only PQ toward either a learned score adapter with deranged
 public-table controls or larger frozen-verifier scale.
+
+Update `2026-04-30`: the protected-Hadamard/OPQ PQ receiver batch microbench
+clears the Mac-local systems gate. Code:
+`scripts/build_source_private_pq_receiver_batch_microbench.py`; test:
+`tests/test_build_source_private_pq_receiver_batch_microbench.py`; memo:
+`paper/source_private_pq_receiver_batch_microbench_20260430.md`; references:
+`references/540_pq_receiver_batch_microbench_refs_20260430.md`; artifact:
+`results/source_private_pq_receiver_batch_microbench_20260430/`. Outcome:
+all `18/18` rows across remaps `101/103/107` and variants `canonical`,
+`utility_balanced`, `opq_procrustes`, `utility_opq_procrustes`,
+`protected_hadamard`, and `utility_protected_hadamard` pass. Max resident-table
+decode p50 is `0.0167 ms/request`; max batch64 p50 is `0.0163 ms/request`;
+max public table build p50 is `1.9629 ms`; table and batch mismatch counts are
+both `0`; prediction hashes are invariant across batch sizes; and 7-byte packet
+records amortize to `7.0` bytes/request at batch256 under 128B burst
+accounting. Interpretation: promote this as receiver-kernel systems evidence
+for geometry-mitigated source-private PQ packets. Do not claim GPU/vLLM
+serving speedup, TTFT/TPOT/goodput, or protocol-free latent reasoning. Next
+exact gate: extend the packet-ring transport microbench to 7-byte PQ records
+and 14-byte query-aware text records, then join transport plus receiver timing
+into one systems waterfall while pursuing a stronger learned/non-hand-decoded
+receiver branch separately.

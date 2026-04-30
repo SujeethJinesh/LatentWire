@@ -77,6 +77,21 @@ ablation. Readiness does not improve; the full-paper gap remains a materially
 different learned/model-mediated receiver or larger frozen Qwen binary-verifier
 scale-up plus native serving telemetry.
 
+Update `2026-04-30`: after the product-codebook prompt/logprob receiver failed,
+the protected-Hadamard/OPQ PQ receiver batch microbench now passes and
+strengthens the systems story. Across canonical, utility-balanced, OPQ,
+utility-OPQ, protected Hadamard, and utility-protected Hadamard PQ variants on
+remaps `101/103/107`, all `18/18` n500 rows pass with zero resident-table or
+batch prediction mismatches. Max resident-table p50 is `0.0167 ms/request`,
+max batch64 p50 is `0.0163 ms/request`, all batch-size prediction hashes are
+invariant, and 7-byte packet records amortize to `7.0` bytes/request at
+batch256 under 128B burst accounting. Readiness implication: the systems
+contribution is now a measured receiver-kernel/boundary-traffic result for the
+geometry-mitigated PQ branch, not just byte counting. It still does not solve
+the broad ICLR blocker: we need broader non-hand-decoded receiver evidence,
+native GPU/serving telemetry, larger verifier scale, or a less synthetic
+cross-family benchmark.
+
 ## Current Paper Story
 
 The honest current story is conditional innovation rather than proven latent
@@ -3352,3 +3367,23 @@ source-private boundary traffic with explicit source-text/KV exposure
 accounting. This still does not close the biggest ICLR blocker: the next method
 gate should be a product-codebook model-mediated receiver at n256/n500 or a
 native GPU serving trace when hardware is available.
+
+Update `2026-04-30`: the product-codebook model-mediated receiver gate has now
+been run and fails under strict controls. The updated harness adds
+`choice_logprob` and `candidate_binary_logprob`, disjoint train/eval ID
+support, train/eval overlap recording, and stricter duplicate-ID parity checks.
+Artifacts:
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n16_distance_choice_logprob_cpu/`,
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n8_signature_binary_logprob_disjoint_cpu/`,
+and
+`results/source_private_product_codebook_target_decoder_smoke_20260430/remap101_budget4_n8_distance_binary_logprob_disjoint_cpu/`.
+The n16 choice-logprob gate is flat at `0.3125` for matched, target, and all
+controls. The disjoint-ID n8 binary gates show matched `0.500` but best
+control `0.500`, for both signature-only and distance-table prompts. Readiness
+impact: this prunes prompt/logprob Qwen3-0.6B PQ reception as a near-term ICLR
+positive method. The paper remains COLM-workshop strong and ICLR-full plausible
+only with a tightened claim boundary plus either stronger receiver evidence,
+larger frozen-verifier scale, a protected-Hadamard/OPQ batch systems
+microbench, or NVIDIA/vLLM serving telemetry. Next exact gate on the Mac:
+protected-Hadamard/OPQ PQ receiver batch microbench at batch sizes
+`1/8/64/256`, with exact prediction parity and cache-line/DMA accounting.

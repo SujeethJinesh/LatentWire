@@ -1,0 +1,15 @@
+{
+  "artifact_sha256": {
+    "pq_receiver_batch_microbench.csv": "a99aef9609e08099105a22f6a1406cc52f247edca1fa819d3cefc2c179a357a4",
+    "pq_receiver_batch_microbench.json": "d7667844321482f958bed837815b775ea907bf24b55d034eeeb99f9ff9ab2d06",
+    "pq_receiver_batch_microbench.md": "df5bf31a10451409723b9069b62ba6c632c0aecc9aa4a10e6262eced8c98bb7b"
+  },
+  "artifacts": [
+    "pq_receiver_batch_microbench.json",
+    "pq_receiver_batch_microbench.md",
+    "pq_receiver_batch_microbench.csv",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

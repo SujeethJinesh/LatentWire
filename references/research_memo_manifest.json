@@ -1279,5 +1279,12 @@
     "path": "references/539_pq_model_receiver_lit_scout_20260430.md",
     "status": "local_memo",
     "reason": "Targeted primary-source literature scout for the product-codebook/PQ model-mediated receiver branch, covering cross-model KV/activation communication, PQ/OPQ/quantization, constrained/logprob decoding, novelty boundaries, subsumption risks, reviewer risks, and cheap Mac ablations."
+  },
+  {
+    "num": 540,
+    "slug": "pq_receiver_batch_microbench_refs_20260430",
+    "path": "references/540_pq_receiver_batch_microbench_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the PQ receiver batch microbench, covering PQ/OPQ, Hadamard/rotation quantization, TurboQuant/QJL/KIVI/KVQuant, C2C/KVComm, vLLM/PagedAttention, DistServe, FlashAttention, receiver-kernel novelty boundaries, and GPU-serving non-claims."
   }
 ]

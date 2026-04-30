@@ -206,6 +206,17 @@ accuracy `0.250`, query-aware text `7.0x` raw bytes, full-log relay at least
 main systems comparison artifact for finalization; it is explicitly not a
 native GPU/vLLM serving claim.
 
+The receiver-kernel follow-up in
+`results/source_private_pq_receiver_batch_microbench_20260430/` now closes the
+Mac-local systems gate for geometry-mitigated PQ. Across canonical,
+utility-balanced, OPQ, utility-OPQ, protected Hadamard, and utility-protected
+Hadamard rows on remaps `101/103/107`, all `18/18` n500 rows pass with zero
+resident-table or batch mismatches. Max resident lookup p50 is `0.0167 ms`,
+max batch64 p50 is `0.0163 ms`, prediction hashes are invariant across batch
+sizes, and 7-byte packet records amortize to `7.0` bytes/request at batch256
+under 128B burst accounting. This supports a receiver microkernel and
+boundary-traffic claim, not a production GPU serving claim.
+
 The product-codebook model-mediated receiver follow-up is now negative. The
 updated target-decoder harness supports constrained A/B/C/D logprob scoring,
 candidate-wise yes/no binary logprob scoring, disjoint train/eval ID offsets,

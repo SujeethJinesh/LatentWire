@@ -77,6 +77,21 @@ ablation. Readiness does not improve; the full-paper gap remains a materially
 different learned/model-mediated receiver or larger frozen Qwen binary-verifier
 scale-up plus native serving telemetry.
 
+Update `2026-04-30`: after the product-codebook prompt/logprob receiver failed,
+the protected-Hadamard/OPQ PQ receiver batch microbench now passes and
+strengthens the systems story. Across canonical, utility-balanced, OPQ,
+utility-OPQ, protected Hadamard, and utility-protected Hadamard PQ variants on
+remaps `101/103/107`, all `18/18` n500 rows pass with zero resident-table or
+batch prediction mismatches. Max resident-table p50 is `0.0167 ms/request`,
+max batch64 p50 is `0.0163 ms/request`, all batch-size prediction hashes are
+invariant, and 7-byte packet records amortize to `7.0` bytes/request at
+batch256 under 128B burst accounting. Readiness implication: the systems
+contribution is now a measured receiver-kernel/boundary-traffic result for the
+geometry-mitigated PQ branch, not just byte counting. It still does not solve
+the broad ICLR blocker: we need broader non-hand-decoded receiver evidence,
+native GPU/serving telemetry, larger verifier scale, or a less synthetic
+cross-family benchmark.
+
 ## Current Paper Story
 
 The honest current story is conditional innovation rather than proven latent
