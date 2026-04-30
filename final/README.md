@@ -151,6 +151,25 @@ Treat this as a reviewer-facing negative boundary, not a contribution claim.
 It prunes the current anchor-relative/crosscoder implementation and supports
 the narrower source-private residual-coding story.
 
+## Product-Codebook n500 Packet
+
+The product-codebook/PQ packet branch now has an n500 pass under
+`results/source_private_product_codebook_packet_gate_n500_20260430/`,
+`results/source_private_product_codebook_uncertainty_n500_20260430/`, and
+`results/source_private_product_codebook_decode_frontier_n500_20260430/`.
+
+At 4 bytes, all three remapped codebooks pass: PQ accuracy is `0.482-0.520`
+versus target `0.250`, best PQ control `0.252-0.268`, and scalar WZ
+`0.424-0.504`. Paired uncertainty passes with minimum CI95 low `+0.174` versus
+target and `+0.154` versus best PQ control. Cached target-side decode has max
+p50 `0.0212 ms`, request-public table decode has max p50 `0.3694 ms`, resident
+lookup has max p50 `0.0177 ms`, and all cached/table decoders match the
+canonical decoder.
+
+This is now the strongest compression-native systems contribution. It should be
+claimed as source-private residual coding with fast cached target-side decode,
+not as protocol-free latent reasoning or native GPU serving speedup.
+
 ## Latest-Model And MoE Status
 
 The current evidence covers the final submitted model rows, including Qwen3,

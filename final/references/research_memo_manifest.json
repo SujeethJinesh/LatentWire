@@ -1244,5 +1244,12 @@
     "path": "references/534_anchor_relative_crosscoder_receiver_gate_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for pruning the strict anchor-relative/crosscoder receiver gate, covering relative representations, model stitching, sparse crosscoders, universal SAEs, Wyner-Ziv/Slepian-Wolf framing, KV compression baselines, TurboQuant, and serving telemetry requirements."
+  },
+  {
+    "num": 535,
+    "slug": "product_codebook_n500_refs_20260430",
+    "path": "references/535_product_codebook_n500_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the n500 product-codebook/PQ packet sprint, covering PQ/OPQ, TurboQuant, RaBitQ, QJL, KIVI/KVQuant, C2C/KVComm, Slepian-Wolf framing, and diffusion/flow/consistency receiver inspiration."
   }
 ]

@@ -1,0 +1,483 @@
+{
+  "gate": "source_private_product_codebook_uncertainty",
+  "headline": {
+    "max_product_codebook_accuracy": 0.52,
+    "min_paired_ci95_low_vs_scalar": -0.032,
+    "min_passing_ci95_low_vs_best_control": 0.154,
+    "min_passing_ci95_low_vs_target": 0.174,
+    "pass_rows": 3,
+    "remaps_with_pass": [
+      101,
+      103,
+      107
+    ],
+    "rows": 3
+  },
+  "inputs": {
+    "bootstrap_samples": 3000,
+    "product_gate_dir": "results/source_private_product_codebook_packet_gate_n500_20260430",
+    "product_gate_json": "results/source_private_product_codebook_packet_gate_n500_20260430/product_codebook_packet_gate.json",
+    "seed": 20260430
+  },
+  "interpretation": "This summary tests whether product-codebook gains are stable at the example-paired level rather than only aggregate accuracies. It is intentionally stricter against source-destroying controls than against scalar WZ: PQ must prove source-causal lift, while scalar WZ remains a strong adjacent codec comparator.",
+  "pass_gate": true,
+  "pass_rule": "At least one row per remapped codebook must have exact ID parity, paired CI95 low >0.15 versus target-only, paired CI95 low >0.10 versus the best product-codebook destructive control, and stay within 0.02 accuracy of scalar Wyner-Ziv.",
+  "rows": [
+    {
+      "best_product_codebook_control": "product_codebook_answer_masked_source",
+      "best_product_codebook_control_accuracy": 0.268,
+      "budget_bytes": 4,
+      "exact_id_parity": true,
+      "n": 500,
+      "paired_comparisons": {
+        "product_codebook_answer_masked_source": {
+          "accuracy": 0.268,
+          "paired_counts": {
+            "losses": 71,
+            "ties": 251,
+            "wins": 178
+          },
+          "paired_delta": {
+            "ci95_high": 0.272,
+            "ci95_low": 0.154,
+            "mean": 0.214
+          }
+        },
+        "product_codebook_constrained_shuffled_source": {
+          "accuracy": 0.18,
+          "paired_counts": {
+            "losses": 52,
+            "ties": 245,
+            "wins": 203
+          },
+          "paired_delta": {
+            "ci95_high": 0.358,
+            "ci95_low": 0.244,
+            "mean": 0.302
+          }
+        },
+        "product_codebook_label_shuffled_ridge": {
+          "accuracy": 0.25,
+          "paired_counts": {
+            "losses": 71,
+            "ties": 242,
+            "wins": 187
+          },
+          "paired_delta": {
+            "ci95_high": 0.292,
+            "ci95_low": 0.172,
+            "mean": 0.232
+          }
+        },
+        "product_codebook_permuted_codes": {
+          "accuracy": 0.22,
+          "paired_counts": {
+            "losses": 59,
+            "ties": 251,
+            "wins": 190
+          },
+          "paired_delta": {
+            "ci95_high": 0.318,
+            "ci95_low": 0.206,
+            "mean": 0.262
+          }
+        },
+        "product_codebook_random_same_byte": {
+          "accuracy": 0.242,
+          "paired_counts": {
+            "losses": 51,
+            "ties": 278,
+            "wins": 171
+          },
+          "paired_delta": {
+            "ci95_high": 0.294,
+            "ci95_low": 0.186,
+            "mean": 0.24
+          }
+        },
+        "protected_rotated_residual_source": {
+          "accuracy": 0.454,
+          "paired_counts": {
+            "losses": 41,
+            "ties": 404,
+            "wins": 55
+          },
+          "paired_delta": {
+            "ci95_high": 0.066,
+            "ci95_low": -0.012,
+            "mean": 0.028
+          }
+        },
+        "qjl_residual_source": {
+          "accuracy": 0.424,
+          "paired_counts": {
+            "losses": 31,
+            "ties": 409,
+            "wins": 60
+          },
+          "paired_delta": {
+            "ci95_high": 0.094,
+            "ci95_low": 0.022,
+            "mean": 0.058
+          }
+        },
+        "rotation_sign_source": {
+          "accuracy": 0.324,
+          "paired_counts": {
+            "losses": 90,
+            "ties": 241,
+            "wins": 169
+          },
+          "paired_delta": {
+            "ci95_high": 0.22,
+            "ci95_low": 0.096,
+            "mean": 0.158
+          }
+        },
+        "scalar_quantized_source": {
+          "accuracy": 0.424,
+          "paired_counts": {
+            "losses": 29,
+            "ties": 413,
+            "wins": 58
+          },
+          "paired_delta": {
+            "ci95_high": 0.092,
+            "ci95_low": 0.022,
+            "mean": 0.058
+          }
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "paired_counts": {
+            "losses": 62,
+            "ties": 260,
+            "wins": 178
+          },
+          "paired_delta": {
+            "ci95_high": 0.288,
+            "ci95_low": 0.174,
+            "mean": 0.232
+          }
+        }
+      },
+      "paired_vs_best_control_ci95_low": 0.154,
+      "paired_vs_scalar_ci95_low": 0.022,
+      "paired_vs_target_ci95_low": 0.174,
+      "path": "results/source_private_product_codebook_packet_gate_n500_20260430/remap_101/predictions_budget4.jsonl",
+      "prior_gate_functional_pass": true,
+      "product_codebook_accuracy": 0.482,
+      "product_minus_best_control": 0.21399999999999997,
+      "product_minus_scalar": 0.057999999999999996,
+      "product_minus_target": 0.23199999999999998,
+      "remap_slot_seed": 101,
+      "scalar_wyner_ziv_accuracy": 0.424,
+      "target_accuracy": 0.25,
+      "uncertainty_pass": true
+    },
+    {
+      "best_product_codebook_control": "product_codebook_label_shuffled_ridge",
+      "best_product_codebook_control_accuracy": 0.262,
+      "budget_bytes": 4,
+      "exact_id_parity": true,
+      "n": 500,
+      "paired_comparisons": {
+        "product_codebook_answer_masked_source": {
+          "accuracy": 0.21,
+          "paired_counts": {
+            "losses": 59,
+            "ties": 233,
+            "wins": 208
+          },
+          "paired_delta": {
+            "ci95_high": 0.356,
+            "ci95_low": 0.24,
+            "mean": 0.298
+          }
+        },
+        "product_codebook_constrained_shuffled_source": {
+          "accuracy": 0.168,
+          "paired_counts": {
+            "losses": 39,
+            "ties": 252,
+            "wins": 209
+          },
+          "paired_delta": {
+            "ci95_high": 0.394,
+            "ci95_low": 0.286,
+            "mean": 0.34
+          }
+        },
+        "product_codebook_label_shuffled_ridge": {
+          "accuracy": 0.262,
+          "paired_counts": {
+            "losses": 69,
+            "ties": 239,
+            "wins": 192
+          },
+          "paired_delta": {
+            "ci95_high": 0.306,
+            "ci95_low": 0.186,
+            "mean": 0.246
+          }
+        },
+        "product_codebook_permuted_codes": {
+          "accuracy": 0.256,
+          "paired_counts": {
+            "losses": 64,
+            "ties": 246,
+            "wins": 190
+          },
+          "paired_delta": {
+            "ci95_high": 0.312,
+            "ci95_low": 0.194,
+            "mean": 0.252
+          }
+        },
+        "product_codebook_random_same_byte": {
+          "accuracy": 0.262,
+          "paired_counts": {
+            "losses": 63,
+            "ties": 251,
+            "wins": 186
+          },
+          "paired_delta": {
+            "ci95_high": 0.306,
+            "ci95_low": 0.186,
+            "mean": 0.246
+          }
+        },
+        "protected_rotated_residual_source": {
+          "accuracy": 0.474,
+          "paired_counts": {
+            "losses": 38,
+            "ties": 407,
+            "wins": 55
+          },
+          "paired_delta": {
+            "ci95_high": 0.072,
+            "ci95_low": -0.004,
+            "mean": 0.034
+          }
+        },
+        "qjl_residual_source": {
+          "accuracy": 0.48,
+          "paired_counts": {
+            "losses": 38,
+            "ties": 410,
+            "wins": 52
+          },
+          "paired_delta": {
+            "ci95_high": 0.064,
+            "ci95_low": -0.008,
+            "mean": 0.028
+          }
+        },
+        "rotation_sign_source": {
+          "accuracy": 0.326,
+          "paired_counts": {
+            "losses": 81,
+            "ties": 247,
+            "wins": 172
+          },
+          "paired_delta": {
+            "ci95_high": 0.24,
+            "ci95_low": 0.12,
+            "mean": 0.182
+          }
+        },
+        "scalar_quantized_source": {
+          "accuracy": 0.502,
+          "paired_counts": {
+            "losses": 43,
+            "ties": 411,
+            "wins": 46
+          },
+          "paired_delta": {
+            "ci95_high": 0.044,
+            "ci95_low": -0.032,
+            "mean": 0.006
+          }
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "paired_counts": {
+            "losses": 69,
+            "ties": 233,
+            "wins": 198
+          },
+          "paired_delta": {
+            "ci95_high": 0.32,
+            "ci95_low": 0.198,
+            "mean": 0.258
+          }
+        }
+      },
+      "paired_vs_best_control_ci95_low": 0.186,
+      "paired_vs_scalar_ci95_low": -0.032,
+      "paired_vs_target_ci95_low": 0.198,
+      "path": "results/source_private_product_codebook_packet_gate_n500_20260430/remap_103/predictions_budget4.jsonl",
+      "prior_gate_functional_pass": true,
+      "product_codebook_accuracy": 0.508,
+      "product_minus_best_control": 0.246,
+      "product_minus_scalar": 0.006000000000000005,
+      "product_minus_target": 0.258,
+      "remap_slot_seed": 103,
+      "scalar_wyner_ziv_accuracy": 0.502,
+      "target_accuracy": 0.25,
+      "uncertainty_pass": true
+    },
+    {
+      "best_product_codebook_control": "product_codebook_permuted_codes",
+      "best_product_codebook_control_accuracy": 0.252,
+      "budget_bytes": 4,
+      "exact_id_parity": true,
+      "n": 500,
+      "paired_comparisons": {
+        "product_codebook_answer_masked_source": {
+          "accuracy": 0.234,
+          "paired_counts": {
+            "losses": 50,
+            "ties": 257,
+            "wins": 193
+          },
+          "paired_delta": {
+            "ci95_high": 0.34,
+            "ci95_low": 0.23,
+            "mean": 0.286
+          }
+        },
+        "product_codebook_constrained_shuffled_source": {
+          "accuracy": 0.164,
+          "paired_counts": {
+            "losses": 47,
+            "ties": 228,
+            "wins": 225
+          },
+          "paired_delta": {
+            "ci95_high": 0.41,
+            "ci95_low": 0.302,
+            "mean": 0.356
+          }
+        },
+        "product_codebook_label_shuffled_ridge": {
+          "accuracy": 0.238,
+          "paired_counts": {
+            "losses": 53,
+            "ties": 253,
+            "wins": 194
+          },
+          "paired_delta": {
+            "ci95_high": 0.336,
+            "ci95_low": 0.222,
+            "mean": 0.282
+          }
+        },
+        "product_codebook_permuted_codes": {
+          "accuracy": 0.252,
+          "paired_counts": {
+            "losses": 60,
+            "ties": 246,
+            "wins": 194
+          },
+          "paired_delta": {
+            "ci95_high": 0.328,
+            "ci95_low": 0.21,
+            "mean": 0.268
+          }
+        },
+        "product_codebook_random_same_byte": {
+          "accuracy": 0.248,
+          "paired_counts": {
+            "losses": 57,
+            "ties": 250,
+            "wins": 193
+          },
+          "paired_delta": {
+            "ci95_high": 0.33,
+            "ci95_low": 0.214,
+            "mean": 0.272
+          }
+        },
+        "protected_rotated_residual_source": {
+          "accuracy": 0.442,
+          "paired_counts": {
+            "losses": 24,
+            "ties": 413,
+            "wins": 63
+          },
+          "paired_delta": {
+            "ci95_high": 0.114,
+            "ci95_low": 0.042,
+            "mean": 0.078
+          }
+        },
+        "qjl_residual_source": {
+          "accuracy": 0.476,
+          "paired_counts": {
+            "losses": 37,
+            "ties": 404,
+            "wins": 59
+          },
+          "paired_delta": {
+            "ci95_high": 0.082,
+            "ci95_low": 0.006,
+            "mean": 0.044
+          }
+        },
+        "rotation_sign_source": {
+          "accuracy": 0.324,
+          "paired_counts": {
+            "losses": 78,
+            "ties": 246,
+            "wins": 176
+          },
+          "paired_delta": {
+            "ci95_high": 0.256,
+            "ci95_low": 0.134,
+            "mean": 0.196
+          }
+        },
+        "scalar_quantized_source": {
+          "accuracy": 0.504,
+          "paired_counts": {
+            "losses": 49,
+            "ties": 394,
+            "wins": 57
+          },
+          "paired_delta": {
+            "ci95_high": 0.058,
+            "ci95_low": -0.024,
+            "mean": 0.016
+          }
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "paired_counts": {
+            "losses": 60,
+            "ties": 245,
+            "wins": 195
+          },
+          "paired_delta": {
+            "ci95_high": 0.326,
+            "ci95_low": 0.212,
+            "mean": 0.27
+          }
+        }
+      },
+      "paired_vs_best_control_ci95_low": 0.21,
+      "paired_vs_scalar_ci95_low": -0.024,
+      "paired_vs_target_ci95_low": 0.212,
+      "path": "results/source_private_product_codebook_packet_gate_n500_20260430/remap_107/predictions_budget4.jsonl",
+      "prior_gate_functional_pass": true,
+      "product_codebook_accuracy": 0.52,
+      "product_minus_best_control": 0.268,
+      "product_minus_scalar": 0.016000000000000014,
+      "product_minus_target": 0.27,
+      "remap_slot_seed": 107,
+      "scalar_wyner_ziv_accuracy": 0.504,
+      "target_accuracy": 0.25,
+      "uncertainty_pass": true
+    }
+  ]
+}

@@ -257,6 +257,12 @@
   pruned: matched packets reach only `0.270-0.309` versus target `0.250`,
   oracles remain below `0.95`, paired CI95 lower bounds cross zero, and
   top-feature knockout does not reduce matched accuracy.
+- Product-codebook/PQ n500 packet artifacts, references, and memo showing a
+  compression-native source-private packet contribution: all three remapped
+  codebooks pass at 4 bytes with PQ accuracy `0.482-0.520`, target `0.250`,
+  best PQ control `0.252-0.268`, minimum paired CI95 low `+0.174` versus
+  target and `+0.154` versus best control, max cached receiver p50 `0.0212 ms`,
+  and zero cached/table decoder mismatches.
 
 ## Notes
 

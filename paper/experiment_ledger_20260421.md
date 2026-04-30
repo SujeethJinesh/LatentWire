@@ -16472,3 +16472,29 @@ anchor-relative/crosscoder receiver as a headline positive method. The failure
 looks like an encoder/interface problem, not a simple byte-budget miss. Next
 highest-value gate is n500 seed stability for the frozen verifier positive row
 plus a TurboResidual/PQ packet branch under the same strict controls.
+
+Update `2026-04-30`: scaled the product-codebook/PQ packet branch to an n500
+Mac-local gate and promoted it as the current compression-native systems
+contribution. Artifacts:
+`results/source_private_product_codebook_packet_gate_n500_20260430/`,
+`results/source_private_product_codebook_uncertainty_n500_20260430/`, and
+`results/source_private_product_codebook_decode_frontier_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_n500_sprint_20260430.md`;
+references:
+`references/535_product_codebook_n500_refs_20260430.md`. Outcome: the
+functional n500 gate passes all three remaps at 4 bytes. Product-codebook
+accuracy is `0.482/0.508/0.520` for remaps `101/103/107` versus target
+`0.250`, best PQ controls `0.268/0.262/0.252`, and scalar WZ
+`0.424/0.502/0.504`; min PQ-control margin is `+0.214`, and all rows pass the
+systems-latency rule in the recorded path. Paired uncertainty passes `3/3`
+rows with min CI95 low `+0.174` versus target and `+0.154` versus best PQ
+control, while paired PQ-vs-scalar remains a tradeoff (`min CI95 low -0.032`).
+The decode frontier also passes `3/3`: max cached receiver p50 `0.0212 ms`,
+max request-public table decode p50 `0.3694 ms`, max resident table lookup p50
+`0.0177 ms`, zero prediction mismatches, and min cached speedup `17.38x` over
+the earlier Python path. Interpretation: this creates a distinct
+compression-native contribution with source-causal lift and fast cached
+target-side decode. It does not prove protocol-free latent reasoning or native
+GPU serving speedup. The next ICLR blocker is frozen verifier n500 or GPU
+serving telemetry plus top-codeword/OPQ/protected-basis stress for the PQ row.

@@ -1,0 +1,388 @@
+{
+  "budget_summaries": [
+    {
+      "best_compression_baseline_accuracy": 0.424,
+      "best_no_source_accuracy": 0.254,
+      "budget_bytes": 4,
+      "consistent_posterior_controls_ok": false,
+      "consistent_posterior_minus_best_no_source": null,
+      "consistent_posterior_minus_canonical_relative": null,
+      "consistent_posterior_minus_scalar": null,
+      "consistent_posterior_packet_accuracy": null,
+      "consistent_posterior_packet_pass": false,
+      "learned_vs_compression_pass": false,
+      "matched_accuracy": 0.272,
+      "matched_minus_best_compression": -0.15199999999999997,
+      "matched_minus_best_no_source": 0.018000000000000016,
+      "metrics": {
+        "matched_learned_syndrome": {
+          "accuracy": 0.272,
+          "correct": 136,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.5121249996591359,
+          "p95_latency_ms": 0.571875018067658
+        },
+        "product_codebook_answer_masked_source": {
+          "accuracy": 0.268,
+          "correct": 134,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.34397900162730366,
+          "p95_latency_ms": 0.3815829986706376
+        },
+        "product_codebook_constrained_shuffled_source": {
+          "accuracy": 0.18,
+          "correct": 90,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.35400000342633575,
+          "p95_latency_ms": 0.39304199162870646
+        },
+        "product_codebook_label_shuffled_ridge": {
+          "accuracy": 0.25,
+          "correct": 125,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.3544169885572046,
+          "p95_latency_ms": 0.39312499575316906
+        },
+        "product_codebook_permuted_codes": {
+          "accuracy": 0.22,
+          "correct": 110,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.3488749935058877,
+          "p95_latency_ms": 0.38987500010989606
+        },
+        "product_codebook_random_same_byte": {
+          "accuracy": 0.242,
+          "correct": 121,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.06662501255050302,
+          "p95_latency_ms": 0.0728330051060766
+        },
+        "product_codebook_source": {
+          "accuracy": 0.482,
+          "correct": 241,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.36031300260219723,
+          "p95_latency_ms": 0.42158400174230337
+        },
+        "protected_answer_masked_source": {
+          "accuracy": 0.258,
+          "correct": 129,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.23412497830577195,
+          "p95_latency_ms": 0.250082986894995
+        },
+        "protected_constrained_shuffled_source": {
+          "accuracy": 0.21,
+          "correct": 105,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.24195849255193025,
+          "p95_latency_ms": 0.26679199072532356
+        },
+        "protected_label_shuffled_ridge": {
+          "accuracy": 0.25,
+          "correct": 125,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.2383954997640103,
+          "p95_latency_ms": 0.261709006736055
+        },
+        "protected_random_same_byte": {
+          "accuracy": 0.256,
+          "correct": 128,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.08075000368990004,
+          "p95_latency_ms": 0.08779100608080626
+        },
+        "protected_rotated_residual_source": {
+          "accuracy": 0.454,
+          "correct": 227,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.23912498727440834,
+          "p95_latency_ms": 0.25845898198895156
+        },
+        "qjl_answer_masked_source": {
+          "accuracy": 0.268,
+          "correct": 134,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.23550000332761556,
+          "p95_latency_ms": 0.2585829934105277
+        },
+        "qjl_constrained_shuffled_source": {
+          "accuracy": 0.198,
+          "correct": 99,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.24310400476679206,
+          "p95_latency_ms": 0.27012499049305916
+        },
+        "qjl_label_shuffled_ridge": {
+          "accuracy": 0.25,
+          "correct": 125,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.24106199271045625,
+          "p95_latency_ms": 0.2643340267241001
+        },
+        "qjl_random_same_byte": {
+          "accuracy": 0.254,
+          "correct": 127,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.08129200432449579,
+          "p95_latency_ms": 0.08875000639818609
+        },
+        "qjl_residual_source": {
+          "accuracy": 0.424,
+          "correct": 212,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.244333001319319,
+          "p95_latency_ms": 0.27208300889469683
+        },
+        "random_same_byte": {
+          "accuracy": 0.254,
+          "correct": 127,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.35216698597650975,
+          "p95_latency_ms": 0.42158301221206784
+        },
+        "raw_source_sign_sketch": {
+          "accuracy": 0.324,
+          "correct": 162,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.48333349695894867,
+          "p95_latency_ms": 0.5446249851956964
+        },
+        "rotation_sign_answer_masked_source": {
+          "accuracy": 0.29,
+          "correct": 145,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.47354148409795016,
+          "p95_latency_ms": 0.5414589832071215
+        },
+        "rotation_sign_constrained_shuffled_source": {
+          "accuracy": 0.192,
+          "correct": 96,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.4798540030606091,
+          "p95_latency_ms": 0.5543750012293458
+        },
+        "rotation_sign_permuted_bits": {
+          "accuracy": 0.276,
+          "correct": 138,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.48906249867286533,
+          "p95_latency_ms": 0.5520419799722731
+        },
+        "rotation_sign_random_same_byte": {
+          "accuracy": 0.254,
+          "correct": 127,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.3503125044517219,
+          "p95_latency_ms": 0.41700000292621553
+        },
+        "rotation_sign_source": {
+          "accuracy": 0.324,
+          "correct": 162,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.48300050548277795,
+          "p95_latency_ms": 0.5449170130304992
+        },
+        "scalar_answer_masked_source": {
+          "accuracy": 0.258,
+          "correct": 129,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.2152090019080788,
+          "p95_latency_ms": 0.23183398297987878
+        },
+        "scalar_constrained_shuffled_source": {
+          "accuracy": 0.2,
+          "correct": 100,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.22366650227922946,
+          "p95_latency_ms": 0.24612498236820102
+        },
+        "scalar_label_shuffled_ridge": {
+          "accuracy": 0.262,
+          "correct": 131,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.22137501218821853,
+          "p95_latency_ms": 0.24270798894576728
+        },
+        "scalar_quantized_source": {
+          "accuracy": 0.424,
+          "correct": 212,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.22431249090004712,
+          "p95_latency_ms": 0.25295797968283296
+        },
+        "scalar_shuffled_source": {
+          "accuracy": 0.216,
+          "correct": 108,
+          "mean_payload_bytes": 4.0,
+          "mean_payload_tokens": 1.0,
+          "n": 500,
+          "p50_latency_ms": 0.22056250600144267,
+          "p95_latency_ms": 0.24083300377242267
+        },
+        "target_only": {
+          "accuracy": 0.25,
+          "correct": 125,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 500,
+          "p50_latency_ms": 0.0021249870769679546,
+          "p95_latency_ms": 0.00291600008495152
+        },
+        "zero_source": {
+          "accuracy": 0.25,
+          "correct": 125,
+          "mean_payload_bytes": 0.0,
+          "mean_payload_tokens": 0.0,
+          "n": 500,
+          "p50_latency_ms": 0.0016669800970703363,
+          "p95_latency_ms": 0.0018749851733446121
+        }
+      },
+      "pass_gate": false,
+      "product_codebook_controls_ok": true,
+      "product_codebook_minus_best_no_source": 0.22799999999999998,
+      "product_codebook_minus_protected": 0.02799999999999997,
+      "product_codebook_minus_qjl": 0.057999999999999996,
+      "product_codebook_minus_scalar": 0.057999999999999996,
+      "product_codebook_source_accuracy": 0.482,
+      "product_codebook_source_packet_pass": true,
+      "protected_controls_ok": true,
+      "protected_minus_best_no_source": 0.2,
+      "protected_minus_qjl": 0.030000000000000027,
+      "protected_minus_scalar": 0.030000000000000027,
+      "protected_rotated_residual_accuracy": 0.454,
+      "protected_source_packet_pass": true,
+      "qjl_controls_ok": true,
+      "qjl_minus_best_no_source": 0.16999999999999998,
+      "qjl_minus_scalar": 0.0,
+      "qjl_residual_source_accuracy": 0.424,
+      "qjl_source_packet_pass": true,
+      "relative_canonical_controls_ok": false,
+      "relative_canonical_minus_best_no_source": null,
+      "relative_canonical_minus_scalar": null,
+      "relative_canonical_score_source_accuracy": null,
+      "relative_canonical_source_packet_pass": false,
+      "relative_controls_ok": false,
+      "relative_minus_best_no_source": null,
+      "relative_minus_scalar": null,
+      "relative_score_source_accuracy": null,
+      "relative_source_packet_pass": false,
+      "rotation_sign_controls_ok": true,
+      "rotation_sign_minus_best_no_source": 0.07,
+      "rotation_sign_minus_raw_source_sign": 0.0,
+      "rotation_sign_minus_scalar": -0.09999999999999998,
+      "rotation_sign_source_accuracy": 0.324,
+      "rotation_sign_source_packet_pass": false,
+      "scalar_controls_ok": true,
+      "scalar_minus_best_no_source": 0.16999999999999998,
+      "scalar_quantized_source_accuracy": 0.424,
+      "scalar_source_packet_pass": true,
+      "target_only_accuracy": 0.25
+    }
+  ],
+  "budgets": [
+    4
+  ],
+  "candidate_pool_recall": 1.0,
+  "candidate_view": "slot",
+  "candidates": 4,
+  "code_projection_sha256": "ecdf2cca90546220df37f713cbae254c39da756040dc798437c99b38fb8abe52",
+  "consistent_encoder_sha256": "472400bb9e23d279cb71ff2ad9b18da55a5c32f0f5558485a4df42f81620bf2d",
+  "consistent_label_shuffle_encoder_sha256": "f7f4116a8bb4bff1dfdaa2277e32cbd99e112d4558074cfb23b17e655157027c",
+  "created_utc": "2026-04-30T16:01:48.953625+00:00",
+  "encoder_sha256": "404a8cfffd543750d2b33e577fcc4a5ba1e90fcea4ac2e3fb020ffcfb7e13b6b",
+  "eval_examples": 500,
+  "eval_family_set": "all",
+  "eval_seed": 30,
+  "exact_id_parity": true,
+  "feature_dim": 512,
+  "fit_intercept": false,
+  "gate": "source_private_tool_trace_compression_baselines",
+  "label_shuffle_encoder_sha256": "15aa6db3e41be34134a6e3a4e948931d21588159f6d186564b949d600d259d67",
+  "label_shuffle_seed": 145117,
+  "packet_variants": [
+    "qjl_residual",
+    "protected_rotated_residual",
+    "rotation_sign",
+    "product_codebook"
+  ],
+  "pass_gate": true,
+  "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate. Protected rotated residual packets rank random-rotated scalar coordinates by calibration separation, send a protected scalar head, and append a sign-sketch residual tail. Rotation-sign packets send only random-rotation source signs and must beat no-source while constrained shuffle, answer-masked, permuted-bit, and random same-byte controls stay within target_only +0.05. Product-codebook packets send one learned centroid index per byte and must beat no-source while label-shuffled, constrained-shuffle, answer-masked, permuted-code, and random same-byte controls stay within target_only +0.05. Canonical relative-score packets serialize scores by stable public candidate identity and map bytes back at decode time. Consistent posterior packets distill smoothed candidate posteriors under source-feature and candidate-negative perturbations.",
+  "prediction_files": {
+    "4": "predictions_budget4.jsonl"
+  },
+  "product_codebook_sha256": {
+    "4": "9574d86f28d3225a2507ef35201a8de95e87a7c427a0329baaab9dd87de17d42"
+  },
+  "protected_projection_sha256": "21d4f35ec6214ce51472f83f3ec1f484b7b2bece39a7659d580b4e29611af51f",
+  "protected_projection_utility_sha256": "6a18ada57815329e621d10daf08db4ca94b5ecc3d52e6991a868d8d16535bcce",
+  "protected_residual_projection_sha256": "154bc97e3479005e17326aee1ea52cf7113ce307dc1b2c45a26a5810e1151351",
+  "qjl_residual_projection_sha256": "288d46b5161627973ba4baa257597127e16fe23b013eeb667eaa9122ac6c53ee",
+  "relative_score_calibration": {
+    "hi": 0.9992149597406387,
+    "lo": 0.35930425494909285
+  },
+  "remap_slot_seed": 101,
+  "ridge": 0.01,
+  "scalar_projection_sha256": "2f98e1c1c2b6c4e6f21f9f541cecd7dad8d767eec1133352667d2c9343f6c14d",
+  "train_examples": 768,
+  "train_family_set": "all",
+  "train_seed": 29
+}

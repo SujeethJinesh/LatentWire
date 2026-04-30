@@ -3273,3 +3273,23 @@ positive-method blocker. Current status remains COLM-workshop plausible, not
 comfortable ICLR full paper. Next exact gate: n500 seed stability for the
 frozen verifier positive row plus a TurboResidual/PQ packet branch that keeps
 the same strict controls and systems accounting.
+
+Update `2026-04-30`: the TurboResidual/PQ path is now materially stronger via
+an n500 product-codebook packet gate. Artifacts:
+`results/source_private_product_codebook_packet_gate_n500_20260430/`,
+`results/source_private_product_codebook_uncertainty_n500_20260430/`, and
+`results/source_private_product_codebook_decode_frontier_n500_20260430/`;
+memo:
+`paper/source_private_product_codebook_n500_sprint_20260430.md`; references:
+`references/535_product_codebook_n500_refs_20260430.md`. The 4-byte PQ packet
+passes all three remapped codebooks at n500: accuracy `0.482-0.520`, target
+`0.250`, best PQ control `0.252-0.268`, scalar WZ `0.424-0.504`, min paired
+CI95 low `+0.174` versus target and `+0.154` versus best PQ control. Cached
+target-side decode is also systems-positive: max cached p50 `0.0212 ms`, max
+request-public table p50 `0.3694 ms`, max resident lookup p50 `0.0177 ms`,
+and zero canonical/cached/table mismatches. Readiness implication: this gives
+the paper a third defensible contribution beyond the benchmark and verifier:
+a compression-native product-codebook source-private packet with n500 remap
+stability and fast cached decode. Comfortable ICLR still needs native
+GPU/vLLM/KV telemetry, frozen verifier n500 or batched verifier evidence, and
+top-codeword/OPQ/protected-basis stress before claiming a broad systems win.

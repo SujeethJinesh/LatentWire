@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "product_codebook_uncertainty.json": "a358f86724cb2471004c6c22ba2d61a9a6bb9d702175970135e4d4c16b02a6ac",
+    "product_codebook_uncertainty.md": "124a608acf1fffba960ffd259ef881e78cba2966cdd79748e5564e818ed24373"
+  },
+  "artifacts": [
+    "product_codebook_uncertainty.json",
+    "product_codebook_uncertainty.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}
