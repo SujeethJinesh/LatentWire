@@ -152,6 +152,12 @@
   decision surface still collapses to at-or-below-target matched performance
   with clean controls; this closes the current semantic-anchor JEPA-Q receiver
   family as a near-term ICLR method path.
+- Controlled rotation-sign packet code, tests, references, memo, and
+  three-remap artifact showing pure random-rotation sign sketches fail as a
+  headline compression-native packet method (`0/9` pass rows, max accuracy
+  `0.348`, max control margin `+0.066`), so they should remain a baseline while
+  product-codebook or stronger protected residual packets become the next
+  compression-native gate.
 
 ## Notes
 

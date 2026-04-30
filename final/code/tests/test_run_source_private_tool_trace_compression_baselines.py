@@ -154,6 +154,68 @@ def test_tool_trace_compression_protected_rotated_residual_variant_is_opt_in(tmp
     assert all(row["metadata"]["scalar_bytes"] + row["metadata"]["sign_bytes"] == 4 for row in protected_rows)
 
 
+def test_tool_trace_compression_rotation_sign_variant_is_opt_in(tmp_path) -> None:
+    default = run_gate(
+        output_dir=tmp_path / "default",
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=128,
+        budgets=[4],
+        train_seed=5,
+        eval_seed=6,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+    )
+    opt_in = run_gate(
+        output_dir=tmp_path / "rotation_sign",
+        train_examples=64,
+        eval_examples=32,
+        train_family_set="all",
+        eval_family_set="all",
+        candidates=4,
+        feature_dim=128,
+        budgets=[4],
+        train_seed=5,
+        eval_seed=6,
+        ridge=1e-2,
+        candidate_view="slot",
+        fit_intercept=False,
+        packet_variants=["rotation_sign"],
+    )
+
+    assert default["packet_variants"] == []
+    assert "rotation_sign_source" not in default["budget_summaries"][0]["metrics"]
+    assert opt_in["packet_variants"] == ["rotation_sign"]
+    row = opt_in["budget_summaries"][0]
+    assert "rotation_sign_source" in row["metrics"]
+    assert row["rotation_sign_source_accuracy"] is not None
+    assert row["rotation_sign_controls_ok"] in {True, False}
+    assert opt_in["pass_gate"] == row["scalar_source_packet_pass"]
+    rotation_rows = [
+        json.loads(line)
+        for line in (tmp_path / "rotation_sign" / "predictions_budget4.jsonl").read_text().splitlines()
+        if json.loads(line)["condition"] == "rotation_sign_source"
+    ]
+    control_conditions = {
+        json.loads(line)["condition"]
+        for line in (tmp_path / "rotation_sign" / "predictions_budget4.jsonl").read_text().splitlines()
+        if json.loads(line)["condition"].startswith("rotation_sign_")
+    }
+    assert rotation_rows
+    assert {row["payload_bytes"] for row in rotation_rows} == {4}
+    assert {
+        "rotation_sign_source",
+        "rotation_sign_constrained_shuffled_source",
+        "rotation_sign_answer_masked_source",
+        "rotation_sign_permuted_bits",
+        "rotation_sign_random_same_byte",
+    }.issubset(control_conditions)
+
+
 def test_tool_trace_compression_relative_scores_variant_is_opt_in(tmp_path) -> None:
     payload = run_gate(
         output_dir=tmp_path / "relative",

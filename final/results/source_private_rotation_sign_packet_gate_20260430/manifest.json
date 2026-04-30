@@ -1,0 +1,13 @@
+{
+  "artifact_sha256": {
+    "rotation_sign_packet_gate.json": "8f9597c3960582766a3e6a9c2089c869f90537bd5f4095fd24c70e52c669a76c",
+    "rotation_sign_packet_gate.md": "ac7e217b0953bfb387f0dbf367eb4d46defd747f2416aeeeaae9c3c84beb1c3c"
+  },
+  "artifacts": [
+    "rotation_sign_packet_gate.json",
+    "rotation_sign_packet_gate.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

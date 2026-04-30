@@ -532,3 +532,6 @@ final-paper framing:
 - `512_`: Whole-pool contrastive receiver and compression-native packet
   references for I-JEPA, BLIP-2/Q-Former, DiT, consistency models, QJL,
   TurboQuant, product quantization, and KIVI.
+- `513_`: Controlled rotation-sign packet falsification and compression-native
+  systems framing for QJL, TurboQuant, product quantization, KIVI, SnapKV, C2C,
+  DeepSC, and CUDA transfer-granularity caveats.

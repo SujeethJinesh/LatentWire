@@ -482,8 +482,23 @@ def _decode_qjl_residual_packet(
     }
 
 
-def _raw_source_sign_packet(example: Example, code_projection: np.ndarray, feature_dim: int, budget_bytes: int) -> bytes:
-    return _packet_from_vector(_source_vector(example, feature_dim, mode="matched"), code_projection, budget_bytes)
+def _raw_source_sign_packet(
+    example: Example,
+    code_projection: np.ndarray,
+    feature_dim: int,
+    budget_bytes: int,
+    *,
+    mode: str = "matched",
+) -> bytes:
+    return _packet_from_vector(_source_vector(example, feature_dim, mode=mode), code_projection, budget_bytes)
+
+
+def _permute_payload_bits(payload: bytes) -> bytes:
+    if len(payload) == 0:
+        return payload
+    bits = np.unpackbits(np.frombuffer(payload, dtype=np.uint8), bitorder="big")
+    bits = np.roll(bits, 1)
+    return np.packbits(bits.astype(np.uint8), bitorder="big").tobytes()
 
 
 def _answer_slot(example: Example) -> int:
@@ -1163,6 +1178,33 @@ def _payload_and_decode(
         payload = _raw_source_sign_packet(example, code_projection, feature_dim, budget_bytes)
         prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
         return prediction, payload, meta | {"packet_family": "raw_source_sign_sketch"}
+    if condition == "rotation_sign_source":
+        payload = _raw_source_sign_packet(example, code_projection, feature_dim, budget_bytes, mode="matched")
+        prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
+        return prediction, payload, meta | {"packet_family": "rotation_sign_sketch", "source": example.example_id}
+    if condition == "rotation_sign_constrained_shuffled_source":
+        other = eval_examples[_constrained_nonself_index(index, eval_examples)]
+        payload = _raw_source_sign_packet(other, code_projection, feature_dim, budget_bytes, mode="matched")
+        prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
+        return prediction, payload, meta | {
+            "packet_family": "rotation_sign_sketch",
+            "source": other.example_id,
+            "shuffle": "cross_family_slot",
+        }
+    if condition == "rotation_sign_answer_masked_source":
+        payload = _raw_source_sign_packet(example, code_projection, feature_dim, budget_bytes, mode="answer_masked")
+        prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
+        return prediction, payload, meta | {"packet_family": "rotation_sign_sketch", "source": "answer_masked"}
+    if condition == "rotation_sign_permuted_bits":
+        payload = _permute_payload_bits(
+            _raw_source_sign_packet(example, code_projection, feature_dim, budget_bytes, mode="matched")
+        )
+        prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
+        return prediction, payload, meta | {"packet_family": "rotation_sign_sketch", "source": "permuted_bits"}
+    if condition == "rotation_sign_random_same_byte":
+        payload = rng.randbytes(budget_bytes)
+        prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
+        return prediction, payload, meta | {"packet_family": "rotation_sign_sketch", "source": "random"}
     if condition == "random_same_byte":
         payload = rng.randbytes(budget_bytes)
         prediction, meta = _decode_packet(example, payload, code_projection, feature_dim, budget_bytes)
@@ -1377,6 +1419,16 @@ def run_gate(
                 "protected_random_same_byte",
             ]
         )
+    if "rotation_sign" in packet_variants:
+        conditions.extend(
+            [
+                "rotation_sign_source",
+                "rotation_sign_constrained_shuffled_source",
+                "rotation_sign_answer_masked_source",
+                "rotation_sign_permuted_bits",
+                "rotation_sign_random_same_byte",
+            ]
+        )
     if "relative_scores" in packet_variants:
         conditions.extend(
             [
@@ -1463,6 +1515,7 @@ def run_gate(
         scalar = metrics["scalar_quantized_source"]["accuracy"]
         qjl = metrics["qjl_residual_source"]["accuracy"] if "qjl_residual_source" in metrics else None
         protected = metrics["protected_rotated_residual_source"]["accuracy"] if "protected_rotated_residual_source" in metrics else None
+        rotation_sign = metrics["rotation_sign_source"]["accuracy"] if "rotation_sign_source" in metrics else None
         relative = metrics["relative_score_source"]["accuracy"] if "relative_score_source" in metrics else None
         relative_canonical = metrics["relative_canonical_score_source"]["accuracy"] if "relative_canonical_score_source" in metrics else None
         consistent_posterior = metrics["consistent_posterior_packet_source"]["accuracy"] if "consistent_posterior_packet_source" in metrics else None
@@ -1484,6 +1537,13 @@ def run_gate(
             and metrics["protected_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["protected_label_shuffled_ridge"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
             and metrics["protected_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+        )
+        rotation_sign_controls_ok = (
+            rotation_sign is not None
+            and metrics["rotation_sign_constrained_shuffled_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["rotation_sign_answer_masked_source"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["rotation_sign_permuted_bits"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
+            and metrics["rotation_sign_random_same_byte"]["accuracy"] <= metrics["target_only"]["accuracy"] + 0.05
         )
         relative_controls_ok = (
             relative is not None
@@ -1515,6 +1575,9 @@ def run_gate(
         scalar_source_packet_pass = scalar >= no_source + 0.15 and scalar_controls_ok
         qjl_source_packet_pass = qjl is not None and qjl >= no_source + 0.15 and qjl_controls_ok
         protected_source_packet_pass = protected is not None and protected >= no_source + 0.15 and protected_controls_ok
+        rotation_sign_source_packet_pass = (
+            rotation_sign is not None and rotation_sign >= no_source + 0.15 and rotation_sign_controls_ok
+        )
         relative_source_packet_pass = relative is not None and relative >= no_source + 0.15 and relative_controls_ok
         relative_canonical_source_packet_pass = (
             relative_canonical is not None and relative_canonical >= no_source + 0.15 and relative_canonical_controls_ok
@@ -1538,6 +1601,7 @@ def run_gate(
                 "scalar_quantized_source_accuracy": scalar,
                 "qjl_residual_source_accuracy": qjl,
                 "protected_rotated_residual_accuracy": protected,
+                "rotation_sign_source_accuracy": rotation_sign,
                 "relative_score_source_accuracy": relative,
                 "relative_canonical_score_source_accuracy": relative_canonical,
                 "consistent_posterior_packet_accuracy": consistent_posterior,
@@ -1552,6 +1616,11 @@ def run_gate(
                 "protected_minus_best_no_source": None if protected is None else protected - no_source,
                 "protected_minus_scalar": None if protected is None else protected - scalar,
                 "protected_minus_qjl": None if protected is None or qjl is None else protected - qjl,
+                "rotation_sign_minus_best_no_source": None if rotation_sign is None else rotation_sign - no_source,
+                "rotation_sign_minus_scalar": None if rotation_sign is None else rotation_sign - scalar,
+                "rotation_sign_minus_raw_source_sign": (
+                    None if rotation_sign is None else rotation_sign - metrics["raw_source_sign_sketch"]["accuracy"]
+                ),
                 "relative_minus_best_no_source": None if relative is None else relative - no_source,
                 "relative_minus_scalar": None if relative is None else relative - scalar,
                 "relative_canonical_minus_best_no_source": None if relative_canonical is None else relative_canonical - no_source,
@@ -1566,11 +1635,13 @@ def run_gate(
                 "scalar_controls_ok": scalar_controls_ok,
                 "qjl_controls_ok": qjl_controls_ok,
                 "protected_controls_ok": protected_controls_ok,
+                "rotation_sign_controls_ok": rotation_sign_controls_ok,
                 "relative_controls_ok": relative_controls_ok,
                 "relative_canonical_controls_ok": relative_canonical_controls_ok,
                 "consistent_posterior_controls_ok": consistent_posterior_controls_ok,
                 "qjl_source_packet_pass": qjl_source_packet_pass,
                 "protected_source_packet_pass": protected_source_packet_pass,
+                "rotation_sign_source_packet_pass": rotation_sign_source_packet_pass,
                 "relative_source_packet_pass": relative_source_packet_pass,
                 "relative_canonical_source_packet_pass": relative_canonical_source_packet_pass,
                 "consistent_posterior_packet_pass": consistent_posterior_packet_pass,
@@ -1610,7 +1681,7 @@ def run_gate(
         "relative_score_calibration": {"lo": relative_lo, "hi": relative_hi},
         "budget_summaries": budget_summaries,
         "pass_gate": any(row["scalar_source_packet_pass"] for row in budget_summaries),
-        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate. Protected rotated residual packets rank random-rotated scalar coordinates by calibration separation, send a protected scalar head, and append a sign-sketch residual tail. Canonical relative-score packets serialize scores by stable public candidate identity and map bytes back at decode time. Consistent posterior packets distill smoothed candidate posteriors under source-feature and candidate-negative perturbations.",
+        "pass_rule": "learned syndrome pass: beats target/no-source by >=0.15 and beats best matched-byte compression baseline by >=0.02. Scalar packet pass: scalar quantized source packet beats no-source by >=0.15 and scalar source-destroying controls stay within target_only +0.05. Optional packet variants are reported as comparator/candidate rows and do not change the historical pass gate. Protected rotated residual packets rank random-rotated scalar coordinates by calibration separation, send a protected scalar head, and append a sign-sketch residual tail. Rotation-sign packets send only random-rotation source signs and must beat no-source while constrained shuffle, answer-masked, permuted-bit, and random same-byte controls stay within target_only +0.05. Canonical relative-score packets serialize scores by stable public candidate identity and map bytes back at decode time. Consistent posterior packets distill smoothed candidate posteriors under source-feature and candidate-negative perturbations.",
         "prediction_files": prediction_files,
     }
     (output_dir / "summary.json").write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -1622,29 +1693,31 @@ def run_gate(
         f"- candidate view: `{candidate_view}`",
         f"- exact ID parity: `{payload['exact_id_parity']}`",
         "",
-        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Protected pass | Relative pass | Canonical relative pass | Consistent posterior pass | Syndrome | Scalar | QJL | Protected | Relative | Canonical relative | Consistent posterior | Target | Best no-source | Protected - scalar | Relative - scalar | Canonical - scalar | Consistent - scalar |",
-        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Budget bytes | Learned > compression | Scalar pass | QJL pass | Protected pass | Rotation-sign pass | Relative pass | Canonical relative pass | Consistent posterior pass | Syndrome | Scalar | QJL | Protected | Rotation-sign | Relative | Canonical relative | Consistent posterior | Target | Best no-source | Protected - scalar | Rotation-sign - scalar | Relative - scalar | Canonical - scalar | Consistent - scalar |",
+        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in budget_summaries:
         qjl_acc = "n/a" if row["qjl_residual_source_accuracy"] is None else f"{row['qjl_residual_source_accuracy']:.3f}"
         protected_acc = "n/a" if row["protected_rotated_residual_accuracy"] is None else f"{row['protected_rotated_residual_accuracy']:.3f}"
+        rotation_sign_acc = "n/a" if row["rotation_sign_source_accuracy"] is None else f"{row['rotation_sign_source_accuracy']:.3f}"
         relative_acc = "n/a" if row["relative_score_source_accuracy"] is None else f"{row['relative_score_source_accuracy']:.3f}"
         relative_canonical_acc = "n/a" if row["relative_canonical_score_source_accuracy"] is None else f"{row['relative_canonical_score_source_accuracy']:.3f}"
         consistent_posterior_acc = "n/a" if row["consistent_posterior_packet_accuracy"] is None else f"{row['consistent_posterior_packet_accuracy']:.3f}"
         protected_delta = "n/a" if row["protected_minus_scalar"] is None else f"{row['protected_minus_scalar']:.3f}"
+        rotation_sign_delta = "n/a" if row["rotation_sign_minus_scalar"] is None else f"{row['rotation_sign_minus_scalar']:.3f}"
         relative_delta = "n/a" if row["relative_minus_scalar"] is None else f"{row['relative_minus_scalar']:.3f}"
         relative_canonical_delta = "n/a" if row["relative_canonical_minus_scalar"] is None else f"{row['relative_canonical_minus_scalar']:.3f}"
         consistent_posterior_delta = "n/a" if row["consistent_posterior_minus_scalar"] is None else f"{row['consistent_posterior_minus_scalar']:.3f}"
         lines.append(
             f"| {row['budget_bytes']} | `{row['learned_vs_compression_pass']}` | "
             f"`{row['scalar_source_packet_pass']}` | `{row['qjl_source_packet_pass']}` | "
-            f"`{row['protected_source_packet_pass']}` | "
+            f"`{row['protected_source_packet_pass']}` | `{row['rotation_sign_source_packet_pass']}` | "
             f"`{row['relative_source_packet_pass']}` | `{row['relative_canonical_source_packet_pass']}` | "
             f"`{row['consistent_posterior_packet_pass']}` | "
             f"{row['matched_accuracy']:.3f} | {row['scalar_quantized_source_accuracy']:.3f} | "
-            f"{qjl_acc} | {protected_acc} | {relative_acc} | {relative_canonical_acc} | {consistent_posterior_acc} | "
+            f"{qjl_acc} | {protected_acc} | {rotation_sign_acc} | {relative_acc} | {relative_canonical_acc} | {consistent_posterior_acc} | "
             f"{row['target_only_accuracy']:.3f} | {row['best_no_source_accuracy']:.3f} | "
-            f"{protected_delta} | {relative_delta} | {relative_canonical_delta} | {consistent_posterior_delta} |"
+            f"{protected_delta} | {rotation_sign_delta} | {relative_delta} | {relative_canonical_delta} | {consistent_posterior_delta} |"
         )
     lines.append("")
     (output_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
@@ -1694,6 +1767,7 @@ def main() -> None:
         choices=[
             "qjl_residual",
             "protected_rotated_residual",
+            "rotation_sign",
             "relative_scores",
             "relative_scores_canonical",
             "consistent_posterior_packet",
