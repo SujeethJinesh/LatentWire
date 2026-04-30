@@ -116,7 +116,7 @@ TTFT, TPOT, goodput, and memory traffic counters under a real serving stack.
 Highest-value Mac-local method gate:
 
 ```text
-source_private_masked_consistency_receiver_smoke_20260501
+source_private_masked_consistency_receiver_smoke_20260430
 ```
 
 Start from the learned 6-byte syndrome packet, train a small one-step

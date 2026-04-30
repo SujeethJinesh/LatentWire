@@ -3065,3 +3065,16 @@ systems/hardware reviewers: boundary-traffic accounting with source-text/KV
 exposure flags and explicit production non-claims. It still does not replace
 native GPU/server telemetry, and the main ICLR blocker remains a less
 table-shaped learned receiver or a larger frozen label-blind stress.
+
+Update `2026-04-30`: the learned masked-consistency receiver materially improves
+method depth. It passes one `n=64` smoke and two `n=256` seed-pair
+confirmations over 6-byte learned syndrome packets. Minimum n256 learned
+matched accuracy is `0.957`, minimum lift vs target is `+0.707`, minimum lift
+vs best destructive control is `+0.676`, and minimum CI95 lower bound vs best
+control is `+0.617`. The receiver preserves deterministic packet utility
+(`learned-Hamming` range `-0.020` to `+0.016`) while suppressing control leakage
+that deterministic Hamming leaves exposed. Readiness implication: this is the
+strongest answer so far to the hand-written decoder objection, but it remains a
+public-candidate/code-feature receiver. ICLR comfort still requires
+label-blind/public-table stress and preferably `n=500`; COLM workshop readiness
+is now very strong.

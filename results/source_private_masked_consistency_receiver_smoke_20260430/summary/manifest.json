@@ -1,0 +1,25 @@
+{
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_masked_consistency_receiver_summary",
+  "headline": {
+    "all_exact_id_parity": true,
+    "all_source_packet_pass": true,
+    "max_n256_learned_minus_hamming": 0.015625,
+    "min_learned_matched_accuracy": 0.95703125,
+    "min_n256_ci95_low_vs_best_control": 0.6171875,
+    "min_n256_ci95_low_vs_target": 0.65234375,
+    "min_n256_learned_matched_accuracy": 0.95703125,
+    "min_n256_learned_minus_hamming": -0.01953125,
+    "min_n256_lift_vs_best_control": 0.67578125,
+    "min_n256_lift_vs_target": 0.70703125,
+    "n256_runs": 2,
+    "pass_gate": true,
+    "runs": 3
+  },
+  "pass_gate": true
+}

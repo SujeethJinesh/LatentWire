@@ -1153,5 +1153,12 @@
     "path": "references/521_mac_unified_memory_transport_profile_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the Mac unified-memory transport profile, covering Apple/MLX unified memory, PyTorch MPS constraints, FlashAttention IO framing, vLLM/PagedAttention, DistServe, KIVI, TurboQuant, QJL, and C2C claim boundaries."
+  },
+  {
+    "num": 522,
+    "slug": "masked_consistency_receiver_refs_20260430",
+    "path": "references/522_masked_consistency_receiver_refs_20260430.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the learned masked-consistency receiver over 6-byte syndrome packets, covering D3PM, MaskGIT, consistency models, latent consistency, I-JEPA/V-JEPA, Wyner-Ziv side information, and DISCUS syndrome coding."
   }
 ]

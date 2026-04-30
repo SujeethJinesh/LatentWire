@@ -16157,3 +16157,26 @@ upgrades the systems contribution from byte accounting to a reviewer-readable
 boundary-traffic profile with explicit source-text/KV exposure flags and hard
 non-claims. It does not prove production serving speed; NVIDIA/server TTFT,
 TPOT, goodput, and memory-counter telemetry remain future gates.
+
+Update `2026-04-30`: added and ran the learned masked-consistency receiver over
+6-byte learned syndrome packets. Code:
+`scripts/run_source_private_masked_consistency_receiver_smoke.py` and
+`scripts/summarize_source_private_masked_consistency_receiver.py`; tests:
+`tests/test_run_source_private_masked_consistency_receiver_smoke.py` and
+`tests/test_summarize_source_private_masked_consistency_receiver.py`; memo:
+`paper/source_private_masked_consistency_receiver_20260430.md`; references:
+`references/522_masked_consistency_receiver_refs_20260430.md`; artifacts:
+`results/source_private_masked_consistency_receiver_smoke_20260430/`. Outcome:
+aggregate pass gate `True` over one `n=64` smoke and two `n=256` seed-pair
+confirmations. Minimum n256 learned matched accuracy is `0.957`; minimum n256
+lift vs target is `+0.707`; minimum n256 lift vs best destructive control is
+`+0.676`; minimum n256 CI95 lower bound is `+0.652` vs target and `+0.617` vs
+best control; learned-minus-deterministic-Hamming ranges from `-0.020` to
+`+0.016`. Important diagnostic: deterministic Hamming leaks on some controls in
+the first n256 run (`shuffled_source=0.332`, `wrong_projection=0.328`), while
+the learned receiver suppresses them to near target (`0.246`, `0.258`).
+Interpretation: promote this as a method-depth contribution, not a final
+semantic-transfer proof. It shows a one-step learned receiver can preserve most
+packet utility while learning when to ignore destructive packets. Next gate is
+label-blind/public-table stress for the learned receiver, then `n=500` if it
+holds.

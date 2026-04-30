@@ -210,6 +210,12 @@
   `+0.425`, destructive-control max lift `+0.000`, query-aware text `7.00x`
   raw but `1.00x` line bytes, full-log relay `183.25x` raw and `6.00x` line
   bytes, and batch-64 packet records at `5.00` line bytes/request.
+- Learned masked-consistency receiver code, tests, references, memo, and
+  artifacts showing a one-step receiver over 6-byte learned syndrome packets
+  passes one `n=64` smoke and two `n=256` seed-pair confirmations; minimum
+  n256 learned matched accuracy is `0.957`, minimum lift vs target is `+0.707`,
+  minimum lift vs best destructive control is `+0.676`, and minimum CI95 lower
+  bound vs best control is `+0.617`.
 
 ## Notes
 
