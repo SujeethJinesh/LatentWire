@@ -1685,5 +1685,12 @@
     "path": "references/597_hellaswag_trained_sae_validation6144_refs_20260501.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed trained-SAE residual scout and the dense HellaSwag validation[0:6144] extension, covering SAE/crosscoder, prefix/prompt, C2C/KVComm, QJL, TurboQuant, vLLM, and SGLang novelty boundaries."
+  },
+  {
+    "num": 598,
+    "slug": "hellaswag_validation7168_refs_20260501",
+    "path": "references/598_hellaswag_validation7168_refs_20260501.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the dense HellaSwag validation[0:7168] extension, covering fixed-byte source-private packet novelty boundaries against prefix/prompt tuning, adapters, SAE/crosscoder, relative representations, C2C/KVComm, QJL, TurboQuant, vLLM, and SGLang."
   }
 ]
