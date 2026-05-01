@@ -94,6 +94,53 @@ def test_dictionary_controls_change_codes() -> None:
     assert not np.allclose(matched, random_dictionary)
 
 
+def test_trained_sae_codes_have_expected_shape_and_controls() -> None:
+    rows = _rows(12)
+    scores = _scores(rows)
+    hidden = _hidden(rows)
+    spec = scout.DictionarySpec(
+        name="sae4",
+        atoms=4,
+        topk=2,
+        atom_source="sae_decision",
+        candidate_source="all",
+        decision_weight=0.1,
+        l1_weight=0.001,
+        epochs=2,
+        batch_size=8,
+    )
+    params = scout._fit_sparse_dictionary(
+        rows=rows,
+        scores=scores,
+        hidden=hidden,
+        fit_indices=list(range(8)),
+        spec=spec,
+        random_seed=47,
+    )
+
+    matched = scout._dictionary_codes(scores=scores, hidden=hidden, spec=spec, params=params)
+    rolled = scout._dictionary_codes(
+        scores=scores,
+        hidden=hidden,
+        spec=spec,
+        params=params,
+        control="atom_index_roll",
+    )
+    random_encoder = scout._dictionary_codes(
+        scores=scores,
+        hidden=hidden,
+        spec=spec,
+        params=params,
+        control="random_dictionary_same_atoms",
+    )
+
+    assert params["fit_kind"] == "trained_sae"
+    assert matched.shape == (12, 4, 6)
+    assert scout._resident_parameter_bytes(params) > np.asarray(params["encoder_weight"], dtype=np.float32).nbytes
+    assert not np.allclose(matched, rolled)
+    assert not np.allclose(matched, random_encoder)
+
+
 def test_build_scout_writes_parseable_artifacts_with_mocked_inputs(tmp_path, monkeypatch) -> None:
     rows = _rows(12)
     source = tmp_path / "rows.jsonl"

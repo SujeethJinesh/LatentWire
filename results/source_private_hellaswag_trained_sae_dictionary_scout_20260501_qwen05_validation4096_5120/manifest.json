@@ -1,0 +1,63 @@
+{
+  "created_utc": "2026-05-01T21:32:44.189094+00:00",
+  "files": [
+    {
+      "bytes": 29806,
+      "path": "results/source_private_hellaswag_trained_sae_dictionary_scout_20260501_qwen05_validation4096_5120/hellaswag_sparse_residual_dictionary_scout.json",
+      "sha256": "a992be15743553455e2aee9f42f06028cc04b018dbf0ce148730ab5847d1feda"
+    },
+    {
+      "bytes": 1041,
+      "path": "results/source_private_hellaswag_trained_sae_dictionary_scout_20260501_qwen05_validation4096_5120/hellaswag_sparse_residual_dictionary_scout.md",
+      "sha256": "3f6024de3a4fda01748368bc43a3330b621096d483c6920ca72a5f0a79003edb"
+    },
+    {
+      "bytes": 11005,
+      "path": "results/source_private_hellaswag_trained_sae_dictionary_scout_20260501_qwen05_validation4096_5120/component_rows.csv",
+      "sha256": "b1ea3ce829f238b9087ed6097e11baea8d2e0d6eba506dba9848d4f53b9e72a8"
+    },
+    {
+      "bytes": 3813,
+      "path": "results/source_private_hellaswag_trained_sae_dictionary_scout_20260501_qwen05_validation4096_5120/variant_rows.csv",
+      "sha256": "5c668fafc8b917274ef948cec711a8ae96fdd9591a5ae05cf5133bd19bcade0b"
+    },
+    {
+      "bytes": 2264,
+      "path": "results/source_private_hellaswag_trained_sae_dictionary_scout_20260501_qwen05_validation4096_5120/sample_caches.jsonl",
+      "sha256": "77dc7963caede397066ad761b6ed83495e705088f8624c55f9c85ab2e146893e"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_trained_sae_dictionary_scout_20260501_qwen05_validation4096_5120/predictions/sae64_saedecision_relu_top8_dw0p2_l10p001.jsonl",
+      "sha256": "4b80904b98a38e8c93f1269e6887e63cc0b99dd53990474158d4b23e758ca25f"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_trained_sae_dictionary_scout_20260501_qwen05_validation4096_5120/predictions/sae64_saepermdecision_relu_top8_dw0p2_l10p001.jsonl",
+      "sha256": "2dbbdcef5ebad82c21e6c7d17aafc1af401b0e9bff882e587993a40fd7d49e98"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_trained_sae_dictionary_scout_20260501_qwen05_validation4096_5120/predictions/sae64_saerecon_relu_top8_dw0_l10p001.jsonl",
+      "sha256": "e3293bb6d638c150366c4c05deb4a334d1e860995dffb072ca2a408fc0e26eec"
+    }
+  ],
+  "gate": "source_private_hellaswag_sparse_residual_dictionary_scout",
+  "headline": {
+    "best_ci95_high_vs_best_label_copy": 0.01171875,
+    "best_ci95_low_vs_best_label_copy": -0.015625,
+    "best_delta_vs_dense_hidden_reference": -0.004101562500000044,
+    "best_label_copy_eval_accuracy": 0.5,
+    "best_selected_eval_accuracy": 0.4990234375,
+    "best_selected_minus_best_label_copy": -0.0009765625,
+    "best_selected_minus_score_only_bagged_control": 0.001953125,
+    "best_variant": "sae64_saedecision_relu_top8_dw0p2_l10p001",
+    "dense_hidden_reference_accuracy": 0.503125,
+    "eval_rows": 1024,
+    "framed_record_bytes": 5,
+    "raw_payload_bytes": 2,
+    "score_only_bagged_control_accuracy": 0.4970703125,
+    "strict_delta_required": 0.02,
+    "variant_count": 3
+  }
+}

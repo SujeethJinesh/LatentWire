@@ -1,0 +1,46 @@
+{
+  "created_utc": "2026-05-01T21:50:14.330261+00:00",
+  "files": [
+    {
+      "bytes": 13004,
+      "path": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_6144/hellaswag_hidden_innovation_multi_slice_stress.json",
+      "sha256": "25df33648de17963e51dd5275e73153bfcb147e30802e5acf36acd18597daeae"
+    },
+    {
+      "bytes": 912,
+      "path": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_6144/hellaswag_hidden_innovation_multi_slice_stress.md",
+      "sha256": "b2f7b696f744f7abae1dda59f9caa55ae6b2463036c5599af70518ac63aa37b1"
+    },
+    {
+      "bytes": 3715,
+      "path": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_6144/slice_rows.csv",
+      "sha256": "8522bf86dd09f7b70b89a330ce48dba96eae640ec8b1ef23f737105719745671"
+    }
+  ],
+  "gate": "source_private_hellaswag_hidden_innovation_multi_slice_stress",
+  "headline": {
+    "contiguous_validation_prefix": true,
+    "corrupted_hidden_controls_below_label_copy": true,
+    "framed_record_bytes": 5,
+    "jackknife_slice_pass_count": 6,
+    "max_candidate_roll_hidden_control_accuracy": 0.4541015625,
+    "max_wrong_example_hidden_control_accuracy": 0.478515625,
+    "min_ci95_low_vs_best_label_copy": 0.01171875,
+    "min_ci95_low_vs_score_only_bagged": 0.0244140625,
+    "min_delta_vs_best_label_copy": 0.0341796875,
+    "min_delta_vs_score_only_bagged": 0.041015625,
+    "min_delta_vs_zero_hidden": 0.041015625,
+    "pass_slice_count": 6,
+    "raw_payload_bytes": 2,
+    "slice_count": 6,
+    "source_private_packet": true,
+    "strict_delta_required": 0.02,
+    "total_eval_rows": 6144,
+    "weighted_best_label_copy_eval_accuracy": 0.4700520833333333,
+    "weighted_score_only_bagged_control_accuracy": 0.4640299479166667,
+    "weighted_selected_eval_accuracy": 0.5118815104166666,
+    "weighted_source_label_copy_eval_accuracy": 0.4640299479166667,
+    "weighted_trained_choice_bias_label_copy_eval_accuracy": 0.4700520833333333,
+    "weighted_zero_hidden_control_accuracy": 0.4640299479166667
+  }
+}

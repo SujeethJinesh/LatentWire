@@ -65,6 +65,11 @@ class DictionarySpec:
     candidate_source: str = "top2_gold"
     atom_source: str = "candidate_residual"
     iterations: int = 6
+    decision_weight: float = 0.0
+    l1_weight: float = 0.0
+    learning_rate: float = 1e-3
+    epochs: int = 80
+    batch_size: int = 256
 
 
 DEFAULT_DICTIONARIES = (
@@ -109,6 +114,138 @@ def _atom_digest(atoms: np.ndarray) -> str:
     return hashlib.sha256(quantized.tobytes()).hexdigest()
 
 
+def _is_trained_sae_source(atom_source: str) -> bool:
+    return atom_source in {
+        "sae_reconstruction",
+        "sae_decision",
+        "sae_permuted_decision",
+    }
+
+
+def _safe_float_label(value: float) -> str:
+    text = f"{value:.4g}"
+    return text.replace("-", "m").replace(".", "p")
+
+
+def _fit_trained_sae(
+    *,
+    matrix: np.ndarray,
+    labels: np.ndarray,
+    spec: DictionarySpec,
+    random_seed: int,
+) -> dict[str, Any]:
+    try:
+        import torch
+    except ImportError as exc:  # pragma: no cover - exercised only on envs without torch.
+        raise RuntimeError("trained SAE atom sources require torch in the repo-local venv") from exc
+
+    torch.manual_seed(int(random_seed))
+    torch.set_num_threads(max(1, min(4, torch.get_num_threads())))
+
+    x = np.asarray(matrix, dtype=np.float32)
+    if x.ndim != 2:
+        raise ValueError(f"expected 2D training matrix, got {x.shape}")
+    mean = np.mean(x, axis=0, dtype=np.float64).astype(np.float32)
+    scale = np.std(x, axis=0, dtype=np.float64).astype(np.float32)
+    scale = np.where(scale < 1e-6, 1.0, scale).astype(np.float32)
+    x = (x - mean[None, :]) / scale[None, :]
+    y = np.asarray(labels, dtype=np.float32).reshape(-1, 1)
+    if spec.atom_source == "sae_permuted_decision":
+        rng = np.random.default_rng(random_seed + 913)
+        y = y[rng.permutation(y.shape[0])]
+
+    tensor_x = torch.from_numpy(x)
+    tensor_y = torch.from_numpy(y)
+    dim = int(tensor_x.shape[1])
+    latent_dim = max(1, int(spec.atoms))
+    encoder = torch.nn.Linear(dim, latent_dim)
+    decoder = torch.nn.Linear(latent_dim, dim)
+    head = torch.nn.Linear(latent_dim, 1)
+    torch.nn.init.xavier_uniform_(encoder.weight)
+    torch.nn.init.zeros_(encoder.bias)
+    torch.nn.init.xavier_uniform_(decoder.weight)
+    torch.nn.init.zeros_(decoder.bias)
+    torch.nn.init.xavier_uniform_(head.weight)
+    torch.nn.init.zeros_(head.bias)
+    opt = torch.optim.Adam(
+        list(encoder.parameters()) + list(decoder.parameters()) + list(head.parameters()),
+        lr=float(spec.learning_rate),
+    )
+    batch_size = max(8, int(spec.batch_size))
+    epochs = max(1, int(spec.epochs))
+    decision_weight = float(spec.decision_weight) if spec.atom_source != "sae_reconstruction" else 0.0
+    positive_count = max(1.0, float(np.sum(y > 0.5)))
+    negative_count = max(1.0, float(y.shape[0] - positive_count))
+    pos_weight = torch.tensor([negative_count / positive_count], dtype=torch.float32)
+    bce = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    rng = np.random.default_rng(random_seed + 1777)
+    final_reconstruction = 0.0
+    final_decision = 0.0
+    final_l1 = 0.0
+    for _ in range(epochs):
+        order = rng.permutation(tensor_x.shape[0])
+        for start in range(0, tensor_x.shape[0], batch_size):
+            batch_ids = torch.from_numpy(order[start : start + batch_size])
+            batch_x = tensor_x[batch_ids]
+            batch_y = tensor_y[batch_ids]
+            latent = torch.relu(encoder(batch_x))
+            reconstruction = decoder(latent)
+            logits = head(latent)
+            reconstruction_loss = torch.mean((reconstruction - batch_x) ** 2)
+            decision_loss = bce(logits, batch_y)
+            l1_loss = torch.mean(latent)
+            loss = reconstruction_loss + decision_weight * decision_loss + float(spec.l1_weight) * l1_loss
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+            final_reconstruction = float(reconstruction_loss.detach().cpu())
+            final_decision = float(decision_loss.detach().cpu())
+            final_l1 = float(l1_loss.detach().cpu())
+
+    with torch.no_grad():
+        latent = torch.relu(encoder(tensor_x))
+        logits = head(latent)
+        train_prediction = (torch.sigmoid(logits) >= 0.5).to(torch.float32)
+        train_decision_accuracy = float(torch.mean((train_prediction == tensor_y).to(torch.float32)).cpu())
+        active_rate = float(torch.mean((latent > 1e-6).to(torch.float32)).cpu())
+        mean_active = float(torch.mean(torch.sum(latent > 1e-6, dim=1).to(torch.float32)).cpu())
+
+    encoder_weight = encoder.weight.detach().cpu().numpy().astype(np.float64)
+    encoder_bias = encoder.bias.detach().cpu().numpy().astype(np.float64)
+    decoder_weight = decoder.weight.detach().cpu().numpy().astype(np.float64)
+    decoder_bias = decoder.bias.detach().cpu().numpy().astype(np.float64)
+    head_weight = head.weight.detach().cpu().numpy().astype(np.float64)
+    head_bias = head.bias.detach().cpu().numpy().astype(np.float64)
+    rng = np.random.default_rng(random_seed + 7919)
+    random_weight = rng.normal(size=encoder_weight.shape)
+    random_scale = np.linalg.norm(random_weight, axis=1, keepdims=True)
+    random_weight = random_weight / np.where(random_scale < 1e-8, 1.0, random_scale)
+    return {
+        "fit_kind": "trained_sae",
+        "atoms": encoder_weight,
+        "mean": mean.astype(np.float64),
+        "scale": scale.astype(np.float64),
+        "encoder_weight": encoder_weight,
+        "encoder_bias": encoder_bias,
+        "decoder_weight": decoder_weight,
+        "decoder_bias": decoder_bias,
+        "head_weight": head_weight,
+        "head_bias": head_bias,
+        "random_atoms": random_weight.astype(np.float64),
+        "random_bias": np.zeros_like(encoder_bias),
+        "candidate_vectors": int(matrix.shape[0]),
+        "valid_vectors": int(matrix.shape[0]),
+        "iterations": int(spec.epochs),
+        "atom_digest": _atom_digest(encoder_weight),
+        "sae_reconstruction_loss": final_reconstruction,
+        "sae_decision_loss": final_decision,
+        "sae_l1_activation": final_l1,
+        "sae_train_decision_accuracy": train_decision_accuracy,
+        "sae_active_rate": active_rate,
+        "sae_mean_active_features": mean_active,
+    }
+
+
 def _fit_sparse_dictionary(
     *,
     rows: list[arc_gate.ArcRow],
@@ -120,9 +257,20 @@ def _fit_sparse_dictionary(
 ) -> dict[str, Any]:
     residuals = anchor_gate._hidden_residual_tensor(scores=scores, hidden=hidden)
     vectors: list[np.ndarray] = []
+    labels: list[float] = []
     for row_index in fit_indices:
         row = rows[row_index]
-        if spec.atom_source == "candidate_residual":
+        if _is_trained_sae_source(spec.atom_source):
+            for candidate in _candidate_ids_for_dictionary(
+                row=row,
+                scores=scores[row_index],
+                source=spec.candidate_source,
+            ):
+                vector = residuals[row_index, candidate]
+                if float(np.linalg.norm(vector)) > 1e-8:
+                    vectors.append(vector)
+                    labels.append(1.0 if candidate == row.answer_index else 0.0)
+        elif spec.atom_source == "candidate_residual":
             for candidate in _candidate_ids_for_dictionary(
                 row=row,
                 scores=scores[row_index],
@@ -152,6 +300,15 @@ def _fit_sparse_dictionary(
         matrix = np.zeros((1, residuals.shape[-1]), dtype=np.float64)
     else:
         matrix = np.asarray(vectors, dtype=np.float64)
+    if _is_trained_sae_source(spec.atom_source):
+        if not labels:
+            labels = [0.0 for _ in range(matrix.shape[0])]
+        return _fit_trained_sae(
+            matrix=matrix,
+            labels=np.asarray(labels, dtype=np.float32),
+            spec=spec,
+            random_seed=random_seed,
+        )
     mean = np.mean(matrix, axis=0)
     centered = matrix - mean
     normalized, norms = _normalize_rows(centered)
@@ -208,6 +365,8 @@ def _dictionary_codes(
     params: dict[str, Any],
     control: str = "matched",
 ) -> np.ndarray:
+    if params.get("fit_kind") == "trained_sae":
+        return _sae_codes(scores=scores, hidden=hidden, spec=spec, params=params, control=control)
     atoms = np.asarray(params["atoms"], dtype=np.float64)
     if control == "random_dictionary_same_atoms":
         atoms = np.asarray(params["random_atoms"], dtype=np.float64)
@@ -242,6 +401,45 @@ def _dictionary_codes(
         values = kept
     norm_feature = np.log1p(norms)
     max_abs_feature = np.max(np.abs(similarities), axis=-1, keepdims=True)
+    return np.concatenate([values, norm_feature, max_abs_feature], axis=-1).astype(np.float64)
+
+
+def _sae_codes(
+    *,
+    scores: list[list[float]],
+    hidden: np.ndarray,
+    spec: DictionarySpec,
+    params: dict[str, Any],
+    control: str = "matched",
+) -> np.ndarray:
+    if control == "random_dictionary_same_atoms":
+        weight = np.asarray(params["random_atoms"], dtype=np.float64)
+        bias = np.asarray(params["random_bias"], dtype=np.float64)
+    else:
+        weight = np.asarray(params["encoder_weight"], dtype=np.float64)
+        bias = np.asarray(params["encoder_bias"], dtype=np.float64)
+    mean = np.asarray(params["mean"], dtype=np.float64)
+    scale = np.asarray(params["scale"], dtype=np.float64)
+    residuals = anchor_gate._hidden_residual_tensor(scores=scores, hidden=hidden)
+    standardized = (residuals - mean[None, None, :]) / scale[None, None, :]
+    flat = standardized.reshape(-1, standardized.shape[-1])
+    raw = (flat @ weight.T) + bias[None, :]
+    values = np.maximum(raw, 0.0).reshape(standardized.shape[0], standardized.shape[1], weight.shape[0])
+    if control == "atom_index_roll" and values.shape[-1] > 1:
+        values = np.roll(values, 1, axis=-1)
+    elif control == "atom_sign_flip":
+        values = -values
+    elif control in {"matched", "random_dictionary_same_atoms"}:
+        pass
+    else:
+        raise ValueError(f"unknown SAE control: {control}")
+    if 0 < spec.topk < values.shape[-1]:
+        kept = np.zeros_like(values)
+        top_ids = np.argsort(np.abs(values), axis=-1)[..., -spec.topk :]
+        np.put_along_axis(kept, top_ids, np.take_along_axis(values, top_ids, axis=-1), axis=-1)
+        values = kept
+    norm_feature = np.log1p(np.linalg.norm(flat, axis=1).reshape(standardized.shape[0], standardized.shape[1], 1))
+    max_abs_feature = np.max(np.abs(raw), axis=1).reshape(standardized.shape[0], standardized.shape[1], 1)
     return np.concatenate([values, norm_feature, max_abs_feature], axis=-1).astype(np.float64)
 
 
@@ -341,9 +539,20 @@ def _fit_component(
         "candidate_source": spec.candidate_source,
         "atom_source": spec.atom_source,
         "iterations": spec.iterations,
+        "fit_kind": params.get("fit_kind", "spherical_sparse_dictionary"),
+        "decision_weight": spec.decision_weight,
+        "l1_weight": spec.l1_weight,
+        "learning_rate": spec.learning_rate,
+        "epochs": spec.epochs,
         "candidate_vectors": params["candidate_vectors"],
         "valid_vectors": params["valid_vectors"],
         "atom_digest": params["atom_digest"],
+        "sae_reconstruction_loss": params.get("sae_reconstruction_loss"),
+        "sae_decision_loss": params.get("sae_decision_loss"),
+        "sae_l1_activation": params.get("sae_l1_activation"),
+        "sae_train_decision_accuracy": params.get("sae_train_decision_accuracy"),
+        "sae_active_rate": params.get("sae_active_rate"),
+        "sae_mean_active_features": params.get("sae_mean_active_features"),
         "selected_ridge": selected["ridge"],
         "selected_feature_dim": selected["feature_dim"],
         "selected_fit_accuracy": selected["fit"]["accuracy"],
@@ -405,6 +614,35 @@ def _write_jsonl(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
     with path.open("w", encoding="utf-8") as handle:
         for row in rows:
             handle.write(json.dumps(row, sort_keys=True) + "\n")
+
+
+def _resident_parameter_bytes(params: dict[str, Any]) -> int:
+    keys = (
+        "atoms",
+        "mean",
+        "scale",
+        "encoder_weight",
+        "encoder_bias",
+        "decoder_weight",
+        "decoder_bias",
+        "head_weight",
+        "head_bias",
+    )
+    total = 0
+    seen: set[int] = set()
+    for key in keys:
+        if params.get("fit_kind") == "trained_sae" and key == "atoms":
+            continue
+        value = params.get(key)
+        if value is None:
+            continue
+        array = np.asarray(value, dtype=np.float32)
+        pointer = int(array.__array_interface__["data"][0])
+        if pointer in seen:
+            continue
+        seen.add(pointer)
+        total += int(array.nbytes)
+    return total
 
 
 def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
@@ -671,6 +909,10 @@ def build_scout(
             "candidate_source": spec.candidate_source,
             "atom_source": spec.atom_source,
             "iterations": spec.iterations,
+            "decision_weight": spec.decision_weight,
+            "l1_weight": spec.l1_weight,
+            "learning_rate": spec.learning_rate,
+            "epochs": spec.epochs,
             "component_model_count": len(components),
             "selected_eval_accuracy": selected_accuracy,
             "source_label_copy_eval_accuracy": source_label_accuracy,
@@ -777,13 +1019,10 @@ def build_scout(
     )
     scout_pass = bool(best_variant["scout_pass_rule"])
     best_components = components_by_variant[best_variant["variant"]]
-    selected_dictionary_bytes = sum(
-        int(np.asarray(component["params"]["atoms"], dtype=np.float32).nbytes)
-        for component in best_components
-    )
+    selected_dictionary_bytes = sum(_resident_parameter_bytes(component["params"]) for component in best_components)
     max_component_dictionary_bytes = max(
         (
-            int(np.asarray(component["params"]["atoms"], dtype=np.float32).nbytes)
+            _resident_parameter_bytes(component["params"])
             for components in components_by_variant.values()
             for component in components
         ),
@@ -934,6 +1173,10 @@ def _parse_str_tuple(value: str) -> tuple[str, ...]:
     return tuple(part.strip() for part in value.split(",") if part.strip())
 
 
+def _parse_float_tuple(value: str) -> tuple[float, ...]:
+    return tuple(float(part.strip()) for part in value.split(",") if part.strip())
+
+
 def _make_dictionary_specs(
     *,
     atoms: tuple[int, ...],
@@ -941,12 +1184,47 @@ def _make_dictionary_specs(
     encode_modes: tuple[str, ...],
     atom_sources: tuple[str, ...],
     iterations: int,
+    sae_decision_weights: tuple[float, ...] = (0.0,),
+    sae_l1_weights: tuple[float, ...] = (0.0,),
+    sae_epochs: int = 80,
+    sae_learning_rate: float = 1e-3,
 ) -> tuple[DictionarySpec, ...]:
     specs: list[DictionarySpec] = []
     for atom_count in atoms:
         for topk in topks:
             for mode in encode_modes:
                 for atom_source in atom_sources:
+                    if _is_trained_sae_source(atom_source):
+                        if mode != encode_modes[0]:
+                            continue
+                        source_label = {
+                            "sae_reconstruction": "saerecon",
+                            "sae_decision": "saedecision",
+                            "sae_permuted_decision": "saepermdecision",
+                        }[atom_source]
+                        decision_weights = (0.0,) if atom_source == "sae_reconstruction" else sae_decision_weights
+                        for decision_weight in decision_weights:
+                            for l1_weight in sae_l1_weights:
+                                specs.append(
+                                    DictionarySpec(
+                                        name=(
+                                            f"sae{atom_count}_{source_label}_relu_top{topk}"
+                                            f"_dw{_safe_float_label(decision_weight)}"
+                                            f"_l1{_safe_float_label(l1_weight)}"
+                                        ),
+                                        atoms=atom_count,
+                                        topk=topk,
+                                        encode_mode="positive",
+                                        candidate_source="all",
+                                        atom_source=atom_source,
+                                        iterations=sae_epochs,
+                                        decision_weight=decision_weight,
+                                        l1_weight=l1_weight,
+                                        learning_rate=sae_learning_rate,
+                                        epochs=sae_epochs,
+                                    )
+                                )
+                        continue
                     mode_label = "signed" if mode == "signed_abs" else mode
                     source_label = {
                         "candidate_residual": "cand",
@@ -984,6 +1262,10 @@ def main() -> int:
     parser.add_argument("--encode-modes", type=_parse_str_tuple, default=("signed_abs", "positive"))
     parser.add_argument("--atom-sources", type=_parse_str_tuple, default=("candidate_residual",))
     parser.add_argument("--dictionary-iterations", type=int, default=6)
+    parser.add_argument("--sae-decision-weights", type=_parse_float_tuple, default=(0.2,))
+    parser.add_argument("--sae-l1-weights", type=_parse_float_tuple, default=(0.001,))
+    parser.add_argument("--sae-epochs", type=int, default=80)
+    parser.add_argument("--sae-learning-rate", type=float, default=1e-3)
     parser.add_argument("--run-date", default="2026-05-01")
     args = parser.parse_args()
     dictionaries = DEFAULT_DICTIONARIES
@@ -994,6 +1276,10 @@ def main() -> int:
             encode_modes=args.encode_modes,
             atom_sources=args.atom_sources,
             iterations=args.dictionary_iterations,
+            sae_decision_weights=args.sae_decision_weights,
+            sae_l1_weights=args.sae_l1_weights,
+            sae_epochs=args.sae_epochs,
+            sae_learning_rate=args.sae_learning_rate,
         )
     payload = build_scout(
         output_dir=args.output_dir,
