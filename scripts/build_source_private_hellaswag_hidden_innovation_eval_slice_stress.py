@@ -234,9 +234,15 @@ def build_gate(
     )
     h = bagged_payload["headline"]
     j = bagged_payload["jackknife_summary"]
-    pass_gate = bool(
+    eval_slice_end = eval_slice_start + eval_slice_rows
+    standard_sized_slice = eval_slice_start >= 1024 and eval_slice_rows >= 1024
+    terminal_tail_slice = (
         eval_slice_start >= 1024
-        and eval_slice_rows >= 1024
+        and eval_slice_rows >= 512
+        and eval_slice_end == int(slice_metadata["source_total_rows"])
+    )
+    pass_gate = bool(
+        (standard_sized_slice or terminal_tail_slice)
         and bagged_payload["pass_gate"]
         and h["selected_minus_best_label_copy"] >= STRICT_DELTA
         and h["paired_ci95_low_vs_best_label_copy"] > 0.0
@@ -247,8 +253,10 @@ def build_gate(
     )
     headline = {
         "eval_slice_start": eval_slice_start,
-        "eval_slice_end_exclusive": eval_slice_start + eval_slice_rows,
+        "eval_slice_end_exclusive": eval_slice_end,
         "eval_rows": eval_slice_rows,
+        "standard_sized_slice": standard_sized_slice,
+        "terminal_tail_slice": terminal_tail_slice,
         "selected_eval_accuracy": h["selected_eval_accuracy"],
         "source_label_copy_eval_accuracy": h["source_label_copy_eval_accuracy"],
         "trained_choice_bias_label_copy_eval_accuracy": h["trained_choice_bias_label_copy_eval_accuracy"],
@@ -279,10 +287,11 @@ def build_gate(
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "pass_gate": pass_gate,
         "pass_rule": (
-            "Pass if a frozen post-first1024 validation slice with at least 1024 rows passes the "
-            "same bagged hidden-innovation gate: >=0.02 over best label-copy, score-only bag, "
-            "and zero-hidden controls, paired CI95 lows > 0, all jackknife subbags pass, and no "
-            "source text/KV/raw hidden/raw score payload is exposed."
+            "Pass if a frozen post-first1024 validation slice is either a standard >=1024-row "
+            "slice or the terminal validation tail with >=512 rows ending at the validation split "
+            "boundary, and passes the same bagged hidden-innovation gate: >=0.02 over best "
+            "label-copy, score-only bag, and zero-hidden controls, paired CI95 lows > 0, all "
+            "jackknife subbags pass, and no source text/KV/raw hidden/raw score payload is exposed."
         ),
         "slice_metadata": slice_metadata,
         "eval_cache_metadata": eval_cache_metadata,

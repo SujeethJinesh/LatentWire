@@ -32,6 +32,27 @@ Validation status:
 - weighted score-only accuracy: `0.479384`
 - min slice delta vs best label-copy: `+0.034180`
 
+Terminal-tail diagnostic:
+
+- terminal slice artifact: `results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation9216_10042/hellaswag_hidden_innovation_eval_slice_stress.json`
+- full-validation aggregate artifact: `results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_10042/hellaswag_hidden_innovation_multi_slice_stress.json`
+- terminal slice: validation `9216:10042`
+- terminal rows: `826`
+- terminal slice pass: `false`
+- terminal selected / best label-copy / score-only accuracy: `0.539952 / 0.498789 / 0.497579`
+- terminal delta vs best label-copy: `+0.041162`
+- terminal paired CI95 low vs best label-copy: `+0.012107`
+- terminal jackknife pass: `2/3`
+- terminal jackknife min CI95 low vs best label-copy: `-0.012167`
+- full-validation aggregate pass: `false`
+- full-validation slices passing: `9/10`
+- full-validation rows: `10042`
+- full-validation weighted selected / best label-copy / score-only accuracy: `0.526688 / 0.485162 / 0.480880`
+
+Interpretation: the terminal tail preserves a positive overall margin but fails
+the strict jackknife robustness requirement. The reviewer-safe HellaSwag claim
+is therefore the contiguous `0:9216` pass, not a full-validation strict pass.
+
 ## Packet Boundary
 
 | Field | Value |
@@ -93,6 +114,14 @@ Safe systems claim:
 > validation gain over label-copy and score-only controls across `9216`
 > contiguous rows while exposing no source text, source KV cache, raw hidden
 > vector, or raw score vector.
+
+Forbidden HellaSwag validation claim:
+
+> LatentWire passes the full HellaSwag validation set under the strict
+> jackknife gate.
+
+That claim is blocked because the short terminal slice `9216:10042` soft-fails
+despite a positive paired margin.
 
 Forbidden systems claim:
 
