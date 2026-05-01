@@ -155,6 +155,15 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert "min delta vs score-only/zero-hidden" in contribution_rows[
         "HellaSwag multi-slice hidden-innovation stress"
     ]["main_metric"]
+    assert contribution_rows["HellaSwag anchor-relative common-basis stress"]["status"] == (
+        "new negative common-basis diagnostic / HellaSwag branch blocker"
+    )
+    assert "weighted selected/best-label/score-only" in contribution_rows[
+        "HellaSwag anchor-relative common-basis stress"
+    ]["headline_evidence"]
+    assert "anchor controls below label-copy" in contribution_rows[
+        "HellaSwag anchor-relative common-basis stress"
+    ]["main_metric"]
     assert contribution_rows["HellaSwag repair systems acceptance card"]["status"] == (
         "new acceptance gate / hidden-innovation method row promoted"
     )
@@ -601,6 +610,21 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     )
     assert any(
         check["check"] == "hellaswag_hidden_innovation_multi_slice_stress_source_private_packet"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_anchor_relative_hidden_innovation_multi_slice_recorded"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_anchor_relative_hidden_innovation_common_basis_demoted"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_anchor_relative_hidden_innovation_source_private_packet"
         and check["pass"]
         for check in payload["pass_checks"]
     )

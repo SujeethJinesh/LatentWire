@@ -1,0 +1,79 @@
+{
+  "created_utc": "2026-05-01T19:50:39.336532+00:00",
+  "files": [
+    {
+      "bytes": 24824,
+      "path": "results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation1024_2048/hellaswag_anchor_relative_hidden_innovation_gate.json",
+      "sha256": "3fe382a1e50afab763cdb25e5c678777e103d1f84f263a4f350df803b9265ee3"
+    },
+    {
+      "bytes": 1093,
+      "path": "results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation1024_2048/hellaswag_anchor_relative_hidden_innovation_gate.md",
+      "sha256": "f86d765e86419b11dc1a46316461dd7e8c50bd9d31afb259696f58c453330502"
+    },
+    {
+      "bytes": 345088,
+      "path": "results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation1024_2048/predictions.jsonl",
+      "sha256": "64185c6faf509e4d82bf32763ca3c90624cd51634708617479b8b1d3b6a783ad"
+    },
+    {
+      "bytes": 2775,
+      "path": "results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation1024_2048/component_rows.csv",
+      "sha256": "cda558618cf7a6362ab8e6b3fc8048abc8b340377d77a6266420a367ad4680bf"
+    },
+    {
+      "bytes": 1344,
+      "path": "results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation1024_2048/jackknife_rows.csv",
+      "sha256": "8b766377ac4949e21802ede8fc8e18f32b8eb92b71ac6fecf38c761dd910fd9c"
+    },
+    {
+      "bytes": 2264,
+      "path": "results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation1024_2048/sample_caches.jsonl",
+      "sha256": "77dc7963caede397066ad761b6ed83495e705088f8624c55f9c85ab2e146893e"
+    },
+    {
+      "bytes": 7915077,
+      "path": "results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation1024_2048/anchor_banks.npz",
+      "sha256": "d3ca9bb3a939c2967dc1cce7516fe6930ce5d10efbddf43d5ca6a58ee967fa67"
+    }
+  ],
+  "gate": "source_private_hellaswag_anchor_relative_hidden_innovation_gate",
+  "headline": {
+    "aggregation_policy": "mean_zscore",
+    "anchor_count": 128,
+    "anchor_count_max": 128,
+    "anchor_count_min": 128,
+    "anchor_id_shuffle_control_accuracy": 0.4091796875,
+    "anchor_value_roll_control_accuracy": 0.4091796875,
+    "best_label_copy_eval_accuracy": 0.4140625,
+    "candidate_roll_hidden_control_accuracy": 0.4052734375,
+    "component_model_count": 9,
+    "eval_rows": 1024,
+    "framed_record_bytes": 5,
+    "paired_ci95_high_vs_best_label_copy": 0.021484375,
+    "paired_ci95_high_vs_score_only_bagged": 0.01953125,
+    "paired_ci95_low_vs_best_label_copy": -0.0146484375,
+    "paired_ci95_low_vs_score_only_bagged": 0.0009765625,
+    "raw_payload_bytes": 2,
+    "score_only_bagged_control_accuracy": 0.4091796875,
+    "score_only_component_model_count": 9,
+    "selected_eval_accuracy": 0.4189453125,
+    "selected_minus_best_label_copy": 0.0048828125,
+    "selected_minus_score_only_bagged_control": 0.009765625,
+    "selected_minus_zero_hidden_control": 0.009765625,
+    "selected_ridge_counts": {
+      "1000.0": 4,
+      "10000.0": 1,
+      "100000.0": 4
+    },
+    "source_label_copy_eval_accuracy": 0.4091796875,
+    "source_top2_oracle_accuracy": 0.6767578125,
+    "source_top4_oracle_accuracy": 1.0,
+    "split_seed_count": 3,
+    "strict_delta_required": 0.02,
+    "train_sample_seed_count": 3,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.4140625,
+    "wrong_example_hidden_control_accuracy": 0.4111328125,
+    "zero_hidden_control_accuracy": 0.4091796875
+  }
+}

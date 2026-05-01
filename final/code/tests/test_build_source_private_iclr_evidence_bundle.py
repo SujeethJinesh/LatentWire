@@ -147,13 +147,22 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
         "HellaSwag heldout-slice hidden-innovation stress"
     ]["main_metric"]
     assert contribution_rows["HellaSwag multi-slice hidden-innovation stress"]["status"] == (
-        "new positive 4-slice gate / stronger HellaSwag headline-candidate"
+        "new positive 5-slice gate / stronger HellaSwag headline-candidate"
     )
-    assert "slices=4/4 contiguous" in contribution_rows[
+    assert "slices=5/5 contiguous" in contribution_rows[
         "HellaSwag multi-slice hidden-innovation stress"
     ]["headline_evidence"]
     assert "min delta vs score-only/zero-hidden" in contribution_rows[
         "HellaSwag multi-slice hidden-innovation stress"
+    ]["main_metric"]
+    assert contribution_rows["HellaSwag anchor-relative common-basis stress"]["status"] == (
+        "new negative common-basis diagnostic / HellaSwag branch blocker"
+    )
+    assert "weighted selected/best-label/score-only" in contribution_rows[
+        "HellaSwag anchor-relative common-basis stress"
+    ]["headline_evidence"]
+    assert "anchor controls below label-copy" in contribution_rows[
+        "HellaSwag anchor-relative common-basis stress"
     ]["main_metric"]
     assert contribution_rows["HellaSwag repair systems acceptance card"]["status"] == (
         "new acceptance gate / hidden-innovation method row promoted"
@@ -465,14 +474,14 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert eval_slice_2048_headline["selected_minus_best_label_copy"] >= 0.02
     multi_slice_headline = payload["hellaswag_hidden_innovation_multi_slice_stress_headline"]
     assert multi_slice_headline["pass_gate"] is True
-    assert multi_slice_headline["slice_count"] == 4
-    assert multi_slice_headline["pass_slice_count"] == 4
-    assert multi_slice_headline["total_eval_rows"] == 4096
+    assert multi_slice_headline["slice_count"] == 5
+    assert multi_slice_headline["pass_slice_count"] == 5
+    assert multi_slice_headline["total_eval_rows"] == 5120
     assert multi_slice_headline["contiguous_validation_prefix"] is True
     assert multi_slice_headline["min_delta_vs_best_label_copy"] >= 0.02
     assert multi_slice_headline["min_delta_vs_score_only_bagged"] >= 0.02
     assert multi_slice_headline["source_private_packet"] is True
-    assert len(multi_slice_headline["slice_artifacts"]) == 4
+    assert len(multi_slice_headline["slice_artifacts"]) == 5
     acceptance_headline = payload["hellaswag_repair_systems_acceptance_headline"]
     assert acceptance_headline["pass_gate"] is True
     assert acceptance_headline["rows"] == 7
@@ -585,6 +594,11 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
         for check in payload["pass_checks"]
     )
     assert any(
+        check["check"] == "hellaswag_hidden_innovation_multi_slice_stress_has_5_contiguous_slices"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
         check["check"] == "hellaswag_hidden_innovation_multi_slice_stress_beats_label_score_zero"
         and check["pass"]
         for check in payload["pass_checks"]
@@ -596,6 +610,21 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     )
     assert any(
         check["check"] == "hellaswag_hidden_innovation_multi_slice_stress_source_private_packet"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_anchor_relative_hidden_innovation_multi_slice_recorded"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_anchor_relative_hidden_innovation_common_basis_demoted"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_anchor_relative_hidden_innovation_source_private_packet"
         and check["pass"]
         for check in payload["pass_checks"]
     )
