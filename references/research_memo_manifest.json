@@ -1642,6 +1642,6 @@
       "slug": "hellaswag_hidden_innovation_multi_slice_refs_20260501",
       "path": "references/591_hellaswag_hidden_innovation_multi_slice_refs_20260501.md",
       "status": "local_memo",
-      "reason": "Primary-source memo for the HellaSwag hidden-innovation multi-slice stress, covering the contiguous validation[0:3072] pass, prefix-token/soft-prompt distinction, source-private fixed-byte packet boundary, SAE/common-basis next branch, and systems boundaries against C2C, KVCOMM, QJL, and TurboQuant."
+      "reason": "Primary-source memo for the HellaSwag hidden-innovation multi-slice stress, covering the contiguous validation[0:4096] pass, prefix-token/soft-prompt distinction, source-private fixed-byte packet boundary, SAE/common-basis next branch, and systems boundaries against C2C, KVCOMM, QJL, and TurboQuant."
     }
 ]

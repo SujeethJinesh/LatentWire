@@ -18347,3 +18347,29 @@ headline-candidate to a stronger multi-slice headline-candidate. The next
 exact gate is remaining-slice/full-validation stress plus one strict
 cross-family falsification pair; native NVIDIA/vLLM/SGLang systems rows remain
 required before any serving-performance claim.
+
+HellaSwag hidden-innovation fourth-slice follow-up: ran the frozen
+validation rows `3072:4096` gate with the same three train samples
+`{1729, 2027, 2039}`, split seeds `{1729, 1731, 1733}`, and `2B` raw /
+`5B` framed source-private candidate/confidence packet, then regenerated the
+multi-slice aggregate at
+`results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_4096/`.
+Outcome: the fourth slice passes with selected accuracy `0.531250` versus
+best label-copy `0.484375`, score-only bagged `0.480469`, and zero-hidden
+`0.480469`; the paired CI95 low versus best label-copy is `+0.027344`, and
+all `3/3` jackknife subbags pass. The four-slice aggregate now passes on
+`4/4` contiguous HellaSwag validation slices totaling `4096` rows. Weighted
+selected accuracy is `0.494385` versus best label-copy `0.451904`, score-only
+bagged `0.446289`, and zero-hidden `0.446289`; the minimum slice delta versus
+best label-copy remains `+0.034180` with minimum paired CI95 low `+0.011719`.
+Wrong-example and candidate-roll hidden controls stay below label-copy, and
+the packet still exposes no source text, source KV, raw hidden vector, or raw
+source scores. Interpretation: this is the strongest Mac-local positive
+HellaSwag result so far, but it is still a headline-candidate rather than an
+ICLR-complete claim until remaining-slice/full-validation stress, one strict
+cross-family falsification pair, and native NVIDIA/vLLM/SGLang systems rows
+are complete. Literature scout boundary: the safe novelty claim is the
+fixed-byte source-private per-example hidden-innovation packet plus
+destructive controls, not prefix/prompt tuning, C2C/KVComm-style cache
+communication, QJL/TurboQuant quantization, SAE/crosscoder common bases, or
+relative representations in isolation.

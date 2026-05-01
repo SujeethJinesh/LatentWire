@@ -29,7 +29,7 @@ source model computes hidden innovation internally and emits only a fixed
 `2B` raw / `5B` framed candidate/confidence packet. The receiver does not
 ingest source text, source KV, raw source hidden vectors, raw source scores,
 soft prompt vectors, prefix tokens, or adapter weights. The new evidence is
-that this exact packet clears contiguous HellaSwag validation rows `0:3072`
+that this exact packet clears contiguous HellaSwag validation rows `0:4096`
 against label-copy, score-only, zero-hidden, wrong-example, candidate-roll,
 and jackknife controls.
 

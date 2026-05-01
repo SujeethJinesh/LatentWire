@@ -549,10 +549,10 @@
       "sha256": "1baec769e5dea93975b36972b0e2ce9b240997a5befbf5a467c24574f7c57511"
     },
     "final_manifest": {
-      "bytes": 859641,
+      "bytes": 864193,
       "exists": true,
       "path": "final/MANIFEST.sha256",
-      "sha256": "63720995f21b97b2a5a48d7569710b0dba17e9d7170d109c12a3f4961ea802ce"
+      "sha256": "6e586b8025037e36778469e6a788b51bcb3cfeef0755a359132414dac878f562"
     },
     "final_table_doc": {
       "bytes": 11779,
@@ -596,11 +596,17 @@
       "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json",
       "sha256": "131f06101fe7989657c618482b59882265890dde44bae4d3c4fb53c58c6d5d9e"
     },
-    "hellaswag_hidden_innovation_multi_slice_stress": {
-      "bytes": 7578,
+    "hellaswag_hidden_innovation_eval_slice_stress_3072_4096": {
+      "bytes": 62677,
       "exists": true,
-      "path": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_3072/hellaswag_hidden_innovation_multi_slice_stress.json",
-      "sha256": "da467369f14c7a7c41d67fafd2e0c29501688ad1013ee1f08b7fffc54fcab9e0"
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "sha256": "0dfcd1a91acfa0732e6d3508179a4bbabb1592d3f306e0d8d6949880ae685821"
+    },
+    "hellaswag_hidden_innovation_multi_slice_stress": {
+      "bytes": 9356,
+      "exists": true,
+      "path": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_4096/hellaswag_hidden_innovation_multi_slice_stress.json",
+      "sha256": "93d3bba654c4d2baff6d81a5a218813fc332a607b3a694c6fb0ad5762b0441a8"
     },
     "hellaswag_hidden_innovation_repair": {
       "bytes": 40928,
@@ -1063,10 +1069,10 @@
     },
     {
       "contribution": "HellaSwag multi-slice hidden-innovation stress",
-      "headline_evidence": "slices=3/3 contiguous; rows=3072; weighted selected/best-label/score-only=0.482/0.441/0.435; new heldout slice=2048:3072",
-      "main_metric": "min delta vs best label-copy=0.034; min CI95 low=0.012; min delta vs score-only/zero-hidden=0.045/0.045; wrong/roll max=0.438/0.390; record bytes=5B",
-      "remaining_gap": "This is the strongest Mac-local HellaSwag evidence so far: the same 2B raw / 5B framed source-private hidden-innovation packet clears validation rows 0:3072 under label-copy, score-only, zero-hidden, corrupted-hidden, and jackknife checks. It still does not replace the remaining validation slices, a strict cross-family falsification pair, or native NVIDIA systems rows.",
-      "status": "new positive 3-slice gate / stronger HellaSwag headline-candidate"
+      "headline_evidence": "slices=4/4 contiguous; rows=4096; weighted selected/best-label/score-only=0.494/0.452/0.446; latest heldout slice=3072:4096",
+      "main_metric": "min delta vs best label-copy=0.034; min CI95 low=0.012; min delta vs score-only/zero-hidden=0.045/0.045; wrong/roll max=0.455/0.405; record bytes=5B",
+      "remaining_gap": "This is the strongest Mac-local HellaSwag evidence so far: the same 2B raw / 5B framed source-private hidden-innovation packet clears validation rows 0:4096 under label-copy, score-only, zero-hidden, corrupted-hidden, and jackknife checks. It still does not replace the remaining validation slices, a strict cross-family falsification pair, or native NVIDIA systems rows.",
+      "status": "new positive 4-slice gate / stronger HellaSwag headline-candidate"
     },
     {
       "contribution": "HellaSwag repair systems acceptance card",
@@ -1279,7 +1285,7 @@
       "status": "bounded diagnostic contribution, not headline cross-family claim"
     }
   ],
-  "created_utc": "2026-05-01T18:14:03.862703+00:00",
+  "created_utc": "2026-05-01T18:51:46.094047+00:00",
   "cross_benchmark_systems_comparator_headline": {
     "claim_scope": "Cross-benchmark byte/state-exposure comparator for source-private packets. KV/cache rows are one-source-token byte floors from the local Qwen2.5-0.5B config, not native C2C/KVComm/QJL/TurboQuant quality or throughput measurements.",
     "diagnostic_benchmarks": 1,
@@ -1472,32 +1478,33 @@
     "contiguous_validation_prefix": true,
     "corrupted_hidden_controls_below_label_copy": true,
     "framed_record_bytes": 5,
-    "jackknife_slice_pass_count": 3,
-    "max_candidate_roll_hidden_control_accuracy": 0.3896484375,
-    "max_wrong_example_hidden_control_accuracy": 0.4375,
+    "jackknife_slice_pass_count": 4,
+    "max_candidate_roll_hidden_control_accuracy": 0.4052734375,
+    "max_wrong_example_hidden_control_accuracy": 0.455078125,
     "min_ci95_low_vs_best_label_copy": 0.01171875,
     "min_ci95_low_vs_score_only_bagged": 0.02734375,
     "min_delta_vs_best_label_copy": 0.0341796875,
     "min_delta_vs_score_only_bagged": 0.044921875,
     "min_delta_vs_zero_hidden": 0.044921875,
     "pass_gate": true,
-    "pass_slice_count": 3,
+    "pass_slice_count": 4,
     "raw_payload_bytes": 2,
     "slice_artifacts": [
       "results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json",
       "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
-      "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json"
+      "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json"
     ],
-    "slice_count": 3,
+    "slice_count": 4,
     "source_private_packet": true,
     "strict_delta_required": 0.02,
-    "total_eval_rows": 3072,
-    "weighted_best_label_copy_eval_accuracy": 0.4410807291666667,
-    "weighted_score_only_bagged_control_accuracy": 0.4348958333333333,
-    "weighted_selected_eval_accuracy": 0.4820963541666667,
-    "weighted_source_label_copy_eval_accuracy": 0.4348958333333333,
-    "weighted_trained_choice_bias_label_copy_eval_accuracy": 0.4410807291666667,
-    "weighted_zero_hidden_control_accuracy": 0.4348958333333333
+    "total_eval_rows": 4096,
+    "weighted_best_label_copy_eval_accuracy": 0.451904296875,
+    "weighted_score_only_bagged_control_accuracy": 0.4462890625,
+    "weighted_selected_eval_accuracy": 0.494384765625,
+    "weighted_source_label_copy_eval_accuracy": 0.4462890625,
+    "weighted_trained_choice_bias_label_copy_eval_accuracy": 0.451904296875,
+    "weighted_zero_hidden_control_accuracy": 0.4462890625
   },
   "hellaswag_hidden_innovation_repair_headline": {
     "best_label_copy_eval_accuracy": 0.4619140625,
@@ -2461,6 +2468,10 @@
       "pass": true
     },
     {
+      "check": "hellaswag_hidden_innovation_multi_slice_stress_has_4_contiguous_slices",
+      "pass": true
+    },
+    {
       "check": "hellaswag_hidden_innovation_multi_slice_stress_beats_label_score_zero",
       "pass": true
     },
@@ -2698,11 +2709,11 @@
     }
   ],
   "pass_gate": true,
-  "readiness": "train-donor positive-method paper branch plus seed-stable ARC-Challenge and OpenBookQA public-basis endpoints; cross-benchmark source-state byte-floor systems comparator and native vLLM/SGLang benchmark plan now strengthen the systems story; HellaSwag single-denoiser hidden innovation fails fresh train-row-sample stress, but the predeclared bagged hidden-innovation packet now passes three-train-sample, 2-of-3 jackknife, frozen heldout validation-slice stress, and a three-contiguous-slice validation[0:3072] stress as a live ICLR headline-candidate pending remaining-slice/full-validation stress, strict cross-family falsification, and native systems rows",
+  "readiness": "train-donor positive-method paper branch plus seed-stable ARC-Challenge and OpenBookQA public-basis endpoints; cross-benchmark source-state byte-floor systems comparator and native vLLM/SGLang benchmark plan now strengthen the systems story; HellaSwag single-denoiser hidden innovation fails fresh train-row-sample stress, but the predeclared bagged hidden-innovation packet now passes three-train-sample, 2-of-3 jackknife, frozen heldout validation-slice stress, and a four-contiguous-slice validation[0:4096] stress as a live ICLR headline-candidate pending remaining-slice/full-validation stress, strict cross-family falsification, and native systems rows",
   "remaining_iclr_risks": [
     "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing; the cross-benchmark systems comparator and native benchmark plan define the table, but they are not native serving results.",
     "ARC-Challenge, OpenBookQA, and HellaSwag now have seed-stable public-basis endpoints, but the source scorer is still a local Qwen log-likelihood bridge rather than a learned hidden-state communication endpoint.",
-    "HellaSwag anchored hidden-innovation repair passes cached split stability but fails the fresh 2027 train-row-sample stress; the new bagged gate now rescues the three-sample stress, passes 2-of-3 jackknife subbags, clears frozen validation[1024:2048] and validation[2048:3072] heldout slices, and passes a contiguous validation[0:3072] multi-slice stress. It still needs remaining-slice/full-validation stress before comfortable headline promotion.",
+    "HellaSwag anchored hidden-innovation repair passes cached split stability but fails the fresh 2027 train-row-sample stress; the new bagged gate now rescues the three-sample stress, passes 2-of-3 jackknife subbags, clears frozen validation[1024:2048], validation[2048:3072], and validation[3072:4096] heldout slices, and passes a contiguous validation[0:4096] multi-slice stress. It still needs remaining-slice/full-validation stress before comfortable headline promotion.",
     "HellaSwag source top-2 oracle headroom is still large after the hidden-innovation repair, so reviewers will expect ablations explaining why the repair recovers only part of the headroom.",
     "The train-only public receiver HellaSwag repair probe also fails below source-label copy, so the next repair gate needs train-split source scores or hidden source summaries rather than public lexical features alone.",
     "The 512-row train-source-score HellaSwag repair probe also fails below source-label copy, so score-shape repair is weakened unless a substantially richer train-source feature family is introduced.",
@@ -2795,7 +2806,8 @@
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_bagged_gate.py --output-dir results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048 --eval-slice-start 1024 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072 --eval-slice-start 2048 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
-    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_3072 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096 --eval-slice-start 3072 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_4096 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_repair_systems_acceptance_card.py --output-dir results/source_private_hellaswag_repair_systems_acceptance_card_20260501 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_mac_packet_ring_transport_microbench.py --output-dir results/source_private_mac_packet_ring_transport_microbench_20260501 --target-bytes 33554432 --repeats 5 --min-iterations 128",
     "./venv_arm64/bin/python scripts/build_source_private_serving_slo_envelope.py --output-dir results/source_private_serving_slo_envelope_20260501",

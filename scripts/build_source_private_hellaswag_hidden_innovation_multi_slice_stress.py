@@ -17,7 +17,7 @@ from scripts import build_source_private_hellaswag_top2_contrastive_repair_probe
 
 
 DEFAULT_OUTPUT = pathlib.Path(
-    "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_3072"
+    "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_4096"
 )
 DEFAULT_SLICE_ARTIFACTS = (
     pathlib.Path(
@@ -28,6 +28,9 @@ DEFAULT_SLICE_ARTIFACTS = (
     ),
     pathlib.Path(
         "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json"
+    ),
+    pathlib.Path(
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json"
     ),
 )
 STRICT_DELTA = 0.02
