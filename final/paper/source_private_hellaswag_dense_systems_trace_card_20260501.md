@@ -15,21 +15,21 @@ HBM, and GPU-memory rows remain blocking.
 ## Local Evidence
 
 Method artifact:
-`results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation6144_7168/hellaswag_hidden_innovation_eval_slice_stress.json`
+`results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation7168_8192/hellaswag_hidden_innovation_eval_slice_stress.json`
 
 Aggregate artifact:
-`results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_7168/hellaswag_hidden_innovation_multi_slice_stress.json`
+`results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_8192/hellaswag_hidden_innovation_multi_slice_stress.json`
 
 Validation status:
 
-- latest slice: validation `6144:7168`
+- latest slice: validation `7168:8192`
 - latest slice pass: `true`
-- aggregate: validation `0:7168`
-- aggregate slices passing: `7/7`
-- aggregate rows: `7168`
-- weighted selected accuracy: `0.518136`
-- weighted best label-copy accuracy: `0.476562`
-- weighted score-only accuracy: `0.470843`
+- aggregate: validation `0:8192`
+- aggregate slices passing: `8/8`
+- aggregate rows: `8192`
+- weighted selected accuracy: `0.522949`
+- weighted best label-copy accuracy: `0.482056`
+- weighted score-only accuracy: `0.476929`
 - min slice delta vs best label-copy: `+0.034180`
 
 ## Packet Boundary
@@ -52,13 +52,13 @@ not a per-request transmitted field.
 
 ## Mac CPU Timing
 
-Measured on the local Mac for validation rows `6144:7168`.
+Measured on the local Mac for validation rows `7168:8192`.
 
 | Phase | Total | Per Request |
 |---|---:|---:|
-| source score cache | `563.299s` | `550.1ms` |
-| source hidden cache | `399.432s` | `390.1ms` |
-| full slice script | `973.612s` | `950.8ms` |
+| source score cache | `543.655s` | `530.9ms` |
+| source hidden cache | `380.325s` | `371.4ms` |
+| full slice script | `962.351s` | `939.8ms` |
 
 Cache artifacts for this slice:
 
@@ -92,7 +92,7 @@ Safe systems claim:
 
 > On Mac, LatentWire demonstrates a source-private byte-scale communication
 > boundary for HellaSwag: a `2B` raw / `5B` framed packet preserves a positive
-> validation gain over label-copy and score-only controls across `7168`
+> validation gain over label-copy and score-only controls across `8192`
 > contiguous rows while exposing no source text, source KV cache, raw hidden
 > vector, or raw score vector.
 

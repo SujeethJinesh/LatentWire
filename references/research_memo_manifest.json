@@ -1692,5 +1692,12 @@
     "path": "references/598_hellaswag_validation7168_refs_20260501.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the dense HellaSwag validation[0:7168] extension, covering fixed-byte source-private packet novelty boundaries against prefix/prompt tuning, adapters, SAE/crosscoder, relative representations, C2C/KVComm, QJL, TurboQuant, vLLM, and SGLang."
+  },
+  {
+    "num": 599,
+    "slug": "hellaswag_validation8192_refs_20260501",
+    "path": "references/599_hellaswag_validation8192_refs_20260501.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the dense HellaSwag validation[0:8192] extension, covering fixed-byte source-private packet novelty boundaries against prefix/prompt tuning, adapters, SAE/crosscoder/relative representations, C2C/KVComm/KVCOMM/Q-KVComm, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, and latent reasoning."
   }
 ]
