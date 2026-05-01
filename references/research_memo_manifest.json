@@ -1671,5 +1671,12 @@
     "path": "references/595_hellaswag_learned_residual_basis_refs_20260501.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the HellaSwag learned residual basis scout, covering the pca256 single-slice pass, five-slice promotion failure, and novelty boundaries against sparse crosscoders, SAEs, relative representations, C2C, and KVComm."
+  },
+  {
+    "num": 596,
+    "slug": "hellaswag_sparse_residual_dictionary_refs_20260501",
+    "path": "references/596_hellaswag_sparse_residual_dictionary_refs_20260501.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the HellaSwag sparse residual dictionary scout, covering failed unsupervised and contrastive dictionary variants, systems/exposure accounting, and novelty boundaries against SAEs, sparse crosscoders, prefix tuning, C2C/KVComm, QJL, and TurboQuant."
   }
 ]

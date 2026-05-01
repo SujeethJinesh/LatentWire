@@ -1,0 +1,108 @@
+{
+  "created_utc": "2026-05-01T21:21:33.362169+00:00",
+  "files": [
+    {
+      "bytes": 47994,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/hellaswag_sparse_residual_dictionary_scout.json",
+      "sha256": "e8a3933d969cc49d19d21fc03302d88a17f2e59bba91635138be315891f207cc"
+    },
+    {
+      "bytes": 1023,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/hellaswag_sparse_residual_dictionary_scout.md",
+      "sha256": "8e4246a7570759c97638c0180ce8968de637b0c7abd8fdd9576e39957d3a8485"
+    },
+    {
+      "bytes": 24891,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/component_rows.csv",
+      "sha256": "ff4953d1cb643fbdf8dba621116d31007d9661805387dc6901b40df2a4cf2fb0"
+    },
+    {
+      "bytes": 12380,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/variant_rows.csv",
+      "sha256": "037b70ec0030db888d8cc8028287ff4efe5cd9328388d7d84da54e354bdc5422"
+    },
+    {
+      "bytes": 2264,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/sample_caches.jsonl",
+      "sha256": "77dc7963caede397066ad761b6ed83495e705088f8624c55f9c85ab2e146893e"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict128_gold_positive_top4.jsonl",
+      "sha256": "94f91fc437ab79fc396d4b3a13a572bcbe39f46d4ec3b4d74cf59a98e0310782"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict128_gold_signed_top4.jsonl",
+      "sha256": "5830220eb988d32711a141b8e610e7349f377811f92947798c9dd9006b63bf59"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict128_goldvtopwrong_positive_top4.jsonl",
+      "sha256": "1c2d29ab38995ec6bd7bc5355a642e8c662d2bb317208a866ca666ac00a3421c"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict128_goldvtopwrong_signed_top4.jsonl",
+      "sha256": "6b0cf246f5e7c40b409d190fe95490e6b4a3f5692be271941ae0ea91548d09ca"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict128_goldvwrongmean_positive_top4.jsonl",
+      "sha256": "c0e01311957b90422cff713e82b27ea74e366e15c4f2605741600bf7fd0c7af3"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict128_goldvwrongmean_signed_top4.jsonl",
+      "sha256": "48eec5fb4d549530eedd6d0b4f8ffdeb8480150604f984579793bf11c89ba17c"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict64_gold_positive_top4.jsonl",
+      "sha256": "9eb7f36680b8aa2936aac320654023fa500129cd315da74bf5d7a38863228ee5"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict64_gold_signed_top4.jsonl",
+      "sha256": "3f11b92a2798a3429a9420127b187a8320ae808464017d2b6cedd7243cb132a2"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict64_goldvtopwrong_positive_top4.jsonl",
+      "sha256": "c32aea92d507e4498719f242ad2c7c7e72e0cd3eb607869066b9c27306dcbd6e"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict64_goldvtopwrong_signed_top4.jsonl",
+      "sha256": "1db4fdae8876c7dfb5ad873d545edc37e9accc2795df7fd95bc28b33d787cf7a"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict64_goldvwrongmean_positive_top4.jsonl",
+      "sha256": "2f80b43848772e9be952d97d0d9875ea5b781ca9077f44ab7a8184df3a9c8572"
+    },
+    {
+      "bytes": 386622,
+      "path": "results/source_private_hellaswag_sparse_residual_dictionary_contrastive_scout_20260501_qwen05_validation4096_5120/predictions/dict64_goldvwrongmean_signed_top4.jsonl",
+      "sha256": "6a3af431dd154fab796dc295bcba43fffd18985d1691fe9a0882539c681f79f3"
+    }
+  ],
+  "gate": "source_private_hellaswag_sparse_residual_dictionary_scout",
+  "headline": {
+    "best_ci95_high_vs_best_label_copy": 0.010278320312499978,
+    "best_ci95_low_vs_best_label_copy": -0.015161132812499999,
+    "best_delta_vs_dense_hidden_reference": -0.005078125000000044,
+    "best_label_copy_eval_accuracy": 0.5,
+    "best_selected_eval_accuracy": 0.498046875,
+    "best_selected_minus_best_label_copy": -0.001953125,
+    "best_selected_minus_score_only_bagged_control": 0.0009765625,
+    "best_variant": "dict64_gold_signed_top4",
+    "dense_hidden_reference_accuracy": 0.503125,
+    "eval_rows": 1024,
+    "framed_record_bytes": 5,
+    "raw_payload_bytes": 2,
+    "score_only_bagged_control_accuracy": 0.4970703125,
+    "strict_delta_required": 0.02,
+    "variant_count": 12
+  }
+}
