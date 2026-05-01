@@ -18373,3 +18373,26 @@ fixed-byte source-private per-example hidden-innovation packet plus
 destructive controls, not prefix/prompt tuning, C2C/KVComm-style cache
 communication, QJL/TurboQuant quantization, SAE/crosscoder common bases, or
 relative representations in isolation.
+
+HellaSwag hidden-innovation fifth-slice follow-up: ran the frozen validation
+rows `4096:5120` gate with the same three train samples `{1729, 2027, 2039}`,
+split seeds `{1729, 1731, 1733}`, and `2B` raw / `5B` framed source-private
+candidate/confidence packet, then regenerated the default multi-slice
+aggregate at
+`results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_5120/`.
+Outcome: the fifth slice passes with selected accuracy `0.538086` versus
+best label-copy `0.500000`, score-only bagged `0.497070`, and zero-hidden
+`0.497070`; the paired CI95 low versus best label-copy is `+0.018555`, and
+all `3/3` jackknife subbags pass. The five-slice aggregate now passes on
+`5/5` contiguous HellaSwag validation slices totaling `5120` rows. Weighted
+selected accuracy is `0.503125` versus best label-copy `0.461523`, score-only
+bagged `0.456445`, and zero-hidden `0.456445`; the minimum slice delta versus
+best label-copy remains `+0.034180` with minimum paired CI95 low `+0.011719`.
+Wrong-example and candidate-roll hidden controls stay below label-copy, and
+the packet still exposes no source text, source KV, raw hidden vector, or raw
+source scores. Interpretation: this strengthens HellaSwag as the current
+ICLR headline-candidate positive method. It is not yet submission-complete:
+the next exact gate is an anchor-relative/common-basis hidden-innovation
+variant or additional remaining-slice/full-validation stress, followed by one
+strict cross-family falsification pair and native NVIDIA/vLLM/SGLang systems
+rows.
